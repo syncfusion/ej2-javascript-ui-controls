@@ -49,9 +49,6 @@ export class Edit {
         if (this.parent.editSettings.allowAdding || (this.parent.editSettings.allowEditing &&
             (this.parent.editSettings.mode === 'Dialog' || this.parent.editSettings.mode === 'Auto'))) {
             this.dialogModule = new DialogEdit(this.parent);
-            if (this.parent.editSettings.mode === 'Dialog') {
-                this.parent.treeGrid.recordDoubleClick = this.recordDoubleClick.bind(this);
-            }
         }
         if (this.parent.editSettings.allowTaskbarEditing) {
             this.taskbarEditModule = new TaskbarEdit(this.parent);
@@ -63,6 +60,7 @@ export class Edit {
             this.parent.element.appendChild(confirmDialog);
             this.renderDeleteConfirmDialog();
         }
+        this.parent.treeGrid.recordDoubleClick = this.recordDoubleClick.bind(this);
         this.parent.treeGrid.editSettings.allowAdding = this.parent.editSettings.allowAdding;
         this.parent.treeGrid.editSettings.allowDeleting = this.parent.editSettings.allowDeleting;
         this.parent.treeGrid.editSettings.showDeleteConfirmDialog = this.parent.editSettings.showDeleteConfirmDialog;
@@ -210,15 +208,9 @@ export class Edit {
             } else if (isNullOrUndefined(this.parent.editModule.dialogModule)) {
                 this.dialogModule = new DialogEdit(this.parent);
             }
-            if (isNullOrUndefined(this.parent.editModule.taskbarEditModule)) {
-                this.taskbarEditModule = new TaskbarEdit(this.parent);
-            }
         } else {
             if (this.cellEditModule) {
                 this.cellEditModule.destroy();
-            }
-            if (this.taskbarEditModule) {
-                this.taskbarEditModule.destroy();
             }
             if (this.dialogModule) {
                 this.dialogModule.destroy();
@@ -238,17 +230,30 @@ export class Edit {
                 this.confirmDialog.destroy();
             }
         }
+
+        if (editSettings.allowTaskbarEditing) {
+            if (isNullOrUndefined(this.parent.editModule.taskbarEditModule)) {
+                this.taskbarEditModule = new TaskbarEdit(this.parent);
+            }
+        } else {
+            if (this.taskbarEditModule) {
+                this.taskbarEditModule.destroy();
+            }
+        }
     }
 
     private recordDoubleClick(args: RecordDoubleClickEventArgs): void {
-        let ganttData: IGanttData;
-        if (args.row) {
-            let rowIndex: number = getValue('rowIndex', args.row);
-            ganttData = this.parent.currentViewData[rowIndex];
+        if (this.parent.editSettings.allowEditing && this.parent.editSettings.mode === 'Dialog') {
+            let ganttData: IGanttData;
+            if (args.row) {
+                let rowIndex: number = getValue('rowIndex', args.row);
+                ganttData = this.parent.currentViewData[rowIndex];
+            }
+            if (!isNullOrUndefined(ganttData)) {
+                this.dialogModule.openEditDialog(ganttData);
+            }
         }
-        if (!isNullOrUndefined(ganttData) && this.parent.editSettings.allowEditing) {
-            this.dialogModule.openEditDialog(ganttData);
-        }
+        this.parent.ganttChartModule.recordDoubleClick(args);
     }
     /**
      * @private
@@ -339,7 +344,7 @@ export class Edit {
         let scheduleFieldNames: string[] = [];
         let isScheduleValueUpdated: boolean = false;
         for (let key of Object.keys(data)) {
-            if (isNullOrUndefined(key) || isNullOrUndefined(data[key])) {
+            if (isNullOrUndefined(key) || (isNullOrUndefined(data[key]) && !ganttObj.allowUnscheduledTasks)) {
                 continue;
             }
             if ([tasks.startDate, tasks.endDate, tasks.duration].indexOf(key) !== -1) {
@@ -370,7 +375,7 @@ export class Edit {
                 let column: ColumnModel = ganttObj.columnByField[key];
                 /* tslint:disable-next-line */
                 let value: any = data[key];
-                if (column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit') {
+                if (!isNullOrUndefined(column) && (column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit')) {
                     value = ganttObj.dataOperation.getDateFromFormat(value);
                 }
                 let ganttPropKey: string = ganttPropByMapping[key];
@@ -379,7 +384,9 @@ export class Edit {
                 } else if (key === tasks.name) {
                     ganttPropKey = 'taskName';
                 }
-                ganttObj.setRecordValue(ganttPropKey, value, ganttData.ganttProperties, true);
+                if (!isNullOrUndefined(ganttPropKey)) {
+                    ganttObj.setRecordValue(ganttPropKey, value, ganttData.ganttProperties, true);
+                }
                 if ((key === tasks.baselineStartDate || key === tasks.baselineEndDate) &&
                     (ganttData.ganttProperties.baselineStartDate && ganttData.ganttProperties.baselineEndDate)) {
                     ganttObj.setRecordValue(
@@ -862,6 +869,9 @@ export class Edit {
         eventArgs.data = args.data;
         eventArgs.modifiedRecords = this.parent.editedRecords;
         eventArgs.modifiedTaskData = getTaskData(this.parent.editedRecords);
+        if (args.action && args.action === 'DrawConnectorLine') {
+            eventArgs.action = 'DrawConnectorLine';
+        }
         if (isBlazor()) {
             eventArgs = this.parent.updateDataArgs(eventArgs);
             modifiedTaskData = eventArgs.modifiedTaskData;
@@ -921,18 +931,30 @@ export class Edit {
             this.parent.connectorLineEditModule.refreshEditedRecordConnectorLine(this.parent.editedRecords);
             this.updateScheduleDatesOnEditing(args);
         }
-        eventArgs.requestType = 'save';
-        eventArgs.data = args.data;
-        eventArgs.modifiedRecords = this.parent.editedRecords;
-        eventArgs.modifiedTaskData = getTaskData(this.parent.editedRecords);
-        if (!isNullOrUndefined(args.action)) {
-            setValue('action', args.action, eventArgs);
+        if (!this.parent.editSettings.allowTaskbarEditing || (this.parent.editSettings.allowTaskbarEditing &&
+            !this.taskbarEditModule.dependencyCancel)) {
+            eventArgs.requestType = 'save';
+            eventArgs.data = args.data;
+            eventArgs.modifiedRecords = this.parent.editedRecords;
+            eventArgs.modifiedTaskData = getTaskData(this.parent.editedRecords);
+            if (!isNullOrUndefined(args.action)) {
+                setValue('action', args.action, eventArgs);
+            }
+            if (args.action === 'TaskbarEditing') {
+                eventArgs.taskBarEditAction = args.taskBarEditAction;
+            }
+            this.endEditAction(args);
+            if (isBlazor()) {
+                this.parent.updateDataArgs(eventArgs);
+            }
+            this.parent.trigger('actionComplete', eventArgs);
+        } else {
+            this.taskbarEditModule.dependencyCancel = false;
+            this.resetEditProperties();
+            if (isBlazor()) {
+                this.parent.updateDataArgs(eventArgs);
+            }
         }
-        this.endEditAction(args);
-        if (isBlazor()) {
-            this.parent.updateDataArgs(eventArgs);
-        }
-        this.parent.trigger('actionComplete', eventArgs);
     }
 
     private resetEditProperties(): void {
@@ -1142,7 +1164,7 @@ export class Edit {
         }
     }
 
-    private removePredecessorOnDelete(record: IGanttData): void {
+    public removePredecessorOnDelete(record: IGanttData): void {
         let predecessors: IPredecessor[] = record.ganttProperties.predecessor;
         for (let i: number = 0; i < predecessors.length; i++) {
             let predecessor: IPredecessor = predecessors[i];
@@ -1202,7 +1224,7 @@ export class Edit {
         }
     }
 
-    private removeFromDataSource(deleteRecordIDs: string[]): void {
+    public removeFromDataSource(deleteRecordIDs: string[]): void {
         let dataSource: Object[];
         let taskFields: TaskFieldsModel = this.parent.taskFields;
         if (this.parent.dataSource instanceof DataManager) {
@@ -1431,7 +1453,7 @@ export class Edit {
      * @return {number}
      * @private
      */
-    private getChildCount(record: IGanttData, count: number): number {
+    public getChildCount(record: IGanttData, count: number): number {
         let currentRecord: IGanttData;
         if (!record.hasChildRecords) {
             return 0;
@@ -1478,7 +1500,7 @@ export class Edit {
      * @return {void}
      * @private
      */
-    private updatePredecessorOnIndentOutdent(parentRecord: IGanttData): void {
+    public updatePredecessorOnIndentOutdent(parentRecord: IGanttData): void {
         let len: number = parentRecord.ganttProperties.predecessor.length;
         let parentRecordTaskData: ITaskData = parentRecord.ganttProperties;
         let predecessorCollection: IPredecessor[] = parentRecordTaskData.predecessor;
@@ -1632,6 +1654,16 @@ export class Edit {
             childIndex = parentItem.childRecords.indexOf(this.addRowSelectedItem);
             /*Child collection update*/
             parentItem.childRecords.splice(childIndex, 0, record);
+            if (this.parent.dataSource instanceof DataManager &&
+                isNullOrUndefined(parentItem.taskData[this.parent.taskFields.parentID])) {
+                let child: string = this.parent.taskFields.child;
+                if (parentItem.taskData[child] && parentItem.taskData[child].length > 0) {
+                    parentItem.taskData[child].push(record.taskData);
+                } else {
+                    parentItem.taskData[child] = [];
+                    parentItem.taskData[child].push(record.taskData);
+                }
+            }
         }
     }
 
@@ -1671,14 +1703,9 @@ export class Edit {
      * @return {void}
      * @private
      */
-    private updateRealDataSource(addedRecord: IGanttData, rowPosition: RowPosition): void {
-        let dataSource: Object[];
+    public updateRealDataSource(addedRecord: IGanttData, rowPosition: RowPosition): void {
         let taskFields: TaskFieldsModel = this.parent.taskFields;
-        if (this.parent.dataSource instanceof DataManager) {
-            dataSource = this.parent.dataSource.dataSource.json as Object[];
-        } else {
-            dataSource = this.parent.dataSource as Object[];
-        }
+        let dataSource: Object[] = this.parent.dataSource as Object[];
         if (rowPosition === 'Top') {
             dataSource.splice(0, 0, addedRecord.taskData);
         } else if (rowPosition === 'Bottom') {
@@ -1701,6 +1728,7 @@ export class Edit {
     private addDataInRealDataSource(
         dataCollection: Object[], record: IGanttData, rowPosition?: RowPosition): boolean | void {
         for (let i: number = 0; i < dataCollection.length; i++) {
+            let child : string = this.parent.taskFields.child;
             if (this.isBreakLoop) {
                 break;
             }
@@ -1712,21 +1740,17 @@ export class Edit {
                 } else if (rowPosition === 'Below') {
                     dataCollection.splice(i + 1, 0, record);
                 } else if (rowPosition === 'Child') {
-                    /* tslint:disable-next-line */
-                    if (dataCollection[i]['subtasks'] && dataCollection[i]['subtasks'].length > 0) {
-                        /* tslint:disable-next-line */
-                        dataCollection[i]['subtasks'].push(record);
+                    if (dataCollection[i][child] && dataCollection[i][child].length > 0) {
+                        dataCollection[i][child].push(record);
                     } else {
-                        /* tslint:disable-next-line */
-                        dataCollection[i]['subtasks'] = [];
-                        /* tslint:disable-next-line */
-                        dataCollection[i]['subtasks'].push(record);
+                        dataCollection[i][child] = [];
+                        dataCollection[i][child].push(record);
                     }
                 }
                 this.isBreakLoop = true;
                 break;
-            } else if (dataCollection[i][this.parent.taskFields.child]) {
-                let childRecords: ITaskData[] = dataCollection[i][this.parent.taskFields.child];
+            } else if (dataCollection[i][child]) {
+                let childRecords: ITaskData[] = dataCollection[i][child];
                 this.addDataInRealDataSource(childRecords, record, rowPosition);
             }
         }
@@ -1800,6 +1824,7 @@ export class Edit {
                 if (isBlazor()) {
                     blazorArgs.data = blazorArgs.data[0];
                     args = blazorArgs;
+                    this._resetProperties();
                 }
                 if (isRemoteData(this.parent.dataSource)) {
                     let data: DataManager = this.parent.dataSource as DataManager;
@@ -1824,10 +1849,11 @@ export class Edit {
                         }
                         this.updateTreeGridUniqueID(cAddedRecord, 'add');
                         this.refreshNewlyAddedRecord(args, cAddedRecord);
-
+                        this._resetProperties();
                     }).catch((e: { result: Object[] }) => {
                         this.removeAddedRecord();
                         this.dmFailure(e as { result: Object[] }, args);
+                        this._resetProperties();
                     });
                 } else {
                     this.updateRealDataSource(args.data, rowPosition);
@@ -1836,7 +1862,7 @@ export class Edit {
                     }
                     this.updateTreeGridUniqueID(cAddedRecord, 'add');
                     this.refreshNewlyAddedRecord(args, cAddedRecord);
-
+                    this._resetProperties();
                 }
             } else {
                 args = isBlazor() ? blazorArgs : args;
@@ -1846,16 +1872,22 @@ export class Edit {
                     this.dialogModule.dialogObj.hide();
                 }
                 this.dialogModule.dialogClose();
+                this._resetProperties();
             }
-            this.parent.isOnEdit = false;
-            this.parent.hideSpinner();
-            this.addRowSelectedItem = null;
-            this.newlyAddedRecordBackup = null;
-            this.isBreakLoop = false;
-            this.parent.element.tabIndex = 0;
-            this.parent.initiateEditAction(false);
         });
+        }
     }
+    /**
+     * Method to reset the flag after adding new record
+     */
+    private _resetProperties(): void {
+        this.parent.isOnEdit = false;
+        this.parent.hideSpinner();
+        this.addRowSelectedItem = null;
+        this.newlyAddedRecordBackup = null;
+        this.isBreakLoop = false;
+        this.parent.element.tabIndex = 0;
+        this.parent.initiateEditAction(false);
     }
 
     /**

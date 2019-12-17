@@ -48,6 +48,11 @@ export class UndoRedoManager {
         this.parent.observer.off(EVENTS.ACTION, this.onAction);
     }
 
+    /**
+     * onAction method
+     * @hidden
+     * @deprecated
+     */
     public onAction(e: IHtmlSubCommands): void {
         if (e.subCommand === 'Undo') {
             this.undo(e);
@@ -59,6 +64,8 @@ export class UndoRedoManager {
      * Destroys the ToolBar.
      * @method destroy
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     public destroy(): void {
         this.removeEventListener();
@@ -86,6 +93,8 @@ export class UndoRedoManager {
      * RTE collection stored html format.
      * @method saveData
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     public saveData(e?: KeyboardEvent | MouseEvent | IUndoCallBack): void {
         let range: Range = new NodeSelection().getRange(this.parent.currentDocument);
@@ -116,6 +125,8 @@ export class UndoRedoManager {
      * Undo the editable text.
      * @method undo
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     public undo(e?: IHtmlSubCommands | IHtmlKeyboardEvent): void {
         if (this.steps > 0) {
@@ -141,6 +152,8 @@ export class UndoRedoManager {
      * Redo the editable text.
      * @method redo
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     public redo(e?: IHtmlSubCommands | IHtmlKeyboardEvent): void {
         if (this.undoRedoStack[this.steps + 1] != null) {
@@ -162,6 +175,11 @@ export class UndoRedoManager {
         }
     }
 
+    /**
+     * getUndoStatus method
+     * @hidden
+     * @deprecated
+     */
     public getUndoStatus(): { [key: string]: boolean } {
         let status: { [key: string]: boolean } = { undo: false, redo: false };
         if (this.steps > 0) {

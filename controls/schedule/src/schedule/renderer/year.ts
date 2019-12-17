@@ -1,4 +1,4 @@
-import { EventHandler, formatUnit, remove, createElement, addClass, closest, prepend } from '@syncfusion/ej2-base';
+import { EventHandler, formatUnit, remove, createElement, addClass, closest, prepend, isBlazor } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { ViewBase } from './view-base';
 import { IRenderer, EventClickArgs, TdData, NotifyEventArgs } from '../base/interface';
@@ -34,6 +34,7 @@ export class Year extends ViewBase implements IRenderer {
         this.renderPanel(className);
         let calendarTable: HTMLElement = this.createTableLayout(cls.OUTER_TABLE_CLASS) as HTMLElement;
         this.element.appendChild(calendarTable);
+        this.element.querySelector('table').setAttribute('role', 'presentation');
         let calendarTBody: HTMLElement = calendarTable.querySelector('tbody');
         this.rowCount = this.getRowColumnCount('row');
         this.columnCount = this.getRowColumnCount('column');
@@ -151,10 +152,11 @@ export class Year extends ViewBase implements IRenderer {
     }
 
     public getMonthName(date: Date): string {
-        return this.parent.globalize.formatDate(date, {
+        let month: string = this.parent.globalize.formatDate(date, {
             format: this.parent.activeViewOptions.dateFormat || 'MMMM',
             calendar: this.parent.getCalendarMode()
         });
+        return util.capitalizeFirstWord(month, 'multiple');
     }
 
     public generateColumnLevels(): TdData[][] {
@@ -217,7 +219,7 @@ export class Year extends ViewBase implements IRenderer {
 
     private onCellClick(e: Event): void {
         let target: Element = closest((e.target as Element), '.' + cls.WORK_CELLS_CLASS);
-        let startDate: Date = new Date(parseInt(target.getAttribute('data-date'), 10));
+        let startDate: Date = this.parent.getDateFromElement(target);
         let endDate: Date = util.addDays(new Date(startDate.getTime()), 1);
         let filteredEvents: Object[] = this.parent.eventBase.filterEvents(startDate, endDate);
         let moreEventArgs: EventClickArgs = { date: startDate, event: filteredEvents, element: e.target } as EventClickArgs;
@@ -228,7 +230,7 @@ export class Year extends ViewBase implements IRenderer {
         let target: HTMLElement = e.target as HTMLElement;
         let headerWrapper: HTMLElement = this.getDatesHeaderElement();
         if (headerWrapper) {
-            (<HTMLElement>headerWrapper.firstChild).scrollLeft = target.scrollLeft;
+            (<HTMLElement>headerWrapper.firstElementChild).scrollLeft = target.scrollLeft;
         }
         let monthWrapper: HTMLElement = this.element.querySelector('.' + cls.MONTH_HEADER_WRAPPER) as HTMLElement;
         if (monthWrapper) {
@@ -254,10 +256,10 @@ export class Year extends ViewBase implements IRenderer {
             let scrollBarWidth: number = util.getScrollBarWidth();
             // tslint:disable:no-any
             if (contentWrapper.offsetWidth - contentWrapper.clientWidth > 0) {
-                (headerWrapper.firstChild as HTMLElement).style[<any>args.cssProperties.border] = scrollBarWidth > 0 ? '1px' : '0px';
+                (headerWrapper.firstElementChild as HTMLElement).style[<any>args.cssProperties.border] = scrollBarWidth > 0 ? '1px' : '0px';
                 headerWrapper.style[<any>args.cssProperties.padding] = scrollBarWidth > 0 ? scrollBarWidth - 1 + 'px' : '0px';
             } else {
-                (headerWrapper.firstChild as HTMLElement).style[<any>args.cssProperties.border] = '';
+                (headerWrapper.firstElementChild as HTMLElement).style[<any>args.cssProperties.border] = '';
                 headerWrapper.style[<any>args.cssProperties.padding] = '';
             }
             // tslint:enable:no-any
@@ -336,6 +338,10 @@ export class Year extends ViewBase implements IRenderer {
         if (this.element) {
             if (this.parent.resourceBase) {
                 this.parent.resourceBase.destroy();
+            }
+            if (isBlazor()) {
+                this.parent.resetLayoutTemplates();
+                this.parent.resetEventTemplates();
             }
             remove(this.element);
             this.element = null;

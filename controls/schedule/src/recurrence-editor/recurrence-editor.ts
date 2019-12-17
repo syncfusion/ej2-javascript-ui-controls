@@ -9,6 +9,7 @@ import { EJ2Instance } from '../schedule/base/interface';
 import { RecRule, extractObjectFromRule, generate, generateSummary, getRecurrenceStringFromDate, getCalendarUtil } from './date-generator';
 import { RecurrenceEditorModel } from './recurrence-editor-model';
 import { CalendarUtil, CalendarType } from '../common/calendar-util';
+import { capitalizeFirstWord } from '../schedule/base/util';
 
 const HEADER: string = 'e-editor';
 const INPUTWARAPPER: string = 'e-input-wrapper';
@@ -185,7 +186,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     public value: String;
     /**
      * Sets the minimum date on recurrence editor.
-     * @default new Date(1900, 1, 1)
+     * @default new Date(1900, 0, 1)
      * @aspDefaultValue new DateTime(1900, 1, 1)
      * @blazorDefaultValue new DateTime(1900, 1, 1)
      */
@@ -193,7 +194,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     public minDate: Date;
     /**
      * Sets the maximum date on recurrence editor.
-     * @default new Date(2099, 12, 31)
+     * @default new Date(2099, 11, 31)
      * @aspDefaultValue new DateTime(2099, 12, 31)
      * @blazorDefaultValue new DateTime(2099, 12, 31)
      */
@@ -718,7 +719,8 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
                 'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.days.stand-alone.' + format, cldrData));
         }
         for (let obj of weekday) {
-            dayData.push({ text: getValue(obj, cldrObj), value: valueData[obj] });
+            let day: string = getValue(obj, cldrObj);
+            dayData.push({ text: format === 'narrow' ? day : capitalizeFirstWord(day, 'single'), value: valueData[obj] });
         }
         return dayData;
     }
@@ -733,7 +735,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         }
         for (let obj of Object.keys(cldrObj)) {
             monthData.push({
-                text: (<string>getValue(obj, cldrObj)),
+                text: capitalizeFirstWord(<string>getValue(obj, cldrObj), 'single'),
                 value: obj
             });
         }
@@ -926,12 +928,12 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         });
         this.monthButtons = [];
     }
-
+    /** @hidden */
     public resetFields(): void {
         this.startState(NONE, NEVER, this.startDate);
         this.setDefaultValue();
     }
-    public getCalendarMode(): string {
+    private getCalendarMode(): string {
         return this.calendarMode.toLowerCase();
     }
     public getRuleSummary(rule: string = this.getRecurrenceRule()): string {

@@ -42,4 +42,10 @@ export interface SelectionSettingsModel {
      */
     persistSelection?: boolean;
 
+    /**
+     * If 'enableToggle' set to true, then the user can able to perform toggle for the selected row.
+     * @default false
+     */
+    enableToggle?: boolean;
+
 }

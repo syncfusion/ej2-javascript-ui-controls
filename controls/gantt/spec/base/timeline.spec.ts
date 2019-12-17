@@ -150,7 +150,7 @@ describe('Gantt-Timeline', () => {
                 done();
             }
             ganttObj.refresh();
-        }, 4000);
+        }, 6000);
         it('Timeline in Minutes Mode only', function (done: Function) {
             ganttObj.projectStartDate = "02/02/2018";
             ganttObj.projectEndDate = "02/05/2018";
@@ -169,7 +169,7 @@ describe('Gantt-Timeline', () => {
                 done();
             }
             ganttObj.refresh();
-        }, 3000);
+        }, 6000);
 
         //Tiers
         // Year Mode
@@ -769,7 +769,7 @@ describe('Gantt-Timeline', () => {
                 done();
             }
             ganttObj.refresh();
-        }, 3000);
+        }, 6000);
         it('Custom Formatting the timeline', () => {
             ganttObj.timelineSettings.timelineViewMode = "Month";
             ganttObj.timelineSettings.topTier.unit = "Month";
@@ -990,8 +990,8 @@ describe('Gantt-Timeline', () => {
             ganttObj.timelineSettings.bottomTier.count = 1;
             ganttObj.timelineSettings.topTier.formatter = null;                     
             ganttObj.dataBound = () => {
-                expect(ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttChart > div.e-timeline-header-container > table:nth-child(1) > thead > tr > th').getAttribute('aria-label').indexOf('Timeline cell 01/27/2018')> -1).toBeTruthy();
-                expect(ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttChart > div.e-timeline-header-container > table:nth-child(2) > thead > tr > th:nth-child(3)').getAttribute('aria-label').indexOf('Timeline cell 01/29/2018')> -1).toBeTruthy();
+                expect(ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttChart > div.e-timeline-header-container > table:nth-child(1) > thead > tr > th').getAttribute('aria-label').indexOf('Timeline cell 1/27/2018')> -1).toBeTruthy();
+                expect(ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttChart > div.e-timeline-header-container > table:nth-child(2) > thead > tr > th:nth-child(3)').getAttribute('aria-label').indexOf('Timeline cell 1/29/2018')> -1).toBeTruthy();
                 done();
             }
             ganttObj.refresh();

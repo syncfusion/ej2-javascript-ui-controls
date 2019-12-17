@@ -1,6 +1,6 @@
 import { EventHandler, L10n, isNullOrUndefined, extend, closest, getValue, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { getActualPropFromColl, isActionPrevent, getColumnByForeignKeyValue } from '../base/util';
-import { remove, matches } from '@syncfusion/ej2-base';
+import { remove, matches, isBlazor } from '@syncfusion/ej2-base';
 import { DataUtil, Predicate, Query, DataManager } from '@syncfusion/ej2-data';
 import { FilterSettings, Grid } from '../base/grid';
 import { IGrid, IAction, NotifyArgs, IFilterOperator, IValueFormatter } from '../base/interface';
@@ -226,6 +226,9 @@ export class Filter implements IAction {
      * @hidden
      */
     public onActionComplete(e: NotifyArgs): void {
+        if (isBlazor() && !this.parent.isJsComponent) {
+            e.rows = null;
+        }
         let args: Object = !this.isRemove ? {
             currentFilterObject: this.currentFilterObject,
             /* tslint:disable:no-string-literal */
@@ -333,7 +336,7 @@ export class Filter implements IAction {
             filterCell = gObj.getHeaderContent().querySelector('[id=\'' + this.column.field + '_filterBarcell\']') as HTMLInputElement;
         }
         if (!isNullOrUndefined(this.column.allowFiltering) && !this.column.allowFiltering) {
-            this.parent.log('action_disabled_column', { moduleName: this.getModuleName(), columnName: this.column.headerText });
+            this.parent.log('action_disabled_column', {moduleName: this.getModuleName(), columnName: this.column.headerText});
             return;
         }
         if (isActionPrevent(gObj)) {
@@ -440,7 +443,8 @@ export class Filter implements IAction {
                 }
                 let filterElement: HTMLInputElement = this.getFilterBarElement(this.column.field);
                 if (filterElement) {
-                    if (!isNullOrUndefined(this.cellText[this.filterSettings.columns[i].field])) {
+                    if (this.cellText[this.filterSettings.columns[i].field] !== ''
+                        && !isNullOrUndefined(this.cellText[this.filterSettings.columns[i].field])) {
                         filterElement.value = this.cellText[this.column.field];
                     } else {
                         filterElement.value = this.filterSettings.columns[i].value as string;
@@ -495,6 +499,9 @@ export class Filter implements IAction {
         this.refresh = false;
         for (let i: number = 0, len: number = filteredcols.length; i < len; i++) {
             this.removeFilteredColsByField(this.parent.getColumnByUid(filteredcols[i]).field, false);
+        }
+        if (isBlazor() && !this.parent.isJsComponent) {
+            this.filterSettings.columns = this.filterSettings.columns;
         }
         this.refresh = true;
         if (filteredcols.length) {
@@ -588,7 +595,7 @@ export class Filter implements IAction {
                 }
                 while (len--) {
                     if (cols[len].uid === column.uid) {
-                        cols.splice(len, 1);
+                         cols.splice(len, 1);
                     }
                 }
                 let fltrElement: Element = this.parent.getColumnHeaderByField(column.field);
@@ -642,7 +649,6 @@ export class Filter implements IAction {
                 this.processFilter(e);
             }
         }
-
         if (e.action === 'altDownArrow' && this.filterSettings.type !== 'FilterBar') {
             let element: HTMLElement = gObj.focusModule.currentInfo.element;
             if (element && element.classList.contains('e-headercell')) {
@@ -655,7 +661,6 @@ export class Filter implements IAction {
         if (e.action === 'escape' && this.filterSettings.type === 'Menu') {
             this.filterModule.closeDialog();
             gObj.notify(events.restoreFocus, {});
-            gObj.focusModule.addOutline();
         }
     }
 
@@ -680,7 +685,7 @@ export class Filter implements IAction {
             if (columns.length > 0 && this.filterStatusMsg !== this.l10n.getConstant('InvalidFilterMessage')) {
                 this.filterStatusMsg = '';
                 for (let index: number = 0; index < columns.length; index++) {
-                    column = gObj.grabColumnByUidFromAllCols(columns[index].uid);
+                    column = gObj.grabColumnByUidFromAllCols(columns[index].uid) || gObj.grabColumnByFieldFromAllCols(columns[index].field);
                     if (index) {
                         this.filterStatusMsg += ' && ';
                     }
@@ -767,6 +772,9 @@ export class Filter implements IAction {
         }
         if (isNullOrUndefined(this.value) || this.value === '') {
             this.removeFilteredColsByField(this.column.field);
+            if (isBlazor() && !this.parent.isJsComponent) {
+                this.filterSettings.columns = this.filterSettings.columns;
+            }
             return;
         }
         this.validateFilterValue(this.value as string);
@@ -821,7 +829,7 @@ export class Filter implements IAction {
                 }
                 break;
             case 'string':
-                this.matchCase = false;
+            this.matchCase = false;
                 if (value.charAt(0) === '*') {
                     this.value = (this.value as string).slice(1);
                     this.operator = this.filterOperators.startsWith;
@@ -855,7 +863,7 @@ export class Filter implements IAction {
                 } else {
                     this.operator = this.filterOperators.equal;
                 }
-        }
+            }
     }
 
     private getOperator(value: string): void {
@@ -937,8 +945,8 @@ export class Filter implements IAction {
         if (target.classList.contains('e-filtermenudiv') && (this.parent.filterSettings.type === 'Menu' ||
             this.parent.filterSettings.type === 'CheckBox' || this.parent.filterSettings.type === 'Excel')) {
             let gObj: IGrid = this.parent;
-            let col: Column = gObj.getColumnByUid
-                (parentsUntil(target, 'e-headercell').firstElementChild.getAttribute('e-mappinguid'));
+            let col: Column = gObj.getColumnByUid(
+                parentsUntil(target, 'e-headercell').firstElementChild.getAttribute('e-mappinguid'));
             this.column = col;
             if (this.fltrDlgDetails.field === col.field && this.fltrDlgDetails.isOpen) {
                 return;
@@ -1002,6 +1010,9 @@ export class Filter implements IAction {
                 this.filterSettings.columns.splice(index, 1);
             }
         }
+        if (args.action === 'clear-filter' && isBlazor() && !this.parent.isJsComponent) {
+            this.filterSettings.columns = this.filterSettings.columns;
+        }
         if (this.values[args.field]) {
             delete this.values[args.field];
         }
@@ -1047,7 +1058,7 @@ export class Filter implements IAction {
             operator: operator,
             value: value,
             type: type
-        };
+            };
         this.actualPredicate[fieldName] ? this.actualPredicate[fieldName].push(obj) : this.actualPredicate[fieldName] = [obj];
         let field: string = uid ? this.parent.grabColumnByUidFromAllCols(uid).field : fieldName;
         this.addFilteredClass(field);

@@ -219,7 +219,6 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     /**
      * Triggers before each axis label gets rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'AxisLabelRendering'
      */
     @Event()

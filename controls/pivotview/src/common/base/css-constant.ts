@@ -498,6 +498,10 @@ export const PIVOTVIEW_EXPAND: string = 'e-pivotview-expand';
 /** @hidden */
 export const PIVOTVIEW_COLLAPSE: string = 'e-pivotview-collapse';
 /** @hidden */
+export const PIVOTVIEW_GROUP: string = 'e-pivotview-group';
+/** @hidden */
+export const PIVOTVIEW_UN_GROUP: string = 'e-pivotview-ungroup';
+/** @hidden */
 export const GRID_PDF_EXPORT: string = 'e-pivotview-pdf-export';
 /** @hidden */
 export const GRID_EXCEL_EXPORT: string = 'e-pivotview-excel-export';

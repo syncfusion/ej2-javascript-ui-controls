@@ -253,6 +253,7 @@ export class ChartRows {
      */
     private getLeftLabelNode(i: number): NodeList {
         let leftLabelNode: NodeList = this.leftLabelContainer();
+        (<HTMLElement>leftLabelNode[0]).setAttribute('aria-label', this.generateTaskLabelAriaLabel('left'));
         let leftLabelTemplateNode: NodeList = null;
         if (this.leftTaskLabelTemplateFunction) {
             leftLabelTemplateNode = this.leftTaskLabelTemplateFunction(
@@ -263,11 +264,7 @@ export class ChartRows {
             let labelString: string = this.getTaskLabel(field);
             if (labelString) {
                 labelString = labelString === 'isCustomTemplate' ? field : labelString;
-                let templateString: string = '<div class="' + cls.leftLabelInnerDiv + '"  style="height:' +
-                    (this.taskBarHeight) +
-                    'px;margin-top:' + this.taskBarMarginTop + 'px;"><span class="' + cls.label + '">' +
-                    labelString + '</span></div>';
-                leftLabelTemplateNode = this.createDivElement(templateString);
+                leftLabelTemplateNode = this.getLableText(labelString, cls.leftLabelInnerDiv);
             }
         }
         if (leftLabelTemplateNode && leftLabelTemplateNode.length > 0) {
@@ -275,7 +272,19 @@ export class ChartRows {
         }
         return leftLabelNode;
     }
-
+    private getLableText(labelString: string, labelDiv: string): NodeList {
+        let templateString: HTMLElement = createElement('div', {
+            className: labelDiv, styles: 'height:' + (this.taskBarHeight) + 'px;' +
+                'margin-top:' + this.taskBarMarginTop + 'px;'
+        });
+        let spanElem: HTMLElement = createElement('span', { className: cls.label });
+        let property: string = this.parent.disableHtmlEncode ? 'textContent' : 'innerHTML';
+        spanElem[property] = labelString;
+        templateString.appendChild(spanElem);
+        let div: HTMLElement = createElement('div');
+        div.appendChild(templateString);
+        return div.childNodes;
+    }
     /**
      * To get right label node.
      * @return {NodeList}
@@ -283,6 +292,7 @@ export class ChartRows {
      */
     private getRightLabelNode(i: number): NodeList {
         let rightLabelNode: NodeList = this.rightLabelContainer();
+        (<HTMLElement>rightLabelNode[0]).setAttribute('aria-label', this.generateTaskLabelAriaLabel('right'));
         let rightLabelTemplateNode: NodeList = null;
         if (this.rightTaskLabelTemplateFunction) {
             rightLabelTemplateNode = this.rightTaskLabelTemplateFunction(
@@ -293,32 +303,13 @@ export class ChartRows {
             let labelString: string = this.getTaskLabel(field);
             if (labelString) {
                 labelString = labelString === 'isCustomTemplate' ? field : labelString;
-                let templateString: string = '<div class="' + cls.rightLabelInnerDiv + '"  style="height:'
-                    + (this.taskBarHeight) + 'px;margin-top:' + this.taskBarMarginTop +
-                    'px;"><span class="' + cls.label + '">' + labelString + '</span></div>';
-                rightLabelTemplateNode = this.createDivElement(templateString);
+                rightLabelTemplateNode = this.getLableText(labelString, cls.rightLabelInnerDiv);
             }
         }
         if (rightLabelTemplateNode && rightLabelTemplateNode.length > 0) {
             rightLabelNode[0].appendChild([].slice.call(rightLabelTemplateNode)[0]);
         }
         return rightLabelNode;
-    }
-     /**
-      * To check presence of single milestone child.
-      * @return {boolean}
-      */
-    private checkChildMileStone(record: IGanttData): boolean {
-        let boolValue: boolean = false;
-        if (record.hasChildRecords && record.childRecords.length === 1) {
-            let childRecords: IGanttData[] = record.childRecords;
-            if (childRecords[0].hasChildRecords) {
-                boolValue = this.checkChildMileStone(childRecords[0]);
-            } else if (childRecords[0].ganttProperties.isMilestone) {
-                boolValue = true;
-            }
-        }
-        return boolValue;
     }
 
     /**
@@ -493,7 +484,7 @@ export class ChartRows {
 
     private leftLabelContainer(): NodeList {
         let template: string = '<div class="' + ((this.leftTaskLabelTemplateFunction) ? cls.leftLabelTempContainer :
-            cls.leftLabelContainer) + ' ' + '" tabindex="-1" ' + this.generateTaskLabelAriaLabel('left') + '  style="height:' +
+            cls.leftLabelContainer) + ' ' + '" tabindex="-1" style="height:' +
             (this.parent.rowHeight - 1) + 'px;width:' + this.taskNameWidth(this.templateData) + '"></div>';
         return this.createDivElement(template);
     }
@@ -503,8 +494,7 @@ export class ChartRows {
         let template: string = '<div class="' + cls.taskBarMainContainer + ' ' +
             this.parent.getUnscheduledTaskClass(data.ganttProperties) + '" ' +
             ((data.ganttProperties.cssClass) ? data.ganttProperties.cssClass : '') +
-            ' tabindex="-1" aria-label = "' + this.generateAriaLabel(data) + '"  ' +
-            ' style="' + ((data.ganttProperties.isMilestone) ? ('width:' + this.milestoneHeight + 'px;height:' +
+            ' tabindex="-1" style="' + ((data.ganttProperties.isMilestone) ? ('width:' + this.milestoneHeight + 'px;height:' +
                 this.milestoneHeight + 'px;margin-top:' + this.milestoneMarginTop + 'px;left:' + (data.ganttProperties.left -
                     (this.milestoneHeight / 2)) + 'px;') : ('width:' + data.ganttProperties.width + 'px;margin-top:' +
                         this.taskBarMarginTop + 'px;left:' + (!this.checkChildMileStone(data) ? (data.ganttProperties.left) :
@@ -515,8 +505,7 @@ export class ChartRows {
 
     private rightLabelContainer(): NodeList {
         let template: string = '<div class="' + ((this.rightTaskLabelTemplateFunction) ? cls.rightLabelTempContainer :
-            cls.rightLabelContainer) + '" ' + ' tabindex="-1" ' + this.generateTaskLabelAriaLabel('right') +
-            ' style="left:' + this.getRightLabelLeft(this.templateData) + 'px;height:'
+            cls.rightLabelContainer) + '" ' + ' tabindex="-1" style="left:' + this.getRightLabelLeft(this.templateData) + 'px;height:'
             + (this.parent.rowHeight - 1) + 'px;"></div>';
         return this.createDivElement(template);
     }
@@ -599,6 +588,23 @@ export class ChartRows {
             resultString = '';
         }
         return resultString;
+    }
+
+    /**
+     * To check presence of single milestone child.
+     * @return {boolean}
+     */
+    private checkChildMileStone(record: IGanttData): boolean {
+        let boolValue: boolean = false;
+        if (record.hasChildRecords && record.childRecords.length === 1) {
+            let childRecords: IGanttData[] = record.childRecords;
+            if (childRecords[0].hasChildRecords) {
+                boolValue = this.checkChildMileStone(childRecords[0]);
+            } else if (childRecords[0].ganttProperties.isMilestone) {
+                boolValue = true;
+            }
+        }
+        return boolValue;
     }
 
     private getExpandDisplayProp(data: IGanttData): string {
@@ -754,6 +760,7 @@ export class ChartRows {
         let parentTrNode: NodeList = this.getTableTrNode();
         let leftLabelNode: NodeList = this.getLeftLabelNode(i);
         let taskbarContainerNode: NodeList = this.taskbarContainer();
+        (<HTMLElement>taskbarContainerNode[0]).setAttribute('aria-label', this.generateAriaLabel(this.templateData));
         if (!this.templateData.hasChildRecords) {
             let connectorLineLeftNode: NodeList = this.getLeftPointNode();
             taskbarContainerNode[0].appendChild([].slice.call(connectorLineLeftNode)[0]);
@@ -1035,6 +1042,7 @@ export class ChartRows {
                 let index: number = this.parent.currentViewData.indexOf(items[i]);
                 this.refreshRow(index);
             }
+            this.parent.ganttChartModule.updateLastRowBottomWidth();
             this.updateTaskbarBlazorTemplate(true);
         }
     }
@@ -1087,11 +1095,11 @@ export class ChartRows {
     private generateTaskLabelAriaLabel(type: string): string {
         let label: string = '';
         if (type === 'left' && this.parent.labelSettings.leftLabel && !this.leftTaskLabelTemplateFunction) {
-            label += 'aria-label= "' + this.parent.localeObj.getConstant('leftTaskLabel') +
-                ' ' + this.getTaskLabel(this.parent.labelSettings.leftLabel) + '"';
+            label += this.parent.localeObj.getConstant('leftTaskLabel') +
+                ' ' + this.getTaskLabel(this.parent.labelSettings.leftLabel);
         } else if (type === 'right' && this.parent.labelSettings.rightLabel && !this.rightTaskLabelTemplateFunction) {
-            label += 'aria-label="' + this.parent.localeObj.getConstant('rightTaskLabel') +
-                ' ' + this.getTaskLabel(this.parent.labelSettings.rightLabel) + '"';
+            label += this.parent.localeObj.getConstant('rightTaskLabel') +
+                ' ' + this.getTaskLabel(this.parent.labelSettings.rightLabel);
         }
         return label;
     }

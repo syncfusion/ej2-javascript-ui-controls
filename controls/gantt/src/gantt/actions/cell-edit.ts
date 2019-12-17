@@ -190,6 +190,9 @@ export class CellEdit {
                 this.parent.setRecordValue('startDate', null, ganttProb, true);
                 this.parent.setRecordValue('duration', null, ganttProb, true);
                 this.parent.setRecordValue('isMilestone', false, ganttProb, true);
+                if (this.parent.allowUnscheduledTasks && isNOU(this.parent.taskFields.endDate)) {
+                    this.parent.setRecordValue('endDate', null, ganttProb, true);
+                }
             }
         } else if (ganttProb.endDate || !isNOU(ganttProb.duration)) {
             this.parent.setRecordValue('startDate', new Date(currentValue.getTime()), ganttProb, true);
@@ -250,8 +253,8 @@ export class CellEdit {
                     true
                 );
             }
-            this.parent.dataOperation.updateWidthLeft(args.data);
         }
+        this.parent.dataOperation.updateWidthLeft(args.data);
         this.parent.dataOperation.updateMappingData(args.data, 'startDate');
         this.parent.dataOperation.updateMappingData(args.data, 'endDate');
         this.parent.dataOperation.updateMappingData(args.data, 'duration');
@@ -377,9 +380,10 @@ export class CellEdit {
      * @param cellEditArgs 
      */
     private dependencyEdited(editedArgs: ITaskbarEditedEventArgs, cellEditArgs: Object): void {
+        this.parent.predecessorModule.updateUnscheduledDependency(editedArgs.data);
         if (!this.parent.connectorLineEditModule.updatePredecessor(
             editedArgs.data,
-            editedArgs.data[this.parent.taskFields.dependency])) {
+            editedArgs.data[this.parent.taskFields.dependency], editedArgs)) {
             this.parent.editModule.revertCellEdit(cellEditArgs);
         }
     }

@@ -10,7 +10,9 @@
 	"dependencies": {
 		"@syncfusion/ej2-base": "*",
 		"@syncfusion/ej2-dropdowns": "*",
-		"@syncfusion/ej2-navigations": "*"
+		"@syncfusion/ej2-navigations": "*",
+		"@syncfusion/ej2-grids": "*",
+		"@syncfusion/ej2-calendars": "*"
 	},
 	"devDependencies": {
 		"@types/chai": "^3.4.28",

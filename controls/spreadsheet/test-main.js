@@ -63,6 +63,36 @@ require.config({
             main: 'ej2-dropdowns.umd.min.js'
         },
         {
+            name: '@syncfusion/ej2-excel-export',
+            location: 'node_modules/@syncfusion/ej2-excel-export/dist',
+            main: 'ej2-excel-export.umd.min.js'
+        },
+        {
+            name: '@syncfusion/ej2-pdf-export',
+            location: 'node_modules/@syncfusion/ej2-pdf-export/dist',
+            main: 'ej2-pdf-export.umd.min.js'
+        },
+        {
+            name: '@syncfusion/ej2-compression',
+            location: 'node_modules/@syncfusion/ej2-compression/dist',
+            main: 'ej2-compression.umd.min.js'
+        },
+        {
+            name: '@syncfusion/ej2-file-utils',
+            location: 'node_modules/@syncfusion/ej2-file-utils/dist',
+            main: 'ej2-file-utils.umd.min.js'
+        },
+        {
+            name: '@syncfusion/ej2-grids',
+            location: 'node_modules/@syncfusion/ej2-grids/dist',
+            main: 'ej2-grids.umd.min.js'
+        },
+        {
+            name: '@syncfusion/ej2-calendars',
+            location: 'node_modules/@syncfusion/ej2-calendars/dist',
+            main: 'ej2-calendars.umd.min.js'
+        },
+        {
             name: '../../../demos/common/data-source',
             location: 'demos/common/',
             main: 'data-source.js'

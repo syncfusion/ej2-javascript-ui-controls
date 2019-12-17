@@ -11,12 +11,12 @@ Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
 
 describe('Keyboard interaction', () => {
     beforeAll(() => {
-        // tslint:disable-next-line:no-any
+        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             // tslint:disable-next-line:no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); //Skips test (in Chai)
+            (this as any).skip(); //Skips test (in Chai)
             return;
         }
     });
@@ -25,9 +25,8 @@ describe('Keyboard interaction', () => {
         let schObj: Schedule;
         // tslint:disable-next-line:no-any
         let keyModule: any;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeEach(() => {
-            document.body.appendChild(elem);
+            document.body.appendChild(createElement('div', { id: 'Schedule' }));
         });
         afterEach(() => {
             util.destroy(schObj);
@@ -1670,7 +1669,7 @@ describe('Keyboard interaction', () => {
             let model: ScheduleModel = {
                 currentView: 'TimelineWeek',
                 views: ['Day', 'Week', 'WorkWeek', 'Month', 'Agenda', 'TimelineDay', 'TimelineWeek',
-                'TimelineWorkWeek', 'TimelineMonth'],
+                    'TimelineWorkWeek', 'TimelineMonth'],
                 selectedDate: new Date(2018, 4, 1)
             };
             schObj = util.createSchedule(model, [], done);
@@ -2706,12 +2705,12 @@ describe('Keyboard interaction', () => {
                         { OwnerText: 'Sara', Id: 9, OwnerGroupId: 2, OwnerColor: '#7499e1' }
                     ],
                     textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor', expandedField: 'Expand'
-                    }],
+                }],
                 dataBound: () => {
                     keyModule = schObj.keyboardInteractionModule;
                     done();
                 }
-            }
+            };
             schObj = util.createSchedule(schOptions, timelineResourceData);
         });
         afterAll(() => {

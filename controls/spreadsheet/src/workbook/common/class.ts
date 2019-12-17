@@ -110,3 +110,16 @@ export class DefineName extends ChildProperty<DefineName> {
     @Property('')
     public refersTo: string;
 }
+
+/**    
+ * Represents the Hyperlink.
+ */
+export class Hyperlink extends ChildProperty<Hyperlink> {
+    /**
+     * Specifies Hyperlink Address.
+     * @default ''
+     */
+    @Property('')
+    public address: string;
+
+}

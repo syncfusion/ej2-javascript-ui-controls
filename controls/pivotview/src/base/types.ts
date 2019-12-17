@@ -180,7 +180,9 @@ export type GroupType =
     /**  Defines group type as 'Date' for date field */
     'Date' |
     /**  Defines group type as 'Number' for numeric field */
-    'Number';
+    'Number' |
+    /**  Defines group type as 'Custom' for custom group field */
+    'Custom';
 export type ProviderType =
     /**  Defines data type as 'Relational' for relation mode */
     'Relational' |

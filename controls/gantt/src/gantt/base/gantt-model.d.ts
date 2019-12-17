@@ -1,4 +1,4 @@
-import { Component, createElement, Complex, addClass, removeClass, Event, EmitType, formatUnit, Browser } from '@syncfusion/ej2-base';import { Internationalization, extend, getValue, isObjectArray, isObject, setValue, isUndefined, isBlazor } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, L10n, ModuleDeclaration, remove } from '@syncfusion/ej2-base';import { isNullOrUndefined, KeyboardEvents, KeyboardEventArgs, Collection, append } from '@syncfusion/ej2-base';import { createSpinner, showSpinner, hideSpinner, Dialog } from '@syncfusion/ej2-popups';import { TaskProcessor } from './task-processor';import { GanttChart } from './gantt-chart';import { Timeline } from '../renderer/timeline';import { GanttTreeGrid } from './tree-grid';import { Toolbar } from '../actions/toolbar';import { IGanttData, IWorkingTimeRange, IQueryTaskbarInfoEventArgs, BeforeTooltipRenderEventArgs, IDependencyEventArgs } from './interface';import { ITaskbarEditedEventArgs, IParent, ITaskData, ISplitterResizedEventArgs, ICollapsingEventArgs, CellEditArgs } from './interface';import { IConnectorLineObject, IValidateArgs, IValidateMode, ITaskAddedEventArgs, IKeyPressedEventArgs } from './interface';import { ZoomEventArgs, IActionBeginEventArgs, CellSelectingEventArgs, RowDeselectEventArgs } from './interface';import { ITimeSpanEventArgs, ZoomTimelineSettings, QueryCellInfoEventArgs, RowDataBoundEventArgs, RowSelectEventArgs } from './interface';import { TaskFieldsModel, TimelineSettingsModel, SplitterSettingsModel, SortSettings, SortSettingsModel } from '../models/models';import { EventMarkerModel, AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, EditSettingsModel } from '../models/models';import { HolidayModel, DayWorkingTimeModel, FilterSettingsModel, SelectionSettingsModel } from '../models/models';import { TaskFields, TimelineSettings, Holiday, EventMarker, DayWorkingTime, EditSettings, SelectionSettings } from '../models/models';import { FilterSettings, SplitterSettings, TooltipSettings, LabelSettings, LabelSettingsModel } from '../models/models';import { SearchSettingsModel, SearchSettings } from '../models/models';import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';import { DateProcessor } from './date-processor';import { ChartRows } from '../renderer/chart-rows';import { Dependency } from '../actions/dependency';import * as cls from './css-constants';import { Query, DataManager } from '@syncfusion/ej2-data';import { Column, ColumnModel } from '../models/column';import { TreeGrid, FilterSettingsModel as TreeGridFilterSettingModel } from '@syncfusion/ej2-treegrid';import { Sort } from '../actions/sort';import { CellSelectEventArgs, ISelectedCell, ContextMenuItemModel } from '@syncfusion/ej2-grids';import { CellDeselectEventArgs, IIndex, FailureEventArgs } from '@syncfusion/ej2-grids';import { HeaderCellInfoEventArgs, ColumnMenuClickEventArgs, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';import { ColumnMenuItemModel, ExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { ExcelExportProperties, ExcelExportCompleteArgs, ExcelHeaderQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { Filter } from '../actions/filter';import { PageEventArgs, FilterEventArgs, SortEventArgs, ResizeArgs, ColumnDragEventArgs, getActualProperties } from '@syncfusion/ej2-grids';import { RenderDayCellEventArgs } from '@syncfusion/ej2-calendars';import { ConnectorLine } from '../renderer/connector-line';import { ConnectorLineEdit } from '../actions/connector-line-edit';import { Edit } from '../actions/edit';import { Splitter } from './splitter';import { ResizeEventArgs, ResizingEventArgs } from '@syncfusion/ej2-layouts';import { TooltipSettingsModel } from '../models/tooltip-settings-model';import { Tooltip } from '../renderer/tooltip';import { ToolbarItem, ColumnMenuItem, RowPosition, DurationUnit, SortDirection, GridLine, ContextMenuItem } from './enum';import { Selection } from '../actions/selection';import { ExcelExport } from '../actions/excel-export';import { DayMarkers } from '../actions/day-markers';import { ContextMenu } from './../actions/context-menu';import { RowSelectingEventArgs } from './interface';import { ContextMenuOpenEventArgs as CMenuOpenEventArgs, ContextMenuClickEventArgs as CMenuClickEventArgs } from './interface';import { ColumnMenu } from '../actions/column-menu';
+import { Component, createElement, Complex, addClass, removeClass, Event, EmitType, formatUnit, Browser } from '@syncfusion/ej2-base';import { Internationalization, extend, getValue, isObjectArray, isObject, setValue, isUndefined, isBlazor } from '@syncfusion/ej2-base';import { Property, NotifyPropertyChanges, INotifyPropertyChanged, L10n, ModuleDeclaration, remove } from '@syncfusion/ej2-base';import { isNullOrUndefined, KeyboardEvents, KeyboardEventArgs, Collection, append } from '@syncfusion/ej2-base';import { createSpinner, showSpinner, hideSpinner, Dialog } from '@syncfusion/ej2-popups';import { RowDragEventArgs } from '@syncfusion/ej2-grids';import { TaskProcessor } from './task-processor';import { GanttChart } from './gantt-chart';import { Timeline } from '../renderer/timeline';import { GanttTreeGrid } from './tree-grid';import { Toolbar } from '../actions/toolbar';import { IGanttData, IWorkingTimeRange, IQueryTaskbarInfoEventArgs, BeforeTooltipRenderEventArgs, IDependencyEventArgs } from './interface';import { ITaskbarEditedEventArgs, IParent, ITaskData, ISplitterResizedEventArgs, ICollapsingEventArgs, CellEditArgs } from './interface';import { IConnectorLineObject, IValidateArgs, IValidateMode, ITaskAddedEventArgs, IKeyPressedEventArgs } from './interface';import { ZoomEventArgs, IActionBeginEventArgs, CellSelectingEventArgs, RowDeselectEventArgs } from './interface';import { ITimeSpanEventArgs, ZoomTimelineSettings, QueryCellInfoEventArgs, RowDataBoundEventArgs, RowSelectEventArgs } from './interface';import { TaskFieldsModel, TimelineSettingsModel, SplitterSettingsModel, SortSettings, SortSettingsModel } from '../models/models';import { EventMarkerModel, AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, EditSettingsModel } from '../models/models';import { HolidayModel, DayWorkingTimeModel, FilterSettingsModel, SelectionSettingsModel } from '../models/models';import { TaskFields, TimelineSettings, Holiday, EventMarker, DayWorkingTime, EditSettings, SelectionSettings } from '../models/models';import { FilterSettings, SplitterSettings, TooltipSettings, LabelSettings, LabelSettingsModel } from '../models/models';import { SearchSettingsModel, SearchSettings } from '../models/models';import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';import { DateProcessor } from './date-processor';import { ChartRows } from '../renderer/chart-rows';import { Dependency } from '../actions/dependency';import * as cls from './css-constants';import { Query, DataManager } from '@syncfusion/ej2-data';import { Column, ColumnModel } from '../models/column';import { TreeGrid, FilterSettingsModel as TreeGridFilterSettingModel } from '@syncfusion/ej2-treegrid';import { Sort } from '../actions/sort';import { CellSelectEventArgs, ISelectedCell, ContextMenuItemModel } from '@syncfusion/ej2-grids';import { CellDeselectEventArgs, IIndex, FailureEventArgs } from '@syncfusion/ej2-grids';import { HeaderCellInfoEventArgs, ColumnMenuClickEventArgs, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';import { ColumnMenuItemModel, ExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { ExcelExportProperties, ExcelExportCompleteArgs, ExcelHeaderQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { RowDD } from '../actions/rowdragdrop';import { Filter } from '../actions/filter';import { PageEventArgs, FilterEventArgs, SortEventArgs, ResizeArgs, ColumnDragEventArgs, getActualProperties } from '@syncfusion/ej2-grids';import { RenderDayCellEventArgs } from '@syncfusion/ej2-calendars';import { ConnectorLine } from '../renderer/connector-line';import { ConnectorLineEdit } from '../actions/connector-line-edit';import { Edit } from '../actions/edit';import { Splitter } from './splitter';import { ResizeEventArgs, ResizingEventArgs } from '@syncfusion/ej2-layouts';import { TooltipSettingsModel } from '../models/tooltip-settings-model';import { Tooltip } from '../renderer/tooltip';import { ToolbarItem, ColumnMenuItem, RowPosition, DurationUnit, SortDirection, GridLine, ContextMenuItem } from './enum';import { Selection } from '../actions/selection';import { ExcelExport } from '../actions/excel-export';import { DayMarkers } from '../actions/day-markers';import { ContextMenu } from './../actions/context-menu';import { RowSelectingEventArgs } from './interface';import { ContextMenuOpenEventArgs as CMenuOpenEventArgs, ContextMenuClickEventArgs as CMenuClickEventArgs } from './interface';import { ColumnMenu } from '../actions/column-menu';import { ITaskbarClickEventArgs, RecordDoubleClickEventArgs, IMouseMoveEventArgs } from './interface';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -12,6 +12,12 @@ export interface GanttModel extends ComponentModel{
      * @default true
      */
     allowKeyboard?: boolean;
+
+    /**
+     * If `disableHtmlEncode` is set to true, it encodes the HTML of the header and content cells.
+     * @default true
+     */
+    disableHtmlEncode?: boolean;
 
     /**
      * Enables or disables the focusing the task bar on click action.
@@ -79,6 +85,7 @@ export interface GanttModel extends ComponentModel{
     /**
      * It is used to render Gantt chart rows and tasks.
      * `dataSource` value was defined as array of JavaScript objects or instances of `DataManager`.
+     * {% codeBlock src='gantt/dataSource/index.md' %}{% endcodeBlock %}
      * @isGenericType true
      * @default []
      */
@@ -102,6 +109,7 @@ export interface GanttModel extends ComponentModel{
 
     /**
      * Specifies the dateFormat for Gantt, given format is displayed in tooltip and Grid cells.
+     * By default, the format is based on the culture.
      */
     dateFormat?: string;
 
@@ -124,6 +132,7 @@ export interface GanttModel extends ComponentModel{
 
     /**
      * Defines the right, left and inner task labels in task bar.
+     * {% codeBlock src='gantt/labelSettings/index.md' %}{% endcodeBlock %}
      */
     labelSettings?: LabelSettingsModel;
 
@@ -269,6 +278,7 @@ export interface GanttModel extends ComponentModel{
     /**
      * Defines column collection displayed in grid
      * If the `columns` declaration was empty then `columns` are automatically populated from `taskSettings` value.
+     * {% codeBlock src='gantt/columns/index.md' %}{% endcodeBlock %}
      * @default []
      */
     columns?: Column[] | string[] | ColumnModel[];
@@ -276,6 +286,7 @@ export interface GanttModel extends ComponentModel{
     /**
      * Defines the tabs and fields to be included in the add dialog.
      * If the value was empty, then it will be calculated from `taskSettings` and `columns` value.
+     * {% codeBlock src='gantt/addDialogFields/index.md' %}{% endcodeBlock %}
      * @default []
      */
     addDialogFields?: AddDialogFieldSettingsModel[];
@@ -283,6 +294,7 @@ export interface GanttModel extends ComponentModel{
     /**
      * Defines the tabs and fields to be included in the edit dialog.
      * If the value was empty, then it will be calculated from `taskSettings` and `columns` value.
+     * {% codeBlock src='gantt/editDialogFields/index.md' %}{% endcodeBlock %}
      * @default []
      */
     editDialogFields?: EditDialogFieldSettingsModel[];
@@ -298,40 +310,47 @@ export interface GanttModel extends ComponentModel{
 
     /**
      * Defines customized working time of project.
+     * {% codeBlock src='gantt/dayWorkingTime/index.md' %}{% endcodeBlock %} 
      */
     dayWorkingTime?: DayWorkingTimeModel[];
 
     /**
      * Defines holidays presented in project timeline.
+     * {% codeBlock src='gantt/holidays/index.md' %}{% endcodeBlock %}
      * @default []
      */
     holidays?: HolidayModel[];
 
     /**
      * Defines events and status of project throughout the timeline.
+     * {% codeBlock src='gantt/eventMarkers/index.md' %}{% endcodeBlock %}
      * @default []
      */
     eventMarkers?: EventMarkerModel[];
 
     /**
      * Defines mapping properties to find task values such as id, start date, end date, duration and progress values from data source.
+     * {% codeBlock src='gantt/taskFields/index.md' %}{% endcodeBlock %}
      */
     taskFields?: TaskFieldsModel;
 
     /**
      * Configures timeline settings of Gantt.
      * Defines default timeline modes or customized top tier mode and bottom tier mode or single tier only.
+     * {% codeBlock src='gantt/timelineSettings/index.md' %}{% endcodeBlock %}
      */
     timelineSettings?: TimelineSettingsModel;
 
     /**
      * Configures the sort settings of the Gantt.
+     * {% codeBlock src='gantt/sortSettings/index.md' %}{% endcodeBlock %}
      * @default {columns:[]}
      */
     sortSettings?: SortSettingsModel;
 
     /**
      * Configures edit settings of Gantt.
+     * {% codeBlock src='gantt/editSettings/index.md' %}{% endcodeBlock %}
      * @default { allowAdding: false, allowEditing: false, allowDeleting: false, mode:'Auto',
      * showDeleteConfirmDialog: false } 
      */
@@ -339,12 +358,14 @@ export interface GanttModel extends ComponentModel{
 
     /**
      * Enables or disables default tooltip of Gantt element and defines customized tooltip for Gantt elements.
+     * {% codeBlock src='gantt/tooltipSettings/index.md' %}{% endcodeBlock %}
      * @default { showTooltip: true } 
      */
     tooltipSettings?: TooltipSettingsModel;
 
     /**
      * Configures the selection settings.
+     * {% codeBlock src='gantt/selectionSettings/index.md' %}{% endcodeBlock %}
      * @default {mode: 'Row', type: 'Single'}
      */
     selectionSettings?: SelectionSettingsModel;
@@ -360,6 +381,12 @@ export interface GanttModel extends ComponentModel{
      * @default false
      */
     allowExcelExport?: boolean;
+
+    /**
+     * If `allowRowDragAndDrop` set to true, then it will allow the user to perform drag and drop action in Gantt.
+     * @default false
+     */
+    allowRowDragAndDrop?: boolean;
 
     /**
      * If `allowReordering` is set to true, Gantt columns can be reordered. 
@@ -381,24 +408,28 @@ export interface GanttModel extends ComponentModel{
     enableContextMenu?: boolean;
 
     /**
-     * If `contextMenuItems` are array collection of menu items in Context Menu.
+     * `contextMenuItems` defines both built-in and custom context menu items.
+     * {% codeBlock src='gantt/contextMenuItems/index.md' %}{% endcodeBlock %}
      * @default null
      */
     contextMenuItems?: ContextMenuItem[] | ContextMenuItemModel[];
 
     /**
      * Configures the filter settings for Gantt.
+     * {% codeBlock src='gantt/filterSettings/index.md' %}{% endcodeBlock %}
      * @default {columns: [], type: 'Menu' }
      */
     filterSettings?: FilterSettingsModel;
 
     /**
      * Configures the search settings for Gantt.
+     * {% codeBlock src='gantt/searchSettings/index.md' %}{% endcodeBlock %}
      */
     searchSettings?: SearchSettingsModel;
 
     /**
      * Configures the splitter settings for Gantt.
+     * {% codeBlock src='gantt/splitterSettings/index.md' %}{% endcodeBlock %}
      */
     splitterSettings?: SplitterSettingsModel;
 
@@ -437,6 +468,32 @@ export interface GanttModel extends ComponentModel{
      * @event
      */
     excelHeaderQueryCellInfo?: EmitType<ExcelHeaderQueryCellInfoEventArgs>;
+
+    /**
+     * Triggers when row elements are dragged (moved) continuously.
+     * @event
+     * @deprecated
+     */
+    rowDrag?: EmitType<RowDragEventArgs>;
+
+    /**
+     * Triggers when row element’s drag(move) starts.
+     * @event
+     * @deprecated
+     */
+    rowDragStart?: EmitType<RowDragEventArgs>;
+
+    /**
+     * Triggers when row element’s before drag(move).
+     * @event
+     */
+    rowDragStartHelper?: EmitType<RowDragEventArgs>;
+
+    /**
+     * Triggers when row elements are dropped on the target row.
+     * @event
+     */
+    rowDrop?: EmitType<RowDragEventArgs>;
 
     /**
      * This will be triggered before the row getting collapsed.
@@ -713,5 +770,26 @@ export interface GanttModel extends ComponentModel{
      * @blazorType Syncfusion.EJ2.Blazor.Gantt.ContextMenuClickEventArgs<TValue>
      */
     contextMenuClick?: EmitType<CMenuClickEventArgs>;
+
+    /**
+     * This event will be triggered when click on taskbar element.
+     * @deprecated
+     * @event 
+     */
+    onTaskbarClick?: EmitType<ITaskbarClickEventArgs>;
+
+    /**
+     * This event will be triggered when double click on record.
+     * @deprecated
+     * @event 
+     */
+    recordDoubleClick?: EmitType<RecordDoubleClickEventArgs>;
+
+    /**
+     * This event will be triggered when mouse move on Gantt.
+     * @deprecated
+     * @event 
+     */
+    onMouseMove?: EmitType<IMouseMoveEventArgs>;
 
 }

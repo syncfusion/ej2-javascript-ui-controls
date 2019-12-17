@@ -10,3 +10,4 @@ export * from './save';
 export * from './context-menu';
 export * from './number-format';
 export * from './sort';
+export * from './filter';

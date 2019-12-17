@@ -1,4 +1,4 @@
-import { Toast, ToastClickEventArgs, ToastOpenArgs, ToastBeforeOpenArgs, ToastCloseArgs } from "../../src/index";
+import { Toast, ToastClickEventArgs, ToastOpenArgs, ToastBeforeOpenArgs, ToastCloseArgs, BeforeSanitizeHtmlArgs } from "../../src/index";
 import { isNullOrUndefined as isNOU, MouseEventArgs } from "@syncfusion/ej2-base";
 import { isVisible, classList, TouchEventArgs, SwipeEventArgs, Browser } from "@syncfusion/ej2-base";
 import { profile, inMB, getMemoryProfile } from './common.spec';
@@ -1735,5 +1735,126 @@ describe("Toast beforeOpen and Open and close event to find duplicate toast", ()
     });
     afterAll(() => {
        toast.destroy();
+    });
+});
+
+//xss testing for title and content prop
+
+describe("EJ2-33526 XSS attack prevent on initial render", () => {
+    let toast: Toast;
+    beforeEach((): void => {
+        let ele: HTMLElement = document.createElement("div");
+        ele.id = "toast";
+        document.body.appendChild(ele);
+    });
+    afterEach((): void => {
+        if (toast) {
+            toast.destroy();
+        }
+        document.body.innerHTML = "";
+    });
+    it("Toast Title & Content property default value testing", () => {
+        let ele: HTMLElement = document.getElementById("toast");
+        toast = new Toast({
+            title: '<script>alert("title")</script>',
+            content: '<script>alert("content")</script>',
+            timeOut: 0,
+            newestOnTop: false,
+        }, ele);
+        toast.show();
+        let toastEle: HTMLElement = ele.firstElementChild as HTMLElement;
+        expect(toastEle.firstElementChild.firstElementChild.querySelectorAll('script').length).toBe(0);
+        expect(toastEle.firstElementChild.querySelectorAll('script').length).toBe(0);
+    });
+});
+
+describe("EJ2-33526 XSS attack prevent with helper", () => {
+    let toast: Toast;
+    beforeEach((): void => {
+        let ele: HTMLElement = document.createElement("div");
+        ele.id = "toast";
+        document.body.appendChild(ele);
+    });
+    afterEach((): void => {
+        if (toast) {
+            toast.destroy();
+        }
+        document.body.innerHTML = "";
+    });
+    it("Toast Title & Content property default value testing", () => {
+        let ele: HTMLElement = document.getElementById("toast");
+        toast = new Toast({
+            title: '<script>alert("title")</script>',
+            content: '<script>alert("content")</script>',
+            timeOut: 0,
+            newestOnTop: false,
+            beforeSanitizeHtml: (args: BeforeSanitizeHtmlArgs) => {
+                args.cancel = true;
+                args.helper = (value: string) => {
+                    return value;
+                }
+            }
+        }, ele);
+        toast.show();
+        let toastEle: HTMLElement = ele.firstElementChild as HTMLElement;
+        expect(toastEle.firstElementChild.firstElementChild.querySelectorAll('script').length).toBeGreaterThan(0);
+        expect(toastEle.firstElementChild.querySelectorAll('script').length).toBeGreaterThan(0);
+    });
+});
+
+describe("EJ2-33526 XSS attack prevent with enableHtmlSanitizer", () => {
+    let toast: Toast;
+    beforeEach((): void => {
+        let ele: HTMLElement = document.createElement("div");
+        ele.id = "toast";
+        document.body.appendChild(ele);
+    });
+    afterEach((): void => {
+        if (toast) {
+            toast.destroy();
+        }
+        document.body.innerHTML = "";
+    });
+    it("Toast Title & Content property default value testing", () => {
+        let ele: HTMLElement = document.getElementById("toast");
+        toast = new Toast({
+            title: '<script>alert("title")</script>',
+            content: '<script>alert("content")</script>',
+            timeOut: 500,
+            newestOnTop: false,
+            enableHtmlSanitizer: false
+        }, ele);
+        toast.show();
+        let toastEle: HTMLElement = ele.firstElementChild as HTMLElement;
+        expect(toastEle.firstElementChild.firstElementChild.querySelectorAll('script').length).toBeGreaterThan(0);
+        expect(toastEle.firstElementChild.querySelectorAll('script').length).toBeGreaterThan(0);
+    });
+});
+describe("EJ2-33526 XSS attack prevent with enableHtmlSanitizer as true", () => {
+    let toast: Toast;
+    beforeEach((): void => {
+        let ele: HTMLElement = document.createElement("div");
+        ele.id = "toast";
+        document.body.appendChild(ele);
+    });
+    afterEach((): void => {
+        if (toast) {
+            toast.destroy();
+        }
+        document.body.innerHTML = "";
+    });
+    it("Toast Title & Content property default value testing", () => {
+        let ele: HTMLElement = document.getElementById("toast");
+        toast = new Toast({
+            title: '<script>alert("title")</script>',
+            content: '<script>alert("content")</script>',
+            timeOut: 0,
+            newestOnTop: false,
+            enableHtmlSanitizer: true
+        }, ele);
+        toast.show();
+        let toastEle: HTMLElement = ele.firstElementChild as HTMLElement;
+        expect(toastEle.firstElementChild.firstElementChild.querySelectorAll('script').length).toBe(0);
+        expect(toastEle.firstElementChild.querySelectorAll('script').length).toBe(0);
     });
 });

@@ -5,7 +5,7 @@ import { Browser, Collection, setValue, getValue, getUniqueID, getInstance, isNu
 import { select, selectAll, closest, detach, append, rippleEffect, isVisible, Complex, addClass, removeClass } from '@syncfusion/ej2-base';
 import { ListBase, ListBaseOptions } from '@syncfusion/ej2-lists';
 import { getZindexPartial, calculatePosition, OffsetPosition, isCollide, flip, fit, Popup } from '@syncfusion/ej2-popups';
-import { updateBlazorTemplate, resetBlazorTemplate, blazorTemplates, extend } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, resetBlazorTemplate, blazorTemplates, extend, SanitizeHtmlHelper, isBlazor } from '@syncfusion/ej2-base';
 import { getScrollableParent } from '@syncfusion/ej2-popups';
 import { MenuItemModel, MenuBaseModel, FieldSettingsModel, MenuAnimationSettingsModel } from './menu-base-model';
 import { HScroll } from '../common/h-scroll';
@@ -338,6 +338,13 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     public enableScrolling: boolean;
 
     /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default false
+     */
+    @Property(false)
+    public enableHtmlSanitizer: boolean;
+
+    /**
      * Specifies mapping fields from the dataSource.
      * Not applicable to ContextMenu component.
      * @default { itemId: "id", text: "text", parentId: "parentId", iconCss: "iconCss", url: "url", separator: "separator",
@@ -420,7 +427,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     protected render(): void {
         this.initialize();
         this.renderItems();
-        if (this.isMenu && this.template && this.isBlazor()) {
+        if (this.isMenu && this.template && isBlazor()) {
             let menuTemplateId: string = this.element.id + TEMPLATE_PROPERTY;
             resetBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY);
             if (Object.keys(blazorTemplates).length) {
@@ -460,7 +467,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         if (!(this.items as objColl).length) {
             let items: { [key: string]: Object; }[] = ListBase.createJsonFromElement(this.element, { fields: { child: 'items' } });
             this.setProperties({ items: items }, true);
-            if (this.isBlazor()) {
+            if (isBlazor()) {
                 this.element = this.removeChildElement(this.element);
             } else {
                 this.element.innerHTML = '';
@@ -469,10 +476,12 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         let ul: Element = this.createItems(this.items as objColl);
         append(Array.prototype.slice.call(ul.children), this.element);
         this.element.classList.add('e-menu-parent');
-        let wrapper: HTMLElement = this.getWrapper() as HTMLElement;
-        this.element.classList.contains('e-vertical') ?
-            this.addScrolling(wrapper, this.element, 'vscroll', wrapper.offsetHeight, this.element.offsetHeight)
-            : this.addScrolling(wrapper, this.element, 'hscroll', wrapper.offsetWidth, this.element.offsetWidth);
+        if (this.isMenu) {
+            let wrapper: HTMLElement = this.getWrapper() as HTMLElement;
+            this.element.classList.contains('e-vertical') ?
+                this.addScrolling(wrapper, this.element, 'vscroll', wrapper.offsetHeight, this.element.offsetHeight)
+                : this.addScrolling(wrapper, this.element, 'hscroll', wrapper.offsetWidth, this.element.offsetWidth);
+        }
     }
 
     protected wireEvents(): void {
@@ -883,7 +892,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             this.uList.style.zIndex = getZindexPartial(target ? target : this.element).toString();
             this.triggerBeforeOpen(li, this.uList, item, e, top, left, 'none');
         }
-        if (this.isMenu && this.template && this.isBlazor()) {
+        if (this.isMenu && this.template && isBlazor()) {
             let menuTemplateId: string = this.element.id + TEMPLATE_PROPERTY;
             if (Object.keys(blazorTemplates).length) {
                 let itemFromBlazorTemplate: objColl = (<obj>blazorTemplates)[menuTemplateId] as objColl;
@@ -941,8 +950,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     protected createHeaderContainer(wrapper?: Element): void {
         wrapper = wrapper || this.getWrapper();
         let spanElem: HTMLElement = this.createElement('span', { className: 'e-' + this.getModuleName() + '-header' });
+        let tempTitle: string = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(this.title) : this.title;
         let spanTitle: HTMLElement = this.createElement('span', {
-            className: 'e-' + this.getModuleName() + '-title', innerHTML: this.title });
+            className: 'e-' + this.getModuleName() + '-title', innerHTML: tempTitle });
         let spanIcon: HTMLElement = this.createElement('span', {
             className: 'e-icons e-' + this.getModuleName() + '-icon', attrs: { 'tabindex': '0' } });
         spanElem.appendChild(spanTitle);
@@ -1166,16 +1176,33 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     private createItems(items: MenuItemModel[] | objColl): HTMLElement {
         let level: number = this.navIdx ? this.navIdx.length : 0;
+        let fields: FieldsMap = this.getFields(level);
+        // tslint:disable-next-line:no-any
+        if (isBlazor() && this.template && items.length && (items[0] as any).properties) {
+            let itemsObj: objColl = [];
+            (<objColl>items).forEach((item: obj, index: number): void => {
+                itemsObj.push({});
+                (itemsObj[index] as obj)[fields.text] = item[fields.text];
+                if (!item[fields.id]) {
+                    item[fields.id] = getUniqueID('menuitem');
+                }
+                (itemsObj[index] as obj)[fields.id] = item[fields.id];
+                (itemsObj[index] as obj)[fields.iconCss] = item[fields.iconCss];
+                (itemsObj[index] as obj)[fields.url] = item[fields.url];
+                (itemsObj[index] as obj)[fields.child] = item[fields.child];
+                (itemsObj[index] as obj)[fields.separator] = item[fields.separator];
+            });
+            items = itemsObj;
+        }
         let showIcon: boolean = this.hasField(items, this.getField('iconCss', level));
-        let id: string = 'id'; let iconCss: string = 'iconCss';
         let listBaseOptions: ListBaseOptions = {
             showIcon: showIcon,
             moduleName: 'menu',
-            fields: this.getFields(level),
+            fields: fields,
             template: this.template,
             itemCreating: (args: { curData: obj, fields: obj }): void => {
-                if (!args.curData[(<obj>args.fields)[id] as string]) {
-                    args.curData[(<obj>args.fields)[id] as string] = getUniqueID('menuitem');
+                if (!args.curData[(<obj>args.fields)[fields.id] as string]) {
+                    args.curData[(<obj>args.fields)[fields.id] as string] = getUniqueID('menuitem');
                 }
                 args.curData.htmlAttributes = {
                     role: 'menuitem',
@@ -1184,8 +1211,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 if (this.isMenu && !(<obj>args.curData)[this.getField('separator', level)]) {
                     (<obj>args.curData.htmlAttributes)['aria-label'] = (<obj>args.curData)[args.fields.text as string];
                 }
-                if (args.curData[(<obj>args.fields)[iconCss] as string] === '') {
-                    args.curData[(<obj>args.fields)[iconCss] as string] = null;
+                if (args.curData[(<obj>args.fields)[fields.iconCss] as string] === '') {
+                    args.curData[(<obj>args.fields)[fields.iconCss] as string] = null;
                 }
             },
             itemCreated: (args: { curData: MenuItemModel | obj, item: Element, fields: obj }): void => {
@@ -1211,6 +1238,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 if (this.isMenu && this.template) {
                     args.item.setAttribute('id', (<obj>args.curData)[args.fields.id as string].toString());
                     args.item.removeAttribute('data-uid');
+                    if (args.item.classList.contains('e-level-1')) { args.item.classList.remove('e-level-1'); }
+                    if (args.item.classList.contains('e-has-child')) { args.item.classList.remove('e-has-child'); }
                 }
                 let eventArgs: MenuEventArgs = { item: args.curData, element: args.item as HTMLElement };
                 this.trigger('beforeItemRender', eventArgs);
@@ -1311,7 +1340,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 : (<obj>fieldName)[level].toString());
     }
 
-    private getFields(level: number = 0): obj {
+    private getFields(level: number = 0): FieldsMap {
         return {
             id: this.getField('itemId', level),
             iconCss: this.getField('iconCss', level),
@@ -1491,7 +1520,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     private getIdx(ul: Element, li: Element, skipHdr: boolean = true): number {
         let idx: number = Array.prototype.indexOf.call(ul.querySelectorAll('li'), li);
-        if (this.isMenu && this.template && this.isBlazor()) {
+        if (this.isMenu && this.template && isBlazor()) {
             idx = Array.prototype.indexOf.call(ul.querySelectorAll(li.tagName), li);
         } else {
             idx = Array.prototype.indexOf.call(ul.children, li);
@@ -1507,10 +1536,6 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             return elem;
         }
         return closest(elem, 'li.e-menu-item');
-    }
-
-    private isBlazor(): boolean {
-        return ((Object.keys(window).indexOf('ejsInterop') === -1) ? false : true);
     }
 
     private removeChildElement(elem: HTMLUListElement): HTMLUListElement {
@@ -1575,7 +1600,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     let item: MenuItemModel[];
                     if (!Object.keys(oldProp.items).length) {
                         let ul: HTMLElement = this.element;
-                        if (this.isBlazor()) {
+                        if (isBlazor()) {
                             ul = this.removeChildElement(this.element);
                         } else {
                             ul.innerHTML = '';
@@ -2011,7 +2036,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         let refEle: Element = this.clonedElement.nextElementSibling;
                         refEle && refEle !== wrapper ? this.clonedElement.parentElement.insertBefore(this.element, refEle) :
                         this.clonedElement.parentElement.appendChild(this.element);
-                        if (this.isBlazor()) {
+                        if (isBlazor()) {
                             this.element = this.removeChildElement(this.element);
                         } else {
                             this.element.innerHTML = '';
@@ -2024,7 +2049,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 this.clonedElement = null;
             } else {
                 this.closeMenu();
-                if (this.isBlazor()) {
+                if (isBlazor()) {
                     this.element = this.removeChildElement(this.element);
                 } else {
                     this.element.innerHTML = '';
@@ -2043,6 +2068,15 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             super.destroy();
         }
     }
+}
+
+interface FieldsMap {
+    id: string;
+    iconCss: string;
+    text: string;
+    url: string;
+    child: string;
+    separator: string;
 }
 
 /**

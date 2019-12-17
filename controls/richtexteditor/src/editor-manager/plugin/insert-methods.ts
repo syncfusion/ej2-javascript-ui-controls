@@ -3,6 +3,11 @@
  * @hidden
  */
 export class InsertMethods {
+    /**
+     * WrapBefore method
+     * @hidden
+     * @deprecated
+     */
     public static WrapBefore(textNode: Text, parentNode: HTMLElement, isAfter?: boolean): Text {
         parentNode.innerText = textNode.textContent;
         (!isAfter) ? this.AppendBefore(parentNode, textNode) : this.AppendBefore(parentNode, textNode, true);
@@ -12,12 +17,22 @@ export class InsertMethods {
         return parentNode.childNodes[0] as Text;
     }
 
+    /**
+     * Wrap method
+     * @hidden
+     * @deprecated
+     */
     public static Wrap(childNode: HTMLElement, parentNode: HTMLElement): HTMLElement {
         this.AppendBefore(parentNode, childNode);
         parentNode.appendChild(childNode);
         return childNode;
     }
 
+    /**
+     * unwrap method
+     * @hidden
+     * @deprecated
+     */
     public static unwrap(node: Node | HTMLElement): Node[] {
         let parent: Node = node.parentNode;
         let child: Node[] = [];
@@ -28,6 +43,11 @@ export class InsertMethods {
         return child;
     }
 
+    /**
+     * AppendBefore method
+     * @hidden
+     * @deprecated
+     */
     public static AppendBefore(
         textNode: HTMLElement | Text | DocumentFragment,
         parentNode: HTMLElement | Text | DocumentFragment,

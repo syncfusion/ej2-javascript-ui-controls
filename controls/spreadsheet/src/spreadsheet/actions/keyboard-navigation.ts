@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../base/index';
-import { keyDown, cellNavigate, renameSheet } from '../common/index';
+import { keyDown, cellNavigate, renameSheet, filterCellKeyDown } from '../common/index';
 import { SheetModel, getCellIndexes, getRangeAddress, getRowHeight, getColumnWidth } from '../../workbook/index';
 import { closest } from '@syncfusion/ej2-base';
 
@@ -38,9 +38,13 @@ export class KeyboardNavigation {
             let scrollIdxes: number[];
             let isRtl: boolean = this.parent.enableRtl;
             let sheet: SheetModel = this.parent.getActiveSheet();
+            let filterArgs: { [key: string]: KeyboardEvent | boolean } = { e: e, isFilterCell: false };
             let actIdxes: number[] = getCellIndexes(this.parent.getActiveSheet().activeCell);
             if ([9, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
                 e.preventDefault();
+            }
+            if (!e.shiftKey && e.altKey && (e.keyCode === 38 || e.keyCode === 40)) {
+                this.parent.notify(filterCellKeyDown, filterArgs);
             }
             if ((!e.shiftKey && ((!isRtl && e.keyCode === 37) || (isRtl && e.keyCode === 39)))
                 || (e.shiftKey && e.keyCode === 9)) { //left key
@@ -51,7 +55,7 @@ export class KeyboardNavigation {
                     let content: Element = this.parent.getMainContent();
                     if (actIdxes[1] === 0 && content.scrollLeft && !isRtl) { content.scrollLeft = 0; }
                 }
-            } else if ((!e.shiftKey && e.keyCode === 38) || (e.shiftKey && e.keyCode === 13)) {    // Up key
+            } else if ((!filterArgs.isFilterCell && !e.shiftKey && e.keyCode === 38) || (e.shiftKey && e.keyCode === 13)) {    // Up key
                 if (actIdxes[0] > 0) {
                     actIdxes[0] -= 1;
                     isNavigate = true;
@@ -64,7 +68,7 @@ export class KeyboardNavigation {
                     actIdxes[1] += 1;
                     isNavigate = true;
                 }
-            } else if ((!e.shiftKey && e.keyCode === 40) || e.keyCode === 13) {      // Down Key
+            } else if ((!filterArgs.isFilterCell && !e.shiftKey && e.keyCode === 40) || e.keyCode === 13) {      // Down Key
                 if (actIdxes[0] < sheet.rowCount - 1) {
                     actIdxes[0] += 1;
                     isNavigate = true;

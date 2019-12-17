@@ -5,6 +5,7 @@ import { IMarkdownItem } from '../index';
 /**
  * Link internal component
  * @hidden
+ * @deprecated
  */
 export class MDLink {
     private parent: MarkdownParser;
@@ -13,6 +14,7 @@ export class MDLink {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     constructor(parent: MarkdownParser) {
         this.parent = parent;

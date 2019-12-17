@@ -158,6 +158,14 @@
     content: '\e76c';
   }
 
+  .e-pivotview-group::before {
+    content: '\e821';
+  }
+
+  .e-pivotview-ungroup::before {
+    content: '\e822';
+  }
+
   #{&}.e-level-options {
     .e-selected-level-icon::before {
       content: '\e718';

@@ -1,7 +1,7 @@
 import {
-    extend, isNullOrUndefined, createElement, EventHandler, addClass, append, removeClass, remove, closest, classList
+    extend, isNullOrUndefined, createElement, EventHandler, addClass, append, removeClass, remove, closest, classList, isBlazor
 } from '@syncfusion/ej2-base';
-import { DataManager, Query } from '@syncfusion/ej2-data';
+import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';
 import { TreeView, NodeClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Data } from '../actions/data';
@@ -87,6 +87,13 @@ export class ResourceBase {
         tbl.appendChild(tBody);
         resDiv.appendChild(tbl);
         return resDiv;
+    }
+
+    public setRenderedResources(): void {
+        let resColl: ResourcesModel[] = this.resourceCollection;
+        this.generateTreeData(true) as TdData[];
+        this.countCalculation(resColl.slice(0, -2), resColl.slice(0, -1));
+        this.renderedResources = this.lastResourceLevel;
     }
 
     public setExpandedResources(): void {
@@ -314,9 +321,9 @@ export class ResourceBase {
             '<div class="e-icons ' + cls.RESOURCE_MENU_ICON + '"></div></div><div class="' + cls.RESOURCE_LEVEL_TITLE + '"></div></div>';
         if (this.parent.currentView === 'MonthAgenda') {
             let target: Element = this.parent.activeView.getPanel().querySelector('.' + cls.CONTENT_WRAP_CLASS);
-            target.insertBefore(resourceWrapper, target.children[1]);
+            target.insertBefore(resourceWrapper, target.querySelector('.' + cls.WRAPPER_CONTAINER_CLASS));
         } else {
-            this.parent.element.insertBefore(resourceWrapper, this.parent.element.children[2]);
+            this.parent.element.insertBefore(resourceWrapper, this.parent.element.querySelector('.' + cls.TABLE_CONTAINER_CLASS));
         }
         this.renderResourceHeaderText();
         EventHandler.add(resourceWrapper.querySelector('.' + cls.RESOURCE_MENU_ICON), 'click', this.menuClick, this);
@@ -442,26 +449,38 @@ export class ResourceBase {
     }
 
     private menuClick(event: Event): void {
-        if (this.parent.element.querySelector('.' + cls.RESOURCE_TREE_POPUP).classList.contains('e-popup-open')) {
+        if (this.parent.element.querySelector('.' + cls.RESOURCE_TREE_POPUP).classList.contains(cls.POPUP_OPEN)) {
             this.treePopup.hide();
-            removeClass([this.popupOverlay], 'e-enable');
+            removeClass([this.popupOverlay], cls.ENABLE_CLASS);
         } else {
             let treeNodes: NodeListOf<Element> = this.treeViewObj.element.querySelectorAll('.e-list-item:not(.e-has-child)');
             removeClass(treeNodes, 'e-active');
             addClass([treeNodes[this.parent.uiStateValues.groupIndex]], 'e-active');
             this.treePopup.show();
-            addClass([this.popupOverlay], 'e-enable');
+            addClass([this.popupOverlay], cls.ENABLE_CLASS);
         }
     }
 
     private resourceClick(event: NodeClickEventArgs): void {
         if (!event.node.classList.contains('e-has-child')) {
             this.treePopup.hide();
+            removeClass([this.popupOverlay], cls.ENABLE_CLASS);
             let treeNodes: HTMLLIElement[] = [].slice.call(this.treeViewObj.element.querySelectorAll('.e-list-item:not(.e-has-child)'));
             this.parent.uiStateValues.groupIndex = treeNodes.indexOf(event.node);
-            this.parent.renderModule.render(this.parent.currentView, false);
-            let processed: Object[] = this.parent.eventBase.processData(this.parent.eventsData as { [key: string]: Object }[]);
-            this.parent.notify(events.dataReady, { processedData: processed });
+            if (this.parent.isServerRenderer()) {
+                // tslint:disable-next-line:no-any
+                (this.parent as any).interopAdaptor.invokeMethodAsync('OnResourceClick', this.parent.uiStateValues.groupIndex).then(() => {
+                    if (this.parent.isDestroyed) { return; }
+                    this.renderResourceHeaderText();
+                    this.parent.activeView.serverRenderLayout();
+                    let processed: Object[] = this.parent.eventBase.processData(this.parent.eventsData as { [key: string]: Object }[]);
+                    this.parent.notify(events.dataReady, { processedData: processed });
+                }).catch((e: ReturnType) => this.dataManagerFailure(e));
+            } else {
+                this.parent.renderModule.render(this.parent.currentView, false);
+                let processed: Object[] = this.parent.eventBase.processData(this.parent.eventsData as { [key: string]: Object }[]);
+                this.parent.notify(events.dataReady, { processedData: processed });
+            }
         }
         event.event.preventDefault();
     }
@@ -471,14 +490,23 @@ export class ResourceBase {
             return;
         }
         let treeWrapper: Element = this.parent.element.querySelector('.' + cls.RESOURCE_TREE_POPUP);
-        if (treeWrapper && treeWrapper.classList.contains('e-popup-open')) {
+        if (treeWrapper && treeWrapper.classList.contains(cls.POPUP_OPEN)) {
             this.treePopup.hide();
-            removeClass([this.popupOverlay], 'e-enable');
+            removeClass([this.popupOverlay], cls.ENABLE_CLASS);
         }
     }
 
     public bindResourcesData(isSetModel: boolean): void {
         this.parent.showSpinner();
+        if (isBlazor()) {
+            // tslint:disable-next-line:no-any
+            (this.parent as any).interopAdaptor.invokeMethodAsync('BindResourcesData').then((result: string) => {
+                if (this.parent.isDestroyed) { return; }
+                this.parent.resourceCollection = DataUtil.parse.parseJson(result);
+                this.refreshLayout(isSetModel);
+            }).catch((e: ReturnType) => this.dataManagerFailure(e));
+            return;
+        }
         let promises: Promise<Object>[] = [];
         for (let i: number = 0; i < this.parent.resources.length; i++) {
             let dataModule: Data = new Data(this.parent.resources[i].dataSource, this.parent.resources[i].query);
@@ -522,9 +550,6 @@ export class ResourceBase {
     private refreshLayout(isSetModel: boolean): void {
         this.parent.uiStateValues.groupIndex = 0;
         this.parent.renderElements(isSetModel);
-        if (isSetModel) {
-            this.parent.eventWindow.refresh();
-        }
     }
 
     public setResourceCollection(): void {

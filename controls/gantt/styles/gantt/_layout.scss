@@ -3,6 +3,75 @@
     display: block;
     width: 100%;
 
+    .e-cloneproperties {
+      padding: $gantt-bigger-clone-padding;
+    }
+
+    & .e-cloneproperties.e-draganddrop .e-row .e-icon-rowdragicon::before {
+      left: -5px;
+      position: relative;
+    }
+
+    .e-cloneproperties {
+      border-style: solid;
+      border-width: $gantt-border-size;
+      box-shadow: $gantt-group-clone-box-shadow;
+      font-size: $gantt-header-font-size;
+      font-weight: $gantt-drag-clone-font-weight;
+      opacity: $gantt-drag-clone-opacity;
+      overflow: hidden;
+      padding: $gantt-clone-padding;
+      text-align: $gantt-group-clone-text-align;
+      user-select: none;
+      vertical-align: middle;
+      white-space: nowrap;
+      z-index: 100;
+    }
+
+    .e-cloneproperties.e-draganddrop {
+      border-spacing: 0;
+      font-size: $gantt-header-font-size;
+      font-weight: normal;
+      overflow: visible;
+    }
+
+    .e-cloneproperties .e-bothganttlines {
+      border-width: 1px 0 0 1px;
+    }
+
+    .e-draganddrop {
+      border-width: 0 1px 1px;
+      font-weight: normal;
+      padding: 0;
+    }
+
+    .e-draganddrop .e-rowcell {
+      opacity: .95;
+    }
+
+    .e-cloneproperties.e-draganddrop table {
+      border-spacing: 0;
+    }
+
+    .e-icons.e-errorelem {
+      display: inline-block;
+      padding-left: 10px;
+      vertical-align: middle;
+    }
+
+    .e-errorelem::before {
+      color: $error-elem-color;
+      content: '\e22a';
+      transform: rotate(180deg);
+    }
+
+    & .e-verticallines .e-cloneproperties.e-draganddrop .e-rowdragdrop,
+    & .e-bothlines .e-cloneproperties.e-draganddrop .e-rowdragdrop {
+      border-bottom: 0;
+      border-right: 1px solid $gantt-cell-border-color;
+      border-top: 1px solid $gantt-cell-border-color;
+    }
+
     .e-gantt-toolbar {
       border-bottom-left-radius: 0;
       border-bottom-right-radius: 0;
@@ -589,6 +658,11 @@
         text-transform: none;
         vertical-align: middle;
       }
+
+      .e-active-container {
+        border: 1px solid !important; // sass-lint:disable-line no-important
+      }
+
     }
 
     .e-gantt-dialog {

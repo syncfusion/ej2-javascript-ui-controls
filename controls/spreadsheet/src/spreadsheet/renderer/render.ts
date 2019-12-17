@@ -66,8 +66,29 @@ export class Render {
         let sheetName: string = getSheetName(this.parent);
         this.parent.showSpinner();
         if (!address) {
-            address = this.parent.scrollSettings.enableVirtualization ? this.getAddress(args.rowIndex, args.colIndex) :
-                `A1:${getCellAddress(sheet.rowCount - 1, sheet.colCount - 1)}`;
+            if (this.parent.scrollSettings.enableVirtualization) {
+                let lastRowIdx: number = args.rowIndex + this.parent.viewport.rowCount + (this.parent.getThreshold('row') * 2);
+                let count: number = sheet.rowCount - 1;
+                if (this.parent.scrollSettings.isFinite && lastRowIdx > count) { lastRowIdx = count; }
+                let lastColIdx: number = args.colIndex + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2);
+                count = sheet.colCount - 1;
+                if (this.parent.scrollSettings.isFinite && lastColIdx > count) { lastColIdx = count; }
+                let indexes: number[] = this.parent.skipHiddenRows(args.rowIndex, lastRowIdx);
+                let startRow: number = args.rowIndex;
+                if (args.rowIndex !== indexes[0]) {
+                    let topLeftCell: number[] = getCellIndexes(sheet.topLeftCell);
+                    if (topLeftCell[0] === args.rowIndex) {
+                        sheet.topLeftCell = getCellAddress(indexes[0], topLeftCell[1]);
+                        this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
+                    }
+                    args.rowIndex = indexes[0];
+                }
+                lastRowIdx = indexes[1];
+                this.parent.viewport.topIndex = args.rowIndex; this.parent.viewport.bottomIndex = lastRowIdx;
+                address = `${getCellAddress(startRow, args.colIndex)}:${getCellAddress(lastRowIdx, lastColIdx)}`;
+            } else {
+                address = `A1:${getCellAddress(sheet.rowCount - 1, sheet.colCount - 1)}`;
+            }
         }
         if (args.refresh === 'All') { this.parent.trigger(beforeDataBound, {}); }
         setAriaOptions(this.parent.getMainContent() as HTMLElement, { busy: true });
@@ -108,21 +129,6 @@ export class Render {
         this.checkTopLeftCell();
     }
 
-    private getAddress(rowIndex: number, colIndex: number): string {
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let lastRowIdx: number = rowIndex + this.parent.viewport.rowCount + (this.parent.getThreshold('row') * 2);
-        let count: number = sheet.rowCount - 1;
-        if (this.parent.scrollSettings.isFinite && lastRowIdx > count) {
-            lastRowIdx = count;
-        }
-        let lastColIdx: number = colIndex + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2);
-        count = sheet.colCount - 1;
-        if (this.parent.scrollSettings.isFinite && lastColIdx > count) {
-            lastColIdx = count;
-        }
-        return `${getCellAddress(rowIndex, colIndex)}:${getCellAddress(lastRowIdx, lastColIdx)}`;
-    }
-
     /**
      * Used to set sheet panel size.
      */
@@ -153,8 +159,8 @@ export class Render {
      * Registing the renderer related services.
      */
     private instantiateRenderer(): void {
-        this.parent.serviceLocator.register('row', new RowRenderer(this.parent));
         this.parent.serviceLocator.register('cell', new CellRenderer(this.parent));
+        this.parent.serviceLocator.register('row', new RowRenderer(this.parent));
         this.parent.serviceLocator.register('sheet', new SheetRender(this.parent));
     }
 

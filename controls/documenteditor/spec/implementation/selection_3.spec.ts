@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { LayoutViewer, PageLayoutViewer } from '../../src/index';
+import { LayoutViewer, PageLayoutViewer, SfdtExport } from '../../src/index';
 
 import { TestHelper } from '../test-helper.spec';
 import { createElement } from '@syncfusion/ej2-base';
@@ -397,10 +397,10 @@ describe('Nested Table copy validation', () => {
     let editor: DocumentEditor = undefined;
     let viewer: LayoutViewer;
     beforeAll(() => {
-        let ele: HTMLElement = createElement('div', { id: 'container' });
+        let ele: HTMLElement = createElement('div', { id: 'container', styles: 'height: 500px' });
         document.body.appendChild(ele);
-        DocumentEditor.Inject(Editor, Selection, BookmarkDialog);
-        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false, enableBookmarkDialog: true });
+        DocumentEditor.Inject(Editor, Selection, BookmarkDialog, SfdtExport);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, enableSfdtExport: true, isReadOnly: false, enableBookmarkDialog: true });
         (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
         (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
         (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;

@@ -1,8 +1,8 @@
-import { EventHandler, setStyleAttribute } from '@syncfusion/ej2-base';
+import { EventHandler, setStyleAttribute, isBlazor } from '@syncfusion/ej2-base';
 import { PivotView } from '../base/pivotview';
-import { contentReady, scroll } from '../../common/base/constant';
+import { contentReady } from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
-import { IAxisSet, PivotEngine, OlapEngine } from '../../base';
+import { PivotEngine, OlapEngine } from '../../base';
 import { showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { Column } from '@syncfusion/ej2-grids';
 
@@ -121,6 +121,9 @@ export class VirtualScroll {
     private update(mHdr: HTMLElement, mCont: HTMLElement, top: number, left: number, e: Event): void {
         this.parent.isScrolling = true;
         let engine: PivotEngine | OlapEngine = this.parent.dataType === 'pivot' ? this.parent.engineModule : this.parent.olapEngineModule;
+        if (isBlazor()) {
+            engine.pageSettings = this.parent.pageSettings;
+        }
         if (this.parent.pageSettings && engine.pageSettings) {
             if (this.direction === 'vertical') {
                 let rowValues: number = this.parent.dataType === 'pivot' ?
@@ -133,23 +136,51 @@ export class VirtualScroll {
                     return;
                 }
                 showSpinner(this.parent.element);
-                //setTimeout(() => {
                 this.parent.scrollPosObject.vertical = section;
                 engine.pageSettings.rowCurrentPage = section > 1 ? section : 1;
                 let rowStartPos: number = 0;
                 if (this.parent.dataType === 'pivot') {
-                    this.parent.engineModule.generateGridData(this.parent.dataSourceSettings, this.parent.engineModule.headerCollection);
-                    rowStartPos = this.parent.engineModule.rowStartPos;
+                    if (isBlazor()) {
+                        let pivot: PivotView = this.parent;
+                        let ejsInterop: string = 'ejsInterop';
+                        /* tslint:disable-next-line */
+                        let dataSourceSettings: any = (window as any)[ejsInterop].
+                            copyWithoutCircularReferences([pivot.dataSourceSettings], pivot.dataSourceSettings);
+                        /* tslint:disable-next-line */
+                        let pageSettings: any = (window as any)[ejsInterop].
+                            copyWithoutCircularReferences([engine.pageSettings], engine.pageSettings);
+                        /* tslint:disable-next-line */
+                        (pivot as any).interopAdaptor.invokeMethodAsync(
+                            'PivotInteropMethod', 'generateGridData', {
+                            'dataSourceSettings': dataSourceSettings,
+                            'pageSettings': pageSettings, 'isScrolling': true
+                        }).then(
+                            /* tslint:disable-next-line */
+                            (data: any) => {
+                                pivot.updateBlazorData(data, pivot);
+                                pivot.pivotValues = engine.pivotValues;
+                                rowStartPos = this.parent.engineModule.rowStartPos;
+                                let exactPage: number = Math.ceil(rowStartPos / (pivot.pageSettings.rowSize * rowValues));
+                                let pos: number = exactSize * exactPage -
+                                    (engine.rowFirstLvl * rowValues * pivot.gridSettings.rowHeight);
+                                pivot.scrollPosObject.verticalSection = pos;
+                            });
+                    } else {
+                        this.parent.engineModule.generateGridData(
+                            this.parent.dataSourceSettings, this.parent.engineModule.headerCollection);
+                        rowStartPos = this.parent.engineModule.rowStartPos;
+                    }
                 } else {
                     this.parent.olapEngineModule.scrollPage('scroll');
                     rowStartPos = this.parent.olapEngineModule.pageRowStartPos;
                 }
-                this.parent.pivotValues = engine.pivotValues;
-                let exactPage: number = Math.ceil(rowStartPos / (this.parent.pageSettings.rowSize * rowValues));
-                let pos: number = exactSize * exactPage -
-                    (engine.rowFirstLvl * rowValues * this.parent.gridSettings.rowHeight);
-                this.parent.scrollPosObject.verticalSection = pos;
-                //});
+                if (!(isBlazor() && this.parent.dataType === 'pivot')) {
+                    this.parent.pivotValues = engine.pivotValues;
+                    let exactPage: number = Math.ceil(rowStartPos / (this.parent.pageSettings.rowSize * rowValues));
+                    let pos: number = exactSize * exactPage -
+                        (engine.rowFirstLvl * rowValues * this.parent.gridSettings.rowHeight);
+                    this.parent.scrollPosObject.verticalSection = pos;
+                }
             } else {
                 let colValues: number =
                     this.parent.dataType === 'pivot' ?
@@ -163,30 +194,50 @@ export class VirtualScroll {
                 }
                 showSpinner(this.parent.element);
                 let pivot: PivotView = this.parent;
-                //setTimeout(() => {
                 pivot.scrollPosObject.horizontal = section;
                 engine.pageSettings.columnCurrentPage = section > 1 ? section : 1;
                 let colStartPos: number = 0;
                 if (pivot.dataType === 'pivot') {
-                    pivot.engineModule.generateGridData(pivot.dataSourceSettings, pivot.engineModule.headerCollection);
-                    colStartPos = pivot.engineModule.colStartPos;
+                    if (isBlazor()) {
+                        let ejsInterop: string = 'ejsInterop';
+                        let pivot: PivotView = this.parent;
+                        /* tslint:disable-next-line */
+                        let pageSettings: any = (window as any)[ejsInterop].
+                            copyWithoutCircularReferences([engine.pageSettings], engine.pageSettings);
+                        /* tslint:disable-next-line */
+                        let dataSourceSettings: any = (window as any)[ejsInterop].
+                            copyWithoutCircularReferences([pivot.dataSourceSettings], pivot.dataSourceSettings);
+                        /* tslint:disable-next-line */
+                        (pivot as any).interopAdaptor.invokeMethodAsync(
+                            'PivotInteropMethod', 'generateGridData', {
+                            'dataSourceSettings': dataSourceSettings,
+                            'pageSettings': pageSettings, 'isScrolling': true
+                        }).then(
+                            /* tslint:disable-next-line */
+                            (data: any) => {
+                                pivot.updateBlazorData(data, pivot);
+                                colStartPos = pivot.engineModule.colStartPos;
+                                pivot.pivotValues = engine.pivotValues;
+                                let exactPage: number = Math.ceil(colStartPos / (pivot.pageSettings.columnSize * colValues));
+                                let pos: number = exactSize * exactPage - (engine.colFirstLvl *
+                                    colValues * pivot.gridSettings.columnWidth);
+                                pivot.scrollPosObject.horizontalSection = pos;
+                            });
+                    } else {
+                        pivot.engineModule.generateGridData(pivot.dataSourceSettings, pivot.engineModule.headerCollection);
+                        colStartPos = pivot.engineModule.colStartPos;
+                    }
                 } else {
                     pivot.olapEngineModule.scrollPage('scroll');
                     colStartPos = pivot.olapEngineModule.pageColStartPos;
                 }
-                // let isLastPage: boolean =
-                //     (engine.pivotValues[0] as IAxisSet[])[engine.pivotValues[0].length - 1].type
-                //     === 'grand sum' && section > 0;
-                pivot.pivotValues = engine.pivotValues;
-                let exactPage: number = Math.ceil(colStartPos / (pivot.pageSettings.columnSize * colValues));
-                // let pos: number = isLastPage ?
-                //     ((left + mHdr.clientWidth) - ((mHdr.querySelector('.' + cls.TABLE) as HTMLElement).offsetWidth)) :
-                //     exactSize * exactPage - (engine.colFirstLvl *
-                //         colValues * pivot.gridSettings.columnWidth);
-                let pos: number = exactSize * exactPage - (engine.colFirstLvl *
-                    colValues * pivot.gridSettings.columnWidth);
-                pivot.scrollPosObject.horizontalSection = pos;
-                //});
+                if (!(isBlazor() && pivot.dataType === 'pivot')) {
+                    pivot.pivotValues = engine.pivotValues;
+                    let exactPage: number = Math.ceil(colStartPos / (pivot.pageSettings.columnSize * colValues));
+                    let pos: number = exactSize * exactPage - (engine.colFirstLvl *
+                        colValues * pivot.gridSettings.columnWidth);
+                    pivot.scrollPosObject.horizontalSection = pos;
+                }
             }
         }
     }

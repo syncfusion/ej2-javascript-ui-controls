@@ -142,7 +142,11 @@ export type ShapeLayerType =
     /**
      * Draw the bing map
      */
-    'Bing';
+    'Bing' |
+    /**
+     * Draw google map
+     */
+    'GoogleStaticMap';
 /**
  * Defines the map layer types.
  * * Layer - Specifies the layer type.
@@ -186,7 +190,11 @@ export type MarkerType =
     /** VerticalLine - Used to render marker shape as VerticalLine on maps */
     'VerticalLine' |
     /** Image - Used to render marker shape as Image on maps  */
-    'Image';
+    'Image' |
+    /** Inverted triangle - Used to render marker shape as InvertedTriangle on maps */
+    'InvertedTriangle' |
+    /** Pentagon - Used  to render marker shape as Pentagon on maps */
+    'Pentagon';
 
 /**
  * Defines the projection type of the maps.
@@ -228,6 +236,20 @@ export type BingMapType =
     'CanvasLight' |
     /** CanvasGray - A grayscale version of the road maps */
     'CanvasGray';
+
+/**
+ * Defines map types
+ * * RoadMap - specifies the road type
+ */
+export type StaticMapType =
+    /** RoadMap - Used to render google map layer with RoadMap type */
+    'RoadMap' |
+    /** Terrain - Used to render google map layer with Terrain type */
+    'Terrain' |
+    /** Satellite - Used to render google map layer with Satellite type */
+    'Satellite' |
+    /** Hybrid - google map with Hybrid type */
+    'Hybrid';
 
 /**
  * Defines the tool bar orientation
@@ -367,7 +389,6 @@ export type PanDirection =
     'Bottom' |
     /** Used to pan the map by mouse move */
     'None';
-
 /**
  * Tooltip Gesture
  */

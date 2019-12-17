@@ -606,6 +606,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     protected preRender(): void {
         this.unWireEvents();
         this.initPrivateVariable();
+        this.allowServerDataBinding = false;
+        this.isProtectedOnChange = true;
         this.setCulture();
         this.stockChartTheme = getThemeColor(this.theme);
         this.wireEvents();
@@ -703,6 +705,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
             this.initialRender = false;
         }
         this.renderComplete();
+        this.allowServerDataBinding = true;
+        this.isProtectedOnChange = false;
     }
 
     /**

@@ -116,12 +116,13 @@ describe('Gantt Selection support', () => {
             expect(oldRowIndex + 1).toBe(ganttObj.currentViewData.length);
             expect((ganttObj.selectionModule.getSelectedRows().length)).toBe(1);
         });
-        it('delete key testing', () => {
+        it('delete key testing', (done: Function) => {
             oldRowIndex = ganttObj.currentViewData.length;
             ganttObj.selectionModule.selectRow(0);
             let args: any = { action: 'delete', preventDefault: preventDefault };
             ganttObj.keyboardModule.keyAction(args);
             expect(oldRowIndex - 1).toBe(ganttObj.currentViewData.length);
+            done();
         });
         it('addRowDialog key testing', () => {
             let args: any = { action: 'addRowDialog', preventDefault: preventDefault };

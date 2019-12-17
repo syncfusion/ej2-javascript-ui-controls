@@ -2,7 +2,7 @@ import { Component, EventHandler, Property, Event, Browser, L10n, EmitType } fro
 import { NotifyPropertyChanges, INotifyPropertyChanged, BaseEventArgs } from '@syncfusion/ej2-base';
 import { createElement, attributes, addClass, removeClass, detach, closest } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, getValue, formatUnit, setValue, merge } from '@syncfusion/ej2-base';
-import { Internationalization, NumberFormatOptions, getNumericObject } from '@syncfusion/ej2-base';
+import { Internationalization, NumberFormatOptions, getNumericObject, isBlazor } from '@syncfusion/ej2-base';
 import { NumericTextBoxModel } from './numerictextbox-model';
 import { Input, InputObject, FloatLabelType } from '../input/input';
 
@@ -343,11 +343,15 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             setValue('ej2_instances', ejInstance, this.element);
 
         }
-        attributes(this.element, { 'role': 'spinbutton', 'tabindex': '0', 'autocomplete': 'off', 'aria-live': 'assertive' });
-        let localeText: object = { incrementTitle: 'Increment value', decrementTitle: 'Decrement value', placeholder: this.placeholder };
-        this.l10n = new L10n('numerictextbox', localeText, this.locale);
-        if (this.l10n.getConstant('placeholder') !== '') {
-            this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
+        if (!(isBlazor() && this.isServerRendered)) {
+            attributes(this.element, { 'role': 'spinbutton', 'tabindex': '0', 'autocomplete': 'off', 'aria-live': 'assertive' });
+            let localeText: object = {
+                incrementTitle: 'Increment value', decrementTitle: 'Decrement value', placeholder: this.placeholder
+            };
+            this.l10n = new L10n('numerictextbox', localeText, this.locale);
+            if (this.l10n.getConstant('placeholder') !== '') {
+                this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
+            }
         }
         this.isValidState = true;
         this.inputStyle = null;
@@ -355,15 +359,17 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         this.cultureInfo = {};
         this.initCultureInfo();
         this.initCultureFunc();
-        this.updateHTMLAttrToElement();
-        this.checkAttributes(false);
         this.prevValue = this.value;
-        if (this.formEle) {
-            this.inputEleValue = this.value;
+        if (!(isBlazor() && this.isServerRendered)) {
+            this.updateHTMLAttrToElement();
+            this.checkAttributes(false);
+            if (this.formEle) {
+                this.inputEleValue = this.value;
+            }
         }
         this.validateMinMax();
         this.validateStep();
-        if (this.placeholder === null) {
+        if (this.placeholder === null && !(isBlazor() && this.isServerRendered)) {
             this.updatePlaceholder();
         }
     }
@@ -374,19 +380,40 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      */
     public render(): void {
         if (this.element.tagName.toLowerCase() === 'input') {
-            this.createWrapper();
-            if (this.showSpinButton) { this.spinBtnCreation(); }
-            this.setElementWidth(this.width);
-            if (!this.container.classList.contains('e-input-group')) { this.container.classList.add('e-input-group'); }
-            this.changeValue(this.value === null || isNaN(this.value) ? null : this.strictMode ? this.trimValue(this.value) : this.value);
-            this.wireEvents();
-            if (this.value !== null && !isNaN(this.value)) {
-                if (this.decimals) {
-                    this.setProperties({ value: this.roundNumber(this.value, this.decimals) }, true);
+            if (!(isBlazor() && this.isServerRendered)) {
+                this.createWrapper();
+                if (this.showSpinButton) { this.spinBtnCreation(); }
+                this.setElementWidth(this.width);
+                if (!this.container.classList.contains('e-input-group')) { this.container.classList.add('e-input-group'); }
+                this.changeValue(this.value === null || isNaN(this.value) ?
+                    null : this.strictMode ? this.trimValue(this.value) : this.value);
+            } else {
+                this.container = this.element.parentElement;
+                this.inputWrapper = { container: this.container };
+                this.hiddenInput = this.container.querySelector('input[type="hidden"]');
+                if (this.showClearButton) {
+                    this.inputWrapper.clearButton = this.container.querySelector('.e-clear-icon');
+                    Input.wireClearBtnEvents(this.element, this.inputWrapper.clearButton, this.inputWrapper.container);
                 }
+                if (this.showSpinButton) {
+                    this.spinDown = this.container.querySelector('.' + SPINDOWN);
+                    this.spinUp = this.container.querySelector('.' + SPINUP);
+                    this.wireSpinBtnEvents();
+                }
+                Input.bindInitialEvent({
+                    element: this.element, buttons: null, customTag: null, floatLabelType: this.floatLabelType, properties: this.properties
+                });
             }
-            if (this.element.getAttribute('value') || this.value) {
-                this.element.setAttribute('value', this.element.value);
+            this.wireEvents();
+            if (!(isBlazor() && this.isServerRendered)) {
+                if (this.value !== null && !isNaN(this.value)) {
+                    if (this.decimals) {
+                        this.setProperties({ value: this.roundNumber(this.value, this.decimals) }, true);
+                    }
+                }
+                if (this.element.getAttribute('value') || this.value) {
+                    this.element.setAttribute('value', this.element.value);
+                }
             }
             this.renderComplete();
         }

@@ -4,11 +4,12 @@
 import { createElement, isNullOrUndefined, remove, compile as templateComplier, merge } from '@syncfusion/ej2-base';
 import { AnimationOptions, Animation, isBlazor } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
-import { Maps, FontModel, BorderModel, LayerSettings, ProjectionType } from '../../index';
+import { Maps, FontModel, BorderModel, LayerSettings, ProjectionType, ISelectionEventArgs, itemSelection } from '../../index';
 import { animationComplete, IAnimationCompleteEventArgs, Alignment, LayerSettingsModel } from '../index';
-import { MarkerType, IShapeSelectedEventArgs, ITouches, IShapes, SelectionSettingsModel, HighlightSettingsModel,
+import {
+    MarkerType, IShapeSelectedEventArgs, ITouches, IShapes, SelectionSettingsModel, HighlightSettingsModel,
     MarkerClusterSettingsModel, IMarkerRenderingEventArgs, MarkerSettings, markerClusterRendering,
-IMarkerClusterRenderingEventArgs, MarkerClusterData} from '../index';
+IMarkerClusterRenderingEventArgs, MarkerClusterData } from '../index';
 import { CenterPositionModel, ConnectorLineSettingsModel, MarkerSettingsModel } from '../model/base-model';
 
 /**
@@ -45,6 +46,15 @@ export function stringToNumber(value: string, containerSize: number): number {
 export function calculateSize(maps: Maps): void {
     let containerWidth: number = maps.element.clientWidth;
     let containerHeight: number = maps.element.clientHeight;
+    if (maps.isBlazor) {
+        if (maps.element.parentElement.style.height !== '' && maps.element.parentElement.style.width !== '') {
+            containerHeight = maps.element.parentElement.clientHeight;
+            containerWidth = maps.element.parentElement.clientWidth;
+        } else {
+            containerHeight = maps.element.clientHeight;
+            containerWidth = maps.element.clientWidth;
+        }
+    }
     maps.availableSize = new Size(
         stringToNumber(maps.width, containerWidth) || containerWidth || 600,
         stringToNumber(maps.height, containerHeight) || containerHeight || (maps.isDevice ?
@@ -638,7 +648,7 @@ export function drawSymbols(shape: MarkerType, imageUrl: string, location: Point
     let fill: string = shapeCustom['fill'];
     let dashArray: string = shapeCustom['dashArray'];
     let border: Object = { color: borderColor, width: borderWidth };
-    let opacity: number = shapeCustom['opacity'];
+    let opacity: number = shapeCustom['opacity']; let padding : number = 5;
     let circleOptions: CircleOption; let pathOptions: PathOption; let rectOptions: RectOption;
     pathOptions = new PathOption(markerID, fill, borderWidth, borderColor, opacity, dashArray, '');
     if (shape === 'Circle') {
@@ -662,8 +672,29 @@ export function drawSymbols(shape: MarkerType, imageUrl: string, location: Point
     }
     return markerEle;
 }
+export function markerColorChoose( eventArgs: IMarkerRenderingEventArgs, data: object): IMarkerRenderingEventArgs{
+    eventArgs.fill = (!isNullOrUndefined(eventArgs.colorValuePath) &&
+    !isNullOrUndefined(data[eventArgs.colorValuePath])) ?
+    data[eventArgs.colorValuePath] : eventArgs.fill;
+    return eventArgs;
+}
+export function markerShapeChoose( eventArgs: IMarkerRenderingEventArgs, data: object): IMarkerRenderingEventArgs {
+    if(!isNullOrUndefined(eventArgs.shapeValuePath) && !isNullOrUndefined(data[eventArgs.shapeValuePath])) {
+        eventArgs.shape = data[eventArgs.shapeValuePath];
+        if(data[eventArgs.shapeValuePath] == 'Image'){
+            eventArgs.imageUrl = (!isNullOrUndefined(eventArgs.imageUrlValuePath) &&
+                                    !isNullOrUndefined(data[eventArgs.imageUrlValuePath])) ?
+                                    data[eventArgs.imageUrlValuePath] : eventArgs.imageUrl;
+        }
+    }
+    else {
+        eventArgs.shape = eventArgs.shape;
+        eventArgs.imageUrl = eventArgs.imageUrl;
+    }
+    return eventArgs;
+}
 //tslint:disable
-export function clusterTemplate(currentLayer: LayerSettings, markerTemplates: HTMLElement | Element, maps:Maps, layerIndex: number, markerCollection:Element,
+export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTMLElement | Element, maps:Maps, layerIndex: number, markerCollection:Element,
     layerElement: Element, check: boolean) {
     let bounds: DOMRect[] = []
     let colloideBounds: DOMRect[] = []
@@ -675,19 +706,20 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplates: HT
     let textElement: Element;
     let postionY: number = (15 / 4);
     let m: number = 0;
+    let indexCollection: number[] = [];
     let clusters: MarkerClusterSettingsModel = currentLayer.markerClusterSettings;
     let clusterGroup: Element = maps.renderer.createGroup({ id: maps.element.id +'_LayerIndex_'+ layerIndex + '_markerCluster' });
-    for (let n: number = 0; n < markerTemplates.childElementCount; n++) {
-        let tempElement: Element = markerTemplates.childNodes[n] as Element;
+    for (let n: number = 0; n < markerTemplate.childElementCount; n++) {
+        let tempElement: Element = markerTemplate.childNodes[n] as Element;
         bounds.push(tempElement.getBoundingClientRect() as DOMRect);
-    }
+    }    
     let eventArg: IMarkerClusterRenderingEventArgs = {
         cancel: false, name: markerClusterRendering, fill: clusters.fill, height: clusters.height,
         width: clusters.width, imageUrl: clusters.imageUrl, shape: clusters.shape,
-        data: data, maps: (isBlazor()) ? null : maps, cluster: clusters, border: clusters.border
+        data: data, maps: maps, cluster: clusters, border: clusters.border
     }
     if (isBlazor()) {
-        const {...blazorEventArgs}: IMarkerClusterRenderingEventArgs = eventArg;
+        const {data, maps, cluster, ...blazorEventArgs}: IMarkerClusterRenderingEventArgs = eventArg;
         eventArg = blazorEventArgs;
     }
     maps.trigger('markerClusterRendering', eventArg, (clusterargs: IMarkerClusterRenderingEventArgs) => {
@@ -698,23 +730,25 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplates: HT
                     if ( bounds[o].left > bounds[p].right || bounds[o].right < bounds[p].left
                         || bounds[o].top > bounds[p].bottom || bounds[o].bottom < bounds[p].top){
                     }
-                     else {
+                    else {
                         colloideBounds.push(bounds[p])
                     }
+                }
             }
-        }
-            tempX = bounds[o].left + bounds[o].width / 2;
-            tempY = bounds[o].top + bounds[o].height;
+        tempX = bounds[o].left + bounds[o].width / 2;
+        tempY = bounds[o].top + bounds[o].height;
             for (let q: number = 0; q < colloideBounds.length; q++) {
-                for (let k: number =0; k< bounds.length; k++) {
+                for (let k: number = 0; k < bounds.length; k++) {
                     if (!isNullOrUndefined(bounds[k])) {
-                        if(colloideBounds[q]['left'] === bounds[k]['left']) {
+                        if (colloideBounds[q]['left'] === bounds[k]['left']) {
                             delete bounds[k]
-                            for(let r: number = 0;r < markerTemplates.childElementCount; r++) {
-                                let tempElement: Element = markerTemplates.childNodes[r] as Element;
+                            for (let r: number = 0; r < markerTemplate.childElementCount; r++) {
+                                let tempElement: Element = markerTemplate.childNodes[r] as Element;
                                 if (colloideBounds[q]['left'] === tempElement.getBoundingClientRect()['left']) {
-                                    markerTemplates.childNodes[r]['style']['visibility'] ="hidden"
-                                    markerTemplates.childNodes[o]['style']['visibility'] ="hidden"
+                                    markerTemplate.childNodes[r]['style']['visibility'] ="hidden";
+                                    markerTemplate.childNodes[o]['style']['visibility'] ="hidden";
+                                    indexCollection.push(o as number);
+                                    indexCollection.push(r as number);
                                 }
                             }
                         }
@@ -723,14 +757,15 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplates: HT
             }
 
         if (colloideBounds.length > 0) {
+            indexCollection = indexCollection.filter((item, index, value) => value.indexOf(item) === index);
             let container: ClientRect = maps.element.getBoundingClientRect();
             tempX = Math.abs(container['left'] - tempX);
             tempY = Math.abs(container['top'] - tempY);
             let translate: Object = (maps.isTileMap) ? new Object() : getTranslate(maps, currentLayer, false);
             let transPoint: Point = (maps.isTileMap) ? {x:0, y:0} :(maps.translatePoint.x !== 0) ?
             maps.translatePoint : translate['location'];
-            let dataIndex: number = parseInt( markerTemplates.childNodes[o]['id'].split('_dataIndex_')[1].split('_')[0], 10);
-            let markerIndex: number = parseInt(markerTemplates.childNodes[o]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
+            let dataIndex: number = parseInt( markerTemplate.childNodes[o]['id'].split('_dataIndex_')[1].split('_')[0], 10);
+            let markerIndex: number = parseInt(markerTemplate.childNodes[o]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
             let clusters: MarkerClusterSettingsModel = currentLayer.markerClusterSettings;
             let shapeCustom: Object = {
                 size: new Size(clusters.width, clusters.height),
@@ -745,25 +780,30 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplates: HT
             shapeCustom['shape'] = eventArg.shape;
             shapeCustom['borderColor']  = eventArg.border.color;
             shapeCustom['borderWidth']  = eventArg.border.width;
-            tempX = (maps.isTileMap) ? tempX :(markerTemplates.id.indexOf('_Markers_Group') > -1) ? tempX : ((tempX + transPoint.x) * maps.mapScaleValue)
-            tempY = (maps.isTileMap) ? tempY : (markerTemplates.id.indexOf('_Markers_Group') > -1) ? tempY: ((tempY + transPoint.y) * maps.mapScaleValue)
-            let clusterID: string = maps.element.id + '_LayerIndex_'+ layerIndex + '_MarkerIndex_'+ markerIndex + '_dataIndex_'+ dataIndex + '_cluster_' + (m);
-            let labelID: string = maps.element.id + '_LayerIndex_'+ layerIndex + '_MarkerIndex_'+ markerIndex + '_dataIndex_'+ dataIndex + '_cluster_' + (m) +'_datalabel_'+ m;
-            m++;
-            let imageShapeY: number = eventArg.shape === 'Image' ? eventArg.height/2 : 0;
-            let ele: Element = drawSymbols(
-                eventArg.shape, eventArg.imageUrl, { x: 0, y: imageShapeY },
-                clusterID, shapeCustom, markerCollection, maps
-            );
-            ele.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
-            options = new TextOption(labelID, (0), postionY, 'middle',(colloideBounds.length + 1).toString() , '', '');
-            textElement = renderTextElement(options, style, style.color, markerCollection)
-            textElement.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
-            clusterGroup.appendChild(textElement);
-            clusterGroup.appendChild(ele);
+                tempX = (maps.isTileMap) ? tempX :(markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempX : ((tempX + transPoint.x) * maps.mapScaleValue)
+                tempY = (maps.isTileMap) ? tempY : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempY: ((tempY + transPoint.y) * maps.mapScaleValue)
+                let clusterID: string = maps.element.id + '_LayerIndex_'+ layerIndex + '_MarkerIndex_'+ markerIndex + '_dataIndex_'+ dataIndex + '_cluster_' + (m);
+                let labelID: string = maps.element.id + '_LayerIndex_'+ layerIndex + '_MarkerIndex_'+ markerIndex + '_dataIndex_'+ dataIndex + '_cluster_' + (m) +'_datalabel_'+ m;
+                m++;
+                let imageShapeY: number = eventArg.shape === 'Image' ? eventArg.height/2 : 0;
+                let ele: Element = drawSymbols(
+                    eventArg.shape, eventArg.imageUrl, { x: 0, y: imageShapeY },
+                    clusterID, shapeCustom, markerCollection, maps
+                );
+                ele.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
+                if (eventArg.shape === 'Balloon') {
+                    ele.children[0].innerHTML = indexCollection.toString();
+                } else {
+                    ele.innerHTML = indexCollection.toString();
+                }
+                options = new TextOption(labelID, (0), postionY, 'middle',(colloideBounds.length + 1).toString() , '', '');
+                textElement = renderTextElement(options, style, style.color, markerCollection)
+                textElement.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
+                clusterGroup.appendChild(textElement);
+                clusterGroup.appendChild(ele);
         }
     }
-    colloideBounds =[];
+        colloideBounds = [];
 }
 while (0 < clusterGroup.childNodes.length) {
     markerCollection.insertBefore(clusterGroup.childNodes[0], markerCollection.firstChild);
@@ -861,18 +901,19 @@ export function clusterSeparate(sameMarkerData: MarkerClusterData[], maps: Maps,
     markerElement.insertBefore(groupEle, markerElement.querySelector('#' + markerId + '_dataIndex_0'));
 }
 export function marker(eventArgs: IMarkerRenderingEventArgs, markerSettings: MarkerSettings, markerData: object[], dataIndex: number,
-    location: Point, transPoint: Point, markerID : string, offset: Point, scale: number, maps: Maps,
-    markerCollection: Element ): Element{
+    location: Point, transPoint: Point, markerID: string, offset: Point, scale: number, maps: Maps,
+    markerCollection: Element): Element {
     let shapeCustom: Object = {
         size: new Size(eventArgs.width, eventArgs.height),
         fill: eventArgs.fill, borderColor: eventArgs.border.color,
         borderWidth: eventArgs.border.width, opacity: markerSettings.opacity,
         dashArray: markerSettings.dashArray
     };
-    let ele: Element = drawSymbols(eventArgs.shape, eventArgs.imageUrl, { x: 0, y: 0 }, markerID, shapeCustom, markerCollection, maps );
+    let ele: Element = drawSymbols(eventArgs.shape, eventArgs.imageUrl, { x: 0, y: 0 }, markerID, shapeCustom, markerCollection, maps);
     let x: number = (maps.isTileMap ? location.x : (location.x + transPoint.x) * scale) + offset.x;
     let y: number = (maps.isTileMap ? location.y : (location.y + transPoint.y) * scale) + offset.y;
     ele.setAttribute('transform', 'translate( ' + x + ' ' + y + ' )');
+    maintainSelection(maps.selectedMarkerElementId, maps.markerSelectionClass, ele, 'MarkerselectionMapStyle');
     markerCollection.appendChild(ele);
     let element: string = (markerData.length - 1) === dataIndex ? 'marker' : null;
     let markerPoint: Point = new Point(x, y);
@@ -883,11 +924,11 @@ export function marker(eventArgs: IMarkerRenderingEventArgs, markerSettings: Mar
     }
     return markerCollection
 }
-export function markerTemplate(eventArgs: IMarkerRenderingEventArgs, templateFn: Function, markerID: string, data:object,
-    markerIndex: number, markerTemplate: HTMLElement, location: Point, scale: number, offset: Point, maps: Maps): HTMLElement{
+export function markerTemplate(eventArgs: IMarkerRenderingEventArgs, templateFn: Function, markerID: string, data: object,
+    markerIndex: number, markerTemplate: HTMLElement, location: Point, scale: number, offset: Point, maps: Maps): HTMLElement {
     templateFn = getTemplateFunction(eventArgs.template);
-    if (templateFn && (!maps.isBlazor ? templateFn(data, null, null, maps.element.id + '_MarkerTemplate', false).length : {})) {
-        let templateElement: HTMLCollection = templateFn(data, null, null, maps.element.id + '_MarkerTemplate', false);
+    if (templateFn && (!maps.isBlazor ? templateFn(data, null, null, maps.element.id + '_MarkerTemplate' + markerIndex, false).length : {})) {
+        let templateElement: HTMLCollection = templateFn(data, null, null, maps.element.id + '_MarkerTemplate' + markerIndex, false);
         let markerElement: HTMLElement = <HTMLElement>convertElement(
             templateElement, markerID, data, markerIndex, maps
         );
@@ -899,9 +940,57 @@ export function markerTemplate(eventArgs: IMarkerRenderingEventArgs, templateFn:
         markerElement.style.top = ((maps.isTileMap ? location.y :
             ((Math.abs(maps.baseMapRectBounds['min']['y'] - location.y)) * scale)) + offset.y) + 'px';
         markerTemplate.appendChild(markerElement);
+        if(maps.layers[maps.baseLayerIndex].layerType === 'GoogleStaticMap') {
+            let staticMapOffset : ClientRect = getElementByID(maps.element.id + '_StaticGoogleMap').getBoundingClientRect();
+            let markerElementOffset : ClientRect = markerElement.getBoundingClientRect();
+            let staticMapOffsetWidth : number  = 640;
+            if((staticMapOffset['x'] > markerElementOffset['x']  || staticMapOffset['x'] + staticMapOffsetWidth < markerElementOffset['x'] + markerElementOffset['width'])
+                && (staticMapOffset['y'] > markerElementOffset['y'] || staticMapOffset['y'] + staticMapOffset['height'] < markerElementOffset['y'] + markerElementOffset['height'])
+                ) {
+                    markerElement.style.display='none';
+            } 
+        }
+        
     }
     return markerTemplate
 }
+
+/**
+ * To maintain selection during page resize
+ * @private
+ */
+export function maintainSelection(elementId: string[], elementClass: Element, element: Element, className: string) {
+    if (elementId) {
+        for (let index = 0; index < elementId.length; index++) {
+            if (element.getAttribute('id') === elementId[index]) {
+                if (isNullOrUndefined(getElement(elementClass.id)) || index === 0) {
+                    document.body.appendChild(elementClass);
+                }
+                element.setAttribute('class', className);
+            }
+        }
+    }
+}
+
+/**
+ * To maintain selection style class
+ * @private
+ */
+export function maintainStyleClass(id: string, idClass: string, fill: string, opacity: string, borderColor: string,
+    borderWidth: string, maps: Maps): void {
+    if (!getElement(id)) {
+        let styleClass: Element;
+        styleClass = createElement('style', {
+            id: id, innerHTML: '.' + idClass + '{fill:'
+                + fill + ';' + 'opacity:' + opacity + ';' +
+                'stroke-width:' + borderWidth + ';' +
+                'stroke:' + borderColor + ';' + '}'
+        });
+        maps.shapeSelectionClass = styleClass;
+        document.body.appendChild(styleClass);
+    } 
+}
+
 /**
  * Internal use of append shape element
  * @private
@@ -992,6 +1081,19 @@ export function calculateShapes(
         case 'VerticalLine':
             options.d = 'M ' + location.x + ' ' + (location.y - size.height / 2) + ' L ' + location.x + ' ' +
                 (location.y + size.height / 2);
+            break;
+        case 'InvertedTriangle':
+            options.d = 'M ' + (location.x - size.width / 2) + ' ' + (location.y - size.height / 2) + ' L ' + (location.x + size.width / 2) + ' ' +
+                (location.y - size.height / 2) + ' L ' + (location.x) + ' ' + (location.y + size.height / 2) + ' Z';
+            break;
+        case 'Pentagon':
+            let eq: number = 72; let xValue: number; let yValue: number;
+            for (let i: number = 0; i < 5; i++) {
+                xValue = (size.width / 2) * Math.cos((Math.PI / 180) * (i * eq));
+                yValue = (size.height / 2) * Math.sin((Math.PI / 180) * (i * eq));
+                options.d += (i == 0 ? 'M ' : 'L ') + (location.x + xValue) + ' ' + (location.y + yValue);
+            }
+            options.d += ' Z';
             break;
     }
     return shape === 'Balloon' ? tempGroup : maps.renderer.drawPath(options);
@@ -1121,7 +1223,7 @@ export function checkPropertyPath(shapeData: string, shapePropertyPath: string |
         if (!isNullOrUndefined(shapePropertyPath)) {
             let length: number;
             let properties: string[] = (Object.prototype.toString.call(shapePropertyPath) === '[object Array]' ?
-            shapePropertyPath : [shapePropertyPath]) as string[];
+                shapePropertyPath : [shapePropertyPath]) as string[];
             for (let i: number = 0; i < properties.length; i++) {
                 if (shapeData === shape[properties[i]]) {
                     return properties[i];
@@ -1152,7 +1254,7 @@ export function getRatioOfBubble(min: number, max: number, value: number, minVal
 /**
  * To find the midpoint of the polygon from points
  */
-export function findMidPointOfPolygon(points: MapLocation[], type : string): object {
+export function findMidPointOfPolygon(points: MapLocation[], type: string): object {
     if (!points.length) {
         return null;
     }
@@ -1306,19 +1408,30 @@ export function removeElement(id: string): void {
  * @private
  */
 export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: boolean): Object {
+    let zoomFactorValue: number = mapObject.zoomSettings.zoomFactor;let scaleFactor: number;
     if (isNullOrUndefined(mapObject.mapScaleValue)) {
-        mapObject.mapScaleValue = mapObject.zoomSettings.zoomFactor;
+        mapObject.mapScaleValue = zoomFactorValue;
     }
-    let zoomFactor: number = animate ? 1 : mapObject.mapScaleValue;
+    if (mapObject.zoomSettings.shouldZoomInitially) {
+        mapObject.mapScaleValue = scaleFactor = zoomFactorValue = ((mapObject.zoomSettings.shouldZoomInitially || mapObject.enablePersistence) &&  mapObject.scale == 1) 
+        ? mapObject.scale : (isNullOrUndefined(mapObject.markerZoomFactor)) ? 1 : mapObject.markerZoomFactor;   
+        if(mapObject.mapScaleValue !== mapObject.markerZoomFactor && !mapObject.enablePersistence) {
+            mapObject.mapScaleValue = zoomFactorValue = mapObject.markerZoomFactor;
+        }
+    }
     let min: Object = mapObject.baseMapRectBounds['min'] as Object;
     let max: Object = mapObject.baseMapRectBounds['max'] as Object;
+    let zoomFactor: number = animate ? 1 : mapObject.mapScaleValue;
+    if (isNullOrUndefined(mapObject.currentShapeDataLength)) {
+        mapObject.currentShapeDataLength =  !isNullOrUndefined(layer.shapeData["features"]) 
+        ? layer.shapeData["features"].length : layer.shapeData["geometries"].length;
+    }
     let size: Rect = (mapObject.totalRect) ? mapObject.totalRect : mapObject.mapAreaRect;
     let availSize: Size = mapObject.availableSize;
     let x: number; let y: number;
     let mapWidth: number = Math.abs(max['x'] - min['x']);
     let mapHeight: number = Math.abs(min['y'] - max['y']);
-    let factor: number = animate ? 1 : mapObject.zoomSettings.zoomFactor;
-    let scaleFactor: number;
+    let factor: number = animate ? 1 : mapObject.markerZoomFactor === 1 ?  mapObject.mapScaleValue : zoomFactorValue;
     let center: CenterPositionModel = mapObject.centerPosition;
     if (!isNullOrUndefined(center.longitude) && !isNullOrUndefined(center.latitude)) {
         let leftPosition: number = ((mapWidth + Math.abs(mapObject.mapAreaRect.width - mapWidth)) / 2) / factor;
@@ -1330,9 +1443,20 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
             y = -point.y + topPosition;
             scaleFactor = zoomFactor;
         } else {
-            scaleFactor = mapObject.scale;
-            x = mapObject.zoomTranslatePoint.x;
-            y = mapObject.zoomTranslatePoint.y;
+            if(Math.floor(mapObject.scale) !== 1 && mapObject.zoomSettings.shouldZoomInitially) {
+                x = -point.x + leftPosition;
+                y = -point.y + topPosition;
+            } else {
+                if(mapObject.zoomSettings.shouldZoomInitially) {
+                    x = -point.x + leftPosition;
+                    y = -point.y + topPosition;
+                    scaleFactor = zoomFactor;
+                } else {
+                    x = mapObject.zoomTranslatePoint.x;
+                    y = mapObject.zoomTranslatePoint.y;
+                } 
+            }
+            scaleFactor = mapObject.mapScaleValue;
         }
     } else {
         if (isNullOrUndefined(mapObject.previousProjection) || mapObject.previousProjection !== mapObject.projectionType) {
@@ -1342,11 +1466,34 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
             x = size.x + ((-(min['x'])) + ((size.width / 2) - (mapWidth / 2)));
             y = size.y + ((-(min['y'])) + ((size.height / 2) - (mapHeight / 2)));
         } else {
-            scaleFactor = mapObject.scale;
-            x = mapObject.zoomTranslatePoint.x;
-            y = mapObject.zoomTranslatePoint.y;
+            if(!mapObject.zoomSettings.shouldZoomInitially && mapObject.markerZoomFactor === 1 && mapObject.mapScaleValue === 1) {
+                scaleFactor = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
+                mapHeight *= scaleFactor;mapWidth *= scaleFactor; 
+                y = size.y + ((-(min['y'])) + ((size.height / 2) - (mapHeight / 2)));
+                x = size.x + ((-(min['x'])) + ((size.width / 2) - (mapWidth / 2)));  
+            }  else {
+                scaleFactor = mapObject.mapScaleValue < 1 ? mapObject.mapScaleValue + 1 : mapObject.mapScaleValue;
+                if((mapObject.currentShapeDataLength !== (!isNullOrUndefined(layer.shapeData["features"]) 
+                ? layer.shapeData["features"].length : layer.shapeData["geometries"].length))) {
+                    let scale : number = parseFloat(Math.min(size.height / mapHeight, size.width / mapWidth).toFixed(2));
+                    mapHeight *= scale;mapWidth *= scale; 
+                    y = size.y + ((-(min['y'])) + ((size.height / 2) 
+                        - (mapHeight / 2)));
+                    scaleFactor = scale;
+                    x = size.x + ((-(min['x'])) 
+                        + ((size.width / 2) - (mapWidth / 2)));
+                } else {
+                    x = mapObject.zoomTranslatePoint.x;
+                    y = mapObject.zoomTranslatePoint.y;
+                }
+            }   
         }
     }
+    if (!isNullOrUndefined(mapObject.translatePoint)) {
+        x = (mapObject.enablePersistence && mapObject.translatePoint.x != 0) ? mapObject.translatePoint.x : x;
+        y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0) ? mapObject.translatePoint.y : y;
+    }
+    scaleFactor = (mapObject.enablePersistence) ? ((mapObject.mapScaleValue >= 1) ? mapObject.mapScaleValue : 1) : scaleFactor;
     return { scale: scaleFactor, location: new Point(x, y) };
 }
 
@@ -1354,14 +1501,21 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
  * @private
  */
 export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?: boolean): Object {
+    let zoomFactorValue : number = mapObject.zoomSettings.zoomFactor;
+    let scaleFactor: number;
     if (isNullOrUndefined(mapObject.mapScaleValue)) {
-        mapObject.mapScaleValue = mapObject.zoomSettings.zoomFactor;
+        mapObject.mapScaleValue = zoomFactorValue;
     }
+    if (mapObject.zoomSettings.shouldZoomInitially) {
+        mapObject.mapScaleValue = zoomFactorValue = scaleFactor = ((mapObject.enablePersistence || mapObject.zoomSettings.shouldZoomInitially) && mapObject.scale == 1)
+            ? mapObject.scale : (isNullOrUndefined(mapObject.markerZoomFactor)) ? mapObject.mapScaleValue : mapObject.markerZoomFactor;
+            zoomFactorValue = mapObject.mapScaleValue;
+        }
     let zoomFactor: number = animate ? 1 : mapObject.mapScaleValue;
     let size: Rect = mapObject.mapAreaRect; let x: number; let y: number;
     let min: Object = mapObject.baseMapRectBounds['min'] as Object;
     let max: Object = mapObject.baseMapRectBounds['max'] as Object;
-    let factor: number = animate ? 1 : mapObject.mapScaleValue; let scaleFactor: number;
+    let factor: number = animate ? 1 : mapObject.mapScaleValue;
     let mapWidth: number = Math.abs(max['x'] - min['x']); let mapHeight: number = Math.abs(min['y'] - max['y']);
     let center: CenterPositionModel = mapObject.centerPosition;
     if (!isNullOrUndefined(center.longitude) && !isNullOrUndefined(center.latitude)) {
@@ -1381,7 +1535,11 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
             x = -point.x + leftPosition;
             y = -point.y + topPosition;
         }
-        scaleFactor = zoomFactor !== 0 ? zoomFactor : 1;
+        if (!isNullOrUndefined(mapObject.translatePoint)) {
+            x = (mapObject.enablePersistence && mapObject.translatePoint.x != 0) ? mapObject.translatePoint.x : x;
+            y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0) ? mapObject.translatePoint.y : y;
+        }
+        scaleFactor = zoomFactorValue !== 0 ? zoomFactorValue : 1;
     } else {
         let zoomFact: number = mapObject.zoomSettings.zoomFactor === 0 ? 1 : mapObject.zoomSettings.zoomFactor;
         let maxZoomFact: number = 10; zoomFact = zoomFact > maxZoomFact ? maxZoomFact : zoomFact;
@@ -1411,10 +1569,13 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
                 }
             }
         }
-        x = leftPosition;
-        y = topPosition;
+        if (!isNullOrUndefined(mapObject.translatePoint)) {
+            x = (mapObject.enablePersistence && mapObject.translatePoint.x != 0) ? mapObject.translatePoint.x : leftPosition;
+            y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0) ? mapObject.translatePoint.y : topPosition;
+        }
     }
-    return { scale: scaleFactor, location: new Point(x, y) };
+    scaleFactor = (mapObject.enablePersistence) ? (mapObject.mapScaleValue == 0 ? 1 : mapObject.mapScaleValue) : scaleFactor;
+    return { scale: animate ? 1 : scaleFactor, location: new Point(x, y) };
 }
 
 /**
@@ -1492,7 +1653,7 @@ export function triggerShapeEvent(
         maps: maps
     };
     if (maps.isBlazor) {
-        const { data, maps, shapeData, ...blazorEventArgs} : IShapeSelectedEventArgs = eventArgs;
+        const { maps, shapeData, ...blazorEventArgs }: IShapeSelectedEventArgs = eventArgs;
         eventArgs = blazorEventArgs;
     }
     maps.trigger(eventName, eventArgs);
@@ -1558,6 +1719,37 @@ export function customizeStyle(id: string, className: string, eventArgs: IShapeS
         'stroke-width:' + eventArgs.border.width.toString() + ';' +
         'stroke:' + eventArgs.border.color + '}';
 }
+
+/**
+ * Function to trigger itemSelection event for legend selection and public method
+ */
+export function triggerItemSelectionEvent(selectionSettings: SelectionSettingsModel, map: Maps, targetElement: Element,
+                                          shapeData: object, data: object): void {
+    let border: BorderModel = {
+        color: selectionSettings.border.color,
+        width: selectionSettings.border.width / map.scale
+    };
+    let eventArgs: ISelectionEventArgs = {
+        opacity: selectionSettings.opacity,
+        fill: selectionSettings.fill,
+        border: border,
+        name: itemSelection,
+        target: targetElement.id,
+        cancel: false,
+        shapeData: shapeData,
+        data: data,
+        maps: map
+    };
+    map.trigger('itemSelection', eventArgs, (observedArgs: ISelectionEventArgs) => {
+        if (!getElement('ShapeselectionMap')) {
+            document.body.appendChild(createStyle('ShapeselectionMap',
+                                      'ShapeselectionMapStyle', eventArgs));
+        } else {
+            customizeStyle('ShapeselectionMap', 'ShapeselectionMapStyle', eventArgs);
+        }
+    });
+}
+
 /**
  * Function to remove class from element
  */
@@ -1990,6 +2182,7 @@ export function zoomAnimate(
 export function animate(element: Element, delay: number, duration: number, process: Function, end: Function): void {
     let start: number = null;
     let clearAnimation: number;
+    let markerStyle : string = 'visibility:visible';
     let startAnimation: FrameRequestCallback = (timestamp: number) => {
         if (!start) { start = timestamp; }
         let progress: number = timestamp - start;
@@ -1999,6 +2192,7 @@ export function animate(element: Element, delay: number, duration: number, proce
         } else {
             window.cancelAnimationFrame(clearAnimation);
             end.call(this, { element: element });
+            element.setAttribute('style',markerStyle);
         }
     };
     clearAnimation = window.requestAnimationFrame(startAnimation);

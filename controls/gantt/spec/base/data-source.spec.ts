@@ -311,11 +311,11 @@ export let projectData1: Object[] = [
                 subtasks: [
                     {
                         TaskID: 3, TaskName: 'Plan timeline', StartDate: null, EndDate: new Date('02/10/2017'),
-                        Duration: 7200, DurationUnit: 'min', Progress: '100', ResourceId: [1]
+                        Duration: 5, Progress: '100', ResourceId: [1]
                     },
                     {
                         TaskID: 4, TaskName: 'Plan budget', StartDate: new Date('02/04/2017 05:00:00 AM'), EndDate: new Date('02/10/2017'),
-                        Duration: 120, DurationUnit: 'hour', Progress: '100', ResourceId: [1]
+                        Duration: 2, Progress: '100', ResourceId: [1]
                     },
                     {
                         TaskID: 5, TaskName: 'Allocate resources', StartDate: new Date('02/06/2017'), EndDate: new Date('02/13/2017'),

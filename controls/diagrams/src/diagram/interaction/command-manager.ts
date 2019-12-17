@@ -192,6 +192,7 @@ export class CommandHandler {
             }
             if (this.diagram.currentDrawingObject && event !== DiagramEvent.positionChange) {
                 return;
+
             }
         }
         this.diagram.triggerEvent(event, args);

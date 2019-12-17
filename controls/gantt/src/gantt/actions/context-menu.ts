@@ -26,6 +26,10 @@ export class ContextMenu {
      * @private
      */
     public isOpen: Boolean;
+    /**
+     * @private
+     */
+    public item: string;
     private predecessors: IPredecessor[];
     private hideItems: string[];
     private disableItems: string[];
@@ -82,29 +86,29 @@ export class ContextMenu {
 
 
     private contextMenuItemClick(args: CMenuClickEventArgs): void {
-        let item: string = this.getKeyFromId(args.item.id);
+        this.item = this.getKeyFromId(args.item.id);
         let parentItem: ContextMenuItemModel = getValue('parentObj', args.item);
         let index: number = -1;
         if (parentItem && !isNullOrUndefined(parentItem.id) && this.getKeyFromId(parentItem.id) === 'DeleteDependency') {
             index = parentItem.items.indexOf(args.item);
         }
         if (this.parent.isAdaptive) {
-            if (item === 'TaskInformation' || item === 'Above' || item === 'Below'
-                || item === 'Child' || item === 'DeleteTask') {
+            if (this.item === 'TaskInformation' || this.item === 'Above' || this.item === 'Below'
+                || this.item === 'Child' || this.item === 'DeleteTask') {
                 if (this.parent.selectionModule && this.parent.selectionSettings.type === 'Multiple') {
                     this.parent.selectionModule.hidePopUp();
                     (<HTMLElement>document.getElementsByClassName('e-gridpopup')[0]).style.display = 'none';
                 }
             }
         }
-        switch (item) {
+        switch (this.item) {
             case 'TaskInformation':
                 this.parent.openEditDialog(Number(this.rowData.ganttProperties.taskId));
                 break;
             case 'Above':
             case 'Below':
             case 'Child':
-                let position: RowPosition = item;
+                let position: RowPosition = this.item;
                 let data: Object = extend({}, {}, this.rowData.taskData, true);
                 let taskfields: TaskFieldsModel = this.parent.taskFields;
                 if (!isNullOrUndefined(taskfields.dependency)) {
@@ -123,7 +127,7 @@ export class ContextMenu {
                 break;
             case 'Milestone':
             case 'ToMilestone':
-                this.convertToMilestone(item);
+                this.parent.convertToMilestone(this.rowData.ganttProperties.taskId);
                 break;
             case 'DeleteTask':
                 this.parent.editModule.deleteRecord(this.rowData);
@@ -163,47 +167,14 @@ export class ContextMenu {
         this.parent.trigger('contextMenuClick', args);
     }
 
-    private convertToMilestone(item: string): void {
-        let data: Object = extend({}, {}, this.rowData.taskData, true);
-        let taskfields: TaskFieldsModel = this.parent.taskFields;
-        if (!isNullOrUndefined(taskfields.duration)) {
-            data[taskfields.duration] = 0;
-        } else {
-            data[taskfields.startDate] = new Date(this.rowData.taskData[taskfields.startDate]);
-            data[taskfields.endDate] = new Date(this.rowData.taskData[taskfields.startDate]);
-        }
-        if (!isNullOrUndefined(taskfields.milestone)) {
-            if (data[taskfields.milestone] === false) {
-                data[taskfields.milestone] = true;
-            }
-        }
-        if (!isNullOrUndefined(taskfields.progress)) {
-            data[taskfields.progress] = 0;
-        }
-        if (!isNullOrUndefined(taskfields.child) && data[taskfields.child]) {
-            data[taskfields.child] = [];
-        }
-        if (!isNullOrUndefined(taskfields.parentID) && data[taskfields.parentID]) {
-            data[taskfields.parentID] = null;
-        }
-        if (item === 'Milestone') {
-            if (!isNullOrUndefined(taskfields.dependency)) {
-                data[taskfields.dependency] = null;
-            }
-            let position: RowPosition = 'Below';
-            this.parent.addRecord(data, position);
-        } else {
-            this.parent.updateRecordByID(data);
-        }
-    }
-
     private contextMenuBeforeOpen(args: CMenuOpenEventArgs): void | Deferred {
         args.gridRow = closest(args.event.target as Element, '.e-row');
         args.chartRow = closest(args.event.target as Element, '.e-chart-row');
         let menuElement: Element = closest(args.event.target as Element, '.e-gantt');
         let editForm: Element = closest(args.event.target as Element, cons.editForm);
         if (!editForm && this.parent.editModule && this.parent.editModule.cellEditModule
-            && this.parent.editModule.cellEditModule.isCellEdit) {
+            && this.parent.editModule.cellEditModule.isCellEdit
+            && !this.parent.editModule.dialogModule.dialogObj.open) {
             this.parent.treeGrid.grid.saveCell();
             this.parent.editModule.cellEditModule.isCellEdit = false;
         }
@@ -507,6 +478,7 @@ export class ContextMenu {
         this.disableItems = [];
         this.headerMenuItems = [];
         this.contentMenuItems = [];
+        this.item = null;
     }
 
     private generateID(item: string): string {

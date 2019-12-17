@@ -370,8 +370,15 @@
 
     .e-row-header .e-prev-highlight .e-header-cell,
     .e-row-header .e-header-cell.e-highlight,
-    .e-select-all-cell.e-prev-highlight-bottom {
+    .e-select-all-cell.e-prev-highlight-bottom,
+    .e-row-header .e-table tr.e-hide-end.e-prev-highlight .e-header-cell::before,
+    .e-row-header .e-table tr.e-hide-end .e-header-cell.e-highlight::before {
       border-bottom-color: $hdr-selection-border-color;
+    }
+
+    .e-row-header .e-table tr.e-hide-start.e-prev-highlight .e-header-cell::after,
+    .e-row-header .e-table tr.e-hide-start .e-header-cell.e-highlight::after {
+      border-top-color: $hdr-selection-border-color;
     }
 
     & .e-toolbar-panel .e-dropdown-btn.e-btn {

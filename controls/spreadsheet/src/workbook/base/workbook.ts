@@ -1,24 +1,29 @@
 import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Collection, Complex, EmitType } from '@syncfusion/ej2-base';
-import { Event, ModuleDeclaration, merge } from '@syncfusion/ej2-base';
-import { Sheet, initSheet, getSheet, getSheetIndexFromId, getSheetNameCount, getMaxSheetId, getSheetIndex } from './sheet';
+import { initSheet, getSheet, getSheetIndexFromId, getSheetNameCount, getMaxSheetId, getSheetIndexByName, getSheetIndex } from './sheet';
+import { Sheet } from './sheet';
+import { Event, ModuleDeclaration, merge, L10n } from '@syncfusion/ej2-base';
 import { WorkbookModel } from './workbook-model';
-import { DefineNameModel } from '../common/class-model';
+import { DefineNameModel, HyperlinkModel } from '../common/class-model';
 import { getWorkbookRequiredModules } from '../common/module';
-import { getData, clearRange } from './data';
+import { getData, clearRange } from './index';
 import { SheetModel } from './sheet-model';
 import { CellModel } from './cell-model';
 import { OpenOptions, BeforeOpenEventArgs, OpenFailureArgs } from '../../spreadsheet/common/interface';
-import { DefineName, CellStyle, updateUsedRange, getIndexesFromAddress } from '../common/index';
+import { DefineName, CellStyle, updateUsedRange, getIndexesFromAddress, localeData, workbookLocale } from '../common/index';
 import * as events from '../common/event';
 import { CellStyleModel } from '../common/index';
 import { setCellFormat, sheetCreated } from '../common/index';
 import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, SaveOptions } from '../common/interface';
 import { SortOptions, BeforeSortEventArgs, SortEventArgs } from '../common/interface';
+import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs } from '../common/interface';
 import { getCell, skipDefaultValue, setCell } from './cell';
-import { DataBind } from '../index';
-import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort } from '../integrations/index';
+import { DataBind, setRow } from '../index';
+import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter } from '../integrations/index';
 import { WorkbookNumberFormat } from '../integrations/number-format';
-import { WorkbookEdit, WorkbookCellFormat } from '../actions/index';
+import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink } from '../actions/index';
+import { ServiceLocator } from '../services/index';
+import { setLinkModel } from '../common/event';
+import { beginAction } from '../../spreadsheet/common/event';
 
 /**
  * Represents the Workbook.
@@ -151,6 +156,13 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     public allowSorting: boolean;
 
     /**
+     * It allows to enable/disable filter and its functionalities.
+     * @default true
+     */
+    @Property(true)
+    public allowFiltering: boolean;
+
+    /**
      * It allows formatting a raw number into different types of formats (number, currency, accounting, percentage, short date,
      * long date, time, fraction, scientific, and text) with built-in format codes.
      * @default true
@@ -164,6 +176,13 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(true)
     public allowCellFormatting: boolean;
+
+    /**
+     * It allows to enable/disable Hyperlink and its functionalities.
+     * @default true
+     */
+    @Property(true)
+    public allowHyperlink: boolean;
 
     /**
      * Specifies the cell style options.
@@ -207,7 +226,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * ```typescript
      * new Spreadsheet({
      *      ...
-     *      definedNames: [{ name: 'namedRange1', refersTo: 'A1:B5' }],
+     *      definedNames: [{ name: 'namedRange1', refersTo: 'Sheet1!A1:B5' }],
      *      ...
      *  }, '#Spreadsheet');
      * ```
@@ -310,6 +329,13 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     public sheetNameCount: number = 1;
 
+    /** @hidden */
+    public serviceLocator: ServiceLocator;
+
+    /**
+     * @hidden
+     */
+    public isOpen: boolean = false;
     /**
      * Constructor for initializing the library.
      * @param options - Configures Workbook model.
@@ -317,10 +343,13 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     constructor(options: WorkbookModel) {
         super(options);
         Workbook.Inject(
-            DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookSort);
+            DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit,
+            WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter);
         this.commonCellStyle = {};
         if (options && options.cellStyle) { this.commonCellStyle = options.cellStyle; }
         if (this.getModuleName() === 'workbook') {
+            this.serviceLocator = new ServiceLocator;
+            this.initWorkbookServices();
             this.dataBind(); this.initEmptySheet();
         }
     }
@@ -334,7 +363,13 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         if (!Object.keys(this.commonCellStyle).length) {
             this.commonCellStyle = skipDefaultValue(this.cellStyle, true);
         }
-        if (this.getModuleName() === 'spreadsheet') { this.initEmptySheet(); }
+        if (this.getModuleName() === 'spreadsheet' && !this.refreshing) {
+            this.initEmptySheet();
+        }
+    }
+
+    private initWorkbookServices(): void {
+        this.serviceLocator.register(workbookLocale, new L10n(this.getModuleName(), localeData, this.locale));
     }
 
     /**
@@ -411,7 +446,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         }
         this.setProperties({ 'sheet': this.sheets }, true);
         this.notify(sheetCreated, { sheetIndex: index | 0 });
-        this.notify(events.workbookFormulaOperation, { action: 'registerSheet', sheetIndex: this.sheets.length - 1 });
+        this.notify(events.workbookFormulaOperation, { action: 'registerSheet', sheetIndex: index });
     }
 
     /**
@@ -455,6 +490,21 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         super.appendTo(selector);
     }
 
+    /**
+     * Used to hide/show the rows in spreadsheet.
+     * @param {number} startRow - Specifies the start row index.
+     * @param {number} endRow - Specifies the end row index.
+     * @param {boolean} hide - To hide/show the rows in specified range.
+     * @hidden
+     */
+    public showHideRow(hide: boolean, startRow: number, endRow: number = startRow): void {
+        let sheet: SheetModel = this.getActiveSheet();
+        for (let i: number = startRow; i < endRow; i++) {
+            setRow(sheet, i, { hidden: hide });
+        }
+        this.setProperties({ 'sheets': this.sheets }, true);
+    }
+
     private initEmptySheet(): void {
         let len: number = this.sheets.length;
         if (len) {
@@ -487,30 +537,12 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
-    /** @hidden */
-    public getRangeData(cellIndexes: number[], sheetIdx?: number): string | number {
-        let sheet: SheetModel;
-        if (sheetIdx) {
-            sheet = getSheet(this, sheetIdx - 1);
-        } else {
-            sheet = this.getActiveSheet();
-        }
-        let row: number = cellIndexes[0];
-        let col: number = cellIndexes[1];
-        let values: string = '';
-        if (sheet.rows[row] && sheet.rows[row].cells[col]) {
-            values = sheet.rows[row].cells[col].value;
-        }
-        return values;
-    }
-
-
     /**
      * Gets the range of data as JSON from the specified address.
      * @param {string} address - Specifies the address for range of cells.
      */
     public getData(address: string): Promise<Map<string, CellModel>> {
-        return getData(this, address);
+        return getData(this, address) as Promise<Map<string, CellModel>>;
     }
 
     /**
@@ -524,6 +556,16 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
 
     /** @hidden */
     public getValueRowCol(sheetIndex: number, rowIndex: number, colIndex: number): string | number {
+        let args: { action: string, sheetInfo: { visibleName: string, sheet: string, index: number }[] } = {
+            action: 'getSheetInfo', sheetInfo: []
+        };
+        this.notify(events.workbookFormulaOperation, args);
+        let id: number = getSheetIndexByName(this, 'Sheet' + sheetIndex, args.sheetInfo);
+        if (id === -1) {
+            let errArgs: { action: string, refError: string } = { action: 'getReferenceError', refError: '' };
+            this.notify(events.workbookFormulaOperation, errArgs);
+            return errArgs.refError;
+        }
         sheetIndex = getSheetIndexFromId(this, sheetIndex);
         let sheet: SheetModel = getSheet(this, sheetIndex - 1);
         let cell: CellModel = getCell(rowIndex - 1, colIndex - 1, sheet);
@@ -569,14 +611,20 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
                 cancel: false
             };
             this.trigger('beforeSave', eventArgs);
+            this.notify(beginAction, { eventArgs: eventArgs, action: 'beforeSave' });
             if (!eventArgs.cancel) {
                 this.notify(
                     events.beginSave, {
-                        saveSettings: eventArgs, isFullPost: eventArgs.isFullPost,
-                        needBlobData: eventArgs.needBlobData, customParams: eventArgs.customParams
-                    });
+                    saveSettings: eventArgs, isFullPost: eventArgs.isFullPost,
+                    needBlobData: eventArgs.needBlobData, customParams: eventArgs.customParams
+                });
             }
         }
+    }
+
+    public addHyperlink(hyperlink: string | HyperlinkModel, cellAddress: string): void {
+        let args: object = {  hyperlink: hyperlink, cell: cellAddress};
+        this.notify( setLinkModel, args );
     }
 
     /**
@@ -592,7 +640,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             cancel: false
         };
         let promise: Promise<SortEventArgs> = new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); });
-        let sortArgs: {[key: string]: BeforeSortEventArgs | Promise<SortEventArgs>} = { args: eventArgs, promise: promise };
+        let sortArgs: { [key: string]: BeforeSortEventArgs | Promise<SortEventArgs> } = { args: eventArgs, promise: promise };
         this.notify(events.initiateSort, sortArgs);
         return sortArgs.promise as Promise<SortEventArgs>;
     }
@@ -605,7 +653,15 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     public updateCell(cell: CellModel, address?: string): void {
         let range: number[] = getIndexesFromAddress(address);
         let sheetIdx: number = getSheetIndex(this, address.split('!')[0]) || this.activeSheetTab - 1;
-        setCell(range[0], range[1], this.sheets[sheetIdx], cell);
+        setCell(range[0], range[1], this.sheets[sheetIdx], cell, true);
+        if (cell.value) {
+            this.notify(
+                events.workbookEditOperation,
+                {
+                    action: 'updateCellValue', address: range, value: cell.value,
+                    sheetIndex: sheetIdx
+                });
+    }
     }
 
     /**
@@ -646,5 +702,44 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         address = address ? address : this.getActiveSheet().selectedRange;
         sheetIndex = sheetIndex ? sheetIndex : this.activeSheetTab;
         clearRange(this, address, sheetIndex, valueOnly);
+    }
+
+    /**
+     * Filters the range of cells in the sheet.
+     */
+    public filter(filterOptions?: FilterOptions, range?: string): Promise<FilterEventArgs> {
+        if (!this.allowFiltering) { return Promise.reject(); }
+        let eventArgs: BeforeFilterEventArgs = {
+            range: range || this.getActiveSheet().selectedRange,
+            filterOptions: filterOptions,
+            cancel: false
+        };
+        let promise: Promise<FilterEventArgs> = new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); });
+        let filterArgs: { [key: string]: BeforeFilterEventArgs | Promise<FilterEventArgs> } = { args: eventArgs, promise: promise };
+        this.notify(events.initiateFilter, filterArgs);
+        return filterArgs.promise as Promise<FilterEventArgs>;
+    }
+
+    /**
+     * Clears the filter changes of the sheet.
+     */
+    public clearFilter(): void {
+        this.notify(events.clearAllFilter, null);
+    }
+
+    /**
+     * Gets the formatted text of the cell.
+     */
+    public getDisplayText(cell: CellModel): string {
+        if (!cell) { return ''; }
+        if (cell.value && cell.format) {
+            let eventArgs: { [key: string]: string | number | boolean } = {
+                formattedText: cell.value, value: cell.value, format: cell.format, onLoad: true
+            };
+            this.notify(events.getFormattedCellObject, eventArgs);
+            return eventArgs.formattedText as string;
+        } else if (!cell.value && cell.hyperlink) {
+            return typeof cell.hyperlink === 'string' ? cell.hyperlink : cell.hyperlink.address;
+        } else { return cell.value ? cell.value.toString() : ''; }
     }
 }

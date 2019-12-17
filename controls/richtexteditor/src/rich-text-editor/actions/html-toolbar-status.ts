@@ -21,6 +21,9 @@ export class HtmlToolbarStatus {
         this.parent.off(events.toolbarRefresh, this.onRefreshHandler);
     }
     private onRefreshHandler(args: { [key: string]: Node | Object }): void {
+        if (this.parent.readonly) {
+            return;
+        }
         let fontsize: string[] = [];
         let fontName: string[] = [];
         let formats: string[] = [];

@@ -248,7 +248,8 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     private elementSize: Size;
     /** @private */
     public themeStyle: IThemeStyle;
-
+    /** @private */
+    public isColorRange: boolean = false;
     /** @private */
     public initialClipRect: Rect;
 
@@ -1310,12 +1311,16 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                 if (this.legendModule && this.legendSettings.visible && this.legendSettings.showLabel && this.legendVisibilityByCellType) {
                     this.legendModule.renderLegendLabelTooltip(e, pageX, pageY);
                 }
+                if (this.legendModule && this.legendSettings.visible && this.legendVisibilityByCellType) {
+                    this.legendModule.renderLegendTitleTooltip(e, pageX, pageY);
+                }
             } else {
                 elementRect = this.element.getBoundingClientRect();
                 let tooltipRect: boolean = (this.paletteSettings.type === 'Fixed' && this.legendSettings.enableSmartLegend &&
-                    this.legendSettings.labelDisplayType === 'None') ? false : true;
+                this.legendSettings.labelDisplayType === 'None') ? false : true;
                 tooltipText = getTooltipText(this.tooltipCollection, pageX, pageY) ||
-                    (this.legendModule && tooltipRect && getTooltipText(this.legendModule.legendLabelTooltip, pageX, pageY));
+                (this.legendModule && tooltipRect  && (getTooltipText(this.legendModule.legendLabelTooltip, pageX, pageY)
+                || getTooltipText(this.legendModule.legendTitleTooltip, pageX, pageY)));
                 if (tooltipText) {
                     showTooltip(
                         tooltipText,  pageX, pageY, this.element.offsetWidth, this.element.id + '_canvas_Tooltip',
@@ -1806,6 +1811,9 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                         this.selectedCellCount++;
                     }
                 }
+            }
+            if (this.rectSelected && this.paletteSettings.type === 'Gradient') {
+                this.legendModule.removeGradientPointer();
             }
         }
     }

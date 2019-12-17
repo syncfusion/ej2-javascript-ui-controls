@@ -5,6 +5,7 @@ import { createElement, isNullOrUndefined as isNOU, detach } from '@syncfusion/e
 /**
  * PasteCleanup for MsWord content
  * @hidden
+ * @deprecated
  */
 export class MsWordPaste {
     private parent: EditorManager;
@@ -63,7 +64,10 @@ export class MsWordPaste {
             this.imageConversion(elm, rtfData);
             tempHTMLContent = tempHTMLContent.replace(/<img[^>]+>/i, '');
             listNodes = this.cleanUp(elm, listNodes);
-            this.listConverter(listNodes);
+            if (!isNOU(listNodes[0]) && listNodes[0].parentElement.tagName !== 'UL' &&
+            listNodes[0].parentElement.tagName !== 'OL') {
+                this.listConverter(listNodes);
+            }
             this.styleCorrection(elm, wordPasteStyleConfig);
             this.removingComments(elm);
             this.removeUnwantedElements(elm);

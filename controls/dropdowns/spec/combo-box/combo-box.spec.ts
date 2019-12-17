@@ -303,7 +303,7 @@ describe('ComboBox', () => {
             comboBoxObj.showPopup();
             setTimeout(() => {
                 comboBoxObj.inputElement.value = 'abc';
-                comboBoxObj.onInput();
+                comboBoxObj.onInput(keyEventArgs);
                 comboBoxObj.onFilterUp(keyEventArgs);
                 comboBoxObj.hidePopup();
                 setTimeout(() => {
@@ -316,7 +316,7 @@ describe('ComboBox', () => {
             comboBoxObj.showPopup();
             setTimeout(() => {
                 comboBoxObj.inputElement.value = 'java';
-                comboBoxObj.onInput();
+                comboBoxObj.onInput(keyEventArgs);
                 comboBoxObj.onFilterUp(keyEventArgs);
                 comboBoxObj.hidePopup();
                 setTimeout(() => {
@@ -340,7 +340,7 @@ describe('ComboBox', () => {
                 comboBoxObj.inputElement.value = 'abc';
                 comboBoxObj.allowCustom = false;
                 comboBoxObj.dataBind();
-                comboBoxObj.onInput();
+                comboBoxObj.onInput(keyEventArgs);
                 comboBoxObj.onFilterUp(keyEventArgs);
                 comboBoxObj.hidePopup();
                 setTimeout(() => {
@@ -354,7 +354,7 @@ describe('ComboBox', () => {
             comboBoxObj.showPopup();
             setTimeout(() => {
                 comboBoxObj.inputElement.value = 'HTML';
-                comboBoxObj.onInput();
+                comboBoxObj.onInput(keyEventArgs);
                 comboBoxObj.onFilterUp(keyEventArgs);
                 comboBoxObj.hidePopup();
                 setTimeout(() => {
@@ -370,7 +370,7 @@ describe('ComboBox', () => {
             comboBoxObj.showPopup();
             setTimeout(() => {
                 comboBoxObj.inputElement.value = 'abc';
-                comboBoxObj.onInput();
+                comboBoxObj.onInput(keyEventArgs);
                 comboBoxObj.onFilterUp(keyEventArgs);
                 keyEventArgs.type = 'keydown';
                 keyEventArgs.action = 'down';
@@ -395,7 +395,7 @@ describe('ComboBox', () => {
         });
         it('update the model value after select a value when hide the popup ', (done) => {
             comboBoxObj.inputElement.value = '';
-            comboBoxObj.onInput();
+            comboBoxObj.onInput(keyEventArgs);
             comboBoxObj.onFilterUp(keyEventArgs);
             setTimeout(() => {
                 keyEventArgs.action = 'down';
@@ -465,7 +465,7 @@ describe('ComboBox', () => {
             comboBoxObj.showPopup();
             setTimeout(() => {
                 comboBoxObj.inputElement.value = 'ASP';
-                comboBoxObj.onInput();
+                comboBoxObj.onInput(keyEventArgs);
                 comboBoxObj.onFilterUp(keyEventArgs);
                 comboBoxObj.hidePopup();
                 setTimeout(() => {
@@ -489,7 +489,7 @@ describe('ComboBox', () => {
             comboBoxObj.showPopup();
             setTimeout(() => {
                 comboBoxObj.inputElement.value = 'ASP';
-                comboBoxObj.onInput();
+                comboBoxObj.onInput(keyEventArgs);
                 comboBoxObj.onFilterUp(keyEventArgs);
                 comboBoxObj.hidePopup();
                 setTimeout(() => {
@@ -684,7 +684,7 @@ describe('ComboBox', () => {
             Browser.userAgent = androidPhoneUa;
             e.keyCode = 74;
             comboBoxObj.element.value = 'a';
-            comboBoxObj.onInput();
+            comboBoxObj.onInput(e);
             comboBoxObj.onFilterUp(e);
             setTimeout(() => {
                 expect(comboBoxObj.isPopupOpen).toEqual(true);
@@ -698,7 +698,7 @@ describe('ComboBox', () => {
             setTimeout(() => {
                 e.key = 'H';
                 e.keyCode = 72;
-                comboBoxObj.onInput();
+                comboBoxObj.onInput(e);
                 comboBoxObj.onFilterUp(e);
                 activeElement = comboBoxObj.list.querySelector('.e-item-focus');
                 expect(activeElement.textContent).toBe('HTML');
@@ -710,7 +710,7 @@ describe('ComboBox', () => {
             comboBoxObj.inputElement.value = '';
             comboBoxObj.showPopup();
             setTimeout(() => {
-                comboBoxObj.onInput();
+                comboBoxObj.onInput(e);
                 comboBoxObj.onFilterUp(e);
                 activeElement = comboBoxObj.list.querySelector('.e-item-focus');
                 expect(activeElement.textContent).toBe('PHP');
@@ -722,7 +722,7 @@ describe('ComboBox', () => {
             comboBoxObj.showPopup();
             setTimeout(() => {
                 e.keyCode = 72;
-                comboBoxObj.onInput();
+                comboBoxObj.onInput(e);
                 comboBoxObj.onFilterUp(e);
                 e.keyCode = 13;
                 e.action = 'enter';
@@ -737,7 +737,7 @@ describe('ComboBox', () => {
             setTimeout(() => {
                 comboBoxObj.inputElement.value = 'x';
                 e.keyCode = 72;
-                comboBoxObj.onInput();
+                comboBoxObj.onInput(e);
                 comboBoxObj.onFilterUp(e);
                 setTimeout(() => {
                     e.keyCode = 13;
@@ -755,7 +755,7 @@ describe('ComboBox', () => {
                 setTimeout(() => {
                     e.keyCode = 46;
                     comboBoxObj.onFilterDown(e);
-                    comboBoxObj.onInput();
+                    comboBoxObj.onInput(e);
                     comboBoxObj.onFilterUp(e);
                     activeElement = comboBoxObj.list.querySelector('.e-item-focus');
                     expect(activeElement.textContent).toBe('HTML');
@@ -766,7 +766,7 @@ describe('ComboBox', () => {
         it('clear text box value by delete and backspace key', () => {
             comboBoxObj.inputElement.value = ''
             e.keyCode = 8;
-            comboBoxObj.onInput();
+            comboBoxObj.onInput(e);
             comboBoxObj.onFilterUp(e);
             expect(isNullOrUndefined(comboBoxObj.value)).toBe(true);
         });
@@ -774,7 +774,7 @@ describe('ComboBox', () => {
             comboBoxObj.inputElement.value = 'ht'
             e.keyCode = 8;
             comboBoxObj.onFilterDown(e);
-            comboBoxObj.onInput();
+            comboBoxObj.onInput(e);
             comboBoxObj.onFilterUp(e);
             activeElement = comboBoxObj.list.querySelector('.e-item-focus');
             expect(activeElement.textContent).toBe('HTML');
@@ -785,7 +785,7 @@ describe('ComboBox', () => {
             comboBoxObj.dataBind();
             comboBoxObj.inputElement.value = 'JAVAa'
             e.keyCode = 74;
-            comboBoxObj.onInput();
+            comboBoxObj.onInput(e);
             comboBoxObj.onFilterUp(e);
             e.action = 'down';
             comboBoxObj.keyActionHandler(e);
@@ -794,7 +794,7 @@ describe('ComboBox', () => {
         it('reset the model value while clear the selected value', () => {
             comboBoxObj.inputElement.value = '';
             e.keyCode = 74;
-            comboBoxObj.onInput();
+            comboBoxObj.onInput(e);
             comboBoxObj.onFilterUp(e);
             comboBoxObj.onBlur(keyEventArgs);
             expect(comboBoxObj.value === null).toBe(true);
@@ -805,7 +805,7 @@ describe('ComboBox', () => {
         it('delete the selected value', (done) => {
             comboBoxObj.inputElement.value = '';
             e.keyCode = 8;
-            comboBoxObj.onInput();
+            comboBoxObj.onInput(e);
             comboBoxObj.onFilterUp(e);
             setTimeout(() => {
                 activeElement = comboBoxObj.list.querySelector('.e-item-focus');
@@ -831,7 +831,7 @@ describe('ComboBox', () => {
         it('click on dropdown icon after press a delete key', (done) => {
             comboBoxObj.inputElement.value = ''
             e.keyCode = 8;
-            comboBoxObj.onInput();
+            comboBoxObj.onInput(e);
             comboBoxObj.onFilterUp(e);
             e.target = comboBoxObj.inputWrapper.buttons[0];
             comboBoxObj.dropDownClick(e);
@@ -844,7 +844,7 @@ describe('ComboBox', () => {
         it('press tab key while hide a popup', (done) => {
             e.keyCode = 9;
             comboBoxObj.onFilterDown(e);
-            comboBoxObj.onInput();
+            comboBoxObj.onInput(e);
             comboBoxObj.onFilterUp(e);
             e.action = 'close';
             comboBoxObj.keyActionHandler(e);
@@ -882,7 +882,7 @@ describe('ComboBox', () => {
             setTimeout(() => {
                 e.key = 'H';
                 e.keyCode = 72;
-                comboBoxObj.onInput();
+                comboBoxObj.onInput(e);
                 comboBoxObj.onFilterUp(e);
                 expect(comboBoxObj.inputElement.value).toBe('hTML');
                 let item: Element = comboBoxObj.list.querySelector('.e-active')
@@ -907,7 +907,7 @@ describe('ComboBox', () => {
             setTimeout(() => {
                 e.key = 'H';
                 e.keyCode = 72;
-                comboBoxObj.onInput();
+                comboBoxObj.onInput(e);
                 comboBoxObj.onFilterUp(e);
                 expect(comboBoxObj.inputElement.value).toBe('hTML');
                 e.keyCode = 13;
@@ -931,7 +931,7 @@ describe('ComboBox', () => {
             e.keyCode = 229;
             comboBoxObj.onFilterDown(e);
             comboBoxObj.inputElement.value = 'ph';
-            comboBoxObj.onInput();
+            comboBoxObj.onInput(e);
             comboBoxObj.onFilterUp(e);
             expect(comboBoxObj.inputElement.value === 'phP').toBe(true);
         });
@@ -939,7 +939,7 @@ describe('ComboBox', () => {
             comboBoxObj.inputElement.value = 'ph';
             comboBoxObj.onFilterDown(e);
             comboBoxObj.inputElement.value = 'ph';
-            comboBoxObj.onInput();
+            comboBoxObj.onInput(e);
             comboBoxObj.onFilterUp(e);
             expect(comboBoxObj.inputElement.value === 'ph').toBe(true);
         });
@@ -948,7 +948,7 @@ describe('ComboBox', () => {
             e.keyCode = 229;
             comboBoxObj.onFilterDown(e);
             comboBoxObj.inputElement.value = 'p';
-            comboBoxObj.onInput();
+            comboBoxObj.onInput(e);
             comboBoxObj.onFilterUp(e);
             expect(comboBoxObj.inputElement.value === 'p').toBe(true);
         });
@@ -957,7 +957,7 @@ describe('ComboBox', () => {
             e.keyCode = 229;
             comboBoxObj.onFilterDown(e);
             comboBoxObj.inputElement.value = 'ph';
-            comboBoxObj.onInput();
+            comboBoxObj.onInput(e);
             comboBoxObj.onFilterUp(e);
             expect(comboBoxObj.inputElement.value === 'ph').toBe(true);
             Browser.userAgent = navigator.userAgent;
@@ -1007,7 +1007,7 @@ describe('ComboBox', () => {
                 e.keyCode = 8;
                 comboBoxObj.inputElement.value = ' ';
                 comboBoxObj.onFilterDown(e);
-                comboBoxObj.onInput();
+                comboBoxObj.onInput(e);
                 comboBoxObj.onFilterUp(e);
                 let element: Element = comboBoxObj.ulElement.querySelector('li')
                 expect(element.classList.contains('e-item-focus')).toEqual(true);
@@ -1026,7 +1026,7 @@ describe('ComboBox', () => {
                 e.keyCode = 8;
                 comboBoxObj.inputElement.value = ' ';
                 comboBoxObj.onFilterDown(e);
-                comboBoxObj.onInput();
+                comboBoxObj.onInput(e);
                 comboBoxObj.onFilterUp(e);
                 let element: Element = comboBoxObj.ulElement.querySelector('li')
                 expect(element.classList.contains('e-item-focus')).toEqual(true);
@@ -1046,7 +1046,7 @@ describe('ComboBox', () => {
             setTimeout(() => {
                 comboBoxObj.inputElement.value = 'abc';
                 comboBoxObj.onFilterDown(e);
-                comboBoxObj.onInput();
+                comboBoxObj.onInput(e);
                 comboBoxObj.onFilterUp(e);
                 let item: HTMLElement = comboBoxObj.popupObj.element.querySelector('.e-item-focus');
                 expect(isNullOrUndefined(item)).toBe(true);
@@ -1055,11 +1055,11 @@ describe('ComboBox', () => {
         })
         it('remove the selection color when open the popup', (done) => {
             comboBoxObj.inputElement.value = '';
-            comboBoxObj.onInput();
+            comboBoxObj.onInput(e);
             comboBoxObj.onFilterUp(e);
             comboBoxObj.keyActionHandler(e);
             comboBoxObj.inputElement.value = 'abc';
-            comboBoxObj.onInput();
+            comboBoxObj.onInput(e);
             comboBoxObj.onFilterUp(e);
             comboBoxObj.hidePopup();
             setTimeout(() => {
@@ -1103,7 +1103,7 @@ describe('ComboBox', () => {
         });
         it('remote data filtering', (done) => {
             ddlObj.filterInput.value = "j";
-            ddlObj.onInput();
+            ddlObj.onInput(keyEventArgs);
             ddlObj.onFilterUp(keyEventArgs);
             setTimeout(() => {
                 let liElement = ddlObj.list.querySelectorAll('li');
@@ -1435,7 +1435,7 @@ describe('ComboBox', () => {
             comboObj.showPopup();
             comboObj.filterInput.value = 'ä';
             keyEventArgs.keyCode = 67;
-            comboObj.onInput();
+            comboObj.onInput(keyEventArgs);
             comboObj.onFilterUp(keyEventArgs);
             setTimeout(() => {
                 let item: HTMLElement[] = comboObj.popupObj.element.querySelectorAll('li');
@@ -1553,7 +1553,7 @@ describe('ComboBox', () => {
             dropDowns.appendTo(element);
             dropDowns.inputElement.value = 'java';
             e.keyCode = 72;
-            dropDowns.onInput();
+            dropDowns.onInput(e);
             dropDowns.onFilterUp(e);
             setTimeout(() => {
                 expect(dropDowns.isPopupOpen).toBe(false);
@@ -1589,7 +1589,7 @@ describe('ComboBox', () => {
             dropDowns.appendTo(element);
             dropDowns.inputElement.value = 'Nancy';
             e.keyCode = 72;
-            dropDowns.onInput();
+            dropDowns.onInput(e);
             dropDowns.onFilterUp(e);
             setTimeout(() => {
                 expect(dropDowns.isPopupOpen).toBe(false);
@@ -1627,7 +1627,7 @@ describe('ComboBox', () => {
             dropDowns.appendTo(element);
             dropDowns.inputElement.value = 'P';
             e.keyCode = 72;
-            dropDowns.onInput();
+            dropDowns.onInput(e);
             dropDowns.onFilterUp(e);
             setTimeout(() => {
                 expect(dropDowns.list.querySelectorAll('li')[0].classList.contains('e-disabled')).toBe(true);
@@ -2033,7 +2033,7 @@ describe('ComboBox', () => {
             ddl.appendTo(element);
             ddl.showPopup();
             ddl.filterInput.value = 'n';
-            ddl.onInput();
+            ddl.onInput(keyEventArgs);
             ddl.onFilterUp(keyEventArgs);
             expect(ddl.popupObj.element.querySelector('.e-list-item').classList.contains('e-item-focus')).toBe(true);
             ddl.destroy();
@@ -2055,7 +2055,7 @@ describe('ComboBox', () => {
             ddl.appendTo(element);
             ddl.showPopup();
             ddl.filterInput.value = 'n';
-            ddl.onInput();
+            ddl.onInput(keyEventArgs);
             ddl.onFilterUp(keyEventArgs);
             expect(ddl.popupObj.element.querySelector('.e-list-item').classList.contains('e-item-focus')).toBe(true);
         });

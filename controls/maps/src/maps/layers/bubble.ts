@@ -3,7 +3,7 @@ import { BubbleSettingsModel, ColorMapping, IBubbleRenderingEventArgs, bubbleRen
 import { IBubbleClickEventArgs, bubbleClick, LayerSettings, IBubbleMoveEventArgs, bubbleMouseMove } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { CircleOption, MapLocation, findMidPointOfPolygon, Point, drawCircle, elementAnimate, getTranslate } from '../utils/helper';
-import { RectOption, Rect, drawRectangle, checkPropertyPath, getZoomTranslate, getRatioOfBubble } from '../utils/helper';
+import { RectOption, Rect, drawRectangle, checkPropertyPath, getZoomTranslate, getRatioOfBubble, maintainSelection } from '../utils/helper';
 
 /**
  * Bubble module class
@@ -121,6 +121,8 @@ export class Bubble {
                     eventArgs.cx -= radius; eventArgs.cy = y;
                     bubbleElement = drawRectangle(this.maps, rectangle, group);
                 }
+                maintainSelection(this.maps.selectedBubbleElementId, this.maps.bubbleSelectionClass, bubbleElement,
+                                  'BubbleselectionMapStyle');
                 this.bubbleCollection.push({
                     LayerIndex: layerIndex,
                     BubbleIndex: bubbleIndex,

@@ -551,6 +551,7 @@ export class DialogEdit {
                 this.dialogObj.isStringTemplate = true;
                 this.dialogObj.appendTo(this.dialog);
                 let actionCompleteArgs: CObject = {
+                    action : 'OpenDialog',
                     requestType: this.isEdit ? 'openEditDialog' : 'openAddDialog',
                     data: this.beforeOpenArgs.rowData,
                     element: this.dialog,
@@ -581,6 +582,7 @@ export class DialogEdit {
                 resourceGrid.currentViewData.forEach((data: CObject, index: number): void => {
                     for (let i: number = 0; i < resources.length; i++) {
                         if (data[ganttObj.resourceIDMapping] === resources[i][ganttObj.resourceIDMapping] &&
+                            !isNullOrUndefined(resourceGrid.selectionModule) &&
                             resourceGrid.selectionModule.selectedRowIndexes.indexOf(index) === -1) {
                             resourceGrid.selectRow(index);
                         }
@@ -650,6 +652,10 @@ export class DialogEdit {
                 break;
             case 'numericedit':
                 let numeric: NumericTextBoxModel = <NumericTextBoxModel>common;
+                if (taskSettings.progress === column.field) {
+                    numeric.min = 0;
+                    numeric.max = 100;
+                }
                 fieldsModel[column.field] = numeric;
                 break;
             case 'datepickeredit':
@@ -775,8 +781,11 @@ export class DialogEdit {
         let tasks: TaskFieldsModel = this.parent.taskFields;
         if (!this.dialogEditValidationFlag) {
             if (isNullOrUndefined(ganttProp.startDate)) {
-                this.parent.setRecordValue('endDate', null, ganttProp, true);
+                this.parent.setRecordValue('duration', null, ganttProp, true);
                 this.parent.setRecordValue('isMilestone', false, ganttProp, true);
+                if (this.parent.allowUnscheduledTasks && isNullOrUndefined(tasks.endDate)) {
+                    this.parent.setRecordValue('endDate', null, ganttProp, true);
+                }
             } else if (isScheduledTask(ganttProp)) {
                 if (isNullOrUndefined(tasks.duration)) {
                     this.parent.dateValidationModule.calculateDuration(ganttData);
@@ -1038,6 +1047,29 @@ export class DialogEdit {
 
     private isCheckIsDisabled(column: GanttColumnModel): boolean {
         let disabled: boolean = false;
+        if (column.allowEditing === false) {
+            if (this.parent.customColumns.indexOf(column.field) !== -1) {
+                disabled = true;
+            } else {
+                if (column.field === this.parent.taskFields.id) {
+                    disabled = true;
+                } else if (column.field === this.parent.taskFields.name) {
+                    disabled = true;
+                } else if (column.field === this.parent.taskFields.duration) {
+                    disabled = true;
+                } else if (column.field === this.parent.taskFields.progress) {
+                    disabled = true;
+                } else if (column.field === this.parent.taskFields.startDate) {
+                    disabled = true;
+                } else if (column.field === this.parent.taskFields.endDate) {
+                    disabled = true;
+                } else if (column.field === this.parent.taskFields.baselineStartDate) {
+                    disabled = true;
+                } else if (column.field === this.parent.taskFields.baselineEndDate) {
+                    disabled = true;
+                }
+            }
+        }
         if (this.isEdit) {
             if (column.field === this.parent.taskFields.id) {
                 disabled = true;
@@ -1060,6 +1092,11 @@ export class DialogEdit {
     private renderPredecessorTab(itemName: string): HTMLElement {
         let ganttObj: Gantt = this.parent;
         let gridModel: GridModel = this.beforeOpenArgs[itemName];
+        let dependencyColumn: GanttColumnModel = this.parent.columnByField[this.parent.taskFields.dependency];
+        if (dependencyColumn.allowEditing === false) {
+            gridModel.editSettings.allowEditing = false;
+            gridModel.editSettings.allowAdding = false;
+        }
         let ganttData: IGanttData = this.beforeOpenArgs.rowData;
         let preData: IPreData[] = [];
         this.taskNameCollection();
@@ -1138,6 +1175,11 @@ export class DialogEdit {
         let divElement: HTMLElement = this.createDivElement('e-resource-div', resourceGridId);
         Grid.Inject(Selection, Filter);
         let gridObj: Grid = new Grid(inputModel);
+        let resourceColumn: GanttColumnModel = this.parent.columnByField[this.parent.taskFields.resourceInfo];
+        if (resourceColumn.allowEditing === false) {
+            gridObj.allowSelection = false;
+            gridObj.allowFiltering = false;
+        }
         gridObj.appendTo(divElement);
         return divElement;
     }
@@ -1152,6 +1194,10 @@ export class DialogEdit {
         let divElement: HTMLElement = this.createDivElement('', ganttObj.element.id + '' + itemName + 'TabContainer');
         RichTextEditor.Inject(RTEToolbar, Link, HtmlEditor, QuickToolbar, Count);
         inputModel.value = ganttProp.notes;
+        let notesColumn: GanttColumnModel = this.parent.columnByField[this.parent.taskFields.notes];
+        if (notesColumn.allowEditing === false) {
+            inputModel.enabled = false;
+        }
         let rteObj: RichTextEditor = new RichTextEditor(inputModel);
         rteObj.appendTo(divElement);
         return divElement;
@@ -1353,7 +1399,7 @@ export class DialogEdit {
         if (gridObj.isEdit) {
             gridObj.endEdit();
         }
-        let dataSource: IPreData[] = <IPreData[]>gridObj.dataSource;
+        let dataSource: IPreData[] = <IPreData[]>gridObj.currentViewData;
         let predecessorName: string[] = [];
         let newValues: IPredecessor[] = [];
         let predecessorString: string = '';
@@ -1390,6 +1436,7 @@ export class DialogEdit {
                 this.parent.taskFields.dependency,
                 predecessorString,
                 this.rowData);
+            this.parent.predecessorModule.updateUnscheduledDependency(this.rowData);
         } else {
             this.addedRecord[this.parent.taskFields.dependency] = predecessorName.length > 0 ? predecessorName.join(',') : '';
         }

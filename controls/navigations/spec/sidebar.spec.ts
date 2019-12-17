@@ -3,6 +3,7 @@ import {
     isNullOrUndefined, EmitType, NotifyPropertyChanges, BaseEventArgs, INotifyPropertyChanged,
     Animation, AnimationModel, AnimationOptions, Browser, createElement
 } from '@syncfusion/ej2-base';
+import { enableBlazorMode, disableBlazorMode } from '@syncfusion/ej2-base';
 
 import { Sidebar } from '../src/sidebar/sidebar';
 import { profile, inMB, getMemoryProfile } from './common.spec';
@@ -1869,3 +1870,56 @@ describe("Sidebar DOM class Testing ", () => {
     })
 });
 
+describe("Blazor Sidebar testing ", () => {
+    let sidebar: any;
+    beforeEach((): void => {
+        enableBlazorMode();
+        (window as any)["ejsInterop"] = function () { };
+        (window as any).ejsInterop["updateModel"] = function () { };
+        (window as any).ejsInterop["renderComplete"] = function () { };
+        let ele: HTMLElement = document.createElement("div");
+        let sibin: HTMLElement = document.createElement("div");
+        ele.innerHTML = "<h3>Testing of Sidebar</h3>"
+        sibin.innerHTML = "Side bar";
+        sibin.className = 'e-content-section';
+        ele.id = "sidebar";
+        ele.style.width = "250px";
+        ele.style.height = "100%";
+        document.body.style.margin = "0px";
+        let div: any = document.createElement('div');
+        let span: any = document.createElement('span');
+        div.className = 'e-context-element';
+        div.appendChild(span);
+        document.body.appendChild(div);
+        document.body.appendChild(ele);
+        document.body.appendChild(sibin);
+        let target: HTMLElement = document.createElement("div");
+        target.className = "main";
+        document.body.appendChild(target);
+    });
+    afterEach((): void => {
+        disableBlazorMode();
+        if (sidebar) {
+            sidebar.destroy();
+        }
+        document.body.innerHTML = "";
+    });
+    it("for width property", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        sidebar = new Sidebar({ width: '250px' });
+        sidebar.isServerRendered = true;
+        sidebar.appendTo(ele);
+        sidebar.show();
+        expect(document.getElementById('sidebar').style.width).toBe("250px");
+    });
+    it("for target property", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        sidebar = new Sidebar({ width: '250px' });
+        sidebar.isServerRendered = true;
+        sidebar.appendTo(ele);
+        sidebar.show();
+        sidebar.target = ".main";
+        sidebar.dataBind();
+        expect(document.getElementById('sidebar').parentElement.classList.contains("main")).toBe(true);
+    });
+});

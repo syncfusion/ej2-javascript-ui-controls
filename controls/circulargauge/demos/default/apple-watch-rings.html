@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Circular Gauge Compass sample testing</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Typescript UI Controls" />
+    <meta name="author" content="Syncfusion" />
+    <script src="../../node_modules/requirejs/require.js" data-main="apple-watch-rings"></script>
+    <script src="../require-packages.js"></script>
+    <link href="../../styles/material.css" rel="stylesheet" />
+    <link href="../css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<script src="../gaugeRequireJS.js" type="text/javascript"></script>
+
+<body>
+    <div class="control-section">
+        <div id="gauge" class="row">
+            <div class="cols-sample-area">
+                <div class="col-lg-9 col-md-9" style="margin-left: -5%">
+                    <div id="gauge1"></div>
+                </div>
+                <div class="col-lg-3 col-md-3" style="margin-left: -9%">
+                    <div class="panel">
+                        <div class="subgauge" id="gauge2" style="float: left;margin-top: 3%"></div>
+                        <div class="content">
+                            <span class="firstcontent" style="font-size: 18px;">MOVE</span>
+                            <span class="firstcontent" style="font-size: 18px;color: #f4104d">65%</span><br />
+                            <span class="secondcontent" style="color: #f4104d; font-size: 19px">338/520 CAL</span>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="subgauge" id="gauge3" style="float: left;margin-top: 3%"></div>
+                        <div class="content">
+                            <span class="firstcontent" style="font-size: 18px;">EXERCISE</span>
+                            <span class="firstcontent" style="font-size: 18px;color: #a6ff00">6%</span><br />
+                            <span class="secondcontent" style="color: #a6ff00; font-size: 19px">9/30 MIN</span>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="subgauge" id="gauge4" style="float: left;margin-top: 3%"></div>
+                        <div class="content">
+                            <span class="firstcontent" style="font-size: 18px;">STAND</span>
+                            <span class="firstcontent" style="font-size: 18px;color: #29a5a2">66%</span><br />
+                            <span class="secondcontent" style="color: #29a5a2; font-size: 19px">7/12 HR</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .panel {
+            width: 105% !important;
+            height: 80px !important;
+            margin-left: 5% !important;
+            margin-top: 15% !important;
+            border-color: black;
+            float: left;
+        }
+
+        .content {
+            float: left !important;
+            margin-left: 62px !important;
+            margin-top: 6% !important;
+            text-align: left !important;
+            position: absolute;
+        }
+
+        @media screen and (max-width: 1160px) {
+            .firstcontent {
+                font-size: 15px !important;
+            }
+
+            .secondcontent {
+                font-size: 17px !important;
+            }
+        }
+
+        @media screen and (max-width: 990px) {
+            .panel {
+                width: 50% !important;
+                height: 80px !important;
+                margin-left: 27% !important;
+                margin-top: 0% !important;
+            }
+
+            .subgauge {
+                margin-left: 4% !important;
+                margin-top: 2% !important;
+            }
+
+            .content {
+                margin-left: 18% !important;
+                margin-top: 3% !important;
+            }
+
+            .firstcontent {
+                font-size: 16px !important;
+            }
+
+            .secondcontent {
+                font-size: 18px !important;
+            }
+        }
+    </style>
+</body>
+
+</html>

@@ -3,7 +3,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { spreadsheetDestroyed, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, RefreshType } from '../common/index';
 import { colWidthChanged } from '../common/index';
 import { IScrollArgs, onVerticalScroll, onHorizontalScroll, rowHeightChanged, beforeHeaderLoaded, deInitProperties } from '../common/index';
-import { SheetModel, getRowHeight, getRowsHeight, getColumnWidth, getColumnsWidth } from './../../workbook/index';
+import { SheetModel, getRowHeight, getRowsHeight, getColumnWidth, getColumnsWidth, isHiddenRow } from './../../workbook/index';
 import { getCellAddress } from '../../workbook/common/index';
 import { updateUsedRange, sheetCreated, sheetsDestroyed } from '../../workbook/common/event';
 
@@ -25,10 +25,6 @@ export class VirtualScroll {
         this.addEventListener();
     }
 
-    public getModuleName(): string {
-        return 'virtualscroll';
-    }
-
     private createVirtualElement(args: { startColIdx?: number }): void {
         let sheet: SheetModel = this.parent.getActiveSheet();
         let container: Element = this.parent.getMainContent();
@@ -44,7 +40,7 @@ export class VirtualScroll {
                 sheet.rowCount = sheet.usedRange.rowIndex;
             }
             this.setScrollCount(sheet.rowCount, 'row');
-            height = getRowsHeight(sheet, domCount, this.scroll[this.parent.activeSheetTab - 1].rowCount - 1);
+            height = getRowsHeight(sheet, 0, this.scroll[this.parent.activeSheetTab - 1].rowCount - 1);
         } else {
             this.scroll[this.parent.activeSheetTab - 1].rowCount = sheet.rowCount = domCount; height = 1;
         }
@@ -57,12 +53,13 @@ export class VirtualScroll {
             this.setScrollCount(sheet.colCount, 'col');
             width = size + getColumnsWidth(sheet, domCount, this.scroll[this.parent.activeSheetTab - 1].colCount - 1);
         } else {
-            sheet.colCount = domCount; width = size;
+            this.scroll[this.parent.activeSheetTab - 1].colCount = sheet.colCount = domCount; width = size;
         }
         this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         if (args.startColIdx) { size = getColumnsWidth(sheet, args.startColIdx, args.startColIdx + domCount - 1); }
         if (isNullOrUndefined(this.translateX)) { this.parent.viewport.leftIndex = 0; this.translateX = 0; }
-        if (isNullOrUndefined(this.translateY)) { this.parent.viewport.topIndex = 0; this.translateY = 0; }
+        if (isNullOrUndefined(this.parent.viewport.topIndex)) { this.parent.viewport.topIndex = 0; }
+        if (isNullOrUndefined(this.translateY)) { this.translateY = 0; }
         if (sheet.showHeaders) {
             container = this.parent.getRowHeaderContent();
             this.rowHeader = this.content.cloneNode() as HTMLElement;
@@ -127,44 +124,73 @@ export class VirtualScroll {
         let idxDiff: number = Math.abs(idx - prevIdx);
         let threshold: number = this.parent.getThreshold('row');
         if (idxDiff > Math.round(threshold / 2)) {
+            let startIdx: number; let lastIdx: number; let prevTopIdx: number;
             if (idx <= threshold) {
                 if (!args.increase) {
-                    this.updateScrollCount(threshold, 'row');
                     if (this.translateY && prevIdx > threshold) {
                         this.translateY = 0;
                         this.parent.viewport.topIndex = prevIdx - threshold;
                         if (!args.preventScroll) {
                             if (idxDiff < this.parent.viewport.rowCount + threshold) {
+                                lastIdx = this.parent.viewport.topIndex - 1;
+                                startIdx = this.parent.skipHiddenRows(0, lastIdx)[0];
+                                this.parent.viewport.topIndex = startIdx;
+                                let hiddenCount: number = this.checkHiddenCount(startIdx, lastIdx);
+                                let skippedHiddenIdx: number = this.checkHiddenIndex(
+                                    this.parent.getActiveSheet(),
+                                    (this.parent.viewport.bottomIndex - ((lastIdx - startIdx + 1) - hiddenCount)), args.increase);
+                                this.parent.viewport.bottomIndex -= (((lastIdx - startIdx + 1) - hiddenCount) +
+                                    (this.checkHiddenCount(skippedHiddenIdx, this.parent.viewport.bottomIndex )));
                                 this.parent.renderModule.refreshUI(
                                     { colIndex: this.parent.viewport.leftIndex, direction: 'last', refresh: 'RowPart' },
-                                    this.getAddress([0, this.parent.viewport.topIndex - 1]));
+                                    this.getAddress([0, lastIdx]));
                             } else {
                                 this.parent.renderModule.refreshUI(
                                     { rowIndex: 0, colIndex: this.parent.viewport.leftIndex, refresh: 'Row' });
                             }
                         }
-                        this.parent.viewport.topIndex = 0;
                     }
+                    this.updateScrollCount(threshold, 'row');
                 }
             }
             if (prevIdx < threshold) {
                 idxDiff = Math.abs(idx - threshold);
             }
             if (idx > threshold) {
-                this.updateScrollCount(args.cur.idx, 'row', threshold);
+                prevTopIdx = this.parent.viewport.topIndex;
                 this.parent.viewport.topIndex = idx - threshold;
+                if (args.increase && prevTopIdx > this.parent.viewport.topIndex) { this.parent.viewport.topIndex = prevTopIdx; return; }
                 this.translateY = height - this.getThresholdHeight(this.parent.viewport.topIndex, threshold);
                 if (!args.preventScroll) {
                     if (idxDiff < this.parent.viewport.rowCount + threshold) {
                         if (args.increase) {
-                            let lastIdx: number = this.parent.viewport.topIndex + this.parent.viewport.rowCount + (threshold * 2);
+                            startIdx = this.parent.viewport.bottomIndex + 1;
+                            lastIdx = this.parent.viewport.bottomIndex + (this.parent.viewport.topIndex - prevTopIdx);
+                            lastIdx -= this.checkHiddenCount(prevTopIdx, this.parent.viewport.topIndex - 1);
+                            this.parent.viewport.topIndex = this.checkHiddenIndex(
+                                this.parent.getActiveSheet(), this.parent.viewport.topIndex, args.increase);
+                            if (lastIdx === this.parent.viewport.bottomIndex) { return; }
+                            let indexes: number[] = this.parent.skipHiddenRows(startIdx, lastIdx);
+                            startIdx = indexes[0]; lastIdx = indexes[1];
+                            lastIdx = this.checkLastIdx(lastIdx, 'row');
+                            this.parent.viewport.bottomIndex = lastIdx;
                             this.parent.renderModule.refreshUI(
                                 { colIndex: this.parent.viewport.leftIndex, direction: 'first', refresh: 'RowPart' },
-                                this.getAddress([lastIdx - idxDiff + 1, this.checkLastIdx(lastIdx, 'row')]));
+                                this.getAddress([startIdx, lastIdx]));
                         } else {
+                            startIdx = this.parent.viewport.topIndex;
+                            lastIdx = startIdx + idxDiff - 1;
+                            let hiddenCount: number = this.checkHiddenCount(startIdx, lastIdx);
+                            let skippedHiddenIdx: number = this.checkHiddenIndex(
+                                this.parent.getActiveSheet(),
+                                (this.parent.viewport.bottomIndex - ((lastIdx - startIdx) - hiddenCount)), args.increase);
+                            this.parent.viewport.bottomIndex -= ((idxDiff - hiddenCount) +
+                                (this.checkHiddenCount(skippedHiddenIdx, this.parent.viewport.bottomIndex )));
+                            startIdx = this.parent.skipHiddenRows(startIdx, lastIdx)[0];
+                            this.parent.viewport.topIndex = startIdx;
                             this.parent.renderModule.refreshUI(
                                 { colIndex: this.parent.viewport.leftIndex, direction: 'last', refresh: 'RowPart' },
-                                this.getAddress([this.parent.viewport.topIndex, this.parent.viewport.topIndex + idxDiff - 1]));
+                                this.getAddress([startIdx, lastIdx]));
                         }
                     } else {
                         this.parent.renderModule.refreshUI({
@@ -172,10 +198,27 @@ export class VirtualScroll {
                             colIndex: this.parent.viewport.leftIndex, refresh: 'Row'
                         });
                     }
+                    this.updateScrollCount(idx, 'row', threshold);
                 }
             }
             args.prev.idx = idx;
         }
+    }
+
+    private checkHiddenIndex(sheet: SheetModel, index: number, increase: boolean): number {
+        if (isHiddenRow(sheet, index)) {
+            increase ? index++ : index--;
+            index = this.checkHiddenIndex(sheet, index, increase);
+        }
+        return index;
+    }
+
+    private checkHiddenCount(startIdx: number, endIdx: number): number {
+        let index: number = 0; let sheet: SheetModel = this.parent.getActiveSheet();
+        for (let i: number = startIdx; i <= endIdx; i++) {
+            if (isHiddenRow(sheet, i)) { index++; }
+        }
+        return index;
     }
 
     private checkLastIdx(idx: number, layout: string): number {
@@ -357,7 +400,8 @@ export class VirtualScroll {
     }
 
     private deInitProps(): void {
-        this.parent.viewport.leftIndex = null; this.parent.viewport.topIndex = null; this.translateX = null; this.translateY = null;
+        this.parent.viewport.leftIndex = null; this.parent.viewport.topIndex = null; this.parent.viewport.bottomIndex = null;
+        this.translateX = null; this.translateY = null;
     }
 
     private updateScrollProps(args: { sheetIndex: number } = { sheetIndex: 0 }): void {
@@ -392,26 +436,24 @@ export class VirtualScroll {
         this.parent.on(spreadsheetDestroyed, this.destroy, this);
     }
 
-    public destroy(): void {
+    private destroy(): void {
         this.removeEventListener();
         this.rowHeader = null; this.colHeader = null; this.content = null; this.parent = null;
         this.scroll.length = 0; this.translateX = null; this.translateY = null;
     }
 
     private removeEventListener(): void {
-        if (!this.parent.isDestroyed) {
-            this.parent.off(beforeContentLoaded, this.createVirtualElement);
-            this.parent.off(beforeVirtualContentLoaded, this.translate);
-            this.parent.off(virtualContentLoaded, this.updateColumnWidth);
-            this.parent.off(onVerticalScroll, this.onVerticalScroll);
-            this.parent.off(onHorizontalScroll, this.onHorizontalScroll);
-            this.parent.off(updateUsedRange, this.updateUsedRange);
-            this.parent.off(rowHeightChanged, this.updateVTrackHeight);
-            this.parent.off(colWidthChanged, this.updateVTrackWidth);
-            this.parent.off(beforeHeaderLoaded, this.createHeaderElement);
-            this.parent.off(sheetsDestroyed, this.sliceScrollProps);
-            this.parent.off(sheetCreated, this.updateScrollProps);
-            this.parent.off(spreadsheetDestroyed, this.destroy);
-        }
+        this.parent.off(beforeContentLoaded, this.createVirtualElement);
+        this.parent.off(beforeVirtualContentLoaded, this.translate);
+        this.parent.off(virtualContentLoaded, this.updateColumnWidth);
+        this.parent.off(onVerticalScroll, this.onVerticalScroll);
+        this.parent.off(onHorizontalScroll, this.onHorizontalScroll);
+        this.parent.off(updateUsedRange, this.updateUsedRange);
+        this.parent.off(rowHeightChanged, this.updateVTrackHeight);
+        this.parent.off(colWidthChanged, this.updateVTrackWidth);
+        this.parent.off(beforeHeaderLoaded, this.createHeaderElement);
+        this.parent.off(sheetsDestroyed, this.sliceScrollProps);
+        this.parent.off(sheetCreated, this.updateScrollProps);
+        this.parent.off(spreadsheetDestroyed, this.destroy);
     }
 }

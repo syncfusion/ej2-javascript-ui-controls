@@ -3,7 +3,7 @@ import {
     Rect, Margin, IWidget, Widget, BodyWidget, TableRowWidget, TableWidget,
     LineWidget, TextElementBox, ListTextElementBox, ImageElementBox, Page, ParagraphWidget, TableCellWidget,
     FieldElementBox, BlockWidget, HeaderFooterWidget, BlockContainer, BookmarkElementBox, ElementBox, HeaderFooters,
-    EditRangeStartElementBox, EditRangeEndElementBox, TabElementBox
+    EditRangeStartElementBox, EditRangeEndElementBox, TabElementBox, CommentElementBox, CommentCharacterElementBox
 } from '../viewer/page';
 import {
     ElementInfo, CaretHeightInfo, IndexInfo, SizeInfo,
@@ -3128,8 +3128,9 @@ export class Selection {
             if (inline.length === 0) {
                 continue;
             }
+            // tslint:disable-next-line:max-line-length
             if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof BookmarkElementBox
-                || inline instanceof EditRangeStartElementBox || inline instanceof EditRangeEndElementBox
+                || inline instanceof EditRangeStartElementBox || inline instanceof EditRangeEndElementBox || inline instanceof CommentCharacterElementBox
                 || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)))) {
                 return startOffset;
             }
@@ -5349,7 +5350,7 @@ export class Selection {
         let element: ElementBox = undefined;
         for (let i: number = 0; i < widget.children.length; i++) {
             element = widget.children[i];
-            if (element instanceof ListTextElementBox) {
+            if (element instanceof ListTextElementBox || element instanceof CommentCharacterElementBox) {
                 if (widget.paragraph.paragraphFormat.bidi) {
                     left += element.margin.left;
                     element = undefined;
@@ -7893,6 +7894,52 @@ export class Selection {
 
         return elements;
     }
+
+    /**
+     * Navigate to previous comment in the document.
+     */
+    public navigatePreviousComment(): void {
+        this.commentNavigateInternal(false);
+    }
+    /**
+     * Navigate to next comment in the document.
+     */
+    public navigateNextComment(): void {
+        this.commentNavigateInternal(true);
+    }
+    private commentNavigateInternal(next: boolean): void {
+        if (!this.viewer.currentSelectedComment) {
+            if (this.viewer.comments.length === 0) {
+                return;
+            }
+            this.viewer.currentSelectedComment = this.viewer.comments[0];
+        }
+        if (this.viewer.currentSelectedComment) {
+            let comments: CommentElementBox[] = this.viewer.comments;
+            let comment: CommentElementBox = this.viewer.currentSelectedComment;
+            let index: number = comments.indexOf(comment);
+            if (next) {
+                comment = (index === (comments.length - 1)) ? comments[0] : comments[index + 1];
+            } else {
+                comment = index === 0 ? comments[comments.length - 1] : comments[index - 1];
+            }
+            this.viewer.currentSelectedComment = comment;
+            this.selectComment(comment);
+        }
+    }
+    /**
+     * @private
+     */
+    public selectComment(comment: CommentElementBox): void {
+        if (!isNullOrUndefined(comment)) {
+            let startPosition: TextPosition = this.getElementPosition(comment.commentStart).startPosition;
+            let endPosition: TextPosition = this.getElementPosition(comment.commentEnd).startPosition;
+            this.selectPosition(startPosition, endPosition);
+            if (this.owner.commentReviewPane) {
+                this.owner.commentReviewPane.selectComment(comment);
+            }
+        }
+    }
     /**
      * @private
      */
@@ -8107,7 +8154,10 @@ export class Selection {
         endPosition.setPositionParagraph(endElement.line, offset);
         return { 'startPosition': startPosition, 'endPosition': endPosition };
     }
-    private getElementPosition(element: ElementBox): PositionInfo {
+    /**
+     * @private
+     */
+    public getElementPosition(element: ElementBox): PositionInfo {
         let offset: number = element.line.getOffset(element, 1);
         let startPosition: TextPosition = new TextPosition(this.viewer.owner);
         startPosition.setPositionParagraph(element.line, offset);

@@ -4,6 +4,7 @@ import { IHtmlFormatterCallBack } from '../../common/interface';
 /**
  * Specifies  Command models interfaces.
  * @hidden
+ * @deprecated
  */
 export interface ICommandModel {
     /**
@@ -20,6 +21,7 @@ export interface ICommandModel {
 /**
  * Specifies IHtmlSubCommands interfaces.
  * @hidden
+ * @deprecated
  */
 export interface IHtmlSubCommands {
     /**
@@ -42,11 +44,16 @@ export interface IHtmlSubCommands {
      * Specifies the iframe element selector.
      */
     selector?: string;
+    /**
+     * Specifies if the icon click is from dropdown or direct toolbarclick.
+     */
+    exeValue?: { [key: string]: string };
 }
 
 /**
  * Specifies  IKeyboardActionArgs interfaces for command line.
  * @hidden
+ * @deprecated
  */
 export interface IKeyboardActionArgs extends KeyboardEvent {
     /**
@@ -55,6 +62,9 @@ export interface IKeyboardActionArgs extends KeyboardEvent {
     action: string;
 }
 
+/**
+ * @deprecated
+ */
 export interface IHtmlItem {
     module?: string;
     event?: KeyboardEvent | MouseEvent;
@@ -68,6 +78,9 @@ export interface IHtmlItem {
     selector: string;
     callBack(args: IHtmlFormatterCallBack): () => void;
 }
+/**
+ * @deprecated
+ */
 export interface IHtmlItemArgs {
     selection?: NodeSelection;
     selectNode?: Node[];
@@ -88,6 +101,9 @@ export interface IHtmlItemArgs {
     captionClass?: string;
     action?: string;
 }
+/**
+ * @deprecated
+ */
 export interface IHtmlUndoRedoData {
     text?: string;
     range?: NodeSelection;
@@ -96,6 +112,7 @@ export interface IHtmlUndoRedoData {
 /**
  * Specifies IHtmlKeyboardEvent interfaces.
  * @hidden
+ * @deprecated
  */
 export interface IHtmlKeyboardEvent {
     /**

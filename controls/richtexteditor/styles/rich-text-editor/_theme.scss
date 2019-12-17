@@ -469,4 +469,13 @@
     background: $rte-content-bg;
   }
 
+  .e-rte-inline-popup .e-rte-quick-toolbar.e-rte-toolbar .e-toolbar-items .e-toolbar-item {
+    &.e-active .e-tbar-btn .e-icons,
+    & .e-tbar-btn:active .e-icons,
+    & .e-tbar-btn:focus .e-icons,
+    & .e-tbar-btn:hover .e-icons {
+      color: $rte-quick-item-active-font-color;
+    }
+  }
+
 }

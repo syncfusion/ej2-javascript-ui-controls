@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## 17.3.34 (2019-12-10)
+## 17.4.39 (2019-12-17)
 
 ### Pivot Table
 
@@ -14,6 +14,21 @@
 #### New Features
 
 - `#252636` - Provision provided to disable the scrollbars in pivot chart.
+- `#250072` - Provision provided to group and separate the grouped headers through UI.
+
+## 17.3.26 (2019-11-05)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#251642` – Now, the defer layout update option can be enabled or disabled dynamically through field list UI.
+- `#251558` – Now, the pivot chart draws with the percent of height value.
+
+#### New Features
+
+- `#248131` – Provided the conditional expression support to create calculated field.
+- `#251642` – The performance of virtual scrolling while adding or removing fields and moving fields to any axis is improved.
 
 ## 17.3.9-beta (2019-09-20)
 

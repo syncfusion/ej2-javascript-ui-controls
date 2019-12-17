@@ -1,4 +1,4 @@
-import { EventHandler, formatUnit, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { EventHandler, formatUnit, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { createElement, remove, addClass, append, prepend } from '@syncfusion/ej2-base';
 import { IRenderer, TdData, RenderCellEventArgs, CellTemplateArgs, NotifyEventArgs, CellClickEventArgs } from '../base/interface';
 import { Schedule } from '../base/schedule';
@@ -7,6 +7,7 @@ import * as util from '../base/util';
 import * as event from '../base/constant';
 import * as cls from '../base/css-constant';
 import { MonthEvent } from '../event-renderer/month';
+import { View } from '../base/type';
 
 /**
  * month view
@@ -66,10 +67,10 @@ export class Month extends ViewBase implements IRenderer {
         let scrollBarWidth: number = util.getScrollBarWidth();
         // tslint:disable:no-any
         if (content.offsetWidth - content.clientWidth > 0) {
-            (<HTMLElement>header.firstChild).style[<any>args.cssProperties.border] = scrollBarWidth > 0 ? '1px' : '0px';
+            (<HTMLElement>header.firstElementChild).style[<any>args.cssProperties.border] = scrollBarWidth > 0 ? '1px' : '0px';
             header.style[<any>args.cssProperties.padding] = scrollBarWidth > 0 ? scrollBarWidth - 1 + 'px' : '0px';
         } else {
-            (<HTMLElement>header.firstChild).style[<any>args.cssProperties.border] = '';
+            (<HTMLElement>header.firstElementChild).style[<any>args.cssProperties.border] = '';
             header.style[<any>args.cssProperties.padding] = '';
         }
         // tslint:enable:no-any
@@ -77,9 +78,9 @@ export class Month extends ViewBase implements IRenderer {
         if (args.scrollPosition) {
             content.scrollTop = args.scrollPosition.top as number;
             content.scrollLeft = args.scrollPosition.left as number;
-        }else {
+        } else {
             let headerCell: HTMLElement = document.querySelector('.' + cls.HEADER_CELLS_CLASS + '[data-date="'
-                + this.parent.selectedDate.getTime() + '"]');
+                + this.parent.getMsFromDate(this.parent.selectedDate) + '"]');
             content.scrollLeft = headerCell !== null ? headerCell.offsetLeft : 0;
         }
     }
@@ -133,8 +134,37 @@ export class Month extends ViewBase implements IRenderer {
         }
         return 'wide';
     }
+    public serverRenderLayout(): void {
+        this.setPanel(this.parent.element.querySelector('.' + cls.TABLE_WRAP_CLASS));
+        let target: HTMLElement = (this.parent.currentView === 'MonthAgenda') ? this.parent.activeView.getPanel() : this.parent.element;
+        let headerCells: Element[] =
+            [].slice.call(this.element.querySelectorAll('.' + cls.DATE_HEADER_WRAP_CLASS + ' td.' + cls.HEADER_CELLS_CLASS));
+        for (let cell of headerCells) {
+            EventHandler.clearEvents(cell);
+            this.wireCellEvents(cell);
+        }
+        let contentBody: Element = this.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody');
+        EventHandler.clearEvents(contentBody);
+        this.wireCellEvents(contentBody);
+        let wrap: Element = this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
+        EventHandler.clearEvents(wrap);
+        EventHandler.add(wrap, 'scroll', this.onContentScroll, this);
+        this.wireExpandCollapseIconEvents();
+        this.renderAppointmentContainer();
+        if (this.parent.uiStateValues.isGroupAdaptive && !target.querySelector('.' + cls.RESOURCE_TOOLBAR_CONTAINER)) {
+            this.renderResourceMobileLayout();
+        }
+        this.parent.notify(event.contentReady, {});
+    }
     public renderLayout(type: string): void {
         this.dayNameFormat = this.getDayNameFormat();
+        if (this.parent.isServerRenderer()) {
+            this.colLevels = this.generateColumnLevels();
+            if (this.parent.activeView.isTimelineView() && this.parent.resourceBase && !this.parent.uiStateValues.isGroupAdaptive) {
+                this.parent.resourceBase.setRenderedResources();
+            }
+            return;
+        }
         this.setPanel(createElement('div', { className: cls.TABLE_WRAP_CLASS }));
         let clsList: string[] = [this.viewClass];
         clsList.push(type);
@@ -147,6 +177,7 @@ export class Month extends ViewBase implements IRenderer {
         addClass([this.element], clsList);
         this.renderPanel(type);
         this.element.appendChild(this.createTableLayout(cls.OUTER_TABLE_CLASS) as HTMLElement);
+        this.element.querySelector('table').setAttribute('role', 'presentation');
         this.colLevels = this.generateColumnLevels();
         this.renderHeader();
         this.renderContent();
@@ -240,7 +271,8 @@ export class Month extends ViewBase implements IRenderer {
         let tdEle: Element = createElement('td');
         this.addAttributes(td, tdEle);
         if (td.type === 'monthDay') {
-            let ele: Element = createElement('span', { innerHTML: this.parent.getDayNames(this.dayNameFormat)[td.date.getDay()] });
+            let ele: Element = createElement(
+                'span', { innerHTML: util.capitalizeFirstWord(this.parent.getDayNames(this.dayNameFormat)[td.date.getDay()], 'single') });
             tdEle.appendChild(ele);
         }
         if (td.type === 'resourceHeader') {
@@ -264,17 +296,20 @@ export class Month extends ViewBase implements IRenderer {
                 let ele: Element = createElement('span', { className: cls.NAVIGATE_CLASS });
                 let title: string =
                     this.parent.globalize.formatDate(td.date, { skeleton: 'full', calendar: this.parent.getCalendarMode() });
-                ele.setAttribute('title', title);
-                ele.innerHTML =
+                ele.setAttribute('title', util.capitalizeFirstWord(title, 'multiple'));
+                let innerText: string =
                     (this.parent.calendarUtil.isMonthStart(td.date) && !this.isCurrentDate(td.date) && !this.parent.isAdaptive) ?
                         this.parent.globalize.formatDate(td.date, { format: 'MMM d', calendar: this.parent.getCalendarMode() }) :
                         this.parent.globalize.formatDate(td.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
+                ele.innerHTML = util.capitalizeFirstWord(innerText, 'single');
                 tdEle.appendChild(ele);
             }
             this.wireCellEvents(tdEle);
         }
         let args: RenderCellEventArgs = { elementType: td.type, element: tdEle, date: td.date, groupIndex: td.groupIndex };
-        this.parent.trigger(event.renderCell, args);
+        if (!isBlazor()) {
+            this.parent.trigger(event.renderCell, args);
+        }
         return tdEle;
     }
     public getContentSlots(): TdData[][] {
@@ -333,6 +368,9 @@ export class Month extends ViewBase implements IRenderer {
     public updateClassList(data: TdData): void {
         if (this.isOtherMonth(data.date)) {
             data.className.push(cls.OTHERMONTH_CLASS);
+        }
+        if (!this.parent.isMinMaxDate(data.date)) {
+            data.className.push(cls.DISABLE_DATES);
         }
         if (this.parent.currentView === 'MonthAgenda' && this.parent.isSelectedDate(data.date)) {
             data.className.push(cls.SELECTED_CELL_CLASS);
@@ -405,7 +443,9 @@ export class Month extends ViewBase implements IRenderer {
             append([].slice.call(cellTemplate), ntd);
         }
         let args: RenderCellEventArgs = { elementType: type, element: ntd, date: data.date, groupIndex: data.groupIndex };
-        this.parent.trigger(event.renderCell, args);
+        if (!isBlazor()) {
+            this.parent.trigger(event.renderCell, args);
+        }
         return ntd;
     }
 
@@ -424,10 +464,11 @@ export class Month extends ViewBase implements IRenderer {
                 this.parent.getCellHeaderTemplate()(args, this.parent, 'cellHeaderTemplate', templateId, false);
             append([].slice.call(cellheaderTemplate), dateHeader);
         } else {
-            dateHeader.innerHTML =
+            let innerText: string =
                 (this.parent.calendarUtil.isMonthStart(data.date) && !this.isCurrentDate(data.date) && !this.parent.isAdaptive) ?
                     this.parent.globalize.formatDate(data.date, { format: 'MMM d', calendar: this.parent.getCalendarMode() }) :
                     this.parent.globalize.formatDate(data.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
+            dateHeader.innerHTML = util.capitalizeFirstWord(innerText, 'single');
         }
         ntd.appendChild(dateHeader);
         if (this.getModuleName() === 'month') {
@@ -468,6 +509,9 @@ export class Month extends ViewBase implements IRenderer {
         if (!workDays) {
             this.renderDates = renderDates;
         }
+        if (this.parent.headerModule) {
+            this.parent.headerModule.previousNextIconHandler();
+        }
         return renderDates;
     }
     public getNextPreviousDate(type: string): Date {
@@ -490,22 +534,25 @@ export class Month extends ViewBase implements IRenderer {
                         this.parent.selectedDate, { format: 'MMMM', calendar: this.parent.getCalendarMode() })) + ' - ' +
                         (this.parent.globalize.formatDate(endDate, { format: 'MMMM ', calendar: this.parent.getCalendarMode() })) +
                         endDate.getFullYear();
-                    return monthNames;
+                    return util.capitalizeFirstWord(monthNames, 'single');
                 }
-                return (this.parent.globalize.formatDate(
+                let text: string = (this.parent.globalize.formatDate(
                     this.parent.selectedDate, { format: 'MMMM', calendar: this.parent.getCalendarMode() })) + ' ' +
                     this.parent.selectedDate.getFullYear() + ' - ' + (this.parent.globalize.formatDate(
                         endDate, { format: 'MMMM ', calendar: this.parent.getCalendarMode() })) +
                     endDate.getFullYear();
+                return util.capitalizeFirstWord(text, 'single');
             }
-            return this.parent.globalize.
-                formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() });
+            return util.capitalizeFirstWord(
+                this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() }),
+                'single');
         }
         return this.formatDateRange(this.parent.selectedDate);
     }
     public getLabelText(view: string): string {
-        return this.parent.localeObj.getConstant(view) + ' of ' +
-            this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() });
+        return this.parent.localeObj.getConstant(view) + ' of ' + util.capitalizeFirstWord(
+            this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() }),
+            'single');
     }
     private createWeekNumberElement(text?: string): HTMLElement {
         let tr: HTMLElement = createElement('tr');
@@ -516,7 +563,9 @@ export class Month extends ViewBase implements IRenderer {
         });
         tr.appendChild(td);
         let args: RenderCellEventArgs = { elementType: 'weekNumberCell', element: td };
-        this.parent.trigger(event.renderCell, args);
+        if (!isBlazor()) {
+            this.parent.trigger(event.renderCell, args);
+        }
         return tr;
     }
 
@@ -542,7 +591,21 @@ export class Month extends ViewBase implements IRenderer {
             if (this.parent.resourceBase) {
                 this.parent.resourceBase.destroy();
             }
-            remove(this.element);
+            if (isBlazor()) {
+                let view: View = this.parent.viewCollections[this.viewIndex].option;
+                if (!this.parent.isServerRenderer(view)) {
+                    this.parent.resetLayoutTemplates();
+                    this.parent.resetEventTemplates();
+                    remove(this.element);
+                } else {
+                    if (['Month', 'MonthAgenda', 'TimelineMonth'].indexOf(this.parent.currentView) === -1) {
+                        this.element.style.display = 'none';
+                    }
+                    this.parent.resetEventTemplates();
+                }
+            } else {
+                remove(this.element);
+            }
             this.element = null;
             if (this.parent.scheduleTouchModule) {
                 this.parent.scheduleTouchModule.resetValues();

@@ -90,6 +90,8 @@ export interface ICellEventArgs extends IHeatMapEventArgs {
     yValue: string | number | Date;
     /** Defines cell value */
     displayText: string;
+    /** Defines cell color of a particular cell */
+    cellColor: string;
 }
 
 export interface ISelectedEventArgs extends IHeatMapEventArgs {

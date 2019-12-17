@@ -1,9 +1,9 @@
 /**
- * Content renderer spec
+ * Content Renderer spec
  */
 import { detach } from '@syncfusion/ej2-base';
 import { RichTextEditor, Toolbar, NodeSelection } from './../../../src/index';
-import { QuickToolbar, Link, Image, MarkdownEditor, HtmlEditor } from "../../../src/rich-text-editor/index";
+import { QuickToolbar, Link, Image, MarkdownEditor, HtmlEditor, MarkdownFormatter } from "../../../src/rich-text-editor/index";
 import { renderRTE, destroy } from "./../render.spec";
 
 RichTextEditor.Inject(MarkdownEditor);
@@ -37,7 +37,8 @@ describe('HTML - Parent based selection', () => {
 
 <p class='second-p-node'><label class='second-label'>label node</label></p>
 <p class='third-p-node'>dom node<label class='third-label'>label node</label></p>
-<ul class='ul-third-node'><li>one-node</li><li>two-node</li><li>three-node</li></ul>`;
+<ul class='ul-third-node'><li>one-node</li><li>two-node</li><li>three-node</li></ul>
+<p id='convertPre'>converted to pre<p><p id='revertPre'>converted to pre<p>`;
     describe(' Toolbar click action ', () => {
         let rteObj: RichTextEditor;
         let curDocument: Document;
@@ -52,7 +53,7 @@ describe('HTML - Parent based selection', () => {
                 rteObj = renderRTE({
                     toolbarSettings: {
                         items: ['|', 'Formats', '|', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|', 'Indent', 'Outdent', '|',
-                            'FontName']
+                            'FontName', '|', 'InsertCode']
                     },
                     value: innerHTMLStr,
                     placeholder : 'Syncfusion RichTextEditor',
@@ -305,6 +306,30 @@ describe('HTML - Parent based selection', () => {
                 (rteObj.toolbarModule as any).dropDownModule.formatDropDown.clickHandler(mouseEventArgs);
                 expect(rteObj.getSelection().trim() === 'Paragraph 1Paragraph 2Paragraph 3cell 1 1cell 1 2cell 2 1Cell 2 2').toBe(true);
             });
+            it("Insert Code Format testing", () => {
+                rteObj.value = innerHTMLStr;
+                rteObj.dataBind();
+                selectNode = editNode.querySelector('#convertPre');
+                setCursorPoint(curDocument, selectNode.childNodes[0] as Element, 1);
+                let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[13];
+                (trgEle.childNodes[0] as HTMLElement).click();
+                selectNode = editNode.querySelector('#convertPre');
+                expect(selectNode.tagName.toLowerCase() === 'pre').toBe(true);
+            });
+            it("Revert the pre when Insert Code Format click on pre applied tag testing", () => {
+                rteObj.value = innerHTMLStr;
+                rteObj.dataBind();
+                selectNode = editNode.querySelector('#revertPre');
+                setCursorPoint(curDocument, selectNode.childNodes[0] as Element, 1);
+                let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[13];
+                (trgEle.childNodes[0] as HTMLElement).click();
+                selectNode = editNode.querySelector('#revertPre');
+                expect(selectNode.tagName.toLowerCase() === 'pre').toBe(true);
+                setCursorPoint(curDocument, selectNode.childNodes[0] as Element, 1);
+                (trgEle.childNodes[0] as HTMLElement).click();
+                selectNode = editNode.querySelector('#revertPre');
+                expect(selectNode.tagName.toLowerCase() === 'p').toBe(true);
+            });
             afterAll(() => {
                 destroy(rteObj);
                 detach(rteEle);
@@ -316,7 +341,7 @@ describe('HTML - Parent based selection', () => {
             beforeAll(() => {
                 rteObj = renderRTE({
                     toolbarSettings: {
-                        items: ['|', 'Formats', '|', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|', 'Indent', 'Outdent']
+                        items: ['|', 'Formats', '|', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|', 'Indent', 'Outdent', '|', 'InsertCode']
                     }, iframeSettings: {
                         enable: true
                     },
@@ -505,6 +530,16 @@ describe('HTML - Parent based selection', () => {
                 selectNode = editNode.querySelector('.third-p-node');
                 expect((selectNode as HTMLElement).style.marginLeft === '20px').toBe(true);
             });
+            it("Insert Code Format testing", () => {
+                rteObj.value = innerHTMLStr;
+                rteObj.dataBind();
+                selectNode = editNode.querySelector('#convertPre');
+                setCursorPoint(curDocument, selectNode.childNodes[0] as Element, 1);
+                let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[11];
+                (trgEle.childNodes[0] as HTMLElement).click();
+                selectNode = editNode.querySelector('#convertPre');
+                expect(selectNode.tagName.toLowerCase() === 'pre').toBe(true);
+            });
             afterAll(() => {
                 destroy(rteObj);
                 detach(rteEle);
@@ -531,7 +566,20 @@ Tabs and shift-tabs work too`;
                 toolbarSettings: {
                     items: ['|', 'Formats', '|', 'OrderedList', 'UnorderedList']
                 },
-                editorMode: 'Markdown'
+                editorMode: 'Markdown',
+                formatter: new MarkdownFormatter({
+                    listTags: { 'OL': '1. ', 'UL': '- ' }, formatTags: {
+                        'h1': '# ',
+                        'h2': '## ',
+                        'h3': '### ',
+                        'h4': '#### ',
+                        'h5': '##### ',
+                        'h6': '###### ',
+                        'blockquote': '> ',
+                        'pre': '```\n',
+                        'p': ''
+                    }
+                })
             });
             rteEle = rteObj.element;
             editNode = rteObj.contentModule.getEditPanel() as HTMLTextAreaElement;

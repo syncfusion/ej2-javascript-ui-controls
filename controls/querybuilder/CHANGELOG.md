@@ -2,13 +2,23 @@
 
 ## [Unreleased]
 
-## 17.3.27 (2019-11-12)
+## 17.4.39 (2019-12-17)
 
 ### QueryBuilder
 
 #### New Features
 
-- Provided `NOT` operator support.
+- Provided `NOT` Condition support.
+- Provided Template support for Time Picker.
+
+#### Bug Fixes
+
+- Tooltip is not destroyed while using destroy method.
+- Predicate is not created for Date type when between operator is selected.
+
+## 17.3.27 (2019-11-12)
+
+### QueryBuilder
 
 #### Bug Fixes
 

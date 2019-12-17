@@ -55,7 +55,7 @@ export class Render {
                 args.row.setAttribute('style', 'display: ' + display  + ';');
             }
         }
-        addClass([args.row], 'e-gridrowindex' + index + 'level' + (<ITreeData>args.data).level);
+        //addClass([args.row], 'e-gridrowindex' + index + 'level' + (<ITreeData>args.data).level);
         let summaryRow: boolean = getObject('isSummaryRow', args.data);
         if (summaryRow) {
             addClass([args.row], 'e-summaryrow');
@@ -80,14 +80,17 @@ export class Render {
             return;
         }
         let grid: IGrid = this.parent.grid;
-        let data: ITreeData = <ITreeData>args.data;
+        let data: ITreeData = <ITreeData>args.data; let index: number;
         let ispadfilter: boolean = isNullOrUndefined(data.filterLevel);
         let pad: number = ispadfilter ? data.level : data.filterLevel;
         let totalIconsWidth: number = 0; let cellElement: HTMLElement;
         let column: Column = this.parent.getColumnByField(args.column.field);
         let summaryRow: boolean = data.isSummaryRow;
+        if (!isNullOrUndefined(data.parentItem)) {
+            index = data.parentItem.index;
+        } else { index = data.index; }
         if (grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex
-         && isNullOrUndefined(args.cell.querySelector('.e-treecell'))) {
+         && (args.requestType === 'add' || args.requestType === 'delete' || isNullOrUndefined(args.cell.querySelector('.e-treecell')))) {
             let container: Element = createElement('div', {
                 className: 'e-treecolumn-container'
             });
@@ -145,9 +148,14 @@ export class Render {
             if (this.parent.allowTextWrap) {
                 cellElement.style.width = 'Calc(100% - ' + totalIconsWidth + 'px)';
             }
+            addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
             this.updateTreeCell(args, cellElement, container);
             container.appendChild(cellElement);
             args.cell.appendChild(container);
+        }
+        if (this.parent.frozenColumns > this.parent.treeColumnIndex &&
+            grid.getColumnIndexByUid(args.column.uid) === this.parent.frozenColumns + 1) {
+                addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
         }
         if (!isNullOrUndefined(column) && column.showCheckbox) {
             this.parent.notify('columnCheckbox', args);

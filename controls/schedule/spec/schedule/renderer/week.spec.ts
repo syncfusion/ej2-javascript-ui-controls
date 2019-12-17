@@ -16,12 +16,12 @@ Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
 
 describe('Schedule Week view', () => {
     beforeAll(() => {
-        // tslint:disable-next-line:no-any
+        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             // tslint:disable-next-line:no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); //Skips test (in Chai)
+            (this as any).skip(); //Skips test (in Chai)
             return;
         }
     });
@@ -36,6 +36,7 @@ describe('Schedule Week view', () => {
             util.destroy(schObj);
         });
         it('view class on container', () => {
+            schObj.activeView.serverRenderLayout();
             expect(schObj.element.querySelector('.e-week-view')).toBeTruthy();
         });
 
@@ -90,6 +91,10 @@ describe('Schedule Week view', () => {
         it('work hours highlight', () => {
             expect(schObj.element.querySelectorAll('.e-work-hours').length).toEqual(18 * 5);
         });
+
+        it('checking content rows', () => {
+            expect(schObj.activeView.getContentRows().length).toEqual(0);
+        });
     });
 
     describe('Dependent properties', () => {
@@ -101,13 +106,13 @@ describe('Schedule Week view', () => {
             util.destroy(schObj);
         });
 
-        xit('width and height', (done: Function) => {
+        it('width and height', () => {
             let model: ScheduleModel = { height: '600px', width: '500px', currentView: 'Week', selectedDate: new Date(2017, 9, 4) };
-            schObj = util.createSchedule(model, [], done);
-            expect(document.getElementById('Schedule').style.width).toEqual('500px');
-            expect(document.getElementById('Schedule').style.height).toEqual('600px');
-            expect(document.getElementById('Schedule').offsetWidth).toEqual(500);
-            expect(document.getElementById('Schedule').offsetHeight).toEqual(600);
+            schObj = util.createSchedule(model, []);
+            expect(schObj.element.style.width).toEqual('500px');
+            expect(schObj.element.style.height).toEqual('600px');
+            expect(schObj.element.offsetWidth).toEqual(500);
+            expect(schObj.element.offsetHeight).toEqual(600);
         });
 
         it('start and end hour', () => {
@@ -277,6 +282,65 @@ describe('Schedule Week view', () => {
             expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML)
                 .toEqual('<div class="e-header-day">Sun</div><div class="e-header-date e-navigate" role="link">1</div>');
             expect(navFn).toHaveBeenCalledTimes(1);
+        });
+
+        it('minDate and maxDate', () => {
+            let model: ScheduleModel = {
+                currentView: 'Week',
+                minDate: new Date(2017, 8, 28),
+                selectedDate: new Date(2017, 9, 5),
+                maxDate: new Date(2017, 9, 12)
+            };
+            schObj = util.createSchedule(model, []);
+            let prevButton: HTMLElement = schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS);
+            let nextButton: HTMLElement = schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS);
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('false');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('false');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('September 24 - 30, 2017');
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('true');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('false');
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('September 24 - 30, 2017');
+            (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('false');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('false');
+            (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 08 - 14, 2017');
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('false');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('true');
+            (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 08 - 14, 2017');
+            schObj.minDate = new Date(2017, 8, 24);
+            schObj.selectedDate = new Date(2017, 9, 4);
+            schObj.maxDate = new Date(2017, 9, 6);
+            schObj.dataBind();
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('false');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('true');
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('September 24 - 30, 2017');
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('true');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('false');
+            (schObj.element.querySelectorAll('.e-date-header-container .e-header-cells .e-navigate')[0] as HTMLElement).click();
+            expect(schObj.currentView).toEqual('Day');
+            schObj.currentView = 'Week';
+            schObj.minDate = new Date(2017, 9, 2);
+            schObj.selectedDate = new Date(2017, 9, 4);
+            schObj.maxDate = new Date(2017, 9, 6);
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 01 - 07, 2017');
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('true');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('true');
+            (schObj.element.querySelectorAll('.e-date-header-container .e-header-cells .e-navigate')[0] as HTMLElement).click();
+            expect(schObj.currentView).toEqual('Week');
+            (schObj.element.querySelectorAll('.e-date-header-container .e-header-cells .e-navigate')[6] as HTMLElement).click();
+            expect(schObj.currentView).toEqual('Week');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells') as HTMLElement, 'dblclick');
+            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            expect(dialogElement.classList.contains('e-popup-close')).toBeTruthy();
         });
     });
 
@@ -796,6 +860,14 @@ describe('Schedule Week view', () => {
         });
 
         it('add event', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
+                let addedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_15"]') as HTMLElement;
+                expect(addedEvent.offsetTop).toEqual(72);
+                expect(addedEvent.offsetWidth).toEqual(53);
+                expect(addedEvent.offsetHeight).toEqual(72);
+                done();
+            };
             let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
             let timeCellsArea: HTMLElement = schObj.element.querySelector('.e-time-cells-wrap') as HTMLElement;
             util.triggerScrollEvent(contentArea, 648);
@@ -827,19 +899,17 @@ describe('Schedule Week view', () => {
             endRevisedObj.value = new Date(2017, 9, 30, 2, 0);
             endRevisedObj.dataBind();
             saveButton.click();
-            util.triggerScrollEvent(contentArea, 648);
-            schObj.dataBound = () => {
-                expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
-                let addedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_15"]') as HTMLElement;
-                expect(addedEvent.offsetTop).toEqual(72);
-                expect(addedEvent.offsetWidth).toEqual(53);
-                expect(addedEvent.offsetHeight).toEqual(72);
-                done();
-            };
-            schObj.dataBind();
         });
 
         it('edit event', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
+                let editedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
+                expect(editedEvent.offsetTop).toEqual(684);
+                expect(editedEvent.offsetWidth).toEqual(26);
+                expect(editedEvent.offsetHeight).toEqual(144);
+                done();
+            };
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             util.triggerMouseEvent(schObj.element.querySelector('.e-appointment') as HTMLElement, 'click');
             util.triggerMouseEvent(schObj.element.querySelector('.e-appointment') as HTMLElement, 'dblclick');
@@ -865,18 +935,17 @@ describe('Schedule Week view', () => {
             endRevisedObj.value = new Date(2017, 9, 31, 11, 30);
             endRevisedObj.dataBind();
             saveButton.click();
+        });
+
+        it('appointments rendering on block events on next week - testing -1', (done: Function) => {
             schObj.dataBound = () => {
                 expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
                 let editedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
                 expect(editedEvent.offsetTop).toEqual(684);
-                expect(editedEvent.offsetWidth).toEqual(26);
+                expect(editedEvent.offsetWidth).toEqual(53);
                 expect(editedEvent.offsetHeight).toEqual(144);
                 done();
             };
-            schObj.dataBind();
-        });
-
-        it('appointments rendering on block events on next week', (done: Function) => {
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             util.triggerMouseEvent(schObj.element.querySelector('.e-appointment') as HTMLElement, 'click');
             util.triggerMouseEvent(schObj.element.querySelector('.e-appointment') as HTMLElement, 'dblclick');
@@ -903,14 +972,19 @@ describe('Schedule Week view', () => {
             endRevisedObj.dataBind();
             saveButton.click();
             schObj.selectedDate = new Date(2017, 10, 12);
+            schObj.dataBind();
+        });
+        it('appointments rendering on block events on next week - testing -2', (done: Function) => {
             schObj.dataBound = () => {
-                expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
-                let editedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
-                expect(editedEvent.offsetTop).toEqual(684);
-                expect(editedEvent.offsetWidth).toEqual(53);
-                expect(editedEvent.offsetHeight).toEqual(144);
+                expect(schObj.eventsData.length).toEqual(8);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(1);
+                expect(schObj.element.querySelectorAll('.e-block-appointment').length).toEqual(5);
                 done();
             };
+            expect(schObj.eventsData.length).toEqual(8);
+            expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(1);
+            expect(schObj.element.querySelectorAll('.e-block-appointment').length).toEqual(5);
+            schObj.selectedDate = new Date(2017, 10, 12);
             schObj.dataBind();
         });
 
@@ -947,7 +1021,7 @@ describe('Schedule Week view', () => {
         });
     });
 
-    describe('Multi level resource rendering  in block events', () => {
+    describe('Multi level resource rendering in block events', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
             let schOptions: ScheduleModel = {
@@ -978,6 +1052,14 @@ describe('Schedule Week view', () => {
         });
 
         it('resource add event', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
+                let addedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_22"]') as HTMLElement;
+                expect(addedEvent.offsetTop).toEqual(72);
+                expect(addedEvent.offsetWidth).toEqual(33);
+                expect(addedEvent.offsetHeight).toEqual(72);
+                done();
+            };
             let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
             let timeCellsArea: HTMLElement = schObj.element.querySelector('.e-time-cells-wrap') as HTMLElement;
             util.triggerScrollEvent(contentArea, 648);
@@ -1009,19 +1091,17 @@ describe('Schedule Week view', () => {
             endRevisedObj.value = new Date(2017, 9, 30, 2, 0);
             endRevisedObj.dataBind();
             saveButton.click();
-            util.triggerScrollEvent(contentArea, 648);
-            schObj.dataBound = () => {
-                expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
-                let addedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_22"]') as HTMLElement;
-                expect(addedEvent.offsetTop).toEqual(72);
-                expect(addedEvent.offsetWidth).toEqual(33);
-                expect(addedEvent.offsetHeight).toEqual(72);
-                done();
-            };
-            schObj.dataBind();
         });
 
         it('resource edit event', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
+                let editedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
+                expect(editedEvent.offsetTop).toEqual(684);
+                expect(editedEvent.offsetWidth).toEqual(33);
+                expect(editedEvent.offsetHeight).toEqual(144);
+                done();
+            };
             util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement, 'click');
             util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement, 'dblclick');
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
@@ -1047,15 +1127,6 @@ describe('Schedule Week view', () => {
             endRevisedObj.value = new Date(2017, 9, 31, 11, 30);
             endRevisedObj.dataBind();
             saveButton.click();
-            schObj.dataBound = () => {
-                expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
-                let editedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_8"]') as HTMLElement;
-                expect(editedEvent.offsetTop).toEqual(684);
-                expect(editedEvent.offsetWidth).toEqual(33);
-                expect(editedEvent.offsetHeight).toEqual(144);
-                done();
-            };
-            schObj.dataBind();
         });
     });
 

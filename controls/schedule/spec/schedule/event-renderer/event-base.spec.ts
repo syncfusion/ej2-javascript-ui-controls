@@ -2,7 +2,6 @@
  * Events base methods testing
  */
 import { Schedule, Day, Week, WorkWeek, Month, Agenda, Timezone, ScheduleModel } from '../../../src/schedule/index';
-import { EventBase } from '../../../src/schedule/event-renderer/event-base';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 import * as util from '../util.spec';
 
@@ -10,34 +9,32 @@ Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
 
 describe('Event Base Module', () => {
     beforeAll(() => {
-        // tslint:disable-next-line:no-any
+        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             // tslint:disable-next-line:no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); //Skips test (in Chai)
+            (this as any).skip(); //Skips test (in Chai)
             return;
         }
     });
 
     describe('split event by day method testing', () => {
         let schObj: Schedule;
-        let eventBase: EventBase;
         beforeAll(() => {
             schObj = util.createSchedule({}, []);
-            eventBase = new EventBase(schObj);
         });
         afterAll(() => {
             util.destroy(schObj);
         });
         it('Event on same day', () => {
             let event: { [key: string]: Object } = { 'StartTime': new Date(2017, 11, 1, 4), 'EndTime': new Date(2017, 11, 1, 8) };
-            let spannedEvents: Object[] = eventBase.splitEventByDay(event);
+            let spannedEvents: Object[] = schObj.eventBase.splitEventByDay(event);
             expect(spannedEvents.length).toEqual(1);
         });
         it('Event on multiple day', () => {
             let event: { [key: string]: Object } = { 'StartTime': new Date(2017, 11, 1, 4), 'EndTime': new Date(2017, 11, 4, 8) };
-            let spannedEvents: Object[] = eventBase.splitEventByDay(event);
+            let spannedEvents: Object[] = schObj.eventBase.splitEventByDay(event);
             expect(spannedEvents.length).toEqual(4);
         });
     });

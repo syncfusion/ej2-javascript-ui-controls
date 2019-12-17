@@ -1,8 +1,8 @@
 /// <reference path='../drop-down-list/drop-down-list-model.d.ts'/>
 import { EventHandler, Property, Event, EmitType, addClass, Browser, KeyboardEventArgs, removeClass, detach } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, NotifyPropertyChanges, getValue, setValue } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, NotifyPropertyChanges, getValue, setValue, Complex } from '@syncfusion/ej2-base';
 import { DropDownList, dropDownListClasses } from '../drop-down-list/drop-down-list';
-import { FilteringEventArgs } from '../drop-down-base/drop-down-base';
+import { FilteringEventArgs, FilterType, FieldSettings } from '../drop-down-base/drop-down-base';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { ComboBoxModel } from '../combo-box/combo-box-model';
 import { Search } from '../common/incremental-search';
@@ -155,6 +155,145 @@ export class ComboBox extends DropDownList {
      */
     @Property(null)
     public filterBarPlaceholder: string;
+    /**
+     * The `fields` property maps the columns of the data table and binds the data to the component.
+     * * text - Maps the text column from data table for each list item.
+     * * value - Maps the value column from data table for each list item.
+     * * iconCss - Maps the icon class column from data table for each list item.
+     * * groupBy - Group the list items with it's related items by mapping groupBy field.
+     * ```html
+     * <input type="text" tabindex="1" id="list"> </input>
+     * ```
+     * ```typescript  
+     *   let customers: ComboBox = new ComboBox({
+     *      dataSource:new DataManager({ url:'http://js.syncfusion.com/demos/ejServices/Wcf/Northwind.svc/' }),
+     *      query: new Query().from('Customers').select(['ContactName', 'CustomerID']).take(5),
+     *      fields: { text: 'ContactName', value: 'CustomerID' },
+     *      placeholder: 'Select a customer'
+     *   });
+     *   customers.appendTo("#list");
+     * ```
+     * @default {text: null, value: null, iconCss: null, groupBy: null}
+     */
+    @Complex<FieldSettingsModel>({ text: null, value: null, iconCss: null, groupBy: null }, FieldSettings)
+    public fields: FieldSettingsModel;
+    /**
+     * Enable or disable persisting component's state between page reloads. 
+     * If enabled, following list of states will be persisted.
+     * 1. value
+     * @default false
+     */
+    @Property(false)
+    public enablePersistence: boolean;
+    /**
+     * Accepts the template design and assigns it to each list item present in the popup.
+     * We have built-in `template engine`
+     * 
+     * which provides options to compile template string into a executable function. 
+     * For EX: We have expression evolution as like ES6 expression string literals. 
+     * @default null
+     */
+    @Property(null)
+    public itemTemplate: string;
+    /**
+     * Accepts the template design and assigns it to the group headers present in the popup list.
+     * @default null
+     */
+    @Property(null)
+    public groupTemplate: string;
+    /**
+     * Accepts the template design and assigns it to popup list of component
+     * when no data is available on the component.
+     * @default 'No Records Found'
+     */
+    @Property('No Records Found')
+    public noRecordsTemplate: string;
+    /**
+     * Accepts the template and assigns it to the popup list content of the component
+     * when the data fetch request from the remote server fails.
+     * @default 'The Request Failed'
+     */
+    @Property('The Request Failed')
+    public actionFailureTemplate: string;
+    /**
+     * Specifies the `sortOrder` to sort the data source. The available type of sort orders are
+     * * `None` - The data source is not sorting.
+     * * `Ascending` - The data source is sorting with ascending order.
+     * * `Descending` - The data source is sorting with descending order.
+     * @default None
+     */
+    @Property<SortOrder>('None')
+    public sortOrder: SortOrder;
+    /**
+     * Specifies a value that indicates whether the component is enabled or not.
+     * @default true
+     */
+    @Property(true)
+    public enabled: boolean;
+    /**
+     * Accepts the list items either through local or remote service and binds it to the component.
+     * It can be an array of JSON Objects or an instance of
+     * `DataManager`.
+     * @default []
+     */
+    @Property([])
+    public dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
+    /**   
+     * Determines on which filter type, the component needs to be considered on search action. 
+     * The `FilterType` and its supported data types are 
+     * 
+     * <table> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * FilterType<br/></td><td colSpan=1 rowSpan=1> 
+     * Description<br/></td><td colSpan=1 rowSpan=1> 
+     * Supported Types<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * StartsWith<br/></td><td colSpan=1 rowSpan=1> 
+     * Checks whether a value begins with the specified value.<br/></td><td colSpan=1 rowSpan=1> 
+     * String<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * EndsWith<br/></td><td colSpan=1 rowSpan=1> 
+     * Checks whether a value ends with specified value.<br/><br/></td><td colSpan=1 rowSpan=1> 
+     * <br/>String<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * Contains<br/></td><td colSpan=1 rowSpan=1> 
+     * Checks whether a value contains with specified value.<br/><br/></td><td colSpan=1 rowSpan=1> 
+     * <br/>String<br/></td></tr> 
+     * </table>
+     * 
+     * The default value set to `StartsWith`, all the suggestion items which contain typed characters to listed in the suggestion popup.
+     * @default 'StartsWith'
+     */
+    @Property('StartsWith')
+    public filterType: FilterType;
+    /**
+     * When set to ‘false’, consider the `case-sensitive` on performing the search to find suggestions.
+     * By default consider the casing.
+     * @default true
+     */
+    @Property(true)
+    public ignoreCase: boolean;
+    /**
+     * specifies the z-index value of the component popup element.
+     * @default 1000
+     */
+    @Property(1000)
+    public zIndex: number;
+    /**
+     * ignoreAccent set to true, then ignores the diacritic characters or accents when filtering.
+     */
+    @Property(false)
+    public ignoreAccent: boolean;
+    /**
+     * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
+     * @default 'en-US'
+     */
+    @Property()
+    public locale: string;
     /**
      * *Constructor for creating the component
      */

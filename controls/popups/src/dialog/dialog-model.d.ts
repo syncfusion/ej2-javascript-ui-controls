@@ -1,5 +1,5 @@
-import { Component, Property, Event, Collection, L10n, Browser, EmitType, Complex, compile, createElement  } from '@syncfusion/ej2-base';import { addClass, removeClass, detach, attributes, prepend, setStyleAttribute } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty, isBlazor } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, append } from '@syncfusion/ej2-base';import { EventHandler, updateBlazorTemplate, BlazorDragEventArgs } from '@syncfusion/ej2-base';import { Draggable } from '@syncfusion/ej2-base';import { Popup, PositionData, getZindexPartial } from '../popup/popup';import { PositionDataModel } from '../popup/popup-model';import { Button, ButtonModel } from '@syncfusion/ej2-buttons';import { createResize, removeResize, setMinHeight } from '../common/resize';
-import {ButtonType,DialogEffect,BeforeOpenEventArgs,OpenEventArgs,BeforeCloseEventArgs,CloseEventArgs} from "./dialog";
+import { Component, Property, Event, Collection, L10n, Browser, EmitType, Complex, compile, createElement  } from '@syncfusion/ej2-base';import { addClass, removeClass, detach, attributes, prepend, setStyleAttribute } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty, isBlazor } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, append } from '@syncfusion/ej2-base';import { EventHandler, updateBlazorTemplate, BlazorDragEventArgs } from '@syncfusion/ej2-base';import { Draggable, SanitizeHtmlHelper, extend } from '@syncfusion/ej2-base';import { Popup, PositionData, getZindexPartial } from '../popup/popup';import { PositionDataModel } from '../popup/popup-model';import { Button, ButtonModel } from '@syncfusion/ej2-buttons';import { createResize, removeResize, setMinHeight } from '../common/resize';
+import {ButtonType,DialogEffect,BeforeSanitizeHtmlArgs,BeforeOpenEventArgs,OpenEventArgs,BeforeCloseEventArgs,CloseEventArgs} from "./dialog";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -90,6 +90,12 @@ export interface DialogModel extends ComponentModel{
      * @blazorType string
      */
     content?: string | HTMLElement;
+
+    /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default true
+     */
+    enableHtmlSanitizer?: boolean;
 
     /**
      * Specifies the value that represents whether the close icon is shown in the dialog component.
@@ -249,6 +255,13 @@ export interface DialogModel extends ComponentModel{
      * @blazorType OpenEventArgs
      */
     open?: EmitType<Object>;
+
+    /**
+     * Event triggers before sanitize the value.
+     * @event 
+     * @blazorProperty 'OnSanitizeHtml'
+     */
+    beforeSanitizeHtml?: EmitType<BeforeSanitizeHtmlArgs>;
 
     /**
      * Event triggers when the dialog is being opened.

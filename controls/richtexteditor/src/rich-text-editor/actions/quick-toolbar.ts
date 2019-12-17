@@ -72,6 +72,11 @@ export class QuickToolbar {
         };
     }
 
+    /**
+     * createQTBar method
+     * @hidden
+     * @deprecated
+     */
     public createQTBar(popupType: string, mode: string, items: (string | IToolbarItems)[], type: RenderType): BaseQuickToolbar {
         if (items.length < 1) { return null; }
         let qTBar: BaseQuickToolbar = new BaseQuickToolbar(this.parent, this.locator);
@@ -118,6 +123,9 @@ export class QuickToolbar {
     }
 
     private showInlineQTBar(x: number, y: number, target: HTMLElement): void {
+        if (this.parent.readonly) {
+            return;
+        }
         this.inlineQTBar.showPopup(x, y, target);
     }
 
@@ -128,6 +136,7 @@ export class QuickToolbar {
     /**
      * Method for hidding the quick toolbar
      * @hidden
+     * @deprecated
      */
     public hideQuickToolbars(): void {
         if (this.linkQTBar && !hasClass(this.linkQTBar.element, 'e-popup-close') && document.body.contains(this.linkQTBar.element)) {
@@ -212,6 +221,11 @@ export class QuickToolbar {
         if (!selection.isCollapsed) { this.mouseUpHandler({ args: e as MouseEvent }); }
     }
 
+    /**
+     * getInlineBaseToolbar method
+     * @hidden
+     * @deprecated
+     */
     public getInlineBaseToolbar(): BaseToolbar {
         return this.inlineQTBar && this.inlineQTBar.quickTBarObj;
     }
@@ -221,6 +235,7 @@ export class QuickToolbar {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     public destroy(): void {
         if (this.linkQTBar) {
@@ -271,6 +286,11 @@ export class QuickToolbar {
         if (this.imageQTBar && !hasClass(this.imageQTBar.element, 'e-popup-close')) { this.imageQTBar.hidePopup(); }
         if (this.tableQTBar && !hasClass(this.tableQTBar.element, 'e-popup-close')) { this.tableQTBar.hidePopup(); }
     }
+    /**
+     * addEventListener
+     * @hidden
+     * @deprecated
+     */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.on(events.initialEnd, this.initializeQuickToolbars, this);
@@ -312,6 +332,11 @@ export class QuickToolbar {
             this.imageQTBar.quickTBarObj.toolbarObj.setProperties({ enableRtl: args.enableRtl });
         }
     }
+    /**
+     * removeEventListener
+     * @hidden
+     * @deprecated
+     */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.off(events.initialEnd, this.initializeQuickToolbars);
@@ -333,6 +358,7 @@ export class QuickToolbar {
     /**
      * Called internally if any of the property value changed.
      * @hidden
+     * @deprecated
      */
     protected onPropertyChanged(e: { [key: string]: RichTextEditorModel }): void {
         if (!isNullOrUndefined(e.newProp.quickToolbarSettings)) {

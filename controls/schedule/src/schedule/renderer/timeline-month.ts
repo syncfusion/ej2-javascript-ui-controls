@@ -121,8 +121,10 @@ export class TimelineMonth extends Month {
         return slotDatas;
     }
 
-    public updateClassList(): void {
-        // No need to update content for timeline month view
+    public updateClassList(data: TdData): void {
+        if (!this.parent.isMinMaxDate(data.date)) {
+            data.className.push(cls.DISABLE_DATES);
+        }
     }
 
     public unwireEvents(): void {

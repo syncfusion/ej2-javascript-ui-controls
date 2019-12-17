@@ -274,4 +274,11 @@
       content: '\e71a';
     }
   }
+
+  .e-richtexteditor {
+    .e-south-east::before,
+    .e-south-west::before {
+      content: '\e7cf';
+    }
+  }
 }

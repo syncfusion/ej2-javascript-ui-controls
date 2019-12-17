@@ -1,11 +1,12 @@
 import { isNullOrUndefined, extend, createElement, Ajax } from '@syncfusion/ej2-base';
 import { Maps } from '../../maps/maps';
 import { getShapeColor } from '../model/theme';
-import { GeoLocation, isCustomPath, convertGeoToPoint, Point, PathOption, Size, PolylineOption, getElementByID } from '../utils/helper';
+import { GeoLocation, isCustomPath, convertGeoToPoint, Point, PathOption, Size, PolylineOption } from '../utils/helper';
+import { getElementByID, maintainSelection } from '../utils/helper';
 import { MapLocation, RectOption, getTranslate, convertTileLatLongToPoint, checkShapeDataFields, CircleOption } from '../utils/helper';
 import { getZoomTranslate } from '../utils/helper';
 import { LayerSettings, ShapeSettings, Tile, BubbleSettings } from '../model/base';
-import { LayerSettingsModel } from '../model/base-model';
+import { LayerSettingsModel, ShapeSettingsModel, ToggleLegendSettingsModel } from '../model/base-model';
 import { BingMap } from './bing-map';
 import { ColorMapping } from './color-mapping';
 import { layerRendering, ILayerRenderingEventArgs, shapeRendering, IShapeRenderingEventArgs, BubbleSettingsModel, Rect } from '../index';
@@ -48,21 +49,39 @@ export class LayerPanel {
         if (this.mapObject.isTileMap && secondaryEle) {
             this.tileSvgObject = this.mapObject.renderer.createSvg({
                 id: this.mapObject.element.id + '_Tile_SVG', width: areaRect.width,
-                height: areaRect.height
+                height: areaRect.height,
             });
-            secondaryEle.appendChild(this.tileSvgObject);
+            let parentElement: Element = createElement('div', {
+                id: this.mapObject.element.id + '_Tile_SVG_Parent', styles: 'position: absolute; height: ' +
+                    (areaRect.height) + 'px; width: '
+                    + (areaRect.width) + 'px;'
+            });
+            parentElement.appendChild(this.tileSvgObject);
+            secondaryEle.appendChild(parentElement);
         }
         this.layerGroup = (this.mapObject.renderer.createGroup({
             id: this.mapObject.element.id + '_Layer_Collections',
             'clip-path': 'url(#' + this.mapObject.element.id + '_MapArea_ClipRect)'
         }));
-        this.clipRectElement = this.mapObject.renderer.drawClipPath(new RectOption(
-            this.mapObject.element.id + '_MapArea_ClipRect',
-            'transparent', { width: 1, color: 'Gray' }, 1,
-            {
-                x: this.mapObject.isTileMap ? 0 : areaRect.x, y: this.mapObject.isTileMap ? 0 : areaRect.y,
-                width: areaRect.width, height: areaRect.height
-            }));
+        if (this.mapObject.layers[this.mapObject.baseLayerIndex].layerType === 'GoogleStaticMap') {
+            let staticMapSize : number = 640;
+            this.clipRectElement = this.mapObject.renderer.drawClipPath(new RectOption(
+                this.mapObject.element.id + '_MapArea_ClipRect',
+                'transparent', { width: 1, color: 'Gray' }, 1,
+                {
+                    x: ((areaRect.width - staticMapSize) / 2), y: 0,
+                    width: staticMapSize, height: areaRect.height
+                }));
+        } else {
+            this.clipRectElement = this.mapObject.renderer.drawClipPath(new RectOption(
+                this.mapObject.element.id + '_MapArea_ClipRect',
+                'transparent', { width: 1, color: 'Gray' }, 1,
+                {
+                    x: this.mapObject.isTileMap ? 0 : areaRect.x, y: this.mapObject.isTileMap ? 0 : areaRect.y,
+                    width: areaRect.width, height: areaRect.height
+                }));
+        }
+
         this.layerGroup.appendChild(this.clipRectElement);
         this.mapObject.baseMapBounds = null;
         this.mapObject.baseMapRectBounds = null;
@@ -73,19 +92,28 @@ export class LayerPanel {
             this.processLayers(layer, index);
         });
     }
-
     /**
      * Tile rendering
      * @private
      */
     public renderTileLayer(panel: LayerPanel, layer: LayerSettings, layerIndex: number, bing?: BingMap): void {
-        let center: Point = new Point(panel.mapObject.centerPosition.longitude, panel.mapObject.centerPosition.latitude);
         panel.currentFactor = panel.calculateFactor(layer);
+        if ((this.mapObject.isTileMap && panel.mapObject.markerModule) && panel.mapObject.zoomSettings.enable) {
+            panel.mapObject.markerModule.calculateZoomCenterPositionAndFactor(this.mapObject.layersCollection);
+        }
+        let center: Point = new Point(panel.mapObject.centerPosition.longitude, panel.mapObject.centerPosition.latitude);
+        let zoomFactorValue : number = panel.mapObject.zoomSettings.shouldZoomInitially &&
+        panel.mapObject.zoomSettings.zoomFactor === 1 ? isNullOrUndefined(panel.mapObject.markerZoomFactor) ? 1 :
+         panel.mapObject.markerZoomFactor : panel.mapObject.zoomSettings.zoomFactor;
+        zoomFactorValue = (panel.mapObject.enablePersistence) ? ((isNullOrUndefined(panel.mapObject.mapScaleValue))
+        ? (isNullOrUndefined(panel.mapObject.markerZoomFactor) ? panel.mapObject.zoomSettings.zoomFactor :
+         panel.mapObject.markerZoomFactor) : panel.mapObject.mapScaleValue) : zoomFactorValue;
         if (isNullOrUndefined(panel.mapObject.tileZoomLevel)) {
-            panel.mapObject.tileZoomLevel = panel.mapObject.zoomSettings.zoomFactor;
-        } else if (panel.mapObject.zoomSettings.zoomFactor !== 1) {
-            panel.mapObject.tileZoomLevel = panel.mapObject.zoomSettings.zoomFactor;
-            if (!isNullOrUndefined(panel.mapObject.tileTranslatePoint)) {
+            panel.mapObject.tileZoomLevel = zoomFactorValue;
+        } else if (panel.mapObject.zoomSettings.zoomFactor !== 1 || panel.mapObject.zoomSettings.shouldZoomInitially) {
+            panel.mapObject.tileZoomLevel = zoomFactorValue;
+            if (!isNullOrUndefined(panel.mapObject.tileTranslatePoint) &&
+            panel.mapObject.markerZoomFactor !== panel.mapObject.mapScaleValue) {
                 panel.mapObject.tileTranslatePoint.x = 0;
                 panel.mapObject.tileTranslatePoint.y = 0;
             }
@@ -111,6 +139,11 @@ export class LayerPanel {
         this.layerObject = (this.mapObject.renderer.createGroup({
             id: this.mapObject.element.id + '_LayerIndex_' + layerIndex
         }));
+        if (!this.mapObject.enablePersistence) {
+            if (!isNullOrUndefined(window.localStorage)) {
+                window.localStorage.clear();
+            }
+        }
         let eventArgs: ILayerRenderingEventArgs = {
             cancel: false, name: layerRendering, index: layerIndex,
             layer: layer, maps: this.mapObject, visible: layer.visible
@@ -279,7 +312,7 @@ export class LayerPanel {
                 eventArgs = blazorEventArgs;
             }
              // tslint:disable-next-line:max-func-body-length
-            let shapeRenderingSuccess: Function = (eventArgs: IShapeRenderingEventArgs) => {
+             let shapeRenderingSuccess: Function = (eventArgs: IShapeRenderingEventArgs) => {
                 let drawingType: string = !isNullOrUndefined(currentShapeData['_isMultiPolygon'])
                 ? 'MultiPolygon' : isNullOrUndefined(currentShapeData['type']) ? currentShapeData[0]['type'] : currentShapeData['type'];
                 drawingType = (drawingType === 'Polygon' || drawingType === 'MultiPolygon') ? 'Polygon' : drawingType;
@@ -349,7 +382,7 @@ export class LayerPanel {
                             shapeSettings.dashArray, path);
                         pathEle = this.mapObject.renderer.drawPath(pathOptions) as SVGPathElement;
                         break;
-                    }
+                }
                 if (!isNullOrUndefined(pathEle)) {
                     let property: string[] = (Object.prototype.toString.call(this.currentLayer.shapePropertyPath) === '[object Array]' ?
                         this.currentLayer.shapePropertyPath : [this.currentLayer.shapePropertyPath]) as string[];
@@ -364,6 +397,21 @@ export class LayerPanel {
                     pathEle.setAttribute('aria-label', ((!isNullOrUndefined(currentShapeData['property'])) ?
                         (currentShapeData['property'][properties]) : ''));
                     pathEle.setAttribute('tabindex', (this.mapObject.tabIndex + i + 2).toString());
+                    maintainSelection(this.mapObject.selectedElementId, this.mapObject.shapeSelectionClass, pathEle,
+                                      'ShapeselectionMapStyle');
+                    if (this.mapObject.toggledShapeElementId) {
+                        for (let j: number = 0; j < this.mapObject.toggledShapeElementId.length; j++) {
+                            let styleProperty: ShapeSettingsModel | ToggleLegendSettingsModel =
+                                this.mapObject.legendSettings.toggleLegendSettings.applyShapeSettings ?
+                                this.currentLayer.shapeSettings : this.mapObject.legendSettings.toggleLegendSettings;
+                            if (this.mapObject.toggledShapeElementId[j] === pathEle.id) {
+                                pathEle.setAttribute('fill', styleProperty.fill);
+                                pathEle.setAttribute('stroke', styleProperty.border.color);
+                                pathEle.setAttribute('opacity', (styleProperty.opacity).toString());
+                                pathEle.setAttribute('stroke-width', (styleProperty.border.width).toString());
+                            }
+                        }
+                    }
                     groupElement.appendChild(pathEle);
                 }
                 if (i === this.currentLayer.layerData.length - 1) {
@@ -387,6 +435,9 @@ export class LayerPanel {
                             });
                             this.groupElements.push(bubbleG);
                         }
+                    }
+                    if ((this.mapObject.markerModule && !this.mapObject.isTileMap) && this.mapObject.zoomSettings.enable) {
+                        this.mapObject.markerModule.calculateZoomCenterPositionAndFactor(this.mapObject.layersCollection);
                     }
                     let group: Element = (this.mapObject.renderer.createGroup({
                         id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_dataLableIndex_Group',
@@ -750,29 +801,83 @@ export class LayerPanel {
     }
 
     public arrangeTiles(): void {
-        let htmlString: string = this.templateCompiler(this.tiles);
-        if (getElementByID(this.mapObject.element.id + '_tile_parent')) {
-            document.getElementById(this.mapObject.element.id + '_tile_parent').innerHTML = htmlString;
+        if (this.mapObject.layers[this.mapObject.baseLayerIndex].layerType === 'GoogleStaticMap') {
+            this.renderGoogleMap(this.mapObject.layers[0].key, this.mapObject.staticMapZoom);
+        } else {
+            let htmlString: string = this.templateCompiler(this.tiles);
+            if (getElementByID(this.mapObject.element.id + '_tile_parent')) {
+                document.getElementById(this.mapObject.element.id + '_tile_parent').innerHTML = htmlString;
+            }
         }
     }
     private templateCompiler(tiles: Tile[]): string {
         let tileElment: string = '';
         let id: number = 0;
         for (let tile of tiles) {
-            if (this.urlTemplate.indexOf('tileX') !== -1) {
                 tileElment += '<div><div id="tile' + id + '" style="position:absolute;left: ' + tile.left + 'px;top: ' + tile.top +
                     'px;height: ' + tile.height + 'px;width: ' + tile.width + 'px;"><img src="' + tile.src + '"></img></div></div>';
                 id++;
-            } else {
-                tileElment = '<div style="position:absolute;"><img src="' + this.urlTemplate + '"></div>';
-                break;
-            }
         }
         return tileElment;
     }
+    /* tslint:disable:no-string-literal */
+    /**
+     * Static map rendering
+     * @param apikey 
+     * @private
+     */
+    public renderGoogleMap(apikey: string, zoom: number): void {
+        let staticMapString: string;
+        let map: Maps = this.mapObject;
+        // zoom = this.mapObject.zoomSettings.shouldZoomInitially ? this.mapObject.markerZoomFactor : zoom;
+        zoom = this.mapObject.tileZoomLevel;
+        let x: number; let y: number;
+        let totalSize: number = Math.pow(2, zoom) * 256;
+        x = (map.mapAreaRect.width / 2) - (totalSize / 2);
+        y = (map.mapAreaRect.height / 2) - (totalSize / 2);
+        let centerPoint: Point = new Point(null, null);
+        let diffX: number = 0; let diffY: number = 0;
+        let position: MapLocation = convertTileLatLongToPoint(
+            centerPoint, zoom, { x: x, y: y }, this.isMapCoordinates);
+        if (map.zoomModule && map.zoomSettings.enable) {
+            diffX = map.zoomModule.mouseDownLatLong['x'] - map.zoomModule.mouseMoveLatLong['x'];
+            diffY = map.zoomModule.mouseDownLatLong['y'] - map.zoomModule.mouseMoveLatLong['y'];
+        }
+        let panLatLng: Object = map.pointToLatLong(position.x - diffX, position.y - diffY);
+        map.centerPosition.latitude = panLatLng['latitude'];
+        map.centerPosition.longitude = panLatLng['longitude'];
+        let mapWidth: number;
+        let mapHeight: number;
+        if (isNullOrUndefined(parseInt(map.width, 10))) {
+            mapWidth = parseInt(map.width, 10) - 22;
+        } else {
+            mapWidth = Math.round(map.mapAreaRect.width);
+        }
+        if (isNullOrUndefined(parseInt(map.height, 10))) {
+            mapHeight = parseInt(map.height, 10) - 22;
+        } else {
+            mapHeight = Math.round(map.mapAreaRect.height);
+        }
+        let eleWidth: number = mapWidth > 640 ? (mapWidth - 640) / 2 : 0;
+        let eleHeight: number = mapHeight > 640 ? (mapHeight - 640) / 2 : 0;
+        let center: string;
+        let mapType: string = (map.layers[map.layers.length - 1].staticMapType).toString().toLowerCase();
+        if (map.centerPosition.latitude && map.centerPosition.longitude) {
+            center =  map.centerPosition.latitude.toString() + ',' + map.centerPosition.longitude.toString();
+            } else {
+            center = '0,0';
+        }
+        staticMapString = 'https://maps.googleapis.com/maps/api/staticmap?size=' + mapWidth + 'x' + mapHeight +
+            '&zoom=' + zoom + '&center=' + center + '&maptype=' + mapType + '&key=' + apikey;
+        document.getElementById(this.mapObject.element.id + '_tile_parent').innerHTML
+            = '<div id="' + this.mapObject.element.id + '_StaticGoogleMap"' + 'style="position:absolute; left:' + eleWidth + 'px; top:'
+            + eleHeight + 'px"><img src="' + staticMapString + '"></div>';
+    }
     private panTileMap(factorX: number, factorY: number, centerPosition: MapLocation): Point {
         let level: number = this.mapObject.tileZoomLevel;
-        let padding: number = 20; let x: number; let y: number;
+        let padding: number = this.mapObject.layers[this.mapObject.layers.length - 1].layerType !== 'GoogleStaticMap' ?
+            20 : 0;
+        let x: number; let y: number;
         let totalSize: number = Math.pow(2, level) * 256;
         x = (factorX / 2) - (totalSize / 2);
         y = (factorY / 2) - (totalSize / 2);

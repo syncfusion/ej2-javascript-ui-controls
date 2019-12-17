@@ -53,24 +53,7 @@ export namespace Input {
         } else {
             createFloatingInput(args, inputObject, makeElement);
         }
-        checkInputValue(args.floatLabelType, args.element as HTMLInputElement);
-        args.element.addEventListener('focus', function() : void {
-          let parent: HTMLElement = getParentNode(this);
-          if (parent.classList.contains('e-input-group') || parent.classList.contains('e-outline')
-             || parent.classList.contains('e-filled')) {
-           parent.classList.add('e-input-focus');
-          }
-        });
-        args.element.addEventListener('blur', function() : void {
-          let parent: HTMLElement = getParentNode(this);
-          if (parent.classList.contains('e-input-group') || parent.classList.contains('e-outline')
-             || parent.classList.contains('e-filled')) {
-           parent.classList.remove('e-input-focus');
-          }
-        });
-        args.element.addEventListener('input', () : void => {
-            checkInputValue(floatType, args.element as HTMLInputElement);
-        });
+        bindInitialEvent(args);
         if (!isNullOrUndefined(args.properties) && !isNullOrUndefined(args.properties.showClearButton) &&
             args.properties.showClearButton && args.element.tagName !== 'TEXTAREA') {
             setClearButton(args.properties.showClearButton, args.element, inputObject, true, makeElement);
@@ -92,6 +75,26 @@ export namespace Input {
         return inputObject;
     }
 
+    export function bindInitialEvent(args: InputArgs): void {
+        checkInputValue(args.floatLabelType, args.element as HTMLInputElement);
+        args.element.addEventListener('focus', function() : void {
+          let parent: HTMLElement = getParentNode(this);
+          if (parent.classList.contains('e-input-group') || parent.classList.contains('e-outline')
+             || parent.classList.contains('e-filled')) {
+           parent.classList.add('e-input-focus');
+          }
+        });
+        args.element.addEventListener('blur', function() : void {
+          let parent: HTMLElement = getParentNode(this);
+          if (parent.classList.contains('e-input-group') || parent.classList.contains('e-outline')
+             || parent.classList.contains('e-filled')) {
+           parent.classList.remove('e-input-focus');
+          }
+        });
+        args.element.addEventListener('input', () : void => {
+            checkInputValue(floatType, args.element as HTMLInputElement);
+        });
+    }
     function checkInputValue(floatLabelType: string, inputElement: HTMLInputElement): void {
         let inputValue: string = inputElement.value;
         if (inputValue !== '' && !isNullOrUndefined(inputValue)) {
@@ -120,7 +123,7 @@ export namespace Input {
         }
     }
 
-    function wireFloatingEvents(element: HTMLInputElement | HTMLTextAreaElement): void {
+    export function wireFloatingEvents(element: HTMLInputElement | HTMLTextAreaElement): void {
       element.addEventListener('focus', _focusFn);
       element.addEventListener('blur', _blurFn);
     }
@@ -274,7 +277,7 @@ export namespace Input {
         return button;
     }
 
-    function wireClearBtnEvents(element: HTMLInputElement | HTMLTextAreaElement, button: HTMLElement, container: HTMLElement): void {
+    export function wireClearBtnEvents(element: HTMLInputElement | HTMLTextAreaElement, button: HTMLElement, container: HTMLElement): void {
       button.addEventListener('click', (event: MouseEvent) => {
         if (!(element.classList.contains(CLASSNAMES.DISABLE) || element.readOnly)) {
           event.preventDefault();

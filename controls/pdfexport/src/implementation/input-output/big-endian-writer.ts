@@ -111,11 +111,17 @@ export class BigEndianWriter {
         if (buff === null) {
             throw new Error('Argument Null Exception : buff');
         }
-        let position : number = this.position;
-        for (let i : number = 0; i < buff.length; i++) {
-            this.buffer[position] = buff[i];
-            position++;
+        let result : number[] = [];
+        for (let i : number = 0; i < this.position; i++) {
+            result.push(this.buffer[i]);
         }
+        for (let i : number = 0; i < buff.length; i++) {
+            result.push(buff[i]);
+        }
+        for (let i : number = this.position; i < this.buffer.length; i++) {
+            result.push(this.buffer[i]);
+        }
+        this.buffer = result;
         this.internalPosition += buff.length;
     }
 }

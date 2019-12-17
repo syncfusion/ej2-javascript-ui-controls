@@ -22,6 +22,7 @@ export type View = 'Day' | 'Week' | 'WorkWeek' | 'Month' | 'Agenda' | 'MonthAgen
 export type CurrentAction = 'Add' | 'Save' | 'Delete' | 'DeleteOccurrence' | 'DeleteSeries' | 'EditOccurrence'
     | 'EditSeries' | 'EditFollowingEvents' | 'DeleteFollowingEvents';
 
+/** @deprecated */
 export type ReturnType = { result: Object[], count: number, aggregates?: Object };
 
 export type PopupType = 'Editor' | 'EventContainer' | 'QuickInfo' | 'RecurrenceAlert' | 'DeleteAlert' | 'ViewEventInfo' | 'EditEventInfo' |

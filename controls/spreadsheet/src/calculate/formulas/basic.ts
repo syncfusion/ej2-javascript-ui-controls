@@ -411,56 +411,51 @@ export class BasicFormulas {
         }
         let product: number = 1;
         let val: string;
-        let orgValue: number | string;
-        let countNum: number = 0;
+        let orgValue: string;
+        let argsHit: boolean = true;
+        let parseVal: number;
         if (!isNullOrUndefined(range)) {
             let argArr: string[] = range;
             for (let i: number = 0; i < argArr.length; i++) {
                 let rangevalue: string = argArr[i];
                 if (rangevalue.indexOf(':') > -1 && this.parent.isCellReference(rangevalue)) {
-                    countNum = 0;
                     let cellCollection: string[] | string = this.parent.getCellCollection(rangevalue);
                     for (let j: number = 0; j < cellCollection.length; j++) {
                         val = this.parent.getValueFromArg(cellCollection[j].split(this.parent.tic).join(''));
                         if (this.parent.getErrorStrings().indexOf(val) > -1) {
                             return val;
                         }
-
-                        /* tslint:disable-next-line */
-                        val = (val.split(this.parent.tic).join('') === 'TRUE') ? '1' : (val.split(this.parent.tic).join('') === 'FALSE') ? '0' : val;
-                        if (isNullOrUndefined(val) || isNaN(this.parent.parseFloat(val))) {
-                            countNum = countNum + 1;
-                            if (countNum === cellCollection.length) {
-                                product = 0;
+                        val = (val.split(this.parent.tic).join('') === 'TRUE') ? '1' :
+                            (val.split(this.parent.tic).join('') === 'FALSE') ? '0' : val;
+                        parseVal = this.parent.parseFloat(val);
+                        if (!isNaN(parseVal)) {
+                            if (val.length > 0) {
+                                product = product * parseVal;
+                                argsHit = false;
                             }
-                            continue;
                         }
-                        product = product * this.parent.parseFloat(val);
                     }
                 } else {
                     orgValue = this.parent.getValueFromArg(argArr[i].split(this.parent.tic).join(''));
                     if (this.parent.getErrorStrings().indexOf(orgValue) > -1) {
                         return orgValue;
                     }
-                    /* tslint:disable-next-line */
-                    orgValue = (orgValue.split(this.parent.tic).join('') === 'TRUE') ? '1' : (orgValue.split(this.parent.tic).join('') === 'FALSE') ? '0' : orgValue;
-                    if (isNullOrUndefined(orgValue) || isNaN(this.parent.parseFloat(orgValue))) {
-                        countNum = countNum + 1;
-                        if (countNum === argArr.length) {
-                            product = 0;
+                    orgValue = (orgValue.split(this.parent.tic).join('') === 'TRUE') ? '1' :
+                        (orgValue.split(this.parent.tic).join('') === 'FALSE') ? '0' : orgValue;
+                    parseVal = this.parent.parseFloat(orgValue);
+                    if (!isNaN(parseVal)) {
+                        if (orgValue.length > 0) {
+                            product = product * parseVal;
+                            argsHit = false;
                         }
-                        continue;
                     }
                     if (this.parent.getErrorStrings().indexOf(orgValue) > -1) {
                         return orgValue;
                     }
-                    if (orgValue.length > 0) {
-                        product = product * this.parent.parseFloat(orgValue + '');
-                    }
                 }
             }
         }
-        return product.toString();
+        return argsHit ? '0' : product.toString();
     }
 
     /** @hidden */
@@ -863,22 +858,25 @@ export class BasicFormulas {
         let argArrs: string[] = args;
         let cellCol: string[] | string;
         let result: number = 0;
-        let cellVal: string;
+        let cellValue: string | number;
         let length: number = 0;
+        let parseValue: string | number;
         for (let k: number = 0; k < argArrs.length; k++) {
             if (argArrs[k].indexOf(':') > -1 && this.parent.isCellReference(argArrs[k])) {
                 cellCol = this.parent.getCellCollection(argArrs[k].split(this.parent.tic).join(''));
                 for (let j: number = 0; j < cellCol.length; j++) {
-                    cellVal = this.parent.getValueFromArg(cellCol[j]);
-                    if (cellVal.toUpperCase() === this.parent.trueValue) {
-                        cellVal = '1';
-                    } else if (cellVal.toUpperCase() === this.parent.falseValue || cellVal === '') {
-                        cellVal = '0';
-                    } else if (isNaN(parseFloat(cellVal))) {
-                        return this.parent.getErrorStrings()[CommonErrors.name];
-                    }
-                    if (cellVal.length > 0) {
-                        result = result + parseFloat(cellVal);
+                    cellValue = this.parent.getValueFromArg(cellCol[j]);
+                    if (cellValue.toUpperCase() === this.parent.trueValue) {
+                        cellValue = '1';
+                    } else if (cellValue.toUpperCase() === this.parent.falseValue || cellValue === '') {
+                        cellValue = '0';
+                    } else if (this.parent.getErrorStrings().indexOf(cellValue) > -1) {
+                        return cellValue;
+                    } else if (cellValue.length > 0) {
+                        parseValue = parseFloat(cellValue);
+                        cellValue = !isNaN(parseValue) ? parseValue : 0;
+                        result = result + cellValue;
+                        length = length + 1;
                     }
                 }
                 length = cellCol.length;
@@ -889,19 +887,19 @@ export class BasicFormulas {
                 if (argArrs[k] === this.parent.falseValue || argArrs[k] === '') {
                     argArrs[k] = '0';
                 }
-                let cellValue: string = this.parent.getValueFromArg(argArrs[k].split(this.parent.tic).join(''));
-                if (argArrs[k].indexOf(this.parent.tic) > -1) {
-                    if (isNaN(parseFloat(argArrs[k].split(this.parent.tic).join('')))) {
-                        return this.parent.getErrorStrings()[CommonErrors.value];
-                    }
-                    if (isNaN(parseFloat(cellValue))) {
-                        return this.parent.getErrorStrings()[CommonErrors.name];
-                    }
-                    if (cellValue.length > 0) {
-                        result = result + parseFloat(cellValue);
-                    }
+                cellValue = this.parent.getValueFromArg(argArrs[k].split(this.parent.tic).join(''));
+                if (this.parent.getErrorStrings().indexOf(cellValue) > -1) {
+                    return cellValue;
+                }
+                if (cellValue.length > 0) {
+                    parseValue = parseFloat(cellValue);
+                    cellValue = !isNaN(parseValue) ? parseValue : 0;
+                    result = result + cellValue;
                     length = length + 1;
                 }
+            }
+            if (length === 0) {
+                return this.parent.getErrorStrings()[CommonErrors.divzero];
             }
         }
         return result / length;

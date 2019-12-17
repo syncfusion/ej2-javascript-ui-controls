@@ -1,15 +1,15 @@
 /**
  * Chart legend
  */
-import { remove, Browser, extend, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { remove, Browser, extend } from '@syncfusion/ej2-base';
 import { Series } from '../series/chart-series';
 import { Indexes } from '../../common/model/base';
 import { ChartSeriesType, ChartDrawType } from '../utils/enum';
 import { LegendOptions, BaseLegend } from '../../common/legend/legend';
 import { Chart } from '../../chart';
 import { LegendSettingsModel } from '../../common/legend/legend-model';
-import { textTrim, ChartLocation, removeElement, getElement, RectOption, withInBounds } from '../../common/utils/helper';
-import { Size, measureText, Rect, CanvasRenderer } from '@syncfusion/ej2-svg-base';
+import { textTrim, ChartLocation, removeElement, RectOption, withInBounds, blazorTemplatesReset } from '../../common/utils/helper';
+import { Size, measureText, Rect, CanvasRenderer, getElement } from '@syncfusion/ej2-svg-base';
 import { ILegendRegions } from '../../common/model/interface';
 import { ILegendRenderEventArgs, ILegendClickEventArgs } from '../../chart/model/chart-interface';
 import { legendRender, legendClick } from '../../common/model/constants';
@@ -198,12 +198,12 @@ export class Legend extends BaseLegend {
             }
             chart.animateSeries = false;
             chart.redraw = chart.enableAnimation;
+            blazorTemplatesReset(chart);
             removeElement(
                 getElement(chart.element.id + '_Secondary_Element').querySelectorAll('.ejSVGTooltip')[0]
             );
             this.redrawSeriesElements(series, chart);
             chart.removeSvg();
-            resetBlazorTemplate(chart.element.id + '_DataLabel');
             chart.refreshAxis();
             series.refreshAxisLabel();
             this.refreshSeries(chart.visibleSeries);

@@ -1,5 +1,5 @@
-import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { closest as closestElement, removeClass, classList, remove, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined, isBlazor, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { closest as closestElement, removeClass, classList, remove } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { getElementIndex, inArray, parentsUntil, getPosition, isActionPrevent } from '../base/util';
 import { IGrid, IAction, NotifyArgs } from '../base/interface';
@@ -99,7 +99,7 @@ export class Reorder implements IAction {
         let uId: string = dropElement.getAttribute('e-mappinguid');
         let column: Column = gObj.getColumnByUid(uId);
         if (!closestElement(e.target, 'th') || (!isNullOrUndefined(column) && (!column.allowReordering || column.lockColumn))) {
-            this.parent.log('action_disabled_column', { moduleName: this.getModuleName(), column });
+            this.parent.log('action_disabled_column', {moduleName: this.getModuleName(), column});
             return;
         }
         let destElem: Element = closestElement(e.target as Element, '.e-headercell');
@@ -108,7 +108,7 @@ export class Reorder implements IAction {
         if (!isNullOrUndefined(destElemUid)) {
             let destColumn: Column = gObj.getColumnByUid(destElemUid);
             if (isNullOrUndefined(destColumn) || !destColumn.allowReordering || destColumn.lockColumn) {
-                this.parent.log('action_disabled_column', { moduleName: this.getModuleName(), column, destColumn });
+                this.parent.log('action_disabled_column', {moduleName: this.getModuleName(), column, destColumn});
                 return;
             }
         }
@@ -151,7 +151,7 @@ export class Reorder implements IAction {
         return isActionPrevent(gObj);
     }
 
-    private moveColumns(destIndex: number, column: Column, reorderByColumn?: boolean): void {
+    private moveColumns(destIndex: number, column: Column, reorderByColumn?: boolean, preventRefresh?: boolean): void {
         let gObj: IGrid = this.parent;
         if (this.isActionPrevent(gObj)) {
             gObj.notify(events.preventBatch, { instance: this, handler: this.moveColumns, arg1: destIndex, arg2: column });
@@ -168,7 +168,7 @@ export class Reorder implements IAction {
                 }
             }
             let col: Column =
-                this.parent.getColumnByUid(this.destElement.firstElementChild.getAttribute('e-mappinguid'));
+            this.parent.getColumnByUid(this.destElement.firstElementChild.getAttribute('e-mappinguid'));
             if (col) {
                 for (let i: number = 0; i < cols.length; i++) {
                     if (cols[i].field === col.field) {
@@ -190,9 +190,11 @@ export class Reorder implements IAction {
         (cols as Column[]).splice(destIndex, 0, (cols as Column[]).splice(srcIdx, 1)[0] as Column);
         gObj.getColumns(true);
         gObj.notify(events.columnPositionChanged, { fromIndex: destIndex, toIndex: srcIdx });
-        gObj.notify(events.modelChanged, {
-            type: events.actionBegin, requestType: 'reorder'
-        });
+        if (preventRefresh !== false) {
+            gObj.notify(events.modelChanged, {
+                type: events.actionBegin, requestType: 'reorder', fromIndex: destIndex, toIndex: srcIdx, toColumnUid: column.uid
+            });
+        }
     }
 
     private targetParentContainerIndex(srcElem: Element, destElem: Element): number {
@@ -214,7 +216,7 @@ export class Reorder implements IAction {
             let fRows: Element[] = [].slice.call(this.parent.getHeaderTable().querySelectorAll('.e-columnheader'));
             if (frozenColumns) {
                 let mRows: Element[] = [].slice.call(this.parent.getHeaderContent()
-                    .querySelector('.e-movableheader').querySelectorAll('.e-columnheader'));
+                .querySelector('.e-movableheader').querySelectorAll('.e-columnheader'));
                 for (let i: number = 0; i < fRows.length; i++) {
                     fTh = [].slice.call(fRows[i].getElementsByClassName('e-headercell'));
                     mTh = [].slice.call(mRows[i].getElementsByClassName('e-headercell'));
@@ -267,8 +269,8 @@ export class Reorder implements IAction {
         let fColumn: Column = this.parent.getColumnByField(fromFName);
         let toColumn: Column = this.parent.getColumnByField(toFName);
         if ((!isNullOrUndefined(fColumn) && (!fColumn.allowReordering || fColumn.lockColumn)) ||
-            (!isNullOrUndefined(toColumn) && (!toColumn.allowReordering || fColumn.lockColumn))) {
-            this.parent.log('action_disabled_column', { moduleName: this.getModuleName(), column: fColumn, destColumn: toColumn });
+        (!isNullOrUndefined(toColumn) && (!toColumn.allowReordering || fColumn.lockColumn))) {
+            this.parent.log('action_disabled_column', {moduleName: this.getModuleName(), column: fColumn, destColumn: toColumn});
             return;
         }
         let column: Column = this.parent.getColumnByField(toFName);
@@ -298,15 +300,27 @@ export class Reorder implements IAction {
             let columns: Column[] = parent ? parent.columns as Column[] : this.parent.columns as Column[];
             let destIndex: number = inArray(column, columns);
             if (destIndex > -1) {
-                this.moveColumns(destIndex, this.parent.getColumnByField(fromFNames[i]), true);
+                this.moveColumns(
+                    destIndex, this.parent.getColumnByField(fromFNames[i]), true, !(isBlazor() && !this.parent.isJsComponent));
             }
             if (this.parent.getColumnIndexByField(fromFNames[i + 1]) >= destIndex) {
                 toIndex++; //R to L
             }
         }
+
+        if (isBlazor() && !this.parent.isJsComponent) {
+            let cols: Column[] = this.parent.getColumns();
+            this.parent.notify(events.modelChanged, {
+                fromColumnUid: fromFNames.map((name: string) => cols.filter((col: Column) => col.field === name)[0].uid),
+                toColumnUid: toColumn.uid,
+                isMultipleReorder: true,
+                requestType: 'reorder',
+                type: 'actionBegin'
+            });
+        }
     }
 
-    private moveTargetColumn(column: Column, toIndex: number): void {
+    private moveTargetColumn(column: Column, toIndex: number) : void {
         if (toIndex > -1) {
             this.moveColumns(toIndex, column, true);
         }
@@ -358,7 +372,7 @@ export class Reorder implements IAction {
      */
     public reorderColumnByTargetIndex(fieldName: string | string[], toIndex: number): void {
         typeof fieldName === 'string' ? this.reorderSingleColumnByTarget(fieldName, toIndex) :
-            this.reorderMultipleColumnByTarget(fieldName, toIndex);
+        this.reorderMultipleColumnByTarget(fieldName, toIndex);
     }
 
     private enableAfterRender(e: NotifyArgs): void {
@@ -371,14 +385,10 @@ export class Reorder implements IAction {
         let header: Element = (this.parent.element.querySelector('.e-headercontent') as Element);
         this.upArrow = header.appendChild(
             this.parent
-                .createElement('div', { className: 'e-icons e-icon-reorderuparrow e-reorderuparrow', attrs: { style: 'display:none' } }));
+            .createElement('div', { className: 'e-icons e-icon-reorderuparrow e-reorderuparrow', attrs: { style: 'display:none' } }));
         this.downArrow = header.appendChild(
             this.parent
-                .createElement(
-                    'div', {
-                    className: 'e-icons e-icon-reorderdownarrow e-reorderdownarrow',
-                    attrs: { style: 'display:none' }
-                }));
+            .createElement('div', { className: 'e-icons e-icon-reorderdownarrow e-reorderdownarrow', attrs: { style: 'display:none' } }));
     }
 
     /**
@@ -387,11 +397,13 @@ export class Reorder implements IAction {
      * @hidden
      */
     public onActionComplete(e: NotifyArgs): void {
+        if (isBlazor() && !this.parent.isJsComponent) {
+            e.rows = null;
+        }
         this.parent.trigger(events.actionComplete, extend(e, { type: events.actionComplete }));
         let target: Element = this.fromCol && this.parent.getColumnHeaderByField(this.fromCol);
         if (target) {
             this.parent.focusModule.onClick({ target }, true);
-            this.parent.focusModule.addOutline();
         }
     }
 
@@ -511,7 +523,7 @@ export class Reorder implements IAction {
         this.element = target.classList.contains('e-headercell') ? target as HTMLElement :
             parentsUntil(target, 'e-headercell') as HTMLElement;
         if (!e.column.allowReordering || e.column.lockColumn) {
-            return;
+             return;
         }
         this.x = getPosition(e.event).x + gObj.getContent().firstElementChild.scrollLeft;
         gObj.trigger(events.columnDragStart, {

@@ -21,7 +21,6 @@ export function disableBlazorMode(): void {
     isBlazorPlatform = false;
 }
 
-
 /**
  * Create Instance from constructor function with desired parameters.
  * @param {Function} classFunction - Class function to which need to create instance
@@ -169,7 +168,7 @@ export function merge(source: Object, destination: Object): void {
  * @private
  */
 export function extend(copied: Object, first: Object, second?: Object, deep?: boolean): Object {
-    let result: IKeyValue = copied as IKeyValue || {} as IKeyValue;
+    let result: IKeyValue = copied && typeof copied === 'object' ? copied as IKeyValue : {} as IKeyValue;
     let length: number = arguments.length;
     if (deep) {
         length = length - 1;
@@ -183,10 +182,14 @@ export function extend(copied: Object, first: Object, second?: Object, deep?: bo
             let src: Object = result[key];
             let copy: Object = obj1[key];
             let clone: Object;
-            if (deep && (isObject(copy) || Array.isArray(copy))) {
+            if (deep && !(src instanceof Event) && (isObject(copy) || Array.isArray(copy))) {
                 if (isObject(copy)) {
                     clone = src ? src : {};
-                    result[key] = extend({}, clone, copy, deep);
+                    if (Array.isArray(clone) && clone.hasOwnProperty('isComplexArray')) {
+                        extend(clone, {}, copy, deep);
+                    } else {
+                        result[key] = extend(clone, {}, copy, deep);
+                    }
                 } else {
                     clone = src ? src : [];
                     result[key] = extend([], clone, copy, deep);
@@ -370,7 +373,6 @@ export function enableBlazorMode(): void {
  * @return {boolean} result
  * @private
  */
-
 export function isBlazor(): boolean {
     return isBlazorPlatform;
 }

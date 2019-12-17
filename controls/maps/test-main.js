@@ -43,11 +43,6 @@ require.config({
             main: 'ej2-file-utils.umd.min.js'
         },
         {
-            name: '@syncfusion/ej2-popups',
-            location: 'node_modules/@syncfusion/ej2-popups/dist',
-            main: 'ej2-popups.umd.min.js'
-        },
-        {
             name: '@syncfusion/ej2-buttons',
             location: 'node_modules/@syncfusion/ej2-buttons/dist',
             main: 'ej2-buttons.umd.min.js'

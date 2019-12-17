@@ -6,18 +6,19 @@ import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda } from '../
 import { triggerScrollEvent, createSchedule, destroy } from '../util.spec';
 import { resourceData, generateObject, defaultData, cloneDataSource } from '../base/datasource.spec';
 import * as util from '../../../src/schedule/base/util';
+import * as cls from '../../../src/schedule/base/css-constant';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
 
 describe('Agenda View', () => {
     beforeAll(() => {
-        // tslint:disable-next-line:no-any
+        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             // tslint:disable-next-line:no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); //Skips test (in Chai)
+            (this as any).skip(); //Skips test (in Chai)
             return;
         }
     });
@@ -35,6 +36,18 @@ describe('Agenda View', () => {
             4000);
         afterAll(() => {
             destroy(schObj);
+        });
+
+        it('Initial load testing', () => {
+            expect(schObj.activeView.getDateSlots([], []).length).toEqual(0);
+            expect(schObj.activeView.generateColumnLevels().length).toEqual(0);
+            expect(schObj.activeView.getColumnLevels()).toBeUndefined();
+            expect(schObj.activeView.serverRenderLayout()).toBeUndefined();
+            schObj.activeViewOptions.startHour = '';
+            schObj.activeViewOptions.endHour = '';
+            let startEndHour: Date = new Date(2000, 0, 0, 0);
+            expect(schObj.activeView.getStartHour().getTime()).toEqual(startEndHour.getTime());
+            expect(schObj.activeView.getEndHour().getTime()).toEqual(startEndHour.getTime());
         });
 
         it('Checking view class name in container', () => {
@@ -884,6 +897,92 @@ describe('Agenda View', () => {
             expect(eventElements.length).toEqual(2);
             expect(eventElements[0].querySelector('.e-date-time').textContent).toEqual('All day (Day 1/2)');
             expect(eventElements[1].querySelector('.e-date-time').textContent).toEqual('12:00 AM - 11:59 PM (Day 2/2)');
+        });
+    });
+
+    describe('Checking minDate and maxDate', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let schOptions: ScheduleModel = {
+                width: '100%',
+                height: '650px',
+                views: [{ option: 'Day' }, { option: 'Agenda' }],
+                minDate: new Date(2017, 9, 29),
+                selectedDate: new Date(2017, 9, 30),
+                maxDate: new Date(2017, 9, 31),
+                currentView: 'Agenda'
+            };
+            let eventData: Object[] = [{
+                Id: 1,
+                Subject: 'Event-1',
+                StartTime: new Date(2017, 9, 29, 10),
+                EndTime: new Date(2017, 9, 29, 11),
+                IsAllDay: false
+            }, {
+                Id: 2,
+                Subject: 'Event-2',
+                StartTime: new Date(2017, 9, 30, 10),
+                EndTime: new Date(2017, 9, 30, 11),
+                IsAllDay: false
+            }, {
+                Id: 3,
+                Subject: 'Event-3',
+                StartTime: new Date(2017, 9, 31, 10),
+                EndTime: new Date(2017, 9, 31, 11),
+                IsAllDay: false
+            }, {
+                Id: 4,
+                Subject: 'Event-4',
+                StartTime: new Date(2017, 10, 1, 10),
+                EndTime: new Date(2017, 10, 1, 11),
+                IsAllDay: false
+            }];
+            schObj = createSchedule(schOptions, eventData, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('minDate and maxDate', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Oct 30 - Nov 05, 2017');
+                expect(prevButton.getAttribute('aria-disabled')).toEqual('true');
+                expect(nextButton.getAttribute('aria-disabled')).toEqual('true');
+                done();
+            };
+            let prevButton: HTMLElement = schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS);
+            let nextButton: HTMLElement = schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS);
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('false');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('false');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Oct 30 - Nov 05, 2017');
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Oct 29 - Nov 04, 2017');
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('true');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('false');
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Oct 29 - Nov 04, 2017');
+            (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Oct 30 - Nov 05, 2017');
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('false');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('false');
+            (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Oct 31 - Nov 06, 2017');
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('false');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('true');
+            (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('Oct 31 - Nov 06, 2017');
+            schObj.minDate = new Date(2017, 9, 30);
+            schObj.maxDate = new Date(2017, 9, 30);
+            schObj.selectedDate = new Date(2017, 9, 30);
+            schObj.dataBind();
+        });
+
+        it('Day view navigation checking', () => {
+            schObj.dataBound = () => {
+                expect(schObj.currentView).toEqual('Day');
+            };
+            expect(schObj.currentView).toEqual('Agenda');
+            (schObj.element.querySelectorAll('.e-m-date')[2] as HTMLElement).click();
         });
     });
 

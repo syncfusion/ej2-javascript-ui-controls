@@ -11,12 +11,12 @@ Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
 
 describe('Month Event Render Module', () => {
     beforeAll(() => {
-        // tslint:disable-next-line:no-any
+        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             // tslint:disable-next-line:no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); //Skips test (in Chai)
+            (this as any).skip(); //Skips test (in Chai)
             return;
         }
     });
@@ -98,9 +98,15 @@ describe('Month Event Render Module', () => {
             let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(2);
             expect(schObj.getWorkCellElements().length).toEqual(25);
+        });
+
+        it('elements in DOM - setmodel checking', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.getWorkCellElements().length).toEqual(35);
+                done();
+            };
             schObj.showWeekend = true;
             schObj.dataBind();
-            expect(schObj.getWorkCellElements().length).toEqual(35);
         });
     });
 

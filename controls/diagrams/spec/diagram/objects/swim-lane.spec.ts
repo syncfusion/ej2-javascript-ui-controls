@@ -484,6 +484,7 @@ describe('Diagram Control', () => {
             }, 1000);
         });
     });
+
     describe('Vertical Swimlane without phase', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

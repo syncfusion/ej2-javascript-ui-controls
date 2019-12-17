@@ -2,7 +2,18 @@
 
 ## [Unreleased]
 
-## 17.3.34 (2019-12-10)
+## 17.4.39 (2019-12-17)
+
+### Spreadsheet
+
+#### New Features
+
+- **Filtering:** Helps you to view specific rows in the spreadsheet by hiding the other rows.
+- **Undo Redo:** Provides the option to perform undo redo operations in spreadsheet.
+- **Collaborative Editing:** Provides the option for real time changes across multiple users in the Spreadsheet.
+- **Hyperlink:** Provides the option to navigate the web links or cell reference within the sheet or to other sheets in spreadsheet.
+
+## 17.3.29 (2019-11-26)
 
 ### Spreadsheet
 

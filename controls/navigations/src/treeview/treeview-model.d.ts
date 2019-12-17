@@ -1,5 +1,5 @@
-﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined, BlazorDragEventArgs } from '@syncfusion/ej2-base';import { Property, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions } from '@syncfusion/ej2-base';import { Draggable, DragEventArgs, Droppable, DropEventArgs } from '@syncfusion/ej2-base';import { updateBlazorTemplate, resetBlazorTemplate , isBlazor, getElement  } from '@syncfusion/ej2-base';import { addClass, removeClass, closest, matches, detach, select, selectAll, isVisible, createElement, append } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { isNullOrUndefined as isNOU, Touch, TapEventArgs, getValue, setValue } from '@syncfusion/ej2-base';import { ListBase, ListBaseOptions, AriaAttributesMapping, FieldsMapping } from '@syncfusion/ej2-lists';import { createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';import { Input, InputObject } from '@syncfusion/ej2-inputs';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
-import {ExpandOnSettings,SortOrder,DataBoundEventArgs,DataSourceChangedEventArgs,DrawNodeEventArgs,NodeKeyPressEventArgs,NodeCheckEventArgs,NodeClickEventArgs,NodeExpandEventArgs,DragAndDropEventArgs,NodeEditEventArgs,NodeSelectEventArgs} from "./treeview";
+﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined, BlazorDragEventArgs } from '@syncfusion/ej2-base';import { Property, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions } from '@syncfusion/ej2-base';import { Draggable, DragEventArgs, Droppable, DropEventArgs } from '@syncfusion/ej2-base';import { updateBlazorTemplate, resetBlazorTemplate , isBlazor, getElement  } from '@syncfusion/ej2-base';import { addClass, removeClass, closest, matches, detach, select, selectAll, isVisible, createElement, append } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { isNullOrUndefined as isNOU, Touch, TapEventArgs, getValue, setValue, extend, merge, attributes } from '@syncfusion/ej2-base';import { ListBase, ListBaseOptions, AriaAttributesMapping, FieldsMapping } from '@syncfusion/ej2-lists';import { createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';import { Input, InputObject } from '@syncfusion/ej2-inputs';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
+import {ExpandOnSettings,SortOrder,FailureEventArgs,DataBoundEventArgs,DataSourceChangedEventArgs,DrawNodeEventArgs,NodeKeyPressEventArgs,NodeCheckEventArgs,NodeClickEventArgs,NodeExpandEventArgs,DragAndDropEventArgs,NodeEditEventArgs,NodeSelectEventArgs} from "./treeview";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -199,6 +199,12 @@ export interface TreeViewModel extends ComponentModel{
     cssClass?: string;
 
     /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default false
+     */
+    enableHtmlSanitizer?: boolean;
+
+    /**
      * Enables or disables persisting TreeView state between page reloads. If enabled, following APIs will persist.
      * 1. `selectedNodes` - Represents the nodes that are selected in the TreeView component.
      * 2. `checkedNodes`  - Represents the nodes that are checked in the TreeView component.
@@ -294,6 +300,13 @@ export interface TreeViewModel extends ComponentModel{
      * @default true
      */
     autoCheck?: boolean;
+
+    /**
+     * Triggers when any TreeView action failed to fetch the desired results. 
+     * @event 
+     * @blazorProperty 'OnActionFailure'
+     */
+    actionFailure?: EmitType<FailureEventArgs>;
 
     /**
      * Triggers when the TreeView control is created successfully.

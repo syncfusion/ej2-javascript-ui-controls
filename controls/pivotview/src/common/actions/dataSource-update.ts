@@ -120,7 +120,7 @@ export class DataSourceUpdate {
                             }
                             break;
                     }
-                    if(isBlazor()) { 
+                    if (isBlazor()) {
                         dataSourceUpdate.parent.control.pivotButtonModule.updateDataSource();
                         dataSourceUpdate.parent.control.axisFieldModule.render();
                     }
@@ -195,8 +195,9 @@ export class DataSourceUpdate {
             newField = {
                 name: fieldName,
                 caption: field.caption,
-                type: ((field.aggregateType as SummaryTypes) === undefined ? field.type === 'number' ? 'Sum' as SummaryTypes :
-                    'Count' as SummaryTypes : field.aggregateType as SummaryTypes),
+                type: (((field.aggregateType as SummaryTypes) === undefined || (field.aggregateType as SummaryTypes) === null) ?
+                    field.type === 'number' ? 'Sum' as SummaryTypes :
+                        'Count' as SummaryTypes : field.aggregateType as SummaryTypes),
                 showNoDataItems: field.showNoDataItems,
                 baseField: field.baseField,
                 baseItem: field.baseItem,

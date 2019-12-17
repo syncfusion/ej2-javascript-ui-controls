@@ -1,5 +1,5 @@
 import { isNullOrUndefined, L10n, getDefaultDateObject, getValue, cldrData } from '@syncfusion/ej2-base';
-import { MS_PER_DAY, addDays, resetTime } from '../schedule/base/util';
+import { MS_PER_DAY, addDays, resetTime, capitalizeFirstWord } from '../schedule/base/util';
 import { CalendarUtil, Islamic, Gregorian, CalendarType } from '../common/calendar-util';
 import { Timezone } from '../schedule/timezone/timezone';
 
@@ -31,7 +31,7 @@ export function generateSummary(rule: string, localeObject: L10n, locale: string
         case 'WEEKLY':
             summary += localeObject.getConstant(WEEKS) + ' ' + localeObject.getConstant(ON) + ' ';
             ruleObject.day.forEach((day: string, index: number) => {
-                summary += getValue(DAYINDEXOBJECT[day], cldrObj);
+                summary += capitalizeFirstWord(<string>getValue(DAYINDEXOBJECT[day], cldrObj), 'single');
                 summary += (((ruleObject.day.length - 1) === index) ? '' : ', ');
             });
             break;
@@ -41,7 +41,7 @@ export function generateSummary(rule: string, localeObject: L10n, locale: string
             break;
         case 'YEARLY':
             summary += localeObject.getConstant(YEARS) + ' ' + localeObject.getConstant(ON) + ' ';
-            summary += getValue((ruleObject.month[0]).toString(), cldrObj1) + ' ';
+            summary += capitalizeFirstWord(<string>getValue((ruleObject.month[0]).toString(), cldrObj1), 'single') + ' ';
             summary += getMonthSummary(ruleObject, cldrObj, localeObject);
             break;
     }
@@ -51,7 +51,7 @@ export function generateSummary(rule: string, localeObject: L10n, locale: string
         let tempDate: Date = ruleObject.until;
         summary += ', ' + localeObject.getConstant(UNTIL)
             + ' ' + tempDate.getDate()
-            + ' ' + getValue((tempDate.getMonth() + 1).toString(), cldrObj1)
+            + ' ' + capitalizeFirstWord(<string>getValue((tempDate.getMonth() + 1).toString(), cldrObj1), 'single')
             + ' ' + tempDate.getFullYear();
     }
     return summary;
@@ -63,7 +63,7 @@ function getMonthSummary(ruleObject: RecRule, cldrObj: string[], localeObj: L10n
     } else if (ruleObject.day) {
         let pos: number = ruleObject.setPosition - 1;
         summary += localeObj.getConstant(WEEKPOS[pos > -1 ? pos : (WEEKPOS.length - 1)])
-            + ' ' + getValue(DAYINDEXOBJECT[ruleObject.day[0]], cldrObj);
+            + ' ' + capitalizeFirstWord(<string>getValue(DAYINDEXOBJECT[ruleObject.day[0]], cldrObj), 'single');
     }
     return summary;
 }
@@ -439,6 +439,9 @@ function monthlyDateTypeProcess(startDate: Date, endDate: Date, data: number[], 
 function monthlyDateTypeProcessforMonthFreq(startDate: Date, endDate: Date, data: number[], ruleObject: RecRule): void {
     let ruleData: RuleData = initializeRecRuleVariables(startDate, ruleObject);
     ruleData.tempDate = ruleData.mainDate = calendarUtil.getMonthStartDate(ruleData.tempDate);
+    if (ruleObject.month.length === 1 && ruleObject.month[0] === 2 && ruleObject.monthDay.length === 1 && ruleObject.monthDay[0] === 30) {
+        return;
+    }
     while (compareDates(ruleData.tempDate, endDate)) {
         ruleData.beginDate = new Date(ruleData.tempDate.getTime());
         processDateCollectionForByMonthDay(ruleObject, ruleData, endDate, true, startDate, data);
@@ -1165,6 +1168,7 @@ export function getCalendarUtil(calendarMode: CalendarType): CalendarUtil {
 
 let startDateCollection: { [key: string]: Date } = {};
 
+/** @hidden */
 export interface RecRule {
     freq: FreqType;
     interval: number;
@@ -1195,6 +1199,7 @@ interface RuleData {
     state?: boolean;
 }
 
+/** @hidden */
 export type FreqType = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 type MonthlyType = 'date' | 'day' | 'both';
 type YearRuleType = 'MONTH' | 'WEEKNO' | 'YEARDAY';

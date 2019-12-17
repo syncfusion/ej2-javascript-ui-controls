@@ -1,4 +1,4 @@
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { Internationalization, setCulture, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';
 import { IValueFormatter } from '../base/interface';
 /**
@@ -17,6 +17,10 @@ export class ValueFormatter implements IValueFormatter {
 
     public getFormatFunction(format: NumberFormatOptions | DateFormatOptions): Function {
         if ((<DateFormatOptions>format).type) {
+            if (isBlazor()) {
+                let isServerRendered: string = 'isServerRendered';
+                format[isServerRendered] = true;
+            }
             return this.intl.getDateFormat(<DateFormatOptions>format);
         } else {
             return this.intl.getNumberFormat(<DateFormatOptions>format);
@@ -25,6 +29,10 @@ export class ValueFormatter implements IValueFormatter {
 
     public getParserFunction(format: NumberFormatOptions | DateFormatOptions): Function {
         if ((<DateFormatOptions>format).type) {
+            if (isBlazor()) {
+                let isServerRendered: string = 'isServerRendered';
+                format[isServerRendered] = true;
+            }
             return this.intl.getDateParser(<DateFormatOptions>format);
         } else {
             return this.intl.getNumberParser(<DateFormatOptions>format);

@@ -902,7 +902,12 @@ function getImageUrl(parent, item) {
         imgUrl = baseUrl + '?path=' + parent.path + fileName;
     }
     imgUrl = imgUrl + '&time=' + (new Date().getTime()).toString();
-    return imgUrl;
+    let eventArgs = {
+        fileDetails: [item],
+        imageUrl: imgUrl
+    };
+    parent.trigger('beforeImageLoad', eventArgs);
+    return eventArgs.imageUrl;
 }
 /* istanbul ignore next */
 function getFullPath(parent, data, path) {
@@ -1448,7 +1453,7 @@ function doDownloadFiles(parent, data, newIds) {
 }
 function createDeniedDialog(parent, data, action) {
     let message = getValue('message', getValue('permission', data));
-    message = (message === '') ? '"' + getValue('name', data) + '" is not accessible. You need permission to perform the ' +
+    message = (message === '') ? '"' + getValue('name', data) + '" is not accessible. you need permission to perform the ' +
         action + ' action.' : message;
     let response = {
         error: {
@@ -1468,11 +1473,11 @@ function hasReadAccess(data) {
 }
 function hasEditAccess(data) {
     let permission = getValue('permission', data);
-    return permission ? ((getValue('read', permission) && (getValue('write', permission)))) : true;
+    return permission ? ((getValue('read', permission) && getValue('write', permission))) : true;
 }
 function hasContentAccess(data) {
     let permission = getValue('permission', data);
-    return permission ? ((getValue('read', permission) && (getValue('writeContents', permission)))) : true;
+    return permission ? ((getValue('read', permission) && getValue('writeContents', permission))) : true;
 }
 function hasUploadAccess(data) {
     let permission = getValue('permission', data);
@@ -1637,6 +1642,7 @@ function createAjax(parent, data, fn, event, operation, targetPath) {
                     parent.notify(afterRequest, { action: 'success' });
                     let id = parent.expandedId ? parent.expandedId : parent.pathId[parent.pathId.length - 1];
                     if (!isNullOrUndefined(result.cwd) && (getValue('action', data) === 'read')) {
+                        result.cwd.name = parent.rootAliasName || result.cwd.name;
                         setValue('_fm_id', id, result.cwd);
                         setValue(id, result.cwd, parent.feParent);
                         if (!isNullOrUndefined(result.files) || result.error.code === '401') {
@@ -1661,6 +1667,23 @@ function createAjax(parent, data, fn, event, operation, targetPath) {
                             setNodeId(result, id);
                             setValue(id, result.files, parent.feFiles);
                         }
+                    }
+                    if (!isNullOrUndefined(result.details) && !isNullOrUndefined(parent.rootAliasName)) {
+                        let rootName = parent.rootAliasName || getValue('name', result.details);
+                        let location = getValue('location', result.details).replace(new RegExp('/', 'g'), '\\');
+                        if ((getValue('path', data) === '/') || (parent.hasId && getValue('path', data).match(/[/]/g).length === 1)) {
+                            if (getValue('names', data).length === 0) {
+                                setValue('name', rootName, result.details);
+                                location = rootName;
+                            }
+                            else {
+                                location = location.replace(location.substring(0, location.indexOf('\\')), rootName);
+                            }
+                        }
+                        else {
+                            location = location.replace(location.substring(0, location.indexOf('\\')), rootName);
+                        }
+                        setValue('location', location, result.details);
                     }
                     fn(parent, result, event, operation, targetPath);
                     if (!isNullOrUndefined(result.files) && (event === 'path-changed' || event === 'finalize-end' || event === 'open-end')) {
@@ -1911,18 +1934,23 @@ function searchSuccess(parent, result, event) {
 function Download(parent, path, items) {
     let downloadUrl = parent.ajaxSettings.downloadUrl ? parent.ajaxSettings.downloadUrl : parent.ajaxSettings.url;
     let data = { 'action': 'download', 'path': path, 'names': items, 'data': parent.itemData };
-    let form = createElement('form', {
-        id: parent.element.id + '_downloadForm',
-        attrs: { action: downloadUrl, method: 'post', name: 'downloadForm', 'download': '' }
+    let eventArgs = { data: data, cancel: false };
+    parent.trigger('beforeDownload', eventArgs, (downloadArgs) => {
+        if (!downloadArgs.cancel) {
+            let form = createElement('form', {
+                id: parent.element.id + '_downloadForm',
+                attrs: { action: downloadUrl, method: 'post', name: 'downloadForm', 'download': '' }
+            });
+            let input = createElement('input', {
+                id: parent.element.id + '_hiddenForm',
+                attrs: { name: 'downloadInput', value: JSON.stringify(downloadArgs.data), type: 'hidden' }
+            });
+            form.appendChild(input);
+            parent.element.appendChild(form);
+            document.forms.namedItem('downloadForm').submit();
+            parent.element.removeChild(form);
+        }
     });
-    let input = createElement('input', {
-        id: parent.element.id + '_hiddenForm',
-        attrs: { name: 'downloadInput', value: JSON.stringify(data), type: 'hidden' }
-    });
-    form.appendChild(input);
-    parent.element.appendChild(form);
-    document.forms.namedItem('downloadForm').submit();
-    parent.element.removeChild(form);
 }
 
 // tslint:disable-next-line
@@ -1993,6 +2021,10 @@ function createExtDialog(parent, text, replaceItems, newPath) {
         parent.extDialogObj.buttons = extOptions.buttons;
         parent.extDialogObj.enableRtl = parent.enableRtl;
         parent.extDialogObj.locale = parent.locale;
+        parent.extDialogObj.beforeOpen = beforeExtOpen.bind(this, parent, extOptions.dialogName);
+        parent.extDialogObj.beforeClose = (args) => {
+            triggerPopupBeforeClose(parent, parent.extDialogObj, args, extOptions.dialogName);
+        };
         parent.extDialogObj.dataBind();
         parent.extDialogObj.show();
     }
@@ -2496,6 +2528,10 @@ function changeOptions(parent, options) {
     parent.dialogObj.enableRtl = parent.enableRtl;
     parent.dialogObj.open = options.open;
     parent.dialogObj.close = options.close;
+    parent.dialogObj.beforeOpen = keydownAction.bind(this, parent, options.dialogName);
+    parent.dialogObj.beforeClose = (args) => {
+        triggerPopupBeforeClose(parent, parent.dialogObj, args, options.dialogName);
+    };
     parent.dialogObj.dataBind();
     parent.dialogObj.show();
 }
@@ -4177,7 +4213,8 @@ class BreadCrumbBar {
         let searchContainer = this.parent.createElement('div');
         searchContainer.setAttribute('class', 'e-search-wrap');
         let id = this.parent.element.id + SEARCH_ID;
-        let searchInput = createElement('input', { id: id, attrs: { autocomplete: 'off' } });
+        let searchInput = createElement('input', { id: id,
+            attrs: { autocomplete: 'off', 'aria-label': getLocaleText(this.parent, 'Search') } });
         searchContainer.appendChild(searchInput);
         let searchEle = this.parent.breadCrumbBarNavigation.querySelector('.e-search-wrap .e-input');
         if (isNullOrUndefined(searchEle)) {
@@ -5333,7 +5370,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         contentWrap.appendChild(gridWrap);
         let largeiconWrap = this.createElement('div', {
             id: this.element.id + LARGEICON_ID,
-            className: LARGE_ICONS
+            className: LARGE_ICONS, attrs: { 'role': 'group' }
         });
         contentWrap.appendChild(largeiconWrap);
         let overlay = this.createElement('span', { className: OVERLAY });
@@ -5719,6 +5756,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
      * @private
      */
     /* istanbul ignore next */
+    // tslint:disable-next-line:max-func-body-length
     onPropertyChanged(newProp, oldProp) {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
@@ -5750,6 +5788,10 @@ let FileManager = FileManager_1 = class FileManager extends Component {
                     break;
                 case 'enableRtl':
                     this.enableRtl = newProp.enableRtl;
+                    this.refresh();
+                    break;
+                case 'rootAliasName':
+                    this.rootAliasName = newProp.rootAliasName;
                     this.refresh();
                     break;
                 case 'height':
@@ -6141,6 +6183,9 @@ __decorate$8([
     Property(true)
 ], FileManager.prototype, "showFileExtension", void 0);
 __decorate$8([
+    Property(null)
+], FileManager.prototype, "rootAliasName", void 0);
+__decorate$8([
     Property(false)
 ], FileManager.prototype, "showHiddenItems", void 0);
 __decorate$8([
@@ -6161,6 +6206,12 @@ __decorate$8([
 __decorate$8([
     Event()
 ], FileManager.prototype, "fileOpen", void 0);
+__decorate$8([
+    Event()
+], FileManager.prototype, "beforeDownload", void 0);
+__decorate$8([
+    Event()
+], FileManager.prototype, "beforeImageLoad", void 0);
 __decorate$8([
     Event()
 ], FileManager.prototype, "beforePopupClose", void 0);
@@ -6396,7 +6447,8 @@ class Toolbar$1 {
                 iconCss: this.parent.view === 'Details' ? ICON_GRID : ICON_LARGE,
                 cssClass: getCssClass(this.parent, 'e-caret-hide ' + ROOT_POPUP),
                 items: layoutItems, select: this.layoutChange.bind(this),
-                enableRtl: this.parent.enableRtl
+                enableRtl: this.parent.enableRtl,
+                content: '<span class="e-tbar-btn-text">' + getLocaleText(this.parent, 'View') + '</span>'
             });
             this.layoutBtnObj.isStringTemplate = true;
             this.layoutBtnObj.appendTo('#' + this.getId('View'));
@@ -6493,12 +6545,16 @@ class Toolbar$1 {
                 case 'View':
                     item = {
                         id: itemId, tooltipText: itemTooltip, prefixIcon: this.parent.view === 'Details' ? ICON_GRID : ICON_LARGE,
-                        overflow: 'Show', align: 'Right',
-                        template: '<button id="' + itemId + '" class="e-tbar-btn e-tbtn-txt" tabindex="-1"></button>'
+                        overflow: 'Show', align: 'Right', text: itemText, showTextOn: 'Overflow',
+                        template: '<button id="' + itemId + '" class="e-tbar-btn e-tbtn-txt" tabindex="-1" aria-label=' +
+                            getLocaleText(this.parent, 'View') + '></button>'
                     };
                     break;
                 case 'Details':
-                    item = { id: itemId, tooltipText: itemTooltip, prefixIcon: ICON_DETAILS, overflow: 'Show', align: 'Right' };
+                    item = {
+                        id: itemId, tooltipText: itemTooltip, prefixIcon: ICON_DETAILS, overflow: 'Show', align: 'Right',
+                        text: itemText, showTextOn: 'Overflow'
+                    };
                     break;
                 case 'NewFolder':
                     item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: ICON_NEWFOLDER, showTextOn: mode };
@@ -8370,13 +8426,14 @@ class DetailsView {
     }
     /* istanbul ignore next */
     onSelection(action, args) {
-        let eventArgs = { action: action, fileDetails: args.data, isInteracted: this.interaction, cancel: false, target: args.target };
+        let eventArgs = {
+            action: action, fileDetails: args.data, isInteracted: this.interaction, cancel: false, target: args.target
+        };
         this.parent.trigger('fileSelection', eventArgs);
         args.cancel = eventArgs.cancel;
     }
     /* istanbul ignore next */
     onSelected(args) {
-        this.addFocus(this.gridObj.selectedRowIndex);
         this.parent.activeModule = 'detailsview';
         if (!this.parent.isLayoutChange || this.parent.isFiltered) {
             this.selectedRecords();
@@ -8428,6 +8485,7 @@ class DetailsView {
             let checkItem = item.querySelector('.e-checkselect');
             checkItem.focus();
         }
+        this.addFocus(this.gridObj.selectedRowIndex);
         if (!this.parent.isLayoutChange) {
             this.isInteracted = true;
         }
@@ -8907,9 +8965,13 @@ class DetailsView {
         let fItem = this.getFocusedItem();
         let itemElement = this.gridObj.getRowByIndex(item);
         if (fItem) {
+            fItem.removeAttribute('tabindex');
             removeClass([fItem], [FOCUS, FOCUSED]);
         }
         if (!isNullOrUndefined(itemElement)) {
+            this.gridObj.element.setAttribute('tabindex', '-1');
+            itemElement.setAttribute('tabindex', '0');
+            itemElement.focus();
             addClass([itemElement], [FOCUS, FOCUSED]);
         }
     }

@@ -17,12 +17,12 @@ Schedule.Inject(TimelineViews, TimelineMonth);
 
 describe('Schedule timeline day view', () => {
     beforeAll(() => {
-        // tslint:disable-next-line:no-any
+        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             // tslint:disable-next-line:no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); //Skips test (in Chai)
+            (this as any).skip(); //Skips test (in Chai)
             return;
         }
     });
@@ -49,8 +49,7 @@ describe('Schedule timeline day view', () => {
 
         it('check date header cells text', () => {
             expect(schObj.element.querySelectorAll('.e-date-header-container .e-header-cells').length).toEqual(1);
-            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).
-                toEqual('Oct 4, Wednesday');
+            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 4, Wednesday');
         });
 
         it('time cells', () => {
@@ -118,7 +117,6 @@ describe('Schedule timeline day view', () => {
         });
 
         it('navigate next date', (done: Function) => {
-            (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
             schObj.dataBound = () => {
                 expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-day');
                 expect(schObj.element.querySelectorAll('.e-date-header-container .e-header-cells').length).toEqual(1);
@@ -139,10 +137,10 @@ describe('Schedule timeline day view', () => {
                 expect(eventWrapperList.length).toEqual(1);
                 done();
             };
+            (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
         });
 
         it('navigate previous date', (done: Function) => {
-            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
             schObj.dataBound = () => {
                 expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-day');
                 expect(schObj.element.querySelectorAll('.e-date-header-container .e-header-cells').length).toEqual(1);
@@ -163,6 +161,7 @@ describe('Schedule timeline day view', () => {
                 expect(eventWrapperList.length).toEqual(1);
                 done();
             };
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
         });
         it('cell single click', () => {
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
@@ -250,28 +249,35 @@ describe('Schedule timeline day view', () => {
             util.destroy(schObj);
         });
 
-        it('Checking elements', () => {
+        it('Checking elements', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.getWorkCellElements().length).toEqual(16);
+                expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toEqual(14);
+                expect(schObj.element.querySelectorAll('.e-header-row .e-time-cells').length * 2).
+                    toEqual(schObj.element.querySelectorAll('.e-content-wrap .e-content-table tbody td').length);
+                expect(schObj.element.querySelectorAll('.e-header-row td')[1].innerHTML).toEqual('<span>8:00 AM</span>');
+                done();
+            };
             expect(schObj.getWorkCellElements().length).toEqual(14);
             expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toEqual(4);
             expect(schObj.element.querySelectorAll('.e-header-row .e-time-cells').length * 2).
                 toEqual(schObj.element.querySelectorAll('.e-content-wrap .e-content-table tbody td').length);
             expect(schObj.element.querySelectorAll('.e-header-row td')[1].innerHTML).
                 toEqual('<span>4:00 AM</span>');
-
             schObj.startHour = '08:00';
             schObj.endHour = '16:00';
             schObj.dataBind();
-            expect(schObj.getWorkCellElements().length).toEqual(16);
-            expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toEqual(14);
-            expect(schObj.element.querySelectorAll('.e-header-row .e-time-cells').length * 2).
-                toEqual(schObj.element.querySelectorAll('.e-content-wrap .e-content-table tbody td').length);
-            expect(schObj.element.querySelectorAll('.e-header-row td')[1].innerHTML).toEqual('<span>8:00 AM</span>');
+        });
 
+        it('Checking elements - setmodel checking', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.getWorkCellElements().length).toEqual(48);
+                expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toEqual(18);
+                done();
+            };
             schObj.startHour = '08';
             schObj.endHour = '16';
             schObj.dataBind();
-            expect(schObj.getWorkCellElements().length).toEqual(48);
-            expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toEqual(18);
         });
 
         it('Checking events elements', (done: Function) => {
@@ -326,25 +332,63 @@ describe('Schedule timeline day view', () => {
             util.destroy(schObj);
         });
 
-        it('Checking elements', () => {
+        it('Checking date elements - initial', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 6, Friday');
+                done();
+            };
             expect(schObj.getWorkCellElements().length).toEqual(48);
             expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 5, Thursday');
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
-            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 6, Friday');
-            (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
-            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 9, Monday');
-            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
-            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 6, Friday');
+        });
 
+        it('Checking date elements - date navigation-1', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 9, Monday');
+                done();
+            };
+            (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
+        });
+
+        it('Checking date elements - date navigation-2', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 6, Friday');
+                done();
+            };
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
+        });
+
+        it('Checking date elements - show weekend as true', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 6, Friday');
+                done();
+            };
             schObj.showWeekend = true;
             schObj.dataBind();
-            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 6, Friday');
+        });
+
+        it('Checking date elements - date navigation-3', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 7, Saturday');
+                done();
+            };
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
-            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 7, Saturday');
+        });
+
+        it('Checking date elements - date navigation-4', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 8, Sunday');
+                done();
+            };
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
-            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 8, Sunday');
+        });
+
+        it('Checking date elements - date navigation-5', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 7, Saturday');
+                done();
+            };
             (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
-            expect(schObj.element.querySelector('.e-header-date.e-navigate').innerHTML).toEqual('Oct 7, Saturday');
         });
 
         it('Checking events elements', (done: Function) => {
@@ -398,14 +442,17 @@ describe('Schedule timeline day view', () => {
             util.destroy(schObj);
         });
 
-        it('Checking elements', () => {
+        it('Checking elements', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toEqual(18);
+                done();
+            };
             expect(schObj.getWorkCellElements().length).toEqual(48);
             expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toEqual(18);
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
             expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toEqual(0);
             schObj.workDays = [0, 1, 2, 3, 4, 5, 6];
             schObj.dataBind();
-            expect(schObj.element.querySelectorAll('.e-work-hours,.e-work-days').length).toEqual(18);
         });
 
         it('Checking events elements', (done: Function) => {
@@ -461,12 +508,15 @@ describe('Schedule timeline day view', () => {
             util.destroy(schObj);
         });
 
-        it('Checking elements', () => {
+        it('Checking elements', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 5, 2017');
+                done();
+            };
             expect(schObj.getWorkCellElements().length).toEqual(48);
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 5, 2017');
             schObj.firstDayOfWeek = 1;
             schObj.dataBind();
-            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 5, 2017');
         });
 
         it('Checking events elements', (done: Function) => {
@@ -598,16 +648,16 @@ describe('Schedule timeline day view', () => {
             util.destroy(schObj);
         });
 
-        xit('width and height', (done: Function) => {
+        it('width and height', () => {
             let model: ScheduleModel = {
                 height: '600px', width: '500px', currentView: 'TimelineDay',
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'], selectedDate: new Date(2017, 9, 4)
             };
-            schObj = util.createSchedule(model, [], done);
-            expect(document.getElementById('Schedule').style.width).toEqual('500px');
-            expect(document.getElementById('Schedule').style.height).toEqual('600px');
-            expect(document.getElementById('Schedule').offsetWidth).toEqual(500);
-            expect(document.getElementById('Schedule').offsetHeight).toEqual(600);
+            schObj = util.createSchedule(model, []);
+            expect(schObj.element.style.width).toEqual('500px');
+            expect(schObj.element.style.height).toEqual('600px');
+            expect(schObj.element.offsetWidth).toEqual(500);
+            expect(schObj.element.offsetHeight).toEqual(600);
         });
 
         it('work hours start and end', () => {
@@ -747,6 +797,45 @@ describe('Schedule timeline day view', () => {
                 }
             };
             schObj = util.createSchedule(model, timelineData);
+        });
+
+        it('minDate and maxDate', () => {
+            let model: ScheduleModel = {
+                currentView: 'TimelineDay',
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                minDate: new Date(2017, 9, 4),
+                selectedDate: new Date(2017, 9, 5),
+                maxDate: new Date(2017, 9, 6)
+            };
+            schObj = util.createSchedule(model, []);
+            let prevButton: HTMLElement = schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS);
+            let nextButton: HTMLElement = schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS);
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('false');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('false');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 5, 2017');
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 4, 2017');
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('true');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('false');
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 4, 2017');
+            (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 5, 2017');
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('false');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('false');
+            (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 6, 2017');
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('false');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('true');
+            (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 6, 2017');
+            schObj.minDate = new Date(2017, 9, 4);
+            schObj.selectedDate = new Date(2017, 9, 4);
+            schObj.maxDate = new Date(2017, 9, 4);
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 4, 2017');
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('true');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('true');
         });
     });
 
@@ -1297,6 +1386,26 @@ describe('Schedule timeline day view', () => {
             };
             schObj.rowAutoHeight = true;
             schObj.dataBind();
+        });
+        it('timeline day view changing to timeline work week view using toolbar click', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.currentView).toEqual('TimelineWorkWeek');
+                expect(schObj.element.querySelector('.e-schedule-toolbar .e-active-view').classList).toContain('e-timeline-work-week');
+                done();
+            };
+            expect(schObj.currentView).toEqual('TimelineDay');
+            expect(schObj.element.querySelector('.e-schedule-toolbar .e-active-view').classList).toContain('e-timeline-day');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-schedule-toolbar .e-timeline-work-week button'), 'click');
+        });
+        it('timeline work week view changing to timeline day view using toolbar click', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.currentView).toEqual('TimelineDay');
+                expect(schObj.element.querySelector('.e-schedule-toolbar .e-active-view').classList).toContain('e-timeline-day');
+                done();
+            };
+            expect(schObj.currentView).toEqual('TimelineWorkWeek');
+            expect(schObj.element.querySelector('.e-schedule-toolbar .e-active-view').classList).toContain('e-timeline-work-week');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-schedule-toolbar .e-timeline-day button'), 'click');
         });
     });
 
@@ -2489,7 +2598,6 @@ describe('Schedule timeline day view', () => {
         });
 
         it('navigate next date', (done: Function) => {
-            (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
             schObj.dataBound = () => {
                 expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-day');
                 expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 2, 2018');
@@ -2523,10 +2631,10 @@ describe('Schedule timeline day view', () => {
                 expect(eventWrapperList.length).toEqual(1);
                 done();
             };
+            (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
         });
 
         it('navigate previous date', (done: Function) => {
-            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
             schObj.dataBound = () => {
                 expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 1, 2018');
                 expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-day');
@@ -2562,6 +2670,7 @@ describe('Schedule timeline day view', () => {
                 expect(eventWrapperList.length).toEqual(1);
                 done();
             };
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
         });
 
         it('Checking rowAutoHeight property', (done: Function) => {
@@ -3186,7 +3295,6 @@ describe('Schedule timeline day view', () => {
         });
 
         it('navigate next date', (done: Function) => {
-            (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
             schObj.dataBound = () => {
                 expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-day');
                 expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 2, 2018');
@@ -3239,10 +3347,10 @@ describe('Schedule timeline day view', () => {
                 expect(eventElements[1].style.backgroundColor).toEqual('rgb(255, 170, 0)');
                 done();
             };
+            (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
         });
 
         it('navigate previous date', (done: Function) => {
-            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
             schObj.dataBound = () => {
                 expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-timeline-day');
                 expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('May 1, 2018');
@@ -3295,6 +3403,7 @@ describe('Schedule timeline day view', () => {
                 expect(eventElements[1].style.backgroundColor).toEqual('rgb(248, 163, 152)');
                 done();
             };
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
         });
     });
 
@@ -3353,7 +3462,7 @@ describe('Schedule timeline day view', () => {
             expect(colElement.style.width).toEqual('50px');
             expect(colElement.style.width).toEqual('50px');
         });
-        it('Check events offsetleft - slot count 6', (done) => {
+        it('Check events offsetleft - slot count 6', (done: DoneFn) => {
             schObj.dataBound = () => {
                 let colElement: HTMLElement =
                     schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
@@ -3363,7 +3472,7 @@ describe('Schedule timeline day view', () => {
             schObj.timeScale.slotCount = 6;
             schObj.dataBind();
         });
-        it('Check events offsetleft - with start hour and end hour', (done) => {
+        it('Check events offsetleft - with start hour and end hour', (done: DoneFn) => {
             schObj.dataBound = () => {
                 let colElement: HTMLElement =
                     schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
@@ -3435,7 +3544,7 @@ describe('Schedule timeline day view', () => {
                 schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' tbody tr:first-child td:first-child') as HTMLElement;
             expect(colElement.getAttribute('style')).toEqual('width: ' + tdElement.offsetWidth + 'px;');
         });
-        it('Check events offsetleft - slot count 6', (done) => {
+        it('Check events offsetleft - slot count 6', (done: DoneFn) => {
             schObj.dataBound = () => {
                 let colElement: HTMLElement =
                     schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
@@ -3445,7 +3554,7 @@ describe('Schedule timeline day view', () => {
             schObj.timeScale.slotCount = 6;
             schObj.dataBind();
         });
-        it('Check events offsetleft - with start hour and end hour', (done) => {
+        it('Check events offsetleft - with start hour and end hour', (done: DoneFn) => {
             schObj.dataBound = () => {
                 let colElement: HTMLElement =
                     schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;

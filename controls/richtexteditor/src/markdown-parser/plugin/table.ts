@@ -8,6 +8,7 @@ import * as EVENTS from './../../common/constant';
 /**
  * Link internal component
  * @hidden
+ * @deprecated
  */
 export class MDTable {
     private parent: MarkdownParser;
@@ -18,6 +19,7 @@ export class MDTable {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     constructor(options: IMDTable) {
         extend(this, this, options, true);
@@ -33,6 +35,11 @@ export class MDTable {
         this.parent.observer.off(EVENTS.KEY_DOWN_HANDLER, this.onKeyDown);
     }
 
+    /**
+     * markdown destroy method
+     * @hidden
+     * @deprecated
+     */
     public destroy(): void {
         this.removeEventListener();
     }

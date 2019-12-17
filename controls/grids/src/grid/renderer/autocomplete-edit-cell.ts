@@ -1,4 +1,4 @@
-import { extend } from '@syncfusion/ej2-base';
+import { extend, isBlazor } from '@syncfusion/ej2-base';
 import { IGrid, EJ2Intance, IEditCell } from '../base/interface';
 import { Column } from '../models/column';
 import { AutoComplete } from '@syncfusion/ej2-dropdowns';
@@ -48,6 +48,9 @@ export class AutoCompleteEditCell implements IEditCell {
                 floatLabelType: isInlineEdit ? 'Never' : 'Always'
             },
             args.column.edit.params));
+        if (isBlazor()) {
+            this.object.locale = this.parentObj.locale;
+        }
         this.object.appendTo(args.element as HTMLElement);
         /* tslint:disable-next-line:no-any */
         args.element.setAttribute('name', getComplexFieldID(args.column.field));

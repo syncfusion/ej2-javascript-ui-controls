@@ -18,6 +18,7 @@ import { ClearFormat } from './../plugin/clearformat';
 /**
  * MarkdownParser internal component
  * @hidden
+ * @deprecated
  */
 export class MarkdownParser {
     public observer: Observer;
@@ -36,6 +37,7 @@ export class MarkdownParser {
     /**
      * Constructor for creating the component
      * @hidden
+     * @deprecated
      */
     constructor(options: IMarkdownParserModel) {
         this.initialize();
@@ -70,6 +72,11 @@ export class MarkdownParser {
     private editorKeyUp(e: IMDKeyboardEvent): void {
         this.observer.notify(EVENTS.KEY_UP_HANDLER, e);
     }
+    /**
+     * markdown execCommand method
+     * @hidden
+     * @deprecated
+     */
     public execCommand<T>(command: MarkdownExecCommand, value: T, event?: Event, callBack?: Function, text?: string, exeValue?: T): void {
         switch (command.toLocaleLowerCase()) {
             case 'lists':

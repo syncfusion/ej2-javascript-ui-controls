@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, NotifyPropertyChanges, Property, Touch, attributes, classList, closest, compile, detach, extend, formatUnit, getUniqueID, isBlazor, isNullOrUndefined, isUndefined, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, attributes, classList, closest, compile, detach, extend, formatUnit, getUniqueID, isBlazor, isNullOrUndefined, isUndefined, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 import { getZindexPartial } from '@syncfusion/ej2-popups';
 
@@ -261,6 +261,27 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         this.fetchEle(this.toastEle, this.template, 'template');
     };
     /**
+     * @hidden
+     */
+    Toast.prototype.sanitizeHelper = function (value) {
+        if (this.enableHtmlSanitizer) {
+            var item = SanitizeHtmlHelper.beforeSanitize();
+            var beforeEvent = {
+                cancel: false,
+                helper: null
+            };
+            extend(item, item, beforeEvent);
+            this.trigger('beforeSanitizeHtml', item);
+            if (item.cancel && !isNullOrUndefined(item.helper)) {
+                value = item.helper(value);
+            }
+            else if (!item.cancel) {
+                value = SanitizeHtmlHelper.serializeValue(item, value);
+            }
+        }
+        return value;
+    };
+    /**
      * To Hide Toast element on a document.
      * To Hide all toast element when passing 'All'.
      * @param  {HTMLElement| Element| string} element? - To Hide Toast element on screen.
@@ -284,6 +305,7 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         this.destroyToast(element);
     };
     Toast.prototype.fetchEle = function (ele, value, prob) {
+        value = typeof (value) === 'string' ? this.sanitizeHelper(value) : value;
         var templateFn;
         var tempVar;
         var tmpArray;
@@ -693,6 +715,9 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         Property(null)
     ], Toast.prototype, "content", void 0);
     __decorate([
+        Property(true)
+    ], Toast.prototype, "enableHtmlSanitizer", void 0);
+    __decorate([
         Property(null)
     ], Toast.prototype, "icon", void 0);
     __decorate([
@@ -731,6 +756,9 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], Toast.prototype, "created", void 0);
+    __decorate([
+        Event()
+    ], Toast.prototype, "beforeSanitizeHtml", void 0);
     __decorate([
         Event()
     ], Toast.prototype, "destroyed", void 0);

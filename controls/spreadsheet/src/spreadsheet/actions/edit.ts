@@ -1,13 +1,14 @@
 import { Spreadsheet } from '../index';
 import { EventHandler, KeyboardEventArgs, Browser, closest } from '@syncfusion/ej2-base';
-import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress } from '../../workbook/common/address';
-import { keyDown, editOperation, clearCopy, keyUp, mouseDown, selectionComplete, enableToolbar } from '../common/event';
-import { formulaBarOperation, formulaOperation } from '../common/event';
+import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress, getRangeAddress } from '../../workbook/common/address';
+import { keyDown, editOperation, clearCopy, keyUp, mouseDown, selectionComplete, enableToolbar, completeAction } from '../common/event';
+import { formulaBarOperation, formulaOperation, setActionData } from '../common/event';
 import { workbookEditOperation, getFormattedBarText, getFormattedCellObject } from '../../workbook/common/event';
 import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell } from '../../workbook/base/index';
 import { getSheetNameFromAddress, getCellPosition, getSheet } from '../../workbook/base/index';
 import { RefreshValueArgs } from '../integrations/index';
 import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer } from '../common/index';
+import { getSwapRange } from '../../workbook/index';
 
 /**
  * The `Edit` module is used to handle the editing functionalities in Spreadsheet.
@@ -211,7 +212,6 @@ export class Edit {
             this.editorElem = editor;
             this.parent.element.querySelector('.e-main-content').appendChild(this.editorElem);
         }
-
         this.parent.notify(formulaOperation, { action: 'renderAutoComplete' });
     }
 
@@ -276,6 +276,8 @@ export class Edit {
             case 'delete':
                 let address: string = this.parent.getActiveSheet().selectedRange;
                 let range: number[] = getIndexesFromAddress(address);
+                range = range[0] > range[2] ? getSwapRange(range) : range;
+                address = getRangeAddress(range);
                 this.parent.clearRange(address, null, true);
                 this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(range);
                 this.parent.notify(selectionComplete, {});
@@ -403,6 +405,8 @@ export class Edit {
     private updateEditedValue(tdRefresh: boolean = true): void {
         let oldCellValue: string = this.editCellData.oldValue;
         let oldValue: string = oldCellValue ? oldCellValue.toString().toUpperCase() : '';
+        /* To set the before cell details for undo redo. */
+        this.parent.notify(setActionData, { args: { action: 'beforeCellSave', eventArgs: { address: this.editCellData.addr } } });
         if (oldCellValue !== this.editCellData.value || oldValue.indexOf('=RAND()') > -1 || oldValue.indexOf('RAND()') > -1 ||
             oldValue.indexOf('=RANDBETWEEN(') > -1 || oldValue.indexOf('RANDBETWEEN(') > -1) {
             let cellIndex: number[] = getRangeIndexes(this.parent.getActiveSheet().activeCell);
@@ -411,7 +415,8 @@ export class Edit {
                 { action: 'updateCellValue', address: this.editCellData.addr, value: this.editCellData.value });
             let cell: CellModel = getCell(cellIndex[0], cellIndex[1], this.parent.getActiveSheet(), true);
             let eventArgs: RefreshValueArgs = this.getRefreshNodeArgs(cell);
-            this.editCellData.value = <string>eventArgs.result;
+            this.editCellData.value = <string>eventArgs.value;
+            if (cell.formula) { this.editCellData.formula = cell.formula; }
             if (tdRefresh) { this.parent.refreshNode(this.editCellData.element, eventArgs); }
         }
     }
@@ -441,6 +446,7 @@ export class Edit {
         };
         let args: RefreshValueArgs;
         this.parent.notify(getFormattedCellObject, eventArgs);
+        eventArgs.formattedText = this.parent.allowNumberFormatting ? eventArgs.formattedText : eventArgs.value;
         args = {
             isRightAlign: <boolean>eventArgs.isRightAlign,
             result: <string>eventArgs.formattedText,
@@ -480,6 +486,12 @@ export class Edit {
             oldValue: this.editCellData.oldValue,
             address: this.editCellData.fullAddr
         };
+        if (eventName === 'cellSave') {
+            if (this.editCellData.formula) {
+                eventArgs.formula = this.editCellData.formula;
+            }
+            this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'cellSave' });
+        }
         if (eventName !== 'cellSave') {
             (<CellEditEventArgs>eventArgs).cancel = false;
         }
@@ -532,4 +544,5 @@ interface IEditCellData {
     addr?: string;
     fullAddr?: string;
     position?: { top: number, left: number };
+    formula?: string;
 }

@@ -1,12 +1,16 @@
-<!-- markdownlint-disable MD010 -->
-
-<!-- markdownlint-disable MD030 -->
-
-<!-- markdownlint-disable MD004 -->
-
 # Changelog
 
 ## [Unreleased]
+
+## 17.4.39 (2019-12-17)
+
+### HeatMap
+
+#### New Features
+
+- `#234060`, `#246529` - Provided the cell color customization support for heatmap by using the `cellRender` event .
+- Provided the legend title support to customize the legend title in heatmap.
+- Provided the support for a cell color range to customize a cell color based on the range value.
 
 ## 17.3.9-beta (2019-09-20)
 

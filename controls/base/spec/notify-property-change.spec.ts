@@ -459,6 +459,21 @@ describe('NotifyProperty', () => {
             });
         });
 
+        describe('Predefined function checking array', () => {
+            it('=> push', () => {
+                demoClassAr.subjectCollection.push({ subID: '3', subScore: 33 });
+                expect((demoClassAr.subjectCollection as Object[]).length).toBe(3);
+                expect(demoClassAr.subjectCollection[2].subID).toBe('3');
+                expect(demoClassAr.subjectCollection[2].subScore).toBe(33);
+            });
+            it('=> pop', () => {
+                demoClassAr.subjectCollection.pop();
+                expect((demoClassAr.subjectCollection as Object[]).length).toBe(1);
+                expect(demoClassAr.subjectCollection[0].subID).toBe('snm');
+                expect(demoClassAr.subjectCollection[0].subScore).toBe(2);
+            });
+        });
+
         describe('Change the value of entries single level', () => {
             beforeEach((done: Function) => {
                 spyOn(demoClassAr, 'onPropertyChanged');

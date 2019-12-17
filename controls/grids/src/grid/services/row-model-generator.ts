@@ -1,4 +1,4 @@
-import { isNullOrUndefined, getValue, setValue } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, getValue, setValue, isBlazor } from '@syncfusion/ej2-base';
 import { IModelGenerator, ICell, IRow, IGrid } from '../base/interface';
 import { Row } from '../models/row';
 import { CellType } from '../base/enum';
@@ -51,7 +51,8 @@ export class RowModelGenerator implements IModelGenerator<Column> {
     protected generateRow(data: Object, index: number, cssClass?: string, indent?: number, pid?: number, tIndex?: number): Row<Column> {
         let options: IRow<Column> = {};
         options.foreignKeyData = {};
-        options.uid = getUid('grid-row');
+        let isServerRendered: string = 'isServerRendered';
+        options.uid = isBlazor() && this.parent[isServerRendered] ? this.parent.getRowUid('grid-row') : getUid('grid-row');
         options.data = data;
         options.index = index;
         options.indent = indent;

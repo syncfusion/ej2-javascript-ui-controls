@@ -212,6 +212,12 @@
           &.e-right-align {
             text-align: right;
           }
+
+          & .e-hyperlink {
+            color: $hyper-link-color;
+            cursor: pointer;
+            text-decoration: underline;
+          }
         }
 
         & .e-header-cell {
@@ -314,6 +320,35 @@
       border-bottom: $spreadsheet-border-width solid;
       overflow-y: hidden;
       position: relative;
+
+      & .e-table tr {
+        &.e-hide-start .e-header-cell::after,
+        &.e-hide-end .e-header-cell::before {
+          content: '';
+          left: 0;
+          position: absolute;
+          width: 100%;
+        }
+
+        &.e-hide-start .e-header-cell {
+          border-bottom-color: transparent;
+          position: relative;
+
+          &::after {
+            border-top: $spreadsheet-border;
+            bottom: .5px;
+          }
+        }
+
+        &.e-hide-end .e-header-cell {
+          position: relative;
+
+          &::before {
+            border-bottom: $spreadsheet-border;
+            top: .5px;
+          }
+        }
+      }
     }
 
     & .e-main-content,
@@ -461,6 +496,7 @@
     .e-selection {
       border-style: solid;
       cursor: cell;
+      pointer-events: none;
       position: absolute;
       z-index: 1;
 
@@ -475,12 +511,18 @@
     .e-active-cell,
     .e-copy-indicator {
       cursor: cell;
+      pointer-events: none;
       position: absolute;
       z-index: 1;
     }
 
     .e-active-cell {
       border: 2px solid $selection-border-color;
+      pointer-events: none;
+
+      &[style*='height: 1px;'] {
+        border-width: 1px;
+      }
     }
 
     .e-copy-indicator div {
@@ -863,6 +905,128 @@
         }
       }
     }
+
+    & .e-hyperlink-dlg,
+    .e-edithyperlink-dlg {
+      max-height: 640px !important; // sass-lint:disable-line no-important
+
+      & .e-dlg-header-content {
+        padding: 24px 24px 16px;
+
+        & .e-dlg-header {
+          font-size: 18px;
+          line-height: 21px;
+        }
+    }
+
+      & .e-dlg-content {
+        padding-bottom: 0;
+        padding-left: 0;
+        padding-right: 0;
+
+        & .e-link-dialog {
+          & .e-tab-header {
+            padding: 0 24px 0 25px;
+
+            & .e-toolbar-items {
+              height: 100%;
+            }
+
+            & .e-toolbar-item {
+              text-align: center;
+              width: 136px;
+
+              & .e-tab-text {
+                font-size: 13px;
+                line-height: 15px;
+            }
+        }
+    }
+
+          & .e-content {
+            padding-top: 24px;
+
+            & .e-cont {
+              margin:  0 0 15.5px 24px;
+
+              & .e-header {
+                font-size: 14px;
+                line-height: 16px;
+               }
+
+              & .e-text {
+                @if $skin-name != 'material' and $skin-name != 'material-dark' {
+                  margin-top: 8px;
+                }
+                font-size: 14px;
+                height: 32px;
+                line-height: 16px;
+                width: 275px;
+                }
+
+              & .e-text.e-disabled {
+                border-bottom-width: 2px;
+              }
+
+              & .e-refcont {
+                border: 1px solid $hyper-doc-border-color;
+                height: 165px;
+                margin: 8px 24px 0 0;
+                overflow: auto;
+                width: 273px;
+                }
+              }
+            }
+        }
+    }
+
+      & .e-footer-content {
+        margin: 4px 0;
+      }
+    }
+
+    & .e-filter-popup { //Need to remove this once separate style provided.
+      position: absolute;
+
+      & .e-contextmenu-wrapper ul {
+        border: 0;
+        box-shadow: none;
+        display: block;
+        max-width: 300px;
+        padding-bottom: 4px;
+        position: static;
+
+        & li,
+        & .e-caret {
+          height: 36px;
+          line-height: 36px;
+        }
+      }
+
+      & .e-dlg-content {
+        padding-top: 0;
+      }
+    }
+
+    & .e-filter-icon {
+      margin-bottom: $filter-icon-margin-bottom;
+
+      &::before {
+        font-size: 20px;
+        margin-left: -3px;
+      }
+    }
+
+    & .e-btn.e-icon-btn.e-filter-btn {
+      bottom: 0;
+      height: 18px;
+      margin-right: 1px;
+      padding: 0;
+      position: absolute;
+      right: 0;
+      width: 20px;
+      z-index: 2;
+    }
   }
 
   .e-spreadsheet.e-col-resizing {
@@ -1199,6 +1363,10 @@
       height: auto;
       line-height: 1;
     }
+
+    & .e-filter-icon {
+      margin-bottom: $filter-icon-bigger-margin-bottom;
+    }
   }
 
   .e-bigger.e-dropdown-popup,
@@ -1240,6 +1408,7 @@
 
     & .e-sort-error,
     & .e-sort-header,
+    & .e-sort-casecheckbox,
     & .e-sort-listsection {
       padding-left: $dlg-content-padding;
       padding-right: $dlg-content-padding;

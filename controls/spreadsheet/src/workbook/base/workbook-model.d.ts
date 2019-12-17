@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Collection, Complex, EmitType } from '@syncfusion/ej2-base';import { Event, ModuleDeclaration, merge } from '@syncfusion/ej2-base';import { Sheet, initSheet, getSheet, getSheetIndexFromId, getSheetNameCount, getMaxSheetId, getSheetIndex } from './sheet';import { DefineNameModel } from '../common/class-model';import { getWorkbookRequiredModules } from '../common/module';import { getData, clearRange } from './data';import { SheetModel } from './sheet-model';import { CellModel } from './cell-model';import { OpenOptions, BeforeOpenEventArgs, OpenFailureArgs } from '../../spreadsheet/common/interface';import { DefineName, CellStyle, updateUsedRange, getIndexesFromAddress } from '../common/index';import * as events from '../common/event';import { CellStyleModel } from '../common/index';import { setCellFormat, sheetCreated } from '../common/index';import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, SaveOptions } from '../common/interface';import { SortOptions, BeforeSortEventArgs, SortEventArgs } from '../common/interface';import { getCell, skipDefaultValue, setCell } from './cell';import { DataBind } from '../index';import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort } from '../integrations/index';import { WorkbookNumberFormat } from '../integrations/number-format';import { WorkbookEdit, WorkbookCellFormat } from '../actions/index';
+import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Collection, Complex, EmitType } from '@syncfusion/ej2-base';import { initSheet, getSheet, getSheetIndexFromId, getSheetNameCount, getMaxSheetId, getSheetIndexByName, getSheetIndex } from './sheet';import { Sheet } from './sheet';import { Event, ModuleDeclaration, merge, L10n } from '@syncfusion/ej2-base';import { DefineNameModel, HyperlinkModel } from '../common/class-model';import { getWorkbookRequiredModules } from '../common/module';import { getData, clearRange } from './index';import { SheetModel } from './sheet-model';import { CellModel } from './cell-model';import { OpenOptions, BeforeOpenEventArgs, OpenFailureArgs } from '../../spreadsheet/common/interface';import { DefineName, CellStyle, updateUsedRange, getIndexesFromAddress, localeData, workbookLocale } from '../common/index';import * as events from '../common/event';import { CellStyleModel } from '../common/index';import { setCellFormat, sheetCreated } from '../common/index';import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, SaveOptions } from '../common/interface';import { SortOptions, BeforeSortEventArgs, SortEventArgs } from '../common/interface';import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs } from '../common/interface';import { getCell, skipDefaultValue, setCell } from './cell';import { DataBind, setRow } from '../index';import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter } from '../integrations/index';import { WorkbookNumberFormat } from '../integrations/number-format';import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink } from '../actions/index';import { ServiceLocator } from '../services/index';import { setLinkModel } from '../common/event';import { beginAction } from '../../spreadsheet/common/event';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -121,6 +121,12 @@ export interface WorkbookModel extends ComponentModel{
     allowSorting?: boolean;
 
     /**
+     * It allows to enable/disable filter and its functionalities.
+     * @default true
+     */
+    allowFiltering?: boolean;
+
+    /**
      * It allows formatting a raw number into different types of formats (number, currency, accounting, percentage, short date,
      * long date, time, fraction, scientific, and text) with built-in format codes.
      * @default true
@@ -132,6 +138,12 @@ export interface WorkbookModel extends ComponentModel{
      * @default true
      */
     allowCellFormatting?: boolean;
+
+    /**
+     * It allows to enable/disable Hyperlink and its functionalities.
+     * @default true
+     */
+    allowHyperlink?: boolean;
 
     /**
      * Specifies the cell style options.
@@ -172,7 +184,7 @@ export interface WorkbookModel extends ComponentModel{
      * ```typescript
      * new Spreadsheet({
      *      ...
-     *      definedNames: [{ name: 'namedRange1', refersTo: 'A1:B5' }],
+     *      definedNames: [{ name: 'namedRange1', refersTo: 'Sheet1!A1:B5' }],
      *      ...
      *  }, '#Spreadsheet');
      * ```

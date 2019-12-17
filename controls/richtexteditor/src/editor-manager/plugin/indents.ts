@@ -9,6 +9,7 @@ import { isIDevice, setEditFrameFocus } from '../../common/util';
 /**
  * Indents internal component
  * @hidden
+ * @deprecated
  */
 export class Indents {
     private parent: EditorManager;
@@ -16,6 +17,7 @@ export class Indents {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     constructor(parent: EditorManager) {
         this.parent = parent;

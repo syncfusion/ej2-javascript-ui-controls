@@ -160,7 +160,7 @@ export class Timeline {
             this.parent.cloneProjectStartDate, this.parent.cloneProjectEndDate, this.parent.isTimelineRoundOff);
         if (this.isZooming || this.isZoomToFit) {
             let args: ZoomEventArgs = {
-                requestType: this.isZoomIn ? 'AfterZoomIn' : this.isZoomToFit ? 'afterZoomToProject' : 'AfterZoomOut',
+                requestType: this.isZoomIn ? 'AfterZoomIn' : this.isZoomToFit ? 'AfterZoomToProject' : 'AfterZoomOut',
             };
             this.parent.trigger('actionComplete', args);
         }
@@ -1192,6 +1192,7 @@ export class Timeline {
             args.isTimelineRoundOff = this.parent.isTimelineRoundOff;
             args.cancel = false;
         }
+        args.action = 'TimescaleUpdate';
         this.parent.trigger(eventType, args);
         return args;
     }

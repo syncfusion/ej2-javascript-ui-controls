@@ -94,8 +94,6 @@ export class WBorder {
         propertyType = WUniqueFormat.getPropertyType(WBorder.uniqueFormatType, property);
         if (property === modifiedProperty) {
             uniqueBorderFormatTemp.add(propertyType, propValue);
-        } else {
-            uniqueBorderFormatTemp.add(propertyType, WBorder.getPropertyDefaultValue(property));
         }
     }
     private static getPropertyDefaultValue(property: string): Object {
@@ -488,7 +486,10 @@ export class WBorder {
         }
         return value;
     }
-    private hasValue(property: string): boolean {
+    /**
+     * @private
+     */
+    public hasValue(property: string): boolean {
         if (!isNullOrUndefined(this.uniqueBorderFormat)) {
             let propertyType: number = WUniqueFormat.getPropertyType(this.uniqueBorderFormat.uniqueFormatType, property);
             return this.uniqueBorderFormat.propertiesHash.containsKey(propertyType);
@@ -512,11 +513,21 @@ export class WBorder {
     }
     public copyFormat(border: WBorder): void {
         if (!isNullOrUndefined(border) && !isNullOrUndefined(border.uniqueBorderFormat)) {
-            this.color = border.color;
-            this.lineStyle = border.lineStyle;
-            this.lineWidth = border.lineWidth;
-            this.shadow = border.shadow;
-            this.space = border.space;
+            if (border.hasValue('color')) {
+                this.color = border.color;
+            }
+            if (border.hasValue('lineStyle')) {
+                this.lineStyle = border.lineStyle;
+            }
+            if (border.hasValue('lineWidth')) {
+                this.lineWidth = border.lineWidth;
+            }
+            if (border.hasValue('shadow')) {
+                this.shadow = border.shadow;
+            }
+            if (border.hasValue('space')) {
+                this.space = border.space;
+            }
         }
     }
     public static clear(): void {

@@ -315,6 +315,10 @@ export class RangeNavigatorAxis extends DateTime {
                 i !== 0 && this.isIntersect(axis, pointX, label.size.width, prevX, prevLabel.size.width)) {
                 continue;
             }
+            //label alignment for single visible label
+            if (control.secondaryLabelAlignment === 'Middle' && axis.visibleLabels.length === 1) {
+                pointX = valueToCoefficient(label.value, axis) + (rect.x + (rect.width / 2));
+            }
             //labelrender event
             let argsData: ILabelRenderEventsArgs;
             let labelStyle: FontModel = control.labelStyle;

@@ -7,12 +7,14 @@ import { InsertHtml } from './inserthtml';
 /**
  * Insert a Text Node or Text
  * @hidden
+ * @deprecated
  */
 export class InsertTextExec {
     private parent: EditorManager;
     /**
      * Constructor for creating the InsertText plugin
      * @hidden
+     * @deprecated
      */
     constructor(parent: EditorManager) {
         this.parent = parent;

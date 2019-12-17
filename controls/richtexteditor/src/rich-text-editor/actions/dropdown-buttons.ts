@@ -55,6 +55,11 @@ export class DropDownButtons {
             '<span class="e-rte-dropdown-btn-text">' + content + '</span></span>');
     }
 
+    /**
+     * renderDropDowns method
+     * @hidden
+     * @deprecated
+     */
     public renderDropDowns(args: IDropDownRenderArgs): void {
         this.initializeInstance();
         let type: string = args.containerType; let tbElement: HTMLElement = args.container;
@@ -347,6 +352,11 @@ export class DropDownButtons {
         ]);
     }
 
+    /**
+     * destroyDropDowns method
+     * @hidden
+     * @deprecated
+     */
     public destroyDropDowns(): void {
         if (this.formatDropDown) {
             this.removeDropDownClasses(this.formatDropDown.element);

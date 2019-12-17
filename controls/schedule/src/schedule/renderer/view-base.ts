@@ -1,9 +1,11 @@
 import {
-    createElement, append, prepend, isNullOrUndefined, getValue, getDefaultDateObject, cldrData, Internationalization, addClass,
-    setStyleAttribute, formatUnit
+    createElement, append, prepend, isNullOrUndefined, getValue, getDefaultDateObject,
+    cldrData, Internationalization, addClass, setStyleAttribute, formatUnit, isBlazor, EventHandler
 } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
-import { getDateInMs, addDays, resetTime, WEEK_LENGTH, getWeekFirstDate, getOuterHeight, getScrollBarWidth } from '../base/util';
+import {
+    getDateInMs, addDays, resetTime, WEEK_LENGTH, getWeekFirstDate, getOuterHeight, getScrollBarWidth, capitalizeFirstWord
+} from '../base/util';
 import { TdData, ResourceDetails } from '../base/interface';
 import * as cls from '../base/css-constant';
 
@@ -28,8 +30,9 @@ export namespace ViewHelper {
         return proxy.getTimeString(date);
     };
     export const getTimelineDate: Function = (proxy: Schedule, date: Date) => {
-        return proxy.globalize.formatDate(date, { skeleton: 'MMMd', calendar: proxy.getCalendarMode() }) + ', ' +
+        let text: string = proxy.globalize.formatDate(date, { skeleton: 'MMMd', calendar: proxy.getCalendarMode() }) + ', ' +
             proxy.getDayNames('wide')[date.getDay()];
+        return capitalizeFirstWord(text, 'multiple');
     };
 }
 export class ViewBase {
@@ -37,6 +40,7 @@ export class ViewBase {
     public parent: Schedule;
     public renderDates: Date[];
     public colLevels: TdData[][];
+    public viewIndex: number;
     /**
      * Constructor
      */
@@ -48,6 +52,9 @@ export class ViewBase {
     }
     public getContentRows(): Element[] {
         return [];
+    }
+    public serverRenderLayout(): void {
+        // Need only for layout server rendering
     }
     public createEventTable(trCount: number): Element {
         let eventTable: Element = createElement('div', { className: cls.EVENT_TABLE_CLASS });
@@ -67,9 +74,6 @@ export class ViewBase {
         return eventRows;
     }
     public collapseRows(wrap: Element): void {
-        if (!this.isTimelineView()) {
-            return;
-        }
         if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
             this.parent.resourceBase.hideResourceRows(wrap.querySelector('tbody'));
             this.parent.resourceBase.hideResourceRows(wrap.querySelector('.' + cls.EVENT_TABLE_CLASS));
@@ -97,7 +101,7 @@ export class ViewBase {
         return content.offsetHeight - content.clientHeight > 0 ? getScrollBarWidth() : 0;
     }
     public scrollTopPanel(target: HTMLElement): void {
-        (this.getDatesHeaderElement().firstChild as Element).scrollLeft = target.scrollLeft;
+        (this.getDatesHeaderElement().firstElementChild as Element).scrollLeft = target.scrollLeft;
     }
     public scrollHeaderLabels(target: HTMLElement): void {
         let headerTable: HTMLElement = this.element.querySelector('.e-date-header-wrap table') as HTMLElement;
@@ -121,9 +125,8 @@ export class ViewBase {
         for (let i: number = 0; i < className.length; i++) {
             let headerCells: HTMLElement[] = [].slice.call(this.element.querySelectorAll(className[i]));
             if (headerCells.length > 0) {
-                headerCells.forEach((element: HTMLElement) => {
-                    (element.children[0] as HTMLElement).style[this.parent.enableRtl ? 'right' : 'left'] = '';
-                });
+                headerCells.forEach((element: HTMLElement) =>
+                    (element.children[0] as HTMLElement).style[this.parent.enableRtl ? 'right' : 'left'] = '');
                 applyLeft(headerCells, this.parent.enableRtl);
             }
         }
@@ -147,7 +150,7 @@ export class ViewBase {
         return headerBarHeight;
     }
     public renderPanel(type: string): void {
-        if (type === cls.PREVIOUS_PANEL_CLASS) {
+        if (type === cls.PREVIOUS_PANEL_CLASS || isBlazor()) {
             prepend([this.element], this.parent.element.querySelector('.' + cls.TABLE_CONTAINER_CLASS));
         } else {
             this.parent.element.querySelector('.' + cls.TABLE_CONTAINER_CLASS).appendChild(this.element);
@@ -260,6 +263,9 @@ export class ViewBase {
         if (!workDays) {
             this.renderDates = renderDates;
         }
+        if (this.parent.headerModule) {
+            this.parent.headerModule.previousNextIconHandler();
+        }
         return renderDates;
     }
     public getNextPreviousDate(type: string): Date {
@@ -296,86 +302,88 @@ export class ViewBase {
         }
     }
     public getLabelText(view: string): string {
-        return this.parent.localeObj.getConstant(view) + ' of ' + this.parent.globalize.formatDate(
-            this.parent.selectedDate, { skeleton: 'long', calendar: this.parent.getCalendarMode() });
+        return this.parent.localeObj.getConstant(view) + ' of ' + capitalizeFirstWord(
+            this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'long', calendar: this.parent.getCalendarMode() }),
+            'single');
     }
     public getDateRangeText(): string {
         if (this.parent.isAdaptive) {
-            return this.parent.globalize.
-                formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() });
+            return capitalizeFirstWord(
+                this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() }),
+                'single');
         }
         return this.formatDateRange(this.renderDates[0], this.renderDates[this.renderDates.length - 1]);
     }
     public formatDateRange(startDate: Date, endDate?: Date): string {
         let globalize: Internationalization = this.parent.globalize;
+        let mode: string = this.parent.getCalendarMode();
         if (startDate === endDate) {
             endDate = null;
         }
         if (!isNullOrUndefined(this.parent.activeViewOptions.dateFormat)) {
+            let text: string = '';
             if (!endDate) {
-                return globalize.formatDate(
-                    startDate, { format: this.parent.activeViewOptions.dateFormat, calendar: this.parent.getCalendarMode() });
+                text = globalize.formatDate(startDate, { format: this.parent.activeViewOptions.dateFormat, calendar: mode });
+                return capitalizeFirstWord(text, 'multiple');
             }
-            return globalize.formatDate(
-                startDate, { format: this.parent.activeViewOptions.dateFormat, calendar: this.parent.getCalendarMode() }) + ' - ' +
-                globalize.
-                    formatDate(endDate, { format: this.parent.activeViewOptions.dateFormat, calendar: this.parent.getCalendarMode() });
+            text = (globalize.formatDate(startDate, { format: this.parent.activeViewOptions.dateFormat, calendar: mode }) +
+                ' - ' + globalize.formatDate(endDate, { format: this.parent.activeViewOptions.dateFormat, calendar: mode }));
+            return capitalizeFirstWord(text, 'multiple');
         }
         let formattedStr: string;
         let longDateFormat: string;
         if (this.parent.locale === 'en' || this.parent.locale === 'en-US') {
-            longDateFormat = getValue('dateFormats.long', getDefaultDateObject(this.parent.getCalendarMode()));
+            longDateFormat = getValue('dateFormats.long', getDefaultDateObject(mode));
         } else {
-            longDateFormat = getValue(
-                'main.' + '' + this.parent.locale + '.dates.calendars.' + this.parent.getCalendarMode() + '.dateFormats.long', cldrData);
+            longDateFormat = getValue('main.' + '' + this.parent.locale + '.dates.calendars.' + mode + '.dateFormats.long', cldrData);
         }
         if (!endDate) {
-            return globalize.formatDate(startDate, { format: longDateFormat, calendar: this.parent.getCalendarMode() });
+            return capitalizeFirstWord(globalize.formatDate(startDate, { format: longDateFormat, calendar: mode }), 'single');
         }
         let dateFormat: string = longDateFormat.trim().toLocaleLowerCase();
         if (dateFormat.substr(0, 1) === 'd') {
             if (startDate.getFullYear() === endDate.getFullYear()) {
                 if (startDate.getMonth() === endDate.getMonth()) {
-                    formattedStr = globalize.formatDate(startDate, { format: 'dd', calendar: this.parent.getCalendarMode() }) + ' - ' +
-                        globalize.formatDate(endDate, { format: 'dd MMMM yyyy', calendar: this.parent.getCalendarMode() });
+                    formattedStr = globalize.formatDate(startDate, { format: 'dd', calendar: mode }) + ' - ' +
+                        globalize.formatDate(endDate, { format: 'dd MMMM yyyy', calendar: mode });
                 } else {
-                    formattedStr = globalize.formatDate(startDate, { format: 'dd MMM', calendar: this.parent.getCalendarMode() }) + ' - ' +
-                        globalize.formatDate(endDate, { format: 'dd MMM yyyy', calendar: this.parent.getCalendarMode() });
+                    formattedStr = globalize.formatDate(startDate, { format: 'dd MMM', calendar: mode }) + ' - ' +
+                        globalize.formatDate(endDate, { format: 'dd MMM yyyy', calendar: mode });
                 }
             } else {
-                formattedStr = globalize.formatDate(startDate, { format: 'dd MMM yyyy', calendar: this.parent.getCalendarMode() }) + ' - ' +
-                    globalize.formatDate(endDate, { format: 'dd MMM yyyy', calendar: this.parent.getCalendarMode() });
+                formattedStr = globalize.formatDate(startDate, { format: 'dd MMM yyyy', calendar: mode }) + ' - ' +
+                    globalize.formatDate(endDate, { format: 'dd MMM yyyy', calendar: mode });
             }
         } else if (dateFormat.substr(0, 1) === 'm') {
             if (startDate.getFullYear() === endDate.getFullYear()) {
                 if (startDate.getMonth() === endDate.getMonth()) {
-                    formattedStr = globalize.formatDate(startDate, { format: 'MMMM dd', calendar: this.parent.getCalendarMode() }) + ' - ' +
-                        globalize.formatDate(endDate, { format: 'dd, yyyy', calendar: this.parent.getCalendarMode() });
+                    formattedStr = globalize.formatDate(startDate, { format: 'MMMM dd', calendar: mode }) + ' - ' +
+                        globalize.formatDate(endDate, { format: 'dd, yyyy', calendar: mode });
                 } else {
-                    formattedStr = globalize.formatDate(startDate, { format: 'MMM dd', calendar: this.parent.getCalendarMode() }) + ' - ' +
-                        globalize.formatDate(endDate, { format: 'MMM dd, yyyy', calendar: this.parent.getCalendarMode() });
+                    formattedStr = globalize.formatDate(startDate, { format: 'MMM dd', calendar: mode }) + ' - ' +
+                        globalize.formatDate(endDate, { format: 'MMM dd, yyyy', calendar: mode });
                 }
             } else {
                 formattedStr = globalize.
-                    formatDate(startDate, { format: 'MMM dd, yyyy', calendar: this.parent.getCalendarMode() }) + ' - ' +
-                    globalize.formatDate(endDate, { format: 'MMM dd, yyyy', calendar: this.parent.getCalendarMode() });
+                    formatDate(startDate, { format: 'MMM dd, yyyy', calendar: mode }) + ' - ' +
+                    globalize.formatDate(endDate, { format: 'MMM dd, yyyy', calendar: mode });
             }
         } else {
-            formattedStr = globalize.formatDate(startDate, { format: longDateFormat, calendar: this.parent.getCalendarMode() }) + ' - ' +
-                globalize.formatDate(endDate, { format: longDateFormat, calendar: this.parent.getCalendarMode() });
+            formattedStr = globalize.formatDate(startDate, { format: longDateFormat, calendar: mode }) + ' - ' +
+                globalize.formatDate(endDate, { format: longDateFormat, calendar: mode });
         }
-        return formattedStr;
+        return capitalizeFirstWord(formattedStr, 'multiple');
     }
     public getMobileDateElement(date: Date, className?: string): Element {
         let wrap: Element = createElement('div', {
             className: className,
             innerHTML: '<div class="e-m-date">' + this.parent.globalize.formatDate(
-                date, { format: 'd', calendar: this.parent.getCalendarMode() }) + '</div>' + '<div class="e-m-day">' +
-                this.parent.globalize.formatDate(date, { format: 'E', calendar: this.parent.getCalendarMode() }) + '</div>'
+                date, { format: 'd', calendar: this.parent.getCalendarMode() }) + '</div>' + '<div class="e-m-day">' + capitalizeFirstWord(
+                    this.parent.globalize.formatDate(date, { format: 'E', calendar: this.parent.getCalendarMode() }), 'single') + '</div>'
         });
         return wrap;
     }
-    public setResourceHeaderContent(tdElement: Element, tdData: TdData, className: string = 'e-text-ellipsis'): void {
+    public setResourceHeaderContent(tdElement: Element, tdData: TdData, className: string = cls.TEXT_ELLIPSIS): void {
         if (this.parent.activeViewOptions.resourceHeaderTemplate) {
             let data: ResourceDetails = { resource: tdData.resource, resourceData: tdData.resourceData };
             let scheduleId: string = this.parent.element.id + '_';
@@ -406,21 +414,20 @@ export class ViewBase {
     }
 
     private getColElements(): HTMLElement[] {
-        return [].slice.call(this.parent.element.querySelectorAll('.' + cls.CONTENT_WRAP_CLASS
+        return [].slice.call(this.element.querySelectorAll('.' + cls.CONTENT_WRAP_CLASS
             + ' col, .' + cls.DATE_HEADER_WRAP_CLASS + ' col')) as HTMLElement[];
     }
 
     public setColWidth(content: HTMLElement): void {
         if (this.isTimelineView()) {
             let colElements: HTMLElement[] = this.getColElements();
-            const colWidth: number = Math.ceil(this.parent.getContentTable().offsetWidth / (colElements.length / 2));
+            let contentBody: HTMLElement = this.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody') as HTMLElement;
+            const colWidth: number = Math.ceil(contentBody.offsetWidth / (colElements.length / 2));
             colElements.forEach((col: HTMLElement) => setStyleAttribute(col, { 'width': formatUnit(colWidth) }));
             if (content.offsetHeight !== content.clientHeight) {
                 let resourceColumn: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS);
                 if (!isNullOrUndefined(resourceColumn)) {
-                    setStyleAttribute(resourceColumn, {
-                        'height': formatUnit(content.clientHeight)
-                    });
+                    setStyleAttribute(resourceColumn, { 'height': formatUnit(content.clientHeight) });
                 }
             }
         }
@@ -433,5 +440,15 @@ export class ViewBase {
 
     public getContentAreaElement(): HTMLElement {
         return this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+    }
+
+    public wireExpandCollapseIconEvents(): void {
+        if (this.parent.resourceBase && this.parent.resourceBase.resourceCollection.length > 1) {
+            let treeIcons: NodeListOf<Element> = this.element.querySelectorAll('.' + cls.RESOURCE_TREE_ICON_CLASS);
+            treeIcons.forEach((icon: Element) => {
+                EventHandler.clearEvents(icon);
+                EventHandler.add(icon, 'click', this.parent.resourceBase.onTreeIconClick, this.parent.resourceBase);
+            });
+        }
     }
 }

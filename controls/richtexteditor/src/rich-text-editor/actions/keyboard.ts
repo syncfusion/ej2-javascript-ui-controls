@@ -76,6 +76,7 @@ let keyCode: { [key: string]: number } = {
  * </script>
  * ```
  * @hidden
+ * @deprecated
  */
 @NotifyPropertyChanges
 export class KeyboardEvents extends Base<HTMLElement> implements INotifyPropertyChanged {

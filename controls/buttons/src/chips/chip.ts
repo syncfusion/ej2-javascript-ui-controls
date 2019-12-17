@@ -41,6 +41,8 @@ export class Chip {
     /**
      * This enabled property helps to enable/disable ChipList component.
      * @default true
+     * @blazorDefaultValue null
+     * @blazorType bool?
      */
     public enabled: boolean;
 }
@@ -86,6 +88,8 @@ export interface ChipModel {
     /**
      * This enabled property helps to enable/disable ChipList component.
      * @default true
+     * @blazorDefaultValue null
+     * @blazorType bool?
      */
     enabled?: boolean;
 }

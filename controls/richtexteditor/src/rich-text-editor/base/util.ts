@@ -4,12 +4,13 @@
 import { isNullOrUndefined as isNOU, addClass, removeClass, L10n, selectAll, createElement, Browser } from '@syncfusion/ej2-base';
 import * as classes from '../base/classes';
 import * as model from '../models/items';
-import { IToolsItemConfigs, IRichTextEditor } from '../base/interface';
+import { IToolsItemConfigs, IRichTextEditor, BeforeSanitizeHtmlArgs } from '../base/interface';
 import { toolsLocale } from '../models/default-locale';
 import { IToolbarItems, IDropDownItemModel, ISetToolbarStatusArgs, IToolbarItemModel } from './interface';
 import { BaseToolbar } from '../actions/base-toolbar';
 import { DropDownButtons } from '../actions/dropdown-buttons';
 import { ServiceLocator } from '../services/service-locator';
+import { SanitizeHtmlHelper, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 let undoRedoItems: string[] = ['Undo', 'Redo'];
 
@@ -102,7 +103,8 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
         for (let j: number = 0; j < e.tbItems.length; j++) {
             let item: string = e.tbItems[j].subCommand;
             let itemStr: string = item && item.toLocaleLowerCase();
-            if (item && (itemStr === key) || (item === 'UL' && key === 'unorderedlist') || (item === 'OL' && key === 'orderedlist')) {
+            if (item && (itemStr === key) || (item === 'UL' && key === 'unorderedlist') || (item === 'OL' && key === 'orderedlist') ||
+            (itemStr === 'pre' && key === 'insertcode')) {
                 if (typeof data[key] === 'boolean') {
                     if (data[key] === true) {
                         addClass([e.tbElements[j]], [classes.CLS_ACTIVE]);
@@ -193,6 +195,9 @@ export function getTBarItemsIndex(items: string[], toolbarItems: IToolbarItemMod
                 } else if (items[i] === 'UnorderedList' && toolbarItems[j].subCommand === 'UL') {
                     itemsIndex.push(j);
                     break;
+                } else if (items[i] === 'InsertCode' && toolbarItems[j].subCommand === 'Pre') {
+                    itemsIndex.push(j);
+                    break;
                 } else if (items[i] === toolbarItems[j].subCommand) {
                     itemsIndex.push(j);
                     break;
@@ -218,6 +223,7 @@ export function updateUndoRedoStatus(baseToolbar: BaseToolbar, undoRedoStatus: {
 /**
  * To dispatch the event manually
  * @hidden
+ * @deprecated
  */
 export function dispatchEvent(element: Element | HTMLDocument, type: string): void {
     let evt: Event = document.createEvent('HTMLEvents');
@@ -268,8 +274,9 @@ export function updateTextNode(value: string): string {
     let childNodes: NodeListOf<Node> = tempNode.childNodes as NodeListOf<Node>;
     if (childNodes.length > 0) {
         [].slice.call(childNodes).forEach((childNode: Node) => {
-            if (childNode.nodeType === Node.TEXT_NODE && childNode.parentNode === tempNode
-                && childNode.textContent.trim() !== '') {
+            if ((childNode.nodeType === Node.TEXT_NODE && childNode.parentNode === tempNode
+                && childNode.textContent.trim() !== '') || (childNode.nodeName === 'IMG' &&
+                childNode.parentNode === tempNode)) {
                 let defaultTag: HTMLElement = document.createElement('p');
                 let parentNode: Element = childNode.parentNode as Element;
                 parentNode.insertBefore(defaultTag, childNode);
@@ -289,4 +296,22 @@ export function decode(value: string): string {
         .replace(/&lt;/g, '<').replace(/&amp;gt;/g, '>')
         .replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ')
         .replace(/&amp;nbsp;/g, ' ').replace(/&quot;/g, '');
+}
+
+export function sanitizeHelper(value: string, parent?: IRichTextEditor): string {
+    if (parent.enableHtmlSanitizer) {
+        let item: BeforeSanitizeHtmlArgs = SanitizeHtmlHelper.beforeSanitize();
+        let beforeEvent: BeforeSanitizeHtmlArgs = {
+            cancel: false,
+            helper: null
+        };
+        extend(item, item, beforeEvent);
+        parent.trigger('beforeSanitizeHtml', item);
+        if (item.cancel && !isNullOrUndefined(item.helper)) {
+            value = item.helper(value);
+        } else if (!item.cancel) {
+            value = SanitizeHtmlHelper.serializeValue(item, value);
+        }
+    }
+    return value;
 }

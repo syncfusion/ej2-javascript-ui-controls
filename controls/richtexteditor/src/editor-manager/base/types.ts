@@ -1,5 +1,7 @@
 /**
  * Types type for EditorManager
+ * @hidden
+ * @deprecated
  */
 export type EditorExecCommand =
     'Indents' |

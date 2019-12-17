@@ -740,6 +740,15 @@ $de-toc-modify-button-margin-rtl: 157px !default;
 $de-hght-type-top: -25px !default;
 $de-bigger-style-button-height: 37px !default;
 $de-bigger-style-button-width: 100px !default;
+$de-cmt-selection: $selection-bg !default;
+$de-cmt-selection-rslv: rgba($de-cmt-selection, .5) !default;
+$de-cmt-opt-size: auto !default;
+$de-cmt-pant-content-font: $content-font !default;
+$de-cmt-post-btn-ht: 32px !default;
+$de-cmt-post-btn-wt-big: 40px !default;
+$de-cmt-post-btn-ht-big: 40px !default;
+$de-cmt-separator: $border-fg !default;
+$de-reply-footer-margin-top: 8px !default;
 
 @include export-module('documenteditor-icons') {
   .e-documenteditor {

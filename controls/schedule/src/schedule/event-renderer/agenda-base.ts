@@ -57,9 +57,7 @@ export class AgendaBase {
                         'tabindex': '0',
                         'aria-readonly': this.parent.eventBase.getReadonlyAttribute(listData[li]),
                         'aria-selected': 'false',
-                        'aria-grabbed': 'true',
-                        'aria-label': (listData[li][this.parent.eventFields.subject]
-                            || this.parent.eventSettings.fields.subject.default) as string
+                        'aria-grabbed': 'true'
                     }
                 });
                 if (!isNullOrUndefined(groupIndex)) {

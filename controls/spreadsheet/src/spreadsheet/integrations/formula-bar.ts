@@ -400,6 +400,7 @@ export class FormulaBar {
         this.parent.notify(workbookFormulaOperation, descriptionArgs);
         this.focusOkButton();
         descriptionArea = document.getElementById(this.parent.element.id + '_description_content');
+        selectedFormula = (selectedFormula === 'AND') ? 'CalculateAND' : (selectedFormula === 'OR') ? 'CalculateOR' : selectedFormula;
         descriptionArea.innerHTML = (this.parent.serviceLocator.getService(locale) as L10n).getConstant(selectedFormula as string);
     }
     private formulaClickHandler(args: MouseEvent & TouchEvent): void {

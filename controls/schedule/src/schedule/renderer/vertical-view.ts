@@ -8,6 +8,7 @@ import { RenderCellEventArgs, CellTemplateArgs, TdData, NotifyEventArgs, IRender
 import * as util from '../base/util';
 import * as event from '../base/constant';
 import * as cls from '../base/css-constant';
+import { View } from '../base/type';
 
 /**
  * vertical view
@@ -80,10 +81,10 @@ export class VerticalView extends ViewBase implements IRenderer {
         let scrollBarWidth: number = util.getScrollBarWidth();
         // tslint:disable:no-any
         if (content.offsetWidth - content.clientWidth > 0) {
-            (header.firstChild as HTMLElement).style[<any>args.cssProperties.border] = scrollBarWidth > 0 ? '1px' : '0px';
+            (header.firstElementChild as HTMLElement).style[<any>args.cssProperties.border] = scrollBarWidth > 0 ? '1px' : '0px';
             header.style[<any>args.cssProperties.padding] = scrollBarWidth > 0 ? scrollBarWidth - 1 + 'px' : '0px';
         } else {
-            (header.firstChild as HTMLElement).style[<any>args.cssProperties.border] = '';
+            (header.firstElementChild as HTMLElement).style[<any>args.cssProperties.border] = '';
             header.style[<any>args.cssProperties.padding] = '';
         }
         // tslint:enable:no-any
@@ -102,7 +103,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         }
     }
     public setContentHeight(element: HTMLElement, leftPanelElement: HTMLElement, height: number): void {
-        if (this.parent.isAdaptive && !this.isTimelineView()) {
+        if (this.parent.isAdaptive && !this.isTimelineView() && !this.parent.isServerRenderer()) {
             element.style.height = formatUnit(height);
         } else {
             if (!isNullOrUndefined(leftPanelElement)) {
@@ -247,7 +248,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         });
         let timeCellsWrap: Element = this.getLeftPanelElement();
         removeClass(timeCellsWrap.querySelectorAll('.' + cls.HIDE_CHILDS_CLASS), cls.HIDE_CHILDS_CLASS);
-        addClass([timeCellsWrap.querySelectorAll('tr')[rowIndex].lastChild as Element], cls.HIDE_CHILDS_CLASS);
+        addClass([timeCellsWrap.querySelectorAll('tr')[rowIndex].lastElementChild as Element], cls.HIDE_CHILDS_CLASS);
         prepend([currentTimeEle], timeCellsWrap);
         currentTimeEle.style.top = formatUnit(currentTimeEle.offsetTop - (currentTimeEle.offsetHeight / 2));
     }
@@ -277,7 +278,7 @@ export class VerticalView extends ViewBase implements IRenderer {
                 } else {
                     wrapper.innerHTML = this.parent.activeView.isTimelineView() ?
                         `<span class="e-header-date e-navigate">${ViewHelper.getTimelineDate(this.parent, date)}</span>` :
-                        `<div class="e-header-day">${ViewHelper.getDayName(this.parent, date)}</div>` +
+                        `<div class="e-header-day">${util.capitalizeFirstWord(ViewHelper.getDayName(this.parent, date), 'single')}</div>` +
                         `<div class="e-header-date e-navigate" role="link">${ViewHelper.getDate(this.parent, date)}</div>`;
                     cntEle = wrapper.childNodes;
                 }
@@ -316,7 +317,41 @@ export class VerticalView extends ViewBase implements IRenderer {
         }
         return cntEle;
     }
+    public serverRenderLayout(): void {
+        this.setPanel(this.parent.element.querySelector('.' + cls.TABLE_WRAP_CLASS));
+        if (this.parent.uiStateValues.isGroupAdaptive && !this.parent.element.querySelector('.' + cls.RESOURCE_TOOLBAR_CONTAINER)) {
+            this.renderResourceMobileLayout();
+        }
+        let headerCells: Element[] =
+            [].slice.call(this.element.querySelectorAll('.' + cls.DATE_HEADER_WRAP_CLASS + ' td.' + cls.HEADER_CELLS_CLASS));
+        for (let cell of headerCells) {
+            EventHandler.clearEvents(cell);
+            this.wireMouseEvents(cell);
+        }
+        let alldayCells: Element[] =
+            [].slice.call(this.element.querySelectorAll('.' + cls.DATE_HEADER_WRAP_CLASS + ' td.' + cls.ALLDAY_CELLS_CLASS));
+        for (let cell of alldayCells) {
+            EventHandler.clearEvents(cell);
+            this.wireCellEvents(cell);
+        }
+        let wrap: Element = this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS);
+        let contentBody: Element = this.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody');
+        EventHandler.clearEvents(contentBody);
+        this.wireCellEvents(contentBody);
+        EventHandler.clearEvents(wrap);
+        EventHandler.add(wrap, 'scroll', this.onContentScroll, this);
+        EventHandler.add(wrap, Browser.touchMoveEvent, this.onApaptiveMove, this);
+        this.wireExpandCollapseIconEvents();
+        this.parent.notify(event.contentReady, {});
+    }
     public renderLayout(type: string): void {
+        if (this.parent.isServerRenderer()) {
+            this.colLevels = this.generateColumnLevels();
+            if (this.parent.resourceBase && !this.parent.uiStateValues.isGroupAdaptive && this.parent.activeView.isTimelineView()) {
+                this.parent.resourceBase.setRenderedResources();
+            }
+            return;
+        }
         this.setPanel(createElement('div', { className: cls.TABLE_WRAP_CLASS }));
         let clsList: string[] = [this.baseCssClass, this.viewClass];
         clsList.push(type);
@@ -332,6 +367,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         this.renderPanel(type);
         addClass([this.element], clsList);
         this.element.appendChild(this.createTableLayout(cls.OUTER_TABLE_CLASS) as HTMLElement);
+        this.element.querySelector('table').setAttribute('role', 'presentation');
         this.colLevels = this.generateColumnLevels();
         this.renderHeader();
         this.renderContent();
@@ -401,7 +437,10 @@ export class VerticalView extends ViewBase implements IRenderer {
         }
         let ntr: Element = trEle.cloneNode() as Element;
         let appointmentExpandCollapse: Element = createElement('div', {
-            attrs: { 'tabindex': '0', title: 'Expand-all-day-section', 'aria-disabled': 'false', 'aria-label': 'Expand section' },
+            attrs: {
+                'tabindex': '0', 'role': 'list',
+                title: 'Expand-all-day-section', 'aria-disabled': 'false', 'aria-label': 'Expand section'
+            },
             className: cls.ALLDAY_APPOINTMENT_SECTION_CLASS + ' ' + cls.APPOINTMENT_ROW_EXPAND_CLASS + ' ' +
                 cls.ICON + ' ' + cls.DISABLE_CLASS,
         });
@@ -464,6 +503,9 @@ export class VerticalView extends ViewBase implements IRenderer {
             if (ele && ele.length) {
                 append([].slice.call(ele), tdEle);
             }
+        }
+        if (!this.parent.isMinMaxDate(util.resetTime(new Date('' + td.date)))) {
+            addClass([tdEle], cls.DISABLE_DATES);
         }
         if (td.type === 'resourceHeader') {
             this.setResourceHeaderContent(tdEle, td);
@@ -538,6 +580,9 @@ export class VerticalView extends ViewBase implements IRenderer {
         let ntd: Element = td.cloneNode() as Element;
         if (tdData.colSpan) { ntd.setAttribute('colspan', tdData.colSpan.toString()); }
         let clsName: string[] = this.getContentTdClass(r);
+        if (!this.parent.isMinMaxDate(util.resetTime(new Date('' + tdData.date)))) {
+            clsName.push(cls.DISABLE_DATES);
+        }
         let cellDate: Date = util.resetTime(new Date('' + tdData.date));
         util.setTime(cellDate, util.getDateInMs(r.date));
         let type: string = 'workCells';
@@ -603,7 +648,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         return tr;
     }
     public getScrollableElement(): Element {
-        if (this.parent.isAdaptive && this.parent.currentView.indexOf('Timeline') === -1) {
+        if (this.parent.isAdaptive && !this.isTimelineView() && !this.parent.isServerRenderer()) {
             return this.element.querySelector('.' + cls.SCROLL_CONTAINER_CLASS);
         } else {
             return this.getContentAreaElement();
@@ -681,10 +726,20 @@ export class VerticalView extends ViewBase implements IRenderer {
                 this.parent.resourceBase.destroy();
             }
             if (isBlazor()) {
-                this.parent.resetLayoutTemplates();
-                this.parent.resetEventTemplates();
+                let view: View = this.parent.viewCollections[this.viewIndex].option;
+                if (this.parent.isServerRenderer(view)) {
+                    if (this.parent.currentView === 'Agenda' || this.parent.currentView === 'TimelineYear') {
+                        this.element.style.display = 'none';
+                    }
+                    this.parent.resetEventTemplates();
+                } else {
+                    this.parent.resetLayoutTemplates();
+                    this.parent.resetEventTemplates();
+                    remove(this.element);
+                }
+            } else {
+                remove(this.element);
             }
-            remove(this.element);
             this.element = null;
             if (this.parent.scheduleTouchModule) {
                 this.parent.scheduleTouchModule.resetValues();

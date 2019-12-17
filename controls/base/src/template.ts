@@ -132,7 +132,6 @@ function evalExp(str: string, nameSpace: string, helper?: Object): string {
                     if (matches[1].length !== 0 && !(/data/).test(ftArray[0]) && !(/window./).test(ftArray[0])) {
                         matches[1] = (fNameSpace === 'global' ? nameSpace + '.' + matches[1] : matches[1]);
                     }
-                    // handing helper function with special characters
                     let splRegexp: RegExp = /\@|\$|\#/gm;
                     let arrObj: RegExp = /\]\./gm;
                     if (WINDOWFUNC.test(cnt) && arrObj.test(cnt) || splRegexp.test(cnt)) {

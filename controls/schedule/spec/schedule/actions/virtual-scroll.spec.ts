@@ -11,12 +11,12 @@ Schedule.Inject(TimelineViews, TimelineMonth);
 
 describe('Virtual scroll', () => {
     beforeAll(() => {
-        // tslint:disable-next-line:no-any
+        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             // tslint:disable-next-line:no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); //Skips test (in Chai)
+            (this as any).skip(); //Skips test (in Chai)
             return;
         }
     });
@@ -293,7 +293,7 @@ describe('Virtual scroll', () => {
         it('checking elements with rowAutoHeight property', (done: Function) => {
             let viewElement: HTMLElement = schObj.element.querySelector('.e-toolbar-item.e-timeline-month');
             viewElement.click();
-            schObj.dataBound = (args: Object) => {
+            schObj.dataBound = () => {
                 let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(5);
                 let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
@@ -322,7 +322,7 @@ describe('Virtual scroll', () => {
             expect(moreIndicatorList.length).toEqual(0);
         });
         it('checking more indicator rowAutoHeight false', (done: Function) => {
-            schObj.dataBound = (args: Object) => {
+            schObj.dataBound = () => {
                 let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(3);
                 let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));

@@ -1,7 +1,7 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, Event, EmitType, select } from '@syncfusion/ej2-base';
 import { detach, addClass, removeClass, EventHandler, setStyleAttribute, Complex, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, closest, extend, L10n, compile, Browser, Touch, TapEventArgs } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, updateBlazorTemplate, resetBlazorTemplate, SanitizeHtmlHelper} from '@syncfusion/ej2-base';
 import { DataManager, UrlAdaptor, Query, WebApiAdaptor, ODataV4Adaptor, ReturnOption } from '@syncfusion/ej2-data';
 import { Button, ButtonModel } from '@syncfusion/ej2-buttons';
 import { RichTextEditorModel } from '@syncfusion/ej2-richtexteditor';
@@ -32,6 +32,35 @@ import { PopupSettingsModel } from './models-model';
 import { ActionBeginEventArgs, ActionEventArgs, FormEventArgs, ValidateEventArgs, IButton, BeginEditEventArgs } from './interface';
 /* Interface */
 import { parseValue, getCompValue } from './util';
+
+export interface SanitizeSelectors {
+    /** Returns the tags. */
+    tags?: string[];
+    /** Returns the attributes. */
+    attributes?: SanitizeRemoveAttrs[];
+}
+
+export interface BeforeSanitizeHtmlArgs {
+    /** Illustrates whether the current action needs to be prevented or not. */
+    cancel?: boolean;
+    /** It is a callback function and executed it before our inbuilt action. It should return HTML as a string.
+     * @function
+     * @param {string} value - Returns the value.
+     * @returns {string}
+     */
+    helper?: Function;
+    /** Returns the selectors object which carrying both tags and attributes selectors to block list of cross-site scripting attack.
+     *  Also possible to modify the block list in this event.
+     */
+    selectors?: SanitizeSelectors;
+}
+
+export interface SanitizeRemoveAttrs {
+    /** Defines the attribute name to sanitize */
+    attribute?: string;
+    /** Defines the selector that sanitize the specified attributes within the selector */
+    selector?: string;
+}
 
 /**
  * Specifies the mode to be render while editing.
@@ -164,6 +193,12 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      */
     @Property('')
     public template: string | HTMLElement;
+    /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default true
+     */
+    @Property(true)
+    public enableHtmlSanitizer: boolean;
     /**
      * Defines single/multiple classes (separated by space) to be used for customization of In-place editor.
      * @default ''
@@ -304,6 +339,13 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      */
     @Event()
     public created: EmitType<Event>;
+    /** 
+     * Event triggers before sanitize the value.
+     * @event 
+     * @blazorProperty 'OnSanitizeHtml'
+     */
+    @Event()
+    public beforeSanitizeHtml: EmitType<BeforeSanitizeHtmlArgs>;
     /**
      * The event will be fired before the data submitted to the server.
      * @event
@@ -563,7 +605,8 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.isExtModule = (Array.prototype.indexOf.call(this.moduleList, this.type) > -1) ? true : false;
         let classProp: string;
         if (!isNOU(this.model.cssClass)) {
-            classProp = this.model.cssClass.indexOf(classes.ELEMENTS) < 0 ? this.model.cssClass + ' ' + classes.ELEMENTS :
+            classProp = this.model.cssClass.indexOf(classes.ELEMENTS) < 0 ?
+            this.model.cssClass === '' ? classes.ELEMENTS : this.model.cssClass + ' ' + classes.ELEMENTS :
             this.model.cssClass;
         } else {
             classProp = classes.ELEMENTS;
@@ -846,7 +889,28 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             }
         }
     }
+    /** 
+     * @hidden
+     */
+    public sanitizeHelper(value: string): string {
+        if (this.enableHtmlSanitizer) {
+            let item: BeforeSanitizeHtmlArgs = SanitizeHtmlHelper.beforeSanitize();
+            let beforeEvent: BeforeSanitizeHtmlArgs = {
+                cancel: false,
+                helper: null
+            };
+            extend(item, item, beforeEvent);
+            this.trigger('beforeSanitizeHtml', item);
+            if (item.cancel && !isNullOrUndefined(item.helper)) {
+                value = item.helper(value);
+            } else if (!item.cancel) {
+                value = SanitizeHtmlHelper.serializeValue(item, value);
+            }
+        }
+        return value;
+    }
     private appendTemplate(trgEle: HTMLElement, tempStr: string | HTMLElement): void {
+        tempStr = typeof(tempStr) === 'string' ? this.sanitizeHelper(tempStr) : tempStr;
         if (typeof tempStr === 'string' || isNOU((<HTMLElement>tempStr).innerHTML)) {
             if ((<string>tempStr)[0] === '.' || (<string>tempStr)[0] === '#') {
                 if (document.querySelectorAll(<string>tempStr).length) {
@@ -1178,8 +1242,8 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         classList.forEach((val: string): void => {
             removeClass([this.element], [val]);
         });
-        while (this.element.firstChild) {
-            this.element.removeChild(this.element.firstChild);
+        while (this.element.firstElementChild) {
+            this.element.removeChild(this.element.firstElementChild);
         }
         super.destroy();
     }

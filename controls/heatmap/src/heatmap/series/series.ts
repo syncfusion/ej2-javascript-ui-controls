@@ -151,10 +151,6 @@ export class Series {
             this.setTextAndColor(dataXIndex, dataYIndex);
             let rectPosition: CurrentRect = new CurrentRect(0, 0, 0, 0, 0, '', 0, 0, 0, 0, true, '', '', true);
             borderColor = tempBorder.color;
-            if ((heatMap.renderingMode === 'Canvas' && parseFloat(tempBorder.width.toString()) === 0) || (!borderColor &&
-                cellSetting.tileType === 'Bubble' && cellSetting.bubbleType === 'Sector')) {
-                borderColor = this.color;
-            }
             if (this.heatMap.bubbleSizeWithColor) {
                 this.updateRectDetails(
                     rectPosition, tempX, tempY, tempWidth, tempHeight,
@@ -164,10 +160,16 @@ export class Series {
             }
             if (cellSetting.showLabel) {
                 displayText = this.getFormatedText(this.text, cellSetting.format);
-                rectPosition.displayText = displayText;
-                if (!isNullOrUndefined(this.heatMap.cellRender)) {
-                    displayText = this.cellRendering(rectPosition, displayText);
-                }
+            } else {
+                displayText = '';
+            }
+            rectPosition.displayText = displayText;
+            if (!isNullOrUndefined(this.heatMap.cellRender)) {
+            displayText = this.cellRendering(rectPosition, displayText);
+            }
+            if ((heatMap.renderingMode === 'Canvas' && parseFloat(tempBorder.width.toString()) === 0) || (!borderColor &&
+                cellSetting.tileType === 'Bubble' && cellSetting.bubbleType === 'Sector')) {
+                borderColor = this.color;
             }
             if (cellSetting.tileType === 'Rect') { // Rectangle/Tile Series
                 this.renderTileCell(rectPosition, tempBorder, x, this.color, borderColor);
@@ -247,13 +249,15 @@ export class Series {
         for (let i: number = 0; i < this.heatMap.toggleValue.length; i++) {
             let minValue: number;
             let maxValue: number;
-            minValue = (i === 0) ? this.heatMap.dataSourceMinValue : this.heatMap.toggleValue[i].value;
+            minValue = (i === 0) && !this.heatMap.isColorRange ? this.heatMap.dataSourceMinValue : this.heatMap.isColorRange ?
+                this.heatMap.toggleValue[i].startValue : this.heatMap.toggleValue[i].value;
             if (this.heatMap.cellSettings.tileType === 'Bubble' && this.heatMap.cellSettings.bubbleType === 'SizeAndColor') {
                 maxValue = (i === this.heatMap.toggleValue.length - 1) ? this.heatMap.maxColorValue :
                     this.heatMap.toggleValue[i + 1].value - 0.01;
             } else {
-                maxValue = (i === this.heatMap.toggleValue.length - 1) ? this.heatMap.dataSourceMaxValue :
-                    this.heatMap.toggleValue[i + 1].value - 0.01;
+                maxValue = (i === this.heatMap.toggleValue.length - 1 && !this.heatMap.isColorRange) ?
+                    this.heatMap.dataSourceMaxValue : this.heatMap.isColorRange ?
+                    this.heatMap.toggleValue[i].endValue : this.heatMap.toggleValue[i + 1].value - 0.01;
             }
             // tslint:disable-next-line:no-any
             let clonedDataSource: any[] = this.heatMap.clonedDataSource;
@@ -272,6 +276,10 @@ export class Series {
                     isValueInRange = true;
                     break;
                 }
+            } else if (this.heatMap.isColorRange &&
+                maxValue >= this.heatMap.toggleValue[i].endValue && i === this.heatMap.toggleValue.length - 1) {
+                    isValueInRange = true;
+                    break;
             }
         }
         return isValueInRange;
@@ -297,9 +305,11 @@ export class Series {
             yLabel: yLabels[rectPosition.yIndex].toString(),
             displayText: text,
             xValue: xAxis.labelValue[rectPosition.xIndex],
-            yValue: yLabelValue[rectPosition.yIndex]
+            yValue: yLabelValue[rectPosition.yIndex],
+            cellColor: this.color
         };
         this.heatMap.trigger('cellRender', argData);
+        this.color = argData.cellColor;
         return argData.displayText;
     }
 

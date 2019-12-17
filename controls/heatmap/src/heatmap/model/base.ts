@@ -178,6 +178,26 @@ export class Title extends ChildProperty<Title> {
     @Complex<FontModel>({}, Font)
     public textStyle: FontModel;
 }
+
+/**
+ * class used to maintain the fill color value for cell color range
+ */
+export class FillColor extends ChildProperty<FillColor> {
+    /**
+     * minimum fill color for cell color range
+     * @default '#eeeeee'
+     */
+    @Property('#eeeeee')
+    public minColor: string;
+
+    /**
+     * maximum fill color for cell color range
+     * @default '#eeeeee'
+     */
+    @Property('#eeeeee')
+    public maxColor: string;
+}
+
 /**
  * class used to maintain palette information.
  */
@@ -195,12 +215,41 @@ export class PaletteCollection extends ChildProperty<PaletteCollection> {
      */
     @Property(null)
     public color: string;
+
     /**
      * Palette color label
      * @default ''
      */
     @Property(null)
     public label: string;
+
+    /**
+     * Palette start value
+     * @default null
+     */
+    @Property(null)
+    public startValue: number;
+
+    /**
+     * Palette end value
+     * @default null
+     */
+    @Property(null)
+    public endValue: number;
+
+    /**
+     * Palette minColor value
+     * @default null
+     */
+    @Property(null)
+    public minColor: string;
+
+    /**
+     * Palette maxColor value
+     * @default null
+     */
+    @Property(null)
+    public maxColor: string;
 }
 /**
  * label border properties.
@@ -217,6 +266,7 @@ export class AxisLabelBorder extends ChildProperty<AxisLabelBorder> {
     /**
      * The width of the border in pixels.
      * @default 1
+     * @blazordefaultvalue 0
      */
     @Property(1)
     public width: number;
@@ -341,10 +391,19 @@ export class ColorCollection {
     public value: number;
     public color: string;
     public label: string;
-    constructor(value: number, color: string, label: string) {
+    public startValue: number;
+    public endValue: number;
+    public minColor: string;
+    public maxColor: string;
+    constructor(value: number, color: string, label: string, startValue: number, endValue: number, minColor: string, maxColor: string) {
         this.value = value;
         this.color = color;
         this.label = label;
+        this.startValue = startValue;
+        this.endValue = endValue;
+        this.minColor = minColor;
+        this.maxColor = maxColor;
+
     }
 }
 /**
@@ -367,11 +426,21 @@ export class LegendColorCollection {
     public value: number;
     public color: string;
     public label: string;
+    public startValue: number;
+    public endValue: number;
+    public minColor: string;
+    public maxColor: string;
     public isHidden: boolean;
-    constructor(value: number, color: string, label: string, isHidden: boolean) {
+    constructor(
+        value: number, color: string, label: string, startValue: number, endValue: number, minColor: string,
+        maxColor: string, isHidden: boolean) {
         this.value = value;
         this.color = color;
         this.label = label;
+        this.startValue = startValue;
+        this.endValue = endValue;
+        this.minColor = minColor;
+        this.maxColor = maxColor;
         this.isHidden = isHidden;
     }
 }

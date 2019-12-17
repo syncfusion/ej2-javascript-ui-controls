@@ -574,6 +574,37 @@ describe('Filtering module => ', () => {
             gridObj.filterByColumn('OrderID', 'equal', '10248', 'and', false);
         });
 
+        it('Ensure filterbar input element value', (done: Function) => {
+            gridObj.clearFiltering();
+            actionComplete = (args?: Object): void => {
+                let elementVal: string = (document.getElementById('OrderID_filterBarcell') as any).value;
+                expect(elementVal).not.toBe('');
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.filterSettings.columns = [{ field: 'OrderID', operator: 'equal', value: 10248 }];
+        });
+
+        it('Empty string', (done: Function) => {
+            actionComplete = (args?: Object): void => {
+                let elementVal: string = (document.getElementById('OrderID_filterBarcell') as any).value;
+                expect(elementVal).toBe('');
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            filterColumn(gridObj, 'OrderID', "");
+        });
+
+        it('Ensure filterbar input element value after filtering', (done: Function) => {
+            actionComplete = (args?: Object): void => {
+                let elementVal: string = (document.getElementById('OrderID_filterBarcell') as any).value;
+                expect(elementVal).not.toBe('');
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.filterByColumn('OrderID', 'equal', '10248');
+        });
+
         afterAll(() => {
             destroy(gridObj);
             gridObj = actionBegin = actionComplete = null;

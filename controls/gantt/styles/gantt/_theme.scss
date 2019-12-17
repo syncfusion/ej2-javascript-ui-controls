@@ -7,6 +7,28 @@
       border-radius: $gantt-header-border-radius;
     }
 
+    .e-cloneproperties.e-draganddrop {
+      box-shadow: $gantt-clone-prop-box-shadow;
+      opacity: .95;
+      overflow: visible;
+    }
+
+    .e-cloneproperties {
+      background-color: $gantt-drag-clone-bg-color;
+      border-color: $gantt-drag-clone-border-color;
+      color: $gantt-drag-clone-color;
+    }
+
+    .e-cloneproperties.e-draganddrop .e-rowcell {
+      color: $gantt-content-font-color;
+    }
+
+    .e-cloneproperties.e-draganddrop table,
+    .e-cloneproperties.e-draganddrop table .e-selectionbackground {
+      background-color: $gantt-clone-dragdrop-bg-color;
+      height: 30px;
+    }
+
     .e-gantt-toolbar + .e-gantt-splitter {
       border-top-left-radius: $gantt-splitter-border-top-left-radius;
       border-top-right-radius: $gantt-splitter-border-top-right-radius;
@@ -165,6 +187,10 @@
 
       .e-line-container-cell {
         border-color: $gantt-line-container-cell-border-color;
+      }
+
+      .e-active-container {
+        border-color: $gantt-active-container-border !important; // sass-lint:disable-line no-important
       }
 
       .e-gantt-child-taskbar-inner-div {

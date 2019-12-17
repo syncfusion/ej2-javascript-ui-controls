@@ -3,3 +3,4 @@
  */
 export * from './cell-format';
 export * from './edit';
+export * from './hyperlink';

@@ -18,12 +18,12 @@ Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, TimelineViews);
 
 describe('Quick Popups', () => {
     beforeAll(() => {
-        // tslint:disable-next-line:no-any
+        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             // tslint:disable-next-line:no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); //Skips test (in Chai)
+            (this as any).skip(); //Skips test (in Chai)
             return;
         }
     });
@@ -50,15 +50,13 @@ describe('Quick Popups', () => {
 
         it('Event click client side event', () => {
             schObj.eventClick = (args: EventClickArgs) => args.cancel = true;
-            schObj.dataBind();
             let eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElements).toBeTruthy();
             eventElements[1].click();
-            schObj.eventClick = (args: EventClickArgs) => args.cancel = false;
-            schObj.dataBind();
         });
 
         it('Event Click and Delete event', () => {
+            schObj.eventClick = (args: EventClickArgs) => args.cancel = false;
             let eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             eventElements[1].click();
             let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
@@ -1422,12 +1420,14 @@ describe('Quick Popups', () => {
             (<HTMLElement>eventPopup.querySelector('.e-close')).click();
         });
 
-        it('more events checking in multiple resource grouping', (done: Function) => {
+        it('enable resource byGroupID', (done: Function) => {
+            schObj.dataBound = () => done();
+            schObj.popupOpen = () => { /** Null */ };
             schObj.group.byGroupID = true;
             schObj.dataBind();
-            schObj.currentView = 'Month';
-            schObj.dataBind();
-            schObj.popupOpen = () => { /** Null */ };
+        });
+
+        it('more events checking in multiple resource grouping', (done: Function) => {
             schObj.dataBound = () => {
                 expect(schObj.eventsData.length).toEqual(10);
                 util.triggerMouseEvent(schObj.element.querySelector('.e-more-indicator'), 'click');
@@ -1439,6 +1439,8 @@ describe('Quick Popups', () => {
                 expect(morePopup.classList).toContain('e-popup-close');
                 done();
             };
+            schObj.currentView = 'Month';
+            schObj.dataBind();
             util.disableScheduleAnimation(schObj);
             expect(schObj.eventsData.length).toEqual(9);
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
@@ -1530,6 +1532,16 @@ describe('Quick Popups', () => {
             expect(schObj.element.querySelector('.e-more-popup-wrapper').classList).toContain('e-popup-close');
         });
 
+        it('selected date changed to current date', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-header-cells.e-current-day').length).toEqual(3);
+                done();
+            };
+            schObj.popupOpen = (args: PopupOpenEventArgs) => args.cancel = false;
+            schObj.selectedDate = new Date();
+            schObj.dataBind();
+        });
+
         it('more event popup checking with current date ', (done: Function) => {
             schObj.dataBound = () => {
                 util.triggerMouseEvent(schObj.element.querySelector('.e-more-indicator'), 'click');
@@ -1540,9 +1552,6 @@ describe('Quick Popups', () => {
                 expect(morePopup.classList).toContain('e-popup-close');
                 done();
             };
-            schObj.popupOpen = (args: PopupOpenEventArgs) => args.cancel = false;
-            schObj.selectedDate = new Date();
-            schObj.dataBind();
             let generateData: Function = () => {
                 let dataCol: Object[] = [];
                 let currentDate: Date = new Date(new Date().setHours(0, 0, 0, 0));
@@ -2380,23 +2389,19 @@ describe('Quick Popups', () => {
         });
 
         it('Checking for cell click quick info popup', () => {
-            let workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
+            let workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             util.triggerMouseEvent(workCell, 'click');
-            let popupElement: HTMLElement = document.querySelector('.e-popup-open') as HTMLElement;
-            expect(popupElement.children[0].classList.contains('e-cell-popup')).toEqual(true);
+            expect(schObj.quickPopup.quickPopup.element.querySelectorAll('.e-cell-popup').length).toEqual(1);
             schObj.closeQuickInfoPopup();
-            let popupElementCount: number = document.querySelectorAll('.e-cell-popup').length;
-            expect(popupElementCount).toEqual(0);
+            expect(schObj.quickPopup.quickPopup.element.querySelectorAll('.e-cell-popup').length).toEqual(0);
         });
 
         it('Checking for event click quick info popup', () => {
-            let eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-            eventElements[0].click();
-            let popupElement: HTMLElement = document.querySelector('.e-popup-open') as HTMLElement;
-            expect(popupElement.children[0].classList.contains('e-event-popup')).toEqual(true);
+            let eventElements: HTMLElement = schObj.element.querySelector('.e-appointment') as HTMLElement;
+            util.triggerMouseEvent(eventElements, 'click');
+            expect(schObj.quickPopup.quickPopup.element.querySelectorAll('.e-event-popup').length).toEqual(1);
             schObj.closeQuickInfoPopup();
-            let popupElementCount: number = document.querySelectorAll('.e-event-popup').length;
-            expect(popupElementCount).toEqual(0);
+            expect(schObj.quickPopup.quickPopup.element.querySelectorAll('.e-event-popup').length).toEqual(0);
         });
     });
 
@@ -2493,8 +2498,6 @@ describe('Quick Popups', () => {
         });
 
         it('More event popup checking on timeline month view', (done: Function) => {
-            schObj.currentView = 'TimelineMonth';
-            schObj.dataBind();
             schObj.dataBound = () => {
                 (schObj.element.querySelector('.e-more-indicator') as HTMLElement).click();
                 let moreEventPopup: Element = document.querySelector('.e-more-popup-wrapper');
@@ -2505,11 +2508,12 @@ describe('Quick Popups', () => {
                 (document.querySelector('.e-more-event-close') as HTMLElement).click();
                 done();
             };
+            schObj.currentView = 'TimelineMonth';
+            schObj.dataBind();
         });
 
         it('isMorePopup property is set to false and check the more indicator click navigation on timeline day view', (done: DoneFn) => {
             schObj.moreEventsClick = (args: MoreEventsClickArgs) => args.isPopupOpen = false;
-            schObj.dataBind();
             schObj.dataBound = () => {
                 expect(schObj.currentView).toEqual('TimelineDay');
                 expect(isVisible(document.querySelector('.e-more-popup-wrapper'))).toBe(false);
@@ -2519,19 +2523,18 @@ describe('Quick Popups', () => {
         });
 
         it('isMorePopup property is set to false and check the more indicator click navigation on day view', (done: Function) => {
-            schObj.currentView = 'Month';
-            schObj.dataBind();
             schObj.dataBound = () => {
                 (schObj.element.querySelectorAll('.e-more-indicator')[2] as HTMLElement).click();
                 expect(schObj.currentView).toEqual('Day');
                 done();
             };
+            schObj.currentView = 'Month';
+            schObj.dataBind();
         });
     });
 
     describe('isMorePopup property checking on Desktop mode', () => {
         let schObj: Schedule;
-
         beforeAll((done: Function) => {
             let model: ScheduleModel = {
                 currentView: 'Month',
@@ -2555,8 +2558,6 @@ describe('Quick Popups', () => {
         });
 
         it('More event popup checking on timeline month view', (done: Function) => {
-            schObj.currentView = 'TimelineMonth';
-            schObj.dataBind();
             schObj.dataBound = () => {
                 (schObj.element.querySelector('.e-more-indicator') as HTMLElement).click();
                 let moreEventPopup: Element = document.querySelector('.e-more-popup-wrapper');
@@ -2566,11 +2567,12 @@ describe('Quick Popups', () => {
                 (document.querySelector('.e-more-event-close') as HTMLElement).click();
                 done();
             };
+            schObj.currentView = 'TimelineMonth';
+            schObj.dataBind();
         });
 
         it('isMorePopup property is set to false and check the more indicator click navigation on timeline day view', (done: DoneFn) => {
             schObj.moreEventsClick = (args: MoreEventsClickArgs) => args.isPopupOpen = false;
-            schObj.dataBind();
             schObj.dataBound = () => {
                 expect(schObj.currentView).toEqual('TimelineDay');
                 expect(isVisible(document.querySelector('.e-more-popup-wrapper'))).toBe(false);
@@ -2580,13 +2582,13 @@ describe('Quick Popups', () => {
         });
 
         it('isMorePopup property is set to false and check the more indicator click navigation on day view', (done: Function) => {
-            schObj.currentView = 'Month';
-            schObj.dataBind();
             schObj.dataBound = () => {
                 (schObj.element.querySelectorAll('.e-more-indicator')[2] as HTMLElement).click();
                 expect(schObj.currentView).toEqual('Day');
                 done();
             };
+            schObj.currentView = 'Month';
+            schObj.dataBind();
         });
     });
 

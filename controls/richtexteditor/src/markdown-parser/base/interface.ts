@@ -5,6 +5,7 @@ import { KeyboardEventArgs } from '@syncfusion/ej2-base';
 /**
  * Specifies IMDFormats interfaces.
  * @hidden
+ * @deprecated
  */
 export interface IMDFormats {
     /**
@@ -20,6 +21,7 @@ export interface IMDFormats {
 /**
  * Specifies IMTable interfaces.
  * @hidden
+ * @deprecated
  */
 export interface IMDTable {
     syntaxTag?: {[key in MarkdownTableFormat]: {[key: string]: string} };
@@ -30,11 +32,15 @@ export interface IMDTable {
     parent?: MarkdownParser;
 }
 
+/**
+ * @deprecated
+ */
 export type MarkdownTableFormat = 'Formats' | 'List';
 
 /**
  * Specifies ISelectedLines interfaces.
  * @hidden
+ * @deprecated
  */
 export interface ISelectedLines {
     /**
@@ -54,6 +60,7 @@ export interface ISelectedLines {
 /**
  * Specifies MarkdownParserModel interfaces.
  * @hidden
+ * @deprecated
  */
 export interface IMarkdownParserModel {
     /**
@@ -81,6 +88,7 @@ export interface IMarkdownParserModel {
 /**
  * Specifies ISubCommands interfaces.
  * @hidden
+ * @deprecated
  */
 export interface IMarkdownSubCommands {
     /**
@@ -97,12 +105,18 @@ export interface IMarkdownSubCommands {
     event?: MouseEvent;
 }
 
+/**
+ * @deprecated
+ */
 export interface MarkdownUndoRedoData {
     text?: string;
     start?: number;
     end?: number;
 }
 
+/**
+ * @deprecated
+ */
 export interface IMarkdownItem {
     module?: string;
     event?: KeyboardEvent | MouseEvent;
@@ -112,6 +126,9 @@ export interface IMarkdownItem {
     callBack(args: IMarkdownFormatterCallBack): () => void;
 }
 
+/**
+ * @deprecated
+ */
 export interface IMarkdownItemArgs {
     url?: string;
     text?: string;
@@ -124,6 +141,7 @@ export interface IMarkdownItemArgs {
 /**
  * Specifies IMDKeyboardEvent interfaces.
  * @hidden
+ * @deprecated
  */
 export interface IMDKeyboardEvent {
     /**
@@ -136,6 +154,9 @@ export interface IMDKeyboardEvent {
     event: KeyboardEventArgs;
 }
 
+/**
+ * @deprecated
+ */
 export interface ITextArea extends HTMLTextAreaElement {
     selectionDirection: string;
 }

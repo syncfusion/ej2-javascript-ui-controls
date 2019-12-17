@@ -70,6 +70,7 @@ export class Render {
      */
     public render(): void {
         let gObj: IGrid = this.parent;
+        let isServerRendered: string = 'isServerRendered';
         this.headerRenderer = <HeaderRender>this.renderer.getRenderer(RenderType.Header);
         this.contentRenderer = <ContentRender>this.renderer.getRenderer(RenderType.Content);
         this.headerRenderer.renderPanel();
@@ -85,7 +86,9 @@ export class Render {
         if (this.parent.height !== 'auto') {
             this.parent.scrollModule.setPadding();
         }
-        this.refreshDataManager();
+        if (!(isBlazor() && this.parent[isServerRendered])) {
+            this.refreshDataManager();
+        }
     }
 
     /** 
@@ -94,9 +97,30 @@ export class Render {
      */
     public refresh(e: NotifyArgs = { requestType: 'refresh' }): void {
         let gObj: IGrid = this.parent;
+        let preventUpdate: string = 'preventUpdate';
         gObj.notify(`${e.requestType}-begin`, e);
         if (isBlazor()) {
             this.resetTemplates();
+        }
+        if (isBlazor() && gObj.isServerRendered) {
+            let bulkChanges: string = 'bulkChanges';
+            if (gObj[bulkChanges].dataSource) {
+                delete gObj[bulkChanges].dataSource;
+            }
+            gObj.notify('blazor-action-begin', e);
+            if (e.requestType === 'filtering') {
+                let columns: string = 'columns';
+                e[columns] = null;
+            }
+            if (e.requestType === 'sorting') {
+                let target: string = 'target';
+                e[target] = null;
+            }
+            if (gObj.editSettings.mode === 'Normal' && gObj.isEdit) {
+                gObj.notify('closeinline', {});
+            } else if (gObj.editSettings.mode === 'Batch' && !gObj.isEdit) {
+                gObj.notify('closebatch', {});
+            }
         }
         gObj.trigger(events.actionBegin, e, (args: NotifyArgs = { requestType: 'refresh' }) => {
             if (args.requestType === 'delete' && isBlazor() && !gObj.isJsComponent) {
@@ -120,7 +144,25 @@ export class Render {
                     gObj.pagerModule.pagerObj.totalRecordsCount = count;
                 }
             }
-            this.refreshDataManager(args);
+            if (isBlazor() && this.parent.isServerRendered) {
+                if (this.parent[preventUpdate]) {
+                    return;
+                }
+                if (e.requestType === 'refresh') {
+                    this.parent.currentAction = e;
+                }
+                if (args.requestType !== 'virtualscroll') {
+                    this.parent.showSpinner();
+                }
+                if (args.requestType === 'delete' || args.requestType === 'save' ) {
+                    this.parent.notify(events.addDeleteAction, args);
+                }
+                this.parent.allowServerDataBinding = true;
+                this.parent.serverDataBind();
+                this.parent.allowServerDataBinding = false;
+            } else {
+                this.refreshDataManager(args);
+            }
         });
     }
     private resetTemplates(): void {
@@ -175,6 +217,9 @@ export class Render {
         }
     }
     private refreshComplete(e?: NotifyArgs): void {
+        if (isBlazor() && !this.parent.isJsComponent) {
+            e.rows = null;
+        }
         this.parent.trigger(events.actionComplete, e);
     }
 
@@ -189,7 +234,7 @@ export class Render {
         this.emptyGrid = false;
         let dataManager: Promise<Object>;
         let isFActon: boolean = this.isNeedForeignAction();
-        this.ariaService.setBusy(<HTMLElement>this.parent.getContent().firstChild, true);
+        this.ariaService.setBusy(<HTMLElement>this.parent.getContent().querySelector('.e-content'), true);
         if (isFActon) {
             let deffered: Deferred = new Deferred();
             dataManager = this.getFData(deffered);
@@ -247,17 +292,23 @@ export class Render {
         let promise: Promise<Object> = this.data.saveChanges(
             (<{ changes?: Object }>args).changes, this.parent.getPrimaryKeyFieldNames()[0],
             (<{ original?: Object }>args).original);
-        let query: Query = this.data.generateQuery().requiresCount();
-        if (this.data.dataManager.dataSource.offline) {
-            this.refreshDataManager({ requestType: 'batchsave' });
-            return;
-        } else {
+        if (isBlazor() && !this.parent.isJsComponent) {
             promise.then((e: ReturnType) => {
-                this.data.getData(args, query)
-                    .then((e: { result: Object[], count: number }) => this.dmSuccess(e, args))
+                this.parent.notify('editsuccess', args);
+            });
+        } else {
+            let query: Query = this.data.generateQuery().requiresCount();
+            if (this.data.dataManager.dataSource.offline) {
+                this.refreshDataManager({ requestType: 'batchsave' });
+                return;
+            } else {
+                promise.then((e: ReturnType) => {
+                    this.data.getData(args, query)
+                        .then((e: { result: Object[], count: number }) => this.dmSuccess(e, args))
+                        .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
+                })
                     .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
-            })
-                .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
+            }
         }
     }
 
@@ -345,7 +396,9 @@ export class Render {
                 columns[i].setParser(valueFormatter.getParserFunction(columns[i].format as DateFormatOptions));
             }
             if (typeof (columns[i].format) === 'string') {
-                setFormatter(this.locator, columns[i]);
+                let isServerRendered: string = 'isServerRendered';
+                let isServerDateMap: boolean = this.parent[isServerRendered] || this.parent.printModule.isPrintGrid();
+                setFormatter(this.locator, columns[i], isServerDateMap);
             } else if (!columns[i].format && columns[i].type === 'number') {
                 columns[i].setParser(
                     fmtr.getParserFunction({ format: 'n2' } as NumberFormatOptions));
@@ -431,7 +484,7 @@ export class Render {
                 }
                 this.contentRenderer.setRowElements([]);
                 this.contentRenderer.setRowObjects([]);
-                this.ariaService.setBusy(<HTMLElement>this.parent.getContent().firstChild, false);
+                this.ariaService.setBusy(<HTMLElement>this.parent.getContent().querySelector('.e-content'), false);
                 this.renderEmptyRow();
                 if (args) {
                     let action: string = (args.requestType || '').toLowerCase() + '-complete';
@@ -449,8 +502,9 @@ export class Render {
         });
     }
 
-    private dataManagerFailure(e: { result: Object[] }, args: NotifyArgs): void {
-        this.ariaService.setOptions(<HTMLElement>this.parent.getContent().firstChild, { busy: false, invalid: true });
+    /** @hidden */
+    public dataManagerFailure(e: { result: Object[] }, args: NotifyArgs): void {
+        this.ariaService.setOptions(<HTMLElement>this.parent.getContent().querySelector('.e-content'), { busy: false, invalid: true });
         this.parent.trigger(events.actionFailure, { error: e });
         this.parent.hideSpinner();
         if (args.requestType === 'save' as Action || args.requestType === 'delete' as Action

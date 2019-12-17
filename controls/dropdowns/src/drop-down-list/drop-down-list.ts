@@ -134,6 +134,8 @@ export class DropDownList extends DropDownBase implements IInput {
     protected keyConfigure: { [key: string]: string };
     protected isCustomFilter: boolean;
     private isSecondClick: boolean;
+    private serverPopupEle: HTMLElement;
+    private isServerBlazor: boolean;
 
     /**
      * Sets CSS classes to the root element of the component that allows customization of appearance.
@@ -204,6 +206,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * {% codeBlock src="dropdownlist/query-api/index.html" %}{% endcodeBlock %}
      * 
      * @default null
+     * @deprecated
      */
     @Property(null)
     public query: Query;
@@ -374,9 +377,14 @@ export class DropDownList extends DropDownBase implements IInput {
      * @private
      */
     protected preRender(): void {
-        this.element.style.opacity = '0';
-        this.initializeData();
-        super.preRender();
+        this.isServerBlazor =  (isBlazor() && this.isServerRendered && this.getModuleName() === 'dropdownlist') ? true : false;
+        if (this.isServerBlazor) {
+            this.initializeData();
+        } else {
+            this.element.style.opacity = '0';
+            this.initializeData();
+            super.preRender();
+        }
         this.activeIndex = this.index;
         this.queryString = '';
     }
@@ -430,8 +438,13 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     protected renderList(isEmptyData?: boolean): void {
-        super.render(isEmptyData);
-        this.wireListEvents();
+        if (!this.isServerBlazor) {
+            super.render(isEmptyData);
+            this.wireListEvents();
+        } else {
+            // tslint:disable-next-line
+            (this as any).interopAdaptor.invokeMethodAsync('OnServerRenderList', this.beforePopupOpen);
+        }
     }
 
     private floatLabelChange(): void {
@@ -559,6 +572,7 @@ export class DropDownList extends DropDownBase implements IInput {
             'aria-haspopup': 'true',
             'aria-expanded': 'false',
             'aria-activedescendant': 'null',
+            'aria-live': 'polite',
             'aria-labelledby': this.hiddenElement.id
         };
     }
@@ -753,6 +767,11 @@ export class DropDownList extends DropDownBase implements IInput {
             this.keyboardModule = new KeyboardEvents(
                 this.targetElement(), {
                     keyAction: this.keyActionHandler.bind(this), keyConfigs: this.keyConfigure, eventName: 'keydown'
+                });
+        } else {
+            this.keyboardModule = new KeyboardEvents(
+                this.targetElement(), {
+                    keyAction: this.mobileKeyActionHandler.bind(this), keyConfigs: this.keyConfigure, eventName: 'keydown'
                 });
         }
         this.bindClearEvent();
@@ -988,6 +1007,28 @@ export class DropDownList extends DropDownBase implements IInput {
         }
     }
 
+    protected mobileKeyActionHandler(e: KeyboardEventArgs): void {
+        if (!this.enabled) {
+            return;
+        }
+        if ((this.isEditTextBox()) && !this.isPopupOpen) {
+            return;
+        }
+        if (!this.readonly) {
+            if (this.list === undefined && !this.isRequested) {
+                this.searchKeyEvent = e;
+                this.renderList();
+            }
+            if (isNullOrUndefined(this.list) || (!isNullOrUndefined(this.liCollections) &&
+                this.liCollections.length === 0) || this.isRequested) {
+                return;
+            }
+            if (e.action === 'enter') {
+                this.selectCurrentItem(e);
+            }
+        }
+    }
+
     protected selectCurrentItem(e: KeyboardEventArgs): void {
         if (this.isPopupOpen) {
             let li: Element = this.list.querySelector('.' + dropDownListClasses.focus);
@@ -1145,11 +1186,19 @@ export class DropDownList extends DropDownBase implements IInput {
                     li.classList.remove(dropDownBaseClasses.selected);
                 } else {
                     this.selectEventCallback(li, e, preventSelect, selectedData, value);
+                    if (this.isServerBlazor) {
+                        // tslint:disable-next-line
+                        (this as any).interopAdaptor.invokeMethodAsync('OnServerItemData', this.itemData);
+                    }
                     if (isSelection) { this.setSelectOptions(li, e); }
                 }
             });
         } else {
             this.selectEventCallback(li, e, preventSelect, selectedData, value);
+            if (this.isServerBlazor) {
+                // tslint:disable-next-line
+                (this as any).interopAdaptor.invokeMethodAsync('OnServerItemData', this.itemData);
+            }
             if (isSelection) { this.setSelectOptions(li, e); }
         }
     }
@@ -1185,7 +1234,11 @@ export class DropDownList extends DropDownBase implements IInput {
         } else {
             Input.setValue(dataItem.text, this.inputElement, this.floatLabelType, this.showClearButton);
         }
-        if (this.valueTemplate && this.itemData !== null) {
+        if (this.isServerBlazor) {
+            // tslint:disable-next-line
+            (this as any).interopAdaptor.invokeMethodAsync('OnServerValueTemplate', dataItem);
+        }
+        if (this.valueTemplate && this.itemData !== null && !this.isServerBlazor) {
             this.DropDownBaseresetBlazorTemplates(false, false, false, false, true);
             this.setValueTemplate();
         } else if (this.inputElement.previousSibling === this.valueTempElement) {
@@ -1467,24 +1520,29 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         this.isDataFetched = false;
         if (this.isFiltering()) {
-            let eventArgs: FilteringEventArgs = {
-                preventDefaultAction: false,
-                text: this.filterInput.value,
-                updateData: (
-                    dataSource: { [key: string]: Object }[] | DataManager | string[] | number[], query?: Query,
-                    fields?: FieldSettingsModel) => {
-                    if (eventArgs.cancel) { return; }
-                    this.isCustomFilter = true;
-                    this.filteringAction(dataSource, query, fields);
-                },
-                baseEventArgs: e,
-                cancel: false
-            };
-            this.trigger('filtering', eventArgs, (eventArgs: FilteringEventArgs) => {
-                if (!eventArgs.cancel && !this.isCustomFilter && !eventArgs.preventDefaultAction) {
-                    this.filteringAction(this.dataSource, null, this.fields);
-                }
-            });
+            if (this.isServerBlazor) {
+                // tslint:disable-next-line
+                (this as any).interopAdaptor.invokeMethodAsync('OnServerFilter', this.filterInput.value);
+            } else {
+                let eventArgs: FilteringEventArgs = {
+                    preventDefaultAction: false,
+                    text: this.filterInput.value,
+                    updateData: (
+                        dataSource: { [key: string]: Object }[] | DataManager | string[] | number[], query?: Query,
+                        fields?: FieldSettingsModel) => {
+                        if (eventArgs.cancel) { return; }
+                        this.isCustomFilter = true;
+                        this.filteringAction(dataSource, query, fields);
+                    },
+                    baseEventArgs: e,
+                    cancel: false
+                };
+                this.trigger('filtering', eventArgs, (eventArgs: FilteringEventArgs) => {
+                    if (!eventArgs.cancel && !this.isCustomFilter && !eventArgs.preventDefaultAction) {
+                        this.filteringAction(this.dataSource, null, this.fields);
+                    }
+                });
+            }
         }
     }
     /**
@@ -1527,9 +1585,13 @@ export class DropDownList extends DropDownBase implements IInput {
     }
     protected setSearchBox(popupElement: HTMLElement): InputObject {
         if (this.isFiltering()) {
-            let parentElement: HTMLElement = this.createElement('span', {
-                className: dropDownListClasses.filterParent
-            });
+            let parentElement: HTMLElement = popupElement.querySelector('.' + dropDownListClasses.filterParent) ?
+                popupElement.querySelector('.' + dropDownListClasses.filterParent) : this.createElement('span', {
+                    className: dropDownListClasses.filterParent
+                });
+            if (this.isServerBlazor) {
+                parentElement.innerHTML = '';
+            }
             this.filterInput = <HTMLInputElement>this.createElement('input', {
                 attrs: { type: 'text' },
                 className: dropDownListClasses.filterInput
@@ -1571,6 +1633,12 @@ export class DropDownList extends DropDownBase implements IInput {
                     keyConfigs: this.keyConfigure,
                     eventName: 'keydown'
                 });
+            } else {
+                this.searchKeyModule = new KeyboardEvents(this.filterInput, {
+                    keyAction: this.mobileKeyActionHandler.bind(this),
+                    keyConfigs: this.keyConfigure,
+                    eventName: 'keydown'
+                });
             }
             EventHandler.add(this.filterInput, 'input', this.onInput, this);
             EventHandler.add(this.filterInput, 'keyup', this.onFilterUp, this);
@@ -1582,8 +1650,14 @@ export class DropDownList extends DropDownBase implements IInput {
         }
     };
 
-    protected onInput(): void {
+    protected onInput(e: KeyboardEventArgs): void {
         this.isValidKey = true;
+        // For filtering works in mobile firefox.
+        if (Browser.isDevice && Browser.info.name === 'mozilla') {
+            this.typedString = this.filterInput.value;
+            this.preventAutoFill = true;
+            this.searchLists(e as KeyboardEventArgs);
+        }
     }
 
     protected onActionFailure(e: Object): void {
@@ -1670,7 +1744,7 @@ export class DropDownList extends DropDownBase implements IInput {
     protected updateActionCompleteData(li: HTMLElement, item: { [key: string]: Object }): void {
         if (this.getModuleName() !== 'autocomplete' && this.actionCompleteData.ulElement) {
             this.actionCompleteData.ulElement.appendChild(li.cloneNode(true));
-            if (this.isFiltering() && this.actionCompleteData.list.indexOf(item) > 0) {
+            if (this.isFiltering() && this.actionCompleteData.list.indexOf(item) < 0) {
                 this.actionCompleteData.list.push(item);
             }
         }
@@ -1711,19 +1785,19 @@ export class DropDownList extends DropDownBase implements IInput {
         let args: BeforeOpenEventArgs = { cancel: false };
         this.trigger('beforeOpen', args, (args: BeforeOpenEventArgs) => {
             if (!args.cancel) {
-                let popupEle: HTMLElement = this.createElement('div', {
+                let popupEle: HTMLElement = (this.serverPopupEle) ? this.serverPopupEle : this.createElement('div', {
                     id: this.element.id + '_popup', className: 'e-ddl e-popup ' + (this.cssClass != null ? this.cssClass : '')
                 });
                 let searchBox: InputObject = this.setSearchBox(popupEle);
                 this.listHeight = formatUnit(this.popupHeight);
-                if (this.headerTemplate) {
-                    this.setHeaderTemplate(popupEle);
-                }
+                if (this.headerTemplate && !this.isServerBlazor) { this.setHeaderTemplate(popupEle); }
                 append([this.list], popupEle);
-                if (this.footerTemplate) {
-                    this.setFooterTemplate(popupEle);
+                if (this.footerTemplate && !this.isServerBlazor) { this.setFooterTemplate(popupEle); }
+                if (this.isServerRendered && popupEle && popupEle.querySelector('.e-ddl-footer')) {
+                    popupEle.appendChild(popupEle.querySelector('.e-ddl-footer'));
                 }
                 document.body.appendChild(popupEle);
+                this.updateServerPopup(popupEle);
                 popupEle.style.visibility = 'hidden';
                 if (this.popupHeight !== 'auto') {
                     this.searchBoxHeight = 0;
@@ -1731,26 +1805,24 @@ export class DropDownList extends DropDownBase implements IInput {
                         this.searchBoxHeight = (searchBox.container.parentElement).getBoundingClientRect().height;
                         this.listHeight = (parseInt(this.listHeight, 10) - (this.searchBoxHeight)).toString() + 'px';
                     }
-                    if (this.headerTemplate) {
+                    if (this.headerTemplate || (this.isServerRendered && popupEle && popupEle.querySelector('.e-ddl-header'))) {
+                        this.header = this.header ? this.header : popupEle.querySelector('.e-ddl-header');
                         let height: number = Math.round(this.header.getBoundingClientRect().height);
                         this.listHeight = (parseInt(this.listHeight, 10) - (height + this.searchBoxHeight)).toString() + 'px';
                     }
-                    if (this.footerTemplate) {
+                    if (this.footerTemplate || (this.isServerRendered && popupEle && popupEle.querySelector('.e-ddl-footer'))) {
+                        this.footer = this.footer ? this.footer : popupEle.querySelector('.e-ddl-footer');
                         let height: number = Math.round(this.footer.getBoundingClientRect().height);
                         this.listHeight = (parseInt(this.listHeight, 10) - (height + this.searchBoxHeight)).toString() + 'px';
                     }
                     this.list.style.maxHeight = (parseInt(this.listHeight, 10) - 2).toString() + 'px'; // due to box-sizing property
                     popupEle.style.maxHeight = formatUnit(this.popupHeight);
-                } else {
-                    popupEle.style.height = 'auto';
-                }
+                } else { popupEle.style.height = 'auto'; }
                 let offsetValue: number = 0;
                 let left: number;
                 if (!isNullOrUndefined(this.selectedLI) && (!isNullOrUndefined(this.activeIndex) && this.activeIndex >= 0)) {
                     this.setScrollPosition();
-                } else {
-                    this.list.scrollTop = 0;
-                }
+                } else { this.list.scrollTop = 0; }
                 if (Browser.isDevice && (!this.allowFiltering && (this.getModuleName() === 'dropdownlist' ||
                     (this.isDropDownClick && this.getModuleName() === 'combobox')))) {
                     offsetValue = this.getOffsetValue(popupEle);
@@ -1785,17 +1857,18 @@ export class DropDownList extends DropDownBase implements IInput {
                 addClass([popupEle], 'e-popup-close');
                 let scrollParentElements: HTMLElement[] = this.popupObj.getScrollableParent(this.inputWrapper.container);
                 for (let element of scrollParentElements) { EventHandler.add(element, 'scroll', this.scrollHandler, this); }
-                if (Browser.isDevice && this.isFilterLayout()) {
-                    EventHandler.add(this.list, 'scroll', this.listScroll, this);
-                }
+                if (Browser.isDevice && this.isFilterLayout()) { EventHandler.add(this.list, 'scroll', this.listScroll, this); }
                 attributes(this.targetElement(), { 'aria-expanded': 'true' });
                 let inputParent: HTMLElement = this.isFiltering() ? this.filterInput.parentElement : this.inputWrapper.container;
                 addClass([inputParent], [dropDownListClasses.inputFocus]);
                 let animModel: AnimationModel = { name: 'FadeIn', duration: 100 };
                 this.beforePopupOpen = true;
-                let eventArgs: PopupEventArgs = { popup: this.popupObj, cancel: false, animation: animModel };
+                let popupInstance: Popup = (isBlazor() && this.isServerRendered) ? null : this.popupObj;
+                let eventArgs: PopupEventArgs = { popup: popupInstance, cancel: false, animation: animModel };
                 this.trigger('open', eventArgs, (eventArgs: PopupEventArgs) => {
                     if (!eventArgs.cancel) {
+                        this.serverBlazorUpdateSelection();
+                        this.bindServerScrollEvent();
                         addClass([this.inputWrapper.container], [dropDownListClasses.iconAnimation]);
                         this.popupObj.show(new Animation(eventArgs.animation), (this.zIndex === 1000) ? this.element : null);
                     } else { this.beforePopupOpen = false;
@@ -1810,6 +1883,29 @@ export class DropDownList extends DropDownBase implements IInput {
             if (collision.length > 0) {
                 popupEle.style.marginTop = -parseInt(getComputedStyle(popupEle).marginTop, 10) + 'px';
             }
+        }
+    }
+    private serverBlazorUpdateSelection(): void {
+        if (this.isServerBlazor && this.value) {
+            this.removeSelection();
+            this.removeFocus();
+            this.removeHover();
+            this.updateValues();
+        }
+    }
+    private bindServerScrollEvent(): void {
+        if (this.isServerBlazor && this.list) {
+            if ((this.fields.groupBy) && !this.isGroupChecking) {
+                EventHandler.remove(this.list, 'scroll', this.setFloatingHeader);
+                EventHandler.add(this.list, 'scroll', this.setFloatingHeader, this);
+            }
+        }
+    }
+    private updateServerPopup(popupEle : HTMLElement): void {
+        if (this.isServerBlazor) {
+            if (popupEle && popupEle.querySelector('li')) { removeClass([this.list], ['e-nodata']); }
+            this.initial = false;
+            popupEle.removeAttribute('style');
         }
     }
     private getOffsetValue(popupEle: HTMLElement): number {
@@ -2064,7 +2160,8 @@ export class DropDownList extends DropDownBase implements IInput {
             duration: 100,
             delay: delay ? delay : 0
         };
-        let eventArgs: PopupEventArgs = { popup: this.popupObj, cancel: false, animation: animModel };
+        let popupInstance: Popup = (isBlazor() && this.isServerRendered) ? null : this.popupObj;
+        let eventArgs: PopupEventArgs = { popup: popupInstance, cancel: false, animation: animModel };
         this.trigger('close', eventArgs, (eventArgs: PopupEventArgs) => {
             if (!eventArgs.cancel) {
                 if (this.getModuleName() === 'autocomplete') {
@@ -2080,6 +2177,13 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     private destroyPopup(): void {
+        if (this.isServerBlazor && this.serverPopupEle) {
+            document.querySelector('#' + this.element.id + '_popup_holder').appendChild(this.serverPopupEle);
+        }
+        if (this.isServerBlazor) {
+            // tslint:disable-next-line
+            (this as any).interopAdaptor.invokeMethodAsync('OnServerClosePopup');
+        }
         this.isPopupOpen = false;
         this.isFilterFocus = false;
         this.popupObj.destroy();
@@ -2094,83 +2198,103 @@ export class DropDownList extends DropDownBase implements IInput {
      * To Initialize the control rendering
      * @private
      */
+    // tslint:disable-next-line
     public render(): void {
-        if (this.element.tagName === 'INPUT') {
+        if (this.isServerBlazor) {
             this.inputElement = this.element as HTMLInputElement;
-            if (isNullOrUndefined(this.inputElement.getAttribute('role'))) {
-                this.inputElement.setAttribute('role', 'textbox');
+            this.inputWrapper = { container: this.element.parentElement };
+            this.hiddenElement = this.inputWrapper.container.querySelector('select');
+            this.inputWrapper.buttons = [this.inputWrapper.container.querySelector('.e-input-group-icon.e-ddl-icon')];
+            if (this.showClearButton) {
+                this.inputWrapper.clearButton = this.inputWrapper.container.querySelector('.e-clear-icon');
+                Input.wireClearBtnEvents(this.element as HTMLInputElement, this.inputWrapper.clearButton, this.inputWrapper.container);
             }
-            if (isNullOrUndefined(this.inputElement.getAttribute('type'))) {
-                this.inputElement.setAttribute('type', 'text');
-            }
-        } else {
-            this.inputElement = this.createElement('input', { attrs: { role: 'textbox', type: 'text' }}) as HTMLInputElement;
-            if (this.element.tagName !== this.getNgDirective()) {
-                this.element.style.display = 'none';
-            }
-            this.element.parentElement.insertBefore(this.inputElement, this.element);
-            this.preventTabIndex(this.inputElement);
-        }
-        this.inputWrapper = Input.createInput(
-            {
-                element: <HTMLInputElement>this.inputElement,
-                buttons: this.isPopupButton() ? [dropDownListClasses.icon] : null,
+            Input.bindInitialEvent({
+                element: this.element as HTMLInputElement,
+                buttons: null, customTag: null,
                 floatLabelType: this.floatLabelType,
-                properties: {
-                    readonly: this.getModuleName() === 'dropdownlist' ? true : this.readonly,
-                    placeholder: this.placeholder,
-                    cssClass: this.cssClass,
-                    enabled: this.enabled,
-                    enableRtl: this.enableRtl,
-                    showClearButton: this.showClearButton
-                },
-            },
-            this.createElement
-        );
-        if (this.element.tagName === this.getNgDirective()) {
-            this.element.appendChild(this.inputWrapper.container);
+                properties: this.properties
+            });
+            this.setFields();
+            this.wireEvent();
         } else {
-            this.inputElement.parentElement.insertBefore(this.element, this.inputElement);
-        }
-        this.hiddenElement = this.createElement('select', {
-            attrs: { 'aria-hidden': 'true', 'tabindex': '-1', 'class': dropDownListClasses.hiddenElement }
-        }) as HTMLSelectElement;
-        prepend([this.hiddenElement], this.inputWrapper.container);
-        this.validationAttribute(this.element, this.hiddenElement);
-        this.setFields();
-        this.setEleWidth(this.width);
-        this.inputWrapper.container.classList.add('e-ddl');
-        this.wireEvent();
-        this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
-        this.element.removeAttribute('tabindex');
-        let id: string = this.element.getAttribute('id') ? this.element.getAttribute('id') : getUniqueID('ej2_dropdownlist');
-        this.element.id = id;
-        this.hiddenElement.id = id + '_hidden';
-        this.targetElement().setAttribute('tabindex', this.tabIndex);
-        attributes(this.targetElement(), this.getAriaAttributes());
-        this.updateDataAttribute(this.htmlAttributes);
-        this.setHTMLAttributes();
-        if (this.value !== null || this.activeIndex !== null || this.text !== null) {
-            this.initValue();
-        } else if (this.element.tagName === 'SELECT' && (<HTMLSelectElement>this.element).options[0]) {
-            let selectElement: HTMLSelectElement = <HTMLSelectElement>this.element;
-            this.value = selectElement.options[selectElement.selectedIndex].value;
-            this.text = isNullOrUndefined(this.value) ? null : selectElement.options[selectElement.selectedIndex].textContent;
-            this.initValue();
-        }
-        this.preventTabIndex(this.element);
-        if (!this.enabled) {
-            this.targetElement().tabIndex = -1;
-        }
-        this.initial = false;
-        this.element.style.opacity = '';
-        this.inputElement.onselect = (e: UIEvent) => { e.stopImmediatePropagation(); };
-        this.inputElement.onchange = (e: UIEvent) => { e.stopImmediatePropagation(); };
-        if (this.element.hasAttribute('autofocus')) {
-            this.focusIn();
-        }
-        if (!isNullOrUndefined(this.text)) {
-            this.inputElement.setAttribute('value', this.text);
+            if (this.element.tagName === 'INPUT') {
+                this.inputElement = this.element as HTMLInputElement;
+                if (isNullOrUndefined(this.inputElement.getAttribute('role'))) {
+                    this.inputElement.setAttribute('role', 'textbox');
+                }
+                if (isNullOrUndefined(this.inputElement.getAttribute('type'))) {
+                    this.inputElement.setAttribute('type', 'text');
+                }
+            } else {
+                this.inputElement = this.createElement('input', { attrs: { role: 'textbox', type: 'text' } }) as HTMLInputElement;
+                if (this.element.tagName !== this.getNgDirective()) {
+                    this.element.style.display = 'none';
+                }
+                this.element.parentElement.insertBefore(this.inputElement, this.element);
+                this.preventTabIndex(this.inputElement);
+            }
+            this.inputWrapper = Input.createInput(
+                {
+                    element: <HTMLInputElement>this.inputElement,
+                    buttons: this.isPopupButton() ? [dropDownListClasses.icon] : null,
+                    floatLabelType: this.floatLabelType,
+                    properties: {
+                        readonly: this.getModuleName() === 'dropdownlist' ? true : this.readonly,
+                        placeholder: this.placeholder,
+                        cssClass: this.cssClass,
+                        enabled: this.enabled,
+                        enableRtl: this.enableRtl,
+                        showClearButton: this.showClearButton
+                    },
+                },
+                this.createElement
+            );
+            if (this.element.tagName === this.getNgDirective()) {
+                this.element.appendChild(this.inputWrapper.container);
+            } else {
+                this.inputElement.parentElement.insertBefore(this.element, this.inputElement);
+            }
+            this.hiddenElement = this.createElement('select', {
+                attrs: { 'aria-hidden': 'true', 'tabindex': '-1', 'class': dropDownListClasses.hiddenElement }
+            }) as HTMLSelectElement;
+            prepend([this.hiddenElement], this.inputWrapper.container);
+            this.validationAttribute(this.element, this.hiddenElement);
+            this.setFields();
+            this.inputWrapper.container.style.width = formatUnit(this.width);
+            this.inputWrapper.container.classList.add('e-ddl');
+            this.wireEvent();
+            this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
+            this.element.removeAttribute('tabindex');
+            let id: string = this.element.getAttribute('id') ? this.element.getAttribute('id') : getUniqueID('ej2_dropdownlist');
+            this.element.id = id;
+            this.hiddenElement.id = id + '_hidden';
+            this.targetElement().setAttribute('tabindex', this.tabIndex);
+            attributes(this.targetElement(), this.getAriaAttributes());
+            this.updateDataAttribute(this.htmlAttributes);
+            this.setHTMLAttributes();
+            if (this.value !== null || this.activeIndex !== null || this.text !== null) {
+                this.initValue();
+            } else if (this.element.tagName === 'SELECT' && (<HTMLSelectElement>this.element).options[0]) {
+                let selectElement: HTMLSelectElement = <HTMLSelectElement>this.element;
+                this.value = selectElement.options[selectElement.selectedIndex].value;
+                this.text = isNullOrUndefined(this.value) ? null : selectElement.options[selectElement.selectedIndex].textContent;
+                this.initValue();
+            }
+            this.preventTabIndex(this.element);
+            if (!this.enabled) {
+                this.targetElement().tabIndex = -1;
+            }
+            this.initial = false;
+            this.element.style.opacity = '';
+            this.inputElement.onselect = (e: UIEvent) => { e.stopImmediatePropagation(); };
+            this.inputElement.onchange = (e: UIEvent) => { e.stopImmediatePropagation(); };
+            if (this.element.hasAttribute('autofocus')) {
+                this.focusIn();
+            }
+            if (!isNullOrUndefined(this.text)) {
+                this.inputElement.setAttribute('value', this.text);
+            }
         }
         this.renderComplete();
     };
@@ -2432,7 +2556,18 @@ export class DropDownList extends DropDownBase implements IInput {
             this.onActionComplete(this.actionCompleteData.ulElement, this.actionCompleteData.list, null, true);
         } else if (isNullOrUndefined(this.list) || !isUndefined(this.list) && this.list.classList.contains(dropDownBaseClasses.noData)) {
             this.renderList();
+        } else if (this.isFiltering() && this.isServerBlazor) {
+            this.renderList();
         }
+        if (!this.isServerBlazor) {
+            this.invokeRenderPopup();
+        }
+        if (this.isServerBlazor && !isNullOrUndefined(this.list)) {
+            this.invokeRenderPopup();
+        }
+    }
+
+    private invokeRenderPopup(): void {
         if (Browser.isDevice && this.isFilterLayout()) {
             let proxy: this = this;
             window.onpopstate = () => {
@@ -2446,6 +2581,28 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         attributes(this.targetElement(), { 'aria-activedescendant': this.selectedLI ? this.selectedLI.id : null });
     }
+    private clientRenderPopup(data: { [key: string]: Object }[] | string[] | boolean[] | number[], popupEle: HTMLElement): void {
+        if (popupEle) {
+            this.serverPopupEle = popupEle;
+            this.list = popupEle.querySelector('.e-dropdownbase.e-content') ?
+                popupEle.querySelector('.e-dropdownbase.e-content') : this.list;
+            this.ulElement = this.list.querySelector('ul');
+            // tslint:disable-next-line
+            this.liCollections = this.ulElement ? this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li) : [] as any;
+            this.listData = data;
+            this.serverBlazorUpdateSelection();
+            this.wireListEvents();
+            if (this.beforePopupOpen) {
+                this.invokeRenderPopup();
+            }
+        }
+    }
+    private updateclientItemData(data: { [key: string]: Object }[] | string[] | boolean[] | number[]): void {
+        this.listData = data;
+    }
+    private serverUpdateListElement(data: { [key: string]: Object }[] | string[] | boolean[] | number[], popupEle: HTMLElement): void {
+        this.listData = data;
+    }
     /**
      * Hides the popup if it is in an open state.
      * @returns void.
@@ -2458,10 +2615,13 @@ export class DropDownList extends DropDownBase implements IInput {
             Input.setValue(this.text, this.inputElement, this.floatLabelType, this.showClearButton);
             this.isEscapeKey = false;
             if (!isNullOrUndefined(this.index)) {
-                this.selectedLI = this.liCollections[this.index];
-                this.updateSelectedItem(this.selectedLI, null, true);
-                if (this.valueTemplate && this.itemData !== null) {
-                    this.setValueTemplate();
+                let element: HTMLElement = this.findListElement(this.ulElement, 'li', 'data-value', this.value);
+                this.selectedLI = this.liCollections[this.index] || element;
+                if (this.selectedLI) {
+                    this.updateSelectedItem(this.selectedLI, null, true);
+                    if (this.valueTemplate && this.itemData !== null) {
+                        this.setValueTemplate();
+                    }
                 }
             } else {
                 this.resetSelection();
@@ -2519,28 +2679,37 @@ export class DropDownList extends DropDownBase implements IInput {
         this.isActive = false;
         this.hidePopup();
         this.unWireEvent();
-        if (this.list) { this.unWireListEvents(); }
-        if (this.element && !this.element.classList.contains('e-' + this.getModuleName())) {
-            return;
+        if (this.list) {
+            this.unWireListEvents();
+            if (this.isServerBlazor) {
+                if ((this.fields.groupBy) && !this.isGroupChecking) {
+                    EventHandler.remove(this.list, 'scroll', this.setFloatingHeader);
+                }
+            }
         }
-        let attrArray: string[] = ['readonly', 'aria-disabled', 'aria-placeholder',
-            'placeholder', 'aria-owns', 'aria-labelledby', 'aria-haspopup', 'aria-expanded',
-            'aria-activedescendant', 'autocomplete', 'aria-readonly', 'autocorrect',
-            'autocapitalize', 'spellcheck', 'aria-autocomplete'];
-        attrArray.forEach((value: string): void => {
-            this.inputElement.removeAttribute(value);
-        });
-        this.inputElement.setAttribute('tabindex', this.tabIndex);
-        this.inputElement.classList.remove('e-input');
-        Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
-        this.element.style.display = 'block';
-        if (this.inputWrapper.container.parentElement.tagName === this.getNgDirective()) {
-            detach(this.inputWrapper.container);
-        } else {
-            this.inputWrapper.container.parentElement.insertBefore(this.element, this.inputWrapper.container);
-            detach(this.inputWrapper.container);
+        if (!this.isServerBlazor) {
+            if (this.element && !this.element.classList.contains('e-' + this.getModuleName())) {
+                return;
+            }
+            let attrArray: string[] = ['readonly', 'aria-disabled', 'aria-placeholder',
+                'placeholder', 'aria-owns', 'aria-labelledby', 'aria-haspopup', 'aria-expanded',
+                'aria-activedescendant', 'autocomplete', 'aria-readonly', 'autocorrect',
+                'autocapitalize', 'spellcheck', 'aria-autocomplete', 'aria-live'];
+            attrArray.forEach((value: string): void => {
+                this.inputElement.removeAttribute(value);
+            });
+            this.inputElement.setAttribute('tabindex', this.tabIndex);
+            this.inputElement.classList.remove('e-input');
+            Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
+            this.element.style.display = 'block';
+            if (this.inputWrapper.container.parentElement.tagName === this.getNgDirective()) {
+                detach(this.inputWrapper.container);
+            } else {
+                this.inputWrapper.container.parentElement.insertBefore(this.element, this.inputWrapper.container);
+                detach(this.inputWrapper.container);
+            }
+            super.destroy();
         }
-        super.destroy();
     };
     /**
      * Gets all the list items bound on this component.

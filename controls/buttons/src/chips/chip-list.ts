@@ -250,6 +250,8 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * This enabled property helps to enable/disable ChipList component.
      * @default true
+     * @blazorDefaultValue null
+     * @blazorType bool?
      */
     @Property(true)
     public enabled: boolean;
@@ -307,17 +309,30 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     private type: string;
     private innerText: string;
 
-    public preRender(): void {
+    /**
+     * Initialize the event handler
+     * @private
+     */
+
+    protected preRender(): void {
         //prerender
     }
 
-    public render(): void {
+    /**
+     * To Initialize the control rendering.
+     * @returns void
+     * @private
+     */
+
+    protected render(): void {
         this.type = this.chips.length ? 'chipset' : (this.text || this.element.innerText ? 'chip' : 'chipset');
-        this.setAttributes();
-        this.createChip();
-        this.setRtl();
+        if (!isBlazor() || !this.isServerRendered) {
+            this.setAttributes();
+            this.createChip();
+            this.setRtl();
+            this.select(this.selectedChips);
+        }
         this.wireEvent(false);
-        this.select(this.selectedChips);
         this.rippleFunctin = rippleEffect(this.element, {
             selector: '.e-chip'
         });
@@ -326,7 +341,16 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     private createChip(): void {
         this.innerText = this.element.innerText.trim();
-        this.element.innerHTML = '';
+        if (isBlazor()) {
+            let childElement: NodeListOf<Element> = this.element.querySelectorAll('.e-chip');
+            for (let i: number = 0; i < childElement.length; i++) {
+                if (childElement[i] != null) {
+                    detach(childElement[i]);
+                }
+            }
+        } else {
+            this.element.innerHTML = '';
+        }
         this.chipCreation(this.type === 'chip' ? [this.innerText ? this.innerText : this.text] : this.chips);
     }
 
@@ -465,7 +489,18 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      *  or chip element or array of chip element.
      */
     public select(fields: number | number[] | HTMLElement | HTMLElement[]): void {
+        this.onSelect(fields, false);
+    }
+
+    private onSelect(fields: number | number[] | HTMLElement | HTMLElement[], callFromProperty: boolean): void {
         if (this.type !== 'chip' && this.selection !== 'None') {
+            if (callFromProperty) {
+                let chipElements: NodeListOf<Element> = this.element.querySelectorAll('.' + classNames.chip);
+                for (let i : number = 0; i < chipElements.length; i++) {
+                    chipElements[i].setAttribute('aria-selected', 'false');
+                    chipElements[i].classList.remove(classNames.active);
+                }
+            }
             let fieldData: number[] | HTMLElement[] = fields instanceof Array ? fields : <number[] | HTMLElement[]>[fields];
             for (let i: number = 0; i < fieldData.length; i++) {
                 let chipElement: HTMLElement = fieldData[i] instanceof HTMLElement ? fieldData[i] as HTMLElement
@@ -620,6 +655,9 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                 activeElement.classList.remove(classNames.active);
                 chipWrapper.setAttribute('aria-selected', 'false');
             }
+            this.setProperties({ selectedChips: null }, true);
+        } else {
+            this.setProperties({ selectedChips: [] }, true);
         }
         if (chipWrapper.classList.contains(classNames.active)) {
             chipWrapper.classList.remove(classNames.active);
@@ -628,7 +666,24 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
             chipWrapper.classList.add(classNames.active);
             chipWrapper.setAttribute('aria-selected', 'true');
         }
+        this.updateSelectedChips();
+    }
 
+    private updateSelectedChips(): void {
+        let chipListEle : NodeListOf<Element> = this.element.querySelectorAll('.e-chip');
+        let chipColl : number[] = [];
+        let chip : number ;
+        for (let i: number = 0; i < chipListEle.length; i++ ) {
+            if (this.element.querySelectorAll('.e-chip')[i].getAttribute('aria-selected') === 'true') {
+                if (this.selection === 'Single' && this.element.querySelectorAll('.e-chip')[i].classList.contains('e-active')) {
+                    chip = i;
+                    break;
+                } else {
+                    chipColl.push(i);
+                }
+            }
+        }
+        this.setProperties({ selectedChips: this.selection === 'Single' ? chip : chipColl }, true);
     }
 
     private deleteHandler(chipWrapper: HTMLElement, index: number): void {
@@ -647,8 +702,19 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
         this.removeMultipleAttributes(['tabindex', 'role', 'aria-label', 'aria-multiselectable'], this.element);
         this.wireEvent(true);
         this.rippleFunctin();
-        this.element.innerHTML = '';
-        this.element.innerText = this.innerText;
+        if (isBlazor()) {
+            let chipChildElement: NodeListOf<Element> = this.element.querySelectorAll('.e-chip');
+            for (let i: number = 0; i < chipChildElement.length; i++) {
+
+                if (chipChildElement[i] != null) {
+                    detach(chipChildElement[i]);
+                }
+            }
+        } else {
+            this.element.innerHTML = '';
+            this.element.innerText = this.innerText;
+        }
+
     }
 
     private removeMultipleAttributes(attributes: string[], element: HTMLElement): void {
@@ -664,6 +730,12 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
         return 'chip-list';
     }
 
+    /**
+     * Called internally if any of the property value changed.
+     * @returns void
+     * @private
+     */
+
     public onPropertyChanged(newProp: ChipList, oldProp: ChipList): void {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
@@ -676,19 +748,23 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                 case 'selection':
                 case 'enableDelete':
                 case 'enabled':
+                    this.isServerRendered = false;
                     this.refresh();
+                    this.isServerRendered = true;
                     break;
                 case 'cssClass':
                     if (this.type === 'chip') {
                         removeClass([this.element], oldProp.cssClass.toString().split(' ').filter((css: string) => css));
                         addClass([this.element], newProp.cssClass.toString().split(' ').filter((css: string) => css));
                     } else {
+                        this.isServerRendered = false;
                         this.refresh();
+                        this.isServerRendered = true;
                     }
                     break;
                 case 'selectedChips':
                     removeClass(this.element.querySelectorAll('.e-active'), 'e-active');
-                    this.select(newProp.selectedChips);
+                    this.onSelect(newProp.selectedChips, true);
                     break;
                 case 'enableRtl':
                     this.setRtl();

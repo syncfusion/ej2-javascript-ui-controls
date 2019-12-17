@@ -6,7 +6,7 @@ import { KeyboardEvents, KeyboardEventArgs, isNullOrUndefined, formatUnit, getVa
 import { ModuleDeclaration, extend } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Input } from '@syncfusion/ej2-inputs';
-import { BlurEventArgs, ClearedEventArgs } from '../calendar/calendar';
+import { BlurEventArgs, ClearedEventArgs, CalendarType, CalendarView, DayHeaderFormats } from '../calendar/calendar';
 import { DatePicker, PopupObjectArgs } from '../datepicker/datepicker';
 import { TimePickerBase } from '../timepicker/timepicker';
 import { DateTimePickerModel } from './datetimepicker-model';
@@ -116,6 +116,13 @@ export class DateTimePicker extends DatePicker {
      */
     @Property(1000)
     public zIndex: number;
+    /**
+     * Gets or sets the selected date of the Calendar.
+     * @default null
+     * @isGenericType true
+     */
+    @Property(null)
+    public value: Date;
     /**     
      * Customizes the key actions in DateTimePicker.
      * For example, when using German keyboard, the key actions can be customized using these shortcuts.
@@ -322,6 +329,125 @@ export class DateTimePicker extends DatePicker {
      */
     @Property(null)
     public serverTimezoneOffset: number;
+    /**
+     * Gets or sets the minimum date that can be selected in the DateTimePicker.
+     * @default new Date(1900, 00, 01)
+     * @blazorDefaultValue new DateTime(1900, 01, 01)
+     */
+    @Property(new Date(1900, 0, 1))
+    public min: Date;
+    /**
+     * Gets or sets the maximum date that can be selected in the DateTimePicker.
+     * @default new Date(2099, 11, 31)
+     * @blazorDefaultValue new DateTime(2099, 12, 31)
+     */
+    @Property(new Date(2099, 11, 31))
+    public max: Date;
+    /**
+     * Gets or sets the Calendar's first day of the week. By default, the first day of the week will be based on the current culture.
+     * @default 0
+     * @aspType int
+     * @blazorType int
+     * > For more details about firstDayOfWeek refer to 
+     * [`First day of week`](../../calendar/how-to/first-day-of-week#change-the-first-day-of-the-week) documentation.
+     */
+    @Property(null)
+    public firstDayOfWeek: number;
+    /**
+     * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
+     * @default 'en-US'
+     */
+    @Property('en-US')
+    public locale: string;
+    /**
+     * Gets or sets the Calendar's Type like gregorian or islamic.
+     * @default Gregorian
+     */
+    @Property('Gregorian')
+    public calendarMode: CalendarType;
+    /**
+     * Specifies the initial view of the Calendar when it is opened.
+     * With the help of this property, initial view can be changed to year or decade view.
+     * @default Month
+     *  
+     * <table>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * View<br/></td><td colSpan=1 rowSpan=1>
+     * Description<br/></td></tr> 
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Month<br/></td><td colSpan=1 rowSpan=1>
+     * Calendar view shows the days of the month.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Year<br/></td><td colSpan=1 rowSpan=1>
+     * Calendar view shows the months of the year.<br/></td></tr>
+     * <tr>
+     * <td colSpan=1 rowSpan=1>
+     * Decade<br/></td><td colSpan=1 rowSpan=1>
+     * Calendar view shows the years of the decade.<br/></td></tr>
+     * </table>
+     *
+     * > For more details about start refer to 
+     * [`calendarView`](../../calendar/calendar-views#view-restriction)documentation.
+     */
+    @Property('Month')
+    public start: CalendarView;
+    /**
+     * Sets the maximum level of view such as month, year, and decade in the Calendar.
+     * Depth view should be smaller than the start view to restrict its view navigation.
+     * @default Month
+     * 
+     * <table> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * view<br/></td><td colSpan=1 rowSpan=1> 
+     * Description<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * Month<br/></td><td colSpan=1 rowSpan=1> 
+     * Calendar view shows up to the days of the month.<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * Year<br/></td><td colSpan=1 rowSpan=1> 
+     * Calendar view shows up to the months of the year.<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * Decade<br/></td><td colSpan=1 rowSpan=1> 
+     * Calendar view shows up to the years of the decade.<br/></td></tr> 
+     * </table> 
+     * 
+     * > For more details about depth refer to 
+     *  [`calendarView`](../../calendar/calendar-views#view-restriction)documentation.
+     */
+    @Property('Month')
+    public depth: CalendarView;
+    /**
+     * Determines whether the week number of the year is to be displayed in the calendar or not.
+     * @default false
+     * > For more details about weekNumber refer to 
+     * [`Calendar with week number`](../../calendar/how-to/render-the-calendar-with-week-numbers)documentation.
+     */
+    @Property(false)
+    public weekNumber: boolean;
+    /** 
+     * Specifies whether the today button is to be displayed or not.
+     * @default true
+     */
+    @Property(true)
+    public showTodayButton: boolean;
+    /**
+     * Specifies the format of the day that to be displayed in header. By default, the format is ‘short’.
+     * Possible formats are:
+     * * `Short` - Sets the short format of day name (like Su ) in day header.
+     * * `Narrow` - Sets the single character of day name (like S ) in day header.
+     * * `Abbreviated` - Sets the min format of day name (like Sun ) in day header.
+     * * `Wide` - Sets the long format of day name (like Sunday ) in day header.
+     * @default Short
+     */
+    @Property('Short')
+    public dayHeaderFormat: DayHeaderFormats;
     /** 
      * Triggers when popup is opened.
      * @event 
@@ -1500,6 +1626,11 @@ export class DateTimePicker extends DatePicker {
                 break;
         }
     }
+    /**
+     * Called internally if any of the property value changed.
+     * returns void
+     * @deprecated
+     */
     public onPropertyChanged(newProp: DateTimePickerModel, oldProp: DateTimePickerModel): void {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {

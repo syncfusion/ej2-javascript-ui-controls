@@ -113,7 +113,7 @@ export type ChartSelectionMode =
 /** 
  * Defines the default items of context menu.
  */
-export type PivotContextMenuItem =
+export type PivotTableContextMenuItem =
     /**  Enables drill through for the cell */
     'Drillthrough' |
     /**  expands the cell */
@@ -143,7 +143,7 @@ export type PivotContextMenuItem =
  * * Vertical - Displays the vertical grid lines only.
  * * Default - Displays grid lines based on the theme.
  */
-export type PivotGridLine =
+export type PivotTableGridLine =
     /** Show both the vertical and horizontal line in the Grid  */
     'Both' |
     /** Hide both the vertical and horizontal line in the Grid  */
@@ -173,7 +173,7 @@ export type PivotCellSelectionMode =
  * * Single - Allows user to select a row or cell.
  * * Multiple - Allows user to select multiple rows or cells.
  */
-export type PivotSelectionType =
+export type PivotTableSelectionType =
     /**  Defines Single selection in the Grid */
     'Single' |
     /**  Defines multiple selections in the Grid */
@@ -184,7 +184,7 @@ export type PivotSelectionType =
  * * Default
  * * ResetOnRowClick
  */
-export type PivotCheckboxSelectionType =
+export type PivotTableCheckboxSelectionType =
     /**  Allows the user to select multiple rows by clicking rows one by one */
     'Default' |
     /**  Allows to reset the previously selected row when a row is clicked and multiple rows can be selected by using CTRL or SHIFT key */
@@ -197,7 +197,7 @@ export type PivotCheckboxSelectionType =
  * * `EllipsisWithTooltip` - Displays ellipsis when the cell content overflows its area
  * also it will display tooltip while hover on ellipsis applied cell.
  */
-export type PivotClipMode =
+export type PivotTableClipMode =
     /**  Truncates the cell content when it overflows its area */
     'Clip' |
     /** Displays ellipsis when the cell content overflows its area */
@@ -210,7 +210,7 @@ export type PivotClipMode =
  * * AllPages - Print all pages records of the Grid.
  * * CurrentPage - Print current page records of the Grid.
  */
-export type PivotPrintMode =
+export type PivotTablePrintMode =
     /**  Defines PrintMode as AllPages */
     'AllPages' |
     /**  Defines PrintMode as CurrentPage */
@@ -336,6 +336,8 @@ export type PivotChartTrendlineTypes =
  * * SeriesType -Render a legend shape based on series type.
  */
 export type PivotChartLegendShape =
+    /** Render a legend shape based on series type. */
+    'SeriesType' |
     /** Render a circle. */
     'Circle' |
     /** Render a Rectangle. */
@@ -353,9 +355,7 @@ export type PivotChartLegendShape =
     /** Render a Pentagon. */
     'Pentagon' |
     /** Render a InvertedTriangle. */
-    'InvertedTriangle' |
-    /** Render a legend shape based on series type. */
-    'SeriesType';
+    'InvertedTriangle';
 
 /**
  * Defines the empty point mode of the chart.
@@ -382,10 +382,10 @@ export type PivotChartEmptyPointMode =
  * *
  */
 export type PivotChartAlignment =
-    /** Define the left alignment. */
-    'Near' |
     /** Define the center alignment. */
     'Center' |
+    /** Define the left alignment. */
+    'Near' |
     /** Define the right alignment. */
     'Far';
 
@@ -396,12 +396,12 @@ export type PivotChartAlignment =
  * * Trim - Shown the chart title with trim if exceed.
  */
 export type PivotChartTextOverflow =
+    /** Used to show the chart title with Trim */
+    'Trim' |
     /** Used to show the chart title with overlap to other element */
     'None' |
     /** Used to show the chart title with Wrap support */
-    'Wrap' |
-    /** Used to show the chart title with Trim */
-    'Trim';
+    'Wrap';
 
 /**
  * Defines the unit of Strip line Size. They are
@@ -439,10 +439,10 @@ export type PivotChartSizeType =
  * * End - Places the strip line text at the end.
  */
 export type PivotChartAnchor =
-    /** Places the strip line text at the start. */
-    'Start' |
     /** Places the strip line text in the middle. */
     'Middle' |
+    /** Places the strip line text at the start. */
+    'Start' |
     /** Places the strip line text at the end. */
     'End';
 
@@ -452,10 +452,10 @@ export type PivotChartAnchor =
  * * Behind - laces the strip line behind the series elements.
  */
 export type PivotChartZIndex =
-    /** Places the strip line over the series elements. */
-    'Over' |
     /** Places the strip line behind the series elements. */
-    'Behind';
+    'Behind' |
+    /** Places the strip line over the series elements. */
+    'Over';
 
 /**
  * Defines border type for multi level labels.
@@ -488,10 +488,10 @@ export type PivotChartBorderType =
  * * horizontal - Shows the horizontal line.
  */
 export type PivotChartLineType =
-    /** Hides both vertical and horizontal crosshair line. */
-    'None' |
     /** Shows both vertical and horizontal crosshair line. */
     'Both' |
+    /** Hides both vertical and horizontal crosshair line. */
+    'None' |
     /** Shows the vertical line. */
     'Vertical' |
     /** Shows the horizontal line. */
@@ -579,6 +579,8 @@ export type PivotChartSplineType =
  * * rotate90 - Rotate the label to 90 degree when it intersect.
  */
 export type PivotChartLabelIntersectAction =
+    /** Rotate the label to 45 degree when it intersect. */
+    'Rotate45' |
     /** Shows all the labels. */
     'None' |
     /** Hide the label when it intersect. */
@@ -589,8 +591,6 @@ export type PivotChartLabelIntersectAction =
     'Wrap' |
     /** Arrange the label in multiple row when it intersect. */
     'MultipleRows' |
-    /** Rotate the label to 45 degree when it intersect. */
-    'Rotate45' |
     /** Rotate the label to 90 degree when it intersect. */
     'Rotate90';
 
@@ -625,10 +625,10 @@ export type PivotChartLabelPlacement =
  * * outside - Place the ticks or labels outside to the axis line.
  */
 export type PivotChartAxisPosition =
-    /** Place the ticks or labels inside to the axis line. */
-    'Inside' |
     /** Place the ticks or labels outside to the axis line. */
-    'Outside';
+    'Outside' |
+    /** Place the ticks or labels inside to the axis line. */
+    'Inside';
 
 /**
  * Defines the zooming mode, They are.

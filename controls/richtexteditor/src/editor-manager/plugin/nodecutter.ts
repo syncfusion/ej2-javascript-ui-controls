@@ -5,11 +5,17 @@ import { InsertMethods } from './insert-methods';
 /**
  * Split the Node based on selection
  * @hidden
+ * @deprecated
  */
 export class NodeCutter {
     public position: number = -1;
     private nodeSelection: NodeSelection = new NodeSelection();
     // Split Selection Node
+    /**
+     * GetSpliceNode method
+     * @hidden
+     * @deprecated
+     */
     public GetSpliceNode(range: Range, node: HTMLElement): Node {
         node = this.SplitNode(range, node, true);
         node = this.SplitNode(range, node, false);
@@ -18,6 +24,7 @@ export class NodeCutter {
 
     /**
      * @hidden
+     * @deprecated
      */
     public SplitNode(range: Range, node: HTMLElement, isCollapsed: boolean): HTMLElement {
         if (node) {
@@ -101,6 +108,11 @@ export class NodeCutter {
         return position;
     }
 
+    /**
+     * GetCursorRange method
+     * @hidden
+     * @deprecated
+     */
     public GetCursorRange(docElement: Document, range: Range, node: Node): Range {
         let cursorRange: Range = docElement.createRange();
         let indexes: number[] = [];
@@ -135,10 +147,20 @@ export class NodeCutter {
         return cursorRange;
     }
 
+    /**
+     * GetCursorNode method
+     * @hidden
+     * @deprecated
+     */
     public GetCursorNode(docElement: Document, range: Range, node: Node): Node {
         return this.GetSpliceNode(this.GetCursorRange(docElement, range, node), node as HTMLElement);
     }
 
+    /**
+     * TrimLineBreak method
+     * @hidden
+     * @deprecated
+     */
     public TrimLineBreak(line: string): string {
         return line.replace(/(\r\n\t|\n|\r\t)/gm, ' ');
     }

@@ -1,7 +1,7 @@
 import { DateFormatOptions } from '../internationalization';
 import { ParserBase as parser, NumberMapper } from './parser-base';
 import { IntlBase as base } from './intl-base';
-import { isUndefined, throwError, getValue } from '../util';
+import { isUndefined, throwError, getValue, isBlazor } from '../util';
 import { HijriParser } from '../hijri-parser';
 import { isNullOrUndefined } from '../util';
 const abbreviateRegexGlobal: RegExp = /\/MMMMM|MMMM|MMM|a|LLL|EEEEE|EEEE|E|K|cccc|ccc|G+|z+/gi;
@@ -30,6 +30,7 @@ const timeSetter: Object = {
     H: 'getHours',
     s: 'getSeconds',
     d: 'getDate',
+    f: 'getMilliseconds'
 };
 export const datePartMatcher: { [key: string]: Object } = {
     'M': 'month',
@@ -45,11 +46,13 @@ export const datePartMatcher: { [key: string]: Object } = {
     'a': 'designator',
     'z': 'timeZone',
     'Z': 'timeZone',
-    'G': 'era'
+    'G': 'era',
+    'f': 'milliseconds'
 };
 
 const timeSeparator: string = 'timeSeparator';
 
+/* tslint:disable no-any */
 /**
  * Date Format is a framework provides support for date formatting.
  * @private
@@ -66,6 +69,9 @@ export class DateFormat {
     public static dateFormat(culture: string, option: DateFormatOptions, cldr: Object): Function {
         let dependable: base.Dependables = base.getDependables(cldr, culture, option.calendar);
         let formatOptions: FormatOptions = { isIslamic: base.islamicRegex.test(option.calendar) };
+        if (isBlazor() && option.isServerRendered) {
+            option = base.compareBlazorDateFormats(option, culture);
+        }
         let resPattern: string = option.format || base.getResultantPattern(option.skeleton, dependable.dateObject, option.type);
         formatOptions.dateSeperator = base.getDateSeparator(dependable.dateObject);
         if (isUndefined(resPattern)) {
@@ -116,6 +122,7 @@ export class DateFormat {
      * @param {Date} value 
      * @param {FormatOptions} options
      */
+    // tslint:disable-next-line:max-func-body-length
     private static intDateFormatter(value: Date, options: FormatOptions): string {
         let pattern: string = options.pattern;
         let ret: string = '';
@@ -128,10 +135,10 @@ export class DateFormat {
                 char = 'h';
             }
             let curval: number;
+            let curvalstr: string = '';
             let isNumber: boolean;
             let processNumber: boolean;
             let curstr: string = '';
-
             switch (char) {
                 case 'M':
                 case 'L':
@@ -151,13 +158,28 @@ export class DateFormat {
                 case 'm':
                 case 's':
                 case 'd':
+                case 'f':
                     isNumber = true;
                     if (char === 'd') {
                         curval = dObject.date;
+                    } else if (char === 'f') {
+                        isNumber = false;
+                        processNumber = true;
+                        curvalstr = (<any>value)[(<any>timeSetter)[char]]().toString();
+                        curvalstr = curvalstr.substring(0, length);
+                        let curlength: number = curvalstr.length;
+                        if (length !== curlength) {
+                            if (length > 3) {
+                                continue;
+                            }
+                            for (let i: number = 0; i < length - curlength; i++) {
+                                curvalstr = '0' + curvalstr.toString();
+                            }
+                        }
+                        curstr += curvalstr;
                     } else {
                         curval = (<any>value)[(<any>timeSetter)[char]]();
                     }
-
                     if (char === 'h') {
                         curval = curval % 12 || 12;
                     }

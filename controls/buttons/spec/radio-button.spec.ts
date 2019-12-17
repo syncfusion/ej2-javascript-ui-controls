@@ -137,6 +137,18 @@ describe('RadioButton', () => {
             radio = new RadioButton({ enablePersistence: true }, '#radio');
             expect(radio.enablePersistence).toEqual(true);
         });
+
+        it('Enable Html Sanitizer testing', () => {
+            radio = new RadioButton({ label: '<style>body{background:rgb(0, 0, 255)}</style>', enableHtmlSanitizer: true }, '#radio');
+            let htmlele: Element = document.body;
+            expect(window.getComputedStyle(htmlele).backgroundColor).not.toBe('rgb(0, 0, 255)');
+        });
+
+        it('Enable Html Sanitizer disabled testing', () => {
+            radio = new RadioButton({ label: '<style>body{background:rgb(0, 0, 255)}</style>' }, '#radio');
+            let htmlele: Element = document.body;
+            expect(window.getComputedStyle(htmlele).backgroundColor).toBe('rgb(0, 0, 255)');
+        });
     });
 
     describe('Notify property changes of', () => {

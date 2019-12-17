@@ -70,12 +70,12 @@ describe('Schedule event window initial load', () => {
     }];
 
     beforeAll(() => {
-        // tslint:disable-next-line:no-any
+        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             // tslint:disable-next-line:no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); //Skips test (in Chai)
+            (this as any).skip(); //Skips test (in Chai)
             return;
         }
     });
@@ -519,6 +519,10 @@ describe('Schedule event window initial load', () => {
         });
 
         it('Edit Occurrence Validation', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(5);
+                done();
+            };
             util.triggerMouseEvent(schObj.element.querySelectorAll('[data-id="Appointment_6"]')[3] as HTMLElement, 'click');
             util.triggerMouseEvent(schObj.element.querySelectorAll('[data-id="Appointment_6"]')[3] as HTMLElement, 'dblclick');
             let eventDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
@@ -551,10 +555,6 @@ describe('Schedule event window initial load', () => {
             expect(eventPopup).toBeTruthy();
             (<HTMLElement>eventPopup.querySelector('.e-event-delete')).click();
             (<HTMLElement>eventDialog.querySelector('.e-quick-dialog-series-event')).click();
-            schObj.dataBound = () => {
-                expect(schObj.eventsData.length).toEqual(5);
-                done();
-            };
         });
 
         it('Reset recurrence field value checking on cell double click', () => {
@@ -755,7 +755,6 @@ describe('Schedule event window initial load', () => {
 
         it('Event double click and Delete occurrence through window', () => {
             schObj.actionBegin = (args: ActionEventArgs) => args.cancel = true;
-            schObj.dataBind();
             let recurrenceEle: Element = schObj.element.querySelector('.e-recurrence-icon');
             let appointmentElement: HTMLElement = closest(recurrenceEle, '.e-appointment') as HTMLElement;
             appointmentElement.click();
@@ -805,7 +804,6 @@ describe('Schedule event window initial load', () => {
 
         it('Event double click and Delete series through window', () => {
             schObj.actionBegin = (args: ActionEventArgs) => args.cancel = true;
-            schObj.dataBind();
             let recurrenceEle: Element = schObj.element.querySelector('.e-recurrence-icon');
             let agendaElement: HTMLElement = closest(recurrenceEle, '.e-appointment') as HTMLElement;
             util.triggerMouseEvent(agendaElement, 'click');
@@ -821,7 +819,6 @@ describe('Schedule event window initial load', () => {
                 done();
             };
             schObj.actionBegin = (args: ActionEventArgs) => args.cancel = false;
-            schObj.dataBind();
             let recurrenceEle: HTMLElement = schObj.element.querySelector('.e-recurrence-icon') as HTMLElement;
             let appointmentElement: HTMLElement = closest(recurrenceEle, '.e-appointment') as HTMLElement;
             util.triggerMouseEvent(appointmentElement, 'click');
@@ -852,6 +849,10 @@ describe('Schedule event window initial load', () => {
         });
 
         it('Event Click and Delete occurence', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(5);
+                done();
+            };
             let eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             eventElements[3].click();
             let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
@@ -859,23 +860,19 @@ describe('Schedule event window initial load', () => {
             (<HTMLElement>eventPopup.querySelector('.e-event-delete')).click();
             let eventDialog: HTMLElement = document.body.querySelector('.e-quick-dialog') as HTMLElement;
             (<HTMLElement>eventDialog.querySelector('.e-quick-dialog-occurrence-event')).click();
-            schObj.dataBound = () => {
-                expect(schObj.eventsData.length).toEqual(5);
-                done();
-            };
         });
 
         it('Event Click and Delete series', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(4);
+                done();
+            };
             (schObj.element.querySelector('[data-id="Appointment_5"]') as HTMLElement).click();
             let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup).toBeTruthy();
             (<HTMLElement>eventPopup.querySelector('.e-event-delete')).click();
             let eventDialog: HTMLElement = document.body.querySelector('.e-quick-dialog') as HTMLElement;
             (<HTMLElement>eventDialog.querySelector('.e-quick-dialog-series-event')).click();
-            schObj.dataBound = () => {
-                expect(schObj.eventsData.length).toEqual(4);
-                done();
-            };
         });
 
         it('Read only checking on event double click', (done: Function) => {
@@ -887,6 +884,11 @@ describe('Schedule event window initial load', () => {
                 expect((((<any>schObj.eventWindow).getInstance(cls.EVENT_WINDOW_SAVE_BUTTON_CLASS)) as Button).disabled).toEqual(false);
                 expect((((<any>schObj.eventWindow).getInstance(cls.DELETE_EVENT_CLASS)) as Button).disabled).toEqual(false);
                 // tslint:enable:no-any
+                expect(schObj.quickPopup.quickDialog.element.classList.contains('e-popup-open')).toEqual(false);
+                expect(schObj.quickPopup.quickDialog.element.classList.contains('e-popup-close')).toEqual(true);
+                schObj.quickPopup.openDeleteAlert();
+                expect(schObj.quickPopup.quickDialog.element.classList.contains('e-popup-open')).toEqual(false);
+                expect(schObj.quickPopup.quickDialog.element.classList.contains('e-popup-close')).toEqual(true);
                 done();
             };
             schObj.readonly = true;
@@ -1279,7 +1281,7 @@ describe('Schedule event window initial load', () => {
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
             expect(schObj.eventWindow.dialogObject.visible).toEqual(true);
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-            expect(dialogElement.querySelectorAll('#Subject').length).toEqual(0);
+            expect(dialogElement.querySelectorAll('#Subject').length).toEqual(1);
             expect(dialogElement.querySelectorAll('.' + cls.SUBJECT_CLASS).length).toEqual(1);
             (dialogElement.querySelector('.e-event-cancel') as HTMLElement).click();
             expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
@@ -1349,6 +1351,8 @@ describe('Schedule event window initial load', () => {
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             (dialogElement.querySelector('#Subject') as HTMLInputElement).value = 'add';
             let addButton: HTMLElement = dialogElement.querySelector('.e-event-save') as HTMLElement;
+            // tslint:disable-next-line:no-any
+            expect((schObj.quickPopup as any).getRecurrenceSummary()).toBe('');
             addButton.click();
             expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
         });
@@ -1357,6 +1361,9 @@ describe('Schedule event window initial load', () => {
             schObj.dataBound = () => {
                 expect((schObj.eventsData[0] as { [key: string]: Object }).Subject).toEqual('edit');
                 expect(schObj.eventsData.length).toEqual(1);
+                schObj.quickPopup.quickDialog.destroy();
+                remove(schObj.quickPopup.quickDialog.element);
+                schObj.quickPopup.quickDialog.element = null;
                 done();
             };
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement, 'click');
@@ -1545,6 +1552,36 @@ describe('Schedule event window initial load', () => {
             let saveButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
             saveButton.click();
         });
+
+        it('custom recurrence editor instance setting', () => {
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+            expect(schObj.eventWindow.dialogObject.element.classList.contains('e-popup-open')).toEqual(true);
+            expect(schObj.eventWindow.dialogObject.element.classList.contains('e-popup-close')).toEqual(false);
+            let recObj: RecurrenceEditor = (schObj.eventWindow.dialogObject.element.querySelector('.e-recurrenceeditor') as EJ2Instance).
+                ej2_instances[0] as RecurrenceEditor;
+            expect(recObj.value).toBe('');
+            schObj.setRecurrenceEditor(new RecurrenceEditor({ value: 'FREQ=DAILY;INTERVAL=1;COUNT=5' }));
+            expect(recObj.value).toBe('');
+            util.triggerMouseEvent(schObj.eventWindow.dialogObject.element.querySelector('.e-dlg-closeicon-btn'), 'click');
+            expect(schObj.eventWindow.dialogObject.element.classList.contains('e-popup-open')).toEqual(false);
+            expect(schObj.eventWindow.dialogObject.element.classList.contains('e-popup-close')).toEqual(true);
+        });
+
+        it('open editor method manually testing for cell click action', () => {
+            let cellData: Object = schObj.getCellDetails(schObj.element.querySelectorAll('.e-work-cells').item(143));
+            let eventData: { [key: string]: Object } = { RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=10' };
+            (<{ [key: string]: Object }>cellData).RecurrenceRule = 'FREQ=DAILY;INTERVAL=1;COUNT=5';
+            schObj.eventWindow.convertToEventData(<{ [key: string]: Object }>cellData, eventData);
+            expect(schObj.eventWindow.dialogObject.element.classList.contains('e-popup-open')).toEqual(false);
+            expect(schObj.eventWindow.dialogObject.element.classList.contains('e-popup-close')).toEqual(true);
+            schObj.openEditor(eventData, 'Add', true);
+            expect(schObj.eventWindow.dialogObject.element.classList.contains('e-popup-open')).toEqual(true);
+            expect(schObj.eventWindow.dialogObject.element.classList.contains('e-popup-close')).toEqual(false);
+            schObj.closeEditor();
+            expect(schObj.eventWindow.dialogObject.element.classList.contains('e-popup-open')).toEqual(false);
+            expect(schObj.eventWindow.dialogObject.element.classList.contains('e-popup-close')).toEqual(true);
+        });
     });
 
     describe('Editor window - Recurrence Editor Mobile Interaction', () => {
@@ -1592,9 +1629,12 @@ describe('Schedule event window initial load', () => {
     });
 
     describe('event window destroy method testing', () => {
-        let recObj: Schedule | RecurrenceEditor;
+        let recObj: RecurrenceEditor;
         beforeEach(() => {
             recObj = undefined;
+        });
+        afterEach(() => {
+            util.destroy(recObj);
         });
 
         it('recurrence editor control destroy checking', () => {
@@ -1603,7 +1643,6 @@ describe('Schedule event window initial load', () => {
             expect(recObj.isDestroyed).toEqual(false);
             recObj.destroy();
             expect(recObj.isDestroyed).toEqual(true);
-            remove(recObj.element);
         });
 
         it('recurrence editor rendering', () => {
@@ -1618,7 +1657,6 @@ describe('Schedule event window initial load', () => {
             recObj.destroy();
             expect(recObj.element.classList.contains('e-recurrenceeditor')).toEqual(false);
             expect(recObj.element.childElementCount).toEqual(0);
-            remove(recObj.element);
         });
     });
 
@@ -1767,7 +1805,8 @@ describe('Schedule event window initial load', () => {
                         { CalendarText: 'Company', CalendarId: 2, CalendarColor: '#ff7f50' },
                         { CalendarText: 'Birthday', CalendarId: 3, CalendarColor: '#AF27CD' },
                         { CalendarText: 'Holiday', CalendarId: 4, CalendarColor: '#808000' }
-                    ]
+                    ],
+                    textField: 'CalendarText', idField: 'CalendarId', colorField: 'calendarColor'
                 }],
                 actionBegin: (e: ActionEventArgs) => {
                     if (e.requestType === 'eventCreate') {
@@ -1808,7 +1847,7 @@ describe('Schedule event window initial load', () => {
             util.destroy(schObj);
         });
 
-        it('Wrong Pattern Alert', (done: Function) => {
+        it('Wrong Pattern Alert', () => {
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
@@ -1833,7 +1872,6 @@ describe('Schedule event window initial load', () => {
             let cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
             cancelButton.click();
             expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
-            done();
         });
 
         it('Create Error Alert', (done: Function) => {

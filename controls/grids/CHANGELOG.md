@@ -2,36 +2,20 @@
 
 ## [Unreleased]
 
-## 17.3.34 (2019-12-10)
+## 17.4.39 (2019-12-17)
 
 ### Grid
 
 #### Bug Fixes
 
-- `#253288` - Movable rows were not removed after calling the `deleteRecord` method issue has been fixed.
-- `#254189` - Drag cell selection issue has been fixed while using `setRowData` method.
+- `#256411` - While programmatically filter the Grid, `filterBar` does not get updated issue has been fixed.
+- Filter item template arguments from single object to nested object structure has been reverted.
+- `#253073`, `#255255` - Aria labels added for grid dialog with feature name for accessibility improvement.
+- `#253073`, `#255255` - When pressing tab key focus moving to next row support added.
 
-## 17.3.30 (2019-12-03)
+#### New Features
 
-### Grid
-
-#### Bug Fixes
-
-- `#254242` - Provided load event support while performing the export action in Grid.
-- `#254782` - Selected rows are deselected when opening Context Menu while having `columnTemplate` in Grid issue has been fixed.
-- `#255479` - Multi-sorting is not working in Mac devices issue has been fixed.
-
-## 17.3.29 (2019-11-26)
-
-### Grid
-
-#### Bug Fixes
-
-- `#252476`, `#254801` - Script error throws while clicking the empty row with first column as visible false has been fixed.
-- `#253639` - `totalRecordsCount` and `totalPages` values are not refreshed in Grid `pagerTemplate` has been fixed.
-- `#254057` - DataSource modified when `aggregateModule` is refreshed in Grid has been fixed.
-- `#250278` - Provided event support for customizing Group Caption text.
-- `#255431` - Script error throws, while updating the row in edited state has been fixed.
+- Provided `virtualization` support in Frozen Grid.
 
 ## 17.3.28 (2019-11-19)
 

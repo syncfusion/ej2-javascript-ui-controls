@@ -181,6 +181,7 @@ export class Annotation {
             this.clearAnnotationMode();
         } else if (type === 'Highlight' || type === 'Strikethrough' || type === 'Underline') {
             if (this.textMarkupAnnotationModule) {
+                this.textMarkupAnnotationModule.isSelectionMaintained = false;
                 this.textMarkupAnnotationModule.drawTextMarkupAnnotations(type.toString());
             }
         } else if (type === 'Line' || type === 'Arrow' || type === 'Rectangle' || type === 'Circle' || type === 'Polygon') {

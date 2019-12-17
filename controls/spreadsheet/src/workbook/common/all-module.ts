@@ -1,6 +1,6 @@
 import { Workbook, DataBind } from '../../workbook/index';
-import { WorkbookSave, WorkbookNumberFormat, WorkbookFormula, WorkbookOpen, WorkbookSort } from '../integrations/index';
-import { WorkbookEdit, WorkbookCellFormat } from '../actions/index';
+import { WorkbookSave, WorkbookNumberFormat, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter } from '../integrations/index';
+import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink } from '../actions/index';
 /**
  * Workbook all module.
  * @private
@@ -13,7 +13,7 @@ export class WorkbookAllModule {
     constructor() {
         Workbook.Inject(
             DataBind, WorkbookSave, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit,
-            WorkbookFormula, WorkbookOpen, WorkbookSort);
+            WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookHyperlink, WorkbookFilter);
     }
 
     /**

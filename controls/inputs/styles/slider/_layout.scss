@@ -1392,6 +1392,7 @@
 
     .e-scale {
       box-sizing: content-box;
+      font-family: $slider-scale-font-family;
       height: 28px;
       line-height: normal;
       list-style: none outside none;
@@ -1435,6 +1436,7 @@
 
         .e-tick-value {
           color: $slider-tick-font-color;
+          font-family: $slider-scale-font-family;
           font-size: $slider-scale-font-size;
           outline: none;
           position: absolute;

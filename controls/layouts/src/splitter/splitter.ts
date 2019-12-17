@@ -1,6 +1,7 @@
 import { Component, Property, setStyleAttribute, ChildProperty, compile, isBlazor } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, addClass, Collection, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Event, EmitType, EventHandler, selectAll, removeClass, select, Browser, detach, formatUnit } from '@syncfusion/ej2-base';
+import { SanitizeHtmlHelper, extend } from '@syncfusion/ej2-base';
 import { SplitterModel, PanePropertiesModel } from './splitter-model';
 
 const ROOT: string = 'e-splitter';
@@ -90,6 +91,45 @@ export class PaneProperties extends ChildProperty<PaneProperties> {
      */
     @Property()
     public content: string | HTMLElement;
+
+    /**
+     * Specifies the CSS class names that defines specific user-defined
+     * styles and themes to be appended on corresponding pane of the Splitter.
+     * It is used to customize the Splitter control panes.
+     * One or more custom CSS classes can be specified to the Splitter panes.
+     * @default ''
+     */
+    @Property('')
+    public cssClass: string;
+}
+
+export interface SanitizeSelectors {
+    /** Returns the tags. */
+    tags?: string[];
+    /** Returns the attributes. */
+    attributes?: SanitizeRemoveAttrs[];
+}
+
+export interface BeforeSanitizeHtmlArgs {
+    /** Illustrates whether the current action needs to be prevented or not. */
+    cancel?: boolean;
+    /** It is a callback function and executed it before our inbuilt action. It should return HTML as a string.
+     * @function
+     * @param {string} value - Returns the value.
+     * @returns {string}
+     */
+    helper?: Function;
+    /** Returns the selectors object which carrying both tags and attributes selectors to block list of cross-site scripting attack.
+     *  Also possible to modify the block list in this event.
+     */
+    selectors?: SanitizeSelectors;
+}
+
+export interface SanitizeRemoveAttrs {
+    /** Defines the attribute name to sanitize */
+    attribute?: string;
+    /** Defines the selector that sanitize the specified attributes within the selector */
+    selector?: string;
 }
 
 /**
@@ -212,12 +252,27 @@ export class Splitter extends Component<HTMLElement> {
     public enabled: boolean;
 
     /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default true
+     */
+    @Property(true)
+    public enableHtmlSanitizer: boolean;
+
+    /**
      * Specifies the size of the separator line for both horizontal or vertical orientation.
      * The separator is used to separate the panes by lines.
      * @default null
      */
     @Property(null)
     public separatorSize: number;
+
+    /** 
+     * Event triggers before sanitize the value.
+     * @event 
+     * @blazorProperty 'OnSanitizeHtml'
+     */
+    @Event()
+    public beforeSanitizeHtml: EmitType<BeforeSanitizeHtmlArgs>;
 
     /**
      * Triggers after creating the splitter component with its panes.
@@ -312,7 +367,7 @@ export class Splitter extends Component<HTMLElement> {
                     this.setSplitterSize(this.element, newProp.width, 'width');
                     break;
                 case 'cssClass':
-                    this.setCssClass(newProp.cssClass);
+                    this.setCssClass(this.element, newProp.cssClass);
                     break;
                 case 'enabled':
                     this.isEnabled(this.enabled);
@@ -353,6 +408,10 @@ export class Splitter extends Component<HTMLElement> {
                                     newProp.paneSettings[index].collapsed ? this.isCollapsed() : this.collapsedOnchange(index);
                                     break;
 
+                                    case 'cssClass':
+                                    this.setCssClass(this.allPanes[index]as HTMLElement, newProp.paneSettings[index].cssClass);
+                                    break;
+
                                     case 'size':
                                     let newValSize: string = Object(newProp.paneSettings[index])[property];
                                     if (newValSize !== '' && !isNullOrUndefined(newValSize)) {
@@ -389,7 +448,7 @@ export class Splitter extends Component<HTMLElement> {
         addClass([this.element], orientation);
         let name: string = Browser.info.name;
         let css: string = (name === 'msie') ? 'e-ie' : '';
-        this.setCssClass(css);
+        this.setCssClass(this.element, css);
         if ( Browser.isDevice ) {
             addClass([this.element], SPLIT_TOUCH);
         }
@@ -413,7 +472,7 @@ export class Splitter extends Component<HTMLElement> {
      */
     public render(): void {
         this.checkDataAttributes();
-        this.setCssClass(this.cssClass);
+        this.setCssClass(this.element, this.cssClass);
         this.isEnabled(this.enabled);
         this.setDimension(this.getHeight(this.element), this.getWidth(this.element));
         this.createSplitPane(this.element);
@@ -431,6 +490,27 @@ export class Splitter extends Component<HTMLElement> {
             this.currentSeparator.classList.remove(SPLIT_BAR_HOVER);
             this.currentSeparator.classList.remove(SPLIT_BAR_ACTIVE);
         }
+    }
+
+    /**
+     * @hidden
+     */
+    public sanitizeHelper(value: string): string {
+        if (this.enableHtmlSanitizer) {
+            let item: BeforeSanitizeHtmlArgs = SanitizeHtmlHelper.beforeSanitize();
+            let beforeEvent: BeforeSanitizeHtmlArgs = {
+                cancel: false,
+                helper: null
+            };
+            extend(item, item, beforeEvent);
+            this.trigger('beforeSanitizeHtml', item);
+            if (item.cancel && !isNullOrUndefined(item.helper)) {
+                value = item.helper(value);
+            } else if (!item.cancel) {
+                value = SanitizeHtmlHelper.serializeValue(item, value);
+            }
+        }
+        return value;
     }
 
     private checkDataAttributes(): void {
@@ -529,9 +609,9 @@ export class Splitter extends Component<HTMLElement> {
         }
     }
 
-    private setCssClass(className: string): void {
+    private setCssClass( element : HTMLElement , className: string): void {
         if ( className) {
-            addClass([this.element], className.split(className.indexOf(',') > -1 ? ',' : ' '));
+            addClass([element], className.split(className.indexOf(',') > -1 ? ',' : ' '));
         }
     }
 
@@ -601,7 +681,23 @@ export class Splitter extends Component<HTMLElement> {
 
     private isCollapsed(index?: number): void {
         if (!isNullOrUndefined(index)) {
+            if (this.allPanes.length <= 2) {
                 this.updateIsCollapsed(index, this.targetArrows().collapseArrow, this.targetArrows().lastBarArrow);
+            } else {
+            let targetEle: HTMLElement;
+            let lastBarIndex: boolean = (index === this.allBars.length);
+            let barIndex: number = lastBarIndex ? index - 1 : index;
+            if (!lastBarIndex && this.allPanes[index + 1].classList.contains(COLLAPSE_PANE) && index !== 0) {
+              targetEle = this.collapseArrow(barIndex - 1, this.targetArrows().lastBarArrow);
+            } else {
+              targetEle = (lastBarIndex) ? this.collapseArrow(barIndex, this.targetArrows().lastBarArrow) :
+                this.collapseArrow(barIndex, this.targetArrows().collapseArrow);
+            }
+            this.allPanes[index].classList.add(PANE_HIDDEN);
+            this.allPanes[index].classList.add(COLLAPSE_PANE);
+            this.allPanes[index].setAttribute('aria-expanded', 'false');
+            this.allPanes[index].style.flexGrow = '0';
+        }
         } else {
             for (let m: number = 0; m < this.allPanes.length; m++) {
                 if (!isNullOrUndefined(this.paneSettings[m]) && this.paneSettings[m].collapsed) {
@@ -624,6 +720,7 @@ export class Splitter extends Component<HTMLElement> {
             }
         }
     }
+
 
     private targetArrows(): {[key: string]: string } {
         this.splitterProperty();
@@ -824,7 +921,7 @@ export class Splitter extends Component<HTMLElement> {
         !isNullOrUndefined(this.paneSettings[this.getNextPaneIndex()]) &&
         this.paneSettings[this.getNextPaneIndex()].resizable) ||
         isNullOrUndefined(this.paneSettings[this.getNextPaneIndex()])) {
-        resizable = true;
+            resizable = true;
         }
 
         return resizable;
@@ -960,7 +1057,7 @@ export class Splitter extends Component<HTMLElement> {
                     addClass([this.nextPane], collapseClass);
                 } else {
                     (this.currentBarIndex !== 0) ?
-                    (this.previousPane as HTMLElement).style.flexGrow = '' : this.nextPane.style.flexGrow = '';
+                    this.previousPane.style.flexGrow = '' : this.nextPane.style.flexGrow = '';
                     removeClass([this.previousPane], collapseClass);
                     removeClass([this.nextPane], EXPAND_PANE);
                 }
@@ -1707,6 +1804,7 @@ export class Splitter extends Component<HTMLElement> {
 
     private setTemplate(template: string | HTMLElement, toElement: HTMLElement): void {
         toElement.innerHTML = '';
+        template = typeof(template) === 'string' ? this.sanitizeHelper(template) : template;
         this.templateCompile(toElement, template);
     }
 
@@ -1806,6 +1904,9 @@ export class Splitter extends Component<HTMLElement> {
                     }
                     if (!isNullOrUndefined(this.paneSettings[i]) && !isNullOrUndefined(this.paneSettings[i].content)) {
                         this.setTemplate(this.paneSettings[i].content as string, child[i] as HTMLElement);
+                    }
+                    if (!isNullOrUndefined(this.paneSettings[i]) && this.paneSettings[i].cssClass) {
+                        this.setCssClass(child[i] , this.paneSettings[i].cssClass);
                     }
                     if (!isNullOrUndefined(this.paneSettings[i])) {
                         this.paneCollapsible(child[i], i);

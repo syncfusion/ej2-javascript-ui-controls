@@ -16,6 +16,15 @@ var Theme;
         fontFamily: 'Segoe UI'
     };
     /** @private */
+    Theme.titleFont = {
+        size: '13px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI',
+        textOverflow: 'None',
+    };
+    /** @private */
     Theme.axisTitleFont = {
         size: '12px',
         fontWeight: 'Normal',
@@ -231,6 +240,17 @@ __decorate$2([
     Complex({}, Font)
 ], Title.prototype, "textStyle", void 0);
 /**
+ * class used to maintain the fill color value for cell color range
+ */
+class FillColor extends ChildProperty {
+}
+__decorate$2([
+    Property('#eeeeee')
+], FillColor.prototype, "minColor", void 0);
+__decorate$2([
+    Property('#eeeeee')
+], FillColor.prototype, "maxColor", void 0);
+/**
  * class used to maintain palette information.
  */
 class PaletteCollection extends ChildProperty {
@@ -244,6 +264,18 @@ __decorate$2([
 __decorate$2([
     Property(null)
 ], PaletteCollection.prototype, "label", void 0);
+__decorate$2([
+    Property(null)
+], PaletteCollection.prototype, "startValue", void 0);
+__decorate$2([
+    Property(null)
+], PaletteCollection.prototype, "endValue", void 0);
+__decorate$2([
+    Property(null)
+], PaletteCollection.prototype, "minColor", void 0);
+__decorate$2([
+    Property(null)
+], PaletteCollection.prototype, "maxColor", void 0);
 /**
  * label border properties.
  */
@@ -307,10 +339,14 @@ __decorate$2([
  * Internal class used to maintain colorcollection.
  */
 class ColorCollection {
-    constructor(value, color, label) {
+    constructor(value, color, label, startValue, endValue, minColor, maxColor) {
         this.value = value;
         this.color = color;
         this.label = label;
+        this.startValue = startValue;
+        this.endValue = endValue;
+        this.minColor = minColor;
+        this.maxColor = maxColor;
     }
 }
 /**
@@ -327,10 +363,14 @@ class BubbleTooltipData {
  * Internal class used to maintain legend colorcollection.
  */
 class LegendColorCollection {
-    constructor(value, color, label, isHidden) {
+    constructor(value, color, label, startValue, endValue, minColor, maxColor, isHidden) {
         this.value = value;
         this.color = color;
         this.label = label;
+        this.startValue = startValue;
+        this.endValue = endValue;
+        this.minColor = minColor;
+        this.maxColor = maxColor;
         this.isHidden = isHidden;
     }
 }
@@ -358,6 +398,9 @@ __decorate$1([
 __decorate$1([
     Property('Table')
 ], PaletteSettings.prototype, "colorGradientMode", void 0);
+__decorate$1([
+    Complex({}, FillColor)
+], PaletteSettings.prototype, "fillColor", void 0);
 /**
  * Helper class for colormapping
  */
@@ -378,25 +421,60 @@ class CellColor {
      * @private
      */
     convertToRGB(value, colorMapping) {
-        let previousOffset = colorMapping[0].value;
+        let previousOffset = this.heatMap.isColorRange ? colorMapping[0].startValue : colorMapping[0].value;
         let nextOffset = 0;
-        for (let i = 1; i < colorMapping.length; i++) {
-            let offset = Number(colorMapping[i].value);
-            if (value <= offset) {
-                nextOffset = offset;
-                break;
+        let i = 0;
+        let previousColor;
+        let nextColor;
+        if (this.heatMap.isColorRange && this.heatMap.paletteSettings.type === 'Gradient') {
+            for (i = 0; i < colorMapping.length; i++) {
+                let offset = Number(colorMapping[i].endValue);
+                if (value <= offset && value >= Number(colorMapping[i].startValue)) {
+                    nextOffset = offset;
+                    previousColor = this.heatMap.colorCollection[i].minColor;
+                    nextColor = this.heatMap.colorCollection[i].maxColor;
+                    break;
+                }
+                else if (colorMapping[0].startValue !== this.heatMap.dataSourceMinValue && value < colorMapping[0].startValue) {
+                    nextOffset = colorMapping[0].startValue;
+                    previousOffset = this.heatMap.dataSourceMinValue;
+                    previousColor = this.heatMap.paletteSettings.fillColor.minColor;
+                    nextColor = this.heatMap.paletteSettings.fillColor.maxColor;
+                    break;
+                }
+                else if (value > offset && value <= (i === (colorMapping.length - 1) ? this.heatMap.dataSourceMaxValue :
+                    colorMapping[i + 1].startValue)) {
+                    nextOffset = (i === (colorMapping.length - 1)) ? this.heatMap.dataSourceMaxValue : colorMapping[i + 1].startValue;
+                    previousOffset = offset;
+                    previousColor = this.heatMap.paletteSettings.fillColor.minColor;
+                    nextColor = this.heatMap.paletteSettings.fillColor.maxColor;
+                    break;
+                }
+                else {
+                    nextOffset = offset;
+                    previousOffset = offset;
+                }
             }
-            else {
-                nextOffset = offset;
-                previousOffset = offset;
+        }
+        else {
+            for (i = 1; i < colorMapping.length; i++) {
+                let offset = Number(colorMapping[i].value);
+                if (value <= offset) {
+                    nextOffset = offset;
+                    previousColor = this.getEqualColor(colorMapping, previousOffset);
+                    nextColor = this.getEqualColor(colorMapping, nextOffset);
+                    break;
+                }
+                else {
+                    nextOffset = offset;
+                    previousOffset = offset;
+                }
             }
         }
         let percent = 0;
-        let full = nextOffset - previousOffset;
+        let full = (nextOffset) - previousOffset;
         percent = (value - previousOffset) / full;
         percent = isNaN(percent) ? 0 : percent;
-        let previousColor = this.getEqualColor(colorMapping, previousOffset);
-        let nextColor = this.getEqualColor(colorMapping, nextOffset);
         return this.getPercentageColor(percent, previousColor, nextColor);
     }
     /**
@@ -479,6 +557,15 @@ class CellColor {
         heatMap.colorCollection = [];
         heatMap.legendColorCollection = [];
         let range;
+        for (let j = 0; j < this.heatMap.paletteSettings.palette.length; j++) {
+            if (this.heatMap.paletteSettings.palette[j].startValue === null || this.heatMap.paletteSettings.palette[j].endValue === null) {
+                this.heatMap.isColorRange = false;
+                break;
+            }
+            else {
+                this.heatMap.isColorRange = true;
+            }
+        }
         let minValue = heatMap.bubbleSizeWithColor ? heatMap.minColorValue : heatMap.dataSourceMinValue;
         let maxValue = heatMap.bubbleSizeWithColor ? heatMap.maxColorValue : heatMap.dataSourceMaxValue;
         heatMap.emptyPointColor = heatMap.paletteSettings.emptyPointColor ? heatMap.paletteSettings.emptyPointColor :
@@ -494,8 +581,8 @@ class CellColor {
             }
             if (tempcolorMapping.offsets.length >= 2) {
                 for (let index = 0; index < tempcolorMapping.offsets.length; index++) {
-                    heatMap.colorCollection.push(new ColorCollection(Math.round(((minValue) + (index * range)) * 100) / 100, tempcolorMapping.offsets[index].color, tempcolorMapping.offsets[index].label));
-                    heatMap.legendColorCollection.push(new LegendColorCollection(Math.round(((minValue) + (index * range)) * 100) / 100, tempcolorMapping.offsets[index].color, tempcolorMapping.offsets[index].label, false));
+                    heatMap.colorCollection.push(new ColorCollection((Math.round(((minValue) + (index * range)) * 100) / 100), tempcolorMapping.offsets[index].color, tempcolorMapping.offsets[index].label, tempcolorMapping.offsets[index].startValue, tempcolorMapping.offsets[index].endValue, tempcolorMapping.offsets[index].minColor, tempcolorMapping.offsets[index].maxColor));
+                    heatMap.legendColorCollection.push(new LegendColorCollection(Math.round(((minValue) + (index * range)) * 100) / 100, tempcolorMapping.offsets[index].color, tempcolorMapping.offsets[index].label, tempcolorMapping.offsets[index].startValue, tempcolorMapping.offsets[index].endValue, tempcolorMapping.offsets[index].minColor, tempcolorMapping.offsets[index].maxColor, false));
                 }
             }
         }
@@ -503,7 +590,9 @@ class CellColor {
             heatMap.colorCollection = tempcolorMapping.offsets;
             heatMap.legendColorCollection = extend([], tempcolorMapping.offsets, null, true);
         }
-        this.updateLegendColorCollection(minValue, maxValue, tempcolorMapping);
+        if (!this.heatMap.isColorRange) {
+            this.updateLegendColorCollection(minValue, maxValue, tempcolorMapping);
+        }
     }
     /**
      * To update legend color Collection.
@@ -514,10 +603,10 @@ class CellColor {
             return;
         }
         if (Math.round(minValue * 100) / 100 < this.heatMap.legendColorCollection[0].value) {
-            this.heatMap.legendColorCollection.unshift(new LegendColorCollection(Math.round(minValue * 100) / 100, this.heatMap.legendColorCollection[0].color, this.heatMap.legendColorCollection[0].label, true));
+            this.heatMap.legendColorCollection.unshift(new LegendColorCollection(Math.round(minValue * 100) / 100, this.heatMap.legendColorCollection[0].color, this.heatMap.legendColorCollection[0].label, this.heatMap.legendColorCollection[0].startValue, this.heatMap.legendColorCollection[0].endValue, this.heatMap.legendColorCollection[0].minColor, this.heatMap.legendColorCollection[0].maxColor, true));
         }
         if (Math.round(maxValue * 100) / 100 > this.heatMap.legendColorCollection[this.heatMap.legendColorCollection.length - 1].value) {
-            this.heatMap.legendColorCollection.push(new LegendColorCollection(Math.round(maxValue * 100) / 100, this.heatMap.legendColorCollection[this.heatMap.legendColorCollection.length - 1].color, this.heatMap.legendColorCollection[this.heatMap.legendColorCollection.length - 1].label, true));
+            this.heatMap.legendColorCollection.push(new LegendColorCollection(Math.round(maxValue * 100) / 100, this.heatMap.legendColorCollection[this.heatMap.legendColorCollection.length - 1].color, this.heatMap.legendColorCollection[this.heatMap.legendColorCollection.length - 1].label, this.heatMap.legendColorCollection[this.heatMap.legendColorCollection.length - 1].startValue, this.heatMap.legendColorCollection[this.heatMap.legendColorCollection.length - 1].endValue, this.heatMap.legendColorCollection[this.heatMap.legendColorCollection.length - 1].minColor, this.heatMap.legendColorCollection[this.heatMap.legendColorCollection.length - 1].maxColor, true));
         }
     }
     /**
@@ -526,7 +615,7 @@ class CellColor {
      */
     orderbyOffset(offsets) {
         let returnCollection = new PaletterColor();
-        let key = 'value';
+        let key = this.heatMap.isColorRange ? 'to' : 'value';
         let label = 'label';
         returnCollection.isCompact = true;
         returnCollection.isLabel = true;
@@ -560,22 +649,39 @@ class CellColor {
         if (text.toString() !== '') {
             if (this.heatMap.cellSettings.tileType === 'Bubble' &&
                 (this.heatMap.cellSettings.bubbleType === 'Size' || this.heatMap.cellSettings.bubbleType === 'Sector')) {
-                color = this.heatMap.colorCollection[0].color;
+                color = this.heatMap.isColorRange ? this.heatMap.colorCollection[0].minColor : this.heatMap.colorCollection[0].color;
             }
             else if (this.heatMap.paletteSettings.type === 'Fixed') {
                 for (let y = 0; y < this.heatMap.colorCollection.length; y++) {
-                    compareValue = this.heatMap.colorCollection[y + 1] ? this.heatMap.colorCollection[y + 1].value :
-                        this.heatMap.colorCollection[y].value;
+                    compareValue = this.heatMap.isColorRange ? this.heatMap.paletteSettings.palette[y].startValue :
+                        this.heatMap.colorCollection[y + 1] ? this.heatMap.colorCollection[y + 1].value :
+                            this.heatMap.colorCollection[y].value;
                     let singleValue = this.heatMap.dataSourceMinValue === this.heatMap.dataSourceMaxValue;
-                    if ((text <= compareValue && y === 0 && singleValue) || text < compareValue ||
-                        (text >= compareValue && y === this.heatMap.colorCollection.length - 1)) {
+                    if (this.heatMap.isColorRange) {
                         let legendRange;
-                        if (this.heatMap.legendVisibilityByCellType) {
-                            legendRange = this.heatMap.legendModule.legendRange;
+                        if ((text <= this.heatMap.colorCollection[y].endValue && text >= this.heatMap.colorCollection[y].startValue)) {
+                            if (this.heatMap.legendVisibilityByCellType) {
+                                legendRange = this.heatMap.legendModule.legendRange;
+                            }
+                            color = (this.heatMap.legendVisibilityByCellType && legendRange[y] && !legendRange[y].visible) ?
+                                this.heatMap.themeStyle.toggledColor : this.heatMap.colorCollection[y].minColor;
+                            break;
                         }
-                        color = (this.heatMap.legendVisibilityByCellType && legendRange[y] && !legendRange[y].visible) ?
-                            this.heatMap.themeStyle.toggledColor : this.heatMap.colorCollection[y].color;
-                        break;
+                        else {
+                            color = this.heatMap.paletteSettings.fillColor.minColor;
+                        }
+                    }
+                    else {
+                        if ((text <= compareValue && singleValue && y === 0) || text < compareValue ||
+                            (text >= compareValue && y === this.heatMap.colorCollection.length - 1)) {
+                            let legendRange;
+                            if (this.heatMap.legendVisibilityByCellType) {
+                                legendRange = this.heatMap.legendModule.legendRange;
+                            }
+                            color = (this.heatMap.legendVisibilityByCellType && legendRange[y] && !legendRange[y].visible) ?
+                                this.heatMap.themeStyle.toggledColor : this.heatMap.colorCollection[y].color;
+                            break;
+                        }
                     }
                 }
             }
@@ -583,10 +689,11 @@ class CellColor {
                 if (this.heatMap.paletteSettings.colorGradientMode !== 'Table') {
                     this.getColorCollection();
                 }
-                if (text < this.heatMap.colorCollection[0].value) {
+                if (text < this.heatMap.colorCollection[0].value && !this.heatMap.isColorRange) {
                     color = this.heatMap.colorCollection[0].color;
                 }
-                else if (text > this.heatMap.colorCollection[this.heatMap.colorCollection.length - 1].value) {
+                else if (text > this.heatMap.colorCollection[this.heatMap.colorCollection.length - 1].value &&
+                    !this.heatMap.isColorRange) {
                     color = this.heatMap.colorCollection[this.heatMap.colorCollection.length - 1].color;
                 }
                 else {
@@ -1400,9 +1507,11 @@ class LegendRange {
 }
 /** @private */
 class ToggleVisibility {
-    constructor(visible, value) {
+    constructor(visible, value, startValue, endValue) {
         this.visible = visible;
         this.value = value;
+        this.startValue = startValue;
+        this.endValue = endValue;
     }
 }
 /** @private */
@@ -2910,10 +3019,6 @@ class Series {
             this.setTextAndColor(dataXIndex, dataYIndex);
             let rectPosition = new CurrentRect(0, 0, 0, 0, 0, '', 0, 0, 0, 0, true, '', '', true);
             borderColor = tempBorder.color;
-            if ((heatMap.renderingMode === 'Canvas' && parseFloat(tempBorder.width.toString()) === 0) || (!borderColor &&
-                cellSetting.tileType === 'Bubble' && cellSetting.bubbleType === 'Sector')) {
-                borderColor = this.color;
-            }
             if (this.heatMap.bubbleSizeWithColor) {
                 this.updateRectDetails(rectPosition, tempX, tempY, tempWidth, tempHeight, extend('', this.bubbleColorValue, null, true), x, dataYIndex, dataXIndex);
             }
@@ -2922,10 +3027,17 @@ class Series {
             }
             if (cellSetting.showLabel) {
                 displayText = this.getFormatedText(this.text, cellSetting.format);
-                rectPosition.displayText = displayText;
-                if (!isNullOrUndefined(this.heatMap.cellRender)) {
-                    displayText = this.cellRendering(rectPosition, displayText);
-                }
+            }
+            else {
+                displayText = '';
+            }
+            rectPosition.displayText = displayText;
+            if (!isNullOrUndefined(this.heatMap.cellRender)) {
+                displayText = this.cellRendering(rectPosition, displayText);
+            }
+            if ((heatMap.renderingMode === 'Canvas' && parseFloat(tempBorder.width.toString()) === 0) || (!borderColor &&
+                cellSetting.tileType === 'Bubble' && cellSetting.bubbleType === 'Sector')) {
+                borderColor = this.color;
             }
             if (cellSetting.tileType === 'Rect') { // Rectangle/Tile Series
                 this.renderTileCell(rectPosition, tempBorder, x, this.color, borderColor);
@@ -3004,14 +3116,16 @@ class Series {
         for (let i = 0; i < this.heatMap.toggleValue.length; i++) {
             let minValue;
             let maxValue;
-            minValue = (i === 0) ? this.heatMap.dataSourceMinValue : this.heatMap.toggleValue[i].value;
+            minValue = (i === 0) && !this.heatMap.isColorRange ? this.heatMap.dataSourceMinValue : this.heatMap.isColorRange ?
+                this.heatMap.toggleValue[i].startValue : this.heatMap.toggleValue[i].value;
             if (this.heatMap.cellSettings.tileType === 'Bubble' && this.heatMap.cellSettings.bubbleType === 'SizeAndColor') {
                 maxValue = (i === this.heatMap.toggleValue.length - 1) ? this.heatMap.maxColorValue :
                     this.heatMap.toggleValue[i + 1].value - 0.01;
             }
             else {
-                maxValue = (i === this.heatMap.toggleValue.length - 1) ? this.heatMap.dataSourceMaxValue :
-                    this.heatMap.toggleValue[i + 1].value - 0.01;
+                maxValue = (i === this.heatMap.toggleValue.length - 1 && !this.heatMap.isColorRange) ?
+                    this.heatMap.dataSourceMaxValue : this.heatMap.isColorRange ?
+                    this.heatMap.toggleValue[i].endValue : this.heatMap.toggleValue[i + 1].value - 0.01;
             }
             // tslint:disable-next-line:no-any
             let clonedDataSource = this.heatMap.clonedDataSource;
@@ -3031,6 +3145,11 @@ class Series {
                     isValueInRange = true;
                     break;
                 }
+            }
+            else if (this.heatMap.isColorRange &&
+                maxValue >= this.heatMap.toggleValue[i].endValue && i === this.heatMap.toggleValue.length - 1) {
+                isValueInRange = true;
+                break;
             }
         }
         return isValueInRange;
@@ -3055,9 +3174,11 @@ class Series {
             yLabel: yLabels[rectPosition.yIndex].toString(),
             displayText: text,
             xValue: xAxis.labelValue[rectPosition.xIndex],
-            yValue: yLabelValue[rectPosition.yIndex]
+            yValue: yLabelValue[rectPosition.yIndex],
+            cellColor: this.color
         };
         this.heatMap.trigger('cellRender', argData);
+        this.color = argData.cellColor;
         return argData.displayText;
     }
     /**
@@ -3878,6 +3999,9 @@ __decorate$6([
     Property('')
 ], LegendSettings.prototype, "width", void 0);
 __decorate$6([
+    Complex({ text: '', textStyle: Theme.titleFont }, Title)
+], LegendSettings.prototype, "title", void 0);
+__decorate$6([
     Property('Right')
 ], LegendSettings.prototype, "position", void 0);
 __decorate$6([
@@ -3916,6 +4040,7 @@ class Legend {
         this.maxLegendLabelSize = new Size(0, 0);
         this.gradientScaleSize = 10;
         this.segmentCollections = [];
+        this.segmentCollectionsLabels = [];
         this.textWrapCollections = [];
         this.labelCollections = [];
         this.labelCollection = [];
@@ -3932,6 +4057,7 @@ class Legend {
         this.pagingRect = new Rect(0, 0, 0, 0);
         this.listInterval = 10; // padding between two lists
         this.legendLabelTooltip = [];
+        this.legendTitleTooltip = [];
         this.labelXCollections = [];
         this.labelYCollections = [];
         this.legendXCollections = [];
@@ -3970,30 +4096,32 @@ class Legend {
      */
     renderLegendItems() {
         let heatMap = this.heatMap;
-        let tempBorder = {
-            color: 'transparent',
-            width: 0,
-        };
+        heatMap.toggleValue = [];
+        let tempBorder = { color: 'transparent', width: 0, };
         this.legend = heatMap.renderer.createGroup({ id: heatMap.element.id + '_Heatmap_Legend' });
         let rectItems = new RectOption(heatMap.element.id + '_LegendBound', 'none', tempBorder, 1, this.legendGroup);
         this.drawSvgCanvas.drawRectangle(rectItems, this.legend);
         let legendBound = this.legendRectScale;
+        let ctx = heatMap.canvasRenderer.ctx;
         let rectItemsSvg = new Rect(legendBound.x, legendBound.y, legendBound.width, legendBound.height);
+        let fill;
         if (heatMap.paletteSettings.type === 'Fixed') {
             let colorCollection = (!heatMap.legendSettings.enableSmartLegend) ?
                 heatMap.colorCollection : heatMap.legendColorCollection;
             this.legendRange = (heatMap.resizing || (!heatMap.legendOnLoad && heatMap.rendering)) ? [] : this.legendRange;
             this.legendTextRange = (heatMap.resizing || (!heatMap.legendOnLoad && heatMap.rendering)) ? [] : this.legendTextRange;
-            heatMap.toggleValue = [];
+            if (heatMap.enableCanvasRendering) {
+                ctx.save();
+                ctx.clip();
+            }
             for (let i = 0; i < colorCollection.length; i++) {
                 let visibility = !isNullOrUndefined(this.visibilityCollections[i]) ? this.visibilityCollections[i] : true;
-                heatMap.toggleValue.push(new ToggleVisibility(visibility, colorCollection[i].value));
+                heatMap.toggleValue.push(new ToggleVisibility(visibility, colorCollection[i].value, colorCollection[i].startValue, colorCollection[i].endValue));
             }
         }
         if (heatMap.paletteSettings.type === 'Gradient' || (heatMap.paletteSettings.type === 'Fixed' &&
             heatMap.legendSettings.enableSmartLegend === true)) {
             if (heatMap.paletteSettings.type === 'Gradient') {
-                let fill;
                 if (heatMap.enableCanvasRendering) {
                     let grd;
                     let ctx = heatMap.canvasRenderer.ctx;
@@ -4003,11 +4131,20 @@ class Legend {
                     else {
                         grd = ctx.createLinearGradient(0, legendBound.y, 0, legendBound.y + legendBound.height);
                     }
+                    if (heatMap.legendSettings.title.text) {
+                        ctx.clip();
+                    }
                     for (let i = 0; i < heatMap.legendColorCollection.length; i++) {
-                        let value = ((heatMap.legendColorCollection[i].value - this.legendMinValue) /
+                        let value = (((this.heatMap.isColorRange ? heatMap.legendColorCollection[i].startValue :
+                            heatMap.legendColorCollection[i].value) - this.legendMinValue) /
                             (this.legendMaxValue - this.legendMinValue));
                         value = isNaN(value) ? 0 : value;
-                        grd.addColorStop(value, heatMap.legendColorCollection[i].color);
+                        if (this.heatMap.isColorRange && this.heatMap.paletteSettings.type === 'Gradient') {
+                            this.calculateCanvasColorRange(i, grd);
+                        }
+                        else {
+                            grd.addColorStop(value, heatMap.legendColorCollection[i].color);
+                        }
                     }
                     ctx.fillStyle = grd;
                     fill = grd.toString();
@@ -4017,11 +4154,16 @@ class Legend {
                     let gradientColor;
                     let cgradientColors = [];
                     for (let i = 0; i < heatMap.legendColorCollection.length; i++) {
-                        let gradientPercentage = ((heatMap.legendColorCollection[i].value - this.legendMinValue) /
-                            (this.legendMaxValue - this.legendMinValue)) * 100;
-                        gradientPercentage = isNaN(gradientPercentage) ? 0 : gradientPercentage;
-                        gradientColor = new GradientColor(heatMap.legendColorCollection[i].color, gradientPercentage + '%');
-                        cgradientColors.push(gradientColor);
+                        if (this.heatMap.isColorRange && this.heatMap.paletteSettings.type === 'Gradient') {
+                            this.calculateColorRange(i, cgradientColors);
+                        }
+                        else {
+                            let gradientPercentage = ((heatMap.legendColorCollection[i].value - this.legendMinValue) /
+                                (this.legendMaxValue - this.legendMinValue)) * 100;
+                            gradientPercentage = isNaN(gradientPercentage) ? 0 : gradientPercentage;
+                            gradientColor = new GradientColor(heatMap.legendColorCollection[i].color, gradientPercentage + '%');
+                            cgradientColors.push(gradientColor);
+                        }
                         if (this.legendMaxValue === this.legendMinValue) {
                             break;
                         }
@@ -4038,13 +4180,17 @@ class Legend {
                 }
                 let rectItem = new RectOption(heatMap.element.id + '_Gradient_Legend', fill, tempBorder, 1, rectItemsSvg);
                 this.drawSvgCanvas.drawRectangle(rectItem, this.legend);
-                this.renderColorAxisGrid(rectItemsSvg);
+                this.renderElements(rectItemsSvg);
             }
             else {
                 this.renderSmartLegend();
+                this.renderTitle(rectItemsSvg);
             }
             if (!heatMap.enableCanvasRendering) {
                 heatMap.svgObject.appendChild(this.legend);
+            }
+            if (heatMap.enableCanvasRendering) {
+                ctx.restore();
             }
             this.renderLegendLabel(rectItemsSvg);
         }
@@ -4052,6 +4198,7 @@ class Legend {
             this.legendScale = heatMap.renderer.createGroup({ id: heatMap.element.id + 'Heatmap_GradientScale' });
             let listRect = new RectOption(heatMap.element.id + '_Gradient_Scale', 'none', tempBorder, 1, this.legendRectScale);
             this.drawSvgCanvas.drawRectangle(listRect, this.legendScale);
+            this.renderTitle(rectItemsSvg);
             if (!heatMap.enableCanvasRendering) {
                 this.legend.appendChild(this.legendScale);
             }
@@ -4061,6 +4208,124 @@ class Legend {
                 this.paginggroup = heatMap.renderer.createGroup({ id: heatMap.element.id + '_navigation' });
             }
             this.renderListLegendMode(rectItemsSvg, true);
+            if (heatMap.enableCanvasRendering) {
+                ctx.restore();
+            }
+        }
+    }
+    renderElements(rectItemsSvg) {
+        this.renderTitle(rectItemsSvg);
+        this.renderColorAxisGrid(rectItemsSvg);
+    }
+    calculateCanvasColorRange(i, grd) {
+        let heatMap = this.heatMap;
+        let value = ((((heatMap.legendColorCollection[i].startValue < heatMap.dataSourceMinValue &&
+            heatMap.legendColorCollection[i].endValue > heatMap.dataSourceMinValue) ?
+            heatMap.dataSourceMinValue : heatMap.legendColorCollection[i].startValue) - this.legendMinValue) /
+            (this.legendMaxValue - this.legendMinValue));
+        value = isNaN(value) ? 0 : value;
+        let value1 = ((heatMap.legendColorCollection[i].endValue >= this.heatMap.dataSourceMaxValue ?
+            this.heatMap.dataSourceMaxValue : heatMap.legendColorCollection[i].endValue) - this.legendMinValue) /
+            (this.legendMaxValue - this.legendMinValue);
+        if (this.heatMap.legendColorCollection[0].startValue !== this.heatMap.dataSourceMinValue && i === 0 &&
+            this.heatMap.legendColorCollection[0].startValue > this.heatMap.dataSourceMinValue) {
+            value = (this.heatMap.legendColorCollection[0].startValue - this.legendMinValue) /
+                (this.legendMaxValue - this.legendMinValue);
+            grd.addColorStop(value / 2, this.heatMap.paletteSettings.fillColor.minColor);
+            grd.addColorStop(value, this.heatMap.paletteSettings.fillColor.maxColor);
+        }
+        grd.addColorStop(value, heatMap.legendColorCollection[i].minColor);
+        grd.addColorStop(value1, heatMap.legendColorCollection[i].maxColor);
+        if (this.heatMap.legendColorCollection[i].endValue !== ((i === this.heatMap.legendColorCollection.length - 1) ?
+            this.heatMap.dataSourceMaxValue : this.heatMap.legendColorCollection[i + 1].startValue) &&
+            this.heatMap.legendColorCollection[i].endValue < this.heatMap.dataSourceMaxValue) {
+            value = (heatMap.legendColorCollection[i].endValue - this.legendMinValue) /
+                (this.legendMaxValue - this.legendMinValue);
+            grd.addColorStop(value, this.heatMap.paletteSettings.fillColor.minColor);
+            value = ((i === this.heatMap.legendColorCollection.length - 1 ? this.heatMap.dataSourceMaxValue :
+                heatMap.legendColorCollection[i + 1].startValue) - this.legendMinValue) /
+                (this.legendMaxValue - this.legendMinValue);
+            grd.addColorStop(value, this.heatMap.paletteSettings.fillColor.maxColor);
+        }
+    }
+    calculateColorRange(i, cgradientColors = []) {
+        let heatMap = this.heatMap;
+        heatMap.toggleValue = [];
+        let gradientPercentage;
+        let gradientColor;
+        let gradientColor1;
+        let gradientColor2;
+        let gradientColor3;
+        if (this.heatMap.legendColorCollection[0].startValue > this.heatMap.dataSourceMinValue && i === 0) {
+            gradientPercentage = (this.heatMap.dataSourceMinValue - this.legendMinValue) /
+                (this.legendMaxValue - this.legendMinValue) * 100;
+            gradientPercentage = isNaN(gradientPercentage) ? 0 : gradientPercentage;
+            gradientColor = new GradientColor(heatMap.paletteSettings.fillColor.minColor, gradientPercentage + '%');
+            cgradientColors.push(gradientColor);
+            gradientPercentage = (heatMap.legendColorCollection[0].startValue - this.legendMinValue) /
+                (this.legendMaxValue - this.legendMinValue) * 100;
+            gradientColor = new GradientColor(heatMap.paletteSettings.fillColor.maxColor, gradientPercentage + '%');
+            cgradientColors.push(gradientColor);
+        }
+        gradientPercentage = ((heatMap.legendColorCollection[i].startValue - this.legendMinValue) /
+            (this.legendMaxValue - this.legendMinValue)) * 100;
+        gradientPercentage = isNaN(gradientPercentage) ? 0 : gradientPercentage;
+        gradientColor = new GradientColor(heatMap.legendColorCollection[i].minColor, gradientPercentage + '%');
+        cgradientColors.push(gradientColor);
+        gradientPercentage = (heatMap.legendColorCollection[i].endValue - this.legendMinValue) /
+            (this.legendMaxValue - this.legendMinValue) * 100;
+        gradientColor1 = new GradientColor(heatMap.legendColorCollection[i].maxColor, gradientPercentage + '%');
+        cgradientColors.push(gradientColor1);
+        if (this.heatMap.legendColorCollection[i].endValue !== ((i === this.heatMap.legendColorCollection.length - 1) ?
+            this.heatMap.dataSourceMaxValue : this.heatMap.legendColorCollection[i + 1].startValue)) {
+            gradientPercentage = (heatMap.legendColorCollection[i].endValue - this.legendMinValue) /
+                (this.legendMaxValue - this.legendMinValue) * 100;
+            gradientColor2 = new GradientColor(this.heatMap.paletteSettings.fillColor.minColor, (gradientPercentage) + '%');
+            cgradientColors.push(gradientColor2);
+            gradientPercentage = ((i === (this.heatMap.legendColorCollection.length - 1) ?
+                this.heatMap.dataSourceMaxValue : heatMap.legendColorCollection[i + 1].startValue) - this.legendMinValue) /
+                (this.legendMaxValue - this.legendMinValue) * 100;
+            gradientColor3 = new GradientColor(this.heatMap.paletteSettings.fillColor.maxColor, (gradientPercentage) + '%');
+            cgradientColors.push(gradientColor3);
+        }
+    }
+    renderTitle(rect) {
+        let heatMap = this.heatMap;
+        if (heatMap.legendSettings.title.text) {
+            let title = heatMap.legendSettings.title;
+            let titleSize = measureText(title.text, title.textStyle);
+            let padding = !heatMap.legendSettings.showLabel ? heatMap.horizontalGradient ? 10 : 6 : this.labelPadding;
+            let y;
+            let anchor = 'start';
+            let maxWidth;
+            let dominantBaseline;
+            let text = title.text;
+            let options;
+            let yValue;
+            if (heatMap.legendSettings.title.textStyle.textOverflow === 'Trim') {
+                maxWidth = this.width - 10;
+                text = textTrim(maxWidth, text, title.textStyle);
+            }
+            if (!heatMap.horizontalGradient) {
+                padding = -(padding + titleSize.height / 4);
+                if (text.length !== 0 && heatMap.enableCanvasRendering) {
+                    this.legendTitleTooltip.push(new CanvasTooltip(title.text, new Rect(rect.x, rect.y - titleSize.height, maxWidth, titleSize.height)));
+                }
+                options = new TextOption(heatMap.element.id + '_legendTitle', new TextBasic(rect.x, rect.y + padding, anchor, text, 0, 'translate(0,0)', dominantBaseline), title.textStyle, title.textStyle.color || heatMap.themeStyle.heatMapTitle);
+            }
+            else {
+                y = rect.y + (heatMap.legendSettings.position === 'Top' ? 0 :
+                    -(10 + titleSize.height + padding));
+                padding = heatMap.legendSettings.position === 'Top' ? -(padding + titleSize.height / 4) :
+                    (padding + (3 * titleSize.height / 4));
+                yValue = heatMap.legendSettings.position === 'Bottom' ? y : y - titleSize.height;
+                if (text.length !== 0 && heatMap.enableCanvasRendering) {
+                    this.legendTitleTooltip.push(new CanvasTooltip(title.text, new Rect(rect.x, yValue, maxWidth, titleSize.height)));
+                }
+                titleSize.width = rect.width < titleSize.width ? rect.width : titleSize.width;
+                options = new TextOption(heatMap.element.id + '_legendTitle', new TextBasic(rect.x + (rect.width / 2) - (titleSize.width / 2), y + padding, anchor, text, 0, 'translate(0,0)', dominantBaseline), title.textStyle, title.textStyle.color || heatMap.themeStyle.heatMapTitle);
+            }
+            this.drawSvgCanvas.createText(options, this.legend, text);
         }
     }
     renderSmartLegend() {
@@ -4106,7 +4371,8 @@ class Legend {
             legendRange.y = legendY;
             legendRange.width = legendWidth;
             legendRange.height = legendHeight;
-            legendRange.value = heatMap.legendColorCollection[i].value;
+            legendRange.value = this.heatMap.isColorRange ?
+                heatMap.legendColorCollection[i].endValue : heatMap.legendColorCollection[i].value;
             legendRange.currentPage = this.currentPage;
             if (colorCollection.length !== heatMap.legendColorCollection.length && i === heatMap.legendColorCollection.length - 1) {
                 heatMap.horizontalGradient ? legendRange.width = 0 : legendRange.height = 0;
@@ -4115,8 +4381,9 @@ class Legend {
             legendRange.visible = !isNullOrUndefined(this.visibilityCollections[i]) ? this.visibilityCollections[i] : true;
             this.legendRange.push(legendRange);
             if (!heatMap.legendColorCollection[i].isHidden) {
-                let color = heatMap.legendOnLoad ? colorCollection[i].color :
-                    this.legendRange[i].visible ? colorCollection[i].color : '#D3D3D3';
+                let color = heatMap.legendOnLoad ? this.heatMap.isColorRange ? colorCollection[i].minColor :
+                    colorCollection[i].color : this.legendRange[i].visible ? this.heatMap.isColorRange ? colorCollection[i].minColor :
+                    colorCollection[i].color : '#D3D3D3';
                 let rectItem = new RectOption(heatMap.element.id + '_Smart_Legend' + i, color, tempBorder, 1, smartLegendRect);
                 this.drawSvgCanvas.drawRectangle(rectItem, this.legend);
                 rectPosition.x = legendX;
@@ -4133,6 +4400,24 @@ class Legend {
                 }
             }
         }
+    }
+    colorRangeLegendPosition(i, labelX) {
+        if (this.segmentCollections.length !== this.segmentCollectionsLabels.length) {
+            for (let k = 0; k < this.segmentCollections.length; k++) {
+                if (this.segmentCollectionsLabels[i] === this.segmentCollections[k]) {
+                    labelX = this.segmentCollectionsLabels[i] + (((k === this.segmentCollections.length - 1 ?
+                        (this.heatMap.horizontalGradient ? this.width : this.height) :
+                        this.segmentCollections[k + 1]) - this.segmentCollections[k]) / 2);
+                    break;
+                }
+            }
+        }
+        else {
+            labelX = this.segmentCollectionsLabels[i] + (((i === this.segmentCollectionsLabels.length - 1 ?
+                (this.heatMap.horizontalGradient ? this.width : this.height) :
+                this.segmentCollectionsLabels[i + 1]) - this.segmentCollectionsLabels[i]) / 2);
+        }
+        this.labelPosition = labelX;
     }
     renderLegendLabel(rect) {
         let heatMap = this.heatMap;
@@ -4163,7 +4448,17 @@ class Legend {
                 let value = ((colorCollection[i].value - (Math.round(this.legendMinValue * 100) / 100)) /
                     ((Math.round(this.legendMaxValue * 100) / 100) - (Math.round(this.legendMinValue * 100) / 100))) * 100;
                 if (heatMap.horizontalGradient) {
-                    labelX = this.segmentCollections[i];
+                    if (this.heatMap.isColorRange && heatMap.paletteSettings.type === 'Gradient') {
+                        this.colorRangeLegendPosition(i, labelX);
+                        labelX = this.labelPosition;
+                    }
+                    else if (this.heatMap.legendSettings.enableSmartLegend && this.heatMap.isColorRange &&
+                        heatMap.paletteSettings.type === 'Fixed') {
+                        labelX = this.segmentCollections[i] + ((rect.width / colorCollection.length) / 2);
+                    }
+                    else {
+                        labelX = this.segmentCollections[i];
+                    }
                     labelY = rect.y + rect.height + this.labelPadding;
                     anchor = ((Math.round(value * 100) / 100) === 0 || (i === 0 && heatMap.paletteSettings.type === 'Fixed')) ? 'start' :
                         (((Math.round(value * 100) / 100) === 100 && heatMap.paletteSettings.type === 'Gradient') ||
@@ -4175,7 +4470,17 @@ class Legend {
                 }
                 else {
                     labelX = rect.x + rect.width + this.labelPadding;
-                    labelY = this.segmentCollections[i];
+                    if (this.heatMap.isColorRange && heatMap.paletteSettings.type === 'Gradient') {
+                        this.colorRangeLegendPosition(i, labelY);
+                        labelY = this.labelPosition;
+                    }
+                    else if (this.heatMap.legendSettings.enableSmartLegend && this.heatMap.isColorRange &&
+                        heatMap.paletteSettings.type === 'Fixed') {
+                        labelY = this.segmentCollections[i] + ((rect.height / colorCollection.length) / 2);
+                    }
+                    else {
+                        labelY = this.segmentCollections[i];
+                    }
                     dominantBaseline = ((Math.round(value * 100) / 100) === 0 || (i === 0 && heatMap.paletteSettings.type === 'Fixed')) ?
                         'hanging' : (((Math.round(value * 100) / 100) === 100 && heatMap.paletteSettings.type === 'Gradient') ||
                         (Math.round(heatMap.dataSourceMaxValue * 100) / 100) === colorCollection[i].value &&
@@ -4335,30 +4640,29 @@ class Legend {
     calculateLegendBounds(rect) {
         let heatMap = this.heatMap;
         let legendSettings = heatMap.legendSettings;
-        let colorCollection = heatMap.legendColorCollection;
-        this.labelCollections = [];
         this.labelCollection = [];
+        this.labelCollections = [];
+        let colorCollection = heatMap.legendColorCollection;
         if (legendSettings.position !== 'Bottom' && legendSettings.position !== 'Top' &&
             legendSettings.position !== 'Right' && legendSettings.position !== 'Left') {
             legendSettings.position = 'Right';
         }
+        let title = heatMap.legendSettings.title;
+        let titleSize = measureText(title.text, title.textStyle);
         heatMap.horizontalGradient = legendSettings.position === 'Bottom' || legendSettings.position === 'Top';
-        this.legendRectPadding = heatMap.horizontalGradient ? 16 : 10; // padding between rect and legend
+        this.legendRectPadding = heatMap.horizontalGradient ? heatMap.legendSettings.title.text ?
+            titleSize.height + 16 : 16 : 10; // padding between rect and legend
         this.labelPadding = legendSettings.showLabel ? this.heatMap.horizontalGradient ? 10 : 6 : 0; // padding between list and label
         this.legendHeight = legendSettings.height;
         this.legendWidth = legendSettings.width;
         let format = heatMap.legendSettings.labelFormat;
         let isCustom = format.match('{value}') !== null;
-        this.format = heatMap.intl.getNumberFormat({
-            format: isCustom ? '' : format
-        });
+        this.format = heatMap.intl.getNumberFormat({ format: isCustom ? '' : format });
         if (heatMap.paletteSettings.type === 'Fixed') {
             for (let i = 0; i < colorCollection.length; i++) {
-                let label = colorCollection[i].label ? colorCollection[i].label :
-                    formatValue(isCustom, format, colorCollection[i].value, this.format).toString();
-                let legendEventArg = {
-                    cancel: false, text: label, name: 'legendRender',
-                };
+                let label = colorCollection[i].label ? colorCollection[i].label : this.heatMap.isColorRange ?
+                    colorCollection[i].startValue.toString() + '-' + colorCollection[i].endValue.toString() : formatValue(isCustom, format, colorCollection[i].value, this.format).toString();
+                let legendEventArg = { cancel: false, text: label, name: 'legendRender' };
                 this.labelCollection.push(label);
                 this.heatMap.trigger('legendRender', legendEventArg);
                 if (heatMap.legendRender) {
@@ -4376,32 +4680,50 @@ class Legend {
                     }
                 }
                 else {
-                    this.labelCollections.push(label);
+                    if (heatMap.legendSettings.enableSmartLegend && heatMap.legendSettings.labelDisplayType === 'Edge'
+                        && i > 0 && i < colorCollection.length - 1) {
+                        this.labelCollections.push('');
+                    }
+                    else {
+                        this.labelCollections.push(label);
+                    }
                 }
             }
         }
         else {
             for (let i = 0; i < colorCollection.length; i++) {
-                let label = colorCollection[i].isHidden ? '' : colorCollection[i].label ?
-                    colorCollection[i].label : formatValue(isCustom, format, colorCollection[i].value, this.format).toString();
-                let legendEventArg = {
-                    cancel: false,
-                    text: label,
-                    name: 'legendRender',
-                };
+                let label = colorCollection[i].isHidden ? '' : colorCollection[i].label ? colorCollection[i].label :
+                    this.heatMap.isColorRange ? colorCollection[i].startValue.toString() + '-' + colorCollection[i].endValue.toString() :
+                        formatValue(isCustom, format, colorCollection[i].value, this.format).toString();
+                let legendEventArg = { cancel: false, text: label, name: 'legendRender', };
                 if (!colorCollection[i].isHidden) {
                     this.heatMap.trigger('legendRender', legendEventArg);
                 }
                 if (heatMap.legendRender) {
                     if (!legendEventArg.cancel) {
-                        this.labelCollections.push(legendEventArg.text);
+                        if (i > 0 && i < colorCollection.length - 1 && heatMap.legendSettings.labelDisplayType === 'Edge') {
+                            this.labelCollections.push('');
+                        }
+                        else {
+                            if (!legendEventArg.cancel) {
+                                this.labelCollections.push(legendEventArg.text);
+                            }
+                            else {
+                                this.labelCollections.push('');
+                            }
+                        }
                     }
                     else {
                         this.labelCollections.push('');
                     }
                 }
                 else {
-                    this.labelCollections.push(label);
+                    if (i > 0 && i < colorCollection.length - 1 && heatMap.legendSettings.labelDisplayType === 'Edge') {
+                        this.labelCollections.push('');
+                    }
+                    else {
+                        this.labelCollections.push(label);
+                    }
                 }
             }
         }
@@ -4416,6 +4738,7 @@ class Legend {
                     heatMap.legendSettings.labelDisplayType === 'None'))) {
                 this.legendWidth = ((2 * this.legendRectPadding) + this.legendSize + this.maxLegendLabelSize.width).toString();
             }
+            this.calculateTitleBounds();
         }
         else {
             this.calculateListLegendBounds(rect);
@@ -4442,12 +4765,39 @@ class Legend {
             rect.width -= this.width;
         }
     }
+    calculateTitleBounds() {
+        let heatMap = this.heatMap;
+        let title = heatMap.legendSettings.title;
+        let titleSize = measureText(title.text, title.textStyle);
+        if (heatMap.legendSettings.title.text) {
+            if ((heatMap.legendSettings.position === 'Top' || heatMap.legendSettings.position === 'Bottom') &&
+                heatMap.legendSettings.height === '') {
+                this.legendHeight = (((2 * this.legendRectPadding) - titleSize.height) +
+                    this.legendSize + this.maxLegendLabelSize.height).toString();
+            }
+            if (heatMap.legendSettings.width === '' && (heatMap.legendSettings.textStyle.textOverflow === 'None' ||
+                (heatMap.paletteSettings.type === 'Fixed' && heatMap.legendSettings.enableSmartLegend &&
+                    heatMap.legendSettings.labelDisplayType === 'None'))) {
+                if (heatMap.legendSettings.position === 'Right') {
+                    this.legendWidth = ((2 * this.legendRectPadding + titleSize.width) +
+                        this.legendSize + this.maxLegendLabelSize.width).toString();
+                }
+                else if (heatMap.legendSettings.position === 'Left') {
+                    titleSize.width = titleSize.width > this.maxLegendLabelSize.width ? titleSize.width : this.maxLegendLabelSize.width;
+                    this.legendWidth = ((2 * this.legendRectPadding + titleSize.width) + this.legendSize).toString();
+                }
+            }
+        }
+    }
     calculateListLegendBounds(rect) {
         let heatMap = this.heatMap;
         this.listWidth = 0;
         this.listHeight = 0;
         this.currentPage = 1;
         let padding = 10; // padding of paging elements
+        let title = heatMap.legendSettings.title;
+        let titleSize = measureText(title.text, title.textStyle);
+        let height = (titleSize.height + 50).toString();
         if (heatMap.horizontalGradient) {
             for (let i = 0; i < heatMap.colorCollection.length; i++) {
                 let size = 0;
@@ -4472,18 +4822,21 @@ class Legend {
             }
         }
         else {
-            this.listHeight = ((this.legendSize + this.listInterval) * heatMap.colorCollection.length) + this.listInterval;
+            this.listHeight = ((this.legendSize + this.listInterval) * heatMap.colorCollection.length)
+                + this.listInterval + (heatMap.legendSettings.title.text ? titleSize.height : 0);
             if (this.legendHeight === '') {
                 this.legendHeight = this.listHeight > rect.height ? rect.height.toString() : this.listHeight.toString();
             }
             if (this.legendWidth === '' && heatMap.legendSettings.textStyle.textOverflow !== 'Trim') {
                 this.maxLegendLabelSize = this.getMaxLabelSize();
+                this.maxLegendLabelSize.width = titleSize.width > this.maxLegendLabelSize.width ?
+                    titleSize.width : this.maxLegendLabelSize.width;
                 this.legendWidth = ((2 * this.legendRectPadding) + this.legendSize + this.labelPadding +
                     this.maxLegendLabelSize.width).toString();
             }
         }
         if (stringToNumber(this.legendHeight, rect.height) < 50) {
-            this.legendHeight = '50';
+            this.legendHeight = height;
         }
         if (stringToNumber(this.legendWidth, rect.width) < 70) {
             this.legendWidth = '70';
@@ -4517,8 +4870,14 @@ class Legend {
         let top;
         let padding = 10; // inner padding for axis title and axil labels
         let alignment = legendSettings.alignment;
+        let width;
         let height = stringToNumber(this.legendHeight, rect.height);
-        let width = stringToNumber(this.legendWidth, rect.width);
+        if (!heatMap.legendSettings.title.text) {
+            width = stringToNumber(this.legendWidth, rect.width);
+        }
+        else {
+            width = this.width;
+        }
         let axis = heatMap.axisCollections;
         let axisTitlePadding = 0;
         if (heatMap.horizontalGradient) {
@@ -4554,8 +4913,10 @@ class Legend {
     // calculating number of lists per page
     measureListLegendBound(rect) {
         let heatMap = this.heatMap;
+        let title = heatMap.legendSettings.title;
         let padding = 15; // padding of paging element
         this.numberOfPages = 1;
+        let titleSize = measureText(title.text, title.textStyle);
         if (heatMap.horizontalGradient) {
             if (this.listWidth > this.width) {
                 this.numberOfRows = Math.ceil(this.listWidth / this.width);
@@ -4573,6 +4934,7 @@ class Legend {
             if (this.listHeight > rect.height || this.listHeight > this.height) {
                 let maxHeight = stringToNumber(this.legendHeight, rect.height);
                 maxHeight = maxHeight > rect.height ? rect.height : maxHeight;
+                maxHeight = heatMap.legendSettings.title.text ? maxHeight - titleSize.height : maxHeight;
                 this.listPerPage = Math.floor(maxHeight / (this.legendSize + this.listInterval) - 1);
                 this.numberOfPages = Math.max(1, Math.ceil(heatMap.colorCollection.length / this.listPerPage));
             }
@@ -4637,6 +4999,9 @@ class Legend {
         let top;
         let height;
         let width;
+        let title = heatMap.legendSettings.title;
+        let titleSize = measureText(title.text, title.textStyle);
+        let titleHeight = heatMap.legendSettings.title.text ? titleSize.height : 0;
         if (heatMap.paletteSettings.type === 'Fixed' && !heatMap.legendSettings.enableSmartLegend) {
             this.measureListLegendBound(heatMap.initialClipRect);
         }
@@ -4650,11 +5015,12 @@ class Legend {
         }
         else {
             left = scale.x + this.legendRectPadding;
-            top = scale.y + padding;
+            top = scale.y + padding + titleHeight;
             width = (heatMap.paletteSettings.type === 'Fixed' && !heatMap.legendSettings.enableSmartLegend) ?
                 scale.width - padding : this.gradientScaleSize;
             height = heatMap.paletteSettings.type === 'Fixed' && !heatMap.legendSettings.enableSmartLegend ?
-                (this.legendSize + this.listInterval) * this.listPerPage - this.listInterval : scale.height - 2 * padding;
+                (this.legendSize + this.listInterval) * this.listPerPage - this.listInterval :
+                scale.height - 2 * padding - titleHeight;
         }
         this.legendRectScale = new Rect(left, top, width, height);
         if (heatMap.paletteSettings.type === 'Gradient' || heatMap.paletteSettings.type === 'Fixed' &&
@@ -4668,6 +5034,7 @@ class Legend {
         let legendPart;
         let text;
         let maxTextWrapLength = 0;
+        this.segmentCollectionsLabels = [];
         this.segmentCollections = [];
         this.textWrapCollections = [];
         let pathX1;
@@ -4676,23 +5043,60 @@ class Legend {
             heatMap.legendColorCollection : heatMap.colorCollection;
         let minValue = heatMap.bubbleSizeWithColor ? heatMap.minColorValue : heatMap.dataSourceMinValue;
         let maxValue = heatMap.bubbleSizeWithColor ? heatMap.maxColorValue : heatMap.dataSourceMaxValue;
-        this.legendMinValue = colorCollection[0].value > minValue ? minValue : colorCollection[0].value;
-        this.legendMaxValue = colorCollection[colorCollection.length - 1].value < maxValue ? maxValue :
-            colorCollection[colorCollection.length - 1].value;
+        this.legendMinValue = this.heatMap.isColorRange ? (colorCollection[0].startValue > heatMap.dataSourceMinValue) ?
+            heatMap.dataSourceMinValue : colorCollection[0].startValue : ((colorCollection[0].value > minValue) ? minValue :
+            colorCollection[0].value);
+        this.legendMaxValue = this.heatMap.isColorRange ? (colorCollection[colorCollection.length - 1].endValue <
+            heatMap.dataSourceMaxValue) ? heatMap.dataSourceMaxValue : colorCollection[colorCollection.length - 1].endValue :
+            (colorCollection[colorCollection.length - 1].value < maxValue ? maxValue : colorCollection[colorCollection.length - 1].value);
         if (heatMap.paletteSettings.type === 'Gradient') {
             for (let index = 0; index < colorCollection.length; index++) {
-                let value = ((colorCollection[index].value - this.legendMinValue) /
-                    (this.legendMaxValue - this.legendMinValue)) * 100;
-                value = isNaN(value) ? 0 : value;
-                if (!heatMap.horizontalGradient) {
-                    legendPart = rect.height / 100;
-                    pathY1 = legendRect.y + (legendPart * value);
+                let value;
+                legendPart = (this.heatMap.isColorRange && heatMap.horizontalGradient ? rect.width : rect.height) / 100;
+                if (this.heatMap.isColorRange) {
+                    if (colorCollection[0].startValue !== this.heatMap.dataSourceMinValue && index === 0 &&
+                        colorCollection[0].startValue > this.heatMap.dataSourceMinValue) {
+                        value = (this.heatMap.dataSourceMinValue - this.legendMinValue) /
+                            (this.legendMaxValue - this.legendMinValue) * 100;
+                        pathY1 = (heatMap.horizontalGradient ? legendRect.x : legendRect.y) + (legendPart * value);
+                        this.segmentCollections.push(pathY1);
+                    }
+                    value = ((((colorCollection[index].startValue < heatMap.dataSourceMinValue && colorCollection[index].endValue >
+                        heatMap.dataSourceMaxValue) ? heatMap.dataSourceMinValue : colorCollection[index].startValue) -
+                        this.legendMinValue) / (this.legendMaxValue - this.legendMinValue)) * 100;
+                    value = isNaN(value) ? 0 : value;
+                    pathY1 = (heatMap.horizontalGradient ? legendRect.x : legendRect.y) + (legendPart * value);
                     this.segmentCollections.push(pathY1);
+                    this.segmentCollectionsLabels.push(pathY1);
+                    if (colorCollection[index].endValue !== ((index === colorCollection.length - 1) ?
+                        this.heatMap.dataSourceMaxValue : colorCollection[index + 1].startValue) &&
+                        this.heatMap.legendColorCollection[index].endValue < this.heatMap.dataSourceMaxValue) {
+                        if (index === colorCollection.length - 1) {
+                            value = (colorCollection[index].endValue - this.legendMinValue) /
+                                (this.legendMaxValue - this.legendMinValue) * 100;
+                            pathY1 = (heatMap.horizontalGradient ? legendRect.x : legendRect.y) + (legendPart * value);
+                            this.segmentCollections.push(pathY1);
+                        }
+                        value = ((index === colorCollection.length - 1 ? this.heatMap.dataSourceMaxValue :
+                            colorCollection[index].endValue) - this.legendMinValue) /
+                            (this.legendMaxValue - this.legendMinValue) * 100;
+                        pathY1 = (heatMap.horizontalGradient ? legendRect.x : legendRect.y) + (legendPart * value);
+                        this.segmentCollections.push(pathY1);
+                    }
                 }
                 else {
-                    legendPart = rect.width / 100;
-                    pathX1 = legendRect.x + (legendPart * value);
-                    this.segmentCollections.push(pathX1);
+                    value = ((colorCollection[index].value - this.legendMinValue) / (this.legendMaxValue - this.legendMinValue)) * 100;
+                    value = isNaN(value) ? 0 : value;
+                    if (!heatMap.horizontalGradient) {
+                        legendPart = rect.height / 100;
+                        pathY1 = legendRect.y + (legendPart * value);
+                        this.segmentCollections.push(pathY1);
+                    }
+                    else {
+                        legendPart = rect.width / 100;
+                        pathX1 = legendRect.x + (legendPart * value);
+                        this.segmentCollections.push(pathX1);
+                    }
                 }
             }
         }
@@ -4744,7 +5148,7 @@ class Legend {
         if (!heatMap.enableCanvasRendering) {
             legendElement = this.heatMap.renderer.createGroup({ id: heatMap.element.id + '_ColorAxis_Grid' });
         }
-        for (let i = 0; i < heatMap.legendColorCollection.length; i++) {
+        for (let i = 0; i < (heatMap.isColorRange ? this.segmentCollections.length : heatMap.legendColorCollection.length); i++) {
             if (!heatMap.horizontalGradient) {
                 pathX1 = legendRect.x;
                 pathY1 = pathY2 = this.segmentCollections[i];
@@ -4760,6 +5164,21 @@ class Legend {
             this.drawSvgCanvas.drawLine(line, legendElement);
             if (!heatMap.enableCanvasRendering) {
                 this.legend.appendChild(legendElement);
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    renderLegendTitleTooltip(e, pageX, pageY) {
+        if (e.target.id.indexOf('_legendTitle') !== -1 && e.target.textContent.indexOf('...') > -1) {
+            showTooltip(this.heatMap.legendSettings.title.text, pageX, pageY, this.heatMap.element.offsetWidth, this.heatMap.element.id + '_legendTitle_Tooltip', getElement(this.heatMap.element.id + '_Secondary_Element'), null, this.heatMap);
+            document.getElementById(this.heatMap.element.id + '_legendTitle_Tooltip').style.visibility = 'visible';
+        }
+        else {
+            let element = document.getElementById(this.heatMap.element.id + '_legendTitle_Tooltip');
+            if (element) {
+                element.style.visibility = 'hidden';
             }
         }
     }
@@ -4856,8 +5275,8 @@ class Legend {
         }
         let x;
         let y;
-        let textWrapWidth = this.legendGroup.width - (this.legendSize +
-            this.legendRectPadding + this.labelPadding);
+        let textWrapWidth = heatMap.legendSettings.title.text ? this.width - (2 * (this.legendSize + this.labelPadding)) :
+            this.legendGroup.width - (this.legendSize + this.legendRectPadding + this.labelPadding);
         if (!heatMap.horizontalGradient) {
             x = (this.currentPage * (this.listPerPage)) - (this.listPerPage);
             y = x + this.listPerPage;
@@ -4915,8 +5334,10 @@ class Legend {
                     }
                 }
                 listRect = new Rect(legendX, legendY, legendSize, legendSize);
-                let listColor = heatMap.legendOnLoad ? heatMap.colorCollection[i].color :
-                    this.legendRange[i].visible ? heatMap.colorCollection[i].color : '#D3D3D3';
+                let listColor = heatMap.legendOnLoad ? this.heatMap.isColorRange ? heatMap.colorCollection[i].minColor :
+                    heatMap.colorCollection[i].color :
+                    this.legendRange[i].visible ? this.heatMap.isColorRange ? heatMap.colorCollection[i].minColor :
+                        heatMap.colorCollection[i].color : '#D3D3D3';
                 let rectItems = new RectOption(heatMap.element.id + '_legend_list' + i, listColor, tempBorder, 1, listRect);
                 this.drawSvgCanvas.drawRectangle(rectItems, this.translategroup);
                 heatMap.horizontalGradient ? legendX = legendX + this.legendSize + this.labelPadding + size.width + this.listInterval :
@@ -4930,7 +5351,7 @@ class Legend {
             let clipRect = heatMap.renderer.drawRectangle(this.legendGroup);
             clippath.appendChild(clipRect);
             this.translategroup.appendChild(clippath);
-            this.translategroup.setAttribute('style', 'clip-path:url(#' + clippath.id + ')');
+            this.legend.setAttribute('style', 'clip-path:url(#' + clippath.id + ')');
             this.legendScale.appendChild(this.translategroup);
             heatMap.svgObject.appendChild(this.legend);
         }
@@ -5031,7 +5452,7 @@ class Legend {
         let currentLegendRect;
         for (let i = 0; i < this.heatMap.colorCollection.length; i++) {
             let position = this.legendRectPositionCollection[i];
-            if (pageX > position.x && pageX < position.width + position.x &&
+            if (position && pageX > position.x && pageX < position.width + position.x &&
                 pageY > position.y && pageY < position.height + position.y) {
                 currentLegendRect = this.legendRectPositionCollection[i];
                 break;
@@ -5054,12 +5475,15 @@ class Legend {
         let heatMap = this.heatMap;
         let legendRange = this.legendRange;
         let padding = 5;
+        let legendPadding = heatMap.horizontalGradient ? 10 : 0;
         let legendBound = this.legendRectScale;
+        let ctx = heatMap.canvasRenderer.ctx;
         heatMap.rangeSelection = true;
         if (heatMap.enableCanvasRendering) {
             let ctx = heatMap.canvasRenderer.ctx;
             if (heatMap.legendSettings.enableSmartLegend) {
-                ctx.fillRect(legendBound.x - padding, legendBound.y - padding, (legendBound.width + this.labelPadding + this.maxLegendLabelSize.width) + padding, legendBound.height + (2 * padding));
+                ctx.fillRect(legendBound.x - padding, legendBound.y - padding, (legendBound.width + this.labelPadding +
+                    this.maxLegendLabelSize.width) + padding, legendBound.height + 2 * (padding + legendPadding));
             }
             else {
                 ctx.fillRect(legendBound.x - padding, legendBound.y - padding, legendBound.width +
@@ -5102,9 +5526,19 @@ class Legend {
             this.renderSmartLegend();
             let rectItemsSvg = new Rect(legendBound.x, legendBound.y, legendBound.width, legendBound.height);
             this.renderLegendLabel(rectItemsSvg);
+            if (heatMap.enableCanvasRendering) {
+                ctx.save();
+                ctx.clip();
+            }
+            if (heatMap.renderingMode === 'SVG') {
+                this.renderTitle(rectItemsSvg);
+            }
         }
         else {
             this.renderListLegendMode(this.legendRectScale, false);
+        }
+        if (heatMap.enableCanvasRendering) {
+            ctx.restore();
         }
         heatMap.heatMapSeries.renderRectSeries();
         heatMap.clearSelection();
@@ -5551,6 +5985,8 @@ let HeatMap = class HeatMap extends Component {
         super(...arguments);
         /** @private */
         this.enableCanvasRendering = false;
+        /** @private */
+        this.isColorRange = false;
         /** @private */
         this.isCellTapHold = false;
         /** @private */
@@ -6449,13 +6885,17 @@ let HeatMap = class HeatMap extends Component {
                 if (this.legendModule && this.legendSettings.visible && this.legendSettings.showLabel && this.legendVisibilityByCellType) {
                     this.legendModule.renderLegendLabelTooltip(e, pageX, pageY);
                 }
+                if (this.legendModule && this.legendSettings.visible && this.legendVisibilityByCellType) {
+                    this.legendModule.renderLegendTitleTooltip(e, pageX, pageY);
+                }
             }
             else {
                 elementRect = this.element.getBoundingClientRect();
                 let tooltipRect = (this.paletteSettings.type === 'Fixed' && this.legendSettings.enableSmartLegend &&
                     this.legendSettings.labelDisplayType === 'None') ? false : true;
                 tooltipText = getTooltipText(this.tooltipCollection, pageX, pageY) ||
-                    (this.legendModule && tooltipRect && getTooltipText(this.legendModule.legendLabelTooltip, pageX, pageY));
+                    (this.legendModule && tooltipRect && (getTooltipText(this.legendModule.legendLabelTooltip, pageX, pageY)
+                        || getTooltipText(this.legendModule.legendTitleTooltip, pageX, pageY)));
                 if (tooltipText) {
                     showTooltip(tooltipText, pageX, pageY, this.element.offsetWidth, this.element.id + '_canvas_Tooltip', getElement(this.element.id + '_Secondary_Element'), this.isTouch, this);
                 }
@@ -6936,6 +7376,9 @@ let HeatMap = class HeatMap extends Component {
                     }
                 }
             }
+            if (this.rectSelected && this.paletteSettings.type === 'Gradient') {
+                this.legendModule.removeGradientPointer();
+            }
         }
     }
     /**
@@ -7094,5 +7537,5 @@ HeatMap = __decorate([
  * HeatMap index file
  */
 
-export { HeatMap, Axis, AxisHelper, Data, AdaptiveMinMax, Adaptor, TwoDimensional, LegendSettings, Legend, Font, Margin, Border, TooltipBorder, BubbleData, Title, PaletteCollection, AxisLabelBorder, BubbleSize, MultiLevelCategories, MultiLevelLabels, ColorCollection, BubbleTooltipData, LegendColorCollection, CellSettings, Series, PaletteSettings, RgbColor, CellColor, TooltipSettings, Tooltip$1 as Tooltip, stringToNumber, measureText, TextElement, titlePositionX, Size, CustomizeOption, PathOption, CurrentRect, SelectedCellDetails, RectOption, CircleOption, Rect, TextOption, TextBasic, Line, LineOption, PathAttributes, Path, sum, titlePositionY, rotateTextSize, DrawSvgCanvas, getTitle, textWrap, textTrim, textNone, Gradient, GradientColor, showTooltip, removeElement, getElement, increaseDateTimeInterval, CanvasTooltip, getTooltipText, PaletterColor, GradientPointer, CurrentLegendRect, LegendRange, ToggleVisibility, colorNameToHex, convertToHexCode, componentToHex, convertHexToColor, formatValue, MultiLevelPosition };
+export { HeatMap, Axis, AxisHelper, Data, AdaptiveMinMax, Adaptor, TwoDimensional, LegendSettings, Legend, Font, Margin, Border, TooltipBorder, BubbleData, Title, FillColor, PaletteCollection, AxisLabelBorder, BubbleSize, MultiLevelCategories, MultiLevelLabels, ColorCollection, BubbleTooltipData, LegendColorCollection, CellSettings, Series, PaletteSettings, RgbColor, CellColor, TooltipSettings, Tooltip$1 as Tooltip, stringToNumber, measureText, TextElement, titlePositionX, Size, CustomizeOption, PathOption, CurrentRect, SelectedCellDetails, RectOption, CircleOption, Rect, TextOption, TextBasic, Line, LineOption, PathAttributes, Path, sum, titlePositionY, rotateTextSize, DrawSvgCanvas, getTitle, textWrap, textTrim, textNone, Gradient, GradientColor, showTooltip, removeElement, getElement, increaseDateTimeInterval, CanvasTooltip, getTooltipText, PaletterColor, GradientPointer, CurrentLegendRect, LegendRange, ToggleVisibility, colorNameToHex, convertToHexCode, componentToHex, convertHexToColor, formatValue, MultiLevelPosition };
 //# sourceMappingURL=ej2-heatmap.es2015.js.map

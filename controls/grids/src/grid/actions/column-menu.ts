@@ -173,7 +173,6 @@ export class ColumnMenu implements IAction {
         }
     }
 
-
     private enableAfterRenderMenu(e: NotifyArgs): void {
         if (e.module === this.getModuleName() && e.enable) {
             if (this.columnMenu) {
@@ -187,6 +186,7 @@ export class ColumnMenu implements IAction {
     private render(): void {
         this.l10n = this.serviceLocator.getService<L10n>('localization');
         this.element = this.parent.createElement('ul', { id: this.gridID + '_columnmenu', className: 'e-colmenu' }) as HTMLUListElement;
+        this.element.setAttribute('aria-label', this.l10n.getConstant('ColumnMenuDialogARIA'));
         this.parent.element.appendChild(this.element);
         this.columnMenu = new Menu({
             cssClass: 'e-grid-menu',
@@ -384,7 +384,9 @@ export class ColumnMenu implements IAction {
                 this.getFilter(args.element, args.element.id, true);
             }
         }
-        this.parent.notify(events.restoreFocus, {});
+        if (!this.parent.getFrozenColumns()) {
+            this.parent.notify(events.restoreFocus, {});
+        }
     }
 
     private getDefaultItems(): string[] {

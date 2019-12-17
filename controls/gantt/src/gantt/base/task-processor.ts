@@ -168,6 +168,9 @@ export class TaskProcessor extends DateProcessor {
         let ganttProperties: ITaskData = {} as ITaskData;
         this.parent.setRecordValue('ganttProperties', ganttProperties, ganttData);
         this.parent.setRecordValue('taskId', data[taskSettings.id], ganttProperties, true);
+        if (taskSettings.parentID) {
+            this.parent.setRecordValue('parentId', data[taskSettings.parentID], ganttProperties, true);
+        }
         this.parent.setRecordValue('taskName', data[taskSettings.name], ganttProperties, true);
         this.addTaskData(ganttData, data, isLoad);
         this.addCustomFieldValue(data, ganttData);
@@ -199,6 +202,7 @@ export class TaskProcessor extends DateProcessor {
         if (!isNullOrUndefined(data[taskSettings.child]) && data[taskSettings.child].length > 0) {
             this.parent.setRecordValue('hasChildRecords', true, ganttData);
             this.parent.setRecordValue('isMilestone', false, ganttProperties, true);
+            this.resetDependency(ganttData);
         } else {
             this.parent.setRecordValue('hasChildRecords', false, ganttData);
         }
@@ -664,6 +668,10 @@ export class TaskProcessor extends DateProcessor {
                 this.parent.setRecordValue('taskData.' + dataMapping.indicators, ganttProperties.indicators, ganttData);
                 this.parent.setRecordValue(dataMapping.indicators, ganttProperties.indicators, ganttData);
             }
+            if (dataMapping.parentID) {
+                this.parent.setRecordValue('taskData.' + dataMapping.parentID, ganttProperties.parentId, ganttData);
+                this.parent.setRecordValue(dataMapping.parentID, ganttProperties.parentId, ganttData);
+            }
         }
     }
     /**
@@ -742,7 +750,9 @@ export class TaskProcessor extends DateProcessor {
      */
     public updateDurationValue(duration: string, ganttProperties: ITaskData): void {
         let tempDuration: Object = this.getDurationValue(duration);
-        this.parent.setRecordValue('duration', getValue('duration', tempDuration), ganttProperties, true);
+        if (!isNaN(getValue('duration', tempDuration))) {
+            this.parent.setRecordValue('duration', getValue('duration', tempDuration), ganttProperties, true);
+        }
         if (!isNullOrUndefined(getValue('durationUnit', tempDuration))) {
             this.parent.setRecordValue('durationUnit', getValue('durationUnit', tempDuration), ganttProperties, true);
         }
@@ -856,6 +866,18 @@ export class TaskProcessor extends DateProcessor {
         }
         return progressValues;
     }
+
+    private resetDependency(record: IGanttData): void {
+        let dependency: string = this.parent.taskFields.dependency;
+        if (!isNullOrUndefined(dependency)) {
+            let recordProp: ITaskData = record.ganttProperties;
+            this.parent.setRecordValue('predecessor', [], recordProp, true);
+            this.parent.setRecordValue('predecessorsName', null, recordProp, true);
+            this.parent.setRecordValue('taskData.' + dependency, null, record);
+            this.parent.setRecordValue(dependency, null, record);
+        }
+    }
+
     /**
      * @private
      */
@@ -922,6 +944,7 @@ export class TaskProcessor extends DateProcessor {
                 this.parent.setRecordValue('progress', Math.floor(parentProgress), parentProp, true);
                 this.parent.setRecordValue('totalProgress', totalProgress, parentProp, true);
                 this.parent.setRecordValue('totalDuration', totalDuration, parentProp, true);
+                this.resetDependency(parentData);
                 this.updateWidthLeft(parentData);
                 this.updateTaskData(parentData);
             }

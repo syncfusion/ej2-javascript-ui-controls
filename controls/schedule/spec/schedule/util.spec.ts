@@ -44,7 +44,7 @@ export function createSchedule(options: ScheduleModel, data: Object[] | DataMana
         height: 580,
         eventSettings: { dataSource: data instanceof DataManager ? data : cloneDataSource(data) },
         // tslint:disable-next-line:no-console
-        actionFailure: (args: ActionEventArgs) => console.log(args)
+        actionFailure: (args: ActionEventArgs) => console.log(JSON.stringify(args))
     };
     if (done) {
         defaultOptions.dataBound = () => {
@@ -184,9 +184,13 @@ export function getInstance(className: string): Object {
     return (document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS + ' .' + className) as EJ2Instance).ej2_instances[0];
 }
 
-export function triggerScrollEvent(target: HTMLElement, scrollTop: number): void {
+export function triggerScrollEvent(target: HTMLElement, scrollTop: number, scrollLeft?: number): void {
     target.scrollTop = scrollTop;
-    let e: UIEvent = document.createEvent('UIEvents');
+    if (scrollLeft) {
+        target.scrollLeft = scrollLeft;
+    }
+    // tslint:disable-next-line:no-any
+    let e: any = document.createEvent('UIEvents');
     e.initUIEvent('scroll', true, true, window, 1);
     target.dispatchEvent(e);
 }

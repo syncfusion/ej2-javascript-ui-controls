@@ -46,8 +46,7 @@ export class AxisLayoutPanel {
      */
 
     private calculateAxesRadius(): void {
-        let totalRadius: number;
-        let currentRadius: number;
+        let totalRadius: number; let currentRadius: number;
         let rangeMaximumRadius: number = 0;
         let xMarginDiff: number = this.gauge.margin.left + this.gauge.margin.right;
         let yMarginDiff: number = this.gauge.margin.top + this.gauge.margin.bottom;
@@ -130,8 +129,7 @@ export class AxisLayoutPanel {
                 }
             }
             axis.visibleRange.interval = this.calculateNumericInterval(axis, axis.rect);
-            let args: IRadiusCalculateEventArgs;
-            args = {
+            let args: IRadiusCalculateEventArgs = {
                 cancel: false, name: radiusCalculate, currentRadius: axis.currentRadius, gauge: this.gauge,
                 midPoint: this.gauge.midPoint, axis: axis
             };
@@ -142,7 +140,9 @@ export class AxisLayoutPanel {
             this.gauge.trigger('radiusCalculate', args, () => {
                 axis.currentRadius = args.currentRadius;
                 this.gauge.midPoint = args.midPoint;
-                this.calculateVisibleLabels(axis);
+                if (!this.gauge.isBlazor) {
+                    this.calculateVisibleLabels(axis);
+                }
             });
         }
     }
@@ -276,10 +276,16 @@ export class AxisLayoutPanel {
                     axis.visibleLabels.push(new VisibleLabels(
                         argsData.text, i
                     ));
+                    if (i === max && this.gauge.isBlazor && document.getElementById(this.gauge.element.id + '_AxesCollection')) {
+                        this.getMaxLabelWidth(this.gauge, axis);
+                        this.axisRenderer.drawAxisLabels(
+                            axis, this.gauge.axes.length - 1,
+                            (document.getElementById(this.gauge.element.id + '_Axis_Group_' + (this.gauge.axes.length - 1))), this.gauge);
+                    }
                 }
             };
             axisLabelRenderSuccess.bind(this);
-            this.gauge.trigger('axisLabelRender', argsData, axisLabelRenderSuccess);
+            this.gauge.trigger(axisLabelRender, argsData, axisLabelRenderSuccess);
         }
         let lastLabel: number = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value : null;
         let maxVal: number = axis.visibleRange.max;
@@ -302,7 +308,7 @@ export class AxisLayoutPanel {
                 }
             };
             axisLabelRenderSuccess.bind(this);
-            this.gauge.trigger('axisLabelRender', argsData, axisLabelRenderSuccess);
+            this.gauge.trigger(axisLabelRender, argsData, axisLabelRenderSuccess);
         }
         this.getMaxLabelWidth(this.gauge, axis);
     }

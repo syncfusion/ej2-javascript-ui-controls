@@ -76,6 +76,7 @@ export interface DropDownListModel extends DropDownBaseModel{
      * {% codeBlock src="dropdownlist/query-api/index.html" %}{% endcodeBlock %}
      * 
      * @default null
+     * @deprecated
      */
     query?: Query;
 

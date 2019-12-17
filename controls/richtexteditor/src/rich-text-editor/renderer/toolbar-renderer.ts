@@ -5,11 +5,9 @@ import { DropDownButton, MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseM
 import { Popup } from '@syncfusion/ej2-popups';
 import * as classes from '../base/classes';
 import * as events from '../base/constant';
-import {
-    CLS_TOOLBAR, CLS_DROPDOWN_BTN, CLS_RTE_ELEMENTS, CLS_TB_BTN, CLS_INLINE_DROPDOWN,
+import { CLS_TOOLBAR, CLS_DROPDOWN_BTN, CLS_RTE_ELEMENTS, CLS_TB_BTN, CLS_INLINE_DROPDOWN,
     CLS_COLOR_CONTENT, CLS_FONT_COLOR_DROPDOWN, CLS_BACKGROUND_COLOR_DROPDOWN, CLS_COLOR_PALETTE,
-    CLS_FONT_COLOR_PICKER, CLS_BACKGROUND_COLOR_PICKER, CLS_CUSTOM_TILE, CLS_NOCOLOR_ITEM
-} from '../base/classes';
+    CLS_FONT_COLOR_PICKER, CLS_BACKGROUND_COLOR_PICKER, CLS_CUSTOM_TILE, CLS_NOCOLOR_ITEM } from '../base/classes';
 import { IRenderer, IRichTextEditor, IToolbarOptions, IDropDownModel, IColorPickerModel, IColorPickerEventArgs } from '../base/interface';
 import { ColorPicker, PaletteTileEventArgs, ModeSwitchEventArgs } from '@syncfusion/ej2-inputs';
 import { hasClass } from '../base/util';
@@ -17,6 +15,7 @@ import { hasClass } from '../base/util';
 /**
  * `Toolbar renderer` module is used to render toolbar in RichTextEditor.
  * @hidden
+ * @deprecated
  */
 export class ToolbarRenderer implements IRenderer {
     private mode: OverflowMode;
@@ -82,6 +81,11 @@ export class ToolbarRenderer implements IRenderer {
         this.parent.notify(events.selectionRestore, args);
     }
 
+    /**
+     * renderToolbar method
+     * @hidden
+     * @deprecated
+     */
     public renderToolbar(args: IToolbarOptions): void {
         this.setPanel(args.target);
         this.renderPanel();
@@ -101,6 +105,11 @@ export class ToolbarRenderer implements IRenderer {
         args.rteToolbarObj.toolbarObj.appendTo(args.target);
     }
 
+    /**
+     * renderDropDownButton method
+     * @hidden
+     * @deprecated
+     */
     public renderDropDownButton(args: IDropDownModel): DropDownButton {
         let css: string;
         args.element.classList.add(CLS_DROPDOWN_BTN);
@@ -190,6 +199,11 @@ export class ToolbarRenderer implements IRenderer {
             }
         }));
     }
+    /**
+     * renderColorPickerDropDown method
+     * @hidden
+     * @deprecated
+     */
     public renderColorPickerDropDown(args: IColorPickerModel, item: string, colorPicker: ColorPicker): DropDownButton {
         let proxy: this = this;
         let css: string = CLS_RTE_ELEMENTS + ' ' + CLS_TB_BTN + ((this.parent.inlineMode) ? (' ' + CLS_INLINE_DROPDOWN) : '');
@@ -318,6 +332,11 @@ export class ToolbarRenderer implements IRenderer {
                 + borderWidth + borderWidth);
         }
     }
+    /**
+     * renderColorPicker method
+     * @hidden
+     * @deprecated
+     */
     public renderColorPicker(args: IColorPickerModel, item: string): ColorPicker {
         let proxy: this = this;
         this.colorPicker = new ColorPicker({
@@ -336,7 +355,6 @@ export class ToolbarRenderer implements IRenderer {
                 if (args.value === '') {
                     args.element.classList.add(CLS_NOCOLOR_ITEM);
                 }
-
             },
             change: (colorPickerArgs: IColorPickerEventArgs): void => {
                 let colorpickerValue: string = colorPickerArgs.currentValue.rgba;
@@ -372,6 +390,8 @@ export class ToolbarRenderer implements IRenderer {
 
     /**
      * The function is used to render RichTextEditor toolbar
+     * @hidden
+     * @deprecated
      */
     public renderPanel(): void {
         this.getPanel().classList.add(CLS_TOOLBAR);
@@ -380,6 +400,8 @@ export class ToolbarRenderer implements IRenderer {
     /**
      * Get the toolbar element of RichTextEditor
      * @return {Element}
+     * @hidden
+     * @deprecated
      */
     public getPanel(): Element {
         return this.toolbarPanel;
@@ -388,6 +410,8 @@ export class ToolbarRenderer implements IRenderer {
     /**
      * Set the toolbar element of RichTextEditor
      * @param  {Element} panel
+     * @hidden
+     * @deprecated
      */
     public setPanel(panel: Element): void {
         this.toolbarPanel = panel;

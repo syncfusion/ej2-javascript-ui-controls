@@ -56,6 +56,36 @@ let dataSourceWithStringID: { [key: string]: Object }[] = [
     { id: '4', text: 'text4' },
     { id: '5', text: 'text5' },
 ]
+
+let XSSData: any = [
+    { id: 1, text: 'text1<style>body{background:rgb(0, 0, 255)}</style>' },
+    { id: 2, text: 'text2' },
+]
+
+let XSSnestedData: any = [
+    {
+        id: '01', text: 'Music<style>body{background:rgb(0, 0, 255)}</style>', icon: 'folder',
+        child: [
+            { id: '01-01', text: 'Gouttes.mp3', icon: 'file' }
+        ]
+    },
+    {
+        id: '02', text: 'Videos', icon: 'folder',
+        child: [
+            { id: '02-01', text: 'Naturals.mp4', icon: 'file' },
+            { id: '02-02', text: 'Wild.mpeg', icon: 'file' },
+        ]
+    },
+    {
+        id: '03', text: 'Documents', icon: 'folder',
+        child: [
+            { id: '03-01', text: 'Environment Pollution.docx', icon: 'file' },
+            { id: '03-02', text: 'Global Water, Sanitation, & Hygiene.docx', icon: 'file' },
+            { id: '03-03', text: 'Global Warming.ppt', icon: 'file' },
+            { id: '03-04', text: 'Social Network.pdf', icon: 'file' },
+            { id: '03-05', text: 'Youth Empowerment.pdf', icon: 'file' },
+        ]
+    }];
 let NestedData: any = [
     {
         id: '01', text: 'text1', icon: 'iconClass1', category: 'a',
@@ -352,6 +382,64 @@ describe('ListView', () => {
             expect(ele.classList.contains('e-listview')).toBe(true);
         });
 
+        afterAll(() => {
+            ele.remove();
+        });
+    });
+
+    describe('enableHtmlSanitizer testing with simple data', () => {
+        let treeObj: any;
+        let ele: HTMLElement = createElement('div', { id: 'ListView' });
+        beforeAll(() => {
+            document.body.appendChild(ele);
+            treeObj = new ListView({ dataSource: XSSData , enableHtmlSanitizer: false});
+            treeObj.appendTo(ele);
+        });
+
+        it('enableHtmlSanitizer testing', () => {
+            var htmlEle = document.body;
+            expect(window.getComputedStyle(htmlEle).backgroundColor).toBe("rgb(0, 0, 255)");
+        });
+
+
+        afterAll(() => {
+            ele.remove();
+        });
+    });
+    describe('enableHtmlSanitizer testing with nested data', () => {
+        let treeObj: any;
+        let ele: HTMLElement = createElement('div', { id: 'ListView' });
+        beforeAll(() => {
+            document.body.appendChild(ele);
+            treeObj = new ListView({ dataSource: XSSnestedData, headerTitle: '<style>body{background:rgb(0, 0, 255)}</style>Folders', showHeader: true, enableHtmlSanitizer: true });
+            treeObj.appendTo(ele);
+        });
+
+        it('enableHtmlSanitizer testing enabled', () => {
+            treeObj.selectItem({ text: 'Music<style>body{background:rgb(0, 0, 255)}</style>' });
+            expect((ele.querySelector(".e-text") as HTMLElement).innerText).toEqual('Music');
+            treeObj.back();
+            expect((ele.querySelector(".e-icon-back") as HTMLElement).style.display).toEqual('none');
+            var htmlele = document.body;
+            expect(window.getComputedStyle(htmlele).backgroundColor).not.toBe("rgb(0, 0, 255)");
+        });
+        afterAll(() => {
+            ele.remove();
+        });
+    });
+    describe('enableHtmlSanitizer testing with nested data', () => {
+        let treeObj: any;
+        let ele: HTMLElement = createElement('div', { id: 'ListView' });
+        beforeAll(() => {
+            document.body.appendChild(ele);
+            treeObj = new ListView({ dataSource: XSSnestedData, headerTitle: '<style>body{background:rgb(0, 0, 255)}</style>Folders', showHeader: true, enableHtmlSanitizer: false });
+            treeObj.appendTo(ele);
+        });
+        it('enableHtmlSanitizer testing disabled', () => {
+            treeObj.selectItem({ text: 'Music<style>body{background:rgb(0, 0, 255)}</style>' }); 
+            var htmlele = document.body;
+            expect(window.getComputedStyle(htmlele).backgroundColor).toBe("rgb(0, 0, 255)");
+        });
         afterAll(() => {
             ele.remove();
         });
@@ -690,12 +778,12 @@ describe('ListView', () => {
 
         it('role of the ul element', () => {
             let deepNode = ele.childNodes[0].childNodes[0] as HTMLElement;
-            expect(deepNode.getAttribute('role')).toBe('list');
+            expect(deepNode.getAttribute('role')).toBe('presentation');
         });
 
         it('role of the li element', () => {
             let deepNode = ele.childNodes[0].childNodes[0].childNodes[1] as HTMLElement;
-            expect(deepNode.getAttribute('role')).toBe('listitem');
+            expect(deepNode.getAttribute('role')).toBe('option');
         });
 
         it('role of the wrapper element', () => {
@@ -2861,6 +2949,17 @@ describe('ListView', () => {
             treeObj.showHeader = true;
             treeObj.dataBind();
             expect(treeObj.element.querySelector('.e-headertext').innerHTML).toBe('Custom Title');
+        });
+
+        it('headerTitle property with enableHtmlSanitizer property as false', () => {
+            treeObj.headerTitle = '<style>body{background:rgb(0, 0, 255)}</style>Custom Title';
+            treeObj.showHeader = true;
+            treeObj.enableHtmlSanitizer = false;
+            treeObj.dataBind();
+            expect(treeObj.element.querySelector('.e-headertext').innerHTML).toBe('<style>body{background:rgb(0, 0, 255)}</style>Custom Title');
+            var ele = document.body;
+            expect(window.getComputedStyle(ele).backgroundColor).toBe("rgb(0, 0, 255)");
+
         });
 
         it('showHeader property', () => {

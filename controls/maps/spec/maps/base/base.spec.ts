@@ -1,7 +1,7 @@
 /**
  * Maps basic spec file
  */
-import { createElement, isNullOrUndefined, Event, EventHandler } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, Event, EventHandler, remove } from '@syncfusion/ej2-base';
 import { Maps, IMouseEventArgs, IResizeEventArgs, ILoadEventArgs, ILoadedEventArgs, BorderModel, FontModel } from '../../../src/index';
 import { MouseEvents } from './events.spec';
 import { drawBalloon, drawCircle, drawCross, drawDiamond, drawHorizontalLine, drawLine, drawPath } from '../../../src/maps/utils/helper';
@@ -16,6 +16,7 @@ import { Bubble, MapsTooltip, DataLabel, Zoom, Marker, ColorMapping, Highlight, 
 import { World_Map, usMap, CustomPathData, flightRoutes, intermediatestops1 } from '../data/data.spec';
 import { map } from '../data/mappoint.spec';
 import { data } from '../data/bubblepointdata.spec';
+import { doesNotThrow } from 'assert';
 Maps.Inject(Bubble, MapsTooltip, Zoom, Highlight, Selection, Legend);
 export function getIdElement(id: string): Element {
     return document.getElementById(id);
@@ -697,6 +698,90 @@ describe('Maps Component Base Spec', () => {
                 let element = document.getElementById(maps.element.id + '_LayerIndex_0_Point_Group');
                 expect(element.childElementCount).toBeGreaterThanOrEqual(1);
             };
+        });
+    });
+
+    describe('Maps Default Selection And Deselection Of Shapes', () => {
+        let id: string = 'container';
+        let world: Maps;
+        let trigger: MouseEvents = new MouseEvents();
+        let ele: HTMLDivElement;
+        let spec: Element;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            world = new Maps({
+                titleSettings: {
+                    text: 'World Map'
+                },
+                legendSettings: {
+                    visible: true,
+                },
+                layers: [
+                    {
+                        highlightSettings: {
+                            enable: false
+                        },
+                        selectionSettings: {
+                            enable: true,
+                            enableMultiSelect: true
+                        },
+                        shapeData: World_Map,
+                        shapePropertyPath: 'continent',
+                        shapeDataPath: 'continent',
+                        shapeSettings: {
+                            colorValuePath: 'color',
+                        },
+                        dataSource: [
+                            { "drillColor": '#C13664', "continent": "North America", "CategoryName": "Books", "Sales": 10882,
+                            'color': '#71B081' },
+                            { "drillColor": '#9C3367',"continent": "South America", "CategoryName": "Books", "Sales": 13776,
+                            'color': '#5A9A77' },
+                            { "drillColor": '#80306A',"continent": "Africa", "CategoryName": "Books", "Sales": 18718.0,
+                            'color': '#498770' },
+                            { "drillColor": '#622D6C',"continent": "Europe", "CategoryName": "Books", "Sales": 3746,
+                            'color': '#39776C' },
+                            { "drillColor": '#462A6D',"continent": "Asia", "CategoryName": "Books", "Sales": 10688,
+                            'color': '#266665' },
+                            { "drillColor": '#2A2870', "continent": "Australia", "CategoryName": "Books", "Sales": 30716,
+                            'color': '#124F5E ' }
+                        ]
+                    }
+                ]
+            },'#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            world.destroy();
+        });
+        it('Select the map shapes using public methode', () => {
+            world.loaded = (args: ILoadedEventArgs) => {
+                args.maps.shapeSelection(0, 'name', 'India', true);
+                let selectedElement = document.getElementById(world.element.id + '_LayerIndex_0_shapeIndex_64_dataIndex_0');
+                expect(selectedElement.getAttribute('class')).toBe(null);
+            };
+            trigger.clickEvent(document.getElementById(world.element.id + '_LayerIndex_0_shapeIndex_64_dataIndex_0'));
+            trigger.clickEvent(document.getElementById(world.element.id + '_LayerIndex_0_shapeIndex_4_dataIndex_1'));
+            world.layers[0].selectionSettings.enableMultiSelect = false;
+            world.refresh();
+        });
+        it('Select the map shapes using public methode', () => {
+            world.loaded = (args: ILoadedEventArgs) => {
+                args.maps.shapeSelection(0, 'continent', 'Asia', true);
+                let selectedElement = document.getElementById(world.element.id + '_LayerIndex_0_shapeIndex_29_dataIndex_4');
+                expect(selectedElement.getAttribute('class')).toBe('ShapeselectionMapStyle');
+            };
+            world.layers[0].selectionSettings.enableMultiSelect = true;
+            world.refresh();
+        });
+        it('Deselect the map shapes using public methode', () => {
+            world.loaded = (args: ILoadedEventArgs) => {
+                args.maps.shapeSelection(0, 'continent', 'Asia', false);
+                let unSelectedElement = document.getElementById(world.element.id + '_LayerIndex_0_shapeIndex_72_dataIndex_4');
+                expect(unSelectedElement.getAttribute('class')).toBe(null);
+            };
+            world.layers[0].selectionSettings.enableMultiSelect = false;
+            world.refresh();
         });
     });
 

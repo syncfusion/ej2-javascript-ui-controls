@@ -16,12 +16,12 @@ Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
 
 describe('Schedule work week view', () => {
     beforeAll(() => {
-        // tslint:disable-next-line:no-any
+        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             // tslint:disable-next-line:no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); //Skips test (in Chai)
+            (this as any).skip(); //Skips test (in Chai)
             return;
         }
     });
@@ -168,13 +168,13 @@ describe('Schedule work week view', () => {
             util.destroy(schObj);
         });
 
-        xit('width and height', (done: Function) => {
+        it('width and height', () => {
             let model: ScheduleModel = { height: '600px', width: '500px', currentView: 'WorkWeek', selectedDate: new Date(2017, 9, 4) };
-            schObj = util.createSchedule(model, [], done);
-            expect(document.getElementById('Schedule').style.width).toEqual('500px');
-            expect(document.getElementById('Schedule').style.height).toEqual('600px');
-            expect(document.getElementById('Schedule').offsetWidth).toEqual(500);
-            expect(document.getElementById('Schedule').offsetHeight).toEqual(600);
+            schObj = util.createSchedule(model, []);
+            expect(schObj.element.style.width).toEqual('500px');
+            expect(schObj.element.style.height).toEqual('600px');
+            expect(schObj.element.offsetWidth).toEqual(500);
+            expect(schObj.element.offsetHeight).toEqual(600);
         });
 
         it('start and end hour', () => {
@@ -351,6 +351,62 @@ describe('Schedule work week view', () => {
             expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML)
                 .toEqual('<div class="e-header-day">Mon</div><div class="e-header-date e-navigate" role="link">2</div>');
             expect(navFn).toHaveBeenCalledTimes(1);
+        });
+
+        it('minDate and maxDate', () => {
+            let model: ScheduleModel = {
+                currentView: 'WorkWeek',
+                minDate: new Date(2017, 8, 28),
+                selectedDate: new Date(2017, 9, 5),
+                maxDate: new Date(2017, 9, 12)
+            };
+            schObj = util.createSchedule(model, []);
+            let prevButton: HTMLElement = schObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS);
+            let nextButton: HTMLElement = schObj.element.querySelector('.' + cls.NEXT_DATE_CLASS);
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('false');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('false');
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 02 - 06, 2017');
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('September 25 - 29, 2017');
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('true');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('false');
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('September 25 - 29, 2017');
+            (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 02 - 06, 2017');
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('false');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('false');
+            (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 09 - 13, 2017');
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('false');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('true');
+            (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 09 - 13, 2017');
+            schObj.minDate = new Date(2017, 8, 24);
+            schObj.selectedDate = new Date(2017, 9, 4);
+            schObj.maxDate = new Date(2017, 9, 5);
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 02 - 06, 2017');
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('false');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('true');
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('September 25 - 29, 2017');
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('true');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('false');
+            (schObj.element.querySelectorAll('.e-date-header-container .e-header-cells .e-navigate')[0] as HTMLElement).click();
+            expect(schObj.currentView).toEqual('Day');
+            schObj.currentView = 'WorkWeek';
+            schObj.minDate = new Date(2017, 9, 3);
+            schObj.selectedDate = new Date(2017, 9, 4);
+            schObj.maxDate = new Date(2017, 9, 5);
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('October 02 - 06, 2017');
+            expect(prevButton.getAttribute('aria-disabled')).toEqual('true');
+            expect(nextButton.getAttribute('aria-disabled')).toEqual('true');
+            (schObj.element.querySelectorAll('.e-date-header-container .e-header-cells .e-navigate')[0] as HTMLElement).click();
+            expect(schObj.currentView).toEqual('WorkWeek');
+            (schObj.element.querySelectorAll('.e-date-header-container .e-header-cells .e-navigate')[4] as HTMLElement).click();
+            expect(schObj.currentView).toEqual('WorkWeek');
         });
     });
 

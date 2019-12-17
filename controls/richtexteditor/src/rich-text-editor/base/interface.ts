@@ -1,5 +1,5 @@
 // tslint:disable-next-line:missing-jsdoc
-import { Component, Observer, L10n, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { Component, Observer, L10n, KeyboardEventArgs, EmitType } from '@syncfusion/ej2-base';
 import { ItemModel, OverflowMode } from '@syncfusion/ej2-navigations';
 import { ItemModel as DropDownItemModel, DropDownButton } from '@syncfusion/ej2-splitbuttons';
 import { ToolbarType, RenderType } from './enum';
@@ -35,6 +35,7 @@ import { Resize } from '../actions/resize';
 /**
  * Specifies RichTextEditor interfaces.
  * @hidden
+ * @deprecated
  */
 export interface IRichTextEditor extends Component<HTMLElement> {
     toolbarSettings?: ToolbarSettingsModel;
@@ -144,7 +145,12 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     serializeValue?(value: string): string;
     sanitizeHtml?(value: string): string;
     enableAutoUrl?: boolean;
+    enableXhtml?: boolean;
+    enableHtmlSanitizer?: boolean;
 }
+/**
+ * @deprecated
+ */
 export interface IRenderer {
     linkQTBar?: BaseQuickToolbar;
     imageQTBar?: BaseQuickToolbar;
@@ -196,6 +202,9 @@ export interface NotifyArgs {
     allowedStylePropertiesArray?: string[];
 }
 
+/**
+ * @deprecated
+ */
 export interface IItemCollectionArgs {
     /** Defines the instance of the current selection */
     selection?: NodeSelection;
@@ -222,6 +231,7 @@ export interface ITouchData {
 
 /** 
  * @hidden
+ * @deprecated
  */
 export interface IColorPickerModel extends ColorPickerModel {
     element?: HTMLElement;
@@ -234,6 +244,7 @@ export interface IColorPickerModel extends ColorPickerModel {
 
 /** 
  * @hidden
+ * @deprecated
  */
 export interface IColorPickerEventArgs extends ColorPickerEventArgs {
     item?: IColorPickerModel;
@@ -243,6 +254,7 @@ export interface IColorPickerEventArgs extends ColorPickerEventArgs {
 
 /** 
  * @hidden
+ * @deprecated
  */
 export interface IDropDownItem extends ItemModel {
     command?: string;
@@ -252,17 +264,24 @@ export interface IDropDownItem extends ItemModel {
 
 /** 
  * @hidden
+ * @deprecated
  */
 export interface IDropDownClickArgs extends ClickEventArgs {
     item: IDropDownItem;
 }
 
+/**
+ * @deprecated
+ */
 export interface IColorPickerRenderArgs {
     items?: string[];
     containerType?: string;
     container?: HTMLElement;
 }
 
+/**
+ * @deprecated
+ */
 export interface IImageNotifyArgs {
     module?: string;
     args?: KeyboardEvent | MouseEvent | ClickEventArgs | IToolbarItemModel | ClipboardEvent | TouchEvent;
@@ -292,6 +311,9 @@ export interface IImageCommandsArgs {
     cssClass?: string;
     selectNode?: Node[];
 }
+/**
+ * @deprecated
+ */
 export interface ImageDragEvent extends DragEvent {
     rangeParent?: Element;
     rangeOffset?: number;
@@ -306,6 +328,9 @@ export interface ILinkCommandsArgs {
     selectParent?: Node[];
 }
 
+/**
+ * @deprecated
+ */
 export interface ITableArgs {
     row?: number;
     columns?: number;
@@ -316,6 +341,9 @@ export interface ITableArgs {
     subCommand?: string;
 }
 
+/**
+ * @deprecated
+ */
 export interface ITableNotifyArgs {
     module?: string;
     args?: ClickEventArgs | MouseEvent | KeyboardEventArgs;
@@ -341,16 +369,22 @@ export interface IEditorModel {
 export interface IToolbarItems {
     template?: string;
     tooltipText?: string;
+    undo?: boolean;
+    click?: EmitType<ClickEventArgs>;
 }
 
 /** 
  * @hidden
+ * @deprecated
  */
 export interface IToolbarItemModel extends ItemModel {
     command?: string;
     subCommand?: string;
 }
 
+/**
+ * @deprecated
+ */
 export interface IToolbarOptions {
     enableRtl: boolean;
     target: HTMLElement;
@@ -360,6 +394,9 @@ export interface IToolbarOptions {
     overflowMode?: OverflowMode;
 }
 
+/**
+ * @deprecated
+ */
 export interface IToolbarSettings {
     enable?: boolean;
     items?: (string | IToolbarItems)[];
@@ -367,6 +404,9 @@ export interface IToolbarSettings {
     type?: ToolbarType;
 }
 
+/**
+ * @deprecated
+ */
 export interface IToolbarRenderOptions {
     target: HTMLElement;
     items?: (string | IToolbarItems)[];
@@ -374,6 +414,9 @@ export interface IToolbarRenderOptions {
     container?: string;
 }
 
+/**
+ * @deprecated
+ */
 export interface IDropDownModel {
     content?: string;
     items: IDropDownItemModel[];
@@ -383,6 +426,9 @@ export interface IDropDownModel {
     element: HTMLElement;
 }
 
+/**
+ * @deprecated
+ */
 export interface IToolsItems {
     id: string;
     icon?: string;
@@ -401,6 +447,7 @@ export interface IToolsItemConfigs {
 
 /** 
  * @hidden
+ * @deprecated
  */
 export interface IDropDownItemModel extends DropDownItemModel {
     cssClass?: string;
@@ -454,6 +501,9 @@ export interface PrintEventArgs extends ActionBeginEventArgs {
     element?: Element;
 }
 
+/**
+ * @deprecated
+ */
 export interface IShowPopupArgs {
     args?: MouseEvent | TouchEvent | KeyboardEvent;
     type?: string;
@@ -461,18 +511,27 @@ export interface IShowPopupArgs {
     elements?: Element | Element[];
 }
 
+/**
+ * @deprecated
+ */
 export interface IUpdateItemsModel {
     targetItem: string;
     updateItem: string;
     baseToolbar: BaseToolbar;
 }
 
+/**
+ * @deprecated
+ */
 export interface IDropDownRenderArgs {
     items?: string[];
     containerType?: string;
     container?: HTMLElement;
 }
 
+/**
+ * @deprecated
+ */
 export interface IShowQuickTBarOptions {
     x: number;
     y: number;
@@ -491,6 +550,9 @@ export interface IShowQuickTBarOptions {
     bodyRightSpace: number;
 }
 
+/**
+ * @deprecated
+ */
 export interface IQuickToolbarOptions {
     popupType: string;
     mode: OverflowMode;
@@ -525,6 +587,9 @@ export interface QuickToolbarEventArgs {
     name?: string;
 }
 
+/**
+ * @deprecated
+ */
 export interface IAdapterProcess {
     text: string;
     range: Range;
@@ -555,12 +620,18 @@ export interface IFormatter {
     isAppliedCommand?(e?: MouseEvent): string;
     mdSelectionFormat?: MDSelectionFormats;
 }
+/**
+ * @deprecated
+ */
 export interface IHtmlFormatterModel {
     currentDocument?: Document;
     element?: Element;
     keyConfig?: { [key: string]: string };
     options?: { [key: string]: number };
 }
+/**
+ * @deprecated
+ */
 export interface IMarkdownFormatterModel {
     element?: Element;
     formatTags?: { [key: string]: string };
@@ -570,18 +641,27 @@ export interface IMarkdownFormatterModel {
     selectionTags?: { [key: string]: string };
 }
 
+/**
+ * @deprecated
+ */
 export interface IFontProperties {
     default?: string;
     items?: IDropDownItemModel[];
     width?: string;
 }
 
+/**
+ * @deprecated
+ */
 export interface IFormatProperties {
     default?: string;
     types?: IDropDownItemModel[];
     width?: string;
 }
 
+/**
+ * @deprecated
+ */
 export interface OffsetPosition {
     left: number;
     top: number;
@@ -625,6 +705,9 @@ export interface SanitizeRemoveAttrs {
     selector?: string;
 }
 
+/**
+ * @deprecated
+ */
 export interface ISetToolbarStatusArgs {
     args: IToolbarStatus;
     parent: IRichTextEditor;
@@ -635,6 +718,9 @@ export interface ISetToolbarStatusArgs {
 
 export declare type ColorModeType = 'Picker' | 'Palette';
 
+/**
+ * @deprecated
+ */
 export interface IColorProperties {
     default?: string;
     mode?: ColorModeType;
@@ -643,13 +729,16 @@ export interface IColorProperties {
     modeSwitcher?: boolean;
 }
 
+/**
+ * @deprecated
+ */
 export interface IExecutionGroup {
     command: string;
     subCommand?: string;
     value?: string;
 }
 
-/** @hidden  */
+/** @hidden @deprecated  */
 export const executeGroup: { [key: string]: IExecutionGroup } = {
     'bold': {
         command: 'Style',
@@ -670,6 +759,11 @@ export const executeGroup: { [key: string]: IExecutionGroup } = {
         command: 'Style',
         subCommand: 'StrikeThrough',
         value: 'span'
+    },
+    'insertCode': {
+        command: 'Formats',
+        subCommand: 'Pre',
+        value: 'pre'
     },
     'superscript': {
         command: 'Effects',
@@ -804,4 +898,4 @@ export declare type CommandName = 'bold' | 'italic' | 'underline' | 'strikeThrou
     'justifyCenter' | 'justifyFull' | 'justifyLeft' | 'justifyRight' | 'undo' | 'createLink' |
     'formatBlock' | 'heading' | 'indent' | 'insertHTML' | 'insertOrderedList' | 'insertUnorderedList' |
     'insertParagraph' | 'outdent' | 'redo' | 'removeFormat' | 'insertText' | 'insertImage' |
-    'insertHorizontalRule' | 'insertBrOnReturn';
+    'insertHorizontalRule' | 'insertBrOnReturn' | 'insertCode';

@@ -169,8 +169,6 @@ type: ChangeType;
 cancel: boolean;
 /** returns the selected element  */
 element?: DiagramEventObject;
-/** returns a parent node of the target node */
-parentId?: string;
 }
 /**
  * IBlazorSegmentCollectionChangeEventArgs notifies while the segment of the connectors changes

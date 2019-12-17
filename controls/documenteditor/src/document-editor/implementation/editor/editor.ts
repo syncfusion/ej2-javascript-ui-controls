@@ -4,7 +4,8 @@ import { TextPosition, ImageFormat } from '../selection/selection-helper';
 import {
     IWidget, ParagraphWidget, LineWidget, ElementBox, TextElementBox, Margin, Page, ImageElementBox,
     BlockWidget, BlockContainer, BodyWidget, TableWidget, TableCellWidget, TableRowWidget, Widget, ListTextElementBox,
-    BookmarkElementBox, HeaderFooterWidget, FieldTextElementBox, TabElementBox, EditRangeStartElementBox, EditRangeEndElementBox
+    BookmarkElementBox, HeaderFooterWidget, FieldTextElementBox, TabElementBox, EditRangeStartElementBox, EditRangeEndElementBox,
+    CommentElementBox, CommentCharacterElementBox
 } from '../viewer/page';
 import { WCharacterFormat } from '../format/character-format';
 import {
@@ -31,7 +32,7 @@ import { SelectionCharacterFormat } from '../index';
 import { Action } from '../../index';
 import { PageLayoutViewer, SfdtReader } from '../index';
 import { WCharacterStyle } from '../format/style';
-import { EditorHistory } from '../editor-history/index';
+import { EditorHistory, HistoryInfo } from '../editor-history/index';
 import { BaseHistoryInfo } from '../editor-history/base-history-info';
 import { TableResizer } from './table-resizer';
 import { Dictionary } from '../../base/dictionary';
@@ -257,6 +258,351 @@ export class Editor {
         this.selection.isHighlightEditRegion = true;
         this.addProtection(credential);
     }
+    private getCommentHierarchicalIndex(comment: CommentElementBox): string {
+        let index: string = '';
+        while (comment.ownerComment) {
+            index = comment.ownerComment.replyComments.indexOf(comment) + ';' + index;
+            comment = comment.ownerComment;
+        }
+        index = 'C;' + this.viewer.comments.indexOf(comment) + ';' + index;
+        return index;
+    }
+
+    /**
+     * Insert comment 
+     * @param text - comment text.
+     */
+    // Comment implementation starts
+    public insertComment(text?: string): void {
+        if (isNullOrUndefined(this.selection.start) || this.owner.isReadOnlyMode) {
+            return;
+        }
+        if (isNullOrUndefined(text)) {
+            text = '';
+        }
+        this.insertCommentInternal(text);
+    }
+
+    private insertCommentInternal(text: string): void {
+        if (this.selection.isEmpty) {
+            this.selection.selectCurrentWord();
+        }
+        let paragraphInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.start);
+        let startIndex: string = this.selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
+        let endParagraphInfo: ParagraphInfo = this.selection.getParagraphInfo(this.selection.start);
+        let endIndex: string = this.selection.getHierarchicalIndex(endParagraphInfo.paragraph, endParagraphInfo.offset.toString());
+        this.initComplexHistory('InsertComment');
+        let startPosition: TextPosition = this.selection.start;
+        let endPosition: TextPosition = this.selection.end;
+        let position: TextPosition = new TextPosition(this.owner);
+        if (!this.selection.isForward) {
+            startPosition = this.selection.end;
+            endPosition = this.selection.start;
+        }
+        // Clones the end position.
+        position.setPositionInternal(endPosition);
+
+        let commentRangeStart: CommentCharacterElementBox = new CommentCharacterElementBox(0);
+        let commentRangeEnd: CommentCharacterElementBox = new CommentCharacterElementBox(1);
+        let isAtSameParagraph: boolean = startPosition.isInSameParagraph(endPosition);
+        // Adds comment start at selection start position.
+        endPosition.setPositionInternal(startPosition);
+        this.initInsertInline(commentRangeStart);
+        // Updates the cloned position, since comment start is added in the same paragraph.
+        if (isAtSameParagraph) {
+            position.setPositionParagraph(position.currentWidget, position.offset + commentRangeStart.length);
+        }
+        // Adds comment end and comment at selection end position.
+        startPosition.setPositionInternal(position);
+        endPosition.setPositionInternal(position);
+        this.initInsertInline(commentRangeEnd);
+
+        let commentAdv: CommentElementBox = new CommentElementBox(new Date().toISOString());
+        if (this.owner.editorHistory) {
+            this.initHistory('InsertCommentWidget');
+            this.owner.editorHistory.currentBaseHistoryInfo.removedNodes.push(commentAdv);
+        }
+
+        commentAdv.author = this.owner.currentUser ? this.owner.currentUser : 'Guest user';
+        commentAdv.text = text;
+        commentAdv.commentId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        commentRangeStart.comment = commentAdv;
+        commentRangeStart.commentId = commentAdv.commentId;
+        commentRangeEnd.comment = commentAdv;
+        commentRangeEnd.commentId = commentAdv.commentId;
+        commentAdv.commentStart = commentRangeStart;
+        commentAdv.commentEnd = commentRangeEnd;
+        this.addCommentWidget(commentAdv, true);
+        if (this.editorHistory) {
+            this.editorHistory.currentBaseHistoryInfo.insertPosition = this.getCommentHierarchicalIndex(commentAdv);
+            this.editorHistory.updateHistory();
+        }
+
+        //tslint:disable-next-line:max-line-length
+        // this.selection.selectPosition(this.selection.getTextPosBasedOnLogicalIndex(startIndex), this.selection.getTextPosBasedOnLogicalIndex(endIndex));
+        if (this.editorHistory) {
+            this.editorHistory.updateComplexHistory();
+        }
+        this.reLayout(this.selection, false);
+    }
+
+    /**
+     * Delete all the comments in current document
+     */
+    public deleteAllComments(): void {
+        if (this.viewer.comments.length === 0) {
+            return;
+        }
+
+        // this.viewer.clearSearchHighlight();
+        this.initComplexHistory('DeleteAllComments');
+        this.owner.isLayoutEnabled = false;
+        let historyInfo: HistoryInfo;
+        if (this.editorHistory && this.editorHistory.currentHistoryInfo) {
+            historyInfo = this.editorHistory.currentHistoryInfo;
+        }
+        while (this.viewer.comments.length > 0) {
+            let comment: CommentElementBox = this.viewer.comments[0];
+            this.initComplexHistory('DeleteComment');
+            this.deleteCommentInternal(comment);
+            if (this.editorHistory && this.editorHistory.currentHistoryInfo) {
+                historyInfo.addModifiedAction(this.editorHistory.currentHistoryInfo);
+            }
+        }
+        this.selection.selectContent(this.owner.documentStart, true);
+        if (this.editorHistory) {
+            this.editorHistory.currentHistoryInfo = historyInfo;
+            this.editorHistory.updateComplexHistory();
+        }
+    }
+    /**
+     * Delete current selected comment.
+     */
+    public deleteComment(): void {
+        if (this.owner.isReadOnlyMode || isNullOrUndefined(this.owner) || isNullOrUndefined(this.owner.viewer)
+            || isNullOrUndefined(this.owner.viewer.currentSelectedComment)) {
+            return;
+        }
+        this.deleteCommentInternal(this.owner.viewer.currentSelectedComment);
+    }
+    /**
+     * @private
+     */
+    public deleteCommentInternal(comment: CommentElementBox): void {
+        this.initComplexHistory('DeleteComment');
+        if (comment) {
+            let commentStart: CommentCharacterElementBox = comment.commentStart;
+            let commentEnd: CommentCharacterElementBox = comment.commentEnd;
+            this.removeInline(commentEnd);
+            this.removeInline(commentStart);
+            commentStart.removeCommentMark();
+            if (comment.replyComments.length > 0) {
+                for (let i: number = comment.replyComments.length - 1; i >= 0; i--) {
+                    this.deleteCommentInternal(comment.replyComments[i]);
+                }
+            }
+            if (this.owner.editorHistory) {
+                this.initHistory('DeleteCommentWidget');
+                this.owner.editorHistory.currentBaseHistoryInfo.insertPosition = this.getCommentHierarchicalIndex(comment);
+                this.owner.editorHistory.currentBaseHistoryInfo.removedNodes.push(comment);
+            }
+            this.deleteCommentWidget(comment);
+            if (this.editorHistory) {
+                this.editorHistory.updateHistory();
+            }
+        }
+        if (this.editorHistory) {
+            this.editorHistory.updateComplexHistory();
+        }
+    }
+
+    /**
+     * @private
+     */
+    public deleteCommentWidget(comment: CommentElementBox): void {
+
+        let commentIndex: number = this.viewer.comments.indexOf(comment);
+        if (commentIndex !== -1) {
+            this.viewer.comments.splice(commentIndex, 1);
+        } else if (comment.isReply && comment.ownerComment) {
+            commentIndex = comment.ownerComment.replyComments.indexOf(comment);
+            comment.ownerComment.replyComments.splice(commentIndex, 1);
+        }
+        if (this.owner.commentReviewPane) {
+            this.owner.commentReviewPane.deleteComment(comment);
+            if (this.viewer.currentSelectedComment === comment) {
+                this.viewer.currentSelectedComment = undefined;
+            }
+        }
+
+    }
+
+    /**
+     * @private
+     */
+    public resolveComment(comment: CommentElementBox): void {
+        this.resolveOrReopenComment(comment, true);
+        if (this.owner.commentReviewPane) {
+            this.owner.commentReviewPane.resolveComment(comment);
+        }
+    }
+
+    /**
+     * @private
+     */
+    public reopenComment(comment: CommentElementBox): void {
+        this.resolveOrReopenComment(comment, false);
+        if (this.owner.commentReviewPane) {
+            this.owner.commentReviewPane.reopenComment(comment);
+        }
+    }
+
+    private resolveOrReopenComment(comment: CommentElementBox, resolve: boolean): void {
+        comment.isResolved = resolve;
+        for (let i: number = 0; i < comment.replyComments.length; i++) {
+            comment.replyComments[i].isResolved = resolve;
+        }
+    }
+
+    /**
+     * @private
+     */
+    public replyComment(parentComment: CommentElementBox, text?: string): void {
+        let commentWidget: CommentElementBox = parentComment;
+        if (parentComment) {
+            this.initComplexHistory('InsertComment');
+            let currentCmtStart: CommentCharacterElementBox = commentWidget.commentStart;
+            let currentCmtEnd: CommentCharacterElementBox = commentWidget.commentEnd;
+            let offset: number = currentCmtStart.line.getOffset(currentCmtStart, 1);
+
+            let startPosition: TextPosition = new TextPosition(this.viewer.owner);
+            startPosition.setPositionParagraph(currentCmtStart.line, offset);
+            let endOffset: number = currentCmtEnd.line.getOffset(currentCmtEnd, 1);
+
+            let endPosition: TextPosition = new TextPosition(this.viewer.owner);
+            endPosition.setPositionParagraph(currentCmtEnd.line, endOffset);
+            this.selection.start.setPositionInternal(startPosition);
+            this.selection.end.setPositionInternal(endPosition);
+
+            startPosition = this.selection.start;
+            endPosition = this.selection.end;
+
+            let position: TextPosition = new TextPosition(this.owner);
+            // Clones the end position.
+            position.setPositionInternal(endPosition);
+
+            let commentRangeStart: CommentCharacterElementBox = new CommentCharacterElementBox(0);
+            let commentRangeEnd: CommentCharacterElementBox = new CommentCharacterElementBox(1);
+            let isAtSameParagraph: boolean = startPosition.isInSameParagraph(endPosition);
+
+            // Adds comment start at selection start position.
+            endPosition.setPositionInternal(startPosition);
+            this.initInsertInline(commentRangeStart);
+
+            // Updates the cloned position, since comment start is added in the same paragraph.
+            if (isAtSameParagraph) {
+                position.setPositionParagraph(position.currentWidget, position.offset + commentRangeStart.length);
+            }
+
+            // Adds comment end and comment at selection end position.
+            startPosition.setPositionInternal(position);
+            endPosition.setPositionInternal(position);
+
+            this.initInsertInline(commentRangeEnd);
+            let replyComment: CommentElementBox = new CommentElementBox(new Date().toISOString());
+            replyComment.author = this.owner.currentUser ? this.owner.currentUser : 'Guest user';
+            replyComment.text = text ? text : '';
+            //tslint:disable-next-line:max-line-length
+            replyComment.commentId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+            replyComment.isReply = true;
+            commentWidget.replyComments.push(replyComment);
+            replyComment.ownerComment = commentWidget;
+            if (this.owner.editorHistory) {
+                this.initHistory('InsertCommentWidget');
+                this.owner.editorHistory.currentBaseHistoryInfo.removedNodes.push(replyComment);
+            }
+            commentRangeStart.comment = replyComment;
+            commentRangeStart.commentId = replyComment.commentId;
+            commentRangeEnd.comment = replyComment;
+            commentRangeEnd.commentId = replyComment.commentId;
+            replyComment.commentStart = commentRangeStart;
+            replyComment.commentEnd = commentRangeEnd;
+
+            if (this.owner.commentReviewPane) {
+                this.owner.commentReviewPane.addReply(replyComment, false);
+            }
+            if (this.editorHistory) {
+                this.editorHistory.currentBaseHistoryInfo.insertPosition = this.getCommentHierarchicalIndex(replyComment);
+                this.editorHistory.updateHistory();
+            }
+
+            if (this.editorHistory) {
+                this.editorHistory.updateComplexHistory();
+            }
+            this.reLayout(this.selection);
+        }
+    }
+
+
+
+    private removeInline(element: ElementBox): void {
+        this.selection.start.setPositionParagraph(element.line, element.line.getOffset(element, 0));
+        this.selection.end.setPositionParagraph(this.selection.start.currentWidget, this.selection.start.offset + element.length);
+        this.initHistory('RemoveInline');
+        if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
+            this.updateHistoryPosition(this.selection.start, true);
+        }
+        this.removeSelectedContents(this.viewer.selection);
+        if (this.editorHistory) {
+            this.editorHistory.updateHistory();
+        }
+        this.fireContentChange();
+    }
+    /**
+     * @private
+     */
+    public addCommentWidget(commentWidget: CommentElementBox, isNewComment: boolean): void {
+        if (this.viewer.comments.indexOf(commentWidget) === -1) {
+            let isInserted: boolean = false;
+            if (this.viewer.comments.length > 0) {
+                // tslint:disable-next-line:max-line-length
+                let currentStart: TextPosition = this.selection.getElementPosition(commentWidget.commentStart).startPosition;
+                for (let i: number = 0; i < this.viewer.comments.length; i++) {
+                    let paraIndex: TextPosition = this.selection.getElementPosition(this.viewer.comments[i].commentStart).startPosition;
+                    if (currentStart.isExistBefore(paraIndex)) {
+                        isInserted = true;
+                        this.viewer.comments.splice(i, 0, commentWidget);
+                        break;
+                    }
+                }
+            }
+            if (!isInserted) {
+                this.viewer.comments.push(commentWidget);
+            }
+            if (this.owner.commentReviewPane) {
+                this.owner.showComments = true;
+                this.owner.commentReviewPane.addComment(commentWidget, isNewComment);
+                this.owner.selection.selectComment(commentWidget);
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    public addReplyComment(comment: CommentElementBox, hierarchicalIndex: string): void {
+        let index: string[] = hierarchicalIndex.split(';');
+        let ownerComment: CommentElementBox = this.viewer.comments[parseInt(index[1], 10)];
+        if (index[2] !== '') {
+            ownerComment.replyComments.splice(parseInt(index[2], 10), 0, comment);
+            comment.ownerComment = ownerComment;
+        }
+        if (this.owner.commentReviewPane) {
+            this.owner.showComments = true;
+            this.owner.commentReviewPane.addReply(comment, false);
+            this.owner.selection.selectComment(comment);
+        }
+    }
+
     /**
      * @private
      */
@@ -1331,12 +1677,20 @@ export class Editor {
 
         text = HelperMethods.trimStart(text);
         let numberFormat: string = text.substring(1, 2);
+
+        let previousList: WList = undefined;
         let listLevelPattern: ListLevelPattern = this.getListLevelPattern(text.substring(0, 1));
         if (listLevelPattern !== 'None' && this.checkNumberFormat(numberFormat, listLevelPattern === 'Bullet', text)) {
             convertList = true;
         } else if (this.checkLeadingZero(text)) {
             isLeadingZero = true;
             convertList = true;
+        } else {
+            previousList = this.checkNextLevelAutoList(text);
+            if (!isNullOrUndefined(previousList)) {
+                convertList = true;
+            }
+
         }
         if (convertList) {
             this.initComplexHistory('AutoList');
@@ -1380,7 +1734,11 @@ export class Editor {
             } else {
                 listLevel.startAt = 1;
             }
-            this.autoConvertList(selection, listLevel);
+            if (!isNullOrUndefined(previousList)) {
+                selection.paragraphFormat.setList(previousList);
+            } else {
+                this.autoConvertList(selection, listLevel);
+            }
             if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentHistoryInfo)) {
                 this.editorHistory.updateComplexHistory();
             } else {
@@ -1389,6 +1747,70 @@ export class Editor {
 
         }
         return convertList;
+    }
+    private checkNextLevelAutoList(text: string): WList {
+        let selection: Selection = this.viewer.selection;
+        let previousList: WList = undefined;
+        let convertList: boolean = false;
+        let currentParagraph: ParagraphWidget = selection.start.paragraph;
+        let prevParagraph: ParagraphWidget = selection.getPreviousParagraphBlock(currentParagraph) as ParagraphWidget;
+        let isList: boolean = false;
+        while (!isNullOrUndefined(prevParagraph) && prevParagraph instanceof ParagraphWidget) {
+            if (prevParagraph.paragraphFormat.listFormat && prevParagraph.paragraphFormat.listFormat.listId !== -1) {
+                isList = true;
+                break;
+            }
+            prevParagraph = selection.getPreviousParagraphBlock(prevParagraph) as ParagraphWidget;
+        }
+        if (isList) {
+            let listNumber: string = this.viewer.layout.getListNumber(prevParagraph.paragraphFormat.listFormat, true);
+            let prevListText: string = listNumber.substring(0, listNumber.length - 1);
+            let currentListText: string = text.substring(0, text.length - 1);
+            //check if numberFormat equal
+            let inputString: number;
+            if (listNumber.substring(listNumber.length - 1) !== text.substring(text.length - 1)) {
+                convertList = false;
+            } else if (currentListText.match(/^[0-9]+$/) && prevListText.match(/^[0-9]+$/)) {
+                inputString = parseInt(currentListText, 10);
+                if (parseInt(prevListText, 10) === inputString || parseInt(prevListText, 10) + 1 === inputString
+                    || parseInt(prevListText, 10) + 2 === inputString) {
+                    convertList = true;
+                }
+            } else if (currentListText.match(/^[a-zA-Z]+$/) && prevListText.match(/^[a-zA-Z]+$/)) {
+                if (prevListText.charCodeAt(0) === text.charCodeAt(0) || prevListText.charCodeAt(0) + 1 === text.charCodeAt(0)
+                    || prevListText.charCodeAt(0) + 2 === text.charCodeAt(0)) {
+                    convertList = true;
+                } else if (currentListText.match(/^[MDCLXVImdclxvi]+$/) && prevListText.match(/^[MDCLXVImdclxvi]+$/)) {
+                    let prevListNumber: number = this.getNumber(prevListText.toUpperCase());
+                    let currentListNumber: number = this.getNumber(currentListText.toUpperCase());
+                    if (prevListNumber === currentListNumber || prevListNumber + 1 === currentListNumber
+                        || prevListNumber + 2 === currentListNumber) {
+                        convertList = true;
+                    }
+                }
+            }
+            if (convertList) {
+                previousList = this.viewer.getListById(prevParagraph.paragraphFormat.listFormat.listId);
+            }
+
+        }
+        return previousList;
+    }
+    private getNumber(roman: string): number {
+        let conversion: object = { 'M': 1000, 'D': 500, 'C': 100, 'L': 50, 'X': 10, 'V': 5, 'I': 1 };
+        let arr: string[] = roman.split('');
+        let num: number = 0;
+        for (let i: number = 0; i < arr.length; i++) {
+            let currentValue: number = conversion[arr[i]];
+            let nextValue: number = conversion[arr[i + 1]];
+            if (currentValue < nextValue) {
+                num -= (currentValue);
+            } else {
+                num += (currentValue);
+            }
+        }
+
+        return num;
     }
     private getListLevelPattern(value: string): ListLevelPattern {
         switch (value) {
@@ -7053,6 +7475,9 @@ export class Editor {
 
     }
     private addRemovedNodes(node: IWidget): void {
+        if (node instanceof CommentCharacterElementBox && node.commentType === 0 && node.commentMark) {
+            node.removeCommentMark();
+        }
         if (node instanceof FieldElementBox && node.fieldType === 0) {
             if (this.viewer.fields.indexOf(node) !== -1) {
                 this.viewer.fields.splice(this.viewer.fields.indexOf(node), 1);
@@ -9275,6 +9700,17 @@ export class Editor {
             }
             this.editorHistory.updateHistory();
         }
+    }
+    /**
+     * @private
+     */
+    public getCommentElementBox(index: string): CommentElementBox {
+        let position: string[] = index.split(';');
+        let comment: CommentElementBox = this.viewer.comments[parseInt(position[1], 10)];
+        if (position.length > 2 && position[2] !== '') {
+            return comment.replyComments[parseInt(position[2], 10)];
+        }
+        return comment;
     }
     /**
      * @private

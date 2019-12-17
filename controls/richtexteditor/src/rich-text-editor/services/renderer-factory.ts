@@ -6,11 +6,17 @@ import { RenderType } from '../base/enum';
 /**
  * RendererFactory
  * @hidden
+ * @deprecated
  */
 export class RendererFactory {
 
     public rendererMap: { [c: string]: IRenderer } = {};
 
+    /**
+     * addRenderer method
+     * @hidden
+     * @deprecated
+     */
     public addRenderer(name: RenderType, type: IRenderer): void {
         let rName: string = <string>getEnumValue(RenderType, <RenderType>name);
 
@@ -19,6 +25,11 @@ export class RendererFactory {
         }
     }
 
+    /**
+     * getRenderer method
+     * @hidden
+     * @deprecated
+     */
     public getRenderer(name: RenderType): IRenderer {
         let rName: string = <string>getEnumValue(RenderType, <RenderType>name);
 

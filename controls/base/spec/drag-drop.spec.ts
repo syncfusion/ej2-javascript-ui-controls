@@ -7,6 +7,7 @@ import { extend,disableBlazorMode } from '../src/util';
 import { EventHandler } from '../src/event-handler';
 import { Droppable } from '../src/droppable';
 import { Touch } from '../src/touch';
+
 const eventstr: string = '__eventList';
 let element: HTMLElement;
 /* tslint:disable */

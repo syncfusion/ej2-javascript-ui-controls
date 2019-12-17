@@ -12,6 +12,15 @@ export namespace Theme {
         fontStyle: 'Normal',
         fontFamily: 'Segoe UI'
     };
+     /** @private */
+     export let titleFont: IFontMapping = {
+        size: '13px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI',
+        textOverflow: 'None',
+    };
     /** @private */
     export let axisTitleFont: IFontMapping = {
         size: '12px',

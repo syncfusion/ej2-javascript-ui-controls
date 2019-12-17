@@ -8,7 +8,7 @@ import { ModifiedLevel, RowHistoryFormat, TableHistoryInfo, EditRangeInfo } from
 import {
     IWidget, BlockWidget,
     ParagraphWidget, LineWidget, BodyWidget, TableCellWidget,
-    FieldElementBox, TableWidget, TableRowWidget, BookmarkElementBox, HeaderFooterWidget, EditRangeStartElementBox
+    FieldElementBox, TableWidget, TableRowWidget, BookmarkElementBox, HeaderFooterWidget, EditRangeStartElementBox, CommentElementBox
 } from '../viewer/page';
 import { Dictionary } from '../../base/dictionary';
 import { DocumentEditor } from '../../document-editor';
@@ -139,6 +139,28 @@ export class BaseHistoryInfo {
             this.editorHistory.undoStack.push(this);
         }
     }
+    private revertComment(): void {
+        let editPosition: string = this.insertPosition;
+        let comment: CommentElementBox = this.removedNodes[0] as CommentElementBox;
+        let insert: boolean = false;
+        if (this.action === 'InsertCommentWidget') {
+            insert = (this.editorHistory.isRedoing);
+        } else if (this.action === 'DeleteCommentWidget') {
+            insert = (this.editorHistory.isUndoing);
+        }
+        if (insert) {
+            if (comment) {
+                if (comment.isReply) {
+                    this.owner.editor.addReplyComment(comment, this.insertPosition);
+                } else {
+                    this.owner.editor.addCommentWidget(comment, false);
+                }
+            }
+        } else {
+            let commentElement: CommentElementBox = this.owner.editor.getCommentElementBox(editPosition);
+            this.owner.editor.deleteCommentWidget(commentElement);
+        }
+    }
     private revertEditRangeRegion(): void {
         let editRangeInfo: EditRangeInfo = this.removedNodes[0] as EditRangeInfo;
         let editStart: EditRangeStartElementBox = editRangeInfo.editStart;
@@ -166,6 +188,10 @@ export class BaseHistoryInfo {
         }
         if (this.action === 'RemoveEditRange') {
             this.revertEditRangeRegion();
+            return;
+        }
+        if (this.action === 'InsertCommentWidget' || this.action === 'DeleteCommentWidget') {
+            this.revertComment();
             return;
         }
         this.owner.isShiftingEnabled = true;

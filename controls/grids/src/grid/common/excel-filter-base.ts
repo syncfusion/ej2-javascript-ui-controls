@@ -315,6 +315,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         });
         let isStringTemplate: string = 'isStringTemplate';
         this.dlgObj[isStringTemplate] = true;
+        this.dlgDiv.setAttribute('aria-label', this.getLocalizedLabel('CustomFilterDialogARIA'));
         this.dlgObj.appendTo(this.dlgDiv);
     }
     private removeDialog(): void {

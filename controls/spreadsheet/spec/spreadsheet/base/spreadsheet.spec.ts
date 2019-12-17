@@ -521,18 +521,31 @@ describe('Spreadsheet base module ->', () => {
             done();
         });
 
-        // it('goTo testing', (done: Function) => {
-        //     let contentTable: HTMLTableElement = helper.getContentTableElement();
-        //     helper.invoke('goTo', ['Z100']);
-        //     setTimeout(() => {
-        //         let tr: HTMLTableRowElement = contentTable.querySelector('tr[aria-rowindex="100"]');
-        //         expect(tr.getAttribute('aria-rowindex')).toEqual('100');
-        //         expect(contentTable.scrollTop).toEqual(1980);
-        //         expect(contentTable.scrollLeft).toEqual(1726);
-        //         done();
-        //     })
-        // });
-
+        it('goTo testing', (done: Function) => {
+            // let content: HTMLElement = helper.getContentElement();
+            // let rhdr: HTMLElement = helper.getRowHeaderElement();
+            // let chdr: HTMLElement = helper.getColHeaderElement();
+            helper.invoke('goTo', ['Z100']);
+            setTimeout(() => {
+                // expect(content.querySelector('tr[aria-rowindex="100"]')).toBeDefined();
+                // expect(helper.getInstance().sheets[0].topLeftCell).toEqual('Z100');
+                // expect(content.scrollTop).toEqual(1980);
+                // expect(rhdr.scrollTop).toEqual(1980);
+                // expect(content.scrollLeft).toEqual(1600);
+                // expect(chdr.scrollLeft).toEqual(1600);
+                helper.invoke('goTo', ['A1']);
+                // setTimeout(() => {
+                //     expect(content.querySelector('tr[aria-rowindex="1"]')).toBeDefined();
+                //     expect(helper.getInstance().sheets[0].topLeftCell).toEqual('A1');
+                //     expect(content.scrollTop).toEqual(0);
+                //     expect(rhdr.scrollTop).toEqual(0);
+                //     expect(content.scrollLeft).toEqual(0);
+                //     expect(chdr.scrollLeft).toEqual(0);
+                //     done();
+                // });
+                done();
+            }, 10);
+        });
 
         it('selectRange testing', (done: Function) => {
             helper.invoke('selectRange', ['D1']);
@@ -541,35 +554,36 @@ describe('Spreadsheet base module ->', () => {
         });
 
         it('cut testing', (done: Function) => {
-            helper.invoke('cut');
-            setTimeout(() => {
-            helper.invoke('selectRange', ['K1']);
-            helper.triggerKeyNativeEvent(86, true);
+            helper.invoke('cut').then(() => {
+                helper.invoke('selectRange', ['K1']);
+                helper.triggerKeyNativeEvent(86, true);
                 helper.invoke('getData', ['Sheet1!K1']).then((values: Map<string, CellModel>) => {
                     expect(values.get('K1').value).toEqual('Quantity');
                     done();
                 });
-            }, 10);
+            });
         });
 
         it('copy testing', (done: Function) => {
-            helper.invoke('copy');
-            setTimeout(() => {
-            helper.invoke('selectRange', ['K2']);
-            helper.triggerKeyNativeEvent(86, true);
+            helper.invoke('copy').then(() => {
+                helper.invoke('selectRange', ['K2']);
+                helper.triggerKeyNativeEvent(86, true);
                 helper.invoke('getData', ['Sheet1!K2']).then((values: Map<string, CellModel>) => {
                     expect(values.get('K2').value).toEqual('Quantity');
                     done();
                 });
-            }, 10);
+            })
         });
 
         it('paste testing', (done: Function) => {
-            helper.invoke('selectRange', ['K3']);
-            helper.invoke('paste', ['K3']);
-            helper.invoke('getData', ['Sheet1!K3']).then((values: Map<string, CellModel>) => {
-                expect(values.get('K3').value).toEqual('Quantity');
-                done();
+            helper.invoke('selectRange', ['K1']);
+            helper.invoke('copy').then(() => {
+                helper.invoke('selectRange', ['K3']);
+                helper.invoke('paste', ['K3']);
+                helper.invoke('getData', ['Sheet1!K3']).then((values: Map<string, CellModel>) => {
+                    expect(values.get('K3').value).toEqual('Quantity');
+                    done();
+                });
             });
         });
 
@@ -621,7 +635,7 @@ describe('Spreadsheet base module ->', () => {
         });
 
         it('setRowHeight testing', (done: Function) => {
-            helper.invoke('setRowHeight', [1, 2, 100]);
+            helper.invoke('setRowHeight', [100, 2, 1]);
             let tr: HTMLTableRowElement = helper.invoke('getRow', [2]);
             expect(tr.style.height).toBe('100px');
             done();

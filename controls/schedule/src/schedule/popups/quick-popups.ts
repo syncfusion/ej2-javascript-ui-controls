@@ -326,12 +326,14 @@ export class QuickPopups {
                         'data-id': '' + eventData[fields.id],
                         'data-guid': eventData.Guid as string, 'role': 'button', 'tabindex': '0',
                         'aria-readonly': this.parent.eventBase.getReadonlyAttribute(eventData),
-                        'aria-selected': 'false', 'aria-grabbed': 'true', 'aria-label': eventText
+                        'aria-selected': 'false', 'aria-grabbed': 'true'
                     }
                 });
                 let templateElement: HTMLElement[];
                 if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
-                    templateElement = this.parent.getAppointmentTemplate()(eventData);
+                    let tempId: string = this.parent.element.id + '_' + this.parent.activeViewOptions.eventTemplateName + 'eventTemplate';
+                    let templateArgs: Object = util.addLocalOffsetToEvent(eventData, this.parent.eventFields);
+                    templateElement = this.parent.getAppointmentTemplate()(templateArgs, this.parent, 'eventTemplate', tempId, false);
                     append(templateElement, appointmentEle);
                 } else {
                     appointmentEle.appendChild(createElement('div', { className: cls.SUBJECT_CLASS, innerHTML: eventText }));
@@ -403,8 +405,10 @@ export class QuickPopups {
     // tslint:disable-next-line:max-func-body-length
     private cellClick(args: CellClickEventArgs): void {
         this.resetQuickPopupTemplates();
+        let date: Date = new Date(args.startTime.getTime());
         if (!this.parent.showQuickInfo || !this.parent.eventSettings.allowAdding ||
-            this.parent.currentView === 'MonthAgenda' || this.isCellBlocked(args)) {
+            this.parent.currentView === 'MonthAgenda' || this.isCellBlocked(args) ||
+            !this.parent.isMinMaxDate(new Date(date.setHours(0, 0, 0, 0)))) {
             this.quickPopupHide();
             return;
         }
@@ -451,7 +455,7 @@ export class QuickPopups {
         }
         let closeIcon: HTMLButtonElement = quickCellPopup.querySelector('.' + cls.CLOSE_CLASS) as HTMLButtonElement;
         if (closeIcon) {
-            this.renderButton('e-flat e-round e-small', cls.ICON + ' ' + cls.CLOSE_ICON_CLASS, false, closeIcon, this.quickPopupHide);
+            this.renderButton('e-flat e-round e-small', cls.ICON + ' ' + cls.CLOSE_ICON_CLASS, false, closeIcon, this.popupClose);
         }
         let moreButton: HTMLButtonElement = quickCellPopup.querySelector('.' + cls.QUICK_POPUP_EVENT_DETAILS_CLASS) as HTMLButtonElement;
         if (moreButton) {
@@ -463,7 +467,6 @@ export class QuickPopups {
         }
         this.quickPopup.content = quickCellPopup;
         this.quickPopup.dataBind();
-        this.applyFormValidation();
         if (this.morePopup) { this.morePopup.hide(); }
         this.quickPopup.relateTo = target as HTMLElement;
         this.beforeQuickPopupOpen(target);
@@ -523,7 +526,7 @@ export class QuickPopups {
             }
             let closeIcon: HTMLButtonElement = quickEventPopup.querySelector('.' + cls.CLOSE_CLASS) as HTMLButtonElement;
             if (closeIcon) {
-                this.renderButton(buttonClass, cls.ICON + ' ' + cls.CLOSE_ICON_CLASS, false, closeIcon, this.quickPopupHide);
+                this.renderButton(buttonClass, cls.ICON + ' ' + cls.CLOSE_ICON_CLASS, false, closeIcon, this.popupClose);
             }
             let editButton: HTMLButtonElement = quickEventPopup.querySelector('.' + cls.EDIT_EVENT_CLASS) as HTMLButtonElement;
             if (editButton) {
@@ -750,7 +753,8 @@ export class QuickPopups {
         }
         let selectedDate: string = ((data.date).getTime()).toString();
         let target: Element = closest(<Element>data.element, '.' + cls.MORE_INDICATOR_CLASS + ',.' + cls.WORK_CELLS_CLASS);
-        this.morePopup.element.querySelector('.' + cls.MORE_EVENT_HEADER_DAY_CLASS).innerHTML = this.getDateFormat(data.date, 'E');
+        let day: string = this.parent.globalize.formatDate(data.date, { format: 'E', calendar: this.parent.getCalendarMode() });
+        this.morePopup.element.querySelector('.' + cls.MORE_EVENT_HEADER_DAY_CLASS).innerHTML = util.capitalizeFirstWord(day, 'single');
         let dateElement: Element = this.morePopup.element.querySelector('.' + cls.MORE_EVENT_HEADER_DATE_CLASS);
         dateElement.innerHTML = this.getDateFormat(data.date, 'd');
         dateElement.setAttribute('data-date', selectedDate);
@@ -771,7 +775,7 @@ export class QuickPopups {
                 let gIndex: string = target.getAttribute('data-group-index');
                 let startDate: Date = new Date(parseInt(target.getAttribute('data-start-date'), 10));
                 startDate.setHours(startDate.getHours(), startDate.getMinutes(), 0);
-                let tdDate: string = startDate.getTime().toString();
+                let tdDate: string = this.parent.getMsFromDate(startDate).toString();
                 if (isNullOrUndefined(gIndex)) {
                     this.morePopup.relateTo = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS +
                         ' tbody tr td[data-date="' + tdDate + '"]') as HTMLElement;
@@ -788,6 +792,7 @@ export class QuickPopups {
             this.morePopup.element.style.left = '0px';
             this.morePopup.element.style.height = formatUnit(window.innerHeight);
         }
+        this.parent.updateEventTemplates();
         let eventProp: PopupOpenEventArgs = { type: 'EventContainer', cancel: false, element: this.morePopup.element };
         if (!isBlazor()) {
             eventProp.data = data;
@@ -800,6 +805,7 @@ export class QuickPopups {
     }
 
     private saveClick(): void {
+        this.applyFormValidation();
         this.isCrudAction = true;
         this.quickPopupHide();
     }
@@ -809,6 +815,7 @@ export class QuickPopups {
         if (subjectEle && subjectEle.value !== '') {
             let args: CellClickEventArgs = <CellClickEventArgs>extend(this.parent.activeCellsData, { subject: subjectEle.value });
         }
+        this.isCrudAction = false;
         this.fieldValidator.destroyToolTip();
         this.quickPopupHide();
         this.parent.eventWindow.openEditor(this.parent.activeCellsData, 'Add');
@@ -945,7 +952,8 @@ export class QuickPopups {
     }
 
     private getDateFormat(date: Date, formatString: string): string {
-        return this.parent.globalize.formatDate(date, { skeleton: formatString, calendar: this.parent.getCalendarMode() });
+        return util.capitalizeFirstWord(
+            this.parent.globalize.formatDate(date, { skeleton: formatString, calendar: this.parent.getCalendarMode() }), 'single');
     }
 
     private getDataFromTarget(target: Element): Object {
@@ -1132,6 +1140,11 @@ export class QuickPopups {
         }
     }
 
+    private popupClose(): void {
+        this.isCrudAction = false;
+        this.quickPopupHide(true);
+    }
+
     public quickPopupHide(hideAnimation?: Boolean): void {
         if (!this.quickPopup.element.classList.contains(cls.POPUP_OPEN)) {
             return;
@@ -1140,7 +1153,7 @@ export class QuickPopups {
         let popupData: Object;
         if (isCellPopup) {
             let formvalidator: Element = this.quickPopup.element.querySelector('.e-formvalidator');
-            if (formvalidator && !((formvalidator as EJ2Instance).ej2_instances[0] as FormValidator).validate()) {
+            if (this.isCrudAction && formvalidator && !((formvalidator as EJ2Instance).ej2_instances[0] as FormValidator).validate()) {
                 return;
             }
             let fields: EventFieldsMapping = this.parent.eventFields;
@@ -1206,7 +1219,7 @@ export class QuickPopups {
             let date: Date = this.parent.getDateFromElement(e.currentTarget as HTMLTableCellElement);
             if (!isNullOrUndefined(date)) {
                 this.closeClick();
-                this.parent.setProperties({ selectedDate: date }, true);
+                this.parent.setScheduleProperties({ selectedDate: date });
                 this.parent.changeView(this.parent.getNavigateView(), e);
             }
         }
@@ -1256,6 +1269,15 @@ export class QuickPopups {
                 instance.destroy();
             }
         });
+    }
+
+    public refreshQuickDialog(): void {
+        if (this.quickDialog.element) {
+            this.quickDialog.destroy();
+            remove(this.quickDialog.element);
+            this.quickDialog.element = null;
+        }
+        this.renderQuickDialog();
     }
 
     public destroy(): void {

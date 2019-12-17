@@ -1,4 +1,4 @@
-import { CellModel, CellStyleModel } from './../../workbook/index';
+import { CellModel, CellStyleModel, BeforeSortEventArgs } from './../../workbook/index';
 import { RefreshType } from './enum';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { BaseEventArgs } from '@syncfusion/ej2-base';
@@ -45,6 +45,7 @@ export interface IViewport {
     rowCount: number;
     colCount: number;
     topIndex: number;
+    bottomIndex: number;
     leftIndex: number;
     height: number;
     width: number;
@@ -72,7 +73,8 @@ export interface IScrollArgs {
  * @hidden
  */
 export interface IRowRenderer {
-    render(index?: number, isRowHeader?: boolean): Element;
+    render(index?: number, isRowHeader?: boolean, skipHidden?: boolean): Element;
+    refresh(index: number, hRow?: Element): Element;
 }
 
 /**
@@ -149,7 +151,14 @@ export interface CellRenderArgs {
     hRow?: HTMLElement;
     isHeightCheckNeeded?: boolean;
 }
-
+/** @hidden */
+export interface IAriaOptions<T> {
+    role?: string;
+    selected?: T;
+    multiselectable?: T;
+    busy?: T;
+    colcount?: string;
+}
 export interface CellEditEventArgs {
     value: string;
     oldValue: string;
@@ -163,4 +172,58 @@ export interface CellSaveEventArgs {
     oldValue: string;
     element: HTMLElement;
     address: string;
+    formula?: string;
+}
+
+/** @hidden */
+export interface CollaborativeEditArgs {
+    action: string;
+    eventArgs: UndoRedoEventArgs;
+}
+
+/** @hidden */
+export interface HideShowEventArgs {
+    hide: boolean;
+    startRow: number;
+    endRow: number;
+    autoFit?: boolean;
+    hdrRow?: HTMLElement;
+    row?: HTMLElement;
+    insertIdx?: number;
+    skipAppend?: boolean;
+}
+
+/** @hidden */
+export interface UndoRedoEventArgs extends CellSaveEventArgs, BeforeSortEventArgs, BeforePasteEventArgs {
+    requestType: string;
+    beforeActionData: BeforeActionData;
+    sheetIndex?: number;
+    oldWidth?: string;
+    oldHeight?: string;
+    isCol?: boolean;
+    index?: number;
+    width?: string;
+    height?: string;
+}
+export interface BeforeActionData {
+    cellDetails: PreviousCellDetails[];
+    cutCellDetails?: PreviousCellDetails[];
+}
+export interface PreviousCellDetails {
+    rowIndex: number;
+    colIndex: number;
+    style: object;
+    format: string;
+    value: string;
+    formula: string;
+}
+
+export interface BeforePasteEventArgs {
+    cancel?: boolean;
+    copiedInfo: { [key: string]: Object };
+    copiedRange: string;
+    pastedRange: string;
+    requestType: string;
+    type: string;
+    BeforeActionData?: BeforeActionData;
 }

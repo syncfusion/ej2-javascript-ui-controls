@@ -13,3 +13,4 @@ export * from './enum';
 export * from './event';
 export * from './util';
 export * from './math';
+export * from './constant';

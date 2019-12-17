@@ -14,8 +14,8 @@ export class ICalendarExport {
         this.parent = parent;
     }
 
-    public initializeCalendarExport(fileName?: string): void {
-        let eventsData: Object[] = <Object[]>extend([], this.parent.eventsData, null, true);
+    public initializeCalendarExport(fileName: string, customData: Object[]): void {
+        let eventsData: Object[] = (customData) ? customData : <Object[]>extend([], this.parent.eventsData, null, true);
         eventsData = this.parent.eventBase.sortByTime(eventsData);
         const SEPARATOR: string = (navigator.appVersion.indexOf('Win') !== -1) ? '\r\n' : '\n';
         let iCalendarEvents: string[] = [];

@@ -9,12 +9,14 @@ import * as EVENTS from './../../common/constant';
 /**
  * Clear Format EXEC internal component
  * @hidden
+ * @deprecated
  */
 export class ClearFormatExec {
     private parent: EditorManager;
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     constructor(parent: EditorManager) {
         this.parent = parent;

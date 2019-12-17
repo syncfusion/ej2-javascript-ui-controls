@@ -3,6 +3,7 @@ import { IRenderer, IRichTextEditor } from '../base/interface';
 /**
  * Markdown module is used to render RichTextEditor as Markdown editor content
  * @hidden
+ * @deprecated
  */
 export class MarkdownRender implements IRenderer {
     private contentPanel: Element;
@@ -17,7 +18,9 @@ export class MarkdownRender implements IRenderer {
     }
 
     /**
-     * The function is used to render RichTextEditor content div    
+     * The function is used to render RichTextEditor content div
+     * @hidden
+     * @deprecated  
      */
     public renderPanel(): void {
         let rteObj: IRichTextEditor = this.parent;
@@ -32,14 +35,18 @@ export class MarkdownRender implements IRenderer {
     }
     /**
      * Get the content div element of RichTextEditor
-     * @return {Element} 
+     * @return {Element}
+     * @hidden
+     * @deprecated
      */
     public getPanel(): Element {
         return this.contentPanel;
     }
     /**
      * Get the editable element of RichTextEditor
-     * @return {Element} 
+     * @return {Element}
+     * @hidden
+     * @deprecated
      */
     public getEditPanel(): Element {
         return this.editableElement;
@@ -53,14 +60,18 @@ export class MarkdownRender implements IRenderer {
     }
     /**
      * Set the content div element of RichTextEditor
-     * @param  {Element} panel   
+     * @param  {Element} panel
+     * @hidden
+     * @deprecated
      */
     public setPanel(panel: Element): void {
         this.contentPanel = panel;
     }
     /**
      * Get the document of RichTextEditor
-     * @param  {Document}   
+     * @param  {Document}
+     * @hidden
+     * @deprecated
      */
     public getDocument(): Document {
         return this.getEditPanel().ownerDocument;

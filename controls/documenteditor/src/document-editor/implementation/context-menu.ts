@@ -11,6 +11,7 @@ import { Point } from './editor/editor-helper';
 const CONTEXTMENU_COPY: string = '_contextmenu_copy';
 const CONTEXTMENU_CUT: string = '_contextmenu_cut';
 const CONTEXTMENU_PASTE: string = '_contextmenu_paste';
+const CONTEXTMENU_ADD_COMMENT: string = '_add_comment';
 const CONTEXTMENU_UPDATE_FIELD: string = '_contextmenu_update_field';
 const CONTEXTMENU_EDIT_FIELD: string = '_contextmenu_edit_field';
 const CONTEXTMENU_HYPERLINK: string = '_contextmenu_hyperlink';
@@ -138,6 +139,14 @@ export class ContextMenu {
                 text: localValue.getConstant('Paste'),
                 iconCss: 'e-icons e-de-paste',
                 id: id + CONTEXTMENU_PASTE
+            },
+            {
+                separator: true
+            },
+            {
+                text: localValue.getConstant('New Comment'),
+                iconCss: 'e-icons e-de-cmt-add',
+                id: id + CONTEXTMENU_ADD_COMMENT
             },
             {
                 separator: true
@@ -351,6 +360,11 @@ export class ContextMenu {
             case id + CONTEXTMENU_PASTE:
                 if (!this.viewer.owner.isReadOnlyMode) {
                     this.viewer.owner.editorModule.pasteInternal(undefined);
+                }
+                break;
+            case id + CONTEXTMENU_ADD_COMMENT:
+                if (!this.viewer.owner.isReadOnlyMode) {
+                    this.viewer.owner.editorModule.insertComment();
                 }
                 break;
             case id + CONTEXTMENU_UPDATE_FIELD:
@@ -656,6 +670,7 @@ export class ContextMenu {
         let continueNumbering: HTMLElement = document.getElementById(id + CONTEXTMENU_CONTINUE_NUMBERING);
         let restartAt: HTMLElement = document.getElementById(id + CONTEXTMENU_RESTART_AT);
         let autoFitTable: HTMLElement = document.getElementById(id + CONTEXTMENU_AUTO_FIT);
+        let addComment: HTMLElement = document.getElementById(id + CONTEXTMENU_ADD_COMMENT);
 
         cut.style.display = 'none';
         paste.style.display = 'none';
@@ -683,8 +698,17 @@ export class ContextMenu {
         let isSelectionEmpty: boolean = selection.isEmpty;
         classList(cut, isSelectionEmpty ? ['e-disabled'] : [], !isSelectionEmpty ? ['e-disabled'] : []);
         classList(copy, isSelectionEmpty ? ['e-disabled'] : [], !isSelectionEmpty ? ['e-disabled'] : []);
+        addComment.style.display = this.viewer.owner.isReadOnlyMode ? 'none' : 'block';
+        (addComment.previousSibling as HTMLElement).style.display = this.viewer.owner.isReadOnlyMode ? 'none' : 'block';
+        (addComment.nextSibling as HTMLElement).style.display = this.viewer.owner.isReadOnlyMode ? 'none' : 'block';
         if (owner.isReadOnlyMode) {
             return true;
+        }
+        if (this.viewer && this.viewer.owner && this.viewer.owner.commentReviewPane &&
+            this.viewer.owner.commentReviewPane.commentPane.isEditMode) {
+            classList(addComment, ['e-disabled'], []);
+        } else {
+            classList(addComment, [], ['e-disabled']);
         }
         cut.style.display = 'block';
         paste.style.display = 'block';

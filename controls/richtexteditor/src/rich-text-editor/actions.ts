@@ -16,3 +16,8 @@ export * from './actions/markdown-editor';
 export * from './actions/html-editor';
 export * from './actions/paste-clean-up';
 export * from './actions/resize';
+export * from './actions/dropdown-buttons';
+export * from './actions/full-screen';
+export * from './actions/html-attributes';
+export * from './actions/html-toolbar-status';
+export * from './actions/xhtml-validation';

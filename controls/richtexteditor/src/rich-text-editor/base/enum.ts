@@ -1,6 +1,7 @@
 /**
  * Defines types of Render
  * @hidden
+ * @deprecated
  */
 export enum RenderType {
     /**  Defines RenderType as Toolbar */

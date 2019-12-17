@@ -442,11 +442,13 @@ export class EventBase {
         }
         for (let member of members) {
             let memberName: string = this.parent.isDateField ? member.formattedText : member.actualText.toString();
+            /* tslint:disable */
             let obj: { [key: string]: Object } = {
                 id: member.actualText.toString(),
                 name: memberName,
                 isSelected: isInclude ? false : true
             };
+            /* tslint:disable */
             if (filterObj[memberName] !== undefined) {
                 obj.isSelected = isInclude ? true : false;
             }

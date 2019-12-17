@@ -37,10 +37,6 @@ module.exports = function (config) {
                 included: false
             },
             {
-                pattern: "node_modules/@syncfusion/ej2-popups/**/*.js",
-                included: false
-            },
-            {
                 pattern: "node_modules/@syncfusion/ej2-buttons/**/*.js",
                 included: false
             },

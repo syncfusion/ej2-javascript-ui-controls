@@ -12,12 +12,14 @@ import { getRangeIndexes, getCellAddress, getRangeAddress, getCellIndexes, getSw
 /**
  * Represents selection support for Spreadsheet.
  */
+
 export class Selection {
     private parent: Spreadsheet;
     private startCell: number[];
     private isRowSelected: boolean;
     private isColSelected: boolean;
-    private scrollInterval: number;
+    /* tslint:disable-next-line:no-any */
+    private scrollInterval: any;
     private touchEvt: TouchEvent & MouseEvent;
     private mouseMoveEvt: EventListener;
 
@@ -57,23 +59,23 @@ export class Selection {
         getUpdateUsingRaf((): void => {
             let ele: HTMLElement = this.getActiveCell();
             let cellIndex: number = getCellIndexes(this.parent.getActiveSheet().activeCell)[0];
-            if ( cellIndex === args.rowIdx && ele) {
+            if (cellIndex === args.rowIdx && ele) {
                 ele.style.height = `${parseInt(ele.style.height, 10) + args.threshold}px`;
             } else if (cellIndex > args.rowIdx && ele) {
                 ele.style.top = `${parseInt(ele.style.top, 10) + args.threshold}px`;
             }
             ele = this.getSelectionElement();
             if (ele) {
-            let selectedRange: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
-            let sRange: number[] = getSwapRange(selectedRange);
-            let rowStart: number = sRange[0];
-            let rowEnd: number = sRange[2];
-            if (rowStart <= args.rowIdx && rowEnd >= args.rowIdx && ele) {
-                ele.style.height = `${parseInt(ele.style.height, 10) + args.threshold}px`;
-            } else if (rowStart > args.rowIdx && ele) {
-                ele.style.top = `${parseInt(ele.style.top, 10) + args.threshold}px`;
+                let selectedRange: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+                let sRange: number[] = getSwapRange(selectedRange);
+                let rowStart: number = sRange[0];
+                let rowEnd: number = sRange[2];
+                if (rowStart <= args.rowIdx && rowEnd >= args.rowIdx && ele) {
+                    ele.style.height = `${parseInt(ele.style.height, 10) + args.threshold}px`;
+                } else if (rowStart > args.rowIdx && ele) {
+                    ele.style.top = `${parseInt(ele.style.top, 10) + args.threshold}px`;
+                }
             }
-        }
         });
     }
 
@@ -81,7 +83,7 @@ export class Selection {
         getUpdateUsingRaf((): void => {
             let ele: HTMLElement = this.getActiveCell();
             let cellIndex: number = getCellIndexes(this.parent.getActiveSheet().activeCell)[1];
-            if ( cellIndex === args.colIdx && ele) {
+            if (cellIndex === args.colIdx && ele) {
                 ele.style.width = `${parseInt(ele.style.width, 10) + args.threshold}px`;
             } else if (cellIndex > args.colIdx && ele) {
                 ele.style.left = `${parseInt(ele.style.left, 10) + args.threshold}px`;
@@ -393,12 +395,13 @@ export class Selection {
     private getHdrIndexes(range: number[]): number[] {
         if (this.parent.scrollSettings.enableVirtualization) {
             let indexes: number[] = [];
+            let hiddenRowCount: number = this.parent.hiddenRowsCount(this.parent.viewport.topIndex, range[0]);
             indexes[0] = this.isColSelected ? range[0] : (range[0] - this.parent.viewport.topIndex) < 0
-                ? 0 : (range[0] - this.parent.viewport.topIndex);
+                ? 0 : ((range[0] - hiddenRowCount) - this.parent.viewport.topIndex);
             indexes[1] = this.isRowSelected ? range[1] : (range[1] - this.parent.viewport.leftIndex) < 0
                 ? 0 : (range[1] - this.parent.viewport.leftIndex);
-            indexes[2] = this.isColSelected ? this.parent.viewport.rowCount + this.parent.getThreshold('row') * 2 : indexes[0] === 0
-                ? range[2] - this.parent.viewport.topIndex : range[2] - range[0] + indexes[0];
+            indexes[2] = this.isColSelected ? this.parent.viewport.rowCount + this.parent.getThreshold('row') * 2 : range[2] -
+                this.parent.hiddenRowsCount(range[0], range[2]) - hiddenRowCount - this.parent.viewport.topIndex;
             indexes[3] = this.isRowSelected ? this.parent.viewport.colCount + this.parent.getThreshold('col') * 2 : indexes[1] === 0
                 ? range[3] - this.parent.viewport.leftIndex : range[3] - range[1] + indexes[1];
             return indexes;

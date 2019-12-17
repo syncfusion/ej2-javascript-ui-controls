@@ -630,6 +630,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         let argsData: IAccSeriesRenderEventArgs = {
             name: seriesRender, series: this, data: e.result,
         };
+        accumulation.allowServerDataBinding = false;
         accumulation.trigger(seriesRender, argsData);
         this.resultData = e.result !== '' ? e.result : [];
         this.getPoints(this.resultData, accumulation);

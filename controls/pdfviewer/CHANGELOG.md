@@ -2,24 +2,7 @@
 
 ## [Unreleased]
 
-## 17.3.34 (2019-12-10)
-
-### PDF Viewer
-
-#### New Features
-
-- `#253745`, `#256518` – Exposed the event to notify the annotation object being moved.
-- `#254275` – Exposed the event to notify the download process in the PDF Viewer control.
-
-#### Bug Fixes
-
-- `#256220` – The context menu will now be shown/hidden properly if we disable the default toolbar.
-- `#256131` – The annotation toolbar will now be shown/hidden properly if we disable the annotation toolbar.
-- `#256932` - Errors will no longer occur while resizing the text markup annotations.
-- `#252805` – The annotationId value is now preserved properly for all annotation events.
-- `#255647` - The form fields contents are rendered properly in the printed document, which has been printed in IE browser.
-
-## 17.3.30 (2019-12-03)
+## 17.4.39 (2019-12-17)
 
 ### PDF Viewer
 
@@ -28,6 +11,8 @@
 - `#251150` – Provided the support to find the interlinked annotations while selecting the annotations.
 - `#243077` , `#241487`, `#244802`, `#252340` – Provided the support for setting the annotation UI properties.
 - `#254634` – Provided the support to maintain the aspect ratio for custom stamp annotation.
+- `#253745`, `#256518` – Exposed the event to notify the annotation object being moved.
+- `#254275` – Exposed the event to notify the download process in the PDF Viewer control.
 
 #### Bug Fixes
 
@@ -41,6 +26,11 @@
 - `#254115`, `#254942` – The annotation modified date is preserved properly in different localization.
 - `#256044` – The font family and text alignment are rendered properly from the exported FreeText annotation data.
 - `#255124` – The text markup annotations are now added properly if the PDF Viewer element ID contains characters.
+- `#256220` – The context menu will now be shown/hidden properly if we disable the default toolbar.
+- `#256131` – The annotation toolbar will now be shown/hidden properly if we disable the annotation toolbar.
+- `#256932` - Errors will no longer occur while resizing the text markup annotations.
+- `#252805` – The annotationId value is now preserved properly for all annotation events.
+- `#255647` - The form fields contents are rendered properly in the printed document, which has been printed in IE browser.
 
 ## 17.3.28 (2019-11-19)
 

@@ -1,4 +1,4 @@
-import { Toolbar, ActionBeginEventArgs, PasteCleanup, HTMLFormatter } from '../../../src/rich-text-editor/index';
+import { Toolbar, ActionBeginEventArgs, PasteCleanup, HTMLFormatter, MarkdownFormatter } from '../../../src/rich-text-editor/index';
 import { dispatchEvent } from '../../../src/rich-text-editor/base/util';
 import { RichTextEditor } from '../../../src/rich-text-editor/base/rich-text-editor';
 import { NodeSelection } from '../../../src/selection/index';
@@ -669,6 +669,17 @@ describe('RTE base module', () => {
             (rteObj as any).keyUp(keyBoardEvent);
             expect(rteObj.contentModule.getEditPanel().innerHTML !== '').toBe(true);
             expect((rteObj.contentModule.getEditPanel().childNodes[0] as Element).tagName === 'P').toBe(true);
+        });
+
+        it('backspace key press inside the pre tag', () => {
+            rteObj.contentModule.getEditPanel().innerHTML = '<pre id="p1"><br>Paragraph 4<br>Paragraph 5<br>Para&#8203;<br><br></pre>';
+            let start: HTMLElement =  rteObj.contentModule.getEditPanel().querySelector('#p1');
+            expect(start.childNodes[5].textContent.length === 5).toBe(true);
+            setCursorPoint(document, start.childNodes[5] as Element, 5);
+            keyBoardEvent.which = 8;
+            keyBoardEvent.code = 'Backspace';
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect(start.childNodes[5].textContent.length === 4).toBe(true);
         });
 
         it('backspace key press while <BR> content in editable element - Firefox', () => {
@@ -2198,7 +2209,21 @@ describe('RTE base module', () => {
             A double enter will end them
             Tabs and shift-tabs work too`;
         beforeAll(() => {
-            rteObj = renderRTE({ editorMode: 'Markdown' });
+            rteObj = renderRTE({ editorMode: 'Markdown',
+            formatter: new MarkdownFormatter({
+                listTags: { 'OL': '1. ', 'UL': '- ' }, formatTags: {
+                    'h1': '# ',
+                    'h2': '## ',
+                    'h3': '### ',
+                    'h4': '#### ',
+                    'h5': '##### ',
+                    'h6': '###### ',
+                    'blockquote': '> ',
+                    'pre': '```\n',
+                    'p': ''
+                }
+            })
+         });
             elem = rteObj.element;
             editNode = rteObj.contentModule.getEditPanel() as HTMLTextAreaElement;
             editNode.value = innerHTML;
@@ -2931,9 +2956,44 @@ describe('EJ2-12731 - RTE -  IFrame heights are not auto adjusted based content'
         rteObj.appendTo("#defaultRTE");
         done();
     });
-    it(' test the iframe content height', () => {
-        let iframe: HTMLElement = rteObj.element.querySelector('#defaultRTE_rte-view');
-        expect(iframe.style.height !== 'auto').toBe(true);
+    it(' test the iframe content height', (done) => {
+        setTimeout(() => {
+            let iframe: HTMLElement = rteObj.element.querySelector('#defaultRTE_rte-view');
+            expect(iframe.style.height !== 'auto').toBe(true);
+            done();
+        }, 110);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+        document.body.innerHTML = '';
+    });
+});
+
+
+describe('IFrame heights are not auto adjusted when image content is loaded', () => {
+    let rteObj: RichTextEditor;
+    let elem: HTMLElement;
+    beforeAll((done: Function) => {
+        elem = document.createElement('div');
+        elem.innerHTML = `<p>The rich text editor is WYSIWYG ("what you see is what you get") editor useful to create and edit content, and return the valid
+        <a href="https://ej2.syncfusion.com/home/" target="_blank">HTML markup</a> 
+       or <a href="https://ej2.syncfusion.com/home/" target="_blank">markdown</a> 
+       of the content</p><p><b>Image.</b></p><img src="data:image/png;base64,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">`;
+        elem.id = 'defaultRTE';
+        document.body.appendChild(elem);
+        rteObj = new RichTextEditor({
+            iframeSettings: { enable: true },
+            width: 200,
+        });
+        rteObj.appendTo("#defaultRTE");
+        done();
+    });
+    it(' test the iframe content height with image', (done) => {
+        setTimeout(() => {
+            let iframe: HTMLElement = rteObj.element.querySelector('#defaultRTE_rte-view');
+            expect(iframe.style.height !== 'auto').toBe(true);
+            done();
+        }, 110);
     });
     afterAll(() => {
         destroy(rteObj);
@@ -3419,7 +3479,6 @@ describe("keyConfig property testing", () => {
 });
 
 describe('EJ2-26359 Clear Format is not working after applied selection and parent based tags', () => {
-    let expectHtml: string = `<p>The rich text editor is WYSIWYG ("what you see is what you get") editor useful to create and edit content, and return the valid HTML markup or markdown of the content</p><p>Table</p><p>Inserts the manages table.</p><p>column 1<br>column 2</p><p><br></p><p>Toolbar</p><p>Toolbar contains commands to align the text, insert link, insert image, insert list, undo/redo operations, HTML view, etc </p><p>Toolbar is fully customizable</p><p>Image.</p><p>Allows you to insert images from an online source as well as the local computer</p><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;">`;
     let innerHtml: string = `<p>The rich text editor is WYSIWYG ("what you see is what you get") editor useful to create and edit content, and return the valid <a href="https://ej2.syncfusion.com/home/" target="_blank">HTML markup</a> or <a href="https://ej2.syncfusion.com/home/" target="_blank">markdown</a> of the content</p><p><strong>Table</strong></p><p>Inserts the manages table.</p><table class="e-rte-table" style="width: 100%;"><tbody><tr><td style="width: 50%;" class=""><p>column 1<br></p><p>column 2</p></td><td style="width: 50%;"><p><br></p></td></tr></tbody></table><p><b>Toolbar</b></p><p>Toolbar contains commands to align the text, insert link, insert image, insert list, undo/redo operations, HTML view, etc </p><ol><li><p>Toolbar is fully customizable</p></li></ol><p><b>Image.</b></p><p><span>Allows you to insert images from an online source as well as the local computer</span></p><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;">`;
     let rteObj: RichTextEditor;
     let controlId: string;
@@ -3441,7 +3500,8 @@ describe('EJ2-26359 Clear Format is not working after applied selection and pare
         let item: HTMLElement = rteElement.querySelector("#" + controlId + '_toolbar_ClearFormat');
         dispatchEvent(item, 'mousedown');
         item.click();
-        expect(expectHtml === rteObj.inputElement.innerHTML).toBe(true);
+        let expectedHTML: string = `<p>The rich text editor is WYSIWYG ("what you see is what you get") editor useful to create and edit content, and return the valid HTML markup or markdown of the content</p><p>Table</p><p>Inserts the manages table.</p><p>column 1<br>column 2</p><p><br></p><p>Toolbar</p><p>Toolbar contains commands to align the text, insert link, insert image, insert list, undo/redo operations, HTML view, etc </p><p>Toolbar is fully customizable</p><p>Image.</p><p>Allows you to insert images from an online source as well as the local computer</p><p><img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;"></p>`;
+        expect(expectedHTML === rteObj.inputElement.innerHTML).toBe(true);
     });
     afterAll(() => {
         destroy(rteObj);
@@ -3544,5 +3604,154 @@ describe('EJ2-29801 Tab and shift+tab key combination should have same behavior'
         rteObj.destroy();
         detach(rteObj.element);
         document.body.innerHTML = '';
+    });
+});
+describe('XHTML validation', function () {
+    let rteObj: any;
+    beforeAll(function (done) {
+        rteObj = renderRTE({ enableXhtml: true });
+        done();
+    });
+    it("clean", function () {
+        rteObj.value = "<!-- sit amet --><div><!-- sit amet --><p>adasd</p></div>";
+        rteObj.enableXhtml = false;
+        rteObj.enableXhtml = true;
+        rteObj.dataBind();
+        expect(rteObj.inputElement.innerHTML).toBe("<div><p>adasd</p></div>");
+    });
+    it("AddRootElement", function () {
+        rteObj.value = "<div><p>adasd</p></div><div><p>adasd</p></div>";
+        rteObj.enableXhtml = false;
+        rteObj.enableXhtml = true;
+        rteObj.dataBind();
+        expect(rteObj.inputElement.innerHTML).toBe("<div><div><p>adasd</p></div><div><p>adasd</p></div></div>");
+    });
+    it("ImageTags", function () {
+        rteObj.value = ' <img src="image.jpg"><p> dfg<img src="image.jpg"> ds</p> ';
+        rteObj.enableXhtml = false;
+        rteObj.enableXhtml = true;
+        rteObj.dataBind();
+        expect(rteObj.inputElement.innerHTML).toBe('<div> <p><img src="image.jpg" alt=""></p><p> dfg<img src="image.jpg" alt=""> ds</p> </div>');
+    });
+    it("removeTags", function () {
+        rteObj.value = "<ul> <li>Coffee</li> <br>   <li>Tea</li> <br>   <li>Milk</li> <br>  </ul> <ol>   <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>  </ol>   ";
+        rteObj.enableXhtml = false;
+        rteObj.enableXhtml = true;
+        rteObj.dataBind();
+        expect(rteObj.inputElement.innerHTML).toBe('<div><ul> <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>   </ul> <ol>   <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>  </ol>   </div>');
+        rteObj.value = "<span><p>dfsddfsdf</p> <table></table></span>   <span><p>asdasdsd </p></span>";
+        rteObj.enableXhtml = false;
+        rteObj.enableXhtml = true;
+        rteObj.dataBind();
+        expect(rteObj.inputElement.innerHTML).toBe('<div><span> </span>   <span></span></div>');
+        rteObj.value = '<div><div contenteditable="true"><p contenteditable="true">text</p><div><p>text</p></div></div></div>';
+        rteObj.enableXhtml = false;
+        rteObj.enableXhtml = true;
+        rteObj.dataBind();
+        expect(rteObj.inputElement.innerHTML).toBe('<div><div><p>text</p><div><p>text</p></div></div></div>');
+    });
+    it("RemoveUnsupported", function () {
+        rteObj.value = "<div contenteditable='true'><table contenteditable='true'> </table></div>";
+        rteObj.enableXhtml = false;
+        rteObj.enableXhtml = true;
+        rteObj.dataBind();
+        expect(rteObj.inputElement.innerHTML).toBe('<div><table contenteditable="true"> </table></div>');
+    });
+    it("Underline tag", function () {
+        rteObj.value = "<p>Rich <u>Text</u> Editor</p><p>Sync<u>fusion</u></p>";
+        rteObj.enableXhtml = false;
+        rteObj.enableXhtml = true;
+        rteObj.dataBind();
+        expect(rteObj.inputElement.innerHTML).toBe('<div><p>Rich <span style="text-decoration: underline;">Text</span> Editor</p><p>Sync<span style="text-decoration: underline;">fusion</span></p></div>');
+    });
+    it("Underline tag", function () {
+        rteObj.value = "<p>Rich<strong>Text</strong> Editor</p><p>Sync<strong>fusion</srong></p>";
+        rteObj.enableXhtml = false;
+        rteObj.enableXhtml = true;
+        rteObj.dataBind();
+        expect(rteObj.inputElement.innerHTML).toBe('<div><p>Rich<b>Text</b> Editor</p><p>Sync<b>fusion</b></p></div>');
+    });
+    it("v:image", function () {
+        rteObj.value = '<p>sync<v:image src="zip.gif"></v:image>sync</p><v:image src="zip.gif"></v:image>';
+        rteObj.enableXhtml = false;
+        rteObj.enableXhtml = true;
+        rteObj.dataBind();
+        expect(rteObj.inputElement.innerHTML).toBe('<div><p>syncsync</p></div>');
+    });
+});
+describe('XHTML validation -iframe', function () {
+    let rteObj: any;
+    beforeAll(function (done) {
+        rteObj = renderRTE({
+            enableXhtml: true,
+            iframeSettings: { enable: true }
+        });
+        done();
+    });
+    it("clean", function () {
+        rteObj.value = "<!-- sit amet --><div><!-- sit amet --><p>adasd</p></div>";
+        rteObj.enableXhtml = false;
+        rteObj.enableXhtml = true;
+        rteObj.dataBind();
+        expect(rteObj.inputElement.innerHTML).toBe("<div><p>adasd</p></div>");
+    });
+    it("AddRootElement", function () {
+        rteObj.value = "<div><p>adasd</p></div><div><p>adasd</p></div>";
+        rteObj.enableXhtml = false;
+        rteObj.enableXhtml = true;
+        rteObj.dataBind();
+        expect(rteObj.inputElement.innerHTML).toBe("<div><div><p>adasd</p></div><div><p>adasd</p></div></div>");
+    });
+    it("ImageTags", function () {
+        rteObj.value = ' <img src="image.jpg"><p> dfg<img src="image.jpg"> ds</p> ';
+        rteObj.enableXhtml = false;
+        rteObj.enableXhtml = true;
+        rteObj.dataBind();
+        expect(rteObj.inputElement.innerHTML).toBe('<div> <p><img src="image.jpg" alt=""></p><p> dfg<img src="image.jpg" alt=""> ds</p> </div>');
+    });
+    it("removeTags", function () {
+        rteObj.value = "<ul> <li>Coffee</li> <br>   <li>Tea</li> <br>   <li>Milk</li> <br>  </ul> <ol>   <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>  </ol>   ";
+        rteObj.enableXhtml = false;
+        rteObj.enableXhtml = true;
+        rteObj.dataBind();
+        expect(rteObj.inputElement.innerHTML).toBe('<div><ul> <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>   </ul> <ol>   <li>Coffee</li>    <li>Tea</li>    <li>Milk</li>  </ol>   </div>');
+        rteObj.value = "<span><p>dfsddfsdf</p> <table></table></span>   <span><p>asdasdsd </p></span>";
+        rteObj.enableXhtml = false;
+        rteObj.enableXhtml = true;
+        rteObj.dataBind();
+        expect(rteObj.inputElement.innerHTML).toBe('<div><span> </span>   <span></span></div>');
+        rteObj.value = '<div><div contenteditable="true"><p contenteditable="true">text</p><div><p>text</p></div></div></div>';
+        rteObj.enableXhtml = false;
+        rteObj.enableXhtml = true;
+        rteObj.dataBind();
+        expect(rteObj.inputElement.innerHTML).toBe('<div><div><p>text</p><div><p>text</p></div></div></div>');
+    });
+    it("RemoveUnsupported", function () {
+        rteObj.value = "<div contenteditable='true'><table contenteditable='true'> </table></div>";
+        rteObj.enableXhtml = false;
+        rteObj.enableXhtml = true;
+        rteObj.dataBind();
+        expect(rteObj.inputElement.innerHTML).toBe('<div><table contenteditable="true"> </table></div>');
+    });
+    it("Underline tag", function () {
+        rteObj.value = "<p>Rich <u>Text</u> Editor</p><p>Sync<u>fusion</u></p>";
+        rteObj.enableXhtml = false;
+        rteObj.enableXhtml = true;
+        rteObj.dataBind();
+        expect(rteObj.inputElement.innerHTML).toBe('<div><p>Rich <span style="text-decoration: underline;">Text</span> Editor</p><p>Sync<span style="text-decoration: underline;">fusion</span></p></div>');
+    });
+    it("Underline tag", function () {
+        rteObj.value = "<p>Rich<strong>Text</strong> Editor</p><p>Sync<strong>fusion</srong></p>";
+        rteObj.enableXhtml = false;
+        rteObj.enableXhtml = true;
+        rteObj.dataBind();
+        expect(rteObj.inputElement.innerHTML).toBe('<div><p>Rich<b>Text</b> Editor</p><p>Sync<b>fusion</b></p></div>');
+    });
+    it("v:image", function () {
+        rteObj.value = '<p>sync<v:image src="zip.gif"></v:image>sync</p><v:image src="zip.gif"></v:image>';
+        rteObj.enableXhtml = false;
+        rteObj.enableXhtml = true;
+        rteObj.dataBind();
+        expect(rteObj.inputElement.innerHTML).toBe('<div><p>syncsync</p></div>');
     });
 });

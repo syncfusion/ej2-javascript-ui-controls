@@ -4,13 +4,14 @@ import { WebElement } from "selenium-webdriver";
 if(browser.isDesktop===true){
     browser.driver.manage().window().setSize(1900, 1200);
 }
-describe('CircularGuage Pointer samples', () => {
+fdescribe('CircularGuage Pointer samples', () => {
     it('Pointer types sample', (done: Function) => {
-        browser.load("/demos/pointer/pointer-customization.html");
-        if(browser.browserName === 'internet explorer') {
-            browser.executeScript('window.onload.call(this);');
-        }
-        browser.compareScreen(element(By.id("all-pointer")), "pointer_custom_1");
-        done();
-    });
+         browser.load("/demos/pointer/pointer-customization.html");
+         browser.compareScreen(element(By.id('container1')), 'Pointer_custom_1');
+         browser.compareScreen(element(By.id('container2')), 'Pointer_custom_2');
+         browser.compareScreen(element(By.id('container3')), 'Pointer_custom_3');
+         browser.compareScreen(element(By.id('container4')), 'Pointer_custom_4');
+         browser.compareScreen(element(By.id('container5')), 'Pointer_custom_5');
+         browser.compareScreen(element(By.id('container6')), 'Pointer_custom_6');
+        });
 });

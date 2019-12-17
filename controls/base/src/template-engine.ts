@@ -32,8 +32,7 @@ export interface ITemplateEngine {
 export function compile(templateString: string, helper?: Object): (data: Object | JSON, component?: any, propName?: any) => NodeList {
     let compiler: Function = engineObj.compile(templateString, helper);
     //tslint:disable-next-line
-    return (data: Object, component?: any, propName?: any, templateId?: any,
-        isStringTemplate?: boolean, index?: number, isSvg?: boolean): NodeList => {
+    return (data: Object, component?: any, propName?: any, templateId?: any, isStringTemplate?: boolean, index?: number): NodeList => {
         let result: object = compiler(data, component, propName);
         let blazor: string = 'Blazor'; let blazorTemplateId: string = 'BlazorTemplateId';
         if (isBlazor() && !isStringTemplate) {
@@ -57,12 +56,9 @@ export function compile(templateString: string, helper?: Object): (data: Object 
                 blazorTemplates[templateId].push(data);
             }
             // tslint:disable-next-line:no-any
-            return isSvg ? [createElement('g', { id: blazorId, className: 'e-blazor-template' })] as any :
+            return propName === 'rowTemplate' ? [createElement('tr', { id: blazorId, className: 'e-blazor-template' })] as any :
                 // tslint:disable-next-line:no-any
-                propName === 'rowTemplate' ? [createElement('tr', { id: blazorId, className: 'e-blazor-template' })] as any :
-                    // tslint:disable-next-line:no-any
-                    [createElement('div', { id: blazorId, className: 'e-blazor-template' })] as any;
-
+                [createElement('div', { id: blazorId, className: 'e-blazor-template' })] as any;
 
         }
         if (typeof result === 'string') {
@@ -131,7 +127,7 @@ export function setTemplateEngine(classObj: ITemplateEngine): void {
 }
 
 /**
- * Get current template engine for template rendering.
+ * Get current template engine for template rendering
  * @param  {ITemplateEngine} classObj - Class object for custom template.
  * @private
  */

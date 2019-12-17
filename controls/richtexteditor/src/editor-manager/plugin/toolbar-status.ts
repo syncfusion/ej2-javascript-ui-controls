@@ -5,6 +5,7 @@ import { IToolbarStatus } from './../../common/interface';
 /**
  * Update Toolbar Status
  * @hidden
+ * @deprecated
  */
 
 export const statusCollection: IToolbarStatus = {
@@ -22,11 +23,16 @@ export const statusCollection: IToolbarStatus = {
     fontname: null,
     fontsize: null,
     formats: null,
-    createlink: false
+    createlink: false,
+    insertcode: false
 };
 
 export class ToolbarStatus {
-
+    /**
+     * get method
+     * @hidden
+     * @deprecated
+     */
     public static get(
         docElement: Document,
         targetNode: Node,
@@ -39,7 +45,8 @@ export class ToolbarStatus {
         let nodes: Node[] = documentNode ? [documentNode] : nodeSelection.getNodeCollection(nodeSelection.getRange(docElement));
         let nodesLength: number = nodes.length;
         for (let index: number = 0; index < nodes.length; index++) {
-            if (nodes[index].nodeType !== 3 || (nodesLength > 1 && nodes[index].nodeType === 3 && nodes[index].textContent.trim() === '')) {
+            if ((nodes[index].nodeName !== 'BR' && nodes[index].nodeType !== 3) ||
+            (nodesLength > 1 && nodes[index].nodeType === 3 && nodes[index].textContent.trim() === '')) {
                 nodes.splice(index, 1);
                 index--;
             }
@@ -48,6 +55,9 @@ export class ToolbarStatus {
             formatCollection = this.getFormatParent(docElement, formatCollection, nodes[index], targetNode, formatNode, fontSize, fontName);
             if ((index === 0 && formatCollection.bold) || !formatCollection.bold) {
                 nodeCollection.bold = formatCollection.bold;
+            }
+            if ((index === 0 && formatCollection.insertcode) || !formatCollection.insertcode) {
+                nodeCollection.insertcode = formatCollection.insertcode;
             }
             if ((index === 0 && formatCollection.italic) || !formatCollection.italic) {
                 nodeCollection.italic = formatCollection.italic;
@@ -163,6 +173,9 @@ export class ToolbarStatus {
         }
         if (!formatCollection.formats) {
             formatCollection.formats = this.isFormats(node, formatNode);
+            if (formatCollection.formats === 'pre') {
+                formatCollection.insertcode = true;
+            }
         }
         if (!formatCollection.createlink) {
             formatCollection.createlink = this.isLink(node);

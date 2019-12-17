@@ -1,4 +1,4 @@
-import { Property, Complex, Collection, ChildProperty, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';import { IDataSet, IDataOptions, IFieldOptions, IFilter, ISort, ICalculatedFieldSettings } from '../../base/engine';import { IDrillOptions, IValueSortSettings, IFormatSettings, IConditionalFormatSettings, IGroupSettings } from '../../base/engine';import { SummaryTypes, Sorting, FilterType, Operators, Condition, DateGroup, GroupType, ProviderType } from '../../base/types';import { IStyle } from '../../base/engine';import { DataManager } from '@syncfusion/ej2-data';
+import { Property, Complex, Collection, ChildProperty, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';import { IDataSet, IDataOptions, IFieldOptions, IFilter, ISort, ICalculatedFieldSettings } from '../../base/engine';import { IDrillOptions, IValueSortSettings, IFormatSettings, IConditionalFormatSettings, IGroupSettings } from '../../base/engine';import { SummaryTypes, Sorting, FilterType, Operators, Condition, DateGroup, GroupType, ProviderType } from '../../base/types';import { IStyle, ICustomGroups } from '../../base/engine';import { DataManager } from '@syncfusion/ej2-data';
 
 /**
  * Interface for a class FieldOptions
@@ -324,6 +324,35 @@ export interface GroupSettingsModel {
      */
     rangeInterval?: number;
 
+    /**
+     * It allows to set the caption to custom field that will be created from group settings.
+     */
+    caption?: string;
+
+    /**
+     * It allows to set the custom group settings of group field.
+     * @default []
+     */
+    customGroups?: ICustomGroups[];
+
+}
+
+/**
+ * Interface for a class CustomGroups
+ */
+export interface CustomGroupsModel {
+
+    /**
+     * It allows to set the group name to apply custom group settings.
+     */
+    groupName?: string;
+
+    /**
+     * It allows to set the members to be grouped.
+     * @default []
+     */
+    items?: string[];
+
 }
 
 /**
@@ -613,7 +642,7 @@ export interface DataSourceSettingsModel {
     emptyCellsTextContent?: string;
 
     /**
-     * It allows to set the settings for grouping the date.
+     * It allows to set the settings for grouping the field.
      * @default []
      */
     groupSettings?: GroupSettingsModel[];

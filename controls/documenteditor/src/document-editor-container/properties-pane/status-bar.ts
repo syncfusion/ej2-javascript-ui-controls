@@ -20,10 +20,10 @@ export class StatusBar {
     private allowSuggestion: boolean;
 
     get documentEditor(): DocumentEditor {
-        return this.container.documentEditor;
+        return this.container ? this.container.documentEditor : undefined;
     }
     get editorPageCount(): number {
-        return this.documentEditor.pageCount;
+        return this.documentEditor ? this.documentEditor.pageCount : 1;
     }
     constructor(parentElement: HTMLElement, docEditor: DocumentEditorContainer) {
         this.statusBarDiv = parentElement;

@@ -1,6 +1,5 @@
 import { getValue, setValue, merge, isBlazor } from './util';
 import { Base } from './base';
-
 /**
  * To detect the changes for inner properties.
  * @private
@@ -11,6 +10,7 @@ export class ChildProperty<T> {
     private controlParent: ParentObject;
     private propName: string;
     private isParentArray: boolean;
+    protected isComplexArraySetter: boolean = false;
     protected properties: { [key: string]: Object } = {};
     protected changedProperties: { [key: string]: Object } = {};
     protected childChangedProperties: { [key: string]: Object } = {};
@@ -105,19 +105,57 @@ export class ChildProperty<T> {
      * @param {Object} oldValue 
      * @returns {void}
      */
-    protected saveChanges(key: string, newValue: Object, oldValue: Object): void {
-        if (this.controlParent.isRendered && isBlazor()) {
-            let ejsInterop: string = 'ejsInterop';
-            if (window && window[ejsInterop]) {
-                window[ejsInterop].childSaveChanges.call(this, key, newValue, oldValue);
-            }
-        }
+    protected saveChanges(key: string, newValue: Object, oldValue: Object, restrictServerDataBind?: boolean): void {
         if (this.controlParent.isProtectedOnChange) { return; }
+        if (!restrictServerDataBind) { this.serverDataBind(key, newValue, true); }
         this.oldProperties[key] = oldValue;
         this.changedProperties[key] = newValue;
         this.updateChange(true, this.propName);
         this.finalUpdate();
         this.updateTimeOut();
+    }
+    protected serverDataBind(key: string, value: Object, isSaveChanges?: boolean, action?: string): void {
+        if (isBlazor() && !this.parentObj.isComplexArraySetter) {
+            // tslint:disable-next-line:no-any
+            let parent: Object;
+            let newChanges: Object = {};
+            let parentKey: string = isSaveChanges ? this.getParentKey(true) + '.' + key : key;
+
+            if (parentKey.indexOf('.') !== -1) {
+                let complexKeys: string[] = parentKey.split('.');
+                parent = newChanges;
+                for (let i: number = 0; i < complexKeys.length; i++) {
+                    let isFinal: boolean = i === complexKeys.length - 1;
+                    parent[complexKeys[i]] = isFinal ? value : {};
+                    parent = isFinal ? parent : parent[complexKeys[i]];
+                }
+            } else {
+                newChanges[parentKey] = {};
+                parent = newChanges[parentKey];
+                newChanges[parentKey][key] = value;
+            }
+            if (this.isParentArray) {
+                let actionProperty: string = 'ejsAction';
+                parent[actionProperty] = action ? action : 'none';
+            }
+            this.controlParent.serverDataBind(newChanges);
+        }
+    }
+    protected getParentKey(isSaveChanges?: boolean): string {
+        // tslint:disable-next-line:no-any
+        let index: any = '';
+        let propName: string = this.propName;
+        if (this.isParentArray) {
+            index = this.parentObj[this.propName].indexOf(this);
+            let valueLength: number = this.parentObj[this.propName].length;
+            valueLength = isSaveChanges ? valueLength : (valueLength > 0 ? valueLength - 1 : 0);
+            index = index !== -1 ? '-' + index : '-' + valueLength;
+            propName = propName + index;
+        }
+        if (this.controlParent !== this.parentObj) {
+            propName = this.parentObj.getParentKey() + '.' + this.propName + index;
+        }
+        return propName;
     }
 }
 /**
@@ -137,4 +175,6 @@ interface ParentObject {
     isProtectedOnChange: boolean;
     controlParent: ParentObject;
     isRendered: boolean;
+    // tslint:disable-next-line:no-any
+    serverDataBind: (newChanges?: { [key: string]: any }) => void;
 }

@@ -206,7 +206,7 @@ export class Sheet extends ChildProperty<Workbook> {
 export function getSheetIndex(context: Workbook, name: string): number {
     let idx: number;
     for (let i: number = 0; i < context.sheets.length; i++) {
-        if (context.sheets[i].name === name) {
+        if (context.sheets[i].name.toLowerCase() === name.toLowerCase()) {
             idx = i;
             break;
         }
@@ -235,6 +235,21 @@ export function getSheetIndexFromId(context: Workbook, id: number): number {
  */
 export function getSheetNameFromAddress(address: string): string {
     return address.split('!')[0];
+}
+
+/**
+ * To get sheet index from sheet name.
+ * @hidden
+ */
+export function getSheetIndexByName
+    (context: Workbook, name: string, info: { visibleName: string, sheet: string, index: number }[]): number {
+    let len: number = info.length;
+    for (let i: number = 0; i < len; i++) {
+        if (info[i].sheet.toUpperCase() === name.toUpperCase()) {
+            return info[i].index;
+        }
+    }
+    return -1;
 }
 
 /**

@@ -1,5 +1,5 @@
 import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, Touch, compile, createElement, extend, getValue, isBlazor, isNullOrUndefined, merge, print, remove, resetBlazorTemplate, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
-import { CanvasRenderer, PathOption, Rect, Size, SvgRenderer, TextOption, Tooltip, findDirection, measureText, removeElement } from '@syncfusion/ej2-svg-base';
+import { CanvasRenderer, PathOption, Rect, Size, SvgRenderer, TextOption, Tooltip, findDirection, getElement, measureText, removeElement, textElement } from '@syncfusion/ej2-svg-base';
 import { DataManager, DataUtil, Query } from '@syncfusion/ej2-data';
 import { PdfBitmap, PdfDocument, PdfPageOrientation, SizeF } from '@syncfusion/ej2-pdf-export';
 import { Toolbar } from '@syncfusion/ej2-navigations';
@@ -883,6 +883,9 @@ class Double {
      */
     getFormat(axis) {
         if (axis.labelFormat) {
+            if (axis.labelFormat.indexOf('p') === 0 && axis.labelFormat.indexOf('{value}') === -1 && axis.isStack100) {
+                return '{value}%';
+            }
             return axis.labelFormat;
         }
         return axis.isStack100 ? '{value}%' : '';
@@ -1951,7 +1954,7 @@ function removeElement$1(id) {
     if (!id) {
         return null;
     }
-    let element = typeof id === 'string' ? getElement(id) : id;
+    let element = typeof id === 'string' ? getElement$1(id) : id;
     if (element) {
         remove(element);
     }
@@ -2178,7 +2181,7 @@ class PolarArc {
 }
 /** @private */
 function createTooltip(id, text, top, left, fontSize) {
-    let tooltip = getElement(id);
+    let tooltip = getElement$1(id);
     let style = 'top:' + top.toString() + 'px;' +
         'left:' + left.toString() + 'px;' +
         'color:black !important; ' +
@@ -2229,7 +2232,7 @@ function createZoomingLabels(chart, axis, parent, index, isVertical, rect) {
         x = x + (margin / 2);
         y = y + (3 * (size.height / 4)) + (margin / 2);
         parent.appendChild(chart.renderer.drawPath(new PathOption(chart.element.id + '_Zoom_' + index + '_AxisLabel_Shape_' + i, chart.themeStyle.crosshairFill, 2, chart.themeStyle.crosshairFill, 1, null, direction)));
-        textElement(chart.renderer, new TextOption(chart.element.id + '_Zoom_' + index + '_AxisLabel_' + i, x, y, anchor, i ? axis.endLabel : axis.startLabel), { color: chart.themeStyle.crosshairLabel, fontFamily: 'Segoe UI', fontWeight: 'Regular', size: '11px' }, chart.themeStyle.crosshairLabel, parent);
+        textElement$1(chart.renderer, new TextOption(chart.element.id + '_Zoom_' + index + '_AxisLabel_' + i, x, y, anchor, i ? axis.endLabel : axis.startLabel), { color: chart.themeStyle.crosshairLabel, fontFamily: 'Segoe UI', fontWeight: 'Regular', size: '11px' }, chart.themeStyle.crosshairLabel, parent);
     }
     return parent;
 }
@@ -2662,7 +2665,7 @@ function minMax(value, min, max) {
     return value > max ? max : (value < min ? min : value);
 }
 /** @private */
-function getElement(id) {
+function getElement$1(id) {
     return document.getElementById(id);
 }
 /** @private */
@@ -2766,7 +2769,7 @@ function appendChildElement(isCanvas, parent, childElement, redraw, isAnimate = 
         return null;
     }
     let existChild = parent.querySelector('#' + childElement.id);
-    let element = (existChild || getElement(childElement.id));
+    let element = (existChild || getElement$1(childElement.id));
     let child = childElement;
     let duration = animateDuration ? animateDuration : 300;
     if (redraw && isAnimate && element) {
@@ -2845,6 +2848,10 @@ function getLabelText(currentPoint, series, chart) {
             break;
     }
     if (labelFormat && !currentPoint.text) {
+        series.yAxis.format = chart.intl.getNumberFormat({
+            format: customLabelFormat ? '' : labelFormat,
+            useGrouping: chart.useGroupingSeparator
+        });
         for (let i = 0; i < text.length; i++) {
             text[i] = customLabelFormat ? labelFormat.replace('{value}', series.yAxis.format(parseFloat(text[i]))) :
                 series.yAxis.format(parseFloat(text[i]));
@@ -3114,7 +3121,7 @@ function redrawElement(redraw, id, options, renderer) {
     if (!redraw) {
         return null;
     }
-    let element = getElement(id);
+    let element = getElement$1(id);
     if (element && options) {
         renderer.setElementAttributes(options, element.tagName === 'clipPath' ? element.childNodes[0] : element);
     }
@@ -3145,7 +3152,7 @@ function animateRedrawElement(element, duration, start, end, x = 'x', y = 'y') {
     });
 }
 /** @private */
-function textElement(renderer, option, font, color, parent, isMinus = false, redraw, isAnimate, forceAnimate = false, animateDuration, seriesClipRect) {
+function textElement$1(renderer, option, font, color, parent, isMinus = false, redraw, isAnimate, forceAnimate = false, animateDuration, seriesClipRect) {
     let renderOptions = {};
     let htmlObject;
     let tspanElement;
@@ -3927,7 +3934,7 @@ class CartesianAxisLayoutPanel {
     drawAxisLine(axis, index, plotX, plotY, parent, rect) {
         let chart = this.chart;
         let optionsLine = {};
-        let element = getElement(chart.element.id + 'AxisLine_' + index);
+        let element = getElement$1(chart.element.id + 'AxisLine_' + index);
         let direction = element ? element.getAttribute('d') : '';
         element = null;
         optionsLine = {
@@ -4069,7 +4076,7 @@ class CartesianAxisLayoutPanel {
                         break;
                 }
             }
-            textElement(chart.renderer, options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
+            textElement$1(chart.renderer, options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
         }
         if (!this.chart.enableCanvas) {
             if (!chart.delayRedraw) {
@@ -4169,7 +4176,7 @@ class CartesianAxisLayoutPanel {
         let y = rect.y + rect.height * 0.5;
         let options = new TextOption(chart.element.id + '_AxisTitle_' + index, x, y - this.padding, 'middle', axis.title, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation);
         options.text = textTrim(axis.updatedRect.height, options.text, axis.titleStyle);
-        let element = textElement(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
+        let element = textElement$1(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
         element.setAttribute('tabindex', axis.tabIndex.toString());
         element.setAttribute('aria-label', axis.description || axis.title);
     }
@@ -4419,7 +4426,7 @@ class CartesianAxisLayoutPanel {
                 options.y = isAxisBreakLabel ? options.y +
                     (isOpposed ? (4 * label.text.length) : -(4 * label.text.length)) : options.y + yLocation;
             }
-            textElement(chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement, (axis.opposedPosition !== (axis.labelPosition === 'Inside')), chart.redraw, true);
+            textElement$1(chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement, (axis.opposedPosition !== (axis.labelPosition === 'Inside')), chart.redraw, true);
         }
         if (!this.chart.enableCanvas) {
             if (!chart.delayRedraw) {
@@ -4535,7 +4542,7 @@ class CartesianAxisLayoutPanel {
      * @param parent
      */
     createAxisBorderElement(axis, index, labelBorder, parent) {
-        let element = getElement(this.chart.element.id + '_BorderLine_' + index);
+        let element = getElement$1(this.chart.element.id + '_BorderLine_' + index);
         let direction = element ? element.getAttribute('d') : '';
         let borderElement = this.chart.renderer.drawPath(new PathOption(this.chart.element.id + '_BorderLine_' + index, 'transparent', axis.border.width, axis.border.color || this.chart.themeStyle.axisLine, 1, '', labelBorder));
         borderElement.setAttribute('style', 'pointer-events: none');
@@ -4569,7 +4576,7 @@ class CartesianAxisLayoutPanel {
             elementSize.height / 4) + scrollBarHeight);
         let options = new TextOption(chart.element.id + '_AxisTitle_' + index, rect.x + rect.width * 0.5, rect.y + padding, 'middle', axis.title);
         options.text = textTrim(axis.updatedRect.width, options.text, axis.titleStyle);
-        let element = textElement(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
+        let element = textElement$1(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
         element.setAttribute('aria-label', axis.description || axis.title);
         element.setAttribute('tabindex', axis.tabIndex.toString());
     }
@@ -4590,7 +4597,7 @@ class CartesianAxisLayoutPanel {
         let direction;
         let element;
         if (gridModel.width > 0 && axis.visible && gridDirection) {
-            element = getElement(chart.element.id + gridId + index + '_' + gridIndex);
+            element = getElement$1(chart.element.id + gridId + index + '_' + gridIndex);
             direction = element ? element.getAttribute('d') : null;
             element = null;
             this.htmlObject = chart.renderer.drawPath(new PathOption(chart.element.id + gridId + index + '_' + gridIndex, 'transparent', gridModel.width, gridModel.color || themeColor, null, dashArray, gridDirection));
@@ -4631,7 +4638,7 @@ class CartesianAxisLayoutPanel {
         });
         zoomElement = createZoomingLabels(chart, axis, zoomElement, index, axis.orientation === 'Vertical', rect);
         parentNode.replaceChild(labelElement, document.getElementById(labelElement.id));
-        if (getElement(chart.element.id + 'AxisLabels_Zoom' + index)) {
+        if (getElement$1(chart.element.id + 'AxisLabels_Zoom' + index)) {
             parentNode.replaceChild(zoomElement, document.getElementById(zoomElement.id));
         }
         else {
@@ -5428,6 +5435,7 @@ class SeriesBase extends ChildProperty {
     }
     dataManagerSuccess(e, isRemoteData = true) {
         this.currentViewData = e.count ? e.result : [];
+        this.chart.allowServerDataBinding = false;
         if (this instanceof Series) {
             if (this.chart.stockChart) {
                 this.chart.stockChart.series[this.index].localData = this.currentViewData;
@@ -6270,8 +6278,8 @@ class Marker extends MarkerExplode {
             }
             shapeOption = new PathOption(symbolId, argsData.fill, argsData.border.width, argsData.border.color, marker.opacity, null);
             if ((parentElement !== undefined && parentElement !== null) || this.chart.enableCanvas) {
-                if (redraw && getElement(shapeOption.id)) {
-                    markerElement = getElement(shapeOption.id);
+                if (redraw && getElement$1(shapeOption.id)) {
+                    markerElement = getElement$1(shapeOption.id);
                     circlePath = argsData.shape === 'Circle' ? 'c' : '';
                     previousLocation = {
                         x: +markerElement.getAttribute(circlePath + 'x'), y: +markerElement.getAttribute(circlePath + 'y')
@@ -6733,7 +6741,7 @@ class BaseLegend {
         textOptions.x = legendOption.location.x + (legend.shapeWidth / 2) + legend.shapePadding;
         textOptions.y = legendOption.location.y + this.maxItemHeight / 4;
         let isCanvas = this.chart.enableCanvas;
-        let element = textElement(chart.renderer, textOptions, legend.textStyle, fontcolor, group, false, false, false, false, null, this.currentPageNumber && isCanvas ?
+        let element = textElement$1(chart.renderer, textOptions, legend.textStyle, fontcolor, group, false, false, false, false, null, this.currentPageNumber && isCanvas ?
             new Rect(0, -this.translatePage(null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) : null);
         if (element) {
             element.setAttribute('aria-label', legend.description || 'Click to show or hide the ' + legendOption.text + ' series');
@@ -6802,7 +6810,7 @@ class BaseLegend {
         if (isCanvas && this.totalNoOfPages) {
             textOption.text = this.currentPageNumber + '/' + this.totalNoOfPages;
         }
-        let pageTextElement = textElement(chart.renderer, textOption, legend.textStyle, legend.textStyle.color, paginggroup, false, false, false, false, null, new Rect(bounds.width - (2 * (iconSize + padding) + padding + size.width), 0, 0, 0));
+        let pageTextElement = textElement$1(chart.renderer, textOption, legend.textStyle, legend.textStyle.color, paginggroup, false, false, false, false, null, new Rect(bounds.width - (2 * (iconSize + padding) + padding + size.width), 0, 0, 0));
         // Page right arrow rendering calculation started here
         x = (textOption.x + padding + (iconSize / 2) + size.width);
         symbolOption.id = this.legendID + '_pagedown';
@@ -6890,10 +6898,10 @@ class BaseLegend {
                         removeElement$1(this.chart.element.id + '_EJ2_Legend_Tooltip');
                     }
                     if (this.isChartControl) {
-                        showTooltip(this.chart.series[index].name, x, y, element.offsetWidth, element.id + '_EJ2_Legend_Tooltip', getElement(this.chart.element.id + '_Secondary_Element'));
+                        showTooltip(this.chart.series[index].name, x, y, element.offsetWidth, element.id + '_EJ2_Legend_Tooltip', getElement$1(this.chart.element.id + '_Secondary_Element'));
                     }
                     else {
-                        showTooltip(this.chart.visibleSeries[0].points[index].x.toString(), x + 10, y + 10, element.offsetWidth, element.id + '_EJ2_Legend_Tooltip', getElement(this.chart.element.id + '_Secondary_Element'));
+                        showTooltip(this.chart.visibleSeries[0].points[index].x.toString(), x + 10, y + 10, element.offsetWidth, element.id + '_EJ2_Legend_Tooltip', getElement$1(this.chart.element.id + '_Secondary_Element'));
                     }
                 }
             }
@@ -7049,14 +7057,14 @@ class ExportUtils {
         if (elements) {
             if (elements instanceof Array) {
                 elements.forEach((value) => {
-                    div.appendChild(getElement(value).cloneNode(true));
+                    div.appendChild(getElement$1(value).cloneNode(true));
                 });
             }
             else if (elements instanceof Element) {
                 div.appendChild(elements.cloneNode(true));
             }
             else {
-                div.appendChild(getElement(elements).cloneNode(true));
+                div.appendChild(getElement$1(elements).cloneNode(true));
             }
         }
         else {
@@ -7372,6 +7380,7 @@ let Chart = class Chart extends Component {
         // It is used for checking blazor framework or not.
         let blazor = 'Blazor';
         this.isBlazor = window[blazor];
+        this.allowServerDataBinding = false;
         this.unWireEvents();
         this.initPrivateVariable();
         this.setCulture();
@@ -7412,6 +7421,7 @@ let Chart = class Chart extends Component {
         this.calculateVisibleAxis();
         this.processData();
         this.renderComplete();
+        this.allowServerDataBinding = true;
     }
     /**
      * Gets the localized label by locale keyword.
@@ -7474,14 +7484,14 @@ let Chart = class Chart extends Component {
                 }
             }
         }
-        if (getElement(this.element.id + '_ej2_drag_multi_group')) {
+        if (getElement$1(this.element.id + '_ej2_drag_multi_group')) {
             if (this.selectionMode.indexOf('Drag') > -1) {
                 this.selectionModule.filterArray = [];
             }
             removeElement$1(this.element.id + '_ej2_drag_multi_group');
             this.selectionModule.calculateDragSelectedElements(this, new Rect(0, 0, 0, 0), true);
         }
-        else if (getElement(this.element.id + '_ej2_drag_group')) {
+        else if (getElement$1(this.element.id + '_ej2_drag_group')) {
             if (this.selectionMode !== 'Lasso') {
                 this.selectionModule.filterArray = [];
             }
@@ -7541,7 +7551,7 @@ let Chart = class Chart extends Component {
                 this.element.appendChild(this.svgObject);
             }
             else {
-                if (!getElement(this.stockChart.chartObject.id)) {
+                if (!getElement$1(this.stockChart.chartObject.id)) {
                     this.stockChart.mainObject.appendChild(this.svgObject);
                 }
             }
@@ -7551,12 +7561,12 @@ let Chart = class Chart extends Component {
      * To set the left and top position for data label template for center aligned chart
      */
     setSecondaryElementPosition() {
-        let element = getElement(this.element.id + '_Secondary_Element');
+        let element = getElement$1(this.element.id + '_Secondary_Element');
         if (!element) {
             return;
         }
         let rect = this.element.getBoundingClientRect();
-        let svgRect = getElement(this.svgId).getBoundingClientRect();
+        let svgRect = getElement$1(this.svgId).getBoundingClientRect();
         element.style.left = Math.max(svgRect.left - rect.left, 0) + 'px';
         element.style.top = Math.max(svgRect.top - rect.top, 0) + 'px';
     }
@@ -7712,7 +7722,7 @@ let Chart = class Chart extends Component {
         appendChildElement(this.enableCanvas, this.svgObject, axisElement, this.redraw);
         if ((this.zoomModule && this.zoomSettings.enableScrollbar && this.scrollElement.childElementCount) ||
             (this.scrollElement && this.scrollElement.childElementCount)) {
-            appendChildElement(false, getElement(this.element.id + '_Secondary_Element'), this.scrollElement, this.redraw);
+            appendChildElement(false, getElement$1(this.element.id + '_Secondary_Element'), this.scrollElement, this.redraw);
         }
         if (this.stripLineModule) {
             this.stripLineModule.renderStripLine(this, 'Over', this.axisCollections);
@@ -7741,7 +7751,7 @@ let Chart = class Chart extends Component {
     renderAnnotation() {
         if (this.annotationModule) {
             //for stock chart, stock chart's id is added to render the annotations
-            this.annotationModule.renderAnnotations(getElement((this.stockChart ? this.stockChart.element.id : this.element.id) + '_Secondary_Element'));
+            this.annotationModule.renderAnnotations(getElement$1((this.stockChart ? this.stockChart.element.id : this.element.id) + '_Secondary_Element'));
         }
     }
     performSelection() {
@@ -7830,6 +7840,7 @@ let Chart = class Chart extends Component {
      * Defines the trendline initialization
      */
     initTrendLines() {
+        this.isProtectedOnChange = true;
         for (let series of this.visibleSeries) {
             let trendIndex = 0;
             for (let trendline of series.trendlines) {
@@ -7848,6 +7859,7 @@ let Chart = class Chart extends Component {
                 trendIndex++;
             }
         }
+        this.isProtectedOnChange = false;
     }
     calculateAreaType() {
         let series = this.series[0];
@@ -8011,7 +8023,7 @@ let Chart = class Chart extends Component {
             rect = new Rect(margin.left, 0, this.availableSize.width - margin.left - margin.right, 0);
             let options = new TextOption(this.element.id + '_ChartTitle', titlePositionX(rect, this.titleStyle), this.margin.top + ((elementSize.height) * 3 / 4), getAnchor, this.titleCollection, '', 'auto');
             let element = redrawElement(this.redraw, this.element.id + '_ChartTitle', options, this.renderer) ||
-                textElement(this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject);
+                textElement$1(this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject);
             if (element) {
                 element.setAttribute('aria-label', this.description || this.title);
                 element.setAttribute('tabindex', this.tabIndex.toString());
@@ -8038,7 +8050,7 @@ let Chart = class Chart extends Component {
         rect = new Rect(alignment === 'Center' ? (options.x - maxWidth * 0.5) : alignment === 'Far' ? options.x - maxWidth : options.x, 0, maxWidth, 0);
         let subTitleOptions = new TextOption(this.element.id + '_ChartSubTitle', titlePositionX(rect, this.subTitleStyle), options.y * options.text.length + ((subTitleElementSize.height) * 3 / 4) + padding, anchor(this.subTitleStyle.textAlignment), this.subTitleCollection, '', 'auto');
         let element = redrawElement(this.redraw, this.element.id + '_ChartSubTitle', subTitleOptions, this.renderer) ||
-            textElement(this.renderer, subTitleOptions, this.subTitleStyle, this.subTitleStyle.color || this.themeStyle.chartTitle, this.svgObject);
+            textElement$1(this.renderer, subTitleOptions, this.subTitleStyle, this.subTitleStyle.color || this.themeStyle.chartTitle, this.svgObject);
         if (element) {
             element.setAttribute('aria-label', this.description || this.subTitle);
             element.setAttribute('tabindex', this.tabIndex.toString());
@@ -8068,7 +8080,7 @@ let Chart = class Chart extends Component {
             return null;
         }
         else {
-            let element = getElement(this.element.id + '_ChartAreaBorder');
+            let element = getElement$1(this.element.id + '_ChartAreaBorder');
             let previousRect = element ?
                 new Rect(+element.getAttribute('x'), +element.getAttribute('y'), +element.getAttribute('width'), +element.getAttribute('height')) : null;
             let rect = new RectOption(this.element.id + '_ChartAreaBorder', this.chartArea.background, { width: this.chartArea.border.width, color: this.chartArea.border.color || this.themeStyle.areaBorder }, this.chartArea.opacity, this.chartAxisLayoutPanel.seriesClipRect);
@@ -8257,7 +8269,7 @@ let Chart = class Chart extends Component {
      * To find mouse x, y for aligned chart element svg position
      */
     setMouseXY(pageX, pageY) {
-        let svgRect = getElement(this.svgId).getBoundingClientRect();
+        let svgRect = getElement$1(this.svgId).getBoundingClientRect();
         let rect = this.element.getBoundingClientRect();
         this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
         this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
@@ -8422,7 +8434,7 @@ let Chart = class Chart extends Component {
         if (id && (event.target.textContent.indexOf('...') > -1)) {
             let title = (targetId === (this.element.id + '_ChartTitle')) ? this.title :
                 targetId.indexOf('_AxisTitle') > -1 ? this.axisCollections[index].title : this.subTitle;
-            showTooltip(title, x, y, this.element.offsetWidth, this.element.id + '_EJ2_Title_Tooltip', getElement(this.element.id + '_Secondary_Element'), isTouch);
+            showTooltip(title, x, y, this.element.offsetWidth, this.element.id + '_EJ2_Title_Tooltip', getElement$1(this.element.id + '_Secondary_Element'), isTouch);
         }
         else {
             removeElement$1(this.element.id + '_EJ2_Title_Tooltip');
@@ -8432,7 +8444,7 @@ let Chart = class Chart extends Component {
         let targetId = event.target.id;
         if (((targetId.indexOf('AxisLabel') > -1) || targetId.indexOf('Axis_MultiLevelLabel') > -1) &&
             (event.target.textContent.indexOf('...') > -1)) {
-            showTooltip(this.findAxisLabel(targetId), x, y, this.element.offsetWidth, this.element.id + '_EJ2_AxisLabel_Tooltip', getElement(this.element.id + '_Secondary_Element'), isTouch);
+            showTooltip(this.findAxisLabel(targetId), x, y, this.element.offsetWidth, this.element.id + '_EJ2_AxisLabel_Tooltip', getElement$1(this.element.id + '_Secondary_Element'), isTouch);
         }
         else {
             removeElement$1(this.element.id + '_EJ2_AxisLabel_Tooltip');
@@ -8477,7 +8489,7 @@ let Chart = class Chart extends Component {
             pageY = e.clientY;
             target = e.target;
         }
-        let svgRect = getElement(this.svgId).getBoundingClientRect();
+        let svgRect = getElement$1(this.svgId).getBoundingClientRect();
         this.mouseDownX = this.previousMouseMoveX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
         this.mouseDownY = this.previousMouseMoveY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
         if (this.isTouch) {
@@ -8552,7 +8564,7 @@ let Chart = class Chart extends Component {
      * Method to set the annotation content dynamically for chart.
      */
     setAnnotationValue(annotationIndex, content) {
-        let parentNode = getElement(this.element.id + '_Annotation_Collections');
+        let parentNode = getElement$1(this.element.id + '_Annotation_Collections');
         let annotation = this.annotations[annotationIndex];
         let element;
         if (content !== null) {
@@ -8564,7 +8576,7 @@ let Chart = class Chart extends Component {
                 parentNode.appendChild(element.children[0]);
             }
             else {
-                this.annotationModule.renderAnnotations(getElement(this.element.id + '_Secondary_Element'));
+                this.annotationModule.renderAnnotations(getElement$1(this.element.id + '_Secondary_Element'));
             }
         }
     }
@@ -9024,10 +9036,15 @@ let Chart = class Chart extends Component {
                         let len = this.series.length;
                         let seriesRefresh = false;
                         let series;
+                        let blazorProp;
                         for (let i = 0; i < len; i++) {
                             series = newProp.series[i];
+                            if (this.isBlazor && (series.isClosed || series.marker ||
+                                series.emptyPointSettings || series.type || series.boxPlotMode || series.showMean)) {
+                                blazorProp = true;
+                            }
                             if (series && (series.dataSource || series.xName || series.yName || series.size ||
-                                series.high || series.low || series.open || series.close || series.fill || series.name)) {
+                                series.high || series.low || series.open || series.close || series.fill || series.name || blazorProp)) {
                                 extend(this.getVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }
@@ -10358,7 +10375,7 @@ class StripLine {
      * @param axis
      */
     renderPath(stripline, rect, id, parent, chart, axis) {
-        let element = getElement(id);
+        let element = getElement$1(id);
         let direction = element ? element.getAttribute('d') : '';
         let d = (axis.orientation === 'Vertical') ? ('M' + rect.x + ' ' + rect.y + ' ' + 'L' + (rect.x + rect.width)
             + ' ' + rect.y) :
@@ -10375,7 +10392,7 @@ class StripLine {
      * @param chart
      */
     renderRectangle(stripline, rect, id, parent, chart) {
-        let element = getElement(id);
+        let element = getElement$1(id);
         let previousRect = element ? new Rect(+element.getAttribute('x'), +element.getAttribute('y'), +element.getAttribute('width'), +element.getAttribute('height')) : null;
         appendChildElement(chart.enableCanvas, parent, chart.renderer.drawRectangle(new RectOption(id, stripline.color, stripline.border, stripline.opacity, rect, 0, 0, '', stripline.dashArray)), chart.redraw, true, 'x', 'y', null, null, true, true, previousRect);
     }
@@ -10406,7 +10423,7 @@ class StripLine {
             ty = this.getTextStart(ty + (textMid * this.factor(stripline.verticalAlignment)) - padding, rect.height, stripline.verticalAlignment);
             anchor = stripline.horizontalAlignment;
         }
-        textElement(chart.renderer, new TextOption(id, tx, ty, anchor, stripline.text, 'rotate(' + rotation + ' ' + tx + ',' + ty + ')', 'middle'), stripline.textStyle, stripline.textStyle.color, parent);
+        textElement$1(chart.renderer, new TextOption(id, tx, ty, anchor, stripline.text, 'rotate(' + rotation + ' ' + tx + ',' + ty + ')', 'middle'), stripline.textStyle, stripline.textStyle.color, parent);
     }
     invertAlignment(anchor) {
         switch (anchor) {
@@ -10591,7 +10608,7 @@ class LineBase {
      * @private
      */
     appendLinePath(options, series, clipRect) {
-        let element = getElement(options.id);
+        let element = getElement$1(options.id);
         let chart = series.chart;
         let previousDirection = element ? element.getAttribute('d') : null;
         let htmlObject = series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y]));
@@ -11292,7 +11309,7 @@ class MultiColoredSeries extends LineBase {
                         'id': option.id + '_Segment_' + index,
                         'd': option.d
                     };
-                    pathAnimation(getElement(attributeOptions.id), attributeOptions.d, chart.redraw);
+                    pathAnimation(getElement$1(attributeOptions.id), attributeOptions.d, chart.redraw);
                     series.seriesElement.appendChild(chart.renderer.drawPath(attributeOptions));
                 });
             }
@@ -11715,7 +11732,7 @@ class PolarRadarPanel extends LineBase {
             }
             this.visibleAxisLabelRect.push(labelRegions[i]);
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, anchor, axis.visibleLabels[i].text);
-            textElement(chart.renderer, options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
+            textElement$1(chart.renderer, options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
         }
         chart.yAxisElements.appendChild(labelElement);
     }
@@ -11741,7 +11758,7 @@ class PolarRadarPanel extends LineBase {
         if (axis.majorGridLines.width > 0) {
             if (chart.visibleSeries[0].type === 'Polar') {
                 for (let j = 0; j < axis.visibleLabels.length; j++) {
-                    element = getElement(chart.element.id + '_MajorGridLine_' + index + '_' + j);
+                    element = getElement$1(chart.element.id + '_MajorGridLine_' + index + '_' + j);
                     previousValue = element ? element.getAttribute('r') : null;
                     radius = chart.radius * valueToCoefficient(axis.visibleLabels[j].value, axis);
                     options = new CircleOption(chart.element.id + '_MajorGridLine_' + index + '_' + j, 'transparent', border, axis.majorGridLines.width, this.centerX, this.centerY, radius);
@@ -11756,14 +11773,14 @@ class PolarRadarPanel extends LineBase {
                 for (let j = 0; j < axis.visibleLabels.length; j++) {
                     radius = chart.radius * valueToCoefficient(axis.visibleLabels[j].value, axis);
                     majorGrid = this.renderRadarGrid(radius, '', chart);
-                    element = getElement(chart.element.id + '_MajorGridLine_' + index + '_' + j);
+                    element = getElement$1(chart.element.id + '_MajorGridLine_' + index + '_' + j);
                     previousValue = element ? element.getAttribute('d') : null;
                     options = new PathOption(chart.element.id + '_MajorGridLine_' + index + '_' + j, 'transparent', axis.majorGridLines.width, axis.majorGridLines.color || chart.themeStyle.majorGridLine, null, null, majorGrid);
                     appendChildElement(chart.enableCanvas, this.element, chart.renderer.drawPath(options), chart.redraw, true, 'x', 'y', null, previousValue, true);
                 }
                 if (radius !== chart.radius) {
                     majorGrid = this.renderRadarGrid(chart.radius, '', chart);
-                    element = getElement(chart.element.id + '_MajorGridLine_' + index + '_' + axis.visibleLabels.length);
+                    element = getElement$1(chart.element.id + '_MajorGridLine_' + index + '_' + axis.visibleLabels.length);
                     previousValue = element ? element.getAttribute('d') : null;
                     options = new PathOption(chart.element.id + '_MajorGridLine_' + index + '_' + axis.visibleLabels.length, 'transparent', axis.majorGridLines.width, axis.majorGridLines.color || chart.themeStyle.majorGridLine, null, null, majorGrid);
                     appendChildElement(chart.enableCanvas, this.element, chart.renderer.drawPath(options), chart.redraw, true, 'x', 'y', null, previousValue, true);
@@ -11973,7 +11990,7 @@ class PolarRadarPanel extends LineBase {
                 continue; // If the label is intersect, the label render is ignored.
             }
             this.visibleAxisLabelRect.push(labelRegions[i]);
-            textElement(chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
+            textElement$1(chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
         }
         this.element.appendChild(labelElement);
     }
@@ -12025,7 +12042,7 @@ class PolarRadarPanel extends LineBase {
         let direction;
         let element;
         if (axis.majorTickLines.width > 0) {
-            element = getElement(chart.element.id + '_MajorTickLine_' + index + '_' + gridIndex);
+            element = getElement$1(chart.element.id + '_MajorTickLine_' + index + '_' + gridIndex);
             direction = element ? element.getAttribute('d') : null;
             tickOptions = new PathOption(chart.element.id + '_MajorTickLine_' + index + '_' + gridIndex, 'transparent', axis.majorTickLines.width, axis.majorTickLines.color || chart.themeStyle.majorTickLine, null, null, majorTickLine);
             /**
@@ -12039,7 +12056,7 @@ class PolarRadarPanel extends LineBase {
             appendChildElement(chart.enableCanvas, chart.yAxisElements, element, chart.redraw, true, 'x', 'y', null, direction);
         }
         if (axis.minorTickLines.width > 0) {
-            element = getElement(chart.element.id + '_MinorTickLine_' + index + '_' + gridIndex);
+            element = getElement$1(chart.element.id + '_MinorTickLine_' + index + '_' + gridIndex);
             direction = element ? element.getAttribute('d') : null;
             tickOptions = new PathOption(chart.element.id + '_MinorTickLine_' + index + '_' + gridIndex, 'transparent', axis.minorTickLines.width, axis.minorTickLines.color || chart.themeStyle.minorTickLine, null, null, minorTickLine);
             /**
@@ -12059,13 +12076,13 @@ class PolarRadarPanel extends LineBase {
         let direction;
         let element;
         if (axis.majorGridLines.width > 0) {
-            element = getElement(chart.element.id + '_MajorGridLine_' + index + '_' + gridIndex);
+            element = getElement$1(chart.element.id + '_MajorGridLine_' + index + '_' + gridIndex);
             direction = element ? element.getAttribute('d') : null;
             gridOptions = new PathOption(chart.element.id + '_MajorGridLine_' + index + '_' + gridIndex, 'transparent', axis.majorGridLines.width, axis.majorGridLines.color || chart.themeStyle.majorGridLine, null, axis.majorGridLines.dashArray, majorGrid);
             appendChildElement(chart.enableCanvas, this.element, chart.renderer.drawPath(gridOptions), chart.redraw, true, 'x', 'y', null, direction);
         }
         if (axis.minorGridLines.width > 0) {
-            element = getElement(chart.element.id + '_MinorGridLine_' + index + '_' + gridIndex);
+            element = getElement$1(chart.element.id + '_MinorGridLine_' + index + '_' + gridIndex);
             direction = element ? element.getAttribute('d') : null;
             gridOptions = new PathOption(chart.element.id + '_MinorGridLine_' + index + '_' + gridIndex, 'transparent', axis.minorGridLines.width, axis.minorGridLines.color || chart.themeStyle.minorGridLine, null, axis.minorGridLines.dashArray, minorGird);
             appendChildElement(chart.enableCanvas, this.element, chart.renderer.drawPath(gridOptions), chart.redraw, true, 'x', 'y', null, direction);
@@ -12577,7 +12594,7 @@ class CandleSeries extends ColumnBase {
             (point.open > point.close ? argsData.fill : 'transparent') : argsData.fill;
         argsData.border.color = argsData.fill;
         let options = new PathOption(series.chart.element.id + '_Series_' + series.index + '_Point_' + point.index, fill, argsData.border.width, argsData.border.color, series.opacity, series.dashArray, direction);
-        let element = getElement(options.id);
+        let element = getElement$1(options.id);
         let previousDirection = element ? element.getAttribute('d') : null;
         let candleElement = series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y]));
         candleElement.setAttribute('aria-label', point.x.toString() + ':' + point.high.toString()
@@ -13124,9 +13141,9 @@ class ScatterSeries {
         let previousPath;
         let marker = series.marker;
         let shapeOption = new PathOption(chart.element.id + '_Series_' + series.index + '_Point_' + point.index, argsData.fill, argsData.border.width, argsData.border.color, series.opacity, null);
-        if (chart.redraw && getElement(shapeOption.id)) {
+        if (chart.redraw && getElement$1(shapeOption.id)) {
             circlePath = argsData.shape === 'Circle' ? 'c' : '';
-            previousPath = getElement(shapeOption.id).getAttribute('d');
+            previousPath = getElement$1(shapeOption.id).getAttribute('d');
         }
         appendChildElement(false, series.seriesElement, drawSymbol(point.symbolLocations[0], argsData.shape, new Size(argsData.width, argsData.height), marker.imageUrl, shapeOption, point.x.toString() + ':' + point.yValue.toString(), series.chart.svgRenderer, series.clipRect), chart.redraw, true, circlePath + 'x', circlePath + 'y', startLocation, previousPath);
         point.regions.push(new Rect(point.symbolLocations[0].x - marker.width, point.symbolLocations[0].y - marker.height, 2 * marker.width, 2 * marker.height));
@@ -13302,8 +13319,8 @@ class WaterfallSeries extends ColumnBase {
             }
         }
         let options = new PathOption(series.chart.element.id + '_Series_' + series.index + '_Connector_', 'none', series.connector.width, series.connector.color, series.opacity, series.connector.dashArray, direction);
-        if (redraw && getElement(options.id)) {
-            direction = getElement(options.id).getAttribute('d');
+        if (redraw && getElement$1(options.id)) {
+            direction = getElement$1(options.id).getAttribute('d');
         }
         let element = (redrawElement(redraw, options.id, options, series.chart.renderer) ||
             series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y])));
@@ -13588,7 +13605,7 @@ class HiloOpenCloseSeries extends ColumnBase {
                 'L' + ' ' + (rect.x + rect.width) + ' ' + (close.y) + ' ');
         }
         options = new PathOption(series.chart.element.id + '_Series_' + series.index + '_Point_' + point.index, argsData.fill, argsData.border.width, argsData.fill, series.opacity, series.dashArray, direction);
-        pathAnimation(getElement(options.id), direction, series.chart.redraw);
+        pathAnimation(getElement$1(options.id), direction, series.chart.redraw);
         let element = series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y]));
         element.setAttribute('aria-label', point.x.toString() + ':' + point.high.toString()
             + ':' + point.low.toString() + ':' + point.close.toString() + ':' + point.open.toString());
@@ -16342,7 +16359,7 @@ class Crosshair {
                         axisGroup.appendChild(pathElement);
                         options = new TextOption(this.elementID + '_axis_tooltip_text_' + k, 0, 0, 'start', text);
                         let render = chart.enableCanvas ? this.svgRenderer : chart.renderer;
-                        textElem = textElement(render, options, axis.crosshairTooltip.textStyle, axis.crosshairTooltip.textStyle.color || chart.themeStyle.crosshairLabel, axisGroup);
+                        textElem = textElement$1(render, options, axis.crosshairTooltip.textStyle, axis.crosshairTooltip.textStyle.color || chart.themeStyle.crosshairLabel, axisGroup);
                     }
                     direction = findDirection(this.rx, this.ry, rect, this.arrowLocation, 10, this.isTop, this.isBottom, this.isLeft, this.valueX, this.valueY);
                     pathElement.setAttribute('d', direction);
@@ -17393,7 +17410,7 @@ class Toolkit {
         else {
             size = measureText(this.chart.getLocalizedLabel('ResetZoom'), { size: '12px' });
             childElement.appendChild(render.drawRectangle(new RectOption(this.elementId + '_Zooming_Reset_1', 'transparent', {}, 1, new Rect(0, 0, size.width, size.height))));
-            textElement(chart.renderer, new TextOption(this.elementId + '_Zooming_Reset_2', 0 + size.width / 2, 0 + size.height * 3 / 4, 'middle', this.chart.getLocalizedLabel('ResetZoom'), 'rotate(0,' + (0) + ',' + (0) + ')', 'auto'), { size: '12px' }, 'black', childElement);
+            textElement$1(chart.renderer, new TextOption(this.elementId + '_Zooming_Reset_2', 0 + size.width / 2, 0 + size.height * 3 / 4, 'middle', this.chart.getLocalizedLabel('ResetZoom'), 'rotate(0,' + (0) + ',' + (0) + ')', 'auto'), { size: '12px' }, 'black', childElement);
         }
         parentElement.appendChild(childElement);
         this.wireEvents(childElement, this.reset);
@@ -17416,9 +17433,9 @@ class Toolkit {
     showTooltip(event) {
         let text = event.currentTarget.id.split('_Zooming_')[1];
         let left = (event.pageX - (measureText(text, { size: '10px' }).width + 5));
-        let rect = getElement(event.currentTarget.id + '_1');
-        let icon2 = getElement(event.currentTarget.id + '_2');
-        let icon3 = getElement(event.currentTarget.id + '_3');
+        let rect = getElement$1(event.currentTarget.id + '_1');
+        let icon2 = getElement$1(event.currentTarget.id + '_2');
+        let icon3 = getElement$1(event.currentTarget.id + '_3');
         if (rect) {
             this.hoveredID = rect.id;
             rect.setAttribute('fill', this.iconRectOverFill);
@@ -17436,12 +17453,12 @@ class Toolkit {
     /** @private */
     // tslint:disable
     removeTooltip() {
-        if (getElement(this.hoveredID)) {
+        if (getElement$1(this.hoveredID)) {
             let rectColor = this.chart.zoomModule.isPanning ? (this.hoveredID.indexOf('_Pan_') > -1) ? this.iconRectSelectionFill : 'transparent' : (this.hoveredID.indexOf('_Zoom_') > -1) ? this.iconRectSelectionFill : 'transparent';
-            getElement(this.hoveredID).setAttribute('fill', rectColor);
+            getElement$1(this.hoveredID).setAttribute('fill', rectColor);
         }
-        let icon2 = this.hoveredID ? getElement(this.hoveredID.replace('_1', '_2')) : null;
-        let icon3 = this.hoveredID ? getElement(this.hoveredID.replace('_1', '_3')) : null;
+        let icon2 = this.hoveredID ? getElement$1(this.hoveredID.replace('_1', '_2')) : null;
+        let icon3 = this.hoveredID ? getElement$1(this.hoveredID.replace('_1', '_3')) : null;
         if (icon2) {
             let iconColor = this.chart.zoomModule.isPanning ? (this.hoveredID.indexOf('_Pan_') > -1) ? this.selectionColor : this.fillColor : (this.hoveredID.indexOf('_Zoom_') > -1) ? this.selectionColor : this.fillColor;
             icon2.setAttribute('fill', iconColor);
@@ -17505,11 +17522,11 @@ class Toolkit {
         this.zoomOutElements.setAttribute('opacity', this.elementOpacity);
         this.applySelection(this.zoomElements.childNodes, this.selectionColor);
         this.applySelection(this.panElements.childNodes, '#737373');
-        if (getElement(this.selectedID)) {
-            getElement(this.selectedID).setAttribute('fill', 'transparent');
+        if (getElement$1(this.selectedID)) {
+            getElement$1(this.selectedID).setAttribute('fill', 'transparent');
         }
         this.selectedID = this.chart.element.id + '_Zooming_Zoom_1';
-        getElement(this.selectedID).setAttribute('fill', this.iconRectSelectionFill);
+        getElement$1(this.selectedID).setAttribute('fill', this.iconRectSelectionFill);
         return false;
     }
     /** @private */
@@ -17522,11 +17539,11 @@ class Toolkit {
         element = this.zoomOutElements ? this.zoomOutElements.setAttribute('opacity', this.elementOpacity) : null;
         element = this.panElements ? this.applySelection(this.panElements.childNodes, this.selectionColor) : null;
         element = this.zoomElements ? this.applySelection(this.zoomElements.childNodes, '#737373') : null;
-        if (getElement(this.selectedID)) {
-            getElement(this.selectedID).setAttribute('fill', 'transparent');
+        if (getElement$1(this.selectedID)) {
+            getElement$1(this.selectedID).setAttribute('fill', 'transparent');
         }
         this.selectedID = this.chart.element.id + '_Zooming_Pan_1';
-        getElement(this.selectedID).setAttribute('fill', this.iconRectSelectionFill);
+        getElement$1(this.selectedID).setAttribute('fill', this.iconRectSelectionFill);
         return false;
     }
     zoomInOutCalculation(scale, chart, axes, mode) {
@@ -17946,7 +17963,7 @@ class Zoom {
                             value.seriesElement.setAttribute('transform', translate);
                         }
                     }
-                    element = getElement(chart.element.id + '_Series_' + value.index + '_DataLabelCollections');
+                    element = getElement$1(chart.element.id + '_Series_' + value.index + '_DataLabelCollections');
                     if (value.errorBarElement) {
                         value.errorBarElement.setAttribute('transform', translate);
                     }
@@ -18005,7 +18022,7 @@ class Zoom {
         let shadowElement = '<filter id="chart_shadow" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="5"/>';
         shadowElement += '<feOffset dx="-3" dy="4" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="1"/>';
         shadowElement += '</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
-        if (length === 0 || getElement(this.elementId + '_Zooming_KitCollection')) {
+        if (length === 0 || getElement$1(this.elementId + '_Zooming_KitCollection')) {
             return false;
         }
         let defElement = render.createDefs();
@@ -18152,7 +18169,7 @@ class Zoom {
     chartMouseWheel(e) {
         let chart = this.chart;
         let offset = chart.element.getBoundingClientRect();
-        let svgRect = getElement(chart.svgId).getBoundingClientRect();
+        let svgRect = getElement$1(chart.svgId).getBoundingClientRect();
         let mouseX = (e.clientX - offset.left) - Math.max(svgRect.left - offset.left, 0);
         let mouseY = (e.clientY - offset.top) - Math.max(svgRect.top - offset.top, 0);
         if (this.zooming.enableMouseWheelZooming &&
@@ -18485,7 +18502,7 @@ class Selection extends BaseSelection {
         let series = chart.series[index.series];
         elementId = (!series.isRectSeries && series.type !== 'Scatter' && series.type !== 'Bubble' &&
             series.marker.visible) ? (elementId + '_Symbol' + suffix) : elementId;
-        return [getElement(elementId), (series.type === 'RangeArea' && series.marker.visible) ? getElement(elementId + '1') : null];
+        return [getElement$1(elementId), (series.type === 'RangeArea' && series.marker.visible) ? getElement$1(elementId + '1') : null];
     }
     getClusterElements(chart, index) {
         let clusters = [];
@@ -18519,7 +18536,7 @@ class Selection extends BaseSelection {
         if (targetElement.id.indexOf('_Series_') > -1) {
             let element;
             if (targetElement.id.indexOf('_Trackball_1') > -1) {
-                element = getElement(targetElement.id.split('_Trackball_')[0] + '_Symbol');
+                element = getElement$1(targetElement.id.split('_Trackball_')[0] + '_Symbol');
             }
             else if (targetElement.id.indexOf('_Trackball_0') > -1) {
                 return null;
@@ -18672,9 +18689,9 @@ class Selection extends BaseSelection {
         let visibility = this.checkVisibility(this.selectedDataIndexes); // legend click scenario
         for (let series of visibleSeries) {
             if (series.visible) {
-                this.checkSelectionElements(getElement(chartId + 'SeriesGroup' + series.index), this.generateStyle(series), visibility);
-                if (!isNullOrUndefined(getElement(chartId + 'SymbolGroup' + series.index))) {
-                    this.checkSelectionElements(getElement(chartId + 'SymbolGroup' + series.index), this.generateStyle(series), visibility);
+                this.checkSelectionElements(getElement$1(chartId + 'SeriesGroup' + series.index), this.generateStyle(series), visibility);
+                if (!isNullOrUndefined(getElement$1(chartId + 'SymbolGroup' + series.index))) {
+                    this.checkSelectionElements(getElement$1(chartId + 'SymbolGroup' + series.index), this.generateStyle(series), visibility);
                 }
             }
         }
@@ -18962,7 +18979,7 @@ class Selection extends BaseSelection {
         if ((chart.allowMultiSelection) && isDragMode) {
             let element;
             let dragGroup;
-            let multiGroup = getElement(this.multiRectGroup);
+            let multiGroup = getElement$1(this.multiRectGroup);
             if (!multiGroup) {
                 multiGroup = chart.svgRenderer.createGroup({ id: this.multiRectGroup });
                 chart.svgObject.appendChild(multiGroup);
@@ -18970,17 +18987,17 @@ class Selection extends BaseSelection {
             if (this.rectGrabbing || this.resizing) {
                 let rectElement;
                 if (this.resizing) {
-                    rectElement = getElement(this.draggedRect + this.targetIndex);
+                    rectElement = getElement$1(this.draggedRect + this.targetIndex);
                 }
                 else {
-                    rectElement = getElement(target.id);
+                    rectElement = getElement$1(target.id);
                 }
                 if (rectElement.nextSibling) {
                     remove(rectElement.nextSibling);
                 }
                 this.setAttributes(rectElement, dragRect);
             }
-            else if (!getElement(this.draggedRectGroup + this.count)) {
+            else if (!getElement$1(this.draggedRectGroup + this.count)) {
                 dragGroup = chart.svgRenderer.createGroup({ id: this.draggedRectGroup + this.count });
                 let svgElement = document.getElementById(chart.element.id + '_series_svg');
                 chart.enableCanvas ? svgElement.appendChild(dragGroup) : multiGroup.appendChild(dragGroup);
@@ -18993,7 +19010,7 @@ class Selection extends BaseSelection {
                 element = chart.svgRenderer.drawPath(new PathOption(this.lassoPath + this.count, rectFill, 3, rectStroke, 1, '', this.path));
             }
             if (!dragGroup && !this.rectGrabbing && !this.resizing) {
-                getElement(this.draggedRectGroup + this.count).appendChild(element);
+                getElement$1(this.draggedRectGroup + this.count).appendChild(element);
             }
             else if (!this.rectGrabbing && !this.resizing) {
                 dragGroup.appendChild(element);
@@ -19001,7 +19018,7 @@ class Selection extends BaseSelection {
         }
         else {
             let element = isLasso ?
-                getElement(this.lassoPath) : getElement(this.draggedRect);
+                getElement$1(this.lassoPath) : getElement$1(this.draggedRect);
             if (this.closeIcon) {
                 removeElement$1(this.closeIconId);
             }
@@ -19062,7 +19079,7 @@ class Selection extends BaseSelection {
             stroke: circleStroke, 'stroke-width': 2, fill: circleStroke
         }, null));
         this.closeIcon = closeIcon;
-        let pathElement = getElement(this.draggedRectGroup + (isMultiDrag ? (isDrag ? this.targetIndex : this.count) : ''));
+        let pathElement = getElement$1(this.draggedRectGroup + (isMultiDrag ? (isDrag ? this.targetIndex : this.count) : ''));
         if (pathElement) {
             pathElement.appendChild(closeIcon);
         }
@@ -19077,8 +19094,8 @@ class Selection extends BaseSelection {
             let isSelectedvalues = true;
             if ((chart.allowMultiSelection)) {
                 let index = this.getIndex(event.target.id);
-                let multiRectGroupElement = getElement(this.multiRectGroup);
-                remove(getElement(this.draggedRectGroup + index));
+                let multiRectGroupElement = getElement$1(this.multiRectGroup);
+                remove(getElement$1(this.draggedRectGroup + index));
                 this.dragRectArray[index] = null;
                 this.filterArray[index] = null;
                 this.totalSelectedPoints[index] = null;
@@ -19118,7 +19135,7 @@ class Selection extends BaseSelection {
                 }
             }
             else {
-                remove(getElement(this.draggedRectGroup));
+                remove(getElement$1(this.draggedRectGroup));
                 this.removeSelectedElements(chart, this.selectedDataIndexes, chart.series);
             }
             this.blurEffect(chart.element.id, chart.visibleSeries);
@@ -19212,7 +19229,7 @@ class Selection extends BaseSelection {
             }
         }
         if (this.chart.selectionMode !== 'Lasso') {
-            this.changeCursorStyle(resize, getElement((this.chart.allowMultiSelection) ? this.draggedRect +
+            this.changeCursorStyle(resize, getElement$1((this.chart.allowMultiSelection) ? this.draggedRect +
                 this.targetIndex : this.draggedRect), cursorStyle);
         }
         this.changeCursorStyle(resize, chartSvgObject, cursorStyle);
@@ -19288,12 +19305,12 @@ class Selection extends BaseSelection {
         if (chart.selectionMode === 'Lasso' && this.dragging && this.path) {
             if (this.path.indexOf('L') !== -1) {
                 if (!(chart.allowMultiSelection)) {
-                    getElement(this.lassoPath).setAttribute('d', this.path + 'Z');
-                    this.pointChecking(getElement(this.lassoPath));
+                    getElement$1(this.lassoPath).setAttribute('d', this.path + 'Z');
+                    this.pointChecking(getElement$1(this.lassoPath));
                 }
-                else if (getElement(this.lassoPath + this.count)) {
-                    getElement(this.lassoPath + this.count).setAttribute('d', this.path + 'Z');
-                    this.pointChecking(getElement(this.lassoPath + this.count));
+                else if (getElement$1(this.lassoPath + this.count)) {
+                    getElement$1(this.lassoPath + this.count).setAttribute('d', this.path + 'Z');
+                    this.pointChecking(getElement$1(this.lassoPath + this.count));
                 }
                 if (this.dragging || this.resizing) {
                     this.calculateDragSelectedElements(chart, this.dragRect);
@@ -19316,7 +19333,7 @@ class Selection extends BaseSelection {
         let target = event.target;
         this.path = undefined;
         if (this.dragging) {
-            this.count = getElement(this.multiRectGroup) ? (this.count + 1) : 0;
+            this.count = getElement$1(this.multiRectGroup) ? (this.count + 1) : 0;
             this.dragRect = new Rect(chart.mouseDownX, chart.mouseDownY, 0, 0);
             if (chart.mouseDownX < seriesClipRect.x || chart.mouseDownX > (seriesClipRect.x + seriesClipRect.width) ||
                 chart.mouseDownY < seriesClipRect.y || chart.mouseDownY > (seriesClipRect.y + seriesClipRect.height)) {
@@ -19402,7 +19419,7 @@ class Selection extends BaseSelection {
     pointChecking(path) {
         let chart = this.chart;
         let element;
-        let svgRect = getElement(chart.svgId).getBoundingClientRect();
+        let svgRect = getElement$1(chart.svgId).getBoundingClientRect();
         let offsetX = chart.chartAxisLayoutPanel.seriesClipRect.x + Math.max(svgRect.left, 0);
         let offsetY = chart.chartAxisLayoutPanel.seriesClipRect.y + Math.max(svgRect.top, 0);
         this.multiDataIndexes[this.count] = [];
@@ -19791,7 +19808,7 @@ class DataLabel {
                                     xValue = rect.x;
                                     yValue = rect.y;
                                 }
-                                textElement(chart.renderer, new TextOption(this.commonId + index + '_Text_' + i, xPos, yPos, 'middle', argsData.text, 'rotate(' + degree + ',' + (xValue) + ',' + (yValue) + ')', 'auto', degree), argsData.font, argsData.font.color ||
+                                textElement$1(chart.renderer, new TextOption(this.commonId + index + '_Text_' + i, xPos, yPos, 'middle', argsData.text, 'rotate(' + degree + ',' + (xValue) + ',' + (yValue) + ')', 'auto', degree), argsData.font, argsData.font.color ||
                                     ((contrast >= 128 || series.type === 'Hilo') ? 'black' : 'white'), series.textElement, false, redraw, true, false, series.chart.duration, series.clipRect);
                             }
                         }
@@ -19800,7 +19817,7 @@ class DataLabel {
             }
         });
         if (element.childElementCount) {
-            appendChildElement(chart.enableCanvas, getElement(chart.element.id + '_Secondary_Element'), element, chart.redraw, false, 'x', 'y', null, '', false, false, null, chart.duration);
+            appendChildElement(chart.enableCanvas, getElement$1(chart.element.id + '_Secondary_Element'), element, chart.redraw, false, 'x', 'y', null, '', false, false, null, chart.duration);
         }
     }
     /**
@@ -20373,12 +20390,12 @@ class ErrorBar {
                 symbolId = this.chart.element.id + '_Series_' + '_ErrorBarGroup_' + seriesIndex + '_Point_' + point.index;
                 capId = this.chart.element.id + '_Series_' + '_ErrorBarCap_' + seriesIndex + '_Point_' + point.index;
                 let shapeOption = new PathOption(symbolId, '', errorbar.width, errorbar.color || this.chart.themeStyle.errorBar, null, '', errorDirection[0]);
-                let element = getElement(shapeOption.id);
+                let element = getElement$1(shapeOption.id);
                 let previousDirection = element ? element.getAttribute('d') : null;
                 series.errorBarElement.appendChild(this.chart.renderer.drawPath(shapeOption));
                 pathAnimation(element, errorDirection[0], redraw, previousDirection);
                 let capOption = new PathOption(capId, '', errorBarCap.width, errorBarCap.color || this.chart.themeStyle.errorBar, null, '', errorDirection[1]);
-                element = getElement(capOption.id);
+                element = getElement$1(capOption.id);
                 previousDirection = element ? element.getAttribute('d') : null;
                 appendChildElement(this.chart.enableCanvas, series.errorBarElement, this.chart.renderer.drawPath(capOption), redraw);
                 pathAnimation(element, errorDirection[1], redraw, previousDirection);
@@ -20798,10 +20815,10 @@ class Legend extends BaseLegend {
             }
             chart.animateSeries = false;
             chart.redraw = chart.enableAnimation;
+            blazorTemplatesReset(chart);
             removeElement$1(getElement(chart.element.id + '_Secondary_Element').querySelectorAll('.ejSVGTooltip')[0]);
             this.redrawSeriesElements(series, chart);
             chart.removeSvg();
-            resetBlazorTemplate(chart.element.id + '_DataLabel');
             chart.refreshAxis();
             series.refreshAxisLabel();
             this.refreshSeries(chart.visibleSeries);
@@ -21061,7 +21078,13 @@ class AnnotationBase {
         else if (this.control.redraw) {
             removeElement$1(annotationElement.id);
         }
-        updateBlazorTemplate((this.control.element.id + 'Annotation' + index).replace(/[^a-zA-Z0-9]/g, ''), 'ContentTemplate', chart.stockChart ? chart.stockChart.annotations[index] : this.control.annotations[index]);
+        let annotationRendered = () => {
+            let elementRect = annotationElement.getBoundingClientRect();
+            annotationElement.style.left = this.setAlignmentValue(this.annotation.horizontalAlignment, elementRect.width, location.x) + 'px';
+            annotationElement.style.top = this.setAlignmentValue(this.annotation.verticalAlignment, elementRect.height, location.y) + 'px';
+        };
+        annotationRendered.bind(location, this);
+        updateBlazorTemplate((this.control.element.id + 'Annotation' + index).replace(/[^a-zA-Z0-9]/g, ''), 'ContentTemplate', chart.stockChart ? chart.stockChart.annotations[index] : this.control.annotations[index], undefined, annotationRendered);
     }
     /**
      * Method to calculate the location for annotation - coordinate unit as point in accumulation chart.
@@ -21811,7 +21834,7 @@ class MultiLevelLabel {
                             textWrap(argsData.text, gap, argsData.textStyle) : textTrim(gap, argsData.text, argsData.textStyle);
                         options.x = options.x - padding / 2;
                     }
-                    textElement(this.chart.renderer, options, argsData.textStyle, argsData.textStyle.color || this.chart.themeStyle.axisLabel, this.labelElement, false, this.chart.redraw, true);
+                    textElement$1(this.chart.renderer, options, argsData.textStyle, argsData.textStyle.color || this.chart.themeStyle.axisLabel, this.labelElement, false, this.chart.redraw, true);
                     if (multiLevel.border.width > 0 && multiLevel.border.type !== 'WithoutBorder') {
                         pathRect = this.renderXAxisLabelBorder(level, endX - startX - padding, axis, startX, startY, labelSize, options, axisRect, argsData.alignment, pathRect, isOutside, opposedPosition, pointIndex);
                         // fix for generating seperate rect 
@@ -21981,7 +22004,7 @@ class MultiLevelLabel {
                     options.text = (multiLevel.overflow === 'Trim') ?
                         textTrim((categoryLabel.maximumTextWidth === null ? this.yAxisMultiLabelHeight[level] :
                             categoryLabel.maximumTextWidth), argsData.text, argsData.textStyle) : options.text;
-                    textElement(this.chart.renderer, options, argsData.textStyle, argsData.textStyle.color || this.chart.themeStyle.axisLabel, this.labelElement, this.chart.redraw, true);
+                    textElement$1(this.chart.renderer, options, argsData.textStyle, argsData.textStyle.color || this.chart.themeStyle.axisLabel, this.labelElement, this.chart.redraw, true);
                     if (multiLevel.border.width > 0 && multiLevel.border.type !== 'WithoutBorder') {
                         path = this.renderYAxisLabelBorder(level, gap, axis, endY, startX, startY, labelSize, options, rect, argsData.alignment, path, isOutside, opposedPosition, pointIndex);
                         if (path !== '') {
@@ -22380,7 +22403,7 @@ class ScrollBar {
             pageX = e.clientX;
             pageY = e.clientY;
         }
-        let svgRect = getElement(this.component.element.id + '_scrollBar_svg' + this.axis.name).getBoundingClientRect();
+        let svgRect = getElement$1(this.component.element.id + '_scrollBar_svg' + this.axis.name).getBoundingClientRect();
         this.mouseX = pageX - Math.max(svgRect.left, 0);
         this.mouseY = pageY - Math.max(svgRect.top, 0);
     }
@@ -22554,7 +22577,7 @@ class ScrollBar {
      * @param e
      */
     scrollMouseWheel(e) {
-        let svgRect = getElement(this.component.element.id + '_scrollBar_svg' + this.axis.name).getBoundingClientRect();
+        let svgRect = getElement$1(this.component.element.id + '_scrollBar_svg' + this.axis.name).getBoundingClientRect();
         this.mouseX = e.clientX - Math.max(svgRect.left, 0);
         this.mouseY = e.clientY - Math.max(svgRect.top, 0);
         let origin = 0.5;
@@ -23332,6 +23355,7 @@ class AccumulationSeries extends ChildProperty {
         let argsData = {
             name: seriesRender, series: this, data: e.result,
         };
+        accumulation.allowServerDataBinding = false;
         accumulation.trigger(seriesRender, argsData);
         this.resultData = e.result !== '' ? e.result : [];
         this.getPoints(this.resultData, accumulation);
@@ -23452,7 +23476,7 @@ class AccumulationSeries extends ChildProperty {
      * @private
      */
     renderSeries(accumulation, redraw) {
-        let seriesGroup = redraw ? getElement(accumulation.element.id + '_Series_' + this.index) :
+        let seriesGroup = redraw ? getElement$1(accumulation.element.id + '_Series_' + this.index) :
             accumulation.renderer.createGroup({ id: accumulation.element.id + '_Series_' + this.index });
         this.renderPoints(accumulation, seriesGroup, redraw);
         let datalabelGroup;
@@ -23507,7 +23531,7 @@ class AccumulationSeries extends ChildProperty {
             }
         }
         if (this.dataLabel.template !== null && element.childElementCount) {
-            appendChildElement(false, getElement(accumulation.element.id + '_Secondary_Element'), element, redraw);
+            appendChildElement(false, getElement$1(accumulation.element.id + '_Secondary_Element'), element, redraw);
         }
         appendChildElement(false, accumulation.getSeriesElement(), datalabelGroup, redraw);
     }
@@ -23898,7 +23922,7 @@ class AccumulationBase {
      * To check point is exploded by id
      */
     isExplode(id) {
-        let element = getElement(id);
+        let element = getElement$1(id);
         let transform = element ? element.getAttribute('transform') : null;
         return (element && (transform === 'translate(0, 0)' || transform === null || transform === 'translate(0)'));
     }
@@ -23906,7 +23930,7 @@ class AccumulationBase {
      * To deExplode the point by index
      */
     deExplodeSlice(index, sliceId, animationDuration) {
-        let element = getElement(sliceId + index);
+        let element = getElement$1(sliceId + index);
         if (element) {
             let borderElement = element.parentNode.lastChild.hasAttribute('transform');
             if (borderElement) {
@@ -23939,7 +23963,7 @@ class AccumulationBase {
      * To translate the point element by id and position
      */
     setElementTransform(id, position) {
-        let element = getElement(id);
+        let element = getElement$1(id);
         if (element) {
             element.setAttribute('transform', position);
         }
@@ -23962,7 +23986,8 @@ class AccumulationBase {
         let chart = this.accumulation;
         let seriesIndex;
         let point;
-        seriesIndex = parseInt(sliceId.split('_')[2], 10);
+        let values = sliceId.split('_');
+        seriesIndex = parseInt(sliceId.split('_')[values.length - 3], 10);
         point = chart.visibleSeries[seriesIndex].points[index];
         if (duration <= 0) {
             this.setTranslate(index, sliceId, 'translate(' + (endX) + ', ' + (endY) + ')', point.transform);
@@ -24174,7 +24199,7 @@ class PieBase extends AccumulationBase {
                 slice.setAttribute('d', this.getPathArc(this.center, 0, 359.99999, radius, 0));
                 this.accumulation.trigger(animationComplete, this.accumulation.isBlazor ? {} :
                     { series: series, accumulation: this.accumulation, chart: this.accumulation });
-                let datalabelGroup = getElement(this.accumulation.element.id + '_datalabel_Series_' + series.index);
+                let datalabelGroup = getElement$1(this.accumulation.element.id + '_datalabel_Series_' + series.index);
                 datalabelGroup.style.visibility = this.accumulation.isDestroyed ? 'hidden' : 'visible';
             }
         });
@@ -24221,15 +24246,15 @@ class PieSeries extends PieBase {
     toggleInnerPoint(event, radius, innerRadius) {
         let target = event.target;
         let id = indexFinder(target.id, true);
-        let accumulationId = event.target.id.split('_')[0];
+        let accumulationId = event.target.id.substring(0, (event.target.id.indexOf('Series') - 1));
         let borderElement = document.getElementById(accumulationId + 'PointHover_Border');
         let createBorderEle;
-        if (!isNaN(id.series)) {
-            let seriesIndex = id.series;
-            let pointIndex = id.point;
+        let seriesIndex = id.series;
+        let pointIndex = id.point;
+        let srcElem = getElement$1(accumulationId + '_Series_' + seriesIndex + '_Point_' + pointIndex);
+        if (!isNaN(id.series) && srcElem) {
             if (!isNullOrUndefined(seriesIndex) && !isNaN(seriesIndex) && !isNullOrUndefined(pointIndex) && !isNaN(pointIndex)) {
                 let point = this.accumulation.visibleSeries[0].points[pointIndex];
-                let srcElem = getElement(accumulationId + '_Series_' + seriesIndex + '_Point_' + pointIndex);
                 const opacity = srcElem.getAttribute('class') === accumulationId + '_ej2_deselected' ?
                     this.accumulation.tooltip.enable ? 0.5 : 0.3 : this.accumulation.tooltip.enable ? 0.5 : 1;
                 let innerPie = this.getPathArc(this.accumulation.pieSeriesModule.center, point.startAngle % 360, (point.startAngle + point.degree) % 360, radius, innerRadius);
@@ -24239,7 +24264,7 @@ class PieSeries extends PieBase {
                     borderElement.parentNode.removeChild(borderElement);
                     borderElement = null;
                 }
-                let seriousGroup = getElement(accumulationId + '_Series_' + seriesIndex);
+                let seriousGroup = getElement$1(accumulationId + '_Series_' + seriesIndex);
                 if (!borderElement && ((!point.isExplode) || (point.isExplode && event.type !== 'click'))) {
                     let path = new PathOption(accumulationId + 'PointHover_Border', point.color, 1, point.color, opacity, '', innerPie);
                     createBorderEle = this.accumulation.renderer.drawPath(path);
@@ -24267,7 +24292,7 @@ class PieSeries extends PieBase {
         }
     }
     refresh(point, degree, start, chart, option, seriesGroup) {
-        let seriesElement = getElement(option.id);
+        let seriesElement = getElement$1(option.id);
         let duration = chart.duration ? chart.duration : 300;
         let currentStartAngle;
         let curentDegree;
@@ -24448,6 +24473,7 @@ let AccumulationChart = class AccumulationChart extends Component {
     preRender() {
         let blazor = 'Blazor';
         this.isBlazor = window[blazor];
+        this.allowServerDataBinding = false;
         this.unWireEvents();
         this.setCulture();
         this.animateSeries = true;
@@ -24476,6 +24502,7 @@ let AccumulationChart = class AccumulationChart extends Component {
         this.calculateVisibleSeries();
         this.processData();
         this.renderComplete();
+        this.allowServerDataBinding = true;
     }
     /**
      * Method to unbind events for accumulation chart
@@ -24530,7 +24557,7 @@ let AccumulationChart = class AccumulationChart extends Component {
     setMouseXY(e) {
         let pageX;
         let pageY;
-        let svgRect = getElement(this.element.id + '_svg').getBoundingClientRect();
+        let svgRect = getElement$1(this.element.id + '_svg').getBoundingClientRect();
         let rect = this.element.getBoundingClientRect();
         if (e.type.indexOf('touch') > -1) {
             this.isTouch = true;
@@ -24648,7 +24675,7 @@ let AccumulationChart = class AccumulationChart extends Component {
     setAnnotationValue(annotationIndex, content) {
         let annotation = this.annotations[annotationIndex];
         let element;
-        let parentNode = getElement(this.element.id + '_Annotation_Collections');
+        let parentNode = getElement$1(this.element.id + '_Annotation_Collections');
         if (content) {
             annotation.content = content;
             if (parentNode) {
@@ -24658,7 +24685,7 @@ let AccumulationChart = class AccumulationChart extends Component {
                 parentNode.appendChild(element.children[0]);
             }
             else {
-                this.annotationModule.renderAnnotations(getElement(this.element.id + '_Secondary_Element'));
+                this.annotationModule.renderAnnotations(getElement$1(this.element.id + '_Secondary_Element'));
             }
         }
     }
@@ -24694,7 +24721,7 @@ let AccumulationChart = class AccumulationChart extends Component {
         let id = (targetId === (this.element.id + '_title') || targetId === (this.element.id + '_subTitle'));
         if ((event.target.textContent.indexOf('...') > -1) && id) {
             let title = (targetId === (this.element.id + '_title')) ? this.title : this.subTitle;
-            showTooltip(title, x, y, this.element.offsetWidth, this.element.id + '_EJ2_Title_Tooltip', getElement(this.element.id + '_Secondary_Element'), isTouch);
+            showTooltip(title, x, y, this.element.offsetWidth, this.element.id + '_EJ2_Title_Tooltip', getElement$1(this.element.id + '_Secondary_Element'), isTouch);
         }
         else {
             removeElement$1(this.element.id + '_EJ2_Title_Tooltip');
@@ -24907,12 +24934,12 @@ let AccumulationChart = class AccumulationChart extends Component {
      * @private
      */
     setSecondaryElementPosition() {
-        let tooltipParent = getElement(this.element.id + '_Secondary_Element');
+        let tooltipParent = getElement$1(this.element.id + '_Secondary_Element');
         if (!tooltipParent) {
             return;
         }
         let rect = this.element.getBoundingClientRect();
-        let svgRect = getElement(this.element.id + '_svg').getBoundingClientRect();
+        let svgRect = getElement$1(this.element.id + '_svg').getBoundingClientRect();
         tooltipParent.style.left = Math.max(svgRect.left - rect.left, 0) + 'px';
         tooltipParent.style.top = Math.max(svgRect.top - rect.top, 0) + 'px';
     }
@@ -24922,7 +24949,7 @@ let AccumulationChart = class AccumulationChart extends Component {
      */
     renderAnnotation() {
         if (this.annotationModule) {
-            this.annotationModule.renderAnnotations(getElement(this.element.id + '_Secondary_Element'));
+            this.annotationModule.renderAnnotations(getElement$1(this.element.id + '_Secondary_Element'));
         }
     }
     /**
@@ -25008,7 +25035,7 @@ let AccumulationChart = class AccumulationChart extends Component {
         let titleSize = measureText(this.title, this.titleStyle);
         rect = new Rect(margin.left, 0, this.availableSize.width - margin.left - margin.right, 0);
         let options = new TextOption(this.element.id + '_title', titlePositionX(rect, this.titleStyle), this.margin.top + (titleSize.height * 3 / 4), getAnchor, this.titleCollection, '', 'auto');
-        let element = textElement(this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject, false, this.redraw);
+        let element = textElement$1(this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject, false, this.redraw);
         if (this.subTitle) {
             this.renderSubTitle(options);
         }
@@ -25029,7 +25056,7 @@ let AccumulationChart = class AccumulationChart extends Component {
         }
         rect = new Rect(alignment === 'Center' ? (options.x - maxWidth / 2) : alignment === 'Far' ? options.x - maxWidth : options.x, 0, maxWidth, 0);
         let subTitleOption = new TextOption(this.element.id + '_subTitle', titlePositionX(rect, this.subTitleStyle), options.y * options.text.length + ((subTitleElementSize.height) * 3 / 4) + padding, getAnchor(this.subTitleStyle.textAlignment), this.subTitleCollection, '', 'auto');
-        let element = textElement(this.renderer, subTitleOption, this.subTitleStyle, this.subTitleStyle.color || this.themeStyle.chartTitle, this.svgObject, false, this.redraw);
+        let element = textElement$1(this.renderer, subTitleOption, this.subTitleStyle, this.subTitleStyle.color || this.themeStyle.chartTitle, this.svgObject, false, this.redraw);
     }
     /**
      * To get the series parent element
@@ -25165,6 +25192,7 @@ let AccumulationChart = class AccumulationChart extends Component {
      * Called internally if any of the property value changed.
      * @private
      */
+    // tslint:disable-next-line:max-func-body-length
     onPropertyChanged(newProp, oldProp) {
         let update = {
             refreshElements: false, refreshBounds: false
@@ -25210,9 +25238,15 @@ let AccumulationChart = class AccumulationChart extends Component {
                         let len = this.series.length;
                         let seriesRefresh = false;
                         let series;
+                        let blazorProp;
                         for (let i = 0; i < len; i++) {
                             series = newProp.series[i];
-                            if (newProp.series[i] && (newProp.series[i].dataSource || newProp.series[i].yName || newProp.series[i].xName)) {
+                            if (this.isBlazor && (series.startAngle || series.endAngle || series.explodeOffset || series.neckHeight ||
+                                series.neckWidth || series.radius || series.innerRadius || series.groupMode || series.emptyPointSettings)) {
+                                blazorProp = true;
+                            }
+                            if (newProp.series[i] && (newProp.series[i].dataSource || newProp.series[i].yName || newProp.series[i].xName ||
+                                blazorProp)) {
                                 extend(this.changeVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }
@@ -26008,8 +26042,8 @@ class AccumulationLegend extends BaseLegend {
                     chart.redraw = chart.enableAnimation;
                     this.sliceVisibility(pointIndex, point.visible);
                     chart.removeSvg();
-                    //To remove the blazor templates
-                    resetBlazorTemplate(chart.element.id + '_DataLabel');
+                    //To remove the blazor templates                  
+                    blazorTemplatesReset(chart);
                     this.chart.refreshPoints(currentSeries.points);
                     this.chart.renderElements();
                 }
@@ -26033,7 +26067,7 @@ class AccumulationLegend extends BaseLegend {
         let sliceId = this.chart.element.id + '_Series_0_Point_';
         if (this.chart.visibleSeries[0].dataLabel.visible) {
             sliceId = this.chart.element.id + '_datalabel_Series_0_';
-            this.sliceAnimate(getElement(sliceId + 'g_' + index), isVisible);
+            this.sliceAnimate(getElement$1(sliceId + 'g_' + index), isVisible);
         }
     }
     /**
@@ -26207,7 +26241,7 @@ class AccumulationDataLabel extends AccumulationBase {
                         removeElement$1(this.accumulation.element.id + '_EJ2_Datalabel_Tooltip');
                     }
                     let point = getSeriesFromIndex(seriesIndex, (this.accumulation).visibleSeries).points[pointIndex];
-                    showTooltip(point.text || point.y.toString(), x, y, this.areaRect.width, this.accumulation.element.id + '_EJ2_Datalabel_Tooltip', getElement(this.accumulation.element.id + '_Secondary_Element'));
+                    showTooltip(point.text || point.y.toString(), x, y, this.areaRect.width, this.accumulation.element.id + '_EJ2_Datalabel_Tooltip', getElement$1(this.accumulation.element.id + '_Secondary_Element'));
                 }
             }
         }
@@ -26618,7 +26652,7 @@ class AccumulationDataLabel extends AccumulationBase {
             }
             else {
                 location = new ChartLocation(point.labelRegion.x + this.marginValue, point.labelRegion.y + (textSize.height * 3 / 4) + this.marginValue);
-                element = getElement(id + 'shape_' + point.index);
+                element = getElement$1(id + 'shape_' + point.index);
                 let startLocation = element ? new ChartLocation(+element.getAttribute('x'), +element.getAttribute('y')) : null;
                 dataLabelElement = this.accumulation.renderer.drawRectangle(new RectOption(id + 'shape_' + point.index, argsData.color, argsData.border, 1, point.labelRegion, dataLabel.rx, dataLabel.ry));
                 appendChildElement(false, datalabelGroup, dataLabelElement, redraw, true, 'x', 'y', startLocation, null, false, false, null, this.accumulation.duration);
@@ -26649,14 +26683,14 @@ class AccumulationDataLabel extends AccumulationBase {
                     rotate = 'rotate(' + degree + ',' + (location.x + (textWidth / 2)) + ',' + (location.y) + ')';
                 }
                 point.transform = rotate;
-                textElement(this.accumulation.renderer, new TextOption(id + 'text_' + point.index, location.x, location.y, 'start', point.label, rotate, 'auto', degree), argsData.font, argsData.font.color || this.getSaturatedColor(point, argsData.color), datalabelGroup, false, redraw, true, false, this.accumulation.duration);
+                textElement$1(this.accumulation.renderer, new TextOption(id + 'text_' + point.index, location.x, location.y, 'start', point.label, rotate, 'auto', degree), argsData.font, argsData.font.color || this.getSaturatedColor(point, argsData.color), datalabelGroup, false, redraw, true, false, this.accumulation.duration);
                 element = null;
             }
             if (this.accumulation.accumulationLegendModule && (dataLabel.position === 'Outside' || this.accumulation.enableSmartLabels)) {
                 this.accumulation.visibleSeries[0].findMaxBounds(this.accumulation.visibleSeries[0].labelBound, point.labelRegion);
             }
             if (point.labelPosition === 'Outside') {
-                let element = getElement(id + 'connector_' + point.index);
+                let element = getElement$1(id + 'connector_' + point.index);
                 let previousDirection = element ? element.getAttribute('d') : '';
                 let pathElement = this.accumulation.renderer.drawPath(new PathOption(id + 'connector_' + point.index, 'transparent', dataLabel.connectorStyle.width, dataLabel.connectorStyle.color || point.color, 1, dataLabel.connectorStyle.dashArray, this.getConnectorPath(extend({}, point.labelRegion, null, true), point, dataLabel, point.labelAngle)));
                 appendChildElement(false, datalabelGroup, pathElement, redraw, true, null, null, null, previousDirection, false, false, null, this.accumulation.duration);
@@ -27362,6 +27396,7 @@ class RangeSeries extends NiceInterval {
      */
     dataManagerSuccess(e, control, series) {
         let viewData = e.count ? e.result : [];
+        control.allowServerDataBinding = false;
         if (e.count) {
             this.findGMT(control, viewData, (series ? series.xName : null) || control.xName);
         }
@@ -27820,6 +27855,10 @@ class RangeNavigatorAxis extends DateTime {
                 i !== 0 && this.isIntersect(axis, pointX, label.size.width, prevX, prevLabel.size.width)) {
                 continue;
             }
+            //label alignment for single visible label
+            if (control.secondaryLabelAlignment === 'Middle' && axis.visibleLabels.length === 1) {
+                pointX = valueToCoefficient(label.value, axis) + (rect.x + (rect.width / 2));
+            }
             //labelrender event
             let argsData;
             let labelStyle = control.labelStyle;
@@ -27844,7 +27883,7 @@ class RangeNavigatorAxis extends DateTime {
             else {
                 continue;
             }
-            textElement(this.rangeNavigator.renderer, new TextOption(this.rangeNavigator.element.id + id + i, pointX, pointY, 'middle', argsData.text), argsData.labelStyle, argsData.labelStyle.color || control.themeStyle.labelFontColor, labelElement).setAttribute('style', axis.valueType === 'DateTime' ? 'cursor: pointer' : 'cursor: default');
+            textElement$1(this.rangeNavigator.renderer, new TextOption(this.rangeNavigator.element.id + id + i, pointX, pointY, 'middle', argsData.text), argsData.labelStyle, argsData.labelStyle.color || control.themeStyle.labelFontColor, labelElement).setAttribute('style', axis.valueType === 'DateTime' ? 'cursor: pointer' : 'cursor: default');
             prevX = pointX;
             prevLabel = label;
         }
@@ -28637,6 +28676,7 @@ let RangeNavigator = class RangeNavigator extends Component {
     preRender() {
         this.unWireEvents();
         this.setCulture();
+        this.allowServerDataBinding = false;
         if (this.element.id === '') {
             let collection = document.getElementsByClassName('e-rangenavigator').length;
             this.element.id = 'rangenavigator_' + this.chartid + '_' + collection;
@@ -28683,6 +28723,7 @@ let RangeNavigator = class RangeNavigator extends Component {
         this.chartSeries.renderChart(this);
         removeElement$1('chartmeasuretext');
         this.renderComplete();
+        this.allowServerDataBinding = true;
     }
     /**
      * Theming for rangeNavigator
@@ -28787,8 +28828,8 @@ let RangeNavigator = class RangeNavigator extends Component {
      * @private
      */
     removeSvg() {
-        if (getElement(this.element.id + '_Secondary_Element')) {
-            remove(getElement(this.element.id + '_Secondary_Element'));
+        if (getElement$1(this.element.id + '_Secondary_Element')) {
+            remove(getElement$1(this.element.id + '_Secondary_Element'));
         }
         let removeLength = 0;
         if (this.svgObject) {
@@ -28884,11 +28925,11 @@ let RangeNavigator = class RangeNavigator extends Component {
      */
     removeAllTooltip() {
         if (this.tooltip.enable && this.tooltip.displayMode === 'Always') {
-            if (getElement(this.element.id + '_leftTooltip')) {
-                remove(getElement(this.element.id + '_leftTooltip'));
+            if (getElement$1(this.element.id + '_leftTooltip')) {
+                remove(getElement$1(this.element.id + '_leftTooltip'));
             }
-            if (getElement(this.element.id + '_rightTooltip')) {
-                remove(getElement(this.element.id + '_rightTooltip'));
+            if (getElement$1(this.element.id + '_rightTooltip')) {
+                remove(getElement$1(this.element.id + '_rightTooltip'));
             }
         }
     }
@@ -28979,8 +29020,8 @@ let RangeNavigator = class RangeNavigator extends Component {
         let pageX = e.type.indexOf('touch') > -1 ?
             e.changedTouches[0].clientX : e.clientX;
         let rect = this.element.getBoundingClientRect();
-        let svgRect = !this.stockChart ? getElement(this.element.id + '_svg').getBoundingClientRect() :
-            getElement(this.element.id).getBoundingClientRect();
+        let svgRect = !this.stockChart ? getElement$1(this.element.id + '_svg').getBoundingClientRect() :
+            getElement$1(this.element.id).getBoundingClientRect();
         return (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
     }
     /** Wire, UnWire and Event releated calculation End here */
@@ -29013,7 +29054,6 @@ let RangeNavigator = class RangeNavigator extends Component {
                 case 'labelStyle':
                     refreshBounds = true;
                     break;
-                case 'series':
                 case 'enableRtl':
                 case 'xName':
                 case 'yName':
@@ -29034,6 +29074,7 @@ let RangeNavigator = class RangeNavigator extends Component {
                     renderer = true;
                     break;
                 case 'dataSource':
+                case 'series':
                     renderer = true;
                     refreshBounds = true;
                     break;
@@ -29059,12 +29100,12 @@ let RangeNavigator = class RangeNavigator extends Component {
         // issue fix for Range Navigator size gets reduced when the data source is refreshed
         if (refreshBounds && renderer) {
             this.removeSvg();
-            this.chartSeries.xMin = Infinity;
-            this.chartSeries.xMax = -Infinity;
+            this.chartSeries.xMin = this.chartSeries.yMin = Infinity;
+            this.chartSeries.xMax = this.chartSeries.yMax = -Infinity;
             this.calculateBounds();
             this.chartSeries.renderChart(this);
         }
-        if (refreshBounds) {
+        if (refreshBounds && !renderer) {
             this.removeSvg();
             this.calculateBounds();
             this.chartSeries.renderChart(this);
@@ -29324,8 +29365,8 @@ class PeriodSelector {
             thumbSize = options.thumbSize;
             element = options.element;
         }
-        if (getElement(element.id + '_Secondary_Element')) {
-            remove(getElement(element.id + '_Secondary_Element'));
+        if (getElement$1(element.id + '_Secondary_Element')) {
+            remove(getElement$1(element.id + '_Secondary_Element'));
         }
         this.periodSelectorDiv = createElement('div', {
             id: element.id + '_Secondary_Element',
@@ -29415,13 +29456,13 @@ class PeriodSelector {
                         innerHTML: selctorArgs.content, className: 'e-btn e-dropdown-btn',
                         styles: 'font-family: "Segoe UI"; font-size: 14px; font-weight: 500; text-transform: none '
                     }));
-                    getElement('customRange').insertAdjacentElement('afterbegin', (createElement('span', {
+                    getElement$1('customRange').insertAdjacentElement('afterbegin', (createElement('span', {
                         id: 'dateIcon', className: 'e-input-group-icon e-range-icon e-btn-icon e-icons',
                         styles: 'font-size: 16px; min-height: 0px; margin: -3px 0 0 0; outline: none; min-width: 30px'
                         // fix for date range icon alignment issue.
                     })));
                     document.getElementById('customRange').onclick = () => {
-                        this.datePicker.show(getElement('customRange'));
+                        this.datePicker.show(getElement$1('customRange'));
                     };
                 }
             },
@@ -29542,8 +29583,8 @@ class PeriodSelector {
         if (this.rootControl.getModuleName() === 'stockChart') {
             this.rootControl.zoomChange = false;
         }
-        if (getElement(this.calendarId + '_popup') && !Browser.isDevice) {
-            let element = getElement(this.calendarId + '_popup');
+        if (getElement$1(this.calendarId + '_popup') && !Browser.isDevice) {
+            let element = getElement$1(this.calendarId + '_popup');
             element.querySelectorAll('.e-range-header')[0].style.display = 'none';
         }
     }
@@ -29667,8 +29708,8 @@ class RangeTooltip {
      * @param id
      */
     createElement(id) {
-        if (getElement(this.elementId + id)) {
-            return getElement(this.elementId + id);
+        if (getElement$1(this.elementId + id)) {
+            return getElement$1(this.elementId + id);
         }
         else {
             let element = document.createElement('div');
@@ -29676,11 +29717,11 @@ class RangeTooltip {
             element.className = 'ejSVGTooltip';
             element.setAttribute('style', 'pointer-events:none; position:absolute;z-index: 1');
             if (!this.control.stockChart) {
-                getElement(this.elementId + '_Secondary_Element').appendChild(element);
+                getElement$1(this.elementId + '_Secondary_Element').appendChild(element);
             }
             else {
                 let stockChart = this.control.stockChart;
-                getElement(stockChart.element.id + '_Secondary_Element').appendChild(element);
+                getElement$1(stockChart.element.id + '_Secondary_Element').appendChild(element);
                 element.style.transform = 'translateY(' + (((stockChart.availableSize.height - stockChart.toolbarHeight - 80) +
                     stockChart.toolbarHeight) + stockChart.titleSize.height) + 'px)';
             }
@@ -29803,6 +29844,8 @@ class CartesianChart {
     }
     initializeChart(chartArgsData) {
         let stockChart = this.stockChart;
+        let isProtect = 'isProtectedOnChange';
+        stockChart[isProtect] = true;
         if (!stockChart.chartObject) {
             stockChart.chartObject = stockChart.renderer.createGroup({
                 id: stockChart.element.id + '_stockChart_chart'
@@ -29814,8 +29857,8 @@ class CartesianChart {
             while (chartElement.firstChild) {
                 chartElement.removeChild(chartElement.firstChild);
             }
-            if (getElement(stockChart.chartObject + '_tooltip')) {
-                remove(getElement(stockChart.chartObject + '_tooltip'));
+            if (getElement$1(stockChart.chartObject + '_tooltip')) {
+                remove(getElement$1(stockChart.chartObject + '_tooltip'));
             }
         }
         this.cartesianChartSize = this.calculateChartSize();
@@ -29895,6 +29938,7 @@ class CartesianChart {
         }
         stockChart.chart.stockChart = stockChart;
         stockChart.chart.appendTo(stockChart.chartObject);
+        stockChart[isProtect] = false;
     }
     findMargin(stockChart) {
         let margin = {};
@@ -29986,11 +30030,11 @@ class RangeSelector {
             while (chartElement.firstChild) {
                 chartElement.removeChild(chartElement.firstChild);
             }
-            if (getElement(stockChart.selectorObject.id + '_leftTooltip')) {
-                remove(getElement(stockChart.selectorObject.id + '_leftTooltip'));
+            if (getElement$1(stockChart.selectorObject.id + '_leftTooltip')) {
+                remove(getElement$1(stockChart.selectorObject.id + '_leftTooltip'));
             }
-            if (getElement(stockChart.selectorObject.id + '_rightTooltip')) {
-                remove(getElement(stockChart.selectorObject.id + '_rightTooltip'));
+            if (getElement$1(stockChart.selectorObject.id + '_rightTooltip')) {
+                remove(getElement$1(stockChart.selectorObject.id + '_rightTooltip'));
             }
         }
         stockChart.rangeNavigator = new RangeNavigator({
@@ -30079,7 +30123,7 @@ class ToolBarSelector {
         this.stockChart.periods = periods;
         this.stockChart.periodSelector.rootControl = this.stockChart;
         let rect = this.stockChart.chart.chartAxisLayoutPanel.seriesClipRect;
-        let htmlElement = getElement(this.stockChart.element.id + '_Secondary_Element');
+        let htmlElement = getElement$1(this.stockChart.element.id + '_Secondary_Element');
         let height = this.stockChart.toolbarHeight;
         this.stockChart.periodSelector.appendSelector({ thumbSize: 0, element: htmlElement, width: rect.width, height: height }, rect.x);
         this.initializeSeriesSelector();
@@ -30154,6 +30198,8 @@ class ToolBarSelector {
         seriesType.appendTo('#' + this.stockChart.element.id + '_seriesType');
     }
     resetButton() {
+        let isProtect = 'isProtectedOnChange';
+        this.stockChart[isProtect] = true;
         let reset = new Button();
         reset.appendTo('#' + this.stockChart.element.id + '_reset');
         document.getElementById(this.stockChart.element.id + '_reset').onclick = () => {
@@ -30189,6 +30235,7 @@ class ToolBarSelector {
             this.stockChart.resizeTo = null;
             this.stockChart.zoomChange = false;
             this.stockChart.refresh();
+            this.stockChart[isProtect] = true;
         };
     }
     initializeTrendlineSelector() {
@@ -30403,17 +30450,17 @@ class ToolBarSelector {
                     this.stockChart.svgObject.insertAdjacentElement('afterbegin', this.addExportSettings());
                     additionalRect = stockChart.svgObject.firstElementChild.getBoundingClientRect();
                     this.stockChart.svgObject.setAttribute('height', (svgHeight.height + additionalRect.height).toString());
-                    getElement(stockID + 'chart').style.transform = 'translateY(' + additionalRect.height + 'px)';
+                    getElement$1(stockID + 'chart').style.transform = 'translateY(' + additionalRect.height + 'px)';
                     if (stockChart.enableSelector) {
-                        getElement(stockID + 'rangeSelector').setAttribute('transform', 
+                        getElement$1(stockID + 'rangeSelector').setAttribute('transform', 
                         // tslint:disable-next-line:align
                         'translate(' + 0 + ',' + (stockChart.cartesianChart.cartesianChartSize.height + additionalRect.height) + ')');
                     }
                     stockChart.chart.exportModule.export(type, 'StockChart', null, [stockChart], null, stockChart.svgObject.clientHeight);
-                    remove(getElement(this.stockChart.element.id + '_additionalExport'));
-                    getElement(stockID + 'chart').style.transform = 'translateY(0px)';
+                    remove(getElement$1(this.stockChart.element.id + '_additionalExport'));
+                    getElement$1(stockID + 'chart').style.transform = 'translateY(0px)';
                     if (stockChart.enableSelector) {
-                        getElement(stockID + 'rangeSelector').setAttribute('transform', 
+                        getElement$1(stockID + 'rangeSelector').setAttribute('transform', 
                         // tslint:disable-next-line:align
                         'translate(' + 0 + ',' + (stockChart.cartesianChart.cartesianChartSize.height) + ')');
                     }
@@ -30456,7 +30503,7 @@ class ToolBarSelector {
         });
         let titleHeight = measureText(this.stockChart.title, this.stockChart.titleStyle).height;
         let options = new TextOption(exportElement.id + '_Title', titlePositionX(new Rect(0, 0, this.stockChart.availableSize.width, 0), this.stockChart.titleStyle), 0, 'middle', this.stockChart.title, '', 'text-before-edge');
-        textElement(this.stockChart.renderer, options, this.stockChart.titleStyle, this.stockChart.titleStyle.color, exportElement);
+        textElement$1(this.stockChart.renderer, options, this.stockChart.titleStyle, this.stockChart.titleStyle.color, exportElement);
         let style = { size: '15px', fontWeight: '500', color: null, fontStyle: 'Normal', fontFamily: 'Segoe UI' };
         let x = measureText('Series: ' + this.selectedSeries, style).width / 2;
         let y = titleHeight;
@@ -31279,7 +31326,7 @@ class StockEvents extends BaseTooltip {
                 stockEventElement.appendChild(drawSymbol(new ChartLocation(lx, ly), 'Circle', new Size(2, 2), '', new PathOption(stockId + '_Circle', 'transparent', border.width, border.color), this.dateParse(stockEve.date).toISOString()));
                 stockEventElement.appendChild(drawSymbol(new ChartLocation(lx, ly - 5), 'VerticalLine', new Size(9, 9), '', new PathOption(stockId + '_Path', border.color, border.width, border.color), this.dateParse(stockEve.date).toISOString()));
                 stockEventElement.appendChild(drawSymbol(new ChartLocation(stockEve.type !== 'Flag' ? lx : lx + result.width / 2, ly - result.height), stockEve.type, result, '', new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color), this.dateParse(stockEve.date).toISOString()));
-                textElement(this.stockChart.renderer, new TextOption(stockId + '_Text', stockEve.type !== 'Flag' ? symbolLocation.x : symbolLocation.x + result.width / 2, (symbolLocation.y - result.height), 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
+                textElement$1(this.stockChart.renderer, new TextOption(stockId + '_Text', stockEve.type !== 'Flag' ? symbolLocation.x : symbolLocation.x + result.width / 2, (symbolLocation.y - result.height), 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
                 break;
             case 'ArrowUp':
             case 'ArrowDown':
@@ -31294,7 +31341,7 @@ class StockEvents extends BaseTooltip {
                 result.height = 3 * textSize.height;
                 result.width = textSize.width + (1.5 * textSize.width);
                 stockEventElement.appendChild(drawSymbol(new ChartLocation(symbolLocation.x, symbolLocation.y), stockEve.type, new Size(20, 20), '', new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color), this.dateParse(stockEve.date).toISOString()));
-                textElement(this.stockChart.renderer, new TextOption(stockId + '_Text', symbolLocation.x, symbolLocation.y, 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
+                textElement$1(this.stockChart.renderer, new TextOption(stockId + '_Text', symbolLocation.x, symbolLocation.y, 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
                 break;
             case 'Text':
                 textSize.height += 8; //padding for text height
@@ -31307,7 +31354,7 @@ class StockEvents extends BaseTooltip {
                     'L' + ' ' + (lx + 5) + ' ' + (ly - 5) + ' ' + 'Z';
                 pathOption = new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color, 1, '', pathString);
                 stockEventElement.appendChild(this.stockChart.renderer.drawPath(pathOption));
-                textElement(this.stockChart.renderer, new TextOption(stockId + '_Text', lx, ly - (textSize.height / 2), 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
+                textElement$1(this.stockChart.renderer, new TextOption(stockId + '_Text', lx, ly - (textSize.height / 2), 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
                 break;
             default:
                 //pin type calculation.
@@ -31319,7 +31366,7 @@ class StockEvents extends BaseTooltip {
                 pathOption = new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color, 1, '', pathString);
                 stockEventElement.appendChild(this.stockChart.renderer.drawPath(pathOption));
                 //append text element
-                textElement(this.stockChart.renderer, new TextOption(stockId + '_Text', lx, ly - (textSize.height / 2), 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
+                textElement$1(this.stockChart.renderer, new TextOption(stockId + '_Text', lx, ly - (textSize.height / 2), 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
         }
     }
     renderStockEventTooltip(targetId) {
@@ -31332,14 +31379,14 @@ class StockEvents extends BaseTooltip {
         let svgElement = this.getElement(this.chartId + '_StockEvents_Tooltip_svg');
         let isTooltip = (svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0);
         if (!isTooltip) {
-            if (getElement(this.chartId + '_StockEvents_Tooltip_svg')) {
-                remove(getElement(this.chartId + '_StockEvents_Tooltip'));
+            if (getElement$1(this.chartId + '_StockEvents_Tooltip_svg')) {
+                remove(getElement$1(this.chartId + '_StockEvents_Tooltip'));
             }
             let tooltipElement = createElement('div', {
                 id: this.chartId + '_StockEvents_Tooltip', className: 'ejSVGTooltip',
                 attrs: { 'style': 'pointer-events:none; position:absolute;z-index: 1' }
             });
-            getElement(this.chartId + '_Secondary_Element').appendChild(tooltipElement);
+            getElement$1(this.chartId + '_Secondary_Element').appendChild(tooltipElement);
             this.stockEventTooltip = new Tooltip({
                 opacity: 1,
                 header: '', content: [(this.stockChart.stockEvents[pointIndex].description)],
@@ -31405,8 +31452,8 @@ class StockEvents extends BaseTooltip {
         this.setOpacity(stockId + '_Text', 1);
     }
     setOpacity(elementId, opacity) {
-        if (getElement(elementId)) {
-            getElement(elementId).setAttribute('opacity', opacity.toString());
+        if (getElement$1(elementId)) {
+            getElement$1(elementId).setAttribute('opacity', opacity.toString());
         }
     }
     /**
@@ -31508,6 +31555,8 @@ class StockChart extends Component {
     preRender() {
         this.unWireEvents();
         this.initPrivateVariable();
+        this.allowServerDataBinding = false;
+        this.isProtectedOnChange = true;
         this.setCulture();
         this.stockChartTheme = getThemeColor(this.theme);
         this.wireEvents();
@@ -31586,6 +31635,8 @@ class StockChart extends Component {
             this.initialRender = false;
         }
         this.renderComplete();
+        this.allowServerDataBinding = true;
+        this.isProtectedOnChange = false;
     }
     /**
      * DataManager Success
@@ -31818,12 +31869,12 @@ class StockChart extends Component {
             target = e.target;
         }
         if (target.id.indexOf(this.element.id + '_stockChart_chart') > -1) {
-            let svgRect = getElement(this.element.id + '_stockChart_chart').getBoundingClientRect();
+            let svgRect = getElement$1(this.element.id + '_stockChart_chart').getBoundingClientRect();
             this.mouseDownY = this.previousMouseMoveY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
             this.mouseDownX = this.previousMouseMoveX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
             this.setMouseXY(this.mouseDownX, this.mouseDownY);
             this.referenceXAxis = this.chart.primaryXAxis;
-            getElement(this.element.id + '_stockChart_chart').setAttribute('cursor', 'pointer');
+            getElement$1(this.element.id + '_stockChart_chart').setAttribute('cursor', 'pointer');
             this.mouseDownXPoint = getRangeValueXByPoint(this.mouseX - this.referenceXAxis.rect.x, this.referenceXAxis.rect.width, this.referenceXAxis.visibleRange, this.referenceXAxis.isInversed);
             this.allowPan = true;
             this.notify(Browser.touchStartEvent, e);
@@ -31850,7 +31901,7 @@ class StockChart extends Component {
             pageX = e.clientX;
             this.isTouch = e.pointerType === 'touch' || e.pointerType === '2';
         }
-        getElement(this.element.id + '_stockChart_chart').setAttribute('cursor', 'auto');
+        getElement$1(this.element.id + '_stockChart_chart').setAttribute('cursor', 'auto');
         this.onPanning = false;
         this.setMouseXY(pageX, pageY);
         this.stockChartOnMouseUp(e);
@@ -31879,7 +31930,7 @@ class StockChart extends Component {
      * To find mouse x, y for aligned chart element svg position
      */
     setMouseXY(pageX, pageY) {
-        let svgRect = getElement(this.element.id + '_stockChart_chart').getBoundingClientRect();
+        let svgRect = getElement$1(this.element.id + '_stockChart_chart').getBoundingClientRect();
         let rect = this.element.getBoundingClientRect();
         this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
         this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
@@ -31917,7 +31968,7 @@ class StockChart extends Component {
     chartOnMouseMove(e) {
         if (this.allowPan && this.mouseDownXPoint && this.mouseX !== this.previousMouseMoveX && this.zoomSettings.enablePan) {
             this.onPanning = true;
-            getElement(this.element.id + '_stockChart_chart').setAttribute('cursor', 'pointer');
+            getElement$1(this.element.id + '_stockChart_chart').setAttribute('cursor', 'pointer');
             this.mouseUpXPoint = getRangeValueXByPoint(this.mouseX - this.referenceXAxis.rect.x, this.referenceXAxis.rect.width, this.referenceXAxis.visibleRange, this.referenceXAxis.isInversed);
             let diff = Math.abs(this.mouseUpXPoint - this.mouseDownXPoint);
             if (this.mouseDownXPoint < this.mouseUpXPoint) {
@@ -31946,7 +31997,7 @@ class StockChart extends Component {
                     remove(element);
                 }
             }
-            if (getElement(this.element.id + '_StockEvents_Tooltip')) {
+            if (getElement$1(this.element.id + '_StockEvents_Tooltip')) {
                 this.stockEvent.removeStockEventTooltip(0);
             }
         }
@@ -32038,7 +32089,7 @@ class StockChart extends Component {
             border.style.position = 'absolute';
             border.style.border = this.border.width + 'px solid ' + this.border.color;
             border.style.pointerEvents = 'none';
-            appendChildElement(false, getElement(this.element.id), border);
+            appendChildElement(false, getElement$1(this.element.id), border);
         }
     }
     /**
@@ -32047,7 +32098,7 @@ class StockChart extends Component {
     renderTitle() {
         let rect;
         if (this.title) {
-            appendChildElement(false, getElement(this.element.id + '_Secondary_Element'), this.renderer.createSvg({
+            appendChildElement(false, getElement$1(this.element.id + '_Secondary_Element'), this.renderer.createSvg({
                 id: this.element.id + '_stockChart_Title',
                 width: this.availableSize.width,
                 height: this.titleSize.height,
@@ -32057,7 +32108,7 @@ class StockChart extends Component {
             let getAnchor = alignment === 'Near' ? 'start' : alignment === 'Far' ? 'end' : 'middle';
             rect = new Rect(0, 0, this.availableSize.width, 0);
             let options = new TextOption(this.element.id + '_ChartTitle', titlePositionX(rect, this.titleStyle), ((this.titleSize.height - 10)), getAnchor, this.title, '', 'auto');
-            let element = textElement(this.renderer, options, this.titleStyle, this.titleStyle.color || this.findTitleColor(), getElement(this.element.id + '_stockChart_Title'), false, false);
+            let element = textElement$1(this.renderer, options, this.titleStyle, this.titleStyle.color || this.findTitleColor(), getElement$1(this.element.id + '_stockChart_Title'), false, false);
             this.availableSize.height -= (this.titleSize.height + 5);
         }
     }
@@ -32233,7 +32284,2294 @@ __decorate$9([
  * Chart and accumulation common files
  */
 
+/**
+ * Class for Bullet chart axis
+ */
+class BulletChartAxis {
+    constructor(bullet) {
+        //super();
+        this.bulletChart = bullet;
+        this.isVertical = (bullet.orientation === 'Vertical');
+        this.isLabelsInside = (bullet.labelPosition === 'Inside');
+        this.isHorizontal = (bullet.orientation === 'Horizontal');
+        this.isLeft = bullet.titlePosition === 'Left';
+        this.isRight = bullet.titlePosition === 'Right';
+        this.isTop = bullet.titlePosition === 'Top';
+        this.majorTickSize = bullet.majorTickLines.height;
+        this.location = 10;
+        this.labelOffset = 15;
+        this.labelSize = parseFloat(bullet.labelStyle.size);
+        this.isLabelBelow = !this.bulletChart.opposedPosition;
+    }
+    renderMajorTickLines(intervalValue, scale) {
+        if (this.bulletChart.orientation === 'Horizontal') {
+            this.renderXMajorTickLines(intervalValue, scale);
+        }
+        else {
+            this.renderYMajorTickLines(intervalValue, scale);
+        }
+    }
+    renderMinorTickLines(intervalValue, scale) {
+        if (this.bulletChart.orientation === 'Horizontal') {
+            this.renderXMinorTickLines(intervalValue, scale);
+        }
+        else {
+            this.renderYMinorTickLines(intervalValue, scale);
+        }
+    }
+    renderAxisLabels(intervalValue, scale) {
+        if (this.bulletChart.orientation === 'Horizontal') {
+            this.renderXAxisLabels(intervalValue, scale);
+        }
+        else {
+            this.renderYAxisLabels(intervalValue, scale);
+        }
+    }
+    /**
+     * To render grid lines of bullet chart axis
+     */
+    renderXMajorTickLines(intervalValue, scale) {
+        let bullet = this.bulletChart;
+        let tickGroup = bullet.renderer.createGroup({ 'id': bullet.svgObject.id + '_majorTickGroup' });
+        let min = bullet.minimum;
+        let max = bullet.maximum;
+        let interval = bullet.interval;
+        let enableRtl = bullet.enableRtl;
+        let y1 = bullet.initialClipRect.y + ((bullet.opposedPosition) ? 0 : bullet.initialClipRect.height);
+        // tslint:disable-next-line:max-line-length
+        let y2 = y1 + ((!bullet.opposedPosition) ? ((bullet.tickPosition !== 'Inside' ? this.majorTickSize : -this.majorTickSize)) :
+            ((bullet.tickPosition !== 'Inside' ? -this.majorTickSize : this.majorTickSize)));
+        let majorTick = bullet.majorTickLines;
+        let strokeColor = majorTick.color || bullet.themeStyle.majorTickLineColor;
+        let options;
+        let condition;
+        let size = bullet.initialClipRect.x + ((bullet.enableRtl) ? bullet.initialClipRect.width : 0);
+        let majorPointX = bullet.initialClipRect.x + majorTick.width / 2 + ((enableRtl) ? bullet.initialClipRect.width : 0);
+        for (let i = min; i <= max; i += interval) {
+            condition = (!bullet.enableRtl) ? (i === max) : (i === min);
+            if (condition) {
+                majorPointX -= majorTick.width / 2;
+            }
+            condition = (!bullet.enableRtl) ? (i === max) : (i === min);
+            if (bullet.majorTickLines.useRangeColor) {
+                strokeColor = this.bindingRangeStrokes(majorPointX - ((condition) ? this.bulletChart.majorTickLines.width / 2 : 0), size, this.bulletChart.orientation, bullet.enableRtl);
+            }
+            options = this.majorTicks(majorPointX, majorPointX, y1, y2, strokeColor, i);
+            let majorTicks = bullet.renderer.drawLine(options);
+            majorPointX = majorPointX + ((enableRtl ? -intervalValue : intervalValue));
+            tickGroup.appendChild(majorTicks);
+            scale.appendChild(tickGroup);
+        }
+    }
+    /**
+     * To render grid lines of bullet chart axis
+     */
+    renderYMajorTickLines(intervalValue, scale) {
+        let bulletChart = this.bulletChart;
+        let tickGroup = bulletChart.renderer.createGroup({ 'id': bulletChart.svgObject.id + '_majorTickGroup' });
+        let min = bulletChart.minimum;
+        let max = bulletChart.maximum;
+        let interval = bulletChart.interval;
+        let enableRtl = bulletChart.enableRtl;
+        let rect = bulletChart.initialClipRect;
+        let x1 = rect.x + ((!bulletChart.opposedPosition) ? 0 : rect.width);
+        // tslint:disable-next-line:max-line-length
+        let x2 = x1 - ((!bulletChart.opposedPosition) ? ((bulletChart.tickPosition !== 'Inside' ? this.majorTickSize : -this.majorTickSize)) :
+            ((bulletChart.tickPosition !== 'Inside' ? -this.majorTickSize : this.majorTickSize)));
+        let majorTick = bulletChart.majorTickLines;
+        let strokeColor = majorTick.color || bulletChart.themeStyle.majorTickLineColor;
+        let condition;
+        let options;
+        let size = rect.y + ((!bulletChart.enableRtl) ? rect.height : 0);
+        let majorPointY = rect.y + majorTick.width / 2 + ((!enableRtl) ? rect.height : 0);
+        for (let i = min; i <= max; i += interval) {
+            condition = (bulletChart.enableRtl) ? (i === max) : (i === min);
+            if (condition) {
+                majorPointY -= majorTick.width / 2;
+            }
+            condition = (!bulletChart.enableRtl) ? (i === max) : (i === min);
+            if (bulletChart.majorTickLines.useRangeColor) {
+                strokeColor = this.bindingRangeStrokes(majorPointY - ((condition) ? this.bulletChart.majorTickLines.width / 2 : 0), size, this.bulletChart.orientation, bulletChart.enableRtl);
+            }
+            options = this.majorTicks(x1, x2, majorPointY, majorPointY, strokeColor, i);
+            let majorTicks = bulletChart.renderer.drawLine(options);
+            majorPointY = majorPointY + ((!enableRtl ? -intervalValue : intervalValue));
+            tickGroup.appendChild(majorTicks);
+            scale.appendChild(tickGroup);
+        }
+    }
+    majorTicks(x1, x2, y1, y2, strokeColor, i) {
+        let options = {
+            'id': this.bulletChart.svgObject.id + '_MajorTickLine_' + i,
+            'x1': x1,
+            'y1': y1,
+            'x2': x2,
+            'y2': y2,
+            'stroke-width': this.bulletChart.majorTickLines.width,
+            'stroke': (this.bulletChart.majorTickLines.useRangeColor && strokeColor) ? strokeColor :
+                this.bulletChart.majorTickLines.color || strokeColor
+        };
+        return options;
+    }
+    bindingRangeStrokes(majorPointX, size, orientation, rtl) {
+        if ((orientation === 'Vertical' && !rtl) || (rtl && orientation === 'Horizontal')) {
+            return this.backwardStrokeBinding(majorPointX, size);
+        }
+        else {
+            return this.forwardStrokeBinding(majorPointX, size);
+        }
+    }
+    /**
+     * To render minor tick lines of bullet chart
+     */
+    renderXMinorTickLines(intervalValue, scaleGroup) {
+        let minorTickGroup = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_minorTickGroup' });
+        let bullet = this.bulletChart;
+        let max = bullet.maximum;
+        let min = bullet.minimum;
+        let interval = bullet.interval;
+        let minorTick = bullet.minorTickLines.height;
+        let minorTicksPerInterval = this.bulletChart.minorTicksPerInterval;
+        let minorPointX;
+        let x;
+        let majorPointX = bullet.initialClipRect.x;
+        let y1 = bullet.initialClipRect.y + ((bullet.opposedPosition) ? 0 : bullet.initialClipRect.height);
+        let y2 = y1 + ((!bullet.opposedPosition) ? ((bullet.tickPosition !== 'Inside' ? minorTick : -minorTick)) :
+            ((bullet.tickPosition !== 'Inside' ? -minorTick : minorTick)));
+        let strokeColor = bullet.minorTickLines.color || bullet.themeStyle.minorTickLineColor;
+        let options;
+        let minorTicks;
+        let size = bullet.initialClipRect.x + ((bullet.enableRtl) ? bullet.initialClipRect.width : 0);
+        for (let i = min; i < max; i += interval) {
+            minorPointX = intervalValue / minorTicksPerInterval;
+            for (let j = 1; j <= minorTicksPerInterval; j++) {
+                x = majorPointX + minorPointX - (minorPointX / (minorTicksPerInterval + 1));
+                if (bullet.minorTickLines.useRangeColor) {
+                    strokeColor = this.bindingRangeStrokes(x, size, this.bulletChart.orientation, bullet.enableRtl);
+                }
+                options = this.minorXTicks(x, x, y1, y2, strokeColor, i.toString() + j.toString());
+                minorTicks = this.bulletChart.renderer.drawLine(options);
+                minorTickGroup.appendChild(minorTicks);
+                scaleGroup.appendChild(minorTickGroup);
+                minorPointX = (intervalValue / minorTicksPerInterval) * (j + 1);
+            }
+            majorPointX += intervalValue;
+        }
+    }
+    /**
+     * To render minor tick lines of bullet chart
+     */
+    renderYMinorTickLines(intervalValue, scaleGroup) {
+        let minorTickGroup = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_minorTickGroup' });
+        let bulletChart = this.bulletChart;
+        let max = bulletChart.maximum;
+        let min = bulletChart.minimum;
+        let interval = bulletChart.interval;
+        let minorTick = bulletChart.minorTickLines.height;
+        let minorTicksPerInterval = this.bulletChart.minorTicksPerInterval;
+        let minorPointY;
+        let y;
+        let majorPointY = bulletChart.initialClipRect.y + ((!bulletChart.enableRtl) ? bulletChart.initialClipRect.height : 0);
+        let x1 = bulletChart.initialClipRect.x + ((!bulletChart.opposedPosition) ? 0 : bulletChart.initialClipRect.width);
+        let x2 = x1 - ((!bulletChart.opposedPosition) ? ((bulletChart.tickPosition !== 'Inside' ? minorTick : -minorTick)) :
+            ((bulletChart.tickPosition !== 'Inside' ? -minorTick : minorTick)));
+        let strokeColor = bulletChart.minorTickLines.color || bulletChart.themeStyle.minorTickLineColor;
+        let options;
+        let minorTicks;
+        let size = bulletChart.initialClipRect.y + ((!bulletChart.enableRtl) ? bulletChart.initialClipRect.height : 0);
+        for (let i = min; i < max; i += interval) {
+            minorPointY = intervalValue / minorTicksPerInterval;
+            for (let j = 1; j <= minorTicksPerInterval; j++) {
+                if (!this.bulletChart.enableRtl) {
+                    y = majorPointY - minorPointY + (minorPointY / (minorTicksPerInterval + 1));
+                }
+                else {
+                    y = majorPointY + minorPointY - (minorPointY / (minorTicksPerInterval + 1));
+                }
+                if (bulletChart.minorTickLines.useRangeColor) {
+                    strokeColor = this.bindingRangeStrokes(y, size, this.bulletChart.orientation, bulletChart.enableRtl);
+                }
+                options = this.minorXTicks(x1, x2, y, y, strokeColor, i.toString() + j.toString());
+                minorTicks = this.bulletChart.renderer.drawLine(options);
+                minorTickGroup.appendChild(minorTicks);
+                scaleGroup.appendChild(minorTickGroup);
+                minorPointY = (intervalValue / minorTicksPerInterval) * (j + 1);
+            }
+            majorPointY -= (this.bulletChart.enableRtl) ? -intervalValue : intervalValue;
+        }
+    }
+    minorXTicks(x1, x2, y1, y2, strokeColor, i) {
+        let options = {
+            'id': this.bulletChart.svgObject.id + '_MajorTickLine_' + i,
+            'x1': x1,
+            'x2': x2,
+            'y1': y1,
+            'y2': y2,
+            'stroke-width': this.bulletChart.minorTickLines.width,
+            'stroke': (this.bulletChart.minorTickLines.useRangeColor && strokeColor) ? strokeColor :
+                this.bulletChart.minorTickLines.color || strokeColor
+        };
+        return options;
+    }
+    forwardStrokeBinding(position, size) {
+        let bullet = this.bulletChart;
+        let previous = size;
+        // (bullet.orientation === 'Horizontal') ? bullet.initialClipRect.x :
+        // (bullet.initialClipRect.y + bullet.initialClipRect.height);
+        for (let k = 0; k <= bullet.rangeCollection.length - 1; k++) {
+            previous += (!k) ? 0 : bullet.rangeCollection[k - 1];
+            if (position >= previous && position < previous + bullet.rangeCollection[k]) {
+                return bullet.ranges[k].color;
+            }
+        }
+        return null;
+    }
+    backwardStrokeBinding(position, size) {
+        let bullet = this.bulletChart;
+        let previous = size;
+        for (let k = 0; k <= bullet.rangeCollection.length - 1; k++) {
+            previous -= (!k) ? 0 : bullet.rangeCollection[k - 1];
+            if (Math.round(position) >= Math.round(previous - bullet.rangeCollection[k]) && position <= previous) {
+                return bullet.ranges[k].color;
+            }
+        }
+        return null;
+    }
+    /**
+     * To render axis labels of bullet chart
+     */
+    renderXAxisLabels(intervalValue, scaleGroup) {
+        let axisLabelGroup = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_axisLabelGroup' });
+        let text;
+        let bullet = this.bulletChart;
+        let locale = this.bulletChart.locale;
+        let padding = 5;
+        let enableRtl = bullet.enableRtl;
+        let tick = (((bullet.tickPosition === bullet.labelPosition) ? bullet.majorTickLines.height : 0) + padding * 2);
+        let y = bullet.initialClipRect.y + ((bullet.opposedPosition) ? ((bullet.labelPosition === 'Inside') ? tick : -tick)
+            : bullet.initialClipRect.height + ((bullet.labelPosition === 'Inside') ? -tick : tick));
+        let x = bullet.initialClipRect.x + ((enableRtl) ? bullet.initialClipRect.width : 0);
+        let min = bullet.minimum;
+        let max = bullet.maximum;
+        let interval = bullet.interval;
+        let localizedText = locale && this.bulletChart.enableGroupSeparator;
+        let strokeColor = bullet.labelStyle.color || bullet.themeStyle.labelFontColor;
+        let format = this.getFormat(this.bulletChart);
+        let isCustomFormat = format.match('{value}') !== null;
+        let condition;
+        this.format = this.bulletChart.intl.getNumberFormat({
+            format: isCustomFormat ? '' : format, useGrouping: this.bulletChart.enableGroupSeparator
+        });
+        let size = bullet.initialClipRect.x + ((bullet.enableRtl) ? bullet.initialClipRect.width : 0);
+        y += measureText(this.formatValue(this, isCustomFormat, format, this.bulletChart.maximum), bullet.labelStyle).height / 3;
+        for (let i = min; i <= max; i += interval) {
+            condition = (!bullet.enableRtl) ? (i === max) : (i === min);
+            if (bullet.labelStyle.useRangeColor) {
+                strokeColor = this.bindingRangeStrokes(x - ((condition) ? this.bulletChart.majorTickLines.width / 2 : 0), size, this.bulletChart.orientation, bullet.enableRtl);
+            }
+            text = localizedText ? i.toLocaleString(locale) : this.formatValue(this, isCustomFormat, format, i);
+            let labelOptions = this.labelXOptions(x, y, text, i);
+            let label = textElement(labelOptions, this.bulletChart.labelStyle, strokeColor, scaleGroup);
+            axisLabelGroup.appendChild(label);
+            x += (enableRtl) ? -intervalValue : intervalValue;
+        }
+        scaleGroup.appendChild(axisLabelGroup);
+    }
+    labelXOptions(labelX, pointY, displayText, i) {
+        let labelOptions = {
+            'id': this.bulletChart.svgObject.id + '_AxisLabel_' + i,
+            'anchor': 'middle',
+            'text': displayText,
+            'transform': '',
+            'x': labelX,
+            'y': pointY,
+            'baseLine': '',
+            'labelRotation': 0,
+        };
+        return labelOptions;
+    }
+    /**
+     * To render axis labels of bullet chart
+     */
+    renderYAxisLabels(intervalValue, scaleGroup) {
+        let axisLabelGroup = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_axisLabelGroup' });
+        let text;
+        let bulletChart = this.bulletChart;
+        let locale = bulletChart.locale;
+        let padding = 5;
+        let enableRtl = bulletChart.enableRtl;
+        let tick = (((bulletChart.tickPosition === bulletChart.labelPosition) ?
+            bulletChart.majorTickLines.height : 0) + padding * 2);
+        let y = bulletChart.initialClipRect.y + ((!enableRtl) ? bulletChart.initialClipRect.height : 0);
+        let x = bulletChart.initialClipRect.x + ((!bulletChart.opposedPosition) ?
+            ((bulletChart.labelPosition === 'Inside') ? (tick + padding * 2) : -tick)
+            : bulletChart.initialClipRect.width + ((bulletChart.labelPosition === 'Inside') ? -(tick + padding * 2) : tick));
+        let min = bulletChart.minimum;
+        let max = bulletChart.maximum;
+        let interval = bulletChart.interval;
+        let localizedText = locale && this.bulletChart.enableGroupSeparator;
+        let strokeColor = bulletChart.labelStyle.color || bulletChart.themeStyle.labelFontColor;
+        let format = this.getFormat(this.bulletChart);
+        let isCustomFormat = format.match('{value}') !== null;
+        let condition;
+        let labelWidth = 5;
+        this.format = this.bulletChart.intl.getNumberFormat({
+            format: isCustomFormat ? '' : format, useGrouping: this.bulletChart.enableGroupSeparator
+        });
+        let size = bulletChart.initialClipRect.y + ((!bulletChart.enableRtl) ? bulletChart.initialClipRect.height : 0);
+        let height = measureText(this.formatValue(this, isCustomFormat, format, this.bulletChart.maximum), bulletChart.labelStyle).height / 3;
+        y += height;
+        for (let i = min; i <= max; i += interval) {
+            condition = (bulletChart.enableRtl) ? (i === max) : (i === min);
+            if (bulletChart.labelStyle.useRangeColor) {
+                strokeColor = this.bindingRangeStrokes(y - height - ((condition) ? this.bulletChart.majorTickLines.width / 2 : 0), size, this.bulletChart.orientation, bulletChart.enableRtl);
+            }
+            text = localizedText ? i.toLocaleString(locale) : this.formatValue(this, isCustomFormat, format, i);
+            //labelWidth = measureText(text, bullet.labelStyle).width / 2;
+            let labelOptions = this.labelXOptions(x - (!this.bulletChart.opposedPosition ? labelWidth : -labelWidth), y, text, i);
+            let label = textElement(labelOptions, this.bulletChart.labelStyle, strokeColor, scaleGroup);
+            axisLabelGroup.appendChild(label);
+            y += (!enableRtl) ? -intervalValue : intervalValue;
+        }
+        scaleGroup.appendChild(axisLabelGroup);
+    }
+    /**
+     * Format of the axis label.
+     * @private
+     */
+    getFormat(axis) {
+        if (axis.labelFormat) {
+            return axis.labelFormat;
+        }
+        return '';
+    }
+    /**
+     * Formatted the axis label.
+     * @private
+     */
+    formatValue(axis, isCustom, format, tempInterval) {
+        return isCustom ? format.replace('{value}', axis.format(tempInterval))
+            : axis.format(tempInterval);
+    }
+}
+
+/**
+ *
+ */
+var BulletChartTheme;
+(function (BulletChartTheme) {
+    /** @private */
+    BulletChartTheme.axisLabelFont = {
+        size: '12px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Roboto-Regular'
+    };
+    /** @private */
+    BulletChartTheme.tooltipLabelFont = {
+        size: '13px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+    /** @private */
+    BulletChartTheme.dataLabelFont = {
+        size: '13px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+    /** @private */
+    BulletChartTheme.titleFont = {
+        size: '15px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Roboto-Regular'
+    };
+    /** @private */
+    BulletChartTheme.subTitleFont = {
+        size: '13px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Roboto-Regular'
+    };
+})(BulletChartTheme || (BulletChartTheme = {}));
+/** @private */
+// tslint:disable-next-line:max-func-body-length
+function getBulletThemeColor(theme, bullet) {
+    let style = {
+        majorTickLineColor: '#424242',
+        minorTickLineColor: '#424242',
+        background: '#FFFFFF',
+        labelFontColor: 'rgba(0,0,0,0.54)',
+        categoryFontColor: '#666666',
+        labelFontFamily: 'SegoeUI',
+        tooltipFill: 'rgba(0, 8, 22, 0.75)',
+        tooltipBoldLabel: '#ffffff',
+        featuredMeasureColor: '#181818',
+        comparativeMeasureColor: '#181818',
+        titleFontColor: 'rgba(0,0,0,0.87)',
+        dataLabelFontColor: '#ffffff',
+        titleFontFamily: 'SegoeUI',
+        subTitleFontColor: ' rgba(0,0,0,0.54)',
+        subTitleFontFamily: 'SegoeUI',
+        firstRangeColor: '#959595',
+        secondRangeColor: '#BDBDBD',
+        thirdRangeColor: '#E3E2E2',
+        rangeStrokes: [{ color: '#959595' }, { color: '#BDBDBD' }, { color: '#E3E2E2' }]
+    };
+    switch (theme) {
+        case 'Fabric':
+            style = {
+                majorTickLineColor: '#424242',
+                minorTickLineColor: '#424242',
+                background: '#FFFFFF',
+                labelFontColor: '#666666',
+                categoryFontColor: '#666666',
+                labelFontFamily: 'SegoeUI',
+                tooltipFill: 'rgba(0, 8, 22, 0.75)',
+                tooltipBoldLabel: '#ffffff',
+                featuredMeasureColor: '#181818',
+                comparativeMeasureColor: '#181818',
+                titleFontColor: '#333333',
+                dataLabelFontColor: '#ffffff',
+                titleFontFamily: 'SegoeUI',
+                subTitleFontColor: '#666666',
+                subTitleFontFamily: 'SegoeUI',
+                firstRangeColor: '#959595',
+                secondRangeColor: '#BDBDBD',
+                thirdRangeColor: '#E3E2E2',
+                rangeStrokes: [{ color: '#959595' }, { color: '#BDBDBD' }, { color: '#E3E2E2' }]
+            };
+            break;
+        case 'Bootstrap':
+            style = {
+                majorTickLineColor: '#424242',
+                minorTickLineColor: '#424242',
+                background: '#FFFFFF',
+                labelFontColor: 'rgba(0,0,0,0.54)',
+                categoryFontColor: 'rgba(0,0,0,0.54)',
+                labelFontFamily: 'Helvetica',
+                tooltipFill: 'rgba(0, 0, 0, 0.9)',
+                tooltipBoldLabel: 'rgba(255,255,255)',
+                featuredMeasureColor: '#181818',
+                comparativeMeasureColor: '#181818',
+                titleFontColor: 'rgba(0,0,0,0.87)',
+                dataLabelFontColor: '#ffffff',
+                titleFontFamily: 'Helvetica-Bold',
+                subTitleFontColor: ' rgba(0,0,0,0.54)',
+                subTitleFontFamily: 'Helvetica',
+                firstRangeColor: '#959595',
+                secondRangeColor: '#BDBDBD',
+                thirdRangeColor: '#E3E2E2',
+                rangeStrokes: [{ color: '#959595' }, { color: '#BDBDBD' }, { color: '#E3E2E2' }]
+            };
+            break;
+        case 'HighContrast':
+            style = {
+                majorTickLineColor: '#FFFFFF',
+                minorTickLineColor: '#FFFFFF',
+                background: '#000000',
+                labelFontColor: '#FFFFFF',
+                categoryFontColor: '#FFFFFF',
+                labelFontFamily: 'SegoeUI',
+                tooltipFill: '#ffffff',
+                tooltipBoldLabel: '#000000',
+                featuredMeasureColor: '#000000',
+                comparativeMeasureColor: '#000000',
+                titleFontColor: '#FFFFFF',
+                dataLabelFontColor: '#ffffff',
+                titleFontFamily: 'HelveticaNeue',
+                subTitleFontColor: '#FFFFFF',
+                subTitleFontFamily: 'SegoeUI',
+                firstRangeColor: '#959595',
+                secondRangeColor: '#BDBDBD',
+                thirdRangeColor: '#E3E2E2',
+                rangeStrokes: [{ color: '#757575' }, { color: '#BDBDBD' }, { color: '#EEEEEE' }]
+            };
+            break;
+        case 'MaterialDark':
+        case 'FabricDark':
+        case 'BootstrapDark':
+            style = {
+                majorTickLineColor: '#F0F0F0',
+                minorTickLineColor: '#F0F0F0',
+                background: '#000000',
+                labelFontColor: '#FFFFFF',
+                categoryFontColor: '#FFFFFF',
+                labelFontFamily: 'Helvetica',
+                tooltipFill: '#F4F4F4',
+                tooltipBoldLabel: '#282727',
+                featuredMeasureColor: '#181818',
+                comparativeMeasureColor: '#181818',
+                titleFontColor: '#FFFFFF',
+                dataLabelFontColor: '#ffffff',
+                titleFontFamily: 'Helvetica-Bold',
+                subTitleFontColor: '#FFFFFF',
+                subTitleFontFamily: 'Helvetica',
+                firstRangeColor: '#8D8D8D',
+                secondRangeColor: '#ADADAD',
+                thirdRangeColor: '#EEEEEE',
+                rangeStrokes: [{ color: '#8D8D8D' }, { color: '#ADADAD' }, { color: '#EEEEEE' }]
+            };
+            break;
+        case 'Bootstrap4':
+            style = {
+                majorTickLineColor: '#424242',
+                minorTickLineColor: '#424242',
+                background: '#FFFFFF',
+                labelFontColor: '#202528',
+                categoryFontColor: '#202528',
+                labelFontFamily: 'HelveticaNeue',
+                tooltipFill: 'rgba(0, 0, 0, 0.9)',
+                tooltipBoldLabel: 'rgba(255,255,255)',
+                featuredMeasureColor: '#181818',
+                comparativeMeasureColor: '#181818',
+                titleFontColor: '#202528',
+                dataLabelFontColor: '#ffffff',
+                titleFontFamily: 'HelveticaNeue-Bold',
+                subTitleFontColor: 'HelveticaNeue',
+                subTitleFontFamily: '#202528',
+                firstRangeColor: '#959595',
+                secondRangeColor: '#BDBDBD',
+                thirdRangeColor: '#E3E2E2',
+                rangeStrokes: [{ color: '#959595' }, { color: '#BDBDBD' }, { color: '#E3E2E2' }]
+            };
+            break;
+        default:
+            style = style;
+            break;
+    }
+    return style;
+}
+
+/**
+ * class for Bullet chart Scale Group
+ */
+class ScaleGroup {
+    constructor(bulletChart) {
+        this.comparative = [];
+        //super();
+        this.dataSource = bulletChart.dataSource;
+        this.isVertical = (bulletChart.orientation === 'Vertical');
+        this.isTicksInside = (bulletChart.tickPosition === 'Inside');
+        this.isLabelsInside = (bulletChart.labelPosition === 'Inside');
+        this.isHorizontal = (bulletChart.orientation === 'Horizontal');
+        this.isLeft = bulletChart.titlePosition === 'Left';
+        this.isRight = bulletChart.titlePosition === 'Right';
+        this.isTop = bulletChart.titlePosition === 'Top';
+        this.location = 10;
+        this.featureBarBounds = [];
+        this.majorTickSize = bulletChart.majorTickLines.height;
+        this.labelOffset = 15;
+        this.labelSize = 12;
+        this.bulletChart = bulletChart;
+        this.isLabelBelow = !this.bulletChart.opposedPosition;
+        this.scaleOrientation = this.bulletChart.orientation;
+        this.rangeColor = [];
+    }
+    /**
+     * To render range scale of the bulletChart graph
+     * @param scaleGroup
+     */
+    drawScaleGroup(scaleGroup) {
+        let rangeGroup = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_rangeGroup' });
+        let max = this.bulletChart.maximum;
+        let ranges = this.bulletChart.ranges;
+        this.scaleSettingsGroup = scaleGroup;
+        let rect;
+        let bullet = this.bulletChart;
+        let enableRtl = bullet.enableRtl;
+        let initialRect = bullet.initialClipRect;
+        let locX = initialRect.x + ((enableRtl && bullet.orientation === 'Horizontal') ? initialRect.width : 0);
+        let locY = initialRect.y + ((!enableRtl && bullet.orientation === 'Vertical') ? initialRect.height : 0);
+        let area = 0;
+        bullet.rangeCollection = [];
+        let start = 0;
+        let range = (bullet.orientation === 'Horizontal') ? initialRect.width : initialRect.height;
+        let fillRange = (bullet.orientation === 'Horizontal') ? initialRect.height : initialRect.width;
+        for (let i = 0; i < ranges.length; i++) {
+            area = (range) * ((ranges[i].end - start) / max);
+            if (bullet.orientation === 'Horizontal') {
+                locX -= (enableRtl) ? area : 0;
+            }
+            else {
+                locY -= (!enableRtl) ? area : 0;
+            }
+            rect = new RectOption(bullet.svgObject.id + '_range_' + i, 
+            // tslint:disable-next-line:no-string-literal
+            ranges[i].color || this.bulletChart.themeStyle.rangeStrokes[i]['color'], { width: 1 }, ranges[i].opacity, new Rect(locX, locY, ((bullet.orientation === 'Horizontal') ? area : fillRange), ((bullet.orientation === 'Horizontal') ? fillRange : area)));
+            let svgRect = bullet.renderer.drawRectangle(rect);
+            rangeGroup.appendChild(svgRect);
+            scaleGroup.appendChild(rangeGroup);
+            if (bullet.orientation === 'Horizontal') {
+                locX += (enableRtl) ? 0 : area;
+            }
+            else {
+                locY += (!enableRtl) ? 0 : area;
+            }
+            bullet.rangeCollection.push(area);
+            start = ranges[i].end;
+        }
+        return this.bulletChart.rangeCollection;
+    }
+    sortRangeCollection(a, b) {
+        return (a - b);
+    }
+    /**
+     * To render the feature bar of the bulletChart chart
+     * @param dataCount
+     */
+    renderFeatureBar(dataCount) {
+        if (dataCount === 0) {
+            return;
+        }
+        this.renderCommonFeatureBar(dataCount, this.isHorizontal);
+    }
+    /**
+     * To render the horizontal feature bar of the bulletChart chart
+     * @param dataCount
+     */
+    renderCommonFeatureBar(dataCount, isHorizontal) {
+        let categoryValue;
+        let dotWidth = 6;
+        let padding = 5;
+        let bulletChart = this.bulletChart;
+        let initialBoundsStart = isHorizontal ? (bulletChart.initialClipRect.y + bulletChart.initialClipRect.height) :
+            bulletChart.initialClipRect.x;
+        let lPoint;
+        let featueGroup = bulletChart.renderer.createGroup({ 'id': bulletChart.svgObject.id + '_featureGroup' });
+        let data;
+        let featureBarSize = (isHorizontal ? bulletChart.initialClipRect.height : bulletChart.initialClipRect.width) / dataCount;
+        let bounds;
+        for (let i = 0; i < dataCount; i++) {
+            data = bulletChart.dataSource[i];
+            categoryValue = data[bulletChart.categoryField];
+            if (isHorizontal) {
+                lPoint = initialBoundsStart - (featureBarSize * i) - (featureBarSize + bulletChart.valueHeight) / 2;
+            }
+            else {
+                lPoint = initialBoundsStart + (featureBarSize * i) + (featureBarSize / 2) - bulletChart.valueHeight / 2;
+            }
+            bounds = this.calculateFeatureMeasureBounds(data[bulletChart.valueField], categoryValue, isHorizontal);
+            if (data && bulletChart.type === 'Dot') {
+                let value = data[bulletChart.valueField];
+                if (isHorizontal) {
+                    bounds.pointX = bounds.pointX + (((value > 0) && !bulletChart.enableRtl) ||
+                        ((value < 0) && bulletChart.enableRtl) ? (bounds.width) : 0) - dotWidth / 2;
+                }
+                else {
+                    bounds.pointX = bounds.pointX + (((value > 0) && bulletChart.enableRtl) ||
+                        ((value < 0) && !bulletChart.enableRtl) ? (bounds.width) : 0) - dotWidth / 2;
+                }
+                bounds.width = dotWidth;
+            }
+            // Drawing feature bar rect element
+            if (bounds) {
+                let svgRect = isHorizontal ? this.featureBar(bounds.pointX, lPoint, bounds.width, i) :
+                    this.verticalFeatureBar(lPoint, bounds.pointX, bounds.width, i);
+                featueGroup.appendChild(svgRect);
+                this.feature = svgRect;
+                this.scaleSettingsGroup.appendChild(featueGroup);
+                this.featureBarBounds[i] = { x: bounds.pointX, y: lPoint, width: bounds.width, height: bulletChart.valueHeight };
+                // Drawing category text element
+                if (!isNullOrUndefined(categoryValue)) {
+                    let categoryTextSize = measureText(categoryValue, bulletChart.categoryLabelStyle);
+                    let categorySize = isHorizontal ? categoryTextSize.width : categoryTextSize.height;
+                    let initialRect = bulletChart.initialClipRect;
+                    let x;
+                    let categoryOptions;
+                    if (isHorizontal) {
+                        x = (bulletChart.enableRtl) ? (initialRect.x + initialRect.width + padding + categorySize / 2) :
+                            initialRect.x - padding - categorySize / 2;
+                        categoryOptions = this.drawcategory(x, lPoint, categoryValue);
+                    }
+                    else {
+                        x = (bulletChart.enableRtl) ? (initialRect.y - padding - categorySize / 2) :
+                            initialRect.y + initialRect.height + padding + categorySize / 2;
+                        categoryOptions = this.drawcategory(lPoint + bulletChart.valueHeight / 2, x, categoryValue);
+                    }
+                    textElement(categoryOptions, bulletChart.categoryLabelStyle, bulletChart.categoryLabelStyle.color || bulletChart.themeStyle.categoryFontColor, this.scaleSettingsGroup);
+                }
+            }
+            if (bulletChart.animation.enable) {
+                this.doValueBarAnimation(this.scaleSettingsGroup);
+            }
+        }
+    }
+    featureBar(pointX, pointY, width, i) {
+        let featureBarOptions = new RectOption(this.bulletChart.svgObject.id + '_FeatureMeasure_' + i, this.bulletChart.valueFill, this.bulletChart.valueBorder, 1, new Rect(pointX, pointY, width, this.bulletChart.valueHeight));
+        let svgRect = this.bulletChart.renderer.drawRectangle(featureBarOptions);
+        svgRect.setAttribute('class', this.bulletChart.svgObject.id + '_FeatureMeasure');
+        svgRect.id = this.bulletChart.svgObject.id + '_FeatureMeasure_' + i;
+        return svgRect;
+    }
+    verticalFeatureBar(pointX, pointY, width, i) {
+        let featureBarOptions = new RectOption(this.bulletChart.svgObject.id + '_FeatureMeasure_' + i, this.bulletChart.valueFill, this.bulletChart.valueBorder, 1, new Rect(pointX, pointY, this.bulletChart.valueHeight, width));
+        let svgRect = this.bulletChart.renderer.drawRectangle(featureBarOptions);
+        svgRect.setAttribute('class', this.bulletChart.svgObject.id + '_FeatureMeasure');
+        svgRect.id = this.bulletChart.svgObject.id + '_FeatureMeasure_' + i;
+        return svgRect;
+    }
+    drawcategory(lPointX, lPointY, categoryValue) {
+        let categoryOptions = {
+            'id': '',
+            'anchor': 'middle',
+            'x': lPointX,
+            'y': lPointY + (this.bulletChart.valueHeight),
+            'transform': '',
+            'text': categoryValue,
+            'baseLine': '',
+            'labelRotation': 0
+        };
+        return categoryOptions;
+    }
+    /**
+     * To render comparative symbol of the bulletChart chart
+     * @param dataCount
+     */
+    renderComparativeSymbol(dataCount) {
+        if (dataCount === 0) {
+            return;
+        }
+        this.renderCommonComparativeSymbol(dataCount, this.isHorizontal);
+    }
+    renderCommonComparativeSymbol(dataCount, isHorizontal) {
+        let bulletChart = this.bulletChart;
+        let value;
+        let rect = bulletChart.initialClipRect;
+        let scaleLength = isHorizontal ? rect.width : rect.height;
+        let y1;
+        let y2;
+        let x1;
+        let pointY = isHorizontal ? (rect.y + rect.height) : rect.x;
+        let comparativeGroup = bulletChart.renderer.createGroup({ 'id': bulletChart.svgObject.id + '_comparativeGroup' });
+        let minimum = bulletChart.minimum;
+        let maximum = bulletChart.maximum;
+        let delta = maximum - minimum;
+        let targetWidth = bulletChart.targetWidth;
+        let pointX = isHorizontal ? (rect.x - (targetWidth / 2)) : (rect.y + rect.height);
+        let temp;
+        let values = [];
+        let targetTypes = bulletChart.targetTypes;
+        let targetType = 'Rect';
+        let targetTypeLength = targetTypes.length;
+        let featureBarSize = (isHorizontal ? rect.height : rect.width) / dataCount;
+        let svgElement;
+        for (let k = 0; k < dataCount; k++) {
+            value = bulletChart.dataSource[k][bulletChart.targetField];
+            values = values.concat(value);
+            for (let i = 0; i < values.length; i++) {
+                targetType = targetTypes[i % targetTypeLength];
+                if (values[i] >= minimum && values[i] <= maximum) {
+                    if (isHorizontal) {
+                        temp = pointY - (featureBarSize * k) - (featureBarSize / 2);
+                    }
+                    else {
+                        temp = pointY + (featureBarSize * k) + (featureBarSize / 2);
+                    }
+                    y1 = temp - targetWidth * 1.5;
+                    y2 = temp + targetWidth * 1.5;
+                    temp = (scaleLength / (delta / (delta - (maximum - values[i]))));
+                    if (isHorizontal) {
+                        x1 = pointX + (bulletChart.enableRtl ? (scaleLength - temp) : temp);
+                    }
+                    else {
+                        x1 = pointX - (bulletChart.enableRtl ? (scaleLength - temp) : temp);
+                    }
+                    svgElement = this.getTargetElement(targetType, isHorizontal, x1, y1, y2, values[i], k);
+                    this.comparative.push(svgElement);
+                    comparativeGroup.appendChild(svgElement);
+                    y1 = 0;
+                    y2 = 0;
+                }
+                this.scaleSettingsGroup.appendChild(comparativeGroup);
+            }
+            values = [];
+            if (bulletChart.animation.enable) {
+                this.doTargetBarAnimation(0);
+            }
+        }
+    }
+    getTargetElement(targetType, isHorizontal, x1, y1, y2, value, k) {
+        let shapeObject;
+        let shapeElement;
+        let bulletChart = this.bulletChart;
+        let size = bulletChart.targetWidth;
+        let lx = isHorizontal ? x1 + (size / 2) : y1 + ((y2 - y1) / 2);
+        let ly = isHorizontal ? y1 + ((y2 - y1) / 2) : x1;
+        let id = bulletChart.svgObject.id + '_ComparativeMeasure_' + k;
+        let className = bulletChart.svgObject.id + '_ComparativeMeasure';
+        if (targetType === 'Rect') {
+            shapeObject = isHorizontal ? this.compareMeasure(x1, y1, y2, k, value) : this.compareVMeasure(y1, y2, x1, k, value);
+            shapeElement = bulletChart.renderer.drawLine(shapeObject);
+        }
+        else if (targetType === 'Circle') {
+            shapeObject = new CircleOption(id, bulletChart.targetColor, { width: 1, color: bulletChart.targetColor }, 1, lx, ly, size);
+            shapeElement = bulletChart.renderer.drawCircle(shapeObject);
+        }
+        else {
+            let crossDirection = 'M ' + (lx - size) + ' ' + (ly - size) + ' L ' + (lx + size) + ' ' + (ly + size) + ' M ' +
+                (lx - size) + ' ' + (ly + size) + ' L ' + (lx + size) + ' ' + (ly - size);
+            shapeObject = new PathOption(id, 'transparent', 1, bulletChart.targetColor, 1, '', crossDirection);
+            shapeElement = bulletChart.renderer.drawPath(shapeObject);
+        }
+        shapeElement.setAttribute('class', className);
+        return shapeElement;
+    }
+    compareMeasure(x1, y1, y2, i, value) {
+        let bulletChart = this.bulletChart;
+        let compareMeasureOptions = {
+            'class': bulletChart.svgObject.id + '_ComparativeMeasure',
+            'id': bulletChart.svgObject.id + '_ComparativeMeasure_' + i,
+            'x1': (value === bulletChart.maximum) ? x1 - (bulletChart.targetWidth / 2) :
+                (value === bulletChart.minimum) ? x1 + (bulletChart.targetWidth / 2) : x1,
+            'y1': y1,
+            'x2': (value === bulletChart.maximum) ? x1 - (bulletChart.targetWidth / 2) :
+                (value === bulletChart.minimum) ? x1 + (bulletChart.targetWidth / 2) : x1,
+            'y2': y2,
+            'stroke-width': bulletChart.targetWidth,
+            'stroke': bulletChart.targetColor
+        };
+        return compareMeasureOptions;
+    }
+    compareVMeasure(x1, x2, y1, i, value) {
+        let bulletChart = this.bulletChart;
+        let compareMeasureOptions = {
+            'class': bulletChart.svgObject.id + '_ComparativeMeasure',
+            'id': bulletChart.svgObject.id + '_ComparativeMeasure_' + i,
+            'x1': x1,
+            'y1': y1,
+            'x2': x2,
+            'y2': y1,
+            'stroke-width': bulletChart.targetWidth,
+            'stroke': bulletChart.targetColor
+        };
+        return compareMeasureOptions;
+    }
+    /**
+     * To calculate the bounds on vertical and horizontal orientation changes
+     * @param value
+     * @param categoryValue
+     */
+    calculateFeatureMeasureBounds(value, categoryValue, isHorizontal) {
+        let bulletChart = this.bulletChart;
+        let min = bulletChart.minimum;
+        value = (value < min && min < 0) ? min : value;
+        if (value >= min) {
+            let pointX;
+            let lastPointX;
+            let width;
+            let loc = isHorizontal ? bulletChart.initialClipRect.x : bulletChart.initialClipRect.y;
+            let scaleLength = isHorizontal ? bulletChart.initialClipRect.width : bulletChart.initialClipRect.height;
+            let delta = bulletChart.maximum - bulletChart.minimum;
+            let valueDiff = bulletChart.maximum - value;
+            let orientation = ((!bulletChart.enableRtl) ? 'forward' : 'backward') + this.scaleOrientation.toLowerCase();
+            categoryValue = isNullOrUndefined(categoryValue) ? '' : categoryValue;
+            let stringLength = measureText(categoryValue.toString(), bulletChart.labelStyle).width;
+            switch (orientation) {
+                case 'forwardhorizontal':
+                case 'backwardvertical':
+                    pointX = loc + ((min > 0) ? 0 : scaleLength / delta * Math.abs(min));
+                    width = scaleLength / (delta / ((min > 0) ? delta - valueDiff : value));
+                    if (value < 0) {
+                        width = Math.abs(width);
+                        pointX -= width;
+                    }
+                    width = (pointX + width < loc + scaleLength) ? width : loc + scaleLength - pointX;
+                    lastPointX = loc - ((orientation === 'forwardhorizontal') ? (stringLength / 2 + 5) :
+                        this.labelOffset);
+                    break;
+                default:
+                    pointX = loc + (scaleLength - scaleLength / (delta / (delta - valueDiff)));
+                    width = (min > 0) ? scaleLength / (delta / (delta - valueDiff)) : scaleLength / (delta / (value));
+                    if (value < 0) {
+                        width = Math.abs(width);
+                        pointX -= width;
+                    }
+                    if (pointX < loc) {
+                        width = pointX + width - loc;
+                        pointX = loc;
+                    }
+                    lastPointX = loc + scaleLength + ((orientation === 'backwardhorizontal') ? (stringLength / 2 +
+                        5) : 5);
+                    break;
+            }
+            return { pointX: pointX, width: width, lastPointX: lastPointX };
+        }
+        return null;
+    }
+    /**
+     * Animates the feature bar.
+     * @param  {FeatureBar} scale - Defines the feature bar to animate.
+     * @return {void}
+     */
+    doValueBarAnimation(scale) {
+        let valueBarElement = this.feature;
+        if (!valueBarElement) {
+            return null;
+        }
+        let animateOption = this.bulletChart.animation;
+        let animateDuration = this.bulletChart.animateSeries ? this.bulletChart.animation.duration : animateOption.duration;
+        let effectType = getAnimationFunction('Linear');
+        let isValuePlot = this.bulletChart.dataSource < 0;
+        let valueX;
+        let valueY;
+        let elementBarHeight = valueBarElement.getBoundingClientRect().height;
+        let elementBarWidth = valueBarElement.getBoundingClientRect().width;
+        let centerX;
+        let centerY;
+        let valueActual;
+        if (this.bulletChart.orientation === 'Horizontal' && valueBarElement) {
+            valueY = parseInt(valueBarElement.getAttribute('height'), 10);
+            valueX = parseInt(valueBarElement.getAttribute('x'), 10);
+            centerY = isValuePlot ? valueY : valueY + elementBarHeight;
+            centerX = valueX;
+        }
+        valueBarElement.style.visibility = 'hidden';
+        new Animation({}).animate(valueBarElement, {
+            duration: animateDuration,
+            delay: animateOption.delay,
+            progress: (args) => {
+                if (args.timeStamp >= args.delay) {
+                    valueBarElement.style.visibility = 'visible';
+                    elementBarWidth = elementBarWidth ? elementBarWidth : 1;
+                    valueActual = effectType(args.timeStamp - args.delay, 0, elementBarWidth, args.duration);
+                    valueBarElement.setAttribute('transform', 'translate(' + centerX + ' ' + centerY +
+                        ') scale(' + (valueActual / elementBarWidth) + ', 1) translate(' + (-centerX) + ' ' + (-centerY) + ')');
+                }
+            },
+            end: (model) => {
+                valueBarElement.setAttribute('transform', 'translate(0,0)');
+                valueBarElement.style.visibility = 'visible';
+            }
+        });
+    }
+    /**
+     * Animates the comparative bar.
+     * @param  {FeatureBar} scale - Defines the feature bar to animate.
+     * @return {void}
+     */
+    doTargetBarAnimation(index) {
+        let targetBarelement;
+        let option = this.bulletChart.animation;
+        let x;
+        let y;
+        let centerX;
+        let centerY;
+        targetBarelement = this.comparative[index];
+        if (!targetBarelement) {
+            return null;
+        }
+        if (this.bulletChart.orientation === 'Horizontal' && targetBarelement) {
+            y = parseFloat(targetBarelement.getAttribute('y1')) + parseFloat(targetBarelement.getAttribute('y2'));
+            x = parseFloat(targetBarelement.getAttribute('x1'));
+            centerY = y;
+            centerX = x;
+        }
+        targetBarelement.style.visibility = 'hidden';
+        this.animateRect(targetBarelement, centerX, centerY, index + 1);
+    }
+    animateRect(targetBarelement, centerX, centerY, index) {
+        let effect = getAnimationFunction('Linear');
+        let value;
+        let option = this.bulletChart.animation;
+        let threshold = this.comparative.length;
+        let duration = this.bulletChart.animateSeries ? this.bulletChart.animation.duration : option.duration;
+        new Animation({}).animate(targetBarelement, {
+            duration: duration,
+            delay: option.delay,
+            progress: (args) => {
+                if (args.timeStamp >= args.delay) {
+                    targetBarelement.style.visibility = 'visible';
+                    value = effect(args.timeStamp - args.delay, 0, 1, args.duration);
+                    targetBarelement.setAttribute('transform', 'translate(' + centerX + ' ' + centerY / 2 +
+                        ') scale(1,' + (value) + ') translate(' + (-centerX) + ' ' + (-centerY / 2) + ')');
+                }
+            },
+            end: (model) => {
+                targetBarelement.setAttribute('transform', 'translate(0,0)');
+                if (index < threshold) {
+                    this.doTargetBarAnimation(index + 1);
+                }
+            }
+        });
+    }
+}
+
 var __decorate$14 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Configuration of the bullet chart ranges
+ */
+class Range extends ChildProperty {
+}
+__decorate$14([
+    Property(null)
+], Range.prototype, "end", void 0);
+__decorate$14([
+    Property(1)
+], Range.prototype, "opacity", void 0);
+__decorate$14([
+    Property(null)
+], Range.prototype, "color", void 0);
+/**
+ * Configures the major tick lines.
+ */
+class MajorTickLinesSettings extends ChildProperty {
+}
+__decorate$14([
+    Property(12)
+], MajorTickLinesSettings.prototype, "height", void 0);
+__decorate$14([
+    Property(1)
+], MajorTickLinesSettings.prototype, "width", void 0);
+__decorate$14([
+    Property(null)
+], MajorTickLinesSettings.prototype, "color", void 0);
+__decorate$14([
+    Property(false)
+], MajorTickLinesSettings.prototype, "useRangeColor", void 0);
+/**
+ * Configures the minor tick lines.
+ */
+class MinorTickLinesSettings extends ChildProperty {
+}
+__decorate$14([
+    Property(8)
+], MinorTickLinesSettings.prototype, "height", void 0);
+__decorate$14([
+    Property(1)
+], MinorTickLinesSettings.prototype, "width", void 0);
+__decorate$14([
+    Property(null)
+], MinorTickLinesSettings.prototype, "color", void 0);
+__decorate$14([
+    Property(false)
+], MinorTickLinesSettings.prototype, "useRangeColor", void 0);
+/**
+ * Configures the fonts in bullet chart.
+ */
+class BulletLabelStyle extends ChildProperty {
+}
+__decorate$14([
+    Property('Normal')
+], BulletLabelStyle.prototype, "fontStyle", void 0);
+__decorate$14([
+    Property('16px')
+], BulletLabelStyle.prototype, "size", void 0);
+__decorate$14([
+    Property('')
+], BulletLabelStyle.prototype, "color", void 0);
+__decorate$14([
+    Property('Normal')
+], BulletLabelStyle.prototype, "fontWeight", void 0);
+__decorate$14([
+    Property('Segoe UI')
+], BulletLabelStyle.prototype, "fontFamily", void 0);
+__decorate$14([
+    Property('Center')
+], BulletLabelStyle.prototype, "textAlignment", void 0);
+__decorate$14([
+    Property('None')
+], BulletLabelStyle.prototype, "textOverflow", void 0);
+__decorate$14([
+    Property(1)
+], BulletLabelStyle.prototype, "opacity", void 0);
+__decorate$14([
+    Property(true)
+], BulletLabelStyle.prototype, "enableTrim", void 0);
+__decorate$14([
+    Property(null)
+], BulletLabelStyle.prototype, "maximumTitleWidth", void 0);
+__decorate$14([
+    Property(false)
+], BulletLabelStyle.prototype, "useRangeColor", void 0);
+/**
+ * Configures the ToolTips in the bullet chart.
+ */
+class BulletTooltipSettings extends ChildProperty {
+}
+__decorate$14([
+    Property(true)
+], BulletTooltipSettings.prototype, "enable", void 0);
+__decorate$14([
+    Property(null)
+], BulletTooltipSettings.prototype, "fill", void 0);
+__decorate$14([
+    Complex(BulletChartTheme.tooltipLabelFont, BulletLabelStyle)
+], BulletTooltipSettings.prototype, "textStyle", void 0);
+__decorate$14([
+    Complex({ color: '#cccccc', width: 0.5 }, Border)
+], BulletTooltipSettings.prototype, "border", void 0);
+__decorate$14([
+    Property(null)
+], BulletTooltipSettings.prototype, "template", void 0);
+/**
+ * Configures the DataLabel in the bullet chart.
+ */
+class BulletDataLabel extends ChildProperty {
+}
+__decorate$14([
+    Property(false)
+], BulletDataLabel.prototype, "enable", void 0);
+__decorate$14([
+    Complex(BulletChartTheme.dataLabelFont, BulletLabelStyle)
+], BulletDataLabel.prototype, "labelStyle", void 0);
+
+var __decorate$13 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * bullet chart
+ */
+let BulletChart = class BulletChart extends Component {
+    /**
+     * Constructor for creating the bullet chart
+     * @hidden
+     */
+    constructor(options, element) {
+        super(options, element);
+        /** @private */
+        this.bulletid = 57726;
+        /** @private */
+        this.animateSeries = true;
+        this.padding = 5;
+        /** @private */
+        this.leftSize = 0;
+        /** @private */
+        this.rightSize = 0;
+        /** @private */
+        this.topSize = 0;
+        /** @private */
+        this.bottomSize = 0;
+        /** @private */
+        this.maxLabelSize = new Size(0, 0);
+        this.maxTitleSize = new Size(0, 0);
+        /** @private */
+        this.intervalDivs = [10, 5, 2, 1];
+    }
+    /**
+     * Initialize the event handler.
+     */
+    preRender() {
+        this.allowServerDataBinding = false;
+        this.unWireEvents();
+        this.initPrivateValues();
+        this.setCulture();
+        this.wireEvents();
+    }
+    /**
+     * To initialize the private variables
+     */
+    initPrivateValues() {
+        this.delayRedraw = false;
+        this.scale = new ScaleGroup(this);
+        this.bulletAxis = new BulletChartAxis(this);
+        if (this.element.id === '') {
+            let collection = document.getElementsByClassName('e-BulletChart').length;
+            this.element.id = 'BulletChart_' + this.bulletid + '_' + collection;
+        }
+    }
+    /**
+     * Method to set culture for BulletChart
+     */
+    setCulture() {
+        this.intl = new Internationalization();
+    }
+    /**
+     * To Initialize the bullet chart rendering.
+     */
+    render() {
+        this.trigger('load', { bulletChart: this });
+        this.setTheme();
+        this.createSvg(this);
+        this.findRange();
+        this.calculatePosition();
+        this.renderBulletElements();
+        this.allowServerDataBinding = true;
+        this.renderComplete();
+    }
+    /**
+     * Theming for bullet chart
+     */
+    setTheme() {
+        this.themeStyle = getBulletThemeColor(this.theme, this);
+    }
+    findRange() {
+        if (!this.minimum) {
+            this.minimum = 0;
+        }
+        if (!this.maximum) {
+            this.maximum = 0;
+            for (let i = 0; i < this.ranges.length; i++) {
+                this.maximum = this.maximum > this.ranges[i].end ? this.maximum : this.ranges[i].end;
+            }
+        }
+        if (!this.interval) {
+            this.interval = this.calculateNumericNiceInterval(this.maximum - this.minimum);
+        }
+    }
+    getActualDesiredIntervalsCount(availableSize) {
+        let size = this.orientation === 'Horizontal' ? availableSize.width : availableSize.height;
+        // tslint:disable-next-line:align
+        let desiredIntervalsCount = (this.orientation === 'Horizontal' ? 0.533 : 1) * 3;
+        desiredIntervalsCount = Math.max((size * (desiredIntervalsCount / 100)), 1);
+        return desiredIntervalsCount;
+    }
+    /**
+     * Numeric Nice Interval for the axis.
+     * @private
+     */
+    calculateNumericNiceInterval(delta) {
+        let actualDesiredIntervalsCount = this.getActualDesiredIntervalsCount(this.availableSize);
+        let niceInterval = delta / actualDesiredIntervalsCount;
+        let minInterval = Math.pow(10, Math.floor(logBase(niceInterval, 10)));
+        for (let interval of this.intervalDivs) {
+            let currentInterval = minInterval * interval;
+            if (actualDesiredIntervalsCount < (delta / currentInterval)) {
+                break;
+            }
+            niceInterval = currentInterval;
+        }
+        return niceInterval;
+    }
+    /**
+     * To set the left and top position for data label template for center aligned bulletchart
+     */
+    setSecondaryElementPosition() {
+        let element = getElement$1(this.element.id + '_Secondary_Element');
+        if (!element) {
+            return;
+        }
+        let rect = this.element.getBoundingClientRect();
+        let svgRect = getElement$1(this.element.id + '_svg').getBoundingClientRect();
+        element.style.left = Math.max(svgRect.left - rect.left, 0) + 'px';
+        element.style.top = Math.max(svgRect.top - rect.top, 0) + 'px';
+        element.style.position = 'relative';
+    }
+    /**
+     * Method to create SVG element.
+     */
+    createSvg(chart) {
+        this.removeSvg();
+        chart.renderer = new SvgRenderer(chart.element.id);
+        this.calculateAvailableSize(this);
+        chart.svgObject = chart.renderer.createSvg({
+            id: chart.element.id + '_svg',
+            width: chart.availableSize.width,
+            height: chart.availableSize.height
+        });
+        this.renderChartBackground();
+    }
+    /**
+     * Creating a background element to the svg object
+     */
+    renderChartBackground() {
+        let rect = new RectOption(this.element.id + '_ChartBorder', this.themeStyle.background, { width: this.border.width || 0, color: this.border.color || 'transparent' }, 1, new Rect(0, 0, this.availableSize.width, this.availableSize.height));
+        this.svgObject.appendChild(this.renderer.drawRectangle(rect));
+    }
+    /**
+     * Rendering the bullet elements
+     */
+    renderBulletElements() {
+        let scaleGroup = this.renderer.createGroup({ 'id': this.svgObject.id + '_scaleGroup' });
+        this.svgObject.appendChild(scaleGroup);
+        this.renderBulletChartTitle();
+        this.rangeCollection = this.scale.drawScaleGroup(scaleGroup);
+        let size = (this.orientation === 'Horizontal') ? this.initialClipRect.width : this.initialClipRect.height;
+        let intervalValue = size / ((this.maximum - this.minimum) / this.interval);
+        this.bulletAxis.renderMajorTickLines(intervalValue, scaleGroup);
+        this.bulletAxis.renderMinorTickLines(intervalValue, scaleGroup);
+        this.bulletAxis.renderAxisLabels(intervalValue, scaleGroup);
+        this.bulletChartRect.x = (this.titlePosition === 'Left' ||
+            this.titlePosition === 'Right' || this.orientation === 'Vertical') ? this.bulletChartRect.x : 0;
+        let categoryWidth = (this.categoryField != null) ? (this.maxLabelSize.width + this.margin.left) : 0;
+        let elementId = this.element.id;
+        if (this.element.tagName !== 'g') {
+            let tooltipDiv = redrawElement(this.redraw, elementId + '_Secondary_Element') ||
+                this.createElement('div');
+            tooltipDiv.id = elementId + '_Secondary_Element';
+            appendChildElement(false, this.element, tooltipDiv, this.redraw);
+        }
+        if (this.tooltip.enable) {
+            appendChildElement(false, this.svgObject, this.renderer.createGroup({ id: elementId + '_UserInteraction', style: 'pointer-events:none;' }), this.redraw);
+        }
+        //this.bulletAxis.renderYAxisLabels(intervalValue, scaleGroup, this.bulletChartRect);
+        this.bindData();
+        this.renderDataLabel();
+        //this.changeOrientation(scaleGroup);
+        this.element.appendChild(this.svgObject);
+        this.setSecondaryElementPosition();
+    }
+    /**
+     * Handles the bullet chart resize.
+     * @return {boolean}
+     * @private
+     */
+    bulletResize(e) {
+        this.animateSeries = false;
+        let arg = {
+            chart: this,
+            name: resized,
+            currentSize: new Size(0, 0),
+            previousSize: new Size(this.availableSize.width, this.availableSize.height),
+        };
+        if (this.resizeTo) {
+            clearTimeout(this.resizeTo);
+        }
+        this.resizeTo = setTimeout(() => {
+            if (this.isDestroyed) {
+                clearTimeout(this.resizeTo);
+                return;
+            }
+            this.createSvg(this);
+            arg.currentSize = this.availableSize;
+            this.trigger(resized, arg);
+            this.calculatePosition();
+            this.renderBulletElements();
+        }, 500);
+        return false;
+    }
+    /**
+     * Process the data values of feature and comparative measure bar
+     */
+    bindData() {
+        if (this.dataSource != null) {
+            this.dataCount = this.dataSource.length;
+            this.drawMeasures(this.dataCount);
+        }
+    }
+    /**
+     * Rendering the feature and comaparative measure bars
+     */
+    drawMeasures(dataCount) {
+        this.scale.renderFeatureBar(dataCount);
+        this.scale.renderComparativeSymbol(dataCount);
+    }
+    /**
+     * To calculate the title bounds
+     */
+    calculatePosition() {
+        let margin = this.margin;
+        // Title Height;
+        let titleHeight = 0;
+        let subTitleHeight = 0;
+        let titleSize = new Size(0, 0);
+        let padding = 5;
+        this.titleCollections = [];
+        this.subTitleCollections = [];
+        let maxTitlteWidth = 0;
+        let maxTitlteHeight = 0;
+        let maxVerticalTitlteHeight = padding;
+        if (this.title) {
+            this.titleCollections = getTitle(this.title, this.titleStyle, this.titleStyle.maximumTitleWidth);
+            titleHeight = (measureText(this.title, this.titleStyle).height * this.titleCollections.length) + padding;
+            for (let titleText of this.titleCollections) {
+                titleSize = measureText(titleText, this.titleStyle);
+                maxTitlteWidth = titleSize.width > maxTitlteWidth ? titleSize.width : maxTitlteWidth;
+                maxTitlteHeight = titleSize.height > maxTitlteHeight ? titleSize.height : maxTitlteHeight;
+            }
+            maxVerticalTitlteHeight += maxTitlteHeight;
+            this.subTitleCollections = getTitle(this.subtitle, this.subtitleStyle, this.titleStyle.maximumTitleWidth);
+            if (this.subtitle) {
+                for (let subText of this.subTitleCollections) {
+                    titleSize = measureText(subText, this.subtitleStyle);
+                    maxTitlteWidth = titleSize.width > maxTitlteWidth ? titleSize.width : maxTitlteWidth;
+                    maxTitlteHeight = titleSize.height > maxTitlteHeight ? titleSize.height : maxTitlteHeight;
+                }
+                subTitleHeight = (measureText(this.subtitle, this.subtitleStyle).height * this.subTitleCollections.length) +
+                    padding;
+                maxVerticalTitlteHeight += maxTitlteHeight;
+            }
+        }
+        this.maxTitleSize = new Size(maxTitlteWidth, this.orientation === 'Vertical' ? maxVerticalTitlteHeight : maxTitlteHeight);
+        this.maxLabelSize = this.getMaxLabelWidth(this);
+        this.initialClipRect = this.getBulletBounds((this.orientation === 'Vertical' ? maxVerticalTitlteHeight : maxTitlteWidth), titleHeight, subTitleHeight, margin);
+        this.bulletChartRect = new Rect(this.initialClipRect.x, this.initialClipRect.y, this.initialClipRect.width, this.initialClipRect.height);
+    }
+    /**
+     * Calculate the rect values based on title position.
+     * @return {void}
+     * @private
+     */
+    getBulletBounds(maxTitlteWidth, titleHeight, subTitleHeight, margin) {
+        let padding = 5;
+        let rect = new Rect(0, 0, 0, 0);
+        let enableRtl = this.enableRtl;
+        let labelSpace = (this.labelPosition === this.tickPosition) ? padding : 0;
+        let tickSize = ((this.tickPosition === 'Inside') ? 0 : (this.majorTickLines.height));
+        // tslint:disable-next-line:max-line-length
+        let labelSize = ((this.labelPosition === 'Inside') ? 0 : padding +
+            ((this.tickPosition === 'Outside') ? 0 : (measureText(this.maximum.toString(), this.labelStyle).height)));
+        let topAxisLabel = 0;
+        let bottomAxisLabel = 0;
+        let leftAxisLabel = 0;
+        let rightAxisLabel = 0;
+        let topCategory = 0;
+        let bottomCategory = 0;
+        let leftCategory = 0;
+        let rightCategory = 0;
+        let title = maxTitlteWidth;
+        let categoryLabelSize;
+        if (this.orientation === 'Horizontal') {
+            categoryLabelSize = this.maxLabelSize.width;
+            topAxisLabel = (this.opposedPosition) ? tickSize + labelSize + labelSpace : 0;
+            bottomAxisLabel = (!this.opposedPosition) ? tickSize + labelSize + labelSpace : 0;
+            leftCategory = ((categoryLabelSize && !enableRtl) ? (categoryLabelSize) : 0);
+            leftCategory += (title && this.titlePosition === 'Left') ? padding * 3 : 0;
+            rightCategory = ((categoryLabelSize && enableRtl) ? (categoryLabelSize) : 0);
+            rightCategory += (title && this.titlePosition === 'Right') ? padding : 0;
+        }
+        else {
+            categoryLabelSize = this.maxLabelSize.height;
+            rightAxisLabel = (this.opposedPosition) ? tickSize + labelSpace : 0;
+            rightAxisLabel += (this.opposedPosition && this.labelPosition !== 'Inside') ?
+                (measureText(this.maximum.toString(), this.labelStyle).width) : 0;
+            leftAxisLabel = (!this.opposedPosition) ? tickSize + labelSpace : 0;
+            leftAxisLabel += (!this.opposedPosition && this.labelPosition !== 'Inside') ?
+                (measureText(this.maximum.toString(), this.labelStyle).width) : 0;
+            topCategory = ((categoryLabelSize && enableRtl) ? (categoryLabelSize + padding) : 0);
+            bottomCategory = ((categoryLabelSize && !enableRtl) ? (categoryLabelSize + padding) : 0);
+        }
+        switch (this.titlePosition) {
+            case 'Left':
+                rect.x = margin.left + title + leftCategory + leftAxisLabel;
+                rect.width = this.availableSize.width - margin.right - rect.x - rightCategory - rightAxisLabel;
+                rect.y = margin.top + topAxisLabel + topCategory;
+                rect.height = this.availableSize.height - rect.y - margin.bottom - bottomAxisLabel - bottomCategory;
+                break;
+            case 'Right':
+                rect.x = margin.left + leftCategory + leftAxisLabel;
+                // tslint:disable-next-line:max-line-length
+                rect.width = this.availableSize.width - rightAxisLabel - margin.right - rect.x - (title + padding) - rightCategory;
+                rect.y = margin.top + topAxisLabel + topCategory;
+                rect.height = this.availableSize.height - rect.y - margin.bottom - bottomAxisLabel - bottomCategory;
+                break;
+            case 'Top':
+                rect.x = margin.left + leftAxisLabel + leftCategory;
+                rect.width = this.availableSize.width - margin.right - rect.x - rightCategory - rightAxisLabel;
+                rect.y = margin.top + (titleHeight + subTitleHeight) + topAxisLabel + topCategory;
+                rect.height = this.availableSize.height - rect.y - margin.bottom - bottomAxisLabel - bottomCategory;
+                break;
+            case 'Bottom':
+                rect.x = margin.left + leftAxisLabel + leftCategory;
+                rect.y = margin.top + topAxisLabel + topCategory;
+                rect.width = this.availableSize.width - margin.right - rect.x - rightCategory - rightAxisLabel;
+                // tslint:disable-next-line:max-line-length
+                rect.height = this.availableSize.height - rect.y - bottomCategory - margin.bottom - bottomAxisLabel - (titleHeight + subTitleHeight);
+                break;
+        }
+        return rect;
+    }
+    /**
+     * Calculate maximum label width for category values.
+     * @return {void}
+     * @private
+     */
+    getMaxLabelWidth(bulletChart) {
+        this.maxLabelSize = new Size(0, 0);
+        if (!this.categoryField) {
+            return this.maxLabelSize;
+        }
+        let label;
+        for (let i = 0, len = Object.keys(this.dataSource).length; i < len; i++) {
+            label = measureText((this.dataSource[i][this.categoryField] || ''), this.categoryLabelStyle);
+            if (label.width > this.maxLabelSize.width) {
+                this.maxLabelSize.width = label.width;
+            }
+            if (label.height > this.maxLabelSize.height) {
+                this.maxLabelSize.height = label.height;
+            }
+        }
+        return this.maxLabelSize;
+    }
+    /**
+     * To render the title of the bullet chart
+     */
+    renderBulletChartTitle() {
+        let margin = this.margin;
+        let x = 0;
+        let y = 0;
+        let padding = 5;
+        let anchor = 'middle';
+        let transform = '';
+        let alignment = this.titleStyle.textAlignment;
+        let elementSize = measureText(this.title, this.titleStyle);
+        let subTitleSize = (this.subtitle) ? measureText(this.subtitle, this.subtitleStyle) : new Size(0, 0);
+        if (this.title) {
+            if (this.orientation === 'Horizontal') {
+                switch (this.titlePosition) {
+                    case 'Top':
+                        x = this.findHorizontalAlignment(margin);
+                        anchor = (alignment === 'Far') ? 'end' : ((alignment === 'Near') ? 'start' : 'middle');
+                        y = margin.top + elementSize.height / 2 + padding;
+                        break;
+                    case 'Bottom':
+                        x = this.findHorizontalAlignment(margin);
+                        anchor = (alignment === 'Far') ? 'end' : ((alignment === 'Near') ? 'start' : 'middle');
+                        // tslint:disable-next-line:max-line-length
+                        y = this.availableSize.height - margin.bottom - elementSize.height / 3 + padding * 2 - ((subTitleSize.height) ? subTitleSize.height + padding : 0);
+                        break;
+                    case 'Left':
+                        anchor = 'end';
+                        x = margin.left + this.maxTitleSize.width;
+                        // tslint:disable-next-line:max-line-length
+                        y = (this.margin.top + (this.availableSize.height) / 2 - elementSize.height / 3) - ((subTitleSize.height) ? subTitleSize.height : 0);
+                        break;
+                    case 'Right':
+                        anchor = 'start';
+                        x = (this.availableSize.width - margin.right - this.maxTitleSize.width + padding);
+                        // tslint:disable-next-line:max-line-length
+                        y = (this.margin.top + (this.availableSize.height) / 2 - elementSize.height / 3) - ((subTitleSize.height) ? subTitleSize.height : 0);
+                        break;
+                }
+            }
+            else {
+                switch (this.titlePosition) {
+                    case 'Top':
+                        x = (this.availableSize.width) / 2 + padding * 2;
+                        y = this.margin.top + elementSize.height / 2 + padding;
+                        break;
+                    case 'Bottom':
+                        x = (this.availableSize.width) / 2;
+                        // tslint:disable-next-line:max-line-length
+                        y = this.availableSize.height - this.margin.bottom - elementSize.height / 3 + padding * 2 - ((subTitleSize.height) ? subTitleSize.height + padding : 0);
+                        break;
+                    case 'Left':
+                        y = this.findVerticalAlignment(margin);
+                        anchor = (alignment === 'Far') ? 'start' : ((alignment === 'Near') ? 'end' : 'middle');
+                        x = margin.left;
+                        // tslint:disable-next-line:max-line-length
+                        break;
+                    case 'Right':
+                        x = (this.availableSize.width - margin.right - elementSize.height / 3);
+                        anchor = (alignment === 'Far') ? 'start' : ((alignment === 'Near') ? 'end' : 'middle');
+                        // tslint:disable-next-line:max-line-length
+                        y = this.findVerticalAlignment(margin);
+                        break;
+                }
+                transform = (this.titlePosition === 'Left') ? 'rotate(-90,' + x + ',' + y + ')' :
+                    ((this.titlePosition === 'Right') ? 'rotate(90,' + x + ',' + y + ')' : '');
+            }
+            let options = new TextOption(this.element.id + '_BulletChartTitle', x, y, anchor, this.titleCollections, transform, 'auto');
+            let element = textElement$1(this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.titleFontColor, this.svgObject);
+            if (element) {
+                element.setAttribute('aria-label', this.title);
+                element.setAttribute('tabindex', this.tabIndex.toString());
+            }
+            if (this.subtitle) {
+                this.renderBulletChartSubTitle(x, y, anchor, options);
+            }
+        }
+    }
+    /**
+     * To render the data label for bullet chart
+     */
+    renderDataLabel() {
+        let x = 0;
+        let y = 0;
+        let elementSpacing = 10;
+        let anchor;
+        let transform = '';
+        let enableRtl = this.enableRtl;
+        let data;
+        let featureBounds;
+        let format = this.labelFormat ? this.labelFormat : '';
+        let isCustomFormat = format.match('{value}') !== null;
+        if (this.dataLabel.enable) {
+            for (let i = 0, len = Object.keys(this.dataSource).length; i < len; i++) {
+                data = this.dataSource[i];
+                featureBounds = this.scale.featureBarBounds[i];
+                let labelText = (data[this.valueField]).toString();
+                this.format = this.intl.getNumberFormat({
+                    format: isCustomFormat ? '' : format, useGrouping: this.enableGroupSeparator
+                });
+                labelText = isCustomFormat ? format.replace('{value}', this.format(labelText)) : labelText;
+                let labelSize = measureText(labelText, this.dataLabel.labelStyle);
+                // tslint:disable:no-string-literal
+                let textWidth = labelSize['width'];
+                let textHeight = labelSize['height'];
+                if (this.orientation === 'Horizontal') {
+                    anchor = this.type === 'Rect' ? 'end' : (enableRtl ? 'end' : 'start');
+                    x = featureBounds.x + (enableRtl ? (this.type === 'Rect' ? textWidth + elementSpacing : -elementSpacing) :
+                        featureBounds.width) + (this.type === 'Rect' ? -elementSpacing / 2 : elementSpacing / 2);
+                    y = featureBounds.y + featureBounds.height / 2;
+                }
+                else {
+                    anchor = 'middle';
+                    x = featureBounds.y + featureBounds.height / 2;
+                    y = featureBounds.x + (enableRtl ? featureBounds.width + (this.type === 'Rect' ? -textHeight : textHeight) : 0) +
+                        (this.type === 'Rect' ? elementSpacing : -elementSpacing);
+                }
+                let labelOptions = new TextOption(this.element.id + '_DataLabel_' + i, x, y, anchor, labelText, transform, 'middle');
+                let label = textElement$1(this.renderer, labelOptions, this.dataLabel.labelStyle, this.dataLabel.labelStyle.color || this.themeStyle.dataLabelFontColor, this.svgObject);
+            }
+        }
+    }
+    findHorizontalAlignment(margin) {
+        let x = 0;
+        switch (this.titleStyle.textAlignment) {
+            case 'Center':
+                x = (this.availableSize.width - margin.left - margin.right) / 2;
+                break;
+            case 'Near':
+                x = margin.left;
+                break;
+            case 'Far':
+                x = this.availableSize.width - margin.right;
+                break;
+        }
+        return x;
+    }
+    findVerticalAlignment(margin) {
+        let y = 0;
+        switch (this.titleStyle.textAlignment) {
+            case 'Center':
+                y = (this.availableSize.height - margin.top - margin.bottom) / 2;
+                break;
+            case 'Near':
+                y = margin.top;
+                break;
+            case 'Far':
+                y = this.availableSize.height - margin.bottom;
+                break;
+        }
+        return y;
+    }
+    /**
+     * To render the sub title of the bullet chart
+     */
+    renderBulletChartSubTitle(x, y, anchor, options) {
+        let margin = this.margin;
+        let padding = 5;
+        let transform = '';
+        let elementSize = measureText(this.subtitle, this.subtitleStyle);
+        if (this.orientation === 'Horizontal') {
+            switch (this.titlePosition) {
+                case 'Top':
+                    y = y + elementSize.height + padding / 2;
+                    break;
+                case 'Bottom':
+                    y = this.availableSize.height - margin.bottom - elementSize.height / 3 + padding;
+                    break;
+                case 'Left':
+                    y = y + elementSize.height + padding / 2;
+                    break;
+                case 'Right':
+                    y = y + elementSize.height + padding / 2;
+                    break;
+            }
+        }
+        else {
+            switch (this.titlePosition) {
+                case 'Top':
+                    y = y + elementSize.height + padding / 2;
+                    break;
+                case 'Bottom':
+                    y = this.availableSize.height - margin.bottom - elementSize.height / 3 + padding;
+                    break;
+                case 'Left':
+                    x += elementSize.height + padding / 2;
+                    break;
+                case 'Right':
+                    x -= elementSize.height + padding / 2;
+                    break;
+            }
+            transform = (this.titlePosition === 'Left') ? 'rotate(-90,' + x + ',' + y + ')' :
+                ((this.titlePosition === 'Right') ? 'rotate(90,' + x + ',' + y + ')' : '');
+        }
+        let subTitleOptions = new TextOption(this.element.id + '_BulletChartSubTitle', x, y, anchor, this.subTitleCollections, transform, 'auto');
+        let element = textElement$1(this.renderer, subTitleOptions, this.subtitleStyle, this.subtitleStyle.color || this.themeStyle.subTitleFontColor, this.svgObject);
+        if (element) {
+            element.setAttribute('aria-label', this.title);
+            element.setAttribute('tabindex', this.tabIndex.toString());
+        }
+    }
+    /**
+     * To calculate the available size and width of the container
+     */
+    calculateAvailableSize(bulletChart) {
+        let containerWidth = this.element.clientWidth || this.element.offsetWidth || 200;
+        // tslint:disable-next-line:max-line-length
+        let height = (this.orientation === 'Vertical') ? 450 : ((this.titlePosition === 'Left' || this.titlePosition === 'Right') ? 83 : 126);
+        let containerHeight = this.element.clientHeight || height;
+        bulletChart.availableSize = new Size(stringToNumber(bulletChart.width, containerWidth) || containerWidth, stringToNumber(bulletChart.height, containerHeight) || containerHeight);
+    }
+    removeSvg() {
+        let svgElement = document.getElementById(this.element.id + '_svg');
+        if (svgElement) {
+            remove(svgElement);
+        }
+    }
+    getPersistData() {
+        let keyEntity = ['loaded'];
+        return this.addOnPersist(keyEntity);
+    }
+    /** Wire, UnWire and Event releated calculation Started here */
+    /**
+     * Method to un-bind events for bullet chart
+     */
+    unWireEvents() {
+        /*! Find the Events type */
+        let startEvent = Browser.touchStartEvent;
+        let moveEvent = Browser.touchMoveEvent;
+        let stopEvent = Browser.touchEndEvent;
+        let cancelEvent = Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        /*! UnBind the Event handler */
+        EventHandler.remove(this.element, startEvent, this.bulletMouseDown);
+        EventHandler.remove(this.element, moveEvent, this.bulletMouseMove);
+        EventHandler.remove(this.element, cancelEvent, this.bulletMouseLeave);
+        window.removeEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.resizeBound);
+    }
+    /**
+     * Method to bind events for bullet chart
+     */
+    wireEvents() {
+        let cancelEvent = Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        /*! Bind the Event handler */
+        EventHandler.add(this.element, Browser.touchMoveEvent, this.bulletMouseMove, this);
+        EventHandler.add(this.element, cancelEvent, this.bulletMouseLeave, this);
+        EventHandler.add(this.element, Browser.touchStartEvent, this.bulletMouseDown, this);
+        this.resizeBound = this.bulletResize.bind(this);
+        window.addEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.resizeBound);
+        /*! Apply the style for chart */
+        this.setStyle(this.element);
+    }
+    setStyle(element) {
+        element.style.position = 'relative';
+        element.style.display = 'block';
+    }
+    /**
+     * Handles the mouse move on the bullet chart.
+     * @return {boolean}
+     * @private
+     */
+    bulletMouseMove(e) {
+        let pageX;
+        let pageY;
+        pageX = e.clientX;
+        pageY = e.clientY;
+        this.setPointMouseXY(pageX, pageY);
+        let targetId;
+        let targetClass;
+        targetId = e.target.id;
+        /* tslint:disable:no-string-literal */
+        targetClass = e.target.className['baseVal'];
+        /* tslint:enable:no-string-literal */
+        if (targetClass !== this.svgObject.id + '_FeatureMeasure' || this.svgObject.id + '_ComparativeMeasure') {
+            if (!isNullOrUndefined(this.dataSource)) {
+                for (let i = 0; i < Object.keys(this.dataSource).length; i++) {
+                    document.getElementById(this.svgObject.id + '_FeatureMeasure_' + i).setAttribute('opacity', '1');
+                    document.getElementById(this.svgObject.id + '_ComparativeMeasure_' + i).setAttribute('opacity', '1');
+                }
+            }
+        }
+        if (!this.isTouch(e)) {
+            let id = 'tooltipDiv' + this.element.id;
+            let tooltipDiv = document.getElementById(id);
+            if (tooltipDiv) {
+                remove(tooltipDiv);
+            }
+            if (this.bulletTooltipModule) {
+                this.bulletTooltipModule._elementTooltip(e, targetClass, targetId, this.mouseX, this.mouseY);
+                this.bulletTooltipModule._displayTooltip(e, targetClass, targetId, this.mouseX, this.mouseY);
+            }
+        }
+    }
+    /**
+     * To find mouse x, y for aligned bullet chart element svg position
+     */
+    setPointMouseXY(pageX, pageY) {
+        let svgClientRect = getElement$1(this.svgObject.id).getBoundingClientRect();
+        let elemntClientRect = this.element.getBoundingClientRect();
+        this.mouseX = (pageX - elemntClientRect.left) - Math.max(svgClientRect.left - elemntClientRect.left, 0);
+        this.mouseY = (pageY - elemntClientRect.top) - Math.max(svgClientRect.top - elemntClientRect.top, 0);
+    }
+    /**
+     * Handles the mouse leave on the bullet chart.
+     * @return {boolean}
+     * @private
+     */
+    bulletMouseLeave(e) {
+        if (!this.isTouch(e)) {
+            let tooltipDiv = document.getElementById('.tooltipDiv' + this.element.id);
+            if (tooltipDiv) {
+                remove(tooltipDiv);
+            }
+        }
+    }
+    /**
+     * Handles the touch event.
+     * @return {boolean}
+     * @private
+     */
+    isTouch(event) {
+        if ((event.pointerType === 'touch') || (event.type.indexOf('touch') > -1)) {
+            return true;
+        }
+        return false;
+    }
+    /**
+     * Handles the mouse down on the bullet chart.
+     * @return {boolean}
+     * @private
+     */
+    bulletMouseDown(e) {
+        if (this.isTouch(e)) {
+            remove(document.getElementById(('tooltipDiv' + this.element.id)));
+            let targetId = e.target.id;
+            /* tslint:disable:no-string-literal */
+            let targetClass = e.target.className['baseVal'];
+            if (this.bulletTooltipModule) {
+                this.bulletTooltipModule._elementTooltip(e, targetClass, targetId, this.mouseX, this.mouseY);
+                this.bulletTooltipModule._displayTooltip(e, targetClass, targetId, this.mouseX, this.mouseY);
+            }
+        }
+    }
+    /**
+     * Called internally if any of the property value changed.
+     * @private
+     */
+    // tslint:disable-next-line:max-func-body-length
+    onPropertyChanged(newProp, oldProp) {
+        let renderer = false;
+        let refreshBounds = false;
+        this.animateSeries = false;
+        if (!this.delayRedraw) {
+            for (let prop of Object.keys(newProp)) {
+                switch (prop) {
+                    case 'height':
+                    case 'width':
+                        this.createSvg(this);
+                        refreshBounds = true;
+                        break;
+                    case 'subtitle':
+                    case 'title':
+                        refreshBounds = true;
+                        break;
+                    case 'tickPosition':
+                        renderer = true;
+                        break;
+                    case 'labelPosition':
+                        renderer = true;
+                        break;
+                    case 'titlePosition':
+                        renderer = true;
+                        break;
+                    case 'minimum':
+                    case 'maximum':
+                    case 'interval':
+                        refreshBounds = true;
+                        break;
+                    case 'majorTickLines':
+                    case 'minorTickLines':
+                    case 'type':
+                    case 'ranges':
+                    case 'valueFill':
+                    case 'targetColor':
+                        refreshBounds = true;
+                        break;
+                    case 'titleStyle':
+                        if (newProp.titleStyle) {
+                            refreshBounds = true;
+                        }
+                        else {
+                            renderer = true;
+                        }
+                        break;
+                    case 'subtitleStyle':
+                        if (newProp.subtitleStyle && (newProp.subtitleStyle.size || newProp.subtitleStyle.textOverflow)) {
+                            refreshBounds = true;
+                        }
+                        else {
+                            renderer = true;
+                        }
+                        break;
+                    case 'border':
+                        renderer = true;
+                        break;
+                    case 'opposedPosition':
+                        renderer = true;
+                        break;
+                    case 'dataSource':
+                        this.bindData();
+                        refreshBounds = true;
+                        break;
+                    case 'theme':
+                        this.animateSeries = true;
+                        break;
+                    case 'locale':
+                    case 'currencyCode':
+                        super.refresh();
+                        break;
+                }
+            }
+            if (!refreshBounds && renderer) {
+                this.removeSvg();
+                this.renderBulletElements();
+                this.trigger('loaded', { BulletChart: this });
+            }
+            if (refreshBounds) {
+                this.render();
+                this.trigger('loaded', { BulletChart: this });
+                this.redraw = false;
+            }
+        }
+    }
+    /**
+     * To provide the array of modules needed for bullet chart rendering
+     * @return {ModuleDeclaration[]}
+     * @private
+     */
+    requiredModules() {
+        let modules = [];
+        if (this.tooltip.enable) {
+            modules.push({
+                member: 'BulletTooltip',
+                args: [this]
+            });
+        }
+        return modules;
+    }
+    getModuleName() {
+        return 'bulletChart';
+    }
+    /**
+     * To destroy the widget
+     * @method destroy
+     * @return {void}.
+     * @member of BulletChart
+     */
+    destroy() {
+        this.unWireEvents();
+        super.destroy();
+        this.removeSvg();
+        this.svgObject = null;
+        this.element.classList.remove('e-BulletChart');
+    }
+};
+__decorate$13([
+    Property(null)
+], BulletChart.prototype, "width", void 0);
+__decorate$13([
+    Property(null)
+], BulletChart.prototype, "height", void 0);
+__decorate$13([
+    Property(null)
+], BulletChart.prototype, "locale", void 0);
+__decorate$13([
+    Complex({}, MajorTickLinesSettings)
+], BulletChart.prototype, "majorTickLines", void 0);
+__decorate$13([
+    Complex({}, MinorTickLinesSettings)
+], BulletChart.prototype, "minorTickLines", void 0);
+__decorate$13([
+    Property(null)
+], BulletChart.prototype, "minimum", void 0);
+__decorate$13([
+    Property(null)
+], BulletChart.prototype, "maximum", void 0);
+__decorate$13([
+    Property(null)
+], BulletChart.prototype, "interval", void 0);
+__decorate$13([
+    Property(4)
+], BulletChart.prototype, "minorTicksPerInterval", void 0);
+__decorate$13([
+    Complex(BulletChartTheme.axisLabelFont, BulletLabelStyle)
+], BulletChart.prototype, "labelStyle", void 0);
+__decorate$13([
+    Complex(BulletChartTheme.axisLabelFont, BulletLabelStyle)
+], BulletChart.prototype, "categoryLabelStyle", void 0);
+__decorate$13([
+    Property('')
+], BulletChart.prototype, "labelFormat", void 0);
+__decorate$13([
+    Property('')
+], BulletChart.prototype, "title", void 0);
+__decorate$13([
+    Complex(BulletChartTheme.titleFont, BulletLabelStyle)
+], BulletChart.prototype, "titleStyle", void 0);
+__decorate$13([
+    Property('')
+], BulletChart.prototype, "subtitle", void 0);
+__decorate$13([
+    Complex(BulletChartTheme.subTitleFont, BulletLabelStyle)
+], BulletChart.prototype, "subtitleStyle", void 0);
+__decorate$13([
+    Property('Horizontal')
+], BulletChart.prototype, "orientation", void 0);
+__decorate$13([
+    Complex({ color: '#DDDDDD', width: 0 }, Border)
+], BulletChart.prototype, "border", void 0);
+__decorate$13([
+    Complex({}, BulletTooltipSettings)
+], BulletChart.prototype, "tooltip", void 0);
+__decorate$13([
+    Collection([{ end: null, opacity: 1, color: '' }, { end: null, opacity: 1, color: '' }, { end: null, opacity: 1, color: '' }], Range)
+], BulletChart.prototype, "ranges", void 0);
+__decorate$13([
+    Property('Outside')
+], BulletChart.prototype, "labelPosition", void 0);
+__decorate$13([
+    Property('Outside')
+], BulletChart.prototype, "tickPosition", void 0);
+__decorate$13([
+    Property('Top')
+], BulletChart.prototype, "titlePosition", void 0);
+__decorate$13([
+    Property(false)
+], BulletChart.prototype, "opposedPosition", void 0);
+__decorate$13([
+    Property('Material')
+], BulletChart.prototype, "theme", void 0);
+__decorate$13([
+    Complex({}, Animation$1)
+], BulletChart.prototype, "animation", void 0);
+__decorate$13([
+    Complex({}, BulletDataLabel)
+], BulletChart.prototype, "dataLabel", void 0);
+__decorate$13([
+    Property(false)
+], BulletChart.prototype, "enableGroupSeparator", void 0);
+__decorate$13([
+    Complex({ top: 15, bottom: 10, left: 15, right: 15 }, Margin)
+], BulletChart.prototype, "margin", void 0);
+__decorate$13([
+    Property(5)
+], BulletChart.prototype, "targetWidth", void 0);
+__decorate$13([
+    Property('#191919')
+], BulletChart.prototype, "targetColor", void 0);
+__decorate$13([
+    Property(6)
+], BulletChart.prototype, "valueHeight", void 0);
+__decorate$13([
+    Property(null)
+], BulletChart.prototype, "valueFill", void 0);
+__decorate$13([
+    Complex({ color: 'transparent', width: 0 }, Border)
+], BulletChart.prototype, "valueBorder", void 0);
+__decorate$13([
+    Property(null)
+], BulletChart.prototype, "dataSource", void 0);
+__decorate$13([
+    Property(null)
+], BulletChart.prototype, "query", void 0);
+__decorate$13([
+    Property(null)
+], BulletChart.prototype, "categoryField", void 0);
+__decorate$13([
+    Property('Rect')
+], BulletChart.prototype, "type", void 0);
+__decorate$13([
+    Property('')
+], BulletChart.prototype, "valueField", void 0);
+__decorate$13([
+    Property('')
+], BulletChart.prototype, "targetField", void 0);
+__decorate$13([
+    Property(['Rect', 'Cross', 'Circle'])
+], BulletChart.prototype, "targetTypes", void 0);
+__decorate$13([
+    Property(1)
+], BulletChart.prototype, "tabIndex", void 0);
+__decorate$13([
+    Event()
+], BulletChart.prototype, "tooltipRender", void 0);
+__decorate$13([
+    Event()
+], BulletChart.prototype, "load", void 0);
+BulletChart = __decorate$13([
+    NotifyPropertyChanges
+], BulletChart);
+
+/**
+ * `BulletTooltip` module is used to render the tooltip for bullet chart.
+ */
+class BulletTooltip {
+    /**
+     * Constructor for tooltip module.
+     * @private.
+     */
+    constructor(bullet) {
+        this.control = bullet;
+        this.elementId = bullet.element.id;
+    }
+    /**
+     * To create tooltip div element
+     */
+    _elementTooltip(e, targetClass, targetId, mouseX, mouseY) {
+        let titleStyle = this.control.titleStyle;
+        let tooltipDiv = this.control.createElement('div');
+        tooltipDiv.id = 'tooltip';
+        tooltipDiv.className = 'tooltipDiv';
+        let target = e.target;
+        let pageX = mouseX + 20;
+        let pageY = e.clientY;
+        let str = '';
+        let font = this.control.tooltip.textStyle.fontStyle ? this.control.tooltip.textStyle.fontStyle :
+            BulletChartTheme.tooltipLabelFont.fontStyle;
+        let color = BulletChartTheme.tooltipLabelFont.color || this.control.themeStyle.tooltipBoldLabel;
+        let fontSize = BulletChartTheme.titleFont.size;
+        let style = 'left:' + pageX + 'px;' + 'top:' + pageY + 'px;' +
+            'display: block; position: absolute; "z-index": "13000",cursor: default;' +
+            'font-family: Segoe UI;' + 'color:' + color + '; font-size: 13px; background-color:' +
+            this.control.themeStyle.tooltipFill + '; border: 1px solid #707070;' + 'font-style:' + font + ';';
+        // adding css prop to the div
+        tooltipDiv.setAttribute('style', style);
+        if (targetClass === this.control.svgObject.id + '_Caption') {
+            str = target.textContent === this.control.title ? '' : this.control.title;
+        }
+        else if (targetClass === this.control.svgObject.id + '_SubTitle') {
+            str = target.textContent === this.control.subtitle ? '' : this.control.subtitle;
+        }
+        if (str !== '') {
+            tooltipDiv.innerHTML = '&nbsp' + str + '&nbsp';
+            document.body.insertAdjacentElement('afterbegin', tooltipDiv);
+        }
+    }
+    /**
+     * To display the bullet chart tooltip
+     */
+    _displayTooltip(e, targetClass, targetId, mouseX, mouseY) {
+        if (targetClass !== 'undefined' && this.control.tooltip.enable && (targetClass === this.control.svgObject.id + '_FeatureMeasure' ||
+            targetClass === this.control.svgObject.id + '_ComparativeMeasure')) {
+            let locale = this.control.locale;
+            let localizedText = locale && this.control.enableGroupSeparator;
+            let data;
+            let measureId;
+            let currentVal;
+            let targetVal = [];
+            let categoryVal;
+            let tooltipdiv;
+            measureId = targetId.substring(targetId.lastIndexOf('_') + 1);
+            currentVal = this.control.dataSource[measureId][this.control.valueField];
+            targetVal = targetVal.concat(this.control.dataSource[measureId][this.control.targetField]);
+            categoryVal = this.control.dataSource[measureId][this.control.categoryField];
+            if (localizedText) {
+                data = {
+                    value: currentVal.toLocaleString(locale), target: targetVal.map((x) => { return x.toLocaleString(locale); }),
+                    category: (!isNullOrUndefined(categoryVal) ? categoryVal.toLocaleString(locale) : categoryVal)
+                };
+            }
+            else {
+                data = { value: currentVal, target: targetVal, category: categoryVal };
+            }
+            let style = 'position: absolute; z-index: 13000; display: block;';
+            if (document.getElementsByClassName('tooltipDiv' + this.control.element.id).length === 0) {
+                tooltipdiv = this.control.createElement('div');
+                tooltipdiv.id = 'tooltipDiv' + this.control.element.id;
+                tooltipdiv.setAttribute('style', style);
+                document.getElementById(this.control.element.id + '_Secondary_Element').appendChild(tooltipdiv);
+            }
+            let argsData = {
+                value: data.value, target: data.target, name: tooltipRender
+            };
+            if (this.control.tooltip.template !== '' && this.control.tooltip.template != null) {
+                this.updateTemplateFn();
+                let templateElement = this.templateFn(data);
+                let elem = this.control.createElement('div', { id: this.control.element.id + 'parent_template' });
+                while (templateElement && templateElement.length > 0) {
+                    elem.appendChild(templateElement[0]);
+                }
+                argsData.template = elem.innerHTML;
+                this.control.trigger(tooltipRender, argsData);
+                elem.innerHTML = argsData.template;
+                tooltipdiv.appendChild(elem);
+            }
+            else {
+                let argsText = 'Value : ' + argsData.value;
+                for (let i = 0; i < argsData.target.length; i++) {
+                    argsText += '<br/> Target' + (i === 0 ? '' : '_' + i) + ' : ' + argsData.target[i];
+                }
+                argsData.text = argsText;
+                this.control.trigger(tooltipRender, argsData);
+                tooltipdiv.innerHTML = argsData.text;
+                tooltipdiv.style.font = this.control.tooltip.textStyle.fontStyle ? this.control.tooltip.textStyle.fontStyle :
+                    BulletChartTheme.tooltipLabelFont.fontStyle;
+                tooltipdiv.style.color = BulletChartTheme.tooltipLabelFont.color || this.control.themeStyle.tooltipBoldLabel;
+                tooltipdiv.style.fontSize = BulletChartTheme.titleFont.size;
+            }
+            let xPos = mouseX;
+            let yPos = mouseY;
+            xPos = ((xPos + stringToNumber(tooltipdiv.getAttribute('width'), this.control.containerWidth) < window.innerWidth) ?
+                (xPos) : stringToNumber(tooltipdiv.getAttribute('width'), this.control.containerWidth));
+            yPos = ((yPos + stringToNumber(tooltipdiv.getAttribute('height'), this.control.containerHeight) < window.innerHeight) ?
+                (yPos) : stringToNumber(tooltipdiv.getAttribute('height'), this.control.containerHeight));
+            if (xPos === undefined || xPos === null) {
+                xPos = mouseX;
+            }
+            if (yPos === undefined || yPos === null) {
+                yPos = e.clientY;
+            }
+            if (this.control.tooltip.template !== '' && this.control.tooltip.template != null) {
+                tooltipdiv.setAttribute('style', 'position: absolute;left:' + (xPos + 20) + 'px;' + 'top:' + (yPos + 20) + 'px;');
+            }
+            else {
+                let divStyle = style + 'left:' + (xPos + 20) + 'px;' + 'top:' + (yPos + 20) + 'px;' +
+                    '-webkit-border-radius: 5px 5px 5px 5px; -moz-border-radius: 5px 5px 5px 5px;-o-border-radius: 5px 5px 5px 5px;' +
+                    'border-radius: 5px 5px 5px 5px;' + 'background-color:' + this.control.themeStyle.tooltipFill + ';' + 'color:' +
+                    tooltipdiv.style.color + '; border: 1px Solid Black;' +
+                    'padding-bottom: 7px;' + 'font-style:' + BulletChartTheme.tooltipLabelFont.fontStyle +
+                    '; padding-left: 10px; font-family: Segoe UI; padding-right: 10px; padding-top: 7px';
+                tooltipdiv.setAttribute('style', divStyle);
+                if ((targetClass === this.control.svgObject.id + '_FeatureMeasure') ||
+                    (targetClass === this.control.svgObject.id + '_ComparativeMeasure')) {
+                    document.getElementById(targetId).setAttribute('opacity', '0.6');
+                }
+            }
+        }
+    }
+    /**
+     * To update template values in the tooltip
+     */
+    updateTemplateFn() {
+        if (this.control.tooltip.template) {
+            try {
+                if (document.querySelectorAll(this.control.tooltip.template).length) {
+                    this.templateFn = compile(document.querySelector(this.control.tooltip.template).innerHTML.trim());
+                }
+            }
+            catch (e) {
+                this.templateFn = compile(this.control.tooltip.template);
+            }
+        }
+    }
+    /**
+     * Get module name.
+     */
+    getModuleName() {
+        return 'BulletTooltip';
+    }
+    /**
+     * To destroy the tooltip.
+     * @return {void}
+     * @private
+     */
+    destroy(chart) {
+        // Destroy method called here
+    }
+}
+
+/**
+ * Bullet Chart component export methods
+ */
+
+var __decorate$16 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -32241,47 +34579,47 @@ var __decorate$14 = (undefined && undefined.__decorate) || function (decorators,
 };
 class SmithchartFont extends ChildProperty {
 }
-__decorate$14([
+__decorate$16([
     Property('Segoe UI')
 ], SmithchartFont.prototype, "fontFamily", void 0);
-__decorate$14([
+__decorate$16([
     Property('Normal')
 ], SmithchartFont.prototype, "fontStyle", void 0);
-__decorate$14([
+__decorate$16([
     Property('Regular')
 ], SmithchartFont.prototype, "fontWeight", void 0);
-__decorate$14([
+__decorate$16([
     Property('')
 ], SmithchartFont.prototype, "color", void 0);
-__decorate$14([
+__decorate$16([
     Property('12px')
 ], SmithchartFont.prototype, "size", void 0);
-__decorate$14([
+__decorate$16([
     Property(1)
 ], SmithchartFont.prototype, "opacity", void 0);
 class SmithchartMargin extends ChildProperty {
 }
-__decorate$14([
+__decorate$16([
     Property(10)
 ], SmithchartMargin.prototype, "top", void 0);
-__decorate$14([
+__decorate$16([
     Property(10)
 ], SmithchartMargin.prototype, "bottom", void 0);
-__decorate$14([
+__decorate$16([
     Property(10)
 ], SmithchartMargin.prototype, "right", void 0);
-__decorate$14([
+__decorate$16([
     Property(10)
 ], SmithchartMargin.prototype, "left", void 0);
 class SmithchartBorder extends ChildProperty {
 }
-__decorate$14([
+__decorate$16([
     Property(0)
 ], SmithchartBorder.prototype, "width", void 0);
-__decorate$14([
+__decorate$16([
     Property(1)
 ], SmithchartBorder.prototype, "opacity", void 0);
-__decorate$14([
+__decorate$16([
     Property('transparent')
 ], SmithchartBorder.prototype, "color", void 0);
 /**
@@ -32356,7 +34694,7 @@ function createSvg$1(smithchart) {
         height: smithchart.availableSize.height
     });
 }
-function getElement$1(id) {
+function getElement$2(id) {
     return document.getElementById(id);
 }
 /**
@@ -32739,7 +35077,7 @@ function getThemeColor$1(theme) {
     return style;
 }
 
-var __decorate$15 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$17 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -32747,111 +35085,111 @@ var __decorate$15 = (undefined && undefined.__decorate) || function (decorators,
 };
 class LegendTitle extends ChildProperty {
 }
-__decorate$15([
+__decorate$17([
     Property(true)
 ], LegendTitle.prototype, "visible", void 0);
-__decorate$15([
+__decorate$17([
     Property('')
 ], LegendTitle.prototype, "text", void 0);
-__decorate$15([
+__decorate$17([
     Property('')
 ], LegendTitle.prototype, "description", void 0);
-__decorate$15([
+__decorate$17([
     Property('Center')
 ], LegendTitle.prototype, "textAlignment", void 0);
-__decorate$15([
+__decorate$17([
     Complex(Theme$1.legendLabelFont, SmithchartFont)
 ], LegendTitle.prototype, "textStyle", void 0);
 class LegendLocation extends ChildProperty {
 }
-__decorate$15([
+__decorate$17([
     Property(0)
 ], LegendLocation.prototype, "x", void 0);
-__decorate$15([
+__decorate$17([
     Property(0)
 ], LegendLocation.prototype, "y", void 0);
 class LegendItemStyleBorder extends ChildProperty {
 }
-__decorate$15([
+__decorate$17([
     Property(1)
 ], LegendItemStyleBorder.prototype, "width", void 0);
-__decorate$15([
+__decorate$17([
     Property(null)
 ], LegendItemStyleBorder.prototype, "color", void 0);
 class LegendItemStyle extends ChildProperty {
 }
-__decorate$15([
+__decorate$17([
     Property(10)
 ], LegendItemStyle.prototype, "width", void 0);
-__decorate$15([
+__decorate$17([
     Property(10)
 ], LegendItemStyle.prototype, "height", void 0);
-__decorate$15([
+__decorate$17([
     Complex({}, LegendItemStyleBorder)
 ], LegendItemStyle.prototype, "border", void 0);
 class LegendBorder extends ChildProperty {
 }
-__decorate$15([
+__decorate$17([
     Property(1)
 ], LegendBorder.prototype, "width", void 0);
-__decorate$15([
+__decorate$17([
     Property(null)
 ], LegendBorder.prototype, "color", void 0);
 class SmithchartLegendSettings extends ChildProperty {
 }
-__decorate$15([
+__decorate$17([
     Property(false)
 ], SmithchartLegendSettings.prototype, "visible", void 0);
-__decorate$15([
+__decorate$17([
     Property('bottom')
 ], SmithchartLegendSettings.prototype, "position", void 0);
-__decorate$15([
+__decorate$17([
     Property('Center')
 ], SmithchartLegendSettings.prototype, "alignment", void 0);
-__decorate$15([
+__decorate$17([
     Property(null)
 ], SmithchartLegendSettings.prototype, "width", void 0);
-__decorate$15([
+__decorate$17([
     Property(null)
 ], SmithchartLegendSettings.prototype, "height", void 0);
-__decorate$15([
+__decorate$17([
     Property('circle')
 ], SmithchartLegendSettings.prototype, "shape", void 0);
-__decorate$15([
+__decorate$17([
     Property(null)
 ], SmithchartLegendSettings.prototype, "rowCount", void 0);
-__decorate$15([
+__decorate$17([
     Property(null)
 ], SmithchartLegendSettings.prototype, "columnCount", void 0);
-__decorate$15([
+__decorate$17([
     Property(8)
 ], SmithchartLegendSettings.prototype, "itemPadding", void 0);
-__decorate$15([
+__decorate$17([
     Property(5)
 ], SmithchartLegendSettings.prototype, "shapePadding", void 0);
-__decorate$15([
+__decorate$17([
     Property('')
 ], SmithchartLegendSettings.prototype, "description", void 0);
-__decorate$15([
+__decorate$17([
     Property(true)
 ], SmithchartLegendSettings.prototype, "toggleVisibility", void 0);
-__decorate$15([
+__decorate$17([
     Complex({}, LegendTitle)
 ], SmithchartLegendSettings.prototype, "title", void 0);
-__decorate$15([
+__decorate$17([
     Complex({}, LegendLocation)
 ], SmithchartLegendSettings.prototype, "location", void 0);
-__decorate$15([
+__decorate$17([
     Complex({}, LegendItemStyle)
 ], SmithchartLegendSettings.prototype, "itemStyle", void 0);
-__decorate$15([
+__decorate$17([
     Complex({}, LegendBorder)
 ], SmithchartLegendSettings.prototype, "border", void 0);
-__decorate$15([
+__decorate$17([
     Complex(Theme$1.legendLabelFont, SmithchartFont)
 ], SmithchartLegendSettings.prototype, "textStyle", void 0);
 
-var __decorate$16 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$18 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -32862,19 +35200,19 @@ var __decorate$16 = (undefined && undefined.__decorate) || function (decorators,
  */
 class SmithchartMajorGridLines extends ChildProperty {
 }
-__decorate$16([
+__decorate$18([
     Property(1)
 ], SmithchartMajorGridLines.prototype, "width", void 0);
-__decorate$16([
+__decorate$18([
     Property('')
 ], SmithchartMajorGridLines.prototype, "dashArray", void 0);
-__decorate$16([
+__decorate$18([
     Property(true)
 ], SmithchartMajorGridLines.prototype, "visible", void 0);
-__decorate$16([
+__decorate$18([
     Property(null)
 ], SmithchartMajorGridLines.prototype, "color", void 0);
-__decorate$16([
+__decorate$18([
     Property(1)
 ], SmithchartMajorGridLines.prototype, "opacity", void 0);
 /**
@@ -32882,19 +35220,19 @@ __decorate$16([
  */
 class SmithchartMinorGridLines extends ChildProperty {
 }
-__decorate$16([
+__decorate$18([
     Property(1)
 ], SmithchartMinorGridLines.prototype, "width", void 0);
-__decorate$16([
+__decorate$18([
     Property('')
 ], SmithchartMinorGridLines.prototype, "dashArray", void 0);
-__decorate$16([
+__decorate$18([
     Property(false)
 ], SmithchartMinorGridLines.prototype, "visible", void 0);
-__decorate$16([
+__decorate$18([
     Property(null)
 ], SmithchartMinorGridLines.prototype, "color", void 0);
-__decorate$16([
+__decorate$18([
     Property(8)
 ], SmithchartMinorGridLines.prototype, "count", void 0);
 /**
@@ -32902,43 +35240,43 @@ __decorate$16([
  */
 class SmithchartAxisLine extends ChildProperty {
 }
-__decorate$16([
+__decorate$18([
     Property(true)
 ], SmithchartAxisLine.prototype, "visible", void 0);
-__decorate$16([
+__decorate$18([
     Property(1)
 ], SmithchartAxisLine.prototype, "width", void 0);
-__decorate$16([
+__decorate$18([
     Property(null)
 ], SmithchartAxisLine.prototype, "color", void 0);
-__decorate$16([
+__decorate$18([
     Property('')
 ], SmithchartAxisLine.prototype, "dashArray", void 0);
 class SmithchartAxis extends ChildProperty {
 }
-__decorate$16([
+__decorate$18([
     Property(true)
 ], SmithchartAxis.prototype, "visible", void 0);
-__decorate$16([
+__decorate$18([
     Property('Outside')
 ], SmithchartAxis.prototype, "labelPosition", void 0);
-__decorate$16([
+__decorate$18([
     Property('Hide')
 ], SmithchartAxis.prototype, "labelIntersectAction", void 0);
-__decorate$16([
+__decorate$18([
     Complex({}, SmithchartMajorGridLines)
 ], SmithchartAxis.prototype, "majorGridLines", void 0);
-__decorate$16([
+__decorate$18([
     Complex({}, SmithchartMinorGridLines)
 ], SmithchartAxis.prototype, "minorGridLines", void 0);
-__decorate$16([
+__decorate$18([
     Complex({}, SmithchartAxisLine)
 ], SmithchartAxis.prototype, "axisLine", void 0);
-__decorate$16([
+__decorate$18([
     Complex(Theme$1.axisLabelFont, SmithchartFont)
 ], SmithchartAxis.prototype, "labelStyle", void 0);
 
-var __decorate$17 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$19 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -32946,58 +35284,58 @@ var __decorate$17 = (undefined && undefined.__decorate) || function (decorators,
 };
 class Subtitle extends ChildProperty {
 }
-__decorate$17([
+__decorate$19([
     Property(true)
 ], Subtitle.prototype, "visible", void 0);
-__decorate$17([
+__decorate$19([
     Property('')
 ], Subtitle.prototype, "text", void 0);
-__decorate$17([
+__decorate$19([
     Property('')
 ], Subtitle.prototype, "description", void 0);
-__decorate$17([
+__decorate$19([
     Property('Far')
 ], Subtitle.prototype, "textAlignment", void 0);
-__decorate$17([
+__decorate$19([
     Property(true)
 ], Subtitle.prototype, "enableTrim", void 0);
-__decorate$17([
+__decorate$19([
     Property(null)
 ], Subtitle.prototype, "maximumWidth", void 0);
-__decorate$17([
+__decorate$19([
     Complex(Theme$1.smithchartSubtitleFont, SmithchartFont)
 ], Subtitle.prototype, "textStyle", void 0);
 class Title extends ChildProperty {
 }
-__decorate$17([
+__decorate$19([
     Property(true)
 ], Title.prototype, "visible", void 0);
-__decorate$17([
+__decorate$19([
     Property('')
 ], Title.prototype, "text", void 0);
-__decorate$17([
+__decorate$19([
     Property('')
 ], Title.prototype, "description", void 0);
-__decorate$17([
+__decorate$19([
     Property('Center')
 ], Title.prototype, "textAlignment", void 0);
-__decorate$17([
+__decorate$19([
     Property(true)
 ], Title.prototype, "enableTrim", void 0);
-__decorate$17([
+__decorate$19([
     Property(null)
 ], Title.prototype, "maximumWidth", void 0);
-__decorate$17([
+__decorate$19([
     Complex({}, Subtitle)
 ], Title.prototype, "subtitle", void 0);
-__decorate$17([
+__decorate$19([
     Complex(Theme$1.smithchartTitleFont, SmithchartFont)
 ], Title.prototype, "font", void 0);
-__decorate$17([
+__decorate$19([
     Complex(Theme$1.smithchartTitleFont, SmithchartFont)
 ], Title.prototype, "textStyle", void 0);
 
-var __decorate$18 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$20 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -33005,147 +35343,147 @@ var __decorate$18 = (undefined && undefined.__decorate) || function (decorators,
 };
 class SeriesTooltipBorder extends ChildProperty {
 }
-__decorate$18([
+__decorate$20([
     Property(1)
 ], SeriesTooltipBorder.prototype, "width", void 0);
-__decorate$18([
+__decorate$20([
     Property(null)
 ], SeriesTooltipBorder.prototype, "color", void 0);
 class SeriesTooltip extends ChildProperty {
 }
-__decorate$18([
+__decorate$20([
     Property(false)
 ], SeriesTooltip.prototype, "visible", void 0);
-__decorate$18([
+__decorate$20([
     Property(null)
 ], SeriesTooltip.prototype, "fill", void 0);
-__decorate$18([
+__decorate$20([
     Property(0.95)
 ], SeriesTooltip.prototype, "opacity", void 0);
-__decorate$18([
+__decorate$20([
     Property('')
 ], SeriesTooltip.prototype, "template", void 0);
-__decorate$18([
+__decorate$20([
     Complex({}, SeriesTooltipBorder)
 ], SeriesTooltip.prototype, "border", void 0);
 class SeriesMarkerBorder extends ChildProperty {
 }
-__decorate$18([
+__decorate$20([
     Property(3)
 ], SeriesMarkerBorder.prototype, "width", void 0);
-__decorate$18([
+__decorate$20([
     Property('white')
 ], SeriesMarkerBorder.prototype, "color", void 0);
 class SeriesMarkerDataLabelBorder extends ChildProperty {
 }
-__decorate$18([
+__decorate$20([
     Property(0.1)
 ], SeriesMarkerDataLabelBorder.prototype, "width", void 0);
-__decorate$18([
+__decorate$20([
     Property('white')
 ], SeriesMarkerDataLabelBorder.prototype, "color", void 0);
 class SeriesMarkerDataLabelConnectorLine extends ChildProperty {
 }
-__decorate$18([
+__decorate$20([
     Property(1)
 ], SeriesMarkerDataLabelConnectorLine.prototype, "width", void 0);
-__decorate$18([
+__decorate$20([
     Property(null)
 ], SeriesMarkerDataLabelConnectorLine.prototype, "color", void 0);
 class SeriesMarkerDataLabel extends ChildProperty {
 }
-__decorate$18([
+__decorate$20([
     Property(false)
 ], SeriesMarkerDataLabel.prototype, "visible", void 0);
-__decorate$18([
+__decorate$20([
     Property('')
 ], SeriesMarkerDataLabel.prototype, "template", void 0);
-__decorate$18([
+__decorate$20([
     Property(null)
 ], SeriesMarkerDataLabel.prototype, "fill", void 0);
-__decorate$18([
+__decorate$20([
     Property(1)
 ], SeriesMarkerDataLabel.prototype, "opacity", void 0);
-__decorate$18([
+__decorate$20([
     Complex({}, SeriesMarkerDataLabelBorder)
 ], SeriesMarkerDataLabel.prototype, "border", void 0);
-__decorate$18([
+__decorate$20([
     Complex({}, SeriesMarkerDataLabelConnectorLine)
 ], SeriesMarkerDataLabel.prototype, "connectorLine", void 0);
-__decorate$18([
+__decorate$20([
     Complex(Theme$1.dataLabelFont, SmithchartFont)
 ], SeriesMarkerDataLabel.prototype, "textStyle", void 0);
 class SeriesMarker extends ChildProperty {
 }
-__decorate$18([
+__decorate$20([
     Property(false)
 ], SeriesMarker.prototype, "visible", void 0);
-__decorate$18([
+__decorate$20([
     Property('circle')
 ], SeriesMarker.prototype, "shape", void 0);
-__decorate$18([
+__decorate$20([
     Property(6)
 ], SeriesMarker.prototype, "width", void 0);
-__decorate$18([
+__decorate$20([
     Property(6)
 ], SeriesMarker.prototype, "height", void 0);
-__decorate$18([
+__decorate$20([
     Property('')
 ], SeriesMarker.prototype, "imageUrl", void 0);
-__decorate$18([
+__decorate$20([
     Property('')
 ], SeriesMarker.prototype, "fill", void 0);
-__decorate$18([
+__decorate$20([
     Property(1)
 ], SeriesMarker.prototype, "opacity", void 0);
-__decorate$18([
+__decorate$20([
     Complex({}, SeriesMarkerBorder)
 ], SeriesMarker.prototype, "border", void 0);
-__decorate$18([
+__decorate$20([
     Complex({}, SeriesMarkerDataLabel)
 ], SeriesMarker.prototype, "dataLabel", void 0);
 class SmithchartSeries extends ChildProperty {
 }
-__decorate$18([
+__decorate$20([
     Property('visible')
 ], SmithchartSeries.prototype, "visibility", void 0);
-__decorate$18([
+__decorate$20([
     Property([])
 ], SmithchartSeries.prototype, "points", void 0);
-__decorate$18([
+__decorate$20([
     Property('')
 ], SmithchartSeries.prototype, "resistance", void 0);
-__decorate$18([
+__decorate$20([
     Property('')
 ], SmithchartSeries.prototype, "reactance", void 0);
-__decorate$18([
+__decorate$20([
     Property(null)
 ], SmithchartSeries.prototype, "dataSource", void 0);
-__decorate$18([
+__decorate$20([
     Property('')
 ], SmithchartSeries.prototype, "name", void 0);
-__decorate$18([
+__decorate$20([
     Property(null)
 ], SmithchartSeries.prototype, "fill", void 0);
-__decorate$18([
+__decorate$20([
     Property(false)
 ], SmithchartSeries.prototype, "enableAnimation", void 0);
-__decorate$18([
+__decorate$20([
     Property('2000ms')
 ], SmithchartSeries.prototype, "animationDuration", void 0);
-__decorate$18([
+__decorate$20([
     Property(false)
 ], SmithchartSeries.prototype, "enableSmartLabels", void 0);
-__decorate$18([
+__decorate$20([
     Property(1)
 ], SmithchartSeries.prototype, "width", void 0);
-__decorate$18([
+__decorate$20([
     Property(1)
 ], SmithchartSeries.prototype, "opacity", void 0);
-__decorate$18([
+__decorate$20([
     Complex({}, SeriesMarker)
 ], SmithchartSeries.prototype, "marker", void 0);
-__decorate$18([
+__decorate$20([
     Complex({}, SeriesTooltip)
 ], SmithchartSeries.prototype, "tooltip", void 0);
 
@@ -34991,7 +37329,7 @@ class ExportUtils$1 {
         this.smithchartPrint.resizeTo(screen.availWidth, screen.availHeight);
         let argsData = {
             cancel: false,
-            htmlContent: !this.control.isBlazor ? this.getHTMLContent(elements) : null,
+            htmlContent: this.getHTMLContent(elements),
             name: smithchartBeforePrint
         };
         this.control.trigger(smithchartBeforePrint, argsData);
@@ -35009,14 +37347,14 @@ class ExportUtils$1 {
         if (svgElements) {
             if (svgElements instanceof Array) {
                 svgElements.forEach((value) => {
-                    div.appendChild(getElement$1(value).cloneNode(true));
+                    div.appendChild(getElement$2(value).cloneNode(true));
                 });
             }
             else if (svgElements instanceof Element) {
                 div.appendChild(svgElements.cloneNode(true));
             }
             else {
-                div.appendChild(getElement$1(svgElements).cloneNode(true));
+                div.appendChild(getElement$2(svgElements).cloneNode(true));
             }
         }
         else {
@@ -35091,7 +37429,7 @@ class ExportUtils$1 {
     }
 }
 
-var __decorate$13 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$15 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -35268,6 +37606,7 @@ let Smithchart = class Smithchart extends Component {
      */
     preRender() {
         this.isBlazor = isBlazor();
+        this.allowServerDataBinding = false;
         this.trigger(load$1, { smithchart: !this.isBlazor ? this : null });
         this.unWireEVents();
         this.initPrivateVariable();
@@ -35308,6 +37647,7 @@ let Smithchart = class Smithchart extends Component {
         this.seriesrender = new SeriesRender();
         this.seriesrender.draw(this, axisRender, this.bounds);
         this.renderComplete();
+        this.allowServerDataBinding = true;
         this.trigger(loaded$1, { smithchart: !this.isBlazor ? this : null });
     }
     createSecondaryElement() {
@@ -35487,82 +37827,82 @@ let Smithchart = class Smithchart extends Component {
         }
     }
 };
-__decorate$13([
+__decorate$15([
     Property('Impedance')
 ], Smithchart.prototype, "renderType", void 0);
-__decorate$13([
+__decorate$15([
     Property('')
 ], Smithchart.prototype, "width", void 0);
-__decorate$13([
+__decorate$15([
     Property('')
 ], Smithchart.prototype, "height", void 0);
-__decorate$13([
+__decorate$15([
     Property('Material')
 ], Smithchart.prototype, "theme", void 0);
-__decorate$13([
+__decorate$15([
     Complex({}, SmithchartMargin)
 ], Smithchart.prototype, "margin", void 0);
-__decorate$13([
+__decorate$15([
     Complex({}, SmithchartFont)
 ], Smithchart.prototype, "font", void 0);
-__decorate$13([
+__decorate$15([
     Complex({}, SmithchartBorder)
 ], Smithchart.prototype, "border", void 0);
-__decorate$13([
+__decorate$15([
     Complex({}, Title)
 ], Smithchart.prototype, "title", void 0);
-__decorate$13([
+__decorate$15([
     Collection([{}], SmithchartSeries)
 ], Smithchart.prototype, "series", void 0);
-__decorate$13([
+__decorate$15([
     Complex({}, SmithchartLegendSettings)
 ], Smithchart.prototype, "legendSettings", void 0);
-__decorate$13([
+__decorate$15([
     Complex({}, SmithchartAxis)
 ], Smithchart.prototype, "horizontalAxis", void 0);
-__decorate$13([
+__decorate$15([
     Complex({}, SmithchartAxis)
 ], Smithchart.prototype, "radialAxis", void 0);
-__decorate$13([
+__decorate$15([
     Property(null)
 ], Smithchart.prototype, "background", void 0);
-__decorate$13([
+__decorate$15([
     Property(10)
 ], Smithchart.prototype, "elementSpacing", void 0);
-__decorate$13([
+__decorate$15([
     Property(1)
 ], Smithchart.prototype, "radius", void 0);
-__decorate$13([
+__decorate$15([
     Event()
 ], Smithchart.prototype, "beforePrint", void 0);
-__decorate$13([
+__decorate$15([
     Event()
 ], Smithchart.prototype, "animationComplete", void 0);
-__decorate$13([
+__decorate$15([
     Event()
 ], Smithchart.prototype, "load", void 0);
-__decorate$13([
+__decorate$15([
     Event()
 ], Smithchart.prototype, "loaded", void 0);
-__decorate$13([
+__decorate$15([
     Event()
 ], Smithchart.prototype, "legendRender", void 0);
-__decorate$13([
+__decorate$15([
     Event()
 ], Smithchart.prototype, "titleRender", void 0);
-__decorate$13([
+__decorate$15([
     Event()
 ], Smithchart.prototype, "subtitleRender", void 0);
-__decorate$13([
+__decorate$15([
     Event()
 ], Smithchart.prototype, "textRender", void 0);
-__decorate$13([
+__decorate$15([
     Event()
 ], Smithchart.prototype, "axisLabelRender", void 0);
-__decorate$13([
+__decorate$15([
     Event()
 ], Smithchart.prototype, "seriesRender", void 0);
-Smithchart = __decorate$13([
+Smithchart = __decorate$15([
     NotifyPropertyChanges
 ], Smithchart);
 
@@ -36080,7 +38420,7 @@ class SmithchartLegend {
  *
  */
 
-var __decorate$20 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$22 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -36094,10 +38434,10 @@ var __decorate$20 = (undefined && undefined.__decorate) || function (decorators,
  */
 class SparklineBorder extends ChildProperty {
 }
-__decorate$20([
+__decorate$22([
     Property('')
 ], SparklineBorder.prototype, "color", void 0);
-__decorate$20([
+__decorate$22([
     Property(0)
 ], SparklineBorder.prototype, "width", void 0);
 /**
@@ -36105,22 +38445,22 @@ __decorate$20([
  */
 class SparklineFont extends ChildProperty {
 }
-__decorate$20([
+__decorate$22([
     Property(null)
 ], SparklineFont.prototype, "size", void 0);
-__decorate$20([
+__decorate$22([
     Property(null)
 ], SparklineFont.prototype, "color", void 0);
-__decorate$20([
+__decorate$22([
     Property('Roboto, Segoe UI, Noto, Sans-serif')
 ], SparklineFont.prototype, "fontFamily", void 0);
-__decorate$20([
+__decorate$22([
     Property(null)
 ], SparklineFont.prototype, "fontWeight", void 0);
-__decorate$20([
+__decorate$22([
     Property(null)
 ], SparklineFont.prototype, "fontStyle", void 0);
-__decorate$20([
+__decorate$22([
     Property(1)
 ], SparklineFont.prototype, "opacity", void 0);
 /**
@@ -36128,13 +38468,13 @@ __decorate$20([
  */
 class TrackLineSettings extends ChildProperty {
 }
-__decorate$20([
+__decorate$22([
     Property(false)
 ], TrackLineSettings.prototype, "visible", void 0);
-__decorate$20([
+__decorate$22([
     Property(null)
 ], TrackLineSettings.prototype, "color", void 0);
-__decorate$20([
+__decorate$22([
     Property(1)
 ], TrackLineSettings.prototype, "width", void 0);
 /**
@@ -36142,25 +38482,25 @@ __decorate$20([
  */
 class SparklineTooltipSettings extends ChildProperty {
 }
-__decorate$20([
+__decorate$22([
     Property(false)
 ], SparklineTooltipSettings.prototype, "visible", void 0);
-__decorate$20([
+__decorate$22([
     Property('')
 ], SparklineTooltipSettings.prototype, "fill", void 0);
-__decorate$20([
+__decorate$22([
     Property('')
 ], SparklineTooltipSettings.prototype, "template", void 0);
-__decorate$20([
+__decorate$22([
     Property('')
 ], SparklineTooltipSettings.prototype, "format", void 0);
-__decorate$20([
+__decorate$22([
     Complex({ color: '#cccccc', width: 0.5 }, SparklineBorder)
 ], SparklineTooltipSettings.prototype, "border", void 0);
-__decorate$20([
+__decorate$22([
     Complex({ size: '13px', fontWeight: 'Normal', fontStyle: 'Normal', fontFamily: 'Roboto, Segoe UI, Noto, Sans-serif' }, SparklineFont)
 ], SparklineTooltipSettings.prototype, "textStyle", void 0);
-__decorate$20([
+__decorate$22([
     Complex({}, TrackLineSettings)
 ], SparklineTooltipSettings.prototype, "trackLineSettings", void 0);
 /**
@@ -36168,10 +38508,10 @@ __decorate$20([
  */
 class ContainerArea extends ChildProperty {
 }
-__decorate$20([
+__decorate$22([
     Property('transparent')
 ], ContainerArea.prototype, "background", void 0);
-__decorate$20([
+__decorate$22([
     Complex({}, SparklineBorder)
 ], ContainerArea.prototype, "border", void 0);
 /**
@@ -36179,19 +38519,19 @@ __decorate$20([
  */
 class LineSettings extends ChildProperty {
 }
-__decorate$20([
+__decorate$22([
     Property(false)
 ], LineSettings.prototype, "visible", void 0);
-__decorate$20([
+__decorate$22([
     Property(null)
 ], LineSettings.prototype, "color", void 0);
-__decorate$20([
+__decorate$22([
     Property('')
 ], LineSettings.prototype, "dashArray", void 0);
-__decorate$20([
+__decorate$22([
     Property(1)
 ], LineSettings.prototype, "width", void 0);
-__decorate$20([
+__decorate$22([
     Property(1)
 ], LineSettings.prototype, "opacity", void 0);
 /**
@@ -36199,16 +38539,16 @@ __decorate$20([
  */
 class RangeBandSettings extends ChildProperty {
 }
-__decorate$20([
+__decorate$22([
     Property(null)
 ], RangeBandSettings.prototype, "startRange", void 0);
-__decorate$20([
+__decorate$22([
     Property(null)
 ], RangeBandSettings.prototype, "endRange", void 0);
-__decorate$20([
+__decorate$22([
     Property(null)
 ], RangeBandSettings.prototype, "color", void 0);
-__decorate$20([
+__decorate$22([
     Property(1)
 ], RangeBandSettings.prototype, "opacity", void 0);
 /**
@@ -36216,22 +38556,22 @@ __decorate$20([
  */
 class AxisSettings extends ChildProperty {
 }
-__decorate$20([
+__decorate$22([
     Property(null)
 ], AxisSettings.prototype, "minX", void 0);
-__decorate$20([
+__decorate$22([
     Property(null)
 ], AxisSettings.prototype, "maxX", void 0);
-__decorate$20([
+__decorate$22([
     Property(null)
 ], AxisSettings.prototype, "minY", void 0);
-__decorate$20([
+__decorate$22([
     Property(null)
 ], AxisSettings.prototype, "maxY", void 0);
-__decorate$20([
+__decorate$22([
     Property(0)
 ], AxisSettings.prototype, "value", void 0);
-__decorate$20([
+__decorate$22([
     Complex({}, LineSettings)
 ], AxisSettings.prototype, "lineSettings", void 0);
 /**
@@ -36239,16 +38579,16 @@ __decorate$20([
  */
 class Padding extends ChildProperty {
 }
-__decorate$20([
+__decorate$22([
     Property(5)
 ], Padding.prototype, "left", void 0);
-__decorate$20([
+__decorate$22([
     Property(5)
 ], Padding.prototype, "right", void 0);
-__decorate$20([
+__decorate$22([
     Property(5)
 ], Padding.prototype, "bottom", void 0);
-__decorate$20([
+__decorate$22([
     Property(5)
 ], Padding.prototype, "top", void 0);
 /**
@@ -36256,19 +38596,19 @@ __decorate$20([
  */
 class SparklineMarkerSettings extends ChildProperty {
 }
-__decorate$20([
+__decorate$22([
     Property([])
 ], SparklineMarkerSettings.prototype, "visible", void 0);
-__decorate$20([
+__decorate$22([
     Property(1)
 ], SparklineMarkerSettings.prototype, "opacity", void 0);
-__decorate$20([
+__decorate$22([
     Property(5)
 ], SparklineMarkerSettings.prototype, "size", void 0);
-__decorate$20([
+__decorate$22([
     Property('#00bdae')
 ], SparklineMarkerSettings.prototype, "fill", void 0);
-__decorate$20([
+__decorate$22([
     Complex({ width: 1 }, SparklineBorder)
 ], SparklineMarkerSettings.prototype, "border", void 0);
 /**
@@ -36276,10 +38616,10 @@ __decorate$20([
  */
 class LabelOffset extends ChildProperty {
 }
-__decorate$20([
+__decorate$22([
     Property(0)
 ], LabelOffset.prototype, "x", void 0);
-__decorate$20([
+__decorate$22([
     Property(0)
 ], LabelOffset.prototype, "y", void 0);
 /**
@@ -36287,28 +38627,28 @@ __decorate$20([
  */
 class SparklineDataLabelSettings extends ChildProperty {
 }
-__decorate$20([
+__decorate$22([
     Property([])
 ], SparklineDataLabelSettings.prototype, "visible", void 0);
-__decorate$20([
+__decorate$22([
     Property(1)
 ], SparklineDataLabelSettings.prototype, "opacity", void 0);
-__decorate$20([
+__decorate$22([
     Property('transparent')
 ], SparklineDataLabelSettings.prototype, "fill", void 0);
-__decorate$20([
+__decorate$22([
     Property('')
 ], SparklineDataLabelSettings.prototype, "format", void 0);
-__decorate$20([
+__decorate$22([
     Complex({ color: 'transparent', width: 0 }, SparklineBorder)
 ], SparklineDataLabelSettings.prototype, "border", void 0);
-__decorate$20([
+__decorate$22([
     Complex({ size: '14px', fontWeight: 'Medium', fontStyle: 'Medium', fontFamily: 'Roboto, Segoe UI, Noto, Sans-serif' }, SparklineFont)
 ], SparklineDataLabelSettings.prototype, "textStyle", void 0);
-__decorate$20([
+__decorate$22([
     Complex({}, LabelOffset)
 ], SparklineDataLabelSettings.prototype, "offset", void 0);
-__decorate$20([
+__decorate$22([
     Property('None')
 ], SparklineDataLabelSettings.prototype, "edgeLabelMode", void 0);
 
@@ -37102,6 +39442,9 @@ class SparklineRenderer {
             this.lowPointIndex = i;
             render = render || (visible.indexOf('low') > -1);
         }
+        if (visible.indexOf('none') > -1) {
+            render = false;
+        }
         return render;
     }
     /**
@@ -37217,6 +39560,9 @@ class SparklineRenderer {
         }
         else if (temp.markerPosition === lowPos) {
             render = render || (labelVisible.indexOf('low') > -1);
+        }
+        if (label.visible.join().toLowerCase().indexOf('none') > -1) {
+            render = false;
         }
         return render;
     }
@@ -37486,7 +39832,7 @@ class SparklineRenderer {
     }
 }
 
-var __decorate$19 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$21 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -37518,6 +39864,7 @@ let Sparkline = class Sparkline extends Component {
      */
     preRender() {
         this.isBlazor = isBlazor();
+        this.allowServerDataBinding = false;
         this.unWireEvents();
         this.trigger('load', { sparkline: !this.isBlazor ? this : null });
         this.sparkTheme = getThemeColor$2(this.theme);
@@ -37533,6 +39880,7 @@ let Sparkline = class Sparkline extends Component {
         // Sparkline rendering splitted into rendering and calculations
         this.sparklineRenderer.processDataManager();
         this.renderComplete();
+        this.allowServerDataBinding = true;
     }
     /**
      * @private
@@ -37876,133 +40224,133 @@ let Sparkline = class Sparkline extends Component {
         return '';
     }
 };
-__decorate$19([
+__decorate$21([
     Property(null)
 ], Sparkline.prototype, "width", void 0);
-__decorate$19([
+__decorate$21([
     Property(null)
 ], Sparkline.prototype, "height", void 0);
-__decorate$19([
+__decorate$21([
     Complex({}, SparklineBorder)
 ], Sparkline.prototype, "border", void 0);
-__decorate$19([
+__decorate$21([
     Property('Line')
 ], Sparkline.prototype, "type", void 0);
-__decorate$19([
+__decorate$21([
     Property(null)
 ], Sparkline.prototype, "dataSource", void 0);
-__decorate$19([
+__decorate$21([
     Property(null)
 ], Sparkline.prototype, "query", void 0);
-__decorate$19([
+__decorate$21([
     Property('Numeric')
 ], Sparkline.prototype, "valueType", void 0);
-__decorate$19([
+__decorate$21([
     Property(null)
 ], Sparkline.prototype, "xName", void 0);
-__decorate$19([
+__decorate$21([
     Property(null)
 ], Sparkline.prototype, "yName", void 0);
-__decorate$19([
+__decorate$21([
     Property('#00bdae')
 ], Sparkline.prototype, "fill", void 0);
-__decorate$19([
+__decorate$21([
     Property('')
 ], Sparkline.prototype, "highPointColor", void 0);
-__decorate$19([
+__decorate$21([
     Property('')
 ], Sparkline.prototype, "lowPointColor", void 0);
-__decorate$19([
+__decorate$21([
     Property('')
 ], Sparkline.prototype, "startPointColor", void 0);
-__decorate$19([
+__decorate$21([
     Property('')
 ], Sparkline.prototype, "endPointColor", void 0);
-__decorate$19([
+__decorate$21([
     Property('')
 ], Sparkline.prototype, "negativePointColor", void 0);
-__decorate$19([
+__decorate$21([
     Property('')
 ], Sparkline.prototype, "tiePointColor", void 0);
-__decorate$19([
+__decorate$21([
     Property([])
 ], Sparkline.prototype, "palette", void 0);
-__decorate$19([
+__decorate$21([
     Property(1)
 ], Sparkline.prototype, "lineWidth", void 0);
-__decorate$19([
+__decorate$21([
     Property(1)
 ], Sparkline.prototype, "opacity", void 0);
-__decorate$19([
+__decorate$21([
     Property(null)
 ], Sparkline.prototype, "format", void 0);
-__decorate$19([
+__decorate$21([
     Property(false)
 ], Sparkline.prototype, "useGroupingSeparator", void 0);
-__decorate$19([
+__decorate$21([
     Complex({}, SparklineTooltipSettings)
 ], Sparkline.prototype, "tooltipSettings", void 0);
-__decorate$19([
+__decorate$21([
     Complex({}, ContainerArea)
 ], Sparkline.prototype, "containerArea", void 0);
-__decorate$19([
+__decorate$21([
     Collection([], RangeBandSettings)
 ], Sparkline.prototype, "rangeBandSettings", void 0);
-__decorate$19([
+__decorate$21([
     Complex({}, AxisSettings)
 ], Sparkline.prototype, "axisSettings", void 0);
-__decorate$19([
+__decorate$21([
     Complex({}, SparklineMarkerSettings)
 ], Sparkline.prototype, "markerSettings", void 0);
-__decorate$19([
+__decorate$21([
     Complex({}, SparklineDataLabelSettings)
 ], Sparkline.prototype, "dataLabelSettings", void 0);
-__decorate$19([
+__decorate$21([
     Complex({}, Padding)
 ], Sparkline.prototype, "padding", void 0);
-__decorate$19([
+__decorate$21([
     Property('Material')
 ], Sparkline.prototype, "theme", void 0);
-__decorate$19([
+__decorate$21([
     Event()
 ], Sparkline.prototype, "loaded", void 0);
-__decorate$19([
+__decorate$21([
     Event()
 ], Sparkline.prototype, "load", void 0);
-__decorate$19([
+__decorate$21([
     Event()
 ], Sparkline.prototype, "tooltipInitialize", void 0);
-__decorate$19([
+__decorate$21([
     Event()
 ], Sparkline.prototype, "seriesRendering", void 0);
-__decorate$19([
+__decorate$21([
     Event()
 ], Sparkline.prototype, "axisRendering", void 0);
-__decorate$19([
+__decorate$21([
     Event()
 ], Sparkline.prototype, "pointRendering", void 0);
-__decorate$19([
+__decorate$21([
     Event()
 ], Sparkline.prototype, "pointRegionMouseMove", void 0);
-__decorate$19([
+__decorate$21([
     Event()
 ], Sparkline.prototype, "pointRegionMouseClick", void 0);
-__decorate$19([
+__decorate$21([
     Event()
 ], Sparkline.prototype, "sparklineMouseMove", void 0);
-__decorate$19([
+__decorate$21([
     Event()
 ], Sparkline.prototype, "sparklineMouseClick", void 0);
-__decorate$19([
+__decorate$21([
     Event()
 ], Sparkline.prototype, "dataLabelRendering", void 0);
-__decorate$19([
+__decorate$21([
     Event()
 ], Sparkline.prototype, "markerRendering", void 0);
-__decorate$19([
+__decorate$21([
     Event()
 ], Sparkline.prototype, "resize", void 0);
-Sparkline = __decorate$19([
+Sparkline = __decorate$21([
     NotifyPropertyChanges
 ], Sparkline);
 
@@ -38270,5 +40618,5 @@ class SparklineTooltip {
  * Chart components exported.
  */
 
-export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
+export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartTheme, getBulletThemeColor, BulletTooltip, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
 //# sourceMappingURL=ej2-charts.es2015.js.map

@@ -2,6 +2,33 @@
 
 ## [Unreleased]
 
+## 17.4.39 (2019-12-17)
+
+### RangeNavigator
+
+#### Bug Fixes
+
+- `#255451` - Label alignment issue in range navigator has been fixed.
+
+### Chart
+
+#### Bug Fixes
+
+- `#256664` - Polar and radar axis labels overlapping with legend issue got fixed.
+- `#149497` - Axis labels are invalid when using label format as percentage in stacking 100 percent series types issue got fixed.
+
+### Bullet Chart
+
+Bullet Chart is the variation of bar chart, which displays one or more measures, and compares it to a target value. You can also display the measures in a qualitative range of performance such as poor, satisfactory, or good. All stock elements are rendered by using Scalable Vector Graphics (SVG).
+
+- **Data Binding** - Binds the data with local and remote data source.
+- **Animation** - Feature and target bar will be animated when rendering.
+- **Tooltip** - Supports tooltip for the feature and target bar.
+- **Orientation** - Supports vertical and horizontal rendering.
+- **Flow Direction** - Supports to render from right to left.
+- **Multiple Target** - Supports multiple targets.
+- **Data Labels** - Supports data label to enhance the data.
+
 ## 17.3.30 (2019-12-03)
 
 ### Chart

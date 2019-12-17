@@ -6,8 +6,8 @@ import { Grid, Resize, ColumnModel, Column, ExcelExport, PdfExport, ContextMenu,
 import { PdfHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelHeaderQueryCellInfoEventArgs, HeaderCellInfoEventArgs, Selection, RowDeselectEventArgs } from '@syncfusion/ej2-grids';
 import { CellDeselectEventArgs, CellSelectingEventArgs } from '@syncfusion/ej2-grids';
-import { createElement, setStyleAttribute, remove, isNullOrUndefined, EventHandler, append, getElement } from '@syncfusion/ej2-base';
-import { isBlazor } from '@syncfusion/ej2-base';
+import { createElement, setStyleAttribute, remove, isNullOrUndefined, EventHandler, getElement } from '@syncfusion/ej2-base';
+import { isBlazor, addClass, removeClass, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
 import { DataBoundEventArgs, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
@@ -16,6 +16,7 @@ import { HyperCellClickEventArgs, PivotCellSelectedEventArgs, QueryCellInfoEvent
 import { AggregateMenu } from '../../common/popups/aggregate-menu';
 import { SummaryTypes } from '../../base/types';
 import { OlapEngine, ITupInfo } from '../../base/olap/engine';
+import { PivotUtil } from '../../base/util';
 
 /**
  * Module to render PivotGrid control
@@ -194,6 +195,11 @@ export class Render {
             pdfQueryCellInfo: this.pdfQueryCellInfo.bind(this),
             beforePdfExport: this.gridSettings.beforePdfExport ? this.gridSettings.beforePdfExport.bind(this) : undefined
         });
+        if (isBlazor()) {
+            let isJsComponent: string = 'isJsComponent';
+            /* tslint:disable-next-line */
+            (this.parent.grid as any)[isJsComponent] = true;
+        }
         this.parent.grid.on('header-refreshed', this.headerRefreshed.bind(this));
     }
     /* tslint:disable-next-line */
@@ -271,12 +277,19 @@ export class Render {
     }
 
     private dataBound(args: DataBoundEventArgs): void {
-        /* tslint:disable-next-line */
         if (this.parent.cellTemplate && !isBlazor()) {
             for (let cell of this.parent.gridHeaderCellInfo) {
                 if (this.parent.cellTemplate) {
                     /* tslint:disable-next-line */
-                    append([].slice.call(this.parent.getCellTemplate()(cell, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate')), cell.targetCell);
+                    let element: any = this.parent.getCellTemplate()(
+                        cell, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate');
+                    if (element && element !== '' && element.length > 0) {
+                        if (this.parent.enableHtmlSanitizer) {
+                            this.parent.appendHtml(cell.targetCell, SanitizeHtmlHelper.sanitize(element[0].outerHTML));
+                        } else {
+                            this.parent.appendHtml(cell.targetCell, element[0].outerHTML);
+                        }
+                    }
                 }
             }
             this.parent.gridHeaderCellInfo = [];
@@ -307,6 +320,7 @@ export class Render {
             let cellTarget: Element = this.parent.lastCellClicked;
             let elem: Element = null;
             let bool: boolean;
+            let isGroupElement: boolean;
             if (cellTarget.classList.contains('e-stackedheadercelldiv') || cellTarget.classList.contains('e-cellvalue') ||
                 cellTarget.classList.contains('e-headercelldiv') || cellTarget.classList.contains('e-icons') || cellTarget.classList.contains('e-rhandler')) {
                 elem = cellTarget.parentElement;
@@ -316,8 +330,15 @@ export class Render {
             } else if (cellTarget.classList.contains('e-headertext')) {
                 elem = cellTarget.parentElement.parentElement;
             }
+            if (!elem) {
+                args.cancel = true;
+                return;
+            }
             if (elem.classList.contains('e-valuesheader') || elem.classList.contains('e-stot')) {
                 bool = true;
+            }
+            if (this.parent.allowGrouping && this.parent.groupingModule && !this.validateField(elem as HTMLElement)) {
+                isGroupElement = true;
             }
             let rowIndex: number = Number(elem.getAttribute('index'));
             let colIndex: number = Number(elem.getAttribute('aria-colindex'));
@@ -363,6 +384,28 @@ export class Render {
                             args.element.querySelector('#' + this.parent.element.id + '_collapse').classList.add(cls.MENU_HIDE);
                         } else {
                             args.element.querySelector('#' + this.parent.element.id + '_collapse').classList.add(cls.MENU_DISABLE);
+                        }
+                    }
+                    break;
+                case this.parent.element.id + '_custom_group':
+                case this.parent.element.id + '_custom_ungroup':
+                    if (!isGroupElement && args.items.length == 2) {
+                        args.cancel = true;
+                    }
+                    if (args.element.querySelectorAll('#' + this.parent.element.id + '_custom_group')) {
+                        addClass([args.element.querySelector('#' + this.parent.element.id + '_custom_group')], cls.MENU_HIDE);
+                    }
+                    if (args.element.querySelectorAll('#' + this.parent.element.id + '_custom_ungroup')) {
+                        addClass([args.element.querySelector('#' + this.parent.element.id + '_custom_ungroup')], cls.MENU_HIDE);
+                    }
+                    if (isGroupElement) {
+                        if (args.element.querySelectorAll('#' + this.parent.element.id + '_custom_group')) {
+                            removeClass([args.element.querySelector('#' + this.parent.element.id + '_custom_group')], cls.MENU_HIDE);
+                        }
+                        if (args.element.querySelectorAll('#' + this.parent.element.id + '_custom_ungroup') &&
+                            (PivotUtil.getGroupItemByName(elem.getAttribute('fieldname'), this.parent.dataSourceSettings.groupSettings) ||
+                                this.engine.fieldList[elem.getAttribute('fieldname')].isCustomField)) {
+                            removeClass([args.element.querySelector('#' + this.parent.element.id + '_custom_ungroup')], cls.MENU_HIDE);
                         }
                     }
                     break;
@@ -568,10 +611,44 @@ export class Render {
                 ele.setAttribute('data-baseItem', this.engine.fieldList[pivotValue.actualText.toString()].baseItem);
                 this.aggMenu.createValueSettingsDialog(ele as HTMLElement, this.parent.element);
                 break;
-
+            case this.parent.element.id + '_custom_group':
+            case this.parent.element.id + '_custom_ungroup':
+                if (this.parent.groupingModule) {
+                    let args: { target: HTMLElement, option: string, parentElement: HTMLElement } = {
+                        target: ele as HTMLElement,
+                        option: selected,
+                        parentElement: this.parent.element
+                    };
+                    this.parent.notify(events.initGrouping, args);
+                    this.parent.grid.contextMenuModule.contextMenu.close();
+                }
+                break;
         }
         this.parent.trigger(events.contextMenuClick, args);
     }
+
+    private validateField(target: HTMLElement): boolean {
+        let isValueField: boolean = false;
+        if (target.classList.contains('e-stot') || target.classList.contains('e-gtot') || target.classList.contains('e-valuescontent') || target.classList.contains('e-valuesheader')) {
+            isValueField = true;
+        } else {
+            let fieldName: string = target.getAttribute('fieldName');
+            if (!fieldName || fieldName == '') {
+                let rowIndx: number = Number(target.getAttribute('index'));
+                let colIndx: number = Number(target.getAttribute('aria-colindex'));
+                fieldName = (this.engine.pivotValues[rowIndx][colIndx] as IAxisSet).actualText as string;
+            }
+            let valuefields: IFieldOptions[] = this.parent.dataSourceSettings.values;
+            for (let valueCnt: number = 0; valueCnt < valuefields.length; valueCnt++) {
+                if (this.parent.dataSourceSettings.values[valueCnt].name === fieldName) {
+                    isValueField = true;
+                    break;
+                }
+            }
+        }
+        return isValueField;
+    }
+
     /* tslint:enable */
     private updateAggregate(aggregate: string): void {
         let valuefields: IFieldOptions[] = this.parent.dataSourceSettings.values;
@@ -865,7 +942,15 @@ export class Render {
                 /* tslint:disable-next-line */
                 if (!(window && isBlazor())) {
                     /* tslint:disable-next-line */
-                    append([].slice.call(this.parent.getCellTemplate()({ targetCell: tCell }, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate')), tCell);
+                    let element: any = this.parent.getCellTemplate()(
+                        { targetCell: tCell }, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate');
+                    if (element && element !== '' && element.length > 0) {
+                        if (this.parent.enableHtmlSanitizer) {
+                            this.parent.appendHtml(tCell, SanitizeHtmlHelper.sanitize(element[0].outerHTML));
+                        } else {
+                            this.parent.appendHtml(tCell, element[0].outerHTML);
+                        }
+                    }
                 } else if (index && colindex) {
                     this.parent.gridCellCollection[templateID] = tCell;
                 }

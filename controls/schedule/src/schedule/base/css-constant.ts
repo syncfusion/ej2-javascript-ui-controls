@@ -54,6 +54,10 @@ export const PREVIOUS_PANEL_CLASS: string = 'e-previous-panel';
 /** @hidden */
 export const NEXT_PANEL_CLASS: string = 'e-next-panel';
 /** @hidden */
+export const PREVIOUS_DATE_CLASS: string = 'e-prev';
+/** @hidden */
+export const NEXT_DATE_CLASS: string = 'e-next';
+/** @hidden */
 export const TRANSLATE_CLASS: string = 'e-translate';
 /** @hidden */
 export const LEFT_INDENT_CLASS: string = 'e-left-indent';
@@ -399,6 +403,8 @@ export const TIMESCALE_DISABLE: string = 'e-timescale-disable';
 export const DISABLE_DATE: string = 'e-disable-date';
 /** @hidden */
 export const HIDDEN_CLASS: string = 'e-hidden';
+/** @hidden */
+export const DISABLE_DATES: string = 'e-disable-dates';
 /** @hidden */
 export const POPUP_WRAPPER_CLASS: string = 'e-quick-popup-wrapper';
 /** @hidden */

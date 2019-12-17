@@ -18,11 +18,6 @@ export class MapsTooltip {
     private currentTime: number;
     private clearTimeout: number;
     public tooltipTargetID: string;
-    /**
-     * 
-     * @param maps @private
-     */
-    public targetID: string;
     constructor(maps: Maps) {
         this.maps = maps;
         this.tooltipId = this.maps.element.id + '_mapsTooltip';
@@ -50,7 +45,6 @@ export class MapsTooltip {
         let option: TooltipSettingsModel;
         let currentData: string = '';
         let targetId: string = target.id; let item: Object = {};
-        this.targetID = targetId;
         let tooltipEle: HTMLElement; let location: MapLocation;
         let toolTipData: Object = {};
         let templateData: object = [];
@@ -149,6 +143,14 @@ export class MapsTooltip {
             this.maps.trigger('tooltipRender', tooltipArgs, (observedArgs: ITooltipRenderEventArgs) => {
                 if (!tooltipArgs.cancel && option.visible && !isNullOrUndefined(currentData) &&
                     (targetId.indexOf('_cluster_') === -1 && targetId.indexOf('_dataLabel_') === -1)) {
+                    let blazTooltipName: string;
+                    if (targetId.indexOf('MarkerIndex') > 0) {
+                        blazTooltipName = 'MarkerTooltipTemplate';
+                    } else if (targetId.indexOf('BubbleIndex') > 0) {
+                        blazTooltipName = 'BubbleTooltipTemplate';
+                    } else {
+                        blazTooltipName = 'LayerTooltipTemplate';
+                    }
                     this.maps['isProtectedOnChange'] = true;
                     tooltipArgs.options['textStyle']['color'] = this.maps.themeStyle.tooltipFontColor
                         || tooltipArgs.options['textStyle']['color'];
@@ -165,7 +167,7 @@ export class MapsTooltip {
                         textStyle: tooltipArgs.options['textStyle'],
                         availableSize: this.maps.availableSize,
                         fill: tooltipArgs.fill || this.maps.themeStyle.tooltipFillColor,
-                        //blazorTemplate: { name: 'TooltipTemplate', parent: tooltipArgs.options }
+                        blazorTemplate: { name: blazTooltipName, parent: option }
                     });
                     this.svgTooltip.opacity = this.maps.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                     this.svgTooltip.appendTo(tooltipEle);

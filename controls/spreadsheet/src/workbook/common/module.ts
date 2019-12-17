@@ -50,5 +50,11 @@ export function getWorkbookRequiredModules(context: Workbook, modules: ModuleDec
     if (context.allowSorting) {
         modules.push({ member: 'workbookSort', args: [context] });
     }
+    if (context.allowHyperlink) {
+        modules.push({ member: 'workbookHyperlink', args: [context] });
+    }
+    if (context.allowFiltering) {
+        modules.push({ member: 'workbookFilter', args: [context] });
+    }
     return modules;
 }

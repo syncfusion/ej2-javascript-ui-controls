@@ -112,6 +112,8 @@ export class ToolBarSelector {
     private indicators: TechnicalIndicators[] = [];
     private secondayIndicators: TechnicalIndicators[] = [];
     public resetButton(): void {
+        let isProtect: string = 'isProtectedOnChange';
+        this.stockChart[isProtect]  = true;
         let reset: Button = new Button();
         reset.appendTo('#' + this.stockChart.element.id + '_reset');
         document.getElementById(this.stockChart.element.id + '_reset').onclick = () => {
@@ -147,6 +149,7 @@ export class ToolBarSelector {
             this.stockChart.zoomChange = false;
 
             this.stockChart.refresh();
+            this.stockChart[isProtect]  = true;
         };
     }
     public initializeTrendlineSelector(): void {

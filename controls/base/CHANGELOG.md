@@ -2,33 +2,6 @@
 
 ## [Unreleased]
 
-## 17.3.27 (2019-11-12)
-
-### Common
-
-#### Bug Fixes
-
-- Resolved Template support for Special characters(@) in helper function
-- Resolved Template support for Short string/numeric string in IF condition with Special characters(@)
-
-## 17.3.16 (2019-10-09)
-
-### Common
-
-#### Bug Fixes
-
-- `#243640` - Resolved Template support for helper function in if/else condition.
-- `#248248` - Resolved dragging misbehaviour, while placing a new drag element `(child)` inside drag element `(parent)`.
-
-## 17.3.14 (2019-10-03)
-
-### Common
-
-#### Bug Fixes
-
-- `#240169` - Resolved Drag and drop doesn't work, if `Drag element` is partially hidden.
-- `#240696` - Fixed the positioning of the draggable element without clone misbehaves after scrolling.
-
 ## 17.2.49 (2019-09-04)
 
 ### Common

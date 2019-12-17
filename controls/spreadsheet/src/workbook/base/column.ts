@@ -27,6 +27,14 @@ export class Column extends ChildProperty<Column> {
      */
     @Property(false)
     public customWidth: boolean;
+
+    /**
+     * To hide/show the column in spreadsheet.
+     * @default false
+     * @hidden
+     */
+    @Property(false)
+    public hidden: boolean;
 }
 
 /**
@@ -69,4 +77,10 @@ export function getColumnsWidth(sheet: SheetModel, startCol: number, endCol: num
         width += getColumnWidth(sheet, i);
     }
     return width;
+}
+
+/** @hidden */
+export function isHiddenCol(sheet: SheetModel, index: number): boolean {
+    return sheet.columns[index] && (sheet.columns[index].hidden || (sheet.columns[index].width !== undefined &&
+        sheet.columns[index].width === 0));
 }

@@ -2,7 +2,7 @@ import { createElement, EmitType } from '@syncfusion/ej2-base';
 import { HeatMap } from '../../src/heatmap/heatmap';
 import { Title } from '../../src/heatmap/model/base';
 import { ILoadedEventArgs } from '../../src/heatmap/model/interface';
-import { Legend } from '../../src/heatmap/legend/legend';
+import { Legend, LegendSettings } from '../../src/heatmap/legend/legend';
 import { Tooltip } from '../../src/heatmap/utils/tooltip';
 import { MouseEvents } from '../base/event.spec'
 import { profile , inMB, getMemoryProfile } from '../../spec/common.spec';
@@ -133,7 +133,6 @@ describe('Heatmap Control', () => {
             expect(document.getElementById('heatmapContainer_Legend_Label2').textContent == '75').toBe(true);
             expect(document.getElementById('heatmapContainer_Legend_Label3').textContent == 'excellent').toBe(true);
         });
-
         it('Checking trim support in vertical direction', () => {
             heatmap.legendSettings.textStyle.textOverflow = 'Trim';
             heatmap.legendSettings.height = '';
@@ -141,7 +140,7 @@ describe('Heatmap Control', () => {
             let element : Element = document.getElementById('heatmapContainer_Legend_Label3');
             expect(element.textContent == 'ex...' || element.textContent == 'exc...').toBe(true);
         });
-
+        
         it('Checking wrap support in vertical direction', () => {
             heatmap.paletteSettings.palette = [
                 { 'value': 100, 'color': 'rgb(255, 255, 153)', 'label': 'text4text4text4' },
@@ -184,7 +183,6 @@ describe('Heatmap Control', () => {
             trigger.mousemoveEvent(legendElement, 5, 5, 715, 73, false);
             expect(document.getElementById('heatmapContainer_LegendLabel_Tooltip').textContent == 'average').toBe(true);
         });
-
         it('Checking Gradient pointer position in horizontal direction', () => {
             heatmap.legendSettings = {
                 height : '',
@@ -391,9 +389,14 @@ describe('Heatmap Control', () => {
         });
         it('Checking legend label customization', function () {
             heatmap.legendRender = function (args:ILegendRenderEventArgs) {
+                args.cancel = true;
+            };
+            heatmap.refresh();
+            heatmap.legendRender = function (args:ILegendRenderEventArgs) {
                 args.cancel = false;
             };
-            heatmap.refresh();            
+            heatmap.refresh();      
+                   
             legendElement = document.getElementById('heatmapContainer_Legend_Label0');
             if(heatmap.paletteSettings.type == 'Gradient'){
                 if (heatmap.legendRender) {
@@ -408,6 +411,7 @@ describe('Heatmap Control', () => {
                     expect(legendElement.textContent == '').toBe(true);
                 }
             }
+
         });
         it('Checking cell toggle for smart legend', function () {
             legendElement = document.getElementById('heatmapContainer_Smart_Legend1');
@@ -435,6 +439,14 @@ describe('Heatmap Control', () => {
             trigger.clickEvent(legendElement, 0, 0, 317, 266);
             expect(heatmap.legendModule.visibilityCollections[3]).toBe(false);
         });
+        it('Checking cell toggle based on legend selection in Canvas', function () {
+            heatmap.legendSettings.enableSmartLegend = true;
+            heatmap.renderingMode = 'Canvas';
+            heatmap.refresh();
+            legendElement = document.getElementById('heatmapContainer_canvas');
+            trigger.clickEvent(legendElement, 0, 0, 317, 266);
+            expect(heatmap.legendModule.visibilityCollections[2]).toBe(false);
+        });
         it('Checking cell toggle when only colors are given in the palette collections', function () {
             heatmap.renderingMode = 'SVG';
             heatmap.legendSettings.enableSmartLegend = true;
@@ -450,7 +462,7 @@ describe('Heatmap Control', () => {
             let region:ClientRect = legendElement.getBoundingClientRect();
             trigger.clickEvent(legendElement, 0, 0, region.left + 2, region.top +5);
             expect(heatmap.legendModule.visibilityCollections[4]).toBe(false);
-    });
+    }); 
     it('Checking cell toggle for smart legend for bubble type size and color', function () {
         heatmap.cellSettings.tileType = 'Bubble';
         heatmap.cellSettings.bubbleType = 'SizeAndColor';
@@ -458,6 +470,139 @@ describe('Heatmap Control', () => {
         let element:ClientRect = legendElement.getBoundingClientRect();
         trigger.clickEvent(legendElement, 0, 0, element.left + 2, element.top + 2);
         expect(legendElement.getAttribute('fill') == 'rgb(153, 153, 255)');
+    });
+    it('Checking the pages per list when title size is increased', () => {
+        heatmap.legendSettings.position = 'Top';
+        heatmap.legendSettings.title.textStyle.color = 'Red';
+        heatmap.legendSettings.width = '50px';
+        heatmap.paletteSettings.type = 'Fixed';
+        heatmap.legendSettings.enableSmartLegend = false;
+        heatmap.dataBind();
+        let tempElement = document.getElementById('heatmapContainer_LegendBound');
+        expect(heatmap.legendModule.listPerPage).toBe(2);
+    });
+    it('Checking the text in bottom position of the heatmap when the width is not provided', () => {
+        heatmap.legendSettings.position = 'Bottom';
+        heatmap.legendSettings.width = '';
+        heatmap.paletteSettings.type = 'Gradient';
+        heatmap.legendSettings.title.textStyle.size = '11px';
+        heatmap.legendSettings.title.text = 'Sample';
+        heatmap.refresh();
+        heatmap.legendSettings.title.textStyle.textOverflow = 'None';
+        let element = document.getElementById('heatmapContainer_legendTitle');
+        expect(element.textContent == 'Sample').toBe(true);
+    });
+    it('Checking the height of the heatmap when the size is changed for the legend title in the Left position', () =>  {
+        heatmap.legendSettings.width = '';
+        heatmap.legendSettings.title.text = 'Sample';
+        heatmap.legendSettings.title.textStyle.textOverflow = 'None';
+        heatmap.legendSettings.title.textStyle.size = '67px';
+        heatmap.paletteSettings.type = 'Fixed';
+        heatmap.legendSettings.position = 'Left';
+        heatmap.legendSettings.enableSmartLegend = true;
+        heatmap.refresh();
+        expect(heatmap.height == '300px').toBe(true);
+    });
+    it('Checking the height of the heatmap when the size is changed for the legend title in the Right position', () =>  {
+        heatmap.legendSettings.width = '';
+        heatmap.legendSettings.title.textStyle.textOverflow = 'None';
+        heatmap.legendSettings.title.textStyle.size = '56px';
+        heatmap.paletteSettings.type = 'Fixed';
+        heatmap.legendSettings.position = 'Right';
+        heatmap.legendSettings.enableSmartLegend = true;
+        heatmap.refresh();
+        expect(heatmap.width == '500px').toBe(true);
+    });
+    it('Checking the height of the heatmap when the size is changed for the legend title in the Left position without smartlegend', () =>  {
+        heatmap.legendSettings.width = '';
+        heatmap.legendSettings.title.textStyle.textOverflow = 'None';
+        heatmap.legendSettings.title.textStyle.size = '56px';
+        heatmap.paletteSettings.type = 'Fixed';
+        heatmap.legendSettings.position = 'Right';
+        heatmap.legendSettings.enableSmartLegend = false;
+        heatmap.refresh();
+        expect(heatmap.width == '500px').toBe(true);
+    });
+    it('Checking the width when title size is changed in the Left direction', () =>  {
+        heatmap.legendSettings.width = '';
+        heatmap.legendSettings.title.textStyle.textOverflow = 'None';
+        heatmap.legendSettings.title.textStyle.size = '89px';
+        heatmap.paletteSettings.type = 'Fixed';
+        heatmap.legendSettings.position = 'Left';
+        heatmap.legendSettings.enableSmartLegend = true;
+        heatmap.refresh();
+        expect(heatmap.width == '500px').toBe(true);
+    });
+    it('Rendering SVG tooltip for legend title', () => {
+        heatmap.legendSettings.width = '5%';
+        heatmap.legendSettings.title.textStyle.textOverflow = 'Trim';
+        heatmap.refresh();
+        legendElement = document.getElementById('heatmapContainer_legendTitle');
+        trigger.mousemoveEvent(legendElement, 5, 5, 715, 73, false);
+        trigger.mousemoveEvent(legendElement, 5, 5, 715, 100, false);
+        trigger.mousemoveEvent(legendElement, 5, 5, 715, 73, false);
+        expect(document.getElementById('heatmapContainer_legendTitle_Tooltip').textContent == 'Sample').toBe(true);
+    });
+    it('Rendering canvas tooltip for legend title', function () {
+        heatmap.renderingMode = 'Canvas';
+        heatmap.legendSettings.position = 'Left';
+        heatmap.refresh();
+        legendElement = document.getElementById('heatmapContainer_canvas');
+        trigger.mousemoveEvent(legendElement, 5, 5, 30, 35, false);
+        let tooltip = document.getElementById('heatmapContainer_canvas_Tooltip');
+        expect(tooltip.textContent == 'Sample').toBe(true);
+    });
+    it('Rendering canvas tooltip for legend title', function () {
+        heatmap.renderingMode = 'Canvas';
+        heatmap.legendSettings.title.textStyle.size = '24px';
+        heatmap.legendSettings.width = '500px'
+        heatmap.legendSettings.position = 'Top';
+        heatmap.refresh();
+        legendElement = document.getElementById('heatmapContainer_canvas');
+        trigger.mousemoveEvent(legendElement, 5, 5, 75, 35, false);
+        trigger.mousemoveEvent(legendElement, 5, 5, 85, 35, false);
+        trigger.mousemoveEvent(legendElement, 5, 5, 65, 35, false);
+        trigger.mousemoveEvent(legendElement, 5, 5, 95, 35, false);
+        let tooltip = document.getElementById('heatmapContainer_canvas_Tooltip');
+        expect(tooltip.textContent == 'Sample').toBe(true);
+    });
+    it('Checking with showlabel set as false', function () {
+        heatmap.renderingMode = 'SVG';
+        heatmap.legendSettings.position = 'Bottom';
+        heatmap.legendSettings.title.text = 'Sample';
+        heatmap.paletteSettings.type = 'Fixed';
+        heatmap.legendSettings.title.textStyle.size = '14px';
+        heatmap.legendSettings.title.textStyle.textOverflow = 'None';
+        heatmap.legendSettings.alignment = 'Center';
+        heatmap.legendSettings.enableSmartLegend = false;
+        heatmap.legendSettings.showLabel = false;
+        heatmap.refresh();
+        tempElement = document.getElementById('heatmapContainer_Heatmap_LegendLabel');
+        expect(tempElement == null).toBe(true);
+    });
+    it('Checking with showlabel set as false', function () {
+        heatmap.renderingMode = 'SVG';
+        heatmap.legendSettings.position = 'Left';
+        heatmap.legendSettings.title.text = 'Sample';
+        heatmap.paletteSettings.type = 'Fixed';
+        heatmap.legendSettings.width = '';
+        heatmap.legendSettings.title.textStyle.size = '14px';
+        heatmap.legendSettings.title.textStyle.textOverflow = 'None';
+        heatmap.legendSettings.alignment = 'Center';
+        heatmap.legendSettings.enableSmartLegend = true;
+        heatmap.legendSettings.showLabel = true;
+        heatmap.refresh();
+        tempElement = document.getElementById('heatmapContainer_legendTitle');
+        expect(tempElement.textContent == 'Sample').toBe(true);
+        heatmap.legendSettings.position = 'Right';
+        heatmap.legendSettings.labelDisplayType = 'None';
+        heatmap.legendSettings.textStyle.textOverflow = 'Trim';
+        heatmap.refresh();
+        heatmap.legendRender = function (args:ILegendRenderEventArgs) {
+            args.cancel = true;
+        };
+        heatmap.paletteSettings.type = 'Gradient';
+        heatmap.refresh();
     });
     });
     it('memory leak', () => {     

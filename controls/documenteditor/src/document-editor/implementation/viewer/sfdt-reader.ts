@@ -11,7 +11,8 @@ import {
     TableRowWidget, TableWidget, FieldElementBox, BlockWidget, HeaderFooterWidget, HeaderFooters,
     BookmarkElementBox, FieldTextElementBox, TabElementBox, EditRangeStartElementBox, EditRangeEndElementBox,
     ChartElementBox, ChartCategoryAxis, ChartLegend, ChartLayout, ChartTitleArea, ChartDataFormat,
-    ChartDataTable, ChartArea, ChartCategory, ChartData, ChartSeries, ChartDataLabels, ChartTrendLines, ChartSeriesFormat, ElementBox
+    ChartDataTable, ChartArea, ChartCategory, ChartData, ChartSeries, ChartDataLabels, ChartTrendLines, ChartSeriesFormat, ElementBox,
+    CommentCharacterElementBox, CommentElementBox
 } from './page';
 import { HelperMethods } from '../editor/editor-helper';
 import { Dictionary } from '../../base/dictionary';
@@ -23,6 +24,9 @@ export class SfdtReader {
     /* tslint:disable:no-any */
     private viewer: LayoutViewer = undefined;
     private fieldSeparator: FieldElementBox;
+    private commentStarts: Dictionary<string, CommentCharacterElementBox> = undefined;
+    private commentEnds: Dictionary<string, CommentCharacterElementBox> = undefined;
+    private commentsCollection: Dictionary<string, CommentElementBox> = undefined;
     private isPageBreakInsideTable: boolean = false;
     private editableRanges: Dictionary<string, EditRangeStartElementBox>;
 
@@ -38,6 +42,9 @@ export class SfdtReader {
      * @param json 
      */
     public convertJsonToDocument(json: string): BodyWidget[] {
+        this.commentStarts = new Dictionary<string, CommentCharacterElementBox>();
+        this.commentEnds = new Dictionary<string, CommentCharacterElementBox>();
+        this.commentsCollection = new Dictionary<string, CommentElementBox>();
         let sections: BodyWidget[] = [];
         let jsonObject: any = json;
         jsonObject = (jsonObject instanceof Object) ? jsonObject : JSON.parse(jsonObject);
@@ -62,6 +69,9 @@ export class SfdtReader {
         }
         if (!isNullOrUndefined(jsonObject.styles)) {
             this.parseStyles(jsonObject, this.viewer.styles);
+        }
+        if (!isNullOrUndefined(jsonObject.comments)) {
+            this.parseComments(jsonObject, this.viewer.comments);
         }
         if (!isNullOrUndefined(jsonObject.sections)) {
             this.parseSections(jsonObject.sections, sections);
@@ -91,6 +101,47 @@ export class SfdtReader {
                 this.parseStyle(data, data.styles[i], styles);
             }
         }
+    }
+    private parseComments(data: any, comments: CommentElementBox[]): void {
+        let count: number = 0;
+        for (let i: number = 0; i < data.comments.length; i++) {
+            let commentData: any = data.comments[i];
+            let commentElement: CommentElementBox = undefined;
+            commentElement = this.parseComment(commentData, commentElement);
+            while (count < commentData.replyComments.length) {
+                let replyComment: CommentElementBox = undefined;
+                replyComment = this.parseComment(commentData.replyComments[count], replyComment);
+                replyComment.ownerComment = commentElement;
+                replyComment.isReply = true;
+                commentElement.replyComments.push(replyComment);
+                this.commentsCollection.add(replyComment.commentId, replyComment);
+                count++;
+            }
+            this.commentsCollection.add(commentElement.commentId, commentElement);
+            comments.push(commentElement);
+            count = 0;
+        }
+    }
+    private parseComment(commentData: any, commentElement: CommentElementBox): CommentElementBox {
+        commentElement = new CommentElementBox(commentData.date);
+        commentElement.author = commentData.author;
+        commentElement.initial = commentData.initial;
+        commentElement.commentId = commentData.commentId;
+        commentElement.isResolved = commentData.done;
+        commentElement.text = this.parseCommentText(commentData.blocks);
+        return commentElement;
+    }
+    private parseCommentText(blocks: any): string {
+        let text: string = '';
+        for (let i: number = 0; i < blocks.length; i++) {
+            if (i !== 0) {
+                text += '\n';
+            }
+            for (let j: number = 0; j < blocks[i].inlines.length; j++) {
+                text = text + blocks[i].inlines[j].text;
+            }
+        }
+        return text;
     }
     public parseStyle(data: any, style: any, styles: WStyles): void {
         let wStyle: any;
@@ -588,6 +639,45 @@ export class SfdtReader {
                     }
                 }
                 hasValidElmts = true;
+            } else if (inline.hasOwnProperty('commentId')) {
+                let commentID: string = inline.commentId;
+                let commentStart: CommentCharacterElementBox = undefined;
+                if (this.commentStarts.containsKey(commentID)) {
+                    commentStart = this.commentStarts.get(commentID);
+                }
+                let commentEnd: CommentCharacterElementBox = undefined;
+                if (this.commentEnds.containsKey(commentID)) {
+                    commentEnd = this.commentEnds.get(commentID);
+                }
+                if (inline.hasOwnProperty('commentCharacterType')) {
+                    if (inline.commentCharacterType === 0) {
+                        let commentStartElement: CommentCharacterElementBox = new CommentCharacterElementBox(0);
+                        commentStartElement.commentId = commentID;
+                        if (!this.commentStarts.containsKey(commentID)) {
+                            this.commentStarts.add(commentID, commentStartElement);
+                        }
+                        commentStartElement.line = lineWidget;
+                        lineWidget.children.push(commentStartElement);
+                        let comment: CommentElementBox = this.commentsCollection.get(commentID);
+                        if (!isNullOrUndefined(comment)) {
+                            comment.commentStart = commentStartElement;
+                            commentStartElement.comment = comment;
+                        }
+                    } else {
+                        let commentEndElement: CommentCharacterElementBox = new CommentCharacterElementBox(1);
+                        commentEndElement.commentId = commentID;
+                        if (!this.commentEnds.containsKey(commentID)) {
+                            this.commentEnds.add(commentID, commentEndElement);
+                        }
+                        commentEndElement.line = lineWidget;
+                        lineWidget.children.push(commentEndElement);
+                        let comment: CommentElementBox = this.commentsCollection.get(commentID);
+                        if (!isNullOrUndefined(comment)) {
+                            comment.commentEnd = commentEndElement;
+                            commentEndElement.comment = comment;
+                        }
+                    }
+                }
             }
         }
         paragraph.childWidgets.push(lineWidget);

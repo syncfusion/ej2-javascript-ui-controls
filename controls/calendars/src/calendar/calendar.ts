@@ -1,5 +1,5 @@
 
-import { Component, EventHandler, Internationalization, ModuleDeclaration } from '@syncfusion/ej2-base';
+import { Component, EventHandler, Internationalization, ModuleDeclaration, isBlazor } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, KeyboardEvents, L10n } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, KeyboardEventArgs, BaseEventArgs } from '@syncfusion/ej2-base';
 import { cldrData, getDefaultDateObject, rippleEffect } from '@syncfusion/ej2-base';
@@ -95,32 +95,15 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected calendarElement: HTMLElement;
     protected isPopupClicked: boolean = false;
     protected isDateSelected: boolean = true;
-    protected defaultKeyConfigs: { [key: string]: string } = {
-        controlUp: 'ctrl+38',
-        controlDown: 'ctrl+40',
-        moveDown: 'downarrow',
-        moveUp: 'uparrow',
-        moveLeft: 'leftarrow',
-        moveRight: 'rightarrow',
-        select: 'enter',
-        home: 'home',
-        end: 'end',
-        pageUp: 'pageup',
-        pageDown: 'pagedown',
-        shiftPageUp: 'shift+pageup',
-        shiftPageDown: 'shift+pagedown',
-        controlHome: 'ctrl+home',
-        controlEnd: 'ctrl+end',
-        altUpArrow: 'alt+uparrow',
-        spacebar: 'space',
-        altRightArrow: 'alt+rightarrow',
-        altLeftArrow: 'alt+leftarrow'
-    };
+    private blazorRef: object;
+    private serverModuleName: string;
+    protected defaultKeyConfigs: { [key: string]: string };
 
     /**
      * Gets or sets the minimum date that can be selected in the Calendar.
      * @default new Date(1900, 00, 01)
      * @blazorDefaultValue new DateTime(1900, 01, 01)
+     * @deprecated
      */
     @Property(new Date(1900, 0, 1))
     public min: Date;
@@ -128,6 +111,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * Gets or sets the maximum date that can be selected in the Calendar.
      * @default new Date(2099, 11, 31)
      * @blazorDefaultValue new DateTime(2099, 12, 31)
+     * @deprecated
      */
     @Property(new Date(2099, 11, 31))
     public max: Date;
@@ -136,6 +120,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * @default 0
      * @aspType int
      * @blazorType int
+     * @deprecated
      * > For more details about firstDayOfWeek refer to 
      * [`First day of week`](../../calendar/how-to/first-day-of-week#change-the-first-day-of-the-week) documentation.
      */
@@ -144,6 +129,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     /**
      * Gets or sets the Calendar's Type like gregorian or islamic.
      * @default Gregorian
+     * @deprecated
      */
     @Property('Gregorian')
     public calendarMode: CalendarType;
@@ -151,6 +137,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * Specifies the initial view of the Calendar when it is opened.
      * With the help of this property, initial view can be changed to year or decade view.
      * @default Month
+     * @deprecated
      *  
      * <table>
      * <tr>
@@ -180,6 +167,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * Sets the maximum level of view such as month, year, and decade in the Calendar.
      * Depth view should be smaller than the start view to restrict its view navigation.
      * @default Month
+     * @deprecated
      * 
      * <table> 
      * <tr> 
@@ -208,6 +196,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     /**
      * Determines whether the week number of the year is to be displayed in the calendar or not.
      * @default false
+     * @deprecated
      * > For more details about weekNumber refer to 
      * [`Calendar with week number`](../../calendar/how-to/render-the-calendar-with-week-numbers)documentation.
      */
@@ -216,6 +205,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     /** 
      * Specifies whether the today button is to be displayed or not.
      * @default true
+     * @deprecated
      */
     @Property(true)
     public showTodayButton: boolean;
@@ -227,6 +217,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * * `Abbreviated` - Sets the min format of day name (like Sun ) in day header.
      * * `Wide` - Sets the long format of day name (like Sunday ) in day header.
      * @default Short
+     * @deprecated
      */
     @Property('Short')
     public dayHeaderFormat: DayHeaderFormats;
@@ -234,6 +225,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * Enable or disable persisting component's state between page reloads. If enabled, following list of states will be persisted.
      * 1. value
      * @default false
+     * @deprecated
      */
     @Property(false)
     public enablePersistence: boolean;
@@ -326,6 +318,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * 
      * @default null
      * @blazorType object
+     * @deprecated
      */
     @Property(null)
     public keyConfigs: { [key: string]: string };
@@ -333,9 +326,17 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * By default, the date value will be processed based on system time zone.
      * If you want to process the initial date value using server time zone 
      * then specify the time zone value to `serverTimezoneOffset` property.
+     * @deprecated
      */
     @Property(null)
     public serverTimezoneOffset: number;
+    /**
+     * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
+     * @default 'en-US'
+     * @deprecated
+     */
+    @Property('en-US')
+    public locale: string;
     /** 
      * Triggers when Calendar is created.
      * @event
@@ -432,6 +433,31 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         if (isNullOrUndefined(max)) {
             this.setProperties({ max: new Date(2099, 11, 31) }, true);
         }
+    }
+
+    protected getDefaultKeyConfig(): { [key: string]: string } {
+        this.defaultKeyConfigs = {
+            controlUp: 'ctrl+38',
+            controlDown: 'ctrl+40',
+            moveDown: 'downarrow',
+            moveUp: 'uparrow',
+            moveLeft: 'leftarrow',
+            moveRight: 'rightarrow',
+            select: 'enter',
+            home: 'home',
+            end: 'end',
+            pageUp: 'pageup',
+            pageDown: 'pagedown',
+            shiftPageUp: 'shift+pageup',
+            shiftPageDown: 'shift+pagedown',
+            controlHome: 'ctrl+home',
+            controlEnd: 'ctrl+end',
+            altUpArrow: 'alt+uparrow',
+            spacebar: 'space',
+            altRightArrow: 'alt+rightarrow',
+            altLeftArrow: 'alt+leftarrow'
+        };
+        return this.defaultKeyConfigs;
     }
 
     protected validateDate(value?: Date): void {
@@ -641,9 +667,17 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             }
         }
     }
-    protected wireEvents(): void {
-        EventHandler.add(this.headerTitleElement, 'click', this.navigateTitle, this);
-        this.defaultKeyConfigs = (extend(this.defaultKeyConfigs, this.keyConfigs) as { [key: string]: string });
+    protected wireEvents(id?: string, ref?: object, keyConfig?: { [key: string]: string }, moduleName?: string): void {
+        if (!(isBlazor() && ref)) {
+            EventHandler.add(this.headerTitleElement, 'click', this.navigateTitle, this);
+            this.defaultKeyConfigs = (extend(this.defaultKeyConfigs, this.keyConfigs) as { [key: string]: string });
+        } else {
+            this.element = document.getElementById(id);
+            this.defaultKeyConfigs = this.getDefaultKeyConfig();
+            this.defaultKeyConfigs = (extend(this.defaultKeyConfigs, keyConfig) as { [key: string]: string });
+            this.blazorRef = ref;
+            this.serverModuleName = moduleName;
+        }
         if (this.getModuleName() === 'calendar') {
             this.keyboardModule = new KeyboardEvents(
                 <HTMLElement>this.element,
@@ -662,6 +696,12 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 });
         }
     }
+    protected dateWireEvents(id?: string, ref?: object, keyConfig?: { [key: string]: string }, moduleName?: string): void {
+        this.defaultKeyConfigs = this.getDefaultKeyConfig();
+        this.defaultKeyConfigs = (extend(this.defaultKeyConfigs, keyConfig) as { [key: string]: string });
+        this.blazorRef = ref;
+        this.serverModuleName = moduleName;
+    }
     protected todayButtonClick(value?: Date): void {
         if (this.showTodayButton) {
             if (this.currentView() === this.depth) {
@@ -678,7 +718,13 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     // tslint:disable-next-line:max-func-body-length
     protected keyActionHandle(e: KeyboardEventArgs, value?: Date, multiSelection?: boolean): void {
-        let view: number = this.getViewNumber(this.currentView());
+        if (isBlazor() && this.blazorRef) {
+            if (!this.tableBodyElement) {
+                this.element = closest((e.target as Element), '.' + 'e-calendar') as HTMLElement;
+                this.tableBodyElement = this.element.querySelector('tbody');
+            }
+            multiSelection = false;
+        }
         let focusedDate: Element = this.tableBodyElement.querySelector('tr td.e-focused-date');
         let selectedDate: Element;
         if (multiSelection) {
@@ -690,101 +736,124 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         } else {
             selectedDate = this.tableBodyElement.querySelector('tr td.e-selected');
         }
-        let depthValue: number = this.getViewNumber(this.depth);
-        let levelRestrict: boolean = (view === depthValue && this.getViewNumber(this.start) >= depthValue);
-        this.effect = '';
-        switch (e.action) {
-            case 'moveLeft':
-                this.KeyboardNavigate(-1, view, e, this.max, this.min);
-                e.preventDefault();
-                break;
-            case 'moveRight':
-                this.KeyboardNavigate(1, view, e, this.max, this.min);
-                e.preventDefault();
-                break;
-            case 'moveUp':
-                if (view === 0) {
-                    this.KeyboardNavigate(-7, view, e, this.max, this.min); // move the current date to the previous seven days.
-                } else {
-                    this.KeyboardNavigate(-4, view, e, this.max, this.min); // move the current year to the previous four days.
-                }
-                e.preventDefault();
-                break;
-            case 'moveDown':
-                if (view === 0) {
-                    this.KeyboardNavigate(7, view, e, this.max, this.min);
-                } else {
-                    this.KeyboardNavigate(4, view, e, this.max, this.min);
-                }
-                e.preventDefault();
-                break;
-            case 'select':
-                if (e.target === this.todayElement) {
-                    this.todayButtonClick(value);
-                } else {
-                    let element: Element = !isNullOrUndefined(focusedDate) ? focusedDate : selectedDate;
-                    if (!isNullOrUndefined(element) && !element.classList.contains(DISABLED)) {
-                        if (levelRestrict) {
-                            let d: Date = new Date(parseInt('' + (element).id, 0));
-                            this.selectDate(e, d, (element));
-                        } else {
-                            this.contentClick(null, --view, (element), value);
+        if (isBlazor() && this.blazorRef) {
+            (this.tableBodyElement as HTMLElement).focus();
+            let targetEle: HTMLElement = e.target as HTMLElement;
+            let args: object = {
+                Action: e.action, Key: e.key, Events: e,
+                SelectDate: selectedDate ? selectedDate.id : null,
+                FocusedDate: focusedDate ? focusedDate.id : null,
+                classList: selectedDate ? selectedDate.classList.toString() : focusedDate ? focusedDate.classList.toString() : 'e-cell',
+                Id: focusedDate ? focusedDate.id : selectedDate ? selectedDate.id : null,
+                TargetClassList: targetEle.classList.toString()
+            };
+            // tslint:disable-next-line
+            (this.blazorRef as any).invokeMethodAsync('OnCalendarKeyboardEvent', args);
+            if (targetEle.classList.contains('e-today')) {
+                targetEle.blur();
+                (this.tableBodyElement as HTMLElement).focus();
+            }
+            if (this.serverModuleName === 'ejs.calendars.Calendar') {
+                this.tableBodyElement = null;
+            }
+        } else {
+            let view: number = this.getViewNumber(this.currentView());
+            let depthValue: number = this.getViewNumber(this.depth);
+            let levelRestrict: boolean = (view === depthValue && this.getViewNumber(this.start) >= depthValue);
+            this.effect = '';
+            switch (e.action) {
+                case 'moveLeft':
+                    this.KeyboardNavigate(-1, view, e, this.max, this.min);
+                    e.preventDefault();
+                    break;
+                case 'moveRight':
+                    this.KeyboardNavigate(1, view, e, this.max, this.min);
+                    e.preventDefault();
+                    break;
+                case 'moveUp':
+                    if (view === 0) {
+                        this.KeyboardNavigate(-7, view, e, this.max, this.min); // move the current date to the previous seven days.
+                    } else {
+                        this.KeyboardNavigate(-4, view, e, this.max, this.min); // move the current year to the previous four days.
+                    }
+                    e.preventDefault();
+                    break;
+                case 'moveDown':
+                    if (view === 0) {
+                        this.KeyboardNavigate(7, view, e, this.max, this.min);
+                    } else {
+                        this.KeyboardNavigate(4, view, e, this.max, this.min);
+                    }
+                    e.preventDefault();
+                    break;
+                case 'select':
+                    if (e.target === this.todayElement) {
+                        this.todayButtonClick(value);
+                    } else {
+                        let element: Element = !isNullOrUndefined(focusedDate) ? focusedDate : selectedDate;
+                        if (!isNullOrUndefined(element) && !element.classList.contains(DISABLED)) {
+                            if (levelRestrict) {
+                                let d: Date = new Date(parseInt('' + (element).id, 0));
+                                this.selectDate(e, d, (element));
+                            } else {
+                                this.contentClick(null, --view, (element), value);
+                            }
                         }
                     }
-                }
-                break;
-            case 'controlUp':
-                this.title();
-                e.preventDefault();
-                break;
-            case 'controlDown':
-                if (!isNullOrUndefined(focusedDate) || !isNullOrUndefined(selectedDate) && !levelRestrict) {
-                    this.contentClick(null, --view, (focusedDate || selectedDate), value);
-                }
-                e.preventDefault();
-                break;
-            case 'home':
-                this.currentDate = this.firstDay(this.currentDate);
-                detach(this.tableBodyElement);
-                (view === 0) ? this.renderMonths(e) : ((view === 1) ? this.renderYears(e) : this.renderDecades(e));
-                e.preventDefault();
-                break;
-            case 'end':
-                this.currentDate = this.lastDay(this.currentDate, view);
-                detach(this.tableBodyElement);
-                (view === 0) ? this.renderMonths(e) : ((view === 1) ? this.renderYears(e) : this.renderDecades(e));
-                e.preventDefault();
-                break;
-            case 'pageUp':
-                this.addMonths(this.currentDate, -1);
-                this.navigateTo('Month', this.currentDate);
-                e.preventDefault();
-                break;
-            case 'pageDown':
-                this.addMonths(this.currentDate, 1);
-                this.navigateTo('Month', this.currentDate);
-                e.preventDefault();
-                break;
-            case 'shiftPageUp':
-                this.addYears(this.currentDate, -1);
-                this.navigateTo('Month', this.currentDate);
-                e.preventDefault();
-                break;
-            case 'shiftPageDown':
-                this.addYears(this.currentDate, 1);
-                this.navigateTo('Month', this.currentDate);
-                e.preventDefault();
-                break;
-            case 'controlHome':
-                this.navigateTo('Month', new Date(this.currentDate.getFullYear(), 0, 1));
-                e.preventDefault();
-                break;
-            case 'controlEnd':
-                this.navigateTo('Month', new Date(this.currentDate.getFullYear(), 11, 31));
-                e.preventDefault();
-                break;
+                    break;
+                case 'controlUp':
+                    this.title();
+                    e.preventDefault();
+                    break;
+                case 'controlDown':
+                    if (!isNullOrUndefined(focusedDate) || !isNullOrUndefined(selectedDate) && !levelRestrict) {
+                        this.contentClick(null, --view, (focusedDate || selectedDate), value);
+                    }
+                    e.preventDefault();
+                    break;
+                case 'home':
+                    this.currentDate = this.firstDay(this.currentDate);
+                    detach(this.tableBodyElement);
+                    (view === 0) ? this.renderMonths(e) : ((view === 1) ? this.renderYears(e) : this.renderDecades(e));
+                    e.preventDefault();
+                    break;
+                case 'end':
+                    this.currentDate = this.lastDay(this.currentDate, view);
+                    detach(this.tableBodyElement);
+                    (view === 0) ? this.renderMonths(e) : ((view === 1) ? this.renderYears(e) : this.renderDecades(e));
+                    e.preventDefault();
+                    break;
+                case 'pageUp':
+                    this.addMonths(this.currentDate, -1);
+                    this.navigateTo('Month', this.currentDate);
+                    e.preventDefault();
+                    break;
+                case 'pageDown':
+                    this.addMonths(this.currentDate, 1);
+                    this.navigateTo('Month', this.currentDate);
+                    e.preventDefault();
+                    break;
+                case 'shiftPageUp':
+                    this.addYears(this.currentDate, -1);
+                    this.navigateTo('Month', this.currentDate);
+                    e.preventDefault();
+                    break;
+                case 'shiftPageDown':
+                    this.addYears(this.currentDate, 1);
+                    this.navigateTo('Month', this.currentDate);
+                    e.preventDefault();
+                    break;
+                case 'controlHome':
+                    this.navigateTo('Month', new Date(this.currentDate.getFullYear(), 0, 1));
+                    e.preventDefault();
+                    break;
+                case 'controlEnd':
+                    this.navigateTo('Month', new Date(this.currentDate.getFullYear(), 11, 31));
+                    e.preventDefault();
+                    break;
+            }
+            if (this.getModuleName() === 'calendar') { this.table.focus(); }
         }
-        if (this.getModuleName() === 'calendar') { this.table.focus(); }
     }
 
     protected KeyboardNavigate(number: number, currentView: number, e: KeyboardEvent, max: Date, min: Date): void {
@@ -836,6 +905,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected preRender(value?: Date): void {
         this.navigatePreviousHandler = this.navigatePrevious.bind(this);
         this.navigateNextHandler = this.navigateNext.bind(this);
+        this.defaultKeyConfigs = this.getDefaultKeyConfig();
         this.navigateHandler = (e: MouseEvent): void => {
             this.triggerNavigate(e);
         };
@@ -1310,7 +1380,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected getModuleName(): string {
         return 'calendar';
     }
-
+    /**
+     * @deprecated
+     */
     public requiredModules(): ModuleDeclaration[] {
         let modules: ModuleDeclaration[] = [];
         if (this) {
@@ -2035,7 +2107,8 @@ export class Calendar extends CalendarBase {
     /**
      * Gets or sets the selected date of the Calendar.
      * @default null
-     * @isBlazorNullableType true
+     * @isGenericType true
+     * @deprecated
      */
     @Property(null)
     public value: Date;
@@ -2210,7 +2283,9 @@ export class Calendar extends CalendarBase {
         this.checkView();
         super.preRender(this.value);
     };
-
+    /**
+     * @deprecated
+     */
     public createContent(): void {
         this.previousDate = this.value;
         super.createContent();
@@ -2366,6 +2441,7 @@ export class Calendar extends CalendarBase {
      * @param  {string} view - Specifies the view of the Calendar.
      * @param  {Date} date - Specifies the focused date in a view.
      * @returns void
+     * @deprecated
      */
     public navigateTo(view: CalendarView, date: Date): void {
         this.minMaxUpdate();
@@ -2373,7 +2449,8 @@ export class Calendar extends CalendarBase {
     }
     /** 
      * Gets the current view of the Calendar.
-     * @returns string 
+     * @returns string
+     * @deprecated
      */
     public currentView(): string {
         return super.currentView();
@@ -2510,7 +2587,9 @@ export interface RenderDayCellEventArgs extends BaseEventArgs {
     isOutOfRange?: boolean;
 }
 export interface ChangedEventArgs extends BaseEventArgs {
-    /** Defines the selected date of the Calendar. */
+    /** Defines the selected date of the Calendar. 
+     * @isGenericType true
+     */
     value?: Date;
 
     /** Defines the multiple selected date of the Calendar. */

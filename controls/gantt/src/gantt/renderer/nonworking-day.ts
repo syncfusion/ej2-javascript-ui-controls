@@ -80,9 +80,10 @@ export class NonWorkingDay {
             });
             let spanTop: number = (viewportHeight < height) ? viewportHeight / 2 : height / 2;
             let spanElement: HTMLElement = createElement('span', {
-                className: cls.holidayLabel, innerHTML: this.parent.holidays[i].label ? `${this.parent.holidays[i].label}` : '',
-                styles: `top:${spanTop}px;left:${(width / 2)}px;`
+                className: cls.holidayLabel, styles: `top:${spanTop}px;left:${(width / 2)}px;`
             });
+            let property: string = this.parent.disableHtmlEncode ? 'textContent' : 'innerHTML';
+            spanElement[property] = this.parent.holidays[i].label ? this.parent.holidays[i].label : '';
             holidayDiv.appendChild(spanElement);
             if (this.parent.holidays[i].cssClass) {
                 holidayDiv.classList.add(this.parent.holidays[i].cssClass);

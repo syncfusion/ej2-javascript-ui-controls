@@ -1,4 +1,4 @@
-/**
+﻿/**
  * spec document for Main.ts class
  */
 import { PdfDocument, PdfGraphics, PdfPage, PdfTextWebLink, PdfColor, SizeF, PdfLayoutBreakType, PdfLayoutType, PdfPen, PdfPaddings } from './../../src/index';

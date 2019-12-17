@@ -6,12 +6,14 @@ import { IHtmlSubCommands } from './../base/interface';
 /**
  * Selection EXEC internal component
  * @hidden
+ * @deprecated
  */
 export class InsertHtmlExec {
     private parent: EditorManager;
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     constructor(parent: EditorManager) {
         this.parent = parent;

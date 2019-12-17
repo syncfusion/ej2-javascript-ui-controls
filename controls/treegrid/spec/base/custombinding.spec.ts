@@ -51,6 +51,9 @@ describe('Custom Binding', () => {
       }   
       gridObj.expandRow(gridObj.getRows()[0]);
     });
+    it ('Nested record expand/collapse icon test', () => {
+      expect(gridObj.getRows()[1].getElementsByClassName('e-treegridcollapse').length === 1).toBe(true);
+    });
     it('Pager Testing', (done: Function) => {
       jasmine.DEFAULT_TIMEOUT_INTERVAL = 4000;
       dataStateChange = (args: any) => {

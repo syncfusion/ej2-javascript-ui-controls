@@ -506,7 +506,7 @@ describe('DropDownList', () => {
 
         it('filter a suggestion list with select element', () => {
             listObj.filterInput.value = "C";
-            listObj.onInput()
+            listObj.onInput(keyEventArgs);
             listObj.onFilterUp(keyEventArgs);
             let element = document.querySelector(".e-list-parent");
             expect(element.childNodes[0].textContent === 'Cricket').toBe(true);

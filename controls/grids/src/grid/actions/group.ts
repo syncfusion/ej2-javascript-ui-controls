@@ -165,6 +165,7 @@ export class Group implements IAction {
         this.parent.on(events.onEmpty, this.initialEnd, this);
         this.parent.on(events.initialEnd, this.render, this);
         this.parent.on(events.groupAggregates, this.onGroupAggregates, this);
+        this.parent.on('blazor-action-begin', this.blazorActionBegin, this);
     }
     /**
      * @hidden
@@ -184,6 +185,13 @@ export class Group implements IAction {
         this.parent.off(events.sortComplete, this.refreshSortIcons);
         this.parent.off(events.keyPressed, this.keyPressHandler);
         this.parent.off(events.groupAggregates, this.onGroupAggregates);
+        this.parent.off('blazor-action-begin', this.blazorActionBegin);
+    }
+
+    private blazorActionBegin(): void {
+        if (this.parent.allowGrouping) {
+            this.expandAll();
+        }
     }
 
     private initialEnd(): void {
@@ -237,7 +245,7 @@ export class Group implements IAction {
                 if (!row) { break; }
                 this.expandCollapseRows(row);
                 break;
-            case 'ctrlSpace':
+                case 'ctrlSpace':
                 let elem: HTMLElement = gObj.focusModule.currentInfo.element;
                 if (elem && elem.classList.contains('e-headercell')) {
                     let column: Column = gObj.getColumnByUid(elem.firstElementChild.getAttribute('e-mappinguid'));
@@ -245,6 +253,7 @@ export class Group implements IAction {
                         this.groupColumn(column.field) : this.ungroupColumn(column.field);
                 }
                 break;
+
         }
     }
 
@@ -529,6 +538,10 @@ export class Group implements IAction {
                 }
             }
         }
+        let isServerRendered: string = 'isServerRendered';
+        if (isBlazor() && this.parent[isServerRendered]) {
+            gObj.sortSettings.columns = gObj.sortSettings.columns;
+        }
         this.groupSettings.columns = columns;
         if (gObj.allowGrouping) {
             this.isAppliedUnGroup = true;
@@ -546,8 +559,8 @@ export class Group implements IAction {
         let i: number = 0;
         let columns: string[] = JSON.parse(JSON.stringify(this.groupSettings.columns));
         columns.push(this.colName);
-        this.groupSettings.columns = columns;
         this.groupAddSortingQuery(this.colName);
+        this.groupSettings.columns = columns;
         this.parent.dataBind();
     }
 
@@ -557,6 +570,9 @@ export class Group implements IAction {
      * @hidden
      */
     public onActionComplete(e: NotifyArgs): void {
+        if (isBlazor() && !this.parent.isJsComponent) {
+            e.rows = null;
+        }
         let gObj: IGrid = this.parent;
         if (e.requestType === 'grouping') {
             this.addColToGroupDrop(this.colName);
@@ -581,6 +597,10 @@ export class Group implements IAction {
         }
         if (this.parent.sortSettings.columns.length === i) {
             this.parent.sortSettings.columns.push({ field: colName, direction: 'Ascending', isFromGroup: true });
+            let isServerRendered: string = 'isServerRendered';
+            if (isBlazor() && this.parent[isServerRendered]) {
+                this.parent.sortSettings.columns = this.parent.sortSettings.columns;
+            }
         } else if (!this.parent.allowSorting) {
             this.parent.sortSettings.columns[i].direction = 'Ascending';
         }
@@ -614,9 +634,9 @@ export class Group implements IAction {
         if (this.groupSettings.showToggleButton) {
             childDiv.appendChild(this.parent.createElement(
                 'span', {
-                className: 'e-togglegroupbutton e-icons e-icon-ungroup e-toggleungroup', innerHTML: '&nbsp;',
-                attrs: { tabindex: '-1', 'aria-label': 'ungroup button' }
-            }));
+                    className: 'e-togglegroupbutton e-icons e-icon-ungroup e-toggleungroup', innerHTML: '&nbsp;',
+                    attrs: { tabindex: '-1', 'aria-label': 'ungroup button' }
+                }));
         }
 
         if (headerCell.querySelectorAll('.e-ascending,.e-descending').length) {
@@ -624,16 +644,16 @@ export class Group implements IAction {
         }
         childDiv.appendChild(this.parent.createElement(
             'span', {
-            className: 'e-groupsort e-icons ' +
-                ('e-' + direction.toLowerCase() + ' e-icon-' + direction.toLowerCase()), innerHTML: '&nbsp;',
-            attrs: { tabindex: '-1', 'aria-label': 'sort the grouped column' }
-        }));
+                className: 'e-groupsort e-icons ' +
+                    ('e-' + direction.toLowerCase() + ' e-icon-' + direction.toLowerCase()), innerHTML: '&nbsp;',
+                attrs: { tabindex: '-1', 'aria-label': 'sort the grouped column' }
+            }));
         childDiv.appendChild(this.parent.createElement(
             'span', {
-            className: 'e-ungroupbutton e-icons e-icon-hide', innerHTML: '&nbsp;',
-            attrs: { title: this.l10n.getConstant('UnGroup'), tabindex: '-1', 'aria-label': 'ungroup the grouped column' },
-            styles: this.groupSettings.showUngroupButton ? '' : 'display:none'
-        }));
+                className: 'e-ungroupbutton e-icons e-icon-hide', innerHTML: '&nbsp;',
+                attrs: { title: this.l10n.getConstant('UnGroup'), tabindex: '-1', 'aria-label': 'ungroup the grouped column' },
+                styles: this.groupSettings.showUngroupButton ? '' : 'display:none'
+            }));
 
         groupedColumn.appendChild(childDiv);
         this.element.appendChild(groupedColumn);
@@ -654,10 +674,10 @@ export class Group implements IAction {
                         if (!isRemove) {
                             headers[i].appendChild(this.parent.createElement(
                                 'span', {
-                                className: 'e-grptogglebtn e-icons ' +
-                                    (this.groupSettings.columns.indexOf(column.field) > -1 ? 'e-toggleungroup e-icon-ungroup'
-                                        : 'e-togglegroup e-icon-group'), attrs: { tabindex: '-1', 'aria-label': 'Group button' }
-                            }));
+                                    className: 'e-grptogglebtn e-icons ' +
+                                        (this.groupSettings.columns.indexOf(column.field) > -1 ? 'e-toggleungroup e-icon-ungroup'
+                                            : 'e-togglegroup e-icon-group'), attrs: { tabindex: '-1', 'aria-label': 'Group button' }
+                                }));
                         }
                     }
                 }

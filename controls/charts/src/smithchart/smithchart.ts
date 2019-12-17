@@ -462,6 +462,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
     protected preRender(): void {
         this.isBlazor = isBlazor();
+        this.allowServerDataBinding = false;
         this.trigger(load, { smithchart: !this.isBlazor ? this : null });
         this.unWireEVents();
         this.initPrivateVariable();
@@ -504,6 +505,7 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
         this.seriesrender = new SeriesRender();
         this.seriesrender.draw(this, axisRender, this.bounds);
         this.renderComplete();
+        this.allowServerDataBinding = true;
         this.trigger(loaded, { smithchart: !this.isBlazor ? this : null });
     }
     private createSecondaryElement(): void {

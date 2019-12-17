@@ -4367,20 +4367,20 @@ var RemoteSaveAdaptor = /** @__PURE__ @class */ (function (_super) {
      * @param  {CrudOptions} changes
      * @param  {RemoteArgs} e
      */
-    RemoteSaveAdaptor.prototype.batchRequest = function (dm, changes, e) {
+    RemoteSaveAdaptor.prototype.batchRequest = function (dm, changes, e, query, original) {
         return {
             type: 'POST',
             url: dm.dataSource.batchUrl || dm.dataSource.crudUrl || dm.dataSource.url,
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',
-            data: JSON.stringify({
+            data: JSON.stringify(extend({}, {
                 changed: changes.changedRecords,
                 added: changes.addedRecords,
                 deleted: changes.deletedRecords,
                 action: 'batch',
                 table: e.url,
                 key: e.key
-            })
+            }, DataUtil.getAddParams(this, dm, query)))
         };
     };
     RemoteSaveAdaptor.prototype.addParams = function (options) {

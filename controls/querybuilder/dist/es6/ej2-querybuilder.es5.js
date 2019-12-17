@@ -1,5 +1,5 @@
 import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, detach, extend, getComponent, getInstance, getValue, isBlazor, isNullOrUndefined, removeClass, rippleEffect } from '@syncfusion/ej2-base';
-import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
+import { Button, RadioButton } from '@syncfusion/ej2-buttons';
 import { CheckBoxSelection, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
 import { DataManager, Deferred, Predicate, Query, UrlAdaptor } from '@syncfusion/ej2-data';
 import { NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
@@ -170,7 +170,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         bodeElem.innerHTML = '';
         this.element.querySelector('.e-btngroup-and').checked = true;
         if (this.enableNotCondition) {
-            getInstance(this.element.querySelector('.e-checkbox'), CheckBox).checked = false;
+            removeClass(this.element.querySelectorAll('.e-qb-toggle'), 'e-active-toggle');
         }
         bodeElem.appendChild(this.createElement('div', { attrs: { class: 'e-rule-list' } }));
         this.levelColl[this.element.id + '_group0'] = [0];
@@ -278,7 +278,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             summaryElem.style.display = 'block';
             txtareaElem.style.height = txtareaElem.scrollHeight + 'px';
         }
-        if (target.tagName === 'BUTTON') {
+        if (target.tagName === 'BUTTON' && target.className.indexOf('e-qb-toggle') < 0) {
             if (target.className.indexOf('e-removerule') > -1) {
                 this.actionButton = target;
                 this.deleteRule(target);
@@ -306,29 +306,37 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 }
             }
         }
-        else if (target.tagName === 'LABEL' && target.parentElement.className.indexOf('e-btn-group') > -1 ||
-            target.parentElement.className.indexOf('e-checkbox-wrapper') > -1) {
+        else if ((target.tagName === 'LABEL' && target.parentElement.className.indexOf('e-btn-group') > -1) ||
+            target.className.indexOf('e-qb-toggle') > -1) {
             var element = closest(target, '.e-group-container');
             var forIdValue = target.getAttribute('for');
-            var targetValue = document.getElementById(forIdValue).getAttribute('value');
+            var targetValue = void 0;
+            if (forIdValue) {
+                targetValue = document.getElementById(forIdValue).getAttribute('value');
+            }
             groupID = element.id.replace(this.element.id + '_', '');
             var ariaChecked = void 0;
             if (this.enableNotCondition) {
-                ariaChecked = element.getElementsByClassName('e-checkbox-wrapper')[0].getAttribute('aria-checked');
-                if (target.parentElement.className.indexOf('e-checkbox-wrapper') > -1) {
-                    if (ariaChecked === 'true') {
-                        ariaChecked = 'false';
+                if (target.className.indexOf('e-qb-toggle') > -1) {
+                    var toggleElem = element.getElementsByClassName('e-qb-toggle')[0];
+                    if (toggleElem.className.indexOf('e-active-toggle') > -1) {
+                        removeClass([toggleElem], 'e-active-toggle');
+                        ariaChecked = false;
                     }
                     else {
-                        ariaChecked = 'true';
+                        addClass([toggleElem], 'e-active-toggle');
+                        ariaChecked = true;
                     }
                     targetValue = this.rule.condition;
+                }
+                else {
+                    ariaChecked = this.rule.not;
                 }
             }
             args = { groupID: groupID, cancel: false, type: 'condition', value: targetValue.toLowerCase() };
             if (this.enableNotCondition) {
                 args = { groupID: groupID, cancel: false, type: 'condition', value: targetValue.toLowerCase(),
-                    'not': JSON.parse(ariaChecked) };
+                    'not': ariaChecked };
             }
             if (!this.isImportRules) {
                 this.trigger('beforeChange', args, function (observedChangeArgs) {
@@ -607,8 +615,10 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         groupElem.appendChild(grpBodyElem);
         // create button group in OR and AND process
         glueElem = this.createElement('div', { attrs: { class: 'e-btn-group' } });
-        inputElem = this.createElement('input', { attrs: { type: 'checkbox', class: 'e-checkbox' } });
-        glueElem.appendChild(inputElem);
+        if (this.enableNotCondition) {
+            inputElem = this.createElement('button', { attrs: { type: 'button', class: 'e-qb-toggle' } });
+            glueElem.appendChild(inputElem);
+        }
         inputElem = this.createElement('input', { attrs: { type: 'radio', class: 'e-btngroup-and', value: 'AND' } });
         inputElem.setAttribute('checked', 'true');
         glueElem.appendChild(inputElem);
@@ -681,7 +691,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             var orInpElem = groupElem.querySelector('.e-btngroup-or');
             var andLblElem = groupElem.querySelector('.e-btngroup-and-lbl');
             var orLblElem = groupElem.querySelector('.e-btngroup-or-lbl');
-            var notElem = groupElem.querySelector('.e-checkbox');
+            var notElem = groupElem.querySelector('.e-qb-toggle');
             andInpElem.setAttribute('id', this.element.id + '_and' + this.btnGroupId);
             orInpElem.setAttribute('id', this.element.id + '_or' + this.btnGroupId);
             andInpElem.setAttribute('name', this.element.id + '_and' + this.btnGroupId);
@@ -722,8 +732,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 this.levelColl[groupElem.id] = [0];
             }
             if (this.enableNotCondition) {
-                var checkbox = new CheckBox({ label: this.l10n.getConstant('NOT'), cssClass: 'e-btn e-small' });
-                checkbox.appendTo(notElem);
+                var tglBtn = new Button({ content: this.l10n.getConstant('NOT'), cssClass: 'e-btn e-small' });
+                tglBtn.appendTo(notElem);
                 groupElem.querySelector('.e-btngroup-and-lbl').classList.add('e-not');
             }
             groupElem.querySelector('.e-btngroup-and').setAttribute('checked', 'true');
@@ -1105,12 +1115,14 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     QueryBuilder.prototype.templateDestroy = function (column, elemId) {
         var temp = column.template.destroy;
         if (column.template && column.template.destroy) {
+            var templateElements = void 0;
+            templateElements = closest(document.getElementById(elemId), '.e-rule-field').querySelectorAll('.e-template');
             if (typeof temp === 'string') {
                 temp = getValue(temp, window);
-                temp({ elementId: elemId });
+                temp({ elementId: elemId, elements: templateElements });
             }
             else {
-                column.template.destroy({ elementId: elemId });
+                column.template.destroy({ elementId: elemId, elements: templateElements });
             }
         }
     };
@@ -1373,6 +1385,12 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var selectedValue;
         if (format) {
             var dParser = this.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
+            if (format.indexOf('/') > -1) {
+                formatOpt = { type: 'dateTime', format: format };
+            }
+            else {
+                formatOpt = { type: 'dateTime', skeleton: format };
+            }
             formatOpt = { type: 'dateTime', format: format };
             selectedValue = dParser(value);
             if (isNullOrUndefined(selectedValue)) {
@@ -1536,10 +1554,10 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 itemData.template = this.columns[filtObj.index].template;
                 var valElem = void 0;
                 if (itemData.template && typeof itemData.template.create === 'string') {
-                    valElem = getValue(itemData.template.create, window)();
+                    valElem = getValue(itemData.template.create, window)({ operator: itemData.value || tempRule.operator });
                 }
                 else if (itemData.template && itemData.template.create) {
-                    valElem = itemData.template.create();
+                    valElem = itemData.template.create({ operator: itemData.value || tempRule.operator });
                 }
                 if (valElem instanceof Element) {
                     valElem.id = parentId + '_valuekey0';
@@ -1614,7 +1632,13 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 break;
             case 'datepicker':
                 var column = this.getColumn(rule.field);
-                var format = { type: 'dateTime', format: column.format || 'MM/dd/yyyy' };
+                var format = void 0;
+                if (column.format && column.format.indexOf('/')) {
+                    format = { type: 'dateTime', format: column.format };
+                }
+                else {
+                    format = { type: 'dateTime', skeleton: column.format || 'yMd' };
+                }
                 var selectedDate = getComponent(element, controlName).value;
                 if (rule.operator.indexOf('between') > -1) {
                     if (typeof rule.value === 'string') {
@@ -1801,7 +1825,13 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             }
             else if (target.className.indexOf('e-datepicker') > -1) {
                 var ddlInst = getInstance(ruleElem.querySelector('.e-rule-filter input'), DropDownList);
-                var format = { type: 'dateTime', format: this.columns[ddlInst.index].format || 'MM/dd/yyyy' };
+                var format = void 0;
+                if (this.columns[ddlInst.index].format && this.columns[ddlInst.index].format.indexOf('/') > -1) {
+                    format = { type: 'dateTime', format: this.columns[ddlInst.index].format };
+                }
+                else {
+                    format = { type: 'dateTime', skeleton: this.columns[ddlInst.index].format || 'yMd' };
+                }
                 if (format.type) {
                     if (arrOperator.indexOf(oper) > -1) {
                         if (typeof rule.rules[index].value === 'string') {
@@ -1859,6 +1889,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var element;
         var i;
         var len;
+        var tooltip;
         _super.prototype.destroy.call(this);
         element = this.element.querySelectorAll('.e-addrulegroup');
         len = element.length;
@@ -1866,17 +1897,29 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             getComponent(element[i], 'dropdown-btn').destroy();
             detach(element[i]);
         }
-        element = this.element.querySelectorAll('.e-rule-filter .e-control');
+        tooltip = this.element.querySelectorAll('.e-rule-filter .e-control.e-tooltip');
+        for (i = 0; i < tooltip.length; i++) {
+            getComponent(tooltip[i], 'tooltip').destroy();
+        }
+        element = this.element.querySelectorAll('.e-rule-filter .e-control:not(.e-tooltip)');
         len = element.length;
         for (i = 0; i < len; i++) {
             getComponent(element[i], 'dropdownlist').destroy();
             detach(element[i]);
         }
-        element = this.element.querySelectorAll('.e-rule-operator .e-control');
+        tooltip = this.element.querySelectorAll('.e-rule-operator .e-control.e-tooltip');
+        for (i = 0; i < tooltip.length; i++) {
+            getComponent(tooltip[i], 'tooltip').destroy();
+        }
+        element = this.element.querySelectorAll('.e-rule-operator .e-control:not(.e-tooltip)');
         len = element.length;
         for (i = 0; i < len; i++) {
             getComponent(element[i], 'dropdownlist').destroy();
             detach(element[i]);
+        }
+        tooltip = this.element.querySelectorAll('.e-rule-value .e-control.e-tooltip');
+        for (i = 0; i < tooltip.length; i++) {
+            getComponent(tooltip[i], 'tooltip').destroy();
         }
         this.isImportRules = false;
         this.unWireEvents();
@@ -2015,19 +2058,24 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     QueryBuilder.prototype.onChangeNotGroup = function () {
         this.element.innerHTML = '';
         this.groupIdCounter = 0;
+        if (this.enableNotCondition) {
+            if (this.enableNotCondition) {
+                var inputElem = this.createElement('button', { attrs: { type: 'button', class: 'e-qb-toggle' } });
+                this.groupElem.querySelector('.e-btn-group').insertBefore(inputElem, this.groupElem.querySelector('.e-btngroup-and'));
+            }
+        }
+        else {
+            this.groupElem.querySelector('.e-qb-toggle').remove();
+        }
         this.rule = this.checkNotGroup(this.rule);
         this.initWrapper();
     };
     QueryBuilder.prototype.notGroupRtl = function () {
         if (this.enableRtl) {
-            this.element.querySelectorAll('.e-checkbox-wrapper').forEach(function (el) {
-                el.classList.add('e-rtl');
-            });
+            addClass(this.element.querySelectorAll('.e-btn-group'), 'e-rtl');
         }
         else {
-            this.element.querySelectorAll('.e-checkbox-wrapper').forEach(function (el) {
-                el.classList.remove('e-rtl');
-            });
+            removeClass(this.element.querySelectorAll('.e-btn-group'), 'e-rtl');
         }
     };
     QueryBuilder.prototype.checkNotGroup = function (rule) {
@@ -2660,7 +2708,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     else {
                         format = { type: 'dateTime', skeleton: column.format || 'yMd' };
                     }
-                    ruleValue = this.intl.parseDate(ruleColl[i].value, format);
+                    ruleValue = this.getDate(ruleColl[i].value, format);
                     if (dateOperColl.indexOf(oper) > -1) {
                         isDateFilter = true;
                     }
@@ -2798,7 +2846,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                         switch (ruleColl.operator) {
                             case 'between':
                                 if (column.type === 'date') {
-                                    pred = new Predicate(ruleColl.field, 'greaterthan', this.intl.parseDate(value[j], format));
+                                    pred = new Predicate(ruleColl.field, 'greaterthan', this.getDate(value[j], format));
                                 }
                                 else {
                                     pred = new Predicate(ruleColl.field, 'greaterthan', value[j]);
@@ -2806,7 +2854,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                                 break;
                             case 'notbetween':
                                 if (column.type === 'date') {
-                                    pred = new Predicate(ruleColl.field, 'lessthan', this.intl.parseDate(value[j], format));
+                                    pred = new Predicate(ruleColl.field, 'lessthan', this.getDate(value[j], format));
                                 }
                                 else {
                                     pred = new Predicate(ruleColl.field, 'lessthan', value[j]);
@@ -2824,7 +2872,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                         switch (ruleColl.operator) {
                             case 'between':
                                 if (column.type === 'date') {
-                                    pred = pred.and(ruleColl.field, 'lessthan', this.intl.parseDate(value[j], format));
+                                    pred = pred.and(ruleColl.field, 'lessthan', this.getDate(value[j], format));
                                 }
                                 else {
                                     pred = pred.and(ruleColl.field, 'lessthan', value[j]);
@@ -2832,7 +2880,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                                 break;
                             case 'notbetween':
                                 if (column.type === 'date') {
-                                    pred = pred.or(ruleColl.field, 'greaterthan', this.intl.parseDate(value[j], format));
+                                    pred = pred.or(ruleColl.field, 'greaterthan', this.getDate(value[j], format));
                                 }
                                 else {
                                     pred = pred.or(ruleColl.field, 'greaterthan', value[j]);
@@ -2864,6 +2912,13 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         }
         return predicate;
     };
+    QueryBuilder.prototype.getDate = function (value, format) {
+        var currDate = this.intl.parseDate(value, format);
+        if (value.indexOf(':') > -1 && (value.indexOf('/') < 0 || value.indexOf(',') < 0)) {
+            currDate.setDate(new Date().getDate());
+        }
+        return currDate;
+    };
     QueryBuilder.prototype.importRules = function (rule, parentElem, isReset) {
         if (!isReset) {
             parentElem = this.renderGroup(rule.condition, parentElem);
@@ -2876,12 +2931,12 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 parentElem.querySelector('.e-btngroup-and').checked = true;
             }
             if (this.enableNotCondition) {
-                var check = getInstance(parentElem.querySelector('.e-checkbox'), CheckBox);
+                var tglBtnElem = parentElem.querySelector('.e-qb-toggle');
                 if (rule.not) {
-                    check.checked = true;
+                    addClass([tglBtnElem], 'e-active-toggle');
                 }
                 else {
-                    check.checked = false;
+                    removeClass([tglBtnElem], 'e-active-toggle');
                 }
             }
         }
@@ -3151,12 +3206,12 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         return rules.type;
     };
     QueryBuilder.prototype.processParser = function (parser, rules, levelColl) {
+        var j;
+        var jLen;
         var rule;
         var subRules;
         var numVal = [];
         var strVal = [];
-        var j;
-        var jLen;
         var k;
         var kLen;
         var l;

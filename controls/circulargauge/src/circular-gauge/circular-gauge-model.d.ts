@@ -146,7 +146,6 @@ export interface CircularGaugeModel extends ComponentModel{
     /**
      * Triggers before each axis label gets rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'AxisLabelRendering'
      */
     axisLabelRender?: EmitType<IAxisLabelRenderEventArgs>;

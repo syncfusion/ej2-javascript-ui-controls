@@ -78,6 +78,15 @@
       float: left;
     }
 
+    .e-split-colorpicker {
+      @if ($field-list-skin == 'bootstrap4') {
+        // sass-lint:disable-all
+        background-color: $format-label-font-color !important;
+        color: $field-list-default-bg-color !important;
+        // sass-lint:enable-all
+      }
+    }
+
     .e-format-delete-button {
       background-color: transparent;
       border-color: transparent;

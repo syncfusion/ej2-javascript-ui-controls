@@ -24,6 +24,7 @@ import { InsertTextExec } from '../plugin/insert-text';
 /**
  * EditorManager internal component
  * @hidden
+ * @deprecated
  */
 export class EditorManager {
     public currentDocument: HTMLDocument;
@@ -48,6 +49,7 @@ export class EditorManager {
     /**
      * Constructor for creating the component
      * @hidden
+     * @deprecated
      */
     constructor(options: ICommandModel) {
         this.currentDocument = options.document;
@@ -90,14 +92,22 @@ export class EditorManager {
     private editorKeyUp(e: IHtmlKeyboardEvent): void {
         this.observer.notify(EVENTS.KEY_UP_HANDLER, e);
     }
+    /**
+     * execCommand
+     * @hidden
+     * @deprecated
+     */
     public execCommand<T>(
-        command: ExecCommand, value: T, event?: Event, callBack?: Function, text?: string | Node, exeValue?: T, selector?: string): void {
+        command: ExecCommand, value: T, event?: Event, callBack?: Function, text?: string | Node, exeValue?: T,
+        selector?: string): void {
         switch (command.toLocaleLowerCase()) {
             case 'lists':
                 this.observer.notify(EVENTS.LIST_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
                 break;
             case 'formats':
-                this.observer.notify(EVENTS.FORMAT_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
+                this.observer.notify(EVENTS.FORMAT_TYPE, { subCommand: value, event: event, callBack: callBack,
+                    selector: selector, exeValue: exeValue
+                });
                 break;
             case 'alignments':
                 this.observer.notify(CONSTANT.ALIGNMENT_TYPE, {

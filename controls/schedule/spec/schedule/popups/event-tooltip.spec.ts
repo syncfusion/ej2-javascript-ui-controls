@@ -11,12 +11,12 @@ Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, TimelineViews);
 
 describe('Schedule event tooltip module', () => {
     beforeAll(() => {
-        // tslint:disable-next-line:no-any
+        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             // tslint:disable-next-line:no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); //Skips test (in Chai)
+            (this as any).skip(); //Skips test (in Chai)
             return;
         }
     });
@@ -201,9 +201,10 @@ describe('Schedule event tooltip module', () => {
             util.triggerMouseEvent(target, 'mouseleave');
             expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
         });
-        it('hide tooltip through set model on mouse hover', () => {
+        it('hide tooltip through set model on mouse hover and checking e-control class on schedule element', () => {
             schObj.eventSettings.enableTooltip = false;
             schObj.dataBind();
+            expect(schObj.element.classList.contains('e-control')).toEqual(true);
             let target: HTMLElement = schObj.element.querySelector('.e-appointment');
             expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
             util.triggerMouseEvent(target, 'mouseover');
@@ -335,6 +336,28 @@ describe('Schedule event tooltip module', () => {
             expect(tooltipEle.querySelector('.e-all-day').innerHTML).toBe('10:00 AM - 12:30 PM');
             util.triggerMouseEvent(targets[1], 'mouseleave');
             expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
+        });
+        it('view change including tooltip settings enabled', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(6);
+                done();
+            };
+            expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(2);
+            schObj.currentView = 'TimelineWeek';
+            schObj.dataBind();
+        });
+        it('tooltip on appointment after view change', () => {
+            let targets: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(targets.length).toEqual(6);
+            util.triggerScrollEvent(schObj.element.querySelector('.e-content-wrap'), 0, 8500);
+            expect(document.querySelector('.e-schedule-event-tooltip')).toBeNull();
+            util.triggerMouseEvent(targets[1], 'mouseover');
+            let tooltipEle: HTMLElement = document.querySelector('.e-schedule-event-tooltip') as HTMLElement;
+            expect(tooltipEle.querySelector('.e-subject').innerHTML).toBe('Meeting');
+            expect(tooltipEle.querySelector('.e-location').innerHTML).toBe('');
+            expect(tooltipEle.querySelector('.e-details').innerHTML).toBe('April 4, 2018');
+            expect(tooltipEle.querySelector('.e-all-day').innerHTML).toBe('2:00 PM - 3:30 PM');
+            util.triggerMouseEvent(targets[1], 'mouseleave');
         });
     });
 

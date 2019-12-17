@@ -35,6 +35,7 @@ export class MarkdownEditor {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     public destroy(): void {
         this.removeEventListener();
@@ -150,6 +151,7 @@ export class MarkdownEditor {
     /**
      * Called internally if any of the property value changed.
      * @hidden
+     * @deprecated
      */
     protected onPropertyChanged(e: { [key: string]: RichTextEditorModel }): void {
         // On property code change here

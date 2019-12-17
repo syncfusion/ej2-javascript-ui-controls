@@ -881,5 +881,11 @@ describe('DateParser', () => {
         let iFormatter: Date = DateParser.dateParser('en', { format:'dd MMM,yyyy' }, cldrData)('01 aug,2019');
         expect(iFormatter).not.toBeNull();
        });
-    })
+    });
+    describe('EJ2-23457 Milliseconds format support for custom date returns proper value',() =>{
+        it('Milliseconds format support for custom date returns proper value',() =>{
+            let iFormatter: Date = DateParser.dateParser('en', { format:'yyyy-MM-dd hh:mm:ss.fff'},cldrData)('2015-07-16 09:33:37.23');
+            expect(DateFormat.dateFormat('en',{format:'dd/MMM/yyyy hh:mm:ss fff'},cldrData)(iFormatter)).toBe('16/Jul/2015 09:33:37 023');
+        });
+    });
 });

@@ -129,11 +129,13 @@ export class Clipboard implements IAction {
                         data: value,
                     };
                     this.parent.trigger(events.beforePaste, args);
-                    if (grid.editModule) {
-                        if (col.type === 'number') {
-                            this.parent.editModule.updateCell(rIdx, col.field, parseInt(args.data as string, 10));
-                        } else {
-                            grid.editModule.updateCell(rIdx, col.field, args.data);
+                    if (!args.cancel) {
+                        if (grid.editModule) {
+                            if (col.type === 'number') {
+                                this.parent.editModule.updateCell(rIdx, col.field, parseInt(args.data as string, 10));
+                            } else {
+                                grid.editModule.updateCell(rIdx, col.field, args.data);
+                            }
                         }
                     }
                 }
@@ -251,7 +253,7 @@ export class Clipboard implements IAction {
             }
             if (isElement) {
                 if (!(cells[j] as HTMLElement).classList.contains('e-hide')) {
-                    this.copyContent += (cells[j] as HTMLElement).textContent;
+                    this.copyContent += (cells[j] as HTMLElement).innerText;
                 }
             } else {
                 this.copyContent += cells[j];

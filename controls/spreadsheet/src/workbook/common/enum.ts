@@ -46,3 +46,8 @@ export type SortOrder =
     'Ascending' |
     /**  Defines SortDirection as Descending */
     'Descending';
+
+/**
+ * Cell format type
+ */
+export type FormatType = 'CellFormat' | 'NumberFormat';

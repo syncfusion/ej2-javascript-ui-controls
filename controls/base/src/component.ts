@@ -52,7 +52,6 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     protected requiredModules(): ModuleDeclaration[] {
         return [];
     };
-    protected isRendered: boolean = false;
     /**
      * Destroys the sub modules while destroying the widget
      */

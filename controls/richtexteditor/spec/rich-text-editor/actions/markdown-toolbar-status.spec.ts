@@ -4,7 +4,7 @@
 import { detach, createElement } from '@syncfusion/ej2-base';
 import { RichTextEditor, Toolbar } from './../../../src/index';
 import { dispatchEvent } from './../../../src/rich-text-editor/base/util';
-import { QuickToolbar, MarkdownEditor, HtmlEditor } from "../../../src/rich-text-editor/index";
+import { QuickToolbar, MarkdownEditor, HtmlEditor, MarkdownFormatter } from "../../../src/rich-text-editor/index";
 
 RichTextEditor.Inject(MarkdownEditor);
 RichTextEditor.Inject(HtmlEditor);
@@ -46,6 +46,19 @@ A double enter will end them
                     items: ['|', 'formats', '|', 'orderedlist', 'unorderedlist']
                 },
                 editorMode: 'Markdown',
+                formatter: new MarkdownFormatter({
+                    listTags: { 'OL': '1. ', 'UL': '- ' }, formatTags: {
+                        'h1': '# ',
+                        'h2': '## ',
+                        'h3': '### ',
+                        'h4': '#### ',
+                        'h5': '##### ',
+                        'h6': '###### ',
+                        'blockquote': '> ',
+                        'pre': '```\n',
+                        'p': ''
+                    }
+                }),
                 value: innerValue,
                 created: oncreate
             });

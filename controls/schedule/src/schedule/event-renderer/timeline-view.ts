@@ -29,7 +29,8 @@ export class TimelineEvent extends MonthEvent {
         super(parent);
         this.renderType = type;
         this.appContainers = [].slice.call(this.element.querySelectorAll('.' + cls.APPOINTMENT_CONTAINER_CLASS));
-        this.dayLength = this.element.querySelectorAll('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr')[0].children.length;
+        this.dayLength = this.element.querySelectorAll('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr').length === 0 ?
+            0 : this.element.querySelectorAll('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr')[0].children.length;
         this.content = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement;
     }
 
@@ -78,10 +79,15 @@ export class TimelineEvent extends MonthEvent {
         }
     }
 
-    public renderEvents(event: { [key: string]: Object }, resIndex: number, eventsList?: { [key: string]: Object }[]): void {
+    public renderEvents(event: { [key: string]: Object }, resIndex: number, appointmentsList?: { [key: string]: Object }[]): void {
+        let startTime: Date = event[this.fields.startTime] as Date;
+        let endTime: Date = event[this.fields.endTime] as Date;
+        if ((startTime.getTime() < this.parent.minDate.getTime()) || (endTime.getTime() > this.parent.maxDate.getTime())) {
+            return;
+        }
         let eventData: { [key: string]: Object } = event.data as { [key: string]: Object };
-        let startTime: Date = this.getStartTime(event, eventData);
-        let endTime: Date = this.getEndTime(event, eventData);
+        startTime = this.getStartTime(event, eventData);
+        endTime = this.getEndTime(event, eventData);
         this.day = this.parent.getIndexOfDate(this.dateRender, util.resetTime(new Date(startTime.getTime())));
         if (this.day < 0) {
             return;
@@ -135,7 +141,7 @@ export class TimelineEvent extends MonthEvent {
                             groupIndex = resIndex.toString();
                         }
                         let filterEvents: Object[] =
-                            this.getFilterEvents(startDate, endDate, slotStartTime, slotEndTime, groupIndex, eventsList);
+                            this.getFilterEvents(startDate, endDate, slotStartTime, slotEndTime, groupIndex, appointmentsList);
                         let appArea: number = this.cellHeight - this.moreIndicatorHeight;
                         let renderedAppCount: number = Math.floor(appArea / (appHeight + EVENT_GAP));
                         let count: number = (filterEvents.length - renderedAppCount) <= 0 ? 1 : (filterEvents.length - renderedAppCount);

@@ -651,6 +651,8 @@ describe('Chips', () => {
                 activeElement = Array.prototype.slice.call(element.querySelectorAll('.e-active'));
                 expect(activeElement.length).toBe(1);
                 expect(activeElement[0]).toBe(chipCollection[2]);
+                let resultantdata: SelectedItem = chips.getSelectedChips() as SelectedItem;
+                expect(resultantdata.index).toBe(2);
             });
             it('Chip component - selectedChips(Multiple)', () => {
                 chips = new ChipList({ text: 'chip content', chips: stringArray.slice(), selection: "Multiple", selectedChips: 0 }, '#chip');
@@ -659,13 +661,28 @@ describe('Chips', () => {
                 expect(activeElement.length).toBe(1);
                 expect(activeElement[0]).toBe(chipCollection[0]);
                 //array of index
-                chips.selectedChips = [1, 2];
+                chips.selectedChips = [0,1, 2];
+                chips.dataBind();
+                chipCollection = Array.prototype.slice.call(element.querySelectorAll('.e-chip'));
+                activeElement = Array.prototype.slice.call(element.querySelectorAll('.e-active'));
+                expect(activeElement.length).toBe(3);
+                expect(activeElement[0]).toBe(chipCollection[0]);
+                expect(activeElement[1]).toBe(chipCollection[1]);
+                expect(activeElement[2]).toBe(chipCollection[2]);
+                chips.selectedChips = [0,1];
                 chips.dataBind();
                 chipCollection = Array.prototype.slice.call(element.querySelectorAll('.e-chip'));
                 activeElement = Array.prototype.slice.call(element.querySelectorAll('.e-active'));
                 expect(activeElement.length).toBe(2);
-                expect(activeElement[0]).toBe(chipCollection[1]);
-                expect(activeElement[1]).toBe(chipCollection[2]);
+                expect(activeElement[0]).toBe(chipCollection[0]);
+                expect(activeElement[1]).toBe(chipCollection[1]);
+                let resultantdata: SelectedItems = chips.getSelectedChips() as SelectedItems;
+                let indexes : number[] = resultantdata.Indexes;
+                let selectedChips : number[] = chips.selectedChips;
+                expect(indexes[0]).toBe(selectedChips[0]);
+                expect(indexes[1]).toBe(selectedChips[1]);
+                chips.select(0);
+                expect(chips.selectedChips[0]).toBe(1);
             });
         });
     });

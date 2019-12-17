@@ -1,11 +1,9 @@
 import { Maps, doubleClick, Orientation, ITouches, ZoomSettings } from '../../index';
 import { Point, getElementByID, Size, PathOption, Rect, convertGeoToPoint, CircleOption, convertTileLatLongToPoint } from '../utils/helper';
 import { RectOption, PolygonOption, createTooltip, calculateScale, getTouchCenter, getTouches, targetTouches } from '../utils/helper';
-import {
-    MapLocation, zoomAnimate, smoothTranslate, measureText, textTrim, clusterTemplate, marker,
-    markerTemplate, removeElement, getElement, clusterSeparate
-} from '../utils/helper';
-import { isNullOrUndefined, EventHandler, Browser, remove, createElement, isBlazor } from '@syncfusion/ej2-base';
+import { MapLocation, zoomAnimate, smoothTranslate , measureText, textTrim, clusterTemplate, marker,
+markerTemplate, removeElement, getElement, clusterSeparate, markerColorChoose, markerShapeChoose } from '../utils/helper';
+import { isNullOrUndefined, EventHandler, Browser, remove, createElement } from '@syncfusion/ej2-base';
 import { MarkerSettings, LayerSettings, changeBorderWidth, IMarkerRenderingEventArgs, markerRendering, } from '../index';
 import { IMapZoomEventArgs, IMapPanEventArgs } from '../model/interface';
 import { zoomIn, zoomOut, pan } from '../model/constants';
@@ -63,6 +61,8 @@ export class Zoom {
     private templateCount: number;
     private distanceX: number;
     private distanceY: number;
+    public mouseDownLatLong: object = { x: 0, y: 0 };
+    public mouseMoveLatLong: object = { x: 0, y: 0 };
     /**
      * @private
      */
@@ -288,7 +288,7 @@ export class Zoom {
         this.templateCount = 0;
         let layer: LayerSettings;
         let zoomshapelocation: object;
-        let i: number;
+        let i: number; let markerStyle: string;
         let scale: number = this.maps.scale;
         let x: number = this.maps.translatePoint.x;
         let y: number = this.maps.translatePoint.y;
@@ -331,6 +331,10 @@ export class Zoom {
                             if (!isNullOrUndefined(currentEle)) {
                                 for (let k: number = 0; k < currentEle.childElementCount; k++) {
                                     this.markerTranslate(<Element>currentEle.childNodes[k], factor, x, y, scale, 'Marker', animate);
+                                    if (!this.maps.isTileMap && this.currentLayer.animationDuration > 0) {
+                                        markerStyle = 'visibility:hidden';
+                                        currentEle.setAttribute('style', markerStyle);
+                                    }
                                 }
                                 if (this.isPanning && this.maps.markerModule.sameMarkerData.length > 0) {
                                     clusterSeparate(this.maps.markerModule.sameMarkerData, this.maps, currentEle, true);
@@ -343,18 +347,20 @@ export class Zoom {
                                 if (document.getElementById(this.maps.element.id + '_mapsTooltip') && this.maps.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_')) {
                                     let mapsTooltip: MapsTooltip = this.maps.mapsTooltipModule;
                                     let tooltipElement: Element = currentEle.querySelector('#' + mapsTooltip.tooltipTargetID);
-                                    if (tooltipElement['style']['visibility'] === 'hidden') {
-                                        removeElement(this.maps.element.id + '_mapsTooltip');
-                                    } else {
-                                        let x: number = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[1]);
-                                        let y: number = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[2]);
-                                        if (this.maps.isTileMap) {
-                                            x += +getElement(this.maps.element.id + '_tile_parent')['style']['left'].split('px')[0];
-                                            y += +getElement(this.maps.element.id + '_tile_parent')['style']['top'].split('px')[0];
+                                    if (!isNullOrUndefined(tooltipElement)) {
+                                        if (tooltipElement['style']['visibility'] === 'hidden') {
+                                            removeElement(this.maps.element.id + '_mapsTooltip');
+                                        } else {
+                                            let x: number = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[1]);
+                                            let y: number = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[2]);
+                                            if (this.maps.isTileMap) {
+                                                x += +getElement(this.maps.element.id + '_tile_parent')['style']['left'].split('px')[0];
+                                                y += +getElement(this.maps.element.id + '_tile_parent')['style']['top'].split('px')[0];
+                                            }
+                                            mapsTooltip.svgTooltip.location.x = x;
+                                            mapsTooltip.svgTooltip.location.y = y;
+                                            mapsTooltip.svgTooltip.enableAnimation = false;
                                         }
-                                        mapsTooltip.svgTooltip.location.x = x;
-                                        mapsTooltip.svgTooltip.location.y = y;
-                                        mapsTooltip.svgTooltip.enableAnimation = false;
                                     }
                                 }
                             }
@@ -426,88 +432,97 @@ export class Zoom {
     //tslint:disable
     private markerTranslates(
         element: Element | HTMLElement, factor: number, x: number, y: number, scale: number, type: string, layerElement: Element, animate: boolean = false,
-    ): void {
-        let markerSVGObject: Element;
-        let templateFn: Function;
-        let markerCounts: number = 0;
-        let markerTemplateCounts : number = 0;
-        let layerIndex: number = parseInt((element ? element : layerElement).id.split('_LayerIndex_')[1].split('_')[0], 10);
-        markerSVGObject = this.maps.renderer.createGroup({
-            id: this.maps.element.id + '_Markers_Group',
-            style: 'pointer-events: auto;'
-        });
-        if (document.getElementById(markerSVGObject.id)) {
-            removeElement(markerSVGObject.id);
-        }
-        let markerTemplateElements: HTMLElement = createElement('div', {
-            id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_Markers_Template_Group',
-            className: 'template',
-            styles: 'overflow: hidden; position: absolute;pointer-events: none;' +
-                'top:' + (this.maps.isTileMap ? 10 : this.maps.mapAreaRect.y) + 'px;' +
-                'left:' + (this.maps.isTileMap ? 10 : this.maps.mapAreaRect.x) + 'px;' +
-                'height:' + this.maps.mapAreaRect.height + 'px;' +
-                'width:' + this.maps.mapAreaRect.width + 'px;'
-        });
-        if (document.getElementById(markerTemplateElements.id)) {
-            removeElement(markerTemplateElements.id);
-        }
-        let currentLayers: LayerSettings = <LayerSettings>this.maps.layersCollection[layerIndex];
-        currentLayers.markerSettings.map((markerSettings: MarkerSettings, markerIndex: number) => {
-            let markerDatas: Object[] = <Object[]>markerSettings.dataSource;
-            markerDatas.forEach((data: Object, dataIndex: number) => {
-                let eventArgs: IMarkerRenderingEventArgs = {
-                    template: markerSettings.template, data: data, maps: this.maps, marker: markerSettings,
-                    cancel: false, name: markerRendering, fill: markerSettings.fill, height: markerSettings.height,
-                    width: markerSettings.width, imageUrl: markerSettings.imageUrl, shape: markerSettings.shape,
-                    border: markerSettings.border
-                };
-                if (isBlazor()) {
-                    const { maps, marker, ...blazorEventArgs }: IMarkerRenderingEventArgs = eventArgs;
-                    eventArgs = blazorEventArgs;
-                }
-                this.maps.trigger('markerRendering', eventArgs, (MarkerArgs: IMarkerRenderingEventArgs) => {
-                    let long: number = data['longitude'];
-                    let lati: number = data['latitude'];
-                    let offset: Point = markerSettings.offset;
-                    if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(long) && !isNullOrUndefined(lati)) {
-                        let markerID: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
-                            + markerIndex + '_dataIndex_' + dataIndex;
-                        let location: Point = (this.maps.isTileMap) ? convertTileLatLongToPoint(
-                            new MapLocation(long, lati), this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true
-                        ) : convertGeoToPoint(lati, long, factor, currentLayers, this.maps);
-                        let animate: boolean = currentLayers.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
-                        let transPoint: Point = { x: x, y: y };
-                        if (eventArgs.template) {
-                            markerTemplateCounts++;
-                            markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplateElements, location,
-                                scale, offset, this.maps);
-                        } else {
-                            markerCounts++;
-                            marker(eventArgs, markerSettings, markerDatas, dataIndex, location, transPoint,
-                                markerID, offset, scale, this.maps, markerSVGObject);
-                        }
+        ): void {
+            let markerSVGObject: Element;
+            let templateFn: Function;
+            let markerCounts: number = 0;
+            let markerTemplateCounts : number = 0;  
+            let layerIndex: number = parseInt((element ? element : layerElement).id.split('_LayerIndex_')[1].split('_')[0], 10);   
+            markerSVGObject = this.maps.renderer.createGroup({
+                id: this.maps.element.id + '_Markers_Group',
+                style: 'pointer-events: auto;'
+            });
+            if (document.getElementById(markerSVGObject.id)) {
+                removeElement(markerSVGObject.id);
+            }
+			let mapsAreaRect: Rect = this.maps.mapAreaRect; 
+            let markerTemplateElements: HTMLElement = createElement('div', {
+                id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_Markers_Template_Group',
+                className: 'template',
+                styles: 'overflow: hidden; position: absolute;pointer-events: none;' +
+                    'top:' + mapsAreaRect.y + 'px;' +
+                    'left:' + mapsAreaRect.x + 'px;' +
+                    'height:' + mapsAreaRect.height + 'px;' +
+                    'width:' + mapsAreaRect.width + 'px;'
+            });
+            if (document.getElementById(markerTemplateElements.id)) {
+                removeElement(markerTemplateElements.id);
+            }
+            let currentLayers: LayerSettings = <LayerSettings>this.maps.layersCollection[layerIndex];
+            currentLayers.markerSettings.map((markerSettings: MarkerSettings, markerIndex: number) => {
+                let markerDatas: Object[] = <Object[]>markerSettings.dataSource;
+                markerDatas.forEach((data: Object, dataIndex: number) => {
+                    let eventArgs: IMarkerRenderingEventArgs = {
+                        template: markerSettings.template, data: data, maps: this.maps, marker: markerSettings,
+                        cancel: false, name: markerRendering, fill: markerSettings.fill, colorValuePath: markerSettings.colorValuePath,
+                        shapeValuePath: markerSettings.shapeValuePath, height: markerSettings.height,
+                        width: markerSettings.width, imageUrl: markerSettings.imageUrl, shape: markerSettings.shape,
+                        border: markerSettings.border
+                    };
+                    eventArgs = markerShapeChoose(eventArgs, data);
+                    eventArgs = markerColorChoose(eventArgs, data);
+                    if (this.maps.isBlazor) {
+                        const {maps, marker, ...blazorEventArgs } : IMarkerRenderingEventArgs = eventArgs;
+                        eventArgs = blazorEventArgs;
                     }
-                    
-                    markerTemplateCounts += (eventArgs.cancel) ? 1 : 0;                        
-                    markerCounts += (eventArgs.cancel) ? 1 : 0;                  
-                    if (markerSVGObject.childElementCount === (markerDatas.length - markerTemplateCounts) && (type !== 'Template')) {
-                        layerElement.appendChild(markerSVGObject);
-                        if (currentLayers.markerClusterSettings.allowClustering) {
-                            this.maps.svgObject.appendChild(markerSVGObject);
-                            this.maps.element.appendChild(this.maps.svgObject);
-                            clusterTemplate(currentLayers, markerSVGObject, this.maps, layerIndex, markerSVGObject, layerElement, true);
+                    this.maps.trigger('markerRendering', eventArgs, (MarkerArgs: IMarkerRenderingEventArgs) => {
+                        if (markerSettings.shapeValuePath !== eventArgs.shapeValuePath ) {
+                            eventArgs = markerShapeChoose(eventArgs, data);
                         }
-                    }
-                    if (markerTemplateElements.childElementCount === (markerDatas.length - markerCounts) && getElementByID(this.maps.element.id + '_Secondary_Element')) {
-                        getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateElements);
-                        if (currentLayers.markerClusterSettings.allowClustering) {
-                            clusterTemplate(currentLayers, markerTemplateElements, this.maps, layerIndex, markerSVGObject, layerElement, false) ;
+                        if (markerSettings.colorValuePath !== eventArgs.colorValuePath ) {
+                            eventArgs = markerColorChoose(eventArgs, data);
                         }
-                    }
+                        let lati: number = data['latitude'];
+                        let long: number = data['longitude'];
+                        let offset: Point = markerSettings.offset;
+                        if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(long) && !isNullOrUndefined(lati)) {
+                            let markerID: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
+                                + markerIndex + '_dataIndex_' + dataIndex;
+                            let location: Point = (this.maps.isTileMap) ? convertTileLatLongToPoint(
+                                new MapLocation(long, lati), this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true
+                            ) : convertGeoToPoint(lati, long, factor, currentLayers, this.maps);
+                            let animate: boolean = currentLayers.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
+                            let transPoint: Point = {x: x, y:y};
+                            if (eventArgs.template) {
+                                markerTemplateCounts++;
+                                markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplateElements, location,
+                                    scale, offset, this.maps);   
+                            } else {
+                                markerCounts++;
+                                marker(eventArgs, markerSettings, markerDatas, dataIndex, location, transPoint,
+                                    markerID, offset, scale, this.maps, markerSVGObject);
+                            }
+                        }
+                        markerTemplateCounts += (eventArgs.cancel) ? 1 : 0;                        
+                        markerCounts += (eventArgs.cancel) ? 1 : 0;                  
+                        if (markerSVGObject.childElementCount === (markerDatas.length - markerTemplateCounts) && (type !== 'Template')) {
+                            layerElement.appendChild(markerSVGObject);
+                            if (currentLayers.markerClusterSettings.allowClustering) {
+                                this.maps.svgObject.appendChild(markerSVGObject);
+                                this.maps.element.appendChild(this.maps.svgObject);
+                                clusterTemplate(currentLayers, markerSVGObject, this.maps, layerIndex, markerSVGObject, layerElement, true);
+                            }
+                        }
+                        if (markerTemplateElements.childElementCount === (markerDatas.length - markerCounts) && getElementByID(this.maps.element.id + '_Secondary_Element')) {
+                            getElementByID(this.maps.element.id + '_Secondary_Element').appendChild(markerTemplateElements);
+                            if (currentLayers.markerClusterSettings.allowClustering) {
+                                clusterTemplate(currentLayers, markerTemplateElements, this.maps, layerIndex, markerSVGObject, layerElement, false) ;
+                            }
+                        }
+                    });
                 });
             });
-        });
-    };
+        };
     /**
      * To translate the layer template elements
      * @private
@@ -674,9 +689,25 @@ export class Zoom {
             if (this.maps.isTileMap) {
                 if (type === 'Template') {
                     let templateOffset: ClientRect = element.getBoundingClientRect();
-                    (<HTMLElement>element).style.left = (location.x - (templateOffset.width / 2)) + 'px';
-                    (<HTMLElement>element).style.top = (location.y - (templateOffset.height / 2)) + 'px';
+                    (<HTMLElement>element).style.left = ((location.x - (templateOffset.width / 2)) + marker.offset.x) + 'px';
+                    (<HTMLElement>element).style.top = ((location.y - (templateOffset.height / 2)) + marker.offset.y) + 'px';
+                    if(this.maps.layers[this.maps.baseLayerIndex].layerType === 'GoogleStaticMap') {
+                        let staticMapOffset : ClientRect = getElementByID(this.maps.element.id + '_StaticGoogleMap').getBoundingClientRect();
+                    let staticMapOffsetWidth : number  = 640;
+                        if(element['style']['display'] !== 'none') {
+                            if((staticMapOffset['x'] > templateOffset['x']  || staticMapOffset['x'] + staticMapOffsetWidth < templateOffset['x'] + templateOffset['width'])
+                            && (staticMapOffset['y'] > templateOffset['y'] || staticMapOffset['y'] + staticMapOffset['height'] < templateOffset['y'] + templateOffset['height'])
+                            ) {
+                                element['style']['display'] = 'none';
+                            } else if((staticMapOffset['x'] > templateOffset['x'] || staticMapOffset['x'] + staticMapOffsetWidth < templateOffset['x'] + templateOffset['width'])) {
+                                element['style']['display'] = 'none';
+                            } 
+                        }
+                    }
+
                 } else {
+                    location.x += marker.offset.x;
+                    location.y += marker.offset.y;
                     element.setAttribute('transform', 'translate( ' + location.x + ' ' + location.y + ' )');
                 }
             } else {
@@ -951,12 +982,22 @@ export class Zoom {
                 this.applySelection(this.panElements, this.selectionColor);
                 break;
             case 'zoomin':
+                map.staticMapZoom = map.tileZoomLevel
+                if (map.staticMapZoom > 0 && map.staticMapZoom < 22) {
+                    map.staticMapZoom += 1
+                }
                 this.toolBarZooming((map.isTileMap ? map.tileZoomLevel : map.scale) + 1, 'ZoomIn');
                 break;
             case 'zoomout':
+                map.staticMapZoom = map.tileZoomLevel
+                map.centerPosition.latitude = null;
+                map.centerPosition.longitude = null;
                 this.toolBarZooming((map.isTileMap ? map.tileZoomLevel : map.scale) - 1, 'ZoomOut');
                 break;
             case 'reset':
+                map.staticMapZoom = map.zoomSettings.enable ? map.zoomSettings.zoomFactor : 0;
+                map.centerPosition.latitude = null;
+                map.centerPosition.longitude = null;
                 this.toolBarZooming(1, 'ZoomOut');
                 this.applySelection(this.zoomElements, this.fillColor);
                 this.applySelection(this.panElements, this.selectionColor);
@@ -1061,12 +1102,13 @@ export class Zoom {
 
     public mapMouseWheel(e: WheelEvent): void {
         if (this.maps.zoomSettings.enable && this.maps.zoomSettings.mouseWheelZoom) {
-            let position: Point = this.getMousePosition(e.pageX, e.pageY);
             let map: Maps = this.maps;
             let size: Size = map.availableSize;
+            let position: Point = this.getMousePosition(e.pageX, e.pageY);
             let prevLevel: number = map.tileZoomLevel;
             let prevScale: number = map.scale;
-            let delta: number = 1;
+            let delta: number = 1; 
+            let staticMaxZoomLevel : number = 22; // google map maximum zoom level value
             let value: number = (map.isTileMap) ? prevLevel : prevScale;
             if (((position.x > map.mapAreaRect.x) && (position.x < (map.mapAreaRect.x + map.mapAreaRect.width))) &&
                 (position.y > map.mapAreaRect.y) && position.y < (map.mapAreaRect.y + map.mapAreaRect.height)) {
@@ -1074,8 +1116,18 @@ export class Zoom {
                 let direction: string = (this.browserName === 'mozilla' && !this.isPointer) ?
                     -(e.detail) / 3 > 0 ? 'ZoomIn' : 'ZoomOut' : (e.wheelDelta / 120) > 0 ? 'ZoomIn' : 'ZoomOut';
                 if (direction === 'ZoomIn') {
+                    map.mapScaleValue = value + delta;
+                    map.staticMapZoom = map.tileZoomLevel;
+                    if (map.staticMapZoom > 0 && map.staticMapZoom < staticMaxZoomLevel) {
+                        map.staticMapZoom += 1
+                    }
                     this.performZooming(position, (value + delta), direction);
                 } else {
+                    map.mapScaleValue = value - delta;
+                    map.staticMapZoom = map.tileZoomLevel;
+                    if (map.staticMapZoom > 1 && map.staticMapZoom < staticMaxZoomLevel) {
+                        map.staticMapZoom -= 1
+                    }
                     this.performZooming(position, (value - delta), direction);
                 }
             }
@@ -1086,12 +1138,14 @@ export class Zoom {
         let pageX: number = e.pageX;
         let pageY: number = e.pageY;
         let target: Element = <Element>(<PointerEvent>e).target;
-        if (this.maps.zoomSettings.enable && this.maps.zoomSettings.doubleClickZoom) {
+        if (this.maps.zoomSettings.enable && this.maps.zoomSettings.doubleClickZoom
+            && !(e.target['id'].indexOf('_Zooming_') > -1)) {
             let position: Point = this.getMousePosition(pageX, pageY);
             let map: Maps = this.maps;
             let size: Size = map.availableSize;
             let prevLevel: number = map.tileZoomLevel;
             let prevScale: number = map.scale;
+            map.mapScaleValue = map.mapScaleValue + 1;
             let value: number = (map.isTileMap) ? prevLevel : prevScale;
             if (((position.x > map.mapAreaRect.x) && (position.x < (map.mapAreaRect.x + map.mapAreaRect.width))) &&
                 (position.y > map.mapAreaRect.y) && position.y < (map.mapAreaRect.y + map.mapAreaRect.height)) {
@@ -1118,6 +1172,7 @@ export class Zoom {
             target = <Element>e.target;
         }
         this.isPanning = this.panColor === this.selectionColor ? true : this.zoomColor !== this.selectionColor;
+        this.mouseDownLatLong = { x: pageX, y: pageY };
         this.rectZoomingStart = ((!this.isPanning) && this.maps.zoomSettings.enable);
         this.mouseDownPoints = this.getMousePosition(pageX, pageY);
         if (this.isTouch) {
@@ -1175,7 +1230,12 @@ export class Zoom {
         if (zoom.enable && this.isPanning) {
             e.preventDefault();
             this.maps.element.style.cursor = 'pointer';
-            this.panning('None', null, null);
+            this.mouseMoveLatLong = { x: pageX, y: pageY };
+            if ((this.mouseDownLatLong['x'] !== this.mouseMoveLatLong['x']) && (this.mouseDownLatLong['y'] !== this.mouseMoveLatLong['y'])) {
+                this.panning('None', null, null);
+                this.mouseDownLatLong['x'] = pageX;
+                this.mouseDownLatLong['y'] = pageY;
+            }
         }
         if (this.isTouch ? (touches.length === 1 && this.rectZoomingStart) : this.rectZoomingStart) {
             e.preventDefault();
@@ -1202,6 +1262,8 @@ export class Zoom {
             remove(zoomRectElement);
             this.performRectZooming();
         }
+        this.mouseMoveLatLong = { x: 0, y: 0 };
+        this.mouseDownLatLong = { x: 0, y: 0 };
     }
 
     public mouseCancelHandler(e: PointerEvent): void {
@@ -1221,7 +1283,7 @@ export class Zoom {
     public click(e: PointerEvent): void {
         let map: Maps = this.maps;
         if ((map.markerModule && map.markerModule.sameMarkerData.length > 0) ||
-+            (e.target['id'].indexOf('MarkerIndex') > -1 && e.target['id'].indexOf('cluster') == -1)) {
+            (e.target['id'].indexOf('MarkerIndex') > -1 && e.target['id'].indexOf('cluster') == -1)) {
             return null;
         }
         if (this.isSingleClick && map.zoomSettings.zoomOnClick && !(e.target['id'].indexOf('_Zooming_') > -1) && !map.zoomSettings.doubleClickZoom
@@ -1231,6 +1293,7 @@ export class Zoom {
             let position: Point = this.getMousePosition(pageX, pageY);
             let prevLevel: number = map.tileZoomLevel;
             let prevScale: number = map.scale;
+            map.mapScaleValue = map.mapScaleValue + 1;
             let value: number = (map.isTileMap) ? prevLevel : prevScale;
             if (((position.x > map.mapAreaRect.x) && (position.x < (map.mapAreaRect.x + map.mapAreaRect.width))) &&
                 (position.y > map.mapAreaRect.y) && position.y < (map.mapAreaRect.y + map.mapAreaRect.height)) {

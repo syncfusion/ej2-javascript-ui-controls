@@ -17,7 +17,6 @@ import { axisLabelRender } from '../model/constants';
 import { StockChart } from '../../stock-chart/stock-chart';
 import { measureText, findDirection, Rect, TextOption, Size, PathOption, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 
-
 /**
  * Function to sort the dataSource, by default it sort the data in ascending order.
  * @param  {Object} data
@@ -1058,6 +1057,10 @@ export function getLabelText(currentPoint: Points, series: Series, chart: Chart)
 
     }
     if (labelFormat && !currentPoint.text) {
+        series.yAxis.format = chart.intl.getNumberFormat({
+            format: customLabelFormat ? '' : labelFormat,
+            useGrouping: chart.useGroupingSeparator
+        });
         for (let i: number = 0; i < text.length; i++) {
             text[i] = customLabelFormat ? labelFormat.replace('{value}', series.yAxis.format(parseFloat(text[i]))) :
                 series.yAxis.format(parseFloat(text[i]));
@@ -1298,9 +1301,9 @@ export function textTrim(maxWidth: number, text: string, font: FontModel): strin
 }
 /**
  * To trim the line break label
- * @param maxWidth 
- * @param text 
- * @param font 
+ * @param maxWidth
+ * @param text
+ * @param font
  */
 export function lineBreakLabelTrim(maxWidth: number, text: string, font: FontModel): string[] {
     let labelCollection: string[] = [];
@@ -1517,6 +1520,7 @@ export function titlePositionX(rect: Rect, titleStyle: FontModel): number {
     }
     return positionX;
 }
+
 /**
  * Method to find new text and element size based on textOverflow
  */

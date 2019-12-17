@@ -1,5 +1,5 @@
 import { createElement, L10n, isNullOrUndefined, addClass, remove, EventHandler, extend, append, EmitType } from '@syncfusion/ej2-base';
-import { cldrData, removeClass, getValue, getDefaultDateObject, closest, getElement } from '@syncfusion/ej2-base';
+import { cldrData, removeClass, getValue, getDefaultDateObject, closest, getElement, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { updateBlazorTemplate, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import { DataManager, Query, Deferred } from '@syncfusion/ej2-data';
 import { CheckBox, ChangeEventArgs, Button } from '@syncfusion/ej2-buttons';
@@ -72,6 +72,7 @@ export class EventWindow {
             cssClass: cls.EVENT_WINDOW_DIALOG_CLASS,
             enableRtl: this.parent.enableRtl,
             height: this.parent.isAdaptive ? '100%' : 'auto',
+            minHeight: '300px',
             isModal: true,
             showCloseIcon: this.parent.isAdaptive ? false : true,
             target: document.body,
@@ -105,13 +106,11 @@ export class EventWindow {
         }
         this.dialogObject = new Dialog(dialogModel, this.element);
         this.dialogObject.isStringTemplate = true;
-        this.updateEditorTemplate();
         addClass([this.element.parentElement], cls.EVENT_WINDOW_DIALOG_CLASS + '-container');
         if (this.parent.isAdaptive) {
             EventHandler.add(this.element.querySelector('.' + cls.EVENT_WINDOW_BACK_ICON_CLASS), 'click', this.dialogClose, this);
             EventHandler.add(this.element.querySelector('.' + cls.EVENT_WINDOW_SAVE_ICON_CLASS), 'click', this.eventSave, this);
         }
-        this.applyFormValidation();
     }
 
     private updateEditorTemplate(): void {
@@ -170,7 +169,6 @@ export class EventWindow {
         }
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             this.renderFormElements(this.element.querySelector('.e-schedule-form'), data);
-            this.updateEditorTemplate();
         }
         if (!this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
             removeClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], cls.DISABLE_CLASS);
@@ -196,10 +194,8 @@ export class EventWindow {
     }
 
     public setDialogContent(): void {
-        this.resetEditorTemplate();
         this.dialogObject.content = this.getEventWindowContent();
         this.dialogObject.dataBind();
-        this.updateEditorTemplate();
     }
 
     private onBeforeOpen(args: BeforeOpenEventArgs): Deferred {
@@ -234,7 +230,7 @@ export class EventWindow {
                 endObj.value = new Date(startObj.value.getTime() + (util.MS_PER_MINUTE * popupArgs.duration));
                 endObj.dataBind();
             }
-            if (this.parent.editorTemplate && this.element.querySelector('.e-recurrenceeditor') && !this.recurrenceEditor) {
+            if (!isBlazor() && this.parent.editorTemplate && this.element.querySelector('.e-recurrenceeditor') && !this.recurrenceEditor) {
                 this.recurrenceEditor = this.getInstance('e-recurrenceeditor') as RecurrenceEditor;
             }
             callBackPromise.resolve(args);
@@ -243,6 +239,8 @@ export class EventWindow {
     }
 
     private onBeforeClose(args: BeforeCloseEventArgs): Deferred {
+        this.resetEditorTemplate();
+        this.updateEditorTemplate();
         if (args.isInteracted) {
             this.isCrudAction = false;
         }
@@ -301,17 +299,19 @@ export class EventWindow {
     private renderFormElements(form: HTMLFormElement, args?: Object): void {
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             if (args) {
-                this.resetEditorTemplate();
                 if (this.recurrenceEditor) {
                     this.recurrenceEditor.destroy();
                     this.recurrenceEditor = null;
                 }
                 this.destroyComponents();
-                [].slice.call(form.childNodes).forEach((node: HTMLElement) => remove(node));
+                [].slice.call(form.children).forEach((node: HTMLElement) => remove(node));
             }
-            let templateId: string = this.parent.element.id + '_editorTemplate';
-            let editorTemplate: NodeList = this.parent.getEditorTemplate()(args || {}, this.parent, 'editorTemplate', templateId, false);
-            append(editorTemplate, form);
+            if (!isBlazor() || (isBlazor() && args)) {
+                let templateId: string = this.parent.element.id + '_editorTemplate';
+                let tempEle: NodeList = this.parent.getEditorTemplate()(args || {}, this.parent, 'editorTemplate', templateId, false);
+                append(tempEle, form);
+                this.updateEditorTemplate();
+            }
         } else {
             form.appendChild(this.getDefaultEventWindowContent());
         }
@@ -383,7 +383,7 @@ export class EventWindow {
     private createInputElement(className: string, fieldName: string, type?: string): HTMLElement {
         return createElement(type || 'input', {
             className: className, attrs: {
-                type: 'text', name: fieldName, value: '',
+                type: 'text', name: fieldName, value: '', id: fieldName,
                 title: ((this.l10n.getConstant(fieldName.charAt(0).toLowerCase() + fieldName.slice(1))) === '') ?
                     fieldName : this.l10n.getConstant(fieldName.charAt(0).toLowerCase() + fieldName.slice(1))
             }
@@ -403,6 +403,8 @@ export class EventWindow {
             change: changeEvent,
             firstDayOfWeek: this.parent.activeViewOptions.firstDayOfWeek,
             calendarMode: this.parent.calendarMode,
+            min: this.parent.minDate,
+            max: this.parent.maxDate,
             cssClass: this.parent.cssClass,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
@@ -411,7 +413,7 @@ export class EventWindow {
                 this.getFormat('dateFormats') : this.parent.dateFormat) + ' ' + this.getFormat('timeFormats'),
             placeholder: this.getFieldLabel(value),
             step: this.getSlotDuration(),
-            value: this.parent.getCurrentTime(), width: '100%'
+            width: '100%'
         });
         dateTimePicker.isStringTemplate = true;
         dateTimePicker.appendTo(dateTimeInput);
@@ -1103,7 +1105,7 @@ export class EventWindow {
     private resetForm(): void {
         this.fieldValidator.destroyToolTip();
         this.resetFormFields();
-        if (!this.parent.isAdaptive && this.recurrenceEditor) {
+        if (!this.parent.isAdaptive && this.recurrenceEditor && !this.recurrenceEditor.isDestroyed) {
             this.recurrenceEditor.resetFields();
         }
     }
@@ -1146,6 +1148,7 @@ export class EventWindow {
     }
 
     public eventSave(alert?: string): void {
+        this.applyFormValidation();
         let formElement: Element = this.element.querySelector('.' + cls.FORM_CLASS);
         if (formElement && formElement.classList.contains('e-formvalidator') &&
             !((formElement as EJ2Instance).ej2_instances[0] as FormValidator).validate()) {
@@ -1557,7 +1560,7 @@ export class EventWindow {
             if ((element as HTMLInputElement).type === 'checkbox') {
                 value = (element as HTMLInputElement).checked as boolean;
             } else {
-                value = (element as HTMLInputElement).value as string;
+                value = SanitizeHtmlHelper.sanitize((element as HTMLInputElement).value as string);
             }
         }
         return value;
@@ -1696,6 +1699,7 @@ export class EventWindow {
      */
     public destroy(): void {
         this.resetEditorTemplate();
+        this.updateEditorTemplate();
         if (this.recurrenceEditor) {
             this.recurrenceEditor.destroy();
         }

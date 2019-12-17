@@ -2,13 +2,27 @@
 
 ## [Unreleased]
 
+## 17.4.39 (2019-12-17)
+
+### File Manager
+
+#### Bug Fixes
+
+- `#149500` - The issue with `incorrect popup name in popupBeforeOpen event` has been fixed.
+
+#### New Features
+
+- The new events `beforeDownload` and `beforeImageLoad` have been provided to customize the `download` and `getImage` file operations.
+- The new ' rootAliasName ' property has been provided to display the custom root folder name.
+- Added the filesystem provider support for File Transfer Protocol.
+
 ## 17.3.28 (2019-11-19)
 
 ### File Manager
 
 #### Bug Fixes
 
-- `#252873` - The issue with ` file search on pressing the enter key` has been fixed.
+- `#252873` - The issue with `file search on pressing the enter key` has been fixed.
 
 ## 17.3.27 (2019-11-12)
 

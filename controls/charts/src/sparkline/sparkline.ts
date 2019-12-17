@@ -388,6 +388,8 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     protected preRender(): void {
         this.isBlazor = isBlazor();
 
+        this.allowServerDataBinding = false;
+
         this.unWireEvents();
 
         this.trigger('load', { sparkline: !this.isBlazor ? this : null });
@@ -410,6 +412,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         // Sparkline rendering splitted into rendering and calculations
         this.sparklineRenderer.processDataManager();
         this.renderComplete();
+        this.allowServerDataBinding = true;
     }
 
     /**

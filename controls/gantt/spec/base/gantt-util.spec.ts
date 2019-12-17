@@ -32,7 +32,7 @@ export function destroyGantt(gantt: Gantt): void {
         remove(document.getElementById(id));
         //ensure once again, because sometimes element not removed from dom.
         if (document.getElementById(id)) {
-           remove(document.getElementById(id));
+           document.getElementById(id).remove();
         }
     }
 }
@@ -42,7 +42,9 @@ export function triggerMouseEvent(
     let mouseEve: MouseEvent = new MouseEvent(eventType);
     buttonArgs = isNullOrUndefined(buttonArgs) ? 0 : buttonArgs;
     mouseEve.initMouseEvent(eventType, true, true, window, 0, 0, 0, x, y, isCtrlKey, false, isShiftKey, false, buttonArgs, null);
-    node.dispatchEvent(mouseEve);
+    if(!isNullOrUndefined(node)){
+        node.dispatchEvent(mouseEve);
+    }    
 }
 
 export function  triggerScrollEvent(target: HTMLElement, newScrollTop?: number, newScrollLeft?: number) {

@@ -2,8 +2,8 @@ import { ColorPicker as ColorPickerComponent, BeforeOpenCloseEventArgs, OpenEven
 import { ColorPickerEventArgs, ModeSwitchEventArgs } from '@syncfusion/ej2-inputs';
 import { addClass, L10n } from '@syncfusion/ej2-base';
 import { Spreadsheet } from '../base/index';
-import { spreadsheetDestroyed, fontColor, fillColor, beforeRibbonCreate, locale } from '../common/index';
-import { destroyComponent } from '../common/index';
+import { spreadsheetDestroyed, fontColor, fillColor, beforeRibbonCreate, locale, destroyComponent } from '../common/index';
+import { setCellFormat, SetCellFormatArgs } from '../../workbook/common/index';
 /**
  * `Color Picker` module is used to handle ColorPicker functionality.
  * @hidden
@@ -28,8 +28,13 @@ export class ColorPicker {
             beforeModeSwitch: (args: ModeSwitchEventArgs): void => this.beforeModeSwitch(fontColorPicker, args),
             change: (args: ColorPickerEventArgs): void => {
                 let color: string = fontColorPicker.getValue(args.currentValue.rgba);
-                this.updateSelectedColor(color, fontColorPicker.element);
-                this.parent.cellFormat({ color: color });
+                let eventArgs: SetCellFormatArgs = { style: { color: color }, onActionUpdate: true };
+                this.parent.notify(setCellFormat, eventArgs);
+                if (eventArgs.cancel) {
+                    fontColorPicker.setProperties({ 'value': fontColorPicker.getValue(args.previousValue.rgba, 'HEXA') }, true);
+                } else {
+                    this.updateSelectedColor(eventArgs.style.color, fontColorPicker.element);
+                }
                 this.parent.element.focus();
             },
             created: (): void => this.wireFocusEvent(fontColorPicker.element, '#000000')
@@ -51,8 +56,13 @@ export class ColorPicker {
             beforeModeSwitch: (args: ModeSwitchEventArgs): void => this.beforeModeSwitch(filColorPicker, args),
             change: (args: ColorPickerEventArgs): void => {
                 let color: string = filColorPicker.getValue(args.currentValue.rgba);
-                this.updateSelectedColor(color, filColorPicker.element);
-                this.parent.cellFormat({ backgroundColor: color });
+                let eventArgs: SetCellFormatArgs = { style: { backgroundColor: color }, onActionUpdate: true };
+                this.parent.notify(setCellFormat, eventArgs);
+                if (eventArgs.cancel) {
+                    filColorPicker.setProperties({ 'value': filColorPicker.getValue(args.previousValue.rgba, 'HEXA') }, true);
+                } else {
+                    this.updateSelectedColor(eventArgs.style.backgroundColor, filColorPicker.element);
+                }
                 this.parent.element.focus();
             },
             created: (): void => this.wireFocusEvent(filColorPicker.element, '#ffff00')

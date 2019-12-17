@@ -71,14 +71,18 @@ export class HeaderRenderer {
         this.toolbarObj.appendTo(this.parent.element.querySelector('.' + cls.HEADER_TOOLBAR) as HTMLElement);
         let prevNavEle: HTMLElement = this.toolbarObj.element.querySelector('.e-prev') as HTMLElement;
         if (prevNavEle) {
-            (prevNavEle.firstChild as Element).setAttribute('title', this.l10n.getConstant('previous'));
+            (prevNavEle.firstElementChild as Element).setAttribute('title', this.l10n.getConstant('previous'));
         }
         let nextNavEle: HTMLElement = this.toolbarObj.element.querySelector('.e-next') as HTMLElement;
         if (nextNavEle) {
-            (nextNavEle.firstChild as Element).setAttribute('title', this.l10n.getConstant('next'));
+            (nextNavEle.firstElementChild as Element).setAttribute('title', this.l10n.getConstant('next'));
         }
         this.updateActiveView();
-        this.parent.trigger(events.actionComplete, <ToolbarActionArgs>{ requestType: 'toolBarItemRendered', items: this.toolbarObj.items });
+        if (!isBlazor()) {
+            this.parent.trigger(events.actionComplete, <ToolbarActionArgs>{
+                requestType: 'toolBarItemRendered', items: this.toolbarObj.items
+            });
+        }
     }
     public updateItems(): void {
         if (this.toolbarObj) {
@@ -89,10 +93,12 @@ export class HeaderRenderer {
             }
             this.toolbarObj.items = args.items;
             this.toolbarObj.dataBind();
-            this.parent.trigger(events.actionComplete, <ToolbarActionArgs>{
-                requestType: 'toolBarItemRendered',
-                items: this.toolbarObj.items
-            });
+            if (!isBlazor()) {
+                this.parent.trigger(events.actionComplete, <ToolbarActionArgs>{
+                    requestType: 'toolBarItemRendered',
+                    items: this.toolbarObj.items
+                });
+            }
         }
     }
     public getPopUpRelativeElement(): HTMLElement {
@@ -110,6 +116,13 @@ export class HeaderRenderer {
     public setCalendarDate(date: Date): void {
         if (this.headerCalendar) {
             this.headerCalendar.value = date;
+            this.headerCalendar.dataBind();
+        }
+    }
+    public setCalendarMinMaxDate(): void {
+        if (this.headerCalendar) {
+            this.headerCalendar.min = this.parent.minDate;
+            this.headerCalendar.max = this.parent.maxDate;
             this.headerCalendar.dataBind();
         }
     }
@@ -146,22 +159,25 @@ export class HeaderRenderer {
         }
     }
     private getDateRangeText(): string {
-        return this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() });
+        return util.capitalizeFirstWord(
+            this.parent.globalize.formatDate(this.parent.selectedDate, { format: 'MMMM y', calendar: this.parent.getCalendarMode() }),
+            'single');
     }
     private getItems(): ItemModel[] {
         let items: ItemModel[] = [];
         let showInPopup: boolean = <boolean>this.parent.isAdaptive;
         items.push({
             align: 'Left', prefixIcon: 'e-icon-prev', tooltipText: 'Previous', overflow: 'Show',
-            cssClass: 'e-prev', htmlAttributes: { 'aria-label': 'previous period' }
+            cssClass: 'e-prev', htmlAttributes: { 'aria-label': 'previous period', 'role': 'navigation' }
         });
         items.push({
             align: 'Left', prefixIcon: 'e-icon-next', tooltipText: 'Next', overflow: 'Show',
-            cssClass: 'e-next', htmlAttributes: { 'aria-label': 'next period' }
+            cssClass: 'e-next', htmlAttributes: { 'aria-label': 'next period', 'role': 'navigation' }
         });
         items.push({
             align: 'Left', text: this.getDateRangeText(), suffixIcon: 'e-icon-down-arrow', cssClass: 'e-date-range',
-            overflow: 'Show', htmlAttributes: { 'aria-atomic': 'true', 'aria-live': 'assertive', 'aria-label': 'title' }
+            overflow: 'Show',
+            htmlAttributes: { 'aria-atomic': 'true', 'aria-live': 'assertive', 'aria-label': 'title', 'role': 'navigation' }
         });
         if (this.parent.isAdaptive) {
             items.push({
@@ -219,12 +235,12 @@ export class HeaderRenderer {
                     text: displayName || this.l10n.getConstant('month'), cssClass: 'e-views e-month'
                 };
                 break;
-            case 'year':
-                view = {
-                    align: 'Right', showAlwaysInPopup: showInPopup, prefixIcon: 'e-icon-year',
-                    text: displayName || this.l10n.getConstant('year'), cssClass: 'e-views e-year'
-                };
-                break;
+            // case 'year':
+            //     view = {
+            //         align: 'Right', showAlwaysInPopup: showInPopup, prefixIcon: 'e-icon-year',
+            //         text: displayName || this.l10n.getConstant('year'), cssClass: 'e-views e-year'
+            //     };
+            //     break;
             case 'agenda':
                 view = {
                     align: 'Right', showAlwaysInPopup: showInPopup, prefixIcon: 'e-icon-agenda', text: this.l10n.getConstant('agenda'),
@@ -286,6 +302,8 @@ export class HeaderRenderer {
         let calendarView: CalendarView = this.getCalendarView();
         this.headerCalendar = new Calendar({
             value: this.parent.selectedDate,
+            min: this.parent.minDate,
+            max: this.parent.maxDate,
             firstDayOfWeek: this.parent.activeViewOptions.firstDayOfWeek,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
@@ -337,9 +355,9 @@ export class HeaderRenderer {
             case 'e-month':
                 this.parent.changeView('Month', args.originalEvent, undefined, this.calculateViewIndex(args));
                 break;
-            case 'e-year':
-                // this.parent.changeView('Year', args.originalEvent, undefined, this.calculateViewIndex(args));
-                break;
+            // case 'e-year':
+            //     this.parent.changeView('Year', args.originalEvent, undefined, this.calculateViewIndex(args));
+            //     break;
             case 'e-agenda':
                 this.parent.changeView('Agenda', args.originalEvent, undefined, this.calculateViewIndex(args));
                 break;
@@ -413,6 +431,29 @@ export class HeaderRenderer {
             (classType === 'add') ? addClass([dateRangeEle], cls.TEXT_ELLIPSIS) : removeClass([dateRangeEle], cls.TEXT_ELLIPSIS);
         }
     }
+    public previousNextIconHandler(): void {
+        let dates: Date[] = this.parent.getCurrentViewDates() as Date[];
+        let prevNavEle: HTMLElement = this.toolbarObj.element.querySelector('.' + cls.PREVIOUS_DATE_CLASS);
+        let nextNavEle: HTMLElement = this.toolbarObj.element.querySelector('.' + cls.NEXT_DATE_CLASS);
+        let firstDate: Date = new Date(dates[0].getTime());
+        let lastDate: Date = new Date(dates[dates.length - 1].getTime());
+        if (this.parent.currentView === 'WorkWeek' || this.parent.currentView === 'TimelineWorkWeek') {
+            firstDate = util.getWeekFirstDate(util.resetTime(this.parent.selectedDate), this.parent.firstDayOfWeek);
+            lastDate = util.addDays(firstDate, 7 * this.parent.activeViewOptions.interval);
+        }
+        if (this.parent.currentView === 'Month') {
+            firstDate = util.firstDateOfMonth(this.parent.selectedDate);
+            let lastMonthFirstDate: Date = util.addMonths(firstDate, this.parent.activeViewOptions.interval - 1);
+            lastDate = util.lastDateOfMonth(lastMonthFirstDate);
+        }
+        if (!isNullOrUndefined(prevNavEle)) {
+            this.toolbarObj.enableItems(prevNavEle, firstDate > this.parent.minDate);
+        }
+        if (!isNullOrUndefined(nextNavEle)) {
+            this.toolbarObj.enableItems(nextNavEle, lastDate < this.parent.maxDate);
+        }
+        this.setCalendarMinMaxDate();
+    }
     /**
      * Get module name.
      */
@@ -427,14 +468,17 @@ export class HeaderRenderer {
     public destroy(): void {
         if (this.headerPopup) {
             this.headerPopup.destroy();
+            this.headerPopup = null;
         }
         if (this.headerCalendar) {
             this.headerCalendar.destroy();
+            this.headerCalendar = null;
         }
         if (!this.toolbarObj.isDestroyed) {
             this.toolbarObj.destroy();
             this.removeEventListener();
             remove(this.element);
+            this.toolbarObj = null;
         }
     }
 }

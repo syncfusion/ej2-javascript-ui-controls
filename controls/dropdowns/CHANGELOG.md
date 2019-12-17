@@ -2,12 +2,36 @@
 
 ## [Unreleased]
 
-## 17.3.34 (2019-12-10)
+## 17.4.39 (2019-12-17)
 
-### ListBox
+### ComboBox
 
 #### Bug Fixes
 
+- `#256098` - The mobile device ENTER key selection issue in the focused item issue has resolved.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#255765` - Issue with "dynamically added item not displayed initially in box mode when control in focus state" has been resolved.
+
+### DropDownList
+
+#### Bug Fixes
+
+- `#256908` - Issue with "script error throws while pressing the escape key after filter the items in the popup" has been resolved.
+
+### ListBox
+
+#### New Features
+
+- Provided public methods for `toolbar` actions.
+- Provided `getDataByValues` method for getting array of data objects.
+
+#### Bug Fixes
+
+- `#252496` - Checkbox selection not maintained after removing filter has been fixed.
 - `#F147087` - script error "contains of undefined in ListBox" while rendering the ListBox and multi select in the same router page has been fixed.
 
 ## 17.3.29 (2019-11-26)

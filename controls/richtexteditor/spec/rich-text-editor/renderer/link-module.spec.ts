@@ -1276,4 +1276,127 @@ describe('insert Link', () => {
             expect(rteEle.querySelectorAll('.e-rte-content .e-content a').length).toBe(0);
         });
     });
+    describe('Checking tags while applying link', function() {
+        let rteEle: HTMLElement;
+        let rteObj: any;
+        beforeAll(function() {
+            rteObj = renderRTE({
+                value: '<p>sync<strong>fusion</strong></p><p><strong>Chennai</strong></p>',
+                toolbarSettings: {
+                    items: ['CreateLink', 'Bold']
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(function() {
+            destroy(rteObj);
+        });
+        it('For Multiple block elements', function() {
+            let pEle : HTMLElement= rteObj.inputElement;
+            rteObj.contentModule.getEditPanel().focus();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[1], 0, 1);
+            (rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            rteObj.linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
+            let target : HTMLElement= rteObj.linkModule.dialogObj.primaryButtonEle;
+            rteObj.linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function() {} });
+            let firstChild : string = '<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank">sync<strong>fusion</strong></a>';
+            expect((pEle.childNodes[0] as HTMLElement).innerHTML === firstChild).toBe(true);
+            let secondChild : string = '<strong><a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank">Chennai</a></strong>';
+            expect((pEle.childNodes[1] as HTMLElement).innerHTML === secondChild).toBe(true);
+        });
+        it('For single element with bold and image', function() {
+            rteObj.value = '<p style="cursor: auto;">Sync<strong>fusion</strong><img class="e-rte-image e-imginline e-resize" width="109" height="42" alt="undefined"' +
+                'src="https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png" style="min-width: 0px; min-height: 0px;"> RichTextEditor</p>';
+            rteObj.dataBind();
+            rteObj.contentModule.getEditPanel().focus();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, rteObj.inputElement.childNodes[0], rteObj.inputElement.childNodes[0], 0, 3);
+            (rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            rteObj.linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
+            let target : string = rteObj.linkModule.dialogObj.primaryButtonEle;
+            rteObj.linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function() {} });
+            (rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            let firstChild : string= '<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank">Sync<strong>fusion</strong>' +
+                '<img class="e-rte-image e-imginline e-resize" width="109" height="42" alt="undefined" src="https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png" style="min-width: 0px; min-height: 0px;"></a> RichTextEditor';
+            expect(rteObj.inputElement.childNodes[0].innerHTML === firstChild).toBe(true);
+        });
+    });
+    describe('Checking tags while applying link-Iframe', function() {
+        let rteEle: HTMLElement;
+        let rteObj: any;
+        beforeAll(function() {
+            rteObj = renderRTE({
+                value: '<p>sync<strong>fusion</strong></p><p><strong>Chennai</strong></p>',
+                toolbarSettings: {
+                    items: ['CreateLink', 'Bold']
+                },
+                iframeSettings: {
+                    enable: true
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(function() {
+            destroy(rteObj);
+        });
+        it('For Multiple block elements-Iframe', function() {
+            let pEle : HTMLElement = rteObj.inputElement;
+            rteObj.contentModule.getEditPanel().focus();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(rteObj.contentModule.getDocument(), rteObj.inputElement.childNodes[0], rteObj.inputElement.childNodes[1], 0, 1);
+            (rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            rteObj.linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
+            let target : HTMLElement= rteObj.linkModule.dialogObj.primaryButtonEle;
+            rteObj.linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function() {} });
+            let firstChild : string = '<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank">sync<strong>fusion</strong></a>';
+            expect((pEle.childNodes[0] as HTMLElement).innerHTML === firstChild).toBe(true);
+            let secondChild : string = '<strong><a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank">Chennai</a></strong>';
+            expect((pEle.childNodes[1] as HTMLElement).innerHTML === secondChild).toBe(true);
+        });
+        it('For single element with bold and image-Iframe', function() {
+            rteObj.value = '<p style="cursor: auto;">Sync<strong>fusion</strong><img class="e-rte-image e-imginline e-resize" width="109" height="42" alt="undefined"' +
+                'src="https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png" style="min-width: 0px; min-height: 0px;"> RichTextEditor</p>';
+            rteObj.dataBind();
+            rteObj.contentModule.getEditPanel().focus();
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(rteObj.contentModule.getDocument(), rteObj.inputElement.childNodes[0], rteObj.inputElement.childNodes[0], 0, 3);
+            (rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            rteObj.linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'https://www.syncfusion.com';
+            let target : string = rteObj.linkModule.dialogObj.primaryButtonEle;
+            rteObj.linkModule.dialogObj.primaryButtonEle.click({ target: target, preventDefault: function() {} });
+            (rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            let firstChild : string= '<a class="e-rte-anchor" href="https://www.syncfusion.com" title="https://www.syncfusion.com" target="_blank">Sync<strong>fusion</strong>' +
+                '<img class="e-rte-image e-imginline e-resize" width="109" height="42" alt="undefined" src="https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png" style="min-width: 0px; min-height: 0px;"></a> RichTextEditor';
+            expect(rteObj.inputElement.childNodes[0].innerHTML === firstChild).toBe(true);
+        });
+    });
+    describe(' quickToolbarSettings property - link quick toolbar - ', function() {
+        let rteObj: any;
+        let controlId : any;
+        beforeEach(function(done) {
+            rteObj = renderRTE({
+                value: "<p><a id=\"link\" href=\"https://ej2.syncfusion.com/home/\" target='_blank'><strong>HTML</strong></a></p><p><a href=\"https://ej2.syncfusion.com/home/\" target='_blank'>sync</a></p>"
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterEach(function(done) {
+            destroy(rteObj);
+            done();
+        });
+        it(' Test - open quickToolbar after applied selection command (italic)', function(done) {
+            let link : HTMLElement = rteObj.element.querySelector("#link");
+            let linkNodes : Node[] = rteObj.element.querySelectorAll('a');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, linkNodes[0].childNodes[0].childNodes[0], linkNodes[1].childNodes[0], 0, 3);
+            let item : any= rteObj.element.querySelector('#' + controlId + '_toolbar_Italic');
+            item.click();
+            dispatchEvent(link, 'mousedown');
+            link.click();
+            dispatchEvent(link, 'mouseup');
+            setTimeout(function() {
+                let linkBtn : HTMLElement= document.getElementById(controlId + "_quick_RemoveLink");
+                linkBtn.click();
+                let link : Element= rteObj.element.querySelector("#link");
+                expect(isNullOrUndefined(link)).toBe(true);
+                done();
+            }, 100);
+        });
+    });
 });

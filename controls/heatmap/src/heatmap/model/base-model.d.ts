@@ -161,6 +161,25 @@ export interface TitleModel {
 }
 
 /**
+ * Interface for a class FillColor
+ */
+export interface FillColorModel {
+
+    /**
+     * minimum fill color for cell color range
+     * @default '#eeeeee'
+     */
+    minColor?: string;
+
+    /**
+     * maximum fill color for cell color range
+     * @default '#eeeeee'
+     */
+    maxColor?: string;
+
+}
+
+/**
  * Interface for a class PaletteCollection
  */
 export interface PaletteCollectionModel {
@@ -183,6 +202,30 @@ export interface PaletteCollectionModel {
      */
     label?: string;
 
+    /**
+     * Palette start value
+     * @default null
+     */
+    startValue?: number;
+
+    /**
+     * Palette end value
+     * @default null
+     */
+    endValue?: number;
+
+    /**
+     * Palette minColor value
+     * @default null
+     */
+    minColor?: string;
+
+    /**
+     * Palette maxColor value
+     * @default null
+     */
+    maxColor?: string;
+
 }
 
 /**
@@ -199,6 +242,7 @@ export interface AxisLabelBorderModel {
     /**
      * The width of the border in pixels.
      * @default 1
+     * @blazordefaultvalue 0
      */
     width?: number;
 

@@ -2,14 +2,14 @@
  * Open properties.
  */
 import { isUndefined } from '@syncfusion/ej2-base';
-import { Spreadsheet } from '../../spreadsheet/index';
 import { OpenOptions, OpenFailureArgs, BeforeOpenEventArgs } from '../../spreadsheet/common/interface';
 import { workbookOpen, openSuccess, openFailure, sheetsDestroyed, workbookFormulaOperation, sheetCreated } from '../common/index';
-import { WorkbookModel, SheetModel, getMaxSheetId } from '../base/index';
+import { WorkbookModel, SheetModel, getMaxSheetId, Workbook } from '../base/index';
+import { beginAction } from '../../spreadsheet/common/event';
 
 export class WorkbookOpen {
-    private parent: Spreadsheet;
-    constructor(parent: Spreadsheet) {
+    private parent: Workbook;
+    constructor(parent: Workbook) {
         this.parent = parent;
         this.addEventListener();
     }
@@ -38,6 +38,7 @@ export class WorkbookOpen {
             }
         };
         this.parent.trigger('beforeOpen', eventArgs);
+        this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'beforeOpen' });
         if (eventArgs.cancel) {
             return;
         }
@@ -78,7 +79,9 @@ export class WorkbookOpen {
             return;
         }
         this.updateModel(impData);
-        this.parent.notify(openSuccess, this);
+        this.parent.notify(openSuccess, {
+            context: this, data: impData as string
+        });
         this.parent.isOpen = false;
     }
 

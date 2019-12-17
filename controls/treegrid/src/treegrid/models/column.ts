@@ -13,6 +13,7 @@ export class Column {
    * The `field` name must be a valid JavaScript identifier,
    * the first character must be an alphabet and should not contain spaces and special characters.
    * @default 'undefined'
+   * @blazorDefaultValue ''
    */
 
     public field: string;
@@ -166,10 +167,10 @@ export class Column {
 
     /**    
      * If `disableHtmlEncode` is set to true, it encodes the HTML of the header and content cells.  
-     * @default false    
+     * @default true    
      */
 
-    public disableHtmlEncode: boolean;
+    public disableHtmlEncode: boolean = true;
 
     /**    
      * Defines the data type of the column.    
@@ -342,6 +343,7 @@ export interface ColumnModel {
    * The `field` name must be a valid JavaScript identifier,
    * the first character must be an alphabet and should not contain spaces and special characters.
    * @default 'undefined'
+   * @blazorDefaultValue ''
    */
 
   field?: string;
@@ -426,7 +428,7 @@ export interface ColumnModel {
 
   /**    
    * If `disableHtmlEncode` is set to true, it encodes the HTML of the header and content cells.  
-   * @default false    
+   * @default true    
    */
 
   disableHtmlEncode?: boolean;

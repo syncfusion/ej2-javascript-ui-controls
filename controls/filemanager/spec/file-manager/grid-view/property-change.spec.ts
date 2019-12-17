@@ -113,7 +113,7 @@ describe('FileManager control Grid view', () => {
                     url: '/FileOperations',
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
-                height:'400px',
+                height: '400px',
                 showThumbnail: false,
             });
             feObj.appendTo('#file');
@@ -206,6 +206,38 @@ describe('FileManager control Grid view', () => {
             expect(feObj.element.style.width).toEqual('');
             feObj.destroy();
             expect(feObj.element.style.width).toEqual('');
+        });
+        it('for rootAliasName', (done) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                rootAliasName: "My Drive"
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
+            setTimeout(function () {
+                expect((<HTMLElement>document.querySelector("#file_tree  .e-text-content .e-list-text")).innerText).toEqual('My Drive');
+                feObj.rootAliasName = 'Test';
+                feObj.dataBind();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    expect((<HTMLElement>document.querySelector("#file_tree  .e-text-content .e-list-text")).innerText).toEqual('Test');
+                    done();
+                }, 500);
+            }, 500);
         });
         it('for enableRTL', (done: Function) => {
             feObj = new FileManager({

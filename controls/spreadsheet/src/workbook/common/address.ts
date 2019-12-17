@@ -1,3 +1,5 @@
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
+
 /**
  * To get range indexes.
  */
@@ -22,6 +24,7 @@ export function getCellIndexes(address: string): number[] {
 
 /**
  * To get column index from text.
+ * @hidden
  */
 function getColIndex(text: string): number {
     let colIdx: number = 0;
@@ -43,7 +46,8 @@ export function getCellAddress(sRow: number, sCol: number): string {
  * To get range address from given range indexes.
  */
 export function getRangeAddress(range: number[]): string {
-    return getCellAddress(range[0], range[1]) + ':' + getCellAddress(range[2], range[3]);
+    return getCellAddress(range[0], range[1]) + ':' + (!isNullOrUndefined(range[2]) ?
+        getCellAddress(range[2], range[3]) : getCellAddress(range[0], range[1]));
 }
 
 /**

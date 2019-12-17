@@ -1,4 +1,4 @@
-import { remove } from '@syncfusion/ej2-base';
+import { remove, isBlazor } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';
 import { IAction, IGrid, NotifyArgs, ICellRenderer } from '../base/interface';
@@ -56,10 +56,19 @@ export class Aggregate implements IAction {
             if (!isNullOrUndefined(column[cFormat])) {
                 column.setPropertiesSilent({format: column[cFormat]});
             }
-            column.setPropertiesSilent({format: this.getFormatFromType(column.format, type)});
+            column.setPropertiesSilent({ format: this.getFormatFromType(column.format, type)});
             column.setFormatter(this.parent.locale);
             column.setPropertiesSilent({columnName: column.columnName || column.field });
         });
+        if (isBlazor() && this.parent.isServerRendered) {
+            let bulkChanges: string = 'bulkChanges';
+            let aggregates: string = 'aggregates';
+            Object.keys(this.parent[bulkChanges]).forEach((prop: string) => {
+                if (prop.startsWith(aggregates)) {
+                    delete this.parent[bulkChanges][prop];
+                }
+            });
+        }
     }
 
     private getFormatFromType(format: string | NumberFormatOptions | DateFormatOptions, type: string):

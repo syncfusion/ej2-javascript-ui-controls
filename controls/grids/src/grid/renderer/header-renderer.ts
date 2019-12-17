@@ -151,12 +151,17 @@ export class HeaderRender implements IRenderer {
      * The function is used to render grid header div    
      */
     public renderPanel(): void {
-        let div: Element = this.parent.createElement('div', { className: 'e-gridheader' });
-        let innerDiv: Element = this.parent.createElement('div', { className: 'e-headercontent' });
+        let div: Element = this.parent.element.querySelector('.e-gridheader');
+        let isRendered: boolean = (div != null);
+        div = isRendered ? div : this.parent.createElement('div', { className: 'e-gridheader' });
+        let innerDiv: Element = isRendered ? div.querySelector('.e-headercontent') :
+        this.parent.createElement('div', { className: 'e-headercontent' });
         this.toggleStackClass(div);
         div.appendChild(innerDiv);
         this.setPanel(div);
-        this.parent.element.appendChild(div);
+        if (!isRendered) {
+            this.parent.element.appendChild(div);
+        }
     }
 
     /**
@@ -236,23 +241,28 @@ export class HeaderRender implements IRenderer {
      * @hidden
      */
     private createHeaderTable(): Element {
+        let skipDom: boolean = isBlazor() && this.parent.frozenRows !== 0;
         let table: Element = this.createTable();
-        let innerDiv: Element = <Element>this.getPanel().firstChild;
-        innerDiv.appendChild(table);
+        let innerDiv: Element = <Element>this.getPanel().querySelector('.e-headercontent');
+        if (!skipDom) {
+            innerDiv.appendChild(table);
+        }
         return innerDiv;
     }
 
     /**
      * @hidden
      */
-    public createTable(): Element {
+    public createTable(tableEle: Element = null): Element {
+        let skipDom: boolean = isBlazor() && this.parent.frozenRows !== 0;
         let gObj: IGrid = this.parent;
-        if (this.getTable() && (!gObj.getFrozenColumns())) {
+        if (!(isBlazor() && !gObj.isJsComponent) && this.getTable() && (!gObj.getFrozenColumns())) {
             remove(this.getTable());
         }
         let columns: Column[] = <Column[]>gObj.getColumns();
-        let table: Element = this.parent.createElement('table', { className: 'e-table', attrs: { cellspacing: '0.25px', role: 'grid' } });
-        let innerDiv: Element = <Element>this.getPanel().firstChild;
+        let innerDiv: Element = <Element>this.getPanel().querySelector('.e-headercontent');
+        let table: Element = skipDom ? tableEle || innerDiv.querySelector('.e-table') :
+                             this.parent.createElement('table', { className: 'e-table', attrs: { cellspacing: '0.25px', role: 'grid' } });
         let findHeaderRow: { thead: Element, rows: Row<Column>[] } = this.createHeaderContent();
         let thead: Element = findHeaderRow.thead;
         let tbody: Element = this.parent.createElement('tbody', { className: this.parent.frozenRows ? '' : 'e-hide' });
@@ -273,10 +283,14 @@ export class HeaderRender implements IRenderer {
             table.classList.add('e-sortfilter');
         }
         this.updateColGroup(colGroup);
-        tbody.appendChild(rowBody);
+        if (!skipDom) {
+            tbody.appendChild(rowBody);
+        }
         table.appendChild(this.setColGroup(colGroup));
         table.appendChild(thead);
-        table.appendChild(tbody);
+        if (!skipDom) {
+            table.appendChild(tbody);
+        }
         table.appendChild(this.caption);
         this.ariaService.setOptions(table as HTMLElement, { colcount: gObj.getColumns().length.toString() });
         return table;
@@ -545,10 +559,18 @@ export class HeaderRender implements IRenderer {
             displayVal = column.visible ? '' : 'none';
             if (frzCols) {
                 if (idx < frzCols) {
-                    setStyleAttribute(<HTMLElement>this.getColGroup().children[idx], { 'display': displayVal });
+                    if (isBlazor() && gObj.isServerRendered) {
+                        setStyleAttribute(<HTMLElement>this.getTable().querySelector('colgroup').children[idx], { 'display': displayVal });
+                        setStyleAttribute(this.getTable().querySelectorAll('th')[idx], { 'display': displayVal });
+                    } else {
+                        setStyleAttribute(<HTMLElement>this.getColGroup().children[idx], { 'display': displayVal });
+                    }
                 } else {
                     let mTblColGrp: Element = gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('colgroup');
                     setStyleAttribute(<HTMLElement>mTblColGrp.children[idx - frzCols], { 'display': displayVal });
+                    if (isBlazor() && gObj.isServerRendered) {
+                        setStyleAttribute(mTblColGrp.querySelectorAll('th')[idx - frzCols], { 'display': displayVal });
+                    }
                 }
             } else {
                 if (gObj.isRowDragable()) { idx++; }
@@ -577,8 +599,13 @@ export class HeaderRender implements IRenderer {
             ? this.headerPanel.querySelector('.e-movableheader').querySelector('.e-table') : this.getTable();
         if (table) {
             remove(table);
-            table.removeChild(table.firstChild);
-            table.removeChild(table.childNodes[0]);
+            if (isBlazor() && this.parent.isServerRendered) {
+                table.removeChild(table.querySelector('colgroup'));
+                table.removeChild(table.querySelector('thead'));
+            } else {
+                table.removeChild(table.firstChild);
+                table.removeChild(table.childNodes[0]);
+            }
             let colGroup: Element = this.parent.createElement('colgroup');
             let findHeaderRow: { thead: Element, rows: Row<Column>[] } = this.createHeaderContent();
             this.rows = findHeaderRow.rows;
@@ -623,7 +650,7 @@ export class HeaderRender implements IRenderer {
 
 
     public appendContent(table?: Element): void {
-        this.getPanel().firstChild.appendChild(table);
+        this.getPanel().querySelector('.e-headercontent').appendChild(table);
     }
 
     private getCellCnt(col: Column, cnt: number): number {

@@ -2,12 +2,13 @@
  * Schedule resource base spec 
  */
 import { isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
+import { DataManager } from '@syncfusion/ej2-data';
+import { Popup } from '@syncfusion/ej2-popups';
 import {
     Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda,
-    ResourceDetails, EJ2Instance, ScheduleModel, TimelineViews
+    ResourceDetails, EJ2Instance, ScheduleModel, TimelineViews, ActionEventArgs
 } from '../../../src/schedule/index';
 import { resourceData } from '../base/datasource.spec';
-import { Popup } from '@syncfusion/ej2-popups';
 import * as util from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
@@ -15,12 +16,12 @@ Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews);
 
 describe('Schedule Resources', () => {
     beforeAll(() => {
-        // tslint:disable-next-line:no-any
+        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             // tslint:disable-next-line:no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); //Skips test (in Chai)
+            (this as any).skip(); //Skips test (in Chai)
             return;
         }
     });
@@ -144,22 +145,28 @@ describe('Schedule Resources', () => {
             (<HTMLElement>eventPopup.querySelector('.e-close')).click();
         });
 
-        it('current time indicator testing without group by-date', () => {
+        it('current time indicator testing without group by-date', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelector('.e-current-timeline')).not.toBeNull();
+                expect(schObj.element.querySelectorAll('.e-current-timeline').length).toEqual(3);
+                done();
+            };
             expect(schObj.element.querySelector('.e-current-timeline')).toBeNull();
             schObj.selectedDate = new Date();
             schObj.dataBind();
-            expect(schObj.element.querySelector('.e-current-timeline')).not.toBeNull();
-            expect(schObj.element.querySelectorAll('.e-current-timeline').length).toEqual(3);
         });
 
-        it('current time indicator testing with group by-date', () => {
+        it('current time indicator testing with group by-date', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap .e-schedule-table tbody tr').length).toBe(4);
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap .e-resource-cells').length).toBe(35);
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap .e-header-cells').length).toBe(7);
+                expect(schObj.element.querySelector('.e-current-timeline')).not.toBeNull();
+                expect(schObj.element.querySelectorAll('.e-current-timeline').length).toEqual(3);
+                done();
+            };
             schObj.group.byDate = true;
             schObj.dataBind();
-            expect(schObj.element.querySelectorAll('.e-date-header-wrap .e-schedule-table tbody tr').length).toBe(4);
-            expect(schObj.element.querySelectorAll('.e-date-header-wrap .e-resource-cells').length).toBe(35);
-            expect(schObj.element.querySelectorAll('.e-date-header-wrap .e-header-cells').length).toBe(7);
-            expect(schObj.element.querySelector('.e-current-timeline')).not.toBeNull();
-            expect(schObj.element.querySelectorAll('.e-current-timeline').length).toEqual(3);
         });
     });
 
@@ -204,10 +211,13 @@ describe('Schedule Resources', () => {
             expect(schObj.element.querySelectorAll('.e-date-header-wrap .e-header-cells').length).toEqual(11);
         });
 
-        it('headerdate checking in week view', () => {
+        it('headerdate checking in week view', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-date-header-wrap .e-header-cells').length).toEqual(21);
+                done();
+            };
             schObj.currentView = 'Week';
             schObj.dataBind();
-            expect(schObj.element.querySelectorAll('.e-date-header-wrap .e-header-cells').length).toEqual(21);
         });
     });
 
@@ -403,6 +413,41 @@ describe('Schedule Resources', () => {
             util.triggerMouseEvent(resourceRow[0].children[0] as HTMLElement, 'click');
             expect(resourceRow[1].parentElement.classList.contains('e-hidden')).toEqual(true);
             expect(resourceRow[2].parentElement.classList.contains('e-hidden')).toEqual(true);
+            expect(schObj.eventWindow.dialogObject.element.querySelectorAll('.e-resources').length).toEqual(3);
+        });
+        it('resource icon click testing with tooltip enabled', () => {
+            schObj.eventSettings.enableTooltip = true;
+            schObj.dataBind();
+            let resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
+            expect(schObj.element.querySelectorAll('.e-resource-column-wrap tbody tr:not(.e-hidden)').length).toEqual(5);
+            let firstRow: HTMLElement = resourceRow.children[1].querySelector('.e-resource-cells div.e-resource-tree-icon') as HTMLElement;
+            firstRow.click();
+            expect(schObj.element.querySelectorAll('.e-resource-column-wrap tbody tr:not(.e-hidden)').length).toEqual(6);
+        });
+        it('resource icon click testing with actionBegin event', () => {
+            schObj.actionBegin = (args: ActionEventArgs) => args.cancel = true;
+            let resourceRow: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap tbody') as HTMLElement;
+            expect(schObj.element.querySelectorAll('.e-resource-column-wrap tbody tr:not(.e-hidden)').length).toEqual(6);
+            let firstRow: HTMLElement = resourceRow.children[1].querySelector('.e-resource-cells div.e-resource-tree-icon') as HTMLElement;
+            firstRow.click();
+            expect(schObj.element.querySelectorAll('.e-resource-column-wrap tbody tr:not(.e-hidden)').length).toEqual(6);
+        });
+        it('setting group resource as empty', (done: DoneFn) => {
+            schObj.actionBegin = null;
+            schObj.dataBound = () => {
+                expect(schObj.eventWindow.dialogObject.element.querySelectorAll('.e-resources').length).toEqual(3);
+                done();
+            };
+            schObj.group.resources = [];
+            schObj.dataBind();
+        });
+        it('entire resource has been removed', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventWindow.dialogObject.element.querySelectorAll('.e-resources').length).toEqual(0);
+                done();
+            };
+            schObj.resources = [];
+            schObj.dataBind();
         });
     });
 
@@ -473,12 +518,15 @@ describe('Schedule Resources', () => {
             expect((<Object[]>schObj.resourceCollection.slice(-1)[0].dataSource).length).toEqual(3);
         });
 
-        it('Public method setWorkHours checking with resource', () => {
+        it('Public method setWorkHours checking with resource', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-work-hours[data-group-index="1"]').length).toEqual(0);
+                schObj.setWorkHours(schObj.activeView.renderDates, '07:00', '09:00', 1);
+                expect(schObj.element.querySelectorAll('.e-work-hours[data-group-index="1"]').length).toEqual(28);
+                done();
+            };
             schObj.workHours.highlight = false;
             schObj.dataBind();
-            expect(schObj.element.querySelectorAll('.e-work-hours[data-group-index="1"]').length).toEqual(0);
-            schObj.setWorkHours(schObj.activeView.renderDates, '07:00', '09:00', 1);
-            expect(schObj.element.querySelectorAll('.e-work-hours[data-group-index="1"]').length).toEqual(28);
         });
     });
 
@@ -488,9 +536,7 @@ describe('Schedule Resources', () => {
             let model: ScheduleModel = {
                 width: '100%', height: '550px',
                 selectedDate: new Date(),
-                group: {
-                    resources: ['Rooms']
-                },
+                group: { resources: ['Rooms'] },
                 resources: [{
                     field: 'RoomId', title: 'Room',
                     name: 'Rooms', allowMultiple: true,
@@ -505,24 +551,18 @@ describe('Schedule Resources', () => {
         });
 
         it('Test eventwindow and datasource length', (done: Function) => {
-            schObj.dataBound = (args: Object) => {
+            schObj.dataBound = () => {
                 expect(!isNullOrUndefined(schObj.eventWindow)).toEqual(true);
                 expect((schObj.resourceCollection[0].dataSource as Object[]).length).toEqual(1);
                 done();
-            }
-            let roomDetails: Object = {
-                Id: 1,
-                Text: "Meeting Room",
-                Color: "#000",
             };
+            let roomDetails: Object = { Id: 1, Text: 'Meeting Room', Color: '#000' };
             schObj.addResource(roomDetails, 'Rooms', 0);
-            schObj.dataBind();
         });
     });
 
     describe('Keyboard interactions with multiple resource grouping', () => {
         let schObj: Schedule;
-        // tslint:disable-next-line:no-any
         let keyModule: any;
         beforeAll((done: Function) => {
             let model: ScheduleModel = {
@@ -583,11 +623,41 @@ describe('Schedule Resources', () => {
         });
     });
 
+    describe('actionFailure testing for resource datasource', () => {
+        let schObj: Schedule;
+        let actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
+        beforeAll(() => {
+            jasmine.Ajax.install();
+            let model: ScheduleModel = {
+                selectedDate: new Date(2019, 11, 5),
+                group: { resources: ['Owners'] },
+                resources: [{
+                    field: 'OwnerId', name: 'Owners',
+                    dataSource: new DataManager({ url: 'api/Schedule/Events/' })
+                }],
+                actionFailure: actionFailedFunction
+            };
+            schObj = util.createSchedule(model, resourceData);
+        });
+        beforeEach((done: Function) => {
+            let request: JasmineAjaxRequest = jasmine.Ajax.requests.mostRecent();
+            request.respondWith({ 'status': 404, 'contentType': 'application/json', 'responseText': 'Page not found' });
+            setTimeout(() => { done(); }, 100);
+        });
+        it('actionFailure testing', () => {
+            expect(actionFailedFunction).toHaveBeenCalled();
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+            jasmine.Ajax.uninstall();
+        });
+    });
+
     describe('Multiple resource grouping rendering in mobile device', () => {
         let schObj: Schedule;
         let uA: string = Browser.userAgent;
-        let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
-            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+        let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 9; Pixel XL Build/PPP3.180510.008) ' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.81 Mobile Safari/537.36';
         beforeAll((done: Function) => {
             Browser.userAgent = androidUserAgent;
             let model: ScheduleModel = {
@@ -640,11 +710,11 @@ describe('Schedule Resources', () => {
             treePopup.dataBind();
             expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-close')).toEqual(true);
             let menuElement: HTMLElement = schObj.element.querySelector('.e-resource-menu .e-icon-menu');
-            menuElement.click();
+            util.triggerMouseEvent(menuElement, 'click');
             expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-close')).toEqual(false);
             expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-open')).toEqual(true);
             expect(schObj.element.querySelector('.e-resource-tree-popup-overlay').classList.contains('e-enable')).toEqual(true);
-            menuElement.click();
+            util.triggerMouseEvent(menuElement, 'click');
             expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-open')).toEqual(false);
             expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-close')).toEqual(true);
             expect(schObj.element.querySelector('.e-resource-tree-popup-overlay').classList.contains('e-enable')).toEqual(false);
@@ -661,15 +731,34 @@ describe('Schedule Resources', () => {
             expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-close')).toEqual(false);
             expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-open')).toEqual(true);
             expect(schObj.element.querySelector('.e-resource-tree-popup-overlay').classList.contains('e-enable')).toEqual(true);
+            let resourceToolbar: HTMLElement = schObj.element.querySelector('.e-schedule-resource-toolbar') as HTMLElement;
+            util.triggerMouseEvent(resourceToolbar, 'mousedown');
+            expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-close')).toEqual(true);
+            expect(schObj.element.querySelector('.e-resource-tree-popup').classList.contains('e-popup-open')).toEqual(false);
+            expect(schObj.element.querySelector('.e-resource-tree-popup-overlay').classList.contains('e-enable')).toEqual(false);
         });
 
-        it('resource node click testing', () => {
+        it('resource node click testing - child node', () => {
             let menuElement: HTMLElement = schObj.element.querySelector('.e-resource-menu .e-icon-menu');
-            menuElement.click();
+            util.triggerMouseEvent(menuElement, 'click');
             expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:first-child').innerHTML).toEqual('Room 1');
             expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:last-child').innerHTML).toEqual('Nancy');
-            let nodeElement: NodeListOf<Element> = schObj.element.querySelectorAll('.e-resource-tree .e-list-item:not(.e-has-child)');
-            util.triggerMouseEvent(nodeElement[2] as HTMLElement, 'mouseup');
+            let nodeElement: Element = schObj.element.querySelector('.e-resource-tree .e-list-item:not(.e-has-child):not(.e-active)');
+            (schObj.resourceBase as any).resourceClick({ event: new MouseEvent('mouseup'), name: 'nodeClicked', node: nodeElement });
+            expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:first-child').innerHTML).toEqual('Room 1');
+            expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:last-child').innerHTML).toEqual('Michael');
+        });
+
+        it('resource node click testing - parent node', () => {
+            let menuElement: HTMLElement = schObj.element.querySelector('.e-resource-menu .e-icon-menu');
+            util.triggerMouseEvent(menuElement, 'click');
+            expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:first-child').innerHTML).toEqual('Room 1');
+            expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:last-child').innerHTML).toEqual('Michael');
+            let nodeElement: Element = schObj.element.querySelector('.e-resource-tree .e-list-item.e-has-child');
+            (schObj.resourceBase as any).resourceClick({ event: new MouseEvent('mouseup'), name: 'nodeClicked', node: nodeElement });
+            expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:first-child').innerHTML).toEqual('Room 1');
+            expect(schObj.element.querySelector('.e-resource-level-title .e-resource-name:last-child').innerHTML).toEqual('Michael');
+            util.triggerMouseEvent(menuElement, 'click');
         });
 
         it('resource events checked for week view testing', () => {
@@ -705,7 +794,7 @@ describe('Schedule Resources', () => {
 
         it('resource events checked for agenda view testing', (done: Function) => {
             schObj.dataBound = () => {
-                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(4);
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(3);
                 done();
             };
             schObj.currentView = 'Agenda';
@@ -724,18 +813,72 @@ describe('Schedule Resources', () => {
         it('Negative case for resource without timescale', (done: Function) => {
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(3);
+                expect(schObj.getWorkCellElements().length).toEqual(336);
+                let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+                expect(workCells[126].getAttribute('data-date')).toEqual(new Date(2018, 3, 1, 9, 0).getTime().toString());
                 done();
             };
             schObj.currentView = 'Week';
             schObj.dataBind();
-            expect(schObj.getWorkCellElements().length).toEqual(336);
-            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            expect(workCells[126].getAttribute('data-date')).toEqual(new Date(2018, 3, 1, 9, 0).getTime().toString());
+        });
+
+        it('Negative case for resource with timescale', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.getWorkCellElements().length).toEqual(7);
+                let emptyCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+                expect(isNullOrUndefined(emptyCell[126])).toEqual(true);
+                done();
+            };
             schObj.timeScale.enable = false;
             schObj.dataBind();
-            expect(schObj.getWorkCellElements().length).toEqual(7);
-            let emptyCell: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
-            expect(isNullOrUndefined(emptyCell[126])).toEqual(true);
+        });
+    });
+
+    describe('Negative testcases for resource grouping rendering in mobile device', () => {
+        let schObj: Schedule;
+        let uA: string = Browser.userAgent;
+        let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 9; Pixel XL Build/PPP3.180510.008) ' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.81 Mobile Safari/537.36';
+        beforeAll((done: Function) => {
+            Browser.userAgent = androidUserAgent;
+            let model: ScheduleModel = {
+                width: 300, height: '500px',
+                selectedDate: new Date(2018, 3, 1),
+                views: ['Day', 'Week', 'WorkWeek', 'Month', 'Agenda', 'MonthAgenda'],
+                group: { resources: ['Rooms', 'Owners'] },
+                resources: [{
+                    field: 'RoomId', name: 'Rooms',
+                    dataSource: [
+                        { Text: 'Room 1', Id: 1, Color: '#ffaa00' },
+                        { Text: 'Room 2', Id: 2, Color: '#f8a398' }
+                    ]
+                }, {
+                    field: 'OwnerId', name: 'Owners', dataSource: []
+                }]
+            };
+            schObj = util.createSchedule(model, resourceData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+            Browser.userAgent = uA;
+        });
+
+        it('last level resource datasource is not defined', () => {
+            expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(0);
+        });
+
+        it('last level resource datasource is defined', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-work-cells').length).toBeGreaterThan(0);
+                done();
+            };
+            expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(0);
+            schObj.resources[1].dataSource = [
+                { Text: 'Nancy', Id: 1, GroupID: 1, Color: '#ffaa00' },
+                { Text: 'Steven', Id: 2, GroupID: 2, Color: '#f8a398' },
+                { Text: 'Michael', Id: 3, GroupID: 1, Color: '#7499e1' }
+            ];
+            schObj.dataBind();
         });
     });
 

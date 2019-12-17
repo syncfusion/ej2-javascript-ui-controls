@@ -1,4 +1,4 @@
-import { EventHandler, Property, Internationalization, NotifyPropertyChanges, DateFormatOptions } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, Animation, EmitType, Event, extend, L10n, Browser, formatUnit } from '@syncfusion/ej2-base';import { createElement, detach, addClass, removeClass, closest, classList, attributes } from '@syncfusion/ej2-base';import { isNullOrUndefined, setValue, getUniqueID, ModuleDeclaration } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { ChangedEventArgs, CalendarView, Calendar, BlurEventArgs, FocusEventArgs, ClearedEventArgs } from '../calendar/calendar';
+import { EventHandler, Property, Internationalization, NotifyPropertyChanges, DateFormatOptions, isBlazor } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, Animation, EmitType, Event, extend, L10n, Browser, formatUnit } from '@syncfusion/ej2-base';import { createElement, detach, addClass, removeClass, closest, classList, attributes, select } from '@syncfusion/ej2-base';import { isNullOrUndefined, setValue, getUniqueID, ModuleDeclaration } from '@syncfusion/ej2-base';import { Popup } from '@syncfusion/ej2-popups';import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';import { ChangedEventArgs, CalendarView, Calendar, BlurEventArgs, FocusEventArgs, ClearedEventArgs, CalendarType, DayHeaderFormats } from '../calendar/calendar';
 import {FormatObject,PopupObjectArgs,PreventableEventArgs} from "./datepicker";
 import {CalendarModel} from "../calendar/calendar-model";
 
@@ -8,10 +8,25 @@ import {CalendarModel} from "../calendar/calendar-model";
 export interface DatePickerModel extends CalendarModel{
 
     /**
+     * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
+     * @default 'en-US'
+     * @deprecated
+     */
+    locale?: string;
+
+    /**
      * Specifies the width of the DatePicker component.
      * @default null
      */
     width?: number | string;
+
+    /**
+     * Gets or sets the selected date of the Calendar.
+     * @default null
+     * @isGenericType true
+     * @deprecated
+     */
+    value?: Date;
 
     /**
      * Specifies the root CSS class of the DatePicker that allows to
@@ -192,6 +207,7 @@ export interface DatePickerModel extends CalendarModel{
      * 
      * @default null
      * @blazorType object 
+     * @deprecated
      */
     keyConfigs?: { [key: string]: string };
 
@@ -199,6 +215,7 @@ export interface DatePickerModel extends CalendarModel{
      * Enable or disable persisting component's state between page reloads. If enabled, following list of states will be persisted.
      * 1. value
      * @default false
+     * @deprecated
      */
     enablePersistence?: boolean;
 
@@ -239,6 +256,7 @@ export interface DatePickerModel extends CalendarModel{
      * By default, the date value will be processed based on system time zone.
      * If you want to process the initial date value using server time zone 
      * then specify the time zone value to `serverTimezoneOffset` property.
+     * @deprecated
      */
     serverTimezoneOffset?: number;
 

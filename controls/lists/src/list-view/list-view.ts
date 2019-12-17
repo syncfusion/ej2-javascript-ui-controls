@@ -3,7 +3,7 @@ import { merge, formatUnit, isNullOrUndefined, append, detach, ModuleDeclaration
 import { attributes, addClass, removeClass, prepend, closest, remove } from '@syncfusion/ej2-base';
 import { Component, EventHandler, BaseEventArgs, Property, Complex, Event } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';
-import { KeyboardEventArgs, EmitType, compile } from '@syncfusion/ej2-base';
+import { KeyboardEventArgs, EmitType, compile, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { Animation, AnimationOptions, Effect, rippleEffect, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
@@ -352,6 +352,13 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     public showHeader: boolean;
 
     /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default false
+     */
+    @Property(false)
+    public enableHtmlSanitizer: boolean;
+
+    /**
      * It is used to set the height of the ListView component.
      * @default ''
      */
@@ -562,6 +569,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     // Support Component Functions
     private header(text?: string, showBack?: boolean): void {
         if (this.headerEle === undefined && this.showHeader) {
+            if (this.enableHtmlSanitizer) {
+                this.setProperties({ headerTitle: SanitizeHtmlHelper.sanitize(this.headerTitle) }, true);
+            }
             this.headerEle = this.createElement('div', { className: classNames.header });
             let innerHeaderEle: HTMLElement = this.createElement('span', { className: classNames.headerText, innerHTML: this.headerTitle });
             let textEle: HTMLElement = this.createElement('div', { className: classNames.text, innerHTML: innerHeaderEle.outerHTML });
@@ -588,6 +598,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 this.headerEle.style.display = '';
                 let textEle: Element = this.headerEle.querySelector('.' + classNames.headerText);
                 let hedBackButton: Element = this.headerEle.querySelector('.' + classNames.backIcon);
+                if (this.enableHtmlSanitizer) {
+                    text = SanitizeHtmlHelper.sanitize(text);
+                }
                 textEle.innerHTML = text;
                 if (this.headerTemplate && showBack) {
                     textEle.parentElement.classList.remove('header');
@@ -658,13 +671,14 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             headerTemplate: this.headerTemplate,
             groupTemplate: this.groupTemplate, expandCollapse: true, listClass: '',
             ariaAttributes: {
-                itemRole: 'listitem', listRole: 'list', itemText: '',
+                itemRole: 'option', listRole: 'presentation', itemText: '',
                 groupItemRole: 'group', wrapperRole: 'presentation'
             },
             fields: (this.fields as ListViewModel & { properties: Object }).properties, sortOrder: this.sortOrder, showIcon: this.showIcon,
             itemCreated: this.renderCheckbox.bind(this),
             templateID: `${this.element.id}${LISTVIEW_TEMPLATE_PROPERTY}`,
             groupTemplateID: `${this.element.id}${LISTVIEW_GROUPTEMPLATE_PROPERTY}`,
+            enableHtmlSanitizer: this.enableHtmlSanitizer,
             removeBlazorID: true
         };
         this.initialization();
@@ -904,6 +918,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     };
     private homeKeyHandler(e: KeyboardEventArgs, end?: boolean): void {
         if (Object.keys(this.dataSource).length && this.curUL) {
+            if (this.selectedItems) {
+                (this.selectedItems.item).setAttribute('aria-selected', 'false');
+            }
             let li: Element[] = <NodeListOf<Element> & Element[]>this.curUL.querySelectorAll('.' + classNames.listItem);
             let focusedElement: Element = this.curUL.querySelector('.' + classNames.focused) ||
                 this.curUL.querySelector('.' + classNames.selected);
@@ -918,6 +935,11 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 li[index].classList.add(classNames.focused);
             } else {
                 this.setSelectLI(li[index], e);
+            }
+            if (li[index]) {
+                this.element.setAttribute('aria-activedescendant', (<HTMLElement>li[index]).id.toString());
+            } else {
+                this.element.removeAttribute('aria-activedescendant');
             }
         }
     }
@@ -946,6 +968,11 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             li = this.curUL.querySelector('.' + classNames.selected);
             siblingLI = ListBase.getSiblingLI(this.curUL.querySelectorAll('.' + classNames.listItem), li, prev);
             this.setSelectLI(siblingLI, e);
+        }
+        if (siblingLI) {
+            this.element.setAttribute('aria-activedescendant', (<HTMLElement>siblingLI).id.toString());
+        } else {
+            this.element.removeAttribute('aria-activedescendant');
         }
         return siblingLI;
     }
@@ -1402,12 +1429,23 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         this.renderIntoDom(this.curUL);
     }
 
+    private setAttributes(liElements: HTMLElement[]): void {
+        liElements.forEach((element: HTMLElement) => {
+            if (element.classList.contains('e-list-item')) {
+                element.setAttribute('id', this.element.id + '_' + element.getAttribute('data-uid'));
+                element.setAttribute('aria-selected', 'false');
+                element.setAttribute('tabindex', '-1');
+            }
+        });
+    }
+
     private createList(): void {
         this.currentLiElements = [];
         this.isNestedList = false;
         this.ulElement = this.curUL = ListBase.createList(
             this.createElement, this.curViewDS as DataSource[], this.listBaseOption);
         this.liCollection = <HTMLElement[] & NodeListOf<Element>>this.curUL.querySelectorAll('.' + classNames.listItem);
+        this.setAttributes(this.liCollection);
         this.updateBlazorTemplates(true);
     }
 
@@ -1452,6 +1490,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             if (!ele) {
                 let data: DataSource[] = this.curViewDS as DataSource[];
                 ele = ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length);
+                let lists: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>ele.querySelectorAll('.' + classNames.listItem);
+                this.setAttributes(lists);
                 ele.setAttribute('pID', <string>uID);
                 (ele as HTMLElement).style.display = 'none';
                 this.renderIntoDom(ele);
@@ -1506,7 +1546,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      */
     public render(): void {
         this.element.classList.add(classNames.root);
-        attributes(this.element, { role: 'list', tabindex: '0' });
+        attributes(this.element, { role: 'listbox', tabindex: '0' });
         this.setCSSClass();
         this.setEnableRTL();
         this.setEnable();
@@ -1567,6 +1607,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             li.setAttribute('aria-selected', 'false');
         }
         this.liCollection = <HTMLElement[] & NodeListOf<Element>>this.curUL.querySelectorAll('.' + classNames.listItem);
+        if (this.enableHtmlSanitizer) {
+            this.setProperties({ headerTitle: SanitizeHtmlHelper.sanitize(this.headerTitle) }, true);
+        }
         this.header((this.curDSLevel.length ? text : this.headerTitle), (this.curDSLevel.length ? true : false));
     }
 
@@ -1944,6 +1987,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         if (isTargetEmptyChild) {
             const targetRefreshedElement: HTMLElement[] = ListBase.createListItemFromJson(
                 this.createElement, targetDS, this.listBaseOption);
+            this.setAttributes(targetRefreshedElement);
             targetUL.insertBefore(targetRefreshedElement[0], targetLi);
             detach(targetLi);
             isRefreshTemplateNeeded = true;
@@ -1974,6 +2018,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         let target: HTMLElement = this.getLiFromObjOrElement((curViewDS as DataSource[])[index + 1]) ||
             this.getLiFromObjOrElement((curViewDS as DataSource[])[index + 2]) || null;
         let li: HTMLElement[] = ListBase.createListItemFromJson(this.createElement, [dataSource], this.listBaseOption);
+        this.setAttributes(li);
         ulElement.insertBefore(li[0], target);
     }
 
@@ -2039,6 +2084,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                         this.createElement,
                         [foundData.parent],
                         this.listBaseOption);
+                    this.setAttributes(li);
                     parentLi.parentElement.insertBefore(li[0], parentLi);
                     parentLi.parentElement.removeChild(parentLi);
                 }

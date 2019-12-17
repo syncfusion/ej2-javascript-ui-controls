@@ -1,6 +1,6 @@
 import { extend, merge, isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
 import { attributes, prepend, isVisible, append, addClass } from '@syncfusion/ej2-base';
-import { compile } from '@syncfusion/ej2-base';
+import { compile, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 
 export let cssClass: ClassList = {
@@ -90,6 +90,7 @@ export namespace ListBase {
     let defaultListBaseOptions: ListBaseOptions = {
         showCheckBox: false,
         showIcon: false,
+        enableHtmlSanitizer: false,
         expandCollapse: false,
         fields: defaultMappedFields,
         ariaAttributes: defaultAriaAttributes,
@@ -736,7 +737,9 @@ export namespace ListBase {
             grpLI = (item.hasOwnProperty('isHeader') && (item as { isHeader: Object } & { [key: string]: Object }).isHeader)
                 ? true : false;
         }
-
+        if (options && options.enableHtmlSanitizer) {
+            text = SanitizeHtmlHelper.sanitize(text);
+        }
         let li: HTMLElement = createElement('li', {
             className: (grpLI === true ? cssClass.group : cssClass.li) + ' ' + (isNullOrUndefined(className) ? '' : className),
             attrs: (ariaAttributes.groupItemRole !== '' && ariaAttributes.itemRole !== '' ?
@@ -836,12 +839,24 @@ export interface FieldsMapping {
     expanded?: string;
     selected?: string;
     iconCss?: string;
+    /**
+     * @blazortype object
+     */
     child?: string;
     tooltip?: string;
     hasChildren?: string;
+    /**
+     * @blazortype object
+     */
     htmlAttributes?: string;
+    /**
+     * @blazortype object
+     */
     urlAttributes?: string;
     imageUrl?: string;
+    /**
+     * @blazortype object
+     */
     imageAttributes?: string;
 }
 
@@ -944,6 +959,10 @@ export interface ListBaseOptions {
      * Remove Blazor ID from items
      */
     removeBlazorID?: boolean;
+    /**
+     * Defines whether to allow the cross scripting site or not.
+     */
+    enableHtmlSanitizer?: boolean;
 }
 
 /**

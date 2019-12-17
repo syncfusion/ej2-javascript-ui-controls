@@ -10,6 +10,7 @@ export const markerClassName: { [key: string]: string } = {
 /**
  * DOMNode internal plugin
  * @hidden
+ * @deprecated
  */
 export class DOMNode {
     private parent: Element;
@@ -18,6 +19,7 @@ export class DOMNode {
     /**
      * Constructor for creating the DOMNode plugin
      * @hidden
+     * @deprecated
      */
     constructor(parent: Element, currentDocument: Document) {
         this.parent = parent;
@@ -25,18 +27,38 @@ export class DOMNode {
         this.currentDocument = currentDocument;
     }
 
+    /**
+     * contents method
+     * @hidden
+     * @deprecated
+     */
     public contents(element: Element): Node[] {
         return (element && 'IFRAME' !== element.tagName ? Array.prototype.slice.call(element.childNodes || []) : []);
     }
 
+    /**
+     * isBlockNode method
+     * @hidden
+     * @deprecated
+     */
     public isBlockNode(element: Element): boolean {
         return (!!element && (element.nodeType === Node.ELEMENT_NODE && CONSTANT.BLOCK_TAGS.indexOf(element.tagName.toLowerCase()) >= 0));
     }
 
+    /**
+     * isLink method
+     * @hidden
+     * @deprecated
+     */
     public isLink(element: Element): boolean {
         return (!!element && (element.nodeType === Node.ELEMENT_NODE && 'a' === element.tagName.toLowerCase()));
     }
 
+    /**
+     * blockParentNode method
+     * @hidden
+     * @deprecated
+     */
     public blockParentNode(element: Element): Element {
         for (; element && element.parentNode !== this.parent && ((!element.parentNode ||
             !this.hasClass(element.parentNode as Element, 'e-node-inner'))); null) {
@@ -48,6 +70,11 @@ export class DOMNode {
         return element;
     }
 
+    /**
+     * rawAttributes method
+     * @hidden
+     * @deprecated
+     */
     public rawAttributes(element: Element): { [key: string]: string } {
         let rawAttr: { [key: string]: string; } = {};
         let attributes: NamedNodeMap = element.attributes;
@@ -60,6 +87,11 @@ export class DOMNode {
         return rawAttr;
     }
 
+    /**
+     * attributes method
+     * @hidden
+     * @deprecated
+     */
     public attributes(element?: Element): string {
         if (!element) { return ''; }
         let attr: string = '';
@@ -82,47 +114,98 @@ export class DOMNode {
         return attr;
     }
 
+    /**
+     * clearAttributes method
+     * @hidden
+     * @deprecated
+     */
     public clearAttributes(element: Element): void {
         for (let attr: NamedNodeMap = element.attributes, c: number = attr.length - 1; c >= 0; c--) {
             let key: Attr = attr[c];
             element.removeAttribute(key.nodeName);
         }
     }
+
+    /**
+     * openTagString method
+     * @hidden
+     * @deprecated
+     */
     public openTagString(element: Element): string {
         return '<' + element.tagName.toLowerCase() + this.attributes(element) + '>';
     }
 
+    /**
+     * closeTagString method
+     * @hidden
+     * @deprecated
+     */
     public closeTagString(element: Element): string {
         return '</' + element.tagName.toLowerCase() + '>';
     }
 
+    /**
+     * createTagString method
+     * @hidden
+     * @deprecated
+     */
     public createTagString(tagName: string, relativeElement: Element, innerHTML: string): string {
         return '<' + tagName.toLowerCase() + this.attributes(relativeElement) + '>' + innerHTML + '</' + tagName.toLowerCase() + '>';
     }
 
+    /**
+     * isList method
+     * @hidden
+     * @deprecated
+     */
     public isList(element: Element): boolean {
         return !!element && ['UL', 'OL'].indexOf(element.tagName) >= 0;
     }
 
+    /**
+     * isElement method
+     * @hidden
+     * @deprecated
+     */
     public isElement(element: Element): boolean {
         return element === this.parent;
     }
 
+    /**
+     * isEditable method
+     * @hidden
+     * @deprecated
+     */
     public isEditable(element: Element): boolean {
         return ((!element.getAttribute || element.getAttribute('contenteditable') === 'true')
             && ['STYLE', 'SCRIPT'].indexOf(element.tagName) < 0);
     }
 
+    /**
+     * hasClass method
+     * @hidden
+     * @deprecated
+     */
     public hasClass(element: Element, className: string): boolean {
         return element && element.classList && element.classList.contains(className);
     }
 
+    /**
+     * replaceWith method
+     * @hidden
+     * @deprecated
+     */
     public replaceWith(element: Element, value: string): void {
         let parentNode: Element = element.parentNode as Element;
         parentNode.insertBefore(this.parseHTMLFragment(value), element);
         detach(element);
     }
 
+    /**
+     * parseHTMLFragment method
+     * @hidden
+     * @deprecated
+     */
     public parseHTMLFragment(value: string): Element {
         /* tslint:disable */
         let temp: HTMLTemplateElement = <HTMLTemplateElement>createElement('template');
@@ -135,6 +218,11 @@ export class DOMNode {
         /* tslint:enable */
     }
 
+    /**
+     * wrap method
+     * @hidden
+     * @deprecated
+     */
     public wrap(element: Element, wrapper: Element): Element {
         element.parentNode.insertBefore(wrapper, element);
         wrapper = element.previousSibling as Element;
@@ -142,10 +230,20 @@ export class DOMNode {
         return wrapper;
     }
 
+    /**
+     * insertAfter method
+     * @hidden
+     * @deprecated
+     */
     public insertAfter(newNode: Element, referenceNode: Element): void {
         referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
     }
 
+    /**
+     * wrapInner method
+     * @hidden
+     * @deprecated
+     */
     public wrapInner(parent: Element, wrapper: Element): Element {
         parent.appendChild(wrapper);
         wrapper = parent.querySelector('.e-rte-wrap-inner');
@@ -157,6 +255,11 @@ export class DOMNode {
         return wrapper;
     }
 
+    /**
+     * unWrap method
+     * @hidden
+     * @deprecated
+     */
     public unWrap(element: Element): Element[] {
         let parent: Element = element.parentNode as Element;
         let unWrapNode: Element[] = [];
@@ -169,6 +272,11 @@ export class DOMNode {
         return unWrapNode;
     }
 
+    /**
+     * getSelectedNode method
+     * @hidden
+     * @deprecated
+     */
     public getSelectedNode(element: Element, index: number): Element {
         if (element.nodeType === Node.ELEMENT_NODE && element.childNodes.length > 0 &&
             element.childNodes[index - 1] && element.childNodes[index - 1].nodeType === Node.ELEMENT_NODE &&
@@ -184,6 +292,11 @@ export class DOMNode {
         return element;
     }
 
+    /**
+     * nodeFinds method
+     * @hidden
+     * @deprecated
+     */
     public nodeFinds(element: Element, elements: Element[]): Element[] {
         let existNodes: Element[] = [];
         for (let i: number = 0; i < elements.length; i++) {
@@ -194,6 +307,11 @@ export class DOMNode {
         return existNodes;
     }
 
+    /**
+     * isEditorArea method
+     * @hidden
+     * @deprecated
+     */
     public isEditorArea(): boolean {
         let range: Range = <Range>this.getRangePoint(0);
         let element: Element;
@@ -203,6 +321,11 @@ export class DOMNode {
         return !!this.isElement(element);
     }
 
+    /**
+     * getRangePoint method
+     * @hidden
+     * @deprecated
+     */
     public getRangePoint(point?: number): Range | Range[] {
         let selection: Selection = this.getSelection();
         let ranges: Range[] = [];
@@ -221,6 +344,11 @@ export class DOMNode {
         return this.nodeSelection.get(this.currentDocument);
     }
 
+    /**
+     * getPreviousNode method
+     * @hidden
+     * @deprecated
+     */
     public getPreviousNode(element: Element): Element {
         element = element.previousElementSibling  as Element;
         for (; element && element.textContent === '\n'; null) {
@@ -229,12 +357,22 @@ export class DOMNode {
         return element;
     }
 
+    /**
+     * encode method
+     * @hidden
+     * @deprecated
+     */
     public encode(value: string): string {
         let divNode: HTMLDivElement = document.createElement('div');
         divNode.innerText = value;
         return divNode.innerHTML.replace(/<br\s*[\/]?>/gi, '\n');
     }
 
+    /**
+     * saveMarker method
+     * @hidden
+     * @deprecated
+     */
     public saveMarker(save: NodeSelection, action?: string): NodeSelection {
         let start: Element = this.parent.querySelector('.' + markerClassName.startSelection);
         let end: Element = this.parent.querySelector('.' + markerClassName.endSelection);
@@ -274,6 +412,11 @@ export class DOMNode {
         return '<span class="' + className + '">' + textContent + '</span>';
     }
 
+    /**
+     * setMarker method
+     * @hidden
+     * @deprecated
+     */
     public setMarker(save: NodeSelection): void {
         let range: Range = save.range;
         let start: Element = <Element>(range.startContainer.childNodes[range.startOffset]
@@ -330,6 +473,11 @@ export class DOMNode {
         }
     }
 
+    /**
+     * ensureSelfClosingTag method
+     * @hidden
+     * @deprecated
+     */
     public ensureSelfClosingTag(start: Element, className: string, range: Range): void {
         let isTable: boolean = false;
         if (start.nodeType === 3) {
@@ -348,7 +496,8 @@ export class DOMNode {
             if (start.tagName === 'TABLE') {
                 isTable = true;
                 if (start.textContent === '') {
-                    start = start.querySelectorAll('td')[start.querySelectorAll('td').length - 1];
+                    let tdNode: NodeListOf<HTMLElement> = start.querySelectorAll('td');
+                    start = tdNode[tdNode.length - 1];
                     start = !isNullOrUndefined(start.childNodes[0]) ? start.childNodes[0] as Element : start;
                 } else {
                     let lastNode: Node = start.lastChild;
@@ -374,6 +523,11 @@ export class DOMNode {
         }
     }
 
+    /**
+     * createTempNode method
+     * @hidden
+     * @deprecated
+     */
     public createTempNode(element: Element): Element {
         let textContent: string = element.textContent;
         if (element.tagName === 'BR') {
@@ -399,6 +553,11 @@ export class DOMNode {
         }
         return element;
     }
+    /**
+     * getImageTagInSelection method
+     * @hidden
+     * @deprecated
+     */
     public getImageTagInSelection(): NodeListOf<HTMLImageElement> {
         let selection: Selection = this.getSelection();
         if (this.isEditorArea() && selection.rangeCount) {
@@ -406,6 +565,11 @@ export class DOMNode {
         }
         return null;
     }
+    /**
+     * blockNodes method
+     * @hidden
+     * @deprecated
+     */
     public blockNodes(): Node[] {
         let collectionNodes: Element[] = [];
         let selection: Selection = this.getSelection();
@@ -442,13 +606,14 @@ export class DOMNode {
                     if (nodes.indexOf(node) < 0 && node.childNodes && node.childNodes.length) {
                         nodes.push(node);
                         node = node.childNodes[0] as Element;
-                    } else if (node && (node.tagName === 'BR' || (node.nodeType === Node.TEXT_NODE &&
+                    } else if (node && node.nodeType !== 8 && (node.tagName === 'BR' || (node.nodeType === Node.TEXT_NODE &&
                         node.textContent.trim() !== '') || (node.nodeType !== Node.TEXT_NODE &&
                         ((node as Element).classList.contains(markerClassName.startSelection) ||
                         (node as Element).classList.contains(markerClassName.endSelection)))) &&
                         CONSTANT.IGNORE_BLOCK_TAGS.indexOf((node.parentNode as Element).tagName.toLocaleLowerCase()) >= 0) {
                         node = this.createTempNode(node as Element);
-                    } else if (node.nextSibling && ((node.nextSibling as Element).tagName === 'BR' ||
+                    } else if (node.nextSibling && node.nextSibling.nodeType !== 8 &&
+                        ((node.nextSibling as Element).tagName === 'BR' ||
                         node.nextSibling.nodeType === Node.TEXT_NODE ||
                         (node.nextSibling as Element).classList.contains(markerClassName.startSelection) ||
                         (node.nextSibling as Element).classList.contains(markerClassName.endSelection)) &&

@@ -2,11 +2,40 @@ import { Component, Property, ChildProperty, INotifyPropertyChanged, NotifyPrope
 import { Browser, isNullOrUndefined as isNOU,  getUniqueID, formatUnit, EventHandler } from '@syncfusion/ej2-base';
 import { EmitType, Collection, Complex, setStyleAttribute, Event, Effect, detach, AnimationModel } from '@syncfusion/ej2-base';
 import { attributes, extend, closest, compile as templateCompiler, classList, BaseEventArgs, isUndefined} from '@syncfusion/ej2-base';
-import { SwipeEventArgs, Touch, updateBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
+import { SwipeEventArgs, Touch, updateBlazorTemplate, isBlazor, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { ButtonModel, Button  } from '@syncfusion/ej2-buttons';
 import { getZindexPartial } from '@syncfusion/ej2-popups';
 import { ToastModel, ButtonModelPropsModel, ToastPositionModel } from './toast-model';
 import {  ToastAnimationsModel, ToastAnimationSettingsModel } from './toast-model';
+
+export interface SanitizeSelectors {
+  /** Returns the tags. */
+  tags?: string[];
+  /** Returns the attributes. */
+  attributes?: SanitizeRemoveAttrs[];
+}
+
+export interface BeforeSanitizeHtmlArgs {
+  /** Illustrates whether the current action needs to be prevented or not. */
+  cancel?: boolean;
+  /** It is a callback function and executed it before our inbuilt action. It should return HTML as a string.
+   * @function
+   * @param {string} value - Returns the value.
+   * @returns {string}
+   */
+  helper?: Function;
+  /** Returns the selectors object which carrying both tags and attributes selectors to block list of cross-site scripting attack.
+   *  Also possible to modify the block list in this event.
+   */
+  selectors?: SanitizeSelectors;
+}
+
+export interface SanitizeRemoveAttrs {
+  /** Defines the attribute name to sanitize */
+  attribute?: string;
+  /** Defines the selector that sanitize the specified attributes within the selector */
+  selector?: string;
+}
 
 /**
  * Specifies the options for positioning the Toast in Y axis.
@@ -291,6 +320,13 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     public content: string | HTMLElement;
 
     /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default true
+     */
+    @Property(true)
+    public enableHtmlSanitizer: boolean;
+
+    /**
      * Defines CSS classes to specify an icon for the Toast which is to be displayed at top left corner of the Toast.
      * @default null
      */
@@ -395,6 +431,14 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
      */
     @Event()
     public created: EmitType<Event>;
+
+    /** 
+     * Event triggers before sanitize the value.
+     * @event 
+     * @blazorProperty 'OnSanitizeHtml'
+     */
+    @Event()
+    public beforeSanitizeHtml: EmitType<BeforeSanitizeHtmlArgs>;
 
     /**
      * Triggers the event after the Toast gets destroyed.
@@ -573,6 +617,28 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     private templateRendering(): void {
       this.fetchEle(this.toastEle, this.template, 'template');
     }
+
+    /**
+     * @hidden
+     */
+    public sanitizeHelper(value: string): string {
+      if (this.enableHtmlSanitizer) {
+        let item: BeforeSanitizeHtmlArgs = SanitizeHtmlHelper.beforeSanitize();
+        let beforeEvent: BeforeSanitizeHtmlArgs = {
+          cancel: false,
+          helper: null
+        };
+        extend(item, item, beforeEvent);
+        this.trigger('beforeSanitizeHtml', item);
+        if (item.cancel && !isNOU(item.helper)) {
+          value = item.helper(value);
+        } else if (!item.cancel) {
+          value = SanitizeHtmlHelper.serializeValue(item, value);
+        }
+      }
+      return value;
+    }
+
     /**
      * To Hide Toast element on a document.
      * To Hide all toast element when passing 'All'.
@@ -594,6 +660,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     private fetchEle (ele: HTEle, value: string, prob: string): HTEle {
+      value = typeof (value) === 'string' ? this.sanitizeHelper(value) : value;
       let templateFn: Function;
       let tempVar: HTEle;
       let tmpArray: HTEle[];

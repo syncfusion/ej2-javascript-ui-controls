@@ -9,6 +9,11 @@ import { isIDevice, setEditFrameFocus } from '../../common/util';
 import { isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 
 export class SelectionCommands {
+    /**
+     * applyFormat method
+     * @hidden
+     * @deprecated
+     */
     public static applyFormat(docElement: Document, format: string, endNode: Node, value?: string, selector?: string): void {
         let validFormats: string[] = ['bold', 'italic', 'underline', 'strikethrough', 'superscript',
             'subscript', 'uppercase', 'lowercase', 'fontcolor', 'fontname', 'fontsize', 'backgroundcolor'];

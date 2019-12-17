@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, classList, closest, compile, createElement, detach, formatUnit, getUniqueID, isBlazor, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getUniqueID, isBlazor, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 
 /**
@@ -1681,13 +1681,15 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         this.allowMaxHeight = true;
         this.preventVisibility = true;
         var classArray = [];
-        for (var j = 0; j < this.element.classList.length; j++) {
-            if (!isNullOrUndefined(this.element.classList[j].match('e-control')) ||
-                !isNullOrUndefined(this.element.classList[j].match(ROOT))) {
-                classArray.push(this.element.classList[j]);
+        if (!(isBlazor() && this.isServerRendered)) {
+            for (var j = 0; j < this.element.classList.length; j++) {
+                if (!isNullOrUndefined(this.element.classList[j].match('e-control')) ||
+                    !isNullOrUndefined(this.element.classList[j].match(ROOT))) {
+                    classArray.push(this.element.classList[j]);
+                }
             }
+            removeClass([this.element], classArray);
         }
-        removeClass([this.element], classArray);
         this.clonedEle = this.element.cloneNode(true);
         this.closeIconClickEventHandler = function (event) {
             _this.hide(event);
@@ -1770,6 +1772,9 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
     };
     Dialog.prototype.setResize = function () {
         if (this.enableResize) {
+            if (isBlazor() && this.isServerRendered && !isNullOrUndefined(this.element.querySelector('.e-icons.e-resize-handle'))) {
+                return;
+            }
             this.element.classList.add(DLG_RESIZABLE);
             var computedHeight = getComputedStyle(this.element).minHeight;
             var computedWidth = getComputedStyle(this.element).minWidth;
@@ -1860,11 +1865,15 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             this.targetEle = ((typeof this.target) === 'string') ?
                 document.querySelector(this.target) : this.target;
         }
-        addClass([this.element], ROOT);
+        if (!(isBlazor() && this.isServerRendered)) {
+            addClass([this.element], ROOT);
+        }
         if (Browser.isDevice) {
             addClass([this.element], DEVICE);
         }
-        this.setCSSClass();
+        if (!(isBlazor() && this.isServerRendered)) {
+            this.setCSSClass();
+        }
         this.setMaxHeight();
     };
     /**
@@ -1874,7 +1883,9 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
     Dialog.prototype.initRender = function () {
         var _this = this;
         this.initialRender = true;
-        attributes(this.element, { role: 'dialog' });
+        if (!(isBlazor() && this.isServerRendered)) {
+            attributes(this.element, { role: 'dialog' });
+        }
         if (this.zIndex === 1000) {
             this.setzIndex(this.element, false);
             this.calculatezIndex = true;
@@ -1882,26 +1893,42 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         else {
             this.calculatezIndex = false;
         }
-        this.setTargetContent();
-        if (this.header !== '' && !isNullOrUndefined(this.header)) {
-            this.setHeader();
+        if (isBlazor() && this.isServerRendered && isNullOrUndefined(this.headerContent)) {
+            this.headerContent = this.element.getElementsByClassName('e-dlg-header-content')[0];
         }
-        if (this.showCloseIcon) {
-            this.renderCloseIcon();
+        if (!(isBlazor() && this.isServerRendered)) {
+            this.setTargetContent();
+            if (this.header !== '' && !isNullOrUndefined(this.header)) {
+                this.setHeader();
+            }
+            if (this.showCloseIcon) {
+                this.renderCloseIcon();
+            }
+            this.setContent();
+            if (this.footerTemplate !== '' && !isNullOrUndefined(this.footerTemplate)) {
+                this.setFooterTemplate();
+            }
+            else if (!isNullOrUndefined(this.buttons[0].buttonModel)) {
+                this.setButton();
+            }
         }
-        this.setContent();
-        if (this.footerTemplate !== '' && !isNullOrUndefined(this.footerTemplate)) {
-            this.setFooterTemplate();
-        }
-        else if (!isNullOrUndefined(this.buttons[0].buttonModel)) {
-            this.setButton();
+        if (isBlazor() && this.isServerRendered) {
+            if (!isNullOrUndefined(this.buttons[0].buttonModel) && this.footerTemplate === '') {
+                this.setButton();
+            }
         }
         if (this.allowDragging && (!isNullOrUndefined(this.headerContent))) {
             this.setAllowDragging();
         }
-        attributes(this.element, { 'aria-modal': (this.isModal ? 'true' : 'false') });
-        if (this.isModal) {
-            this.setIsModal();
+        if (!(isBlazor() && this.isServerRendered)) {
+            attributes(this.element, { 'aria-modal': (this.isModal ? 'true' : 'false') });
+            if (this.isModal) {
+                this.setIsModal();
+            }
+        }
+        if (isBlazor() && this.isServerRendered && isNullOrUndefined(this.dlgContainer)) {
+            this.dlgContainer = this.element.parentElement;
+            this.dlgOverlay = this.element.parentElement.getElementsByClassName('e-dlg-overlay')[0];
         }
         if (!isNullOrUndefined(this.targetEle)) {
             this.isModal ? this.targetEle.appendChild(this.dlgContainer) : this.targetEle.appendChild(this.element);
@@ -1948,9 +1975,11 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         });
         this.positionChange();
         this.setEnableRTL();
-        addClass([this.element], DLG_HIDE);
-        if (this.isModal) {
-            this.setOverlayZindex();
+        if (!(isBlazor() && this.isServerRendered)) {
+            addClass([this.element], DLG_HIDE);
+            if (this.isModal) {
+                this.setOverlayZindex();
+            }
         }
         if (this.visible) {
             this.show();
@@ -1985,11 +2014,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             else {
                 this.element.style.top = '0px';
                 this.element.style.left = '0px';
-                var positonX = typeof (this.position.X) === 'number' ? this.position.X :
-                    this.position.X.toLocaleLowerCase();
-                var positionY = typeof (this.position.Y) === 'number' ? this.position.Y :
-                    this.position.Y.toLocaleLowerCase();
-                this.dlgContainer.classList.add('e-dlg-' + positonX + '-' + positionY);
+                this.dlgContainer.classList.add('e-dlg-' + this.position.X + '-' + this.position.Y);
             }
         }
         else {
@@ -1999,8 +2024,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
     Dialog.prototype.setPopupPosition = function () {
         this.popupObj.setProperties({
             position: {
-                X: typeof (this.position.X) === 'number' ? this.position.X : this.position.X.toLocaleLowerCase(),
-                Y: typeof (this.position.Y) === 'number' ? this.position.Y : this.position.Y.toLocaleLowerCase()
+                X: this.position.X, Y: this.position.Y
             }
         });
     };
@@ -2010,7 +2034,6 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         this.dragObj = new Draggable(this.element, {
             clone: false,
             abort: '.e-dlg-closeicon-btn',
-            isDragScroll: true,
             handle: handleContent,
             dragStart: function (event) {
                 _this.trigger('dragStart', event, function (dragEventArgs) {
@@ -2039,22 +2062,31 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Dialog.prototype.setButton = function () {
-        this.buttonContent = [];
-        this.btnObj = [];
-        for (var i = 0; i < this.buttons.length; i++) {
-            var buttonType = !isNullOrUndefined(this.buttons[i].type) ? this.buttons[i].type.toLowerCase() : 'button';
-            var btn = this.createElement('button', { attrs: { type: buttonType } });
-            this.buttonContent.push(btn.outerHTML);
+        if (!(isBlazor() && this.isServerRendered)) {
+            this.buttonContent = [];
+            this.btnObj = [];
+            for (var i = 0; i < this.buttons.length; i++) {
+                var buttonType = !isNullOrUndefined(this.buttons[i].type) ? this.buttons[i].type.toLowerCase() : 'button';
+                var btn = this.createElement('button', { attrs: { type: buttonType } });
+                this.buttonContent.push(btn.outerHTML);
+            }
+            this.setFooterTemplate();
         }
-        this.setFooterTemplate();
         for (var i = 0; i < this.buttons.length; i++) {
-            this.btnObj[i] = new Button(this.buttons[i].buttonModel);
+            if (!(isBlazor() && this.isServerRendered)) {
+                this.btnObj[i] = new Button(this.buttons[i].buttonModel);
+            }
+            if (isBlazor() && this.isServerRendered) {
+                this.ftrTemplateContent = this.element.querySelector('.e-footer-content');
+            }
             if (typeof (this.buttons[i].click) === 'function') {
                 EventHandler.add(this.ftrTemplateContent.children[i], 'click', this.buttons[i].click, this);
             }
-            this.btnObj[i].appendTo(this.ftrTemplateContent.children[i]);
-            this.btnObj[i].element.classList.add('e-flat');
-            this.primaryButtonEle = this.element.getElementsByClassName('e-primary')[0];
+            if (!(isBlazor() && this.isServerRendered)) {
+                this.btnObj[i].appendTo(this.ftrTemplateContent.children[i]);
+                this.btnObj[i].element.classList.add('e-flat');
+                this.primaryButtonEle = this.element.getElementsByClassName('e-primary')[0];
+            }
         }
     };
     Dialog.prototype.setContent = function () {
@@ -2066,7 +2098,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         else if (!isNullOrUndefined(this.content) && this.content !== '' || !this.initialRender) {
             var blazorContain = Object.keys(window);
             if (typeof (this.content) === 'string' && blazorContain.indexOf('ejsInterop') === -1) {
-                this.contentEle.innerHTML = this.content;
+                this.contentEle.innerHTML = this.sanitizeHelper(this.content);
             }
             else if (this.content instanceof HTMLElement) {
                 this.contentEle.appendChild(this.content);
@@ -2107,7 +2139,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             templateValue = template;
         }
         else {
-            toElement.innerHTML = template;
+            toElement.innerHTML = this.sanitizeHelper(template);
         }
         var fromElements = [];
         if (!isNullOrUndefined(templateFn)) {
@@ -2123,6 +2155,27 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                 this.blazorTemplate(templateProps);
             }
         }
+    };
+    /**
+     * @hidden
+     */
+    Dialog.prototype.sanitizeHelper = function (value) {
+        if (this.enableHtmlSanitizer) {
+            var item = SanitizeHtmlHelper.beforeSanitize();
+            var beforeEvent = {
+                cancel: false,
+                helper: null
+            };
+            extend(item, item, beforeEvent);
+            this.trigger('beforeSanitizeHtml', item);
+            if (item.cancel && !isNullOrUndefined(item.helper)) {
+                value = item.helper(value);
+            }
+            else if (!item.cancel) {
+                value = SanitizeHtmlHelper.serializeValue(item, value);
+            }
+        }
+        return value;
     };
     Dialog.prototype.blazorTemplate = function (templateProps) {
         if (templateProps === this.element.id + 'header') {
@@ -2144,13 +2197,11 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         this.element.style.maxHeight = (!isNullOrUndefined(this.target)) && (this.targetEle.offsetHeight < window.innerHeight) ?
             (this.targetEle.offsetHeight - 20) + 'px' : (window.innerHeight - 20) + 'px';
         this.element.style.display = display;
-        if (Browser.isIE && this.contentEle && this.height === 'auto' && (this.element.offsetHeight <
-            this.contentEle.offsetHeight)) {
-            this.element.style.height = '100%';
-        }
     };
     Dialog.prototype.setEnableRTL = function () {
-        this.enableRtl ? addClass([this.element], RTL) : removeClass([this.element], RTL);
+        if (!(isBlazor() && this.isServerRendered)) {
+            this.enableRtl ? addClass([this.element], RTL) : removeClass([this.element], RTL);
+        }
         if (!isNullOrUndefined(this.element.querySelector('.e-resize-handle'))) {
             removeResize();
             this.setResize();
@@ -2267,6 +2318,9 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         var value = '[autofocus]';
         var items = container.querySelectorAll(value);
         var validNode = this.getValidFocusNode(items);
+        if (isBlazor()) {
+            this.primaryButtonEle = this.element.getElementsByClassName('e-primary')[0];
+        }
         if (!isNullOrUndefined(validNode)) {
             node = validNode;
         }
@@ -2325,15 +2379,24 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             switch (prop) {
                 case 'content':
                     if (!isNullOrUndefined(this.content) && this.content !== '') {
+                        if (isBlazor() && this.isServerRendered) {
+                            this.contentEle = this.element.querySelector('.e-dlg-content');
+                        }
                         if (!isNullOrUndefined(this.contentEle) && this.contentEle.getAttribute('role') !== 'dialog') {
-                            this.contentEle.innerHTML = '';
-                            typeof (this.content) === 'function' ? this.setTemplate(this.content, this.contentEle) :
-                                (typeof (this.content) === 'string' ? this.contentEle.innerHTML = this.content :
-                                    this.contentEle.appendChild(this.content));
+                            if (!(isBlazor() && this.isServerRendered)) {
+                                this.contentEle.innerHTML = '';
+                            }
+                            typeof (this.content) === 'string' ? (isBlazor() && this.isServerRendered
+                                && (this.contentEle.innerText === '')) ?
+                                this.contentEle.insertAdjacentHTML('beforeend', this.sanitizeHelper(this.content)) :
+                                this.contentEle.innerHTML = this.sanitizeHelper(this.content) : this.contentEle.appendChild(this.content);
                             this.setMaxHeight();
                         }
                         else {
-                            this.setContent();
+                            if (!(isBlazor() && this.isServerRendered) ||
+                                isNullOrUndefined(this.element.querySelector('.e-dlg-content'))) {
+                                this.setContent();
+                            }
                         }
                     }
                     else if (!isNullOrUndefined(this.contentEle)) {
@@ -2349,7 +2412,10 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                         }
                     }
                     else {
-                        this.setHeader();
+                        if (!(isBlazor() && this.isServerRendered) ||
+                            isNullOrUndefined(this.element.querySelector('.e-dlg-header-content'))) {
+                            this.setHeader();
+                        }
                     }
                     break;
                 case 'footerTemplate':
@@ -2362,7 +2428,10 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                         this.buttons = [{}];
                     }
                     else {
-                        this.setFooterTemplate();
+                        if (!(isBlazor() && this.isServerRendered) ||
+                            isNullOrUndefined(this.element.querySelector('.e-footer-content'))) {
+                            this.setFooterTemplate();
+                        }
                         this.buttons = [{}];
                     }
                     break;
@@ -2375,9 +2444,16 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                         else if (!this.showCloseIcon) {
                             detach(this.closeIcon);
                         }
+                        else {
+                            if (isBlazor() && this.isServerRendered) {
+                                this.wireEvents();
+                            }
+                        }
                     }
                     else {
-                        this.renderCloseIcon();
+                        if (!(isBlazor() && this.isServerRendered)) {
+                            this.renderCloseIcon();
+                        }
                         this.wireEvents();
                     }
                     break;
@@ -2520,17 +2596,33 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                     this.btnObj[i].destroy();
                 }
             }
-            if (this.isModal) {
+            if (this.isModal && (!(isBlazor() && this.isServerRendered))) {
                 detach(this.dlgOverlay);
                 this.dlgContainer.parentNode.insertBefore(this.element, this.dlgContainer);
                 detach(this.dlgContainer);
             }
-            this.element.innerHTML = this.clonedEle.innerHTML;
+            if (!(isBlazor() && this.isServerRendered)) {
+                this.element.innerHTML = '';
+            }
+            if (isBlazor() && this.isServerRendered) {
+                if (!isNullOrUndefined(this.element.children)) {
+                    for (var i = 0; i <= this.element.children.length; i++) {
+                        i = i - i;
+                        detach(this.element.children[i]);
+                    }
+                }
+            }
             while (this.element.attributes.length > 0) {
                 this.element.removeAttribute(this.element.attributes[0].name);
             }
             for (var k = 0; k < this.clonedEle.attributes.length; k++) {
-                this.element.setAttribute(this.clonedEle.attributes[k].name, this.clonedEle.attributes[k].value);
+                if (isBlazor() && this.isServerRendered && this.clonedEle.attributes[k].name === 'id') {
+                    this.element.setAttribute(this.clonedEle.attributes[k].name, this.clonedEle.attributes[k].value);
+                    return;
+                }
+                else {
+                    this.element.setAttribute(this.clonedEle.attributes[k].name, this.clonedEle.attributes[k].value);
+                }
             }
         }
     };
@@ -2539,6 +2631,9 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
      * @hidden
      */
     Dialog.prototype.wireEvents = function () {
+        if (isBlazor() && this.isServerRendered && this.showCloseIcon) {
+            this.closeIcon = this.element.getElementsByClassName('e-dlg-closeicon-btn')[0];
+        }
         if (this.showCloseIcon) {
             EventHandler.add(this.closeIcon, 'click', this.closeIconClickEventHandler, this);
         }
@@ -2558,9 +2653,18 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             EventHandler.remove(this.dlgOverlay, 'click', this.dlgOverlayClickEventHandler);
         }
         if (!isNullOrUndefined(this.buttons[0].buttonModel)) {
-            for (var i = 0; i < this.buttons.length; i++) {
-                if (typeof (this.buttons[i].click) === 'function') {
-                    EventHandler.remove(this.ftrTemplateContent.children[i], 'click', this.buttons[i].click);
+            if (!(isBlazor() && this.isServerRendered)) {
+                for (var i = 0; i < this.buttons.length; i++) {
+                    if (typeof (this.buttons[i].click) === 'function') {
+                        EventHandler.remove(this.ftrTemplateContent.children[i], 'click', this.buttons[i].click);
+                    }
+                }
+            }
+            else if (isBlazor() && this.isServerRendered && this.footerTemplate === '') {
+                for (var i = 0; i < this.buttons.length; i++) {
+                    if (typeof (this.buttons[i].click) === 'function') {
+                        EventHandler.remove(this.ftrTemplateContent.children[i], 'click', this.buttons[i].click);
+                    }
                 }
             }
         }
@@ -2743,6 +2847,9 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         Property('')
     ], Dialog.prototype, "content", void 0);
     __decorate$1([
+        Property(true)
+    ], Dialog.prototype, "enableHtmlSanitizer", void 0);
+    __decorate$1([
         Property(false)
     ], Dialog.prototype, "showCloseIcon", void 0);
     __decorate$1([
@@ -2799,6 +2906,9 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Event()
     ], Dialog.prototype, "open", void 0);
+    __decorate$1([
+        Event()
+    ], Dialog.prototype, "beforeSanitizeHtml", void 0);
     __decorate$1([
         Event()
     ], Dialog.prototype, "beforeOpen", void 0);
@@ -3070,6 +3180,7 @@ var POPUP_ROOT$1 = 'e-popup';
 var POPUP_OPEN = 'e-popup-open';
 var POPUP_CLOSE = 'e-popup-close';
 var POPUP_LIB = 'e-lib';
+var HIDE_POPUP = 'e-hidden';
 var Animation$1 = /** @__PURE__ @class */ (function (_super) {
     __extends$2(Animation$$1, _super);
     function Animation$$1() {
@@ -3101,11 +3212,18 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
      * Constructor for creating the Tooltip Component
      */
     function Tooltip(options, element) {
-        return _super.call(this, options, element) || this;
+        var _this = _super.call(this, options, element) || this;
+        _this.isBlazorTooltip = false;
+        _this.contentTargetValue = null;
+        _this.contentEvent = null;
+        _this.contentAnimation = null;
+        return _this;
     }
     Tooltip.prototype.initialize = function () {
         this.formatPosition();
-        addClass([this.element], ROOT$1);
+        if (!(isBlazor() && this.isServerRendered)) {
+            addClass([this.element], ROOT$1);
+        }
     };
     Tooltip.prototype.formatPosition = function () {
         var _a, _b;
@@ -3118,10 +3236,18 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
     };
     Tooltip.prototype.renderArrow = function () {
         this.setTipClass(this.position);
-        var tip = this.createElement('div', { className: ARROW_TIP + ' ' + this.tipClass });
-        tip.appendChild(this.createElement('div', { className: ARROW_TIP_OUTER + ' ' + this.tipClass }));
-        tip.appendChild(this.createElement('div', { className: ARROW_TIP_INNER + ' ' + this.tipClass }));
-        this.tooltipEle.appendChild(tip);
+        if (!(isBlazor() && this.isServerRendered)) {
+            var tip = this.createElement('div', { className: ARROW_TIP + ' ' + this.tipClass });
+            tip.appendChild(this.createElement('div', { className: ARROW_TIP_OUTER + ' ' + this.tipClass }));
+            tip.appendChild(this.createElement('div', { className: ARROW_TIP_INNER + ' ' + this.tipClass }));
+            this.tooltipEle.appendChild(tip);
+        }
+        else {
+            var tip = this.tooltipEle.querySelector('.' + ARROW_TIP);
+            addClass([tip.querySelector('.' + ARROW_TIP_OUTER)], this.tipClass);
+            addClass([tip.querySelector('.' + ARROW_TIP_INNER)], this.tipClass);
+            this.tooltipEle.appendChild(tip);
+        }
     };
     Tooltip.prototype.setTipClass = function (position) {
         if (position.indexOf('Right') === 0) {
@@ -3140,17 +3266,24 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
     Tooltip.prototype.renderPopup = function (target) {
         var elePos = this.mouseTrail ? { top: 0, left: 0 } : this.getTooltipPosition(target);
         this.tooltipEle.classList.remove(POPUP_LIB);
-        this.popupObj = new Popup(this.tooltipEle, {
-            height: this.height,
-            width: this.width,
-            position: {
-                X: elePos.left,
-                Y: elePos.top
-            },
-            enableRtl: this.enableRtl,
-            open: this.openPopupHandler.bind(this),
-            close: this.closePopupHandler.bind(this)
-        });
+        if (isBlazor() && this.isServerRendered) {
+            this.popupObj = new Popup(this.tooltipEle, {
+                position: { X: elePos.left, Y: elePos.top },
+                open: this.openPopupHandler.bind(this),
+                close: this.closePopupHandler.bind(this),
+                enableRtl: this.enableRtl
+            });
+        }
+        else {
+            this.popupObj = new Popup(this.tooltipEle, {
+                height: this.height,
+                width: this.width,
+                position: { X: elePos.left, Y: elePos.top },
+                enableRtl: this.enableRtl,
+                open: this.openPopupHandler.bind(this),
+                close: this.closePopupHandler.bind(this)
+            });
+        }
     };
     Tooltip.prototype.getTooltipPosition = function (target) {
         this.tooltipEle.style.display = 'none';
@@ -3166,7 +3299,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         this.popupObj.dataBind();
     };
     Tooltip.prototype.openPopupHandler = function () {
-        if (this.needTemplateReposition() && !this.mouseTrail) {
+        if (!this.mouseTrail && this.needTemplateReposition()) {
             this.reposition(this.findTarget());
         }
         this.trigger('afterOpen', this.tooltipEventArgs);
@@ -3274,15 +3407,17 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
                 // Arrow icon aligned -6px height from ArrowOuterTip div
                 arrowInnerELe.style.top = '-' + (tipHeight - 6) + 'px';
             }
-            var tipPosExclude = tooltipPositionX !== 'Center' || (tooltipWidth > target.offsetWidth) || this.mouseTrail;
-            if ((tipPosExclude && tooltipPositionX === 'Left') || (!tipPosExclude && this.tipPointerPosition === 'End')) {
-                leftValue = (tooltipWidth - tipWidth - POINTER_ADJUST) + 'px';
-            }
-            else if ((tipPosExclude && tooltipPositionX === 'Right') || (!tipPosExclude && this.tipPointerPosition === 'Start')) {
-                leftValue = POINTER_ADJUST + 'px';
-            }
-            else {
-                leftValue = ((tooltipWidth / 2) - (tipWidth / 2)) + 'px';
+            if (target) {
+                var tipPosExclude = tooltipPositionX !== 'Center' || (tooltipWidth > target.offsetWidth) || this.mouseTrail;
+                if ((tipPosExclude && tooltipPositionX === 'Left') || (!tipPosExclude && this.tipPointerPosition === 'End')) {
+                    leftValue = (tooltipWidth - tipWidth - POINTER_ADJUST) + 'px';
+                }
+                else if ((tipPosExclude && tooltipPositionX === 'Right') || (!tipPosExclude && this.tipPointerPosition === 'Start')) {
+                    leftValue = POINTER_ADJUST + 'px';
+                }
+                else {
+                    leftValue = ((tooltipWidth / 2) - (tipWidth / 2)) + 'px';
+                }
             }
         }
         else {
@@ -3317,19 +3452,24 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             target.removeAttribute('title');
         }
         if (!isNullOrUndefined(this.content)) {
-            tooltipContent.innerHTML = '';
-            if (this.content instanceof HTMLElement) {
-                tooltipContent.appendChild(this.content);
-            }
-            else if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') < 0) {
-                tooltipContent.innerHTML = this.content;
-            }
-            else {
-                var templateFunction = compile(this.content);
-                append(templateFunction({}, null, null, this.element.id + 'content'), tooltipContent);
-                if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') >= 0) {
-                    this.isBlazorTemplate = true;
-                    updateBlazorTemplate(this.element.id + 'content', 'Content', this);
+            if (this.isBlazorTooltip || !(isBlazor() && this.isServerRendered)) {
+                tooltipContent.innerHTML = '';
+                if (this.content instanceof HTMLElement) {
+                    tooltipContent.appendChild(this.content);
+                }
+                else if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') < 0) {
+                    if (this.enableHtmlSanitizer) {
+                        this.setProperties({ content: SanitizeHtmlHelper.sanitize(this.content) }, true);
+                    }
+                    tooltipContent.innerHTML = this.content;
+                }
+                else {
+                    var templateFunction = compile(this.content);
+                    append(templateFunction({}, null, null, this.element.id + 'content'), tooltipContent);
+                    if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') >= 0) {
+                        this.isBlazorTemplate = true;
+                        updateBlazorTemplate(this.element.id + 'content', 'Content', this);
+                    }
                 }
             }
         }
@@ -3433,7 +3573,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         this.trigger('beforeRender', this.tooltipEventArgs, observeCallback.bind(this));
     };
     Tooltip.prototype.beforeRenderCallback = function (beforeRenderArgs, target, e, showAnimation) {
-        var _this = this;
+        var isBlazorTooltipRendered = false;
         if (beforeRenderArgs.cancel) {
             this.isHidden = true;
             this.clear();
@@ -3441,52 +3581,105 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         else {
             this.isHidden = false;
             if (isNullOrUndefined(this.tooltipEle)) {
-                this.ctrlId = this.element.getAttribute('id') ?
-                    getUniqueID(this.element.getAttribute('id')) : getUniqueID('tooltip');
-                this.tooltipEle = this.createElement('div', {
-                    className: TOOLTIP_WRAP + ' ' + POPUP_ROOT$1 + ' ' + POPUP_LIB, attrs: {
-                        role: 'tooltip', 'aria-hidden': 'false', 'id': this.ctrlId + '_content'
-                    }, styles: 'width:' +
-                        formatUnit(this.width) + ';height:' + formatUnit(this.height) + ';position:absolute;'
-                });
-                if (this.cssClass) {
-                    addClass([this.tooltipEle], this.cssClass.split(' '));
+                if (isBlazor() && this.isServerRendered) {
+                    this.contentTargetValue = target;
+                    this.contentEvent = e;
+                    this.contentAnimation = showAnimation;
+                    var args = { 'enableTooltip': 'true' };
+                    // tslint:disable
+                    this.interopAdaptor.invokeMethodAsync('OnTooltipServerCall', args);
+                    // tslint:enable
+                    isBlazorTooltipRendered = true;
                 }
-                if (Browser.isDevice) {
-                    addClass([this.tooltipEle], DEVICE$1);
+                else {
+                    this.ctrlId = this.element.getAttribute('id') ?
+                        getUniqueID(this.element.getAttribute('id')) : getUniqueID('tooltip');
+                    this.tooltipEle = this.createElement('div', {
+                        className: TOOLTIP_WRAP + ' ' + POPUP_ROOT$1 + ' ' + POPUP_LIB, attrs: {
+                            role: 'tooltip', 'aria-hidden': 'false', 'id': this.ctrlId + '_content'
+                        }, styles: 'width:' +
+                            formatUnit(this.width) + ';height:' + formatUnit(this.height) + ';position:absolute;'
+                    });
+                    if (this.cssClass) {
+                        addClass([this.tooltipEle], this.cssClass.split(' '));
+                    }
+                    this.beforeRenderBlazor(target, this);
                 }
-                if (this.width !== 'auto') {
-                    this.tooltipEle.style.maxWidth = formatUnit(this.width);
+                if (!isBlazorTooltipRendered) {
+                    this.afterRenderBlazor(target, e, showAnimation, this);
                 }
-                this.tooltipEle.appendChild(this.createElement('div', { className: CONTENT }));
-                document.body.appendChild(this.tooltipEle);
-                this.addDescribedBy(target, this.ctrlId + '_content');
-                this.renderContent(target);
-                addClass([this.tooltipEle], POPUP_OPEN);
-                if (this.showTipPointer) {
-                    this.renderArrow();
-                }
-                this.renderCloseIcon();
-                this.renderPopup(target);
             }
             else {
-                this.adjustArrow(target, this.position, this.tooltipPositionX, this.tooltipPositionY);
-                this.addDescribedBy(target, this.ctrlId + '_content');
-                this.renderContent(target);
-                Animation.stop(this.tooltipEle);
-                this.reposition(target);
+                if (isBlazor() && this.isServerRendered) {
+                    addClass([this.tooltipEle], POPUP_OPEN);
+                    document.body.appendChild(this.tooltipEle);
+                    this.renderCloseIcon();
+                    this.renderPopup(target);
+                }
+                if (target) {
+                    this.adjustArrow(target, this.position, this.tooltipPositionX, this.tooltipPositionY);
+                    this.addDescribedBy(target, this.ctrlId + '_content');
+                    this.renderContent(target);
+                    Animation.stop(this.tooltipEle);
+                    this.reposition(target);
+                    this.afterRenderBlazor(target, e, showAnimation, this);
+                }
             }
-            removeClass([this.tooltipEle], POPUP_OPEN);
-            addClass([this.tooltipEle], POPUP_CLOSE);
-            this.tooltipEventArgs = e ? { type: e.type, cancel: false, target: target, event: e, element: this.tooltipEle } :
-                { type: null, cancel: false, target: target, event: null, element: this.tooltipEle };
-            if (this.needTemplateReposition() && !this.mouseTrail) {
-                this.tooltipEle.style.display = 'none';
+        }
+    };
+    
+    Tooltip.prototype.contentUpdated = function (args) {
+        if (isNullOrUndefined(this.tooltipEle)) {
+            if (isBlazor() && this.isServerRendered) {
+                this.ctrlId = this.element.id;
+                this.tooltipEle = document.querySelector('#' + this.ctrlId + '_content');
+                this.beforeRenderBlazor(this.contentTargetValue, this);
+                this.afterRenderBlazor(this.contentTargetValue, this.contentEvent, this.contentAnimation, this);
+                this.contentTargetValue = this.contentEvent = this.contentAnimation = null;
+            }
+        }
+    };
+    
+    Tooltip.prototype.beforeRenderBlazor = function (target, ctrlObj) {
+        if (target) {
+            if (Browser.isDevice) {
+                addClass([ctrlObj.tooltipEle], DEVICE$1);
+            }
+            if (ctrlObj.width !== 'auto') {
+                ctrlObj.tooltipEle.style.maxWidth = formatUnit(ctrlObj.width);
+            }
+            if (!(isBlazor() && this.isServerRendered)) {
+                ctrlObj.tooltipEle.appendChild(ctrlObj.createElement('div', { className: CONTENT }));
+            }
+            document.body.appendChild(ctrlObj.tooltipEle);
+            removeClass([ctrlObj.tooltipEle], HIDE_POPUP);
+            ctrlObj.addDescribedBy(target, ctrlObj.ctrlId + '_content');
+            ctrlObj.renderContent(target);
+            addClass([ctrlObj.tooltipEle], POPUP_OPEN);
+            if (ctrlObj.showTipPointer) {
+                ctrlObj.renderArrow();
+            }
+            ctrlObj.renderCloseIcon();
+            ctrlObj.renderPopup(target);
+            ctrlObj.adjustArrow(target, ctrlObj.position, ctrlObj.tooltipPositionX, ctrlObj.tooltipPositionY);
+            Animation.stop(ctrlObj.tooltipEle);
+            ctrlObj.reposition(target);
+        }
+    };
+    Tooltip.prototype.afterRenderBlazor = function (target, e, showAnimation, ctrlObj) {
+        if (target) {
+            removeClass([ctrlObj.tooltipEle], POPUP_OPEN);
+            addClass([ctrlObj.tooltipEle], POPUP_CLOSE);
+            ctrlObj.tooltipEventArgs = e ?
+                { type: e.type, cancel: false, target: target, event: e, element: ctrlObj.tooltipEle } :
+                { type: null, cancel: false, target: target, event: null, element: ctrlObj.tooltipEle };
+            if (ctrlObj.needTemplateReposition() && !ctrlObj.mouseTrail) {
+                ctrlObj.tooltipEle.style.display = 'none';
             }
             var observeCallback = function (observedArgs) {
-                _this.beforeOpenCallback(observedArgs, target, showAnimation, e);
+                ctrlObj.beforeOpenCallback(observedArgs, target, showAnimation, e);
             };
-            this.trigger('beforeOpen', this.tooltipEventArgs, observeCallback.bind(this));
+            ctrlObj.trigger('beforeOpen', ctrlObj.tooltipEventArgs, observeCallback.bind(ctrlObj));
         }
     };
     Tooltip.prototype.beforeOpenCallback = function (observedArgs, target, showAnimation, e) {
@@ -3527,7 +3720,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         var tooltip = this;
         return !isNullOrUndefined(tooltip.viewContainerRef)
             && typeof tooltip.viewContainerRef !== 'string'
-            || isBlazor() && this.isBlazorTemplate;
+            || (isBlazor() && this.isServerRendered) && this.isBlazorTemplate;
     };
     Tooltip.prototype.checkCollision = function (target, x, y) {
         var elePos = {
@@ -3662,7 +3855,16 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             if (this.popupObj) {
                 this.popupObj.destroy();
             }
-            if (this.tooltipEle) {
+            if (isBlazor() && this.isServerRendered && this.tooltipEle) {
+                this.tooltipEle.style.display = 'none';
+                this.tooltipEle = null;
+                var args = { 'enableTooltip': 'false' };
+                // tslint:disable
+                this.interopAdaptor.invokeMethodAsync('OnTooltipServerCall', args);
+                // tslint:enable
+                remove(this.tooltipEle);
+            }
+            else if (this.tooltipEle) {
                 remove(this.tooltipEle);
             }
             this.tooltipEle = null;
@@ -3916,20 +4118,51 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             var prop = _a[_i];
             switch (prop) {
                 case 'width':
-                    if (this.tooltipEle && targetElement) {
-                        this.tooltipEle.style.width = formatUnit(newProp.width);
-                        this.reposition(targetElement);
+                    if (this.tooltipEle) {
+                        if (targetElement) {
+                            this.tooltipEle.style.width = formatUnit(newProp.width);
+                            this.reposition(targetElement);
+                        }
+                    }
+                    else if (isBlazor() && this.isServerRendered) {
+                        var args = { 'width': formatUnit(newProp.width) };
+                        // tslint:disable
+                        this.interopAdaptor.invokeMethodAsync('OnTooltipServerCall', args);
+                        // tslint:enable
+                        if (targetElement) {
+                            this.reposition(targetElement);
+                        }
                     }
                     break;
                 case 'height':
-                    if (this.tooltipEle && targetElement) {
-                        this.tooltipEle.style.height = formatUnit(newProp.height);
-                        this.reposition(targetElement);
+                    if (this.tooltipEle) {
+                        if (targetElement) {
+                            this.tooltipEle.style.height = formatUnit(newProp.height);
+                            this.reposition(targetElement);
+                        }
+                    }
+                    else if (isBlazor() && this.isServerRendered) {
+                        var args = { 'height': formatUnit(newProp.height) };
+                        // tslint:disable
+                        this.interopAdaptor.invokeMethodAsync('OnTooltipServerCall', args);
+                        // tslint:enable
+                        if (targetElement) {
+                            this.reposition(targetElement);
+                        }
                     }
                     break;
                 case 'content':
                     if (this.tooltipEle) {
+                        if (isBlazor() && this.isServerRendered) {
+                            this.isBlazorTooltip = true;
+                        }
                         this.renderContent();
+                    }
+                    else if (isBlazor() && this.isServerRendered) {
+                        var args = { 'content': newProp.content };
+                        // tslint:disable
+                        this.interopAdaptor.invokeMethodAsync('OnTooltipServerCall', args);
+                        // tslint:enable
                     }
                     break;
                 case 'opensOn':
@@ -3969,6 +4202,12 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
                         if (newProp.cssClass) {
                             addClass([this.tooltipEle], newProp.cssClass.split(' '));
                         }
+                    }
+                    else if (isBlazor() && this.isServerRendered) {
+                        var args = { 'cssClass': newProp.cssClass };
+                        // tslint:disable
+                        this.interopAdaptor.invokeMethodAsync('OnTooltipServerCall', args);
+                        // tslint:enable
                     }
                     break;
                 case 'enableRtl':
@@ -4087,6 +4326,9 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
     __decorate$2([
         Property()
     ], Tooltip.prototype, "cssClass", void 0);
+    __decorate$2([
+        Property(false)
+    ], Tooltip.prototype, "enableHtmlSanitizer", void 0);
     __decorate$2([
         Event()
     ], Tooltip.prototype, "beforeRender", void 0);

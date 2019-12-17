@@ -1,7 +1,7 @@
 /**
  * Spreadsheet default sample
  */
-import { Spreadsheet, SheetModel, ColumnModel } from './../../../../src/index';
+import { Spreadsheet, SheetModel, ColumnModel, SortEventArgs, CellSaveEventArgs, SaveCompleteEventArgs, CollaborativeEditArgs, BeforeCellFormatArgs } from './../../../../src/index';
 import { enableRipple } from '@syncfusion/ej2-base';
 import { switchTheme } from '../../../common/switch-theme';
 import { defaultData as dataSource } from './../../../common/data-source';
@@ -26,6 +26,7 @@ let columns: ColumnModel[] = [
 ];
 
 let sheet: SheetModel[] = [{
+    name: 'PriceDetails',
     rangeSettings: [{
         dataSource: dataSource,
         startCell: 'A1'
@@ -41,8 +42,22 @@ let spreadsheet: Spreadsheet = new Spreadsheet({
             spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
         }
     },
-    openUrl: 'https://ej2services.syncfusion.com/development/web-services/api/spreadsheet/open',
-    saveUrl: 'https://ej2services.syncfusion.com/development/web-services/api/spreadsheet/save'
+    openUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/open',
+    saveUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/save',
+    actionBegin:(args: object) => {
+        console.log(args);
+    },
+    actionComplete: (args: SortEventArgs | CellSaveEventArgs | SaveCompleteEventArgs |CollaborativeEditArgs | Object) => {
+        //spreadsheet.refreshClient(args as CollaborativeEditArgs);
+        console.log(args);
+    },
+    beforeCellFormat: (args: BeforeCellFormatArgs) => {
+        console.log(args);
+    },
+    openComplete: (args: Object) => {
+        console.log(args);
+    }
+    
 });
 
 spreadsheet.appendTo('#spreadsheet');

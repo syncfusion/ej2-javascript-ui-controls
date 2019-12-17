@@ -359,6 +359,8 @@ export class PivotButton implements IAction {
             engineModule = this.parent.engineModule;
         }
         if (!this.parent.allowDeferLayoutUpdate) {
+            engineModule.fieldList[fieldName].filter = engineModule.fieldList[fieldName].filter === null ?
+                [] : engineModule.fieldList[fieldName].filter;
             filterCLass = engineModule.fieldList[fieldName].filter.length === 0 ?
                 !engineModule.fieldList[fieldName].isExcelFilter ? cls.FILTER_CLASS : cls.FILTERED_CLASS : cls.FILTERED_CLASS;
         } else {
@@ -665,6 +667,31 @@ export class PivotButton implements IAction {
         }
     }
     private updateFiltering(args: MouseEventArgs): void {
+        let pivotObj: PivotView = (this.parent as any).pivotGridModule ? (this.parent as any).pivotGridModule : this.parent;
+        if (pivotObj && pivotObj.enableVirtualization && isBlazor() && pivotObj.dataType == 'pivot') {
+            let fieldName: string = (args.target as HTMLElement).parentElement.id;
+            let _this: PivotButton = this;
+            (pivotObj as any).interopAdaptor.invokeMethodAsync("PivotInteropMethod", 'fetchFieldMembers',
+                fieldName).then(function (data: any) {
+                    let parsedData: any = JSON.parse(data.dateMembers);
+                    let dateMembers: any = [];
+                    let formattedMembers: any = {};
+                    let members: any = {};
+                    for (var i = 0; i < parsedData.length; i++) {
+                        dateMembers.push({ formattedText: parsedData[i].FormattedText, actualText: parsedData[i].ActualText });
+                        formattedMembers[parsedData[i].FormattedText] = {};
+                        members[parsedData[i].ActualText] = {};
+                    }
+                    _this.parent.engineModule.fieldList[fieldName].dateMember = dateMembers;
+                    _this.parent.engineModule.fieldList[fieldName].formattedMembers = formattedMembers;
+                    _this.parent.engineModule.fieldList[fieldName].members = members;
+                    _this.updateFilterEvents(args);
+                });
+        } else {
+            this.updateFilterEvents(args);
+        }
+    }
+    private updateFilterEvents(args: MouseEventArgs): void {
         this.parent.pivotCommon.eventBase.updateFiltering(args);
         let target: HTMLElement = args.target as HTMLElement;
         this.fieldName = target.parentElement.id;

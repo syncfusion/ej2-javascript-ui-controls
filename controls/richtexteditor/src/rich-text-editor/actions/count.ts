@@ -34,6 +34,11 @@ export class Count {
         this.editPanel = this.contentRenderer.getEditPanel();
     }
 
+    /**
+     * renderCount method
+     * @hidden
+     * @deprecated
+     */
     public renderCount(): void {
         this.initializeInstance();
         this.element = this.parent.createElement('span', { className: CLS_COUNT });
@@ -65,6 +70,7 @@ export class Count {
     }
     /**
      * @hidden
+     * @deprecated
      */
     public refresh(): void {
         if (!isNullOrUndefined(this.editPanel)) {
@@ -78,6 +84,7 @@ export class Count {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     public destroy(): void {
         this.removeEventListener();

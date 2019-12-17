@@ -19,6 +19,10 @@ export class TestHelper {
         return document.querySelector(elemRefr);
     }
 
+    public getElements(elemRefr: string = '#' + this.id): any {
+        return document.querySelectorAll(elemRefr);
+    }
+
     public getInstance(elemRefr: string = '#' + this.id): any {
         return this.getElement(elemRefr).ej2_instances[0];
     }

@@ -1,6 +1,6 @@
 import { Maps } from '../../index';
 import { LayerSettings, convertTileLatLongToPoint  } from '../index';
-import { convertGeoToPoint, Point, PathOption } from '../utils/helper';
+import { convertGeoToPoint, Point, PathOption, maintainSelection } from '../utils/helper';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * navigation-selected-line
@@ -125,6 +125,8 @@ export class NavigationLine {
                         (arrowPosition === 'Start') ? navigationEle.setAttribute('marker-start', startArrow)
                             : navigationEle.setAttribute('marker-end', endArrow);
                     }
+                    maintainSelection(this.maps.selectedNavigationElementId, this.maps.navigationSelectionClass, navigationEle,
+                                      'navigationlineselectionMapStyle');
                     navigationGroup.appendChild(navigationEle);
                     group.appendChild(navigationGroup);
                 }

@@ -279,6 +279,32 @@ describe('Progress Button', () => {
         }
     });
 
+    it('Enable Html Sanitizer', () => {
+        new ProgressButton({ content: 'Progress<style>body{background:rgb(0, 0, 255)}</style>', enableHtmlSanitizer: true }, '#progressbtn17');
+        let htmlele: Element = document.body;
+        expect(window.getComputedStyle(htmlele).backgroundColor).not.toBe('rgb(0, 0, 255)');
+    });
+
+    it('Enable Html Sanitizer disabled', () => {
+        let ele: any = createElement('button', { id: 'progressbtn17' });
+        document.body.appendChild(ele);
+        let button: ProgressButton = new ProgressButton({ content: 'Progress<style>body{background:rgb(0, 0, 255)}</style>' }, '#progressbtn17');
+        let htmlele: Element = document.body;
+        expect(window.getComputedStyle(htmlele).backgroundColor).toBe('rgb(0, 0, 255)');
+        button.destroy();
+    });
+
+    it('Progress Complete', () => {
+        let ele: any = createElement('button', { id: 'progressbtn18' });
+        document.body.appendChild(ele);
+        let button: any = new ProgressButton({ content: 'ProgressComplete', enableProgress: true, duration: 1000 }, '#progressbtn9');
+        button.start(50);
+        button.stop();
+        expect(button.percent).toBeGreaterThan(40);
+        button.progressComplete();
+        expect(button.percent).toEqual(0);
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange);

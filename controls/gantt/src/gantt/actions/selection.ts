@@ -29,6 +29,7 @@ export class Selection {
         this.bindEvents();
         this.parent.treeGrid.selectedRowIndex = this.parent.selectedRowIndex;
         this.parent.treeGrid.allowSelection = this.parent.allowSelection;
+        this.parent.treeGrid.grid.selectionSettings.enableToggle = this.parent.selectionSettings.enableToggle;
         this.parent.treeGrid.selectionSettings = getActualProperties(this.parent.selectionSettings);
         this.wireEvents();
     }
@@ -187,7 +188,10 @@ export class Selection {
         if (index === -1 || isNullOrUndefined(selectedRow) || this.parent.selectionSettings.mode === 'Cell') {
             return;
         }
+        this.parent.treeGrid.grid.selectionModule.preventFocus = true;
         this.parent.treeGrid.selectRow(index, isToggle);
+        this.parent.treeGrid.grid.selectionModule.preventFocus = this.parent.treeGrid.grid.selectionModule.preventFocus === true ?
+            false : this.parent.treeGrid.grid.selectionModule.preventFocus;
         this.prevRowIndex = index;
     }
 
@@ -279,13 +283,15 @@ export class Selection {
         this.actualTarget = e.target;
         this.isInteracted = true;
         this.isSelectionFromChart = fromChart;
+        let isToggle: boolean = this.parent.selectionSettings.enableToggle;
         if (fromChart) {
             if (this.parent.selectionSettings.type === 'Single' || (!this.isMultiCtrlRequest && !this.isMultiShiftRequest)) {
-                this.selectRow(rIndex, true);
+                this.selectRow(rIndex, isToggle);
             } else {
                 if (this.isMultiShiftRequest) {
                     this.selectRowsByRange(isNullOrUndefined(this.prevRowIndex) ? rIndex : this.prevRowIndex, rIndex);
                 } else {
+                    setValue('isMultiCtrlRequest', true, this.parent.treeGrid.grid.selectionModule);
                     this.parent.treeGrid.grid.selectionModule.addRowsToSelection([rIndex]);
                 }
             }

@@ -338,16 +338,16 @@ export class HtmlExport {
             //if (cell.cellFormat.shading.backgroundColor !== Color.FromArgb(0, 0, 0, 0)) {
             tagAttributes.push('bgcolor="' + cell.cellFormat.shading.backgroundColor + '"');
             // }
-            if (cell.cellFormat.columnSpan > 1) {
+            if (!isNullOrUndefined(cell.cellFormat.columnSpan) && cell.cellFormat.columnSpan > 1) {
                 tagAttributes.push('colspan="' + cell.cellFormat.columnSpan.toString() + '"');
             }
-            if (cell.cellFormat.rowSpan > 1) {
+            if (!isNullOrUndefined(cell.cellFormat.rowSpan) && cell.cellFormat.rowSpan > 1) {
                 tagAttributes.push('rowspan="' + cell.cellFormat.rowSpan.toString() + '"');
             }
-            if (cell.cellFormat.cellWidth !== 0) {
+            if (!isNullOrUndefined(cell.cellFormat.cellWidth) && cell.cellFormat.cellWidth !== 0) {
                 tagAttributes.push('width="' + cell.cellFormat.cellWidth.toString() + '"');
             }
-            if (cell.cellFormat.verticalAlignment !== 'Top') {
+            if (!isNullOrUndefined(cell.cellFormat.verticalAlignment) && cell.cellFormat.verticalAlignment !== 'Top') {
                 tagAttributes.push('valign="' + cell.cellFormat.verticalAlignment.toString().toLowerCase() + '"');
             }
             if (!isNullOrUndefined(cell.cellFormat.leftMargin) && cell.cellFormat.leftMargin !== 0) {
@@ -431,33 +431,57 @@ export class HtmlExport {
     public serializeTableBorderStyle(borders: any): string {
         let borderStyle: string = '';
 
-        borderStyle += ('border-left-style:' + this.convertBorderLineStyle(borders.left.lineStyle));
-        borderStyle += ';';
-        borderStyle += ('border-left-width:' + borders.left.lineWidth.toString() + 'pt');
-        borderStyle += ';';
-        borderStyle += ('border-left-color:' + borders.left.color);
-        borderStyle += ';';
+        if (!isNullOrUndefined(borders.left.lineStyle)) {
+            borderStyle += ('border-left-style:' + this.convertBorderLineStyle(borders.left.lineStyle));
+            borderStyle += ';';
+        }
+        if (borders.left.lineWidth) {
+            borderStyle += ('border-left-width:' + borders.left.lineWidth.toString() + 'pt');
+            borderStyle += ';';
+        }
+        if (borders.left.color) {
+            borderStyle += ('border-left-color:' + borders.left.color);
+            borderStyle += ';';
+        }
+        if (!isNullOrUndefined(borders.right.lineStyle)) {
+            borderStyle += ('border-right-style:' + this.convertBorderLineStyle(borders.right.lineStyle));
+            borderStyle += ';';
+        }
+        if (!isNullOrUndefined(borders.right.lineWidth)) {
+            borderStyle += ('border-right-width:' + borders.right.lineWidth.toString() + 'pt');
+            borderStyle += ';';
+        }
+        if (!isNullOrUndefined(borders.right.color)) {
 
-        borderStyle += ('border-right-style:' + this.convertBorderLineStyle(borders.right.lineStyle));
-        borderStyle += ';';
-        borderStyle += ('border-right-width:' + borders.right.lineWidth.toString() + 'pt');
-        borderStyle += ';';
-        borderStyle += ('border-right-color:' + borders.right.color);
-        borderStyle += ';';
+            borderStyle += ('border-right-color:' + borders.right.color);
+            borderStyle += ';';
+        }
+        if (!isNullOrUndefined(borders.top.lineStyle)) {
+            borderStyle += ('border-top-style:' + this.convertBorderLineStyle(borders.top.lineStyle));
+            borderStyle += ';';
+        }
+        if (!isNullOrUndefined(borders.top.lineWidth)) {
+            borderStyle += ('border-top-width:' + borders.top.lineWidth.toString() + 'pt');
+            borderStyle += ';';
+        }
+        if (!isNullOrUndefined(borders.top.color)) {
 
-        borderStyle += ('border-top-style:' + this.convertBorderLineStyle(borders.top.lineStyle));
-        borderStyle += ';';
-        borderStyle += ('border-top-width:' + borders.top.lineWidth.toString() + 'pt');
-        borderStyle += ';';
-        borderStyle += ('border-top-color:' + borders.top.color);
-        borderStyle += ';';
+            borderStyle += ('border-top-color:' + borders.top.color);
+            borderStyle += ';';
+        }
+        if (!isNullOrUndefined(borders.bottom.lineStyle)) {
+            borderStyle += ('border-bottom-style:' + this.convertBorderLineStyle(borders.bottom.lineStyle));
+            borderStyle += ';';
+        }
+        if (!isNullOrUndefined(borders.bottom.lineWidth)) {
+            borderStyle += ('border-bottom-width:' + borders.bottom.lineWidth.toString() + 'pt');
+            borderStyle += ';';
+        }
+        if (!isNullOrUndefined(borders.bottom.color)) {
 
-        borderStyle += ('border-Bottom-style:' + this.convertBorderLineStyle(borders.bottom.lineStyle));
-        borderStyle += ';';
-        borderStyle += ('border-Bottom-width:' + borders.bottom.lineWidth.toString() + 'pt');
-        borderStyle += ';';
-        borderStyle += ('border-Bottom-color:' + borders.bottom.color);
-        borderStyle += ';';
+            borderStyle += ('border-bottom-color:' + borders.bottom.color);
+            borderStyle += ';';
+        }
         return borderStyle;
     }
     /**
@@ -746,12 +770,14 @@ export class HtmlExport {
         tagAttributes.push('border="' + '1"');
         if (!isNullOrUndefined(table.tableFormat)) {
             //if (table.tableFormat.shading.backgroundColor !== Color.FromArgb(0, 0, 0, 0)) {
-            tagAttributes.push('bgcolor="' + table.tableFormat.shading.backgroundColor + '"');
+            if (!isNullOrUndefined(table.tableFormat.shading) && !isNullOrUndefined(table.tableFormat.shading.backgroundColor)) {
+                tagAttributes.push('bgcolor="' + table.tableFormat.shading.backgroundColor + '"');
+            }
             //}
-            if (table.tableFormat.leftIndent !== 0) {
+            if (!isNullOrUndefined(table.tableFormat.leftIndent) && table.tableFormat.leftIndent !== 0) {
                 tagAttributes.push('left-indent="' + table.tableFormat.leftIndent.toString() + 'pt;');
             }
-            if (table.tableFormat.cellSpacing > 0) {
+            if (!isNullOrUndefined(table.tableFormat.cellSpacing) && table.tableFormat.cellSpacing > 0) {
                 tagAttributes.push('cellspacing="' + (((table.tableFormat.cellSpacing * 72) / 96) * 2).toString() + '"');
             } else {
                 tableStyle += ('border-collapse:collapse;');
@@ -783,7 +809,7 @@ export class HtmlExport {
         if (row.rowFormat.isHeader) {
             blockStyle += (this.createTag('thead'));
         }
-        if (row.rowFormat.height > 0) {
+        if (!isNullOrUndefined(row.rowFormat.height) && row.rowFormat.height > 0) {
             tagAttributes.push('height="' + row.rowFormat.height + '"');
         }
         return blockStyle + this.createAttributesTag('tr', tagAttributes);

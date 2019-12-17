@@ -64,12 +64,16 @@ describe('Gantt Selection support', () => {
             expect(ganttObj.selectionModule.getSelectedRowCellIndexes()[0].rowIndex).toBe(1);
         });
         it('DeSelect a row by clicking on treegrid side', () => {
+            ganttObj.selectionSettings.enableToggle = true;
+            ganttObj.dataBind();
             let cell: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
             triggerMouseEvent(cell, 'click', 10, 10);
             triggerMouseEvent(cell, 'click', 10, 10);
             expect(ganttObj.selectionModule.getSelectedRecords().length).toBe(0);
         });
         it('Deselect row', () => {
+            ganttObj.selectionSettings.enableToggle = true;
+            ganttObj.dataBind();
             let row: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-left-label-container') as HTMLElement;
             triggerMouseEvent(row, 'mouseup', 10, 10, false, true);
             triggerMouseEvent(row, 'mouseup', 10, 10, false, true);
@@ -93,6 +97,44 @@ describe('Gantt Selection support', () => {
             let updateToolbar: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_update') as HTMLElement;
             triggerMouseEvent(updateToolbar, 'click');
             expect((ganttObj.selectionModule.getSelectedRows().length)).toBe(1);
+        });
+        it('Select a row when the toggle selection disabled', () => {
+            ganttObj.selectionModule.clearSelection();
+            ganttObj.selectionSettings.enableToggle = false;
+            ganttObj.selectionSettings.type = 'Single';
+            ganttObj.selectionSettings.mode = 'Row';
+            ganttObj.dataBind();
+            let row: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-left-label-container') as HTMLElement;
+            triggerMouseEvent(row, 'mouseup', 10, 10, false, true);
+            triggerMouseEvent(row, 'mouseup', 10, 10, false, true);
+            expect(ganttObj.selectionModule.getSelectedRecords().length).toBe(1);
+        });
+        it('Select a row when the toggle selection enabled', () => {
+            ganttObj.selectionModule.clearSelection();
+            ganttObj.selectionSettings.enableToggle = true;
+            ganttObj.dataBind();
+            let row: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-left-label-container') as HTMLElement;
+            triggerMouseEvent(row, 'mouseup', 10, 10, false, true);
+            triggerMouseEvent(row, 'mouseup', 10, 10, false, true);
+            expect(ganttObj.selectionModule.getSelectedRecords().length).toBe(0);
+        });
+        it('Select a cell when the toggle selection enabled', () => {
+            ganttObj.selectionModule.clearSelection();
+            ganttObj.selectionSettings.mode = 'Cell';
+            ganttObj.dataBind();
+            let cell: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-Child(2)') as HTMLElement;
+            triggerMouseEvent(cell, 'click', 10, 10);
+            triggerMouseEvent(cell, 'click', 10, 10);
+            expect(ganttObj.selectionModule.getSelectedRowCellIndexes().length).toBe(0);
+        });
+        it('Select a cell when the toggle selection disabled', () => {
+            ganttObj.selectionModule.clearSelection();
+            ganttObj.selectionSettings.enableToggle = false;
+            ganttObj.dataBind();
+            let cell: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-Child(2)') as HTMLElement;
+            triggerMouseEvent(cell, 'click', 10, 10);
+            triggerMouseEvent(cell, 'click', 10, 10);
+            expect(ganttObj.selectionModule.getSelectedRowCellIndexes().length).toBe(1);
         });
         it('Enabling persist selection', () => {
             ganttObj.selectionSettings.persistSelection = true;

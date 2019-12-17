@@ -1,6 +1,7 @@
 /**
  * Is formatted or not.
  * @hidden
+ * @deprecated
  */
 export class IsFormatted {
    // Get Formatted Node
@@ -29,6 +30,11 @@ export class IsFormatted {
     'u',
     'var'   ];
 
+    /**
+     * getFormattedNode method
+     * @hidden
+     * @deprecated
+     */
     public getFormattedNode(node: Node, format: string, endNode: Node ): Node {
         let parentNode: Node = this.getFormatParent(node, format, endNode);
         if (parentNode !== null && parentNode !== endNode) {
@@ -73,6 +79,11 @@ export class IsFormatted {
     }
 
 
+    /**
+     * isBold method
+     * @hidden
+     * @deprecated
+     */
     public static isBold(node : Node): boolean {
         let validTags : string[] = ['strong', 'b'];
         if ( validTags.indexOf(node.nodeName.toLowerCase()) !== -1 ) {
@@ -85,6 +96,11 @@ export class IsFormatted {
         }
     }
 
+    /**
+     * isItalic method
+     * @hidden
+     * @deprecated
+     */
     public static isItalic(node : Node): boolean {
         let validTags : string[] = ['em', 'i'];
         if ( validTags.indexOf(node.nodeName.toLowerCase()) !== -1 ) {
@@ -97,6 +113,11 @@ export class IsFormatted {
         }
     }
 
+    /**
+     * isUnderline method
+     * @hidden
+     * @deprecated
+     */
     public static isUnderline(node : Node): boolean {
         let validTags : string[] = ['u'];
         if ( validTags.indexOf(node.nodeName.toLowerCase()) !== -1 ) {
@@ -109,6 +130,11 @@ export class IsFormatted {
         }
     }
 
+    /**
+     * isStrikethrough method
+     * @hidden
+     * @deprecated
+     */
     public static isStrikethrough(node : Node): boolean {
         let validTags : string[] = ['del', 'strike'];
         if ( validTags.indexOf(node.nodeName.toLowerCase()) !== -1 ) {
@@ -121,6 +147,11 @@ export class IsFormatted {
         }
     }
 
+    /**
+     * isSuperscript method
+     * @hidden
+     * @deprecated
+     */
     public static isSuperscript(node : Node): boolean {
         let validTags : string[] = ['sup'];
         if ( validTags.indexOf(node.nodeName.toLowerCase()) !== -1 ) {
@@ -130,6 +161,11 @@ export class IsFormatted {
         }
     }
 
+    /**
+     * isSubscript method
+     * @hidden
+     * @deprecated
+     */
     public static isSubscript(node : Node): boolean {
         let validTags : string[] = ['sub'];
         if ( validTags.indexOf(node.nodeName.toLowerCase()) !== -1 ) {

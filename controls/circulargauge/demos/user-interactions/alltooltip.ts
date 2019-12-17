@@ -45,8 +45,7 @@ let circulargauge: CircularGauge = new CircularGauge({
         type:['Pointer', 'Range', 'Annotation'],
         enable: true,
         enableAnimation: false,
-        annotationSettings: { format:'3:00 PM', border: {}, textStyle:{} },
-        rangeSettings: { border: {}, textStyle: {}}
+        annotationSettings: { format:'3:00 PM' },
     },
     tooltipRender: (args: ITooltipRenderEventArgs) => {
         if(args.pointer){

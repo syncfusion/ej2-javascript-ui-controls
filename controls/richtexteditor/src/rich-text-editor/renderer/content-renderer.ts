@@ -5,6 +5,7 @@ import { getEditValue } from '../base/util';
 /**
  * Content module is used to render RichTextEditor content
  * @hidden
+ * @deprecated
  */
 export class ContentRender implements IRenderer {
     //Internal variables
@@ -23,6 +24,8 @@ export class ContentRender implements IRenderer {
 
     /**
      * The function is used to render RichTextEditor content div
+     * @hidden
+     * @deprecated
      */
     public renderPanel(): void {
         let rteObj: IRichTextEditor = this.parent;
@@ -44,6 +47,8 @@ export class ContentRender implements IRenderer {
     /**
      * Get the content div element of RichTextEditor
      * @return {Element}
+     * @hidden
+     * @deprecated
      */
     public getPanel(): Element {
         return this.contentPanel;
@@ -52,6 +57,8 @@ export class ContentRender implements IRenderer {
     /**
      * Get the editable element of RichTextEditor
      * @return {Element}
+     * @hidden
+     * @deprecated
      */
     public getEditPanel(): Element {
         return this.editableElement;
@@ -68,6 +75,8 @@ export class ContentRender implements IRenderer {
     /**
      * Set the content div element of RichTextEditor
      * @param {Element} panel
+     * @hidden
+     * @deprecated
      */
     public setPanel(panel: Element): void {
         this.contentPanel = panel;
@@ -76,6 +85,8 @@ export class ContentRender implements IRenderer {
     /**
      * Get the document of RichTextEditor
      * @return {Document}
+     * @hidden
+     * @deprecated
      */
     public getDocument(): Document {
         return this.getEditPanel().ownerDocument;

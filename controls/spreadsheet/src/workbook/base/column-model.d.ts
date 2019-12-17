@@ -25,4 +25,11 @@ export interface ColumnModel {
      */
     customWidth?: boolean;
 
+    /**
+     * To hide/show the column in spreadsheet.
+     * @default false
+     * @hidden
+     */
+    hidden?: boolean;
+
 }

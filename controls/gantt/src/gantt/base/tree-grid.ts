@@ -261,6 +261,11 @@ export class GanttTreeGrid {
         if (isBlazor()) {
             this.parent.updateDataArgs(updatedArgs);
         }
+        if (this.parent.isCancelled) {
+            setValue('requestType', 'cancel', updatedArgs);
+            setValue('action', 'CellEditing', updatedArgs);
+            this.parent.isCancelled = false;
+        }
         this.parent.trigger('actionComplete', updatedArgs);
     }
 
@@ -272,6 +277,8 @@ export class GanttTreeGrid {
         delete this.parent.treeGrid.grid.keyboardModule.keyConfigs.ctrlHome;
         delete this.parent.treeGrid.grid.keyboardModule.keyConfigs.ctrlEnd;
         delete this.parent.treeGrid.grid.keyboardModule.keyConfigs.enter;
+        delete this.parent.treeGrid.grid.keyboardModule.keyConfigs.tab;
+        delete this.parent.treeGrid.grid.keyboardModule.keyConfigs.shiftTab;
         delete this.parent.treeGrid.keyboardModule.keyConfigs.enter;
         delete this.parent.treeGrid.keyboardModule.keyConfigs.upArrow;
         delete this.parent.treeGrid.keyboardModule.keyConfigs.downArrow;
@@ -279,6 +286,8 @@ export class GanttTreeGrid {
         delete this.parent.treeGrid.keyboardModule.keyConfigs.ctrlShiftDownArrow;
         delete this.parent.treeGrid.keyboardModule.keyConfigs.ctrlUpArrow;
         delete this.parent.treeGrid.keyboardModule.keyConfigs.ctrlDownArrow;
+        delete this.parent.treeGrid.keyboardModule.keyConfigs.tab;
+        delete this.parent.treeGrid.keyboardModule.keyConfigs.shiftTab;
     }
 
     /**
@@ -309,6 +318,9 @@ export class GanttTreeGrid {
             this.parent.notify('grid-scroll', { top: content.scrollTop });
         }
         this.previousScroll.top = content.scrollTop;
+        if (this.parent.contextMenuModule && this.parent.contextMenuModule.isOpen) {
+            this.parent.contextMenuModule.contextMenu.close();
+        }
     }
     /**
      * @private
@@ -369,6 +381,7 @@ export class GanttTreeGrid {
      */
     private createTreeGridColumn(column: GanttColumnModel, isDefined?: boolean): void {
         let taskSettings: TaskFieldsModel = this.parent.taskFields;
+        column.disableHtmlEncode = column.disableHtmlEncode ? column.disableHtmlEncode : this.parent.disableHtmlEncode;
         if (taskSettings.id !== column.field) {
             column.clipMode = column.clipMode ? column.clipMode : 'EllipsisWithTooltip';
         }
@@ -468,7 +481,7 @@ export class GanttTreeGrid {
         column.isPrimaryKey = isNullOrUndefined(column.isPrimaryKey) ? true : column.isPrimaryKey;
         column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('id');
         column.width = column.width ? column.width : 100;
-        column.allowEditing = false;
+        column.allowEditing = column.allowEditing ? column.allowEditing : false;
         column.editType = column.editType ? column.editType : 'numericedit';
     }
 

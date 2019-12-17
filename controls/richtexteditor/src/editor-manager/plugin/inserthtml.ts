@@ -8,8 +8,14 @@ import { InsertMethods } from './insert-methods';
 /**
  * Insert a HTML Node or Text
  * @hidden
+ * @deprecated
  */
 export class InsertHtml {
+    /**
+     * Insert method
+     * @hidden
+     * @deprecated
+     */
     public static Insert(docElement: Document, insertNode: Node | string, editNode?: Element): void {
         let node: Node;
         if (typeof insertNode === 'string') {
@@ -22,6 +28,8 @@ export class InsertHtml {
         let nodeSelection: NodeSelection = new NodeSelection();
         let nodeCutter: NodeCutter = new NodeCutter();
         let range: Range = nodeSelection.getRange(docElement);
+        let isCursor: boolean = range.startOffset === range.endOffset && range.startOffset === 0 &&
+        range.startContainer === range.endContainer;
         let isCollapsed: boolean = range.collapsed;
         let nodes: Node[] = nodeSelection.getInsertNodeCollection(range);
         let closestParentNode: Node = (node.nodeName.toLowerCase() === 'table') ? this.closestEle(nodes[0].parentNode, editNode) : nodes[0];
@@ -65,8 +73,10 @@ export class InsertHtml {
                 if (previousNode !== null) {
                     parentNode = previousNode;
                 }
-                if (parentNode.firstChild && (parentNode as HTMLElement).contentEditable !== 'true') {
-                    if (parentNode.textContent.trim() === '') {
+                if (parentNode.firstChild && ((parentNode as HTMLElement) !== editNode ||
+                (node.nodeName === 'TABLE' && isCursor && parentNode === range.startContainer &&
+                parentNode === range.endContainer))) {
+                    if (parentNode.textContent.trim() === '' && (parentNode as HTMLElement) !== editNode) {
                         InsertMethods.AppendBefore(node as HTMLElement, parentNode as HTMLElement, false);
                         detach(parentNode);
                     } else {
@@ -102,9 +112,7 @@ export class InsertHtml {
             let lastNode: Node = node.lastChild;
             lastNode = lastNode.nodeName === 'BR' ? lastNode.previousSibling : lastNode;
             while (!isNOU(lastNode) && lastNode.nodeName !== '#text' && lastNode.nodeName !== 'IMG' &&
-            lastNode.nodeName !== 'BR') {
-                lastNode = lastNode.lastChild;
-            }
+            lastNode.nodeName !== 'BR') { lastNode = lastNode.lastChild; }
             lastNode = isNOU(lastNode) ? node : lastNode;
             nodeSelection.setSelectionText(docElement, lastNode, lastNode, lastNode.textContent.length, lastNode.textContent.length);
         }

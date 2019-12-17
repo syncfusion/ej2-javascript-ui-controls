@@ -125,6 +125,10 @@ export class Link {
     }
 
     private editAreaClickHandler(e: IImageNotifyArgs): void {
+        if (this.parent.readonly) {
+            this.hideLinkQuickToolbar();
+            return;
+        }
         let args: MouseEvent = e.args as MouseEvent;
         let showOnRightClick: boolean = this.parent.quickToolbarSettings.showOnRightClick;
         if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) { return; }
@@ -278,7 +282,7 @@ export class Link {
         if ((this.parent.editorMode === 'HTML' && isNullOrUndefined(inputDetails) && ((!isNullOrUndefined(selectText)
             && selectText !== '') && (e.selection.range.startOffset === 0) || e.selection.range.startOffset !==
             e.selection.range.endOffset)) || e.module === 'Markdown') { linkText.value = selectText; }
-        EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
+        EventHandler.add(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick, this);
         if (this.quickToolObj) {
             this.hideLinkQuickToolbar();
             if (this.quickToolObj.inlineQTBar && document.body.contains(this.quickToolObj.inlineQTBar.element)) {
@@ -386,7 +390,9 @@ export class Link {
         return <HTMLElement>(selectParent ? selectParent : element);
     }
     private editLink(e: NotifyArgs): void {
+        let selectedNode: HTMLElement = this.getAnchorNode(e.selectNode[0] as HTMLElement);
         let selectParentEle: HTMLElement = this.getAnchorNode(e.selectParent[0] as HTMLElement);
+        selectParentEle = selectedNode.nodeName === 'A' ? selectedNode : selectParentEle;
         if (selectParentEle.classList.contains('e-rte-anchor') || selectParentEle.tagName === 'A') {
             let linkUpdate: string = this.i10n.getConstant('dialogUpdate');
             let inputDetails: { [key: string]: string } = {
@@ -428,6 +434,7 @@ export class Link {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     public destroy(): void {
         this.removeEventListener();

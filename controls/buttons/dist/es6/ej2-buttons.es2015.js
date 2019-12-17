@@ -1,4 +1,4 @@
-import { Component, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, attributes, closest, deleteObject, detach, getElement, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, isRippleEnabled, removeClass, rippleEffect, setValue } from '@syncfusion/ej2-base';
+import { Component, Event, EventHandler, NotifyPropertyChanges, Observer, Property, SanitizeHtmlHelper, addClass, append, attributes, closest, deleteObject, detach, getElement, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, isRippleEnabled, removeClass, rippleEffect, setValue } from '@syncfusion/ej2-base';
 
 /**
  * Initialize wrapper element for angular.
@@ -120,6 +120,7 @@ var __decorate = (undefined && undefined.__decorate) || function (decorators, ta
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+const buttonObserver = new Observer();
 const cssClassName = {
     RTL: 'e-rtl',
     BUTTON: 'e-btn',
@@ -156,7 +157,16 @@ let Button = class Button extends Component {
      * @private
      */
     render() {
-        this.initialize();
+        if (isBlazor() && this.isServerRendered) {
+            if (!this.disabled) {
+                this.wireEvents();
+            }
+            buttonObserver.notify('component-rendered', { id: this.element.id, instance: this });
+        }
+        else {
+            this.initialize();
+        }
+        this.removeRippleEffect = rippleEffect(this.element, { selector: '.' + cssClassName.BUTTON });
         this.renderComplete();
     }
     initialize() {
@@ -168,7 +178,8 @@ let Button = class Button extends Component {
         }
         if (!isBlazor() || (isBlazor() && this.getModuleName() !== 'progress-btn')) {
             if (this.content) {
-                this.element.innerHTML = this.content;
+                let tempContent = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(this.content) : this.content;
+                this.element.innerHTML = tempContent;
             }
             this.setIconCss();
         }
@@ -181,7 +192,6 @@ let Button = class Button extends Component {
         else {
             this.wireEvents();
         }
-        this.removeRippleEffect = rippleEffect(this.element, { selector: '.' + cssClassName.BUTTON });
     }
     controlStatus(disabled) {
         this.element.disabled = disabled;
@@ -230,27 +240,29 @@ let Button = class Button extends Component {
      * @returns void
      */
     destroy() {
-        let span;
-        let classList = [cssClassName.PRIMARY, cssClassName.RTL, cssClassName.ICONBTN, 'e-success', 'e-info', 'e-danger',
-            'e-warning', 'e-flat', 'e-outline', 'e-small', 'e-bigger', 'e-active', 'e-round',
-            'e-top-icon-btn', 'e-bottom-icon-btn'];
-        if (this.cssClass) {
-            classList = classList.concat(this.cssClass.split(' '));
-        }
-        super.destroy();
-        removeClass([this.element], classList);
-        if (!this.element.getAttribute('class')) {
-            this.element.removeAttribute('class');
-        }
-        if (this.disabled) {
-            this.element.removeAttribute('disabled');
-        }
-        if (this.content) {
-            this.element.innerHTML = this.element.innerHTML.replace(this.content, '');
-        }
-        span = this.element.querySelector('span.e-btn-icon');
-        if (span) {
-            detach(span);
+        if (!(isBlazor() && this.isServerRendered)) {
+            let span;
+            let classList = [cssClassName.PRIMARY, cssClassName.RTL, cssClassName.ICONBTN, 'e-success', 'e-info', 'e-danger',
+                'e-warning', 'e-flat', 'e-outline', 'e-small', 'e-bigger', 'e-active', 'e-round',
+                'e-top-icon-btn', 'e-bottom-icon-btn'];
+            if (this.cssClass) {
+                classList = classList.concat(this.cssClass.split(' '));
+            }
+            super.destroy();
+            removeClass([this.element], classList);
+            if (!this.element.getAttribute('class')) {
+                this.element.removeAttribute('class');
+            }
+            if (this.disabled) {
+                this.element.removeAttribute('disabled');
+            }
+            if (this.content) {
+                this.element.innerHTML = this.element.innerHTML.replace(this.content, '');
+            }
+            span = this.element.querySelector('span.e-btn-icon');
+            if (span) {
+                detach(span);
+            }
         }
         this.unWireEvents();
         if (isRippleEnabled) {
@@ -353,7 +365,10 @@ let Button = class Button extends Component {
                     if (!node) {
                         this.element.classList.remove(cssClassName.ICONBTN);
                     }
-                    if (!isBlazor() || (isBlazor() && this.getModuleName() !== 'progress-btn')) {
+                    if (!isBlazor()) {
+                        if (this.enableHtmlSanitizer) {
+                            newProp.content = SanitizeHtmlHelper.sanitize(newProp.content);
+                        }
                         this.element.innerHTML = newProp.content;
                         this.setIconCss();
                     }
@@ -411,6 +426,9 @@ __decorate([
 __decorate([
     Property()
 ], Button.prototype, "locale", void 0);
+__decorate([
+    Property(false)
+], Button.prototype, "enableHtmlSanitizer", void 0);
 __decorate([
     Event()
 ], Button.prototype, "created", void 0);
@@ -524,26 +542,33 @@ let CheckBox = class CheckBox extends Component {
      */
     destroy() {
         let wrapper = this.getWrapper();
-        super.destroy();
-        if (!this.disabled) {
-            this.unWireEvents();
-        }
-        if (this.tagName === 'INPUT') {
-            wrapper.parentNode.insertBefore(this.element, wrapper);
-            detach(wrapper);
-            this.element.checked = false;
-            if (this.indeterminate) {
-                this.element.indeterminate = false;
+        if (isBlazor() && this.isServerRendered) {
+            if (!this.disabled) {
+                this.unWireEvents();
             }
-            ['name', 'value', 'disabled'].forEach((key) => {
-                this.element.removeAttribute(key);
-            });
         }
         else {
-            ['role', 'aria-checked', 'class'].forEach((key) => {
-                wrapper.removeAttribute(key);
-            });
-            wrapper.innerHTML = '';
+            super.destroy();
+            if (!this.disabled) {
+                this.unWireEvents();
+            }
+            if (this.tagName === 'INPUT') {
+                wrapper.parentNode.insertBefore(this.element, wrapper);
+                detach(wrapper);
+                this.element.checked = false;
+                if (this.indeterminate) {
+                    this.element.indeterminate = false;
+                }
+                ['name', 'value', 'disabled'].forEach((key) => {
+                    this.element.removeAttribute(key);
+                });
+            }
+            else {
+                ['role', 'aria-checked', 'class'].forEach((key) => {
+                    wrapper.removeAttribute(key);
+                });
+                wrapper.innerHTML = '';
+            }
         }
     }
     focusHandler() {
@@ -589,7 +614,6 @@ let CheckBox = class CheckBox extends Component {
         if (this.disabled) {
             this.setDisabled();
         }
-        this.updateHtmlAttributeToWrapper();
     }
     initWrapper() {
         let wrapper = this.element.parentElement;
@@ -717,6 +741,9 @@ let CheckBox = class CheckBox extends Component {
      * @private
      */
     preRender() {
+        if (isBlazor() && this.isServerRendered) {
+            return;
+        }
         let element = this.element;
         this.formElement = closest(this.element, 'form');
         this.tagName = this.element.tagName;
@@ -734,11 +761,19 @@ let CheckBox = class CheckBox extends Component {
      * @private
      */
     render() {
-        this.initWrapper();
-        this.initialize();
+        if (isBlazor() && this.isServerRendered) {
+            if (isRippleEnabled) {
+                rippleEffect(this.getWrapper().getElementsByClassName(RIPPLE)[0], { duration: 400, isCenterRipple: true });
+            }
+        }
+        else {
+            this.initWrapper();
+            this.initialize();
+        }
         if (!this.disabled) {
             this.wireEvents();
         }
+        this.updateHtmlAttributeToWrapper();
         this.renderComplete();
     }
     setDisabled() {
@@ -753,6 +788,7 @@ let CheckBox = class CheckBox extends Component {
             label.textContent = text;
         }
         else {
+            text = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(text) : text;
             label = this.createElement('span', { className: LABEL, innerHTML: text });
             let labelWrap = this.getWrapper().getElementsByTagName('label')[0];
             if (this.labelPosition === 'Before') {
@@ -872,6 +908,9 @@ __decorate$1([
     Property('')
 ], CheckBox.prototype, "value", void 0);
 __decorate$1([
+    Property(false)
+], CheckBox.prototype, "enableHtmlSanitizer", void 0);
+__decorate$1([
     Property({})
 ], CheckBox.prototype, "htmlAttributes", void 0);
 CheckBox = __decorate$1([
@@ -942,24 +981,31 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
      * @returns void
      */
     destroy() {
-        let radioWrap = this.element.parentElement;
-        super.destroy();
-        if (!this.disabled) {
-            this.unWireEvents();
-        }
-        if (this.tagName === 'INPUT') {
-            radioWrap.parentNode.insertBefore(this.element, radioWrap);
-            detach(radioWrap);
-            this.element.checked = false;
-            ['name', 'value', 'disabled'].forEach((key) => {
-                this.element.removeAttribute(key);
-            });
+        if (isBlazor() && this.isServerRendered) {
+            if (!this.disabled) {
+                this.unWireEvents();
+            }
         }
         else {
-            ['role', 'aria-checked', 'class'].forEach((key) => {
-                radioWrap.removeAttribute(key);
-            });
-            radioWrap.innerHTML = '';
+            let radioWrap = this.element.parentElement;
+            super.destroy();
+            if (!this.disabled) {
+                this.unWireEvents();
+            }
+            if (this.tagName === 'INPUT') {
+                radioWrap.parentNode.insertBefore(this.element, radioWrap);
+                detach(radioWrap);
+                this.element.checked = false;
+                ['name', 'value', 'disabled'].forEach((key) => {
+                    this.element.removeAttribute(key);
+                });
+            }
+            else {
+                ['role', 'aria-checked', 'class'].forEach((key) => {
+                    radioWrap.removeAttribute(key);
+                });
+                radioWrap.innerHTML = '';
+            }
         }
     }
     focusHandler() {
@@ -1127,6 +1173,9 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
      * @private
      */
     preRender() {
+        if (isBlazor() && this.isServerRendered) {
+            return;
+        }
         let element = this.element;
         this.formElement = closest(this.element, 'form');
         this.tagName = this.element.tagName;
@@ -1151,7 +1200,15 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
      * @private
      */
     render() {
-        this.initialize();
+        if (isBlazor() && this.isServerRendered) {
+            if (isRippleEnabled) {
+                let rippleSpan = this.element.parentElement.getElementsByClassName(RIPPLE$1)[0];
+                rippleEffect(rippleSpan, { duration: 400, isCenterRipple: true });
+            }
+        }
+        else {
+            this.initialize();
+        }
         if (!this.disabled) {
             this.wireEvents();
         }
@@ -1167,6 +1224,7 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
             textLabel.textContent = text;
         }
         else {
+            text = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(text) : text;
             textLabel = this.createElement('span', { className: LABEL$1, innerHTML: text });
             label.appendChild(textLabel);
         }
@@ -1251,6 +1309,9 @@ __decorate$2([
 __decorate$2([
     Property('')
 ], RadioButton.prototype, "value", void 0);
+__decorate$2([
+    Property(false)
+], RadioButton.prototype, "enableHtmlSanitizer", void 0);
 RadioButton = RadioButton_1 = __decorate$2([
     NotifyPropertyChanges
 ], RadioButton);
@@ -1333,11 +1394,18 @@ let Switch = class Switch extends Component {
      * @returns void
      */
     destroy() {
-        super.destroy();
-        if (!this.disabled) {
-            this.unWireEvents();
+        if (isBlazor() && this.isServerRendered) {
+            if (!this.disabled) {
+                this.unWireEvents();
+            }
         }
-        destroy(this, this.getWrapper(), this.tagName);
+        else {
+            super.destroy();
+            if (!this.disabled) {
+                this.unWireEvents();
+            }
+            destroy(this, this.getWrapper(), this.tagName);
+        }
     }
     focusHandler() {
         this.isFocused = true;
@@ -1470,6 +1538,9 @@ let Switch = class Switch extends Component {
      * @private
      */
     preRender() {
+        if (isBlazor() && this.isServerRendered) {
+            return;
+        }
         let element = this.element;
         this.formElement = closest(this.element, 'form');
         this.tagName = this.element.tagName;
@@ -1480,8 +1551,15 @@ let Switch = class Switch extends Component {
      * @private
      */
     render() {
-        this.initWrapper();
-        this.initialize();
+        if (isBlazor() && this.isServerRendered) {
+            if (isRippleEnabled) {
+                rippleEffect(this.element.parentElement, { duration: 400, isCenterRipple: true });
+            }
+        }
+        else {
+            this.initWrapper();
+            this.initialize();
+        }
         if (!this.disabled) {
             this.wireEvents();
         }
@@ -1673,16 +1751,27 @@ let ChipList = class ChipList extends Component {
     constructor(options, element) {
         super(options, element);
     }
+    /**
+     * Initialize the event handler
+     * @private
+     */
     preRender() {
         //prerender
     }
+    /**
+     * To Initialize the control rendering.
+     * @returns void
+     * @private
+     */
     render() {
         this.type = this.chips.length ? 'chipset' : (this.text || this.element.innerText ? 'chip' : 'chipset');
-        this.setAttributes();
-        this.createChip();
-        this.setRtl();
+        if (!isBlazor() || !this.isServerRendered) {
+            this.setAttributes();
+            this.createChip();
+            this.setRtl();
+            this.select(this.selectedChips);
+        }
         this.wireEvent(false);
-        this.select(this.selectedChips);
         this.rippleFunctin = rippleEffect(this.element, {
             selector: '.e-chip'
         });
@@ -1690,7 +1779,17 @@ let ChipList = class ChipList extends Component {
     }
     createChip() {
         this.innerText = this.element.innerText.trim();
-        this.element.innerHTML = '';
+        if (isBlazor()) {
+            let childElement = this.element.querySelectorAll('.e-chip');
+            for (let i = 0; i < childElement.length; i++) {
+                if (childElement[i] != null) {
+                    detach(childElement[i]);
+                }
+            }
+        }
+        else {
+            this.element.innerHTML = '';
+        }
         this.chipCreation(this.type === 'chip' ? [this.innerText ? this.innerText : this.text] : this.chips);
     }
     setAttributes() {
@@ -1826,7 +1925,17 @@ let ChipList = class ChipList extends Component {
      *  or chip element or array of chip element.
      */
     select(fields) {
+        this.onSelect(fields, false);
+    }
+    onSelect(fields, callFromProperty) {
         if (this.type !== 'chip' && this.selection !== 'None') {
+            if (callFromProperty) {
+                let chipElements = this.element.querySelectorAll('.' + classNames.chip);
+                for (let i = 0; i < chipElements.length; i++) {
+                    chipElements[i].setAttribute('aria-selected', 'false');
+                    chipElements[i].classList.remove(classNames.active);
+                }
+            }
             let fieldData = fields instanceof Array ? fields : [fields];
             for (let i = 0; i < fieldData.length; i++) {
                 let chipElement = fieldData[i] instanceof HTMLElement ? fieldData[i]
@@ -1977,6 +2086,10 @@ let ChipList = class ChipList extends Component {
                 activeElement.classList.remove(classNames.active);
                 chipWrapper.setAttribute('aria-selected', 'false');
             }
+            this.setProperties({ selectedChips: null }, true);
+        }
+        else {
+            this.setProperties({ selectedChips: [] }, true);
         }
         if (chipWrapper.classList.contains(classNames.active)) {
             chipWrapper.classList.remove(classNames.active);
@@ -1986,6 +2099,24 @@ let ChipList = class ChipList extends Component {
             chipWrapper.classList.add(classNames.active);
             chipWrapper.setAttribute('aria-selected', 'true');
         }
+        this.updateSelectedChips();
+    }
+    updateSelectedChips() {
+        let chipListEle = this.element.querySelectorAll('.e-chip');
+        let chipColl = [];
+        let chip;
+        for (let i = 0; i < chipListEle.length; i++) {
+            if (this.element.querySelectorAll('.e-chip')[i].getAttribute('aria-selected') === 'true') {
+                if (this.selection === 'Single' && this.element.querySelectorAll('.e-chip')[i].classList.contains('e-active')) {
+                    chip = i;
+                    break;
+                }
+                else {
+                    chipColl.push(i);
+                }
+            }
+        }
+        this.setProperties({ selectedChips: this.selection === 'Single' ? chip : chipColl }, true);
     }
     deleteHandler(chipWrapper, index) {
         this.chips.splice(index, 1);
@@ -2002,8 +2133,18 @@ let ChipList = class ChipList extends Component {
         this.removeMultipleAttributes(['tabindex', 'role', 'aria-label', 'aria-multiselectable'], this.element);
         this.wireEvent(true);
         this.rippleFunctin();
-        this.element.innerHTML = '';
-        this.element.innerText = this.innerText;
+        if (isBlazor()) {
+            let chipChildElement = this.element.querySelectorAll('.e-chip');
+            for (let i = 0; i < chipChildElement.length; i++) {
+                if (chipChildElement[i] != null) {
+                    detach(chipChildElement[i]);
+                }
+            }
+        }
+        else {
+            this.element.innerHTML = '';
+            this.element.innerText = this.innerText;
+        }
     }
     removeMultipleAttributes(attributes$$1, element) {
         attributes$$1.forEach((attr) => {
@@ -2016,6 +2157,11 @@ let ChipList = class ChipList extends Component {
     getModuleName() {
         return 'chip-list';
     }
+    /**
+     * Called internally if any of the property value changed.
+     * @returns void
+     * @private
+     */
     onPropertyChanged(newProp, oldProp) {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
@@ -2028,7 +2174,9 @@ let ChipList = class ChipList extends Component {
                 case 'selection':
                 case 'enableDelete':
                 case 'enabled':
+                    this.isServerRendered = false;
                     this.refresh();
+                    this.isServerRendered = true;
                     break;
                 case 'cssClass':
                     if (this.type === 'chip') {
@@ -2036,12 +2184,14 @@ let ChipList = class ChipList extends Component {
                         addClass([this.element], newProp.cssClass.toString().split(' ').filter((css) => css));
                     }
                     else {
+                        this.isServerRendered = false;
                         this.refresh();
+                        this.isServerRendered = true;
                     }
                     break;
                 case 'selectedChips':
                     removeClass(this.element.querySelectorAll('.e-active'), 'e-active');
-                    this.select(newProp.selectedChips);
+                    this.onSelect(newProp.selectedChips, true);
                     break;
                 case 'enableRtl':
                     this.setRtl();
@@ -2110,5 +2260,5 @@ class Chip {
  * Button all modules
  */
 
-export { wrapperInitialize, getTextNode, destroy, preRender, createCheckBox, rippleMouseHandler, setHiddenInput, Button, CheckBox, RadioButton, Switch, classNames, ChipList, Chip };
+export { wrapperInitialize, getTextNode, destroy, preRender, createCheckBox, rippleMouseHandler, setHiddenInput, buttonObserver, Button, CheckBox, RadioButton, Switch, classNames, ChipList, Chip };
 //# sourceMappingURL=ej2-buttons.es2015.js.map

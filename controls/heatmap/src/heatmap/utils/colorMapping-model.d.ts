@@ -1,4 +1,4 @@
-import { Property, extend, ChildProperty, Collection, isNullOrUndefined } from '@syncfusion/ej2-base';import { HeatMap } from '../heatmap';import { PaletteType, ColorGradientMode} from '../utils/enum';import { ColorCollection, LegendColorCollection, PaletteCollection } from '../model/base';import { PaletteCollectionModel } from '../model/base-model';import { PaletterColor, LegendRange } from './helper';
+import { Property, extend, ChildProperty, Collection, isNullOrUndefined, Complex } from '@syncfusion/ej2-base';import { HeatMap } from '../heatmap';import { PaletteType, ColorGradientMode} from '../utils/enum';import { ColorCollection, LegendColorCollection, PaletteCollection, FillColor } from '../model/base';import { PaletteCollectionModel, FillColorModel } from '../model/base-model';import { PaletterColor, LegendRange } from './helper';
 
 /**
  * Interface for a class PaletteSettings
@@ -30,6 +30,12 @@ export interface PaletteSettingsModel {
      * @default 'Table'
      */
     colorGradientMode?: ColorGradientMode;
+
+    /**
+     * Options to set fill colors.
+     */
+
+    fillColor?: FillColorModel;
 
 }
 

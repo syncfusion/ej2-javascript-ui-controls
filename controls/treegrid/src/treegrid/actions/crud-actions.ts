@@ -10,17 +10,17 @@ import { extendArray, getPlainData, getParentData } from '../utils';
 
 export function editAction(details: { value: ITreeData, action: string }, control: TreeGrid, isSelfReference: boolean,
                            addRowIndex: number, selectedIndex: number, columnName?: string, addRowRecord?: ITreeData): void {
-    let value: ITreeData = details.value;
-    let action: string = details.action;
-    let i: number; let j: number;
+    let value: ITreeData = details.value; let action: string = details.action; let changedRecords: string = 'changedRecords';
+    let i: number; let j: number; let addedRecords: string = 'addedRecords'; let batchChanges: Object;
     let key: string = control.grid.getPrimaryKeyFieldNames()[0];
     let treeData: ITreeData[] = control.dataSource instanceof DataManager ?
         control.dataSource.dataSource.json : <Object[]>control.dataSource;
-    let modifiedData: object[] = [];
-    let originalData: ITreeData = value;
-    let isSkip: boolean = false;
-    let currentViewRecords: ITreeData[] = <ITreeData[]>control.grid.getCurrentViewRecords();
-    if (action === 'add') {
+    let modifiedData: object[] = []; let originalData: ITreeData = value; let isSkip: boolean = false;
+    if (control.editSettings.mode === 'Batch') {
+        batchChanges = control.grid.editModule.getBatchChanges();
+    }
+    if (action === 'add' || (action === 'batchsave' && (control.editSettings.mode === 'Batch'
+        && batchChanges[addedRecords].length))) {
         let addAct: { value: Object, isSkip: boolean } = addAction(details, treeData, control, isSelfReference,
                                                                    addRowIndex, selectedIndex, addRowRecord);
         value = addAct.value; isSkip = addAct.isSkip;
@@ -33,6 +33,9 @@ export function editAction(details: { value: ITreeData, action: string }, contro
     if (!isSkip && (action !== 'add' ||
         (control.editSettings.newRowPosition !== 'Top' && control.editSettings.newRowPosition !== 'Bottom'))) {
         for (let k: number = 0; k < modifiedData.length; k++) {
+            if (typeof(modifiedData[k][key]) === 'object') {
+                modifiedData[k] = modifiedData[k][key];
+            }
             let keys: string[] = Object.keys((modifiedData[k] as ITreeData).taskData);
             i = treeData.length;
             while (i-- && i >= 0) {
@@ -61,13 +64,14 @@ export function editAction(details: { value: ITreeData, action: string }, contro
                     } else {
                         if (action === 'edit') {
                             for (j = 0; j < keys.length; j++) {
-                                if (treeData[i].hasOwnProperty(keys[j]) && (control.editSettings.mode !== 'Cell'
-                                || keys[j] === columnName)) {
+                                if (treeData[i].hasOwnProperty(keys[j]) && ((control.editSettings.mode !== 'Cell'
+                                    || (!isNullOrUndefined(batchChanges) && batchChanges[changedRecords].length === 0))
+                                    || keys[j] === columnName)) {
                                     let editedData: ITreeData = getParentData(control, (<ITreeData>modifiedData[k]).uniqueID);
                                     editedData.taskData[keys[j]] = treeData[i][keys[j]] = modifiedData[k][keys[j]];
                                 }
                             }
-                        } else if (action === 'add') {
+                        } else if (action === 'add' || action === 'batchsave') {
                             let index: number;
                             if (control.editSettings.newRowPosition === 'Child') {
                                 if (isSelfReference) {
@@ -112,7 +116,11 @@ export function addAction(details: { value: ITreeData, action: string }, treeDat
     value = getPlainData(value);
     switch (control.editSettings.newRowPosition) {
         case 'Top':
-            treeData.unshift(value);
+            if (control.editSettings.mode === 'Batch') {
+                treeData.splice(treeData.length, 0, value);
+            } else {
+                treeData.unshift(value);
+            }
             isSkip = true;
             break;
         case 'Bottom':
@@ -157,7 +165,7 @@ export function removeChildRecords(childRecords: ITreeData[], modifiedData: obje
                     }
                 }
                 break;
-            } else if (action === 'add') {
+            } else if (action === 'add' || action === 'batchsave') {
                 if (control.editSettings.newRowPosition === 'Child') {
                     if (isSelfReference) {
                         originalData[control.parentIdMapping] = childRecords[j][control.idMapping];
@@ -198,16 +206,16 @@ export function updateParentRow(key: string, record: ITreeData, action: string, 
                                 child?: ITreeData): void {
 
     if ((control.editSettings.newRowPosition === 'Above' || control.editSettings.newRowPosition === 'Below')
-        && action === 'add' && !isNullOrUndefined(child.parentItem)) {
-            let parentData: ITreeData = getParentData(control, child.parentItem.uniqueID);
-            parentData.childRecords.push(child);
+        && ((action === 'add' || action === 'batchsave')) && !isNullOrUndefined(child.parentItem)) {
+        let parentData: ITreeData = getParentData(control, child.parentItem.uniqueID);
+        parentData.childRecords.push(child);
     } else {
         let currentRecords: ITreeData[] = control.grid.getCurrentViewRecords();
         let index: number;
         currentRecords.map((e: ITreeData, i: number) => { if (e[key] === record[key]) { index = i; return; } });
         record = currentRecords[index];
         record.hasChildRecords = false;
-        if (action === 'add') {
+        if (action === 'add' || action === 'batchsave') {
             record.expanded = true;
             record.hasChildRecords = true;
             if (control.sortSettings.columns.length && isNullOrUndefined(child)) {
@@ -217,7 +225,7 @@ export function updateParentRow(key: string, record: ITreeData, action: string, 
                     } else {
                         return null;
                     }
-                 });
+                });
             }
             let childRecords: ITreeData = child ? child instanceof Array ? child[0] : child : currentRecords[index + 1];
             if (!(<Object>record).hasOwnProperty('childRecords')) {
@@ -241,7 +249,7 @@ export function updateParentRow(key: string, record: ITreeData, action: string, 
         }
         let primaryKeys: string = control.grid.getPrimaryKeyFieldNames()[0];
         let data: ITreeData[] = control.grid.dataSource instanceof DataManager ?
-        control.grid.dataSource.dataSource.json : <Object[]>control.grid.dataSource;
+            control.grid.dataSource.dataSource.json : <Object[]>control.grid.dataSource;
         for (let i: number = 0; i < data.length; i++) {
             if (data[i][primaryKeys] === record[primaryKeys]) {
                 data[i] = record;
@@ -257,7 +265,8 @@ export function updateParentRow(key: string, record: ITreeData, action: string, 
         control.renderModule.cellRender({
             data: record, cell: row.cells[control.treeColumnIndex] ? row.cells[control.treeColumnIndex]
                 : movableRow.cells[control.treeColumnIndex - control.frozenColumns],
-            column: control.grid.getColumns()[control.treeColumnIndex]
+            column: control.grid.getColumns()[control.treeColumnIndex],
+            requestType: action
         });
     }
 }

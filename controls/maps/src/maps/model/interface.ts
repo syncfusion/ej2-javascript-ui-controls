@@ -71,10 +71,21 @@ export interface IMouseEventArgs extends IMapsEventArgs {
     longitude?: number;
 }
 /**
+ * Specifies the geo location.
+ */
+export interface GeoPosition {
+    /** Defines current latitude value of maps location */
+    latitude?: number;
+    /** Defines current longitude value of maps location */
+    longitude?: number;
+}
+/**
  * Specifies TooltipRender event arguments for maps.
  */
 export interface ITooltipRenderCompleteEventArgs extends IMapsEventArgs {
-    /** Defines the current Map instance */
+    /** Defines the current Map instance 
+     * @deprecated 
+     */
     maps?: Maps;
     /**
      * Define the current tooltip element.
@@ -86,15 +97,6 @@ export interface ITooltipRenderCompleteEventArgs extends IMapsEventArgs {
     options: Object;
 }
 /**
- * Specifies the geo location.
- */
-export interface GeoPosition {
-    /** Defines current latitude value of maps location */
-    latitude?: number;
-    /** Defines current longitude value of maps location */
-    longitude?: number;
-}
-/**
  * Maps Resize event arguments.
  */
 export interface IResizeEventArgs {
@@ -104,7 +106,7 @@ export interface IResizeEventArgs {
     previousSize: Size;
     /** Defines the current size of the maps */
     currentSize: Size;
-    /** Defines the Maps instance
+    /** Defines the current Maps instance
      * @deprecated
      */
     maps: Maps;
@@ -131,7 +133,7 @@ export interface MapsTooltipOption {
  * Specifies TooltipRender event arguments for maps.
  */
 export interface ITooltipRenderEventArgs extends IMapsEventArgs {
-    /** Defines the current TreeMap instance
+    /** Defines the current Maps instance
      * @deprecated
      */
     maps?: Maps;
@@ -168,7 +170,7 @@ export interface ITooltipRenderEventArgs extends IMapsEventArgs {
  * Specifies itemSelection event arguments for maps.
  */
 export interface ISelectionEventArgs extends IMapsEventArgs {
-    /** Defines the current Map instance
+    /** Defines the current Maps instance
      * @deprecated
      */
     maps?: Maps;
@@ -201,7 +203,7 @@ export interface ISelectionEventArgs extends IMapsEventArgs {
  * Specifies shapeSelected event arguments for maps.
  */
 export interface IShapeSelectedEventArgs extends IMapsEventArgs {
-    /** Defines the current Map instance
+    /** Defines the current Maps instance
      * @deprecated
      */
     maps?: Maps;
@@ -345,6 +347,18 @@ export interface IMarkerRenderingEventArgs extends IMapsEventArgs {
      * marker data event argument
      */
     data?: Object;
+    /**
+     * To get marker color from dataSource.
+     */
+    colorValuePath?: string;
+    /**
+     * To get marker shape from dataSource.
+     */
+    shapeValuePath?: string;
+    /**
+     * To get marker image from dataSource.
+     */
+    imageUrlValuePath?: string;
 }
 
 /**
@@ -407,6 +421,10 @@ export interface IMarkerClickEventArgs extends IMouseEventArgs {
      * marker instance event argument
      */
     marker?: MarkerSettingsModel;
+    /**
+     * name of a marker
+     */
+    value: string;
     /**
      * defines the currently clicked marker data
      */
@@ -590,6 +608,10 @@ export interface ILegendRenderingEventArgs extends IMapsEventArgs {
      * Customize the legend shape of the maps.
      */
     shape?: LegendShape;
+    /**
+     * Specifies the legend text 
+     */
+    text?: string | string[];
 }
 
 /**
@@ -707,6 +729,10 @@ export interface IDataTemplate {
     continent?: string;
     /** continent name for datalabel */
     admin?: string;
+    /** population of bubble */
+    Population?: number;
+    /** name of country */
+    Country?: string;
     /** Text of any string */
-    text?: string[] | number;
+    text?: string[];
 }

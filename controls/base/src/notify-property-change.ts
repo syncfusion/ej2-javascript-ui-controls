@@ -204,14 +204,30 @@ function complexArrayGetter(defaultValue: Object[], curKey: string, type: (...ar
             let defCollection: Object[] = getObjectArray(this, curKey, defaultValue, type, false);
             this.properties[curKey] = defCollection;
         }
+        let ignore: boolean = ((this.controlParent !== undefined && this.controlParent.ignoreCollectionWatch)
+            || this.ignoreCollectionWatch);
+        if (!this.properties[curKey].hasOwnProperty('push') && !ignore) {
+            ['push', 'pop'].forEach((extendFunc: string) => {
+                let descriptor: PropertyDescriptor = {
+                    value: complexArrayDefinedCallback(extendFunc, curKey, type, this.properties[curKey]).bind(this),
+                    configurable: true
+                };
+                Object.defineProperty(this.properties[curKey], extendFunc, descriptor);
+            });
+        }
+        if (!this.properties[curKey].hasOwnProperty('isComplexArray')) {
+            Object.defineProperty(this.properties[curKey], 'isComplexArray', { value: true });
+        }
         return this.properties[curKey];
     };
 }
 
 function complexArraySetter(defaultValue: Object[], curKey: string, type: (...arg: Object[]) => object): (arg: Object) => void {
     return function (newValue: Object[]): void {
+        this.isComplexArraySetter = true;
         let oldValueCollection: Object[] = getObjectArray(this, curKey, defaultValue, type, false);
         let newValCollection: Object[] = getObjectArray(this, curKey, newValue, type, true);
+        this.isComplexArraySetter = false;
         this.saveChanges(curKey, newValCollection, oldValueCollection);
         this.properties[curKey] = newValCollection;
     };
@@ -242,6 +258,43 @@ function complexArrayFactoryGetter(
         }
         return this.properties[curKey];
     };
+}
+
+function complexArrayDefinedCallback(
+    dFunc: string, curKey: string, type: (...arg: Object[]) => object, prop: Object[]): (arg: Object) => Object[] {
+    /* tslint:disable no-function-expression */
+    return function (...newValue: Object[]): Object[] {
+        let keyString: string = this.propName ? this.getParentKey() + '.' + curKey + '-' : curKey + '-';
+        switch (dFunc) {
+            case 'push':
+                for (let i: number = 0; i < newValue.length; i++) {
+                    Array.prototype[dFunc].apply(prop, [newValue[i]]);
+                    let model: Object = getArrayModel(keyString + (prop.length - 1), newValue[i], !this.controlParent, dFunc);
+                    this.serverDataBind(model, newValue[i], false, dFunc);
+                }
+                break;
+            case 'pop':
+                Array.prototype[dFunc].apply(prop);
+                let model: Object = getArrayModel(keyString + prop.length, null, !this.controlParent, dFunc);
+                this.serverDataBind(model, { ejsAction: 'pop' }, false, dFunc);
+                break;
+        }
+        return prop;
+    };
+    /* tslint:enable no-function-expression */
+}
+
+function getArrayModel(keyString: string, value: Object, isControlParent: boolean, arrayFunction: string): Object {
+    let modelObject: Object = keyString;
+    if (isControlParent) {
+        modelObject = {};
+        modelObject[keyString] = value;
+        if (value && typeof value === 'object') {
+            let action: string = 'ejsAction';
+            modelObject[keyString][action] = arrayFunction;
+        }
+    }
+    return modelObject;
 }
 
 /**

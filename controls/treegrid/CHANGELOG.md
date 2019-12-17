@@ -2,88 +2,17 @@
 
 ## [Unreleased]
 
-## 17.3.34 (2019-12-10)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#254018` - RowDrop event triggers properly when we drop the row outside of the TreeGrid.
-
-## 17.3.28 (2019-11-19)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#F148459` - Header Checkbox display properly when we hide and show the columns using hideColumns and showColumns method.
-- `#I247045` - Row Drag and Drop works fine when text wrap is enabled.
-
-## 17.3.26 (2019-11-05)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#252667` - Expand icon shows properly for nested parent record while doing search operation.
-
-## 17.3.21 (2019-10-30)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#249633` - Row Drag and Drop works fine with RemoteSaveAdaptor in SelfReference Data.
-
-## 17.3.19 (2019-10-22)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#251499` - Border applied properly for checkbox column when `treeColumnIndex` property is enabled with different themes.
-
-## 17.3.17 (2019-10-15)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#248114` - Data loads properly when we set `height` to 100% in `EnableVirtualization`.
-
-## 17.3.16 (2019-10-09)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#249633` - Row Drag and Drop works fine with RemoteSaveAdaptor.
-- `#F147968` - Datasource update works fine after cancelling edit action on cell editing.
-
-## 17.3.14 (2019-10-03)
+## 17.4.39 (2019-12-17)
 
 ### TreeGrid
 
 #### New Features
 
-- `#237050`, `#237420`, `#237783` - Custom Data binding support has been provided that allows users to handle data externally and bind result to treegrid.
-- `#F145931` - Frozen Rows and Columns support has been provided that freezes the specific rows or columns and make them always visible in the top and/or left side of the Tree Grid while scrolling.
+- AutoFill support has been provided that allows users to copy the data of selected cells and paste it to another cells by dragging.
 
-#### Bug Fixes
+#### Breaking Changes
 
-- `#237050` - CheckBox Selection works fine while refreshing dataSource.
-- `#F147099` - Row drag and drop working fine with self reference data.
-- `#247045` - Row drag and drop support has been provided for Remote Data.
-- `#246926` - Searching works fine when the `hierarchyMode` is `child` and when records are in collapsed state.
-
-## 17.3.9-beta (2019-09-20)
-
-### TreeGrid
-
-#### New Features
-
-- `#237050`, `#237420`, `#237783` - Custom Data binding support has been provided that allows users to handle data externally and bind result to treegrid.
-- `#F145931` - Frozen Rows and Columns support has been provided that freezes the specific rows or columns and make them always visible in the top and/or left side of the Tree Grid while scrolling.
+- Default value of column's `disableHtmlEncode` is set to true, so the HTML tags can be displayed in the Grid header and content by default. To display it as html content `disableHtmlEncode` need to be set as false.
 
 ## 17.2.48-beta (2019-08-28)
 

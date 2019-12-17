@@ -1,5 +1,5 @@
 import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, Touch, compile, createElement, extend, getValue, isBlazor, isNullOrUndefined, merge, print, remove, resetBlazorTemplate, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
-import { CanvasRenderer, PathOption, Rect, Size, SvgRenderer, TextOption, Tooltip, findDirection, measureText, removeElement } from '@syncfusion/ej2-svg-base';
+import { CanvasRenderer, PathOption, Rect, Size, SvgRenderer, TextOption, Tooltip, findDirection, getElement, measureText, removeElement, textElement } from '@syncfusion/ej2-svg-base';
 import { DataManager, DataUtil, Query } from '@syncfusion/ej2-data';
 import { PdfBitmap, PdfDocument, PdfPageOrientation, SizeF } from '@syncfusion/ej2-pdf-export';
 import { Toolbar } from '@syncfusion/ej2-navigations';
@@ -986,6 +986,9 @@ var Double = /** @__PURE__ @class */ (function () {
      */
     Double.prototype.getFormat = function (axis) {
         if (axis.labelFormat) {
+            if (axis.labelFormat.indexOf('p') === 0 && axis.labelFormat.indexOf('{value}') === -1 && axis.isStack100) {
+                return '{value}%';
+            }
             return axis.labelFormat;
         }
         return axis.isStack100 ? '{value}%' : '';
@@ -2172,7 +2175,7 @@ function removeElement$1(id) {
     if (!id) {
         return null;
     }
-    var element = typeof id === 'string' ? getElement(id) : id;
+    var element = typeof id === 'string' ? getElement$1(id) : id;
     if (element) {
         remove(element);
     }
@@ -2403,7 +2406,7 @@ var PolarArc = /** @__PURE__ @class */ (function () {
 }());
 /** @private */
 function createTooltip(id, text, top, left, fontSize) {
-    var tooltip = getElement(id);
+    var tooltip = getElement$1(id);
     var style = 'top:' + top.toString() + 'px;' +
         'left:' + left.toString() + 'px;' +
         'color:black !important; ' +
@@ -2454,7 +2457,7 @@ function createZoomingLabels(chart, axis, parent, index, isVertical, rect) {
         x = x + (margin / 2);
         y = y + (3 * (size.height / 4)) + (margin / 2);
         parent.appendChild(chart.renderer.drawPath(new PathOption(chart.element.id + '_Zoom_' + index + '_AxisLabel_Shape_' + i, chart.themeStyle.crosshairFill, 2, chart.themeStyle.crosshairFill, 1, null, direction)));
-        textElement(chart.renderer, new TextOption(chart.element.id + '_Zoom_' + index + '_AxisLabel_' + i, x, y, anchor, i ? axis.endLabel : axis.startLabel), { color: chart.themeStyle.crosshairLabel, fontFamily: 'Segoe UI', fontWeight: 'Regular', size: '11px' }, chart.themeStyle.crosshairLabel, parent);
+        textElement$1(chart.renderer, new TextOption(chart.element.id + '_Zoom_' + index + '_AxisLabel_' + i, x, y, anchor, i ? axis.endLabel : axis.startLabel), { color: chart.themeStyle.crosshairLabel, fontFamily: 'Segoe UI', fontWeight: 'Regular', size: '11px' }, chart.themeStyle.crosshairLabel, parent);
     }
     return parent;
 }
@@ -2890,7 +2893,7 @@ function minMax(value, min, max) {
     return value > max ? max : (value < min ? min : value);
 }
 /** @private */
-function getElement(id) {
+function getElement$1(id) {
     return document.getElementById(id);
 }
 /** @private */
@@ -3005,7 +3008,7 @@ function appendChildElement(isCanvas, parent, childElement, redraw, isAnimate, x
         return null;
     }
     var existChild = parent.querySelector('#' + childElement.id);
-    var element = (existChild || getElement(childElement.id));
+    var element = (existChild || getElement$1(childElement.id));
     var child = childElement;
     var duration = animateDuration ? animateDuration : 300;
     if (redraw && isAnimate && element) {
@@ -3085,6 +3088,10 @@ function getLabelText(currentPoint, series, chart) {
             break;
     }
     if (labelFormat && !currentPoint.text) {
+        series.yAxis.format = chart.intl.getNumberFormat({
+            format: customLabelFormat ? '' : labelFormat,
+            useGrouping: chart.useGroupingSeparator
+        });
         for (var i = 0; i < text.length; i++) {
             text[i] = customLabelFormat ? labelFormat.replace('{value}', series.yAxis.format(parseFloat(text[i]))) :
                 series.yAxis.format(parseFloat(text[i]));
@@ -3354,7 +3361,7 @@ function redrawElement(redraw, id, options, renderer) {
     if (!redraw) {
         return null;
     }
-    var element = getElement(id);
+    var element = getElement$1(id);
     if (element && options) {
         renderer.setElementAttributes(options, element.tagName === 'clipPath' ? element.childNodes[0] : element);
     }
@@ -3387,7 +3394,7 @@ function animateRedrawElement(element, duration, start, end, x, y) {
     });
 }
 /** @private */
-function textElement(renderer, option, font, color, parent, isMinus, redraw, isAnimate, forceAnimate, animateDuration, seriesClipRect) {
+function textElement$1(renderer, option, font, color, parent, isMinus, redraw, isAnimate, forceAnimate, animateDuration, seriesClipRect) {
     if (isMinus === void 0) { isMinus = false; }
     if (forceAnimate === void 0) { forceAnimate = false; }
     var renderOptions = {};
@@ -4194,7 +4201,7 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
     CartesianAxisLayoutPanel.prototype.drawAxisLine = function (axis, index, plotX, plotY, parent, rect) {
         var chart = this.chart;
         var optionsLine = {};
-        var element = getElement(chart.element.id + 'AxisLine_' + index);
+        var element = getElement$1(chart.element.id + 'AxisLine_' + index);
         var direction = element ? element.getAttribute('d') : '';
         element = null;
         optionsLine = {
@@ -4336,7 +4343,7 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
                         break;
                 }
             }
-            textElement(chart.renderer, options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
+            textElement$1(chart.renderer, options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
         }
         if (!this.chart.enableCanvas) {
             if (!chart.delayRedraw) {
@@ -4436,7 +4443,7 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
         var y = rect.y + rect.height * 0.5;
         var options = new TextOption(chart.element.id + '_AxisTitle_' + index, x, y - this.padding, 'middle', axis.title, 'rotate(' + labelRotation + ',' + (x) + ',' + (y) + ')', null, labelRotation);
         options.text = textTrim(axis.updatedRect.height, options.text, axis.titleStyle);
-        var element = textElement(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
+        var element = textElement$1(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
         element.setAttribute('tabindex', axis.tabIndex.toString());
         element.setAttribute('aria-label', axis.description || axis.title);
     };
@@ -4686,7 +4693,7 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
                 options.y = isAxisBreakLabel ? options.y +
                     (isOpposed ? (4 * label.text.length) : -(4 * label.text.length)) : options.y + yLocation;
             }
-            textElement(chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement, (axis.opposedPosition !== (axis.labelPosition === 'Inside')), chart.redraw, true);
+            textElement$1(chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement, (axis.opposedPosition !== (axis.labelPosition === 'Inside')), chart.redraw, true);
         }
         if (!this.chart.enableCanvas) {
             if (!chart.delayRedraw) {
@@ -4802,7 +4809,7 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
      * @param parent
      */
     CartesianAxisLayoutPanel.prototype.createAxisBorderElement = function (axis, index, labelBorder, parent) {
-        var element = getElement(this.chart.element.id + '_BorderLine_' + index);
+        var element = getElement$1(this.chart.element.id + '_BorderLine_' + index);
         var direction = element ? element.getAttribute('d') : '';
         var borderElement = this.chart.renderer.drawPath(new PathOption(this.chart.element.id + '_BorderLine_' + index, 'transparent', axis.border.width, axis.border.color || this.chart.themeStyle.axisLine, 1, '', labelBorder));
         borderElement.setAttribute('style', 'pointer-events: none');
@@ -4836,7 +4843,7 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
             elementSize.height / 4) + scrollBarHeight);
         var options = new TextOption(chart.element.id + '_AxisTitle_' + index, rect.x + rect.width * 0.5, rect.y + padding, 'middle', axis.title);
         options.text = textTrim(axis.updatedRect.width, options.text, axis.titleStyle);
-        var element = textElement(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
+        var element = textElement$1(chart.renderer, options, axis.titleStyle, axis.titleStyle.color || chart.themeStyle.axisTitle, parent);
         element.setAttribute('aria-label', axis.description || axis.title);
         element.setAttribute('tabindex', axis.tabIndex.toString());
     };
@@ -4858,7 +4865,7 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
         var direction;
         var element;
         if (gridModel.width > 0 && axis.visible && gridDirection) {
-            element = getElement(chart.element.id + gridId + index + '_' + gridIndex);
+            element = getElement$1(chart.element.id + gridId + index + '_' + gridIndex);
             direction = element ? element.getAttribute('d') : null;
             element = null;
             this.htmlObject = chart.renderer.drawPath(new PathOption(chart.element.id + gridId + index + '_' + gridIndex, 'transparent', gridModel.width, gridModel.color || themeColor, null, dashArray, gridDirection));
@@ -4899,7 +4906,7 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
         });
         zoomElement = createZoomingLabels(chart, axis, zoomElement, index, axis.orientation === 'Vertical', rect);
         parentNode.replaceChild(labelElement, document.getElementById(labelElement.id));
-        if (getElement(chart.element.id + 'AxisLabels_Zoom' + index)) {
+        if (getElement$1(chart.element.id + 'AxisLabels_Zoom' + index)) {
             parentNode.replaceChild(zoomElement, document.getElementById(zoomElement.id));
         }
         else {
@@ -5750,6 +5757,7 @@ var SeriesBase = /** @__PURE__ @class */ (function (_super) {
     SeriesBase.prototype.dataManagerSuccess = function (e, isRemoteData) {
         if (isRemoteData === void 0) { isRemoteData = true; }
         this.currentViewData = e.count ? e.result : [];
+        this.chart.allowServerDataBinding = false;
         if (this instanceof Series) {
             if (this.chart.stockChart) {
                 this.chart.stockChart.series[this.index].localData = this.currentViewData;
@@ -6653,8 +6661,8 @@ var Marker = /** @__PURE__ @class */ (function (_super) {
             }
             shapeOption = new PathOption(symbolId, argsData.fill, argsData.border.width, argsData.border.color, marker.opacity, null);
             if ((parentElement !== undefined && parentElement !== null) || this.chart.enableCanvas) {
-                if (redraw && getElement(shapeOption.id)) {
-                    markerElement = getElement(shapeOption.id);
+                if (redraw && getElement$1(shapeOption.id)) {
+                    markerElement = getElement$1(shapeOption.id);
                     circlePath = argsData.shape === 'Circle' ? 'c' : '';
                     previousLocation = {
                         x: +markerElement.getAttribute(circlePath + 'x'), y: +markerElement.getAttribute(circlePath + 'y')
@@ -7142,7 +7150,7 @@ var BaseLegend = /** @__PURE__ @class */ (function () {
         textOptions.x = legendOption.location.x + (legend.shapeWidth / 2) + legend.shapePadding;
         textOptions.y = legendOption.location.y + this.maxItemHeight / 4;
         var isCanvas = this.chart.enableCanvas;
-        var element = textElement(chart.renderer, textOptions, legend.textStyle, fontcolor, group, false, false, false, false, null, this.currentPageNumber && isCanvas ?
+        var element = textElement$1(chart.renderer, textOptions, legend.textStyle, fontcolor, group, false, false, false, false, null, this.currentPageNumber && isCanvas ?
             new Rect(0, -this.translatePage(null, this.currentPageNumber - 1, this.currentPageNumber), 0, 0) : null);
         if (element) {
             element.setAttribute('aria-label', legend.description || 'Click to show or hide the ' + legendOption.text + ' series');
@@ -7211,7 +7219,7 @@ var BaseLegend = /** @__PURE__ @class */ (function () {
         if (isCanvas && this.totalNoOfPages) {
             textOption.text = this.currentPageNumber + '/' + this.totalNoOfPages;
         }
-        var pageTextElement = textElement(chart.renderer, textOption, legend.textStyle, legend.textStyle.color, paginggroup, false, false, false, false, null, new Rect(bounds.width - (2 * (iconSize + padding) + padding + size.width), 0, 0, 0));
+        var pageTextElement = textElement$1(chart.renderer, textOption, legend.textStyle, legend.textStyle.color, paginggroup, false, false, false, false, null, new Rect(bounds.width - (2 * (iconSize + padding) + padding + size.width), 0, 0, 0));
         // Page right arrow rendering calculation started here
         x = (textOption.x + padding + (iconSize / 2) + size.width);
         symbolOption.id = this.legendID + '_pagedown';
@@ -7300,10 +7308,10 @@ var BaseLegend = /** @__PURE__ @class */ (function () {
                         removeElement$1(this.chart.element.id + '_EJ2_Legend_Tooltip');
                     }
                     if (this.isChartControl) {
-                        showTooltip(this.chart.series[index].name, x, y, element.offsetWidth, element.id + '_EJ2_Legend_Tooltip', getElement(this.chart.element.id + '_Secondary_Element'));
+                        showTooltip(this.chart.series[index].name, x, y, element.offsetWidth, element.id + '_EJ2_Legend_Tooltip', getElement$1(this.chart.element.id + '_Secondary_Element'));
                     }
                     else {
-                        showTooltip(this.chart.visibleSeries[0].points[index].x.toString(), x + 10, y + 10, element.offsetWidth, element.id + '_EJ2_Legend_Tooltip', getElement(this.chart.element.id + '_Secondary_Element'));
+                        showTooltip(this.chart.visibleSeries[0].points[index].x.toString(), x + 10, y + 10, element.offsetWidth, element.id + '_EJ2_Legend_Tooltip', getElement$1(this.chart.element.id + '_Secondary_Element'));
                     }
                 }
             }
@@ -7477,14 +7485,14 @@ var ExportUtils = /** @__PURE__ @class */ (function () {
         if (elements) {
             if (elements instanceof Array) {
                 elements.forEach(function (value) {
-                    div.appendChild(getElement(value).cloneNode(true));
+                    div.appendChild(getElement$1(value).cloneNode(true));
                 });
             }
             else if (elements instanceof Element) {
                 div.appendChild(elements.cloneNode(true));
             }
             else {
-                div.appendChild(getElement(elements).cloneNode(true));
+                div.appendChild(getElement$1(elements).cloneNode(true));
             }
         }
         else {
@@ -7828,6 +7836,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         // It is used for checking blazor framework or not.
         var blazor = 'Blazor';
         this.isBlazor = window[blazor];
+        this.allowServerDataBinding = false;
         this.unWireEvents();
         this.initPrivateVariable();
         this.setCulture();
@@ -7868,6 +7877,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         this.calculateVisibleAxis();
         this.processData();
         this.renderComplete();
+        this.allowServerDataBinding = true;
     };
     /**
      * Gets the localized label by locale keyword.
@@ -7932,14 +7942,14 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
                 }
             }
         }
-        if (getElement(this.element.id + '_ej2_drag_multi_group')) {
+        if (getElement$1(this.element.id + '_ej2_drag_multi_group')) {
             if (this.selectionMode.indexOf('Drag') > -1) {
                 this.selectionModule.filterArray = [];
             }
             removeElement$1(this.element.id + '_ej2_drag_multi_group');
             this.selectionModule.calculateDragSelectedElements(this, new Rect(0, 0, 0, 0), true);
         }
-        else if (getElement(this.element.id + '_ej2_drag_group')) {
+        else if (getElement$1(this.element.id + '_ej2_drag_group')) {
             if (this.selectionMode !== 'Lasso') {
                 this.selectionModule.filterArray = [];
             }
@@ -8000,7 +8010,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
                 this.element.appendChild(this.svgObject);
             }
             else {
-                if (!getElement(this.stockChart.chartObject.id)) {
+                if (!getElement$1(this.stockChart.chartObject.id)) {
                     this.stockChart.mainObject.appendChild(this.svgObject);
                 }
             }
@@ -8010,12 +8020,12 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
      * To set the left and top position for data label template for center aligned chart
      */
     Chart.prototype.setSecondaryElementPosition = function () {
-        var element = getElement(this.element.id + '_Secondary_Element');
+        var element = getElement$1(this.element.id + '_Secondary_Element');
         if (!element) {
             return;
         }
         var rect = this.element.getBoundingClientRect();
-        var svgRect = getElement(this.svgId).getBoundingClientRect();
+        var svgRect = getElement$1(this.svgId).getBoundingClientRect();
         element.style.left = Math.max(svgRect.left - rect.left, 0) + 'px';
         element.style.top = Math.max(svgRect.top - rect.top, 0) + 'px';
     };
@@ -8175,7 +8185,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         appendChildElement(this.enableCanvas, this.svgObject, axisElement, this.redraw);
         if ((this.zoomModule && this.zoomSettings.enableScrollbar && this.scrollElement.childElementCount) ||
             (this.scrollElement && this.scrollElement.childElementCount)) {
-            appendChildElement(false, getElement(this.element.id + '_Secondary_Element'), this.scrollElement, this.redraw);
+            appendChildElement(false, getElement$1(this.element.id + '_Secondary_Element'), this.scrollElement, this.redraw);
         }
         if (this.stripLineModule) {
             this.stripLineModule.renderStripLine(this, 'Over', this.axisCollections);
@@ -8204,7 +8214,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
     Chart.prototype.renderAnnotation = function () {
         if (this.annotationModule) {
             //for stock chart, stock chart's id is added to render the annotations
-            this.annotationModule.renderAnnotations(getElement((this.stockChart ? this.stockChart.element.id : this.element.id) + '_Secondary_Element'));
+            this.annotationModule.renderAnnotations(getElement$1((this.stockChart ? this.stockChart.element.id : this.element.id) + '_Secondary_Element'));
         }
     };
     Chart.prototype.performSelection = function () {
@@ -8297,6 +8307,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
      * Defines the trendline initialization
      */
     Chart.prototype.initTrendLines = function () {
+        this.isProtectedOnChange = true;
         for (var _i = 0, _a = this.visibleSeries; _i < _a.length; _i++) {
             var series = _a[_i];
             var trendIndex = 0;
@@ -8317,6 +8328,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
                 trendIndex++;
             }
         }
+        this.isProtectedOnChange = false;
     };
     Chart.prototype.calculateAreaType = function () {
         var series = this.series[0];
@@ -8485,7 +8497,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
             rect = new Rect(margin.left, 0, this.availableSize.width - margin.left - margin.right, 0);
             var options = new TextOption(this.element.id + '_ChartTitle', titlePositionX(rect, this.titleStyle), this.margin.top + ((elementSize.height) * 3 / 4), getAnchor, this.titleCollection, '', 'auto');
             var element = redrawElement(this.redraw, this.element.id + '_ChartTitle', options, this.renderer) ||
-                textElement(this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject);
+                textElement$1(this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject);
             if (element) {
                 element.setAttribute('aria-label', this.description || this.title);
                 element.setAttribute('tabindex', this.tabIndex.toString());
@@ -8513,7 +8525,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         rect = new Rect(alignment === 'Center' ? (options.x - maxWidth * 0.5) : alignment === 'Far' ? options.x - maxWidth : options.x, 0, maxWidth, 0);
         var subTitleOptions = new TextOption(this.element.id + '_ChartSubTitle', titlePositionX(rect, this.subTitleStyle), options.y * options.text.length + ((subTitleElementSize.height) * 3 / 4) + padding, anchor(this.subTitleStyle.textAlignment), this.subTitleCollection, '', 'auto');
         var element = redrawElement(this.redraw, this.element.id + '_ChartSubTitle', subTitleOptions, this.renderer) ||
-            textElement(this.renderer, subTitleOptions, this.subTitleStyle, this.subTitleStyle.color || this.themeStyle.chartTitle, this.svgObject);
+            textElement$1(this.renderer, subTitleOptions, this.subTitleStyle, this.subTitleStyle.color || this.themeStyle.chartTitle, this.svgObject);
         if (element) {
             element.setAttribute('aria-label', this.description || this.subTitle);
             element.setAttribute('tabindex', this.tabIndex.toString());
@@ -8543,7 +8555,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
             return null;
         }
         else {
-            var element = getElement(this.element.id + '_ChartAreaBorder');
+            var element = getElement$1(this.element.id + '_ChartAreaBorder');
             var previousRect = element ?
                 new Rect(+element.getAttribute('x'), +element.getAttribute('y'), +element.getAttribute('width'), +element.getAttribute('height')) : null;
             var rect = new RectOption(this.element.id + '_ChartAreaBorder', this.chartArea.background, { width: this.chartArea.border.width, color: this.chartArea.border.color || this.themeStyle.areaBorder }, this.chartArea.opacity, this.chartAxisLayoutPanel.seriesClipRect);
@@ -8733,7 +8745,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
      * To find mouse x, y for aligned chart element svg position
      */
     Chart.prototype.setMouseXY = function (pageX, pageY) {
-        var svgRect = getElement(this.svgId).getBoundingClientRect();
+        var svgRect = getElement$1(this.svgId).getBoundingClientRect();
         var rect = this.element.getBoundingClientRect();
         this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
         this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
@@ -8899,7 +8911,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         if (id && (event.target.textContent.indexOf('...') > -1)) {
             var title = (targetId === (this.element.id + '_ChartTitle')) ? this.title :
                 targetId.indexOf('_AxisTitle') > -1 ? this.axisCollections[index].title : this.subTitle;
-            showTooltip(title, x, y, this.element.offsetWidth, this.element.id + '_EJ2_Title_Tooltip', getElement(this.element.id + '_Secondary_Element'), isTouch);
+            showTooltip(title, x, y, this.element.offsetWidth, this.element.id + '_EJ2_Title_Tooltip', getElement$1(this.element.id + '_Secondary_Element'), isTouch);
         }
         else {
             removeElement$1(this.element.id + '_EJ2_Title_Tooltip');
@@ -8909,7 +8921,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         var targetId = event.target.id;
         if (((targetId.indexOf('AxisLabel') > -1) || targetId.indexOf('Axis_MultiLevelLabel') > -1) &&
             (event.target.textContent.indexOf('...') > -1)) {
-            showTooltip(this.findAxisLabel(targetId), x, y, this.element.offsetWidth, this.element.id + '_EJ2_AxisLabel_Tooltip', getElement(this.element.id + '_Secondary_Element'), isTouch);
+            showTooltip(this.findAxisLabel(targetId), x, y, this.element.offsetWidth, this.element.id + '_EJ2_AxisLabel_Tooltip', getElement$1(this.element.id + '_Secondary_Element'), isTouch);
         }
         else {
             removeElement$1(this.element.id + '_EJ2_AxisLabel_Tooltip');
@@ -8954,7 +8966,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
             pageY = e.clientY;
             target = e.target;
         }
-        var svgRect = getElement(this.svgId).getBoundingClientRect();
+        var svgRect = getElement$1(this.svgId).getBoundingClientRect();
         this.mouseDownX = this.previousMouseMoveX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
         this.mouseDownY = this.previousMouseMoveY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
         if (this.isTouch) {
@@ -9029,7 +9041,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
      * Method to set the annotation content dynamically for chart.
      */
     Chart.prototype.setAnnotationValue = function (annotationIndex, content) {
-        var parentNode = getElement(this.element.id + '_Annotation_Collections');
+        var parentNode = getElement$1(this.element.id + '_Annotation_Collections');
         var annotation = this.annotations[annotationIndex];
         var element;
         if (content !== null) {
@@ -9041,7 +9053,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
                 parentNode.appendChild(element.children[0]);
             }
             else {
-                this.annotationModule.renderAnnotations(getElement(this.element.id + '_Secondary_Element'));
+                this.annotationModule.renderAnnotations(getElement$1(this.element.id + '_Secondary_Element'));
             }
         }
     };
@@ -9516,10 +9528,15 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
                         var len = this.series.length;
                         var seriesRefresh = false;
                         var series = void 0;
+                        var blazorProp = void 0;
                         for (var i = 0; i < len; i++) {
                             series = newProp.series[i];
+                            if (this.isBlazor && (series.isClosed || series.marker ||
+                                series.emptyPointSettings || series.type || series.boxPlotMode || series.showMean)) {
+                                blazorProp = true;
+                            }
                             if (series && (series.dataSource || series.xName || series.yName || series.size ||
-                                series.high || series.low || series.open || series.close || series.fill || series.name)) {
+                                series.high || series.low || series.open || series.close || series.fill || series.name || blazorProp)) {
                                 extend(this.getVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }
@@ -10934,7 +10951,7 @@ var StripLine = /** @__PURE__ @class */ (function () {
      * @param axis
      */
     StripLine.prototype.renderPath = function (stripline, rect, id, parent, chart, axis) {
-        var element = getElement(id);
+        var element = getElement$1(id);
         var direction = element ? element.getAttribute('d') : '';
         var d = (axis.orientation === 'Vertical') ? ('M' + rect.x + ' ' + rect.y + ' ' + 'L' + (rect.x + rect.width)
             + ' ' + rect.y) :
@@ -10951,7 +10968,7 @@ var StripLine = /** @__PURE__ @class */ (function () {
      * @param chart
      */
     StripLine.prototype.renderRectangle = function (stripline, rect, id, parent, chart) {
-        var element = getElement(id);
+        var element = getElement$1(id);
         var previousRect = element ? new Rect(+element.getAttribute('x'), +element.getAttribute('y'), +element.getAttribute('width'), +element.getAttribute('height')) : null;
         appendChildElement(chart.enableCanvas, parent, chart.renderer.drawRectangle(new RectOption(id, stripline.color, stripline.border, stripline.opacity, rect, 0, 0, '', stripline.dashArray)), chart.redraw, true, 'x', 'y', null, null, true, true, previousRect);
     };
@@ -10982,7 +10999,7 @@ var StripLine = /** @__PURE__ @class */ (function () {
             ty = this.getTextStart(ty + (textMid * this.factor(stripline.verticalAlignment)) - padding, rect.height, stripline.verticalAlignment);
             anchor = stripline.horizontalAlignment;
         }
-        textElement(chart.renderer, new TextOption(id, tx, ty, anchor, stripline.text, 'rotate(' + rotation + ' ' + tx + ',' + ty + ')', 'middle'), stripline.textStyle, stripline.textStyle.color, parent);
+        textElement$1(chart.renderer, new TextOption(id, tx, ty, anchor, stripline.text, 'rotate(' + rotation + ' ' + tx + ',' + ty + ')', 'middle'), stripline.textStyle, stripline.textStyle.color, parent);
     };
     StripLine.prototype.invertAlignment = function (anchor) {
         switch (anchor) {
@@ -11169,7 +11186,7 @@ var LineBase = /** @__PURE__ @class */ (function () {
      * @private
      */
     LineBase.prototype.appendLinePath = function (options, series, clipRect) {
-        var element = getElement(options.id);
+        var element = getElement$1(options.id);
         var chart = series.chart;
         var previousDirection = element ? element.getAttribute('d') : null;
         var htmlObject = series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y]));
@@ -11934,7 +11951,7 @@ var MultiColoredSeries = /** @__PURE__ @class */ (function (_super) {
                         'id': option.id + '_Segment_' + index,
                         'd': option.d
                     };
-                    pathAnimation(getElement(attributeOptions.id), attributeOptions.d, chart.redraw);
+                    pathAnimation(getElement$1(attributeOptions.id), attributeOptions.d, chart.redraw);
                     series.seriesElement.appendChild(chart.renderer.drawPath(attributeOptions));
                 });
             }
@@ -12417,7 +12434,7 @@ var PolarRadarPanel = /** @__PURE__ @class */ (function (_super) {
             }
             this.visibleAxisLabelRect.push(labelRegions[i]);
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, anchor, axis.visibleLabels[i].text);
-            textElement(chart.renderer, options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
+            textElement$1(chart.renderer, options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
         }
         chart.yAxisElements.appendChild(labelElement);
     };
@@ -12443,7 +12460,7 @@ var PolarRadarPanel = /** @__PURE__ @class */ (function (_super) {
         if (axis.majorGridLines.width > 0) {
             if (chart.visibleSeries[0].type === 'Polar') {
                 for (var j = 0; j < axis.visibleLabels.length; j++) {
-                    element = getElement(chart.element.id + '_MajorGridLine_' + index + '_' + j);
+                    element = getElement$1(chart.element.id + '_MajorGridLine_' + index + '_' + j);
                     previousValue = element ? element.getAttribute('r') : null;
                     radius = chart.radius * valueToCoefficient(axis.visibleLabels[j].value, axis);
                     options = new CircleOption(chart.element.id + '_MajorGridLine_' + index + '_' + j, 'transparent', border, axis.majorGridLines.width, this.centerX, this.centerY, radius);
@@ -12458,14 +12475,14 @@ var PolarRadarPanel = /** @__PURE__ @class */ (function (_super) {
                 for (var j = 0; j < axis.visibleLabels.length; j++) {
                     radius = chart.radius * valueToCoefficient(axis.visibleLabels[j].value, axis);
                     majorGrid = this.renderRadarGrid(radius, '', chart);
-                    element = getElement(chart.element.id + '_MajorGridLine_' + index + '_' + j);
+                    element = getElement$1(chart.element.id + '_MajorGridLine_' + index + '_' + j);
                     previousValue = element ? element.getAttribute('d') : null;
                     options = new PathOption(chart.element.id + '_MajorGridLine_' + index + '_' + j, 'transparent', axis.majorGridLines.width, axis.majorGridLines.color || chart.themeStyle.majorGridLine, null, null, majorGrid);
                     appendChildElement(chart.enableCanvas, this.element, chart.renderer.drawPath(options), chart.redraw, true, 'x', 'y', null, previousValue, true);
                 }
                 if (radius !== chart.radius) {
                     majorGrid = this.renderRadarGrid(chart.radius, '', chart);
-                    element = getElement(chart.element.id + '_MajorGridLine_' + index + '_' + axis.visibleLabels.length);
+                    element = getElement$1(chart.element.id + '_MajorGridLine_' + index + '_' + axis.visibleLabels.length);
                     previousValue = element ? element.getAttribute('d') : null;
                     options = new PathOption(chart.element.id + '_MajorGridLine_' + index + '_' + axis.visibleLabels.length, 'transparent', axis.majorGridLines.width, axis.majorGridLines.color || chart.themeStyle.majorGridLine, null, null, majorGrid);
                     appendChildElement(chart.enableCanvas, this.element, chart.renderer.drawPath(options), chart.redraw, true, 'x', 'y', null, previousValue, true);
@@ -12675,7 +12692,7 @@ var PolarRadarPanel = /** @__PURE__ @class */ (function (_super) {
                 continue; // If the label is intersect, the label render is ignored.
             }
             this.visibleAxisLabelRect.push(labelRegions[i]);
-            textElement(chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
+            textElement$1(chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
         }
         this.element.appendChild(labelElement);
     };
@@ -12727,7 +12744,7 @@ var PolarRadarPanel = /** @__PURE__ @class */ (function (_super) {
         var direction;
         var element;
         if (axis.majorTickLines.width > 0) {
-            element = getElement(chart.element.id + '_MajorTickLine_' + index + '_' + gridIndex);
+            element = getElement$1(chart.element.id + '_MajorTickLine_' + index + '_' + gridIndex);
             direction = element ? element.getAttribute('d') : null;
             tickOptions = new PathOption(chart.element.id + '_MajorTickLine_' + index + '_' + gridIndex, 'transparent', axis.majorTickLines.width, axis.majorTickLines.color || chart.themeStyle.majorTickLine, null, null, majorTickLine);
             /**
@@ -12741,7 +12758,7 @@ var PolarRadarPanel = /** @__PURE__ @class */ (function (_super) {
             appendChildElement(chart.enableCanvas, chart.yAxisElements, element, chart.redraw, true, 'x', 'y', null, direction);
         }
         if (axis.minorTickLines.width > 0) {
-            element = getElement(chart.element.id + '_MinorTickLine_' + index + '_' + gridIndex);
+            element = getElement$1(chart.element.id + '_MinorTickLine_' + index + '_' + gridIndex);
             direction = element ? element.getAttribute('d') : null;
             tickOptions = new PathOption(chart.element.id + '_MinorTickLine_' + index + '_' + gridIndex, 'transparent', axis.minorTickLines.width, axis.minorTickLines.color || chart.themeStyle.minorTickLine, null, null, minorTickLine);
             /**
@@ -12761,13 +12778,13 @@ var PolarRadarPanel = /** @__PURE__ @class */ (function (_super) {
         var direction;
         var element;
         if (axis.majorGridLines.width > 0) {
-            element = getElement(chart.element.id + '_MajorGridLine_' + index + '_' + gridIndex);
+            element = getElement$1(chart.element.id + '_MajorGridLine_' + index + '_' + gridIndex);
             direction = element ? element.getAttribute('d') : null;
             gridOptions = new PathOption(chart.element.id + '_MajorGridLine_' + index + '_' + gridIndex, 'transparent', axis.majorGridLines.width, axis.majorGridLines.color || chart.themeStyle.majorGridLine, null, axis.majorGridLines.dashArray, majorGrid);
             appendChildElement(chart.enableCanvas, this.element, chart.renderer.drawPath(gridOptions), chart.redraw, true, 'x', 'y', null, direction);
         }
         if (axis.minorGridLines.width > 0) {
-            element = getElement(chart.element.id + '_MinorGridLine_' + index + '_' + gridIndex);
+            element = getElement$1(chart.element.id + '_MinorGridLine_' + index + '_' + gridIndex);
             direction = element ? element.getAttribute('d') : null;
             gridOptions = new PathOption(chart.element.id + '_MinorGridLine_' + index + '_' + gridIndex, 'transparent', axis.minorGridLines.width, axis.minorGridLines.color || chart.themeStyle.minorGridLine, null, axis.minorGridLines.dashArray, minorGird);
             appendChildElement(chart.enableCanvas, this.element, chart.renderer.drawPath(gridOptions), chart.redraw, true, 'x', 'y', null, direction);
@@ -13358,7 +13375,7 @@ var CandleSeries = /** @__PURE__ @class */ (function (_super) {
             (point.open > point.close ? argsData.fill : 'transparent') : argsData.fill;
         argsData.border.color = argsData.fill;
         var options = new PathOption(series.chart.element.id + '_Series_' + series.index + '_Point_' + point.index, fill, argsData.border.width, argsData.border.color, series.opacity, series.dashArray, direction);
-        var element = getElement(options.id);
+        var element = getElement$1(options.id);
         var previousDirection = element ? element.getAttribute('d') : null;
         var candleElement = series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y]));
         candleElement.setAttribute('aria-label', point.x.toString() + ':' + point.high.toString()
@@ -14002,9 +14019,9 @@ var ScatterSeries = /** @__PURE__ @class */ (function () {
         var previousPath;
         var marker = series.marker;
         var shapeOption = new PathOption(chart.element.id + '_Series_' + series.index + '_Point_' + point.index, argsData.fill, argsData.border.width, argsData.border.color, series.opacity, null);
-        if (chart.redraw && getElement(shapeOption.id)) {
+        if (chart.redraw && getElement$1(shapeOption.id)) {
             circlePath = argsData.shape === 'Circle' ? 'c' : '';
-            previousPath = getElement(shapeOption.id).getAttribute('d');
+            previousPath = getElement$1(shapeOption.id).getAttribute('d');
         }
         appendChildElement(false, series.seriesElement, drawSymbol(point.symbolLocations[0], argsData.shape, new Size(argsData.width, argsData.height), marker.imageUrl, shapeOption, point.x.toString() + ':' + point.yValue.toString(), series.chart.svgRenderer, series.clipRect), chart.redraw, true, circlePath + 'x', circlePath + 'y', startLocation, previousPath);
         point.regions.push(new Rect(point.symbolLocations[0].x - marker.width, point.symbolLocations[0].y - marker.height, 2 * marker.width, 2 * marker.height));
@@ -14219,8 +14236,8 @@ var WaterfallSeries = /** @__PURE__ @class */ (function (_super) {
             }
         }
         var options = new PathOption(series.chart.element.id + '_Series_' + series.index + '_Connector_', 'none', series.connector.width, series.connector.color, series.opacity, series.connector.dashArray, direction);
-        if (redraw && getElement(options.id)) {
-            direction = getElement(options.id).getAttribute('d');
+        if (redraw && getElement$1(options.id)) {
+            direction = getElement$1(options.id).getAttribute('d');
         }
         var element = (redrawElement(redraw, options.id, options, series.chart.renderer) ||
             series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y])));
@@ -14543,7 +14560,7 @@ var HiloOpenCloseSeries = /** @__PURE__ @class */ (function (_super) {
                 'L' + ' ' + (rect.x + rect.width) + ' ' + (close.y) + ' ');
         }
         options = new PathOption(series.chart.element.id + '_Series_' + series.index + '_Point_' + point.index, argsData.fill, argsData.border.width, argsData.fill, series.opacity, series.dashArray, direction);
-        pathAnimation(getElement(options.id), direction, series.chart.redraw);
+        pathAnimation(getElement$1(options.id), direction, series.chart.redraw);
         var element = series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y]));
         element.setAttribute('aria-label', point.x.toString() + ':' + point.high.toString()
             + ':' + point.low.toString() + ':' + point.close.toString() + ':' + point.open.toString());
@@ -17602,7 +17619,7 @@ var Crosshair = /** @__PURE__ @class */ (function () {
                         axisGroup.appendChild(pathElement);
                         options = new TextOption(this.elementID + '_axis_tooltip_text_' + k, 0, 0, 'start', text);
                         var render = chart.enableCanvas ? this.svgRenderer : chart.renderer;
-                        textElem = textElement(render, options, axis.crosshairTooltip.textStyle, axis.crosshairTooltip.textStyle.color || chart.themeStyle.crosshairLabel, axisGroup);
+                        textElem = textElement$1(render, options, axis.crosshairTooltip.textStyle, axis.crosshairTooltip.textStyle.color || chart.themeStyle.crosshairLabel, axisGroup);
                     }
                     direction = findDirection(this.rx, this.ry, rect, this.arrowLocation, 10, this.isTop, this.isBottom, this.isLeft, this.valueX, this.valueY);
                     pathElement.setAttribute('d', direction);
@@ -18701,7 +18718,7 @@ var Toolkit = /** @__PURE__ @class */ (function () {
         else {
             size = measureText(this.chart.getLocalizedLabel('ResetZoom'), { size: '12px' });
             childElement.appendChild(render.drawRectangle(new RectOption(this.elementId + '_Zooming_Reset_1', 'transparent', {}, 1, new Rect(0, 0, size.width, size.height))));
-            textElement(chart.renderer, new TextOption(this.elementId + '_Zooming_Reset_2', 0 + size.width / 2, 0 + size.height * 3 / 4, 'middle', this.chart.getLocalizedLabel('ResetZoom'), 'rotate(0,' + (0) + ',' + (0) + ')', 'auto'), { size: '12px' }, 'black', childElement);
+            textElement$1(chart.renderer, new TextOption(this.elementId + '_Zooming_Reset_2', 0 + size.width / 2, 0 + size.height * 3 / 4, 'middle', this.chart.getLocalizedLabel('ResetZoom'), 'rotate(0,' + (0) + ',' + (0) + ')', 'auto'), { size: '12px' }, 'black', childElement);
         }
         parentElement.appendChild(childElement);
         this.wireEvents(childElement, this.reset);
@@ -18724,9 +18741,9 @@ var Toolkit = /** @__PURE__ @class */ (function () {
     Toolkit.prototype.showTooltip = function (event) {
         var text = event.currentTarget.id.split('_Zooming_')[1];
         var left = (event.pageX - (measureText(text, { size: '10px' }).width + 5));
-        var rect = getElement(event.currentTarget.id + '_1');
-        var icon2 = getElement(event.currentTarget.id + '_2');
-        var icon3 = getElement(event.currentTarget.id + '_3');
+        var rect = getElement$1(event.currentTarget.id + '_1');
+        var icon2 = getElement$1(event.currentTarget.id + '_2');
+        var icon3 = getElement$1(event.currentTarget.id + '_3');
         if (rect) {
             this.hoveredID = rect.id;
             rect.setAttribute('fill', this.iconRectOverFill);
@@ -18744,12 +18761,12 @@ var Toolkit = /** @__PURE__ @class */ (function () {
     /** @private */
     // tslint:disable
     Toolkit.prototype.removeTooltip = function () {
-        if (getElement(this.hoveredID)) {
+        if (getElement$1(this.hoveredID)) {
             var rectColor = this.chart.zoomModule.isPanning ? (this.hoveredID.indexOf('_Pan_') > -1) ? this.iconRectSelectionFill : 'transparent' : (this.hoveredID.indexOf('_Zoom_') > -1) ? this.iconRectSelectionFill : 'transparent';
-            getElement(this.hoveredID).setAttribute('fill', rectColor);
+            getElement$1(this.hoveredID).setAttribute('fill', rectColor);
         }
-        var icon2 = this.hoveredID ? getElement(this.hoveredID.replace('_1', '_2')) : null;
-        var icon3 = this.hoveredID ? getElement(this.hoveredID.replace('_1', '_3')) : null;
+        var icon2 = this.hoveredID ? getElement$1(this.hoveredID.replace('_1', '_2')) : null;
+        var icon3 = this.hoveredID ? getElement$1(this.hoveredID.replace('_1', '_3')) : null;
         if (icon2) {
             var iconColor = this.chart.zoomModule.isPanning ? (this.hoveredID.indexOf('_Pan_') > -1) ? this.selectionColor : this.fillColor : (this.hoveredID.indexOf('_Zoom_') > -1) ? this.selectionColor : this.fillColor;
             icon2.setAttribute('fill', iconColor);
@@ -18813,11 +18830,11 @@ var Toolkit = /** @__PURE__ @class */ (function () {
         this.zoomOutElements.setAttribute('opacity', this.elementOpacity);
         this.applySelection(this.zoomElements.childNodes, this.selectionColor);
         this.applySelection(this.panElements.childNodes, '#737373');
-        if (getElement(this.selectedID)) {
-            getElement(this.selectedID).setAttribute('fill', 'transparent');
+        if (getElement$1(this.selectedID)) {
+            getElement$1(this.selectedID).setAttribute('fill', 'transparent');
         }
         this.selectedID = this.chart.element.id + '_Zooming_Zoom_1';
-        getElement(this.selectedID).setAttribute('fill', this.iconRectSelectionFill);
+        getElement$1(this.selectedID).setAttribute('fill', this.iconRectSelectionFill);
         return false;
     };
     /** @private */
@@ -18830,11 +18847,11 @@ var Toolkit = /** @__PURE__ @class */ (function () {
         element = this.zoomOutElements ? this.zoomOutElements.setAttribute('opacity', this.elementOpacity) : null;
         element = this.panElements ? this.applySelection(this.panElements.childNodes, this.selectionColor) : null;
         element = this.zoomElements ? this.applySelection(this.zoomElements.childNodes, '#737373') : null;
-        if (getElement(this.selectedID)) {
-            getElement(this.selectedID).setAttribute('fill', 'transparent');
+        if (getElement$1(this.selectedID)) {
+            getElement$1(this.selectedID).setAttribute('fill', 'transparent');
         }
         this.selectedID = this.chart.element.id + '_Zooming_Pan_1';
-        getElement(this.selectedID).setAttribute('fill', this.iconRectSelectionFill);
+        getElement$1(this.selectedID).setAttribute('fill', this.iconRectSelectionFill);
         return false;
     };
     Toolkit.prototype.zoomInOutCalculation = function (scale, chart, axes, mode) {
@@ -19256,7 +19273,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
                             value.seriesElement.setAttribute('transform', translate);
                         }
                     }
-                    element = getElement(chart.element.id + '_Series_' + value.index + '_DataLabelCollections');
+                    element = getElement$1(chart.element.id + '_Series_' + value.index + '_DataLabelCollections');
                     if (value.errorBarElement) {
                         value.errorBarElement.setAttribute('transform', translate);
                     }
@@ -19316,7 +19333,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
         var shadowElement = '<filter id="chart_shadow" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="5"/>';
         shadowElement += '<feOffset dx="-3" dy="4" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="1"/>';
         shadowElement += '</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
-        if (length === 0 || getElement(this.elementId + '_Zooming_KitCollection')) {
+        if (length === 0 || getElement$1(this.elementId + '_Zooming_KitCollection')) {
             return false;
         }
         var defElement = render.createDefs();
@@ -19463,7 +19480,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
     Zoom.prototype.chartMouseWheel = function (e) {
         var chart = this.chart;
         var offset = chart.element.getBoundingClientRect();
-        var svgRect = getElement(chart.svgId).getBoundingClientRect();
+        var svgRect = getElement$1(chart.svgId).getBoundingClientRect();
         var mouseX = (e.clientX - offset.left) - Math.max(svgRect.left - offset.left, 0);
         var mouseY = (e.clientY - offset.top) - Math.max(svgRect.top - offset.top, 0);
         if (this.zooming.enableMouseWheelZooming &&
@@ -19818,7 +19835,7 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
         var series = chart.series[index.series];
         elementId = (!series.isRectSeries && series.type !== 'Scatter' && series.type !== 'Bubble' &&
             series.marker.visible) ? (elementId + '_Symbol' + suffix) : elementId;
-        return [getElement(elementId), (series.type === 'RangeArea' && series.marker.visible) ? getElement(elementId + '1') : null];
+        return [getElement$1(elementId), (series.type === 'RangeArea' && series.marker.visible) ? getElement$1(elementId + '1') : null];
     };
     Selection.prototype.getClusterElements = function (chart, index) {
         var clusters = [];
@@ -19854,7 +19871,7 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
         if (targetElement.id.indexOf('_Series_') > -1) {
             var element = void 0;
             if (targetElement.id.indexOf('_Trackball_1') > -1) {
-                element = getElement(targetElement.id.split('_Trackball_')[0] + '_Symbol');
+                element = getElement$1(targetElement.id.split('_Trackball_')[0] + '_Symbol');
             }
             else if (targetElement.id.indexOf('_Trackball_0') > -1) {
                 return null;
@@ -20009,9 +20026,9 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
         for (var _i = 0, visibleSeries_1 = visibleSeries; _i < visibleSeries_1.length; _i++) {
             var series = visibleSeries_1[_i];
             if (series.visible) {
-                this.checkSelectionElements(getElement(chartId + 'SeriesGroup' + series.index), this.generateStyle(series), visibility);
-                if (!isNullOrUndefined(getElement(chartId + 'SymbolGroup' + series.index))) {
-                    this.checkSelectionElements(getElement(chartId + 'SymbolGroup' + series.index), this.generateStyle(series), visibility);
+                this.checkSelectionElements(getElement$1(chartId + 'SeriesGroup' + series.index), this.generateStyle(series), visibility);
+                if (!isNullOrUndefined(getElement$1(chartId + 'SymbolGroup' + series.index))) {
+                    this.checkSelectionElements(getElement$1(chartId + 'SymbolGroup' + series.index), this.generateStyle(series), visibility);
                 }
             }
         }
@@ -20310,7 +20327,7 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
         if ((chart.allowMultiSelection) && isDragMode) {
             var element = void 0;
             var dragGroup = void 0;
-            var multiGroup = getElement(this.multiRectGroup);
+            var multiGroup = getElement$1(this.multiRectGroup);
             if (!multiGroup) {
                 multiGroup = chart.svgRenderer.createGroup({ id: this.multiRectGroup });
                 chart.svgObject.appendChild(multiGroup);
@@ -20318,17 +20335,17 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
             if (this.rectGrabbing || this.resizing) {
                 var rectElement = void 0;
                 if (this.resizing) {
-                    rectElement = getElement(this.draggedRect + this.targetIndex);
+                    rectElement = getElement$1(this.draggedRect + this.targetIndex);
                 }
                 else {
-                    rectElement = getElement(target.id);
+                    rectElement = getElement$1(target.id);
                 }
                 if (rectElement.nextSibling) {
                     remove(rectElement.nextSibling);
                 }
                 this.setAttributes(rectElement, dragRect);
             }
-            else if (!getElement(this.draggedRectGroup + this.count)) {
+            else if (!getElement$1(this.draggedRectGroup + this.count)) {
                 dragGroup = chart.svgRenderer.createGroup({ id: this.draggedRectGroup + this.count });
                 var svgElement = document.getElementById(chart.element.id + '_series_svg');
                 chart.enableCanvas ? svgElement.appendChild(dragGroup) : multiGroup.appendChild(dragGroup);
@@ -20341,7 +20358,7 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
                 element = chart.svgRenderer.drawPath(new PathOption(this.lassoPath + this.count, rectFill, 3, rectStroke, 1, '', this.path));
             }
             if (!dragGroup && !this.rectGrabbing && !this.resizing) {
-                getElement(this.draggedRectGroup + this.count).appendChild(element);
+                getElement$1(this.draggedRectGroup + this.count).appendChild(element);
             }
             else if (!this.rectGrabbing && !this.resizing) {
                 dragGroup.appendChild(element);
@@ -20349,7 +20366,7 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             var element = isLasso ?
-                getElement(this.lassoPath) : getElement(this.draggedRect);
+                getElement$1(this.lassoPath) : getElement$1(this.draggedRect);
             if (this.closeIcon) {
                 removeElement$1(this.closeIconId);
             }
@@ -20410,7 +20427,7 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
             stroke: circleStroke, 'stroke-width': 2, fill: circleStroke
         }, null));
         this.closeIcon = closeIcon;
-        var pathElement = getElement(this.draggedRectGroup + (isMultiDrag ? (isDrag ? this.targetIndex : this.count) : ''));
+        var pathElement = getElement$1(this.draggedRectGroup + (isMultiDrag ? (isDrag ? this.targetIndex : this.count) : ''));
         if (pathElement) {
             pathElement.appendChild(closeIcon);
         }
@@ -20425,8 +20442,8 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
             var isSelectedvalues = true;
             if ((chart.allowMultiSelection)) {
                 var index = this.getIndex(event.target.id);
-                var multiRectGroupElement = getElement(this.multiRectGroup);
-                remove(getElement(this.draggedRectGroup + index));
+                var multiRectGroupElement = getElement$1(this.multiRectGroup);
+                remove(getElement$1(this.draggedRectGroup + index));
                 this.dragRectArray[index] = null;
                 this.filterArray[index] = null;
                 this.totalSelectedPoints[index] = null;
@@ -20466,7 +20483,7 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             else {
-                remove(getElement(this.draggedRectGroup));
+                remove(getElement$1(this.draggedRectGroup));
                 this.removeSelectedElements(chart, this.selectedDataIndexes, chart.series);
             }
             this.blurEffect(chart.element.id, chart.visibleSeries);
@@ -20560,7 +20577,7 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
             }
         }
         if (this.chart.selectionMode !== 'Lasso') {
-            this.changeCursorStyle(resize, getElement((this.chart.allowMultiSelection) ? this.draggedRect +
+            this.changeCursorStyle(resize, getElement$1((this.chart.allowMultiSelection) ? this.draggedRect +
                 this.targetIndex : this.draggedRect), cursorStyle);
         }
         this.changeCursorStyle(resize, chartSvgObject, cursorStyle);
@@ -20639,12 +20656,12 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
         if (chart.selectionMode === 'Lasso' && this.dragging && this.path) {
             if (this.path.indexOf('L') !== -1) {
                 if (!(chart.allowMultiSelection)) {
-                    getElement(this.lassoPath).setAttribute('d', this.path + 'Z');
-                    this.pointChecking(getElement(this.lassoPath));
+                    getElement$1(this.lassoPath).setAttribute('d', this.path + 'Z');
+                    this.pointChecking(getElement$1(this.lassoPath));
                 }
-                else if (getElement(this.lassoPath + this.count)) {
-                    getElement(this.lassoPath + this.count).setAttribute('d', this.path + 'Z');
-                    this.pointChecking(getElement(this.lassoPath + this.count));
+                else if (getElement$1(this.lassoPath + this.count)) {
+                    getElement$1(this.lassoPath + this.count).setAttribute('d', this.path + 'Z');
+                    this.pointChecking(getElement$1(this.lassoPath + this.count));
                 }
                 if (this.dragging || this.resizing) {
                     this.calculateDragSelectedElements(chart, this.dragRect);
@@ -20667,7 +20684,7 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
         var target = event.target;
         this.path = undefined;
         if (this.dragging) {
-            this.count = getElement(this.multiRectGroup) ? (this.count + 1) : 0;
+            this.count = getElement$1(this.multiRectGroup) ? (this.count + 1) : 0;
             this.dragRect = new Rect(chart.mouseDownX, chart.mouseDownY, 0, 0);
             if (chart.mouseDownX < seriesClipRect.x || chart.mouseDownX > (seriesClipRect.x + seriesClipRect.width) ||
                 chart.mouseDownY < seriesClipRect.y || chart.mouseDownY > (seriesClipRect.y + seriesClipRect.height)) {
@@ -20756,7 +20773,7 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         var chart = this.chart;
         var element;
-        var svgRect = getElement(chart.svgId).getBoundingClientRect();
+        var svgRect = getElement$1(chart.svgId).getBoundingClientRect();
         var offsetX = chart.chartAxisLayoutPanel.seriesClipRect.x + Math.max(svgRect.left, 0);
         var offsetY = chart.chartAxisLayoutPanel.seriesClipRect.y + Math.max(svgRect.top, 0);
         this.multiDataIndexes[this.count] = [];
@@ -21150,7 +21167,7 @@ var DataLabel = /** @__PURE__ @class */ (function () {
                                     xValue = rect.x;
                                     yValue = rect.y;
                                 }
-                                textElement(chart.renderer, new TextOption(_this.commonId + index + '_Text_' + i, xPos, yPos, 'middle', argsData.text, 'rotate(' + degree + ',' + (xValue) + ',' + (yValue) + ')', 'auto', degree), argsData.font, argsData.font.color ||
+                                textElement$1(chart.renderer, new TextOption(_this.commonId + index + '_Text_' + i, xPos, yPos, 'middle', argsData.text, 'rotate(' + degree + ',' + (xValue) + ',' + (yValue) + ')', 'auto', degree), argsData.font, argsData.font.color ||
                                     ((contrast >= 128 || series.type === 'Hilo') ? 'black' : 'white'), series.textElement, false, redraw, true, false, series.chart.duration, series.clipRect);
                             }
                         }
@@ -21159,7 +21176,7 @@ var DataLabel = /** @__PURE__ @class */ (function () {
             }
         });
         if (element.childElementCount) {
-            appendChildElement(chart.enableCanvas, getElement(chart.element.id + '_Secondary_Element'), element, chart.redraw, false, 'x', 'y', null, '', false, false, null, chart.duration);
+            appendChildElement(chart.enableCanvas, getElement$1(chart.element.id + '_Secondary_Element'), element, chart.redraw, false, 'x', 'y', null, '', false, false, null, chart.duration);
         }
     };
     /**
@@ -21735,12 +21752,12 @@ var ErrorBar = /** @__PURE__ @class */ (function () {
                 symbolId = this.chart.element.id + '_Series_' + '_ErrorBarGroup_' + seriesIndex + '_Point_' + point.index;
                 capId = this.chart.element.id + '_Series_' + '_ErrorBarCap_' + seriesIndex + '_Point_' + point.index;
                 var shapeOption = new PathOption(symbolId, '', errorbar.width, errorbar.color || this.chart.themeStyle.errorBar, null, '', errorDirection[0]);
-                var element = getElement(shapeOption.id);
+                var element = getElement$1(shapeOption.id);
                 var previousDirection = element ? element.getAttribute('d') : null;
                 series.errorBarElement.appendChild(this.chart.renderer.drawPath(shapeOption));
                 pathAnimation(element, errorDirection[0], redraw, previousDirection);
                 var capOption = new PathOption(capId, '', errorBarCap.width, errorBarCap.color || this.chart.themeStyle.errorBar, null, '', errorDirection[1]);
-                element = getElement(capOption.id);
+                element = getElement$1(capOption.id);
                 previousDirection = element ? element.getAttribute('d') : null;
                 appendChildElement(this.chart.enableCanvas, series.errorBarElement, this.chart.renderer.drawPath(capOption), redraw);
                 pathAnimation(element, errorDirection[1], redraw, previousDirection);
@@ -22179,10 +22196,10 @@ var Legend = /** @__PURE__ @class */ (function (_super) {
             }
             chart.animateSeries = false;
             chart.redraw = chart.enableAnimation;
+            blazorTemplatesReset(chart);
             removeElement$1(getElement(chart.element.id + '_Secondary_Element').querySelectorAll('.ejSVGTooltip')[0]);
             this.redrawSeriesElements(series, chart);
             chart.removeSvg();
-            resetBlazorTemplate(chart.element.id + '_DataLabel');
             chart.refreshAxis();
             series.refreshAxisLabel();
             this.refreshSeries(chart.visibleSeries);
@@ -22436,6 +22453,7 @@ var AnnotationBase = /** @__PURE__ @class */ (function () {
      * @param parentElement
      */
     AnnotationBase.prototype.processAnnotation = function (annotation, index, parentElement) {
+        var _this = this;
         var annotationElement;
         var location;
         var chart = this.control;
@@ -22447,7 +22465,13 @@ var AnnotationBase = /** @__PURE__ @class */ (function () {
         else if (this.control.redraw) {
             removeElement$1(annotationElement.id);
         }
-        updateBlazorTemplate((this.control.element.id + 'Annotation' + index).replace(/[^a-zA-Z0-9]/g, ''), 'ContentTemplate', chart.stockChart ? chart.stockChart.annotations[index] : this.control.annotations[index]);
+        var annotationRendered = function () {
+            var elementRect = annotationElement.getBoundingClientRect();
+            annotationElement.style.left = _this.setAlignmentValue(_this.annotation.horizontalAlignment, elementRect.width, location.x) + 'px';
+            annotationElement.style.top = _this.setAlignmentValue(_this.annotation.verticalAlignment, elementRect.height, location.y) + 'px';
+        };
+        annotationRendered.bind(location, this);
+        updateBlazorTemplate((this.control.element.id + 'Annotation' + index).replace(/[^a-zA-Z0-9]/g, ''), 'ContentTemplate', chart.stockChart ? chart.stockChart.annotations[index] : this.control.annotations[index], undefined, annotationRendered);
     };
     /**
      * Method to calculate the location for annotation - coordinate unit as point in accumulation chart.
@@ -23274,7 +23298,7 @@ var MultiLevelLabel = /** @__PURE__ @class */ (function () {
                             textWrap(argsData.text, gap, argsData.textStyle) : textTrim(gap, argsData.text, argsData.textStyle);
                         options.x = options.x - padding / 2;
                     }
-                    textElement(_this.chart.renderer, options, argsData.textStyle, argsData.textStyle.color || _this.chart.themeStyle.axisLabel, _this.labelElement, false, _this.chart.redraw, true);
+                    textElement$1(_this.chart.renderer, options, argsData.textStyle, argsData.textStyle.color || _this.chart.themeStyle.axisLabel, _this.labelElement, false, _this.chart.redraw, true);
                     if (multiLevel.border.width > 0 && multiLevel.border.type !== 'WithoutBorder') {
                         pathRect = _this.renderXAxisLabelBorder(level, endX - startX - padding, axis, startX, startY, labelSize, options, axisRect, argsData.alignment, pathRect, isOutside, opposedPosition, pointIndex);
                         // fix for generating seperate rect 
@@ -23445,7 +23469,7 @@ var MultiLevelLabel = /** @__PURE__ @class */ (function () {
                     options.text = (multiLevel.overflow === 'Trim') ?
                         textTrim((categoryLabel.maximumTextWidth === null ? _this.yAxisMultiLabelHeight[level] :
                             categoryLabel.maximumTextWidth), argsData.text, argsData.textStyle) : options.text;
-                    textElement(_this.chart.renderer, options, argsData.textStyle, argsData.textStyle.color || _this.chart.themeStyle.axisLabel, _this.labelElement, _this.chart.redraw, true);
+                    textElement$1(_this.chart.renderer, options, argsData.textStyle, argsData.textStyle.color || _this.chart.themeStyle.axisLabel, _this.labelElement, _this.chart.redraw, true);
                     if (multiLevel.border.width > 0 && multiLevel.border.type !== 'WithoutBorder') {
                         path = _this.renderYAxisLabelBorder(level, gap, axis, endY, startX, startY, labelSize, options, rect, argsData.alignment, path, isOutside, opposedPosition, pointIndex);
                         if (path !== '') {
@@ -23846,7 +23870,7 @@ var ScrollBar = /** @__PURE__ @class */ (function () {
             pageX = e.clientX;
             pageY = e.clientY;
         }
-        var svgRect = getElement(this.component.element.id + '_scrollBar_svg' + this.axis.name).getBoundingClientRect();
+        var svgRect = getElement$1(this.component.element.id + '_scrollBar_svg' + this.axis.name).getBoundingClientRect();
         this.mouseX = pageX - Math.max(svgRect.left, 0);
         this.mouseY = pageY - Math.max(svgRect.top, 0);
     };
@@ -24021,7 +24045,7 @@ var ScrollBar = /** @__PURE__ @class */ (function () {
      * @param e
      */
     ScrollBar.prototype.scrollMouseWheel = function (e) {
-        var svgRect = getElement(this.component.element.id + '_scrollBar_svg' + this.axis.name).getBoundingClientRect();
+        var svgRect = getElement$1(this.component.element.id + '_scrollBar_svg' + this.axis.name).getBoundingClientRect();
         this.mouseX = e.clientX - Math.max(svgRect.left, 0);
         this.mouseY = e.clientY - Math.max(svgRect.top, 0);
         var origin = 0.5;
@@ -24850,6 +24874,7 @@ var AccumulationSeries = /** @__PURE__ @class */ (function (_super) {
         var argsData = {
             name: seriesRender, series: this, data: e.result,
         };
+        accumulation.allowServerDataBinding = false;
         accumulation.trigger(seriesRender, argsData);
         this.resultData = e.result !== '' ? e.result : [];
         this.getPoints(this.resultData, accumulation);
@@ -24970,7 +24995,7 @@ var AccumulationSeries = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     AccumulationSeries.prototype.renderSeries = function (accumulation, redraw) {
-        var seriesGroup = redraw ? getElement(accumulation.element.id + '_Series_' + this.index) :
+        var seriesGroup = redraw ? getElement$1(accumulation.element.id + '_Series_' + this.index) :
             accumulation.renderer.createGroup({ id: accumulation.element.id + '_Series_' + this.index });
         this.renderPoints(accumulation, seriesGroup, redraw);
         var datalabelGroup;
@@ -25027,7 +25052,7 @@ var AccumulationSeries = /** @__PURE__ @class */ (function (_super) {
             }
         }
         if (this.dataLabel.template !== null && element.childElementCount) {
-            appendChildElement(false, getElement(accumulation.element.id + '_Secondary_Element'), element, redraw);
+            appendChildElement(false, getElement$1(accumulation.element.id + '_Secondary_Element'), element, redraw);
         }
         appendChildElement(false, accumulation.getSeriesElement(), datalabelGroup, redraw);
     };
@@ -25439,7 +25464,7 @@ var AccumulationBase = /** @__PURE__ @class */ (function () {
      * To check point is exploded by id
      */
     AccumulationBase.prototype.isExplode = function (id) {
-        var element = getElement(id);
+        var element = getElement$1(id);
         var transform = element ? element.getAttribute('transform') : null;
         return (element && (transform === 'translate(0, 0)' || transform === null || transform === 'translate(0)'));
     };
@@ -25447,7 +25472,7 @@ var AccumulationBase = /** @__PURE__ @class */ (function () {
      * To deExplode the point by index
      */
     AccumulationBase.prototype.deExplodeSlice = function (index, sliceId, animationDuration) {
-        var element = getElement(sliceId + index);
+        var element = getElement$1(sliceId + index);
         if (element) {
             var borderElement = element.parentNode.lastChild.hasAttribute('transform');
             if (borderElement) {
@@ -25480,7 +25505,7 @@ var AccumulationBase = /** @__PURE__ @class */ (function () {
      * To translate the point element by id and position
      */
     AccumulationBase.prototype.setElementTransform = function (id, position) {
-        var element = getElement(id);
+        var element = getElement$1(id);
         if (element) {
             element.setAttribute('transform', position);
         }
@@ -25504,7 +25529,8 @@ var AccumulationBase = /** @__PURE__ @class */ (function () {
         var chart = this.accumulation;
         var seriesIndex;
         var point;
-        seriesIndex = parseInt(sliceId.split('_')[2], 10);
+        var values = sliceId.split('_');
+        seriesIndex = parseInt(sliceId.split('_')[values.length - 3], 10);
         point = chart.visibleSeries[seriesIndex].points[index];
         if (duration <= 0) {
             this.setTranslate(index, sliceId, 'translate(' + (endX) + ', ' + (endY) + ')', point.transform);
@@ -25735,7 +25761,7 @@ var PieBase = /** @__PURE__ @class */ (function (_super) {
                 slice.setAttribute('d', _this.getPathArc(_this.center, 0, 359.99999, radius, 0));
                 _this.accumulation.trigger(animationComplete, _this.accumulation.isBlazor ? {} :
                     { series: series, accumulation: _this.accumulation, chart: _this.accumulation });
-                var datalabelGroup = getElement(_this.accumulation.element.id + '_datalabel_Series_' + series.index);
+                var datalabelGroup = getElement$1(_this.accumulation.element.id + '_datalabel_Series_' + series.index);
                 datalabelGroup.style.visibility = _this.accumulation.isDestroyed ? 'hidden' : 'visible';
             }
         });
@@ -25800,15 +25826,15 @@ var PieSeries = /** @__PURE__ @class */ (function (_super) {
     PieSeries.prototype.toggleInnerPoint = function (event, radius, innerRadius) {
         var target = event.target;
         var id = indexFinder(target.id, true);
-        var accumulationId = event.target.id.split('_')[0];
+        var accumulationId = event.target.id.substring(0, (event.target.id.indexOf('Series') - 1));
         var borderElement = document.getElementById(accumulationId + 'PointHover_Border');
         var createBorderEle;
-        if (!isNaN(id.series)) {
-            var seriesIndex = id.series;
-            var pointIndex = id.point;
+        var seriesIndex = id.series;
+        var pointIndex = id.point;
+        var srcElem = getElement$1(accumulationId + '_Series_' + seriesIndex + '_Point_' + pointIndex);
+        if (!isNaN(id.series) && srcElem) {
             if (!isNullOrUndefined(seriesIndex) && !isNaN(seriesIndex) && !isNullOrUndefined(pointIndex) && !isNaN(pointIndex)) {
                 var point = this.accumulation.visibleSeries[0].points[pointIndex];
-                var srcElem = getElement(accumulationId + '_Series_' + seriesIndex + '_Point_' + pointIndex);
                 var opacity = srcElem.getAttribute('class') === accumulationId + '_ej2_deselected' ?
                     this.accumulation.tooltip.enable ? 0.5 : 0.3 : this.accumulation.tooltip.enable ? 0.5 : 1;
                 var innerPie = this.getPathArc(this.accumulation.pieSeriesModule.center, point.startAngle % 360, (point.startAngle + point.degree) % 360, radius, innerRadius);
@@ -25818,7 +25844,7 @@ var PieSeries = /** @__PURE__ @class */ (function (_super) {
                     borderElement.parentNode.removeChild(borderElement);
                     borderElement = null;
                 }
-                var seriousGroup = getElement(accumulationId + '_Series_' + seriesIndex);
+                var seriousGroup = getElement$1(accumulationId + '_Series_' + seriesIndex);
                 if (!borderElement && ((!point.isExplode) || (point.isExplode && event.type !== 'click'))) {
                     var path = new PathOption(accumulationId + 'PointHover_Border', point.color, 1, point.color, opacity, '', innerPie);
                     createBorderEle = this.accumulation.renderer.drawPath(path);
@@ -25847,7 +25873,7 @@ var PieSeries = /** @__PURE__ @class */ (function (_super) {
     };
     PieSeries.prototype.refresh = function (point, degree, start, chart, option, seriesGroup) {
         var _this = this;
-        var seriesElement = getElement(option.id);
+        var seriesElement = getElement$1(option.id);
         var duration = chart.duration ? chart.duration : 300;
         var currentStartAngle;
         var curentDegree;
@@ -26048,6 +26074,7 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
     AccumulationChart.prototype.preRender = function () {
         var blazor = 'Blazor';
         this.isBlazor = window[blazor];
+        this.allowServerDataBinding = false;
         this.unWireEvents();
         this.setCulture();
         this.animateSeries = true;
@@ -26076,6 +26103,7 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
         this.calculateVisibleSeries();
         this.processData();
         this.renderComplete();
+        this.allowServerDataBinding = true;
     };
     /**
      * Method to unbind events for accumulation chart
@@ -26130,7 +26158,7 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
     AccumulationChart.prototype.setMouseXY = function (e) {
         var pageX;
         var pageY;
-        var svgRect = getElement(this.element.id + '_svg').getBoundingClientRect();
+        var svgRect = getElement$1(this.element.id + '_svg').getBoundingClientRect();
         var rect = this.element.getBoundingClientRect();
         if (e.type.indexOf('touch') > -1) {
             this.isTouch = true;
@@ -26249,7 +26277,7 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
     AccumulationChart.prototype.setAnnotationValue = function (annotationIndex, content) {
         var annotation = this.annotations[annotationIndex];
         var element;
-        var parentNode = getElement(this.element.id + '_Annotation_Collections');
+        var parentNode = getElement$1(this.element.id + '_Annotation_Collections');
         if (content) {
             annotation.content = content;
             if (parentNode) {
@@ -26259,7 +26287,7 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
                 parentNode.appendChild(element.children[0]);
             }
             else {
-                this.annotationModule.renderAnnotations(getElement(this.element.id + '_Secondary_Element'));
+                this.annotationModule.renderAnnotations(getElement$1(this.element.id + '_Secondary_Element'));
             }
         }
     };
@@ -26295,7 +26323,7 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
         var id = (targetId === (this.element.id + '_title') || targetId === (this.element.id + '_subTitle'));
         if ((event.target.textContent.indexOf('...') > -1) && id) {
             var title = (targetId === (this.element.id + '_title')) ? this.title : this.subTitle;
-            showTooltip(title, x, y, this.element.offsetWidth, this.element.id + '_EJ2_Title_Tooltip', getElement(this.element.id + '_Secondary_Element'), isTouch);
+            showTooltip(title, x, y, this.element.offsetWidth, this.element.id + '_EJ2_Title_Tooltip', getElement$1(this.element.id + '_Secondary_Element'), isTouch);
         }
         else {
             removeElement$1(this.element.id + '_EJ2_Title_Tooltip');
@@ -26511,12 +26539,12 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     AccumulationChart.prototype.setSecondaryElementPosition = function () {
-        var tooltipParent = getElement(this.element.id + '_Secondary_Element');
+        var tooltipParent = getElement$1(this.element.id + '_Secondary_Element');
         if (!tooltipParent) {
             return;
         }
         var rect = this.element.getBoundingClientRect();
-        var svgRect = getElement(this.element.id + '_svg').getBoundingClientRect();
+        var svgRect = getElement$1(this.element.id + '_svg').getBoundingClientRect();
         tooltipParent.style.left = Math.max(svgRect.left - rect.left, 0) + 'px';
         tooltipParent.style.top = Math.max(svgRect.top - rect.top, 0) + 'px';
     };
@@ -26526,7 +26554,7 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
      */
     AccumulationChart.prototype.renderAnnotation = function () {
         if (this.annotationModule) {
-            this.annotationModule.renderAnnotations(getElement(this.element.id + '_Secondary_Element'));
+            this.annotationModule.renderAnnotations(getElement$1(this.element.id + '_Secondary_Element'));
         }
     };
     /**
@@ -26613,7 +26641,7 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
         var titleSize = measureText(this.title, this.titleStyle);
         rect = new Rect(margin.left, 0, this.availableSize.width - margin.left - margin.right, 0);
         var options = new TextOption(this.element.id + '_title', titlePositionX(rect, this.titleStyle), this.margin.top + (titleSize.height * 3 / 4), getAnchor, this.titleCollection, '', 'auto');
-        var element = textElement(this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject, false, this.redraw);
+        var element = textElement$1(this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject, false, this.redraw);
         if (this.subTitle) {
             this.renderSubTitle(options);
         }
@@ -26635,7 +26663,7 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
         }
         rect = new Rect(alignment === 'Center' ? (options.x - maxWidth / 2) : alignment === 'Far' ? options.x - maxWidth : options.x, 0, maxWidth, 0);
         var subTitleOption = new TextOption(this.element.id + '_subTitle', titlePositionX(rect, this.subTitleStyle), options.y * options.text.length + ((subTitleElementSize.height) * 3 / 4) + padding, getAnchor(this.subTitleStyle.textAlignment), this.subTitleCollection, '', 'auto');
-        var element = textElement(this.renderer, subTitleOption, this.subTitleStyle, this.subTitleStyle.color || this.themeStyle.chartTitle, this.svgObject, false, this.redraw);
+        var element = textElement$1(this.renderer, subTitleOption, this.subTitleStyle, this.subTitleStyle.color || this.themeStyle.chartTitle, this.svgObject, false, this.redraw);
     };
     /**
      * To get the series parent element
@@ -26775,6 +26803,7 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
      * Called internally if any of the property value changed.
      * @private
      */
+    // tslint:disable-next-line:max-func-body-length
     AccumulationChart.prototype.onPropertyChanged = function (newProp, oldProp) {
         var update = {
             refreshElements: false, refreshBounds: false
@@ -26821,9 +26850,15 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
                         var len = this.series.length;
                         var seriesRefresh = false;
                         var series = void 0;
+                        var blazorProp = void 0;
                         for (var i = 0; i < len; i++) {
                             series = newProp.series[i];
-                            if (newProp.series[i] && (newProp.series[i].dataSource || newProp.series[i].yName || newProp.series[i].xName)) {
+                            if (this.isBlazor && (series.startAngle || series.endAngle || series.explodeOffset || series.neckHeight ||
+                                series.neckWidth || series.radius || series.innerRadius || series.groupMode || series.emptyPointSettings)) {
+                                blazorProp = true;
+                            }
+                            if (newProp.series[i] && (newProp.series[i].dataSource || newProp.series[i].yName || newProp.series[i].xName ||
+                                blazorProp)) {
                                 extend(this.changeVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }
@@ -27695,8 +27730,8 @@ var AccumulationLegend = /** @__PURE__ @class */ (function (_super) {
                     chart.redraw = chart.enableAnimation;
                     this.sliceVisibility(pointIndex, point.visible);
                     chart.removeSvg();
-                    //To remove the blazor templates
-                    resetBlazorTemplate(chart.element.id + '_DataLabel');
+                    //To remove the blazor templates                  
+                    blazorTemplatesReset(chart);
                     this.chart.refreshPoints(currentSeries.points);
                     this.chart.renderElements();
                 }
@@ -27720,7 +27755,7 @@ var AccumulationLegend = /** @__PURE__ @class */ (function (_super) {
         var sliceId = this.chart.element.id + '_Series_0_Point_';
         if (this.chart.visibleSeries[0].dataLabel.visible) {
             sliceId = this.chart.element.id + '_datalabel_Series_0_';
-            this.sliceAnimate(getElement(sliceId + 'g_' + index), isVisible);
+            this.sliceAnimate(getElement$1(sliceId + 'g_' + index), isVisible);
         }
     };
     /**
@@ -27912,7 +27947,7 @@ var AccumulationDataLabel = /** @__PURE__ @class */ (function (_super) {
                         removeElement$1(this.accumulation.element.id + '_EJ2_Datalabel_Tooltip');
                     }
                     var point = getSeriesFromIndex(seriesIndex, (this.accumulation).visibleSeries).points[pointIndex];
-                    showTooltip(point.text || point.y.toString(), x, y, this.areaRect.width, this.accumulation.element.id + '_EJ2_Datalabel_Tooltip', getElement(this.accumulation.element.id + '_Secondary_Element'));
+                    showTooltip(point.text || point.y.toString(), x, y, this.areaRect.width, this.accumulation.element.id + '_EJ2_Datalabel_Tooltip', getElement$1(this.accumulation.element.id + '_Secondary_Element'));
                 }
             }
         }
@@ -28326,7 +28361,7 @@ var AccumulationDataLabel = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 location = new ChartLocation(point.labelRegion.x + this.marginValue, point.labelRegion.y + (textSize.height * 3 / 4) + this.marginValue);
-                element = getElement(id + 'shape_' + point.index);
+                element = getElement$1(id + 'shape_' + point.index);
                 var startLocation = element ? new ChartLocation(+element.getAttribute('x'), +element.getAttribute('y')) : null;
                 dataLabelElement = this.accumulation.renderer.drawRectangle(new RectOption(id + 'shape_' + point.index, argsData.color, argsData.border, 1, point.labelRegion, dataLabel.rx, dataLabel.ry));
                 appendChildElement(false, datalabelGroup, dataLabelElement, redraw, true, 'x', 'y', startLocation, null, false, false, null, this.accumulation.duration);
@@ -28357,14 +28392,14 @@ var AccumulationDataLabel = /** @__PURE__ @class */ (function (_super) {
                     rotate = 'rotate(' + degree + ',' + (location.x + (textWidth / 2)) + ',' + (location.y) + ')';
                 }
                 point.transform = rotate;
-                textElement(this.accumulation.renderer, new TextOption(id + 'text_' + point.index, location.x, location.y, 'start', point.label, rotate, 'auto', degree), argsData.font, argsData.font.color || this.getSaturatedColor(point, argsData.color), datalabelGroup, false, redraw, true, false, this.accumulation.duration);
+                textElement$1(this.accumulation.renderer, new TextOption(id + 'text_' + point.index, location.x, location.y, 'start', point.label, rotate, 'auto', degree), argsData.font, argsData.font.color || this.getSaturatedColor(point, argsData.color), datalabelGroup, false, redraw, true, false, this.accumulation.duration);
                 element = null;
             }
             if (this.accumulation.accumulationLegendModule && (dataLabel.position === 'Outside' || this.accumulation.enableSmartLabels)) {
                 this.accumulation.visibleSeries[0].findMaxBounds(this.accumulation.visibleSeries[0].labelBound, point.labelRegion);
             }
             if (point.labelPosition === 'Outside') {
-                var element_1 = getElement(id + 'connector_' + point.index);
+                var element_1 = getElement$1(id + 'connector_' + point.index);
                 var previousDirection = element_1 ? element_1.getAttribute('d') : '';
                 var pathElement = this.accumulation.renderer.drawPath(new PathOption(id + 'connector_' + point.index, 'transparent', dataLabel.connectorStyle.width, dataLabel.connectorStyle.color || point.color, 1, dataLabel.connectorStyle.dashArray, this.getConnectorPath(extend({}, point.labelRegion, null, true), point, dataLabel, point.labelAngle)));
                 appendChildElement(false, datalabelGroup, pathElement, redraw, true, null, null, null, previousDirection, false, false, null, this.accumulation.duration);
@@ -29150,6 +29185,7 @@ var RangeSeries = /** @__PURE__ @class */ (function (_super) {
      */
     RangeSeries.prototype.dataManagerSuccess = function (e, control, series) {
         var viewData = e.count ? e.result : [];
+        control.allowServerDataBinding = false;
         if (e.count) {
             this.findGMT(control, viewData, (series ? series.xName : null) || control.xName);
         }
@@ -29625,6 +29661,10 @@ var RangeNavigatorAxis = /** @__PURE__ @class */ (function (_super) {
                 i !== 0 && this.isIntersect(axis, pointX, label.size.width, prevX, prevLabel.size.width)) {
                 continue;
             }
+            //label alignment for single visible label
+            if (control.secondaryLabelAlignment === 'Middle' && axis.visibleLabels.length === 1) {
+                pointX = valueToCoefficient(label.value, axis) + (rect.x + (rect.width / 2));
+            }
             //labelrender event
             var argsData = void 0;
             var labelStyle = control.labelStyle;
@@ -29649,7 +29689,7 @@ var RangeNavigatorAxis = /** @__PURE__ @class */ (function (_super) {
             else {
                 continue;
             }
-            textElement(this.rangeNavigator.renderer, new TextOption(this.rangeNavigator.element.id + id + i, pointX, pointY, 'middle', argsData.text), argsData.labelStyle, argsData.labelStyle.color || control.themeStyle.labelFontColor, labelElement).setAttribute('style', axis.valueType === 'DateTime' ? 'cursor: pointer' : 'cursor: default');
+            textElement$1(this.rangeNavigator.renderer, new TextOption(this.rangeNavigator.element.id + id + i, pointX, pointY, 'middle', argsData.text), argsData.labelStyle, argsData.labelStyle.color || control.themeStyle.labelFontColor, labelElement).setAttribute('style', axis.valueType === 'DateTime' ? 'cursor: pointer' : 'cursor: default');
             prevX = pointX;
             prevLabel = label;
         }
@@ -30491,6 +30531,7 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
     RangeNavigator.prototype.preRender = function () {
         this.unWireEvents();
         this.setCulture();
+        this.allowServerDataBinding = false;
         if (this.element.id === '') {
             var collection = document.getElementsByClassName('e-rangenavigator').length;
             this.element.id = 'rangenavigator_' + this.chartid + '_' + collection;
@@ -30537,6 +30578,7 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
         this.chartSeries.renderChart(this);
         removeElement$1('chartmeasuretext');
         this.renderComplete();
+        this.allowServerDataBinding = true;
     };
     /**
      * Theming for rangeNavigator
@@ -30641,8 +30683,8 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     RangeNavigator.prototype.removeSvg = function () {
-        if (getElement(this.element.id + '_Secondary_Element')) {
-            remove(getElement(this.element.id + '_Secondary_Element'));
+        if (getElement$1(this.element.id + '_Secondary_Element')) {
+            remove(getElement$1(this.element.id + '_Secondary_Element'));
         }
         var removeLength = 0;
         if (this.svgObject) {
@@ -30739,11 +30781,11 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
      */
     RangeNavigator.prototype.removeAllTooltip = function () {
         if (this.tooltip.enable && this.tooltip.displayMode === 'Always') {
-            if (getElement(this.element.id + '_leftTooltip')) {
-                remove(getElement(this.element.id + '_leftTooltip'));
+            if (getElement$1(this.element.id + '_leftTooltip')) {
+                remove(getElement$1(this.element.id + '_leftTooltip'));
             }
-            if (getElement(this.element.id + '_rightTooltip')) {
-                remove(getElement(this.element.id + '_rightTooltip'));
+            if (getElement$1(this.element.id + '_rightTooltip')) {
+                remove(getElement$1(this.element.id + '_rightTooltip'));
             }
         }
     };
@@ -30834,8 +30876,8 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
         var pageX = e.type.indexOf('touch') > -1 ?
             e.changedTouches[0].clientX : e.clientX;
         var rect = this.element.getBoundingClientRect();
-        var svgRect = !this.stockChart ? getElement(this.element.id + '_svg').getBoundingClientRect() :
-            getElement(this.element.id).getBoundingClientRect();
+        var svgRect = !this.stockChart ? getElement$1(this.element.id + '_svg').getBoundingClientRect() :
+            getElement$1(this.element.id).getBoundingClientRect();
         return (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
     };
     /** Wire, UnWire and Event releated calculation End here */
@@ -30869,7 +30911,6 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
                 case 'labelStyle':
                     refreshBounds = true;
                     break;
-                case 'series':
                 case 'enableRtl':
                 case 'xName':
                 case 'yName':
@@ -30890,6 +30931,7 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
                     renderer = true;
                     break;
                 case 'dataSource':
+                case 'series':
                     renderer = true;
                     refreshBounds = true;
                     break;
@@ -30915,12 +30957,12 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
         // issue fix for Range Navigator size gets reduced when the data source is refreshed
         if (refreshBounds && renderer) {
             this.removeSvg();
-            this.chartSeries.xMin = Infinity;
-            this.chartSeries.xMax = -Infinity;
+            this.chartSeries.xMin = this.chartSeries.yMin = Infinity;
+            this.chartSeries.xMax = this.chartSeries.yMax = -Infinity;
             this.calculateBounds();
             this.chartSeries.renderChart(this);
         }
-        if (refreshBounds) {
+        if (refreshBounds && !renderer) {
             this.removeSvg();
             this.calculateBounds();
             this.chartSeries.renderChart(this);
@@ -31183,8 +31225,8 @@ var PeriodSelector = /** @__PURE__ @class */ (function () {
             thumbSize = options.thumbSize;
             element = options.element;
         }
-        if (getElement(element.id + '_Secondary_Element')) {
-            remove(getElement(element.id + '_Secondary_Element'));
+        if (getElement$1(element.id + '_Secondary_Element')) {
+            remove(getElement$1(element.id + '_Secondary_Element'));
         }
         this.periodSelectorDiv = createElement('div', {
             id: element.id + '_Secondary_Element',
@@ -31275,13 +31317,13 @@ var PeriodSelector = /** @__PURE__ @class */ (function () {
                         innerHTML: selctorArgs.content, className: 'e-btn e-dropdown-btn',
                         styles: 'font-family: "Segoe UI"; font-size: 14px; font-weight: 500; text-transform: none '
                     }));
-                    getElement('customRange').insertAdjacentElement('afterbegin', (createElement('span', {
+                    getElement$1('customRange').insertAdjacentElement('afterbegin', (createElement('span', {
                         id: 'dateIcon', className: 'e-input-group-icon e-range-icon e-btn-icon e-icons',
                         styles: 'font-size: 16px; min-height: 0px; margin: -3px 0 0 0; outline: none; min-width: 30px'
                         // fix for date range icon alignment issue.
                     })));
                     document.getElementById('customRange').onclick = function () {
-                        _this.datePicker.show(getElement('customRange'));
+                        _this.datePicker.show(getElement$1('customRange'));
                     };
                 }
             },
@@ -31403,8 +31445,8 @@ var PeriodSelector = /** @__PURE__ @class */ (function () {
         if (this.rootControl.getModuleName() === 'stockChart') {
             this.rootControl.zoomChange = false;
         }
-        if (getElement(this.calendarId + '_popup') && !Browser.isDevice) {
-            var element = getElement(this.calendarId + '_popup');
+        if (getElement$1(this.calendarId + '_popup') && !Browser.isDevice) {
+            var element = getElement$1(this.calendarId + '_popup');
             element.querySelectorAll('.e-range-header')[0].style.display = 'none';
         }
     };
@@ -31529,8 +31571,8 @@ var RangeTooltip = /** @__PURE__ @class */ (function () {
      * @param id
      */
     RangeTooltip.prototype.createElement = function (id) {
-        if (getElement(this.elementId + id)) {
-            return getElement(this.elementId + id);
+        if (getElement$1(this.elementId + id)) {
+            return getElement$1(this.elementId + id);
         }
         else {
             var element = document.createElement('div');
@@ -31538,11 +31580,11 @@ var RangeTooltip = /** @__PURE__ @class */ (function () {
             element.className = 'ejSVGTooltip';
             element.setAttribute('style', 'pointer-events:none; position:absolute;z-index: 1');
             if (!this.control.stockChart) {
-                getElement(this.elementId + '_Secondary_Element').appendChild(element);
+                getElement$1(this.elementId + '_Secondary_Element').appendChild(element);
             }
             else {
                 var stockChart = this.control.stockChart;
-                getElement(stockChart.element.id + '_Secondary_Element').appendChild(element);
+                getElement$1(stockChart.element.id + '_Secondary_Element').appendChild(element);
                 element.style.transform = 'translateY(' + (((stockChart.availableSize.height - stockChart.toolbarHeight - 80) +
                     stockChart.toolbarHeight) + stockChart.titleSize.height) + 'px)';
             }
@@ -31668,6 +31710,8 @@ var CartesianChart = /** @__PURE__ @class */ (function () {
     CartesianChart.prototype.initializeChart = function (chartArgsData) {
         var _this = this;
         var stockChart = this.stockChart;
+        var isProtect = 'isProtectedOnChange';
+        stockChart[isProtect] = true;
         if (!stockChart.chartObject) {
             stockChart.chartObject = stockChart.renderer.createGroup({
                 id: stockChart.element.id + '_stockChart_chart'
@@ -31679,8 +31723,8 @@ var CartesianChart = /** @__PURE__ @class */ (function () {
             while (chartElement.firstChild) {
                 chartElement.removeChild(chartElement.firstChild);
             }
-            if (getElement(stockChart.chartObject + '_tooltip')) {
-                remove(getElement(stockChart.chartObject + '_tooltip'));
+            if (getElement$1(stockChart.chartObject + '_tooltip')) {
+                remove(getElement$1(stockChart.chartObject + '_tooltip'));
             }
         }
         this.cartesianChartSize = this.calculateChartSize();
@@ -31760,6 +31804,7 @@ var CartesianChart = /** @__PURE__ @class */ (function () {
         }
         stockChart.chart.stockChart = stockChart;
         stockChart.chart.appendTo(stockChart.chartObject);
+        stockChart[isProtect] = false;
     };
     CartesianChart.prototype.findMargin = function (stockChart) {
         var margin = {};
@@ -31853,11 +31898,11 @@ var RangeSelector = /** @__PURE__ @class */ (function () {
             while (chartElement.firstChild) {
                 chartElement.removeChild(chartElement.firstChild);
             }
-            if (getElement(stockChart.selectorObject.id + '_leftTooltip')) {
-                remove(getElement(stockChart.selectorObject.id + '_leftTooltip'));
+            if (getElement$1(stockChart.selectorObject.id + '_leftTooltip')) {
+                remove(getElement$1(stockChart.selectorObject.id + '_leftTooltip'));
             }
-            if (getElement(stockChart.selectorObject.id + '_rightTooltip')) {
-                remove(getElement(stockChart.selectorObject.id + '_rightTooltip'));
+            if (getElement$1(stockChart.selectorObject.id + '_rightTooltip')) {
+                remove(getElement$1(stockChart.selectorObject.id + '_rightTooltip'));
             }
         }
         stockChart.rangeNavigator = new RangeNavigator({
@@ -31947,7 +31992,7 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
         this.stockChart.periods = periods;
         this.stockChart.periodSelector.rootControl = this.stockChart;
         var rect = this.stockChart.chart.chartAxisLayoutPanel.seriesClipRect;
-        var htmlElement = getElement(this.stockChart.element.id + '_Secondary_Element');
+        var htmlElement = getElement$1(this.stockChart.element.id + '_Secondary_Element');
         var height = this.stockChart.toolbarHeight;
         this.stockChart.periodSelector.appendSelector({ thumbSize: 0, element: htmlElement, width: rect.width, height: height }, rect.x);
         this.initializeSeriesSelector();
@@ -32024,6 +32069,8 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
     };
     ToolBarSelector.prototype.resetButton = function () {
         var _this = this;
+        var isProtect = 'isProtectedOnChange';
+        this.stockChart[isProtect] = true;
         var reset = new Button();
         reset.appendTo('#' + this.stockChart.element.id + '_reset');
         document.getElementById(this.stockChart.element.id + '_reset').onclick = function () {
@@ -32059,6 +32106,7 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
             _this.stockChart.resizeTo = null;
             _this.stockChart.zoomChange = false;
             _this.stockChart.refresh();
+            _this.stockChart[isProtect] = true;
         };
     };
     ToolBarSelector.prototype.initializeTrendlineSelector = function () {
@@ -32277,17 +32325,17 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
                     _this.stockChart.svgObject.insertAdjacentElement('afterbegin', _this.addExportSettings());
                     additionalRect = stockChart.svgObject.firstElementChild.getBoundingClientRect();
                     _this.stockChart.svgObject.setAttribute('height', (svgHeight.height + additionalRect.height).toString());
-                    getElement(stockID + 'chart').style.transform = 'translateY(' + additionalRect.height + 'px)';
+                    getElement$1(stockID + 'chart').style.transform = 'translateY(' + additionalRect.height + 'px)';
                     if (stockChart.enableSelector) {
-                        getElement(stockID + 'rangeSelector').setAttribute('transform', 
+                        getElement$1(stockID + 'rangeSelector').setAttribute('transform', 
                         // tslint:disable-next-line:align
                         'translate(' + 0 + ',' + (stockChart.cartesianChart.cartesianChartSize.height + additionalRect.height) + ')');
                     }
                     stockChart.chart.exportModule.export(type, 'StockChart', null, [stockChart], null, stockChart.svgObject.clientHeight);
-                    remove(getElement(_this.stockChart.element.id + '_additionalExport'));
-                    getElement(stockID + 'chart').style.transform = 'translateY(0px)';
+                    remove(getElement$1(_this.stockChart.element.id + '_additionalExport'));
+                    getElement$1(stockID + 'chart').style.transform = 'translateY(0px)';
                     if (stockChart.enableSelector) {
-                        getElement(stockID + 'rangeSelector').setAttribute('transform', 
+                        getElement$1(stockID + 'rangeSelector').setAttribute('transform', 
                         // tslint:disable-next-line:align
                         'translate(' + 0 + ',' + (stockChart.cartesianChart.cartesianChartSize.height) + ')');
                     }
@@ -32330,7 +32378,7 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
         });
         var titleHeight = measureText(this.stockChart.title, this.stockChart.titleStyle).height;
         var options = new TextOption(exportElement.id + '_Title', titlePositionX(new Rect(0, 0, this.stockChart.availableSize.width, 0), this.stockChart.titleStyle), 0, 'middle', this.stockChart.title, '', 'text-before-edge');
-        textElement(this.stockChart.renderer, options, this.stockChart.titleStyle, this.stockChart.titleStyle.color, exportElement);
+        textElement$1(this.stockChart.renderer, options, this.stockChart.titleStyle, this.stockChart.titleStyle.color, exportElement);
         var style = { size: '15px', fontWeight: '500', color: null, fontStyle: 'Normal', fontFamily: 'Segoe UI' };
         var x = measureText('Series: ' + this.selectedSeries, style).width / 2;
         var y = titleHeight;
@@ -33263,7 +33311,7 @@ var StockEvents = /** @__PURE__ @class */ (function (_super) {
                 stockEventElement.appendChild(drawSymbol(new ChartLocation(lx, ly), 'Circle', new Size(2, 2), '', new PathOption(stockId + '_Circle', 'transparent', border.width, border.color), this.dateParse(stockEve.date).toISOString()));
                 stockEventElement.appendChild(drawSymbol(new ChartLocation(lx, ly - 5), 'VerticalLine', new Size(9, 9), '', new PathOption(stockId + '_Path', border.color, border.width, border.color), this.dateParse(stockEve.date).toISOString()));
                 stockEventElement.appendChild(drawSymbol(new ChartLocation(stockEve.type !== 'Flag' ? lx : lx + result.width / 2, ly - result.height), stockEve.type, result, '', new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color), this.dateParse(stockEve.date).toISOString()));
-                textElement(this.stockChart.renderer, new TextOption(stockId + '_Text', stockEve.type !== 'Flag' ? symbolLocation.x : symbolLocation.x + result.width / 2, (symbolLocation.y - result.height), 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
+                textElement$1(this.stockChart.renderer, new TextOption(stockId + '_Text', stockEve.type !== 'Flag' ? symbolLocation.x : symbolLocation.x + result.width / 2, (symbolLocation.y - result.height), 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
                 break;
             case 'ArrowUp':
             case 'ArrowDown':
@@ -33278,7 +33326,7 @@ var StockEvents = /** @__PURE__ @class */ (function (_super) {
                 result.height = 3 * textSize.height;
                 result.width = textSize.width + (1.5 * textSize.width);
                 stockEventElement.appendChild(drawSymbol(new ChartLocation(symbolLocation.x, symbolLocation.y), stockEve.type, new Size(20, 20), '', new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color), this.dateParse(stockEve.date).toISOString()));
-                textElement(this.stockChart.renderer, new TextOption(stockId + '_Text', symbolLocation.x, symbolLocation.y, 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
+                textElement$1(this.stockChart.renderer, new TextOption(stockId + '_Text', symbolLocation.x, symbolLocation.y, 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
                 break;
             case 'Text':
                 textSize.height += 8; //padding for text height
@@ -33291,7 +33339,7 @@ var StockEvents = /** @__PURE__ @class */ (function (_super) {
                     'L' + ' ' + (lx + 5) + ' ' + (ly - 5) + ' ' + 'Z';
                 pathOption = new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color, 1, '', pathString);
                 stockEventElement.appendChild(this.stockChart.renderer.drawPath(pathOption));
-                textElement(this.stockChart.renderer, new TextOption(stockId + '_Text', lx, ly - (textSize.height / 2), 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
+                textElement$1(this.stockChart.renderer, new TextOption(stockId + '_Text', lx, ly - (textSize.height / 2), 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
                 break;
             default:
                 //pin type calculation.
@@ -33303,7 +33351,7 @@ var StockEvents = /** @__PURE__ @class */ (function (_super) {
                 pathOption = new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color, 1, '', pathString);
                 stockEventElement.appendChild(this.stockChart.renderer.drawPath(pathOption));
                 //append text element
-                textElement(this.stockChart.renderer, new TextOption(stockId + '_Text', lx, ly - (textSize.height / 2), 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
+                textElement$1(this.stockChart.renderer, new TextOption(stockId + '_Text', lx, ly - (textSize.height / 2), 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
         }
     };
     StockEvents.prototype.renderStockEventTooltip = function (targetId) {
@@ -33316,14 +33364,14 @@ var StockEvents = /** @__PURE__ @class */ (function (_super) {
         var svgElement = this.getElement(this.chartId + '_StockEvents_Tooltip_svg');
         var isTooltip = (svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0);
         if (!isTooltip) {
-            if (getElement(this.chartId + '_StockEvents_Tooltip_svg')) {
-                remove(getElement(this.chartId + '_StockEvents_Tooltip'));
+            if (getElement$1(this.chartId + '_StockEvents_Tooltip_svg')) {
+                remove(getElement$1(this.chartId + '_StockEvents_Tooltip'));
             }
             var tooltipElement = createElement('div', {
                 id: this.chartId + '_StockEvents_Tooltip', className: 'ejSVGTooltip',
                 attrs: { 'style': 'pointer-events:none; position:absolute;z-index: 1' }
             });
-            getElement(this.chartId + '_Secondary_Element').appendChild(tooltipElement);
+            getElement$1(this.chartId + '_Secondary_Element').appendChild(tooltipElement);
             this.stockEventTooltip = new Tooltip({
                 opacity: 1,
                 header: '', content: [(this.stockChart.stockEvents[pointIndex].description)],
@@ -33390,8 +33438,8 @@ var StockEvents = /** @__PURE__ @class */ (function (_super) {
         this.setOpacity(stockId + '_Text', 1);
     };
     StockEvents.prototype.setOpacity = function (elementId, opacity) {
-        if (getElement(elementId)) {
-            getElement(elementId).setAttribute('opacity', opacity.toString());
+        if (getElement$1(elementId)) {
+            getElement$1(elementId).setAttribute('opacity', opacity.toString());
         }
     };
     /**
@@ -33510,6 +33558,8 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
     StockChart.prototype.preRender = function () {
         this.unWireEvents();
         this.initPrivateVariable();
+        this.allowServerDataBinding = false;
+        this.isProtectedOnChange = true;
         this.setCulture();
         this.stockChartTheme = getThemeColor(this.theme);
         this.wireEvents();
@@ -33589,6 +33639,8 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
             this.initialRender = false;
         }
         this.renderComplete();
+        this.allowServerDataBinding = true;
+        this.isProtectedOnChange = false;
     };
     /**
      * DataManager Success
@@ -33826,12 +33878,12 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
             target = e.target;
         }
         if (target.id.indexOf(this.element.id + '_stockChart_chart') > -1) {
-            var svgRect = getElement(this.element.id + '_stockChart_chart').getBoundingClientRect();
+            var svgRect = getElement$1(this.element.id + '_stockChart_chart').getBoundingClientRect();
             this.mouseDownY = this.previousMouseMoveY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
             this.mouseDownX = this.previousMouseMoveX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
             this.setMouseXY(this.mouseDownX, this.mouseDownY);
             this.referenceXAxis = this.chart.primaryXAxis;
-            getElement(this.element.id + '_stockChart_chart').setAttribute('cursor', 'pointer');
+            getElement$1(this.element.id + '_stockChart_chart').setAttribute('cursor', 'pointer');
             this.mouseDownXPoint = getRangeValueXByPoint(this.mouseX - this.referenceXAxis.rect.x, this.referenceXAxis.rect.width, this.referenceXAxis.visibleRange, this.referenceXAxis.isInversed);
             this.allowPan = true;
             this.notify(Browser.touchStartEvent, e);
@@ -33858,7 +33910,7 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
             pageX = e.clientX;
             this.isTouch = e.pointerType === 'touch' || e.pointerType === '2';
         }
-        getElement(this.element.id + '_stockChart_chart').setAttribute('cursor', 'auto');
+        getElement$1(this.element.id + '_stockChart_chart').setAttribute('cursor', 'auto');
         this.onPanning = false;
         this.setMouseXY(pageX, pageY);
         this.stockChartOnMouseUp(e);
@@ -33887,7 +33939,7 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
      * To find mouse x, y for aligned chart element svg position
      */
     StockChart.prototype.setMouseXY = function (pageX, pageY) {
-        var svgRect = getElement(this.element.id + '_stockChart_chart').getBoundingClientRect();
+        var svgRect = getElement$1(this.element.id + '_stockChart_chart').getBoundingClientRect();
         var rect = this.element.getBoundingClientRect();
         this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
         this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
@@ -33925,7 +33977,7 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
     StockChart.prototype.chartOnMouseMove = function (e) {
         if (this.allowPan && this.mouseDownXPoint && this.mouseX !== this.previousMouseMoveX && this.zoomSettings.enablePan) {
             this.onPanning = true;
-            getElement(this.element.id + '_stockChart_chart').setAttribute('cursor', 'pointer');
+            getElement$1(this.element.id + '_stockChart_chart').setAttribute('cursor', 'pointer');
             this.mouseUpXPoint = getRangeValueXByPoint(this.mouseX - this.referenceXAxis.rect.x, this.referenceXAxis.rect.width, this.referenceXAxis.visibleRange, this.referenceXAxis.isInversed);
             var diff = Math.abs(this.mouseUpXPoint - this.mouseDownXPoint);
             if (this.mouseDownXPoint < this.mouseUpXPoint) {
@@ -33954,7 +34006,7 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
                     remove(element);
                 }
             }
-            if (getElement(this.element.id + '_StockEvents_Tooltip')) {
+            if (getElement$1(this.element.id + '_StockEvents_Tooltip')) {
                 this.stockEvent.removeStockEventTooltip(0);
             }
         }
@@ -34046,7 +34098,7 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
             border.style.position = 'absolute';
             border.style.border = this.border.width + 'px solid ' + this.border.color;
             border.style.pointerEvents = 'none';
-            appendChildElement(false, getElement(this.element.id), border);
+            appendChildElement(false, getElement$1(this.element.id), border);
         }
     };
     /**
@@ -34055,7 +34107,7 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
     StockChart.prototype.renderTitle = function () {
         var rect;
         if (this.title) {
-            appendChildElement(false, getElement(this.element.id + '_Secondary_Element'), this.renderer.createSvg({
+            appendChildElement(false, getElement$1(this.element.id + '_Secondary_Element'), this.renderer.createSvg({
                 id: this.element.id + '_stockChart_Title',
                 width: this.availableSize.width,
                 height: this.titleSize.height,
@@ -34065,7 +34117,7 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
             var getAnchor = alignment === 'Near' ? 'start' : alignment === 'Far' ? 'end' : 'middle';
             rect = new Rect(0, 0, this.availableSize.width, 0);
             var options = new TextOption(this.element.id + '_ChartTitle', titlePositionX(rect, this.titleStyle), ((this.titleSize.height - 10)), getAnchor, this.title, '', 'auto');
-            var element = textElement(this.renderer, options, this.titleStyle, this.titleStyle.color || this.findTitleColor(), getElement(this.element.id + '_stockChart_Title'), false, false);
+            var element = textElement$1(this.renderer, options, this.titleStyle, this.titleStyle.color || this.findTitleColor(), getElement$1(this.element.id + '_stockChart_Title'), false, false);
             this.availableSize.height -= (this.titleSize.height + 5);
         }
     };
@@ -34242,7 +34294,1030 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
  * Chart and accumulation common files
  */
 
-var __extends$80 = (undefined && undefined.__extends) || (function () {
+/**
+ * Class for Bullet chart axis
+ */
+var BulletChartAxis = /** @__PURE__ @class */ (function () {
+    function BulletChartAxis(bullet) {
+        //super();
+        this.bulletChart = bullet;
+        this.isVertical = (bullet.orientation === 'Vertical');
+        this.isLabelsInside = (bullet.labelPosition === 'Inside');
+        this.isHorizontal = (bullet.orientation === 'Horizontal');
+        this.isLeft = bullet.titlePosition === 'Left';
+        this.isRight = bullet.titlePosition === 'Right';
+        this.isTop = bullet.titlePosition === 'Top';
+        this.majorTickSize = bullet.majorTickLines.height;
+        this.location = 10;
+        this.labelOffset = 15;
+        this.labelSize = parseFloat(bullet.labelStyle.size);
+        this.isLabelBelow = !this.bulletChart.opposedPosition;
+    }
+    BulletChartAxis.prototype.renderMajorTickLines = function (intervalValue, scale) {
+        if (this.bulletChart.orientation === 'Horizontal') {
+            this.renderXMajorTickLines(intervalValue, scale);
+        }
+        else {
+            this.renderYMajorTickLines(intervalValue, scale);
+        }
+    };
+    BulletChartAxis.prototype.renderMinorTickLines = function (intervalValue, scale) {
+        if (this.bulletChart.orientation === 'Horizontal') {
+            this.renderXMinorTickLines(intervalValue, scale);
+        }
+        else {
+            this.renderYMinorTickLines(intervalValue, scale);
+        }
+    };
+    BulletChartAxis.prototype.renderAxisLabels = function (intervalValue, scale) {
+        if (this.bulletChart.orientation === 'Horizontal') {
+            this.renderXAxisLabels(intervalValue, scale);
+        }
+        else {
+            this.renderYAxisLabels(intervalValue, scale);
+        }
+    };
+    /**
+     * To render grid lines of bullet chart axis
+     */
+    BulletChartAxis.prototype.renderXMajorTickLines = function (intervalValue, scale) {
+        var bullet = this.bulletChart;
+        var tickGroup = bullet.renderer.createGroup({ 'id': bullet.svgObject.id + '_majorTickGroup' });
+        var min = bullet.minimum;
+        var max = bullet.maximum;
+        var interval = bullet.interval;
+        var enableRtl = bullet.enableRtl;
+        var y1 = bullet.initialClipRect.y + ((bullet.opposedPosition) ? 0 : bullet.initialClipRect.height);
+        // tslint:disable-next-line:max-line-length
+        var y2 = y1 + ((!bullet.opposedPosition) ? ((bullet.tickPosition !== 'Inside' ? this.majorTickSize : -this.majorTickSize)) :
+            ((bullet.tickPosition !== 'Inside' ? -this.majorTickSize : this.majorTickSize)));
+        var majorTick = bullet.majorTickLines;
+        var strokeColor = majorTick.color || bullet.themeStyle.majorTickLineColor;
+        var options;
+        var condition;
+        var size = bullet.initialClipRect.x + ((bullet.enableRtl) ? bullet.initialClipRect.width : 0);
+        var majorPointX = bullet.initialClipRect.x + majorTick.width / 2 + ((enableRtl) ? bullet.initialClipRect.width : 0);
+        for (var i = min; i <= max; i += interval) {
+            condition = (!bullet.enableRtl) ? (i === max) : (i === min);
+            if (condition) {
+                majorPointX -= majorTick.width / 2;
+            }
+            condition = (!bullet.enableRtl) ? (i === max) : (i === min);
+            if (bullet.majorTickLines.useRangeColor) {
+                strokeColor = this.bindingRangeStrokes(majorPointX - ((condition) ? this.bulletChart.majorTickLines.width / 2 : 0), size, this.bulletChart.orientation, bullet.enableRtl);
+            }
+            options = this.majorTicks(majorPointX, majorPointX, y1, y2, strokeColor, i);
+            var majorTicks = bullet.renderer.drawLine(options);
+            majorPointX = majorPointX + ((enableRtl ? -intervalValue : intervalValue));
+            tickGroup.appendChild(majorTicks);
+            scale.appendChild(tickGroup);
+        }
+    };
+    /**
+     * To render grid lines of bullet chart axis
+     */
+    BulletChartAxis.prototype.renderYMajorTickLines = function (intervalValue, scale) {
+        var bulletChart = this.bulletChart;
+        var tickGroup = bulletChart.renderer.createGroup({ 'id': bulletChart.svgObject.id + '_majorTickGroup' });
+        var min = bulletChart.minimum;
+        var max = bulletChart.maximum;
+        var interval = bulletChart.interval;
+        var enableRtl = bulletChart.enableRtl;
+        var rect = bulletChart.initialClipRect;
+        var x1 = rect.x + ((!bulletChart.opposedPosition) ? 0 : rect.width);
+        // tslint:disable-next-line:max-line-length
+        var x2 = x1 - ((!bulletChart.opposedPosition) ? ((bulletChart.tickPosition !== 'Inside' ? this.majorTickSize : -this.majorTickSize)) :
+            ((bulletChart.tickPosition !== 'Inside' ? -this.majorTickSize : this.majorTickSize)));
+        var majorTick = bulletChart.majorTickLines;
+        var strokeColor = majorTick.color || bulletChart.themeStyle.majorTickLineColor;
+        var condition;
+        var options;
+        var size = rect.y + ((!bulletChart.enableRtl) ? rect.height : 0);
+        var majorPointY = rect.y + majorTick.width / 2 + ((!enableRtl) ? rect.height : 0);
+        for (var i = min; i <= max; i += interval) {
+            condition = (bulletChart.enableRtl) ? (i === max) : (i === min);
+            if (condition) {
+                majorPointY -= majorTick.width / 2;
+            }
+            condition = (!bulletChart.enableRtl) ? (i === max) : (i === min);
+            if (bulletChart.majorTickLines.useRangeColor) {
+                strokeColor = this.bindingRangeStrokes(majorPointY - ((condition) ? this.bulletChart.majorTickLines.width / 2 : 0), size, this.bulletChart.orientation, bulletChart.enableRtl);
+            }
+            options = this.majorTicks(x1, x2, majorPointY, majorPointY, strokeColor, i);
+            var majorTicks = bulletChart.renderer.drawLine(options);
+            majorPointY = majorPointY + ((!enableRtl ? -intervalValue : intervalValue));
+            tickGroup.appendChild(majorTicks);
+            scale.appendChild(tickGroup);
+        }
+    };
+    BulletChartAxis.prototype.majorTicks = function (x1, x2, y1, y2, strokeColor, i) {
+        var options = {
+            'id': this.bulletChart.svgObject.id + '_MajorTickLine_' + i,
+            'x1': x1,
+            'y1': y1,
+            'x2': x2,
+            'y2': y2,
+            'stroke-width': this.bulletChart.majorTickLines.width,
+            'stroke': (this.bulletChart.majorTickLines.useRangeColor && strokeColor) ? strokeColor :
+                this.bulletChart.majorTickLines.color || strokeColor
+        };
+        return options;
+    };
+    BulletChartAxis.prototype.bindingRangeStrokes = function (majorPointX, size, orientation, rtl) {
+        if ((orientation === 'Vertical' && !rtl) || (rtl && orientation === 'Horizontal')) {
+            return this.backwardStrokeBinding(majorPointX, size);
+        }
+        else {
+            return this.forwardStrokeBinding(majorPointX, size);
+        }
+    };
+    /**
+     * To render minor tick lines of bullet chart
+     */
+    BulletChartAxis.prototype.renderXMinorTickLines = function (intervalValue, scaleGroup) {
+        var minorTickGroup = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_minorTickGroup' });
+        var bullet = this.bulletChart;
+        var max = bullet.maximum;
+        var min = bullet.minimum;
+        var interval = bullet.interval;
+        var minorTick = bullet.minorTickLines.height;
+        var minorTicksPerInterval = this.bulletChart.minorTicksPerInterval;
+        var minorPointX;
+        var x;
+        var majorPointX = bullet.initialClipRect.x;
+        var y1 = bullet.initialClipRect.y + ((bullet.opposedPosition) ? 0 : bullet.initialClipRect.height);
+        var y2 = y1 + ((!bullet.opposedPosition) ? ((bullet.tickPosition !== 'Inside' ? minorTick : -minorTick)) :
+            ((bullet.tickPosition !== 'Inside' ? -minorTick : minorTick)));
+        var strokeColor = bullet.minorTickLines.color || bullet.themeStyle.minorTickLineColor;
+        var options;
+        var minorTicks;
+        var size = bullet.initialClipRect.x + ((bullet.enableRtl) ? bullet.initialClipRect.width : 0);
+        for (var i = min; i < max; i += interval) {
+            minorPointX = intervalValue / minorTicksPerInterval;
+            for (var j = 1; j <= minorTicksPerInterval; j++) {
+                x = majorPointX + minorPointX - (minorPointX / (minorTicksPerInterval + 1));
+                if (bullet.minorTickLines.useRangeColor) {
+                    strokeColor = this.bindingRangeStrokes(x, size, this.bulletChart.orientation, bullet.enableRtl);
+                }
+                options = this.minorXTicks(x, x, y1, y2, strokeColor, i.toString() + j.toString());
+                minorTicks = this.bulletChart.renderer.drawLine(options);
+                minorTickGroup.appendChild(minorTicks);
+                scaleGroup.appendChild(minorTickGroup);
+                minorPointX = (intervalValue / minorTicksPerInterval) * (j + 1);
+            }
+            majorPointX += intervalValue;
+        }
+    };
+    /**
+     * To render minor tick lines of bullet chart
+     */
+    BulletChartAxis.prototype.renderYMinorTickLines = function (intervalValue, scaleGroup) {
+        var minorTickGroup = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_minorTickGroup' });
+        var bulletChart = this.bulletChart;
+        var max = bulletChart.maximum;
+        var min = bulletChart.minimum;
+        var interval = bulletChart.interval;
+        var minorTick = bulletChart.minorTickLines.height;
+        var minorTicksPerInterval = this.bulletChart.minorTicksPerInterval;
+        var minorPointY;
+        var y;
+        var majorPointY = bulletChart.initialClipRect.y + ((!bulletChart.enableRtl) ? bulletChart.initialClipRect.height : 0);
+        var x1 = bulletChart.initialClipRect.x + ((!bulletChart.opposedPosition) ? 0 : bulletChart.initialClipRect.width);
+        var x2 = x1 - ((!bulletChart.opposedPosition) ? ((bulletChart.tickPosition !== 'Inside' ? minorTick : -minorTick)) :
+            ((bulletChart.tickPosition !== 'Inside' ? -minorTick : minorTick)));
+        var strokeColor = bulletChart.minorTickLines.color || bulletChart.themeStyle.minorTickLineColor;
+        var options;
+        var minorTicks;
+        var size = bulletChart.initialClipRect.y + ((!bulletChart.enableRtl) ? bulletChart.initialClipRect.height : 0);
+        for (var i = min; i < max; i += interval) {
+            minorPointY = intervalValue / minorTicksPerInterval;
+            for (var j = 1; j <= minorTicksPerInterval; j++) {
+                if (!this.bulletChart.enableRtl) {
+                    y = majorPointY - minorPointY + (minorPointY / (minorTicksPerInterval + 1));
+                }
+                else {
+                    y = majorPointY + minorPointY - (minorPointY / (minorTicksPerInterval + 1));
+                }
+                if (bulletChart.minorTickLines.useRangeColor) {
+                    strokeColor = this.bindingRangeStrokes(y, size, this.bulletChart.orientation, bulletChart.enableRtl);
+                }
+                options = this.minorXTicks(x1, x2, y, y, strokeColor, i.toString() + j.toString());
+                minorTicks = this.bulletChart.renderer.drawLine(options);
+                minorTickGroup.appendChild(minorTicks);
+                scaleGroup.appendChild(minorTickGroup);
+                minorPointY = (intervalValue / minorTicksPerInterval) * (j + 1);
+            }
+            majorPointY -= (this.bulletChart.enableRtl) ? -intervalValue : intervalValue;
+        }
+    };
+    BulletChartAxis.prototype.minorXTicks = function (x1, x2, y1, y2, strokeColor, i) {
+        var options = {
+            'id': this.bulletChart.svgObject.id + '_MajorTickLine_' + i,
+            'x1': x1,
+            'x2': x2,
+            'y1': y1,
+            'y2': y2,
+            'stroke-width': this.bulletChart.minorTickLines.width,
+            'stroke': (this.bulletChart.minorTickLines.useRangeColor && strokeColor) ? strokeColor :
+                this.bulletChart.minorTickLines.color || strokeColor
+        };
+        return options;
+    };
+    BulletChartAxis.prototype.forwardStrokeBinding = function (position, size) {
+        var bullet = this.bulletChart;
+        var previous = size;
+        // (bullet.orientation === 'Horizontal') ? bullet.initialClipRect.x :
+        // (bullet.initialClipRect.y + bullet.initialClipRect.height);
+        for (var k = 0; k <= bullet.rangeCollection.length - 1; k++) {
+            previous += (!k) ? 0 : bullet.rangeCollection[k - 1];
+            if (position >= previous && position < previous + bullet.rangeCollection[k]) {
+                return bullet.ranges[k].color;
+            }
+        }
+        return null;
+    };
+    BulletChartAxis.prototype.backwardStrokeBinding = function (position, size) {
+        var bullet = this.bulletChart;
+        var previous = size;
+        for (var k = 0; k <= bullet.rangeCollection.length - 1; k++) {
+            previous -= (!k) ? 0 : bullet.rangeCollection[k - 1];
+            if (Math.round(position) >= Math.round(previous - bullet.rangeCollection[k]) && position <= previous) {
+                return bullet.ranges[k].color;
+            }
+        }
+        return null;
+    };
+    /**
+     * To render axis labels of bullet chart
+     */
+    BulletChartAxis.prototype.renderXAxisLabels = function (intervalValue, scaleGroup) {
+        var axisLabelGroup = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_axisLabelGroup' });
+        var text;
+        var bullet = this.bulletChart;
+        var locale = this.bulletChart.locale;
+        var padding = 5;
+        var enableRtl = bullet.enableRtl;
+        var tick = (((bullet.tickPosition === bullet.labelPosition) ? bullet.majorTickLines.height : 0) + padding * 2);
+        var y = bullet.initialClipRect.y + ((bullet.opposedPosition) ? ((bullet.labelPosition === 'Inside') ? tick : -tick)
+            : bullet.initialClipRect.height + ((bullet.labelPosition === 'Inside') ? -tick : tick));
+        var x = bullet.initialClipRect.x + ((enableRtl) ? bullet.initialClipRect.width : 0);
+        var min = bullet.minimum;
+        var max = bullet.maximum;
+        var interval = bullet.interval;
+        var localizedText = locale && this.bulletChart.enableGroupSeparator;
+        var strokeColor = bullet.labelStyle.color || bullet.themeStyle.labelFontColor;
+        var format = this.getFormat(this.bulletChart);
+        var isCustomFormat = format.match('{value}') !== null;
+        var condition;
+        this.format = this.bulletChart.intl.getNumberFormat({
+            format: isCustomFormat ? '' : format, useGrouping: this.bulletChart.enableGroupSeparator
+        });
+        var size = bullet.initialClipRect.x + ((bullet.enableRtl) ? bullet.initialClipRect.width : 0);
+        y += measureText(this.formatValue(this, isCustomFormat, format, this.bulletChart.maximum), bullet.labelStyle).height / 3;
+        for (var i = min; i <= max; i += interval) {
+            condition = (!bullet.enableRtl) ? (i === max) : (i === min);
+            if (bullet.labelStyle.useRangeColor) {
+                strokeColor = this.bindingRangeStrokes(x - ((condition) ? this.bulletChart.majorTickLines.width / 2 : 0), size, this.bulletChart.orientation, bullet.enableRtl);
+            }
+            text = localizedText ? i.toLocaleString(locale) : this.formatValue(this, isCustomFormat, format, i);
+            var labelOptions = this.labelXOptions(x, y, text, i);
+            var label = textElement(labelOptions, this.bulletChart.labelStyle, strokeColor, scaleGroup);
+            axisLabelGroup.appendChild(label);
+            x += (enableRtl) ? -intervalValue : intervalValue;
+        }
+        scaleGroup.appendChild(axisLabelGroup);
+    };
+    BulletChartAxis.prototype.labelXOptions = function (labelX, pointY, displayText, i) {
+        var labelOptions = {
+            'id': this.bulletChart.svgObject.id + '_AxisLabel_' + i,
+            'anchor': 'middle',
+            'text': displayText,
+            'transform': '',
+            'x': labelX,
+            'y': pointY,
+            'baseLine': '',
+            'labelRotation': 0,
+        };
+        return labelOptions;
+    };
+    /**
+     * To render axis labels of bullet chart
+     */
+    BulletChartAxis.prototype.renderYAxisLabels = function (intervalValue, scaleGroup) {
+        var axisLabelGroup = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_axisLabelGroup' });
+        var text;
+        var bulletChart = this.bulletChart;
+        var locale = bulletChart.locale;
+        var padding = 5;
+        var enableRtl = bulletChart.enableRtl;
+        var tick = (((bulletChart.tickPosition === bulletChart.labelPosition) ?
+            bulletChart.majorTickLines.height : 0) + padding * 2);
+        var y = bulletChart.initialClipRect.y + ((!enableRtl) ? bulletChart.initialClipRect.height : 0);
+        var x = bulletChart.initialClipRect.x + ((!bulletChart.opposedPosition) ?
+            ((bulletChart.labelPosition === 'Inside') ? (tick + padding * 2) : -tick)
+            : bulletChart.initialClipRect.width + ((bulletChart.labelPosition === 'Inside') ? -(tick + padding * 2) : tick));
+        var min = bulletChart.minimum;
+        var max = bulletChart.maximum;
+        var interval = bulletChart.interval;
+        var localizedText = locale && this.bulletChart.enableGroupSeparator;
+        var strokeColor = bulletChart.labelStyle.color || bulletChart.themeStyle.labelFontColor;
+        var format = this.getFormat(this.bulletChart);
+        var isCustomFormat = format.match('{value}') !== null;
+        var condition;
+        var labelWidth = 5;
+        this.format = this.bulletChart.intl.getNumberFormat({
+            format: isCustomFormat ? '' : format, useGrouping: this.bulletChart.enableGroupSeparator
+        });
+        var size = bulletChart.initialClipRect.y + ((!bulletChart.enableRtl) ? bulletChart.initialClipRect.height : 0);
+        var height = measureText(this.formatValue(this, isCustomFormat, format, this.bulletChart.maximum), bulletChart.labelStyle).height / 3;
+        y += height;
+        for (var i = min; i <= max; i += interval) {
+            condition = (bulletChart.enableRtl) ? (i === max) : (i === min);
+            if (bulletChart.labelStyle.useRangeColor) {
+                strokeColor = this.bindingRangeStrokes(y - height - ((condition) ? this.bulletChart.majorTickLines.width / 2 : 0), size, this.bulletChart.orientation, bulletChart.enableRtl);
+            }
+            text = localizedText ? i.toLocaleString(locale) : this.formatValue(this, isCustomFormat, format, i);
+            //labelWidth = measureText(text, bullet.labelStyle).width / 2;
+            var labelOptions = this.labelXOptions(x - (!this.bulletChart.opposedPosition ? labelWidth : -labelWidth), y, text, i);
+            var label = textElement(labelOptions, this.bulletChart.labelStyle, strokeColor, scaleGroup);
+            axisLabelGroup.appendChild(label);
+            y += (!enableRtl) ? -intervalValue : intervalValue;
+        }
+        scaleGroup.appendChild(axisLabelGroup);
+    };
+    /**
+     * Format of the axis label.
+     * @private
+     */
+    BulletChartAxis.prototype.getFormat = function (axis) {
+        if (axis.labelFormat) {
+            return axis.labelFormat;
+        }
+        return '';
+    };
+    /**
+     * Formatted the axis label.
+     * @private
+     */
+    BulletChartAxis.prototype.formatValue = function (axis, isCustom, format, tempInterval) {
+        return isCustom ? format.replace('{value}', axis.format(tempInterval))
+            : axis.format(tempInterval);
+    };
+    return BulletChartAxis;
+}());
+
+/**
+ *
+ */
+var BulletChartTheme;
+(function (BulletChartTheme) {
+    /** @private */
+    BulletChartTheme.axisLabelFont = {
+        size: '12px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Roboto-Regular'
+    };
+    /** @private */
+    BulletChartTheme.tooltipLabelFont = {
+        size: '13px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+    /** @private */
+    BulletChartTheme.dataLabelFont = {
+        size: '13px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+    /** @private */
+    BulletChartTheme.titleFont = {
+        size: '15px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Roboto-Regular'
+    };
+    /** @private */
+    BulletChartTheme.subTitleFont = {
+        size: '13px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Roboto-Regular'
+    };
+})(BulletChartTheme || (BulletChartTheme = {}));
+/** @private */
+// tslint:disable-next-line:max-func-body-length
+function getBulletThemeColor(theme, bullet) {
+    var style = {
+        majorTickLineColor: '#424242',
+        minorTickLineColor: '#424242',
+        background: '#FFFFFF',
+        labelFontColor: 'rgba(0,0,0,0.54)',
+        categoryFontColor: '#666666',
+        labelFontFamily: 'SegoeUI',
+        tooltipFill: 'rgba(0, 8, 22, 0.75)',
+        tooltipBoldLabel: '#ffffff',
+        featuredMeasureColor: '#181818',
+        comparativeMeasureColor: '#181818',
+        titleFontColor: 'rgba(0,0,0,0.87)',
+        dataLabelFontColor: '#ffffff',
+        titleFontFamily: 'SegoeUI',
+        subTitleFontColor: ' rgba(0,0,0,0.54)',
+        subTitleFontFamily: 'SegoeUI',
+        firstRangeColor: '#959595',
+        secondRangeColor: '#BDBDBD',
+        thirdRangeColor: '#E3E2E2',
+        rangeStrokes: [{ color: '#959595' }, { color: '#BDBDBD' }, { color: '#E3E2E2' }]
+    };
+    switch (theme) {
+        case 'Fabric':
+            style = {
+                majorTickLineColor: '#424242',
+                minorTickLineColor: '#424242',
+                background: '#FFFFFF',
+                labelFontColor: '#666666',
+                categoryFontColor: '#666666',
+                labelFontFamily: 'SegoeUI',
+                tooltipFill: 'rgba(0, 8, 22, 0.75)',
+                tooltipBoldLabel: '#ffffff',
+                featuredMeasureColor: '#181818',
+                comparativeMeasureColor: '#181818',
+                titleFontColor: '#333333',
+                dataLabelFontColor: '#ffffff',
+                titleFontFamily: 'SegoeUI',
+                subTitleFontColor: '#666666',
+                subTitleFontFamily: 'SegoeUI',
+                firstRangeColor: '#959595',
+                secondRangeColor: '#BDBDBD',
+                thirdRangeColor: '#E3E2E2',
+                rangeStrokes: [{ color: '#959595' }, { color: '#BDBDBD' }, { color: '#E3E2E2' }]
+            };
+            break;
+        case 'Bootstrap':
+            style = {
+                majorTickLineColor: '#424242',
+                minorTickLineColor: '#424242',
+                background: '#FFFFFF',
+                labelFontColor: 'rgba(0,0,0,0.54)',
+                categoryFontColor: 'rgba(0,0,0,0.54)',
+                labelFontFamily: 'Helvetica',
+                tooltipFill: 'rgba(0, 0, 0, 0.9)',
+                tooltipBoldLabel: 'rgba(255,255,255)',
+                featuredMeasureColor: '#181818',
+                comparativeMeasureColor: '#181818',
+                titleFontColor: 'rgba(0,0,0,0.87)',
+                dataLabelFontColor: '#ffffff',
+                titleFontFamily: 'Helvetica-Bold',
+                subTitleFontColor: ' rgba(0,0,0,0.54)',
+                subTitleFontFamily: 'Helvetica',
+                firstRangeColor: '#959595',
+                secondRangeColor: '#BDBDBD',
+                thirdRangeColor: '#E3E2E2',
+                rangeStrokes: [{ color: '#959595' }, { color: '#BDBDBD' }, { color: '#E3E2E2' }]
+            };
+            break;
+        case 'HighContrast':
+            style = {
+                majorTickLineColor: '#FFFFFF',
+                minorTickLineColor: '#FFFFFF',
+                background: '#000000',
+                labelFontColor: '#FFFFFF',
+                categoryFontColor: '#FFFFFF',
+                labelFontFamily: 'SegoeUI',
+                tooltipFill: '#ffffff',
+                tooltipBoldLabel: '#000000',
+                featuredMeasureColor: '#000000',
+                comparativeMeasureColor: '#000000',
+                titleFontColor: '#FFFFFF',
+                dataLabelFontColor: '#ffffff',
+                titleFontFamily: 'HelveticaNeue',
+                subTitleFontColor: '#FFFFFF',
+                subTitleFontFamily: 'SegoeUI',
+                firstRangeColor: '#959595',
+                secondRangeColor: '#BDBDBD',
+                thirdRangeColor: '#E3E2E2',
+                rangeStrokes: [{ color: '#757575' }, { color: '#BDBDBD' }, { color: '#EEEEEE' }]
+            };
+            break;
+        case 'MaterialDark':
+        case 'FabricDark':
+        case 'BootstrapDark':
+            style = {
+                majorTickLineColor: '#F0F0F0',
+                minorTickLineColor: '#F0F0F0',
+                background: '#000000',
+                labelFontColor: '#FFFFFF',
+                categoryFontColor: '#FFFFFF',
+                labelFontFamily: 'Helvetica',
+                tooltipFill: '#F4F4F4',
+                tooltipBoldLabel: '#282727',
+                featuredMeasureColor: '#181818',
+                comparativeMeasureColor: '#181818',
+                titleFontColor: '#FFFFFF',
+                dataLabelFontColor: '#ffffff',
+                titleFontFamily: 'Helvetica-Bold',
+                subTitleFontColor: '#FFFFFF',
+                subTitleFontFamily: 'Helvetica',
+                firstRangeColor: '#8D8D8D',
+                secondRangeColor: '#ADADAD',
+                thirdRangeColor: '#EEEEEE',
+                rangeStrokes: [{ color: '#8D8D8D' }, { color: '#ADADAD' }, { color: '#EEEEEE' }]
+            };
+            break;
+        case 'Bootstrap4':
+            style = {
+                majorTickLineColor: '#424242',
+                minorTickLineColor: '#424242',
+                background: '#FFFFFF',
+                labelFontColor: '#202528',
+                categoryFontColor: '#202528',
+                labelFontFamily: 'HelveticaNeue',
+                tooltipFill: 'rgba(0, 0, 0, 0.9)',
+                tooltipBoldLabel: 'rgba(255,255,255)',
+                featuredMeasureColor: '#181818',
+                comparativeMeasureColor: '#181818',
+                titleFontColor: '#202528',
+                dataLabelFontColor: '#ffffff',
+                titleFontFamily: 'HelveticaNeue-Bold',
+                subTitleFontColor: 'HelveticaNeue',
+                subTitleFontFamily: '#202528',
+                firstRangeColor: '#959595',
+                secondRangeColor: '#BDBDBD',
+                thirdRangeColor: '#E3E2E2',
+                rangeStrokes: [{ color: '#959595' }, { color: '#BDBDBD' }, { color: '#E3E2E2' }]
+            };
+            break;
+        default:
+            style = style;
+            break;
+    }
+    return style;
+}
+
+/**
+ * class for Bullet chart Scale Group
+ */
+var ScaleGroup = /** @__PURE__ @class */ (function () {
+    function ScaleGroup(bulletChart) {
+        this.comparative = [];
+        //super();
+        this.dataSource = bulletChart.dataSource;
+        this.isVertical = (bulletChart.orientation === 'Vertical');
+        this.isTicksInside = (bulletChart.tickPosition === 'Inside');
+        this.isLabelsInside = (bulletChart.labelPosition === 'Inside');
+        this.isHorizontal = (bulletChart.orientation === 'Horizontal');
+        this.isLeft = bulletChart.titlePosition === 'Left';
+        this.isRight = bulletChart.titlePosition === 'Right';
+        this.isTop = bulletChart.titlePosition === 'Top';
+        this.location = 10;
+        this.featureBarBounds = [];
+        this.majorTickSize = bulletChart.majorTickLines.height;
+        this.labelOffset = 15;
+        this.labelSize = 12;
+        this.bulletChart = bulletChart;
+        this.isLabelBelow = !this.bulletChart.opposedPosition;
+        this.scaleOrientation = this.bulletChart.orientation;
+        this.rangeColor = [];
+    }
+    /**
+     * To render range scale of the bulletChart graph
+     * @param scaleGroup
+     */
+    ScaleGroup.prototype.drawScaleGroup = function (scaleGroup) {
+        var rangeGroup = this.bulletChart.renderer.createGroup({ 'id': this.bulletChart.svgObject.id + '_rangeGroup' });
+        var max = this.bulletChart.maximum;
+        var ranges = this.bulletChart.ranges;
+        this.scaleSettingsGroup = scaleGroup;
+        var rect;
+        var bullet = this.bulletChart;
+        var enableRtl = bullet.enableRtl;
+        var initialRect = bullet.initialClipRect;
+        var locX = initialRect.x + ((enableRtl && bullet.orientation === 'Horizontal') ? initialRect.width : 0);
+        var locY = initialRect.y + ((!enableRtl && bullet.orientation === 'Vertical') ? initialRect.height : 0);
+        var area = 0;
+        bullet.rangeCollection = [];
+        var start = 0;
+        var range = (bullet.orientation === 'Horizontal') ? initialRect.width : initialRect.height;
+        var fillRange = (bullet.orientation === 'Horizontal') ? initialRect.height : initialRect.width;
+        for (var i = 0; i < ranges.length; i++) {
+            area = (range) * ((ranges[i].end - start) / max);
+            if (bullet.orientation === 'Horizontal') {
+                locX -= (enableRtl) ? area : 0;
+            }
+            else {
+                locY -= (!enableRtl) ? area : 0;
+            }
+            rect = new RectOption(bullet.svgObject.id + '_range_' + i, 
+            // tslint:disable-next-line:no-string-literal
+            ranges[i].color || this.bulletChart.themeStyle.rangeStrokes[i]['color'], { width: 1 }, ranges[i].opacity, new Rect(locX, locY, ((bullet.orientation === 'Horizontal') ? area : fillRange), ((bullet.orientation === 'Horizontal') ? fillRange : area)));
+            var svgRect = bullet.renderer.drawRectangle(rect);
+            rangeGroup.appendChild(svgRect);
+            scaleGroup.appendChild(rangeGroup);
+            if (bullet.orientation === 'Horizontal') {
+                locX += (enableRtl) ? 0 : area;
+            }
+            else {
+                locY += (!enableRtl) ? 0 : area;
+            }
+            bullet.rangeCollection.push(area);
+            start = ranges[i].end;
+        }
+        return this.bulletChart.rangeCollection;
+    };
+    ScaleGroup.prototype.sortRangeCollection = function (a, b) {
+        return (a - b);
+    };
+    /**
+     * To render the feature bar of the bulletChart chart
+     * @param dataCount
+     */
+    ScaleGroup.prototype.renderFeatureBar = function (dataCount) {
+        if (dataCount === 0) {
+            return;
+        }
+        this.renderCommonFeatureBar(dataCount, this.isHorizontal);
+    };
+    /**
+     * To render the horizontal feature bar of the bulletChart chart
+     * @param dataCount
+     */
+    ScaleGroup.prototype.renderCommonFeatureBar = function (dataCount, isHorizontal) {
+        var categoryValue;
+        var dotWidth = 6;
+        var padding = 5;
+        var bulletChart = this.bulletChart;
+        var initialBoundsStart = isHorizontal ? (bulletChart.initialClipRect.y + bulletChart.initialClipRect.height) :
+            bulletChart.initialClipRect.x;
+        var lPoint;
+        var featueGroup = bulletChart.renderer.createGroup({ 'id': bulletChart.svgObject.id + '_featureGroup' });
+        var data;
+        var featureBarSize = (isHorizontal ? bulletChart.initialClipRect.height : bulletChart.initialClipRect.width) / dataCount;
+        var bounds;
+        for (var i = 0; i < dataCount; i++) {
+            data = bulletChart.dataSource[i];
+            categoryValue = data[bulletChart.categoryField];
+            if (isHorizontal) {
+                lPoint = initialBoundsStart - (featureBarSize * i) - (featureBarSize + bulletChart.valueHeight) / 2;
+            }
+            else {
+                lPoint = initialBoundsStart + (featureBarSize * i) + (featureBarSize / 2) - bulletChart.valueHeight / 2;
+            }
+            bounds = this.calculateFeatureMeasureBounds(data[bulletChart.valueField], categoryValue, isHorizontal);
+            if (data && bulletChart.type === 'Dot') {
+                var value = data[bulletChart.valueField];
+                if (isHorizontal) {
+                    bounds.pointX = bounds.pointX + (((value > 0) && !bulletChart.enableRtl) ||
+                        ((value < 0) && bulletChart.enableRtl) ? (bounds.width) : 0) - dotWidth / 2;
+                }
+                else {
+                    bounds.pointX = bounds.pointX + (((value > 0) && bulletChart.enableRtl) ||
+                        ((value < 0) && !bulletChart.enableRtl) ? (bounds.width) : 0) - dotWidth / 2;
+                }
+                bounds.width = dotWidth;
+            }
+            // Drawing feature bar rect element
+            if (bounds) {
+                var svgRect = isHorizontal ? this.featureBar(bounds.pointX, lPoint, bounds.width, i) :
+                    this.verticalFeatureBar(lPoint, bounds.pointX, bounds.width, i);
+                featueGroup.appendChild(svgRect);
+                this.feature = svgRect;
+                this.scaleSettingsGroup.appendChild(featueGroup);
+                this.featureBarBounds[i] = { x: bounds.pointX, y: lPoint, width: bounds.width, height: bulletChart.valueHeight };
+                // Drawing category text element
+                if (!isNullOrUndefined(categoryValue)) {
+                    var categoryTextSize = measureText(categoryValue, bulletChart.categoryLabelStyle);
+                    var categorySize = isHorizontal ? categoryTextSize.width : categoryTextSize.height;
+                    var initialRect = bulletChart.initialClipRect;
+                    var x = void 0;
+                    var categoryOptions = void 0;
+                    if (isHorizontal) {
+                        x = (bulletChart.enableRtl) ? (initialRect.x + initialRect.width + padding + categorySize / 2) :
+                            initialRect.x - padding - categorySize / 2;
+                        categoryOptions = this.drawcategory(x, lPoint, categoryValue);
+                    }
+                    else {
+                        x = (bulletChart.enableRtl) ? (initialRect.y - padding - categorySize / 2) :
+                            initialRect.y + initialRect.height + padding + categorySize / 2;
+                        categoryOptions = this.drawcategory(lPoint + bulletChart.valueHeight / 2, x, categoryValue);
+                    }
+                    textElement(categoryOptions, bulletChart.categoryLabelStyle, bulletChart.categoryLabelStyle.color || bulletChart.themeStyle.categoryFontColor, this.scaleSettingsGroup);
+                }
+            }
+            if (bulletChart.animation.enable) {
+                this.doValueBarAnimation(this.scaleSettingsGroup);
+            }
+        }
+    };
+    ScaleGroup.prototype.featureBar = function (pointX, pointY, width, i) {
+        var featureBarOptions = new RectOption(this.bulletChart.svgObject.id + '_FeatureMeasure_' + i, this.bulletChart.valueFill, this.bulletChart.valueBorder, 1, new Rect(pointX, pointY, width, this.bulletChart.valueHeight));
+        var svgRect = this.bulletChart.renderer.drawRectangle(featureBarOptions);
+        svgRect.setAttribute('class', this.bulletChart.svgObject.id + '_FeatureMeasure');
+        svgRect.id = this.bulletChart.svgObject.id + '_FeatureMeasure_' + i;
+        return svgRect;
+    };
+    ScaleGroup.prototype.verticalFeatureBar = function (pointX, pointY, width, i) {
+        var featureBarOptions = new RectOption(this.bulletChart.svgObject.id + '_FeatureMeasure_' + i, this.bulletChart.valueFill, this.bulletChart.valueBorder, 1, new Rect(pointX, pointY, this.bulletChart.valueHeight, width));
+        var svgRect = this.bulletChart.renderer.drawRectangle(featureBarOptions);
+        svgRect.setAttribute('class', this.bulletChart.svgObject.id + '_FeatureMeasure');
+        svgRect.id = this.bulletChart.svgObject.id + '_FeatureMeasure_' + i;
+        return svgRect;
+    };
+    ScaleGroup.prototype.drawcategory = function (lPointX, lPointY, categoryValue) {
+        var categoryOptions = {
+            'id': '',
+            'anchor': 'middle',
+            'x': lPointX,
+            'y': lPointY + (this.bulletChart.valueHeight),
+            'transform': '',
+            'text': categoryValue,
+            'baseLine': '',
+            'labelRotation': 0
+        };
+        return categoryOptions;
+    };
+    /**
+     * To render comparative symbol of the bulletChart chart
+     * @param dataCount
+     */
+    ScaleGroup.prototype.renderComparativeSymbol = function (dataCount) {
+        if (dataCount === 0) {
+            return;
+        }
+        this.renderCommonComparativeSymbol(dataCount, this.isHorizontal);
+    };
+    ScaleGroup.prototype.renderCommonComparativeSymbol = function (dataCount, isHorizontal) {
+        var bulletChart = this.bulletChart;
+        var value;
+        var rect = bulletChart.initialClipRect;
+        var scaleLength = isHorizontal ? rect.width : rect.height;
+        var y1;
+        var y2;
+        var x1;
+        var pointY = isHorizontal ? (rect.y + rect.height) : rect.x;
+        var comparativeGroup = bulletChart.renderer.createGroup({ 'id': bulletChart.svgObject.id + '_comparativeGroup' });
+        var minimum = bulletChart.minimum;
+        var maximum = bulletChart.maximum;
+        var delta = maximum - minimum;
+        var targetWidth = bulletChart.targetWidth;
+        var pointX = isHorizontal ? (rect.x - (targetWidth / 2)) : (rect.y + rect.height);
+        var temp;
+        var values = [];
+        var targetTypes = bulletChart.targetTypes;
+        var targetType = 'Rect';
+        var targetTypeLength = targetTypes.length;
+        var featureBarSize = (isHorizontal ? rect.height : rect.width) / dataCount;
+        var svgElement;
+        for (var k = 0; k < dataCount; k++) {
+            value = bulletChart.dataSource[k][bulletChart.targetField];
+            values = values.concat(value);
+            for (var i = 0; i < values.length; i++) {
+                targetType = targetTypes[i % targetTypeLength];
+                if (values[i] >= minimum && values[i] <= maximum) {
+                    if (isHorizontal) {
+                        temp = pointY - (featureBarSize * k) - (featureBarSize / 2);
+                    }
+                    else {
+                        temp = pointY + (featureBarSize * k) + (featureBarSize / 2);
+                    }
+                    y1 = temp - targetWidth * 1.5;
+                    y2 = temp + targetWidth * 1.5;
+                    temp = (scaleLength / (delta / (delta - (maximum - values[i]))));
+                    if (isHorizontal) {
+                        x1 = pointX + (bulletChart.enableRtl ? (scaleLength - temp) : temp);
+                    }
+                    else {
+                        x1 = pointX - (bulletChart.enableRtl ? (scaleLength - temp) : temp);
+                    }
+                    svgElement = this.getTargetElement(targetType, isHorizontal, x1, y1, y2, values[i], k);
+                    this.comparative.push(svgElement);
+                    comparativeGroup.appendChild(svgElement);
+                    y1 = 0;
+                    y2 = 0;
+                }
+                this.scaleSettingsGroup.appendChild(comparativeGroup);
+            }
+            values = [];
+            if (bulletChart.animation.enable) {
+                this.doTargetBarAnimation(0);
+            }
+        }
+    };
+    ScaleGroup.prototype.getTargetElement = function (targetType, isHorizontal, x1, y1, y2, value, k) {
+        var shapeObject;
+        var shapeElement;
+        var bulletChart = this.bulletChart;
+        var size = bulletChart.targetWidth;
+        var lx = isHorizontal ? x1 + (size / 2) : y1 + ((y2 - y1) / 2);
+        var ly = isHorizontal ? y1 + ((y2 - y1) / 2) : x1;
+        var id = bulletChart.svgObject.id + '_ComparativeMeasure_' + k;
+        var className = bulletChart.svgObject.id + '_ComparativeMeasure';
+        if (targetType === 'Rect') {
+            shapeObject = isHorizontal ? this.compareMeasure(x1, y1, y2, k, value) : this.compareVMeasure(y1, y2, x1, k, value);
+            shapeElement = bulletChart.renderer.drawLine(shapeObject);
+        }
+        else if (targetType === 'Circle') {
+            shapeObject = new CircleOption(id, bulletChart.targetColor, { width: 1, color: bulletChart.targetColor }, 1, lx, ly, size);
+            shapeElement = bulletChart.renderer.drawCircle(shapeObject);
+        }
+        else {
+            var crossDirection = 'M ' + (lx - size) + ' ' + (ly - size) + ' L ' + (lx + size) + ' ' + (ly + size) + ' M ' +
+                (lx - size) + ' ' + (ly + size) + ' L ' + (lx + size) + ' ' + (ly - size);
+            shapeObject = new PathOption(id, 'transparent', 1, bulletChart.targetColor, 1, '', crossDirection);
+            shapeElement = bulletChart.renderer.drawPath(shapeObject);
+        }
+        shapeElement.setAttribute('class', className);
+        return shapeElement;
+    };
+    ScaleGroup.prototype.compareMeasure = function (x1, y1, y2, i, value) {
+        var bulletChart = this.bulletChart;
+        var compareMeasureOptions = {
+            'class': bulletChart.svgObject.id + '_ComparativeMeasure',
+            'id': bulletChart.svgObject.id + '_ComparativeMeasure_' + i,
+            'x1': (value === bulletChart.maximum) ? x1 - (bulletChart.targetWidth / 2) :
+                (value === bulletChart.minimum) ? x1 + (bulletChart.targetWidth / 2) : x1,
+            'y1': y1,
+            'x2': (value === bulletChart.maximum) ? x1 - (bulletChart.targetWidth / 2) :
+                (value === bulletChart.minimum) ? x1 + (bulletChart.targetWidth / 2) : x1,
+            'y2': y2,
+            'stroke-width': bulletChart.targetWidth,
+            'stroke': bulletChart.targetColor
+        };
+        return compareMeasureOptions;
+    };
+    ScaleGroup.prototype.compareVMeasure = function (x1, x2, y1, i, value) {
+        var bulletChart = this.bulletChart;
+        var compareMeasureOptions = {
+            'class': bulletChart.svgObject.id + '_ComparativeMeasure',
+            'id': bulletChart.svgObject.id + '_ComparativeMeasure_' + i,
+            'x1': x1,
+            'y1': y1,
+            'x2': x2,
+            'y2': y1,
+            'stroke-width': bulletChart.targetWidth,
+            'stroke': bulletChart.targetColor
+        };
+        return compareMeasureOptions;
+    };
+    /**
+     * To calculate the bounds on vertical and horizontal orientation changes
+     * @param value
+     * @param categoryValue
+     */
+    ScaleGroup.prototype.calculateFeatureMeasureBounds = function (value, categoryValue, isHorizontal) {
+        var bulletChart = this.bulletChart;
+        var min = bulletChart.minimum;
+        value = (value < min && min < 0) ? min : value;
+        if (value >= min) {
+            var pointX = void 0;
+            var lastPointX = void 0;
+            var width = void 0;
+            var loc = isHorizontal ? bulletChart.initialClipRect.x : bulletChart.initialClipRect.y;
+            var scaleLength = isHorizontal ? bulletChart.initialClipRect.width : bulletChart.initialClipRect.height;
+            var delta = bulletChart.maximum - bulletChart.minimum;
+            var valueDiff = bulletChart.maximum - value;
+            var orientation_1 = ((!bulletChart.enableRtl) ? 'forward' : 'backward') + this.scaleOrientation.toLowerCase();
+            categoryValue = isNullOrUndefined(categoryValue) ? '' : categoryValue;
+            var stringLength = measureText(categoryValue.toString(), bulletChart.labelStyle).width;
+            switch (orientation_1) {
+                case 'forwardhorizontal':
+                case 'backwardvertical':
+                    pointX = loc + ((min > 0) ? 0 : scaleLength / delta * Math.abs(min));
+                    width = scaleLength / (delta / ((min > 0) ? delta - valueDiff : value));
+                    if (value < 0) {
+                        width = Math.abs(width);
+                        pointX -= width;
+                    }
+                    width = (pointX + width < loc + scaleLength) ? width : loc + scaleLength - pointX;
+                    lastPointX = loc - ((orientation_1 === 'forwardhorizontal') ? (stringLength / 2 + 5) :
+                        this.labelOffset);
+                    break;
+                default:
+                    pointX = loc + (scaleLength - scaleLength / (delta / (delta - valueDiff)));
+                    width = (min > 0) ? scaleLength / (delta / (delta - valueDiff)) : scaleLength / (delta / (value));
+                    if (value < 0) {
+                        width = Math.abs(width);
+                        pointX -= width;
+                    }
+                    if (pointX < loc) {
+                        width = pointX + width - loc;
+                        pointX = loc;
+                    }
+                    lastPointX = loc + scaleLength + ((orientation_1 === 'backwardhorizontal') ? (stringLength / 2 +
+                        5) : 5);
+                    break;
+            }
+            return { pointX: pointX, width: width, lastPointX: lastPointX };
+        }
+        return null;
+    };
+    /**
+     * Animates the feature bar.
+     * @param  {FeatureBar} scale - Defines the feature bar to animate.
+     * @return {void}
+     */
+    ScaleGroup.prototype.doValueBarAnimation = function (scale) {
+        var valueBarElement = this.feature;
+        if (!valueBarElement) {
+            return null;
+        }
+        var animateOption = this.bulletChart.animation;
+        var animateDuration = this.bulletChart.animateSeries ? this.bulletChart.animation.duration : animateOption.duration;
+        var effectType = getAnimationFunction('Linear');
+        var isValuePlot = this.bulletChart.dataSource < 0;
+        var valueX;
+        var valueY;
+        var elementBarHeight = valueBarElement.getBoundingClientRect().height;
+        var elementBarWidth = valueBarElement.getBoundingClientRect().width;
+        var centerX;
+        var centerY;
+        var valueActual;
+        if (this.bulletChart.orientation === 'Horizontal' && valueBarElement) {
+            valueY = parseInt(valueBarElement.getAttribute('height'), 10);
+            valueX = parseInt(valueBarElement.getAttribute('x'), 10);
+            centerY = isValuePlot ? valueY : valueY + elementBarHeight;
+            centerX = valueX;
+        }
+        valueBarElement.style.visibility = 'hidden';
+        new Animation({}).animate(valueBarElement, {
+            duration: animateDuration,
+            delay: animateOption.delay,
+            progress: function (args) {
+                if (args.timeStamp >= args.delay) {
+                    valueBarElement.style.visibility = 'visible';
+                    elementBarWidth = elementBarWidth ? elementBarWidth : 1;
+                    valueActual = effectType(args.timeStamp - args.delay, 0, elementBarWidth, args.duration);
+                    valueBarElement.setAttribute('transform', 'translate(' + centerX + ' ' + centerY +
+                        ') scale(' + (valueActual / elementBarWidth) + ', 1) translate(' + (-centerX) + ' ' + (-centerY) + ')');
+                }
+            },
+            end: function (model) {
+                valueBarElement.setAttribute('transform', 'translate(0,0)');
+                valueBarElement.style.visibility = 'visible';
+            }
+        });
+    };
+    /**
+     * Animates the comparative bar.
+     * @param  {FeatureBar} scale - Defines the feature bar to animate.
+     * @return {void}
+     */
+    ScaleGroup.prototype.doTargetBarAnimation = function (index) {
+        var targetBarelement;
+        var option = this.bulletChart.animation;
+        var x;
+        var y;
+        var centerX;
+        var centerY;
+        targetBarelement = this.comparative[index];
+        if (!targetBarelement) {
+            return null;
+        }
+        if (this.bulletChart.orientation === 'Horizontal' && targetBarelement) {
+            y = parseFloat(targetBarelement.getAttribute('y1')) + parseFloat(targetBarelement.getAttribute('y2'));
+            x = parseFloat(targetBarelement.getAttribute('x1'));
+            centerY = y;
+            centerX = x;
+        }
+        targetBarelement.style.visibility = 'hidden';
+        this.animateRect(targetBarelement, centerX, centerY, index + 1);
+    };
+    ScaleGroup.prototype.animateRect = function (targetBarelement, centerX, centerY, index) {
+        var _this = this;
+        var effect = getAnimationFunction('Linear');
+        var value;
+        var option = this.bulletChart.animation;
+        var threshold = this.comparative.length;
+        var duration = this.bulletChart.animateSeries ? this.bulletChart.animation.duration : option.duration;
+        new Animation({}).animate(targetBarelement, {
+            duration: duration,
+            delay: option.delay,
+            progress: function (args) {
+                if (args.timeStamp >= args.delay) {
+                    targetBarelement.style.visibility = 'visible';
+                    value = effect(args.timeStamp - args.delay, 0, 1, args.duration);
+                    targetBarelement.setAttribute('transform', 'translate(' + centerX + ' ' + centerY / 2 +
+                        ') scale(1,' + (value) + ') translate(' + (-centerX) + ' ' + (-centerY / 2) + ')');
+                }
+            },
+            end: function (model) {
+                targetBarelement.setAttribute('transform', 'translate(0,0)');
+                if (index < threshold) {
+                    _this.doTargetBarAnimation(index + 1);
+                }
+            }
+        });
+    };
+    return ScaleGroup;
+}());
+
+var __extends$79 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -34261,62 +35336,1394 @@ var __decorate$14 = (undefined && undefined.__decorate) || function (decorators,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var SmithchartFont = /** @__PURE__ @class */ (function (_super) {
-    __extends$80(SmithchartFont, _super);
-    function SmithchartFont() {
+/**
+ * Configuration of the bullet chart ranges
+ */
+var Range = /** @__PURE__ @class */ (function (_super) {
+    __extends$79(Range, _super);
+    function Range() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate$14([
-        Property('Segoe UI')
-    ], SmithchartFont.prototype, "fontFamily", void 0);
+        Property(null)
+    ], Range.prototype, "end", void 0);
+    __decorate$14([
+        Property(1)
+    ], Range.prototype, "opacity", void 0);
+    __decorate$14([
+        Property(null)
+    ], Range.prototype, "color", void 0);
+    return Range;
+}(ChildProperty));
+/**
+ * Configures the major tick lines.
+ */
+var MajorTickLinesSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$79(MajorTickLinesSettings, _super);
+    function MajorTickLinesSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$14([
+        Property(12)
+    ], MajorTickLinesSettings.prototype, "height", void 0);
+    __decorate$14([
+        Property(1)
+    ], MajorTickLinesSettings.prototype, "width", void 0);
+    __decorate$14([
+        Property(null)
+    ], MajorTickLinesSettings.prototype, "color", void 0);
+    __decorate$14([
+        Property(false)
+    ], MajorTickLinesSettings.prototype, "useRangeColor", void 0);
+    return MajorTickLinesSettings;
+}(ChildProperty));
+/**
+ * Configures the minor tick lines.
+ */
+var MinorTickLinesSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$79(MinorTickLinesSettings, _super);
+    function MinorTickLinesSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$14([
+        Property(8)
+    ], MinorTickLinesSettings.prototype, "height", void 0);
+    __decorate$14([
+        Property(1)
+    ], MinorTickLinesSettings.prototype, "width", void 0);
+    __decorate$14([
+        Property(null)
+    ], MinorTickLinesSettings.prototype, "color", void 0);
+    __decorate$14([
+        Property(false)
+    ], MinorTickLinesSettings.prototype, "useRangeColor", void 0);
+    return MinorTickLinesSettings;
+}(ChildProperty));
+/**
+ * Configures the fonts in bullet chart.
+ */
+var BulletLabelStyle = /** @__PURE__ @class */ (function (_super) {
+    __extends$79(BulletLabelStyle, _super);
+    function BulletLabelStyle() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
     __decorate$14([
         Property('Normal')
-    ], SmithchartFont.prototype, "fontStyle", void 0);
+    ], BulletLabelStyle.prototype, "fontStyle", void 0);
     __decorate$14([
-        Property('Regular')
-    ], SmithchartFont.prototype, "fontWeight", void 0);
+        Property('16px')
+    ], BulletLabelStyle.prototype, "size", void 0);
     __decorate$14([
         Property('')
-    ], SmithchartFont.prototype, "color", void 0);
+    ], BulletLabelStyle.prototype, "color", void 0);
     __decorate$14([
+        Property('Normal')
+    ], BulletLabelStyle.prototype, "fontWeight", void 0);
+    __decorate$14([
+        Property('Segoe UI')
+    ], BulletLabelStyle.prototype, "fontFamily", void 0);
+    __decorate$14([
+        Property('Center')
+    ], BulletLabelStyle.prototype, "textAlignment", void 0);
+    __decorate$14([
+        Property('None')
+    ], BulletLabelStyle.prototype, "textOverflow", void 0);
+    __decorate$14([
+        Property(1)
+    ], BulletLabelStyle.prototype, "opacity", void 0);
+    __decorate$14([
+        Property(true)
+    ], BulletLabelStyle.prototype, "enableTrim", void 0);
+    __decorate$14([
+        Property(null)
+    ], BulletLabelStyle.prototype, "maximumTitleWidth", void 0);
+    __decorate$14([
+        Property(false)
+    ], BulletLabelStyle.prototype, "useRangeColor", void 0);
+    return BulletLabelStyle;
+}(ChildProperty));
+/**
+ * Configures the ToolTips in the bullet chart.
+ */
+var BulletTooltipSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$79(BulletTooltipSettings, _super);
+    function BulletTooltipSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$14([
+        Property(true)
+    ], BulletTooltipSettings.prototype, "enable", void 0);
+    __decorate$14([
+        Property(null)
+    ], BulletTooltipSettings.prototype, "fill", void 0);
+    __decorate$14([
+        Complex(BulletChartTheme.tooltipLabelFont, BulletLabelStyle)
+    ], BulletTooltipSettings.prototype, "textStyle", void 0);
+    __decorate$14([
+        Complex({ color: '#cccccc', width: 0.5 }, Border)
+    ], BulletTooltipSettings.prototype, "border", void 0);
+    __decorate$14([
+        Property(null)
+    ], BulletTooltipSettings.prototype, "template", void 0);
+    return BulletTooltipSettings;
+}(ChildProperty));
+/**
+ * Configures the DataLabel in the bullet chart.
+ */
+var BulletDataLabel = /** @__PURE__ @class */ (function (_super) {
+    __extends$79(BulletDataLabel, _super);
+    function BulletDataLabel() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$14([
+        Property(false)
+    ], BulletDataLabel.prototype, "enable", void 0);
+    __decorate$14([
+        Complex(BulletChartTheme.dataLabelFont, BulletLabelStyle)
+    ], BulletDataLabel.prototype, "labelStyle", void 0);
+    return BulletDataLabel;
+}(ChildProperty));
+
+var __extends$78 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$13 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * bullet chart
+ */
+var BulletChart = /** @__PURE__ @class */ (function (_super) {
+    __extends$78(BulletChart, _super);
+    /**
+     * Constructor for creating the bullet chart
+     * @hidden
+     */
+    function BulletChart(options, element) {
+        var _this = _super.call(this, options, element) || this;
+        /** @private */
+        _this.bulletid = 57726;
+        /** @private */
+        _this.animateSeries = true;
+        _this.padding = 5;
+        /** @private */
+        _this.leftSize = 0;
+        /** @private */
+        _this.rightSize = 0;
+        /** @private */
+        _this.topSize = 0;
+        /** @private */
+        _this.bottomSize = 0;
+        /** @private */
+        _this.maxLabelSize = new Size(0, 0);
+        _this.maxTitleSize = new Size(0, 0);
+        /** @private */
+        _this.intervalDivs = [10, 5, 2, 1];
+        return _this;
+    }
+    /**
+     * Initialize the event handler.
+     */
+    BulletChart.prototype.preRender = function () {
+        this.allowServerDataBinding = false;
+        this.unWireEvents();
+        this.initPrivateValues();
+        this.setCulture();
+        this.wireEvents();
+    };
+    /**
+     * To initialize the private variables
+     */
+    BulletChart.prototype.initPrivateValues = function () {
+        this.delayRedraw = false;
+        this.scale = new ScaleGroup(this);
+        this.bulletAxis = new BulletChartAxis(this);
+        if (this.element.id === '') {
+            var collection = document.getElementsByClassName('e-BulletChart').length;
+            this.element.id = 'BulletChart_' + this.bulletid + '_' + collection;
+        }
+    };
+    /**
+     * Method to set culture for BulletChart
+     */
+    BulletChart.prototype.setCulture = function () {
+        this.intl = new Internationalization();
+    };
+    /**
+     * To Initialize the bullet chart rendering.
+     */
+    BulletChart.prototype.render = function () {
+        this.trigger('load', { bulletChart: this });
+        this.setTheme();
+        this.createSvg(this);
+        this.findRange();
+        this.calculatePosition();
+        this.renderBulletElements();
+        this.allowServerDataBinding = true;
+        this.renderComplete();
+    };
+    /**
+     * Theming for bullet chart
+     */
+    BulletChart.prototype.setTheme = function () {
+        this.themeStyle = getBulletThemeColor(this.theme, this);
+    };
+    BulletChart.prototype.findRange = function () {
+        if (!this.minimum) {
+            this.minimum = 0;
+        }
+        if (!this.maximum) {
+            this.maximum = 0;
+            for (var i = 0; i < this.ranges.length; i++) {
+                this.maximum = this.maximum > this.ranges[i].end ? this.maximum : this.ranges[i].end;
+            }
+        }
+        if (!this.interval) {
+            this.interval = this.calculateNumericNiceInterval(this.maximum - this.minimum);
+        }
+    };
+    BulletChart.prototype.getActualDesiredIntervalsCount = function (availableSize) {
+        var size = this.orientation === 'Horizontal' ? availableSize.width : availableSize.height;
+        // tslint:disable-next-line:align
+        var desiredIntervalsCount = (this.orientation === 'Horizontal' ? 0.533 : 1) * 3;
+        desiredIntervalsCount = Math.max((size * (desiredIntervalsCount / 100)), 1);
+        return desiredIntervalsCount;
+    };
+    /**
+     * Numeric Nice Interval for the axis.
+     * @private
+     */
+    BulletChart.prototype.calculateNumericNiceInterval = function (delta) {
+        var actualDesiredIntervalsCount = this.getActualDesiredIntervalsCount(this.availableSize);
+        var niceInterval = delta / actualDesiredIntervalsCount;
+        var minInterval = Math.pow(10, Math.floor(logBase(niceInterval, 10)));
+        for (var _i = 0, _a = this.intervalDivs; _i < _a.length; _i++) {
+            var interval = _a[_i];
+            var currentInterval = minInterval * interval;
+            if (actualDesiredIntervalsCount < (delta / currentInterval)) {
+                break;
+            }
+            niceInterval = currentInterval;
+        }
+        return niceInterval;
+    };
+    /**
+     * To set the left and top position for data label template for center aligned bulletchart
+     */
+    BulletChart.prototype.setSecondaryElementPosition = function () {
+        var element = getElement$1(this.element.id + '_Secondary_Element');
+        if (!element) {
+            return;
+        }
+        var rect = this.element.getBoundingClientRect();
+        var svgRect = getElement$1(this.element.id + '_svg').getBoundingClientRect();
+        element.style.left = Math.max(svgRect.left - rect.left, 0) + 'px';
+        element.style.top = Math.max(svgRect.top - rect.top, 0) + 'px';
+        element.style.position = 'relative';
+    };
+    /**
+     * Method to create SVG element.
+     */
+    BulletChart.prototype.createSvg = function (chart) {
+        this.removeSvg();
+        chart.renderer = new SvgRenderer(chart.element.id);
+        this.calculateAvailableSize(this);
+        chart.svgObject = chart.renderer.createSvg({
+            id: chart.element.id + '_svg',
+            width: chart.availableSize.width,
+            height: chart.availableSize.height
+        });
+        this.renderChartBackground();
+    };
+    /**
+     * Creating a background element to the svg object
+     */
+    BulletChart.prototype.renderChartBackground = function () {
+        var rect = new RectOption(this.element.id + '_ChartBorder', this.themeStyle.background, { width: this.border.width || 0, color: this.border.color || 'transparent' }, 1, new Rect(0, 0, this.availableSize.width, this.availableSize.height));
+        this.svgObject.appendChild(this.renderer.drawRectangle(rect));
+    };
+    /**
+     * Rendering the bullet elements
+     */
+    BulletChart.prototype.renderBulletElements = function () {
+        var scaleGroup = this.renderer.createGroup({ 'id': this.svgObject.id + '_scaleGroup' });
+        this.svgObject.appendChild(scaleGroup);
+        this.renderBulletChartTitle();
+        this.rangeCollection = this.scale.drawScaleGroup(scaleGroup);
+        var size = (this.orientation === 'Horizontal') ? this.initialClipRect.width : this.initialClipRect.height;
+        var intervalValue = size / ((this.maximum - this.minimum) / this.interval);
+        this.bulletAxis.renderMajorTickLines(intervalValue, scaleGroup);
+        this.bulletAxis.renderMinorTickLines(intervalValue, scaleGroup);
+        this.bulletAxis.renderAxisLabels(intervalValue, scaleGroup);
+        this.bulletChartRect.x = (this.titlePosition === 'Left' ||
+            this.titlePosition === 'Right' || this.orientation === 'Vertical') ? this.bulletChartRect.x : 0;
+        var categoryWidth = (this.categoryField != null) ? (this.maxLabelSize.width + this.margin.left) : 0;
+        var elementId = this.element.id;
+        if (this.element.tagName !== 'g') {
+            var tooltipDiv = redrawElement(this.redraw, elementId + '_Secondary_Element') ||
+                this.createElement('div');
+            tooltipDiv.id = elementId + '_Secondary_Element';
+            appendChildElement(false, this.element, tooltipDiv, this.redraw);
+        }
+        if (this.tooltip.enable) {
+            appendChildElement(false, this.svgObject, this.renderer.createGroup({ id: elementId + '_UserInteraction', style: 'pointer-events:none;' }), this.redraw);
+        }
+        //this.bulletAxis.renderYAxisLabels(intervalValue, scaleGroup, this.bulletChartRect);
+        this.bindData();
+        this.renderDataLabel();
+        //this.changeOrientation(scaleGroup);
+        this.element.appendChild(this.svgObject);
+        this.setSecondaryElementPosition();
+    };
+    /**
+     * Handles the bullet chart resize.
+     * @return {boolean}
+     * @private
+     */
+    BulletChart.prototype.bulletResize = function (e) {
+        var _this = this;
+        this.animateSeries = false;
+        var arg = {
+            chart: this,
+            name: resized,
+            currentSize: new Size(0, 0),
+            previousSize: new Size(this.availableSize.width, this.availableSize.height),
+        };
+        if (this.resizeTo) {
+            clearTimeout(this.resizeTo);
+        }
+        this.resizeTo = setTimeout(function () {
+            if (_this.isDestroyed) {
+                clearTimeout(_this.resizeTo);
+                return;
+            }
+            _this.createSvg(_this);
+            arg.currentSize = _this.availableSize;
+            _this.trigger(resized, arg);
+            _this.calculatePosition();
+            _this.renderBulletElements();
+        }, 500);
+        return false;
+    };
+    /**
+     * Process the data values of feature and comparative measure bar
+     */
+    BulletChart.prototype.bindData = function () {
+        if (this.dataSource != null) {
+            this.dataCount = this.dataSource.length;
+            this.drawMeasures(this.dataCount);
+        }
+    };
+    /**
+     * Rendering the feature and comaparative measure bars
+     */
+    BulletChart.prototype.drawMeasures = function (dataCount) {
+        this.scale.renderFeatureBar(dataCount);
+        this.scale.renderComparativeSymbol(dataCount);
+    };
+    /**
+     * To calculate the title bounds
+     */
+    BulletChart.prototype.calculatePosition = function () {
+        var margin = this.margin;
+        // Title Height;
+        var titleHeight = 0;
+        var subTitleHeight = 0;
+        var titleSize = new Size(0, 0);
+        var padding = 5;
+        this.titleCollections = [];
+        this.subTitleCollections = [];
+        var maxTitlteWidth = 0;
+        var maxTitlteHeight = 0;
+        var maxVerticalTitlteHeight = padding;
+        if (this.title) {
+            this.titleCollections = getTitle(this.title, this.titleStyle, this.titleStyle.maximumTitleWidth);
+            titleHeight = (measureText(this.title, this.titleStyle).height * this.titleCollections.length) + padding;
+            for (var _i = 0, _a = this.titleCollections; _i < _a.length; _i++) {
+                var titleText = _a[_i];
+                titleSize = measureText(titleText, this.titleStyle);
+                maxTitlteWidth = titleSize.width > maxTitlteWidth ? titleSize.width : maxTitlteWidth;
+                maxTitlteHeight = titleSize.height > maxTitlteHeight ? titleSize.height : maxTitlteHeight;
+            }
+            maxVerticalTitlteHeight += maxTitlteHeight;
+            this.subTitleCollections = getTitle(this.subtitle, this.subtitleStyle, this.titleStyle.maximumTitleWidth);
+            if (this.subtitle) {
+                for (var _b = 0, _c = this.subTitleCollections; _b < _c.length; _b++) {
+                    var subText = _c[_b];
+                    titleSize = measureText(subText, this.subtitleStyle);
+                    maxTitlteWidth = titleSize.width > maxTitlteWidth ? titleSize.width : maxTitlteWidth;
+                    maxTitlteHeight = titleSize.height > maxTitlteHeight ? titleSize.height : maxTitlteHeight;
+                }
+                subTitleHeight = (measureText(this.subtitle, this.subtitleStyle).height * this.subTitleCollections.length) +
+                    padding;
+                maxVerticalTitlteHeight += maxTitlteHeight;
+            }
+        }
+        this.maxTitleSize = new Size(maxTitlteWidth, this.orientation === 'Vertical' ? maxVerticalTitlteHeight : maxTitlteHeight);
+        this.maxLabelSize = this.getMaxLabelWidth(this);
+        this.initialClipRect = this.getBulletBounds((this.orientation === 'Vertical' ? maxVerticalTitlteHeight : maxTitlteWidth), titleHeight, subTitleHeight, margin);
+        this.bulletChartRect = new Rect(this.initialClipRect.x, this.initialClipRect.y, this.initialClipRect.width, this.initialClipRect.height);
+    };
+    /**
+     * Calculate the rect values based on title position.
+     * @return {void}
+     * @private
+     */
+    BulletChart.prototype.getBulletBounds = function (maxTitlteWidth, titleHeight, subTitleHeight, margin) {
+        var padding = 5;
+        var rect = new Rect(0, 0, 0, 0);
+        var enableRtl = this.enableRtl;
+        var labelSpace = (this.labelPosition === this.tickPosition) ? padding : 0;
+        var tickSize = ((this.tickPosition === 'Inside') ? 0 : (this.majorTickLines.height));
+        // tslint:disable-next-line:max-line-length
+        var labelSize = ((this.labelPosition === 'Inside') ? 0 : padding +
+            ((this.tickPosition === 'Outside') ? 0 : (measureText(this.maximum.toString(), this.labelStyle).height)));
+        var topAxisLabel = 0;
+        var bottomAxisLabel = 0;
+        var leftAxisLabel = 0;
+        var rightAxisLabel = 0;
+        var topCategory = 0;
+        var bottomCategory = 0;
+        var leftCategory = 0;
+        var rightCategory = 0;
+        var title = maxTitlteWidth;
+        var categoryLabelSize;
+        if (this.orientation === 'Horizontal') {
+            categoryLabelSize = this.maxLabelSize.width;
+            topAxisLabel = (this.opposedPosition) ? tickSize + labelSize + labelSpace : 0;
+            bottomAxisLabel = (!this.opposedPosition) ? tickSize + labelSize + labelSpace : 0;
+            leftCategory = ((categoryLabelSize && !enableRtl) ? (categoryLabelSize) : 0);
+            leftCategory += (title && this.titlePosition === 'Left') ? padding * 3 : 0;
+            rightCategory = ((categoryLabelSize && enableRtl) ? (categoryLabelSize) : 0);
+            rightCategory += (title && this.titlePosition === 'Right') ? padding : 0;
+        }
+        else {
+            categoryLabelSize = this.maxLabelSize.height;
+            rightAxisLabel = (this.opposedPosition) ? tickSize + labelSpace : 0;
+            rightAxisLabel += (this.opposedPosition && this.labelPosition !== 'Inside') ?
+                (measureText(this.maximum.toString(), this.labelStyle).width) : 0;
+            leftAxisLabel = (!this.opposedPosition) ? tickSize + labelSpace : 0;
+            leftAxisLabel += (!this.opposedPosition && this.labelPosition !== 'Inside') ?
+                (measureText(this.maximum.toString(), this.labelStyle).width) : 0;
+            topCategory = ((categoryLabelSize && enableRtl) ? (categoryLabelSize + padding) : 0);
+            bottomCategory = ((categoryLabelSize && !enableRtl) ? (categoryLabelSize + padding) : 0);
+        }
+        switch (this.titlePosition) {
+            case 'Left':
+                rect.x = margin.left + title + leftCategory + leftAxisLabel;
+                rect.width = this.availableSize.width - margin.right - rect.x - rightCategory - rightAxisLabel;
+                rect.y = margin.top + topAxisLabel + topCategory;
+                rect.height = this.availableSize.height - rect.y - margin.bottom - bottomAxisLabel - bottomCategory;
+                break;
+            case 'Right':
+                rect.x = margin.left + leftCategory + leftAxisLabel;
+                // tslint:disable-next-line:max-line-length
+                rect.width = this.availableSize.width - rightAxisLabel - margin.right - rect.x - (title + padding) - rightCategory;
+                rect.y = margin.top + topAxisLabel + topCategory;
+                rect.height = this.availableSize.height - rect.y - margin.bottom - bottomAxisLabel - bottomCategory;
+                break;
+            case 'Top':
+                rect.x = margin.left + leftAxisLabel + leftCategory;
+                rect.width = this.availableSize.width - margin.right - rect.x - rightCategory - rightAxisLabel;
+                rect.y = margin.top + (titleHeight + subTitleHeight) + topAxisLabel + topCategory;
+                rect.height = this.availableSize.height - rect.y - margin.bottom - bottomAxisLabel - bottomCategory;
+                break;
+            case 'Bottom':
+                rect.x = margin.left + leftAxisLabel + leftCategory;
+                rect.y = margin.top + topAxisLabel + topCategory;
+                rect.width = this.availableSize.width - margin.right - rect.x - rightCategory - rightAxisLabel;
+                // tslint:disable-next-line:max-line-length
+                rect.height = this.availableSize.height - rect.y - bottomCategory - margin.bottom - bottomAxisLabel - (titleHeight + subTitleHeight);
+                break;
+        }
+        return rect;
+    };
+    /**
+     * Calculate maximum label width for category values.
+     * @return {void}
+     * @private
+     */
+    BulletChart.prototype.getMaxLabelWidth = function (bulletChart) {
+        this.maxLabelSize = new Size(0, 0);
+        if (!this.categoryField) {
+            return this.maxLabelSize;
+        }
+        var label;
+        for (var i = 0, len = Object.keys(this.dataSource).length; i < len; i++) {
+            label = measureText((this.dataSource[i][this.categoryField] || ''), this.categoryLabelStyle);
+            if (label.width > this.maxLabelSize.width) {
+                this.maxLabelSize.width = label.width;
+            }
+            if (label.height > this.maxLabelSize.height) {
+                this.maxLabelSize.height = label.height;
+            }
+        }
+        return this.maxLabelSize;
+    };
+    /**
+     * To render the title of the bullet chart
+     */
+    BulletChart.prototype.renderBulletChartTitle = function () {
+        var margin = this.margin;
+        var x = 0;
+        var y = 0;
+        var padding = 5;
+        var anchor = 'middle';
+        var transform = '';
+        var alignment = this.titleStyle.textAlignment;
+        var elementSize = measureText(this.title, this.titleStyle);
+        var subTitleSize = (this.subtitle) ? measureText(this.subtitle, this.subtitleStyle) : new Size(0, 0);
+        if (this.title) {
+            if (this.orientation === 'Horizontal') {
+                switch (this.titlePosition) {
+                    case 'Top':
+                        x = this.findHorizontalAlignment(margin);
+                        anchor = (alignment === 'Far') ? 'end' : ((alignment === 'Near') ? 'start' : 'middle');
+                        y = margin.top + elementSize.height / 2 + padding;
+                        break;
+                    case 'Bottom':
+                        x = this.findHorizontalAlignment(margin);
+                        anchor = (alignment === 'Far') ? 'end' : ((alignment === 'Near') ? 'start' : 'middle');
+                        // tslint:disable-next-line:max-line-length
+                        y = this.availableSize.height - margin.bottom - elementSize.height / 3 + padding * 2 - ((subTitleSize.height) ? subTitleSize.height + padding : 0);
+                        break;
+                    case 'Left':
+                        anchor = 'end';
+                        x = margin.left + this.maxTitleSize.width;
+                        // tslint:disable-next-line:max-line-length
+                        y = (this.margin.top + (this.availableSize.height) / 2 - elementSize.height / 3) - ((subTitleSize.height) ? subTitleSize.height : 0);
+                        break;
+                    case 'Right':
+                        anchor = 'start';
+                        x = (this.availableSize.width - margin.right - this.maxTitleSize.width + padding);
+                        // tslint:disable-next-line:max-line-length
+                        y = (this.margin.top + (this.availableSize.height) / 2 - elementSize.height / 3) - ((subTitleSize.height) ? subTitleSize.height : 0);
+                        break;
+                }
+            }
+            else {
+                switch (this.titlePosition) {
+                    case 'Top':
+                        x = (this.availableSize.width) / 2 + padding * 2;
+                        y = this.margin.top + elementSize.height / 2 + padding;
+                        break;
+                    case 'Bottom':
+                        x = (this.availableSize.width) / 2;
+                        // tslint:disable-next-line:max-line-length
+                        y = this.availableSize.height - this.margin.bottom - elementSize.height / 3 + padding * 2 - ((subTitleSize.height) ? subTitleSize.height + padding : 0);
+                        break;
+                    case 'Left':
+                        y = this.findVerticalAlignment(margin);
+                        anchor = (alignment === 'Far') ? 'start' : ((alignment === 'Near') ? 'end' : 'middle');
+                        x = margin.left;
+                        // tslint:disable-next-line:max-line-length
+                        break;
+                    case 'Right':
+                        x = (this.availableSize.width - margin.right - elementSize.height / 3);
+                        anchor = (alignment === 'Far') ? 'start' : ((alignment === 'Near') ? 'end' : 'middle');
+                        // tslint:disable-next-line:max-line-length
+                        y = this.findVerticalAlignment(margin);
+                        break;
+                }
+                transform = (this.titlePosition === 'Left') ? 'rotate(-90,' + x + ',' + y + ')' :
+                    ((this.titlePosition === 'Right') ? 'rotate(90,' + x + ',' + y + ')' : '');
+            }
+            var options = new TextOption(this.element.id + '_BulletChartTitle', x, y, anchor, this.titleCollections, transform, 'auto');
+            var element = textElement$1(this.renderer, options, this.titleStyle, this.titleStyle.color || this.themeStyle.titleFontColor, this.svgObject);
+            if (element) {
+                element.setAttribute('aria-label', this.title);
+                element.setAttribute('tabindex', this.tabIndex.toString());
+            }
+            if (this.subtitle) {
+                this.renderBulletChartSubTitle(x, y, anchor, options);
+            }
+        }
+    };
+    /**
+     * To render the data label for bullet chart
+     */
+    BulletChart.prototype.renderDataLabel = function () {
+        var x = 0;
+        var y = 0;
+        var elementSpacing = 10;
+        var anchor;
+        var transform = '';
+        var enableRtl = this.enableRtl;
+        var data;
+        var featureBounds;
+        var format = this.labelFormat ? this.labelFormat : '';
+        var isCustomFormat = format.match('{value}') !== null;
+        if (this.dataLabel.enable) {
+            for (var i = 0, len = Object.keys(this.dataSource).length; i < len; i++) {
+                data = this.dataSource[i];
+                featureBounds = this.scale.featureBarBounds[i];
+                var labelText = (data[this.valueField]).toString();
+                this.format = this.intl.getNumberFormat({
+                    format: isCustomFormat ? '' : format, useGrouping: this.enableGroupSeparator
+                });
+                labelText = isCustomFormat ? format.replace('{value}', this.format(labelText)) : labelText;
+                var labelSize = measureText(labelText, this.dataLabel.labelStyle);
+                // tslint:disable:no-string-literal
+                var textWidth = labelSize['width'];
+                var textHeight = labelSize['height'];
+                if (this.orientation === 'Horizontal') {
+                    anchor = this.type === 'Rect' ? 'end' : (enableRtl ? 'end' : 'start');
+                    x = featureBounds.x + (enableRtl ? (this.type === 'Rect' ? textWidth + elementSpacing : -elementSpacing) :
+                        featureBounds.width) + (this.type === 'Rect' ? -elementSpacing / 2 : elementSpacing / 2);
+                    y = featureBounds.y + featureBounds.height / 2;
+                }
+                else {
+                    anchor = 'middle';
+                    x = featureBounds.y + featureBounds.height / 2;
+                    y = featureBounds.x + (enableRtl ? featureBounds.width + (this.type === 'Rect' ? -textHeight : textHeight) : 0) +
+                        (this.type === 'Rect' ? elementSpacing : -elementSpacing);
+                }
+                var labelOptions = new TextOption(this.element.id + '_DataLabel_' + i, x, y, anchor, labelText, transform, 'middle');
+                var label = textElement$1(this.renderer, labelOptions, this.dataLabel.labelStyle, this.dataLabel.labelStyle.color || this.themeStyle.dataLabelFontColor, this.svgObject);
+            }
+        }
+    };
+    BulletChart.prototype.findHorizontalAlignment = function (margin) {
+        var x = 0;
+        switch (this.titleStyle.textAlignment) {
+            case 'Center':
+                x = (this.availableSize.width - margin.left - margin.right) / 2;
+                break;
+            case 'Near':
+                x = margin.left;
+                break;
+            case 'Far':
+                x = this.availableSize.width - margin.right;
+                break;
+        }
+        return x;
+    };
+    BulletChart.prototype.findVerticalAlignment = function (margin) {
+        var y = 0;
+        switch (this.titleStyle.textAlignment) {
+            case 'Center':
+                y = (this.availableSize.height - margin.top - margin.bottom) / 2;
+                break;
+            case 'Near':
+                y = margin.top;
+                break;
+            case 'Far':
+                y = this.availableSize.height - margin.bottom;
+                break;
+        }
+        return y;
+    };
+    /**
+     * To render the sub title of the bullet chart
+     */
+    BulletChart.prototype.renderBulletChartSubTitle = function (x, y, anchor, options) {
+        var margin = this.margin;
+        var padding = 5;
+        var transform = '';
+        var elementSize = measureText(this.subtitle, this.subtitleStyle);
+        if (this.orientation === 'Horizontal') {
+            switch (this.titlePosition) {
+                case 'Top':
+                    y = y + elementSize.height + padding / 2;
+                    break;
+                case 'Bottom':
+                    y = this.availableSize.height - margin.bottom - elementSize.height / 3 + padding;
+                    break;
+                case 'Left':
+                    y = y + elementSize.height + padding / 2;
+                    break;
+                case 'Right':
+                    y = y + elementSize.height + padding / 2;
+                    break;
+            }
+        }
+        else {
+            switch (this.titlePosition) {
+                case 'Top':
+                    y = y + elementSize.height + padding / 2;
+                    break;
+                case 'Bottom':
+                    y = this.availableSize.height - margin.bottom - elementSize.height / 3 + padding;
+                    break;
+                case 'Left':
+                    x += elementSize.height + padding / 2;
+                    break;
+                case 'Right':
+                    x -= elementSize.height + padding / 2;
+                    break;
+            }
+            transform = (this.titlePosition === 'Left') ? 'rotate(-90,' + x + ',' + y + ')' :
+                ((this.titlePosition === 'Right') ? 'rotate(90,' + x + ',' + y + ')' : '');
+        }
+        var subTitleOptions = new TextOption(this.element.id + '_BulletChartSubTitle', x, y, anchor, this.subTitleCollections, transform, 'auto');
+        var element = textElement$1(this.renderer, subTitleOptions, this.subtitleStyle, this.subtitleStyle.color || this.themeStyle.subTitleFontColor, this.svgObject);
+        if (element) {
+            element.setAttribute('aria-label', this.title);
+            element.setAttribute('tabindex', this.tabIndex.toString());
+        }
+    };
+    /**
+     * To calculate the available size and width of the container
+     */
+    BulletChart.prototype.calculateAvailableSize = function (bulletChart) {
+        var containerWidth = this.element.clientWidth || this.element.offsetWidth || 200;
+        // tslint:disable-next-line:max-line-length
+        var height = (this.orientation === 'Vertical') ? 450 : ((this.titlePosition === 'Left' || this.titlePosition === 'Right') ? 83 : 126);
+        var containerHeight = this.element.clientHeight || height;
+        bulletChart.availableSize = new Size(stringToNumber(bulletChart.width, containerWidth) || containerWidth, stringToNumber(bulletChart.height, containerHeight) || containerHeight);
+    };
+    BulletChart.prototype.removeSvg = function () {
+        var svgElement = document.getElementById(this.element.id + '_svg');
+        if (svgElement) {
+            remove(svgElement);
+        }
+    };
+    BulletChart.prototype.getPersistData = function () {
+        var keyEntity = ['loaded'];
+        return this.addOnPersist(keyEntity);
+    };
+    /** Wire, UnWire and Event releated calculation Started here */
+    /**
+     * Method to un-bind events for bullet chart
+     */
+    BulletChart.prototype.unWireEvents = function () {
+        /*! Find the Events type */
+        var startEvent = Browser.touchStartEvent;
+        var moveEvent = Browser.touchMoveEvent;
+        var stopEvent = Browser.touchEndEvent;
+        var cancelEvent = Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        /*! UnBind the Event handler */
+        EventHandler.remove(this.element, startEvent, this.bulletMouseDown);
+        EventHandler.remove(this.element, moveEvent, this.bulletMouseMove);
+        EventHandler.remove(this.element, cancelEvent, this.bulletMouseLeave);
+        window.removeEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.resizeBound);
+    };
+    /**
+     * Method to bind events for bullet chart
+     */
+    BulletChart.prototype.wireEvents = function () {
+        var cancelEvent = Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        /*! Bind the Event handler */
+        EventHandler.add(this.element, Browser.touchMoveEvent, this.bulletMouseMove, this);
+        EventHandler.add(this.element, cancelEvent, this.bulletMouseLeave, this);
+        EventHandler.add(this.element, Browser.touchStartEvent, this.bulletMouseDown, this);
+        this.resizeBound = this.bulletResize.bind(this);
+        window.addEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.resizeBound);
+        /*! Apply the style for chart */
+        this.setStyle(this.element);
+    };
+    BulletChart.prototype.setStyle = function (element) {
+        element.style.position = 'relative';
+        element.style.display = 'block';
+    };
+    /**
+     * Handles the mouse move on the bullet chart.
+     * @return {boolean}
+     * @private
+     */
+    BulletChart.prototype.bulletMouseMove = function (e) {
+        var pageX;
+        var pageY;
+        pageX = e.clientX;
+        pageY = e.clientY;
+        this.setPointMouseXY(pageX, pageY);
+        var targetId;
+        var targetClass;
+        targetId = e.target.id;
+        /* tslint:disable:no-string-literal */
+        targetClass = e.target.className['baseVal'];
+        /* tslint:enable:no-string-literal */
+        if (targetClass !== this.svgObject.id + '_FeatureMeasure' || this.svgObject.id + '_ComparativeMeasure') {
+            if (!isNullOrUndefined(this.dataSource)) {
+                for (var i = 0; i < Object.keys(this.dataSource).length; i++) {
+                    document.getElementById(this.svgObject.id + '_FeatureMeasure_' + i).setAttribute('opacity', '1');
+                    document.getElementById(this.svgObject.id + '_ComparativeMeasure_' + i).setAttribute('opacity', '1');
+                }
+            }
+        }
+        if (!this.isTouch(e)) {
+            var id = 'tooltipDiv' + this.element.id;
+            var tooltipDiv = document.getElementById(id);
+            if (tooltipDiv) {
+                remove(tooltipDiv);
+            }
+            if (this.bulletTooltipModule) {
+                this.bulletTooltipModule._elementTooltip(e, targetClass, targetId, this.mouseX, this.mouseY);
+                this.bulletTooltipModule._displayTooltip(e, targetClass, targetId, this.mouseX, this.mouseY);
+            }
+        }
+    };
+    /**
+     * To find mouse x, y for aligned bullet chart element svg position
+     */
+    BulletChart.prototype.setPointMouseXY = function (pageX, pageY) {
+        var svgClientRect = getElement$1(this.svgObject.id).getBoundingClientRect();
+        var elemntClientRect = this.element.getBoundingClientRect();
+        this.mouseX = (pageX - elemntClientRect.left) - Math.max(svgClientRect.left - elemntClientRect.left, 0);
+        this.mouseY = (pageY - elemntClientRect.top) - Math.max(svgClientRect.top - elemntClientRect.top, 0);
+    };
+    /**
+     * Handles the mouse leave on the bullet chart.
+     * @return {boolean}
+     * @private
+     */
+    BulletChart.prototype.bulletMouseLeave = function (e) {
+        if (!this.isTouch(e)) {
+            var tooltipDiv = document.getElementById('.tooltipDiv' + this.element.id);
+            if (tooltipDiv) {
+                remove(tooltipDiv);
+            }
+        }
+    };
+    /**
+     * Handles the touch event.
+     * @return {boolean}
+     * @private
+     */
+    BulletChart.prototype.isTouch = function (event) {
+        if ((event.pointerType === 'touch') || (event.type.indexOf('touch') > -1)) {
+            return true;
+        }
+        return false;
+    };
+    /**
+     * Handles the mouse down on the bullet chart.
+     * @return {boolean}
+     * @private
+     */
+    BulletChart.prototype.bulletMouseDown = function (e) {
+        if (this.isTouch(e)) {
+            remove(document.getElementById(('tooltipDiv' + this.element.id)));
+            var targetId = e.target.id;
+            /* tslint:disable:no-string-literal */
+            var targetClass = e.target.className['baseVal'];
+            if (this.bulletTooltipModule) {
+                this.bulletTooltipModule._elementTooltip(e, targetClass, targetId, this.mouseX, this.mouseY);
+                this.bulletTooltipModule._displayTooltip(e, targetClass, targetId, this.mouseX, this.mouseY);
+            }
+        }
+    };
+    /**
+     * Called internally if any of the property value changed.
+     * @private
+     */
+    // tslint:disable-next-line:max-func-body-length
+    BulletChart.prototype.onPropertyChanged = function (newProp, oldProp) {
+        var renderer = false;
+        var refreshBounds = false;
+        this.animateSeries = false;
+        if (!this.delayRedraw) {
+            for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
+                var prop = _a[_i];
+                switch (prop) {
+                    case 'height':
+                    case 'width':
+                        this.createSvg(this);
+                        refreshBounds = true;
+                        break;
+                    case 'subtitle':
+                    case 'title':
+                        refreshBounds = true;
+                        break;
+                    case 'tickPosition':
+                        renderer = true;
+                        break;
+                    case 'labelPosition':
+                        renderer = true;
+                        break;
+                    case 'titlePosition':
+                        renderer = true;
+                        break;
+                    case 'minimum':
+                    case 'maximum':
+                    case 'interval':
+                        refreshBounds = true;
+                        break;
+                    case 'majorTickLines':
+                    case 'minorTickLines':
+                    case 'type':
+                    case 'ranges':
+                    case 'valueFill':
+                    case 'targetColor':
+                        refreshBounds = true;
+                        break;
+                    case 'titleStyle':
+                        if (newProp.titleStyle) {
+                            refreshBounds = true;
+                        }
+                        else {
+                            renderer = true;
+                        }
+                        break;
+                    case 'subtitleStyle':
+                        if (newProp.subtitleStyle && (newProp.subtitleStyle.size || newProp.subtitleStyle.textOverflow)) {
+                            refreshBounds = true;
+                        }
+                        else {
+                            renderer = true;
+                        }
+                        break;
+                    case 'border':
+                        renderer = true;
+                        break;
+                    case 'opposedPosition':
+                        renderer = true;
+                        break;
+                    case 'dataSource':
+                        this.bindData();
+                        refreshBounds = true;
+                        break;
+                    case 'theme':
+                        this.animateSeries = true;
+                        break;
+                    case 'locale':
+                    case 'currencyCode':
+                        _super.prototype.refresh.call(this);
+                        break;
+                }
+            }
+            if (!refreshBounds && renderer) {
+                this.removeSvg();
+                this.renderBulletElements();
+                this.trigger('loaded', { BulletChart: this });
+            }
+            if (refreshBounds) {
+                this.render();
+                this.trigger('loaded', { BulletChart: this });
+                this.redraw = false;
+            }
+        }
+    };
+    /**
+     * To provide the array of modules needed for bullet chart rendering
+     * @return {ModuleDeclaration[]}
+     * @private
+     */
+    BulletChart.prototype.requiredModules = function () {
+        var modules = [];
+        if (this.tooltip.enable) {
+            modules.push({
+                member: 'BulletTooltip',
+                args: [this]
+            });
+        }
+        return modules;
+    };
+    BulletChart.prototype.getModuleName = function () {
+        return 'bulletChart';
+    };
+    /**
+     * To destroy the widget
+     * @method destroy
+     * @return {void}.
+     * @member of BulletChart
+     */
+    BulletChart.prototype.destroy = function () {
+        this.unWireEvents();
+        _super.prototype.destroy.call(this);
+        this.removeSvg();
+        this.svgObject = null;
+        this.element.classList.remove('e-BulletChart');
+    };
+    __decorate$13([
+        Property(null)
+    ], BulletChart.prototype, "width", void 0);
+    __decorate$13([
+        Property(null)
+    ], BulletChart.prototype, "height", void 0);
+    __decorate$13([
+        Property(null)
+    ], BulletChart.prototype, "locale", void 0);
+    __decorate$13([
+        Complex({}, MajorTickLinesSettings)
+    ], BulletChart.prototype, "majorTickLines", void 0);
+    __decorate$13([
+        Complex({}, MinorTickLinesSettings)
+    ], BulletChart.prototype, "minorTickLines", void 0);
+    __decorate$13([
+        Property(null)
+    ], BulletChart.prototype, "minimum", void 0);
+    __decorate$13([
+        Property(null)
+    ], BulletChart.prototype, "maximum", void 0);
+    __decorate$13([
+        Property(null)
+    ], BulletChart.prototype, "interval", void 0);
+    __decorate$13([
+        Property(4)
+    ], BulletChart.prototype, "minorTicksPerInterval", void 0);
+    __decorate$13([
+        Complex(BulletChartTheme.axisLabelFont, BulletLabelStyle)
+    ], BulletChart.prototype, "labelStyle", void 0);
+    __decorate$13([
+        Complex(BulletChartTheme.axisLabelFont, BulletLabelStyle)
+    ], BulletChart.prototype, "categoryLabelStyle", void 0);
+    __decorate$13([
+        Property('')
+    ], BulletChart.prototype, "labelFormat", void 0);
+    __decorate$13([
+        Property('')
+    ], BulletChart.prototype, "title", void 0);
+    __decorate$13([
+        Complex(BulletChartTheme.titleFont, BulletLabelStyle)
+    ], BulletChart.prototype, "titleStyle", void 0);
+    __decorate$13([
+        Property('')
+    ], BulletChart.prototype, "subtitle", void 0);
+    __decorate$13([
+        Complex(BulletChartTheme.subTitleFont, BulletLabelStyle)
+    ], BulletChart.prototype, "subtitleStyle", void 0);
+    __decorate$13([
+        Property('Horizontal')
+    ], BulletChart.prototype, "orientation", void 0);
+    __decorate$13([
+        Complex({ color: '#DDDDDD', width: 0 }, Border)
+    ], BulletChart.prototype, "border", void 0);
+    __decorate$13([
+        Complex({}, BulletTooltipSettings)
+    ], BulletChart.prototype, "tooltip", void 0);
+    __decorate$13([
+        Collection([{ end: null, opacity: 1, color: '' }, { end: null, opacity: 1, color: '' }, { end: null, opacity: 1, color: '' }], Range)
+    ], BulletChart.prototype, "ranges", void 0);
+    __decorate$13([
+        Property('Outside')
+    ], BulletChart.prototype, "labelPosition", void 0);
+    __decorate$13([
+        Property('Outside')
+    ], BulletChart.prototype, "tickPosition", void 0);
+    __decorate$13([
+        Property('Top')
+    ], BulletChart.prototype, "titlePosition", void 0);
+    __decorate$13([
+        Property(false)
+    ], BulletChart.prototype, "opposedPosition", void 0);
+    __decorate$13([
+        Property('Material')
+    ], BulletChart.prototype, "theme", void 0);
+    __decorate$13([
+        Complex({}, Animation$1)
+    ], BulletChart.prototype, "animation", void 0);
+    __decorate$13([
+        Complex({}, BulletDataLabel)
+    ], BulletChart.prototype, "dataLabel", void 0);
+    __decorate$13([
+        Property(false)
+    ], BulletChart.prototype, "enableGroupSeparator", void 0);
+    __decorate$13([
+        Complex({ top: 15, bottom: 10, left: 15, right: 15 }, Margin)
+    ], BulletChart.prototype, "margin", void 0);
+    __decorate$13([
+        Property(5)
+    ], BulletChart.prototype, "targetWidth", void 0);
+    __decorate$13([
+        Property('#191919')
+    ], BulletChart.prototype, "targetColor", void 0);
+    __decorate$13([
+        Property(6)
+    ], BulletChart.prototype, "valueHeight", void 0);
+    __decorate$13([
+        Property(null)
+    ], BulletChart.prototype, "valueFill", void 0);
+    __decorate$13([
+        Complex({ color: 'transparent', width: 0 }, Border)
+    ], BulletChart.prototype, "valueBorder", void 0);
+    __decorate$13([
+        Property(null)
+    ], BulletChart.prototype, "dataSource", void 0);
+    __decorate$13([
+        Property(null)
+    ], BulletChart.prototype, "query", void 0);
+    __decorate$13([
+        Property(null)
+    ], BulletChart.prototype, "categoryField", void 0);
+    __decorate$13([
+        Property('Rect')
+    ], BulletChart.prototype, "type", void 0);
+    __decorate$13([
+        Property('')
+    ], BulletChart.prototype, "valueField", void 0);
+    __decorate$13([
+        Property('')
+    ], BulletChart.prototype, "targetField", void 0);
+    __decorate$13([
+        Property(['Rect', 'Cross', 'Circle'])
+    ], BulletChart.prototype, "targetTypes", void 0);
+    __decorate$13([
+        Property(1)
+    ], BulletChart.prototype, "tabIndex", void 0);
+    __decorate$13([
+        Event()
+    ], BulletChart.prototype, "tooltipRender", void 0);
+    __decorate$13([
+        Event()
+    ], BulletChart.prototype, "load", void 0);
+    BulletChart = __decorate$13([
+        NotifyPropertyChanges
+    ], BulletChart);
+    return BulletChart;
+}(Component));
+
+/**
+ * `BulletTooltip` module is used to render the tooltip for bullet chart.
+ */
+var BulletTooltip = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for tooltip module.
+     * @private.
+     */
+    function BulletTooltip(bullet) {
+        this.control = bullet;
+        this.elementId = bullet.element.id;
+    }
+    /**
+     * To create tooltip div element
+     */
+    BulletTooltip.prototype._elementTooltip = function (e, targetClass, targetId, mouseX, mouseY) {
+        var titleStyle = this.control.titleStyle;
+        var tooltipDiv = this.control.createElement('div');
+        tooltipDiv.id = 'tooltip';
+        tooltipDiv.className = 'tooltipDiv';
+        var target = e.target;
+        var pageX = mouseX + 20;
+        var pageY = e.clientY;
+        var str = '';
+        var font = this.control.tooltip.textStyle.fontStyle ? this.control.tooltip.textStyle.fontStyle :
+            BulletChartTheme.tooltipLabelFont.fontStyle;
+        var color = BulletChartTheme.tooltipLabelFont.color || this.control.themeStyle.tooltipBoldLabel;
+        var fontSize = BulletChartTheme.titleFont.size;
+        var style = 'left:' + pageX + 'px;' + 'top:' + pageY + 'px;' +
+            'display: block; position: absolute; "z-index": "13000",cursor: default;' +
+            'font-family: Segoe UI;' + 'color:' + color + '; font-size: 13px; background-color:' +
+            this.control.themeStyle.tooltipFill + '; border: 1px solid #707070;' + 'font-style:' + font + ';';
+        // adding css prop to the div
+        tooltipDiv.setAttribute('style', style);
+        if (targetClass === this.control.svgObject.id + '_Caption') {
+            str = target.textContent === this.control.title ? '' : this.control.title;
+        }
+        else if (targetClass === this.control.svgObject.id + '_SubTitle') {
+            str = target.textContent === this.control.subtitle ? '' : this.control.subtitle;
+        }
+        if (str !== '') {
+            tooltipDiv.innerHTML = '&nbsp' + str + '&nbsp';
+            document.body.insertAdjacentElement('afterbegin', tooltipDiv);
+        }
+    };
+    /**
+     * To display the bullet chart tooltip
+     */
+    BulletTooltip.prototype._displayTooltip = function (e, targetClass, targetId, mouseX, mouseY) {
+        if (targetClass !== 'undefined' && this.control.tooltip.enable && (targetClass === this.control.svgObject.id + '_FeatureMeasure' ||
+            targetClass === this.control.svgObject.id + '_ComparativeMeasure')) {
+            var locale_1 = this.control.locale;
+            var localizedText = locale_1 && this.control.enableGroupSeparator;
+            var data = void 0;
+            var measureId = void 0;
+            var currentVal = void 0;
+            var targetVal = [];
+            var categoryVal = void 0;
+            var tooltipdiv = void 0;
+            measureId = targetId.substring(targetId.lastIndexOf('_') + 1);
+            currentVal = this.control.dataSource[measureId][this.control.valueField];
+            targetVal = targetVal.concat(this.control.dataSource[measureId][this.control.targetField]);
+            categoryVal = this.control.dataSource[measureId][this.control.categoryField];
+            if (localizedText) {
+                data = {
+                    value: currentVal.toLocaleString(locale_1), target: targetVal.map(function (x) { return x.toLocaleString(locale_1); }),
+                    category: (!isNullOrUndefined(categoryVal) ? categoryVal.toLocaleString(locale_1) : categoryVal)
+                };
+            }
+            else {
+                data = { value: currentVal, target: targetVal, category: categoryVal };
+            }
+            var style = 'position: absolute; z-index: 13000; display: block;';
+            if (document.getElementsByClassName('tooltipDiv' + this.control.element.id).length === 0) {
+                tooltipdiv = this.control.createElement('div');
+                tooltipdiv.id = 'tooltipDiv' + this.control.element.id;
+                tooltipdiv.setAttribute('style', style);
+                document.getElementById(this.control.element.id + '_Secondary_Element').appendChild(tooltipdiv);
+            }
+            var argsData = {
+                value: data.value, target: data.target, name: tooltipRender
+            };
+            if (this.control.tooltip.template !== '' && this.control.tooltip.template != null) {
+                this.updateTemplateFn();
+                var templateElement = this.templateFn(data);
+                var elem = this.control.createElement('div', { id: this.control.element.id + 'parent_template' });
+                while (templateElement && templateElement.length > 0) {
+                    elem.appendChild(templateElement[0]);
+                }
+                argsData.template = elem.innerHTML;
+                this.control.trigger(tooltipRender, argsData);
+                elem.innerHTML = argsData.template;
+                tooltipdiv.appendChild(elem);
+            }
+            else {
+                var argsText = 'Value : ' + argsData.value;
+                for (var i = 0; i < argsData.target.length; i++) {
+                    argsText += '<br/> Target' + (i === 0 ? '' : '_' + i) + ' : ' + argsData.target[i];
+                }
+                argsData.text = argsText;
+                this.control.trigger(tooltipRender, argsData);
+                tooltipdiv.innerHTML = argsData.text;
+                tooltipdiv.style.font = this.control.tooltip.textStyle.fontStyle ? this.control.tooltip.textStyle.fontStyle :
+                    BulletChartTheme.tooltipLabelFont.fontStyle;
+                tooltipdiv.style.color = BulletChartTheme.tooltipLabelFont.color || this.control.themeStyle.tooltipBoldLabel;
+                tooltipdiv.style.fontSize = BulletChartTheme.titleFont.size;
+            }
+            var xPos = mouseX;
+            var yPos = mouseY;
+            xPos = ((xPos + stringToNumber(tooltipdiv.getAttribute('width'), this.control.containerWidth) < window.innerWidth) ?
+                (xPos) : stringToNumber(tooltipdiv.getAttribute('width'), this.control.containerWidth));
+            yPos = ((yPos + stringToNumber(tooltipdiv.getAttribute('height'), this.control.containerHeight) < window.innerHeight) ?
+                (yPos) : stringToNumber(tooltipdiv.getAttribute('height'), this.control.containerHeight));
+            if (xPos === undefined || xPos === null) {
+                xPos = mouseX;
+            }
+            if (yPos === undefined || yPos === null) {
+                yPos = e.clientY;
+            }
+            if (this.control.tooltip.template !== '' && this.control.tooltip.template != null) {
+                tooltipdiv.setAttribute('style', 'position: absolute;left:' + (xPos + 20) + 'px;' + 'top:' + (yPos + 20) + 'px;');
+            }
+            else {
+                var divStyle = style + 'left:' + (xPos + 20) + 'px;' + 'top:' + (yPos + 20) + 'px;' +
+                    '-webkit-border-radius: 5px 5px 5px 5px; -moz-border-radius: 5px 5px 5px 5px;-o-border-radius: 5px 5px 5px 5px;' +
+                    'border-radius: 5px 5px 5px 5px;' + 'background-color:' + this.control.themeStyle.tooltipFill + ';' + 'color:' +
+                    tooltipdiv.style.color + '; border: 1px Solid Black;' +
+                    'padding-bottom: 7px;' + 'font-style:' + BulletChartTheme.tooltipLabelFont.fontStyle +
+                    '; padding-left: 10px; font-family: Segoe UI; padding-right: 10px; padding-top: 7px';
+                tooltipdiv.setAttribute('style', divStyle);
+                if ((targetClass === this.control.svgObject.id + '_FeatureMeasure') ||
+                    (targetClass === this.control.svgObject.id + '_ComparativeMeasure')) {
+                    document.getElementById(targetId).setAttribute('opacity', '0.6');
+                }
+            }
+        }
+    };
+    /**
+     * To update template values in the tooltip
+     */
+    BulletTooltip.prototype.updateTemplateFn = function () {
+        if (this.control.tooltip.template) {
+            try {
+                if (document.querySelectorAll(this.control.tooltip.template).length) {
+                    this.templateFn = compile(document.querySelector(this.control.tooltip.template).innerHTML.trim());
+                }
+            }
+            catch (e) {
+                this.templateFn = compile(this.control.tooltip.template);
+            }
+        }
+    };
+    /**
+     * Get module name.
+     */
+    BulletTooltip.prototype.getModuleName = function () {
+        return 'BulletTooltip';
+    };
+    /**
+     * To destroy the tooltip.
+     * @return {void}
+     * @private
+     */
+    BulletTooltip.prototype.destroy = function (chart) {
+        // Destroy method called here
+    };
+    return BulletTooltip;
+}());
+
+/**
+ * Bullet Chart component export methods
+ */
+
+var __extends$82 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$16 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var SmithchartFont = /** @__PURE__ @class */ (function (_super) {
+    __extends$82(SmithchartFont, _super);
+    function SmithchartFont() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$16([
+        Property('Segoe UI')
+    ], SmithchartFont.prototype, "fontFamily", void 0);
+    __decorate$16([
+        Property('Normal')
+    ], SmithchartFont.prototype, "fontStyle", void 0);
+    __decorate$16([
+        Property('Regular')
+    ], SmithchartFont.prototype, "fontWeight", void 0);
+    __decorate$16([
+        Property('')
+    ], SmithchartFont.prototype, "color", void 0);
+    __decorate$16([
         Property('12px')
     ], SmithchartFont.prototype, "size", void 0);
-    __decorate$14([
+    __decorate$16([
         Property(1)
     ], SmithchartFont.prototype, "opacity", void 0);
     return SmithchartFont;
 }(ChildProperty));
 var SmithchartMargin = /** @__PURE__ @class */ (function (_super) {
-    __extends$80(SmithchartMargin, _super);
+    __extends$82(SmithchartMargin, _super);
     function SmithchartMargin() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$14([
+    __decorate$16([
         Property(10)
     ], SmithchartMargin.prototype, "top", void 0);
-    __decorate$14([
+    __decorate$16([
         Property(10)
     ], SmithchartMargin.prototype, "bottom", void 0);
-    __decorate$14([
+    __decorate$16([
         Property(10)
     ], SmithchartMargin.prototype, "right", void 0);
-    __decorate$14([
+    __decorate$16([
         Property(10)
     ], SmithchartMargin.prototype, "left", void 0);
     return SmithchartMargin;
 }(ChildProperty));
 var SmithchartBorder = /** @__PURE__ @class */ (function (_super) {
-    __extends$80(SmithchartBorder, _super);
+    __extends$82(SmithchartBorder, _super);
     function SmithchartBorder() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$14([
+    __decorate$16([
         Property(0)
     ], SmithchartBorder.prototype, "width", void 0);
-    __decorate$14([
+    __decorate$16([
         Property(1)
     ], SmithchartBorder.prototype, "opacity", void 0);
-    __decorate$14([
+    __decorate$16([
         Property('transparent')
     ], SmithchartBorder.prototype, "color", void 0);
     return SmithchartBorder;
@@ -34349,14 +36756,14 @@ var LabelRegion = /** @__PURE__ @class */ (function () {
     return LabelRegion;
 }());
 var HorizontalLabelCollection = /** @__PURE__ @class */ (function (_super) {
-    __extends$80(HorizontalLabelCollection, _super);
+    __extends$82(HorizontalLabelCollection, _super);
     function HorizontalLabelCollection() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     return HorizontalLabelCollection;
 }(LabelCollection));
 var RadialLabelCollections = /** @__PURE__ @class */ (function (_super) {
-    __extends$80(RadialLabelCollections, _super);
+    __extends$82(RadialLabelCollections, _super);
     function RadialLabelCollections() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -34431,7 +36838,7 @@ var GridArcPoints = /** @__PURE__ @class */ (function () {
     return GridArcPoints;
 }());
 
-var __extends$79 = (undefined && undefined.__extends) || (function () {
+var __extends$81 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -34453,7 +36860,7 @@ function createSvg$1(smithchart) {
         height: smithchart.availableSize.height
     });
 }
-function getElement$1(id) {
+function getElement$2(id) {
     return document.getElementById(id);
 }
 /**
@@ -34575,7 +36982,7 @@ var PathOption$1 = /** @__PURE__ @class */ (function () {
  * @private
  */
 var RectOption$1 = /** @__PURE__ @class */ (function (_super) {
-    __extends$79(RectOption, _super);
+    __extends$81(RectOption, _super);
     function RectOption(id, fill, border, opacity, rect) {
         var _this = _super.call(this, id, fill, border.width, border.color, opacity) || this;
         _this.y = rect.y;
@@ -34591,7 +36998,7 @@ var RectOption$1 = /** @__PURE__ @class */ (function (_super) {
  * @private
  */
 var CircleOption$1 = /** @__PURE__ @class */ (function (_super) {
-    __extends$79(CircleOption, _super);
+    __extends$81(CircleOption, _super);
     function CircleOption(id, fill, border, opacity, cx, cy, r, dashArray) {
         var _this = _super.call(this, id, fill, border.width, border.color, opacity) || this;
         _this.cy = cy;
@@ -34844,281 +37251,6 @@ function getThemeColor$1(theme) {
     return style;
 }
 
-var __extends$81 = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate$15 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var LegendTitle = /** @__PURE__ @class */ (function (_super) {
-    __extends$81(LegendTitle, _super);
-    function LegendTitle() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$15([
-        Property(true)
-    ], LegendTitle.prototype, "visible", void 0);
-    __decorate$15([
-        Property('')
-    ], LegendTitle.prototype, "text", void 0);
-    __decorate$15([
-        Property('')
-    ], LegendTitle.prototype, "description", void 0);
-    __decorate$15([
-        Property('Center')
-    ], LegendTitle.prototype, "textAlignment", void 0);
-    __decorate$15([
-        Complex(Theme$1.legendLabelFont, SmithchartFont)
-    ], LegendTitle.prototype, "textStyle", void 0);
-    return LegendTitle;
-}(ChildProperty));
-var LegendLocation = /** @__PURE__ @class */ (function (_super) {
-    __extends$81(LegendLocation, _super);
-    function LegendLocation() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$15([
-        Property(0)
-    ], LegendLocation.prototype, "x", void 0);
-    __decorate$15([
-        Property(0)
-    ], LegendLocation.prototype, "y", void 0);
-    return LegendLocation;
-}(ChildProperty));
-var LegendItemStyleBorder = /** @__PURE__ @class */ (function (_super) {
-    __extends$81(LegendItemStyleBorder, _super);
-    function LegendItemStyleBorder() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$15([
-        Property(1)
-    ], LegendItemStyleBorder.prototype, "width", void 0);
-    __decorate$15([
-        Property(null)
-    ], LegendItemStyleBorder.prototype, "color", void 0);
-    return LegendItemStyleBorder;
-}(ChildProperty));
-var LegendItemStyle = /** @__PURE__ @class */ (function (_super) {
-    __extends$81(LegendItemStyle, _super);
-    function LegendItemStyle() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$15([
-        Property(10)
-    ], LegendItemStyle.prototype, "width", void 0);
-    __decorate$15([
-        Property(10)
-    ], LegendItemStyle.prototype, "height", void 0);
-    __decorate$15([
-        Complex({}, LegendItemStyleBorder)
-    ], LegendItemStyle.prototype, "border", void 0);
-    return LegendItemStyle;
-}(ChildProperty));
-var LegendBorder = /** @__PURE__ @class */ (function (_super) {
-    __extends$81(LegendBorder, _super);
-    function LegendBorder() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$15([
-        Property(1)
-    ], LegendBorder.prototype, "width", void 0);
-    __decorate$15([
-        Property(null)
-    ], LegendBorder.prototype, "color", void 0);
-    return LegendBorder;
-}(ChildProperty));
-var SmithchartLegendSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$81(SmithchartLegendSettings, _super);
-    function SmithchartLegendSettings() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$15([
-        Property(false)
-    ], SmithchartLegendSettings.prototype, "visible", void 0);
-    __decorate$15([
-        Property('bottom')
-    ], SmithchartLegendSettings.prototype, "position", void 0);
-    __decorate$15([
-        Property('Center')
-    ], SmithchartLegendSettings.prototype, "alignment", void 0);
-    __decorate$15([
-        Property(null)
-    ], SmithchartLegendSettings.prototype, "width", void 0);
-    __decorate$15([
-        Property(null)
-    ], SmithchartLegendSettings.prototype, "height", void 0);
-    __decorate$15([
-        Property('circle')
-    ], SmithchartLegendSettings.prototype, "shape", void 0);
-    __decorate$15([
-        Property(null)
-    ], SmithchartLegendSettings.prototype, "rowCount", void 0);
-    __decorate$15([
-        Property(null)
-    ], SmithchartLegendSettings.prototype, "columnCount", void 0);
-    __decorate$15([
-        Property(8)
-    ], SmithchartLegendSettings.prototype, "itemPadding", void 0);
-    __decorate$15([
-        Property(5)
-    ], SmithchartLegendSettings.prototype, "shapePadding", void 0);
-    __decorate$15([
-        Property('')
-    ], SmithchartLegendSettings.prototype, "description", void 0);
-    __decorate$15([
-        Property(true)
-    ], SmithchartLegendSettings.prototype, "toggleVisibility", void 0);
-    __decorate$15([
-        Complex({}, LegendTitle)
-    ], SmithchartLegendSettings.prototype, "title", void 0);
-    __decorate$15([
-        Complex({}, LegendLocation)
-    ], SmithchartLegendSettings.prototype, "location", void 0);
-    __decorate$15([
-        Complex({}, LegendItemStyle)
-    ], SmithchartLegendSettings.prototype, "itemStyle", void 0);
-    __decorate$15([
-        Complex({}, LegendBorder)
-    ], SmithchartLegendSettings.prototype, "border", void 0);
-    __decorate$15([
-        Complex(Theme$1.legendLabelFont, SmithchartFont)
-    ], SmithchartLegendSettings.prototype, "textStyle", void 0);
-    return SmithchartLegendSettings;
-}(ChildProperty));
-
-var __extends$82 = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate$16 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * Configures the major Grid lines in the `axis`.
- */
-var SmithchartMajorGridLines = /** @__PURE__ @class */ (function (_super) {
-    __extends$82(SmithchartMajorGridLines, _super);
-    function SmithchartMajorGridLines() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$16([
-        Property(1)
-    ], SmithchartMajorGridLines.prototype, "width", void 0);
-    __decorate$16([
-        Property('')
-    ], SmithchartMajorGridLines.prototype, "dashArray", void 0);
-    __decorate$16([
-        Property(true)
-    ], SmithchartMajorGridLines.prototype, "visible", void 0);
-    __decorate$16([
-        Property(null)
-    ], SmithchartMajorGridLines.prototype, "color", void 0);
-    __decorate$16([
-        Property(1)
-    ], SmithchartMajorGridLines.prototype, "opacity", void 0);
-    return SmithchartMajorGridLines;
-}(ChildProperty));
-/**
- * Configures the major grid lines in the `axis`.
- */
-var SmithchartMinorGridLines = /** @__PURE__ @class */ (function (_super) {
-    __extends$82(SmithchartMinorGridLines, _super);
-    function SmithchartMinorGridLines() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$16([
-        Property(1)
-    ], SmithchartMinorGridLines.prototype, "width", void 0);
-    __decorate$16([
-        Property('')
-    ], SmithchartMinorGridLines.prototype, "dashArray", void 0);
-    __decorate$16([
-        Property(false)
-    ], SmithchartMinorGridLines.prototype, "visible", void 0);
-    __decorate$16([
-        Property(null)
-    ], SmithchartMinorGridLines.prototype, "color", void 0);
-    __decorate$16([
-        Property(8)
-    ], SmithchartMinorGridLines.prototype, "count", void 0);
-    return SmithchartMinorGridLines;
-}(ChildProperty));
-/**
- * Configures the axis lines in the `axis`.
- */
-var SmithchartAxisLine = /** @__PURE__ @class */ (function (_super) {
-    __extends$82(SmithchartAxisLine, _super);
-    function SmithchartAxisLine() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$16([
-        Property(true)
-    ], SmithchartAxisLine.prototype, "visible", void 0);
-    __decorate$16([
-        Property(1)
-    ], SmithchartAxisLine.prototype, "width", void 0);
-    __decorate$16([
-        Property(null)
-    ], SmithchartAxisLine.prototype, "color", void 0);
-    __decorate$16([
-        Property('')
-    ], SmithchartAxisLine.prototype, "dashArray", void 0);
-    return SmithchartAxisLine;
-}(ChildProperty));
-var SmithchartAxis = /** @__PURE__ @class */ (function (_super) {
-    __extends$82(SmithchartAxis, _super);
-    function SmithchartAxis() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$16([
-        Property(true)
-    ], SmithchartAxis.prototype, "visible", void 0);
-    __decorate$16([
-        Property('Outside')
-    ], SmithchartAxis.prototype, "labelPosition", void 0);
-    __decorate$16([
-        Property('Hide')
-    ], SmithchartAxis.prototype, "labelIntersectAction", void 0);
-    __decorate$16([
-        Complex({}, SmithchartMajorGridLines)
-    ], SmithchartAxis.prototype, "majorGridLines", void 0);
-    __decorate$16([
-        Complex({}, SmithchartMinorGridLines)
-    ], SmithchartAxis.prototype, "minorGridLines", void 0);
-    __decorate$16([
-        Complex({}, SmithchartAxisLine)
-    ], SmithchartAxis.prototype, "axisLine", void 0);
-    __decorate$16([
-        Complex(Theme$1.axisLabelFont, SmithchartFont)
-    ], SmithchartAxis.prototype, "labelStyle", void 0);
-    return SmithchartAxis;
-}(ChildProperty));
-
 var __extends$83 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -35138,67 +37270,140 @@ var __decorate$17 = (undefined && undefined.__decorate) || function (decorators,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var Subtitle = /** @__PURE__ @class */ (function (_super) {
-    __extends$83(Subtitle, _super);
-    function Subtitle() {
+var LegendTitle = /** @__PURE__ @class */ (function (_super) {
+    __extends$83(LegendTitle, _super);
+    function LegendTitle() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate$17([
         Property(true)
-    ], Subtitle.prototype, "visible", void 0);
+    ], LegendTitle.prototype, "visible", void 0);
     __decorate$17([
         Property('')
-    ], Subtitle.prototype, "text", void 0);
+    ], LegendTitle.prototype, "text", void 0);
     __decorate$17([
         Property('')
-    ], Subtitle.prototype, "description", void 0);
-    __decorate$17([
-        Property('Far')
-    ], Subtitle.prototype, "textAlignment", void 0);
-    __decorate$17([
-        Property(true)
-    ], Subtitle.prototype, "enableTrim", void 0);
-    __decorate$17([
-        Property(null)
-    ], Subtitle.prototype, "maximumWidth", void 0);
-    __decorate$17([
-        Complex(Theme$1.smithchartSubtitleFont, SmithchartFont)
-    ], Subtitle.prototype, "textStyle", void 0);
-    return Subtitle;
-}(ChildProperty));
-var Title = /** @__PURE__ @class */ (function (_super) {
-    __extends$83(Title, _super);
-    function Title() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$17([
-        Property(true)
-    ], Title.prototype, "visible", void 0);
-    __decorate$17([
-        Property('')
-    ], Title.prototype, "text", void 0);
-    __decorate$17([
-        Property('')
-    ], Title.prototype, "description", void 0);
+    ], LegendTitle.prototype, "description", void 0);
     __decorate$17([
         Property('Center')
-    ], Title.prototype, "textAlignment", void 0);
+    ], LegendTitle.prototype, "textAlignment", void 0);
     __decorate$17([
-        Property(true)
-    ], Title.prototype, "enableTrim", void 0);
+        Complex(Theme$1.legendLabelFont, SmithchartFont)
+    ], LegendTitle.prototype, "textStyle", void 0);
+    return LegendTitle;
+}(ChildProperty));
+var LegendLocation = /** @__PURE__ @class */ (function (_super) {
+    __extends$83(LegendLocation, _super);
+    function LegendLocation() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$17([
+        Property(0)
+    ], LegendLocation.prototype, "x", void 0);
+    __decorate$17([
+        Property(0)
+    ], LegendLocation.prototype, "y", void 0);
+    return LegendLocation;
+}(ChildProperty));
+var LegendItemStyleBorder = /** @__PURE__ @class */ (function (_super) {
+    __extends$83(LegendItemStyleBorder, _super);
+    function LegendItemStyleBorder() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$17([
+        Property(1)
+    ], LegendItemStyleBorder.prototype, "width", void 0);
     __decorate$17([
         Property(null)
-    ], Title.prototype, "maximumWidth", void 0);
+    ], LegendItemStyleBorder.prototype, "color", void 0);
+    return LegendItemStyleBorder;
+}(ChildProperty));
+var LegendItemStyle = /** @__PURE__ @class */ (function (_super) {
+    __extends$83(LegendItemStyle, _super);
+    function LegendItemStyle() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
     __decorate$17([
-        Complex({}, Subtitle)
-    ], Title.prototype, "subtitle", void 0);
+        Property(10)
+    ], LegendItemStyle.prototype, "width", void 0);
     __decorate$17([
-        Complex(Theme$1.smithchartTitleFont, SmithchartFont)
-    ], Title.prototype, "font", void 0);
+        Property(10)
+    ], LegendItemStyle.prototype, "height", void 0);
     __decorate$17([
-        Complex(Theme$1.smithchartTitleFont, SmithchartFont)
-    ], Title.prototype, "textStyle", void 0);
-    return Title;
+        Complex({}, LegendItemStyleBorder)
+    ], LegendItemStyle.prototype, "border", void 0);
+    return LegendItemStyle;
+}(ChildProperty));
+var LegendBorder = /** @__PURE__ @class */ (function (_super) {
+    __extends$83(LegendBorder, _super);
+    function LegendBorder() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$17([
+        Property(1)
+    ], LegendBorder.prototype, "width", void 0);
+    __decorate$17([
+        Property(null)
+    ], LegendBorder.prototype, "color", void 0);
+    return LegendBorder;
+}(ChildProperty));
+var SmithchartLegendSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$83(SmithchartLegendSettings, _super);
+    function SmithchartLegendSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$17([
+        Property(false)
+    ], SmithchartLegendSettings.prototype, "visible", void 0);
+    __decorate$17([
+        Property('bottom')
+    ], SmithchartLegendSettings.prototype, "position", void 0);
+    __decorate$17([
+        Property('Center')
+    ], SmithchartLegendSettings.prototype, "alignment", void 0);
+    __decorate$17([
+        Property(null)
+    ], SmithchartLegendSettings.prototype, "width", void 0);
+    __decorate$17([
+        Property(null)
+    ], SmithchartLegendSettings.prototype, "height", void 0);
+    __decorate$17([
+        Property('circle')
+    ], SmithchartLegendSettings.prototype, "shape", void 0);
+    __decorate$17([
+        Property(null)
+    ], SmithchartLegendSettings.prototype, "rowCount", void 0);
+    __decorate$17([
+        Property(null)
+    ], SmithchartLegendSettings.prototype, "columnCount", void 0);
+    __decorate$17([
+        Property(8)
+    ], SmithchartLegendSettings.prototype, "itemPadding", void 0);
+    __decorate$17([
+        Property(5)
+    ], SmithchartLegendSettings.prototype, "shapePadding", void 0);
+    __decorate$17([
+        Property('')
+    ], SmithchartLegendSettings.prototype, "description", void 0);
+    __decorate$17([
+        Property(true)
+    ], SmithchartLegendSettings.prototype, "toggleVisibility", void 0);
+    __decorate$17([
+        Complex({}, LegendTitle)
+    ], SmithchartLegendSettings.prototype, "title", void 0);
+    __decorate$17([
+        Complex({}, LegendLocation)
+    ], SmithchartLegendSettings.prototype, "location", void 0);
+    __decorate$17([
+        Complex({}, LegendItemStyle)
+    ], SmithchartLegendSettings.prototype, "itemStyle", void 0);
+    __decorate$17([
+        Complex({}, LegendBorder)
+    ], SmithchartLegendSettings.prototype, "border", void 0);
+    __decorate$17([
+        Complex(Theme$1.legendLabelFont, SmithchartFont)
+    ], SmithchartLegendSettings.prototype, "textStyle", void 0);
+    return SmithchartLegendSettings;
 }(ChildProperty));
 
 var __extends$84 = (undefined && undefined.__extends) || (function () {
@@ -35220,187 +37425,389 @@ var __decorate$18 = (undefined && undefined.__decorate) || function (decorators,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var SeriesTooltipBorder = /** @__PURE__ @class */ (function (_super) {
-    __extends$84(SeriesTooltipBorder, _super);
-    function SeriesTooltipBorder() {
+/**
+ * Configures the major Grid lines in the `axis`.
+ */
+var SmithchartMajorGridLines = /** @__PURE__ @class */ (function (_super) {
+    __extends$84(SmithchartMajorGridLines, _super);
+    function SmithchartMajorGridLines() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate$18([
         Property(1)
-    ], SeriesTooltipBorder.prototype, "width", void 0);
+    ], SmithchartMajorGridLines.prototype, "width", void 0);
     __decorate$18([
+        Property('')
+    ], SmithchartMajorGridLines.prototype, "dashArray", void 0);
+    __decorate$18([
+        Property(true)
+    ], SmithchartMajorGridLines.prototype, "visible", void 0);
+    __decorate$18([
+        Property(null)
+    ], SmithchartMajorGridLines.prototype, "color", void 0);
+    __decorate$18([
+        Property(1)
+    ], SmithchartMajorGridLines.prototype, "opacity", void 0);
+    return SmithchartMajorGridLines;
+}(ChildProperty));
+/**
+ * Configures the major grid lines in the `axis`.
+ */
+var SmithchartMinorGridLines = /** @__PURE__ @class */ (function (_super) {
+    __extends$84(SmithchartMinorGridLines, _super);
+    function SmithchartMinorGridLines() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$18([
+        Property(1)
+    ], SmithchartMinorGridLines.prototype, "width", void 0);
+    __decorate$18([
+        Property('')
+    ], SmithchartMinorGridLines.prototype, "dashArray", void 0);
+    __decorate$18([
+        Property(false)
+    ], SmithchartMinorGridLines.prototype, "visible", void 0);
+    __decorate$18([
+        Property(null)
+    ], SmithchartMinorGridLines.prototype, "color", void 0);
+    __decorate$18([
+        Property(8)
+    ], SmithchartMinorGridLines.prototype, "count", void 0);
+    return SmithchartMinorGridLines;
+}(ChildProperty));
+/**
+ * Configures the axis lines in the `axis`.
+ */
+var SmithchartAxisLine = /** @__PURE__ @class */ (function (_super) {
+    __extends$84(SmithchartAxisLine, _super);
+    function SmithchartAxisLine() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$18([
+        Property(true)
+    ], SmithchartAxisLine.prototype, "visible", void 0);
+    __decorate$18([
+        Property(1)
+    ], SmithchartAxisLine.prototype, "width", void 0);
+    __decorate$18([
+        Property(null)
+    ], SmithchartAxisLine.prototype, "color", void 0);
+    __decorate$18([
+        Property('')
+    ], SmithchartAxisLine.prototype, "dashArray", void 0);
+    return SmithchartAxisLine;
+}(ChildProperty));
+var SmithchartAxis = /** @__PURE__ @class */ (function (_super) {
+    __extends$84(SmithchartAxis, _super);
+    function SmithchartAxis() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$18([
+        Property(true)
+    ], SmithchartAxis.prototype, "visible", void 0);
+    __decorate$18([
+        Property('Outside')
+    ], SmithchartAxis.prototype, "labelPosition", void 0);
+    __decorate$18([
+        Property('Hide')
+    ], SmithchartAxis.prototype, "labelIntersectAction", void 0);
+    __decorate$18([
+        Complex({}, SmithchartMajorGridLines)
+    ], SmithchartAxis.prototype, "majorGridLines", void 0);
+    __decorate$18([
+        Complex({}, SmithchartMinorGridLines)
+    ], SmithchartAxis.prototype, "minorGridLines", void 0);
+    __decorate$18([
+        Complex({}, SmithchartAxisLine)
+    ], SmithchartAxis.prototype, "axisLine", void 0);
+    __decorate$18([
+        Complex(Theme$1.axisLabelFont, SmithchartFont)
+    ], SmithchartAxis.prototype, "labelStyle", void 0);
+    return SmithchartAxis;
+}(ChildProperty));
+
+var __extends$85 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$19 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var Subtitle = /** @__PURE__ @class */ (function (_super) {
+    __extends$85(Subtitle, _super);
+    function Subtitle() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$19([
+        Property(true)
+    ], Subtitle.prototype, "visible", void 0);
+    __decorate$19([
+        Property('')
+    ], Subtitle.prototype, "text", void 0);
+    __decorate$19([
+        Property('')
+    ], Subtitle.prototype, "description", void 0);
+    __decorate$19([
+        Property('Far')
+    ], Subtitle.prototype, "textAlignment", void 0);
+    __decorate$19([
+        Property(true)
+    ], Subtitle.prototype, "enableTrim", void 0);
+    __decorate$19([
+        Property(null)
+    ], Subtitle.prototype, "maximumWidth", void 0);
+    __decorate$19([
+        Complex(Theme$1.smithchartSubtitleFont, SmithchartFont)
+    ], Subtitle.prototype, "textStyle", void 0);
+    return Subtitle;
+}(ChildProperty));
+var Title = /** @__PURE__ @class */ (function (_super) {
+    __extends$85(Title, _super);
+    function Title() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$19([
+        Property(true)
+    ], Title.prototype, "visible", void 0);
+    __decorate$19([
+        Property('')
+    ], Title.prototype, "text", void 0);
+    __decorate$19([
+        Property('')
+    ], Title.prototype, "description", void 0);
+    __decorate$19([
+        Property('Center')
+    ], Title.prototype, "textAlignment", void 0);
+    __decorate$19([
+        Property(true)
+    ], Title.prototype, "enableTrim", void 0);
+    __decorate$19([
+        Property(null)
+    ], Title.prototype, "maximumWidth", void 0);
+    __decorate$19([
+        Complex({}, Subtitle)
+    ], Title.prototype, "subtitle", void 0);
+    __decorate$19([
+        Complex(Theme$1.smithchartTitleFont, SmithchartFont)
+    ], Title.prototype, "font", void 0);
+    __decorate$19([
+        Complex(Theme$1.smithchartTitleFont, SmithchartFont)
+    ], Title.prototype, "textStyle", void 0);
+    return Title;
+}(ChildProperty));
+
+var __extends$86 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$20 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var SeriesTooltipBorder = /** @__PURE__ @class */ (function (_super) {
+    __extends$86(SeriesTooltipBorder, _super);
+    function SeriesTooltipBorder() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$20([
+        Property(1)
+    ], SeriesTooltipBorder.prototype, "width", void 0);
+    __decorate$20([
         Property(null)
     ], SeriesTooltipBorder.prototype, "color", void 0);
     return SeriesTooltipBorder;
 }(ChildProperty));
 var SeriesTooltip = /** @__PURE__ @class */ (function (_super) {
-    __extends$84(SeriesTooltip, _super);
+    __extends$86(SeriesTooltip, _super);
     function SeriesTooltip() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$18([
+    __decorate$20([
         Property(false)
     ], SeriesTooltip.prototype, "visible", void 0);
-    __decorate$18([
+    __decorate$20([
         Property(null)
     ], SeriesTooltip.prototype, "fill", void 0);
-    __decorate$18([
+    __decorate$20([
         Property(0.95)
     ], SeriesTooltip.prototype, "opacity", void 0);
-    __decorate$18([
+    __decorate$20([
         Property('')
     ], SeriesTooltip.prototype, "template", void 0);
-    __decorate$18([
+    __decorate$20([
         Complex({}, SeriesTooltipBorder)
     ], SeriesTooltip.prototype, "border", void 0);
     return SeriesTooltip;
 }(ChildProperty));
 var SeriesMarkerBorder = /** @__PURE__ @class */ (function (_super) {
-    __extends$84(SeriesMarkerBorder, _super);
+    __extends$86(SeriesMarkerBorder, _super);
     function SeriesMarkerBorder() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$18([
+    __decorate$20([
         Property(3)
     ], SeriesMarkerBorder.prototype, "width", void 0);
-    __decorate$18([
+    __decorate$20([
         Property('white')
     ], SeriesMarkerBorder.prototype, "color", void 0);
     return SeriesMarkerBorder;
 }(ChildProperty));
 var SeriesMarkerDataLabelBorder = /** @__PURE__ @class */ (function (_super) {
-    __extends$84(SeriesMarkerDataLabelBorder, _super);
+    __extends$86(SeriesMarkerDataLabelBorder, _super);
     function SeriesMarkerDataLabelBorder() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$18([
+    __decorate$20([
         Property(0.1)
     ], SeriesMarkerDataLabelBorder.prototype, "width", void 0);
-    __decorate$18([
+    __decorate$20([
         Property('white')
     ], SeriesMarkerDataLabelBorder.prototype, "color", void 0);
     return SeriesMarkerDataLabelBorder;
 }(ChildProperty));
 var SeriesMarkerDataLabelConnectorLine = /** @__PURE__ @class */ (function (_super) {
-    __extends$84(SeriesMarkerDataLabelConnectorLine, _super);
+    __extends$86(SeriesMarkerDataLabelConnectorLine, _super);
     function SeriesMarkerDataLabelConnectorLine() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$18([
+    __decorate$20([
         Property(1)
     ], SeriesMarkerDataLabelConnectorLine.prototype, "width", void 0);
-    __decorate$18([
+    __decorate$20([
         Property(null)
     ], SeriesMarkerDataLabelConnectorLine.prototype, "color", void 0);
     return SeriesMarkerDataLabelConnectorLine;
 }(ChildProperty));
 var SeriesMarkerDataLabel = /** @__PURE__ @class */ (function (_super) {
-    __extends$84(SeriesMarkerDataLabel, _super);
+    __extends$86(SeriesMarkerDataLabel, _super);
     function SeriesMarkerDataLabel() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$18([
+    __decorate$20([
         Property(false)
     ], SeriesMarkerDataLabel.prototype, "visible", void 0);
-    __decorate$18([
+    __decorate$20([
         Property('')
     ], SeriesMarkerDataLabel.prototype, "template", void 0);
-    __decorate$18([
+    __decorate$20([
         Property(null)
     ], SeriesMarkerDataLabel.prototype, "fill", void 0);
-    __decorate$18([
+    __decorate$20([
         Property(1)
     ], SeriesMarkerDataLabel.prototype, "opacity", void 0);
-    __decorate$18([
+    __decorate$20([
         Complex({}, SeriesMarkerDataLabelBorder)
     ], SeriesMarkerDataLabel.prototype, "border", void 0);
-    __decorate$18([
+    __decorate$20([
         Complex({}, SeriesMarkerDataLabelConnectorLine)
     ], SeriesMarkerDataLabel.prototype, "connectorLine", void 0);
-    __decorate$18([
+    __decorate$20([
         Complex(Theme$1.dataLabelFont, SmithchartFont)
     ], SeriesMarkerDataLabel.prototype, "textStyle", void 0);
     return SeriesMarkerDataLabel;
 }(ChildProperty));
 var SeriesMarker = /** @__PURE__ @class */ (function (_super) {
-    __extends$84(SeriesMarker, _super);
+    __extends$86(SeriesMarker, _super);
     function SeriesMarker() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$18([
+    __decorate$20([
         Property(false)
     ], SeriesMarker.prototype, "visible", void 0);
-    __decorate$18([
+    __decorate$20([
         Property('circle')
     ], SeriesMarker.prototype, "shape", void 0);
-    __decorate$18([
+    __decorate$20([
         Property(6)
     ], SeriesMarker.prototype, "width", void 0);
-    __decorate$18([
+    __decorate$20([
         Property(6)
     ], SeriesMarker.prototype, "height", void 0);
-    __decorate$18([
+    __decorate$20([
         Property('')
     ], SeriesMarker.prototype, "imageUrl", void 0);
-    __decorate$18([
+    __decorate$20([
         Property('')
     ], SeriesMarker.prototype, "fill", void 0);
-    __decorate$18([
+    __decorate$20([
         Property(1)
     ], SeriesMarker.prototype, "opacity", void 0);
-    __decorate$18([
+    __decorate$20([
         Complex({}, SeriesMarkerBorder)
     ], SeriesMarker.prototype, "border", void 0);
-    __decorate$18([
+    __decorate$20([
         Complex({}, SeriesMarkerDataLabel)
     ], SeriesMarker.prototype, "dataLabel", void 0);
     return SeriesMarker;
 }(ChildProperty));
 var SmithchartSeries = /** @__PURE__ @class */ (function (_super) {
-    __extends$84(SmithchartSeries, _super);
+    __extends$86(SmithchartSeries, _super);
     function SmithchartSeries() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$18([
+    __decorate$20([
         Property('visible')
     ], SmithchartSeries.prototype, "visibility", void 0);
-    __decorate$18([
+    __decorate$20([
         Property([])
     ], SmithchartSeries.prototype, "points", void 0);
-    __decorate$18([
+    __decorate$20([
         Property('')
     ], SmithchartSeries.prototype, "resistance", void 0);
-    __decorate$18([
+    __decorate$20([
         Property('')
     ], SmithchartSeries.prototype, "reactance", void 0);
-    __decorate$18([
+    __decorate$20([
         Property(null)
     ], SmithchartSeries.prototype, "dataSource", void 0);
-    __decorate$18([
+    __decorate$20([
         Property('')
     ], SmithchartSeries.prototype, "name", void 0);
-    __decorate$18([
+    __decorate$20([
         Property(null)
     ], SmithchartSeries.prototype, "fill", void 0);
-    __decorate$18([
+    __decorate$20([
         Property(false)
     ], SmithchartSeries.prototype, "enableAnimation", void 0);
-    __decorate$18([
+    __decorate$20([
         Property('2000ms')
     ], SmithchartSeries.prototype, "animationDuration", void 0);
-    __decorate$18([
+    __decorate$20([
         Property(false)
     ], SmithchartSeries.prototype, "enableSmartLabels", void 0);
-    __decorate$18([
+    __decorate$20([
         Property(1)
     ], SmithchartSeries.prototype, "width", void 0);
-    __decorate$18([
+    __decorate$20([
         Property(1)
     ], SmithchartSeries.prototype, "opacity", void 0);
-    __decorate$18([
+    __decorate$20([
         Complex({}, SeriesMarker)
     ], SmithchartSeries.prototype, "marker", void 0);
-    __decorate$18([
+    __decorate$20([
         Complex({}, SeriesTooltip)
     ], SmithchartSeries.prototype, "tooltip", void 0);
     return SmithchartSeries;
@@ -37273,7 +39680,7 @@ var ExportUtils$1 = /** @__PURE__ @class */ (function () {
         this.smithchartPrint.resizeTo(screen.availWidth, screen.availHeight);
         var argsData = {
             cancel: false,
-            htmlContent: !this.control.isBlazor ? this.getHTMLContent(elements) : null,
+            htmlContent: this.getHTMLContent(elements),
             name: smithchartBeforePrint
         };
         this.control.trigger(smithchartBeforePrint, argsData);
@@ -37291,14 +39698,14 @@ var ExportUtils$1 = /** @__PURE__ @class */ (function () {
         if (svgElements) {
             if (svgElements instanceof Array) {
                 svgElements.forEach(function (value) {
-                    div.appendChild(getElement$1(value).cloneNode(true));
+                    div.appendChild(getElement$2(value).cloneNode(true));
                 });
             }
             else if (svgElements instanceof Element) {
                 div.appendChild(svgElements.cloneNode(true));
             }
             else {
-                div.appendChild(getElement$1(svgElements).cloneNode(true));
+                div.appendChild(getElement$2(svgElements).cloneNode(true));
             }
         }
         else {
@@ -37375,7 +39782,7 @@ var ExportUtils$1 = /** @__PURE__ @class */ (function () {
     return ExportUtils;
 }());
 
-var __extends$78 = (undefined && undefined.__extends) || (function () {
+var __extends$80 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -37388,7 +39795,7 @@ var __extends$78 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$13 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$15 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -37406,7 +39813,7 @@ var __decorate$13 = (undefined && undefined.__decorate) || function (decorators,
  * ```
  */
 var Smithchart = /** @__PURE__ @class */ (function (_super) {
-    __extends$78(Smithchart, _super);
+    __extends$80(Smithchart, _super);
     /**
      * Constructor for creating the Smithchart widget
      */
@@ -37569,6 +39976,7 @@ var Smithchart = /** @__PURE__ @class */ (function (_super) {
      */
     Smithchart.prototype.preRender = function () {
         this.isBlazor = isBlazor();
+        this.allowServerDataBinding = false;
         this.trigger(load$1, { smithchart: !this.isBlazor ? this : null });
         this.unWireEVents();
         this.initPrivateVariable();
@@ -37609,6 +40017,7 @@ var Smithchart = /** @__PURE__ @class */ (function (_super) {
         this.seriesrender = new SeriesRender();
         this.seriesrender.draw(this, axisRender, this.bounds);
         this.renderComplete();
+        this.allowServerDataBinding = true;
         this.trigger(loaded$1, { smithchart: !this.isBlazor ? this : null });
     };
     Smithchart.prototype.createSecondaryElement = function () {
@@ -37788,82 +40197,82 @@ var Smithchart = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    __decorate$13([
+    __decorate$15([
         Property('Impedance')
     ], Smithchart.prototype, "renderType", void 0);
-    __decorate$13([
+    __decorate$15([
         Property('')
     ], Smithchart.prototype, "width", void 0);
-    __decorate$13([
+    __decorate$15([
         Property('')
     ], Smithchart.prototype, "height", void 0);
-    __decorate$13([
+    __decorate$15([
         Property('Material')
     ], Smithchart.prototype, "theme", void 0);
-    __decorate$13([
+    __decorate$15([
         Complex({}, SmithchartMargin)
     ], Smithchart.prototype, "margin", void 0);
-    __decorate$13([
+    __decorate$15([
         Complex({}, SmithchartFont)
     ], Smithchart.prototype, "font", void 0);
-    __decorate$13([
+    __decorate$15([
         Complex({}, SmithchartBorder)
     ], Smithchart.prototype, "border", void 0);
-    __decorate$13([
+    __decorate$15([
         Complex({}, Title)
     ], Smithchart.prototype, "title", void 0);
-    __decorate$13([
+    __decorate$15([
         Collection([{}], SmithchartSeries)
     ], Smithchart.prototype, "series", void 0);
-    __decorate$13([
+    __decorate$15([
         Complex({}, SmithchartLegendSettings)
     ], Smithchart.prototype, "legendSettings", void 0);
-    __decorate$13([
+    __decorate$15([
         Complex({}, SmithchartAxis)
     ], Smithchart.prototype, "horizontalAxis", void 0);
-    __decorate$13([
+    __decorate$15([
         Complex({}, SmithchartAxis)
     ], Smithchart.prototype, "radialAxis", void 0);
-    __decorate$13([
+    __decorate$15([
         Property(null)
     ], Smithchart.prototype, "background", void 0);
-    __decorate$13([
+    __decorate$15([
         Property(10)
     ], Smithchart.prototype, "elementSpacing", void 0);
-    __decorate$13([
+    __decorate$15([
         Property(1)
     ], Smithchart.prototype, "radius", void 0);
-    __decorate$13([
+    __decorate$15([
         Event()
     ], Smithchart.prototype, "beforePrint", void 0);
-    __decorate$13([
+    __decorate$15([
         Event()
     ], Smithchart.prototype, "animationComplete", void 0);
-    __decorate$13([
+    __decorate$15([
         Event()
     ], Smithchart.prototype, "load", void 0);
-    __decorate$13([
+    __decorate$15([
         Event()
     ], Smithchart.prototype, "loaded", void 0);
-    __decorate$13([
+    __decorate$15([
         Event()
     ], Smithchart.prototype, "legendRender", void 0);
-    __decorate$13([
+    __decorate$15([
         Event()
     ], Smithchart.prototype, "titleRender", void 0);
-    __decorate$13([
+    __decorate$15([
         Event()
     ], Smithchart.prototype, "subtitleRender", void 0);
-    __decorate$13([
+    __decorate$15([
         Event()
     ], Smithchart.prototype, "textRender", void 0);
-    __decorate$13([
+    __decorate$15([
         Event()
     ], Smithchart.prototype, "axisLabelRender", void 0);
-    __decorate$13([
+    __decorate$15([
         Event()
     ], Smithchart.prototype, "seriesRender", void 0);
-    Smithchart = __decorate$13([
+    Smithchart = __decorate$15([
         NotifyPropertyChanges
     ], Smithchart);
     return Smithchart;
@@ -38388,7 +40797,7 @@ var SmithchartLegend = /** @__PURE__ @class */ (function () {
  *
  */
 
-var __extends$86 = (undefined && undefined.__extends) || (function () {
+var __extends$88 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -38401,7 +40810,7 @@ var __extends$86 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$20 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$22 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -38414,14 +40823,14 @@ var __decorate$20 = (undefined && undefined.__decorate) || function (decorators,
  * Configures the borders in the Sparkline.
  */
 var SparklineBorder = /** @__PURE__ @class */ (function (_super) {
-    __extends$86(SparklineBorder, _super);
+    __extends$88(SparklineBorder, _super);
     function SparklineBorder() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$20([
+    __decorate$22([
         Property('')
     ], SparklineBorder.prototype, "color", void 0);
-    __decorate$20([
+    __decorate$22([
         Property(0)
     ], SparklineBorder.prototype, "width", void 0);
     return SparklineBorder;
@@ -38430,26 +40839,26 @@ var SparklineBorder = /** @__PURE__ @class */ (function (_super) {
  * Configures the fonts in sparklines.
  */
 var SparklineFont = /** @__PURE__ @class */ (function (_super) {
-    __extends$86(SparklineFont, _super);
+    __extends$88(SparklineFont, _super);
     function SparklineFont() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$20([
+    __decorate$22([
         Property(null)
     ], SparklineFont.prototype, "size", void 0);
-    __decorate$20([
+    __decorate$22([
         Property(null)
     ], SparklineFont.prototype, "color", void 0);
-    __decorate$20([
+    __decorate$22([
         Property('Roboto, Segoe UI, Noto, Sans-serif')
     ], SparklineFont.prototype, "fontFamily", void 0);
-    __decorate$20([
+    __decorate$22([
         Property(null)
     ], SparklineFont.prototype, "fontWeight", void 0);
-    __decorate$20([
+    __decorate$22([
         Property(null)
     ], SparklineFont.prototype, "fontStyle", void 0);
-    __decorate$20([
+    __decorate$22([
         Property(1)
     ], SparklineFont.prototype, "opacity", void 0);
     return SparklineFont;
@@ -38458,17 +40867,17 @@ var SparklineFont = /** @__PURE__ @class */ (function (_super) {
  * To configure the tracker line settings.
  */
 var TrackLineSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$86(TrackLineSettings, _super);
+    __extends$88(TrackLineSettings, _super);
     function TrackLineSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$20([
+    __decorate$22([
         Property(false)
     ], TrackLineSettings.prototype, "visible", void 0);
-    __decorate$20([
+    __decorate$22([
         Property(null)
     ], TrackLineSettings.prototype, "color", void 0);
-    __decorate$20([
+    __decorate$22([
         Property(1)
     ], TrackLineSettings.prototype, "width", void 0);
     return TrackLineSettings;
@@ -38477,29 +40886,29 @@ var TrackLineSettings = /** @__PURE__ @class */ (function (_super) {
  * To configure the tooltip settings for sparkline.
  */
 var SparklineTooltipSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$86(SparklineTooltipSettings, _super);
+    __extends$88(SparklineTooltipSettings, _super);
     function SparklineTooltipSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$20([
+    __decorate$22([
         Property(false)
     ], SparklineTooltipSettings.prototype, "visible", void 0);
-    __decorate$20([
+    __decorate$22([
         Property('')
     ], SparklineTooltipSettings.prototype, "fill", void 0);
-    __decorate$20([
+    __decorate$22([
         Property('')
     ], SparklineTooltipSettings.prototype, "template", void 0);
-    __decorate$20([
+    __decorate$22([
         Property('')
     ], SparklineTooltipSettings.prototype, "format", void 0);
-    __decorate$20([
+    __decorate$22([
         Complex({ color: '#cccccc', width: 0.5 }, SparklineBorder)
     ], SparklineTooltipSettings.prototype, "border", void 0);
-    __decorate$20([
+    __decorate$22([
         Complex({ size: '13px', fontWeight: 'Normal', fontStyle: 'Normal', fontFamily: 'Roboto, Segoe UI, Noto, Sans-serif' }, SparklineFont)
     ], SparklineTooltipSettings.prototype, "textStyle", void 0);
-    __decorate$20([
+    __decorate$22([
         Complex({}, TrackLineSettings)
     ], SparklineTooltipSettings.prototype, "trackLineSettings", void 0);
     return SparklineTooltipSettings;
@@ -38508,14 +40917,14 @@ var SparklineTooltipSettings = /** @__PURE__ @class */ (function (_super) {
  * To configure the sparkline container area customization
  */
 var ContainerArea = /** @__PURE__ @class */ (function (_super) {
-    __extends$86(ContainerArea, _super);
+    __extends$88(ContainerArea, _super);
     function ContainerArea() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$20([
+    __decorate$22([
         Property('transparent')
     ], ContainerArea.prototype, "background", void 0);
-    __decorate$20([
+    __decorate$22([
         Complex({}, SparklineBorder)
     ], ContainerArea.prototype, "border", void 0);
     return ContainerArea;
@@ -38524,23 +40933,23 @@ var ContainerArea = /** @__PURE__ @class */ (function (_super) {
  * To configure axis line settings
  */
 var LineSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$86(LineSettings, _super);
+    __extends$88(LineSettings, _super);
     function LineSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$20([
+    __decorate$22([
         Property(false)
     ], LineSettings.prototype, "visible", void 0);
-    __decorate$20([
+    __decorate$22([
         Property(null)
     ], LineSettings.prototype, "color", void 0);
-    __decorate$20([
+    __decorate$22([
         Property('')
     ], LineSettings.prototype, "dashArray", void 0);
-    __decorate$20([
+    __decorate$22([
         Property(1)
     ], LineSettings.prototype, "width", void 0);
-    __decorate$20([
+    __decorate$22([
         Property(1)
     ], LineSettings.prototype, "opacity", void 0);
     return LineSettings;
@@ -38549,20 +40958,20 @@ var LineSettings = /** @__PURE__ @class */ (function (_super) {
  * To configure the sparkline rangeband
  */
 var RangeBandSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$86(RangeBandSettings, _super);
+    __extends$88(RangeBandSettings, _super);
     function RangeBandSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$20([
+    __decorate$22([
         Property(null)
     ], RangeBandSettings.prototype, "startRange", void 0);
-    __decorate$20([
+    __decorate$22([
         Property(null)
     ], RangeBandSettings.prototype, "endRange", void 0);
-    __decorate$20([
+    __decorate$22([
         Property(null)
     ], RangeBandSettings.prototype, "color", void 0);
-    __decorate$20([
+    __decorate$22([
         Property(1)
     ], RangeBandSettings.prototype, "opacity", void 0);
     return RangeBandSettings;
@@ -38571,26 +40980,26 @@ var RangeBandSettings = /** @__PURE__ @class */ (function (_super) {
  * To configure the sparkline axis
  */
 var AxisSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$86(AxisSettings, _super);
+    __extends$88(AxisSettings, _super);
     function AxisSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$20([
+    __decorate$22([
         Property(null)
     ], AxisSettings.prototype, "minX", void 0);
-    __decorate$20([
+    __decorate$22([
         Property(null)
     ], AxisSettings.prototype, "maxX", void 0);
-    __decorate$20([
+    __decorate$22([
         Property(null)
     ], AxisSettings.prototype, "minY", void 0);
-    __decorate$20([
+    __decorate$22([
         Property(null)
     ], AxisSettings.prototype, "maxY", void 0);
-    __decorate$20([
+    __decorate$22([
         Property(0)
     ], AxisSettings.prototype, "value", void 0);
-    __decorate$20([
+    __decorate$22([
         Complex({}, LineSettings)
     ], AxisSettings.prototype, "lineSettings", void 0);
     return AxisSettings;
@@ -38599,20 +41008,20 @@ var AxisSettings = /** @__PURE__ @class */ (function (_super) {
  * To configure the sparkline padding.
  */
 var Padding = /** @__PURE__ @class */ (function (_super) {
-    __extends$86(Padding, _super);
+    __extends$88(Padding, _super);
     function Padding() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$20([
+    __decorate$22([
         Property(5)
     ], Padding.prototype, "left", void 0);
-    __decorate$20([
+    __decorate$22([
         Property(5)
     ], Padding.prototype, "right", void 0);
-    __decorate$20([
+    __decorate$22([
         Property(5)
     ], Padding.prototype, "bottom", void 0);
-    __decorate$20([
+    __decorate$22([
         Property(5)
     ], Padding.prototype, "top", void 0);
     return Padding;
@@ -38621,23 +41030,23 @@ var Padding = /** @__PURE__ @class */ (function (_super) {
  * To configure the sparkline marker options.
  */
 var SparklineMarkerSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$86(SparklineMarkerSettings, _super);
+    __extends$88(SparklineMarkerSettings, _super);
     function SparklineMarkerSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$20([
+    __decorate$22([
         Property([])
     ], SparklineMarkerSettings.prototype, "visible", void 0);
-    __decorate$20([
+    __decorate$22([
         Property(1)
     ], SparklineMarkerSettings.prototype, "opacity", void 0);
-    __decorate$20([
+    __decorate$22([
         Property(5)
     ], SparklineMarkerSettings.prototype, "size", void 0);
-    __decorate$20([
+    __decorate$22([
         Property('#00bdae')
     ], SparklineMarkerSettings.prototype, "fill", void 0);
-    __decorate$20([
+    __decorate$22([
         Complex({ width: 1 }, SparklineBorder)
     ], SparklineMarkerSettings.prototype, "border", void 0);
     return SparklineMarkerSettings;
@@ -38646,14 +41055,14 @@ var SparklineMarkerSettings = /** @__PURE__ @class */ (function (_super) {
  * To configure the datalabel offset
  */
 var LabelOffset = /** @__PURE__ @class */ (function (_super) {
-    __extends$86(LabelOffset, _super);
+    __extends$88(LabelOffset, _super);
     function LabelOffset() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$20([
+    __decorate$22([
         Property(0)
     ], LabelOffset.prototype, "x", void 0);
-    __decorate$20([
+    __decorate$22([
         Property(0)
     ], LabelOffset.prototype, "y", void 0);
     return LabelOffset;
@@ -38662,38 +41071,38 @@ var LabelOffset = /** @__PURE__ @class */ (function (_super) {
  * To configure the sparkline dataLabel options.
  */
 var SparklineDataLabelSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$86(SparklineDataLabelSettings, _super);
+    __extends$88(SparklineDataLabelSettings, _super);
     function SparklineDataLabelSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$20([
+    __decorate$22([
         Property([])
     ], SparklineDataLabelSettings.prototype, "visible", void 0);
-    __decorate$20([
+    __decorate$22([
         Property(1)
     ], SparklineDataLabelSettings.prototype, "opacity", void 0);
-    __decorate$20([
+    __decorate$22([
         Property('transparent')
     ], SparklineDataLabelSettings.prototype, "fill", void 0);
-    __decorate$20([
+    __decorate$22([
         Property('')
     ], SparklineDataLabelSettings.prototype, "format", void 0);
-    __decorate$20([
+    __decorate$22([
         Complex({ color: 'transparent', width: 0 }, SparklineBorder)
     ], SparklineDataLabelSettings.prototype, "border", void 0);
-    __decorate$20([
+    __decorate$22([
         Complex({ size: '14px', fontWeight: 'Medium', fontStyle: 'Medium', fontFamily: 'Roboto, Segoe UI, Noto, Sans-serif' }, SparklineFont)
     ], SparklineDataLabelSettings.prototype, "textStyle", void 0);
-    __decorate$20([
+    __decorate$22([
         Complex({}, LabelOffset)
     ], SparklineDataLabelSettings.prototype, "offset", void 0);
-    __decorate$20([
+    __decorate$22([
         Property('None')
     ], SparklineDataLabelSettings.prototype, "edgeLabelMode", void 0);
     return SparklineDataLabelSettings;
 }(ChildProperty));
 
-var __extends$87 = (undefined && undefined.__extends) || (function () {
+var __extends$89 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -38839,7 +41248,7 @@ var PathOption$2 = /** @__PURE__ @class */ (function () {
  * @private
  */
 var RectOption$2 = /** @__PURE__ @class */ (function (_super) {
-    __extends$87(RectOption, _super);
+    __extends$89(RectOption, _super);
     function RectOption(id, fill, border, opacity, rect, tl, tr, bl, br) {
         if (tl === void 0) { tl = 0; }
         if (tr === void 0) { tr = 0; }
@@ -38860,7 +41269,7 @@ var RectOption$2 = /** @__PURE__ @class */ (function (_super) {
  * @private
  */
 var CircleOption$2 = /** @__PURE__ @class */ (function (_super) {
-    __extends$87(CircleOption, _super);
+    __extends$89(CircleOption, _super);
     function CircleOption(id, fill, border, opacity, cx, cy, r, dashArray) {
         var _this = _super.call(this, id, fill, border.width, border.color, opacity) || this;
         _this.cy = cy;
@@ -39530,6 +41939,9 @@ var SparklineRenderer = /** @__PURE__ @class */ (function () {
             this.lowPointIndex = i;
             render = render || (visible.indexOf('low') > -1);
         }
+        if (visible.indexOf('none') > -1) {
+            render = false;
+        }
         return render;
     };
     /**
@@ -39650,6 +42062,9 @@ var SparklineRenderer = /** @__PURE__ @class */ (function () {
         }
         else if (temp.markerPosition === lowPos) {
             render = render || (labelVisible.indexOf('low') > -1);
+        }
+        if (label.visible.join().toLowerCase().indexOf('none') > -1) {
+            render = false;
         }
         return render;
     };
@@ -39921,7 +42336,7 @@ var SparklineRenderer = /** @__PURE__ @class */ (function () {
     return SparklineRenderer;
 }());
 
-var __extends$85 = (undefined && undefined.__extends) || (function () {
+var __extends$87 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -39934,7 +42349,7 @@ var __extends$85 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$19 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$21 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -39952,7 +42367,7 @@ var __decorate$19 = (undefined && undefined.__decorate) || function (decorators,
  * ```
  */
 var Sparkline = /** @__PURE__ @class */ (function (_super) {
-    __extends$85(Sparkline, _super);
+    __extends$87(Sparkline, _super);
     // Sparkline rendering starts from here.
     /**
      * Constructor for creating the Sparkline widget
@@ -39968,6 +42383,7 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
      */
     Sparkline.prototype.preRender = function () {
         this.isBlazor = isBlazor();
+        this.allowServerDataBinding = false;
         this.unWireEvents();
         this.trigger('load', { sparkline: !this.isBlazor ? this : null });
         this.sparkTheme = getThemeColor$2(this.theme);
@@ -39983,6 +42399,7 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
         // Sparkline rendering splitted into rendering and calculations
         this.sparklineRenderer.processDataManager();
         this.renderComplete();
+        this.allowServerDataBinding = true;
     };
     /**
      * @private
@@ -40328,133 +42745,133 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
     Sparkline.prototype.getPersistData = function () {
         return '';
     };
-    __decorate$19([
+    __decorate$21([
         Property(null)
     ], Sparkline.prototype, "width", void 0);
-    __decorate$19([
+    __decorate$21([
         Property(null)
     ], Sparkline.prototype, "height", void 0);
-    __decorate$19([
+    __decorate$21([
         Complex({}, SparklineBorder)
     ], Sparkline.prototype, "border", void 0);
-    __decorate$19([
+    __decorate$21([
         Property('Line')
     ], Sparkline.prototype, "type", void 0);
-    __decorate$19([
+    __decorate$21([
         Property(null)
     ], Sparkline.prototype, "dataSource", void 0);
-    __decorate$19([
+    __decorate$21([
         Property(null)
     ], Sparkline.prototype, "query", void 0);
-    __decorate$19([
+    __decorate$21([
         Property('Numeric')
     ], Sparkline.prototype, "valueType", void 0);
-    __decorate$19([
+    __decorate$21([
         Property(null)
     ], Sparkline.prototype, "xName", void 0);
-    __decorate$19([
+    __decorate$21([
         Property(null)
     ], Sparkline.prototype, "yName", void 0);
-    __decorate$19([
+    __decorate$21([
         Property('#00bdae')
     ], Sparkline.prototype, "fill", void 0);
-    __decorate$19([
+    __decorate$21([
         Property('')
     ], Sparkline.prototype, "highPointColor", void 0);
-    __decorate$19([
+    __decorate$21([
         Property('')
     ], Sparkline.prototype, "lowPointColor", void 0);
-    __decorate$19([
+    __decorate$21([
         Property('')
     ], Sparkline.prototype, "startPointColor", void 0);
-    __decorate$19([
+    __decorate$21([
         Property('')
     ], Sparkline.prototype, "endPointColor", void 0);
-    __decorate$19([
+    __decorate$21([
         Property('')
     ], Sparkline.prototype, "negativePointColor", void 0);
-    __decorate$19([
+    __decorate$21([
         Property('')
     ], Sparkline.prototype, "tiePointColor", void 0);
-    __decorate$19([
+    __decorate$21([
         Property([])
     ], Sparkline.prototype, "palette", void 0);
-    __decorate$19([
+    __decorate$21([
         Property(1)
     ], Sparkline.prototype, "lineWidth", void 0);
-    __decorate$19([
+    __decorate$21([
         Property(1)
     ], Sparkline.prototype, "opacity", void 0);
-    __decorate$19([
+    __decorate$21([
         Property(null)
     ], Sparkline.prototype, "format", void 0);
-    __decorate$19([
+    __decorate$21([
         Property(false)
     ], Sparkline.prototype, "useGroupingSeparator", void 0);
-    __decorate$19([
+    __decorate$21([
         Complex({}, SparklineTooltipSettings)
     ], Sparkline.prototype, "tooltipSettings", void 0);
-    __decorate$19([
+    __decorate$21([
         Complex({}, ContainerArea)
     ], Sparkline.prototype, "containerArea", void 0);
-    __decorate$19([
+    __decorate$21([
         Collection([], RangeBandSettings)
     ], Sparkline.prototype, "rangeBandSettings", void 0);
-    __decorate$19([
+    __decorate$21([
         Complex({}, AxisSettings)
     ], Sparkline.prototype, "axisSettings", void 0);
-    __decorate$19([
+    __decorate$21([
         Complex({}, SparklineMarkerSettings)
     ], Sparkline.prototype, "markerSettings", void 0);
-    __decorate$19([
+    __decorate$21([
         Complex({}, SparklineDataLabelSettings)
     ], Sparkline.prototype, "dataLabelSettings", void 0);
-    __decorate$19([
+    __decorate$21([
         Complex({}, Padding)
     ], Sparkline.prototype, "padding", void 0);
-    __decorate$19([
+    __decorate$21([
         Property('Material')
     ], Sparkline.prototype, "theme", void 0);
-    __decorate$19([
+    __decorate$21([
         Event()
     ], Sparkline.prototype, "loaded", void 0);
-    __decorate$19([
+    __decorate$21([
         Event()
     ], Sparkline.prototype, "load", void 0);
-    __decorate$19([
+    __decorate$21([
         Event()
     ], Sparkline.prototype, "tooltipInitialize", void 0);
-    __decorate$19([
+    __decorate$21([
         Event()
     ], Sparkline.prototype, "seriesRendering", void 0);
-    __decorate$19([
+    __decorate$21([
         Event()
     ], Sparkline.prototype, "axisRendering", void 0);
-    __decorate$19([
+    __decorate$21([
         Event()
     ], Sparkline.prototype, "pointRendering", void 0);
-    __decorate$19([
+    __decorate$21([
         Event()
     ], Sparkline.prototype, "pointRegionMouseMove", void 0);
-    __decorate$19([
+    __decorate$21([
         Event()
     ], Sparkline.prototype, "pointRegionMouseClick", void 0);
-    __decorate$19([
+    __decorate$21([
         Event()
     ], Sparkline.prototype, "sparklineMouseMove", void 0);
-    __decorate$19([
+    __decorate$21([
         Event()
     ], Sparkline.prototype, "sparklineMouseClick", void 0);
-    __decorate$19([
+    __decorate$21([
         Event()
     ], Sparkline.prototype, "dataLabelRendering", void 0);
-    __decorate$19([
+    __decorate$21([
         Event()
     ], Sparkline.prototype, "markerRendering", void 0);
-    __decorate$19([
+    __decorate$21([
         Event()
     ], Sparkline.prototype, "resize", void 0);
-    Sparkline = __decorate$19([
+    Sparkline = __decorate$21([
         NotifyPropertyChanges
     ], Sparkline);
     return Sparkline;
@@ -40726,5 +43143,5 @@ var SparklineTooltip = /** @__PURE__ @class */ (function () {
  * Chart components exported.
  */
 
-export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
+export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartTheme, getBulletThemeColor, BulletTooltip, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
 //# sourceMappingURL=ej2-charts.es5.js.map

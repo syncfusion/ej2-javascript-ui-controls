@@ -1,6 +1,6 @@
 import { Ajax, createElement, select, extend } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, setValue, getValue } from '@syncfusion/ej2-base';
-import { IFileManager, ReadArgs, BeforeSendEventArgs } from '../base/interface';
+import { IFileManager, ReadArgs, BeforeSendEventArgs, BeforeDownloadEventArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { createDialog, createExtDialog } from '../pop-up/dialog';
 import { FileDetails, FileDragEventArgs, FailureEventArgs, SuccessEventArgs } from '../../index';
@@ -148,6 +148,7 @@ function createAjax(
                     parent.notify(events.afterRequest, { action: 'success' });
                     let id: string = parent.expandedId ? parent.expandedId : parent.pathId[parent.pathId.length - 1];
                     if (!isNOU(result.cwd) && (getValue('action', data) === 'read')) {
+                        result.cwd.name = parent.rootAliasName || result.cwd.name;
                         setValue('_fm_id', id, result.cwd);
                         setValue(id, result.cwd, parent.feParent);
                         if (!isNOU(result.files) || result.error.code === '401') {
@@ -172,6 +173,21 @@ function createAjax(
                             setNodeId(result, id);
                             setValue(id, result.files, parent.feFiles);
                         }
+                    }
+                    if (!isNOU(result.details) && !isNOU(parent.rootAliasName)) {
+                        let rootName: string = parent.rootAliasName || getValue('name', result.details);
+                        let location: string = getValue('location', result.details).replace(new RegExp('/', 'g'), '\\');
+                        if ((getValue('path', data) === '/') || (parent.hasId && getValue('path', data).match(/[/]/g).length === 1)) {
+                            if (getValue('names', data).length === 0) {
+                                setValue('name', rootName, result.details);
+                                location = rootName;
+                            } else {
+                                location = location.replace(location.substring(0, location.indexOf('\\')), rootName);
+                            }
+                        } else {
+                            location = location.replace(location.substring(0, location.indexOf('\\')), rootName);
+                        }
+                        setValue('location', location, result.details);
                     }
                     fn(parent, result, event, operation, targetPath);
                     if (!isNOU(result.files) && (event === 'path-changed' || event === 'finalize-end' || event === 'open-end')) {
@@ -406,17 +422,22 @@ function searchSuccess(parent: IFileManager, result: ReadArgs, event: string): v
 export function Download(parent: IFileManager, path: string, items: string[]): void {
     let downloadUrl: string = parent.ajaxSettings.downloadUrl ? parent.ajaxSettings.downloadUrl : parent.ajaxSettings.url;
     let data: Object = { 'action': 'download', 'path': path, 'names': items, 'data': parent.itemData };
-    let form: HTMLElement = createElement('form', {
-        id: parent.element.id + '_downloadForm',
-        attrs: { action: downloadUrl, method: 'post', name: 'downloadForm', 'download': '' }
+    let eventArgs: BeforeDownloadEventArgs = { data: data, cancel: false };
+    parent.trigger('beforeDownload', eventArgs, (downloadArgs: BeforeDownloadEventArgs) => {
+        if (!downloadArgs.cancel) {
+            let form: HTMLElement = createElement('form', {
+                id: parent.element.id + '_downloadForm',
+                attrs: { action: downloadUrl, method: 'post', name: 'downloadForm', 'download': '' }
+            });
+            let input: HTMLElement =
+                createElement('input', {
+                    id: parent.element.id + '_hiddenForm',
+                    attrs: { name: 'downloadInput', value: JSON.stringify(downloadArgs.data), type: 'hidden' }
+                });
+            form.appendChild(input);
+            parent.element.appendChild(form);
+            document.forms.namedItem('downloadForm').submit();
+            parent.element.removeChild(form);
+        }
     });
-    let input: HTMLElement =
-        createElement('input', {
-            id: parent.element.id + '_hiddenForm',
-            attrs: { name: 'downloadInput', value: JSON.stringify(data), type: 'hidden' }
-        });
-    form.appendChild(input);
-    parent.element.appendChild(form);
-    document.forms.namedItem('downloadForm').submit();
-    parent.element.removeChild(form);
 }

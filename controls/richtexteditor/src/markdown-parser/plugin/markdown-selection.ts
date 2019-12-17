@@ -1,34 +1,65 @@
 /**
  * MarkdownSelection internal module
  * @hidden
+ * @deprecated
  */
 export class MarkdownSelection {
     public selectionStart: number;
     public selectionEnd: number;
+    /**
+     * markdown getLineNumber method
+     * @hidden
+     * @deprecated
+     */
     public getLineNumber(textarea: HTMLTextAreaElement, point: number): number {
         return textarea.value.substr(0, point).split('\n').length;
     }
 
+    /**
+     * markdown getSelectedText method
+     * @hidden
+     * @deprecated
+     */
     public getSelectedText(textarea: HTMLTextAreaElement): string {
         let start: number = textarea.selectionStart;
         let end: number = textarea.selectionEnd;
         return textarea.value.substring(start, end);
     }
 
+    /**
+     * markdown getAllParents method
+     * @hidden
+     * @deprecated
+     */
     public getAllParents(value: string): string[] {
         return value.split('\n');
     }
 
+    /**
+     * markdown getSelectedLine method
+     * @hidden
+     * @deprecated
+     */
     public getSelectedLine(textarea: HTMLTextAreaElement): string {
         let lines: string[] = this.getAllParents(textarea.value);
         let index: number = this.getLineNumber(textarea, textarea.selectionStart);
         return lines[index - 1];
     }
+    /**
+     * markdown getLine method
+     * @hidden
+     * @deprecated
+     */
     public getLine(textarea: HTMLTextAreaElement, index: number): string {
         let lines: string[] = this.getAllParents(textarea.value);
         return lines[index];
     }
 
+    /**
+     * markdown getSelectedParentPoints method
+     * @hidden
+     * @deprecated
+     */
     public getSelectedParentPoints(textarea: HTMLTextAreaElement): { [key: string]: string | number }[] {
         let lines: string[] = this.getAllParents(textarea.value);
         let start: number = this.getLineNumber(textarea, textarea.selectionStart);
@@ -63,20 +94,40 @@ export class MarkdownSelection {
         return selectedPoints;
     }
 
+    /**
+     * markdown setSelection method
+     * @hidden
+     * @deprecated
+     */
     public setSelection(textarea: HTMLTextAreaElement, start: number, end: number): void {
         textarea.setSelectionRange(start, end);
         textarea.focus();
     }
 
+    /**
+     * markdown save method
+     * @hidden
+     * @deprecated
+     */
     public save(start: number, end: number): void {
         this.selectionStart = start;
         this.selectionEnd = end;
     }
 
+    /**
+     * markdown restore method
+     * @hidden
+     * @deprecated
+     */
     public restore(textArea: HTMLTextAreaElement): void {
         this.setSelection(textArea, this.selectionStart, this.selectionEnd);
     }
 
+    /**
+     * markdown isStartWith method
+     * @hidden
+     * @deprecated
+     */
     public isStartWith(line: string, command: string): boolean {
         let isStart: boolean = false;
         if (line) {
@@ -87,9 +138,19 @@ export class MarkdownSelection {
         }
         return isStart;
     }
+    /**
+     * markdown replaceSpecialChar method
+     * @hidden
+     * @deprecated
+     */
     public replaceSpecialChar(value: string): string {
         return value.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/g, '\\$&');
     }
+    /**
+     * markdown isClear method
+     * @hidden
+     * @deprecated
+     */
     public isClear(parents: { [key: string]: string | number }[], regex: string): boolean {
         let isClear: boolean = false;
         for (let i: number = 0; i < parents.length; i++) {
@@ -99,6 +160,11 @@ export class MarkdownSelection {
         }
         return isClear;
     }
+    /**
+     * markdown getSelectedInlinePoints method
+     * @hidden
+     * @deprecated
+     */
     public getSelectedInlinePoints(textarea: HTMLTextAreaElement): { [key: string]: string | number } {
         let start: number = textarea.selectionStart;
         let end: number = textarea.selectionEnd;

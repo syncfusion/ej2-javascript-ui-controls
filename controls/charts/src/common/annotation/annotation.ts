@@ -153,8 +153,21 @@ export class AnnotationBase {
         } else if (this.control.redraw) {
             removeElement(annotationElement.id);
         }
+
+        let annotationRendered: Function = () => {
+            let elementRect: ClientRect = annotationElement.getBoundingClientRect();
+            annotationElement.style.left = this.setAlignmentValue(
+                this.annotation.horizontalAlignment, elementRect.width, location.x
+            ) + 'px';
+            annotationElement.style.top = this.setAlignmentValue(
+                this.annotation.verticalAlignment, elementRect.height, location.y
+            ) + 'px';
+        };
+        annotationRendered.bind(location, this);
+
         updateBlazorTemplate((this.control.element.id + 'Annotation' + index).replace(/[^a-zA-Z0-9]/g, ''), 'ContentTemplate',
-                             chart.stockChart ? chart.stockChart.annotations[index] : this.control.annotations[index]);
+                             chart.stockChart ? chart.stockChart.annotations[index] : this.control.annotations[index], undefined,
+                             annotationRendered);
 
     }
 

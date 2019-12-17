@@ -39,6 +39,8 @@ export class BatchEdit {
     } = {};
     private isColored: boolean;
     private isAdded: boolean;
+    private originalCell: Object = {};
+    private cloneCell: Object = {};
 
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator, renderer?: EditRender) {
         this.parent = parent;
@@ -62,6 +64,7 @@ export class BatchEdit {
         this.parent.on(events.doubleTap, this.dblClickHandler, this);
         this.parent.on(events.keyPressed, this.keyDownHandler, this);
         this.parent.on(events.editNextValCell, this.editNextValCell, this);
+        this.parent.on('closebatch', this.closeForm, this);
     }
 
     /**
@@ -77,6 +80,7 @@ export class BatchEdit {
         this.parent.off(events.doubleTap, this.dblClickHandler);
         this.parent.off(events.keyPressed, this.keyDownHandler);
         this.parent.off(events.editNextValCell, this.editNextValCell);
+        this.parent.off('closebatch', this.closeForm);
     }
 
     private dataBound(): void {
@@ -189,7 +193,7 @@ export class BatchEdit {
         if (argument.cancel) {
             return;
         }
-        if (gObj.frozenColumns && rows.length < this.parent.currentViewData.length * 2) {
+        if (gObj.frozenColumns && rows.length < this.parent.currentViewData.length * 2 && !(isBlazor() && gObj.isServerRendered)) {
             rows.push.apply(rows, this.parent.getMovableRowsObject());
         }
         let cols: Column[] = this.parent.getColumns();
@@ -249,8 +253,16 @@ export class BatchEdit {
                         delete rows[i].edit;
                         rows[i].isDirty = false;
                         let ftr: HTMLElement = mTr ? mTr : tr;
-                        classList(ftr, [], ['e-hiddenrow', 'e-updatedtd']);
-                        rowRenderer.refresh(rows[i], gObj.getColumns() as Column[], false);
+                        if (isBlazor() && gObj.isServerRendered) {
+                            if (gObj.getFrozenColumns()) {
+                                this.removeHideAndSelection(mTr);
+                            }
+                            this.removeHideAndSelection(tr);
+                            this.closeForm();
+                        } else {
+                            classList(ftr, [], ['e-hiddenrow', 'e-updatedtd']);
+                            rowRenderer.refresh(rows[i], gObj.getColumns() as Column[], false);
+                        }
                         if (this.parent.aggregates.length > 0) {
                             let type: string = 'type';
                             let editType: Object[] = [];
@@ -263,6 +275,9 @@ export class BatchEdit {
                     }
                 }
             }
+        }
+        if (isBlazor() && gObj.isServerRendered) {
+            gObj.selectRow(gObj.selectionModule.prevRowIndex);
         }
         if (!gObj.getContentTable().querySelector('tr.e-row')) {
             gObj.renderModule.renderEmptyRow();
@@ -283,6 +298,16 @@ export class BatchEdit {
         if (gObj.frozenColumns) {
             rows.splice(this.parent.getMovableRowsObject().length, rows.length);
         }
+    }
+
+    private removeHideAndSelection(tr: Element): void {
+        if (tr.classList.contains('e-hiddenrow')) {
+            tr.removeAttribute('aria-selected');
+            tr.querySelectorAll('.e-selectionbackground').forEach((td: Element) => {
+                 removeClass([td], ['e-selectionbackground', 'e-active']);
+            });
+        }
+        classList(tr, [], ['e-hiddenrow', 'e-updatedtd']);
     }
 
     public deleteRecord(fieldname?: string, data?: Object): void {
@@ -308,7 +333,32 @@ export class BatchEdit {
         if (this.parent.isEdit && this.validateFormObj()) {
             return;
         }
+        if (isBlazor() && this.parent.isServerRendered) {
+            let content: Element =  this.parent.getContent();
+            this.closeForm();
+            removeClass(content.querySelectorAll('.e-updatedtd'), ['e-updatedtd']);
+            if (content.querySelector('.e-insertedrow, .e-hiddenrow')) {
+                removeClass(content.querySelectorAll('.e-hiddenrow'), ['e-hiddenrow']);
+                content.querySelectorAll('.e-insertedrow').forEach((el: Element) => el.remove());
+            }
+            this.refreshRowIdx();
+        }
         this.batchSave();
+    }
+
+    private closeForm() : void {
+        for (let i: number = 0; i < Object.keys(this.originalCell).length; i++) {
+            for (let j: number = 0; j < Object.keys(this.cloneCell).length; j++) {
+                if (Object.keys(this.originalCell)[i] === Object.keys(this.cloneCell)[j]) {
+                    this.cloneCell[Object.keys(this.cloneCell)[j]].replaceWith(this.originalCell[Object.keys(this.originalCell)[i]]);
+                    if (this.originalCell[Object.keys(this.originalCell)[i]].classList.contains('e-selectionbackground')) {
+                        this.originalCell[Object.keys(this.originalCell)[i]].classList.remove('e-selectionbackground', 'e-active');
+                    }
+                }
+            }
+        }
+        this.cloneCell = {};
+        this.originalCell = {};
     }
 
     private validateFormObj(): boolean {
@@ -367,8 +417,6 @@ export class BatchEdit {
             changedRecords: []
         };
         let rows: Row<Column>[] = this.parent.getRowsObject() as Row<Column>[];
-        let mRows: Row<Column>[] = this.parent.getMovableRowsObject() as Row<Column>[];
-        let frzCols: number = this.parent.getFrozenColumns();
         for (let row of rows) {
             if (row.isDirty) {
                 switch (row.edit) {
@@ -780,6 +828,25 @@ export class BatchEdit {
                     this.isColored = true;
                     cellEditArgs.cell.classList.remove('e-updatedtd');
                 }
+                if (isBlazor() && gObj.isServerRendered) {
+                    let cell: string = 'cells';
+                    let cloneCell: string = 'cloneCell';
+                    this.cloneCell[`${this.cellDetails.rowIndex}${cellEditArgs.columnObject.index}`] =
+                                    cellEditArgs[cloneCell] = cellEditArgs.cell.cloneNode(true);
+                    if ((parentsUntil(cellEditArgs.cell, 'e-movableheader') ||
+                            parentsUntil(cellEditArgs.cell, 'e-movablecontent'))) {
+                    (<HTMLTableRowElement>cellEditArgs.row).insertCell(cellEditArgs.columnObject.index - gObj.getFrozenColumns());
+                    cellEditArgs.row.replaceChild(cellEditArgs[cloneCell],
+                                                  cellEditArgs.row[cell][cellEditArgs.columnObject.index - gObj.getFrozenColumns()]);
+                    } else {
+                        (<HTMLTableRowElement>cellEditArgs.row).insertCell(cellEditArgs.columnObject.index);
+                        cellEditArgs.row.replaceChild(cellEditArgs[cloneCell], cellEditArgs.row[cell][cellEditArgs.columnObject.index]);
+                    }
+                    this.originalCell[`${this.cellDetails.rowIndex}${cellEditArgs.columnObject.index}`] =
+                    cellEditArgs.cell.parentElement.removeChild(cellEditArgs.cell);
+                    removeClass([this.cloneCell[`${this.cellDetails.rowIndex}${cellEditArgs.columnObject.index}`]],
+                                ['e-focus', 'e-focused']);
+                }
                 gObj.isEdit = true;
                 gObj.clearSelection();
                 if (!gObj.isCheckBoxSelection || !gObj.isPersistSelection) {
@@ -814,28 +881,40 @@ export class BatchEdit {
         }
     }
 
-    private setChanges(rowObj: Row<Column>, field: string, value: string | number | boolean | Date): void {
-        let currentCol: Column = this.parent.getColumnByField(field);
-        let currentRowObj: Row<Column> ;
-        if (this.parent.getFrozenColumns() || currentCol.isFrozen) {
-            currentRowObj = rowObj.isFreezeRow ? this.parent.getMovableRowsObject()[rowObj.index] :
-                this.parent.getRowsObject()[rowObj.index];
-        }
-        if (!rowObj.changes) {
-            rowObj.changes = extend({}, {}, rowObj.data, true);
-        }
-        if (!isNullOrUndefined(field)) {
-            DataUtil.setValue(field, value, rowObj.changes);
-        }
-        if (rowObj.data[field] !== value) {
-            rowObj.isDirty = true;
-        }
-        if (currentRowObj) {
-            currentRowObj.changes = extend({}, {}, rowObj.data, true);
-            if (!isNullOrUndefined(field)) {
-                DataUtil.setValue(field, value, currentRowObj.changes);
+    private setChanges(rowObj: Row<Column>, field: string, value: string | number | boolean | Date, td: Element): void {
+        let currentRowObj: Row<Column>;
+        if (!this.parent.getFrozenColumns()) {
+            if (!rowObj.changes) {
+                rowObj.changes = extend({}, {}, rowObj.data, true);
             }
-            currentRowObj.isDirty = true;
+            if (!isNullOrUndefined(field)) {
+                DataUtil.setValue(field, value, rowObj.changes);
+            }
+            if (rowObj.data[field] !== value) {
+                rowObj.isDirty = true;
+            }
+        } else {
+            let rowEle: Element = this.parent.getRowElementByUID(rowObj.uid);
+            let rowIndex: number = parseInt(rowEle.getAttribute('aria-rowindex'), 10);
+            currentRowObj = this.parent.getRowsObject()[rowIndex];
+            if (!currentRowObj.changes) {
+                currentRowObj.changes = extend({}, {}, rowObj.data, true);
+            }
+            setValue(field, value, currentRowObj.changes);
+            let movableRowObject: Row<Column>;
+            if (isBlazor() && this.parent.isServerRendered && (parentsUntil(td, 'e-movableheader') ||
+            parentsUntil(td, 'e-movablecontent'))) {
+                let movRowEle: Element = this.parent.getMovableRowByIndex(this.cellDetails.rowIndex);
+                let movRowIndex: number = parseInt(movRowEle.getAttribute('aria-rowindex'), 10);
+                movableRowObject = this.parent.getMovableRowsObject()[movRowIndex];
+            } else {
+                movableRowObject = this.parent.getRowObjectFromUID(rowObj.uid);
+            }
+            movableRowObject.changes = extend({}, {}, currentRowObj.changes, true);
+            if (rowObj.data[field] !== value) {
+                movableRowObject.isDirty = true;
+                currentRowObj.isDirty = true;
+            }
         }
     }
 
@@ -858,7 +937,7 @@ export class BatchEdit {
     private refreshTD(td: Element, column: Column, rowObj: Row<Column>, value: string | number | boolean | Date): void {
         let cell: CellRenderer = new CellRenderer(this.parent, this.serviceLocator);
         let rowcell: Cell<Column>[];
-        this.setChanges(rowObj, column.field, value);
+        this.setChanges(rowObj, column.field, value, td);
         let frzCols: number = this.parent.getFrozenColumns();
         refreshForeignData(rowObj, this.parent.getForeignKeyColumns(), rowObj.changes);
         if (frzCols && this.getCellIdx(column.uid) >= frzCols && this.parent.getColumns().length === rowObj.cells.length) {
@@ -961,7 +1040,12 @@ export class BatchEdit {
                 updateBlazorTemplate(gObj.element.id + column.uid, 'Template', column, false);
             }
             this.parent.notify(events.tooltipDestroy, {});
-            this.refreshTD(cellSaveArgs.cell, column, gObj.getRowObjectFromUID(tr.getAttribute('data-uid')), cellSaveArgs.value);
+            if (isBlazor() && gObj.isServerRendered && (parentsUntil(cellSaveArgs.cell, 'e-movableheader') ||
+                parentsUntil(cellSaveArgs.cell, 'e-movablecontent') )) {
+                this.refreshTD(cellSaveArgs.cell, column, gObj.getMovableRowsObject()[this.cellDetails.rowIndex], cellSaveArgs.value);
+            } else {
+                this.refreshTD(cellSaveArgs.cell, column, gObj.getRowObjectFromUID(tr.getAttribute('data-uid')), cellSaveArgs.value);
+            }
             removeClass([tr], ['e-editedrow', 'e-batchrow']);
             removeClass([cellSaveArgs.cell], ['e-editedbatchcell', 'e-boolcell']);
             if (!isNullOrUndefined(cellSaveArgs.value) && cellSaveArgs.value.toString() ===
@@ -969,6 +1053,19 @@ export class BatchEdit {
                 || (isNullOrUndefined(cellSaveArgs.value) && isNullOrUndefined(this.cellDetails.value) &&
                     !cellSaveArgs.cell.parentElement.classList.contains('e-insertedrow'))) {
                 cellSaveArgs.cell.classList.remove('e-updatedtd');
+                if (isBlazor() && gObj.isServerRendered && cellSaveArgs.value.toString() ===
+                (!isNullOrUndefined(this.cellDetails.value) ? this.cellDetails.value : '').toString()) {
+                    if (this.cloneCell[`${this.cellDetails.rowIndex}${cellSaveArgs.columnObject.index}`].
+                        classList.contains('e-selectionbackground')) {
+                        this.originalCell[`${this.cellDetails.rowIndex}${cellSaveArgs.columnObject.index}`].
+                            classList.add('e-selectionbackground', 'e-active');
+                    } else {
+                        this.originalCell[`${this.cellDetails.rowIndex}${cellSaveArgs.columnObject.index}`].
+                            classList.remove('e-selectionbackground', 'e-active');
+                    }
+                    this.cloneCell[`${this.cellDetails.rowIndex}${cellSaveArgs.columnObject.index}`]
+                                .replaceWith(this.originalCell[`${this.cellDetails.rowIndex}${cellSaveArgs.columnObject.index}`]);
+                }
             }
             gObj.trigger(events.cellSaved, cellSaveArgs);
             gObj.notify(events.toolbarRefresh, {});

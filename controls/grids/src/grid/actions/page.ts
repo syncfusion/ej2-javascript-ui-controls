@@ -1,6 +1,6 @@
 import { KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { extend } from '@syncfusion/ej2-base';
-import { remove, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { remove, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { Pager } from '../../pager/pager';
 import { PagerDropDown } from '../../pager/pager-dropdown';
 import { ExternalMessage } from '../../pager/external-message';
@@ -78,6 +78,7 @@ export class Page implements IAction {
             },
             ['parentObj', 'propName']);
         this.pagerObj = new Pager(pagerObj);
+        this.pagerObj.allowServerDataBinding = false;
     }
 
     private onSelect(e: Pager): void {
@@ -160,6 +161,9 @@ export class Page implements IAction {
      * @hidden
      */
     public onActionComplete(e: NotifyArgs): void {
+        if (isBlazor() && !this.parent.isJsComponent) {
+            e.rows = null;
+        }
         this.parent.trigger(events.actionComplete, extend(e, {
             currentPage: this.parent.pageSettings.currentPage, requestType: 'paging',
             type: events.actionComplete

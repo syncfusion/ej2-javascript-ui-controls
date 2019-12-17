@@ -50,7 +50,7 @@ let importRules: RuleModel = {
         }]
     }]
     };
-let qryBldrObj: QueryBuilder = new QueryBuilder({ dataSource: employeeData, rule: importRules,
+let qryBldrObj: QueryBuilder = new QueryBuilder({ dataSource: employeeData, rule: importRules, enableNotCondition: true,
     displayMode: "Horizontal", allowValidation: true });
 qryBldrObj.appendTo('#querybuilder');
 
@@ -96,4 +96,24 @@ document.getElementById('highcontrasttouch').onclick = (e : Event) => {
     document.body.classList.add('darkBG');
     addClass([qryBldrObj.element], 'e-bigger');
     document.getElementById('theme').setAttribute('href', '../../theme-files/highcontrast.css');
+};
+document.getElementById('material-dark').onclick = (e : Event) => {
+    document.body.classList.add('darkBG');
+    removeClass([qryBldrObj.element], 'e-bigger');
+    document.getElementById('theme').setAttribute('href', '../../theme-files/material-dark.css');
+};
+document.getElementById('fabric-dark').onclick = (e : Event) => {
+    document.body.classList.add('darkBG');
+    removeClass([qryBldrObj.element], 'e-bigger');
+    document.getElementById('theme').setAttribute('href', '../../theme-files/fabric-dark.css');
+};
+document.getElementById('bootstrap-dark').onclick = (e : Event) => {
+    document.body.classList.add('darkBG');
+    removeClass([qryBldrObj.element], 'e-bigger');
+    document.getElementById('theme').setAttribute('href', '../../theme-files/bootstrap-dark.css');
+};
+document.getElementById('bootstrap4').onclick = (e : Event) => {
+    document.body.classList.remove('darkBG');
+    removeClass([qryBldrObj.element], 'e-bigger');
+    document.getElementById('theme').setAttribute('href', '../../theme-files/bootstrap4.css');
 };

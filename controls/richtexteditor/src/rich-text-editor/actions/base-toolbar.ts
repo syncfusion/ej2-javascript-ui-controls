@@ -1,4 +1,4 @@
-import { ItemModel, Toolbar as tool } from '@syncfusion/ej2-navigations';
+import { ItemModel, Toolbar as tool, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { RenderType } from '../base/enum';
 import { CLS_HR_SEPARATOR } from '../base/classes';
 import * as events from '../base/constant';
@@ -9,7 +9,7 @@ import { IRichTextEditor, IRenderer, IToolbarRenderOptions, IToolbarItems, ITool
 import { IToolbarOptions, IToolbarItemModel } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
-import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, EmitType } from '@syncfusion/ej2-base';
 
 /**
  * `Toolbar` module is used to handle Toolbar actions.
@@ -72,6 +72,11 @@ export class BaseToolbar {
         };
     }
 
+    /**
+     * getObject method
+     * @hidden
+     * @deprecated
+     */
     public getObject(item: string, container: string): IToolbarItemModel {
         let itemStr: string = item.toLowerCase();
         if (templateItems.indexOf(itemStr) !== -1) {
@@ -95,6 +100,7 @@ export class BaseToolbar {
     }
     /** 
      * @hidden
+     * @deprecated
      */
     public getItems(tbItems: (string | IToolbarItems)[], container: string): ItemModel[] {
         if (this.parent.toolbarSettings.items.length < 1) { return []; }
@@ -105,6 +111,19 @@ export class BaseToolbar {
                     items.push(this.getObject(item as string, container));
                     break;
                 default:
+                    if (!isNullOrUndefined((item as IToolbarItems).click)) {
+                        let proxy: IToolbarItems = item as IToolbarItems;
+                        let callback: EmitType<ClickEventArgs> = proxy.click;
+                        proxy.click = () => {
+                            if (proxy.undo && this.parent.formatter.getUndoRedoStack().length === 0) {
+                                this.parent.formatter.saveData();
+                            }
+                            callback.call(this);
+                            if (proxy.undo) {
+                                this.parent.formatter.saveData();
+                            }
+                        };
+                    }
                     items.push(item as ItemModel);
             }
         }
@@ -122,6 +141,11 @@ export class BaseToolbar {
         };
     }
 
+    /**
+     * render method
+     * @hidden
+     * @deprecated
+     */
     public render(args: IToolbarRenderOptions): void {
         this.toolbarRenderer = this.renderFactory.getRenderer(RenderType.Toolbar);
         this.toolbarRenderer.renderToolbar(this.getToolbarOptions(args));

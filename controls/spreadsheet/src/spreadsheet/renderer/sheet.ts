@@ -79,7 +79,7 @@ export class SheetRender implements IRenderer {
         if (sheet.showHeaders) {
             this.contentPanel.appendChild(this.parent.createElement('div', { className: 'e-row-header', id: `${id}_row_header` }));
             this.initHeaderPanel();
-            this.parent.scrollModule.setPadding();
+            if (this.parent.allowScrolling) { this.parent.scrollModule.setPadding(); }
         } else {
             this.updateHideHeaders();
         }
@@ -362,31 +362,31 @@ export class SheetRender implements IRenderer {
                     rFrag.appendChild(hRow);
                     hRow.appendChild(this.cellRenderer.renderRowHeader(indexes[0]));
                     colGroupWidth = getColGroupWidth(indexes[0] + 1);
-                    if (this.parent.scrollSettings.enableVirtualization) {
+                    if (this.parent.scrollSettings.enableVirtualization && direction) {
                         // tslint:disable-next-line:no-any
                         detach((rTBody as any)[direction + 'ElementChild']);
                     }
                 }
                 row = this.rowRenderer.render(indexes[0]) as HTMLElement;
                 frag.appendChild(row);
-                if (this.parent.scrollSettings.enableVirtualization) {
+                if (this.parent.scrollSettings.enableVirtualization && direction) {
                     // tslint:disable-next-line:no-any
                     detach((tBody as any)[direction + 'ElementChild']);
                 }
             }
-            row.appendChild(this.cellRenderer.render(<CellRenderArgs>{ colIdx: indexes[1], rowIdx: indexes[0], cell: value,
-                address: cKey, lastCell: indexes[1] === lastIdx, row: row, hRow: hRow, isHeightCheckNeeded: direction === 'first' }));
+            row.appendChild(this.cellRenderer.render(<CellRenderArgs>{ colIdx: indexes[1], rowIdx: indexes[0], cell: value, address: cKey,
+                lastCell: indexes[1] === lastIdx, row: row, hRow: hRow, isHeightCheckNeeded: direction === 'first' || direction === '' }));
         });
-        getUpdateUsingRaf((): void => {
+        let appendFn: Function = (): void => {
             if (this.colGroupWidth !== colGroupWidth) {
                 this.updateLeftColGroup(colGroupWidth);
             }
-            if (direction === 'first') {
-                if (sheet.showHeaders) { rTBody.appendChild(rFrag); }
-                tBody.appendChild(frag);
-            } else {
+            if (direction === 'last') {
                 if (sheet.showHeaders) { rTBody.insertBefore(rFrag, rTBody.firstElementChild); }
                 tBody.insertBefore(frag, tBody.firstElementChild);
+            } else {
+                if (sheet.showHeaders) { rTBody.appendChild(rFrag); }
+                tBody.appendChild(frag);
             }
             if (this.parent.scrollSettings.enableVirtualization) {
                 this.parent.notify(virtualContentLoaded, { refresh: 'Row' });
@@ -395,7 +395,8 @@ export class SheetRender implements IRenderer {
                 this.parent.hideSpinner();
             }
             setAriaOptions(this.parent.getMainContent() as HTMLElement, { busy: false });
-        });
+        };
+        direction ? getUpdateUsingRaf(appendFn) : appendFn();
     }
 
     /**

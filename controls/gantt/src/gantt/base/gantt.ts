@@ -3,6 +3,7 @@ import { Internationalization, extend, getValue, isObjectArray, isObject, setVal
 import { Property, NotifyPropertyChanges, INotifyPropertyChanged, L10n, ModuleDeclaration, remove } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, KeyboardEvents, KeyboardEventArgs, Collection, append } from '@syncfusion/ej2-base';
 import { createSpinner, showSpinner, hideSpinner, Dialog } from '@syncfusion/ej2-popups';
+import { RowDragEventArgs } from '@syncfusion/ej2-grids';
 import { GanttModel } from './gantt-model';
 import { TaskProcessor } from './task-processor';
 import { GanttChart } from './gantt-chart';
@@ -34,6 +35,7 @@ import { CellDeselectEventArgs, IIndex, FailureEventArgs } from '@syncfusion/ej2
 import { HeaderCellInfoEventArgs, ColumnMenuClickEventArgs, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';
 import { ColumnMenuItemModel, ExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelExportProperties, ExcelExportCompleteArgs, ExcelHeaderQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
+import { RowDD } from '../actions/rowdragdrop';
 import { Filter } from '../actions/filter';
 import { PageEventArgs, FilterEventArgs, SortEventArgs, ResizeArgs, ColumnDragEventArgs, getActualProperties } from '@syncfusion/ej2-grids';
 import { RenderDayCellEventArgs } from '@syncfusion/ej2-calendars';
@@ -52,6 +54,7 @@ import { ContextMenu } from './../actions/context-menu';
 import { RowSelectingEventArgs } from './interface';
 import { ContextMenuOpenEventArgs as CMenuOpenEventArgs, ContextMenuClickEventArgs as CMenuClickEventArgs } from './interface';
 import { ColumnMenu } from '../actions/column-menu';
+import { ITaskbarClickEventArgs, RecordDoubleClickEventArgs, IMouseMoveEventArgs } from './interface';
 
 /**
  *
@@ -89,6 +92,8 @@ export class Gantt extends Component<HTMLElement>
     public connectorLineEditModule: ConnectorLineEdit;
     /** @hidden */
     public splitterModule: Splitter;
+    /** @hidden */
+    public isCancelled: boolean = false;
     /** @hidden */
     public treeGrid: TreeGrid;
     /** @hidden */
@@ -208,6 +213,10 @@ export class Gantt extends Component<HTMLElement>
      */
     public excelExportModule: ExcelExport;
     /**
+     * The `rowDragandDrop` is used to manipulate Row Reordering in Gantt.
+     */
+    public rowDragAndDropModule: RowDD;
+    /**
      * The `dayMarkersModule` is used to manipulate event markers operation in Gantt.
      */
     public dayMarkersModule: DayMarkers;
@@ -234,6 +243,8 @@ export class Gantt extends Component<HTMLElement>
     /** @hidden */
     public staticSelectedRowIndex: number = -1;
     protected needsID: boolean = true;
+    /** @hidden */
+    public showActiveElement: boolean = false;
     /**
      * Enables or disables the key board interaction of Gantt.
      * 
@@ -241,6 +252,12 @@ export class Gantt extends Component<HTMLElement>
      */
     @Property(true)
     public allowKeyboard: boolean;
+    /**
+     * If `disableHtmlEncode` is set to true, it encodes the HTML of the header and content cells.
+     * @default true
+     */
+    @Property(true)
+    public disableHtmlEncode: boolean;
     /**
      * Enables or disables the focusing the task bar on click action.
      * 
@@ -313,6 +330,7 @@ export class Gantt extends Component<HTMLElement>
     /**
      * It is used to render Gantt chart rows and tasks.
      * `dataSource` value was defined as array of JavaScript objects or instances of `DataManager`.
+     * {% codeBlock src='gantt/dataSource/index.md' %}{% endcodeBlock %}
      * @isGenericType true
      * @default []
      */
@@ -336,8 +354,9 @@ export class Gantt extends Component<HTMLElement>
     public query: Query;
     /**
      * Specifies the dateFormat for Gantt, given format is displayed in tooltip and Grid cells.
+     * By default, the format is based on the culture.
      */
-    @Property('MM/dd/yyyy')
+    @Property(null)
     public dateFormat: string;
     /**
      * Defines the height of the Gantt component container.
@@ -361,6 +380,7 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Defines the right, left and inner task labels in task bar.
+     * {% codeBlock src='gantt/labelSettings/index.md' %}{% endcodeBlock %}
      */
     @Complex<LabelSettingsModel>({}, LabelSettings)
     public labelSettings: LabelSettingsModel;
@@ -515,6 +535,7 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Defines column collection displayed in grid
      * If the `columns` declaration was empty then `columns` are automatically populated from `taskSettings` value.
+     * {% codeBlock src='gantt/columns/index.md' %}{% endcodeBlock %}
      * @default []
      */
     @Property([])
@@ -522,6 +543,7 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Defines the tabs and fields to be included in the add dialog.
      * If the value was empty, then it will be calculated from `taskSettings` and `columns` value.
+     * {% codeBlock src='gantt/addDialogFields/index.md' %}{% endcodeBlock %}
      * @default []
      */
     @Property([])
@@ -529,6 +551,7 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Defines the tabs and fields to be included in the edit dialog.
      * If the value was empty, then it will be calculated from `taskSettings` and `columns` value.
+     * {% codeBlock src='gantt/editDialogFields/index.md' %}{% endcodeBlock %}
      * @default []
      */
     @Property([])
@@ -545,23 +568,27 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Defines customized working time of project.
+     * {% codeBlock src='gantt/dayWorkingTime/index.md' %}{% endcodeBlock %} 
      */
     @Collection<DayWorkingTimeModel>([{ from: 8, to: 12 }, { from: 13, to: 17 }], DayWorkingTime)
     public dayWorkingTime: DayWorkingTimeModel[];
     /**
      * Defines holidays presented in project timeline.
+     * {% codeBlock src='gantt/holidays/index.md' %}{% endcodeBlock %}
      * @default []
      */
     @Collection<HolidayModel>([], Holiday)
     public holidays: HolidayModel[];
     /**
      * Defines events and status of project throughout the timeline.
+     * {% codeBlock src='gantt/eventMarkers/index.md' %}{% endcodeBlock %}
      * @default []
      */
     @Collection<EventMarkerModel>([], EventMarker)
     public eventMarkers: EventMarkerModel[];
     /**
      * Defines mapping properties to find task values such as id, start date, end date, duration and progress values from data source.
+     * {% codeBlock src='gantt/taskFields/index.md' %}{% endcodeBlock %}
      */
     @Complex<TaskFieldsModel>({}, TaskFields)
     public taskFields: TaskFieldsModel;
@@ -569,6 +596,7 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Configures timeline settings of Gantt.
      * Defines default timeline modes or customized top tier mode and bottom tier mode or single tier only.
+     * {% codeBlock src='gantt/timelineSettings/index.md' %}{% endcodeBlock %}
      */
     @Complex<TimelineSettingsModel>({}, TimelineSettings)
     public timelineSettings: TimelineSettingsModel;
@@ -583,6 +611,7 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Configures the sort settings of the Gantt.
+     * {% codeBlock src='gantt/sortSettings/index.md' %}{% endcodeBlock %}
      * @default {columns:[]}
      */
     @Complex<SortSettingsModel>({}, SortSettings)
@@ -590,6 +619,7 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Configures edit settings of Gantt.
+     * {% codeBlock src='gantt/editSettings/index.md' %}{% endcodeBlock %}
      * @default { allowAdding: false, allowEditing: false, allowDeleting: false, mode:'Auto',
      * showDeleteConfirmDialog: false } 
      */
@@ -597,12 +627,14 @@ export class Gantt extends Component<HTMLElement>
     public editSettings: EditSettingsModel;
     /**
      * Enables or disables default tooltip of Gantt element and defines customized tooltip for Gantt elements.
+     * {% codeBlock src='gantt/tooltipSettings/index.md' %}{% endcodeBlock %}
      * @default { showTooltip: true } 
      */
     @Complex<TooltipSettingsModel>({}, TooltipSettings)
     public tooltipSettings: TooltipSettingsModel;
     /**
      * Configures the selection settings.
+     * {% codeBlock src='gantt/selectionSettings/index.md' %}{% endcodeBlock %}
      * @default {mode: 'Row', type: 'Single'}
      */
     @Complex<SelectionSettingsModel>({}, SelectionSettings)
@@ -621,6 +653,12 @@ export class Gantt extends Component<HTMLElement>
     @Property(false)
     public allowExcelExport: boolean;
 
+    /**
+     * If `allowRowDragAndDrop` set to true, then it will allow the user to perform drag and drop action in Gantt.
+     * @default false
+     */
+    @Property(false)
+    public allowRowDragAndDrop: boolean;
     /**
      * If `allowReordering` is set to true, Gantt columns can be reordered. 
      * Reordering can be done by drag and drop of a particular column from one index to another index.  
@@ -642,13 +680,15 @@ export class Gantt extends Component<HTMLElement>
     @Property(false)
     public enableContextMenu: boolean;
     /**
-     * If `contextMenuItems` are array collection of menu items in Context Menu.
+     * `contextMenuItems` defines both built-in and custom context menu items.
+     * {% codeBlock src='gantt/contextMenuItems/index.md' %}{% endcodeBlock %}
      * @default null
      */
     @Property()
     public contextMenuItems: ContextMenuItem[] | ContextMenuItemModel[];
     /**
      * Configures the filter settings for Gantt.
+     * {% codeBlock src='gantt/filterSettings/index.md' %}{% endcodeBlock %}
      * @default {columns: [], type: 'Menu' }
      */
     @Complex<FilterSettingsModel>({}, FilterSettings)
@@ -656,12 +696,14 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Configures the search settings for Gantt.
+     * {% codeBlock src='gantt/searchSettings/index.md' %}{% endcodeBlock %}
      */
     @Complex<SearchSettingsModel>({}, SearchSettings)
     public searchSettings: SearchSettingsModel;
 
     /**
      * Configures the splitter settings for Gantt.
+     * {% codeBlock src='gantt/splitterSettings/index.md' %}{% endcodeBlock %}
      */
     @Complex<SplitterSettingsModel>({}, SplitterSettings)
     public splitterSettings: SplitterSettingsModel;
@@ -724,6 +766,33 @@ export class Gantt extends Component<HTMLElement>
      */
     @Event()
     public excelHeaderQueryCellInfo: EmitType<ExcelHeaderQueryCellInfoEventArgs>;
+    /**
+     * Triggers when row elements are dragged (moved) continuously.
+     * @event
+     * @deprecated
+     */
+    @Event()
+    public rowDrag: EmitType<RowDragEventArgs>;
+    /**
+     * Triggers when row element’s drag(move) starts.
+     * @event
+     * @deprecated
+     */
+    @Event()
+    public rowDragStart: EmitType<RowDragEventArgs>;
+
+    /**
+     * Triggers when row element’s before drag(move).
+     * @event
+     */
+    @Event()
+    public rowDragStartHelper: EmitType<RowDragEventArgs>;
+    /**
+     * Triggers when row elements are dropped on the target row.
+     * @event
+     */
+    @Event()
+    public rowDrop: EmitType<RowDragEventArgs>;
 
     /** 
      * This will be triggered before the row getting collapsed.
@@ -1044,6 +1113,30 @@ export class Gantt extends Component<HTMLElement>
         super(options, <HTMLElement | string>element);
     }
 
+    /** 
+     * This event will be triggered when click on taskbar element.
+     * @deprecated
+     * @event 
+     */
+    @Event()
+    public onTaskbarClick: EmitType<ITaskbarClickEventArgs>;
+
+    /** 
+     * This event will be triggered when double click on record.
+     * @deprecated
+     * @event 
+     */
+    @Event()
+    public recordDoubleClick: EmitType<RecordDoubleClickEventArgs>;
+
+    /** 
+     * This event will be triggered when mouse move on Gantt.
+     * @deprecated
+     * @event 
+     */
+    @Event()
+    public onMouseMove: EmitType<IMouseMoveEventArgs>;
+
     /**
      * To get the module name
      * @private
@@ -1111,6 +1204,9 @@ export class Gantt extends Component<HTMLElement>
             case 'saveRequest':
                 if (!isNullOrUndefined(this.editModule) && !isNullOrUndefined(this.editModule.cellEditModule) &&
                     this.editModule.cellEditModule.isCellEdit === true) {
+                    if (this.editModule.dialogModule.dialogObj && getValue('dialogOpen', this.editModule.dialogModule.dialogObj)) {
+                        return;
+                    }
                     this.editModule.cellEditModule.isCellEdit = false;
                     this.treeGrid.grid.saveCell();
                     let focussedElement: HTMLElement = <HTMLElement>this.element.querySelector('.e-treegrid');
@@ -1184,6 +1280,10 @@ export class Gantt extends Component<HTMLElement>
                     searchElement.focus();
                 }
                 break;
+            case 'tab':
+            case 'shiftTab':
+                this.ganttChartModule.onTabAction(e);
+                break;
             default:
                 let eventArgs: IKeyPressedEventArgs = {
                     requestType: 'keyPressed',
@@ -1245,6 +1345,8 @@ export class Gantt extends Component<HTMLElement>
     }
     private initProperties(): void {
         this.globalize = new Internationalization(this.locale);
+        this.dateFormat = !isNullOrUndefined(this.dateFormat) ? this.dateFormat :
+            this.globalize.getDatePattern({ skeleton: 'yMd' });
         this.isAdaptive = Browser.isDevice;
         this.flatData = [];
         this.currentViewData = [];
@@ -1319,6 +1421,8 @@ export class Gantt extends Component<HTMLElement>
             addRowDialog: 'ctrl+insert',
             editRowDialog: 'ctrl+f2',
             delete: 'delete',
+            tab: 'tab',
+            shiftTab: 'shift+tab',
             focusTask: 'shift+f5',
             indentLevel: 'shift+leftarrow',
             outdentLevel: 'shift+rightarrow',
@@ -1472,7 +1576,7 @@ export class Gantt extends Component<HTMLElement>
         if (isBlazor()) {
             let records: IGanttData[] = this.treeGrid.getCurrentViewRecords().slice();
             this.currentViewData = [];
-            for ( let i: number = 0; i < records.length; i++ ) {
+            for (let i: number = 0; i < records.length; i++) {
                 this.currentViewData.push(this.getTaskByUniqueID(records[i].uniqueID));
             }
             this.treeGrid.grid.currentViewData = this.currentViewData;
@@ -1485,7 +1589,7 @@ export class Gantt extends Component<HTMLElement>
      */
     public getRecordFromFlatdata(records: IGanttData[]): IGanttData[] {
         let updatedRecord: IGanttData[] = [];
-        for ( let i: number = 0; i < records.length; i++ ) {
+        for (let i: number = 0; i < records.length; i++) {
             updatedRecord.push(this.getTaskByUniqueID(records[i].uniqueID));
         }
         return updatedRecord;
@@ -1848,6 +1952,7 @@ export class Gantt extends Component<HTMLElement>
                     break;
                 case 'selectionSettings':
                     this.treeGrid.selectionSettings = getActualProperties(this.selectionSettings);
+                    this.treeGrid.grid.selectionSettings.enableToggle = this.selectionSettings.enableToggle;
                     this.treeGrid.dataBind();
                     break;
                 case 'searchSettings':
@@ -2031,6 +2136,12 @@ export class Gantt extends Component<HTMLElement>
                 args: [this]
             });
         }
+        if (this.allowRowDragAndDrop) {
+            modules.push({
+                member: 'rowDragAndDrop',
+                args: [this]
+            });
+        }
         if (this.allowResizing) {
             modules.push({
                 member: 'resize',
@@ -2044,7 +2155,7 @@ export class Gantt extends Component<HTMLElement>
             });
         }
         if (this.editSettings.allowAdding || this.editSettings.allowEditing || this.editSettings.allowDeleting
-            || this.editSettings.allowTaskbarEditing) {
+            || this.editSettings.allowTaskbarEditing || this.allowRowDragAndDrop) {
             modules.push({
                 member: 'edit',
                 args: [this]
@@ -2763,6 +2874,12 @@ export class Gantt extends Component<HTMLElement>
         this.ganttChartModule.updateScrollLeft(0);
     }
     /**
+     * Reorder the rows based on given indexes and position
+     */
+    public reorderRows(fromIndexes: number[], toIndex: number, position: string): void {
+        this.rowDragAndDropModule.reorderRows(fromIndexes, toIndex, position);
+    }
+    /**
      * Method to update record by Index.
      * @param  {number} index - Defines the index of data to modify.
      * @param  {object} data - Defines the data to modify.
@@ -2914,7 +3031,6 @@ export class Gantt extends Component<HTMLElement>
             return '';
         }
     }
-
     private createGanttPopUpElement(): void {
         let popup: Element = this.createElement('div', { className: 'e-ganttpopup', styles: 'display:none;' });
         let content: Element = this.createElement('div', { className: 'e-content', attrs: { tabIndex: '-1' } });
@@ -2993,16 +3109,16 @@ export class Gantt extends Component<HTMLElement>
     public updateDataSource(dataSource: object[], args: object): void {
         if (!isNullOrUndefined(args)) {
             for (let prop of Object.keys(args)) {
-            switch (prop) {
-                case 'projectStartDate':
-                    this.setProperties({ projectStartDate: args[prop] }, true);
-                    break;
-                case 'projectEndDate':
-                    this.setProperties({ projectEndDate: args[prop] }, true);
-                    break;
+                switch (prop) {
+                    case 'projectStartDate':
+                        this.setProperties({ projectStartDate: args[prop] }, true);
+                        break;
+                    case 'projectEndDate':
+                        this.setProperties({ projectEndDate: args[prop] }, true);
+                        break;
+                }
             }
         }
-    }
         this.dataSource = dataSource;
     }
 
@@ -3084,6 +3200,7 @@ export class Gantt extends Component<HTMLElement>
      * @public
      */
     public cancelEdit(): void {
+        this.isCancelled = true;
         this.closeGanttActions();
     }
 
@@ -3138,7 +3255,7 @@ export class Gantt extends Component<HTMLElement>
      */
     public deleteRecord(taskDetail: number | string | number[] | string[] | IGanttData | IGanttData[]): void {
         if (this.editModule) {
-           this.editModule.deleteRecord(taskDetail);
+            this.editModule.deleteRecord(taskDetail);
         }
     }
     /**
@@ -3148,9 +3265,9 @@ export class Gantt extends Component<HTMLElement>
      * @return {void}
      */
     public enableItems(items: string[], isEnable: boolean): void {
-      if (this.toolbarModule) {
-          this.toolbarModule.enableItems(items, isEnable);
-      }
+        if (this.toolbarModule) {
+            this.toolbarModule.enableItems(items, isEnable);
+        }
     }
     /**
      * Deselects the current selected rows and cells.
@@ -3165,12 +3282,58 @@ export class Gantt extends Component<HTMLElement>
      * @param args
      * @hidden
      */
-    public updateDataArgs(args: ITaskAddedEventArgs | IActionBeginEventArgs): ITaskAddedEventArgs | IActionBeginEventArgs  {
+    public updateDataArgs(args: ITaskAddedEventArgs | IActionBeginEventArgs): ITaskAddedEventArgs | IActionBeginEventArgs {
         if (!Array.isArray(args.data)) {
             let customData: IGanttData[] = [];
             customData.push(args.data);
             setValue('data', customData, args);
         }
         return args;
+    }
+    /**
+     * Method to convert task data to milestone data.
+     * @param {string} id - Defines id of record.
+     * @return {void}
+     * @public
+     */
+    public convertToMilestone(id: string): void {
+        let rowData: IGanttData = this.getRecordByID(id);
+        if (!isNullOrUndefined(rowData)) {
+            let data: Object = extend({}, {}, rowData.taskData, true);
+            let taskfields: TaskFieldsModel = this.taskFields;
+            if (!isNullOrUndefined(taskfields.duration)) {
+                data[taskfields.duration] = 0;
+            } else {
+                data[taskfields.startDate] = new Date(rowData.taskData[taskfields.startDate]);
+                data[taskfields.endDate] = new Date(rowData.taskData[taskfields.startDate]);
+            }
+            if (!isNullOrUndefined(taskfields.milestone)) {
+                if (data[taskfields.milestone] === false) {
+                    data[taskfields.milestone] = true;
+                }
+            }
+            if (!isNullOrUndefined(taskfields.progress)) {
+                data[taskfields.progress] = 0;
+            }
+            if (!isNullOrUndefined(taskfields.child) && data[taskfields.child]) {
+                data[taskfields.child] = [];
+            }
+            if (!isNullOrUndefined(taskfields.parentID) && data[taskfields.parentID]) {
+                data[taskfields.parentID] = null;
+            }
+            if (!isNullOrUndefined(this.contextMenuModule) &&
+                this.contextMenuModule.isOpen &&
+                this.contextMenuModule.item === 'Milestone') {
+                if (!isNullOrUndefined(taskfields.dependency)) {
+                    data[taskfields.dependency] = null;
+                }
+                let position: RowPosition = 'Below';
+                this.addRecord(data, position);
+            } else {
+                if (!rowData.hasChildRecords && !rowData.ganttProperties.isMilestone) {
+                    this.updateRecordByID(data);
+                }
+            }
+        }
     }
 }

@@ -68,8 +68,8 @@ export class WorkCellInteraction {
             });
         } else {
             let date: Date = this.parent.getDateFromElement(target);
-            if (!isNullOrUndefined(date) && !this.parent.isAdaptive) {
-                this.parent.setProperties({ selectedDate: date }, true);
+            if (!isNullOrUndefined(date) && !this.parent.isAdaptive && this.parent.isMinMaxDate(date)) {
+                this.parent.setScheduleProperties({ selectedDate: date });
                 this.parent.changeView(this.parent.getNavigateView(), e);
             }
         }
@@ -83,6 +83,10 @@ export class WorkCellInteraction {
             <CellClickEventArgs>extend(this.parent.activeCellsData, { cancel: false, event: e, name: 'cellDoubleClick' });
         this.parent.trigger(event.cellDoubleClick, args, (clickArgs: CellClickEventArgs) => {
             clickArgs = this.serializingData(clickArgs, e);
+            let date: Date = new Date(clickArgs.startTime.getTime());
+            if (!this.parent.isMinMaxDate(new Date(date.setHours(0, 0, 0, 0)))) {
+                return;
+            }
             if (!clickArgs.cancel) {
                 this.parent.eventWindow.openEditor(this.parent.activeCellsData, 'Add');
             }

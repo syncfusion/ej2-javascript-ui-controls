@@ -93,7 +93,6 @@ export class PivotChart {
             return;
         } else {
             this.parent.notify(events.contentReady, {});
-            this.parent.chart.refresh();
             return;
         }
         this.columnGroupObject = {};
@@ -254,7 +253,7 @@ export class PivotChart {
             this.chartSeries = this.chartSeries.concat(currentSeries);
         }
         let seriesEvent: ChartSeriesCreatedEventArgs = { series: this.chartSeries, cancel: false };
-        let pivotChart : PivotChart = this;
+        let pivotChart: PivotChart = this;
         this.parent.trigger(events.chartSeriesCreated, seriesEvent, (observedArgs: ChartSeriesCreatedEventArgs) => {
             if (!observedArgs.cancel) {
                 pivotChart.bindChart();
@@ -265,7 +264,7 @@ export class PivotChart {
                 pivotChart.parent.notify(events.contentReady, {});
             }
         });
-        
+
     }
 
     private frameObjectWithKeys(series: any): SeriesModel | AxisModel {
@@ -648,7 +647,13 @@ export class PivotChart {
     private configTooltipSettings(): TooltipSettingsModel {
         let tooltip: TooltipSettingsModel = this.chartSettings.tooltip;
         tooltip.enable = tooltip.enable === undefined ? true : tooltip.enable;
-        tooltip.header = tooltip.header ? tooltip.header : '';
+        if (isBlazor()) {
+            this.parent.allowServerDataBinding = false;
+            this.parent.setProperties({ chartSettings: { tooltip: { header: tooltip.header ? tooltip.header : '' } } }, true);
+            this.parent.allowServerDataBinding = true;
+        } else {
+            tooltip.header = tooltip.header ? tooltip.header : '';
+        }
         tooltip.enableMarker = tooltip.enableMarker === undefined ? true : tooltip.enableMarker;
         return tooltip;
     }
@@ -703,7 +708,7 @@ export class PivotChart {
             formattedText);
         args.text = measureAggregatedName + ': ' + formattedValue +
             (this.dataSourceSettings.columns.length === 0 ? '' :
-                (' <br/>' + this.parent.localeObj.getConstant('column') + ': ' + args.series.name.split(' | ')[0])) +
+                (' <br/>' + this.parent.localeObj.getConstant('column') + ': ' + (args.series.name ? args.series.name.split(' | ')[0] : args.data.seriesName.split(' | ')[0]))) +
             (this.dataSourceSettings.rows.length === 0 ? '' :
                 (' <br/>' + this.parent.localeObj.getConstant('row') + ': ' + args.point.x));
         this.parent.trigger(events.chartTooltipRender, args);
@@ -723,14 +728,25 @@ export class PivotChart {
                     "#" + this.parent.element.id + multilabelAxisName).setAttribute('cursor', 'pointer');
             }
         }
-        if (this.parent.chart && this.parent.showToolbar && this.parent.element.querySelector(".e-pivot-toolbar")) {
+        if (this.parent.chart && this.parent.showToolbar && this.parent.element.querySelector(".e-pivot-toolbar")
+            && this.parent.showGroupingBar && this.parent.element.querySelector(".e-chart-grouping-bar")) {
+            this.parent.chart.height = (this.parent.getHeightAsNumber() - this.parent.element.querySelector(".e-pivot-toolbar").clientHeight -
+                this.parent.element.querySelector(".e-chart-grouping-bar").clientHeight).toString();
+        } else if (this.parent.chart && this.parent.showToolbar && this.parent.element.querySelector(".e-pivot-toolbar")) {
             this.parent.chart.height = (this.parent.getHeightAsNumber() - this.parent.element.querySelector(".e-pivot-toolbar").clientHeight).toString();
-        }
-        if (this.parent.chart && this.parent.showGroupingBar && this.parent.element.querySelector(".e-chart-grouping-bar")) {
+        } else if (this.parent.chart && this.parent.showGroupingBar && this.parent.element.querySelector(".e-chart-grouping-bar")) {
             this.parent.chart.height = (this.parent.getHeightAsNumber() - this.parent.element.querySelector(".e-chart-grouping-bar").clientHeight).toString();
-        }
-        if (parseInt(this.parent.chart.height) < 200) {
+        } else if (parseInt(this.parent.chart.height) < 200) {
             this.parent.chart.height = "200";
+        }
+        if (this.parent.grid && this.parent.chart && this.parent.showToolbar) {
+            if (this.parent.currentView === 'Table') {
+                this.parent.grid.element.style.display = '';
+                this.parent.chart.element.style.display = 'none';
+            } else {
+                this.parent.grid.element.style.display = 'none';
+                this.parent.chart.element.style.display = '';
+            }
         }
         this.parent.notify(events.contentReady, {});
         this.parent.trigger(events.chartLoaded, args);

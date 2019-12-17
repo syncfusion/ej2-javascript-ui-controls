@@ -1,14 +1,15 @@
 import { Grid, Edit as GridEdit, SaveEventArgs, CellSaveArgs, CellEditArgs, getUid, getObject,
   NotifyArgs, Row, ActionEventArgs} from '@syncfusion/ej2-grids';
-import { BatchCancelArgs, Column, RecordDoubleClickEventArgs, RowInfo } from '@syncfusion/ej2-grids';
+import { BatchCancelArgs, Column, RecordDoubleClickEventArgs, RowInfo, BeforeBatchSaveArgs } from '@syncfusion/ej2-grids';
 import { TreeGrid } from '../base/treegrid';
 import { ITreeData, CellSaveEventArgs } from '../base/interface';
 import * as events from '../base/constant';
-import { isNullOrUndefined, extend, setValue, removeClass, KeyboardEventArgs, addClass, getValue } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, setValue, removeClass, KeyboardEventArgs, addClass, getValue, isBlazor } from '@syncfusion/ej2-base';
 import { DataManager, Deferred, RemoteSaveAdaptor, AdaptorOptions } from '@syncfusion/ej2-data';
 import { findChildrenRecords, getParentData, isRemoteData } from '../utils';
 import { editAction, updateParentRow } from './crud-actions';
 import { RowPosition } from '../enum';
+import { beforeBatchSaveAction, batchSaveAction } from './batch-edit';
 
 /**
  * TreeGrid Edit Module
@@ -40,6 +41,7 @@ export class Edit {
      */
     constructor(parent: TreeGrid) {
         Grid.Inject(GridEdit);
+
         this.parent = parent;
         this.isSelfReference = !isNullOrUndefined(parent.parentIdMapping);
         // this.batchDeleted = {};
@@ -80,8 +82,8 @@ export class Edit {
         // this.parent.on(events.batchDelete, this.batchDelete, this);
         // this.parent.on(events.batchAdd, this.batchAdd, this);
         // this.parent.on(events.beforeBatchAdd, this.beforeBatchAdd, this);
-        // this.parent.on(events.beforeBatchSave, this.beforeBatchSave, this);
-        // this.parent.on(events.batchSave, this.batchSave, this);
+        this.parent.on(events.beforeBatchSave, this.beforeBatchSave, this);
+        this.parent.on(events.batchSave, this.batchSave, this);
         this.parent.grid.on(events.beforeStartEdit, this.beforeStartEdit, this);
         this.parent.grid.on(events.beforeBatchCancel, this.beforeBatchCancel, this);
         //this.parent.grid.on(events.batchEditFormRendered, this.batchEditFormRendered, this);
@@ -104,6 +106,8 @@ export class Edit {
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.off(events.crudAction, this.crudAction);
+        this.parent.off(events.beforeBatchSave, this.beforeBatchSave);
+        this.parent.off(events.batchSave, this.batchSave);
         this.parent.off(events.beginEdit, this.beginEdit);
         this.parent.off(events.beginAdd, this.beginAdd);
         this.parent.off(events.recordDoubleClick, this.recordDoubleClick);
@@ -183,7 +187,7 @@ export class Edit {
     this.parent.grid.isEdit = false;
   }
   private keyPressed(args: KeyboardEventArgs): void {
-    if (this.isOnBatch) {
+    if (this.isOnBatch || (this.parent.editSettings.mode === 'Cell' && isBlazor() && this.parent.isServerRendered)) {
       this.keyPress = args.action;
     }
     if (args.action === 'f2') {
@@ -253,6 +257,14 @@ export class Edit {
       this.updateGridEditMode('Normal');
       this.isOnBatch = false;
     }
+    if (this.parent.editSettings.mode === 'Batch') {
+      let targetElement: string = 'targetElement';
+      if (!isNullOrUndefined(this.parent[targetElement])) {
+        let row: HTMLTableRowElement = this.parent[targetElement].closest('tr');
+        this.parent.collapseRow(row);
+        this.parent[targetElement] = null;
+      }
+    }
     // this.batchRecords = [];
     // let keys: string[] = Object.keys(this.batchDeleted);
     // let primaryLey: string = this.parent.grid.getPrimaryKeyFieldNames()[0];
@@ -274,10 +286,16 @@ export class Edit {
     private cellSave(args: CellSaveArgs): void {
       if (this.parent.editSettings.mode === 'Cell' && this.parent.element.querySelector('form')) {
           args.cancel = true;
+          let editModule: string = 'editModule';
           setValue('isEdit', false, this.parent.grid);
           setValue('isEditCollapse', true, this.parent);
           args.rowData[args.columnName] = args.value;
-          let row: HTMLTableRowElement = <HTMLTableRowElement>args.cell.parentNode;
+          let row: HTMLTableRowElement;
+          if (isNullOrUndefined(args.cell)) {
+            row = this.parent.grid.editModule[editModule].form.parentElement.parentNode;
+          } else {
+            row = <HTMLTableRowElement>args.cell.parentNode;
+          }
           let rowIndex: number;
           let primaryKeys: string[] = this.parent.getPrimaryKeyFieldNames();
           if (isNullOrUndefined(row)) {
@@ -368,23 +386,24 @@ export class Edit {
         if (!isNullOrUndefined(data2.parentItem)) {
           index = getValue('uniqueIDCollection.' + data2.parentItem.uniqueID + '.index', this.parent);
         }
-        for (let l: number = 0; l < row.classList.length; l++) {
-          let value: string = row.classList[l];
+        let treecell: HTMLElement = (row as HTMLTableRowElement).cells[this.parent.treeColumnIndex];
+        for (let l: number = 0; l < treecell.classList.length; l++) {
+          let value: string = treecell.classList[l];
           let remove: RegExp = /e-gridrowindex/i;
           let removed: RegExp = /e-griddetailrowindex/i;
           let result: RegExpMatchArray = value.match(remove);
           let results: RegExpMatchArray = value.match(removed);
           if (result != null) {
-           removeClass([row], value);
+           removeClass([treecell], value);
           }
           if (results != null) {
-            removeClass([row], value);
+            removeClass([treecell], value);
            }
         }
         if (!rows[k].classList.contains('e-detailrow')) {
-          addClass([row], 'e-gridrowindex' + index + 'level' + level);
+          addClass([treecell], 'e-gridrowindex' + index + 'level' + level);
         }else {
-          addClass([row], 'e-griddetailrowindex' + index + 'level' + level);
+          addClass([treecell], 'e-griddetailrowindex' + index + 'level' + level);
         }
       }
     }
@@ -631,7 +650,8 @@ export class Edit {
 
   private contentready (e: { rows: Row<Column>[], args?: NotifyArgs }): void {
     if (!isNullOrUndefined(e.args.requestType)
-    && (e.args.requestType.toString() === 'delete' || e.args.requestType.toString() === 'save')) {
+      && (e.args.requestType.toString() === 'delete' || e.args.requestType.toString() === 'save'
+        || (this.parent.editSettings.mode === 'Batch' && e.args.requestType.toString() === 'batchsave'))) {
       this.updateIndex(this.parent.grid.dataSource, this.parent.getRows(), this.parent.getCurrentViewRecords());
       if (this.parent.frozenRows || this.parent.getFrozenColumns()) {
         this.updateIndex(this.parent.grid.dataSource, this.parent.getMovableDataRows(), this.parent.getCurrentViewRecords());
@@ -645,10 +665,21 @@ export class Edit {
      */
 
     public editCell(rowIndex?: number, field?: string): void {
-      if (this.parent.editSettings.mode === 'Cell') {
-        this.isOnBatch = true;
-        this.updateGridEditMode('Batch');
+      if (this.parent.editSettings.mode === 'Cell' || this.parent.editSettings.mode === 'Batch') {
+        if (this.parent.editSettings.mode !== 'Batch') {
+          this.isOnBatch = true;
+          this.updateGridEditMode('Batch');
+        }
         this.parent.grid.editModule.editCell(rowIndex, field);
+      }
+    }
+    private beforeBatchSave(e: BeforeBatchSaveArgs): void {
+      beforeBatchSaveAction(e, this.parent);
+    }
+
+    private batchSave (args: SaveEventArgs): void {
+      if (this.parent.editSettings.mode === 'Batch') {
+        batchSaveAction(this.parent);
       }
     }
 

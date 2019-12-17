@@ -100,10 +100,20 @@ export class ConnectorLine {
     public renderConnectorLines(connectorLinesCollection: IConnectorLineObject[]): void {
         let connectorLineContainer: NodeList;
         let connectorLine: string = '';
+        let ariaConnector : IConnectorLineObject[] = [];
         for (let index: number = 0; index < connectorLinesCollection.length; index++) {
             connectorLine = connectorLine + this.getConnectorLineTemplate(connectorLinesCollection[index]);
+            ariaConnector.push(connectorLinesCollection[index]);
         }
         this.dependencyViewContainer.innerHTML = connectorLine;
+        let childNodes: NodeList = this.parent.connectorLineModule.dependencyViewContainer.childNodes;
+        for (let i: number = 0; i < childNodes.length; i++) {
+            let innerChild: NodeList = childNodes[i].childNodes;
+            for (let j: number = 0; j < innerChild.length; j++) {
+                let ariaString: string = this.parent.connectorLineModule.generateAriaLabel(ariaConnector[i]);
+                (<HTMLElement>innerChild[j]).setAttribute('aria-label', ariaString);
+            }
+        }
         this.parent.ganttChartModule.chartBodyContent.appendChild(this.dependencyViewContainer);
     }
 
@@ -334,7 +344,7 @@ export class ConnectorLine {
         if (this.getParentPosition(data)) {
             connectorContainer = '<div id="ConnectorLine' + data.connectorLineId + '" style="background-color:black">';
             let div: string = '<div class="' + cls.connectorLineContainer +
-                '" tabindex="-1" aria-label="' + this.generateAriaLabel(data) + '" style="';
+                '" tabindex="-1" style="';
             let eLine: string = '<div class="' + cls.connectorLine + '" style="' +
                 (!isNullOrUndefined(this.lineColor) ? 'outline-color:' + this.lineColor + ';' : '');
             let rightArrow: string = '<div class="' + cls.connectorLineRightArrow + '" style="' +
@@ -849,8 +859,9 @@ export class ConnectorLine {
     }
     /**
      * Generate aria-label for connectorline
+     * @private
      */
-    private generateAriaLabel(data: IConnectorLineObject): string {
+    public generateAriaLabel(data: IConnectorLineObject): string {
         let type: string = data.type;
         let updatedRecords: IGanttData[] = this.parent.getExpandedRecords(this.parent.currentViewData);
         let fromName: string = updatedRecords[data.parentIndex].ganttProperties.taskName;

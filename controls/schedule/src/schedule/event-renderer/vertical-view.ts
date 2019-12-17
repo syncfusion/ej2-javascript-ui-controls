@@ -168,8 +168,10 @@ export class VerticalEvent extends EventBase {
         for (let resource of resources) {
             this.slots = [];
             let renderDates: Date[] = this.dateRender[resource];
+            let renderedDate: Date[] = this.getRenderedDates(renderDates) || renderDates;
             this.slots.push(renderDates.map((date: Date) => { return +date; }));
-            for (let day: number = 0, length: number = renderDates.length; day < length; day++) {
+            for (let day: number = 0, length: number = renderDates.length; day < length &&
+                renderDates[day] <= renderedDate[renderedDate.length - 1]; day++) {
                 this.renderedEvents = [];
                 let startDate: Date = new Date(renderDates[day].getTime());
                 let endDate: Date = util.addDays(renderDates[day], 1);
@@ -224,8 +226,7 @@ export class VerticalEvent extends EventBase {
                 'tabindex': '0',
                 'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record),
                 'aria-selected': 'false',
-                'aria-grabbed': 'true',
-                'aria-label': recordSubject
+                'aria-grabbed': 'true'
             }
         });
         if (record[this.fields.isReadonly]) {
@@ -310,7 +311,7 @@ export class VerticalEvent extends EventBase {
             });
             let moreIndicatorElement: Element = createElement('div', {
                 className: cls.MORE_INDICATOR_CLASS,
-                attrs: { 'tabindex': '0', 'data-index': index.toString(), 'data-count': '1' },
+                attrs: { 'tabindex': '0', 'role': 'list', 'data-index': index.toString(), 'data-count': '1' },
                 innerHTML: '+1&nbsp;' + (this.parent.isAdaptive ? '' : this.parent.localeObj.getConstant('more'))
             });
             innerCountWrap.appendChild(moreIndicatorElement);
@@ -350,6 +351,11 @@ export class VerticalEvent extends EventBase {
 
     public isSpannedEvent(record: { [key: string]: Object }, day: number, resource: number): { [key: string]: Object } {
         let currentDate: Date = util.resetTime(this.dateRender[resource][day]);
+        let renderedDate: Date[] = this.getRenderedDates(this.dateRender[resource]) || [currentDate];
+        let currentDay: Date[] = renderedDate.filter((date: Date) => date.getDay() === day);
+        if (currentDay.length === 0) {
+            currentDate = util.resetTime(renderedDate[0]);
+        }
         let fieldMapping: EventFieldsMapping = this.parent.eventFields;
         let startEndHours: { [key: string]: Date } = util.getStartEndHours(currentDate, this.startHour, this.endHour);
         let event: { [key: string]: Object } = extend({}, record, null, true) as { [key: string]: Object };
@@ -366,7 +372,7 @@ export class VerticalEvent extends EventBase {
     }
 
     private renderAllDayEvents(eventObj: { [key: string]: Object }, dayIndex: number, resource: number, dayCount: number): void {
-        let currentDates: Date[] = this.dateRender[resource];
+        let currentDates: Date[] = this.getRenderedDates(this.dateRender[resource]) || this.dateRender[resource];
         if (this.parent.activeViewOptions.group.byDate) {
             this.slots[0] = [this.dateRender[resource][dayIndex].getTime()];
             currentDates = [this.dateRender[resource][dayIndex]];

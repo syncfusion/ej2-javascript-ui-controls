@@ -2,7 +2,7 @@
  * Splitter test cases
  */
 import { createElement, Browser, isNullOrUndefined} from '@syncfusion/ej2-base';
-import {Splitter, ResizeEventArgs, BeforeExpandEventArgs} from '../src/splitter/splitter';
+import {Splitter, ResizeEventArgs, BeforeExpandEventArgs, BeforeSanitizeHtmlArgs} from '../src/splitter/splitter';
 import {SplitterModel, PanePropertiesModel} from '../src/splitter/splitter-model';
 
 function appendSplitterStyles() {
@@ -3359,7 +3359,6 @@ describe('Splitter Control', () => {
             });
         });
 
-
         describe('PaneSettings content as selectors', () => {
             let splitterObj: any;
             beforeAll((): void => {
@@ -3410,7 +3409,7 @@ describe('Splitter Control', () => {
                 expect(document.querySelectorAll('.splitterClassWithMultipleElement')[1].innerHTML === 'Content from splitter Class With MultipleElement 1').toBe(true);
             });
         });
-        
+
         // destroy method when calling more than once
         describe('Destroy method', () => {
             let splitterObj: any;
@@ -3921,7 +3920,6 @@ describe('Splitter Control', () => {
             expect(splitterObj.element.classList.contains('e-control')).toEqual(true);
         });
     });
-
     describe('Check expand and collapse arrow', () => {
         let splitterObj: any;
         beforeAll((): void => {
@@ -4000,6 +3998,182 @@ describe('Splitter Control', () => {
                 expect(splitterObj.allPanes[1].classList.contains('e-pane-hidden')).toBe(true);
                 expect(splitterObj.allPanes[2].classList.contains('e-collapsed')).toBe(true);
                 expect(splitterObj.allPanes[2].classList.contains('e-pane-hidden')).toBe(true);
+            });
+        });
+
+        describe('collapse method', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let child3: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsed: false }, { size: '50%', collapsed: true }, { collapsed: false }] });
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('collapsible false for 1st pane', function() {
+                splitterObj.collapse(2);
+                expect(splitterObj.allPanes[1].classList.contains('e-collapsed')).toBe(true);
+                expect(splitterObj.allPanes[1].classList.contains('e-pane-hidden')).toBe(true);
+                expect(splitterObj.allPanes[2].classList.contains('e-collapsed')).toBe(true);
+                expect(splitterObj.allPanes[2].classList.contains('e-pane-hidden')).toBe(true);
+            });
+        });
+
+        describe('CssClass Api -panes', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('single class', () => {
+                splitterObj = new Splitter({  paneSettings: [{ cssClass : 'first-pane' }, { cssClass : 'second-pane' }, { cssClass : 'third-pane' }] });
+                splitterObj.appendTo(document.getElementById('default'));
+                expect(splitterObj.allPanes[0].className).toBe('e-pane e-pane-horizontal e-scrollable first-pane e-resizable');
+                expect(splitterObj.allPanes[1].className).toBe('e-pane e-pane-horizontal e-scrollable second-pane e-resizable');
+                expect(splitterObj.allPanes[2].className).toBe('e-pane e-pane-horizontal e-scrollable third-pane e-resizable');
+            });
+                    
+        });
+        describe('CssClass Api -panes', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('Multiple class', () => {
+                splitterObj = new Splitter({   paneSettings: [{ cssClass : '' }, {  }, { cssClass : 'first-pane,third-child' }]});
+                splitterObj.appendTo(document.getElementById('default'));
+                expect(splitterObj.element.classList.length).toBe(4);
+                expect(splitterObj.allPanes[0].className).toBe('e-pane e-pane-horizontal e-scrollable e-resizable');
+                expect(splitterObj.allPanes[1].className).toBe('e-pane e-pane-horizontal e-scrollable e-resizable');
+                expect(splitterObj.allPanes[2].className).toBe('e-pane e-pane-horizontal e-scrollable first-pane third-child e-resizable');
+                splitterObj.paneSettings[1].cssClass ='second-pane';
+                splitterObj.dataBind();
+                expect(splitterObj.allPanes[1].className).toBe('e-pane e-pane-horizontal e-scrollable e-resizable second-pane');
+            });     
+        });
+
+        // XSS attack test case
+
+        describe('EJ2-33526 prevent xss at initial render', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let child3: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', content:'<style>bod{width:100px;}</style>' }, { size: '50%', content:'<style>bod{width:100px;}</style>' }, { content:'<style>bod{width:100px;}</style>' }] });
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('check style element', function() {
+                expect(splitterObj.allPanes[0].querySelectorAll('style').length).toBe(0);
+                expect(splitterObj.allPanes[1].querySelectorAll('style').length).toBe(0);
+            });
+        });
+
+        describe('EJ2-33526 prevent xss dynamic', () => {
+            appendSplitterStyles();
+            let splitterObj: any;
+            beforeAll((): void => {
+                let element: HTMLElement = createElement('div', { id: 'default'});
+                let child1: HTMLElement = createElement('div');
+                child1.innerHTML =  "Paris, the city of lights and love - this short guide is full of ideas for how to make the most of the romanticism.";
+                let child2: HTMLElement = createElement('div');
+                child2.innerHTML = "Paris, the city of lights and love - this short guide is full of ideas for how to make the most of the romanticism...";
+                element.appendChild(child1);
+                element.appendChild(child2);
+                document.body.appendChild(element);
+                splitterObj = new Splitter({
+                    width: '800px', 
+                    height: '500px',
+                    paneSettings: [
+                        {
+                            size: '200px', min: '10px'
+                        },
+                        {
+                            size: '300px', min: '40px'
+                        }
+                    ]
+                });
+                splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+                document.body.innerHTML = '';
+            });
+    
+            it('Validate xss on Add Pane', () => {
+                let paneContent1 : PanePropertiesModel = {
+                    size: '200px',
+                    min: '40px',
+                    max: '100px',
+                    content: '<script>alert("1")</script>',
+                    resizable: false,
+                }
+                let paneContent2 : PanePropertiesModel = {
+                    size: '200px',
+                    min: '40px',
+                    max: '100px',
+                    content: '<script>alert("2")</script>',
+                    resizable: false,
+                }
+                splitterObj.addPane(paneContent1, 0);
+                splitterObj.addPane(paneContent2, 1);
+                expect(splitterObj.allPanes[0].querySelectorAll('script').length).toBe(0);
+                expect(splitterObj.allPanes[1].querySelectorAll('script').length).toBe(0);
+            });
+        });
+
+        describe('EJ2-33526 prevent xss at initial render', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let child3: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', content:'<style>bod{width:100px;}</style>' }, { size: '50%', content:'<style>bod{width:100px;}</style>' }, { content:'<style>bod{width:100px;}</style>' }],
+            enableHtmlSanitizer: false
+        });
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('check style element', function() {
+                expect(splitterObj.allPanes[0].querySelectorAll('style').length).toBeGreaterThan(0);
             });
         });
  });

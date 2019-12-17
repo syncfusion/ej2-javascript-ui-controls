@@ -22,6 +22,11 @@ export class ClearFormat {
     private static NONVALID_TAGS: string[] = ['thead', 'tbody', 'figcaption', 'td', 'tr',
             'th',   'tfoot', 'figcaption', 'li'  ];
 
+    /**
+     * clear method
+     * @hidden
+     * @deprecated
+     */
     public static clear(docElement: Document, endNode: Node, selector?: string): void {
         let nodeSelection: NodeSelection = new NodeSelection();
         let nodeCutter: NodeCutter = new NodeCutter();

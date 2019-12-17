@@ -1,15 +1,17 @@
 import { Tab, SelectingEventArgs, TabItemModel, SelectEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/index';
-import { refreshSheetTabs, locale, addSheetTab, cMenuBeforeOpen, dialog, renameSheet } from '../common/index';
+import { refreshSheetTabs, locale, addSheetTab, cMenuBeforeOpen, dialog, renameSheet, click, completeAction } from '../common/index';
+import { sheetNameUpdate, clearUndoRedoCollection } from '../common/index';
 import { sheetTabs, renameSheetTab, removeSheetTab, activeSheetChanged, onVerticalScroll, onHorizontalScroll } from '../common/index';
 import { getUpdateUsingRaf } from '../common/index';
-import { SheetModel, getSheetName, aggregateComputation, AggregateArgs, isSingleCell, getRangeIndexes } from '../../workbook/index';
+import { SheetModel, getSheetName, aggregateComputation, AggregateArgs } from '../../workbook/index';
+import { isSingleCell, getRangeIndexes, getSheet, getSheetIndex } from '../../workbook/index';
 import { DropDownButton, MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { isCollide, OffsetPosition, calculatePosition } from '@syncfusion/ej2-popups';
 import { rippleEffect, L10n, closest, EventHandler, remove } from '@syncfusion/ej2-base';
 import { Dialog } from '../services/index';
-import { sheetsDestroyed, activeCellChanged } from '../../workbook/common/index';
+import { sheetsDestroyed, activeCellChanged, workbookFormulaOperation } from '../../workbook/common/index';
 
 /**
  * Represents SheetTabs for Spreadsheet.
@@ -36,7 +38,8 @@ export class SheetTabs {
         }
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
         let panel: HTMLElement = this.parent.createElement('div', {
-            className: 'e-sheet-tab-panel', id: this.parent.element.id + '_sheet_tab_panel' });
+            className: 'e-sheet-tab-panel', id: this.parent.element.id + '_sheet_tab_panel'
+        });
         let addBtn: HTMLElement = this.parent.createElement('button', {
             className: 'e-add-sheet-tab e-btn e-css e-flat e-icon-btn', attrs: { 'title': l10n.getConstant('AddSheet') }
         });
@@ -86,6 +89,12 @@ export class SheetTabs {
         this.tabInstance.appendTo(sheetTab);
         // tslint:disable-next-line:no-any
         EventHandler.remove(this.tabInstance.element, 'keydown', (this.tabInstance as any).spaceKeyDown);
+        let sheetCount: number = items.tabItems.length;
+        for (let i: number = 0; i < sheetCount; i++) {
+            let sheetName: string = getSheetName(this.parent, i + 1);
+            let arg: { [key: string]: Object } = { action: 'addSheet', sheetName: 'Sheet' + (i + 1), index: i + 1, visibleName: sheetName };
+            this.parent.notify(workbookFormulaOperation, arg);
+        }
     }
 
     private updateDropDownItems(curIdx: number, prevIdx?: number): void {
@@ -137,8 +146,12 @@ export class SheetTabs {
         this.tabInstance.dataBind();
     }
 
-    private addSheetTab(args: { text: string }): void {
-        let idx: number = args.text && args.text === 'Insert' ? this.parent.activeSheetTab - 1 : this.parent.activeSheetTab;
+    private addSheetTab(args: { text: string, isAction?: boolean, count?: number, previousIndex?: number }): void {
+        if (args.count && (args.count === this.parent.sheets.length)) {
+            return;
+        }
+        let idx: number = args.previousIndex ? args.previousIndex : args.text && args.text === 'Insert' ?
+            this.parent.activeSheetTab - 1 : this.parent.activeSheetTab;
         this.parent.createSheet(idx);
         let sheetName: string = this.parent.sheets[idx].name;
         this.dropDownInstance.items.splice(idx, 0, <ItemModel>{ text: sheetName });
@@ -148,9 +161,23 @@ export class SheetTabs {
             this.parent.renderModule.refreshSheet();
             this.updateDropDownItems(idx, idx + 1);
         } else {
-            this.updateSheetTab({ idx: idx });
+            if (!args.isAction) {
+                this.updateSheetTab({ idx: idx });
+            }
         }
         this.parent.element.focus();
+        let index: number = this.parent.getActiveSheet().id;
+        let arg: { [key: string]: Object } = { action: 'addSheet', visibleName: sheetName, sheetName: 'Sheet' + index, index: index };
+        this.parent.notify(workbookFormulaOperation, arg);
+        if (!args.isAction) {
+            let eventArgs: { [key: string]: Object } = {
+                index: this.parent.getActiveSheet().id,
+                text: args.text,
+                sheetCount: this.parent.sheets.length,
+                previousIndex: idx
+            };
+            this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'addSheet' });
+        }
     }
 
     private updateSheetTab(args: { idx: number }): void {
@@ -179,7 +206,8 @@ export class SheetTabs {
             let input: HTMLElement = this.parent.createElement('input', {
                 id: this.parent.element.id + '_rename_input',
                 className: 'e-input e-sheet-rename', styles: `width: ${target.getBoundingClientRect().width}px`, attrs: {
-                    'type': 'text', 'name': 'Rename', 'required': '', 'value': value, 'spellcheck': 'false', 'maxlength': '31' }
+                    'type': 'text', 'name': 'Rename', 'required': '', 'value': value, 'spellcheck': 'false', 'maxlength': '31'
+                }
             });
             (target.firstElementChild as HTMLElement).style.display = 'none';
             target.appendChild(input);
@@ -204,7 +232,7 @@ export class SheetTabs {
 
     private renameInputFocusOut(e: KeyboardEvent | MouseEvent): void {
         let target: HTMLInputElement = e.target as HTMLInputElement;
-        if ((e.type === 'mousedown' || e.type === 'touchstart') &&  (target.classList.contains('e-sheet-rename') ||
+        if ((e.type === 'mousedown' || e.type === 'touchstart') && (target.classList.contains('e-sheet-rename') ||
             closest(target, '.e-dlg-container'))) { return; }
         target = document.getElementById(this.parent.element.id + '_rename_input') as HTMLInputElement;
         if (e.type === 'keydown' && (e as KeyboardEvent).keyCode === 27) {
@@ -227,16 +255,7 @@ export class SheetTabs {
                 if (this.tabInstance.items[idx].header.text !== value) {
                     this.parent.sheets[idx].name = value;
                     this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
-                    this.tabInstance.items[idx].header.text = value;
-                    this.dropDownInstance.items[idx].text = value;
-                    this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
-                    if (value.indexOf('  ') > -1) {
-                        this.tabInstance.setProperties({ 'items': this.tabInstance.items }, true);
-                        items.querySelector('.e-toolbar-item.e-active .e-tab-text').textContent = value;
-                    } else {
-                        this.tabInstance.items = this.tabInstance.items;
-                        this.tabInstance.dataBind();
-                    }
+                    this.updateSheetName({ value: value, idx: idx, items: items });
                 }
                 if (e.type === 'keydown' || (closest(e.target as Element, '.e-spreadsheet'))) { this.parent.element.focus(); }
             } else {
@@ -244,6 +263,27 @@ export class SheetTabs {
             }
         } else {
             this.showRenameDialog(target, l10n.getConstant('SheetRenameEmptyAlert'));
+        }
+        let sheetIndex: number = this.parent.getActiveSheet().id;
+        let args: { [key: string]: Object } = { action: 'renameUpdation', value: value, sheetId: sheetIndex };
+        this.parent.notify(workbookFormulaOperation, args);
+        let eventArgs: { [key: string]: Object } = {
+            index: sheetIndex,
+            value: value
+        };
+        this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'renameSheet' });
+    }
+
+    private updateSheetName(args: { value: string, idx: number, items?: Element, }): void {
+        this.tabInstance.items[args.idx].header.text = args.value;
+        this.dropDownInstance.items[args.idx].text = args.value;
+        this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
+        if (args.value.indexOf('  ') > -1) {
+            this.tabInstance.setProperties({ 'items': this.tabInstance.items }, true);
+            args.items.querySelector('.e-toolbar-item.e-active .e-tab-text').textContent = args.value;
+        } else {
+            this.tabInstance.items = this.tabInstance.items;
+            this.tabInstance.dataBind();
         }
     }
 
@@ -273,28 +313,61 @@ export class SheetTabs {
         if (input) { input.focus(); }
     }
 
-    private removeSheetTab(args: { event: MouseEvent & TouchEvent }): void {
+    private removeSheetTab(args: {
+        event: MouseEvent & TouchEvent, index?: number, isAction?: boolean,
+        count?: number, clicked?: boolean, sheetName?: string
+    }): void {
+        if (args.count && (args.count === this.parent.sheets.length)) {
+            return;
+        }
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
         if (this.parent.sheets.length > 1) {
-            let sheet: SheetModel = this.parent.getActiveSheet();
+            let sheet: SheetModel = args.sheetName ? getSheet(this.parent, getSheetIndex(this.parent, args.sheetName)) :
+                this.parent.getActiveSheet();
+            let sheetIndex: number = args.index || getSheetIndex(this.parent, sheet.name);
+            let eventArgs: { [key: string]: Object } = {
+                index: sheetIndex,
+                sheetCount: this.parent.sheets.length,
+                sheetName: sheet.name
+            };
             let isDataAvail: boolean = sheet.rows && sheet.rows.length ?
                 (sheet.rows.length === 1 ? (sheet.rows[0].cells && sheet.rows[0].cells.length ? true : false) : true) : false;
             if (isDataAvail) {
                 let dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
-                dialogInst.show({
-                    height: 180, width: 400, isModal: true, showCloseIcon: true,
-                    content: l10n.getConstant('DeleteSheetAlert'),
-                    beforeOpen: (): void => this.parent.element.focus(),
-                    buttons: [{
-                        buttonModel: {
-                            content: l10n.getConstant('Ok'), isPrimary: true },
+                if (args.clicked) {
+                    this.forceDelete(sheetIndex);
+                } else {
+                    dialogInst.show({
+                        height: 180, width: 400, isModal: true, showCloseIcon: true,
+                        content: l10n.getConstant('DeleteSheetAlert'),
+                        beforeOpen: (): void => this.parent.element.focus(),
+                        buttons: [{
+                            buttonModel: {
+                                content: l10n.getConstant('Ok'), isPrimary: true
+                            },
                             click: (): void => {
                                 dialogInst.hide();
-                                this.destroySheet();
-                            }}]
+                                this.forceDelete(sheetIndex);
+                                this.parent.notify(clearUndoRedoCollection, null);
+                                if (args && !args.isAction) {
+                                    eventArgs.sheetCount = this.parent.sheets.length;
+                                    this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'removeSheet' });
+                                }
+                            }
+                        }]
                     });
+                }
             } else {
-                this.destroySheet();
+                this.destroySheet(sheetIndex);
+                let sheetArgs: { action: string, sheetName: string, index: number } = {
+                    action: 'deleteSheetTab', sheetName: '', index: sheetIndex
+                };
+                this.parent.notify(workbookFormulaOperation, sheetArgs);
+                this.parent.notify(clearUndoRedoCollection, null);
+                if (args && !args.isAction) {
+                    eventArgs.sheetCount = this.parent.sheets.length;
+                    this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'removeSheet' });
+                }
             }
         } else {
             (this.parent.serviceLocator.getService(dialog) as Dialog).show({
@@ -306,10 +379,18 @@ export class SheetTabs {
         }
     }
 
-    private destroySheet(): void {
-        let activeSheetIdx: number = this.parent.activeSheetTab - 1;
+    private forceDelete(sheetIndex: number): void {
+        this.destroySheet(sheetIndex);
+        let sheetArgs: { action: string, sheetName: string, index: number } = {
+            action: 'deleteSheetTab', sheetName: '', index: sheetIndex
+        };
+        this.parent.notify(workbookFormulaOperation, sheetArgs);
+    }
+
+    private destroySheet(sheetIndex?: number): void {
+        let activeSheetIdx: number = sheetIndex || this.parent.activeSheetTab - 1;
         this.parent.removeSheet(activeSheetIdx);
-        this.parent.notify(sheetsDestroyed, { sheetIndex: activeSheetIdx});
+        this.parent.notify(sheetsDestroyed, { sheetIndex: activeSheetIdx });
         this.dropDownInstance.items.splice(activeSheetIdx, 1);
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
         this.tabInstance.removeTab(activeSheetIdx);
@@ -366,7 +447,7 @@ export class SheetTabs {
         this.aggregateDropDown.content = text;
         this.aggregateDropDown.dataBind();
         this.aggregateDropDown.setProperties({ 'items': this.getAggregateItems(eventArgs) }, true);
-     }
+    }
 
     private removeAggregate(): void {
         if (this.aggregateDropDown && isSingleCell(getRangeIndexes(this.parent.getActiveSheet().selectedRange))) {
@@ -388,6 +469,7 @@ export class SheetTabs {
         this.parent.on(activeCellChanged, this.removeAggregate, this);
         this.parent.on(onVerticalScroll, this.focusRenameInput, this);
         this.parent.on(onHorizontalScroll, this.focusRenameInput, this);
+        this.parent.on(sheetNameUpdate, this.updateSheetName, this);
     }
 
     public destroy(): void {
@@ -419,6 +501,7 @@ export class SheetTabs {
             this.parent.off(activeCellChanged, this.removeAggregate);
             this.parent.off(onVerticalScroll, this.focusRenameInput);
             this.parent.off(onHorizontalScroll, this.focusRenameInput);
+            this.parent.off(sheetNameUpdate, this.updateSheetName);
         }
     }
 }

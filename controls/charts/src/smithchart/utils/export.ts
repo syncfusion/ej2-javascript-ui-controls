@@ -30,7 +30,7 @@ export class ExportUtils {
         this.smithchartPrint.resizeTo(screen.availWidth, screen.availHeight);
         let argsData: ISmithchartPrintEventArgs = {
             cancel: false,
-            htmlContent: !this.control.isBlazor ? this.getHTMLContent(elements) : null,
+            htmlContent: this.getHTMLContent(elements),
             name: smithchartBeforePrint
         };
         this.control.trigger(smithchartBeforePrint, argsData);

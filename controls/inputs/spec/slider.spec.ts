@@ -470,7 +470,6 @@ describe('Slider Control', () => {
             slider = new Slider({ showButtons: true });
             slider.appendTo('#slider');
             expect(document.getElementsByClassName('e-handle')[0].getAttribute('aria-orientation')).toEqual('horizontal');
-            expect(document.getElementsByClassName('e-handle')[0].getAttribute('aria-labelledby')).toEqual('slider_title');
             expect((document.getElementsByClassName('e-handle')[0] as HTMLElement).getAttribute('aria-valuemin')).toBe('0');
             expect((document.getElementsByClassName('e-handle')[0] as HTMLElement).getAttribute('aria-valuemax')).toBe('100');
             expect((document.getElementsByClassName('e-handle')[0] as HTMLElement).getAttribute('aria-valuenow')).toBe('0');
@@ -2643,6 +2642,35 @@ describe('Slider Control', () => {
             slider.keyDown(eventArgs);
             expect(document.querySelectorAll('.e-tip-content')[0].textContent).toBe('Jun 14, 2013');
         });
+        it('Tooltip Custom formats - Date and enableHtmlSanitizer property value as true', () => {
+            element = createElement('div', { id: 'slider' });
+            document.body.appendChild(element);
+            slider = new Slider({
+                min: new Date("2013-06-13").getTime(),
+                max: new Date("2013-06-21").getTime(),
+                step: 86400000,
+                tooltipChange: function (args: any) {
+                    let totalMiliSeconds = Number(args.text.split(' ')[0]);
+                    let custom = { year: "numeric", month: "short", day: "numeric" };
+                    var data = new Date(totalMiliSeconds).toLocaleDateString("en-us", custom);
+                    args.text = '<style>body{background:rgb(0, 0, 255)}</style><div>' +data + '</div>';
+                },
+                tooltip: {
+                    isVisible: true,
+                    placement: 'Before',
+                    cssClass: 'e-formatted-tooltip'
+                },
+                enableHtmlSanitizer: true
+            }, '#slider');
+            eventArgs = {
+                keyCode: 39, currentTarget: (document.getElementsByClassName("e-handle")[0] as HTMLElement),
+                target: (document.getElementsByClassName("e-handle")[0] as HTMLElement), preventDefault: (): void => { }
+            };
+            slider.keyDown(eventArgs);
+            var ele = document.body;
+            expect(window.getComputedStyle(ele).backgroundColor).not.toBe("rgb(0, 0, 255)");
+            expect(document.querySelectorAll('.e-tip-content')[0].textContent).toBe('Jun 14, 2013');
+        });
         afterEach(() => {
             document.body.innerHTML = '';
         });
@@ -3713,6 +3741,54 @@ describe('Slider Control', () => {
                 }
             }, '#slider');
             expect(document.querySelectorAll('.e-tick-value')[0].textContent).toBe('11:00 AM');
+        });
+        it('Ticks with custom formatting - weekdays with XSS and enableHtmlSanitizer property as false', () => {
+            element = createElement('div', { id: 'slider' });
+            document.body.appendChild(element);
+            slider = new Slider({
+                value: 0,
+                min: 0,
+                max: 6,
+                step: 1,
+                showButtons: true,
+                renderingTicks: function (args: any) {
+                    let weekday: string[] = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thrusday', 'Friday', 'Saturday'];
+                    var data= weekday[parseFloat(args.value)];
+                    args.text = '<style>body{background:rgb(0, 0, 255)}</style><div>' +data + '</div>';
+                },
+                ticks: {
+                    placement: 'After',
+                    largeStep: 1
+                },
+                enableHtmlSanitizer: false
+            }, '#slider');
+            expect(document.querySelectorAll('.e-tick-value')[0].textContent).toBe('body{background:rgb(0, 0, 255)}Sunday');
+            var ele = document.body;
+            expect(window.getComputedStyle(ele).backgroundColor).toBe("rgb(0, 0, 255)");
+        });
+        it('Ticks with custom formatting - weekdays with XSS and enableHtmlSanitizer property as true', () => {
+            element = createElement('div', { id: 'slider' });
+            document.body.appendChild(element);
+            slider = new Slider({
+                value: 0,
+                min: 0,
+                max: 6,
+                step: 1,
+                showButtons: true,
+                renderingTicks: function (args: any) {
+                    let weekday: string[] = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thrusday', 'Friday', 'Saturday'];
+                    var data= weekday[parseFloat(args.value)];
+                    args.text = '<style>body{background:rgb(0, 0, 255)}</style><div>' +data + '</div>';
+                },
+                enableHtmlSanitizer: true,
+                ticks: {
+                    placement: 'After',
+                    largeStep: 1
+                }
+            }, '#slider');
+            expect(document.querySelectorAll('.e-tick-value')[0].textContent).toBe('Sunday');
+            var ele = document.body;
+            expect(window.getComputedStyle(ele).backgroundColor).not.toBe("rgb(0, 0, 255)");
         });
         afterEach(() => {
             document.body.innerHTML = '';

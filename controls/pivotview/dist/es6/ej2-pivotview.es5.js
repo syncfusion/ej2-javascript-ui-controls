@@ -1,10 +1,10 @@
-import { Ajax, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, closest, compile, createElement, extend, formatUnit, getElement, getInstance, isBlazor, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Ajax, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, append, closest, compile, createElement, extend, formatUnit, getElement, getInstance, isBlazor, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, Deferred, Query } from '@syncfusion/ej2-data';
 import { Dialog, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { ColumnChooser, CommandColumn, ContextMenu, Edit, ExcelExport, Freeze, Grid, Page, PdfExport, Reorder, Resize, Selection, Toolbar, VirtualScroll, getObject, headerRefreshed, setStyleAndAttributes } from '@syncfusion/ej2-grids';
 import { Accordion, ContextMenu as ContextMenu$1, Menu, Tab, Toolbar as Toolbar$1, TreeView } from '@syncfusion/ej2-navigations';
 import { ColorPicker, MaskedTextBox, NumericTextBox } from '@syncfusion/ej2-inputs';
-import { DropDownList } from '@syncfusion/ej2-dropdowns';
+import { CheckBoxSelection, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
 import { Workbook } from '@syncfusion/ej2-excel-export';
 import { PdfBorders, PdfColor, PdfDocument, PdfFontFamily, PdfFontStyle, PdfGrid, PdfPageTemplateElement, PdfPen, PdfSolidBrush, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfVerticalAlignment, PointF, RectangleF } from '@syncfusion/ej2-pdf-export';
 import { Animation, AreaSeries, AxisLine, BarSeries, Border, BubbleSeries, Category, Chart, ChartArea, ChartLocation, ChartSegment, ColumnSeries, CornerRadius, Crosshair, CrosshairSettings, CrosshairTooltip, DataLabelSettings, EmptyPointSettings, ErrorBarCapSettings, ErrorBarSettings, Export, Font, Indexes, LabelBorder, Legend, LineSeries, MajorGridLines, MajorTickLines, Margin, MarkerSettings, MinorGridLines, MinorTickLines, MultiColoredAreaSeries, MultiColoredLineSeries, MultiLevelLabel, ParetoSeries, PolarSeries, RadarSeries, RangeAreaSeries, RangeColumnSeries, ScatterSeries, ScrollBar, SplineAreaSeries, SplineSeries, StackingAreaSeries, StackingBarSeries, StackingColumnSeries, StepAreaSeries, StepLineSeries, StripLineSettings, Theme, Tooltip as Tooltip$1, Trendline, Zoom } from '@syncfusion/ej2-charts';
@@ -51,10 +51,12 @@ var PivotUtil = /** @__PURE__ @class */ (function () {
     PivotUtil.getClonedPivotValues = function (pivotValues) {
         var clonedSets = [];
         for (var i = 0; i < pivotValues.length; i++) {
-            clonedSets[i] = [];
-            for (var j = 0; j < pivotValues[i].length; j++) {
-                if (pivotValues[i][j]) {
-                    clonedSets[i][j] = this.getClonedObj(pivotValues[i][j]);
+            if (pivotValues[i]) {
+                clonedSets[i] = [];
+                for (var j = 0; j < pivotValues[i].length; j++) {
+                    if (pivotValues[i][j]) {
+                        clonedSets[i][j] = this.getClonedObj(pivotValues[i][j]);
+                    }
                 }
             }
         }
@@ -78,13 +80,38 @@ var PivotUtil = /** @__PURE__ @class */ (function () {
         return framedSet;
     };
     PivotUtil.inArray = function (value, collection) {
-        for (var i = 0, cnt = collection.length; i < cnt; i++) {
-            if (collection[i] === value) {
-                return i;
+        if (collection) {
+            for (var i = 0, cnt = collection.length; i < cnt; i++) {
+                if (collection[i] === value) {
+                    return i;
+                }
             }
         }
         return -1;
     };
+    PivotUtil.isContainCommonElements = function (collection1, collection2) {
+        for (var i = 0, cnt = collection1.length; i < cnt; i++) {
+            for (var j = 0, lnt = collection2.length; j < lnt; j++) {
+                if (collection2[j] === collection1[i]) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+    /* tslint:disable */
+    PivotUtil.setPivotProperties = function (control, properties) {
+        control.allowServerDataBinding = false;
+        if (control.pivotGridModule) {
+            control.pivotGridModule.allowServerDataBinding = false;
+        }
+        control.setProperties(properties, true);
+        control.allowServerDataBinding = true;
+        if (control.pivotGridModule) {
+            control.pivotGridModule.allowServerDataBinding = true;
+        }
+    };
+    /* tslint:enable */
     PivotUtil.getClonedDataSourceSettings = function (dataSourceSettings) {
         var clonesDataSource = {
             catalog: dataSourceSettings.catalog,
@@ -96,18 +123,19 @@ var PivotUtil = /** @__PURE__ @class */ (function () {
             expandAll: dataSourceSettings.expandAll,
             allowLabelFilter: dataSourceSettings.allowLabelFilter,
             allowValueFilter: dataSourceSettings.allowValueFilter,
+            allowMemberFilter: dataSourceSettings.allowMemberFilter,
             enableSorting: dataSourceSettings.enableSorting ? true : false,
-            rows: extend([], dataSourceSettings.rows, null, true),
-            columns: extend([], dataSourceSettings.columns, null, true),
-            filters: extend([], dataSourceSettings.filters, null, true),
-            values: extend([], dataSourceSettings.values, null, true),
-            filterSettings: extend([], dataSourceSettings.filterSettings, null, true),
-            sortSettings: extend([], dataSourceSettings.sortSettings, null, true),
-            drilledMembers: extend([], dataSourceSettings.drilledMembers, null, true),
-            valueSortSettings: extend({}, dataSourceSettings.valueSortSettings, null, true),
+            rows: this.cloneFieldSettings(dataSourceSettings.rows),
+            columns: this.cloneFieldSettings(dataSourceSettings.columns),
+            filters: this.cloneFieldSettings(dataSourceSettings.filters),
+            values: this.cloneFieldSettings(dataSourceSettings.values),
+            filterSettings: this.cloneFilterSettings(dataSourceSettings.filterSettings),
+            sortSettings: this.cloneSortSettings(dataSourceSettings.sortSettings),
+            drilledMembers: this.cloneDrillMemberSettings(dataSourceSettings.drilledMembers),
+            valueSortSettings: this.CloneValueSortObject(dataSourceSettings.valueSortSettings),
             valueAxis: dataSourceSettings.valueAxis,
-            formatSettings: extend([], dataSourceSettings.formatSettings, null, true),
-            calculatedFieldSettings: extend([], dataSourceSettings.calculatedFieldSettings, null, true),
+            formatSettings: this.cloneFormatSettings(dataSourceSettings.formatSettings),
+            calculatedFieldSettings: this.cloneCalculatedFieldSettings(dataSourceSettings.calculatedFieldSettings),
             showSubTotals: dataSourceSettings.showSubTotals,
             showRowSubTotals: dataSourceSettings.showRowSubTotals,
             showColumnSubTotals: dataSourceSettings.showColumnSubTotals,
@@ -116,16 +144,16 @@ var PivotUtil = /** @__PURE__ @class */ (function () {
             showColumnGrandTotals: dataSourceSettings.showColumnGrandTotals,
             showHeaderWhenEmpty: dataSourceSettings.showHeaderWhenEmpty,
             alwaysShowValueHeader: dataSourceSettings.alwaysShowValueHeader,
-            conditionalFormatSettings: extend([], dataSourceSettings.conditionalFormatSettings, null, true),
+            conditionalFormatSettings: this.cloneConditionalFormattingSettings(dataSourceSettings.conditionalFormatSettings),
             emptyCellsTextContent: dataSourceSettings.emptyCellsTextContent,
-            groupSettings: extend([], dataSourceSettings.groupSettings, null, true)
+            groupSettings: this.cloneGroupSettings(dataSourceSettings.groupSettings)
         };
         return clonesDataSource;
     };
     PivotUtil.updateDataSourceSettings = function (control, dataSourceSettings) {
         if (control) {
             /* tslint:disable */
-            control.setProperties({
+            this.setPivotProperties(control, {
                 dataSourceSettings: {
                     catalog: dataSourceSettings.catalog,
                     cube: dataSourceSettings.cube,
@@ -136,6 +164,7 @@ var PivotUtil = /** @__PURE__ @class */ (function () {
                     expandAll: dataSourceSettings.expandAll,
                     allowLabelFilter: dataSourceSettings.allowLabelFilter,
                     allowValueFilter: dataSourceSettings.allowValueFilter,
+                    allowMemberFilter: dataSourceSettings.allowMemberFilter,
                     enableSorting: dataSourceSettings.enableSorting ? true : false,
                     rows: dataSourceSettings.rows,
                     columns: dataSourceSettings.columns,
@@ -160,8 +189,236 @@ var PivotUtil = /** @__PURE__ @class */ (function () {
                     emptyCellsTextContent: dataSourceSettings.emptyCellsTextContent,
                     groupSettings: dataSourceSettings.groupSettings
                 }
-            }, true);
+            });
         }
+    };
+    PivotUtil.cloneFieldSettings = function (collection) {
+        if (collection) {
+            var clonedCollection = [];
+            for (var _i = 0, collection_1 = collection; _i < collection_1.length; _i++) {
+                var set = collection_1[_i];
+                clonedCollection.push({
+                    name: set.name,
+                    caption: set.caption,
+                    axis: set.axis,
+                    baseField: set.baseField,
+                    baseItem: set.baseItem,
+                    isCalculatedField: set.isCalculatedField,
+                    isNamedSet: set.isNamedSet,
+                    showNoDataItems: set.showNoDataItems,
+                    showSubTotals: set.showSubTotals,
+                    type: set.type
+                });
+            }
+            return clonedCollection;
+        }
+        else {
+            return collection;
+        }
+    };
+    PivotUtil.cloneFilterSettings = function (collection) {
+        if (collection) {
+            var clonedCollection = [];
+            for (var _i = 0, collection_2 = collection; _i < collection_2.length; _i++) {
+                var set = collection_2[_i];
+                clonedCollection.push({
+                    name: set.name,
+                    type: set.type,
+                    condition: set.condition,
+                    items: set.items ? set.items.slice() : set.items,
+                    levelCount: set.levelCount,
+                    measure: set.measure,
+                    selectedField: set.selectedField,
+                    showDateFilter: set.showDateFilter,
+                    showLabelFilter: set.showLabelFilter,
+                    showNumberFilter: set.showNumberFilter,
+                    value1: set.value1,
+                    value2: set.value2
+                });
+            }
+            return clonedCollection;
+        }
+        else {
+            return collection;
+        }
+    };
+    PivotUtil.cloneSortSettings = function (collection) {
+        if (collection) {
+            var clonedCollection = [];
+            for (var _i = 0, collection_3 = collection; _i < collection_3.length; _i++) {
+                var set = collection_3[_i];
+                clonedCollection.push({
+                    name: set.name,
+                    order: set.order
+                });
+            }
+            return clonedCollection;
+        }
+        else {
+            return collection;
+        }
+    };
+    PivotUtil.cloneDrillMemberSettings = function (collection) {
+        if (collection) {
+            var clonedCollection = [];
+            for (var _i = 0, collection_4 = collection; _i < collection_4.length; _i++) {
+                var set = collection_4[_i];
+                clonedCollection.push({
+                    name: set.name,
+                    delimiter: set.delimiter,
+                    items: set.items ? set.items.slice() : set.items
+                });
+            }
+            return clonedCollection;
+        }
+        else {
+            return collection;
+        }
+    };
+    PivotUtil.cloneFormatSettings = function (collection) {
+        if (collection) {
+            var clonedCollection = [];
+            for (var _i = 0, collection_5 = collection; _i < collection_5.length; _i++) {
+                var set = collection_5[_i];
+                clonedCollection.push({
+                    name: set.name,
+                    calendar: set.calendar,
+                    currency: set.currency,
+                    format: set.format,
+                    maximumFractionDigits: set.maximumFractionDigits,
+                    maximumSignificantDigits: set.maximumSignificantDigits,
+                    minimumFractionDigits: set.minimumFractionDigits,
+                    minimumIntegerDigits: set.minimumIntegerDigits,
+                    minimumSignificantDigits: set.minimumSignificantDigits,
+                    skeleton: set.skeleton,
+                    type: set.type,
+                    useGrouping: set.useGrouping
+                });
+            }
+            return clonedCollection;
+        }
+        else {
+            return collection;
+        }
+    };
+    PivotUtil.CloneValueSortObject = function (collection) {
+        if (collection) {
+            var clonedCollection = {
+                columnIndex: collection.columnIndex,
+                headerDelimiter: collection.headerDelimiter,
+                headerText: collection.headerText,
+                measure: collection.measure,
+                sortOrder: collection.sortOrder
+            };
+            return clonedCollection;
+        }
+        else {
+            return collection;
+        }
+    };
+    PivotUtil.cloneCalculatedFieldSettings = function (collection) {
+        if (collection) {
+            var clonedCollection = [];
+            for (var _i = 0, collection_6 = collection; _i < collection_6.length; _i++) {
+                var set = collection_6[_i];
+                clonedCollection.push({
+                    name: set.name,
+                    formatString: set.formatString,
+                    formula: set.formula,
+                    hierarchyUniqueName: set.hierarchyUniqueName
+                });
+            }
+            return clonedCollection;
+        }
+        else {
+            return collection;
+        }
+    };
+    PivotUtil.cloneConditionalFormattingSettings = function (collection) {
+        if (collection) {
+            var clonedCollection = [];
+            for (var _i = 0, collection_7 = collection; _i < collection_7.length; _i++) {
+                var set = collection_7[_i];
+                clonedCollection.push({
+                    applyGrandTotals: set.applyGrandTotals,
+                    conditions: set.conditions,
+                    label: set.label,
+                    measure: set.measure,
+                    style: set.style ? {
+                        backgroundColor: set.style.backgroundColor,
+                        color: set.style.color,
+                        fontFamily: set.style.fontFamily,
+                        fontSize: set.style.fontSize
+                    } : set.style,
+                    value1: set.value1,
+                    value2: set.value2
+                });
+            }
+            return clonedCollection;
+        }
+        else {
+            return collection;
+        }
+    };
+    PivotUtil.cloneGroupSettings = function (collection) {
+        if (collection) {
+            var clonedCollection = [];
+            for (var _i = 0, collection_8 = collection; _i < collection_8.length; _i++) {
+                var set = collection_8[_i];
+                clonedCollection.push({
+                    name: set.name,
+                    caption: set.caption,
+                    customGroups: this.cloneCustomGroups(set.customGroups),
+                    endingAt: set.endingAt,
+                    startingAt: set.startingAt,
+                    groupInterval: set.groupInterval,
+                    rangeInterval: set.rangeInterval,
+                    type: set.type
+                });
+            }
+            return clonedCollection;
+        }
+        else {
+            return collection;
+        }
+    };
+    PivotUtil.cloneCustomGroups = function (collection) {
+        if (collection) {
+            var clonedCollection = [];
+            for (var _i = 0, collection_9 = collection; _i < collection_9.length; _i++) {
+                var set = collection_9[_i];
+                clonedCollection.push({
+                    groupName: set.groupName,
+                    items: set.items ? set.items.slice() : set.items
+                });
+            }
+            return clonedCollection;
+        }
+        else {
+            return collection;
+        }
+    };
+    PivotUtil.getSortItemByName = function (fieldName, sortObjects) {
+        return new DataManager({ json: sortObjects }).executeLocal(new Query().where('name', 'equal', fieldName))[0];
+    };
+    PivotUtil.getFilterItemByName = function (fieldName, filterObjects) {
+        var filterItems = new DataManager({ json: filterObjects }).executeLocal(new Query().where('name', 'equal', fieldName));
+        if (filterItems && filterItems.length > 0) {
+            return filterItems[filterItems.length - 1];
+        }
+        return undefined;
+    };
+    PivotUtil.getFieldByName = function (fieldName, fields) {
+        return new DataManager({ json: fields }).executeLocal(new Query().where('name', 'equal', fieldName))[0];
+    };
+    PivotUtil.getFormatItemByName = function (fieldName, formatObjects) {
+        return new DataManager({ json: formatObjects }).executeLocal(new Query().where('name', 'equal', fieldName))[0];
+    };
+    PivotUtil.getDrillItemByName = function (fieldName, drillObjects) {
+        return new DataManager({ json: drillObjects }).executeLocal(new Query().where('name', 'equal', fieldName))[0];
+    };
+    PivotUtil.getGroupItemByName = function (fieldName, drillObjects) {
+        return new DataManager({ json: drillObjects }).executeLocal(new Query().where('name', 'equal', fieldName))[0];
     };
     return PivotUtil;
 }());
@@ -208,6 +465,8 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
         this.rMembers = [];
         /** @hidden */
         this.cMembers = [];
+        /** @hidden */
+        this.groupingFields = {};
         this.valueMatrix = [];
         this.indexMatrix = [];
         this.memberCnt = -1;
@@ -233,7 +492,6 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
         this.dataSourceSettings = {};
         this.frameHeaderObjectsCollection = false;
         this.headerObjectsCollection = {};
-        this.groupingFields = {};
         this.columnKeys = {};
         this.fieldDrillCollection = {};
         /* tslint:disable-next-line:max-line-length */
@@ -457,13 +715,18 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
     /* tslint:disable */
     PivotEngine.prototype.getGroupData = function (data) {
         var fieldkeySet = data[0];
-        var _loop_1 = function (dategroup) {
-            var fieldName = dategroup.name;
+        var _loop_1 = function (group) {
+            var fieldName = group.name;
+            var caption = group.caption;
             if (this_1.fields.indexOf(fieldName) > -1) {
                 var groupFields = {};
-                if (dategroup.type === 'Number') {
-                    if (PivotUtil.getType(fieldkeySet[fieldName]) === 'number') {
-                        if (dategroup.rangeInterval) {
+                var customGroupFieldName = void 0;
+                if (group.type === 'Date' && this_1.groupingFields[fieldName]) {
+                    return { value: fieldkeySet };
+                }
+                else if (group.type === 'Number') {
+                    if (PivotUtil.getType(fieldkeySet[fieldName]) === 'number' || !this_1.groupingFields[fieldName]) {
+                        if (group.rangeInterval) {
                             data.sort(function (a, b) { return (a[fieldName] > b[fieldName]) ? 1 : ((b[fieldName] > a[fieldName]) ? -1 : 0); });
                         }
                     }
@@ -471,29 +734,30 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                         return { value: fieldkeySet };
                     }
                 }
+                else if (group.type === 'Custom' && this_1.fields.indexOf(fieldName + '_custom_group') > -1) {
+                    return { value: fieldkeySet };
+                }
                 var len = data.length;
                 while (len--) {
                     var item = data[len];
-                    if (item[fieldName] && dategroup.type === 'Date') {
+                    if (item[fieldName] && group.type === 'Date') {
                         var date = new Date(item[fieldName].toString());
-                        if (!isNullOrUndefined(date) && dategroup.groupInterval.length > 0) {
-                            var isGrouped = false;
-                            for (var _i = 0, _a = dategroup.groupInterval; _i < _a.length; _i++) {
-                                var interval = _a[_i];
-                                isGrouped = true;
-                                var isInRangeAvail = this_1.getRange(dategroup, date.getTime());
+                        if (!isNullOrUndefined(date) && group.groupInterval.length > 0) {
+                            for (var i = 0, len_1 = group.groupInterval.length; i < len_1; i++) {
+                                var interval = group.groupInterval[i];
+                                var isInRangeAvail = this_1.getRange(group, date.getTime());
                                 var newDate = PivotUtil.resetTime(new Date());
                                 switch (interval) {
                                     case 'Years':
                                         {
-                                            var newFieldName = fieldName + '_years';
+                                            var newFieldName = (i === group.groupInterval.length - 1) ? fieldName : fieldName + '_date_group_years';
                                             groupFields[newFieldName] = interval;
                                             item[newFieldName] = (isInRangeAvail ? undefined : new Date(newDate.setFullYear(date.getFullYear())).toString());
                                         }
                                         break;
                                     case 'Quarters':
                                         {
-                                            var newFieldName = fieldName + '_quarters';
+                                            var newFieldName = (i === group.groupInterval.length - 1) ? fieldName : fieldName + '_date_group_quarters';
                                             groupFields[newFieldName] = interval;
                                             var month = Math.ceil((date.getMonth() + 1) / 3);
                                             item[newFieldName] = (isInRangeAvail ? undefined : ((this_1.localeObj ? this_1.localeObj.getConstant('qtr') : 'Qtr') + month.toString()));
@@ -501,7 +765,7 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                                         break;
                                     case 'QuarterYear':
                                         {
-                                            var newFieldName = fieldName + '_quarterYear';
+                                            var newFieldName = (i === group.groupInterval.length - 1) ? fieldName : fieldName + '_date_group_quarterYear';
                                             groupFields[newFieldName] = interval;
                                             var month = Math.ceil((date.getMonth() + 1) / 3);
                                             item[newFieldName] = (isInRangeAvail ? undefined :
@@ -512,67 +776,83 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                                         break;
                                     case 'Months':
                                         {
-                                            var newFieldName = fieldName + '_months';
+                                            var newFieldName = (i === group.groupInterval.length - 1) ? fieldName : fieldName + '_date_group_months';
                                             groupFields[newFieldName] = interval;
                                             item[newFieldName] = (isInRangeAvail ? undefined : new Date(newDate.setMonth(date.getMonth(), newDate.getDate())).toString());
                                         }
                                         break;
                                     case 'Days':
                                         {
-                                            var newFieldName = fieldName + '_days';
+                                            var newFieldName = (i === group.groupInterval.length - 1) ? fieldName : fieldName + '_date_group_days';
                                             groupFields[newFieldName] = interval;
                                             item[newFieldName] = (isInRangeAvail ? undefined : new Date(newDate.setMonth(date.getMonth(), date.getDate())).toString());
                                         }
                                         break;
                                     case 'Hours':
                                         {
-                                            var newFieldName = fieldName + '_hours';
+                                            var newFieldName = (i === group.groupInterval.length - 1) ? fieldName : fieldName + '_date_group_hours';
                                             groupFields[newFieldName] = interval;
                                             item[newFieldName] = (isInRangeAvail ? undefined : new Date(newDate.setHours(date.getHours())).toString());
                                         }
                                         break;
                                     case 'Minutes':
                                         {
-                                            var newFieldName = fieldName + '_minutes';
+                                            var newFieldName = (i === group.groupInterval.length - 1) ? fieldName : fieldName + '_date_group_minutes';
                                             groupFields[newFieldName] = interval;
                                             item[newFieldName] = (isInRangeAvail ? undefined : new Date(newDate.setMinutes(date.getMinutes())).toString());
                                         }
                                         break;
                                     case 'Seconds':
                                         {
-                                            var newFieldName = fieldName + '_seconds';
+                                            var newFieldName = (i === group.groupInterval.length - 1) ? fieldName : fieldName + '_date_group_seconds';
                                             groupFields[newFieldName] = interval;
                                             item[newFieldName] = (isInRangeAvail ? undefined : new Date(newDate.setSeconds(date.getSeconds())).toString());
                                         }
                                         break;
                                 }
                             }
-                            if (isGrouped) {
-                                delete item[fieldName];
+                        }
+                    }
+                    else if (item[fieldName] && group.type === 'Number') {
+                        var isInRangeAvail = this_1.getRange(group, item[fieldName]);
+                        item[fieldName] = isInRangeAvail ? undefined : item[fieldName];
+                    }
+                    else if (item[fieldName] && group.type === 'Custom' && group.customGroups && group.customGroups.length > 0) {
+                        var newFieldName = fieldName + '_custom_group';
+                        var customGroups = group.customGroups;
+                        var groupValue = void 0;
+                        for (var i = 0, len_2 = customGroups.length; i < len_2; i++) {
+                            {
+                                var cGroup = customGroups[i];
+                                if (cGroup.items && cGroup.items.length > 1) {
+                                    customGroupFieldName = newFieldName;
+                                    var isDataMatch = PivotUtil.inArray(item[fieldName].toString(), cGroup.items) == -1 ? false : true;
+                                    item[newFieldName] = (isDataMatch ? (cGroup.groupName && cGroup.groupName != '') ? cGroup.groupName :
+                                        this_1.localeObj.getConstant('group') + ' ' + i : (groupValue && groupValue !== item[fieldName].toString()) ?
+                                        groupValue : item[fieldName].toString());
+                                    groupValue = item[newFieldName];
+                                }
                             }
                         }
                     }
-                    else {
-                        var isInRangeAvail = this_1.getRange(dategroup, item[fieldName]);
-                        item[fieldName] = isInRangeAvail ? undefined : item[fieldName];
-                    }
                     var keys = Object.keys(item);
                     var isCompleteSet = [];
-                    for (var _b = 0, keys_1 = keys; _b < keys_1.length; _b++) {
-                        var key = keys_1[_b];
+                    for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
+                        var key = keys_1[_i];
                         isCompleteSet.push((item[key]) ? true : false);
                     }
                     
                     fieldkeySet = (((isCompleteSet.indexOf(false) === -1) && keys.length === Object.keys(data[0]).length) ? item : fieldkeySet);
+                    this_1.fields = Object.keys(fieldkeySet);
                 }
-                if (dategroup.type === 'Date') {
+                if (group.type === 'Date') {
                     var isDataSource = false;
                     var axisFields = [this_1.rows, this_1.columns, this_1.values, this_1.filters];
                     var groupKeys = Object.keys(groupFields);
                     var gCnt = Object.keys(groupKeys).length;
                     var groupField = void 0;
-                    for (var _c = 0, axisFields_1 = axisFields; _c < axisFields_1.length; _c++) {
-                        var axis = axisFields_1[_c];
+                    for (var _a = 0, axisFields_1 = axisFields; _a < axisFields_1.length; _a++) {
+                        var axis = axisFields_1[_a];
                         if (!isDataSource && axis) {
                             var cnt = axis.length;
                             var i = 0;
@@ -581,17 +861,21 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                                     isDataSource = true;
                                     var actualField = axis[i];
                                     axis.splice(i, 1);
+                                    var dataFields = this_1.rows;
+                                    dataFields = dataFields.concat(this_1.columns, this_1.values, this_1.filters);
                                     while (gCnt--) {
-                                        groupField = groupFields[groupKeys[gCnt]];
-                                        var newField = {
-                                            name: groupKeys[gCnt],
-                                            caption: (this_1.localeObj ? this_1.localeObj.getConstant(groupField) : groupField) + ' (' + fieldName + ')',
-                                            type: 'Count',
-                                            showNoDataItems: actualField.showNoDataItems,
-                                            baseField: actualField.baseField,
-                                            baseItem: actualField.baseItem,
-                                        };
-                                        axis.splice(i, 0, newField);
+                                        if (!PivotUtil.getFieldByName(groupKeys[gCnt], dataFields)) {
+                                            groupField = groupFields[groupKeys[gCnt]];
+                                            var newField = {
+                                                name: groupKeys[gCnt],
+                                                caption: (this_1.localeObj ? this_1.localeObj.getConstant(groupField) : groupField) + ' (' + (actualField.caption ? actualField.caption : actualField.name) + ')',
+                                                type: 'Count',
+                                                showNoDataItems: actualField.showNoDataItems,
+                                                baseField: actualField.baseField,
+                                                baseItem: actualField.baseItem,
+                                            };
+                                            axis.splice(i, 0, newField);
+                                        }
                                     }
                                     break;
                                 }
@@ -605,8 +889,13 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                     gCnt = Object.keys(groupKeys).length;
                     while (gCnt--) {
                         groupField = groupFields[groupKeys[gCnt]];
-                        var formatfield = new DataManager({ json: this_1.formats }).executeLocal(new Query().where('name', 'equal', groupKeys[gCnt]))[0];
-                        if (groupField !== 'Quarters' && groupField !== 'QuarterYear' && !formatfield) {
+                        for (var i = 0, len_3 = this_1.formats.length; i < len_3; i++) {
+                            if (this_1.formats[i].name === groupKeys[gCnt]) {
+                                this_1.formats.splice(i, 1);
+                                break;
+                            }
+                        }
+                        if (groupField !== 'Quarters' && groupField !== 'QuarterYear') {
                             var formatSettings = {
                                 name: groupKeys[gCnt],
                                 type: ['Years', 'Months', 'Days'].indexOf(groupField) > -1 ? 'date' : 'time',
@@ -618,7 +907,7 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                         }
                     }
                 }
-                else if (dategroup.type === 'Number' && dategroup.rangeInterval) {
+                else if (group.type === 'Number' && group.rangeInterval) {
                     var startValue = void 0;
                     var endValue = void 0;
                     var cStartValue = void 0;
@@ -636,7 +925,7 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                         cnt++;
                     }
                     var framedSetLength = Math.max.apply(Math, framedSet);
-                    for (var i = framedSet[0], len_1 = framedSetLength; i < len_1; i++) {
+                    for (var i = framedSet[0], len_4 = framedSetLength; i < len_4; i++) {
                         if (unframedSet.indexOf(i) < 0) {
                             var duplicateData = this_1.frameData(data[0]);
                             duplicateData[fieldName] = i;
@@ -650,7 +939,7 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                     while (cnt < dataLength) {
                         if (data[cnt] && data[cnt][fieldName]) {
                             cStartValue = data[cnt][fieldName];
-                            cEndValue = cStartValue + (dategroup.rangeInterval - 1);
+                            cEndValue = cStartValue + (group.rangeInterval - 1);
                             startValue = (!startValue) ? cStartValue : startValue;
                             endValue = ((!endValue) ? ((cEndValue > framedSetLength) ? framedSetLength : cEndValue) : ((endValue > framedSetLength) ? framedSetLength : endValue));
                             if (cStartValue >= startValue && cStartValue <= endValue) {
@@ -658,13 +947,13 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                             }
                             else if (cStartValue > endValue && cStartValue === endValue + 1) {
                                 startValue = endValue + 1;
-                                endValue = ((startValue + (dategroup.rangeInterval - 1) > framedSetLength) ? framedSetLength : startValue + (dategroup.rangeInterval - 1));
+                                endValue = ((startValue + (group.rangeInterval - 1) > framedSetLength) ? framedSetLength : startValue + (group.rangeInterval - 1));
                                 data[cnt][fieldName] = ((startValue === endValue) ? startValue.toString() : startValue.toString() + '-' + endValue.toString());
                             }
                             var keys = Object.keys(data[cnt]);
                             var isCompleteSet = [];
-                            for (var _d = 0, keys_2 = keys; _d < keys_2.length; _d++) {
-                                var key = keys_2[_d];
+                            for (var _b = 0, keys_2 = keys; _b < keys_2.length; _b++) {
+                                var key = keys_2[_b];
                                 isCompleteSet.push((data[cnt][key]) ? true : false);
                             }
                             
@@ -673,19 +962,78 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                         cnt++;
                     }
                     var axisFields = [this_1.rows, this_1.columns, this_1.values, this_1.filters];
-                    for (var _e = 0, axisFields_2 = axisFields; _e < axisFields_2.length; _e++) {
-                        var fields = axisFields_2[_e];
+                    for (var _c = 0, axisFields_2 = axisFields; _c < axisFields_2.length; _c++) {
+                        var fields = axisFields_2[_c];
                         var field = new DataManager({ json: fields }).executeLocal(new Query().where('name', 'equal', fieldName))[0];
                         if (field) {
                             field = field.properties ? field.properties : field;
                             field.type = 'Count';
                         }
                     }
-                    for (var i = 0, len_2 = this_1.formats.length; i < len_2; i++) {
+                    for (var i = 0, len_5 = this_1.formats.length; i < len_5; i++) {
                         if (this_1.formats[i].name === fieldName) {
                             this_1.formats.splice(i, 1);
                             break;
                         }
+                    }
+                }
+                else if (group.type === 'Custom' && customGroupFieldName) {
+                    var customFieldName = customGroupFieldName;
+                    // this.groupingFields[customFieldName] = customFieldName;
+                    var isDataSource = false;
+                    var axisFields = [this_1.rows, this_1.columns, this_1.values, this_1.filters];
+                    var dataFields = this_1.rows;
+                    dataFields = dataFields.concat(this_1.columns, this_1.values, this_1.filters);
+                    var pattern = [];
+                    if (!caption || caption == '') {
+                        pattern = customFieldName.match(/_custom_group/g);
+                    }
+                    // let actualFieldName: string = fieldName.replace(/_custom_group/g, '');
+                    var parentField = PivotUtil.getFieldByName(fieldName.replace(/_custom_group/g, ''), dataFields);
+                    var customGroupField = PivotUtil.getFieldByName(customFieldName, dataFields);
+                    for (var _d = 0, axisFields_3 = axisFields; _d < axisFields_3.length; _d++) {
+                        var axis = axisFields_3[_d];
+                        if (!isDataSource && axis) {
+                            var cnt = axis.length;
+                            var i = 0;
+                            while (i < cnt) {
+                                if (axis[i].name === group.name && !customGroupField) {
+                                    isDataSource = true;
+                                    var actualField = axis[i];
+                                    var newField = {
+                                        name: customFieldName,
+                                        caption: (!caption || caption == '') ? (parentField.caption ? parentField.caption : parentField.name) + (pattern.length + 1) : caption,
+                                        type: 'Count',
+                                        showNoDataItems: actualField.showNoDataItems,
+                                        baseField: actualField.baseField,
+                                        baseItem: actualField.baseItem,
+                                    };
+                                    axis.splice(i, 0, newField);
+                                    break;
+                                }
+                                else if (axis[i].name === customFieldName && customGroupField) {
+                                    var newField = {
+                                        name: customGroupField.name,
+                                        caption: (!caption || caption == '') ? customGroupField.caption : caption,
+                                        type: customGroupField.type,
+                                        showNoDataItems: customGroupField.showNoDataItems,
+                                        baseField: customGroupField.baseField,
+                                        baseItem: customGroupField.baseItem,
+                                    };
+                                    axis.splice(i, 1, newField);
+                                    break;
+                                }
+                                i++;
+                            }
+                            if (isDataSource) {
+                                break;
+                            }
+                        }
+                    }
+                    var formatfield = PivotUtil.getFormatItemByName(fieldName, PivotUtil.cloneFormatSettings(this_1.formats));
+                    if (formatfield) {
+                        formatfield.name = customFieldName;
+                        this_1.formats.push(formatfield);
                     }
                 }
                 this_1.groupingFields = extend(this_1.groupingFields, groupFields);
@@ -696,8 +1044,8 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
         };
         var this_1 = this;
         for (var _i = 0, _a = this.groups; _i < _a.length; _i++) {
-            var dategroup = _a[_i];
-            var state_1 = _loop_1(dategroup);
+            var group = _a[_i];
+            var state_1 = _loop_1(group);
             if (typeof state_1 === "object")
                 return state_1.value;
         }
@@ -800,32 +1148,34 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                     this.fieldList[key] = {
                         id: key,
                         caption: key,
-                        type: (type === undefined || type === 'undefined') ? 'number' : type,
+                        type: ((key.indexOf('_custom_group') !== -1) || (key.indexOf('_date_group') !== -1)) ?
+                            'string' : (type === undefined || type === 'undefined') ? 'number' : type,
+                        sort: isSort ? 'Ascending' : 'None',
+                        isSelected: false,
                         filterType: '',
                         index: len,
                         filter: [],
-                        sort: isSort ? 'Ascending' : 'None',
-                        isSelected: false
+                        isCustomField: ((key.indexOf('_custom_group') !== -1) || (key.indexOf('_date_group') !== -1))
                     };
                 }
             }
         }
         else {
+            this.fieldList = {};
             while (len--) { /** while is used for better performance than for */
                 var key = keys[len];
                 type = (this.fieldsType && this.fieldsType[key]) ? this.fieldsType[key] : PivotUtil.getType(fields[key]);
-                if (!this.fieldList) {
-                    this.fieldList = {};
-                }
                 this.fieldList[key] = {
                     id: key,
                     caption: key,
-                    type: (type === undefined || type === 'undefined') ? 'number' : type,
+                    type: ((key.indexOf('_custom_group') !== -1) || (key.indexOf('_date_group') !== -1)) ?
+                        'string' : (type === undefined || type === 'undefined') ? 'number' : type,
                     filterType: '',
                     index: len,
                     filter: [],
                     sort: isSort ? 'Ascending' : 'None',
-                    isSelected: false
+                    isSelected: false,
+                    isCustomField: ((key.indexOf('_custom_group') !== -1) || (key.indexOf('_date_group') !== -1))
                 };
             }
         }
@@ -3233,7 +3583,7 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                     }
                 }
                 else {
-                    for (var len_3 = data.length, i = 0; i < len_3; i++) {
+                    for (var len_6 = data.length, i = 0; i < len_6; i++) {
                         if (data[i] !== undefined && data[i][0] === undefined) {
                             columnHeaders.push(data[i]);
                         }
@@ -3255,7 +3605,7 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                             var isSelectedColumn = false;
                             if (activeColumn[cln] !== undefined && activeColumn[cln].valueSort[uniqueName]) {
                                 activeValues = activeColumn[cln];
-                                for (var len_4 = data.length, i = 0; i < len_4; i++) {
+                                for (var len_7 = data.length, i = 0; i < len_7; i++) {
                                     var axisObj = data[i];
                                     if (axisObj !== undefined && axisObj[0] !== undefined &&
                                         axisObj[cln].axis === 'value' &&
@@ -3978,32 +4328,54 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
             dateText: commonValue
         };
         if (this.formatFields[fieldName] && value) {
-            var formatField = (this.formatFields[fieldName].properties ?
-                this.formatFields[fieldName].properties : this.formatFields[fieldName]);
-            var formatSetting = extend({}, formatField, null, true);
-            delete formatSetting.name;
-            if (!formatSetting.minimumSignificantDigits && formatSetting.minimumSignificantDigits < 1) {
-                delete formatSetting.minimumSignificantDigits;
-            }
-            if (!formatSetting.maximumSignificantDigits && formatSetting.maximumSignificantDigits < 1) {
-                delete formatSetting.maximumSignificantDigits;
-            }
-            if (formatSetting.type) {
-                formattedValue.formattedText = this.dateFormatFunction[fieldName].exactFormat(new Date(value));
-            }
-            else {
-                delete formatSetting.type;
-                if ((formatSetting.format) && !(this.formatRegex.test(formatSetting.format))) {
-                    var pattern = formatSetting.format.match(this.customRegex);
-                    var integerPart = pattern[6];
-                    formatSetting.useGrouping = integerPart.indexOf(',') !== -1;
+            try {
+                var formatField = (this.formatFields[fieldName].properties ?
+                    this.formatFields[fieldName].properties : this.formatFields[fieldName]);
+                var formatSetting = extend({}, formatField, null, true);
+                delete formatSetting.name;
+                if (!formatSetting.minimumSignificantDigits && formatSetting.minimumSignificantDigits < 1) {
+                    delete formatSetting.minimumSignificantDigits;
                 }
-                formattedValue.formattedText = this.globalize.formatNumber(value, formatSetting);
+                if (!formatSetting.maximumSignificantDigits && formatSetting.maximumSignificantDigits < 1) {
+                    delete formatSetting.maximumSignificantDigits;
+                }
+                if (formatSetting.type) {
+                    formattedValue.formattedText = this.dateFormatFunction[fieldName].exactFormat(new Date(value));
+                }
+                else {
+                    delete formatSetting.type;
+                    if ((formatSetting.format) && !(this.formatRegex.test(formatSetting.format))) {
+                        var pattern = formatSetting.format.match(this.customRegex);
+                        var integerPart = pattern[6];
+                        formatSetting.useGrouping = integerPart.indexOf(',') !== -1;
+                    }
+                    formattedValue.formattedText = this.globalize.formatNumber(value, formatSetting);
+                }
+                formattedValue.actualText = value;
+                if (this.fieldList[fieldName].sort !== 'None' && formatSetting.type &&
+                    ['date', 'dateTime', 'time'].indexOf(this.formatFields[fieldName].type) > -1) {
+                    formattedValue.dateText = this.dateFormatFunction[fieldName].fullFormat(new Date(value));
+                }
+                if (this.fieldList[fieldName].isCustomField) {
+                    formattedValue.formattedText = formattedValue.formattedText === 'NaN' ?
+                        commonValue.toString() : formattedValue.formattedText;
+                    formattedValue.dateText = formattedValue.dateText === 'NaN' ?
+                        commonValue.toString() : formattedValue.dateText;
+                }
             }
-            formattedValue.actualText = value;
-            if (this.fieldList[fieldName].sort !== 'None' && formatSetting.type &&
-                ['date', 'dateTime', 'time'].indexOf(this.formatFields[fieldName].type) > -1) {
-                formattedValue.dateText = this.dateFormatFunction[fieldName].fullFormat(new Date(value));
+            catch (exception) {
+                if (!this.fieldList[fieldName].isCustomField) {
+                    throw exception;
+                }
+            }
+            finally {
+                if (this.fieldList[fieldName].isCustomField) {
+                    formattedValue.formattedText =
+                        (isNullOrUndefined(formattedValue.formattedText) || formattedValue.formattedText === 'NaN') ?
+                            commonValue.toString() : formattedValue.formattedText;
+                    formattedValue.dateText = (isNullOrUndefined(formattedValue.formattedText) || formattedValue.formattedText === 'NaN') ?
+                        commonValue.toString() : formattedValue.dateText;
+                }
             }
         }
         return formattedValue;
@@ -4163,6 +4535,8 @@ var click = 'click';
 var initToolbar = 'init-toolbar';
 /** @hidden */
 var initFormatting = 'init-formatting';
+/** @hidden */
+var initGrouping = 'init-grouping';
 
 /**
  * CSS Constants
@@ -4662,6 +5036,10 @@ var PIVOTVIEW_GRID = 'e-pivotview-grid';
 var PIVOTVIEW_EXPAND = 'e-pivotview-expand';
 /** @hidden */
 var PIVOTVIEW_COLLAPSE = 'e-pivotview-collapse';
+/** @hidden */
+var PIVOTVIEW_GROUP = 'e-pivotview-group';
+/** @hidden */
+var PIVOTVIEW_UN_GROUP = 'e-pivotview-ungroup';
 /** @hidden */
 var GRID_PDF_EXPORT = 'e-pivotview-pdf-export';
 /** @hidden */
@@ -5323,6 +5701,11 @@ var Render = /** @__PURE__ @class */ (function () {
             pdfQueryCellInfo: this.pdfQueryCellInfo.bind(this),
             beforePdfExport: this.gridSettings.beforePdfExport ? this.gridSettings.beforePdfExport.bind(this) : undefined
         });
+        if (isBlazor()) {
+            var isJsComponent = 'isJsComponent';
+            /* tslint:disable-next-line */
+            this.parent.grid[isJsComponent] = true;
+        }
         this.parent.grid.on('header-refreshed', this.headerRefreshed.bind(this));
     };
     /* tslint:disable-next-line */
@@ -5387,13 +5770,20 @@ var Render = /** @__PURE__ @class */ (function () {
         this.parent.renderModule.pdfColumnEvent(args);
     };
     Render.prototype.dataBound = function (args) {
-        /* tslint:disable-next-line */
         if (this.parent.cellTemplate && !isBlazor()) {
             for (var _i = 0, _a = this.parent.gridHeaderCellInfo; _i < _a.length; _i++) {
                 var cell = _a[_i];
                 if (this.parent.cellTemplate) {
                     /* tslint:disable-next-line */
-                    append([].slice.call(this.parent.getCellTemplate()(cell, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate')), cell.targetCell);
+                    var element = this.parent.getCellTemplate()(cell, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate');
+                    if (element && element !== '' && element.length > 0) {
+                        if (this.parent.enableHtmlSanitizer) {
+                            this.parent.appendHtml(cell.targetCell, SanitizeHtmlHelper.sanitize(element[0].outerHTML));
+                        }
+                        else {
+                            this.parent.appendHtml(cell.targetCell, element[0].outerHTML);
+                        }
+                    }
                 }
             }
             this.parent.gridHeaderCellInfo = [];
@@ -5425,6 +5815,7 @@ var Render = /** @__PURE__ @class */ (function () {
             var cellTarget = this.parent.lastCellClicked;
             var elem = null;
             var bool = void 0;
+            var isGroupElement = void 0;
             if (cellTarget.classList.contains('e-stackedheadercelldiv') || cellTarget.classList.contains('e-cellvalue') ||
                 cellTarget.classList.contains('e-headercelldiv') || cellTarget.classList.contains('e-icons') || cellTarget.classList.contains('e-rhandler')) {
                 elem = cellTarget.parentElement;
@@ -5436,8 +5827,15 @@ var Render = /** @__PURE__ @class */ (function () {
             else if (cellTarget.classList.contains('e-headertext')) {
                 elem = cellTarget.parentElement.parentElement;
             }
+            if (!elem) {
+                args.cancel = true;
+                return;
+            }
             if (elem.classList.contains('e-valuesheader') || elem.classList.contains('e-stot')) {
                 bool = true;
+            }
+            if (this.parent.allowGrouping && this.parent.groupingModule && !this.validateField(elem)) {
+                isGroupElement = true;
             }
             var rowIndex = Number(elem.getAttribute('index'));
             var colIndex = Number(elem.getAttribute('aria-colindex'));
@@ -5485,6 +5883,28 @@ var Render = /** @__PURE__ @class */ (function () {
                         }
                         else {
                             args.element.querySelector('#' + this.parent.element.id + '_collapse').classList.add(MENU_DISABLE);
+                        }
+                    }
+                    break;
+                case this.parent.element.id + '_custom_group':
+                case this.parent.element.id + '_custom_ungroup':
+                    if (!isGroupElement && args.items.length == 2) {
+                        args.cancel = true;
+                    }
+                    if (args.element.querySelectorAll('#' + this.parent.element.id + '_custom_group')) {
+                        addClass([args.element.querySelector('#' + this.parent.element.id + '_custom_group')], MENU_HIDE);
+                    }
+                    if (args.element.querySelectorAll('#' + this.parent.element.id + '_custom_ungroup')) {
+                        addClass([args.element.querySelector('#' + this.parent.element.id + '_custom_ungroup')], MENU_HIDE);
+                    }
+                    if (isGroupElement) {
+                        if (args.element.querySelectorAll('#' + this.parent.element.id + '_custom_group')) {
+                            removeClass([args.element.querySelector('#' + this.parent.element.id + '_custom_group')], MENU_HIDE);
+                        }
+                        if (args.element.querySelectorAll('#' + this.parent.element.id + '_custom_ungroup') &&
+                            (PivotUtil.getGroupItemByName(elem.getAttribute('fieldname'), this.parent.dataSourceSettings.groupSettings) ||
+                                this.engine.fieldList[elem.getAttribute('fieldname')].isCustomField)) {
+                            removeClass([args.element.querySelector('#' + this.parent.element.id + '_custom_ungroup')], MENU_HIDE);
                         }
                     }
                     break;
@@ -5700,8 +6120,42 @@ var Render = /** @__PURE__ @class */ (function () {
                 ele.setAttribute('data-baseItem', this.engine.fieldList[pivotValue.actualText.toString()].baseItem);
                 this.aggMenu.createValueSettingsDialog(ele, this.parent.element);
                 break;
+            case this.parent.element.id + '_custom_group':
+            case this.parent.element.id + '_custom_ungroup':
+                if (this.parent.groupingModule) {
+                    var args_1 = {
+                        target: ele,
+                        option: selected$$1,
+                        parentElement: this.parent.element
+                    };
+                    this.parent.notify(initGrouping, args_1);
+                    this.parent.grid.contextMenuModule.contextMenu.close();
+                }
+                break;
         }
         this.parent.trigger(contextMenuClick, args);
+    };
+    Render.prototype.validateField = function (target) {
+        var isValueField = false;
+        if (target.classList.contains('e-stot') || target.classList.contains('e-gtot') || target.classList.contains('e-valuescontent') || target.classList.contains('e-valuesheader')) {
+            isValueField = true;
+        }
+        else {
+            var fieldName = target.getAttribute('fieldName');
+            if (!fieldName || fieldName == '') {
+                var rowIndx = Number(target.getAttribute('index'));
+                var colIndx = Number(target.getAttribute('aria-colindex'));
+                fieldName = this.engine.pivotValues[rowIndx][colIndx].actualText;
+            }
+            var valuefields = this.parent.dataSourceSettings.values;
+            for (var valueCnt = 0; valueCnt < valuefields.length; valueCnt++) {
+                if (this.parent.dataSourceSettings.values[valueCnt].name === fieldName) {
+                    isValueField = true;
+                    break;
+                }
+            }
+        }
+        return isValueField;
     };
     /* tslint:enable */
     Render.prototype.updateAggregate = function (aggregate) {
@@ -5992,7 +6446,15 @@ var Render = /** @__PURE__ @class */ (function () {
                 /* tslint:disable-next-line */
                 if (!(window && isBlazor())) {
                     /* tslint:disable-next-line */
-                    append([].slice.call(this.parent.getCellTemplate()({ targetCell: tCell }, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate')), tCell);
+                    var element = this.parent.getCellTemplate()({ targetCell: tCell }, this.parent, 'cellTemplate', this.parent.element.id + '_cellTemplate');
+                    if (element && element !== '' && element.length > 0) {
+                        if (this.parent.enableHtmlSanitizer) {
+                            this.parent.appendHtml(tCell, SanitizeHtmlHelper.sanitize(element[0].outerHTML));
+                        }
+                        else {
+                            this.parent.appendHtml(tCell, element[0].outerHTML);
+                        }
+                    }
                 }
                 else if (index && colindex) {
                     this.parent.gridCellCollection[templateID] = tCell;
@@ -6884,7 +7346,29 @@ var GroupSettings = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property()
     ], GroupSettings.prototype, "rangeInterval", void 0);
+    __decorate$1([
+        Property()
+    ], GroupSettings.prototype, "caption", void 0);
+    __decorate$1([
+        Property()
+    ], GroupSettings.prototype, "customGroups", void 0);
     return GroupSettings;
+}(ChildProperty));
+/**
+ * Configures the custom group settings of fields.
+ */
+var CustomGroups = /** @__PURE__ @class */ (function (_super) {
+    __extends$1(CustomGroups, _super);
+    function CustomGroups() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$1([
+        Property()
+    ], CustomGroups.prototype, "groupName", void 0);
+    __decorate$1([
+        Property([])
+    ], CustomGroups.prototype, "items", void 0);
+    return CustomGroups;
 }(ChildProperty));
 /**
  * Configures the calculatedfields settings.
@@ -8269,76 +8753,127 @@ var VirtualScroll$1 = /** @__PURE__ @class */ (function () {
         };
     };
     VirtualScroll$$1.prototype.update = function (mHdr, mCont, top, left, e) {
+        var _this = this;
         this.parent.isScrolling = true;
         var engine = this.parent.dataType === 'pivot' ? this.parent.engineModule : this.parent.olapEngineModule;
+        if (isBlazor()) {
+            engine.pageSettings = this.parent.pageSettings;
+        }
         if (this.parent.pageSettings && engine.pageSettings) {
             if (this.direction === 'vertical') {
-                var rowValues = this.parent.dataType === 'pivot' ?
+                var rowValues_1 = this.parent.dataType === 'pivot' ?
                     (this.parent.dataSourceSettings.valueAxis === 'row' ? this.parent.dataSourceSettings.values.length : 1) : 1;
-                var exactSize = (this.parent.pageSettings.rowSize * rowValues * this.parent.gridSettings.rowHeight);
-                var section = Math.ceil(top / exactSize);
+                var exactSize_1 = (this.parent.pageSettings.rowSize * rowValues_1 * this.parent.gridSettings.rowHeight);
+                var section = Math.ceil(top / exactSize_1);
                 if ((this.parent.scrollPosObject.vertical === section ||
                     engine.pageSettings.rowSize >= engine.rowCount)) {
                     hideSpinner(this.parent.element);
                     return;
                 }
                 showSpinner(this.parent.element);
-                //setTimeout(() => {
                 this.parent.scrollPosObject.vertical = section;
                 engine.pageSettings.rowCurrentPage = section > 1 ? section : 1;
-                var rowStartPos = 0;
+                var rowStartPos_1 = 0;
                 if (this.parent.dataType === 'pivot') {
-                    this.parent.engineModule.generateGridData(this.parent.dataSourceSettings, this.parent.engineModule.headerCollection);
-                    rowStartPos = this.parent.engineModule.rowStartPos;
+                    if (isBlazor()) {
+                        var pivot_1 = this.parent;
+                        var ejsInterop = 'ejsInterop';
+                        /* tslint:disable-next-line */
+                        var dataSourceSettings = window[ejsInterop].
+                            copyWithoutCircularReferences([pivot_1.dataSourceSettings], pivot_1.dataSourceSettings);
+                        /* tslint:disable-next-line */
+                        var pageSettings = window[ejsInterop].
+                            copyWithoutCircularReferences([engine.pageSettings], engine.pageSettings);
+                        /* tslint:disable-next-line */
+                        pivot_1.interopAdaptor.invokeMethodAsync('PivotInteropMethod', 'generateGridData', {
+                            'dataSourceSettings': dataSourceSettings,
+                            'pageSettings': pageSettings, 'isScrolling': true
+                        }).then(
+                        /* tslint:disable-next-line */
+                        function (data) {
+                            pivot_1.updateBlazorData(data, pivot_1);
+                            pivot_1.pivotValues = engine.pivotValues;
+                            rowStartPos_1 = _this.parent.engineModule.rowStartPos;
+                            var exactPage = Math.ceil(rowStartPos_1 / (pivot_1.pageSettings.rowSize * rowValues_1));
+                            var pos = exactSize_1 * exactPage -
+                                (engine.rowFirstLvl * rowValues_1 * pivot_1.gridSettings.rowHeight);
+                            pivot_1.scrollPosObject.verticalSection = pos;
+                        });
+                    }
+                    else {
+                        this.parent.engineModule.generateGridData(this.parent.dataSourceSettings, this.parent.engineModule.headerCollection);
+                        rowStartPos_1 = this.parent.engineModule.rowStartPos;
+                    }
                 }
                 else {
                     this.parent.olapEngineModule.scrollPage('scroll');
-                    rowStartPos = this.parent.olapEngineModule.pageRowStartPos;
+                    rowStartPos_1 = this.parent.olapEngineModule.pageRowStartPos;
                 }
-                this.parent.pivotValues = engine.pivotValues;
-                var exactPage = Math.ceil(rowStartPos / (this.parent.pageSettings.rowSize * rowValues));
-                var pos = exactSize * exactPage -
-                    (engine.rowFirstLvl * rowValues * this.parent.gridSettings.rowHeight);
-                this.parent.scrollPosObject.verticalSection = pos;
-                //});
+                if (!(isBlazor() && this.parent.dataType === 'pivot')) {
+                    this.parent.pivotValues = engine.pivotValues;
+                    var exactPage = Math.ceil(rowStartPos_1 / (this.parent.pageSettings.rowSize * rowValues_1));
+                    var pos = exactSize_1 * exactPage -
+                        (engine.rowFirstLvl * rowValues_1 * this.parent.gridSettings.rowHeight);
+                    this.parent.scrollPosObject.verticalSection = pos;
+                }
             }
             else {
-                var colValues = this.parent.dataType === 'pivot' ?
+                var colValues_1 = this.parent.dataType === 'pivot' ?
                     (this.parent.dataSourceSettings.valueAxis === 'column' ? this.parent.dataSourceSettings.values.length : 1) : 1;
-                var exactSize = (this.parent.pageSettings.columnSize *
-                    colValues * this.parent.gridSettings.columnWidth);
-                var section = Math.ceil(left / exactSize);
+                var exactSize_2 = (this.parent.pageSettings.columnSize *
+                    colValues_1 * this.parent.gridSettings.columnWidth);
+                var section = Math.ceil(left / exactSize_2);
                 if (this.parent.scrollPosObject.horizontal === section) {
                     hideSpinner(this.parent.element);
                     return;
                 }
                 showSpinner(this.parent.element);
                 var pivot = this.parent;
-                //setTimeout(() => {
                 pivot.scrollPosObject.horizontal = section;
                 engine.pageSettings.columnCurrentPage = section > 1 ? section : 1;
-                var colStartPos = 0;
+                var colStartPos_1 = 0;
                 if (pivot.dataType === 'pivot') {
-                    pivot.engineModule.generateGridData(pivot.dataSourceSettings, pivot.engineModule.headerCollection);
-                    colStartPos = pivot.engineModule.colStartPos;
+                    if (isBlazor()) {
+                        var ejsInterop = 'ejsInterop';
+                        var pivot_2 = this.parent;
+                        /* tslint:disable-next-line */
+                        var pageSettings = window[ejsInterop].
+                            copyWithoutCircularReferences([engine.pageSettings], engine.pageSettings);
+                        /* tslint:disable-next-line */
+                        var dataSourceSettings = window[ejsInterop].
+                            copyWithoutCircularReferences([pivot_2.dataSourceSettings], pivot_2.dataSourceSettings);
+                        /* tslint:disable-next-line */
+                        pivot_2.interopAdaptor.invokeMethodAsync('PivotInteropMethod', 'generateGridData', {
+                            'dataSourceSettings': dataSourceSettings,
+                            'pageSettings': pageSettings, 'isScrolling': true
+                        }).then(
+                        /* tslint:disable-next-line */
+                        function (data) {
+                            pivot_2.updateBlazorData(data, pivot_2);
+                            colStartPos_1 = pivot_2.engineModule.colStartPos;
+                            pivot_2.pivotValues = engine.pivotValues;
+                            var exactPage = Math.ceil(colStartPos_1 / (pivot_2.pageSettings.columnSize * colValues_1));
+                            var pos = exactSize_2 * exactPage - (engine.colFirstLvl *
+                                colValues_1 * pivot_2.gridSettings.columnWidth);
+                            pivot_2.scrollPosObject.horizontalSection = pos;
+                        });
+                    }
+                    else {
+                        pivot.engineModule.generateGridData(pivot.dataSourceSettings, pivot.engineModule.headerCollection);
+                        colStartPos_1 = pivot.engineModule.colStartPos;
+                    }
                 }
                 else {
                     pivot.olapEngineModule.scrollPage('scroll');
-                    colStartPos = pivot.olapEngineModule.pageColStartPos;
+                    colStartPos_1 = pivot.olapEngineModule.pageColStartPos;
                 }
-                // let isLastPage: boolean =
-                //     (engine.pivotValues[0] as IAxisSet[])[engine.pivotValues[0].length - 1].type
-                //     === 'grand sum' && section > 0;
-                pivot.pivotValues = engine.pivotValues;
-                var exactPage = Math.ceil(colStartPos / (pivot.pageSettings.columnSize * colValues));
-                // let pos: number = isLastPage ?
-                //     ((left + mHdr.clientWidth) - ((mHdr.querySelector('.' + cls.TABLE) as HTMLElement).offsetWidth)) :
-                //     exactSize * exactPage - (engine.colFirstLvl *
-                //         colValues * pivot.gridSettings.columnWidth);
-                var pos = exactSize * exactPage - (engine.colFirstLvl *
-                    colValues * pivot.gridSettings.columnWidth);
-                pivot.scrollPosObject.horizontalSection = pos;
-                //});
+                if (!(isBlazor() && pivot.dataType === 'pivot')) {
+                    pivot.pivotValues = engine.pivotValues;
+                    var exactPage = Math.ceil(colStartPos_1 / (pivot.pageSettings.columnSize * colValues_1));
+                    var pos = exactSize_2 * exactPage - (engine.colFirstLvl *
+                        colValues_1 * pivot.gridSettings.columnWidth);
+                    pivot.scrollPosObject.horizontalSection = pos;
+                }
             }
         }
     };
@@ -8588,25 +9123,41 @@ var DrillThroughDialog = /** @__PURE__ @class */ (function () {
                         }
                     }
                     count = 0;
-                    var items = [];
-                    var data = (_this.parent.allowDataCompression && _this.parent.enableVirtualization) ?
-                        _this.parent.engineModule.actualData : _this.parent.engineModule.data;
-                    for (var _d = 0, _e = data; _d < _e.length; _d++) {
-                        var item = _e[_d];
-                        delete item['__index'];
-                        if (_this.gridIndexObjects[count.toString()] === undefined) {
-                            items.push(item);
-                        }
-                        count++;
+                    if (isBlazor() && _this.parent.enableVirtualization) {
+                        var currModule_1 = _this;
+                        /* tslint:disable:no-any */
+                        currModule_1.parent.interopAdaptor.invokeMethodAsync('PivotInteropMethod', 'updateRawData', {
+                            'AddItem': addItems, 'RemoveItem': currModule_1.gridIndexObjects, 'ModifiedItem': currModule_1.gridData
+                        }).then(function (data) {
+                            currModule_1.parent.updateBlazorData(data, currModule_1.parent);
+                            currModule_1.parent.setProperties({ pivotValues: currModule_1.parent.engineModule.pivotValues }, true);
+                            currModule_1.isUpdated = false;
+                            currModule_1.gridIndexObjects = {};
+                        });
                     }
-                    /* tslint:enable:no-string-literal */
-                    items = items.concat(addItems);
-                    _this.parent.setProperties({ dataSourceSettings: { dataSource: items } }, true);
-                    _this.engine.updateGridData(_this.parent.dataSourceSettings);
-                    _this.parent.pivotValues = _this.engine.pivotValues;
+                    else {
+                        var items = [];
+                        var data = (_this.parent.allowDataCompression && _this.parent.enableVirtualization) ?
+                            _this.parent.engineModule.actualData : _this.parent.engineModule.data;
+                        for (var _d = 0, _e = data; _d < _e.length; _d++) {
+                            var item = _e[_d];
+                            delete item['__index'];
+                            if (_this.gridIndexObjects[count.toString()] === undefined) {
+                                items.push(item);
+                            }
+                            count++;
+                        }
+                        /* tslint:enable:no-string-literal */
+                        items = items.concat(addItems);
+                        _this.parent.setProperties({ dataSourceSettings: { dataSource: items } }, true);
+                        _this.engine.updateGridData(_this.parent.dataSourceSettings);
+                        _this.parent.pivotValues = _this.engine.pivotValues;
+                    }
                 }
-                _this.isUpdated = false;
-                _this.gridIndexObjects = {};
+                if (!(isBlazor() && _this.parent.enableVirtualization)) {
+                    _this.isUpdated = false;
+                    _this.gridIndexObjects = {};
+                }
             },
             isModal: true,
             visible: true,
@@ -8920,42 +9471,63 @@ var DrillThrough = /** @__PURE__ @class */ (function () {
                 valueCaption = engine.fieldList[pivotValue.actualText.toString()] ?
                     engine.fieldList[pivotValue.actualText.toString()].caption : pivotValue.actualText.toString();
                 aggType = engine.fieldList[pivotValue.actualText] ? engine.fieldList[pivotValue.actualText].aggregateType : '';
-                if (this.parent.enableVirtualization && this.parent.allowDataCompression) {
-                    var indexArray = Object.keys(pivotValue.indexObject);
-                    this.drillThroughDialog.indexString = [];
-                    for (var _i = 0, indexArray_1 = indexArray; _i < indexArray_1.length; _i++) {
-                        var cIndex = indexArray_1[_i];
-                        for (var _a = 0, _b = this.parent.engineModule.groupRawIndex[Number(cIndex)]; _a < _b.length; _a++) {
-                            var aIndex = _b[_a];
-                            rawData.push(this.parent.engineModule.actualData[aIndex]);
-                            this.drillThroughDialog.indexString.push(aIndex.toString());
+                var currModule_1 = this;
+                if (isBlazor() && this.parent.enableVirtualization) {
+                    /* tslint:disable:no-any */
+                    currModule_1.parent.interopAdaptor.invokeMethodAsync('PivotInteropMethod', 'fetchRawData', { 'RowIndex': rowIndex, 'ColumnIndex': colIndex }).then(function (data) {
+                        rawData = JSON.parse(data.rawData);
+                        var parsedObj = JSON.parse(data.indexObject);
+                        var indexObject = {};
+                        for (var len = 0; len < parsedObj.length; len++) {
+                            indexObject[parsedObj[len].Key] = parsedObj[len].Value;
+                        }
+                        pivotValue.indexObject = indexObject;
+                        currModule_1.triggerDialog(valueCaption, aggType, rawData, pivotValue, ele);
+                    });
+                }
+                else {
+                    if (this.parent.enableVirtualization && this.parent.allowDataCompression) {
+                        var indexArray = Object.keys(pivotValue.indexObject);
+                        this.drillThroughDialog.indexString = [];
+                        for (var _i = 0, indexArray_1 = indexArray; _i < indexArray_1.length; _i++) {
+                            var cIndex = indexArray_1[_i];
+                            for (var _a = 0, _b = this.parent.engineModule.groupRawIndex[Number(cIndex)]; _a < _b.length; _a++) {
+                                var aIndex = _b[_a];
+                                rawData.push(this.parent.engineModule.actualData[aIndex]);
+                                this.drillThroughDialog.indexString.push(aIndex.toString());
+                            }
+                        }
+                    }
+                    else {
+                        var indexArray = Object.keys(pivotValue.indexObject);
+                        for (var _c = 0, indexArray_2 = indexArray; _c < indexArray_2.length; _c++) {
+                            var index = indexArray_2[_c];
+                            rawData.push(this.parent.engineModule.data[Number(index)]);
                         }
                     }
                 }
-                else {
-                    var indexArray = Object.keys(pivotValue.indexObject);
-                    for (var _c = 0, indexArray_2 = indexArray; _c < indexArray_2.length; _c++) {
-                        var index = indexArray_2[_c];
-                        rawData.push(this.parent.engineModule.data[Number(index)]);
-                    }
-                }
             }
-            var valuetText = aggType === 'CalculatedField' ? valueCaption.toString() : aggType !== '' ?
-                (this.parent.localeObj.getConstant(aggType) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + valueCaption) :
-                valueCaption;
-            var eventArgs = {
-                currentTarget: ele,
-                currentCell: pivotValue,
-                rawData: rawData,
-                rowHeaders: pivotValue.rowHeaders === '' ? '' : pivotValue.rowHeaders.toString().split('.').join(' - '),
-                columnHeaders: pivotValue.columnHeaders === '' ? '' : pivotValue.columnHeaders.toString().split('.').join(' - '),
-                value: valuetText + '(' + pivotValue.formattedText + ')'
-            };
-            var drillThrough_1 = this;
-            this.parent.trigger(drillThrough, eventArgs, function (observedArgs) {
-                drillThrough_1.drillThroughDialog.showDrillThroughDialog(observedArgs);
-            });
+            if (!(isBlazor() && this.parent.enableVirtualization)) {
+                this.triggerDialog(valueCaption, aggType, rawData, pivotValue, ele);
+            }
         }
+    };
+    DrillThrough.prototype.triggerDialog = function (valueCaption, aggType, rawData, pivotValue, ele) {
+        var valuetText = aggType === 'CalculatedField' ? valueCaption.toString() : aggType !== '' ?
+            (this.parent.localeObj.getConstant(aggType) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + valueCaption) :
+            valueCaption;
+        var eventArgs = {
+            currentTarget: ele,
+            currentCell: pivotValue,
+            rawData: rawData,
+            rowHeaders: pivotValue.rowHeaders === '' ? '' : pivotValue.rowHeaders.toString().split('.').join(' - '),
+            columnHeaders: pivotValue.columnHeaders === '' ? '' : pivotValue.columnHeaders.toString().split('.').join(' - '),
+            value: valuetText + '(' + pivotValue.formattedText + ')'
+        };
+        var drillThrough$$1 = this;
+        this.parent.trigger(drillThrough, eventArgs, function (observedArgs) {
+            drillThrough$$1.drillThroughDialog.showDrillThroughDialog(observedArgs);
+        });
     };
     return DrillThrough;
 }());
@@ -9018,7 +9590,6 @@ var PivotChart = /** @__PURE__ @class */ (function () {
         }
         else {
             this.parent.notify(contentReady, {});
-            this.parent.chart.refresh();
             return;
         }
         this.columnGroupObject = {};
@@ -9590,7 +10161,14 @@ var PivotChart = /** @__PURE__ @class */ (function () {
     PivotChart.prototype.configTooltipSettings = function () {
         var tooltip = this.chartSettings.tooltip;
         tooltip.enable = tooltip.enable === undefined ? true : tooltip.enable;
-        tooltip.header = tooltip.header ? tooltip.header : '';
+        if (isBlazor()) {
+            this.parent.allowServerDataBinding = false;
+            this.parent.setProperties({ chartSettings: { tooltip: { header: tooltip.header ? tooltip.header : '' } } }, true);
+            this.parent.allowServerDataBinding = true;
+        }
+        else {
+            tooltip.header = tooltip.header ? tooltip.header : '';
+        }
         tooltip.enableMarker = tooltip.enableMarker === undefined ? true : tooltip.enableMarker;
         return tooltip;
     };
@@ -9641,7 +10219,7 @@ var PivotChart = /** @__PURE__ @class */ (function () {
             formattedText);
         args.text = measureAggregatedName + ': ' + formattedValue +
             (this.dataSourceSettings.columns.length === 0 ? '' :
-                (' <br/>' + this.parent.localeObj.getConstant('column') + ': ' + args.series.name.split(' | ')[0])) +
+                (' <br/>' + this.parent.localeObj.getConstant('column') + ': ' + (args.series.name ? args.series.name.split(' | ')[0] : args.data.seriesName.split(' | ')[0]))) +
             (this.dataSourceSettings.rows.length === 0 ? '' :
                 (' <br/>' + this.parent.localeObj.getConstant('row') + ': ' + args.point.x));
         this.parent.trigger(chartTooltipRender, args);
@@ -9659,14 +10237,29 @@ var PivotChart = /** @__PURE__ @class */ (function () {
                 this.parent.element.querySelector("#" + this.parent.element.id + multilabelAxisName).setAttribute('cursor', 'pointer');
             }
         }
-        if (this.parent.chart && this.parent.showToolbar && this.parent.element.querySelector(".e-pivot-toolbar")) {
+        if (this.parent.chart && this.parent.showToolbar && this.parent.element.querySelector(".e-pivot-toolbar")
+            && this.parent.showGroupingBar && this.parent.element.querySelector(".e-chart-grouping-bar")) {
+            this.parent.chart.height = (this.parent.getHeightAsNumber() - this.parent.element.querySelector(".e-pivot-toolbar").clientHeight -
+                this.parent.element.querySelector(".e-chart-grouping-bar").clientHeight).toString();
+        }
+        else if (this.parent.chart && this.parent.showToolbar && this.parent.element.querySelector(".e-pivot-toolbar")) {
             this.parent.chart.height = (this.parent.getHeightAsNumber() - this.parent.element.querySelector(".e-pivot-toolbar").clientHeight).toString();
         }
-        if (this.parent.chart && this.parent.showGroupingBar && this.parent.element.querySelector(".e-chart-grouping-bar")) {
+        else if (this.parent.chart && this.parent.showGroupingBar && this.parent.element.querySelector(".e-chart-grouping-bar")) {
             this.parent.chart.height = (this.parent.getHeightAsNumber() - this.parent.element.querySelector(".e-chart-grouping-bar").clientHeight).toString();
         }
-        if (parseInt(this.parent.chart.height) < 200) {
+        else if (parseInt(this.parent.chart.height) < 200) {
             this.parent.chart.height = "200";
+        }
+        if (this.parent.grid && this.parent.chart && this.parent.showToolbar) {
+            if (this.parent.currentView === 'Table') {
+                this.parent.grid.element.style.display = '';
+                this.parent.chart.element.style.display = 'none';
+            }
+            else {
+                this.parent.grid.element.style.display = 'none';
+                this.parent.chart.element.style.display = '';
+            }
         }
         this.parent.notify(contentReady, {});
         this.parent.trigger(chartLoaded, args);
@@ -14698,6 +15291,10 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         _this_1.lastCalcFieldInfo = {};
         /** @hidden */
         _this_1.isScrolling = false;
+        /** @hidden */
+        _this_1.updateGroupType = 'Number';
+        /** @hidden */
+        _this_1.isGroupUIupdate = false;
         _this_1.shiftLockedPos = [];
         _this_1.savedSelectedCellsPos = [];
         _this_1.isPopupClicked = false;
@@ -14743,7 +15340,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         var modules = [];
         var isCommonRequire;
         isCommonRequire = true;
-        modules.push({ args: [this], member: 'grouping' });
+        modules.push({ args: [this], member: 'groupingbar' });
         if (this.allowConditionalFormatting) {
             modules.push({ args: [this], member: 'conditionalformatting' });
         }
@@ -14775,6 +15372,10 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         }
         if (this.enableVirtualization) {
             modules.push({ args: [this], member: 'virtualscroll' });
+        }
+        if (this.allowGrouping) {
+            isCommonRequire = true;
+            modules.push({ args: [this], member: 'grouping' });
         }
         if (this.gridSettings) {
             if (this.gridSettings.contextMenuItems) {
@@ -15023,7 +15624,18 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             copy: 'Copy',
             defaultReport: 'Default report',
             customFormatString: 'Custom Format',
-            invalidFormat: 'Invalid Format.'
+            invalidFormat: 'Invalid Format.',
+            group: 'Group',
+            unGroup: 'Ungroup',
+            invalidSelection: 'Cannot group that selection.',
+            groupName: 'Enter the caption to display in header',
+            captionName: 'Enter the caption for group field',
+            selectedItems: 'Selected items',
+            groupTitle: 'Group name :',
+            startAt: 'Starting at :',
+            endAt: 'Ending at :',
+            groupBy: 'By :',
+            selectGroup: 'Select groups',
         };
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.renderContextMenu();
@@ -15052,38 +15664,45 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
     };
     /** @hidden */
     PivotView.prototype.renderContextMenu = function () {
-        if (this.gridSettings.contextMenuItems) {
+        if (this.gridSettings.contextMenuItems || (this.allowGrouping && this.dataType === 'pivot')) {
             var conmenuItems = [];
+            var groupItems = [];
             var customItems = [];
             var exportItems = [];
             var aggItems = [];
             var expItems = [];
             var aggregateItems = [];
-            for (var _i = 0, _a = this.gridSettings.contextMenuItems; _i < _a.length; _i++) {
-                var item = _a[_i];
-                if (typeof item === 'string' && this.getDefaultItems().indexOf(item) !== -1) {
-                    if (item.toString().toLowerCase().indexOf('aggregate') !== -1) {
-                        aggregateItems = [
-                            { text: this.localeObj.getConstant('Sum'), id: this.element.id + '_AggSum' },
-                            { text: this.localeObj.getConstant('DistinctCount'), id: this.element.id + '_AggDistinctCount' },
-                            { text: this.localeObj.getConstant('Count'), id: this.element.id + '_AggCount' },
-                            { text: this.localeObj.getConstant('Product'), id: this.element.id + '_AggProduct' },
-                            { text: this.localeObj.getConstant('Avg'), id: this.element.id + '_AggAvg' },
-                            { text: this.localeObj.getConstant('Max'), id: this.element.id + '_AggMax' },
-                            { text: this.localeObj.getConstant('Min'), id: this.element.id + '_AggMin' },
-                            { text: this.localeObj.getConstant('MoreOption'), id: this.element.id + '_AggMoreOption' }
-                        ];
+            if (this.gridSettings.contextMenuItems) {
+                for (var _i = 0, _a = this.gridSettings.contextMenuItems; _i < _a.length; _i++) {
+                    var item = _a[_i];
+                    if (typeof item === 'string' && this.getDefaultItems().indexOf(item) !== -1) {
+                        if (item.toString().toLowerCase().indexOf('aggregate') !== -1) {
+                            aggregateItems = [
+                                { text: this.localeObj.getConstant('Sum'), id: this.element.id + '_AggSum' },
+                                { text: this.localeObj.getConstant('DistinctCount'), id: this.element.id + '_AggDistinctCount' },
+                                { text: this.localeObj.getConstant('Count'), id: this.element.id + '_AggCount' },
+                                { text: this.localeObj.getConstant('Product'), id: this.element.id + '_AggProduct' },
+                                { text: this.localeObj.getConstant('Avg'), id: this.element.id + '_AggAvg' },
+                                { text: this.localeObj.getConstant('Max'), id: this.element.id + '_AggMax' },
+                                { text: this.localeObj.getConstant('Min'), id: this.element.id + '_AggMin' },
+                                { text: this.localeObj.getConstant('MoreOption'), id: this.element.id + '_AggMoreOption' }
+                            ];
+                        }
+                        else if (item.toString().toLowerCase().indexOf('export') !== -1) {
+                            exportItems.push(this.buildDefaultItems(item));
+                        }
+                        else {
+                            conmenuItems.push(this.buildDefaultItems(item));
+                        }
                     }
-                    else if (item.toString().toLowerCase().indexOf('export') !== -1) {
-                        exportItems.push(this.buildDefaultItems(item));
-                    }
-                    else {
-                        conmenuItems.push(this.buildDefaultItems(item));
+                    else if (typeof item !== 'string') {
+                        customItems.push(item);
                     }
                 }
-                else if (typeof item !== 'string') {
-                    customItems.push(item);
-                }
+            }
+            if (this.allowGrouping && this.dataType === 'pivot') {
+                groupItems.push(this.buildDefaultItems('Group'));
+                groupItems.push(this.buildDefaultItems('Ungroup'));
             }
             if (aggregateItems.length > 0) {
                 var aggregateGroup = this.buildDefaultItems('Aggregate');
@@ -15098,6 +15717,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             this.gridSettings.contextMenuItems = [];
             Array.prototype.push.apply(this.gridSettings.contextMenuItems, aggItems);
             Array.prototype.push.apply(this.gridSettings.contextMenuItems, conmenuItems);
+            Array.prototype.push.apply(this.gridSettings.contextMenuItems, groupItems);
             Array.prototype.push.apply(this.gridSettings.contextMenuItems, expItems);
             Array.prototype.push.apply(this.gridSettings.contextMenuItems, customItems);
         }
@@ -15176,6 +15796,18 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                     id: this.element.id + '_sortdesc', iconCss: ICON_DESC + ' ' + ICON
                 };
                 break;
+            case 'Group':
+                menuItem = {
+                    text: this.localeObj.getConstant('group'), target: 'td.e-rowsheader,.e-columnsheader',
+                    id: this.element.id + '_custom_group', iconCss: PIVOTVIEW_GROUP + ' ' + ICON
+                };
+                break;
+            case 'Ungroup':
+                menuItem = {
+                    text: this.localeObj.getConstant('unGroup'), target: 'td.e-rowsheader,.e-columnsheader',
+                    id: this.element.id + '_custom_ungroup', iconCss: PIVOTVIEW_UN_GROUP + ' ' + ICON
+                };
+                break;
         }
         this.defaultItems[item] = {
             text: menuItem.text, id: menuItem.id,
@@ -15239,6 +15871,11 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         this.isCellBoxMultiSelection = this.gridSettings.allowSelection &&
             this.gridSettings.selectionSettings.cellSelectionMode === 'Box' &&
             this.gridSettings.selectionSettings.mode === 'Cell' && this.gridSettings.selectionSettings.type === 'Multiple';
+        if (this.allowGrouping && !this.isCellBoxMultiSelection) {
+            this.isCellBoxMultiSelection = true;
+            /* tslint:disable-next-line:max-line-length */
+            this.setProperties({ gridSettings: { allowSelection: true, selectionSettings: { cellSelectionMode: 'Box', mode: 'Cell', type: 'Multiple' } } }, true);
+        }
         if (this.displayOption.view !== 'Table') {
             this.chartModule = new PivotChart();
         }
@@ -15460,22 +16097,31 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                 case 'editSettings':
                 case 'allowDataCompression':
                     if (newProp.dataSourceSettings && Object.keys(newProp.dataSourceSettings).length === 1
-                        && newProp.dataSourceSettings.groupSettings) {
-                        var groupSettings = extend([], this.dataSourceSettings.groupSettings, null, true);
-                        var data = PivotUtil.getClonedData(this.clonedDataSet);
-                        var dataSource = extend({}, this.clonedReport, null, true);
-                        dataSource.dataSource = data;
-                        if (newProp.dataSourceSettings.groupSettings.length === 0 ||
-                            newProp.dataSourceSettings.groupSettings.length > 0) {
-                            dataSource.groupSettings =
-                                newProp.dataSourceSettings.groupSettings.length > 0 ? groupSettings : [];
-                            this.setProperties({ dataSourceSettings: dataSource }, true);
+                        && newProp.dataSourceSettings.groupSettings && this.dataType === 'pivot') {
+                        if (this.isGroupUIupdate) {
+                            this.isGroupUIupdate = false;
+                            this.updateGroupingReport(newProp.dataSourceSettings.groupSettings);
+                        }
+                        else {
+                            var groupSettings = extend([], this.dataSourceSettings.groupSettings, null, true);
+                            var data = PivotUtil.getClonedData(this.clonedDataSet);
+                            var dataSource = extend({}, this.clonedReport, null, true);
+                            dataSource.dataSource = data;
+                            if (newProp.dataSourceSettings.groupSettings.length === 0 ||
+                                newProp.dataSourceSettings.groupSettings.length > 0) {
+                                this.engineModule.groupingFields = {};
+                                dataSource.groupSettings =
+                                    newProp.dataSourceSettings.groupSettings.length > 0 ? groupSettings : [];
+                                this.setProperties({ dataSourceSettings: dataSource }, true);
+                            }
                         }
                     }
                     if (newProp.dataSourceSettings && Object.keys(newProp.dataSourceSettings).length === 1
                         && Object.keys(newProp.dataSourceSettings)[0] === 'dataSource') {
-                        this.engineModule.fieldList = null;
-                        this.refreshData();
+                        if (!(isBlazor() && this.enableVirtualization)) {
+                            this.engineModule.fieldList = null;
+                            this.refreshData();
+                        }
                     }
                     else {
                         this.notify(initialLoad, {});
@@ -15516,13 +16162,19 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'gridSettings':
                     this.lastGridSettings = newProp.gridSettings;
-                    this.renderModule.updateGridSettings();
                     this.isCellBoxMultiSelection = this.gridSettings.allowSelection &&
                         this.gridSettings.selectionSettings.cellSelectionMode === 'Box' &&
                         this.gridSettings.selectionSettings.mode === 'Cell' && this.gridSettings.selectionSettings.type === 'Multiple';
+                    if (this.allowGrouping && this.groupingModule && !this.isCellBoxMultiSelection) {
+                        /* tslint:disable-next-line:max-line-length */
+                        this.setProperties({ gridSettings: { allowSelection: true, selectionSettings: { cellSelectionMode: 'Box', mode: 'Cell', type: 'Multiple' } } }, true);
+                        this.isCellBoxMultiSelection = true;
+                    }
+                    this.renderModule.updateGridSettings();
                     break;
                 case 'chartSettings':
                     this.chartModule.loadChart(this, this.chartSettings);
+                    this.notify(uiUpdate, this);
                     break;
                 case 'locale':
                 case 'currencyCode':
@@ -15572,6 +16224,17 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
     };
     PivotView.prototype.getCellTemplate = function () {
         return this.cellTemplateFn;
+    };
+    /**
+     * @hidden
+     */
+    PivotView.prototype.appendHtml = function (node, innerHtml) {
+        var tempElement = document.createElement('div');
+        tempElement.innerHTML = innerHtml;
+        if (!isNullOrUndefined(tempElement.firstChild)) {
+            node.appendChild(tempElement.firstChild);
+        }
+        return node;
     };
     /**
      * Render the UI section of PivotView.
@@ -15684,24 +16347,90 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             }
             pivot.updatePageSettings(false);
             if (pivot.dataType === 'pivot' && pivot.enableVirtualization && (isSorted || isFiltered || isAggChange || isCalcChange)) {
+                /* tslint:disable-next-line:no-any */
+                var interopArguments = {};
                 if (isSorted) {
                     pivot.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
-                    pivot.engineModule.onSort(pivot.lastSortInfo);
+                    if (isBlazor()) {
+                        var ejsInterop = 'ejsInterop';
+                        var sortInfo = {
+                            name: pivot.lastSortInfo.name,
+                            order: pivot.lastSortInfo.order
+                        };
+                        /* tslint:disable-next-line */
+                        var sortArgs = window[ejsInterop].copyWithoutCircularReferences([pivot.lastSortInfo], pivot.lastSortInfo);
+                        interopArguments = { 'key': 'onSort', 'arg': sortArgs };
+                    }
+                    else {
+                        pivot.engineModule.onSort(pivot.lastSortInfo);
+                    }
                     pivot.lastSortInfo = {};
                 }
                 if (isAggChange) {
-                    pivot.engineModule.onAggregation(pivot.lastAggregationInfo);
+                    if (isBlazor()) {
+                        /* tslint:disable */
+                        var ejsInterop = 'ejsInterop';
+                        var aggregateArgs = window[ejsInterop].copyWithoutCircularReferences([pivot.lastAggregationInfo], pivot.lastAggregationInfo);
+                        interopArguments = { 'key': 'onAggregation', 'arg': aggregateArgs };
+                        /* tslint:enable */
+                    }
+                    else {
+                        pivot.engineModule.onAggregation(pivot.lastAggregationInfo);
+                    }
                     pivot.lastAggregationInfo = {};
                 }
                 if (isCalcChange) {
-                    pivot.engineModule.onCalcOperation(pivot.lastCalcFieldInfo);
+                    if (isBlazor()) {
+                        /* tslint:disable */
+                        var dataSourceSettings = window['ejsInterop'].copyWithoutCircularReferences([pivot.dataSourceSettings.properties], pivot.dataSourceSettings.properties);
+                        interopArguments = {
+                            'key': 'onCalcOperation',
+                            'arg': {
+                                lastCalcFieldInfo: pivot.lastCalcFieldInfo,
+                                values: dataSourceSettings.values,
+                                calculatedFieldSettings: dataSourceSettings.calculatedFieldSettings
+                            }
+                        };
+                        /* tslint:enable */
+                    }
+                    else {
+                        pivot.engineModule.onCalcOperation(pivot.lastCalcFieldInfo);
+                    }
                     pivot.lastCalcFieldInfo = {};
                 }
                 if (isFiltered) {
-                    pivot.engineModule.onFilter(pivot.lastFilterInfo, pivot.dataSourceSettings);
+                    if (isBlazor()) {
+                        /* tslint:disable */
+                        var filterArgs = window['ejsInterop'].copyWithoutCircularReferences([pivot.lastFilterInfo], pivot.lastFilterInfo);
+                        var filterSettings = window['ejsInterop'].copyWithoutCircularReferences([pivot.dataSourceSettings.filterSettings], pivot.dataSourceSettings.filterSettings);
+                        interopArguments = {
+                            'key': 'onFilter',
+                            'arg': { 'lastFilterInfo': filterArgs, 'filterSettings': filterSettings }
+                        };
+                        /* tslint:enable */
+                    }
+                    else {
+                        pivot.engineModule.onFilter(pivot.lastFilterInfo, pivot.dataSourceSettings);
+                    }
                     pivot.lastFilterInfo = {};
                 }
-                pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
+                if (isBlazor()) {
+                    /* tslint:disable */
+                    pivot.interopAdaptor.invokeMethodAsync('PivotInteropMethod', interopArguments['key'], interopArguments['arg']).then(function (data) {
+                        pivot.updateBlazorData(data, pivot);
+                        pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
+                        pivot.enginePopulatedEventMethod('updateDataSource', pivot);
+                        if (pivot.calculatedFieldModule && pivot.calculatedFieldModule.isRequireUpdate) {
+                            pivot.calculatedFieldModule.endDialog();
+                            pivot.calculatedFieldModule.isRequireUpdate = false;
+                        }
+                    });
+                    /* tslint:enable */
+                }
+                else {
+                    pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
+                    pivot.enginePopulatedEventMethod('updateDataSource');
+                }
             }
             else {
                 if (pivot.dataType === 'olap') {
@@ -15731,6 +16460,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                         pivot.olapEngineModule.renderEngine(pivot.dataSourceSettings, customProperties);
                     }
                     pivot.setProperties({ pivotValues: pivot.olapEngineModule.pivotValues }, true);
+                    pivot.enginePopulatedEventMethod('updateDataSource');
                 }
                 else {
                     /* tslint:disable:align */
@@ -15743,33 +16473,25 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                         localeObj: pivot.localeObj,
                         fieldsType: pivot.fieldsType
                     };
-                    pivot.engineModule.renderEngine(pivot.dataSourceSettings, customProperties, pivot.getValueCellInfo.bind(pivot));
-                    pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
+                    if (isBlazor() && pivot.enableVirtualization) {
+                        /* tslint:disable */
+                        var ejsInterop = 'ejsInterop';
+                        var customArgs = window[ejsInterop].copyWithoutCircularReferences([customProperties], customProperties);
+                        var datasourceSettings = window[ejsInterop].copyWithoutCircularReferences([pivot.dataSourceSettings], pivot.dataSourceSettings);
+                        pivot.interopAdaptor.invokeMethodAsync('PivotInteropMethod', 'renderEngine', { 'dataSourceSettings': datasourceSettings, 'customProperties': customArgs }).then(function (data) {
+                            pivot.updateBlazorData(data, pivot);
+                            pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
+                            pivot.enginePopulatedEventMethod('updateDataSource', pivot);
+                        });
+                        /* tslint:enable */
+                    }
+                    else {
+                        pivot.engineModule.renderEngine(pivot.dataSourceSettings, customProperties, pivot.getValueCellInfo.bind(pivot));
+                        pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
+                        pivot.enginePopulatedEventMethod('updateDataSource');
+                    }
                 }
             }
-            var eventArgs = {
-                dataSourceSettings: pivot.dataSourceSettings,
-                pivotValues: isBlazor() ? pivot.dataType === 'olap' ? pivot.olapEngineModule.pivotValues :
-                    pivot.engineModule.pivotValues : pivot.pivotValues
-            };
-            pivot.trigger(enginePopulated, eventArgs, function (observedArgs) {
-                var dataSource = pivot.dataSourceSettings.dataSource;
-                if (isBlazor() && observedArgs.dataSourceSettings.dataSource instanceof Object) {
-                    observedArgs.dataSourceSettings.dataSource = dataSource;
-                }
-                pivot.dataSourceSettings = observedArgs.dataSourceSettings;
-                if (pivot.dataType === 'olap') {
-                    pivot.olapEngineModule.pivotValues = isBlazor() ? pivot.olapEngineModule.pivotValues : observedArgs.pivotValues;
-                    pivot.setProperties({ pivotValues: pivot.olapEngineModule.pivotValues }, true);
-                }
-                else {
-                    pivot.engineModule.pivotValues = isBlazor() ? pivot.engineModule.pivotValues : observedArgs.pivotValues;
-                    pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
-                }
-                pivot.pivotCommon.engineModule = pivot.dataType === 'olap' ? pivot.olapEngineModule : pivot.engineModule;
-                pivot.pivotCommon.dataSourceSettings = pivot.dataSourceSettings;
-                pivot.renderPivotGrid();
-            });
         });
         //});
     };
@@ -15904,22 +16626,39 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                 action: action,
                 currentCell: currentCell
             };
-            var drillArgs = {
+            var drillArgs_1 = {
                 drillInfo: drilledItem_1,
                 pivotview: isBlazor() ? undefined : pivot_1
             };
-            pivot_1.trigger(drill, drillArgs, function (observedArgs) {
+            pivot_1.trigger(drill, drillArgs_1, function (observedArgs) {
                 if (pivot_1.enableVirtualization) {
-                    pivot_1.engineModule.drilledMembers = pivot_1.dataSourceSettings.drilledMembers;
-                    pivot_1.engineModule.onDrill(drilledItem_1);
+                    if (isBlazor()) {
+                        /* tslint:disable */
+                        var ejsInterop = 'ejsInterop';
+                        var dataSourceSettings = window[ejsInterop].copyWithoutCircularReferences([pivot_1.dataSourceSettings], pivot_1.dataSourceSettings);
+                        var drillItem = window[ejsInterop].copyWithoutCircularReferences([drilledItem_1], drilledItem_1);
+                        var args = window[ejsInterop].copyWithoutCircularReferences([drillArgs_1], drillArgs_1);
+                        pivot_1.interopAdaptor.invokeMethodAsync('PivotInteropMethod', 'onDrill', { 'dataSourceSettings': dataSourceSettings, 'drilledItem': drillItem }).then(function (data) {
+                            pivot_1.updateBlazorData(data, pivot_1);
+                            pivot_1.engineModule.drilledMembers = pivot_1.dataSourceSettings.drilledMembers;
+                            pivot_1.setProperties({ pivotValues: pivot_1.engineModule.pivotValues }, true);
+                            pivot_1.renderPivotGrid();
+                        });
+                        /* tslint:enable */
+                    }
+                    else {
+                        pivot_1.engineModule.drilledMembers = pivot_1.dataSourceSettings.drilledMembers;
+                        pivot_1.engineModule.onDrill(drilledItem_1);
+                    }
                 }
                 else {
                     pivot_1.engineModule.generateGridData(pivot_1.dataSourceSettings);
                 }
-                pivot_1.setProperties({ pivotValues: pivot_1.engineModule.pivotValues }, true);
-                pivot_1.renderPivotGrid();
+                if (!(isBlazor() && pivot_1.enableVirtualization)) {
+                    pivot_1.setProperties({ pivotValues: pivot_1.engineModule.pivotValues }, true);
+                    pivot_1.renderPivotGrid();
+                }
             });
-            //});
         }
         else {
             this.onOlapDrill(fieldName, axis, action, delimiter, target, chartDrillInfo);
@@ -16102,7 +16841,6 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         this.unwireEvents();
         this.wireEvents();
         this.isChartLoaded = false;
-        /* tslint:disable-next-line */
         if (this.cellTemplate && isBlazor()) {
             var gridCells = Object.keys(this.gridCellCollection);
             if (gridCells.length > 0) {
@@ -16125,7 +16863,15 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                         templateObject.value = pivotCell.value;
                     }
                     /* tslint:disable-next-line */
-                    append([].slice.call(this.getCellTemplate()(templateObject, this, 'cellTemplate', this.element.id + '_cellTemplate')), tCell);
+                    var element = this.getCellTemplate()(templateObject, this, 'cellTemplate', this.element.id + '_cellTemplate');
+                    if (element && element !== '' && element.length > 0) {
+                        if (this.enableHtmlSanitizer) {
+                            this.appendHtml(tCell, SanitizeHtmlHelper.sanitize(element[0].outerHTML));
+                        }
+                        else {
+                            this.appendHtml(tCell, element[0].outerHTML);
+                        }
+                    }
                 }
                 updateBlazorTemplate(this.element.id + '_cellTemplate', 'CellTemplate', this);
             }
@@ -16334,28 +17080,40 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                 }, true);
                 /* tslint:enable */
                 showSpinner(this.element);
-                var pivot = this;
+                var pivot_2 = this;
                 //setTimeout(() => {
-                pivot.engineModule.enableValueSorting = true;
-                if (pivot.enableVirtualization) {
-                    if (pivot.dataSourceSettings.enableSorting) {
-                        for (var _i = 0, _a = Object.keys(pivot.engineModule.fieldList); _i < _a.length; _i++) {
+                pivot_2.engineModule.enableValueSorting = true;
+                if (pivot_2.enableVirtualization) {
+                    if (pivot_2.dataSourceSettings.enableSorting) {
+                        for (var _i = 0, _a = Object.keys(pivot_2.engineModule.fieldList); _i < _a.length; _i++) {
                             var key = _a[_i];
-                            pivot.engineModule.fieldList[key].sort = 'Ascending';
+                            pivot_2.engineModule.fieldList[key].sort = 'Ascending';
                         }
-                        pivot.setProperties({ dataSourceSettings: { sortSettings: [] } }, true);
+                        pivot_2.setProperties({ dataSourceSettings: { sortSettings: [] } }, true);
                     }
-                    pivot.engineModule.rMembers = pivot.engineModule.headerCollection.rowHeaders;
-                    pivot.engineModule.cMembers = pivot.engineModule.headerCollection.columnHeaders;
-                    pivot.engineModule.applyValueSorting();
-                    pivot.engineModule.updateEngine();
+                    if (isBlazor()) {
+                        /* tslint:disable */
+                        pivot_2.interopAdaptor.invokeMethodAsync('PivotInteropMethod', 'applyValueSorting', { 'valueSortSettings': pivot_2.dataSourceSettings.valueSortSettings.properties }).then(function (data) {
+                            pivot_2.updateBlazorData(data, pivot_2);
+                            pivot_2.setProperties({ pivotValues: pivot_2.engineModule.pivotValues }, true);
+                            pivot_2.renderPivotGrid();
+                        });
+                        /* tslint:enable */
+                    }
+                    else {
+                        pivot_2.engineModule.rMembers = pivot_2.engineModule.headerCollection.rowHeaders;
+                        pivot_2.engineModule.cMembers = pivot_2.engineModule.headerCollection.columnHeaders;
+                        pivot_2.engineModule.applyValueSorting();
+                        pivot_2.engineModule.updateEngine();
+                    }
                 }
                 else {
-                    pivot.engineModule.generateGridData(pivot.dataSourceSettings);
+                    pivot_2.engineModule.generateGridData(pivot_2.dataSourceSettings);
                 }
-                pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
-                pivot.renderPivotGrid();
-                //});
+                if (!(isBlazor() && pivot_2.enableVirtualization)) {
+                    pivot_2.setProperties({ pivotValues: pivot_2.engineModule.pivotValues }, true);
+                    pivot_2.renderPivotGrid();
+                }
             }
         }
         else if (target.classList.contains(COLLAPSE) || target.classList.contains(EXPAND)) {
@@ -16879,29 +17637,161 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                     _this_1.clonedReport = _this_1.clonedReport ? _this_1.clonedReport : extend({}, _this_1.dataSourceSettings, null, true);
                     _this_1.setProperties({ dataSourceSettings: { dataSource: dataSet } }, true);
                 }
-                _this_1.engineModule.renderEngine(_this_1.dataSourceSettings, customProperties, _this_1.getValueCellInfo.bind(_this_1));
-                _this_1.setProperties({ pivotValues: _this_1.engineModule.pivotValues }, true);
+                if (isBlazor() && _this_1.enableVirtualization) {
+                    var pivot_3 = _this_1;
+                    var ejsInterop = 'ejsInterop';
+                    var customArgs = window[ejsInterop].copyWithoutCircularReferences([customProperties], customProperties);
+                    var datasourceSettings = window[ejsInterop].copyWithoutCircularReferences([pivot_3.dataSourceSettings], pivot_3.dataSourceSettings);
+                    pivot_3.interopAdaptor.invokeMethodAsync('PivotInteropMethod', 'renderEngine', { 'dataSourceSettings': datasourceSettings, 'customProperties': customArgs }).then(function (data) {
+                        pivot_3.updateBlazorData(data, pivot_3);
+                        PivotUtil.setPivotProperties(pivot_3, { pivotValues: pivot_3.engineModule.pivotValues });
+                        pivot_3.enginePopulatedEventMethod('initEngine', pivot_3);
+                    });
+                }
+                else {
+                    _this_1.engineModule.renderEngine(_this_1.dataSourceSettings, customProperties, _this_1.getValueCellInfo.bind(_this_1));
+                    _this_1.setProperties({ pivotValues: _this_1.engineModule.pivotValues }, true);
+                    _this_1.enginePopulatedEventMethod('initEngine');
+                }
             }
             else if (_this_1.dataSourceSettings.providerType === 'SSAS' && _this_1.dataType === 'olap') {
                 customProperties.savedFieldList = _this_1.olapEngineModule.fieldList;
                 customProperties.savedFieldListData = _this_1.olapEngineModule.fieldListData;
                 _this_1.olapEngineModule.renderEngine(_this_1.dataSourceSettings, customProperties);
                 _this_1.setProperties({ pivotValues: _this_1.olapEngineModule.pivotValues }, true);
+                _this_1.enginePopulatedEventMethod('initEngine');
             }
-            var this$ = _this_1;
-            _this_1.trigger(enginePopulated, { pivotValues: _this_1.pivotValues }, function (observedArgs) {
-                if (this$.dataType === 'olap') {
-                    this$.olapEngineModule.pivotValues = isBlazor() ? _this_1.olapEngineModule.pivotValues : observedArgs.pivotValues;
-                    this$.pivotValues = this$.olapEngineModule.pivotValues;
+        });
+    };
+    PivotView.prototype.enginePopulatedEventMethod = function (action, control) {
+        var _this_1 = this;
+        if (action === 'initEngine') {
+            var this$_1 = control ? control : this;
+            this.trigger(enginePopulated, { pivotValues: this.pivotValues }, function (observedArgs) {
+                if (this$_1.dataType === 'olap') {
+                    this$_1.olapEngineModule.pivotValues = isBlazor() ? _this_1.olapEngineModule.pivotValues : observedArgs.pivotValues;
+                    this$_1.pivotValues = this$_1.olapEngineModule.pivotValues;
                 }
                 else {
-                    this$.engineModule.pivotValues = isBlazor() ? _this_1.engineModule.pivotValues : observedArgs.pivotValues;
-                    this$.pivotValues = this$.engineModule.pivotValues;
+                    this$_1.engineModule.pivotValues = isBlazor() ? _this_1.engineModule.pivotValues : observedArgs.pivotValues;
+                    this$_1.pivotValues = this$_1.engineModule.pivotValues;
                 }
-                this$.notify(dataReady, {});
-                this$.isEmptyGrid = false;
+                this$_1.notify(dataReady, {});
+                this$_1.isEmptyGrid = false;
             });
-        });
+        }
+        else {
+            var pivot_4 = control ? control : this;
+            var eventArgs = {
+                dataSourceSettings: pivot_4.dataSourceSettings,
+                pivotValues: isBlazor() ? pivot_4.dataType === 'olap' ? pivot_4.olapEngineModule.pivotValues :
+                    pivot_4.engineModule.pivotValues : pivot_4.pivotValues
+            };
+            pivot_4.trigger(enginePopulated, eventArgs, function (observedArgs) {
+                var dataSource = pivot_4.dataSourceSettings.dataSource;
+                if (isBlazor() && observedArgs.dataSourceSettings.dataSource instanceof Object) {
+                    observedArgs.dataSourceSettings.dataSource = dataSource;
+                }
+                pivot_4.dataSourceSettings = observedArgs.dataSourceSettings;
+                if (pivot_4.dataType === 'olap') {
+                    pivot_4.olapEngineModule.pivotValues = isBlazor() ? pivot_4.olapEngineModule.pivotValues : observedArgs.pivotValues;
+                    pivot_4.setProperties({ pivotValues: pivot_4.olapEngineModule.pivotValues }, true);
+                }
+                else {
+                    pivot_4.engineModule.pivotValues = isBlazor() ? pivot_4.engineModule.pivotValues : observedArgs.pivotValues;
+                    pivot_4.setProperties({ pivotValues: pivot_4.engineModule.pivotValues }, true);
+                }
+                pivot_4.pivotCommon.engineModule = pivot_4.dataType === 'olap' ? pivot_4.olapEngineModule : pivot_4.engineModule;
+                pivot_4.pivotCommon.dataSourceSettings = pivot_4.dataSourceSettings;
+                pivot_4.renderPivotGrid();
+            });
+        }
+    };
+    /** @hidden */
+    PivotView.prototype.updateBlazorData = function (data, control) {
+        control.allowServerDataBinding = false;
+        var pivVal;
+        var pivotFL;
+        var pivotFields;
+        var valueSort;
+        var blazPivot = control;
+        var valContent = [];
+        var headContent = [];
+        pivotFL = JSON.parse(data["fieldList"]);
+        pivVal = JSON.parse(data["pivotValue"]);
+        pivotFields = JSON.parse(data["fields"]);
+        valueSort = JSON.parse(data["valueSortSettings"]);
+        var len = pivVal.length;
+        var pvalues = JSON.parse(pivVal[0]);
+        var pvalLen = pvalues.length;
+        var blazPivotValues = new Array(len);
+        for (i = 0; i < len; i++) {
+            blazPivotValues[i] = new Array(pvalLen);
+        }
+        for (var i = 0; i < len; i++) {
+            if (pivVal[i] != null) {
+                var values = JSON.parse(pivVal[i]);
+                var valLen = values.length;
+                for (var j = 0; j < valLen; j++) {
+                    blazPivotValues[i][j] = values[j];
+                }
+            }
+            else {
+                blazPivotValues[i] = undefined;
+                //headContent[i] = undefined;
+            }
+        }
+        var pivotValues = blazPivotValues;
+        var rowPos;
+        for (var rCnt = 0; rCnt < pivotValues.length; rCnt++) {
+            if (pivotValues[rCnt] && pivotValues[rCnt][0] && pivotValues[rCnt][0].axis === 'row') {
+                rowPos = rCnt;
+                break;
+            }
+        }
+        blazPivot.pivotValues = blazPivotValues;
+        valContent = blazPivot.frameContent(blazPivotValues, 'value', rowPos, blazPivot);
+        headContent = blazPivot.frameContent(blazPivotValues, 'header', rowPos, blazPivot);
+        this.engineModule.pivotValues = blazPivotValues;
+        this.engineModule.fieldList = pivotFL;
+        this.engineModule.fields = pivotFields;
+        this.engineModule.valueSortSettings = valueSort;
+        this.engineModule.valueContent = valContent;
+        this.engineModule.headerContent = headContent;
+        this.engineModule.isEngineUpdated = JSON.parse(data["isEngineUpdated"]);
+        this.engineModule.isEmptyData = JSON.parse(data["isEmptyData"]);
+        this.engineModule.rowCount = JSON.parse(data["rowCount"]);
+        this.engineModule.columnCount = JSON.parse(data["columnCount"]);
+        this.engineModule.rowStartPos = JSON.parse(data["rowStartPos"]);
+        this.engineModule.colStartPos = JSON.parse(data["colStartPos"]);
+        this.engineModule.rowFirstLvl = JSON.parse(data["rowFirstLvl"]);
+        this.engineModule.colFirstLvl = JSON.parse(data["colFirstLvl"]);
+        control.allowServerDataBinding = true;
+    };
+    /** @hidden */
+    PivotView.prototype.frameContent = function (pivotValues, type, rowPosition, control) {
+        var dataContent = [];
+        var pivot = control;
+        if (pivot.dataSourceSettings.values.length > 0 && !pivot.engineModule.isEmptyData) {
+            if ((pivot.enableValueSorting) || !pivot.engineModule.isEngineUpdated) {
+                var rowCnt = 0;
+                var start = type === 'value' ? rowPosition : 0;
+                var end = type === 'value' ? pivotValues.length : rowPosition;
+                for (var rCnt = start; rCnt < end; rCnt++) {
+                    if (pivotValues[rCnt]) {
+                        rowCnt = type === 'header' ? rCnt : rowCnt;
+                        dataContent[rowCnt] = {};
+                        for (var cCnt = 0; cCnt < pivotValues[rCnt].length; cCnt++) {
+                            if (pivotValues[rCnt][cCnt]) {
+                                dataContent[rowCnt][cCnt] = pivotValues[rCnt][cCnt];
+                            }
+                        }
+                        rowCnt++;
+                    }
+                }
+            }
+        }
+        return dataContent;
     };
     /* tslint:enable */
     PivotView.prototype.generateData = function () {
@@ -16922,7 +17812,15 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         }
         if (pivot.dataSourceSettings && (pivot.dataSourceSettings.dataSource || pivot.dataSourceSettings.url)) {
             if (pivot.dataSourceSettings.dataSource instanceof DataManager) {
-                setTimeout(pivot.getData.bind(pivot), 100);
+                if (isBlazor() && pivot.enableVirtualization) {
+                    if (!pivot.element.querySelector('.e-spinner-pane')) {
+                        showSpinner(this.element);
+                    }
+                    pivot.initEngine();
+                }
+                else {
+                    setTimeout(pivot.getData.bind(pivot), 100);
+                }
             }
             else if ((this.dataSourceSettings.url !== '' && this.dataType === 'olap') ||
                 pivot.dataSourceSettings.dataSource.length > 0) {
@@ -16954,7 +17852,13 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         this.trigger(getObject('name', args), args);
     };
     PivotView.prototype.getData = function () {
-        this.dataSourceSettings.dataSource.executeQuery(new Query()).then(this.executeQuery.bind(this));
+        if (isBlazor()) {
+            this.dataSourceSettings.dataSource.
+                executeQuery(new Query().requiresCount()).then(this.executeQuery.bind(this));
+        }
+        else {
+            this.dataSourceSettings.dataSource.executeQuery(new Query()).then(this.executeQuery.bind(this));
+        }
     };
     PivotView.prototype.executeQuery = function (e) {
         if (!this.element.querySelector('.e-spinner-pane')) {
@@ -17132,6 +18036,101 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                 return false;
         }
     };
+    PivotView.prototype.updateGroupingReport = function (newGroupSettings) {
+        if (!this.clonedDataSet && !this.clonedReport) {
+            var dataSet = this.engineModule.data;
+            this.clonedDataSet = PivotUtil.getClonedData(dataSet);
+            this.setProperties({ dataSourceSettings: { dataSource: [] } }, true);
+            this.clonedReport = extend({}, this.dataSourceSettings, null, true);
+            this.setProperties({ dataSourceSettings: { dataSource: dataSet } }, true);
+        }
+        /* tslint:disable-next-line:max-line-length */
+        var dateGroup = /_date_group_years|_date_group_quarters|_date_group_quarterYear|_date_group_months|_date_group_days|_date_group_hours|_date_group_minutes|_date_group_seconds/g;
+        var data = PivotUtil.getClonedData(this.clonedDataSet);
+        var dataSource = this.dataSourceSettings;
+        var clonedReport = this.clonedReport.properties ?
+            this.clonedReport.properties : this.clonedReport;
+        var axisFields = [dataSource.rows, dataSource.columns, dataSource.values, dataSource.filters];
+        var fieldSettings = [dataSource.filterSettings, dataSource.sortSettings, dataSource.formatSettings, dataSource.drilledMembers];
+        var clonedAxisFields = clonedReport.rows;
+        clonedAxisFields = clonedAxisFields.concat(clonedReport.columns, clonedReport.values, clonedReport.filters);
+        if (newGroupSettings.length === 0 || newGroupSettings.length > 0) {
+            this.engineModule.groupingFields = {};
+            /* tslint:disable-next-line:max-line-length */
+            this.setProperties({ dataSourceSettings: { dataSource: data, groupSettings: newGroupSettings.length > 0 ? dataSource.groupSettings : [] } }, true);
+            var isDateGroupUpdated = this.updateGroupType === 'Date';
+            var fields = [];
+            for (var i = 0, cnt = axisFields.length; i < cnt; i++) {
+                for (var j = 0, len = axisFields[i].length; j < len; j++) {
+                    var fieldName = axisFields[i][j].name;
+                    if (fields.indexOf(fieldName) === -1) {
+                        fields.push(fieldName);
+                    }
+                    var index = fields.indexOf(fieldName);
+                    var group = PivotUtil.getGroupItemByName(fieldName, dataSource.groupSettings);
+                    if ((!isNullOrUndefined(fieldName.match(dateGroup)) &&
+                        isDateGroupUpdated) || (fieldName.indexOf('_custom_group') !== -1 &&
+                        !PivotUtil.getGroupItemByName(fieldName.replace('_custom_group', ''), dataSource.groupSettings))) {
+                        axisFields[i].splice(j, 1);
+                        fields.splice(index, 1);
+                        j--;
+                        len--;
+                    }
+                    else {
+                        var fieldObj = PivotUtil.getFieldByName(fieldName, clonedAxisFields);
+                        if (fieldObj) {
+                            axisFields[i].splice(j, 1, fieldObj);
+                        }
+                    }
+                }
+            }
+            for (var _i = 0, fields_1 = fields; _i < fields_1.length; _i++) {
+                var fieldName = fields_1[_i];
+                var filterObj = PivotUtil.getFilterItemByName(fieldName, clonedReport.filterSettings);
+                var sortObj = PivotUtil.getSortItemByName(fieldName, clonedReport.sortSettings);
+                var formatObj = PivotUtil.getFormatItemByName(fieldName, clonedReport.formatSettings);
+                var drillObj = PivotUtil.getDrillItemByName(fieldName, clonedReport.drilledMembers);
+                var settingsObj = [filterObj, sortObj, formatObj, drillObj];
+                for (var i = 0, cnt = fieldSettings.length; i < cnt; i++) {
+                    var isExists = false;
+                    for (var j = 0, len = fieldSettings[i].length; j < len; j++) {
+                        var name_1 = fieldSettings[i][j].name;
+                        /* tslint:disable-next-line:max-line-length */
+                        if ((!isNullOrUndefined(name_1.match(dateGroup)) && isDateGroupUpdated) || (name_1.indexOf('_custom_group') !== -1 &&
+                            !PivotUtil.getGroupItemByName(name_1.replace('_custom_group', ''), dataSource.groupSettings))) {
+                            fieldSettings[i].splice(j, 1);
+                            j--;
+                            len--;
+                        }
+                        else if (fieldName === fieldSettings[i][j].name) {
+                            isExists = true;
+                            if (settingsObj[i]) {
+                                fieldSettings[i].splice(j, 1, settingsObj[i]);
+                            }
+                            else {
+                                fieldSettings[i].splice(j, 1);
+                                j--;
+                                len--;
+                            }
+                            break;
+                        }
+                    }
+                    if (!isExists && i === 0 && filterObj) {
+                        fieldSettings[i].push(filterObj);
+                    }
+                    if (!isExists && i === 1 && sortObj) {
+                        fieldSettings[i].push(sortObj);
+                    }
+                    if (!isExists && i === 2 && formatObj) {
+                        fieldSettings[i].push(formatObj);
+                    }
+                    if (!isExists && i === 3 && drillObj) {
+                        fieldSettings[i].push(drillObj);
+                    }
+                }
+            }
+        }
+    };
     PivotView.prototype.wireEvents = function () {
         if (this.displayOption.view !== 'Chart') {
             EventHandler.add(this.element, this.isAdaptive ? 'touchend' : 'click', this.mouseClickHandler, this);
@@ -17162,6 +18161,9 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         this.removeInternalEvents();
         if (this.showGroupingBar && this.groupingBarModule) {
             this.groupingBarModule.destroy();
+        }
+        if (this.allowGrouping && this.groupingModule) {
+            this.groupingModule.destroy();
         }
         if (this.showToolbar && this.toolbarModule) {
             this.toolbarModule.destroy();
@@ -17286,11 +18288,17 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         Property(true)
     ], PivotView.prototype, "loadOnDemandInMemberEditor", void 0);
     __decorate([
+        Property(true)
+    ], PivotView.prototype, "enableHtmlSanitizer", void 0);
+    __decorate([
         Property()
     ], PivotView.prototype, "cellTemplate", void 0);
     __decorate([
         Property()
     ], PivotView.prototype, "spinnerTemplate", void 0);
+    __decorate([
+        Property(false)
+    ], PivotView.prototype, "allowGrouping", void 0);
     __decorate([
         Event()
     ], PivotView.prototype, "queryCellInfo", void 0);
@@ -18013,11 +19021,13 @@ var EventBase = /** @__PURE__ @class */ (function () {
         for (var _a = 0, members_2 = members; _a < members_2.length; _a++) {
             var member = members_2[_a];
             var memberName = this.parent.isDateField ? member.formattedText : member.actualText.toString();
+            /* tslint:disable */
             var obj = {
                 id: member.actualText.toString(),
                 name: memberName,
                 isSelected: isInclude ? false : true
             };
+            /* tslint:disable */
             if (filterObj[memberName] !== undefined) {
                 obj.isSelected = isInclude ? true : false;
             }
@@ -18457,8 +19467,9 @@ var DataSourceUpdate = /** @__PURE__ @class */ (function () {
             newField = {
                 name: fieldName,
                 caption: field.caption,
-                type: (field.aggregateType === undefined ? field.type === 'number' ? 'Sum' :
-                    'Count' : field.aggregateType),
+                type: ((field.aggregateType === undefined || field.aggregateType === null) ?
+                    field.type === 'number' ? 'Sum' :
+                        'Count' : field.aggregateType),
                 showNoDataItems: field.showNoDataItems,
                 baseField: field.baseField,
                 baseItem: field.baseItem,
@@ -21282,6 +22293,8 @@ var PivotButton = /** @__PURE__ @class */ (function () {
             engineModule = this.parent.engineModule;
         }
         if (!this.parent.allowDeferLayoutUpdate) {
+            engineModule.fieldList[fieldName].filter = engineModule.fieldList[fieldName].filter === null ?
+                [] : engineModule.fieldList[fieldName].filter;
             filterCLass = engineModule.fieldList[fieldName].filter.length === 0 ?
                 !engineModule.fieldList[fieldName].isExcelFilter ? FILTER_CLASS : FILTERED_CLASS : FILTERED_CLASS;
         }
@@ -21606,6 +22619,31 @@ var PivotButton = /** @__PURE__ @class */ (function () {
         }
     };
     PivotButton.prototype.updateFiltering = function (args) {
+        var pivotObj = this.parent.pivotGridModule ? this.parent.pivotGridModule : this.parent;
+        if (pivotObj && pivotObj.enableVirtualization && isBlazor() && pivotObj.dataType == 'pivot') {
+            var fieldName_1 = args.target.parentElement.id;
+            var _this_1 = this;
+            pivotObj.interopAdaptor.invokeMethodAsync("PivotInteropMethod", 'fetchFieldMembers', fieldName_1).then(function (data) {
+                var parsedData = JSON.parse(data.dateMembers);
+                var dateMembers = [];
+                var formattedMembers = {};
+                var members = {};
+                for (var i = 0; i < parsedData.length; i++) {
+                    dateMembers.push({ formattedText: parsedData[i].FormattedText, actualText: parsedData[i].ActualText });
+                    formattedMembers[parsedData[i].FormattedText] = {};
+                    members[parsedData[i].ActualText] = {};
+                }
+                _this_1.parent.engineModule.fieldList[fieldName_1].dateMember = dateMembers;
+                _this_1.parent.engineModule.fieldList[fieldName_1].formattedMembers = formattedMembers;
+                _this_1.parent.engineModule.fieldList[fieldName_1].members = members;
+                _this_1.updateFilterEvents(args);
+            });
+        }
+        else {
+            this.updateFilterEvents(args);
+        }
+    };
+    PivotButton.prototype.updateFilterEvents = function (args) {
         this.parent.pivotCommon.eventBase.updateFiltering(args);
         var target = args.target;
         this.fieldName = target.parentElement.id;
@@ -22395,7 +23433,8 @@ var PivotFieldList = /** @__PURE__ @class */ (function (_super) {
             QuarterYear: 'Quarter Year',
             caption: 'Field Caption',
             copy: 'Copy',
-            of: 'of'
+            of: 'of',
+            group: 'Group'
         };
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.isDragging = false;
@@ -22686,7 +23725,7 @@ var PivotFieldList = /** @__PURE__ @class */ (function (_super) {
         /* tslint:disable-next-line:max-line-length */
         this.captionData = [dataSourceSettings.rows, dataSourceSettings.columns, dataSourceSettings.values, dataSourceSettings.filters];
     };
-    /* tslint:disable:max-func-body-length */
+    /* tslint:disable */
     /**
      * Updates the PivotEngine using dataSource from Pivot Field List component.
      * @method updateDataSource
@@ -22725,92 +23764,153 @@ var PivotFieldList = /** @__PURE__ @class */ (function (_super) {
                     var customProperties = pivot.frameCustomProperties();
                     customProperties.savedFieldList = pivot.pivotFieldList;
                     if (pageSettings && (isSorted || isFiltered || isAggChange || isCalcChange)) {
+                        var interopArguments = {};
                         if (isSorted) {
                             pivot.pivotGridModule.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
-                            pivot.engineModule.onSort(lastSortInfo);
+                            if ((isBlazor())) {
+                                interopArguments = { 'key': 'onSort', 'arg': lastSortInfo };
+                            }
+                            else {
+                                pivot.engineModule.onSort(lastSortInfo);
+                            }
                         }
                         if (isFiltered) {
-                            pivot.engineModule.onFilter(pivot.lastFilterInfo, pivot.dataSourceSettings);
+                            if (isBlazor()) {
+                                var dataArgs = window['ejsInterop'].copyWithoutCircularReferences([pivot.dataSourceSettings.filterSettings], pivot.dataSourceSettings.filterSettings);
+                                interopArguments = {
+                                    'key': 'onFilter',
+                                    'arg': { 'lastFilterInfo': pivot.lastFilterInfo, 'filterSettings': dataArgs }
+                                };
+                            }
+                            else {
+                                pivot.engineModule.onFilter(pivot.lastFilterInfo, pivot.dataSourceSettings);
+                            }
                             pivot.lastFilterInfo = {};
                         }
                         if (isAggChange) {
-                            pivot.engineModule.onAggregation(pivot.lastAggregationInfo);
+                            if (isBlazor()) {
+                                interopArguments = { 'key': 'onAggregation', 'arg': pivot.lastAggregationInfo };
+                            }
+                            else {
+                                pivot.engineModule.onAggregation(pivot.lastAggregationInfo);
+                            }
                             pivot.lastAggregationInfo = {};
                         }
                         if (isCalcChange) {
-                            pivot.engineModule.onCalcOperation(pivot.lastCalcFieldInfo);
+                            if (isBlazor()) {
+                                interopArguments = {
+                                    'key': 'onCalcOperation',
+                                    'arg': {
+                                        lastCalcFieldInfo: pivot.lastCalcFieldInfo,
+                                        values: pivot.dataSourceSettings.values,
+                                        calculatedFieldSettings: pivot.dataSourceSettings.calculatedFieldSettings
+                                    }
+                                };
+                            }
+                            else {
+                                pivot.engineModule.onCalcOperation(pivot.lastCalcFieldInfo);
+                            }
                             pivot.lastCalcFieldInfo = {};
+                        }
+                        if (isBlazor()) {
+                            var args_1 = window['ejsInterop'].copyWithoutCircularReferences([interopArguments['arg']], interopArguments['arg']);
+                            pivot.pivotGridModule.interopAdaptor.invokeMethodAsync("PivotInteropMethod", interopArguments['key'], args_1).then(function (data) {
+                                pivot.pivotGridModule.updateBlazorData(data, pivot.pivotGridModule);
+                                pivot.getFieldCaption(pivot.dataSourceSettings);
+                                pivot.enginePopulatedEventMethod(pivot, isTreeViewRefresh, isOlapDataRefreshed);
+                                if (pivot.calculatedFieldModule && pivot.calculatedFieldModule.isRequireUpdate) {
+                                    pivot.calculatedFieldModule.endDialog();
+                                    pivot.calculatedFieldModule.isRequireUpdate = false;
+                                }
+                            });
                         }
                     }
                     else {
-                        /* tslint:disable-next-line:max-line-length */
-                        pivot.engineModule.renderEngine(pivot.dataSourceSettings, customProperties, pivot.getValueCellInfo.bind(pivot));
+                        if (isBlazor() && pageSettings) {
+                            var dataArgs = window['ejsInterop'].copyWithoutCircularReferences([pivot.dataSourceSettings.properties], pivot.dataSourceSettings.properties);
+                            pivot.pivotGridModule.interopAdaptor.invokeMethodAsync("PivotInteropMethod", 'renderEngine', { 'dataSourceSettings': dataArgs, 'customProperties': customProperties }).then(function (data) {
+                                pivot.pivotGridModule.updateBlazorData(data, pivot.pivotGridModule);
+                                pivot.getFieldCaption(pivot.dataSourceSettings);
+                                pivot.enginePopulatedEventMethod(pivot, isTreeViewRefresh, isOlapDataRefreshed);
+                            });
+                        }
+                        else {
+                            /* tslint:disable-next-line:max-line-length */
+                            pivot.engineModule.renderEngine(pivot.dataSourceSettings, customProperties, pivot.getValueCellInfo.bind(pivot));
+                        }
                     }
                 }
                 else {
                     isOlapDataRefreshed = pivot.updateOlapDataSource(pivot, isSorted, isCalcChange, isOlapDataRefreshed);
                 }
-                pivot.getFieldCaption(pivot.dataSourceSettings);
+                if (!(isBlazor() && pageSettings)) {
+                    pivot.getFieldCaption(pivot.dataSourceSettings);
+                }
             }
             else {
                 pivot.axisFieldModule.render();
                 pivot.isRequiredUpdate = false;
             }
-            var eventArgs = {
-                dataSourceSettings: pivot.dataSourceSettings,
-                pivotFieldList: pivot.dataType === 'pivot' ? pivot.engineModule.fieldList : pivot.olapEngineModule.fieldList,
-                pivotValues: pivot.dataType === 'pivot' ? pivot.engineModule.pivotValues : pivot.olapEngineModule.pivotValues
-            };
-            pivot.trigger(enginePopulated, eventArgs, function (observedArgs) {
-                var dataSource = pivot.dataSourceSettings.dataSource;
-                if (isBlazor() && observedArgs.dataSourceSettings.dataSource instanceof Object) {
-                    observedArgs.dataSourceSettings.dataSource = dataSource;
-                }
-                pivot.dataSourceSettings = observedArgs.dataSourceSettings;
-                pivot.pivotCommon.dataSourceSettings = pivot.dataSourceSettings;
-                pivot.pivotFieldList = observedArgs.pivotFieldList;
-                if (pivot.dataType === 'olap') {
-                    pivot.olapEngineModule.pivotValues = isBlazor() ? pivot.olapEngineModule.pivotValues : observedArgs.pivotValues;
-                    pivot.pivotCommon.engineModule = pivot.olapEngineModule;
-                }
-                else {
-                    pivot.engineModule.pivotValues = isBlazor() ? pivot.engineModule.pivotValues : observedArgs.pivotValues;
-                    pivot.pivotCommon.engineModule = pivot.engineModule;
-                }
-                if (!isTreeViewRefresh && pivot.treeViewModule.fieldTable && !pivot.isAdaptive) {
-                    pivot.notify(treeViewUpdate, {});
-                }
-                if (pivot.isRequiredUpdate) {
-                    if (pivot.allowDeferLayoutUpdate) {
-                        pivot.clonedDataSource = extend({}, pivot.dataSourceSettings, null, true);
-                        pivot.clonedFieldList = extend({}, pivot.pivotFieldList, null, true);
-                    }
-                    pivot.updateView(pivot.pivotGridModule);
-                }
-                else if (pivot.renderMode === 'Popup' && pivot.allowDeferLayoutUpdate) {
-                    pivot.pivotGridModule.engineModule = pivot.engineModule;
-                    /* tslint:disable:align */
-                    pivot.pivotGridModule.setProperties({
-                        dataSourceSettings: pivot.dataSourceSettings.properties
-                    }, true);
-                    pivot.pivotGridModule.notify(uiUpdate, pivot);
-                    hideSpinner(pivot.fieldListSpinnerElement);
-                }
-                if (pivot.renderMode === 'Popup' && pivot.pivotGridModule &&
-                    pivot.pivotGridModule.allowDeferLayoutUpdate && !pivot.isRequiredUpdate) {
-                    hideSpinner(pivot.fieldListSpinnerElement);
-                    hideSpinner(pivot.pivotGridModule.element);
-                }
-                pivot.isRequiredUpdate = true;
-                if (!pivot.pivotGridModule || isOlapDataRefreshed) {
-                    hideSpinner(pivot.fieldListSpinnerElement);
-                }
-                else {
-                    pivot.pivotGridModule.fieldListSpinnerElement = pivot.fieldListSpinnerElement;
-                }
-            });
+            if (!(isBlazor() && pageSettings)) {
+                pivot.enginePopulatedEventMethod(pivot, isTreeViewRefresh, isOlapDataRefreshed);
+            }
         });
         //});
+    };
+    PivotFieldList.prototype.enginePopulatedEventMethod = function (pivot, isTreeViewRefresh, isOlapDataRefreshed) {
+        var eventArgs = {
+            dataSourceSettings: pivot.dataSourceSettings,
+            pivotFieldList: pivot.dataType === 'pivot' ? pivot.engineModule.fieldList : pivot.olapEngineModule.fieldList,
+            pivotValues: pivot.dataType === 'pivot' ? pivot.engineModule.pivotValues : pivot.olapEngineModule.pivotValues
+        };
+        pivot.trigger(enginePopulated, eventArgs, function (observedArgs) {
+            var dataSource = pivot.dataSourceSettings.dataSource;
+            if (isBlazor() && observedArgs.dataSourceSettings.dataSource instanceof Object) {
+                observedArgs.dataSourceSettings.dataSource = dataSource;
+            }
+            pivot.dataSourceSettings = observedArgs.dataSourceSettings;
+            pivot.pivotCommon.dataSourceSettings = pivot.dataSourceSettings;
+            pivot.pivotFieldList = observedArgs.pivotFieldList;
+            if (pivot.dataType === 'olap') {
+                pivot.olapEngineModule.pivotValues = isBlazor() ? pivot.olapEngineModule.pivotValues : observedArgs.pivotValues;
+                pivot.pivotCommon.engineModule = pivot.olapEngineModule;
+            }
+            else {
+                pivot.engineModule.pivotValues = isBlazor() ? pivot.engineModule.pivotValues : observedArgs.pivotValues;
+                pivot.pivotCommon.engineModule = pivot.engineModule;
+            }
+            if (!isTreeViewRefresh && pivot.treeViewModule.fieldTable && !pivot.isAdaptive) {
+                pivot.notify(treeViewUpdate, {});
+            }
+            if (pivot.isRequiredUpdate) {
+                if (pivot.allowDeferLayoutUpdate) {
+                    pivot.clonedDataSource = extend({}, pivot.dataSourceSettings, null, true);
+                    pivot.clonedFieldList = extend({}, pivot.pivotFieldList, null, true);
+                }
+                pivot.updateView(pivot.pivotGridModule);
+            }
+            else if (pivot.renderMode === 'Popup' && pivot.allowDeferLayoutUpdate) {
+                pivot.pivotGridModule.engineModule = pivot.engineModule;
+                /* tslint:disable:align */
+                pivot.pivotGridModule.setProperties({
+                    dataSourceSettings: pivot.dataSourceSettings.properties
+                }, true);
+                pivot.pivotGridModule.notify(uiUpdate, pivot);
+                hideSpinner(pivot.fieldListSpinnerElement);
+            }
+            if (pivot.renderMode === 'Popup' && pivot.pivotGridModule &&
+                pivot.pivotGridModule.allowDeferLayoutUpdate && !pivot.isRequiredUpdate) {
+                hideSpinner(pivot.fieldListSpinnerElement);
+                hideSpinner(pivot.pivotGridModule.element);
+            }
+            pivot.isRequiredUpdate = true;
+            if (!pivot.pivotGridModule || isOlapDataRefreshed) {
+                hideSpinner(pivot.fieldListSpinnerElement);
+            }
+            else {
+                pivot.pivotGridModule.fieldListSpinnerElement = pivot.fieldListSpinnerElement;
+            }
+        });
     };
     /* tslint:enable */
     PivotFieldList.prototype.updateOlapDataSource = function (pivot, isSorted, isCalcChange, isOlapDataRefreshed) {
@@ -22888,7 +23988,12 @@ var PivotFieldList = /** @__PURE__ @class */ (function (_super) {
         }
         if (control) {
             control.clonedDataSet = this.clonedDataSet;
-            control.setProperties({ dataSourceSettings: this.dataSourceSettings }, true);
+            if (isBlazor()) {
+                PivotUtil.updateDataSourceSettings(control, PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings));
+            }
+            else {
+                control.setProperties({ dataSourceSettings: this.dataSourceSettings }, true);
+            }
             control.engineModule = this.engineModule;
             control.olapEngineModule = this.olapEngineModule;
             control.dataType = this.dataType;
@@ -22898,7 +24003,12 @@ var PivotFieldList = /** @__PURE__ @class */ (function (_super) {
                 pivotValues: control.pivotValues
             };
             control.trigger(fieldListRefreshed, eventArgs);
-            control.dataBind();
+            if (control.enableVirtualization && isBlazor()) {
+                control.renderPivotGrid();
+            }
+            else {
+                control.dataBind();
+            }
         }
     };
     /**
@@ -23054,6 +24164,8 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
     function CalculatedField(parent) {
         /** @hidden */
         this.isFormula = false;
+        /** @hidden */
+        this.isRequireUpdate = false;
         this.parent = parent;
         this.existingReport = null;
         this.parent.calculatedFieldModule = this;
@@ -23460,25 +24572,33 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
         }
         try {
             this.parent.updateDataSource(false);
-            var thisObj = this;
-            //setTimeout(() => {
-            thisObj.isEdit = false;
-            if (thisObj.dialog) {
-                thisObj.dialog.close();
+            var pivot = this.parent.getModuleName() === 'pivotfieldlist' ?
+                this.parent.pivotGridModule : this.parent;
+            if (!(isBlazor() && pivot && pivot.enableVirtualization)) {
+                this.endDialog();
             }
             else {
-                thisObj.inputObj.value = '';
-                thisObj.formulaText = null;
-                thisObj.fieldText = null;
-                thisObj.parent.
-                    dialogRenderer.parentElement.querySelector('.' + CALCINPUT).value = '';
-                thisObj.parent.
-                    dialogRenderer.parentElement.querySelector('#' + thisObj.parentID + 'droppable').value = '';
+                this.isRequireUpdate = true;
             }
-            //});
         }
         catch (exception) {
             this.showError();
+        }
+    };
+    /** @hidden */
+    CalculatedField.prototype.endDialog = function () {
+        this.isEdit = false;
+        if (this.dialog) {
+            this.dialog.close();
+        }
+        else {
+            this.inputObj.value = '';
+            this.formulaText = null;
+            this.fieldText = null;
+            this.parent.
+                dialogRenderer.parentElement.querySelector('.' + CALCINPUT).value = '';
+            this.parent.
+                dialogRenderer.parentElement.querySelector('#' + this.parentID + 'droppable').value = '';
         }
     };
     /** @hidden */
@@ -24826,7 +25946,7 @@ var GroupingBar = /** @__PURE__ @class */ (function () {
      * @private
      */
     GroupingBar.prototype.getModuleName = function () {
-        return 'grouping';
+        return 'groupingbar';
     };
     GroupingBar.prototype.renderLayout = function () {
         this.groupingTable = createElement('div', { className: GROUPING_BAR_CLASS });
@@ -25218,8 +26338,8 @@ var GroupingBar = /** @__PURE__ @class */ (function () {
         if (this.parent.isDestroyed) {
             return;
         }
-        this.parent.off(initSubComponent, this.handlers.end);
-        this.parent.off(uiUpdate, this.handlers.load);
+        this.parent.off(uiUpdate, this.handlers.end);
+        this.parent.off(initSubComponent, this.handlers.load);
     };
     /**
      * To destroy the groupingbar
@@ -26647,6 +27767,9 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
                     }
                     this.parent.layoutRefresh();
                 }
+                if (isBlazor() && this.parent.element.querySelector('.e-toggle-field-list') && this.parent.toolbar.indexOf('FieldList') !== -1) {
+                    this.parent.element.querySelector('.e-toggle-field-list').style.display = 'none';
+                }
                 break;
             case (this.parent.element.id + '_' + 'Column'):
             case (this.parent.element.id + '_' + 'Bar'):
@@ -26668,6 +27791,9 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
                             this.parent.element.querySelector('.e-chart-grouping-bar').style.display = "";
                         }
                     }
+                }
+                if (isBlazor() && this.parent.element.querySelector('.e-toggle-field-list') && this.parent.toolbar.indexOf('FieldList') !== -1) {
+                    this.parent.element.querySelector('.e-toggle-field-list').style.display = 'none';
                 }
                 break;
             case (this.parent.element.id + 'pdf'):
@@ -27193,6 +28319,818 @@ var NumberFormatting = /** @__PURE__ @class */ (function () {
     return NumberFormatting;
 }());
 
+PivotView.Inject(Common);
+/**
+ * `Grouping` module to create grouping option for date, number and custom in popup.
+ */
+/** @hidden */
+var Grouping = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for the group UI rendering.
+     * @hidden
+     */
+    function Grouping(parent) {
+        /* tslint:disable-next-line:max-line-length */
+        this.dateGroup = /_date_group_years|_date_group_quarters|_date_group_quarterYear|_date_group_months|_date_group_days|_date_group_hours|_date_group_minutes|_date_group_seconds/g;
+        this.parent = parent;
+        this.parent.groupingModule = this;
+        this.addEventListener();
+    }
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    Grouping.prototype.getModuleName = function () {
+        return 'grouping';
+    };
+    Grouping.prototype.render = function (args) {
+        var target = args.target;
+        var option = args.option;
+        var parentElement = args.parentElement;
+        this.parentElement = parentElement;
+        this.selectedCellsInfo = [];
+        this.isUpdate = false;
+        this.parent.updateGroupType = 'Number';
+        var colIndex = Number(target.getAttribute('aria-colindex'));
+        var rowIndex = Number(target.getAttribute('index'));
+        var cell = this.parent.engineModule.pivotValues[rowIndex][colIndex];
+        var fieldName = cell.valueSort.axis.toString();
+        this.selectedCellsInfo = this.getSelectedCells(cell.axis, fieldName, cell.actualText.toString());
+        this.selectedCellsInfo.push({ axis: cell.axis, fieldName: fieldName, name: cell.actualText.toString(), cellInfo: cell });
+        if (option.replace(parentElement.id, '').indexOf('_custom_group') !== -1) {
+            this.createGroupSettings(fieldName);
+        }
+        else {
+            this.updateUnGroupSettings(fieldName);
+        }
+    };
+    Grouping.prototype.getSelectedOptions = function () {
+        var selectedOptions = [];
+        for (var _i = 0, _a = this.selectedCellsInfo; _i < _a.length; _i++) {
+            var option = _a[_i];
+            if (PivotUtil.inArray(option.name, selectedOptions) === -1) {
+                selectedOptions.push(option.name);
+            }
+        }
+        return selectedOptions;
+    };
+    Grouping.prototype.createGroupSettings = function (fieldName) {
+        var fieldList = this.parent.engineModule.fieldList[fieldName];
+        var group = this.getGroupSettings(fieldName);
+        if (this.selectedCellsInfo.length > 0) {
+            var type = void 0;
+            var isInvalid = false;
+            if (fieldList.isCustomField) {
+                if (!group) {
+                    var dateGroup = this.getGroupSettings(fieldName.replace(this.dateGroup, ''));
+                    var customGroup = this.getGroupSettings(fieldName.replace(/_custom_group/g, ''));
+                    if (dateGroup) {
+                        isInvalid = false;
+                        type = 'date';
+                        fieldName = fieldName.replace(this.dateGroup, '');
+                    }
+                    else if (customGroup) {
+                        isInvalid = this.selectedCellsInfo.length === 1;
+                        type = 'custom';
+                    }
+                }
+                else if (group && group.type === 'Custom') {
+                    if (this.selectedCellsInfo.length === 1) {
+                        isInvalid = true;
+                    }
+                    else {
+                        isInvalid = false;
+                        type = 'custom';
+                    }
+                }
+                else if (group && group.type === 'Number') {
+                    isInvalid = false;
+                    type = 'number';
+                }
+            }
+            else {
+                if (group) {
+                    if (group.type === 'Number' || group.type === 'Date') {
+                        isInvalid = false;
+                        type = group.type === 'Date' ? 'date' : 'number';
+                    }
+                    else if (group.type === 'Custom') {
+                        isInvalid = this.selectedCellsInfo.length === 1;
+                        type = 'custom';
+                    }
+                }
+                else {
+                    if (fieldList.type === 'number' ||
+                        (['datetime', 'date']).indexOf(fieldList.type) !== -1 || this.isDateType(fieldName)) {
+                        isInvalid = false;
+                        type = (this.selectedCellsInfo.length === 1 ? ((['datetime', 'date']).indexOf(fieldList.type) !== -1 ||
+                            this.isDateType(fieldName)) ? 'date' : 'number' : 'custom');
+                    }
+                    else if (fieldList.type === 'string') {
+                        isInvalid = this.selectedCellsInfo.length === 1;
+                        type = 'custom';
+                    }
+                }
+            }
+            if (isInvalid) {
+                /* tslint:disable-next-line:max-line-length */
+                this.parent.pivotCommon.errorDialog.createErrorDialog(this.parent.localeObj.getConstant('warning'), this.parent.localeObj.getConstant('invalidSelection'));
+                this.parent.grid.clearSelection();
+            }
+            else if (type && type !== '') {
+                this.createGroupDialog(fieldName, type);
+            }
+        }
+    };
+    Grouping.prototype.updateUnGroupSettings = function (fieldName) {
+        var fieldList = this.parent.engineModule.fieldList[fieldName];
+        var groupFields = extend([], this.parent.dataSourceSettings.groupSettings, null, true);
+        var group = this.getGroupSettings(fieldName);
+        if (this.selectedCellsInfo.length > 0) {
+            var type = void 0;
+            if (fieldList.isCustomField) {
+                if (!group) {
+                    var dateGroup = this.getGroupSettings(fieldName.replace(this.dateGroup, ''));
+                    var customGroup = this.getGroupSettings(fieldName.replace(/_custom_group/g, ''));
+                    if (dateGroup) {
+                        type = 'date';
+                        fieldName = fieldName.replace(this.dateGroup, '');
+                    }
+                    else if (customGroup) {
+                        type = 'custom';
+                    }
+                }
+                else if (group.type === 'Custom') {
+                    type = 'custom';
+                }
+            }
+            else {
+                if (group) {
+                    if (group.type === 'Number' || group.type === 'Date') {
+                        type = group.type === 'Date' ? 'date' : 'number';
+                    }
+                }
+            }
+            if (type === 'date' || type === 'number') {
+                groupFields = this.validateSettings(fieldName, groupFields, type, []);
+            }
+            else if (type === 'custom') {
+                var selectedOptions = this.getSelectedOptions();
+                groupFields = this.validateSettings(fieldName, groupFields, type, selectedOptions);
+            }
+            if (this.isUpdate) {
+                this.parent.updateGroupType = type === 'date' ? 'Date' : type === 'custom' ? 'Custom' : 'Number';
+                this.parent.dataSourceSettings.groupSettings = groupFields;
+                this.parent.isGroupUIupdate = true;
+            }
+        }
+    };
+    /* tslint:disable-next-line:max-line-length */
+    Grouping.prototype.removeGroupSettings = function (fieldName, selectedOptions, groupFields, groupNames, type) {
+        var index = groupNames.indexOf(fieldName);
+        if (index !== -1) {
+            var field = groupFields[index];
+            for (var j = 0, len = field.customGroups.length; j < len; j++) {
+                if (field.customGroups[j]) {
+                    var group = field.customGroups[j];
+                    if (PivotUtil.inArray(group.groupName, selectedOptions) !== -1) {
+                        groupFields = this.modifyParentGroupItems(fieldName, groupFields, [group.groupName], group.items, groupNames);
+                        field.customGroups.splice(j, 1);
+                        this.isUpdate = true;
+                        j--;
+                        len--;
+                    }
+                }
+            }
+        }
+        return groupFields;
+    };
+    Grouping.prototype.getGroupSettings = function (fieldName) {
+        for (var _i = 0, _a = this.parent.dataSourceSettings.groupSettings; _i < _a.length; _i++) {
+            var group = _a[_i];
+            if (group.name === fieldName) {
+                return group;
+            }
+        }
+        return undefined;
+    };
+    Grouping.prototype.isDateType = function (fieldName) {
+        for (var _i = 0, _a = this.parent.dataSourceSettings.formatSettings; _i < _a.length; _i++) {
+            var format = _a[_i];
+            if (format.name === fieldName && format.type) {
+                return true;
+            }
+        }
+        return false;
+    };
+    Grouping.prototype.getSelectedCells = function (axis, fieldName, name) {
+        var selectedCellsInfo = [];
+        /* tslint:disable */
+        var selectedElements = this.parentElement.querySelectorAll('.' + CELL_SELECTED_BGCOLOR + ',.' + SELECTED_BGCOLOR);
+        /* tslint:enable */
+        for (var _i = 0, selectedElements_1 = selectedElements; _i < selectedElements_1.length; _i++) {
+            var element = selectedElements_1[_i];
+            var colIndex = Number(element.getAttribute('aria-colindex'));
+            var rowIndex = Number(element.getAttribute('index'));
+            var cell = this.parent.engineModule.pivotValues[rowIndex][colIndex];
+            if (cell && (cell.axis === axis) && !(cell.type === 'grand sum' || cell.type === 'sum') &&
+                cell.valueSort.axis === fieldName && name !== cell.actualText.toString()) {
+                selectedCellsInfo.push({
+                    axis: cell.axis,
+                    fieldName: cell.valueSort.axis.toString(),
+                    name: cell.actualText.toString(),
+                    cellInfo: cell
+                });
+            }
+        }
+        return selectedCellsInfo;
+    };
+    /** @hidden */
+    Grouping.prototype.createGroupDialog = function (fieldName, type) {
+        var _this = this;
+        var groupDialog = createElement('div', {
+            id: this.parentElement.id + '_GroupDialog',
+            className: 'e-group-field-settings',
+            attrs: { 'data-field': fieldName, 'data-type': type }
+        });
+        this.parentElement.appendChild(groupDialog);
+        this.groupDialog = new Dialog({
+            animationSettings: { effect: 'Fade' },
+            allowDragging: true,
+            header: this.parent.localeObj.getConstant('grouping'),
+            content: this.createGroupOptions(fieldName, type),
+            isModal: true,
+            visible: true,
+            showCloseIcon: true,
+            enableRtl: this.parent.enableRtl,
+            width: 300,
+            height: 'auto',
+            position: { X: 'center', Y: 'center' },
+            buttons: [
+                {
+                    click: this.updateGroupSettings.bind(this),
+                    buttonModel: { cssClass: OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true }
+                },
+                {
+                    click: function () { _this.groupDialog.hide(); },
+                    buttonModel: { cssClass: CANCEL_BUTTON_CLASS, content: this.parent.localeObj.getConstant('cancel') }
+                }
+            ],
+            overlayClick: function () { _this.removeDialog(); },
+            closeOnEscape: true,
+            close: this.removeDialog.bind(this),
+            target: this.parentElement
+        });
+        this.groupDialog.isStringTemplate = true;
+        this.groupDialog.appendTo(groupDialog);
+    };
+    /* tslint:disable:all */
+    Grouping.prototype.createGroupOptions = function (fieldName, type) {
+        var _this = this;
+        var groupInstance = this;
+        var mainDiv = createElement('div', {
+            className: 'e-group-field-div-content', id: this.parentElement.id + '_group_field_div_content',
+            attrs: { 'data-fieldName': fieldName, 'data-type': type }
+        });
+        var groupWrapperDiv1 = createElement('div', { className: 'e-group-option-wrapper' });
+        mainDiv.appendChild(groupWrapperDiv1);
+        // this.parentElement.appendChild(mainDiv);
+        var dataSource = this.parent.dataSourceSettings;
+        var groupField = PivotUtil.getGroupItemByName(fieldName, dataSource.groupSettings);
+        switch (type) {
+            case 'custom':
+                {
+                    var caption = void 0;
+                    var dataFields = dataSource.rows;
+                    dataFields = dataFields.concat(dataSource.columns, dataSource.values, dataSource.filters);
+                    var actualField = PivotUtil.getFieldByName(fieldName.replace(/_custom_group/g, ''), dataFields);
+                    var currentField = PivotUtil.getFieldByName(fieldName, dataFields);
+                    var nextField = PivotUtil.getFieldByName(fieldName + '_custom_group', dataFields);
+                    if (currentField) {
+                        var newFieldName = fieldName + '_custom_group';
+                        caption = nextField ? nextField.caption :
+                            this.parent.engineModule.fieldList[actualField.name].caption + (newFieldName.match(/_custom_group/g).length + 1);
+                    }
+                    var captionInputTextDiv1 = createElement('div', {
+                        className: 'e-caption-option-text', innerHTML: this.parent.localeObj.getConstant('sourceCaption')
+                    });
+                    var captionInputDiv1 = createElement('div', { className: 'e-group-caption-wrapper' });
+                    var captionInputField1 = createElement('input', {
+                        id: this.parentElement.id + 'group_caption_option',
+                        className: 'e-group-caption-text',
+                        attrs: { 'type': 'text' }
+                    });
+                    captionInputDiv1.appendChild(captionInputTextDiv1);
+                    captionInputDiv1.appendChild(captionInputField1);
+                    groupWrapperDiv1.appendChild(captionInputDiv1);
+                    var inputTextDiv1 = createElement('div', {
+                        className: 'e-input-option-text', innerHTML: this.parent.localeObj.getConstant('groupTitle')
+                    });
+                    var inputDiv1 = createElement('div', { className: 'e-group-input-wrapper' });
+                    var inputField1 = createElement('input', {
+                        id: this.parentElement.id + 'group_input_option',
+                        className: 'e-group-input-text',
+                        attrs: { 'type': 'text' }
+                    });
+                    inputDiv1.appendChild(inputTextDiv1);
+                    inputDiv1.appendChild(inputField1);
+                    groupWrapperDiv1.appendChild(inputDiv1);
+                    var captionInputObj1 = new MaskedTextBox({
+                        placeholder: this.parent.localeObj.getConstant('captionName'),
+                        enableRtl: this.parent.enableRtl,
+                        value: caption, width: '100%'
+                    });
+                    captionInputObj1.isStringTemplate = true;
+                    captionInputObj1.appendTo(captionInputField1);
+                    var inputObj1 = new MaskedTextBox({
+                        placeholder: this.parent.localeObj.getConstant('groupName'),
+                        enableRtl: this.parent.enableRtl,
+                        width: '100%'
+                    });
+                    inputObj1.isStringTemplate = true;
+                    inputObj1.appendTo(inputField1);
+                }
+                break;
+            case 'date':
+            case 'number':
+                {
+                    var startAtWrapper = createElement('div', {
+                        className: 'e-group-start-option-wrapper'
+                    });
+                    var startAtOptionDiv1 = createElement('input', {
+                        id: this.parentElement.id + 'group_start_option',
+                        className: 'e-group_start_option',
+                        attrs: { 'type': 'checkbox' }
+                    });
+                    var startAtInputField1 = createElement('input', {
+                        id: this.parentElement.id + 'group_start_input',
+                        className: 'e-group_start_input',
+                        attrs: { 'type': 'text' }
+                    });
+                    startAtWrapper.appendChild(startAtOptionDiv1);
+                    startAtWrapper.appendChild(startAtInputField1);
+                    groupWrapperDiv1.appendChild(startAtWrapper);
+                    var endAtWrapper = createElement('div', {
+                        className: 'e-group-end-option-wrapper'
+                    });
+                    var endAtOptionDiv1 = createElement('input', {
+                        id: this.parentElement.id + 'group_end_option',
+                        className: 'e-group_end_option',
+                        attrs: { 'type': 'checkbox' }
+                    });
+                    var endAtInputField1 = createElement('input', {
+                        id: this.parentElement.id + 'group_end_input',
+                        className: 'e-group_end_input',
+                        attrs: { 'type': 'text' }
+                    });
+                    endAtWrapper.appendChild(endAtOptionDiv1);
+                    endAtWrapper.appendChild(endAtInputField1);
+                    groupWrapperDiv1.appendChild(endAtWrapper);
+                    var intervalWrapper = createElement('div', {
+                        className: 'e-group-interval-option-wrapper'
+                    });
+                    var intervalTextDiv1 = createElement('div', {
+                        className: 'e-group-inerval-option-text', innerHTML: this.parent.localeObj.getConstant('groupBy')
+                    });
+                    var intervalInputField1 = createElement('input', {
+                        id: this.parentElement.id + 'group_interval_input',
+                        className: 'e-group_interval_input',
+                        attrs: { 'type': 'text' }
+                    });
+                    intervalWrapper.appendChild(intervalTextDiv1);
+                    intervalWrapper.appendChild(intervalInputField1);
+                    groupWrapperDiv1.appendChild(intervalWrapper);
+                    var startAt = undefined;
+                    var endAt = undefined;
+                    if (type === 'date') {
+                        var selectedGroups = [];
+                        var groupData = [
+                            { value: 'Seconds', text: this.parent.localeObj.getConstant('Seconds') },
+                            { value: 'Minutes', text: this.parent.localeObj.getConstant('Minutes') },
+                            { value: 'Hours', text: this.parent.localeObj.getConstant('Hours') },
+                            { value: 'Days', text: this.parent.localeObj.getConstant('Days') },
+                            { value: 'Months', text: this.parent.localeObj.getConstant('Months') },
+                            { value: 'QuarterYear', text: this.parent.localeObj.getConstant('QuarterYear') },
+                            { value: 'Quarters', text: this.parent.localeObj.getConstant('Quarters') },
+                            { value: 'Years', text: this.parent.localeObj.getConstant('Years') },
+                        ];
+                        if (groupField && groupField.type === 'Date') {
+                            selectedGroups = groupField.groupInterval;
+                            startAt = groupField.startingAt ? groupField.startingAt.toString() : undefined;
+                            endAt = groupField.endingAt ? groupField.endingAt.toString() : undefined;
+                        }
+                        else {
+                            selectedGroups = ['Months'];
+                        }
+                        var startAtInputObj = new DateTimePicker({
+                            placeholder: this.parent.localeObj.getConstant('chooseDate'),
+                            enableRtl: this.parent.enableRtl,
+                            format: 'dd/MM/yyyy hh:mm:ss a',
+                            enabled: !(startAt === undefined),
+                            width: '100%',
+                        });
+                        startAtInputObj.isStringTemplate = true;
+                        startAtInputObj.appendTo(startAtInputField1);
+                        var endAtInputObj = new DateTimePicker({
+                            placeholder: this.parent.localeObj.getConstant('chooseDate'),
+                            enableRtl: this.parent.enableRtl,
+                            format: 'dd/MM/yyyy hh:mm:ss a',
+                            enabled: !(endAt === undefined),
+                            width: '100%',
+                        });
+                        endAtInputObj.isStringTemplate = true;
+                        endAtInputObj.appendTo(endAtInputField1);
+                        MultiSelect.Inject(CheckBoxSelection);
+                        var intervalObj_1 = new MultiSelect({
+                            dataSource: groupData,
+                            value: selectedGroups,
+                            fields: { text: 'text', value: 'value' },
+                            mode: 'CheckBox',
+                            showDropDownIcon: true,
+                            enableSelectionOrder: false,
+                            placeholder: this.parent.localeObj.getConstant('selectGroup'),
+                            filterBarPlaceholder: this.parent.localeObj.getConstant('example') + ' ' + this.parent.localeObj.getConstant('Months'),
+                            enableRtl: this.parent.enableRtl,
+                            select: function () {
+                                groupInstance.groupDialog.element.querySelector('.' + OK_BUTTON_CLASS).removeAttribute('disabled');
+                            },
+                            removed: function () {
+                                /* tslint:disable */
+                                if (intervalObj_1.checkBoxSelectionModule.activeLi.length === 0) {
+                                    groupInstance.groupDialog.element.querySelector('.' + OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
+                                }
+                                /* tslint:enable */
+                            }
+                        });
+                        intervalObj_1.isStringTemplate = true;
+                        intervalObj_1.appendTo(intervalInputField1);
+                        startAtInputObj.value = startAt === undefined ? null : new Date(startAt);
+                        startAtInputObj.dataBind();
+                        endAtInputObj.value = endAt === undefined ? null : new Date(endAt);
+                        endAtInputObj.dataBind();
+                    }
+                    else {
+                        var selectedInterval = undefined;
+                        if (groupField && groupField.type === 'Number') {
+                            selectedInterval = groupField.rangeInterval;
+                            startAt = groupField.startingAt ? groupField.startingAt.toString() : undefined;
+                            endAt = groupField.endingAt ? groupField.endingAt.toString() : undefined;
+                        }
+                        else {
+                            selectedInterval = 2;
+                        }
+                        var startAtInputObj = new NumericTextBox({
+                            placeholder: this.parent.localeObj.getConstant('enterValue'),
+                            enableRtl: this.parent.enableRtl,
+                            showClearButton: true,
+                            format: '###',
+                            value: startAt === undefined ? undefined : parseInt(startAt, 10),
+                            enabled: !(startAt === undefined),
+                            width: '100%',
+                        });
+                        startAtInputObj.isStringTemplate = true;
+                        startAtInputObj.appendTo(startAtInputField1);
+                        var endAtInputObj = new NumericTextBox({
+                            placeholder: this.parent.localeObj.getConstant('enterValue'),
+                            enableRtl: this.parent.enableRtl,
+                            showClearButton: true,
+                            format: '###',
+                            value: endAt === undefined ? undefined : parseInt(endAt, 10),
+                            enabled: !(endAt === undefined),
+                            width: '100%'
+                        });
+                        endAtInputObj.isStringTemplate = true;
+                        endAtInputObj.appendTo(endAtInputField1);
+                        var intervalObj = new NumericTextBox({
+                            placeholder: this.parent.localeObj.getConstant('enterValue'),
+                            enableRtl: this.parent.enableRtl,
+                            showClearButton: true,
+                            format: '###',
+                            min: 1,
+                            value: selectedInterval,
+                            width: '100%'
+                        });
+                        intervalObj.isStringTemplate = true;
+                        intervalObj.appendTo(intervalInputField1);
+                    }
+                    var startAtObj = new CheckBox({
+                        label: this.parent.localeObj.getConstant('startAt'),
+                        checked: !(startAt === undefined),
+                        enableRtl: this.parent.enableRtl,
+                        change: function (args) {
+                            var startAtObj = (type === 'date' ?
+                                getInstance('#' + _this.parentElement.id + 'group_start_input', DateTimePicker) :
+                                getInstance('#' + _this.parentElement.id + 'group_start_input', NumericTextBox));
+                            startAtObj.enabled = args.checked;
+                            startAtObj.dataBind();
+                        }
+                    });
+                    startAtObj.isStringTemplate = true;
+                    startAtObj.appendTo(startAtOptionDiv1);
+                    var endAtObj = new CheckBox({
+                        label: this.parent.localeObj.getConstant('endAt'),
+                        checked: !(endAt === undefined),
+                        enableRtl: this.parent.enableRtl,
+                        change: function (args) {
+                            var endAtObj = (type === 'date' ?
+                                getInstance('#' + _this.parentElement.id + 'group_end_input', DateTimePicker) :
+                                getInstance('#' + _this.parentElement.id + 'group_end_input', NumericTextBox));
+                            endAtObj.enabled = args.checked;
+                            endAtObj.dataBind();
+                        }
+                    });
+                    endAtObj.isStringTemplate = true;
+                    endAtObj.appendTo(endAtOptionDiv1);
+                }
+                break;
+        }
+        return mainDiv;
+    };
+    /* tslint:disable */
+    Grouping.prototype.updateGroupSettings = function () {
+        var dialogElement = this.groupDialog.element;
+        var groupType = dialogElement.getAttribute('data-type');
+        var fieldName = dialogElement.getAttribute('data-field');
+        var groupFields = extend([], this.parent.dataSourceSettings.groupSettings, null, true);
+        if (groupFields.length === 0 && !this.parent.clonedDataSet && !this.parent.clonedReport) {
+            var dataSet = this.parent.engineModule.data;
+            this.parent.clonedDataSet = PivotUtil.getClonedData(dataSet);
+            this.parent.setProperties({ dataSourceSettings: { dataSource: [] } }, true);
+            this.parent.clonedReport = extend({}, this.parent.dataSourceSettings, null, true);
+            this.parent.setProperties({ dataSourceSettings: { dataSource: dataSet } }, true);
+        }
+        if (groupType === 'custom') {
+            var inputInstance = getInstance('#' + this.parentElement.id + 'group_input_option', MaskedTextBox);
+            var captionInputInstance = getInstance('#' + this.parentElement.id + 'group_caption_option', MaskedTextBox);
+            removeClass([inputInstance.element], EMPTY_FIELD);
+            if (inputInstance.value === null || inputInstance.value === '') {
+                addClass([inputInstance.element], EMPTY_FIELD);
+                inputInstance.element.focus();
+                return;
+            }
+            var selectedOptions = this.getSelectedOptions();
+            var customGroup = { groupName: inputInstance.value, items: selectedOptions };
+            var splicedItems = [];
+            var newItems = [];
+            var field = { name: fieldName, caption: captionInputInstance.value, type: 'Custom', customGroups: [] };
+            var isUpdated = false;
+            for (var i = 0, len = groupFields.length; i < len; i++) {
+                if (groupFields[i].name === fieldName) {
+                    field = groupFields[i];
+                    field.caption = captionInputInstance.value;
+                    for (var j = 0, len_1 = field.customGroups.length; j < len_1; j++) {
+                        if (field.customGroups[j]) {
+                            var group = field.customGroups[j];
+                            if (group.items && PivotUtil.isContainCommonElements(group.items, selectedOptions)) {
+                                splicedItems = this.mergeArray(splicedItems, [group.groupName]);
+                                newItems = this.mergeArray(newItems, group.items);
+                                field.customGroups.splice(j, 1);
+                                j--;
+                                len_1--;
+                            }
+                        }
+                    }
+                    for (var _i = 0, selectedOptions_1 = selectedOptions; _i < selectedOptions_1.length; _i++) {
+                        var item = selectedOptions_1[_i];
+                        var index = newItems.indexOf(item);
+                        if (index !== -1) {
+                            newItems.splice(index, 1);
+                        }
+                    }
+                    newItems = this.mergeArray(newItems, [customGroup.groupName]);
+                    field.customGroups.push(customGroup);
+                    this.isUpdate = true;
+                    isUpdated = true;
+                    break;
+                }
+            }
+            if (!isUpdated) {
+                field.customGroups.push(customGroup);
+                this.isUpdate = true;
+                groupFields.push(field);
+            }
+            groupFields = this.validateSettings(fieldName, groupFields, groupType, (splicedItems.length === 0 ? customGroup.items : splicedItems), newItems);
+        }
+        else if (groupType === 'date' || groupType === 'number') {
+            var startCheckBoxInstance = getInstance('#' + this.parentElement.id + 'group_start_option', CheckBox);
+            var endCheckBoxInstance = getInstance('#' + this.parentElement.id + 'group_end_option', CheckBox);
+            var startInputInstance = (groupType === 'date' ?
+                getInstance('#' + this.parentElement.id + 'group_start_input', DateTimePicker) :
+                getInstance('#' + this.parentElement.id + 'group_start_input', NumericTextBox));
+            var endInputInstance = (groupType === 'date' ?
+                getInstance('#' + this.parentElement.id + 'group_end_input', DateTimePicker) :
+                getInstance('#' + this.parentElement.id + 'group_end_input', NumericTextBox));
+            var intervalInstance = (groupType === 'date' ?
+                getInstance('#' + this.parentElement.id + 'group_interval_input', MultiSelect) :
+                getInstance('#' + this.parentElement.id + 'group_interval_input', NumericTextBox));
+            var startAt = startCheckBoxInstance.checked ? startInputInstance.value.toString() : undefined;
+            var endAt = endCheckBoxInstance.checked ? endInputInstance.value.toString() : undefined;
+            var field = { name: fieldName, startingAt: startAt, endingAt: endAt };
+            if (groupType === 'date') {
+                var selectedItems = [];
+                for (var _a = 0, _b = intervalInstance.value; _a < _b.length; _a++) {
+                    var list = _b[_a];
+                    selectedItems.push(list);
+                }
+                field.type = 'Date';
+                field.groupInterval = selectedItems;
+            }
+            else {
+                field.type = 'Number';
+                field.rangeInterval = intervalInstance.value;
+            }
+            var isUpdated = false;
+            for (var i = 0, len = groupFields.length; i < len; i++) {
+                if (groupFields[i].name === fieldName) {
+                    groupFields.splice(i, 1, field);
+                    this.isUpdate = true;
+                    isUpdated = true;
+                    break;
+                }
+            }
+            if (!isUpdated) {
+                this.isUpdate = true;
+                groupFields.push(field);
+            }
+            groupFields = this.validateSettings(fieldName, groupFields, groupType, [], []);
+        }
+        this.groupDialog.close();
+        if (this.isUpdate) {
+            this.parent.updateGroupType = groupType === 'date' ? 'Date' : groupType === 'custom' ? 'Custom' : 'Number';
+            this.parent.dataSourceSettings.groupSettings = groupFields;
+            this.parent.isGroupUIupdate = true;
+        }
+    };
+    /* tslint:enable */
+    Grouping.prototype.getGroupBasedSettings = function (groupFields) {
+        var groups = {};
+        for (var _i = 0, groupFields_1 = groupFields; _i < groupFields_1.length; _i++) {
+            var group = groupFields_1[_i];
+            if (groups[group.type]) {
+                groups[group.type].push(group);
+            }
+            else {
+                groups[group.type] = [group];
+            }
+        }
+        return groups;
+    };
+    Grouping.prototype.getGroupByName = function (groupFields) {
+        var customFields = {};
+        for (var _i = 0, groupFields_2 = groupFields; _i < groupFields_2.length; _i++) {
+            var field = groupFields_2[_i];
+            var name_1 = field.name.replace(/_custom_group/g, '');
+            if (customFields[name_1]) {
+                customFields[name_1].push(field);
+            }
+            else {
+                customFields[name_1] = [field];
+            }
+        }
+        return customFields;
+    };
+    /* tslint:disable-next-line:max-line-length */
+    Grouping.prototype.validateSettings = function (fieldName, groupFields, groupType, splicedItems, newItems) {
+        var validatedSettings = [];
+        var groups = this.getGroupBasedSettings(groupFields);
+        var groupOrders = ['Date', 'Number', 'Custom'];
+        if (groups[groupOrders[2]] && groupType === 'custom') {
+            var customFields = this.getGroupByName(groups[groupOrders[2]]);
+            if (customFields[fieldName.replace(/_custom_group/g, '')]) {
+                var customGroups = customFields[fieldName.replace(/_custom_group/g, '')];
+                var fields = customGroups.map(function (item, pos) { return item.name; });
+                if (newItems) {
+                    /* tslint:disable-next-line:max-line-length */
+                    customGroups = this.modifyParentGroupItems(fieldName, customGroups, splicedItems, newItems, fields);
+                }
+                else {
+                    customGroups = this.removeGroupSettings(fieldName.replace('_custom_group', ''), splicedItems, customGroups, fields);
+                }
+            }
+            var orderedGroups = [];
+            for (var _i = 0, _a = Object.keys(customFields); _i < _a.length; _i++) {
+                var field = _a[_i];
+                var fields = customFields[field].map(function (item, pos) { return item.name; });
+                orderedGroups = this.reOrderSettings(customFields[field], fields, orderedGroups, field);
+            }
+            groups[groupOrders[2]] = orderedGroups;
+        }
+        else if ((groupType === 'date' || groupType === 'number') && !newItems) {
+            var groupFields_3 = groupType === 'date' ? groups[groupOrders[0]] : groups[groupOrders[1]];
+            if (groupType === 'date') {
+                groups[groupOrders[0]] = groupFields_3.filter(function (field) { return field.name !== fieldName; });
+            }
+            else {
+                groups[groupOrders[1]] = groupFields_3.filter(function (field) { return field.name !== fieldName; });
+            }
+            this.isUpdate = true;
+        }
+        for (var _b = 0, groupOrders_1 = groupOrders; _b < groupOrders_1.length; _b++) {
+            var order = groupOrders_1[_b];
+            if (groups[order]) {
+                validatedSettings = validatedSettings.concat(groups[order]);
+            }
+        }
+        return validatedSettings;
+    };
+    /* tslint:disable-next-line:max-line-length */
+    Grouping.prototype.reOrderSettings = function (customGroups, fields, orderedSettings, fieldName) {
+        var index = fields.indexOf(fieldName);
+        if (index > -1 && customGroups[index].customGroups && customGroups[index].customGroups.length > 0) {
+            orderedSettings.push(customGroups[index]);
+            this.reOrderSettings(customGroups, fields, orderedSettings, fieldName + '_custom_group');
+        }
+        return orderedSettings;
+    };
+    /* tslint:disable-next-line:max-line-length */
+    Grouping.prototype.modifyParentGroupItems = function (fieldName, groupFields, splicedItems, newItems, fields) {
+        var index = fields.indexOf(fieldName + '_custom_group');
+        if (index !== -1) {
+            var field = groupFields[index];
+            if (field.customGroups && field.customGroups.length > 0) {
+                for (var i = 0, len = field.customGroups.length; i < len; i++) {
+                    if (field.customGroups[i]) {
+                        var isItemsUpdated = false;
+                        var group = field.customGroups[i];
+                        if (group.items) {
+                            for (var _i = 0, splicedItems_1 = splicedItems; _i < splicedItems_1.length; _i++) {
+                                var item = splicedItems_1[_i];
+                                var pos = group.items.indexOf(item);
+                                if (pos !== -1) {
+                                    group.items.splice(pos, 1);
+                                    this.isUpdate = true;
+                                    isItemsUpdated = true;
+                                }
+                            }
+                            if (isItemsUpdated) {
+                                group.items = this.mergeArray(group.items, newItems);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return groupFields;
+    };
+    Grouping.prototype.mergeArray = function (collection1, collection2) {
+        var resultArray = [];
+        var array = collection1.concat(collection2);
+        var len = array.length;
+        var assoc = {};
+        while (len--) {
+            var item = String(array[len]);
+            if (!assoc[item]) {
+                resultArray.unshift(item);
+                assoc[item] = true;
+            }
+        }
+        return resultArray;
+    };
+    Grouping.prototype.removeDialog = function () {
+        if (this.parent.grid && this.parent.grid.isDestroyed) {
+            return;
+        }
+        this.parent.grid.clearSelection();
+        if (this.groupDialog && !this.groupDialog.isDestroyed) {
+            this.groupDialog.destroy();
+        }
+        if (document.getElementById(this.parentElement.id + '_GroupDialog')) {
+            remove(document.getElementById(this.parentElement.id + '_GroupDialog'));
+        }
+    };
+    /**
+     * @hidden
+     */
+    Grouping.prototype.addEventListener = function () {
+        this.handlers = {
+            load: this.render
+        };
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.on(initGrouping, this.handlers.load, this); //For initial rendering
+    };
+    /**
+     * @hidden
+     */
+    Grouping.prototype.removeEventListener = function () {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.removeDialog();
+        this.parent.off(initGrouping, this.handlers.load);
+    };
+    /**
+     * To destroy the pivot button event listener
+     * @return {void}
+     * @hidden
+     */
+    Grouping.prototype.destroy = function () {
+        this.removeEventListener();
+    };
+    return Grouping;
+}());
+
 /**
  * common exported items
  */
@@ -27210,5 +29148,5 @@ var NumberFormatting = /** @__PURE__ @class */ (function () {
  * Export PivotGrid components
  */
 
-export { GroupingBarSettings, CellEditSettings, ConditionalSettings, HyperlinkSettings, DisplayOption, PivotView, Render, ExcelExport$1 as ExcelExport, PDFExport, KeyboardInteraction, VirtualScroll$1 as VirtualScroll, DrillThrough, PivotChart, PivotFieldList, TreeViewRenderer, AxisFieldRenderer, AxisTableRenderer, DialogRenderer, EventBase, NodeStateModified, DataSourceUpdate, FieldList, CommonKeyboardInteraction, GroupingBar, CalculatedField, ConditionalFormatting, PivotCommon, load, enginePopulating, enginePopulated, onFieldDropped, beforePivotTableRender, afterPivotTableRender, beforeExport, excelHeaderQueryCellInfo, pdfHeaderQueryCellInfo, excelQueryCellInfo, pdfQueryCellInfo, onPdfCellRender, dataBound, queryCellInfo, headerCellInfo, hyperlinkCellClick, resizing, resizeStop, cellClick, drillThrough, beforeColumnsRender, selected, cellSelecting, drill, cellSelected, cellDeselected, rowSelected, rowDeselected, beginDrillThrough, saveReport, fetchReport, loadReport, renameReport, removeReport, newReport, toolbarRender, toolbarClick, chartTooltipRender, chartLoaded, chartLoad, chartResized, chartAxisLabelRender, chartSeriesCreated, aggregateCellInfo, contextMenuClick, contextMenuOpen, fieldListRefreshed, conditionalFormatting, beforePdfExport, beforeExcelExport, memberFiltering, initialLoad, uiUpdate, scroll, contentReady, dataReady, initSubComponent, treeViewUpdate, pivotButtonUpdate, initCalculatedField, click, initToolbar, initFormatting, ErrorDialog, FilterDialog, PivotContextMenu, AggregateMenu, Toolbar$2 as Toolbar, NumberFormatting, PivotEngine, PivotUtil, OlapEngine, MDXQuery };
+export { GroupingBarSettings, CellEditSettings, ConditionalSettings, HyperlinkSettings, DisplayOption, PivotView, Render, ExcelExport$1 as ExcelExport, PDFExport, KeyboardInteraction, VirtualScroll$1 as VirtualScroll, DrillThrough, PivotChart, PivotFieldList, TreeViewRenderer, AxisFieldRenderer, AxisTableRenderer, DialogRenderer, EventBase, NodeStateModified, DataSourceUpdate, FieldList, CommonKeyboardInteraction, GroupingBar, CalculatedField, ConditionalFormatting, PivotCommon, load, enginePopulating, enginePopulated, onFieldDropped, beforePivotTableRender, afterPivotTableRender, beforeExport, excelHeaderQueryCellInfo, pdfHeaderQueryCellInfo, excelQueryCellInfo, pdfQueryCellInfo, onPdfCellRender, dataBound, queryCellInfo, headerCellInfo, hyperlinkCellClick, resizing, resizeStop, cellClick, drillThrough, beforeColumnsRender, selected, cellSelecting, drill, cellSelected, cellDeselected, rowSelected, rowDeselected, beginDrillThrough, saveReport, fetchReport, loadReport, renameReport, removeReport, newReport, toolbarRender, toolbarClick, chartTooltipRender, chartLoaded, chartLoad, chartResized, chartAxisLabelRender, chartSeriesCreated, aggregateCellInfo, contextMenuClick, contextMenuOpen, fieldListRefreshed, conditionalFormatting, beforePdfExport, beforeExcelExport, memberFiltering, initialLoad, uiUpdate, scroll, contentReady, dataReady, initSubComponent, treeViewUpdate, pivotButtonUpdate, initCalculatedField, click, initToolbar, initFormatting, initGrouping, ErrorDialog, FilterDialog, PivotContextMenu, AggregateMenu, Toolbar$2 as Toolbar, NumberFormatting, Grouping, PivotEngine, PivotUtil, OlapEngine, MDXQuery };
 //# sourceMappingURL=ej2-pivotview.es5.js.map

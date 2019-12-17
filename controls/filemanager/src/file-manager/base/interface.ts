@@ -138,6 +138,28 @@ export interface BeforeSendEventArgs {
     cancel?: boolean;
 }
 
+export interface BeforeDownloadEventArgs {
+    /**
+     * Specifies the data to be sent to server.
+     */
+    data?: Object;
+    /**
+     * If you want to cancel this event then, set cancel to true. Otherwise, false.
+     */
+    cancel?: boolean;
+}
+
+export interface BeforeImageLoadEventArgs {
+    /**
+     * Return the current rendering image item as an array of JSON object.
+     */
+    fileDetails?: Object[];
+    /**
+     * Specifies the URL along with custom attributes to be sent to server.
+     */
+    imageUrl?: string;
+}
+
 export interface SuccessEventArgs {
     /**
      * Return the name of the AJAX action will be performed.
@@ -476,6 +498,7 @@ export interface IFileManager extends Component<HTMLElement> {
     showThumbnail: boolean;
     allowDragAndDrop: boolean;
     enableRtl: boolean;
+    rootAliasName: string;
     path: string;
     folderPath: string;
     showFileExtension: boolean;

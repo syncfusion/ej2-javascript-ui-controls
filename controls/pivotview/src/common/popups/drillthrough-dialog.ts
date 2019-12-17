@@ -80,24 +80,40 @@ export class DrillThroughDialog {
                         }
                     }
                     count = 0;
-                    let items: IDataSet[] = [];
-                    let data: IDataSet[] = (this.parent.allowDataCompression && this.parent.enableVirtualization) ?
-                        this.parent.engineModule.actualData : this.parent.engineModule.data;
-                    for (let item of data as IDataSet[]) {
-                        delete item['__index'];
-                        if (this.gridIndexObjects[count.toString()] === undefined) {
-                            items.push(item);
+                    if (isBlazor() && this.parent.enableVirtualization) {
+                        let currModule: DrillThroughDialog = this;
+                        /* tslint:disable:no-any */
+                        (currModule.parent as any).interopAdaptor.invokeMethodAsync(
+                            'PivotInteropMethod', 'updateRawData', {
+                            'AddItem': addItems, 'RemoveItem': currModule.gridIndexObjects, 'ModifiedItem': currModule.gridData
+                        }).then((data: any) => {
+                            currModule.parent.updateBlazorData(data, currModule.parent);
+                            currModule.parent.setProperties({ pivotValues: currModule.parent.engineModule.pivotValues }, true);
+                            currModule.isUpdated = false;
+                            currModule.gridIndexObjects = {};
+                        });
+                    } else {
+                        let items: IDataSet[] = [];
+                        let data: IDataSet[] = (this.parent.allowDataCompression && this.parent.enableVirtualization) ?
+                            this.parent.engineModule.actualData : this.parent.engineModule.data;
+                        for (let item of data as IDataSet[]) {
+                            delete item['__index'];
+                            if (this.gridIndexObjects[count.toString()] === undefined) {
+                                items.push(item);
+                            }
+                            count++;
                         }
-                        count++;
+                        /* tslint:enable:no-string-literal */
+                        items = items.concat(addItems);
+                        this.parent.setProperties({ dataSourceSettings: { dataSource: items } }, true);
+                        (this.engine as PivotEngine).updateGridData(this.parent.dataSourceSettings as IDataOptions);
+                        this.parent.pivotValues = this.engine.pivotValues;
                     }
-                    /* tslint:enable:no-string-literal */
-                    items = items.concat(addItems);
-                    this.parent.setProperties({ dataSourceSettings: { dataSource: items } }, true);
-                    (this.engine as PivotEngine).updateGridData(this.parent.dataSourceSettings as IDataOptions);
-                    this.parent.pivotValues = this.engine.pivotValues;
                 }
-                this.isUpdated = false;
-                this.gridIndexObjects = {};
+                if (!(isBlazor() && this.parent.enableVirtualization)) {
+                    this.isUpdated = false;
+                    this.gridIndexObjects = {};
+                }
             },
             isModal: true,
             visible: true,

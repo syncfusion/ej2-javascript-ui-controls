@@ -443,13 +443,27 @@ function calculateShapes(location, shape, size, url, options) {
             merge(options, { 'd': path });
             break;
         case 'Triangle':
-            path = 'M' + ' ' + (x + (isLegend ? width / 2 : 0)) + ' ' + y + ' ' + 'L' + ' ' + (x + width) + ' ' +
-                (y + (isLegend ? height : height / 2)) + 'L' + ' ' + x + ' ' + (y + height) + ' Z';
+            if (isLegend) {
+                path = 'M' + ' ' + (x + (width / 2)) + ' ' + y + ' ' + 'L' + ' ' + (x + width) + ' ' +
+                    (y + height) + 'L' + ' ' + x + ' ' + (y + height) + ' Z';
+            }
+            else {
+                path = 'M' + ' ' + locX + ' ' + locY + ' ' +
+                    'L' + ' ' + (locX - height) + ' ' + (locY - (width / 2)) +
+                    'L' + ' ' + (locX - height) + ' ' + (locY + (width / 2)) + ' Z';
+            }
             merge(options, { 'd': path });
             break;
         case 'InvertedTriangle':
-            path = 'M' + ' ' + (x + width) + ' ' + y + ' ' + 'L' + ' ' + (x + (isLegend ? width / 2 : width)) + ' ' + (y + height) +
-                'L' + ' ' + x + ' ' + (y + (isLegend ? 0 : height / 2)) + ' Z';
+            if (isLegend) {
+                path = 'M' + ' ' + (x + width) + ' ' + y + ' ' + 'L' + ' ' + (x + (width / 2)) + ' ' + (y + height) +
+                    'L' + ' ' + x + ' ' + (y) + ' Z';
+            }
+            else {
+                path = 'M' + ' ' + locX + ' ' + locY + ' ' +
+                    'L' + ' ' + (locX + height) + ' ' + (locY - (width / 2)) +
+                    'L' + ' ' + (locX + height) + ' ' + (locY + (width / 2)) + ' Z';
+            }
             merge(options, { 'd': path });
             break;
         case 'Image':
@@ -2465,8 +2479,7 @@ class AxisLayoutPanel {
                 }
             }
             axis.visibleRange.interval = this.calculateNumericInterval(axis, axis.rect);
-            let args;
-            args = {
+            let args = {
                 cancel: false, name: radiusCalculate, currentRadius: axis.currentRadius, gauge: this.gauge,
                 midPoint: this.gauge.midPoint, axis: axis
             };
@@ -2477,7 +2490,9 @@ class AxisLayoutPanel {
             this.gauge.trigger('radiusCalculate', args, () => {
                 axis.currentRadius = args.currentRadius;
                 this.gauge.midPoint = args.midPoint;
-                this.calculateVisibleLabels(axis);
+                if (!this.gauge.isBlazor) {
+                    this.calculateVisibleLabels(axis);
+                }
             });
         }
     }
@@ -2590,10 +2605,14 @@ class AxisLayoutPanel {
             let axisLabelRenderSuccess = (argsData) => {
                 if (!argsData.cancel) {
                     axis.visibleLabels.push(new VisibleLabels(argsData.text, i));
+                    if (i === max && this.gauge.isBlazor && document.getElementById(this.gauge.element.id + '_AxesCollection')) {
+                        this.getMaxLabelWidth(this.gauge, axis);
+                        this.axisRenderer.drawAxisLabels(axis, this.gauge.axes.length - 1, (document.getElementById(this.gauge.element.id + '_Axis_Group_' + (this.gauge.axes.length - 1))), this.gauge);
+                    }
                 }
             };
             axisLabelRenderSuccess.bind(this);
-            this.gauge.trigger('axisLabelRender', argsData, axisLabelRenderSuccess);
+            this.gauge.trigger(axisLabelRender, argsData, axisLabelRenderSuccess);
         }
         let lastLabel = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value : null;
         let maxVal = axis.visibleRange.max;
@@ -2614,7 +2633,7 @@ class AxisLayoutPanel {
                 }
             };
             axisLabelRenderSuccess.bind(this);
-            this.gauge.trigger('axisLabelRender', argsData, axisLabelRenderSuccess);
+            this.gauge.trigger(axisLabelRender, argsData, axisLabelRenderSuccess);
         }
         this.getMaxLabelWidth(this.gauge, axis);
     }

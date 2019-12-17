@@ -1,4 +1,4 @@
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { IEditCell, IGrid } from '../base/interface';
 import { Row } from '../models/row';
 import { Column } from '../models/column';
@@ -69,6 +69,9 @@ export class BooleanEditCell implements IEditCell {
                     change: this.checkBoxChange.bind(this)
                 },
                 args.column.edit.params));
+        if (isBlazor()) {
+            this.obj.locale = this.parent.locale;
+        }
         this.obj.appendTo(args.element as HTMLElement);
     }
 

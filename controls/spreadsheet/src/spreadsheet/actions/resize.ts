@@ -1,9 +1,9 @@
 import { Spreadsheet } from '../index';
 import { closest, EventHandler, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { colWidthChanged, rowHeightChanged, contentLoaded } from '../common/index';
-import { setRowHeight } from '../../workbook/base/row';
-import { getColumn } from '../../workbook/base/column';
-import { SheetModel } from '../../workbook';
+import { colWidthChanged, rowHeightChanged, beforeHeaderLoaded, contentLoaded, hideShowRow } from '../common/index';
+import { findMaxValue, setResize, autoFit, HideShowEventArgs, completeAction } from '../common/index';
+import { setRowHeight, isHiddenRow, SheetModel, getColumn, setRow, getRowHeight } from '../../workbook/base/index';
+import { getRangeIndexes, getSwapRange } from '../../workbook/common/index';
 
 /**
  * The `Resize` module is used to handle the resizing functionalities in Spreadsheet.
@@ -12,6 +12,7 @@ export class Resize {
     private parent: Spreadsheet;
     private trgtEle: HTMLElement;
     private event: MouseEvent;
+    private isMouseMoved: boolean;
 
     /**
      * Constructor for resize module in Spreadsheet.
@@ -24,15 +25,28 @@ export class Resize {
 
     private addEventListener(): void {
         this.parent.on(contentLoaded, this.wireEvents, this);
+        this.parent.on(beforeHeaderLoaded, this.wireEvents, this);
+        this.parent.on(autoFit, this.autoFit, this);
     }
 
-    private wireEvents(): void {
-        let rowHeader: Element = this.parent.getRowHeaderContent(); let colHeader: Element = this.parent.getColumnHeaderContent();
-        EventHandler.add(colHeader, 'dblclick', this.dblClickHandler, this);
-        EventHandler.add(rowHeader, 'dblclick', this.dblClickHandler, this);
-        EventHandler.add(this.parent.getColumnHeaderContent(), 'mousedown', this.mouseDownHandler, this);
-        EventHandler.add(this.parent.getRowHeaderContent(), 'mousedown', this.mouseDownHandler, this);
-        this.wireResizeCursorEvent(rowHeader, colHeader);
+    private autoFit(args: { isRow: boolean, startIndex: number, endIndex: number }): void {
+        args.isRow = args.isRow ? false : true; let rowHdrTable: HTMLTableElement = this.parent.getRowHeaderTable();
+        for (let i: number = args.startIndex; i <= args.endIndex; i++) {
+            this.trgtEle = this.parent.getRow(i, rowHdrTable);
+            this.setAutofit(i, args.isRow);
+        }
+    }
+
+    private wireEvents(args: { element: Element }): void {
+        if (this.parent.getActiveSheet().showHeaders) {
+            let rowHeader: Element = args ? args.element : this.parent.getRowHeaderContent();
+            let colHeader: Element = this.parent.getColumnHeaderContent();
+            EventHandler.add(colHeader, 'dblclick', this.dblClickHandler, this);
+            EventHandler.add(rowHeader, 'dblclick', this.dblClickHandler, this);
+            EventHandler.add(colHeader, 'mousedown', this.mouseDownHandler, this);
+            EventHandler.add(rowHeader, 'mousedown', this.mouseDownHandler, this);
+            this.wireResizeCursorEvent(rowHeader, colHeader);
+        }
     }
 
     private wireResizeCursorEvent(rowHeader: Element, colHeader: Element): void {
@@ -46,16 +60,20 @@ export class Resize {
     }
 
     private unwireEvents(): void {
-        EventHandler.remove(this.parent.getColumnHeaderContent(), 'dblclick', this.dblClickHandler);
-        EventHandler.remove(this.parent.getRowHeaderContent(), 'dblclick', this.dblClickHandler);
-        EventHandler.remove(this.parent.getColumnHeaderContent(), 'mousedown', this.mouseDownHandler);
-        EventHandler.remove(this.parent.getRowHeaderContent(), 'mousedown', this.mouseDownHandler);
-        this.unWireResizeCursorEvent();
+        if (this.parent.getActiveSheet().showHeaders) {
+            EventHandler.remove(this.parent.getColumnHeaderContent(), 'dblclick', this.dblClickHandler);
+            EventHandler.remove(this.parent.getRowHeaderContent(), 'dblclick', this.dblClickHandler);
+            EventHandler.remove(this.parent.getColumnHeaderContent(), 'mousedown', this.mouseDownHandler);
+            EventHandler.remove(this.parent.getRowHeaderContent(), 'mousedown', this.mouseDownHandler);
+            this.unWireResizeCursorEvent();
+        }
     }
 
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
             this.parent.off(contentLoaded, this.wireEvents);
+            this.parent.off(beforeHeaderLoaded, this.wireEvents);
+            this.parent.off(autoFit, this.autoFit);
         }
     }
 
@@ -64,6 +82,7 @@ export class Resize {
         let colResizeHandler: HTMLElement = this.parent.element.getElementsByClassName('e-colresize-handler')[0] as HTMLElement;
         let rowResizeHandler: HTMLElement = this.parent.element.getElementsByClassName('e-rowresize-handler')[0] as HTMLElement;
         if (colResizeHandler || rowResizeHandler) {
+            this.isMouseMoved = true;
             if (colResizeHandler) {
                 if (e.x > (this.trgtEle.parentElement.firstChild as HTMLElement).getBoundingClientRect().left) {
                     colResizeHandler.style.left = e.clientX - this.parent.element.getBoundingClientRect().left + 'px';
@@ -79,6 +98,12 @@ export class Resize {
     private mouseDownHandler(e: MouseEvent & TouchEvent): void {
         this.event = e;
         this.trgtEle = <HTMLElement>e.target;
+        if (this.trgtEle.parentElement.classList.contains('e-hide-end')) {
+            let offset: number = this.trgtEle.offsetHeight; let offsetY: number = e.offsetY;
+            if ((offset >= 10 && offsetY < 5) || (offset - 2 < 8 && offsetY < Math.ceil((offset - 2) / 2))) {
+                this.trgtEle.parentElement.classList.add('e-skip-resize');
+            }
+        }
         this.updateTarget(e, this.trgtEle);
         let trgt: HTMLElement = this.trgtEle;
         let className: string = trgt.classList.contains('e-colresize') ? 'e-colresize-handler' :
@@ -93,6 +118,7 @@ export class Resize {
         let colResizeHandler: HTMLElement = this.parent.element.getElementsByClassName('e-colresize-handler')[0] as HTMLElement;
         let rowResizeHandler: HTMLElement = this.parent.element.getElementsByClassName('e-rowresize-handler')[0] as HTMLElement;
         this.resizeOn(e);
+        this.isMouseMoved = null;
         let resizeHandler: HTMLElement = colResizeHandler ? colResizeHandler : rowResizeHandler;
         if (resizeHandler) {
             this.parent.element.getElementsByClassName('e-sheet-panel')[0].removeChild(resizeHandler);
@@ -103,7 +129,7 @@ export class Resize {
         this.wireResizeCursorEvent(this.parent.getRowHeaderContent(), this.parent.getColumnHeaderContent());
     }
 
-    private dblClickHandler(e: MouseEvent & TouchEvent): void {
+    private dblClickHandler(e?: MouseEvent & TouchEvent): void {
         this.trgtEle = <HTMLElement>e.target;
         this.updateTarget(e, this.trgtEle);
         let trgt: HTMLElement = this.trgtEle;
@@ -111,9 +137,11 @@ export class Resize {
             let colIndx: number = parseInt(trgt.getAttribute('aria-colindex'), 10) - 1;
             let rowIndx: number = parseInt(this.trgtEle.parentElement.getAttribute('aria-rowindex'), 10) - 1;
             if (trgt.classList.contains('e-colresize')) {
-                this.setAutofit(colIndx, true);
+                let prevWdt: string = this.parent.getMainContent().getElementsByTagName('col')[colIndx].style.width;
+                this.setAutofit(colIndx, true, prevWdt);
             } else if (trgt.classList.contains('e-rowresize')) {
-                this.setAutofit(rowIndx, false);
+                let prevHgt: string = `${getRowHeight(this.parent.getActiveSheet(), rowIndx)}px`;
+                this.setAutofit(rowIndx, false, prevHgt);
             }
         }
     }
@@ -126,7 +154,10 @@ export class Resize {
             if (!isNullOrUndefined(trgt.previousElementSibling)) { newTrgt = <HTMLElement>trgt.previousElementSibling; }
         } else if (closest(trgt, '.e-row')) {
             eOffsetV = e.offsetY; tOffsetV = trgt.offsetHeight; tClass = 'e-rowresize';
-            if (!isNullOrUndefined(trgt.parentElement.previousElementSibling)) {
+            if (isNullOrUndefined(trgt.parentElement.previousElementSibling)) {
+                let idx: number = Number(trgt.parentElement.getAttribute('aria-rowindex'));
+                if (idx > 1) { newTrgt = trgt; }
+            } else {
                 newTrgt =
                     <HTMLElement>trgt.parentElement.previousElementSibling.firstElementChild;
             }
@@ -158,19 +189,39 @@ export class Resize {
                 trgt.offsetWidth >= 10) && trgt.classList.contains('e-colresize') && trgt.previousElementSibling) {
                 this.trgtEle = trgt.previousElementSibling as HTMLElement;
             }
-        } else if (closest(trgt, '.e-row')) {
+        } else {
             if ((trgt.offsetHeight < 10 && e.offsetY < Math.ceil((trgt.offsetHeight - 2) / 2)) || (e.offsetY < 5 &&
-                trgt.offsetHeight >= 10) && trgt.classList.contains('e-rowresize') && trgt.parentElement.previousElementSibling) {
-                this.trgtEle = trgt.parentElement.previousElementSibling.getElementsByClassName('e-header-cell')[0] as HTMLElement;
+                trgt.offsetHeight >= 10) && trgt.classList.contains('e-rowresize')) {
+                let sheet: SheetModel = this.parent.getActiveSheet();
+                let prevIdx: number = Number(trgt.parentElement.getAttribute('aria-rowindex')) - 2;
+                if (trgt.parentElement.previousElementSibling || isHiddenRow(sheet, prevIdx)) {
+                    if (e.type === 'dblclick' && isHiddenRow(sheet, prevIdx) && trgt.parentElement.classList.contains('e-skip-resize')) {
+                        let selectRange: number[] = getSwapRange(getRangeIndexes(this.parent.getActiveSheet().selectedRange));
+                        let eventArgs: HideShowEventArgs;
+                        if (prevIdx <= selectRange[2] && prevIdx > selectRange[0]) {
+                            eventArgs = { startRow: selectRange[0], endRow: selectRange[2], hide: false, autoFit: true };
+                        } else {
+                            eventArgs = { startRow: prevIdx, endRow: prevIdx, hide: false, autoFit: true };
+                        }
+                        this.parent.notify(hideShowRow, eventArgs);
+                        trgt.parentElement.classList.remove('e-skip-resize');
+                    } else {
+                        if (!isHiddenRow(sheet, prevIdx)) {
+                            this.trgtEle = trgt.parentElement.previousElementSibling.getElementsByClassName(
+                                'e-header-cell')[0] as HTMLElement;
+                        }
+                    }
+                }
             }
         }
     }
 
-    private setAutofit(idx: number, isCol: boolean): void {
+    private setAutofit(idx: number, isCol?: boolean, prevData?: string): void {
         let index: number;
         let oldIdx: number = idx;
         if (this.parent.scrollSettings.enableVirtualization) {
-            idx = isCol ? idx - this.parent.viewport.leftIndex : idx - this.parent.viewport.topIndex;
+            idx = isCol ? idx - this.parent.viewport.leftIndex :
+            idx - this.parent.hiddenRowsCount(this.parent.viewport.topIndex, idx) - this.parent.viewport.topIndex;
         }
         let sheet: SheetModel = this.parent.getActiveSheet();
         let mainContent: Element = this.parent.getMainContent();
@@ -196,50 +247,19 @@ export class Resize {
                 contentClone[index] = contentRow[idx].getElementsByTagName('td')[index].cloneNode(true) as HTMLElement;
             }
         }
-        let headerFit: number = this.findMaxValue(headerTable, [headerText], isCol);
-        let contentFit: number = this.findMaxValue(contentTable, contentClone, isCol);
+        let headerFit: number = findMaxValue(headerTable, [headerText], isCol, this.parent);
+        let contentFit: number = findMaxValue(contentTable, contentClone, isCol, this.parent);
         let autofitValue: number = headerFit < contentFit ? contentFit : headerFit;
         let threshold: number = parseInt(oldValue, 10) > autofitValue ?
             -(parseInt(oldValue, 10) - autofitValue) : autofitValue - parseInt(oldValue, 10);
         if (isCol) {
-            getColumn(sheet, idx).width = autofitValue > 0 ? autofitValue : 0;
+            getColumn(sheet, oldIdx).width = autofitValue > 0 ? autofitValue : 0;
             this.parent.notify(colWidthChanged, { threshold, colIdx: oldIdx });
         } else {
-            setRowHeight(sheet, idx, autofitValue > 0 ? autofitValue : 0);
+            setRowHeight(sheet, oldIdx, autofitValue > 0 ? autofitValue : 0);
             this.parent.notify(rowHeightChanged, { threshold: threshold, rowIdx: oldIdx });
         }
-        this.setResize(idx, autofitValue + 'px', isCol);
-    }
-
-    private findMaxValue(table: HTMLElement, text: HTMLElement[], isCol: boolean): number {
-        let myTableDiv: HTMLElement = this.parent.createElement('div', { className: this.parent.element.className });
-        let myTable: HTMLElement = this.parent.createElement('table', {
-            className: table.className + 'e-resizetable',
-            styles: 'width: auto;height: auto'
-        });
-        let myTr: HTMLElement = this.parent.createElement('tr');
-        if (isCol) {
-            text.forEach((element: Element) => {
-                let tr: Element = (<Element>myTr.cloneNode());
-                tr.appendChild(element);
-                myTable.appendChild(tr);
-            });
-        } else {
-            text.forEach((element: Element) => {
-                myTr.appendChild(<Element>element.cloneNode(true));
-            });
-            myTable.appendChild(myTr);
-        }
-        myTableDiv.appendChild(myTable);
-        document.body.appendChild(myTableDiv);
-        let offsetWidthValue: number = myTable.getBoundingClientRect().width;
-        let offsetHeightValue: number = myTable.getBoundingClientRect().height;
-        document.body.removeChild(myTableDiv);
-        if (isCol) {
-            return Math.ceil(offsetWidthValue);
-        } else {
-            return Math.ceil(offsetHeightValue);
-        }
+        this.resizeStart(oldIdx, idx, autofitValue + 'px', isCol, true, prevData);
     }
 
     private createResizeHandler(trgt: HTMLElement, className: string): void {
@@ -258,8 +278,10 @@ export class Resize {
         this.updateCursor(this.event);
     }
 
-    private setColWidth(index: number, width: string): void {
+    private setColWidth(index: number, width: string, prevData?: string): void {
         let sheet: SheetModel = this.parent.getActiveSheet();
+        let mIndex: number = index;
+        if (this.parent.scrollSettings.enableVirtualization) { mIndex = mIndex + this.parent.viewport.leftIndex; }
         let eleWidth: number = parseInt(this.parent.getMainContent().getElementsByTagName('col')[index].style.width, 10);
         let colWidth: string = width;
         let threshold: number = parseInt(colWidth, 10) - eleWidth;
@@ -268,43 +290,108 @@ export class Resize {
         }
         let oldIdx: number = parseInt(this.trgtEle.getAttribute('aria-colindex'), 10) - 1;
         this.parent.notify(colWidthChanged, { threshold, colIdx: oldIdx });
-        this.setResize(index, colWidth, true);
-        getColumn(sheet, index).width = parseInt(colWidth, 10) > 0 ? parseInt(colWidth, 10) : 0;
-        sheet.columns[index].customWidth = true;
+        this.resizeStart(index, index, colWidth, true, false, prevData);
+        getColumn(sheet, mIndex).width = parseInt(colWidth, 10) > 0 ? parseInt(colWidth, 10) : 0;
+        sheet.columns[mIndex].customWidth = true;
         this.parent.setProperties({ sheets: this.parent.sheets }, true);
     }
 
-    private setRowHeight(index: number, height: string): void {
-        let eleHeight: number = parseInt(this.parent.getMainContent().getElementsByTagName('tr')[index].style.height, 10);
+    private setRowHeight(rowIdx: number, viewportIdx: number, height: string, prevData?: string): void {
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        let eleHeight: number = parseInt(this.parent.getMainContent().getElementsByTagName('tr')[viewportIdx].style.height, 10);
         let rowHeight: string = height;
         let threshold: number = parseInt(rowHeight, 10) - eleHeight;
         if (threshold < 0 && eleHeight < -(threshold)) {
             threshold = -eleHeight;
         }
-        let oldIdx: number = parseInt(this.trgtEle.parentElement.getAttribute('aria-rowindex'), 10) - 1;
-        this.parent.notify(rowHeightChanged, { threshold, rowIdx: oldIdx });
-        this.setResize(index, rowHeight, false);
-        setRowHeight(this.parent.getActiveSheet(), index, parseInt(rowHeight, 10) > 0 ? parseInt(rowHeight, 10) : 0);
-        this.parent.getActiveSheet().rows[index].customHeight = true;
+        this.parent.notify(rowHeightChanged, { threshold, rowIdx: rowIdx });
+        this.resizeStart(rowIdx, viewportIdx, rowHeight, false, false, prevData);
+        setRow(sheet, rowIdx, { height: parseInt(rowHeight, 10) > 0 ? parseInt(rowHeight, 10) : 0, customHeight: true });
         this.parent.setProperties({ sheets: this.parent.sheets }, true);
     }
 
+
     private resizeOn(e: MouseEvent): void {
-        let idx: number;
+        let idx: number; let actualIdx: number;
         if (this.trgtEle.classList.contains('e-rowresize')) {
-            idx = parseInt(this.trgtEle.parentElement.getAttribute('aria-rowindex'), 10) - 1;
-            if (this.parent.scrollSettings.enableVirtualization) { idx = idx - this.parent.viewport.topIndex; }
-            let rowHeight: string =
-                e.clientY - this.event.clientY +
-                parseInt((this.parent.getMainContent().getElementsByClassName('e-row')[idx] as HTMLElement).style.height, 10) + 'px';
-            this.setRowHeight(idx, rowHeight);
+            let sheet: SheetModel = this.parent.getActiveSheet();
+            let prevIdx: number = Number(this.trgtEle.parentElement.getAttribute('aria-rowindex')) - 2;
+            if (this.isMouseMoved && isHiddenRow(sheet, prevIdx) && this.trgtEle.parentElement.classList.contains('e-skip-resize') &&
+                e.clientY > this.trgtEle.getBoundingClientRect().top) {
+                this.trgtEle.parentElement.classList.remove('e-skip-resize');
+                let eventArgs: HideShowEventArgs = { startRow: prevIdx, endRow: prevIdx, hide: false, skipAppend: true };
+                this.parent.notify(hideShowRow, eventArgs);
+                let rTbody: HTMLElement = this.parent.getRowHeaderTable().tBodies[0];
+                let tbody: HTMLElement = this.parent.getContentTable().tBodies[0];
+                eventArgs.hdrRow.style.display = 'none'; eventArgs.row.style.display = 'none';
+                rTbody.insertBefore(eventArgs.hdrRow, rTbody.children[eventArgs.insertIdx]);
+                tbody.insertBefore(eventArgs.row, tbody.children[eventArgs.insertIdx]);
+                this.trgtEle = <HTMLElement>eventArgs.hdrRow.firstElementChild;
+                eventArgs.hdrRow.nextElementSibling.classList.remove('e-hide-end');
+            } else {
+                if (this.trgtEle.parentElement.classList.contains('e-skip-resize')) {
+                    this.trgtEle.parentElement.classList.remove('e-skip-resize');
+                    return;
+                }
+            }
+            actualIdx = idx = parseInt(this.trgtEle.parentElement.getAttribute('aria-rowindex'), 10) - 1;
+            if (this.parent.scrollSettings.enableVirtualization) {
+                idx = idx - this.parent.hiddenRowsCount(this.parent.viewport.topIndex, idx) - this.parent.viewport.topIndex;
+            }
+            let prevData: string = (this.parent.getMainContent().getElementsByClassName('e-row')[idx] as HTMLElement).style.height;
+            let rowHeight: number = e.clientY - this.event.clientY + parseInt(prevData, 10);
+            if (rowHeight <= 0) {
+                this.parent.showHideRow(true, actualIdx);
+                setRow(sheet, actualIdx, { height: 0, customHeight: true });
+                this.parent.setProperties({ sheets: this.parent.sheets }, true);
+                this.parent.notify(completeAction, { eventArgs:
+                    { index: actualIdx, height: '0px', isCol: false, sheetIdx: this.parent.activeSheetTab, oldHeight: prevData },
+                    action: 'resize' });
+                return;
+            }
+            this.setRowHeight(actualIdx, idx, `${rowHeight}px`, prevData);
+            if (this.trgtEle.parentElement.style.display === 'none') {
+                let sheet: SheetModel = this.parent.getActiveSheet();
+                let selectedRange: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
+                if (actualIdx <= selectedRange[2] && actualIdx > selectedRange[0]) {
+                    rowHeight = sheet.rows[actualIdx].height; let count: number;
+                    for (let i: number = selectedRange[0]; i <= selectedRange[2]; i++) {
+                        if (i === actualIdx) { continue; }
+                        prevData = `${getRowHeight(sheet, i)}px`;
+                        setRow(sheet, i, { customHeight: true, height: rowHeight });
+                        if (isHiddenRow(sheet, i)) {
+                            if (!count) { count = i; }
+                        } else {
+                            this.parent.getRow(i).style.height = `${rowHeight}px`;
+                            if (sheet.showHeaders) {
+                                this.parent.getRow(i, this.parent.getRowHeaderTable()).style.height = `${rowHeight}px`;
+                            }
+                        }
+                        this.parent.notify(completeAction, { eventArgs:
+                            { index: i, height: `${rowHeight}px`, isCol: false, sheetIdx: this.parent.activeSheetTab, oldHeight: prevData },
+                            action: 'resize' });
+                    }
+                    this.parent.setProperties({ sheets: this.parent.sheets }, true);
+                    this.parent.showHideRow(false, selectedRange[0], actualIdx - 1);
+                    idx += Math.abs(actualIdx - count);
+                } else {
+                    if (idx !== 0 && !isHiddenRow(sheet, actualIdx - 1)) {
+                        this.trgtEle.parentElement.previousElementSibling.classList.remove('e-hide-start');
+                    } else {
+                        if (idx !== 0) { this.trgtEle.parentElement.classList.add('e-hide-end'); }
+                    }
+                    this.parent.selectRange(sheet.selectedRange);
+                }
+                this.trgtEle.parentElement.style.display = ''; this.parent.getContentTable().rows[idx].style.display = '';
+            }
         } else if (this.trgtEle.classList.contains('e-colresize')) {
-            idx = parseInt(this.trgtEle.getAttribute('aria-colindex'), 10) - 1;
+            let mIndex: number = parseInt(this.trgtEle.getAttribute('aria-colindex'), 10) - 1;
+            idx = mIndex;
             if (this.parent.scrollSettings.enableVirtualization) { idx = idx - this.parent.viewport.leftIndex; }
             let colWidth: string =
                 e.clientX - this.event.clientX +
                 parseInt(this.parent.getMainContent().getElementsByTagName('col')[idx].style.width, 10) + 'px';
-            this.setColWidth(idx, colWidth);
+            this.setColWidth(idx, colWidth, this.parent.getMainContent().getElementsByTagName('col')[idx].style.width);
         }
     }
 
@@ -316,304 +403,20 @@ export class Resize {
         }
     }
 
-    // tslint:disable-next-line:max-func-body-length
-    private setResize(index: number, value: string, isCol: boolean): void {
-        let curEle: HTMLElement;
-        let curEleH: HTMLElement;
-        let curEleC: HTMLElement;
-        let preEle: HTMLElement;
-        let preEleH: HTMLElement;
-        let preEleC: HTMLElement;
-        let nxtEle: HTMLElement;
-        let nxtEleH: HTMLElement;
-        let nxtEleC: HTMLElement;
-        let sheet: SheetModel = this.parent.getActiveSheet();
+    private resizeStart(idx: number, viewportIdx: number, value: string, isCol?: boolean, isFit?: boolean, prevData?: string): void {
+        setResize(viewportIdx, value, isCol, this.parent);
+        let action: string = isFit ? 'resizeToFit' : 'resize';
+        let eventArgs: object;
+        let isAction: boolean;
         if (isCol) {
-            curEle = this.parent.element.getElementsByClassName('e-column-header')[0].getElementsByTagName('th')[index];
-            curEleH = this.parent.element.getElementsByClassName('e-column-header')[0].getElementsByTagName('col')[index];
-            curEleC = this.parent.element.getElementsByClassName('e-main-content')[0].getElementsByTagName('col')[index];
+            eventArgs = { index: idx, width: value, isCol: isCol, sheetIdx: this.parent.activeSheetTab, oldWidth: prevData };
+            isAction = prevData !== value;
         } else {
-            curEle = this.parent.element.getElementsByClassName('e-row-header')[0].getElementsByTagName('tr')[index];
-            curEleH = this.parent.element.getElementsByClassName('e-row-header')[0].getElementsByTagName('tr')[index];
-            curEleC = this.parent.element.getElementsByClassName('e-main-content')[0].getElementsByTagName('tr')[index];
-            curEleH.style.height = parseInt(value, 10) > 0 ? value : '2px';
-            curEleC.style.height = parseInt(value, 10) > 0 ? value : '0px';
-            let hdrRow: HTMLCollectionOf<HTMLTableRowElement> =
-                this.parent.getRowHeaderContent().getElementsByClassName('e-row') as HTMLCollectionOf<HTMLTableRowElement>;
-            let hdrClone: HTMLElement[] = [];
-            hdrClone[0] = hdrRow[index].getElementsByTagName('td')[0].cloneNode(true) as HTMLElement;
-            let hdrFntSize: number = this.findMaxValue(this.parent.getRowHeaderTable(), hdrClone, false) + 1;
-            let contentRow: HTMLCollectionOf<HTMLTableRowElement> =
-                this.parent.getMainContent().getElementsByClassName('e-row') as HTMLCollectionOf<HTMLTableRowElement>;
-            let contentClone: HTMLElement[] = [];
-            for (let idx: number = 0; idx < contentRow[index].getElementsByTagName('td').length; idx++) {
-                contentClone[idx] = contentRow[index].getElementsByTagName('td')[idx].cloneNode(true) as HTMLElement;
-            }
-            let cntFntSize: number = this.findMaxValue(this.parent.getContentTable(), contentClone, false) + 1;
-            let fntSize: number = hdrFntSize >= cntFntSize ? hdrFntSize : cntFntSize;
-            if (parseInt(curEleC.style.height, 10) < fntSize ||
-                (curEle.classList.contains('e-reach-fntsize') && parseInt(curEleC.style.height, 10) === fntSize)) {
-                curEle.classList.add('e-reach-fntsize');
-                curEleH.style.lineHeight = parseInt(value, 10) >= 4 ? ((parseInt(value, 10)) - 4) + 'px' :
-                    parseInt(value, 10) > 0 ? ((parseInt(value, 10)) - 1) + 'px' : '0px';
-                curEleC.style.lineHeight = parseInt(value, 10) > 0 ? ((parseInt(value, 10)) - 1) + 'px' : '0px';
-            } else {
-                curEleH.style.removeProperty('line-height');
-                curEleC.style.removeProperty('line-height');
-                if (curEle.classList.contains('e-reach-fntsize')) {
-                    curEle.classList.remove('e-reach-fntsize');
-                }
-            }
+            eventArgs = { index: idx, height: value, isCol: isCol, sheetIdx: this.parent.activeSheetTab, oldHeight: prevData };
+            isAction = prevData !== value;
         }
-        preEle = curEle.previousElementSibling as HTMLElement;
-        nxtEle = curEle.nextElementSibling as HTMLElement;
-        if (preEle) {
-            preEle = curEle.previousElementSibling as HTMLElement;
-            preEleH = curEleH.previousElementSibling as HTMLElement;
-            preEleC = curEleC.previousElementSibling as HTMLElement;
-        }
-        if (nxtEle) {
-            nxtEle = curEle.nextElementSibling as HTMLElement;
-            nxtEleH = curEleH.nextElementSibling as HTMLElement;
-            nxtEleC = curEleC.nextElementSibling as HTMLElement;
-        }
-        if (parseInt(value, 10) <= 0 && !(curEle.classList.contains('e-zero') || curEle.classList.contains('e-zero-start'))) {
-            if (preEle && nxtEle) {
-                if (isCol) {
-                    curEleH.style.width = '2px';
-                    curEleC.style.width = '0px';
-                } else {
-                    curEleH.style.height = '2px';
-                    curEleC.style.height = '0px';
-                }
-                if (preEle.classList.contains('e-zero-start')) {
-                    curEle.classList.add('e-zero-start');
-                    curEleC.classList.add('e-zero-start');
-                } else {
-                    curEle.classList.add('e-zero');
-                    curEleC.classList.add('e-zero');
-                }
-                if (!nxtEle.classList.contains('e-zero') && !nxtEle.classList.contains('e-zero-last')) {
-                    curEle.classList.add('e-zero-last');
-                    curEleC.classList.add('e-zero-last');
-                }
-                if (preEle.classList.contains('e-zero-last')) {
-                    preEle.classList.remove('e-zero-last');
-                    preEleC.classList.remove('e-zero-last');
-                }
-                if (preEle.classList.contains('e-zero')) {
-                    if (curEle.classList.contains('e-zero-end')) {
-                        this.setWidthAndHeight(preEleH, -2, isCol);
-                    } else {
-                        this.setWidthAndHeight(preEleH, -2, isCol);
-                    }
-                } else {
-                    this.setWidthAndHeight(preEleH, -1, isCol);
-                }
-
-                if (preEle.classList.contains('e-zero-start')) {
-                    this.setWidthAndHeight(curEleH, -1, isCol);
-                }
-                if (nxtEle.classList.contains('e-zero')) {
-                    if (curEle.classList.contains('e-zero-start')) {
-                        while (nxtEle) {
-                            if (nxtEle.classList.contains('e-zero') && (parseInt(nxtEleH.style.height, 10) !== 0 && !isCol) ||
-                                (parseInt(nxtEleH.style.width, 10) !== 0 && isCol)) {
-                                if (isCol) {
-                                    curEleH.style.width = parseInt(curEleH.style.width, 10) - 1 + 'px';
-                                    nxtEleH.style.width = parseInt(nxtEleH.style.width, 10) - 1 + 'px';
-                                } else {
-                                    curEleH.style.height = parseInt(curEleH.style.height, 10) - 1 + 'px';
-                                    nxtEleH.style.height = parseInt(nxtEleH.style.height, 10) - 1 + 'px';
-                                }
-                                nxtEle.classList.remove('e-zero');
-                                nxtEle.classList.add('e-zero-start');
-                                break;
-                            } else {
-                                let nxtIndex: number;
-                                nxtEle.classList.remove('e-zero');
-                                nxtEle.classList.add('e-zero-start');
-                                if (isCol) {
-                                    nxtIndex = parseInt(nxtEle.getAttribute('aria-colindex'), 10) - 1;
-                                    nxtEle = this.parent.getColHeaderTable().getElementsByTagName('th')[nxtIndex + 1];
-                                    nxtEleH = this.parent.getColHeaderTable().getElementsByTagName('col')[nxtIndex + 1];
-                                } else {
-                                    nxtIndex = parseInt(nxtEle.getAttribute('aria-rowindex'), 10) - 1;
-                                    nxtEle = this.parent.getRowHeaderTable().getElementsByTagName('tr')[nxtIndex + 1];
-                                    nxtEleH = this.parent.getRowHeaderTable().getElementsByTagName('tr')[nxtIndex + 1];
-                                }
-                            }
-                        }
-                    } else {
-                        this.setWidthAndHeight(curEleH, -2, isCol);
-                    }
-                } else {
-                    if (nxtEle.classList.contains('e-zero-end')) {
-                        if (isCol) {
-                            curEleH.style.width = '0px';
-                        } else {
-                            curEleH.style.height = '0px';
-                        }
-                    } else {
-                        this.setWidthAndHeight(nxtEleH, -1, isCol);
-                    }
-                }
-            } else if (preEle) {
-                if (isCol) {
-                    curEleH.style.width = '1px';
-                    curEleC.style.width = '0px';
-                } else {
-                    curEleH.style.height = '1px';
-                    curEleC.style.height = '0px';
-                }
-                curEle.classList.add('e-zero-end');
-                curEleC.classList.add('e-zero-end');
-                curEle.classList.add('e-zero-last');
-                curEleC.classList.add('e-zero-last');
-                if (preEle.classList.contains('e-zero')) {
-                    this.setWidthAndHeight(preEleH, -2, isCol);
-                } else {
-                    this.setWidthAndHeight(preEleH, -1, isCol);
-                }
-            } else if (nxtEle) {
-                curEle.classList.add('e-zero-start');
-                curEleC.classList.add('e-zero-start');
-                if (!nxtEle.classList.contains('e-zero')) {
-                    curEle.classList.add('e-zero-last');
-                    curEleC.classList.add('e-zero-last');
-                }
-                if (isCol) {
-                    curEleH.style.width = '1px';
-                    curEleC.style.width = '0px';
-                } else {
-                    curEleH.style.height = '1px';
-                    curEleC.style.height = '0px';
-                }
-                if (nxtEle.classList.contains('e-zero')) {
-                    while (nxtEle) {
-                        if (nxtEle.classList.contains('e-zero') && (parseInt(nxtEleH.style.width, 10) !== 0
-                            && isCol) || (parseInt(nxtEleH.style.height, 10) !== 0 && !isCol)) {
-                            if (isCol) {
-                                nxtEleH.style.width = parseInt(nxtEleH.style.width, 10) - 1 + 'px';
-                                curEleH.style.width = parseInt(curEleH.style.width, 10) - 1 + 'px';
-                            } else {
-                                nxtEleH.style.height = parseInt(nxtEleH.style.height, 10) - 1 + 'px';
-                                curEleH.style.height = parseInt(curEleH.style.height, 10) - 1 + 'px';
-                            }
-                            nxtEle.classList.add('e-zero-start');
-                            nxtEle.classList.remove('e-zero');
-                            break;
-                        } else {
-                            let nxtIndex: number;
-                            nxtEle.classList.add('e-zero-start');
-                            nxtEle.classList.remove('e-zero');
-                            if (isCol) {
-                                nxtIndex = parseInt(nxtEle.getAttribute('aria-colindex'), 10) - 1;
-                                nxtEleH = this.parent.getColHeaderTable().getElementsByTagName('col')[nxtIndex + 1];
-                                nxtEle = this.parent.getColHeaderTable().getElementsByTagName('th')[nxtIndex + 1];
-                            } else {
-                                nxtIndex = parseInt(nxtEle.getAttribute('aria-rowindex'), 10) - 1;
-                                nxtEleH = this.parent.getRowHeaderTable().getElementsByTagName('tr')[nxtIndex + 1];
-                                nxtEle = this.parent.getRowHeaderTable().getElementsByTagName('tr')[nxtIndex + 1];
-                            }
-                        }
-                    }
-
-                } else {
-                    this.setWidthAndHeight(nxtEleH, -1, isCol);
-                }
-            }
-        } else if (parseInt(value, 10) > 0) {
-            if (isCol) {
-                curEleH.style.width = value;
-                curEleC.style.width = value;
-            } else {
-                curEleH.style.height = value;
-                curEleC.style.height = value;
-            }
-            if (preEle && nxtEle) {
-                if (preEle.classList.contains('e-zero')) {
-                    if (curEle.classList.contains('e-zero')) {
-                        if (isCol) {
-                            preEleH.style.width = parseInt(preEleH.style.width, 10) + 2 + 'px';
-                            curEleH.style.width = parseInt(curEleH.style.width, 10) - 1 + 'px';
-                        } else {
-                            preEleH.style.height = parseInt(preEleH.style.height, 10) + 2 + 'px';
-                            curEleH.style.height = parseInt(curEleH.style.height, 10) - 1 + 'px';
-                        }
-                    } else {
-                        this.setWidthAndHeight(curEleH, -1, isCol);
-                    }
-                } else {
-                    if (curEle.classList.contains('e-zero')) {
-                        this.setWidthAndHeight(preEleH, 1, isCol);
-                    } else {
-                        if (curEle.classList.contains('e-zero-start')) {
-                            if (isCol) {
-                                preEleH.style.width = parseInt(preEleH.style.width, 10) + 1 + 'px';
-                                curEleH.style.width = parseInt(curEleH.style.width, 10) - 1 + 'px';
-                            } else {
-                                preEleH.style.height = parseInt(preEleH.style.height, 10) + 1 + 'px';
-                                curEleH.style.height = parseInt(curEleH.style.height, 10) - 1 + 'px';
-                            }
-
-                        }
-                    }
-                }
-                if (nxtEle.classList.contains('e-zero')) {
-                    this.setWidthAndHeight(curEleH, -1, isCol);
-                } else {
-                    if (curEle.classList.contains('e-zero') || curEle.classList.contains('e-zero-start')) {
-                        this.setWidthAndHeight(nxtEleH, 1, isCol);
-                    }
-                }
-                if (curEle.classList.contains('e-zero')) { curEle.classList.remove('e-zero'); }
-                if (curEle.classList.contains('e-zero-start')) { curEle.classList.remove('e-zero-start'); }
-                if (curEleC.classList.contains('e-zero')) { curEleC.classList.remove('e-zero'); }
-                if (curEleC.classList.contains('e-zero-start')) { curEleC.classList.remove('e-zero-start'); }
-
-                if (curEle.classList.contains('e-zero-last')) { curEle.classList.remove('e-zero-last'); }
-                if (curEleC.classList.contains('e-zero-last')) { curEleC.classList.remove('e-zero-last'); }
-                if (preEle.classList.contains('e-zero') || preEle.classList.contains('e-zero-start')) {
-                    preEle.classList.add('e-zero-last');
-                    preEleC.classList.add('e-zero-last');
-                }
-            } else if (preEle) {
-                if (preEle.classList.contains('e-zero')) {
-                    if (curEle.classList.contains('e-zero')) {
-                        if (isCol) {
-                            curEleH.style.width = parseInt(curEleH.style.width, 10) - 1 + 'px';
-                            preEleH.style.width = parseInt(preEleH.style.width, 10) + 2 + 'px';
-                        } else {
-                            curEleH.style.height = parseInt(curEleH.style.height, 10) - 1 + 'px';
-                            preEleH.style.height = parseInt(preEleH.style.height, 10) + 2 + 'px';
-                        }
-                    } else {
-                        this.setWidthAndHeight(curEleH, -1, isCol);
-                    }
-                } else {
-                    if (curEle.classList.contains('e-zero')) {
-                        this.setWidthAndHeight(preEleH, 1, isCol);
-                    } else {
-                        this.setWidthAndHeight(curEleH, -1, isCol);
-                    }
-                }
-                if (curEle.classList.contains('e-zero')) { curEle.classList.remove('e-zero'); }
-                if (curEle.classList.contains('e-zero-end')) { curEle.classList.remove('e-zero-end'); }
-                if (curEleC.classList.contains('e-zero')) { curEleC.classList.remove('e-zero'); }
-                if (curEleC.classList.contains('e-zero-end')) { curEleC.classList.remove('e-zero-end'); }
-            } else if (nxtEle) {
-                if (nxtEle.classList.contains('e-zero')) {
-                    this.setWidthAndHeight(curEleH, -1, isCol);
-                } else if (curEle.classList.contains('e-zero-start')) {
-                    this.setWidthAndHeight(nxtEleH, 1, isCol);
-                    curEle.classList.remove('e-zero-start');
-                }
-                if (curEle.classList.contains('e-zero')) { curEle.classList.remove('e-zero'); }
-                if (curEleC.classList.contains('e-zero')) { curEleC.classList.remove('e-zero'); }
-                if (curEle.classList.contains('e-zero-start')) { curEle.classList.remove('e-zero-start'); }
-                if (curEleC.classList.contains('e-zero-start')) { curEleC.classList.remove('e-zero-start'); }
-            }
+        if (isAction) {
+            this.parent.notify(completeAction, { eventArgs: eventArgs, action: action });
         }
     }
 

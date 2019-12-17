@@ -426,7 +426,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             QuarterYear: 'Quarter Year',
             caption: 'Field Caption',
             copy: 'Copy',
-            of: 'of'
+            of: 'of',
+            group: 'Group'
         };
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.isDragging = false;
@@ -714,7 +715,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         this.captionData = [dataSourceSettings.rows, dataSourceSettings.columns, dataSourceSettings.values, dataSourceSettings.filters] as FieldOptionsModel[][];
     }
 
-    /* tslint:disable:max-func-body-length */
+    /* tslint:disable */
     /**
      * Updates the PivotEngine using dataSource from Pivot Field List component.
      * @method updateDataSource
@@ -753,86 +754,152 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     let customProperties: ICustomProperties = pivot.frameCustomProperties();
                     customProperties.savedFieldList = pivot.pivotFieldList;
                     if (pageSettings && (isSorted || isFiltered || isAggChange || isCalcChange)) {
+                        let interopArguments: any = {};
                         if (isSorted) {
                             pivot.pivotGridModule.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
-                            pivot.engineModule.onSort(lastSortInfo);
+                            if ((isBlazor())) {
+                                interopArguments = { 'key': 'onSort', 'arg': lastSortInfo };
+                            } else {
+                                pivot.engineModule.onSort(lastSortInfo);
+                            }
                         }
                         if (isFiltered) {
-                            pivot.engineModule.onFilter(pivot.lastFilterInfo, pivot.dataSourceSettings as IDataOptions);
+                            if (isBlazor()) {
+                                let dataArgs: any =
+                                    (window as any)['ejsInterop'].copyWithoutCircularReferences(
+                                        [pivot.dataSourceSettings.filterSettings], pivot.dataSourceSettings.filterSettings);
+                                interopArguments = {
+                                    'key': 'onFilter',
+                                    'arg': { 'lastFilterInfo': pivot.lastFilterInfo, 'filterSettings': dataArgs }
+                                };
+                            } else {
+                                pivot.engineModule.onFilter(pivot.lastFilterInfo, pivot.dataSourceSettings as IDataOptions);
+                            }
                             pivot.lastFilterInfo = {};
                         }
                         if (isAggChange) {
-                            pivot.engineModule.onAggregation(pivot.lastAggregationInfo);
+                            if (isBlazor()) {
+                                interopArguments = { 'key': 'onAggregation', 'arg': pivot.lastAggregationInfo };
+                            } else {
+                                pivot.engineModule.onAggregation(pivot.lastAggregationInfo);
+                            }
                             pivot.lastAggregationInfo = {};
                         }
                         if (isCalcChange) {
-                            pivot.engineModule.onCalcOperation(pivot.lastCalcFieldInfo);
+                            if (isBlazor()) {
+                                interopArguments = {
+                                    'key': 'onCalcOperation',
+                                    'arg': {
+                                        lastCalcFieldInfo: pivot.lastCalcFieldInfo,
+                                        values: pivot.dataSourceSettings.values,
+                                        calculatedFieldSettings: pivot.dataSourceSettings.calculatedFieldSettings
+                                    }
+                                };
+                            } else {
+                                pivot.engineModule.onCalcOperation(pivot.lastCalcFieldInfo);
+                            }
                             pivot.lastCalcFieldInfo = {};
                         }
+                        if (isBlazor()) {
+                            let args: any = (window as any)['ejsInterop'].copyWithoutCircularReferences([interopArguments['arg']],
+                                interopArguments['arg']);
+                            (pivot.pivotGridModule as any).interopAdaptor.invokeMethodAsync("PivotInteropMethod",
+                                interopArguments['key'], args
+                            ).then(
+                                (data: any) => {
+                                    pivot.pivotGridModule.updateBlazorData(data, pivot.pivotGridModule);
+                                    pivot.getFieldCaption(pivot.dataSourceSettings);
+                                    pivot.enginePopulatedEventMethod(pivot, isTreeViewRefresh, isOlapDataRefreshed);
+                                    if (pivot.calculatedFieldModule && pivot.calculatedFieldModule.isRequireUpdate) {
+                                        pivot.calculatedFieldModule.endDialog();
+                                        pivot.calculatedFieldModule.isRequireUpdate = false;
+                                    }
+                                });
+                        }
                     } else {
-                        /* tslint:disable-next-line:max-line-length */
-                        pivot.engineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties, pivot.getValueCellInfo.bind(pivot));
+                        if (isBlazor() && pageSettings) {
+                            let dataArgs: any = (window as any)['ejsInterop'].copyWithoutCircularReferences(
+                                [(pivot.dataSourceSettings as any).properties], (pivot.dataSourceSettings as any).properties);
+                            (pivot.pivotGridModule as any).interopAdaptor.invokeMethodAsync("PivotInteropMethod", 'renderEngine',
+                                { 'dataSourceSettings': dataArgs, 'customProperties': customProperties }).then(
+                                    (data: any) => {
+                                        pivot.pivotGridModule.updateBlazorData(data, pivot.pivotGridModule);
+                                        pivot.getFieldCaption(pivot.dataSourceSettings);
+                                        pivot.enginePopulatedEventMethod(pivot, isTreeViewRefresh, isOlapDataRefreshed);
+                                    });
+                        } else {
+                            /* tslint:disable-next-line:max-line-length */
+                            pivot.engineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties, pivot.getValueCellInfo.bind(pivot));
+                        }
                     }
                 } else {
                     isOlapDataRefreshed = pivot.updateOlapDataSource(pivot, isSorted, isCalcChange, isOlapDataRefreshed);
                 }
-                pivot.getFieldCaption(pivot.dataSourceSettings);
+                if (!(isBlazor() && pageSettings)) {
+                    pivot.getFieldCaption(pivot.dataSourceSettings);
+                }
             } else {
                 pivot.axisFieldModule.render();
                 pivot.isRequiredUpdate = false;
             }
-            let eventArgs: EnginePopulatedEventArgs = {
-                dataSourceSettings: pivot.dataSourceSettings as IDataOptions,
-                pivotFieldList: pivot.dataType === 'pivot' ? pivot.engineModule.fieldList : pivot.olapEngineModule.fieldList,
-                pivotValues: pivot.dataType === 'pivot' ? pivot.engineModule.pivotValues : pivot.olapEngineModule.pivotValues
-            };
-            pivot.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
-                let dataSource: IDataSet[] | DataManager = pivot.dataSourceSettings.dataSource;
-                if (isBlazor() && observedArgs.dataSourceSettings.dataSource instanceof Object) {
-                    observedArgs.dataSourceSettings.dataSource = dataSource;
-                }
-                pivot.dataSourceSettings = observedArgs.dataSourceSettings;
-                pivot.pivotCommon.dataSourceSettings = pivot.dataSourceSettings as IDataOptions;
-                pivot.pivotFieldList = observedArgs.pivotFieldList;
-                if (pivot.dataType === 'olap') {
-                    pivot.olapEngineModule.pivotValues = isBlazor() ? pivot.olapEngineModule.pivotValues : observedArgs.pivotValues;
-                    pivot.pivotCommon.engineModule = pivot.olapEngineModule;
-                } else {
-                    pivot.engineModule.pivotValues = isBlazor() ? pivot.engineModule.pivotValues : observedArgs.pivotValues;
-                    pivot.pivotCommon.engineModule = pivot.engineModule;
-                }
-                if (!isTreeViewRefresh && pivot.treeViewModule.fieldTable && !pivot.isAdaptive) {
-                    pivot.notify(events.treeViewUpdate, {});
-                }
-                if (pivot.isRequiredUpdate) {
-                    if (pivot.allowDeferLayoutUpdate) {
-                        pivot.clonedDataSource = extend({}, pivot.dataSourceSettings, null, true) as IDataOptions;
-                        pivot.clonedFieldList = extend({}, pivot.pivotFieldList, null, true) as IFieldListOptions;
-                    }
-                    pivot.updateView(pivot.pivotGridModule);
-                } else if (pivot.renderMode === 'Popup' && pivot.allowDeferLayoutUpdate) {
-                    pivot.pivotGridModule.engineModule = pivot.engineModule;
-                    /* tslint:disable:align */
-                    pivot.pivotGridModule.setProperties({
-                        dataSourceSettings: (<{ [key: string]: Object }>pivot.dataSourceSettings).properties as IDataOptions
-                    }, true);
-                    pivot.pivotGridModule.notify(events.uiUpdate, pivot);
-                    hideSpinner(pivot.fieldListSpinnerElement as HTMLElement);
-                }
-                if (pivot.renderMode === 'Popup' && pivot.pivotGridModule &&
-                    pivot.pivotGridModule.allowDeferLayoutUpdate && !pivot.isRequiredUpdate) {
-                    hideSpinner(pivot.fieldListSpinnerElement as HTMLElement);
-                    hideSpinner(pivot.pivotGridModule.element);
-                }
-                pivot.isRequiredUpdate = true;
-                if (!pivot.pivotGridModule || isOlapDataRefreshed) {
-                    hideSpinner(pivot.fieldListSpinnerElement as HTMLElement);
-                } else {
-                    pivot.pivotGridModule.fieldListSpinnerElement = pivot.fieldListSpinnerElement as HTMLElement;
-                }
-            });
+            if (!(isBlazor() && pageSettings)) {
+                pivot.enginePopulatedEventMethod(pivot, isTreeViewRefresh, isOlapDataRefreshed);
+            }
         });
         //});
+    }
+
+    private enginePopulatedEventMethod(pivot: PivotFieldList, isTreeViewRefresh: boolean, isOlapDataRefreshed: boolean): void {
+        let eventArgs: EnginePopulatedEventArgs = {
+            dataSourceSettings: pivot.dataSourceSettings as IDataOptions,
+            pivotFieldList: pivot.dataType === 'pivot' ? pivot.engineModule.fieldList : pivot.olapEngineModule.fieldList,
+            pivotValues: pivot.dataType === 'pivot' ? pivot.engineModule.pivotValues : pivot.olapEngineModule.pivotValues
+        };
+        pivot.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
+            let dataSource: IDataSet[] | DataManager = pivot.dataSourceSettings.dataSource;
+            if (isBlazor() && observedArgs.dataSourceSettings.dataSource instanceof Object) {
+                observedArgs.dataSourceSettings.dataSource = dataSource;
+            }
+            pivot.dataSourceSettings = observedArgs.dataSourceSettings;
+            pivot.pivotCommon.dataSourceSettings = pivot.dataSourceSettings as IDataOptions;
+            pivot.pivotFieldList = observedArgs.pivotFieldList;
+            if (pivot.dataType === 'olap') {
+                pivot.olapEngineModule.pivotValues = isBlazor() ? pivot.olapEngineModule.pivotValues : observedArgs.pivotValues;
+                pivot.pivotCommon.engineModule = pivot.olapEngineModule;
+            } else {
+                pivot.engineModule.pivotValues = isBlazor() ? pivot.engineModule.pivotValues : observedArgs.pivotValues;
+                pivot.pivotCommon.engineModule = pivot.engineModule;
+            }
+            if (!isTreeViewRefresh && pivot.treeViewModule.fieldTable && !pivot.isAdaptive) {
+                pivot.notify(events.treeViewUpdate, {});
+            }
+            if (pivot.isRequiredUpdate) {
+                if (pivot.allowDeferLayoutUpdate) {
+                    pivot.clonedDataSource = extend({}, pivot.dataSourceSettings, null, true) as IDataOptions;
+                    pivot.clonedFieldList = extend({}, pivot.pivotFieldList, null, true) as IFieldListOptions;
+                }
+                pivot.updateView(pivot.pivotGridModule);
+            } else if (pivot.renderMode === 'Popup' && pivot.allowDeferLayoutUpdate) {
+                pivot.pivotGridModule.engineModule = pivot.engineModule;
+                /* tslint:disable:align */
+                pivot.pivotGridModule.setProperties({
+                    dataSourceSettings: (<{ [key: string]: Object }>pivot.dataSourceSettings).properties as IDataOptions
+                }, true);
+                pivot.pivotGridModule.notify(events.uiUpdate, pivot);
+                hideSpinner(pivot.fieldListSpinnerElement as HTMLElement);
+            }
+            if (pivot.renderMode === 'Popup' && pivot.pivotGridModule &&
+                pivot.pivotGridModule.allowDeferLayoutUpdate && !pivot.isRequiredUpdate) {
+                hideSpinner(pivot.fieldListSpinnerElement as HTMLElement);
+                hideSpinner(pivot.pivotGridModule.element);
+            }
+            pivot.isRequiredUpdate = true;
+            if (!pivot.pivotGridModule || isOlapDataRefreshed) {
+                hideSpinner(pivot.fieldListSpinnerElement as HTMLElement);
+            } else {
+                pivot.pivotGridModule.fieldListSpinnerElement = pivot.fieldListSpinnerElement as HTMLElement;
+            }
+        });
     }
     /* tslint:enable */
 
@@ -911,7 +978,11 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         }
         if (control) {
             control.clonedDataSet = this.clonedDataSet;
-            control.setProperties({ dataSourceSettings: this.dataSourceSettings }, true);
+            if (isBlazor()) {
+                PivotUtil.updateDataSourceSettings(control, PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings));
+            } else {
+                control.setProperties({ dataSourceSettings: this.dataSourceSettings }, true);
+            }
             control.engineModule = this.engineModule;
             control.olapEngineModule = this.olapEngineModule;
             control.dataType = this.dataType;
@@ -921,7 +992,11 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 pivotValues: control.pivotValues
             };
             control.trigger(events.fieldListRefreshed, eventArgs);
-            control.dataBind();
+            if (control.enableVirtualization && isBlazor()) {
+                control.renderPivotGrid();
+            } else {
+                control.dataBind();
+            }
         }
     }
 

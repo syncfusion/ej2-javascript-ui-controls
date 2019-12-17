@@ -62,7 +62,7 @@ export class GroupingBar implements IAction {
      * @private
      */
     protected getModuleName(): string {
-        return 'grouping';
+        return 'groupingbar';
     }
 
     private renderLayout(): void {
@@ -454,8 +454,8 @@ export class GroupingBar implements IAction {
      */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
-        this.parent.off(events.initSubComponent, this.handlers.end);
-        this.parent.off(events.uiUpdate, this.handlers.load);
+        this.parent.off(events.uiUpdate, this.handlers.end);
+        this.parent.off(events.initSubComponent, this.handlers.load);
     }
 
     /**

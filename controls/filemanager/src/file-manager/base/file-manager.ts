@@ -23,7 +23,7 @@ import { ITreeView, IContextMenu, ViewType, SortOrder, FileDragEventArgs, RetryA
 import { BeforeSendEventArgs, SuccessEventArgs, FailureEventArgs, FileLoadEventArgs } from './interface';
 import { FileOpenEventArgs, FileSelectEventArgs, MenuClickEventArgs, MenuOpenEventArgs } from './interface';
 import { ToolbarClickEventArgs, ToolbarCreateEventArgs, UploadListCreateArgs } from './interface';
-import { PopupOpenCloseEventArgs, BeforePopupOpenCloseEventArgs } from './interface';
+import { PopupOpenCloseEventArgs, BeforePopupOpenCloseEventArgs, BeforeDownloadEventArgs, BeforeImageLoadEventArgs } from './interface';
 import { refresh, getPathObject, getLocaleText, setNextPath, createDeniedDialog } from '../common/utility';
 import { hasContentAccess, hasUploadAccess, updateLayout, createNewFolder, uploadItem } from '../common/utility';
 import { TreeView as BaseTreeView } from '@syncfusion/ej2-navigations';
@@ -284,6 +284,13 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public showFileExtension: boolean;
 
     /**
+     * Specifies the root folder alias name in file manager
+     * @default null
+     */
+    @Property(null)
+    public rootAliasName: string;
+
+    /**
      * Shows or hides the files and folders that are marked as hidden.
      * @default false
      */
@@ -342,6 +349,22 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      */
     @Event()
     public fileOpen: EmitType<FileOpenEventArgs>;
+
+    /**
+     * Triggers before sending the download request to the server.
+     * @event
+     * @blazorproperty 'BeforeDownload'
+     */
+    @Event()
+    public beforeDownload: EmitType<BeforeDownloadEventArgs>;
+
+    /**
+     * Triggers before sending the getImage request to the server.
+     * @event
+     * @blazorproperty 'BeforeImageLoad'
+     */
+    @Event()
+    public beforeImageLoad: EmitType<BeforeImageLoadEventArgs>;
 
     /**
      * Triggers before the dialog is closed.
@@ -671,7 +694,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         contentWrap.appendChild(gridWrap);
         let largeiconWrap: HTMLElement = this.createElement('div', {
             id: this.element.id + CLS.LARGEICON_ID,
-            className: CLS.LARGE_ICONS
+            className: CLS.LARGE_ICONS, attrs: { 'role': 'group' }
         });
         contentWrap.appendChild(largeiconWrap);
         let overlay: HTMLElement = this.createElement('span', { className: CLS.OVERLAY });
@@ -1068,6 +1091,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * @private
      */
     /* istanbul ignore next */
+    // tslint:disable-next-line:max-func-body-length
     public onPropertyChanged(newProp: FileManagerModel, oldProp: FileManagerModel): void {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
@@ -1098,6 +1122,10 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
                     break;
                 case 'enableRtl':
                     this.enableRtl = newProp.enableRtl;
+                    this.refresh();
+                    break;
+                case 'rootAliasName':
+                    this.rootAliasName = newProp.rootAliasName;
                     this.refresh();
                     break;
                 case 'height':

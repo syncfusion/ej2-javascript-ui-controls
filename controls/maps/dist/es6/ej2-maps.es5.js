@@ -1,4 +1,4 @@
-import { Ajax, Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, compile, createElement, extend, isBlazor, isNullOrUndefined, merge, print, remove, resetBlazorTemplate, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Ajax, Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, compile, createElement, extend, isBlazor, isNullOrUndefined, merge, print, remove, resetBlazorTemplate, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { PdfBitmap, PdfDocument, PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
@@ -54,6 +54,16 @@ function stringToNumber(value, containerSize) {
 function calculateSize(maps) {
     var containerWidth = maps.element.clientWidth;
     var containerHeight = maps.element.clientHeight;
+    if (maps.isBlazor) {
+        if (maps.element.parentElement.style.height !== '' && maps.element.parentElement.style.width !== '') {
+            containerHeight = maps.element.parentElement.clientHeight;
+            containerWidth = maps.element.parentElement.clientWidth;
+        }
+        else {
+            containerHeight = maps.element.clientHeight;
+            containerWidth = maps.element.clientWidth;
+        }
+    }
     maps.availableSize = new Size(stringToNumber(maps.width, containerWidth) || containerWidth || 600, stringToNumber(maps.height, containerHeight) || containerHeight || (maps.isDevice ?
         Math.min(window.innerWidth, window.innerHeight) : 450));
 }
@@ -594,8 +604,29 @@ function drawSymbols(shape, imageUrl, location, markerID, shapeCustom, markerCol
     }
     return markerEle;
 }
+function markerColorChoose(eventArgs, data) {
+    eventArgs.fill = (!isNullOrUndefined(eventArgs.colorValuePath) &&
+        !isNullOrUndefined(data[eventArgs.colorValuePath])) ?
+        data[eventArgs.colorValuePath] : eventArgs.fill;
+    return eventArgs;
+}
+function markerShapeChoose(eventArgs, data) {
+    if (!isNullOrUndefined(eventArgs.shapeValuePath) && !isNullOrUndefined(data[eventArgs.shapeValuePath])) {
+        eventArgs.shape = data[eventArgs.shapeValuePath];
+        if (data[eventArgs.shapeValuePath] == 'Image') {
+            eventArgs.imageUrl = (!isNullOrUndefined(eventArgs.imageUrlValuePath) &&
+                !isNullOrUndefined(data[eventArgs.imageUrlValuePath])) ?
+                data[eventArgs.imageUrlValuePath] : eventArgs.imageUrl;
+        }
+    }
+    else {
+        eventArgs.shape = eventArgs.shape;
+        eventArgs.imageUrl = eventArgs.imageUrl;
+    }
+    return eventArgs;
+}
 //tslint:disable
-function clusterTemplate(currentLayer, markerTemplates, maps, layerIndex, markerCollection, layerElement, check) {
+function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerCollection, layerElement, check) {
     var bounds = [];
     var colloideBounds = [];
     var tempX = 0;
@@ -606,19 +637,20 @@ function clusterTemplate(currentLayer, markerTemplates, maps, layerIndex, marker
     var textElement;
     var postionY = (15 / 4);
     var m = 0;
+    var indexCollection = [];
     var clusters = currentLayer.markerClusterSettings;
     var clusterGroup = maps.renderer.createGroup({ id: maps.element.id + '_LayerIndex_' + layerIndex + '_markerCluster' });
-    for (var n = 0; n < markerTemplates.childElementCount; n++) {
-        var tempElement = markerTemplates.childNodes[n];
+    for (var n = 0; n < markerTemplate.childElementCount; n++) {
+        var tempElement = markerTemplate.childNodes[n];
         bounds.push(tempElement.getBoundingClientRect());
     }
     var eventArg = {
         cancel: false, name: markerClusterRendering, fill: clusters.fill, height: clusters.height,
         width: clusters.width, imageUrl: clusters.imageUrl, shape: clusters.shape,
-        data: data, maps: (isBlazor()) ? null : maps, cluster: clusters, border: clusters.border
+        data: data, maps: maps, cluster: clusters, border: clusters.border
     };
     if (isBlazor()) {
-        var blazorEventArgs = __rest(eventArg, []);
+        var data_1 = eventArg.data, maps_1 = eventArg.maps, cluster = eventArg.cluster, blazorEventArgs = __rest(eventArg, ["data", "maps", "cluster"]);
         eventArg = blazorEventArgs;
     }
     maps.trigger('markerClusterRendering', eventArg, function (clusterargs) {
@@ -641,11 +673,13 @@ function clusterTemplate(currentLayer, markerTemplates, maps, layerIndex, marker
                         if (!isNullOrUndefined(bounds[k])) {
                             if (colloideBounds[q]['left'] === bounds[k]['left']) {
                                 delete bounds[k];
-                                for (var r = 0; r < markerTemplates.childElementCount; r++) {
-                                    var tempElement = markerTemplates.childNodes[r];
+                                for (var r = 0; r < markerTemplate.childElementCount; r++) {
+                                    var tempElement = markerTemplate.childNodes[r];
                                     if (colloideBounds[q]['left'] === tempElement.getBoundingClientRect()['left']) {
-                                        markerTemplates.childNodes[r]['style']['visibility'] = "hidden";
-                                        markerTemplates.childNodes[o]['style']['visibility'] = "hidden";
+                                        markerTemplate.childNodes[r]['style']['visibility'] = "hidden";
+                                        markerTemplate.childNodes[o]['style']['visibility'] = "hidden";
+                                        indexCollection.push(o);
+                                        indexCollection.push(r);
                                     }
                                 }
                             }
@@ -653,14 +687,15 @@ function clusterTemplate(currentLayer, markerTemplates, maps, layerIndex, marker
                     }
                 }
                 if (colloideBounds.length > 0) {
+                    indexCollection = indexCollection.filter(function (item, index, value) { return value.indexOf(item) === index; });
                     var container = maps.element.getBoundingClientRect();
                     tempX = Math.abs(container['left'] - tempX);
                     tempY = Math.abs(container['top'] - tempY);
                     var translate = (maps.isTileMap) ? new Object() : getTranslate(maps, currentLayer, false);
                     var transPoint = (maps.isTileMap) ? { x: 0, y: 0 } : (maps.translatePoint.x !== 0) ?
                         maps.translatePoint : translate['location'];
-                    var dataIndex = parseInt(markerTemplates.childNodes[o]['id'].split('_dataIndex_')[1].split('_')[0], 10);
-                    var markerIndex = parseInt(markerTemplates.childNodes[o]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
+                    var dataIndex = parseInt(markerTemplate.childNodes[o]['id'].split('_dataIndex_')[1].split('_')[0], 10);
+                    var markerIndex = parseInt(markerTemplate.childNodes[o]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
                     var clusters_1 = currentLayer.markerClusterSettings;
                     var shapeCustom = {
                         size: new Size(clusters_1.width, clusters_1.height),
@@ -675,14 +710,20 @@ function clusterTemplate(currentLayer, markerTemplates, maps, layerIndex, marker
                     shapeCustom['shape'] = eventArg.shape;
                     shapeCustom['borderColor'] = eventArg.border.color;
                     shapeCustom['borderWidth'] = eventArg.border.width;
-                    tempX = (maps.isTileMap) ? tempX : (markerTemplates.id.indexOf('_Markers_Group') > -1) ? tempX : ((tempX + transPoint.x) * maps.mapScaleValue);
-                    tempY = (maps.isTileMap) ? tempY : (markerTemplates.id.indexOf('_Markers_Group') > -1) ? tempY : ((tempY + transPoint.y) * maps.mapScaleValue);
+                    tempX = (maps.isTileMap) ? tempX : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempX : ((tempX + transPoint.x) * maps.mapScaleValue);
+                    tempY = (maps.isTileMap) ? tempY : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempY : ((tempY + transPoint.y) * maps.mapScaleValue);
                     var clusterID = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_cluster_' + (m);
                     var labelID = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_cluster_' + (m) + '_datalabel_' + m;
                     m++;
                     var imageShapeY = eventArg.shape === 'Image' ? eventArg.height / 2 : 0;
                     var ele = drawSymbols(eventArg.shape, eventArg.imageUrl, { x: 0, y: imageShapeY }, clusterID, shapeCustom, markerCollection, maps);
                     ele.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
+                    if (eventArg.shape === 'Balloon') {
+                        ele.children[0].innerHTML = indexCollection.toString();
+                    }
+                    else {
+                        ele.innerHTML = indexCollection.toString();
+                    }
                     options = new TextOption(labelID, (0), postionY, 'middle', (colloideBounds.length + 1).toString(), '', '');
                     textElement = renderTextElement(options, style, style.color, markerCollection);
                     textElement.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
@@ -798,6 +839,7 @@ function marker(eventArgs, markerSettings, markerData, dataIndex, location, tran
     var x = (maps.isTileMap ? location.x : (location.x + transPoint.x) * scale) + offset.x;
     var y = (maps.isTileMap ? location.y : (location.y + transPoint.y) * scale) + offset.y;
     ele.setAttribute('transform', 'translate( ' + x + ' ' + y + ' )');
+    maintainSelection(maps.selectedMarkerElementId, maps.markerSelectionClass, ele, 'MarkerselectionMapStyle');
     markerCollection.appendChild(ele);
     var element = (markerData.length - 1) === dataIndex ? 'marker' : null;
     var markerPoint = new Point(x, y);
@@ -808,8 +850,8 @@ function marker(eventArgs, markerSettings, markerData, dataIndex, location, tran
 }
 function markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplate, location, scale, offset, maps) {
     templateFn = getTemplateFunction(eventArgs.template);
-    if (templateFn && (!maps.isBlazor ? templateFn(data, null, null, maps.element.id + '_MarkerTemplate', false).length : {})) {
-        var templateElement = templateFn(data, null, null, maps.element.id + '_MarkerTemplate', false);
+    if (templateFn && (!maps.isBlazor ? templateFn(data, null, null, maps.element.id + '_MarkerTemplate' + markerIndex, false).length : {})) {
+        var templateElement = templateFn(data, null, null, maps.element.id + '_MarkerTemplate' + markerIndex, false);
         var markerElement = convertElement(templateElement, markerID, data, markerIndex, maps);
         for (var i = 0; i < markerElement.children.length; i++) {
             markerElement.children[i].style.pointerEvents = 'none';
@@ -819,8 +861,50 @@ function markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, mark
         markerElement.style.top = ((maps.isTileMap ? location.y :
             ((Math.abs(maps.baseMapRectBounds['min']['y'] - location.y)) * scale)) + offset.y) + 'px';
         markerTemplate.appendChild(markerElement);
+        if (maps.layers[maps.baseLayerIndex].layerType === 'GoogleStaticMap') {
+            var staticMapOffset = getElementByID(maps.element.id + '_StaticGoogleMap').getBoundingClientRect();
+            var markerElementOffset = markerElement.getBoundingClientRect();
+            var staticMapOffsetWidth = 640;
+            if ((staticMapOffset['x'] > markerElementOffset['x'] || staticMapOffset['x'] + staticMapOffsetWidth < markerElementOffset['x'] + markerElementOffset['width'])
+                && (staticMapOffset['y'] > markerElementOffset['y'] || staticMapOffset['y'] + staticMapOffset['height'] < markerElementOffset['y'] + markerElementOffset['height'])) {
+                markerElement.style.display = 'none';
+            }
+        }
     }
     return markerTemplate;
+}
+/**
+ * To maintain selection during page resize
+ * @private
+ */
+function maintainSelection(elementId, elementClass, element, className) {
+    if (elementId) {
+        for (var index = 0; index < elementId.length; index++) {
+            if (element.getAttribute('id') === elementId[index]) {
+                if (isNullOrUndefined(getElement(elementClass.id)) || index === 0) {
+                    document.body.appendChild(elementClass);
+                }
+                element.setAttribute('class', className);
+            }
+        }
+    }
+}
+/**
+ * To maintain selection style class
+ * @private
+ */
+function maintainStyleClass(id, idClass, fill, opacity, borderColor, borderWidth, maps) {
+    if (!getElement(id)) {
+        var styleClass = void 0;
+        styleClass = createElement('style', {
+            id: id, innerHTML: '.' + idClass + '{fill:'
+                + fill + ';' + 'opacity:' + opacity + ';' +
+                'stroke-width:' + borderWidth + ';' +
+                'stroke:' + borderColor + ';' + '}'
+        });
+        maps.shapeSelectionClass = styleClass;
+        document.body.appendChild(styleClass);
+    }
 }
 /**
  * Internal use of append shape element
@@ -910,6 +994,21 @@ function calculateShapes(maps, shape, options, size, location, markerEle) {
         case 'VerticalLine':
             options.d = 'M ' + location.x + ' ' + (location.y - size.height / 2) + ' L ' + location.x + ' ' +
                 (location.y + size.height / 2);
+            break;
+        case 'InvertedTriangle':
+            options.d = 'M ' + (location.x - size.width / 2) + ' ' + (location.y - size.height / 2) + ' L ' + (location.x + size.width / 2) + ' ' +
+                (location.y - size.height / 2) + ' L ' + (location.x) + ' ' + (location.y + size.height / 2) + ' Z';
+            break;
+        case 'Pentagon':
+            var eq = 72;
+            var xValue = void 0;
+            var yValue = void 0;
+            for (var i = 0; i < 5; i++) {
+                xValue = (size.width / 2) * Math.cos((Math.PI / 180) * (i * eq));
+                yValue = (size.height / 2) * Math.sin((Math.PI / 180) * (i * eq));
+                options.d += (i == 0 ? 'M ' : 'L ') + (location.x + xValue) + ' ' + (location.y + yValue);
+            }
+            options.d += ' Z';
             break;
     }
     return shape === 'Balloon' ? tempGroup : maps.renderer.drawPath(options);
@@ -1225,20 +1324,32 @@ function removeElement(id) {
  * @private
  */
 function getTranslate(mapObject, layer, animate) {
+    var zoomFactorValue = mapObject.zoomSettings.zoomFactor;
+    var scaleFactor;
     if (isNullOrUndefined(mapObject.mapScaleValue)) {
-        mapObject.mapScaleValue = mapObject.zoomSettings.zoomFactor;
+        mapObject.mapScaleValue = zoomFactorValue;
     }
-    var zoomFactor = animate ? 1 : mapObject.mapScaleValue;
+    if (mapObject.zoomSettings.shouldZoomInitially) {
+        mapObject.mapScaleValue = scaleFactor = zoomFactorValue = ((mapObject.zoomSettings.shouldZoomInitially || mapObject.enablePersistence) && mapObject.scale == 1)
+            ? mapObject.scale : (isNullOrUndefined(mapObject.markerZoomFactor)) ? 1 : mapObject.markerZoomFactor;
+        if (mapObject.mapScaleValue !== mapObject.markerZoomFactor && !mapObject.enablePersistence) {
+            mapObject.mapScaleValue = zoomFactorValue = mapObject.markerZoomFactor;
+        }
+    }
     var min = mapObject.baseMapRectBounds['min'];
     var max = mapObject.baseMapRectBounds['max'];
+    var zoomFactor = animate ? 1 : mapObject.mapScaleValue;
+    if (isNullOrUndefined(mapObject.currentShapeDataLength)) {
+        mapObject.currentShapeDataLength = !isNullOrUndefined(layer.shapeData["features"])
+            ? layer.shapeData["features"].length : layer.shapeData["geometries"].length;
+    }
     var size = (mapObject.totalRect) ? mapObject.totalRect : mapObject.mapAreaRect;
     var availSize = mapObject.availableSize;
     var x;
     var y;
     var mapWidth = Math.abs(max['x'] - min['x']);
     var mapHeight = Math.abs(min['y'] - max['y']);
-    var factor = animate ? 1 : mapObject.zoomSettings.zoomFactor;
-    var scaleFactor;
+    var factor = animate ? 1 : mapObject.markerZoomFactor === 1 ? mapObject.mapScaleValue : zoomFactorValue;
     var center = mapObject.centerPosition;
     if (!isNullOrUndefined(center.longitude) && !isNullOrUndefined(center.latitude)) {
         var leftPosition = ((mapWidth + Math.abs(mapObject.mapAreaRect.width - mapWidth)) / 2) / factor;
@@ -1250,9 +1361,22 @@ function getTranslate(mapObject, layer, animate) {
             scaleFactor = zoomFactor;
         }
         else {
-            scaleFactor = mapObject.scale;
-            x = mapObject.zoomTranslatePoint.x;
-            y = mapObject.zoomTranslatePoint.y;
+            if (Math.floor(mapObject.scale) !== 1 && mapObject.zoomSettings.shouldZoomInitially) {
+                x = -point.x + leftPosition;
+                y = -point.y + topPosition;
+            }
+            else {
+                if (mapObject.zoomSettings.shouldZoomInitially) {
+                    x = -point.x + leftPosition;
+                    y = -point.y + topPosition;
+                    scaleFactor = zoomFactor;
+                }
+                else {
+                    x = mapObject.zoomTranslatePoint.x;
+                    y = mapObject.zoomTranslatePoint.y;
+                }
+            }
+            scaleFactor = mapObject.mapScaleValue;
         }
     }
     else {
@@ -1264,19 +1388,53 @@ function getTranslate(mapObject, layer, animate) {
             y = size.y + ((-(min['y'])) + ((size.height / 2) - (mapHeight / 2)));
         }
         else {
-            scaleFactor = mapObject.scale;
-            x = mapObject.zoomTranslatePoint.x;
-            y = mapObject.zoomTranslatePoint.y;
+            if (!mapObject.zoomSettings.shouldZoomInitially && mapObject.markerZoomFactor === 1 && mapObject.mapScaleValue === 1) {
+                scaleFactor = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
+                mapHeight *= scaleFactor;
+                mapWidth *= scaleFactor;
+                y = size.y + ((-(min['y'])) + ((size.height / 2) - (mapHeight / 2)));
+                x = size.x + ((-(min['x'])) + ((size.width / 2) - (mapWidth / 2)));
+            }
+            else {
+                scaleFactor = mapObject.mapScaleValue < 1 ? mapObject.mapScaleValue + 1 : mapObject.mapScaleValue;
+                if ((mapObject.currentShapeDataLength !== (!isNullOrUndefined(layer.shapeData["features"])
+                    ? layer.shapeData["features"].length : layer.shapeData["geometries"].length))) {
+                    var scale = parseFloat(Math.min(size.height / mapHeight, size.width / mapWidth).toFixed(2));
+                    mapHeight *= scale;
+                    mapWidth *= scale;
+                    y = size.y + ((-(min['y'])) + ((size.height / 2)
+                        - (mapHeight / 2)));
+                    scaleFactor = scale;
+                    x = size.x + ((-(min['x']))
+                        + ((size.width / 2) - (mapWidth / 2)));
+                }
+                else {
+                    x = mapObject.zoomTranslatePoint.x;
+                    y = mapObject.zoomTranslatePoint.y;
+                }
+            }
         }
     }
+    if (!isNullOrUndefined(mapObject.translatePoint)) {
+        x = (mapObject.enablePersistence && mapObject.translatePoint.x != 0) ? mapObject.translatePoint.x : x;
+        y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0) ? mapObject.translatePoint.y : y;
+    }
+    scaleFactor = (mapObject.enablePersistence) ? ((mapObject.mapScaleValue >= 1) ? mapObject.mapScaleValue : 1) : scaleFactor;
     return { scale: scaleFactor, location: new Point(x, y) };
 }
 /**
  * @private
  */
 function getZoomTranslate(mapObject, layer, animate) {
+    var zoomFactorValue = mapObject.zoomSettings.zoomFactor;
+    var scaleFactor;
     if (isNullOrUndefined(mapObject.mapScaleValue)) {
-        mapObject.mapScaleValue = mapObject.zoomSettings.zoomFactor;
+        mapObject.mapScaleValue = zoomFactorValue;
+    }
+    if (mapObject.zoomSettings.shouldZoomInitially) {
+        mapObject.mapScaleValue = zoomFactorValue = scaleFactor = ((mapObject.enablePersistence || mapObject.zoomSettings.shouldZoomInitially) && mapObject.scale == 1)
+            ? mapObject.scale : (isNullOrUndefined(mapObject.markerZoomFactor)) ? mapObject.mapScaleValue : mapObject.markerZoomFactor;
+        zoomFactorValue = mapObject.mapScaleValue;
     }
     var zoomFactor = animate ? 1 : mapObject.mapScaleValue;
     var size = mapObject.mapAreaRect;
@@ -1285,7 +1443,6 @@ function getZoomTranslate(mapObject, layer, animate) {
     var min = mapObject.baseMapRectBounds['min'];
     var max = mapObject.baseMapRectBounds['max'];
     var factor = animate ? 1 : mapObject.mapScaleValue;
-    var scaleFactor;
     var mapWidth = Math.abs(max['x'] - min['x']);
     var mapHeight = Math.abs(min['y'] - max['y']);
     var center = mapObject.centerPosition;
@@ -1307,7 +1464,11 @@ function getZoomTranslate(mapObject, layer, animate) {
             x = -point.x + leftPosition;
             y = -point.y + topPosition;
         }
-        scaleFactor = zoomFactor !== 0 ? zoomFactor : 1;
+        if (!isNullOrUndefined(mapObject.translatePoint)) {
+            x = (mapObject.enablePersistence && mapObject.translatePoint.x != 0) ? mapObject.translatePoint.x : x;
+            y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0) ? mapObject.translatePoint.y : y;
+        }
+        scaleFactor = zoomFactorValue !== 0 ? zoomFactorValue : 1;
     }
     else {
         var zoomFact = mapObject.zoomSettings.zoomFactor === 0 ? 1 : mapObject.zoomSettings.zoomFactor;
@@ -1340,10 +1501,13 @@ function getZoomTranslate(mapObject, layer, animate) {
                 }
             }
         }
-        x = leftPosition;
-        y = topPosition;
+        if (!isNullOrUndefined(mapObject.translatePoint)) {
+            x = (mapObject.enablePersistence && mapObject.translatePoint.x != 0) ? mapObject.translatePoint.x : leftPosition;
+            y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0) ? mapObject.translatePoint.y : topPosition;
+        }
     }
-    return { scale: scaleFactor, location: new Point(x, y) };
+    scaleFactor = (mapObject.enablePersistence) ? (mapObject.mapScaleValue == 0 ? 1 : mapObject.mapScaleValue) : scaleFactor;
+    return { scale: animate ? 1 : scaleFactor, location: new Point(x, y) };
 }
 /**
  * To get the html element by specified id
@@ -1416,7 +1580,7 @@ function triggerShapeEvent(targetId, selection, maps, eventName) {
         maps: maps
     };
     if (maps.isBlazor) {
-        var data = eventArgs.data, maps_1 = eventArgs.maps, shapeData = eventArgs.shapeData, blazorEventArgs = __rest(eventArgs, ["data", "maps", "shapeData"]);
+        var maps_2 = eventArgs.maps, shapeData = eventArgs.shapeData, blazorEventArgs = __rest(eventArgs, ["maps", "shapeData"]);
         eventArgs = blazorEventArgs;
     }
     maps.trigger(eventName, eventArgs);
@@ -1480,6 +1644,34 @@ function customizeStyle(id, className, eventArgs) {
         + eventArgs.fill + ';' + 'opacity:' + eventArgs.opacity.toString() + ';' +
         'stroke-width:' + eventArgs.border.width.toString() + ';' +
         'stroke:' + eventArgs.border.color + '}';
+}
+/**
+ * Function to trigger itemSelection event for legend selection and public method
+ */
+function triggerItemSelectionEvent(selectionSettings, map, targetElement, shapeData, data) {
+    var border = {
+        color: selectionSettings.border.color,
+        width: selectionSettings.border.width / map.scale
+    };
+    var eventArgs = {
+        opacity: selectionSettings.opacity,
+        fill: selectionSettings.fill,
+        border: border,
+        name: itemSelection,
+        target: targetElement.id,
+        cancel: false,
+        shapeData: shapeData,
+        data: data,
+        maps: map
+    };
+    map.trigger('itemSelection', eventArgs, function (observedArgs) {
+        if (!getElement('ShapeselectionMap')) {
+            document.body.appendChild(createStyle('ShapeselectionMap', 'ShapeselectionMapStyle', eventArgs));
+        }
+        else {
+            customizeStyle('ShapeselectionMap', 'ShapeselectionMapStyle', eventArgs);
+        }
+    });
 }
 /**
  * Function to remove class from element
@@ -1886,6 +2078,7 @@ function animate(element, delay, duration, process, end) {
     var _this = this;
     var start = null;
     var clearAnimation;
+    var markerStyle = 'visibility:visible';
     var startAnimation = function (timestamp) {
         if (!start) {
             start = timestamp;
@@ -1898,6 +2091,7 @@ function animate(element, delay, duration, process, end) {
         else {
             window.cancelAnimationFrame(clearAnimation);
             end.call(_this, { element: element });
+            element.setAttribute('style', markerStyle);
         }
     };
     clearAnimation = window.requestAnimationFrame(startAnimation);
@@ -2591,6 +2785,22 @@ var ColorMappingSettings = /** @__PURE__ @class */ (function (_super) {
     return ColorMappingSettings;
 }(ChildProperty));
 /**
+ * To configure the initial shape selection settings
+ */
+var InitialShapeSelectionSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$2(InitialShapeSelectionSettings, _super);
+    function InitialShapeSelectionSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$1([
+        Property(null)
+    ], InitialShapeSelectionSettings.prototype, "shapePath", void 0);
+    __decorate$1([
+        Property(null)
+    ], InitialShapeSelectionSettings.prototype, "shapeValue", void 0);
+    return InitialShapeSelectionSettings;
+}(ChildProperty));
+/**
  * To configure the selection settings
  */
 var SelectionSettings = /** @__PURE__ @class */ (function (_super) {
@@ -2839,6 +3049,9 @@ var ZoomSettings = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property(1)
     ], ZoomSettings.prototype, "minZoom", void 0);
+    __decorate$1([
+        Property(false)
+    ], ZoomSettings.prototype, "shouldZoomInitially", void 0);
     return ZoomSettings;
 }(ChildProperty));
 /**
@@ -3076,6 +3289,15 @@ var MarkerBase = /** @__PURE__ @class */ (function (_super) {
         Property(1)
     ], MarkerBase.prototype, "opacity", void 0);
     __decorate$1([
+        Property(null)
+    ], MarkerBase.prototype, "colorValuePath", void 0);
+    __decorate$1([
+        Property(null)
+    ], MarkerBase.prototype, "shapeValuePath", void 0);
+    __decorate$1([
+        Property(null)
+    ], MarkerBase.prototype, "imageUrlValuePath", void 0);
+    __decorate$1([
         Property('Balloon')
     ], MarkerBase.prototype, "shape", void 0);
     __decorate$1([
@@ -3153,6 +3375,9 @@ var LayerSettings = /** @__PURE__ @class */ (function (_super) {
         Property('Aerial')
     ], LayerSettings.prototype, "bingMapType", void 0);
     __decorate$1([
+        Property('RoadMap')
+    ], LayerSettings.prototype, "staticMapType", void 0);
+    __decorate$1([
         Property('')
     ], LayerSettings.prototype, "key", void 0);
     __decorate$1([
@@ -3200,6 +3425,9 @@ var LayerSettings = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Complex({}, ToggleLegendSettings)
     ], LayerSettings.prototype, "toggleLegendSettings", void 0);
+    __decorate$1([
+        Collection([], InitialShapeSelectionSettings)
+    ], LayerSettings.prototype, "initialShapeSelection", void 0);
     return LayerSettings;
 }(ChildProperty));
 /**
@@ -3272,8 +3500,8 @@ var Marker = /** @__PURE__ @class */ (function () {
             id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_Markers_Template_Group',
             className: 'template',
             styles: 'overflow: hidden; position: absolute;pointer-events: none;' +
-                'top:' + (this.maps.isTileMap ? 0 : this.maps.mapAreaRect.y) + 'px;' +
-                'left:' + (this.maps.isTileMap ? 0 : this.maps.mapAreaRect.x) + 'px;' +
+                'top:' + this.maps.mapAreaRect.y + 'px;' +
+                'left:' + this.maps.mapAreaRect.x + 'px;' +
                 'height:' + this.maps.mapAreaRect.height + 'px;' +
                 'width:' + this.maps.mapAreaRect.width + 'px;'
         });
@@ -3285,27 +3513,39 @@ var Marker = /** @__PURE__ @class */ (function () {
                     cancel: false, name: markerRendering, fill: markerSettings.fill, height: markerSettings.height,
                     width: markerSettings.width, imageUrl: markerSettings.imageUrl, shape: markerSettings.shape,
                     template: markerSettings.template, data: data, maps: _this.maps, marker: markerSettings,
-                    border: markerSettings.border
+                    border: markerSettings.border, colorValuePath: markerSettings.colorValuePath,
+                    shapeValuePath: markerSettings.shapeValuePath, imageUrlValuePath: markerSettings.imageUrlValuePath
                 };
+                eventArgs = markerColorChoose(eventArgs, data);
+                eventArgs = markerShapeChoose(eventArgs, data);
                 if (_this.maps.isBlazor) {
                     var maps = eventArgs.maps, marker_1 = eventArgs.marker, blazorEventArgs = __rest$1(eventArgs, ["maps", "marker"]);
                     eventArgs = blazorEventArgs;
                 }
                 _this.maps.trigger('markerRendering', eventArgs, function (MarkerArgs) {
+                    if (markerSettings.colorValuePath !== eventArgs.colorValuePath) {
+                        eventArgs = markerColorChoose(eventArgs, data);
+                    }
+                    if (markerSettings.shapeValuePath !== eventArgs.shapeValuePath) {
+                        eventArgs = markerShapeChoose(eventArgs, data);
+                    }
                     var lng = data['longitude'];
                     var lat = data['latitude'];
-                    var data1 = {};
-                    var text = [];
-                    var j = 0;
-                    for (var i = 0; i < Object.keys(data).length; i++) {
-                        if (Object.keys(data)[i].toLowerCase() !== 'latitude' && Object.keys(data)[i].toLowerCase() !== 'longitude' && Object.keys(data)[i].toLowerCase() !== 'name'
-                            && Object.keys(data)[i].toLowerCase() !== 'blazortemplateid' && Object.keys(data)[i].toLowerCase() !== 'text') {
-                            text[j] = data[Object.keys(data)[i].toLowerCase()];
-                            data1['text'] = text;
-                            j++;
+                    if (_this.maps.isBlazor) {
+                        var data1 = {};
+                        var text = [];
+                        var j = 0;
+                        for (var i = 0; i < Object.keys(data).length; i++) {
+                            if (Object.keys(data)[i].toLowerCase() !== 'latitude' && Object.keys(data)[i].toLowerCase() !== 'longitude'
+                                && Object.keys(data)[i].toLowerCase() !== 'name' && Object.keys(data)[i].toLowerCase() !== 'blazortemplateid'
+                                && Object.keys(data)[i].toLowerCase() !== 'text') {
+                                text[j] = data[Object.keys(data)[i].toLowerCase()];
+                                data1['text'] = text;
+                                j++;
+                            }
                         }
+                        data['text'] = data1['text'];
                     }
-                    data['text'] = data1['text'];
                     var offset = markerSettings.offset;
                     if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(lng) && !isNullOrUndefined(lat)) {
                         var markerID = _this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
@@ -3348,6 +3588,153 @@ var Marker = /** @__PURE__ @class */ (function () {
         });
     };
     /**
+     * To find zoom level for the marker min and max latitude values
+     */
+    Marker.prototype.calculateMarkerZoomLevel = function (minLat, maxLat, minLong, maxLong, mapWidth, mapHeight) {
+        var latRatio;
+        var lngRatio;
+        var scaleFactor;
+        var maxZoomFact = 10;
+        var latZoom;
+        var lngZoom;
+        var result;
+        var maxLatSin = Math.sin(maxLat * Math.PI / 180);
+        var maxLatRad = Math.log((1 + maxLatSin) / (1 - maxLatSin)) / 2;
+        var maxLatValue = Math.max(Math.min(maxLatRad, Math.PI), -Math.PI) / 2;
+        var minLatSin = Math.sin(minLat * Math.PI / 180);
+        var minLatRad = Math.log((1 + minLatSin) / (1 - minLatSin)) / 2;
+        var minLatValue = Math.max(Math.min(minLatRad, Math.PI), -Math.PI) / 2;
+        latRatio = (maxLatValue - minLatValue) / Math.PI;
+        var lngDiff = maxLong - minLong;
+        lngRatio = ((lngDiff < 0) ? (lngDiff + 360) : lngDiff) / 360;
+        var WORLD_PX_HEIGHT = 256;
+        var WORLD_PX_WIDTH = 256;
+        latZoom = Math.floor(Math.log(mapHeight / WORLD_PX_HEIGHT / latRatio) / Math.LN2);
+        lngZoom = Math.floor(Math.log(mapWidth / WORLD_PX_WIDTH / lngRatio) / Math.LN2);
+        result = Math.min(latZoom, lngZoom);
+        scaleFactor = Math.min(result, maxZoomFact - 1);
+        return scaleFactor;
+    };
+    /**
+     * To find zoom level for individual layers like India, USA.
+     */
+    Marker.prototype.calculateIndividualLayerMarkerZoomLevel = function (mapWidth, mapHeight, maxZoomFact) {
+        var latZoom;
+        var lngZoom;
+        var result;
+        var scaleFactor;
+        var height = Math.abs(this.maps.baseMapBounds.latitude.max - this.maps.baseMapBounds.latitude.min);
+        var width = Math.abs(this.maps.baseMapBounds.longitude.max - this.maps.baseMapBounds.longitude.min);
+        latZoom = Math.floor(Math.log(mapHeight / height));
+        latZoom = (latZoom > maxZoomFact) ? maxZoomFact : latZoom;
+        lngZoom = Math.floor(Math.log(mapWidth / width));
+        lngZoom = (lngZoom > maxZoomFact) ? maxZoomFact : lngZoom;
+        result = Math.min(latZoom, lngZoom);
+        scaleFactor = Math.min(result, maxZoomFact - 1);
+        return scaleFactor;
+    };
+    /**
+     * To calculate center position and factor value dynamically
+     */
+    Marker.prototype.calculateZoomCenterPositionAndFactor = function (layersCollection) {
+        if (this.maps.zoomSettings.shouldZoomInitially && this.maps.markerModule) {
+            var minLong_1;
+            var maxLat_1;
+            var minLat_1;
+            var maxLong_1;
+            var zoomLevel = void 0;
+            var centerLat = void 0;
+            var centerLong = void 0;
+            var maxZoomFact = 10;
+            var mapWidth = this.maps.mapAreaRect.width;
+            var mapHeight = this.maps.mapAreaRect.height;
+            layersCollection.forEach(function (currentLayer, layerIndex) {
+                var isMarker = currentLayer.markerSettings.length !== 0;
+                if (isMarker) {
+                    currentLayer.markerSettings.forEach(function (markerSetting, markerIndex) {
+                        var markerData = markerSetting.dataSource;
+                        markerData.forEach(function (data, dataIndex) {
+                            minLong_1 = isNullOrUndefined(minLong_1) && dataIndex === 0 ?
+                                data['longitude'] : minLong_1;
+                            maxLat_1 = isNullOrUndefined(maxLat_1) && dataIndex === 0 ?
+                                data['latitude'] : maxLat_1;
+                            minLat_1 = isNullOrUndefined(minLat_1) && dataIndex === 0 ?
+                                data['latitude'] : minLat_1;
+                            maxLong_1 = isNullOrUndefined(maxLong_1) && dataIndex === 0 ?
+                                data['longitude'] : maxLong_1;
+                            if (minLong_1 > data['longitude']) {
+                                minLong_1 = data['longitude'];
+                            }
+                            if (minLat_1 > data['latitude']) {
+                                minLat_1 = data['latitude'];
+                            }
+                            if (maxLong_1 < data['longitude']) {
+                                maxLong_1 = data['longitude'];
+                            }
+                            if (maxLat_1 < data['latitude']) {
+                                maxLat_1 = data['latitude'];
+                            }
+                        });
+                    });
+                }
+            });
+            if (!isNullOrUndefined(minLat_1) && !isNullOrUndefined(minLong_1) &&
+                !isNullOrUndefined(maxLong_1) && !isNullOrUndefined(maxLat_1)) {
+                // To find the center position
+                centerLat = (minLat_1 + maxLat_1) / 2;
+                centerLong = (minLong_1 + maxLong_1) / 2;
+                this.maps.centerPosition.latitude = centerLat;
+                this.maps.centerPosition.longitude = centerLong;
+                var markerFactor = void 0;
+                if (this.maps.isTileMap || this.maps.baseMapRectBounds['min']['x'] === 0) {
+                    zoomLevel = this.calculateMarkerZoomLevel(minLat_1, maxLat_1, minLong_1, maxLong_1, mapWidth, mapHeight);
+                    if (this.maps.isTileMap) {
+                        markerFactor = isNullOrUndefined(this.maps.markerZoomFactor) ?
+                            zoomLevel : isNullOrUndefined(this.maps.mapScaleValue) ?
+                            zoomLevel : this.maps.mapScaleValue > 1 && this.maps.markerZoomFactor !== 1 ?
+                            this.maps.mapScaleValue : zoomLevel;
+                    }
+                    else {
+                        markerFactor = isNullOrUndefined(this.maps.mapScaleValue) ? zoomLevel :
+                            (Math.floor(this.maps.scale) !== 1 &&
+                                this.maps.mapScaleValue !== zoomLevel)
+                                ? this.maps.mapScaleValue : zoomLevel;
+                        if (((markerFactor === this.maps.mapScaleValue &&
+                            (this.maps.markerZoomFactor === 1 || this.maps.mapScaleValue === 1))
+                            && (!this.maps.enablePersistence))) {
+                            markerFactor = zoomLevel;
+                        }
+                    }
+                }
+                else {
+                    zoomLevel = this.calculateIndividualLayerMarkerZoomLevel(mapWidth, mapHeight, maxZoomFact);
+                    markerFactor = isNullOrUndefined(this.maps.mapScaleValue) ? zoomLevel :
+                        (this.maps.mapScaleValue !== zoomLevel)
+                            ? this.maps.mapScaleValue : zoomLevel;
+                }
+                this.maps.markerZoomFactor = markerFactor;
+            }
+        }
+        else {
+            if (this.maps.markerZoomFactor > 1) {
+                this.maps.centerPosition.latitude = null;
+                this.maps.centerPosition.longitude = null;
+                this.maps.markerZoomFactor = 1;
+                if (!this.maps.enablePersistence) {
+                    this.maps.mapScaleValue = 1;
+                }
+            }
+            if (this.maps.isTileMap && !this.maps.enablePersistence
+                && this.maps.mapScaleValue <= 1) {
+                this.maps.tileZoomLevel = this.maps.mapScaleValue === 0 ? 1 : this.maps.mapScaleValue;
+                if (this.maps.mapScaleValue === 1 && this.maps.markerZoomFactor === 1) {
+                    this.maps.tileTranslatePoint.x = 0;
+                    this.maps.tileTranslatePoint.y = 0;
+                }
+            }
+        }
+    };
+    /**
      * To check and trigger marker click event
      */
     Marker.prototype.markerClick = function (e) {
@@ -3362,7 +3749,9 @@ var Marker = /** @__PURE__ @class */ (function () {
         var eventArgs = {
             cancel: false, name: markerClick, data: options.data, maps: this.maps,
             marker: options.marker, target: target, x: e.clientX, y: e.clientY,
-            latitude: options.data["latitude"] || options.data["Latitude"], longitude: options.data["longitude"] || options.data["Longitude"]
+            latitude: options.data["latitude"] || options.data["Latitude"],
+            longitude: options.data["longitude"] || options.data["Longitude"],
+            value: options.data["name"]
         };
         if (this.maps.isBlazor) {
             var maps = eventArgs.maps, marker_2 = eventArgs.marker, data = eventArgs.data, blazorEventArgs = __rest$1(eventArgs, ["maps", "marker", "data"]);
@@ -3382,15 +3771,16 @@ var Marker = /** @__PURE__ @class */ (function () {
         if (isNullOrUndefined(options)) {
             return;
         }
-        if (options.clusterCollection.length > 0) {
-            var textElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? target : target + '_datalabel_' + target.split('_cluster_')[1]);
-            if (+textElement.textContent === options.clusterCollection[0].data.length) {
-                if (this.sameMarkerData.length > 0) {
-                    mergeSeparateCluster(this.sameMarkerData, this.maps, this.markerSVGObject);
-                }
-                this.sameMarkerData = options.clusterCollection;
-                clusterSeparate(this.sameMarkerData, this.maps, this.markerSVGObject, true);
+        if ((options.clusterCollection.length > 0) && options.clusterCollection[0].isClusterSame) {
+            if (getElement(this.maps.element.id + '_mapsTooltip') &&
+                this.maps.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_') > -1) {
+                removeElement(this.maps.element.id + '_mapsTooltip');
             }
+            if (this.sameMarkerData.length > 0) {
+                mergeSeparateCluster(this.sameMarkerData, this.maps, this.markerSVGObject);
+            }
+            this.sameMarkerData = options.clusterCollection;
+            clusterSeparate(this.sameMarkerData, this.maps, this.markerSVGObject, true);
         }
         var eventArgs = {
             cancel: false, name: markerClusterClick, data: options.data, maps: this.maps,
@@ -3420,15 +3810,33 @@ var Marker = /** @__PURE__ @class */ (function () {
             if (!isNaN(markerIndex)) {
                 data = marker$$1.dataSource[dataIndex];
                 var collection_1 = [];
-                if ((this.maps.layers[index].markerClusterSettings.allowClusterExpand) && target.indexOf('_cluster_') > -1) {
-                    marker$$1.dataSource.forEach(function (loc, index) {
-                        if (loc['latitude'] === data['latitude'] && loc['longitude'] === data['longitude']) {
+                if (!marker$$1.template && (target.indexOf('_cluster_') > -1) && (this.maps.layers[index].markerClusterSettings.allowClusterExpand)) {
+                    marker$$1.dataSource.forEach(function (location, index) {
+                        if (location['latitude'] === data['latitude'] && location['longitude'] === data['longitude']) {
                             collection_1.push({ data: data, index: index });
                         }
                     });
+                }
+                if ((target.indexOf('_cluster_') > -1)) {
+                    var textElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? target : target + '_datalabel_' + target.split('_cluster_')[1]);
+                    var isClusterSame = false;
+                    if (+textElement.textContent === collection_1.length) {
+                        isClusterSame = true;
+                    }
+                    else {
+                        var clusterElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? target.split('_datalabel_')[0] : target);
+                        var indexes = clusterElement.innerHTML.split(',').map(Number);
+                        collection_1 = [];
+                        for (var _i = 0, indexes_1 = indexes; _i < indexes_1.length; _i++) {
+                            var i = indexes_1[_i];
+                            collection_1.push({ data: marker$$1.dataSource[i], index: i });
+                        }
+                        isClusterSame = false;
+                    }
                     clusterCollection.push({
                         data: collection_1, layerIndex: index, markerIndex: markerIndex,
-                        targetClusterIndex: +(target.split('_cluster_')[1].indexOf('_datalabel_') > -1 ? target.split('_cluster_')[1].split('_datalabel_')[0] : target.split('_cluster_')[1])
+                        targetClusterIndex: +(target.split('_cluster_')[1].indexOf('_datalabel_') > -1 ? target.split('_cluster_')[1].split('_datalabel_')[0] : target.split('_cluster_')[1]),
+                        isClusterSame: isClusterSame
                     });
                 }
                 return { marker: marker$$1, data: data, clusterCollection: clusterCollection };
@@ -3467,6 +3875,9 @@ var Marker = /** @__PURE__ @class */ (function () {
             return;
         }
         var options = this.getMarker(targetId);
+        if (options.clusterCollection[0].isClusterSame) {
+            e.target.setAttribute('style', 'cursor: pointer');
+        }
         if (isNullOrUndefined(options)) {
             return;
         }
@@ -3930,18 +4341,33 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
         if (this.mapObject.isTileMap && secondaryEle) {
             this.tileSvgObject = this.mapObject.renderer.createSvg({
                 id: this.mapObject.element.id + '_Tile_SVG', width: areaRect.width,
-                height: areaRect.height
+                height: areaRect.height,
             });
-            secondaryEle.appendChild(this.tileSvgObject);
+            var parentElement = createElement('div', {
+                id: this.mapObject.element.id + '_Tile_SVG_Parent', styles: 'position: absolute; height: ' +
+                    (areaRect.height) + 'px; width: '
+                    + (areaRect.width) + 'px;'
+            });
+            parentElement.appendChild(this.tileSvgObject);
+            secondaryEle.appendChild(parentElement);
         }
         this.layerGroup = (this.mapObject.renderer.createGroup({
             id: this.mapObject.element.id + '_Layer_Collections',
             'clip-path': 'url(#' + this.mapObject.element.id + '_MapArea_ClipRect)'
         }));
-        this.clipRectElement = this.mapObject.renderer.drawClipPath(new RectOption(this.mapObject.element.id + '_MapArea_ClipRect', 'transparent', { width: 1, color: 'Gray' }, 1, {
-            x: this.mapObject.isTileMap ? 0 : areaRect.x, y: this.mapObject.isTileMap ? 0 : areaRect.y,
-            width: areaRect.width, height: areaRect.height
-        }));
+        if (this.mapObject.layers[this.mapObject.baseLayerIndex].layerType === 'GoogleStaticMap') {
+            var staticMapSize = 640;
+            this.clipRectElement = this.mapObject.renderer.drawClipPath(new RectOption(this.mapObject.element.id + '_MapArea_ClipRect', 'transparent', { width: 1, color: 'Gray' }, 1, {
+                x: ((areaRect.width - staticMapSize) / 2), y: 0,
+                width: staticMapSize, height: areaRect.height
+            }));
+        }
+        else {
+            this.clipRectElement = this.mapObject.renderer.drawClipPath(new RectOption(this.mapObject.element.id + '_MapArea_ClipRect', 'transparent', { width: 1, color: 'Gray' }, 1, {
+                x: this.mapObject.isTileMap ? 0 : areaRect.x, y: this.mapObject.isTileMap ? 0 : areaRect.y,
+                width: areaRect.width, height: areaRect.height
+            }));
+        }
         this.layerGroup.appendChild(this.clipRectElement);
         this.mapObject.baseMapBounds = null;
         this.mapObject.baseMapRectBounds = null;
@@ -3957,14 +4383,24 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
      * @private
      */
     LayerPanel.prototype.renderTileLayer = function (panel, layer, layerIndex, bing) {
-        var center = new Point(panel.mapObject.centerPosition.longitude, panel.mapObject.centerPosition.latitude);
         panel.currentFactor = panel.calculateFactor(layer);
-        if (isNullOrUndefined(panel.mapObject.tileZoomLevel)) {
-            panel.mapObject.tileZoomLevel = panel.mapObject.zoomSettings.zoomFactor;
+        if ((this.mapObject.isTileMap && panel.mapObject.markerModule) && panel.mapObject.zoomSettings.enable) {
+            panel.mapObject.markerModule.calculateZoomCenterPositionAndFactor(this.mapObject.layersCollection);
         }
-        else if (panel.mapObject.zoomSettings.zoomFactor !== 1) {
-            panel.mapObject.tileZoomLevel = panel.mapObject.zoomSettings.zoomFactor;
-            if (!isNullOrUndefined(panel.mapObject.tileTranslatePoint)) {
+        var center = new Point(panel.mapObject.centerPosition.longitude, panel.mapObject.centerPosition.latitude);
+        var zoomFactorValue = panel.mapObject.zoomSettings.shouldZoomInitially &&
+            panel.mapObject.zoomSettings.zoomFactor === 1 ? isNullOrUndefined(panel.mapObject.markerZoomFactor) ? 1 :
+            panel.mapObject.markerZoomFactor : panel.mapObject.zoomSettings.zoomFactor;
+        zoomFactorValue = (panel.mapObject.enablePersistence) ? ((isNullOrUndefined(panel.mapObject.mapScaleValue))
+            ? (isNullOrUndefined(panel.mapObject.markerZoomFactor) ? panel.mapObject.zoomSettings.zoomFactor :
+                panel.mapObject.markerZoomFactor) : panel.mapObject.mapScaleValue) : zoomFactorValue;
+        if (isNullOrUndefined(panel.mapObject.tileZoomLevel)) {
+            panel.mapObject.tileZoomLevel = zoomFactorValue;
+        }
+        else if (panel.mapObject.zoomSettings.zoomFactor !== 1 || panel.mapObject.zoomSettings.shouldZoomInitially) {
+            panel.mapObject.tileZoomLevel = zoomFactorValue;
+            if (!isNullOrUndefined(panel.mapObject.tileTranslatePoint) &&
+                panel.mapObject.markerZoomFactor !== panel.mapObject.mapScaleValue) {
                 panel.mapObject.tileTranslatePoint.x = 0;
                 panel.mapObject.tileTranslatePoint.y = 0;
             }
@@ -3985,6 +4421,11 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
         this.layerObject = (this.mapObject.renderer.createGroup({
             id: this.mapObject.element.id + '_LayerIndex_' + layerIndex
         }));
+        if (!this.mapObject.enablePersistence) {
+            if (!isNullOrUndefined(window.localStorage)) {
+                window.localStorage.clear();
+            }
+        }
         var eventArgs = {
             cancel: false, name: layerRendering, index: layerIndex,
             layer: layer, maps: this.mapObject, visible: layer.visible
@@ -4237,6 +4678,19 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
                     pathEle.setAttribute('aria-label', ((!isNullOrUndefined(currentShapeData['property'])) ?
                         (currentShapeData['property'][properties]) : ''));
                     pathEle.setAttribute('tabindex', (_this.mapObject.tabIndex + i + 2).toString());
+                    maintainSelection(_this.mapObject.selectedElementId, _this.mapObject.shapeSelectionClass, pathEle, 'ShapeselectionMapStyle');
+                    if (_this.mapObject.toggledShapeElementId) {
+                        for (var j = 0; j < _this.mapObject.toggledShapeElementId.length; j++) {
+                            var styleProperty = _this.mapObject.legendSettings.toggleLegendSettings.applyShapeSettings ?
+                                _this.currentLayer.shapeSettings : _this.mapObject.legendSettings.toggleLegendSettings;
+                            if (_this.mapObject.toggledShapeElementId[j] === pathEle.id) {
+                                pathEle.setAttribute('fill', styleProperty.fill);
+                                pathEle.setAttribute('stroke', styleProperty.border.color);
+                                pathEle.setAttribute('opacity', (styleProperty.opacity).toString());
+                                pathEle.setAttribute('stroke-width', (styleProperty.border.width).toString());
+                            }
+                        }
+                    }
                     groupElement.appendChild(pathEle);
                 }
                 if (i === _this.currentLayer.layerData.length - 1) {
@@ -4259,6 +4713,9 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
                         for (var j = 0; j < length_1; j++) {
                             _loop_2(j);
                         }
+                    }
+                    if ((_this.mapObject.markerModule && !_this.mapObject.isTileMap) && _this.mapObject.zoomSettings.enable) {
+                        _this.mapObject.markerModule.calculateZoomCenterPositionAndFactor(_this.mapObject.layersCollection);
                     }
                     var group_1 = (_this.mapObject.renderer.createGroup({
                         id: _this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_dataLableIndex_Group',
@@ -4619,9 +5076,14 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
         this.arrangeTiles();
     };
     LayerPanel.prototype.arrangeTiles = function () {
-        var htmlString = this.templateCompiler(this.tiles);
-        if (getElementByID(this.mapObject.element.id + '_tile_parent')) {
-            document.getElementById(this.mapObject.element.id + '_tile_parent').innerHTML = htmlString;
+        if (this.mapObject.layers[this.mapObject.baseLayerIndex].layerType === 'GoogleStaticMap') {
+            this.renderGoogleMap(this.mapObject.layers[0].key, this.mapObject.staticMapZoom);
+        }
+        else {
+            var htmlString = this.templateCompiler(this.tiles);
+            if (getElementByID(this.mapObject.element.id + '_tile_parent')) {
+                document.getElementById(this.mapObject.element.id + '_tile_parent').innerHTML = htmlString;
+            }
         }
     };
     LayerPanel.prototype.templateCompiler = function (tiles) {
@@ -4629,21 +5091,73 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
         var id = 0;
         for (var _i = 0, tiles_1 = tiles; _i < tiles_1.length; _i++) {
             var tile = tiles_1[_i];
-            if (this.urlTemplate.indexOf('tileX') !== -1) {
-                tileElment += '<div><div id="tile' + id + '" style="position:absolute;left: ' + tile.left + 'px;top: ' + tile.top +
-                    'px;height: ' + tile.height + 'px;width: ' + tile.width + 'px;"><img src="' + tile.src + '"></img></div></div>';
-                id++;
-            }
-            else {
-                tileElment = '<div style="position:absolute;"><img src="' + this.urlTemplate + '"></div>';
-                break;
-            }
+            tileElment += '<div><div id="tile' + id + '" style="position:absolute;left: ' + tile.left + 'px;top: ' + tile.top +
+                'px;height: ' + tile.height + 'px;width: ' + tile.width + 'px;"><img src="' + tile.src + '"></img></div></div>';
+            id++;
         }
         return tileElment;
     };
+    /* tslint:disable:no-string-literal */
+    /**
+     * Static map rendering
+     * @param apikey
+     * @private
+     */
+    LayerPanel.prototype.renderGoogleMap = function (apikey, zoom) {
+        var staticMapString;
+        var map = this.mapObject;
+        // zoom = this.mapObject.zoomSettings.shouldZoomInitially ? this.mapObject.markerZoomFactor : zoom;
+        zoom = this.mapObject.tileZoomLevel;
+        var x;
+        var y;
+        var totalSize = Math.pow(2, zoom) * 256;
+        x = (map.mapAreaRect.width / 2) - (totalSize / 2);
+        y = (map.mapAreaRect.height / 2) - (totalSize / 2);
+        var centerPoint = new Point(null, null);
+        var diffX = 0;
+        var diffY = 0;
+        var position = convertTileLatLongToPoint(centerPoint, zoom, { x: x, y: y }, this.isMapCoordinates);
+        if (map.zoomModule && map.zoomSettings.enable) {
+            diffX = map.zoomModule.mouseDownLatLong['x'] - map.zoomModule.mouseMoveLatLong['x'];
+            diffY = map.zoomModule.mouseDownLatLong['y'] - map.zoomModule.mouseMoveLatLong['y'];
+        }
+        var panLatLng = map.pointToLatLong(position.x - diffX, position.y - diffY);
+        map.centerPosition.latitude = panLatLng['latitude'];
+        map.centerPosition.longitude = panLatLng['longitude'];
+        var mapWidth;
+        var mapHeight;
+        if (isNullOrUndefined(parseInt(map.width, 10))) {
+            mapWidth = parseInt(map.width, 10) - 22;
+        }
+        else {
+            mapWidth = Math.round(map.mapAreaRect.width);
+        }
+        if (isNullOrUndefined(parseInt(map.height, 10))) {
+            mapHeight = parseInt(map.height, 10) - 22;
+        }
+        else {
+            mapHeight = Math.round(map.mapAreaRect.height);
+        }
+        var eleWidth = mapWidth > 640 ? (mapWidth - 640) / 2 : 0;
+        var eleHeight = mapHeight > 640 ? (mapHeight - 640) / 2 : 0;
+        var center;
+        var mapType = (map.layers[map.layers.length - 1].staticMapType).toString().toLowerCase();
+        if (map.centerPosition.latitude && map.centerPosition.longitude) {
+            center = map.centerPosition.latitude.toString() + ',' + map.centerPosition.longitude.toString();
+        }
+        else {
+            center = '0,0';
+        }
+        staticMapString = 'https://maps.googleapis.com/maps/api/staticmap?size=' + mapWidth + 'x' + mapHeight +
+            '&zoom=' + zoom + '&center=' + center + '&maptype=' + mapType + '&key=' + apikey;
+        document.getElementById(this.mapObject.element.id + '_tile_parent').innerHTML
+            = '<div id="' + this.mapObject.element.id + '_StaticGoogleMap"' + 'style="position:absolute; left:' + eleWidth + 'px; top:'
+                + eleHeight + 'px"><img src="' + staticMapString + '"></div>';
+    };
     LayerPanel.prototype.panTileMap = function (factorX, factorY, centerPosition) {
         var level = this.mapObject.tileZoomLevel;
-        var padding = 20;
+        var padding = this.mapObject.layers[this.mapObject.layers.length - 1].layerType !== 'GoogleStaticMap' ?
+            20 : 0;
         var x;
         var y;
         var totalSize = Math.pow(2, level) * 256;
@@ -4966,14 +5480,52 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         _this.baseTileTranslatePoint = new Point(0, 0);
         /** @private */
         _this.isDevice = false;
+        /** @private */
+        _this.staticMapZoom = _this.zoomSettings.enable ? _this.zoomSettings.zoomFactor : 0;
         /** @public */
         _this.dataLabelShape = [];
         _this.zoomShapeCollection = [];
         _this.zoomLabelPositions = [];
         _this.mouseDownEvent = { x: null, y: null };
         _this.mouseClickEvent = { x: null, y: null };
+        _this.selectedElementId = [];
+        _this.selectedMarkerElementId = [];
+        _this.selectedBubbleElementId = [];
+        _this.selectedNavigationElementId = [];
+        _this.selectedLegendElementId = [];
+        _this.legendSelectionCollection = [];
+        _this.shapeSelections = true;
+        _this.legendSelection = true;
+        _this.toggledLegendId = [];
+        _this.toggledShapeElementId = [];
+        _this.checkInitialRender = true;
+        setValue('mergePersistData', _this.mergePersistMapsData, _this);
         return _this;
     }
+    /**
+     * To manage persist maps data
+     */
+    Maps.prototype.mergePersistMapsData = function () {
+        var data;
+        if (!isNullOrUndefined(window.localStorage)) {
+            data = window.localStorage.getItem(this.getModuleName() + this.element.id);
+        }
+        if (!(isNullOrUndefined(data) || (data === ''))) {
+            var dataObj = JSON.parse(data);
+            var keys = Object.keys(dataObj);
+            this.isProtectedOnChange = true;
+            for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
+                var key = keys_1[_i];
+                if ((typeof this[key] === 'object') && !isNullOrUndefined(this[key])) {
+                    extend(this[key], dataObj[key]);
+                }
+                else {
+                    this[key] = dataObj[key];
+                }
+            }
+            this.isProtectedOnChange = false;
+        }
+    };
     /**
      * Gets the localized label by locale keyword.
      * @param  {string} key
@@ -4990,6 +5542,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         this.isDevice = Browser.isDevice;
         this.isBlazor = isBlazor();
         this.initPrivateVariable();
+        this.allowServerDataBinding = false;
         this.trigger(load, this.isBlazor ? {} : { maps: this }, function () {
             _this.unWireEVents();
             _this.createSVG();
@@ -5085,7 +5638,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Maps.prototype.renderMap = function () {
-        if (this.legendModule && this.legendSettings.visible) {
+        if (!this.isTileMap && this.legendModule && this.legendSettings.visible) {
             this.legendModule.renderLegend();
         }
         this.createTile();
@@ -5098,6 +5651,21 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         }
         this.mapLayerPanel.measureLayerPanel();
         this.element.appendChild(this.svgObject);
+        for (var i = 0; i < this.layers.length; i++) {
+            if (this.layers[i].selectionSettings && this.layers[i].selectionSettings.enable &&
+                this.layers[i].initialShapeSelection.length > 0 && this.checkInitialRender) {
+                var checkSelection = this.layers[i].selectionSettings.enableMultiSelect;
+                this.layers[i].selectionSettings.enableMultiSelect = checkSelection ? checkSelection : true;
+                var shapeSelection = this.layers[i].initialShapeSelection;
+                for (var j = 0; j < this.layers[i].initialShapeSelection.length; j++) {
+                    this.shapeSelection(i, shapeSelection[j].shapePath, shapeSelection[j].shapeValue, true);
+                }
+                this.layers[i].selectionSettings.enableMultiSelect = checkSelection;
+                if (i === this.layers.length - 1) {
+                    this.checkInitialRender = false;
+                }
+            }
+        }
         if (!isNullOrUndefined(document.getElementById(this.element.id + '_tile_parent'))) {
             var svg = this.svgObject.getBoundingClientRect();
             var element = document.getElementById(this.element.id);
@@ -5123,11 +5691,15 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
      * To append blazor templates
      */
     Maps.prototype.blazorTemplates = function () {
-        if (this.layers[this.layers.length - 1].dataLabelSettings || this.layers[this.layers.length - 1].markerSettings) {
-            updateBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate', this.layers[0].dataLabelSettings);
-            for (var i = 0; i < this.layers.length; i++) {
-                for (var j = 0; j < this.layers[i].markerSettings.length; j++) {
-                    updateBlazorTemplate(this.element.id + '_MarkerTemplate', 'MarkerTemplate', this.layers[i].markerSettings[j]);
+        var layerLength = this.layers.length - 1;
+        var markerLength = this.layers[layerLength].markerSettings.length - 1;
+        if (markerLength >= 0) {
+            if (this.layers[layerLength].dataLabelSettings.visible || this.layers[layerLength].markerSettings[markerLength].template) {
+                updateBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate', this.layers[layerLength].dataLabelSettings);
+                for (var i = 0; i < this.layers.length; i++) {
+                    for (var j = 0; j < this.layers[i].markerSettings.length; j++) {
+                        updateBlazorTemplate(this.element.id + '_MarkerTemplate' + j, 'MarkerTemplate', this.layers[i].markerSettings[j]);
+                    }
                 }
             }
         }
@@ -5170,7 +5742,8 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
             var tileSvgRect = getElementByID(this.element.id + '_Tile_SVG').getBoundingClientRect();
             left = (tileRect.left - tileSvgRect.left);
             top = (tileRect.top - tileSvgRect.top);
-            getElementByID(this.element.id + '_Tile_SVG').setAttribute('transform', 'translate(' + left + ' ' + top + ')');
+            getElementByID(this.element.id + '_Tile_SVG_Parent').style.left = left + 'px';
+            getElementByID(this.element.id + '_Tile_SVG_Parent').style.top = top + 'px';
             var markerTemplateElements = document.getElementsByClassName('template');
             if (!isNullOrUndefined(markerTemplateElements) && markerTemplateElements.length > 0) {
                 for (var i = 0; i < markerTemplateElements.length; i++) {
@@ -5246,7 +5819,8 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
     Maps.prototype.createTile = function () {
         var mainLayer = this.layersCollection[0];
         var padding = 0;
-        if (mainLayer.isBaseLayer && (mainLayer.layerType === 'OSM' || mainLayer.layerType === 'Bing')) {
+        if (mainLayer.isBaseLayer && (mainLayer.layerType === 'OSM' || mainLayer.layerType === 'Bing' ||
+            mainLayer.layerType === 'GoogleStaticMap')) {
             removeElement(this.element.id + '_tile_parent');
             // let elementRect: ClientRect = this.element.getBoundingClientRect();
             // let parentRect: ClientRect = this.element.parentElement.getBoundingClientRect();
@@ -5359,7 +5933,11 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
      */
     Maps.prototype.createSVG = function () {
         resetBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate');
-        resetBlazorTemplate(this.element.id + '_MarkerTemplate', 'MarkerTemplate');
+        for (var i = 0; i < this.layers.length; i++) {
+            for (var j = 0; j < this.layers[i].markerSettings.length; j++) {
+                resetBlazorTemplate(this.element.id + '_MarkerTemplate' + j, 'MarkerTemplate');
+            }
+        }
         this.removeSvg();
         createSvg(this);
     };
@@ -5463,6 +6041,10 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
                         mergeSeparateCluster(_this.markerModule.sameMarkerData, _this, getElement(_this.element.id + '_Markers_Group'));
                         _this.markerModule.sameMarkerData = [];
                     }
+                    if (getElement(_this.element.id + '_mapsTooltip') &&
+                        _this.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_') > -1) {
+                        removeElement(_this.element.id + '_mapsTooltip');
+                    }
                 }
                 if (_this.markerModule) {
                     _this.markerModule.markerClick(e);
@@ -5516,6 +6098,23 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         this.mouseDownEvent = { x: e.x, y: e.y };
         var rect = this.element.getBoundingClientRect();
         var element = e.target;
+        if (element.id.indexOf('_ToolBar') === -1) {
+            var markerModule = this.markerModule;
+            if (element.id.indexOf('shapeIndex') > -1 || element.id.indexOf('Tile') > -1) {
+                if (markerModule && (markerModule.sameMarkerData.length > 0) &&
+                    (this.zoomModule ? this.zoomModule.isSingleClick : true)) {
+                    mergeSeparateCluster(markerModule.sameMarkerData, this, getElement(this.element.id + '_Markers_Group'));
+                    markerModule.sameMarkerData = [];
+                }
+            }
+            if (markerModule) {
+                markerModule.markerClick(e);
+                markerModule.markerClusterClick(e);
+            }
+            if (this.bubbleModule) {
+                this.bubbleModule.bubbleClick(e);
+            }
+        }
         this.notify(Browser.touchStartEvent, e);
     };
     /**
@@ -5684,6 +6283,94 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
+     * Public method for selection
+     * @param layerIndex
+     * @param propertyName
+     * @param name
+     * @param enable
+     */
+    Maps.prototype.shapeSelection = function (layerIndex, propertyName, name, enable) {
+        var targetEle;
+        if (isNullOrUndefined(enable)) {
+            enable = true;
+        }
+        var selectionsettings = this.layers[layerIndex].selectionSettings;
+        if (!selectionsettings.enableMultiSelect && this.legendSelection && enable) {
+            this.removeShapeSelection();
+        }
+        if (selectionsettings.enable) {
+            var targetId = void 0;
+            var dataIndex = void 0;
+            var shapeIndex = void 0;
+            var shapeDataValue = void 0;
+            var data = void 0;
+            var shapeData = this.layers[layerIndex].shapeData['features'];
+            for (var i = 0; i < shapeData.length; i++) {
+                if (shapeData[i]['properties'][propertyName] === name) {
+                    var k = checkShapeDataFields(this.layers[layerIndex].dataSource, shapeData[i]['properties'], this.layers[layerIndex].shapeDataPath, this.layers[layerIndex].shapePropertyPath);
+                    targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' +
+                        (k ? k.toString() : 'undefined');
+                    targetEle = getElement(targetId);
+                    if (isNullOrUndefined(k) && isNullOrUndefined(targetEle)) {
+                        targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_null';
+                        targetEle = getElement(targetId);
+                    }
+                    shapeIndex = parseInt(targetEle.id.split('_shapeIndex_')[1].split('_')[0], 10);
+                    shapeDataValue = this.layers[layerIndex].shapeData['features']['length'] > shapeIndex ?
+                        this.layers[layerIndex].shapeData['features'][shapeIndex]['properties'] : null;
+                    dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
+                    data = isNullOrUndefined(dataIndex) ? null : this.layers[layerIndex].dataSource[dataIndex];
+                    if (enable) {
+                        triggerItemSelectionEvent(selectionsettings, this, targetEle, shapeDataValue, data);
+                        this.shapeSelectionClass = getElement('ShapeselectionMap');
+                        if (this.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1) {
+                            this.legendModule.shapeHighLightAndSelection(targetEle, data, selectionsettings, 'selection', layerIndex);
+                        }
+                        var shapeToggled = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
+                        if (shapeToggled) {
+                            targetEle.setAttribute('class', 'ShapeselectionMapStyle');
+                            if (this.selectedElementId.indexOf(targetEle.getAttribute('id')) === -1) {
+                                this.selectedElementId.push(targetEle.getAttribute('id'));
+                            }
+                            if (!selectionsettings.enableMultiSelect) {
+                                return;
+                            }
+                        }
+                    }
+                    else {
+                        this.legendSelection = (!selectionsettings.enableMultiSelect && !this.legendSelection) ?
+                            true : this.legendSelection;
+                        if (this.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1 &&
+                            targetEle.getAttribute('class') === 'ShapeselectionMapStyle') {
+                            this.legendModule.shapeHighLightAndSelection(targetEle, data, selectionsettings, 'selection', layerIndex);
+                        }
+                        var shapeToggled = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
+                        if (shapeToggled) {
+                            removeClass(targetEle);
+                            var selectedElementIdIndex = this.selectedElementId.indexOf(targetEle.getAttribute('id'));
+                            if (selectedElementIdIndex !== -1) {
+                                this.selectedElementId.splice(selectedElementIdIndex, 1);
+                                if (!selectionsettings.enableMultiSelect && this.legendSelection && this.selectedElementId.length > 0) {
+                                    this.removeShapeSelection();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    };
+    /**
+     * Method to romove multiple selected shapes maps
+     */
+    Maps.prototype.removeShapeSelection = function () {
+        var selectedElements = this.selectedElementId.length;
+        for (var i = 0; i < selectedElements; i++) {
+            removeClass(getElementByID(this.selectedElementId[0]));
+            this.selectedElementId.splice(0, 1);
+        }
+    };
+    /**
      * Method to set culture for maps
      */
     Maps.prototype.setCulture = function () {
@@ -5722,7 +6409,8 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Maps.prototype.getPersistData = function () {
-        return '';
+        var keyEntity = ['translatePoint', 'zoomSettings', 'mapScaleValue', 'tileTranslatePoint', 'baseTranslatePoint', 'scale'];
+        return this.addOnPersist(keyEntity);
     };
     /**
      * Called internally if any of the property value changed.
@@ -5730,6 +6418,8 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
      */
     Maps.prototype.onPropertyChanged = function (newProp, oldProp) {
         var render = false;
+        var isMarker = false;
+        var isStaticMapType = false;
         var newLayerLength = Object.keys(newProp).length;
         var layerEle = document.getElementById(this.element.id + '_LayerIndex_' + (newLayerLength - 1));
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
@@ -5744,12 +6434,34 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
                 case 'projectionType':
                 case 'legendSettings':
                 case 'zoomSettings':
+                case 'baseLayerIndex':
+                    if (prop === 'layers') {
+                        var layerPropLength = Object.keys(newProp.layers).length;
+                        for (var x = 0; x < layerPropLength; x++) {
+                            if (!isNullOrUndefined(newProp.layers[x])) {
+                                var collection = Object.keys(newProp.layers[x]);
+                                for (var _b = 0, collection_1 = collection; _b < collection_1.length; _b++) {
+                                    var collectionProp = collection_1[_b];
+                                    if (collectionProp === 'markerSettings') {
+                                        isMarker = true;
+                                    }
+                                    else if (collectionProp === 'staticMapType') {
+                                        isStaticMapType = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
                     render = true;
+                    break;
+                case 'locale':
+                case 'currencyCode':
+                    _super.prototype.refresh.call(this);
                     break;
             }
         }
         if (render) {
-            if (newProp.layers && newProp.layers[newLayerLength - 1].markerSettings) {
+            if (newProp.layers && isMarker) {
                 removeElement(this.element.id + '_Markers_Group');
                 if (this.isTileMap) {
                     this.mapLayerPanel.renderTileLayer(this.mapLayerPanel, this.layers['currentFactor'], (newLayerLength - 1));
@@ -5757,6 +6469,9 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
                 else {
                     this.markerModule.markerRender(layerEle, (newLayerLength - 1), this.mapLayerPanel['currentFactor'], 'AddMarker');
                 }
+            }
+            else if (newProp.layers && isStaticMapType) {
+                this.mapLayerPanel.renderGoogleMap(this.layers[this.layers.length - 1].key, this.staticMapZoom);
             }
             else {
                 this.createSVG();
@@ -6024,11 +6739,12 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         var ele = document.getElementById(this.element.id + '_tile_parent');
         var lastTile = this.mapLayerPanel.tiles[this.mapLayerPanel.tiles.length - 1];
         var tile0 = this.mapLayerPanel.tiles[0];
-        latLong = this.pointToLatLong(location.layerX - (ele.offsetLeft - container.offsetLeft), location.layerY - (ele.offsetTop - container.offsetTop));
+        latLong = this.pointToLatLong(location.layerX + this.mapAreaRect.x - (ele.offsetLeft - container.offsetLeft), location.layerY + this.mapAreaRect.y - (ele.offsetTop - container.offsetTop));
         return { latitude: latLong['latitude'], longitude: latLong['longitude'] };
     };
     Maps.prototype.pointToLatLong = function (pageX, pageY) {
-        pageY = (this.zoomSettings.enable) ? pageY + 10 : pageY;
+        var padding = this.layers[this.layers.length - 1].layerType === 'GoogleStaticMap' ? 0 : 10;
+        pageY = (this.zoomSettings.enable) ? pageY + padding : pageY;
         var mapSize = 256 * Math.pow(2, this.tileZoomLevel);
         var x1 = (this.clip(pageX - (this.translatePoint.x * this.scale), 0, mapSize - 1) / mapSize) - 0.5;
         var y1 = 0.5 - (this.clip(pageY - (this.translatePoint.y * this.scale), 0, mapSize - 1) / mapSize);
@@ -6120,6 +6836,9 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], Maps.prototype, "tooltipRender", void 0);
+    __decorate([
+        Event()
+    ], Maps.prototype, "legendRendering", void 0);
     __decorate([
         Event()
     ], Maps.prototype, "tooltipRenderComplete", void 0);
@@ -6314,6 +7033,7 @@ var Bubble = /** @__PURE__ @class */ (function () {
                     eventArgs.cy = y;
                     bubbleElement = drawRectangle(_this.maps, rectangle, group);
                 }
+                maintainSelection(_this.maps.selectedBubbleElementId, _this.maps.bubbleSelectionClass, bubbleElement, 'BubbleselectionMapStyle');
                 _this.bubbleCollection.push({
                     LayerIndex: layerIndex,
                     BubbleIndex: bubbleIndex,
@@ -6595,9 +7315,7 @@ var DataLabel = /** @__PURE__ @class */ (function () {
                     return;
                 }
                 var position = [];
-                var width = zoomLabelsPosition && scaleZoomValue > 1
-                    ? _this.maps.zoomShapeCollection[index]['width'] :
-                    location['rightMax']['x'] - location['leftMax']['x'];
+                var width = location['rightMax']['x'] - location['leftMax']['x'];
                 if (!isNullOrUndefined(_this.maps.dataLabelShape)) {
                     shapeWidth = firstLevelMapLocation['rightMax']['x'] - firstLevelMapLocation['leftMax']['x'];
                     _this.maps.dataLabelShape.push(shapeWidth);
@@ -6898,6 +7616,7 @@ var NavigationLine = /** @__PURE__ @class */ (function () {
                         (arrowPosition === 'Start') ? navigationEle.setAttribute('marker-start', startArrow)
                             : navigationEle.setAttribute('marker-end', endArrow);
                     }
+                    maintainSelection(this.maps.selectedNavigationElementId, this.maps.navigationSelectionClass, navigationEle, 'navigationlineselectionMapStyle');
                     navigationGroup.appendChild(navigationEle);
                     group.appendChild(navigationGroup);
                 }
@@ -6945,13 +7664,11 @@ var Legend = /** @__PURE__ @class */ (function () {
         this.widthIncrement = 0;
         this.textMaxWidth = 0;
         this.shapeHighlightCollection = [];
-        this.shapeSelectionCollection = [];
         this.legendHighlightCollection = [];
-        this.legendSelectionCollection = [];
+        this.shapePreviousColor = [];
+        this.selectedNonLegendShapes = [];
+        this.shapeToggled = true;
         this.legendElement = null;
-        this.shapeElement = null;
-        this.shapeSelection = true;
-        this.legendSelection = true;
         this.maps = maps;
         this.addEventListener();
     }
@@ -7008,6 +7725,25 @@ var Legend = /** @__PURE__ @class */ (function () {
                 }
             }
         });
+        if (this.legendCollection.length > 0) {
+            for (var i = 0; i < this.legendCollection.length; i++) {
+                var legendItem = this.legendCollection[i];
+                var eventArgs = {
+                    name: legendRendering, cancel: false, fill: legendItem['fill'], shape: legend.shape,
+                    shapeBorder: legend.shapeBorder,
+                    text: typeof legendItem['text'] === 'number' ? legendItem['text'].toString() : legendItem['text']
+                };
+                map.trigger('legendRendering', eventArgs);
+                legendItem['fill'] = eventArgs.fill;
+                legendItem['shape'] = eventArgs.shape;
+                legendItem['shapeBorder'] = eventArgs.shapeBorder;
+                legendItem['text'] = eventArgs.text;
+                if (eventArgs.cancel) {
+                    this.legendCollection.splice(i, 1);
+                    i--;
+                }
+            }
+        }
         var defaultSize = 25;
         var legendTitle = map.legendSettings.title.text;
         var titleTextStyle = map.legendSettings.titleStyle;
@@ -7089,6 +7825,12 @@ var Legend = /** @__PURE__ @class */ (function () {
                             textX_1 - (itemTextSize.width / 2) : startX;
                         itemStartY = (arrangement === 'Horizontal') ? (position_1 === 'After') ? startY :
                             textY_1 - (itemTextSize.height / 2) : startY;
+                        if (this.legendCollection.length === 1) {
+                            legendWidth = (arrangement === 'Horizontal') ? Math.abs((startX + rectWidth) - itemStartX) :
+                                (rectWidth + maxTextWidth + textPadding_1);
+                            legendHeight = (arrangement === 'Horizontal') ? (rectHeight + (maxTextHeight / 2) + textPadding_1) :
+                                Math.abs((startY + rectHeight) - itemStartY);
+                        }
                     }
                     else if (i === this.legendCollection.length - 1) {
                         legendWidth = (arrangement === 'Horizontal') ? Math.abs((startX + rectWidth) - itemStartX) :
@@ -7100,7 +7842,8 @@ var Legend = /** @__PURE__ @class */ (function () {
                         fill: this.legendCollection[i]['fill'], x: startX, y: startY,
                         width: rectWidth, height: rectHeight,
                         text: legendText, textX: textX_1, textY: textY_1,
-                        textWidth: itemTextSize.width, textHeight: itemTextSize.height
+                        textWidth: itemTextSize.width, textHeight: itemTextSize.height,
+                        shapeBorder: this.legendCollection[i]['shapeBorder']
                     });
                 }
                 if (this.legendCollection.length === 1) {
@@ -7185,6 +7928,9 @@ var Legend = /** @__PURE__ @class */ (function () {
                         Shape: { x: shapeX, y: shapeY },
                         Text: { x: textX, y: textY },
                         Fill: legendItem['fill'],
+                        legendShape: legendItem['shape'],
+                        shapeBorder: legendItem['shapeBorder'],
+                        idIndex: i,
                         Rect: {
                             x: shapeLocation[j].x - (shapeWidth / 2),
                             y: (shapeLocation[j].y - (shapeHeight / 2)) < (textY - legendTextSize.height) ?
@@ -7232,41 +7978,29 @@ var Legend = /** @__PURE__ @class */ (function () {
      * To draw the legend shape and text.
      */
     Legend.prototype.drawLegend = function () {
-        var _this = this;
         var map = this.maps;
         var legend = map.legendSettings;
         var render = map.renderer;
         var textOptions;
         var textFont = legend.textStyle;
         this.legendGroup = render.createGroup({ id: map.element.id + '_Legend_Group' });
-        var eventArgs = {
-            name: legendRendering, cancel: false, fill: '', shape: legend.shape,
-            shapeBorder: legend.shapeBorder
-        };
         if (legend.mode === 'Interactive') {
-            var _loop_1 = function (i) {
+            for (var i = 0; i < this.legendRenderingCollections.length; i++) {
                 var itemId = map.element.id + '_Legend_Index_' + i;
                 var textId = map.element.id + '_Legend_Index_' + i + '_Text';
-                var item = this_1.legendRenderingCollections[i];
+                var item = this.legendRenderingCollections[i];
                 var bounds = new Rect(item['x'], item['y'], item['width'], item['height']);
                 var textLocation = new Point(item['textX'], item['textY']);
-                eventArgs.fill = item['fill'];
-                map.trigger(legendRendering, eventArgs, function () {
-                    textFont.color = (textFont.color !== null) ? textFont.color : _this.maps.themeStyle.legendTextColor;
-                    var rectOptions = new RectOption(itemId, eventArgs.fill, eventArgs.shapeBorder, legend.opacity, bounds);
-                    textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'middle', item['text'], '', '');
-                    textFont.fontFamily = map.themeStyle.fontFamily || textFont.fontFamily;
-                    textFont.size = map.themeStyle.legendFontSize || textFont.size;
-                    renderTextElement(textOptions, textFont, textFont.color, _this.legendGroup);
-                    _this.legendGroup.appendChild(render.drawRectangle(rectOptions));
-                    if (i === _this.legendRenderingCollections.length - 1) {
-                        _this.renderLegendBorder();
-                    }
-                });
-            };
-            var this_1 = this;
-            for (var i = 0; i < this.legendRenderingCollections.length; i++) {
-                _loop_1(i);
+                textFont.color = (textFont.color !== null) ? textFont.color : this.maps.themeStyle.legendTextColor;
+                var rectOptions = new RectOption(itemId, item['fill'], item['shapeBorder'], legend.opacity, bounds);
+                textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'middle', item['text'], '', '');
+                textFont.fontFamily = map.themeStyle.fontFamily || textFont.fontFamily;
+                textFont.size = map.themeStyle.legendFontSize || textFont.size;
+                renderTextElement(textOptions, textFont, textFont.color, this.legendGroup);
+                this.legendGroup.appendChild(render.drawRectangle(rectOptions));
+                if (i === this.legendRenderingCollections.length - 1) {
+                    this.renderLegendBorder();
+                }
             }
         }
         else {
@@ -7275,103 +8009,93 @@ var Legend = /** @__PURE__ @class */ (function () {
     };
     // tslint:disable-next-line:max-func-body-length
     Legend.prototype.drawLegendItem = function (page) {
-        var _this = this;
         var map = this.maps;
         var legend = map.legendSettings;
         var spacing = 10;
         var shapeSize = new Size(legend.shapeWidth, legend.shapeHeight);
         var textOptions;
         var render = map.renderer;
-        var shapeBorder = legend.shapeBorder;
-        var eventArgs = { name: legendRendering, cancel: false, fill: '', shape: legend.shape };
         if (page >= 0 && page < this.totalPages.length) {
             if (querySelector(this.legendGroup.id, this.maps.element.id)) {
                 remove(querySelector(this.legendGroup.id, this.maps.element.id));
             }
-            var strokeColor = (legend.shape === 'HorizontalLine' || legend.shape === 'VerticalLine'
-                || legend.shape === 'Cross') ? isNullOrUndefined(legend.fill) ? '#000000' : legend.fill : shapeBorder.color;
-            var strokeWidth = (legend.shape === 'HorizontalLine' || legend.shape === 'VerticalLine'
-                || legend.shape === 'Cross') ? (shapeBorder.width === 0) ?
-                1 : shapeBorder.width : shapeBorder.width;
-            eventArgs.shapeBorder = { width: strokeWidth, color: strokeColor };
-            var _loop_2 = function (i) {
-                var collection = this_2.totalPages[page]['Collection'][i];
-                var legendElement = render.createGroup({ id: map.element.id + '_Legend_Index_' + i });
-                var legendText = collection['DisplayText'];
-                eventArgs.fill = collection['Fill'];
-                eventArgs.shape = ((legend.type === 'Markers') ? ((isNullOrUndefined(collection['ImageSrc'])) ?
-                    legend.shape : 'Image') : legend.shape);
-                map.trigger(legendRendering, eventArgs, function () {
-                    var shapeId = map.element.id + '_Legend_Shape_Index_' + i;
-                    var textId = map.element.id + '_Legend_Text_Index_' + i;
-                    var shapeLocation = collection['Shape'];
-                    var textLocation = collection['Text'];
-                    var imageUrl = ((isNullOrUndefined(collection['ImageSrc'])) ? legend.shape : collection['ImageSrc']);
-                    var renderOptions = new PathOption(shapeId, eventArgs.fill, eventArgs.shapeBorder.width, eventArgs.shapeBorder.color, legend.opacity, '');
-                    legend.textStyle.color = (legend.textStyle.color !== null) ? legend.textStyle.color :
-                        _this.maps.themeStyle.legendTextColor;
-                    legend.textStyle.fontFamily = map.themeStyle.fontFamily || legend.textStyle.fontFamily;
-                    legend.textStyle.size = map.themeStyle.legendFontSize || legend.textStyle.size;
-                    legendElement.appendChild(drawSymbol(shapeLocation, eventArgs.shape, shapeSize, collection['ImageSrc'], renderOptions));
-                    textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
-                    renderTextElement(textOptions, legend.textStyle, legend.textStyle.color, legendElement);
-                    _this.legendGroup.appendChild(legendElement);
-                    if (i === (_this.totalPages[page]['Collection'].length - 1)) {
-                        var pagingGroup = void 0;
-                        var width = spacing;
-                        var height = (spacing / 2);
-                        if (_this.page !== 0) {
-                            var pagingText = (page + 1) + '/' + _this.totalPages.length;
-                            var pagingFont = legend.textStyle;
-                            var pagingTextSize = measureText(pagingText, pagingFont);
-                            var leftPageX = (_this.legendItemRect.x + _this.legendItemRect.width) - pagingTextSize.width -
-                                (width * 2) - spacing;
-                            var rightPageX = (_this.legendItemRect.x + _this.legendItemRect.width);
-                            var locY = (_this.legendItemRect.y + _this.legendItemRect.height) + (height / 2) + spacing;
-                            var pageTextX = rightPageX - width - (pagingTextSize.width / 2) - (spacing / 2);
-                            pagingGroup = render.createGroup({ id: map.element.id + '_Legend_Paging_Group' });
-                            var leftPageElement = render.createGroup({ id: map.element.id + '_Legend_Left_Paging_Group' });
-                            var rightPageElement = render.createGroup({ id: map.element.id + '_Legend_Right_Paging_Group' });
-                            var rightPath = ' M ' + rightPageX + ' ' + locY + ' L ' + (rightPageX - width) + ' ' + (locY - height) +
-                                ' L ' + (rightPageX - width) + ' ' + (locY + height) + ' z ';
-                            var leftPath = ' M ' + leftPageX + ' ' + locY + ' L ' + (leftPageX + width) + ' ' + (locY - height) +
-                                ' L ' + (leftPageX + width) + ' ' + (locY + height) + ' z ';
-                            var leftPageOptions = new PathOption(map.element.id + '_Left_Page', '#a6a6a6', 0, '#a6a6a6', 1, '', leftPath);
-                            leftPageElement.appendChild(render.drawPath(leftPageOptions));
-                            var leftRectPageOptions = new RectOption(map.element.id + '_Left_Page_Rect', 'transparent', {}, 1, new Rect(leftPageX - (width / 2), (locY - (height * 2)), width * 2, spacing * 2), null, null, '', '');
-                            leftPageElement.appendChild(render.drawRectangle(leftRectPageOptions));
-                            _this.wireEvents(leftPageElement);
-                            var rightPageOptions = new PathOption(map.element.id + '_Right_Page', '#a6a6a6', 0, '#a6a6a6', 1, '', rightPath);
-                            rightPageElement.appendChild(render.drawPath(rightPageOptions));
-                            var rightRectPageOptions = new RectOption(map.element.id + '_Right_Page_Rect', 'transparent', {}, 1, new Rect((rightPageX - width), (locY - height), width, spacing), null, null, '', '');
-                            rightPageElement.appendChild(render.drawRectangle(rightRectPageOptions));
-                            _this.wireEvents(rightPageElement);
-                            pagingGroup.appendChild(leftPageElement);
-                            pagingGroup.appendChild(rightPageElement);
-                            var pageTextOptions = {
-                                'id': map.element.id + '_Paging_Text',
-                                'x': pageTextX,
-                                'y': locY + (pagingTextSize.height / 4),
-                                'fill': '#a6a6a6',
-                                'font-size': '14px',
-                                'font-style': pagingFont.fontStyle,
-                                'font-family': pagingFont.fontFamily,
-                                'font-weight': pagingFont.fontWeight,
-                                'text-anchor': 'middle',
-                                'transform': '',
-                                'opacity': 1,
-                                'dominant-baseline': ''
-                            };
-                            pagingGroup.appendChild(render.createText(pageTextOptions, pagingText));
-                            _this.legendGroup.appendChild(pagingGroup);
-                        }
-                        _this.renderLegendBorder();
-                    }
-                });
-            };
-            var this_2 = this;
             for (var i = 0; i < this.totalPages[page]['Collection'].length; i++) {
-                _loop_2(i);
+                var collection = this.totalPages[page]['Collection'][i];
+                var shapeBorder = collection['shapeBorder'];
+                var legendElement = render.createGroup({ id: map.element.id + '_Legend_Index_' + collection['idIndex'] });
+                var legendText = collection['DisplayText'];
+                var shape = ((legend.type === 'Markers') ? ((isNullOrUndefined(collection['ImageSrc'])) ?
+                    legend.shape : 'Image') : collection['legendShape']);
+                var strokeColor = (legend.shape === 'HorizontalLine' || legend.shape === 'VerticalLine'
+                    || legend.shape === 'Cross') ? isNullOrUndefined(legend.fill) ? '#000000' : legend.fill : shapeBorder.color;
+                var strokeWidth = (legend.shape === 'HorizontalLine' || legend.shape === 'VerticalLine'
+                    || legend.shape === 'Cross') ? (shapeBorder.width === 0) ?
+                    1 : shapeBorder.width : shapeBorder.width;
+                var shapeId = map.element.id + '_Legend_Shape_Index_' + collection['idIndex'];
+                var textId = map.element.id + '_Legend_Text_Index_' + collection['idIndex'];
+                var shapeLocation = collection['Shape'];
+                var textLocation = collection['Text'];
+                var imageUrl = ((isNullOrUndefined(collection['ImageSrc'])) ? legend.shape : collection['ImageSrc']);
+                var renderOptions_1 = new PathOption(shapeId, collection['Fill'], strokeWidth, strokeColor, legend.opacity, '');
+                legend.textStyle.color = (legend.textStyle.color !== null) ? legend.textStyle.color :
+                    this.maps.themeStyle.legendTextColor;
+                legend.textStyle.fontFamily = map.themeStyle.fontFamily || legend.textStyle.fontFamily;
+                legend.textStyle.size = map.themeStyle.legendFontSize || legend.textStyle.size;
+                legendElement.appendChild(drawSymbol(shapeLocation, shape, shapeSize, collection['ImageSrc'], renderOptions_1));
+                textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
+                renderTextElement(textOptions, legend.textStyle, legend.textStyle.color, legendElement);
+                this.legendGroup.appendChild(legendElement);
+                if (i === (this.totalPages[page]['Collection'].length - 1)) {
+                    var pagingGroup = void 0;
+                    var width = spacing;
+                    var height = (spacing / 2);
+                    if (this.page !== 0) {
+                        var pagingText = (page + 1) + '/' + this.totalPages.length;
+                        var pagingFont = legend.textStyle;
+                        var pagingTextSize = measureText(pagingText, pagingFont);
+                        var leftPageX = (this.legendItemRect.x + this.legendItemRect.width) - pagingTextSize.width -
+                            (width * 2) - spacing;
+                        var rightPageX = (this.legendItemRect.x + this.legendItemRect.width);
+                        var locY = (this.legendItemRect.y + this.legendItemRect.height) + (height / 2) + spacing;
+                        var pageTextX = rightPageX - width - (pagingTextSize.width / 2) - (spacing / 2);
+                        pagingGroup = render.createGroup({ id: map.element.id + '_Legend_Paging_Group' });
+                        var leftPageElement = render.createGroup({ id: map.element.id + '_Legend_Left_Paging_Group' });
+                        var rightPageElement = render.createGroup({ id: map.element.id + '_Legend_Right_Paging_Group' });
+                        var rightPath = ' M ' + rightPageX + ' ' + locY + ' L ' + (rightPageX - width) + ' ' + (locY - height) +
+                            ' L ' + (rightPageX - width) + ' ' + (locY + height) + ' z ';
+                        var leftPath = ' M ' + leftPageX + ' ' + locY + ' L ' + (leftPageX + width) + ' ' + (locY - height) +
+                            ' L ' + (leftPageX + width) + ' ' + (locY + height) + ' z ';
+                        var leftPageOptions = new PathOption(map.element.id + '_Left_Page', '#a6a6a6', 0, '#a6a6a6', 1, '', leftPath);
+                        leftPageElement.appendChild(render.drawPath(leftPageOptions));
+                        var leftRectPageOptions = new RectOption(map.element.id + '_Left_Page_Rect', 'transparent', {}, 1, new Rect(leftPageX - (width / 2), (locY - (height * 2)), width * 2, spacing * 2), null, null, '', '');
+                        leftPageElement.appendChild(render.drawRectangle(leftRectPageOptions));
+                        this.wireEvents(leftPageElement);
+                        var rightPageOptions = new PathOption(map.element.id + '_Right_Page', '#a6a6a6', 0, '#a6a6a6', 1, '', rightPath);
+                        rightPageElement.appendChild(render.drawPath(rightPageOptions));
+                        var rightRectPageOptions = new RectOption(map.element.id + '_Right_Page_Rect', 'transparent', {}, 1, new Rect((rightPageX - width), (locY - height), width, spacing), null, null, '', '');
+                        rightPageElement.appendChild(render.drawRectangle(rightRectPageOptions));
+                        this.wireEvents(rightPageElement);
+                        pagingGroup.appendChild(leftPageElement);
+                        pagingGroup.appendChild(rightPageElement);
+                        var pageTextOptions = {
+                            'id': map.element.id + '_Paging_Text',
+                            'x': pageTextX,
+                            'y': locY + (pagingTextSize.height / 4),
+                            'fill': '#a6a6a6',
+                            'font-size': '14px',
+                            'font-style': pagingFont.fontStyle,
+                            'font-family': pagingFont.fontFamily,
+                            'font-weight': pagingFont.fontWeight,
+                            'text-anchor': 'middle',
+                            'transform': '',
+                            'opacity': 1,
+                            'dominant-baseline': ''
+                        };
+                        pagingGroup.appendChild(render.createText(pageTextOptions, pagingText));
+                        this.legendGroup.appendChild(pagingGroup);
+                    }
+                    this.renderLegendBorder();
+                }
             }
         }
     };
@@ -7388,28 +8112,43 @@ var Legend = /** @__PURE__ @class */ (function () {
         var length;
         var selectLength = 0;
         var interactProcess = true;
+        var idIndex = parseFloat(targetElement.id.charAt(targetElement.id.length - 1));
+        this.updateLegendElement();
+        var toggleLegendCheck = this.maps.toggledLegendId.indexOf(idIndex);
+        if (this.maps.legendSettings.toggleLegendSettings.enable && value === 'highlight' && toggleLegendCheck !== -1) {
+            var collectionIndex = this.getIndexofLegend(this.legendHighlightCollection, targetElement);
+            if (collectionIndex !== -1) {
+                this.legendHighlightCollection.splice(collectionIndex, 1);
+            }
+            this.removeLegendHighlightCollection();
+            return null;
+        }
         if (value === 'selection') {
+            var multiSelectEnable = this.maps.layers[collection[0]['data'][0]['layerIndex']].selectionSettings.enableMultiSelect;
             this.shapeHighlightCollection = [];
-            if (this.legendSelectionCollection.length > 0) {
-                for (var k = 0; k < this.legendSelectionCollection.length; k++) {
-                    if (targetElement === this.legendSelectionCollection[k]['legendElement']) {
+            if (!this.maps.shapeSelections && !multiSelectEnable) {
+                this.removeAllSelections();
+                this.maps.shapeSelections = true;
+            }
+            if (this.maps.legendSelectionCollection.length > 0 && (!multiSelectEnable ? this.maps.shapeSelections : true)) {
+                for (var k = 0; k < this.maps.legendSelectionCollection.length; k++) {
+                    if (targetElement === this.maps.legendSelectionCollection[k]['legendElement']) {
+                        this.maps.legendSelectionCollection[k]['legendElement'] = targetElement;
                         interactProcess = false;
-                        this.removeLegendSelectionCollection();
-                        this.legendSelectionCollection.splice(k, 1);
+                        this.removeLegendSelectionCollection(this.maps.legendSelectionCollection[k]['legendElement']);
+                        this.maps.selectedLegendElementId.splice(this.maps.selectedLegendElementId.indexOf(idIndex), 1);
+                        this.maps.legendSelectionCollection.splice(k, 1);
+                        this.maps.legendSelection = this.maps.legendSelectionCollection.length > 0 ? false : true;
                         break;
-                    }
-                    else {
-                        this.removeLegendSelectionCollection();
-                        this.legendSelectionCollection.splice(k, 1);
                     }
                 }
             }
         }
         else {
-            if (this.legendSelectionCollection.length > 0) {
-                for (var k = 0; k < this.legendSelectionCollection.length; k++) {
-                    if ((targetElement.id.indexOf('_Legend_Shape') > -1 || targetElement.id.indexOf('_Legend_Index')) && targetElement ===
-                        this.legendSelectionCollection[k]['legendElement']) {
+            if (this.maps.legendSelectionCollection.length > 0) {
+                for (var k = 0; k < this.maps.legendSelectionCollection.length; k++) {
+                    if ((targetElement.id.indexOf('_Legend_Shape') > -1 || targetElement.id.indexOf('_Legend_Index')) &&
+                        targetElement === this.maps.legendSelectionCollection[k]['legendElement']) {
                         interactProcess = false;
                         break;
                     }
@@ -7422,13 +8161,17 @@ var Legend = /** @__PURE__ @class */ (function () {
         }
         if (interactProcess) {
             for (var i = 0; i < collection.length; i++) {
-                if (textEle.textContent === collection[i]['text'] && collection[i]['data'].length > 0 &&
-                    parseFloat(targetElement.id.split('_Legend_Index_')[1]) === i) {
+                if (textEle.textContent === collection[i]['text'] && collection[i]['data'].length > 0) {
                     var layer = this.maps.layers[collection[i]['data'][0]['layerIndex']];
-                    var enable = (value === 'selection') ? layer.selectionSettings.enable : layer.highlightSettings.enable;
+                    var enable = void 0;
                     var module = void 0;
-                    module = (value === 'selection') ? layer.selectionSettings : layer.highlightSettings;
-                    var data = collection[i]['data'];
+                    var data = void 0;
+                    if (!isNullOrUndefined(layer)) {
+                        enable = (value === 'selection') ? layer.selectionSettings.enable : layer.highlightSettings.enable;
+                        module = void 0;
+                        module = (value === 'selection') ? layer.selectionSettings : layer.highlightSettings;
+                        data = collection[i]['data'];
+                    }
                     if (enable) {
                         for (var j = 0; j < data.length; j++) {
                             shapeIndex = data[j]['shapeIndex'];
@@ -7437,7 +8180,16 @@ var Legend = /** @__PURE__ @class */ (function () {
                             var shapeEle = document.getElementById(this.maps.element.id + '_LayerIndex_' +
                                 layerIndex + '_shapeIndex_' + shapeIndex + '_dataIndex_' + dataIndex);
                             if (shapeEle !== null) {
-                                if (value === 'highlight' && this.shapeElement !== targetElement) {
+                                var shapeMatch = true;
+                                if (this.maps.legendSelectionCollection !== null) {
+                                    for (var i_1 = 0; i_1 < this.maps.legendSelectionCollection.length; i_1++) {
+                                        if (this.maps.legendSelectionCollection[i_1]['legendElement'] === targetElement) {
+                                            shapeMatch = false;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (value === 'highlight' && shapeMatch) {
                                     if (j === 0) {
                                         this.legendHighlightCollection = [];
                                         this.pushCollection(targetElement, this.legendHighlightCollection, collection[i], layer.shapeSettings);
@@ -7445,22 +8197,34 @@ var Legend = /** @__PURE__ @class */ (function () {
                                     length = this.legendHighlightCollection.length;
                                     var legendHighlightColor = this.legendHighlightCollection[length - 1]['legendOldFill'];
                                     this.legendHighlightCollection[length - 1]['MapShapeCollection']['Elements'].push(shapeEle);
-                                    this.setColor(shapeEle, !isNullOrUndefined(module.fill) ? module.fill : legendHighlightColor, module.opacity.toString(), module.border.color, module.border.width.toString());
-                                    this.setColor(targetElement, !isNullOrUndefined(module.fill) ? module.fill : legendHighlightColor, module.opacity.toString(), module.border.color, module.border.width.toString());
+                                    var shapeItemCount = this.legendHighlightCollection[length - 1]['MapShapeCollection']['Elements'].length - 1;
+                                    var shapeOldFillColor = shapeEle.getAttribute('fill');
+                                    this.legendHighlightCollection[length - 1]['shapeOldFillColor'].push(shapeOldFillColor);
+                                    var shapeOldColor = this.legendHighlightCollection[length - 1]['shapeOldFillColor'][shapeItemCount];
+                                    this.shapePreviousColor = this.legendHighlightCollection[length - 1]['shapeOldFillColor'];
+                                    this.setColor(shapeEle, !isNullOrUndefined(module.fill) ? module.fill : shapeOldColor, module.opacity.toString(), module.border.color, module.border.width.toString(), 'highlight');
+                                    this.setColor(targetElement, !isNullOrUndefined(module.fill) ? module.fill : legendHighlightColor, module.opacity.toString(), module.border.color, module.border.width.toString(), 'highlight');
                                 }
-                                else if (value === 'selection' && this.shapeSelection) {
+                                else if (value === 'selection') {
                                     this.legendHighlightCollection = [];
+                                    this.maps.legendSelectionClass = module;
                                     if (j === 0) {
-                                        this.pushCollection(targetElement, this.legendSelectionCollection, collection[i], layer.shapeSettings);
+                                        this.pushCollection(targetElement, this.maps.legendSelectionCollection, collection[i], layer.shapeSettings);
+                                        this.maps.selectedLegendElementId.push(i);
                                     }
-                                    selectLength = this.legendSelectionCollection.length;
-                                    var legendSelectionColor = this.legendSelectionCollection[selectLength - 1]['legendOldFill'];
-                                    this.legendSelectionCollection[selectLength - 1]['MapShapeCollection']['Elements'].push(shapeEle);
-                                    this.setColor(targetElement, !isNullOrUndefined(module.fill) ? module.fill : legendSelectionColor, module.opacity.toString(), module.border.color, module.border.width.toString());
-                                    this.setColor(shapeEle, !isNullOrUndefined(module.fill) ? module.fill : legendSelectionColor, module.opacity.toString(), module.border.color, module.border.width.toString());
-                                    this.legendElement = targetElement;
+                                    selectLength = this.maps.legendSelectionCollection.length;
+                                    var legendSelectionColor = void 0;
+                                    legendSelectionColor = this.maps.legendSelectionCollection[selectLength - 1]['legendOldFill'];
+                                    this.maps.legendSelectionCollection[selectLength - 1]['MapShapeCollection']['Elements'].push(shapeEle);
+                                    this.maps.legendSelectionCollection[selectLength - 1]['shapeOldFillColor'] = this.shapePreviousColor;
+                                    this.setColor(targetElement, !isNullOrUndefined(module.fill) ? module.fill : legendSelectionColor, module.opacity.toString(), module.border.color, module.border.width.toString(), 'selection');
+                                    this.setColor(shapeEle, !isNullOrUndefined(module.fill) ? module.fill : legendSelectionColor, module.opacity.toString(), module.border.color, module.border.width.toString(), 'selection');
+                                    if (this.maps.selectedElementId.indexOf(shapeEle.getAttribute('id')) === -1) {
+                                        this.maps.selectedElementId.push(shapeEle.getAttribute('id'));
+                                    }
                                     if (j === data.length - 1) {
-                                        this.legendSelection = false;
+                                        this.maps.legendSelection = false;
+                                        this.removeLegend(this.maps.legendSelectionCollection);
                                     }
                                 }
                             }
@@ -7470,11 +8234,17 @@ var Legend = /** @__PURE__ @class */ (function () {
             }
         }
     };
-    Legend.prototype.setColor = function (element, fill, opacity, borderColor, borderWidth) {
-        element.setAttribute('fill', fill);
-        element.setAttribute('opacity', opacity);
-        element.setAttribute('stroke', borderColor);
-        element.setAttribute('stroke-width', (Number(borderWidth) / this.maps.scale).toString());
+    Legend.prototype.setColor = function (element, fill, opacity, borderColor, borderWidth, type) {
+        if (type === 'selection') {
+            maintainStyleClass('ShapeselectionMap', 'ShapeselectionMapStyle', fill, opacity, borderColor, borderWidth, this.maps);
+            element.setAttribute('class', 'ShapeselectionMapStyle');
+        }
+        else {
+            element.setAttribute('fill', fill);
+            element.setAttribute('opacity', opacity);
+            element.setAttribute('stroke', borderColor);
+            element.setAttribute('stroke-width', (Number(borderWidth) / this.maps.scale).toString());
+        }
     };
     Legend.prototype.pushCollection = function (targetElement, collection, oldElement, shapeSettings) {
         collection.push({
@@ -7485,27 +8255,42 @@ var Legend = /** @__PURE__ @class */ (function () {
         });
         length = collection.length;
         collection[length - 1]['MapShapeCollection'] = { Elements: [] };
+        collection[length - 1]['shapeOldFillColor'] = [];
     };
     Legend.prototype.removeLegend = function (collection) {
         for (var i = 0; i < collection.length; i++) {
             var item = collection[i];
-            this.setColor(item['legendElement'], item['legendOldFill'], item['legendOldOpacity'], item['legendOldBorderColor'], item['legendOldBorderWidth']);
+            this.setColor(item['legendElement'], item['legendOldFill'], item['legendOldOpacity'], item['legendOldBorderColor'], item['legendOldBorderWidth'], 'highlight');
             var dataCount = item['MapShapeCollection']['Elements'].length;
             for (var j = 0; j < dataCount; j++) {
-                this.setColor(item['MapShapeCollection']['Elements'][j], item['legendOldFill'], item['shapeOpacity'], item['shapeOldBorderColor'], item['shapeOldBorderWidth']);
+                var shapeFillColor = item['legendOldFill'].indexOf('url') !== -1
+                    ? item['shapeOldFillColor'][j] : item['legendOldFill'];
+                this.setColor(item['MapShapeCollection']['Elements'][j], shapeFillColor, item['shapeOpacity'], item['shapeOldBorderColor'], item['shapeOldBorderWidth'], 'highlight');
             }
         }
     };
     Legend.prototype.removeLegendHighlightCollection = function () {
         if (this.legendHighlightCollection.length > 0) {
             this.removeLegend(this.legendHighlightCollection);
+            this.legendHighlightCollection = [];
         }
     };
-    Legend.prototype.removeLegendSelectionCollection = function () {
-        if (this.legendSelectionCollection.length > 0) {
-            this.removeLegend(this.legendSelectionCollection);
-            this.legendElement = null;
-            this.legendSelection = true;
+    Legend.prototype.removeLegendSelectionCollection = function (targetElement) {
+        if (this.maps.legendSelectionCollection.length > 0) {
+            removeClass(targetElement);
+            var shapeElements = this.shapesOfLegend(targetElement);
+            var dataCount = shapeElements.length;
+            for (var j = 0; j < dataCount; j++) {
+                var shapeElement = getElement(shapeElements[j]);
+                if (shapeElement.getAttribute('class') === 'ShapeselectionMapStyle') {
+                    removeClass(shapeElement);
+                    var selectedElementIdIndex = void 0;
+                    selectedElementIdIndex = this.maps.selectedElementId.indexOf(shapeElement.id);
+                    if (selectedElementIdIndex !== -1) {
+                        this.maps.selectedElementId.splice(selectedElementIdIndex, 1);
+                    }
+                }
+            }
         }
     };
     Legend.prototype.removeShapeHighlightCollection = function () {
@@ -7513,83 +8298,198 @@ var Legend = /** @__PURE__ @class */ (function () {
             for (var i = 0; i < this.shapeHighlightCollection.length; i++) {
                 var item = this.shapeHighlightCollection[i];
                 var removeFill = true;
-                for (var j = 0; j < this.shapeSelectionCollection.length; j++) {
-                    if (this.shapeSelectionCollection[j]['legendElement'] === item['legendElement']) {
+                for (var j = 0; j < this.maps.legendSelectionCollection.length; j++) {
+                    if (this.maps.legendSelectionCollection[j]['legendElement'] === item['legendElement']) {
                         removeFill = false;
                     }
                 }
                 if (removeFill) {
-                    this.setColor(item['legendElement'], item['legendOldFill'], item['legendOldOpacity'], item['legendOldBorderColor'], item['legendOldBorderWidth']);
+                    this.setColor(item['legendElement'], item['legendOldFill'], item['legendOldOpacity'], item['legendOldBorderColor'], item['legendOldBorderWidth'], 'highlight');
                 }
             }
         }
     };
+    // tslint:disable-next-line:max-func-body-length
     Legend.prototype.shapeHighLightAndSelection = function (targetElement, data, module, getValue, layerIndex) {
         if (data !== undefined) {
+            this.updateLegendElement();
+            this.shapeToggled = true;
             var collection = this.maps.legendModule.legendCollection;
-            var index = this.legendIndexOnShape(data, layerIndex);
-            var text = collection[index]['text'];
+            var indexes = this.legendIndexOnShape(data, layerIndex);
+            var shapeElement = this.shapeDataOnLegend(targetElement);
+            var toggleLegendCheck = this.maps.toggledLegendId.indexOf(indexes['actualIndex']);
+            if (this.maps.legendSettings.toggleLegendSettings.enable && toggleLegendCheck !== -1) {
+                this.shapeToggled = false;
+                this.legendHighlightCollection = [];
+                var collectionIndex = this.getIndexofLegend(this.shapeHighlightCollection, shapeElement['LegendEle']);
+                if (collectionIndex !== -1) {
+                    this.shapeHighlightCollection.splice(collectionIndex, 1);
+                }
+                this.removeShapeHighlightCollection();
+                return null;
+            }
+            if (indexes['currentIndex'] === undefined && indexes['actualIndex'] === undefined) {
+                this.removeShapeHighlightCollection();
+                return null;
+            }
+            if (indexes['currentIndex'] === undefined && getValue === 'selection'
+                && !this.maps.layers[layerIndex].selectionSettings.enableMultiSelect &&
+                targetElement.getAttribute('class') !== 'ShapeselectionMapStyle') {
+                this.maps.legendSelection = false;
+            }
+            if (getValue === 'selection' && !this.maps.layers[layerIndex].selectionSettings.enableMultiSelect &&
+                !this.maps.legendSelection) {
+                this.removeAllSelections();
+                this.maps.legendSelection = true;
+            }
+            if (indexes['currentIndex'] === undefined) {
+                if (getValue === 'selection' && indexes['actualIndex'] !== undefined) {
+                    var checkSelection = 0;
+                    for (var i = 0; i < shapeElement['Elements'].length; i++) {
+                        if (shapeElement['Elements'][i].getAttribute('class') === 'ShapeselectionMapStyle') {
+                            checkSelection++;
+                        }
+                    }
+                    var selectionIndex = this.maps.selectedLegendElementId.indexOf(indexes['actualIndex']);
+                    if (selectionIndex === -1) {
+                        this.maps.selectedLegendElementId.push(indexes['actualIndex']);
+                        this.maps.legendSelectionClass = module;
+                    }
+                    else {
+                        if ((checkSelection <= 1) && targetElement.getAttribute('class') === 'ShapeselectionMapStyle') {
+                            if (!this.maps.layers[layerIndex].selectionSettings.enableMultiSelect) {
+                                this.maps.selectedLegendElementId.splice(selectionIndex, 1);
+                            }
+                            else {
+                                if (checkSelection <= 1 && targetElement.getAttribute('class') === 'ShapeselectionMapStyle') {
+                                    this.maps.selectedLegendElementId.splice(selectionIndex, 1);
+                                }
+                            }
+                        }
+                    }
+                }
+                this.removeShapeHighlightCollection();
+                return null;
+            }
+            var text = collection[indexes['actualIndex']]['text'];
             var content = void 0;
             var legendShape = void 0;
             if (this.maps.legendSettings.mode === 'Default') {
-                content = document.getElementById(this.maps.element.id + '_Legend_Text_Index_' + index).textContent;
-                legendShape = document.getElementById(this.maps.element.id + '_Legend_Shape_Index_' + index);
+                if (indexes['currentIndex'] !== undefined) {
+                    content = document.getElementById(this.maps.element.id + '_Legend_Text_Index_' + indexes['actualIndex']).textContent;
+                    legendShape = document.getElementById(this.maps.element.id + '_Legend_Shape_Index_' + indexes['actualIndex']);
+                }
             }
             else {
-                content = document.getElementById(this.maps.element.id + '_Legend_Index_' + index + '_Text').textContent;
-                legendShape = document.getElementById(this.maps.element.id + '_Legend_Index_' + index);
+                content = document.getElementById(this.maps.element.id + '_Legend_Index_' + indexes['actualIndex']
+                    + '_Text').textContent;
+                legendShape = document.getElementById(this.maps.element.id + '_Legend_Index_' + indexes['actualIndex']);
             }
-            var shapeElement = this.shapeDataOnLegend(targetElement);
             this.oldShapeElement = shapeElement['LegendEle'];
-            var length_1 = this.shapeSelectionCollection.length;
+            var length_1 = this.maps.legendSelectionCollection.length;
             if (text === content) {
-                if (getValue === 'highlight' && shapeElement['LegendEle'] !== this.legendElement) {
+                var shapeMatched = true;
+                if (this.maps.legendSelectionCollection) {
+                    for (var i = 0; i < this.maps.legendSelectionCollection.length; i++) {
+                        if (this.maps.legendSelectionCollection[i]['legendElement'] === shapeElement['LegendEle']) {
+                            shapeMatched = false;
+                            break;
+                        }
+                    }
+                }
+                if (getValue === 'highlight' && shapeMatched) {
                     var selectionEle = this.isTargetSelected(shapeElement, this.shapeHighlightCollection);
                     if (selectionEle === undefined || (selectionEle && !selectionEle['IsSelected'])) {
-                        this.pushCollection(legendShape, this.shapeHighlightCollection, collection[index], this.maps.layers[layerIndex].shapeSettings);
+                        this.pushCollection(legendShape, this.shapeHighlightCollection, collection[indexes['actualIndex']], this.maps.layers[layerIndex].shapeSettings);
+                    }
+                    for (var j = 0; j < this.shapeHighlightCollection.length; j++) {
+                        if (shapeElement['LegendEle'].id === this.shapeHighlightCollection[j]['legendElement'].id) {
+                            this.shapeHighlightCollection[j]['legendElement'] = shapeElement['LegendEle'];
+                        }
                     }
                     if (length_1 > 0) {
                         for (var j = 0; j < length_1; j++) {
-                            if (shapeElement['LegendEle'] === this.shapeSelectionCollection[j]['legendElement']) {
+                            if (shapeElement['LegendEle'] === this.maps.legendSelectionCollection[j]['legendElement']) {
+                                this.maps.legendSelectionCollection[j]['legendElement'] = shapeElement['LegendEle'];
+                                this.removeShapeHighlightCollection();
                                 break;
                             }
                             else if (j === length_1 - 1) {
                                 this.removeShapeHighlightCollection();
-                                this.setColor(legendShape, !isNullOrUndefined(module.fill) ? module.fill : legendShape.getAttribute('fill'), module.opacity.toString(), module.border.color, module.border.width.toString());
+                                this.setColor(legendShape, !isNullOrUndefined(module.fill) ? module.fill : legendShape.getAttribute('fill'), module.opacity.toString(), module.border.color, module.border.width.toString(), 'highlight');
                             }
                         }
                     }
                     else {
                         this.removeShapeHighlightCollection();
-                        this.setColor(legendShape, !isNullOrUndefined(module.fill) ? module.fill : legendShape.getAttribute('fill'), module.opacity.toString(), module.border.color, module.border.width.toString());
+                        this.setColor(legendShape, !isNullOrUndefined(module.fill) ? module.fill : legendShape.getAttribute('fill'), module.opacity.toString(), module.border.color, module.border.width.toString(), 'highlight');
                     }
                 }
                 else if (getValue === 'selection') {
-                    var selectionEle = this.isTargetSelected(shapeElement, this.shapeSelectionCollection);
+                    var selectionEle = this.isTargetSelected(shapeElement, this.maps.legendSelectionCollection);
                     if (length_1 > 0) {
-                        for (var j = 0; j < length_1; j++) {
-                            if (shapeElement['LegendEle'] !== this.shapeSelectionCollection[j]['legendElement']) {
-                                var element = this.shapeSelectionCollection[j];
-                                this.setColor(element['legendElement'], element['legendOldFill'], element['legendOldOpacity'], element['legendOldBorderColor'], element['legendOldBorderWidth']);
-                                this.shapeSelection = true;
-                                this.shapeElement = null;
+                        var j = 0;
+                        while (j < this.maps.legendSelectionCollection.length) {
+                            if (shapeElement['LegendEle'] !== this.maps.legendSelectionCollection[j]['legendElement'] &&
+                                !module.enableMultiSelect) {
+                                var element = this.maps.legendSelectionCollection[j];
+                                var selectedLegendIndex = this.maps.selectedLegendElementId.indexOf(indexes['actualIndex']);
+                                this.maps.selectedLegendElementId.splice(selectedLegendIndex, 1);
+                                this.maps.legendSelectionCollection.splice(j, 1);
+                                removeClass(element['legendElement']);
+                                this.maps.shapeSelections = true;
+                                j = 0;
+                            }
+                            else {
+                                j++;
                             }
                         }
                     }
                     if (selectionEle && (selectionEle['IsSelected'] && targetElement.getAttribute('class') === 'ShapeselectionMapStyle')) {
-                        var element = this.shapeSelectionCollection[selectionEle['SelectionIndex']];
-                        this.setColor(shapeElement['LegendEle'], element['legendOldFill'], element['legendOldOpacity'], element['legendOldBorderColor'], element['legendOldBorderWidth']);
-                        this.shapeSelectionCollection.splice(selectionEle['SelectionIndex'], 1);
-                        this.shapeSelection = true;
-                        this.shapeElement = null;
-                    }
-                    if (targetElement.getAttribute('class') !== 'ShapeselectionMapStyle' && this.legendSelection) {
-                        if (selectionEle === undefined || (selectionEle && !selectionEle['IsSelected'])) {
-                            this.pushCollection(legendShape, this.shapeSelectionCollection, collection[index], this.maps.layers[layerIndex].shapeSettings);
+                        var element = this.maps.legendSelectionCollection[selectionEle['SelectionIndex']];
+                        var multiSelection = 0;
+                        if (module.enableMultiSelect) {
+                            for (var i = 0; i < shapeElement['Elements'].length; i++) {
+                                if (targetElement.getAttribute('class') === shapeElement['Elements'][i].getAttribute('class')) {
+                                    multiSelection++;
+                                }
+                            }
                         }
-                        this.setColor(legendShape, !isNullOrUndefined(module.fill) ? module.fill : legendShape.getAttribute('fill'), module.opacity.toString(), module.border.color, module.border.width.toString());
-                        this.shapeElement = shapeElement['LegendEle'];
-                        this.shapeSelection = false;
+                        if (multiSelection <= 1 && (!module.enableMultiSelect ?
+                            this.maps.legendSelection : true)) {
+                            this.maps.selectedLegendElementId.splice(this.maps.selectedLegendElementId.indexOf(indexes['actualIndex']), 1);
+                            if (!isNullOrUndefined(shapeElement['LegendEle'])) {
+                                removeClass(shapeElement['LegendEle']);
+                            }
+                            this.maps.legendSelectionCollection.splice(selectionEle['SelectionIndex'], 1);
+                            this.maps.shapeSelections = true;
+                        }
+                    }
+                    else {
+                        if ((selectionEle === undefined || (selectionEle && !selectionEle['IsSelected'])) &&
+                            !isNullOrUndefined(legendShape)) {
+                            var legendSelectionIndex = this.getIndexofLegend(this.maps.legendSelectionCollection, legendShape);
+                            if (legendSelectionIndex === -1) {
+                                this.pushCollection(legendShape, this.maps.legendSelectionCollection, collection[indexes['actualIndex']], this.maps.layers[layerIndex].shapeSettings);
+                            }
+                        }
+                        var addId = true;
+                        for (var i = 0; i < this.maps.selectedLegendElementId.length; i++) {
+                            if (indexes['actualIndex'] === this.maps.selectedLegendElementId[i]) {
+                                addId = false;
+                            }
+                        }
+                        if (addId) {
+                            this.maps.selectedLegendElementId.push(indexes['actualIndex']);
+                        }
+                        this.maps.legendSelectionClass = module;
+                        this.removeLegend(this.shapeHighlightCollection);
+                        if (!isNullOrUndefined(legendShape)) {
+                            this.setColor(legendShape, !isNullOrUndefined(module.fill) ? module.fill : legendShape.getAttribute('fill'), module.opacity.toString(), module.border.color, module.border.width.toString(), 'selection');
+                            var legendSelectionIndex = this.getIndexofLegend(this.maps.legendSelectionCollection, legendShape);
+                            this.maps.legendSelectionCollection[legendSelectionIndex]['MapShapeCollection']['Elements'].push(targetElement);
+                        }
+                        this.maps.shapeSelections = false;
                     }
                 }
                 else if (document.getElementsByClassName('highlightMapStyle').length > 0) {
@@ -7605,26 +8505,73 @@ var Legend = /** @__PURE__ @class */ (function () {
     Legend.prototype.isTargetSelected = function (target, collection) {
         var selectEle;
         for (var i = 0; i < collection.length; i++) {
-            if (target['LegendEle'] === collection[i]['legendElement']) {
+            if (!isNullOrUndefined(target['LegendEle'].getAttribute('id')) &&
+                (target['LegendEle'].getAttribute('id') === collection[i]['legendElement'].getAttribute('id'))) {
                 selectEle = { IsSelected: true, SelectionIndex: i };
             }
         }
         return selectEle;
     };
+    Legend.prototype.updateLegendElement = function () {
+        for (var i = 0; i < this.maps.legendSelectionCollection.length; i++) {
+            if (document.getElementById(this.maps.legendSelectionCollection[i]['legendElement'].id)) {
+                this.maps.legendSelectionCollection[i]['legendElement'] =
+                    document.getElementById(this.maps.legendSelectionCollection[i]['legendElement'].id);
+            }
+        }
+    };
+    Legend.prototype.getIndexofLegend = function (targetCollection, targetElement) {
+        var legendIndex = targetCollection.map(function (e) { return e['legendElement']; }).indexOf(targetElement);
+        return legendIndex;
+    };
+    Legend.prototype.removeAllSelections = function () {
+        for (var i = 0; i < this.maps.selectedElementId.length; i++) {
+            var selectedElement = document.getElementById(this.maps.selectedElementId[i]);
+            removeClass(selectedElement);
+        }
+        for (var j = 0; j < this.maps.selectedLegendElementId.length; j++) {
+            var idIndex = this.maps.legendSettings.mode === 'Interactive' ?
+                'container_Legend_Index_' : 'container_Legend_Shape_Index_';
+            var selectedElement = idIndex + this.maps.selectedLegendElementId[j];
+            var legendElement = document.getElementById(selectedElement);
+            if (!isNullOrUndefined(legendElement)) {
+                removeClass(document.getElementById(selectedElement));
+            }
+        }
+        this.maps.legendSelectionCollection = [];
+        this.maps.selectedLegendElementId = [];
+        this.maps.selectedElementId = [];
+    };
     Legend.prototype.legendIndexOnShape = function (data, index) {
         var legendIndex;
+        var actualIndex;
         var path = this.maps.layers[index].shapeDataPath;
         var value = data[path];
+        var legendType = this.maps.legendSettings.mode;
         var collection = this.maps.legendModule.legendCollection;
+        var currentCollection;
+        if (legendType === 'Default' && !isNullOrUndefined(this.maps.legendModule.totalPages)) {
+            currentCollection = this.maps.legendModule.totalPages[this.maps.legendModule.currentPage]['Collection'];
+        }
+        var currentCollectionLength = legendType === 'Default' ? currentCollection['length'] : 1;
         for (var i = 0; i < collection.length; i++) {
             var dataValue = collection[i]['data'];
+            for (var k = 0; k < currentCollectionLength; k++) {
+                if (legendType !== 'Default' || collection[i]['text'] === currentCollection[k]['DisplayText']) {
+                    for (var j = 0; j < dataValue.length; j++) {
+                        if (value === dataValue[j]['name']) {
+                            legendIndex = k;
+                        }
+                    }
+                }
+            }
             for (var j = 0; j < dataValue.length; j++) {
                 if (value === dataValue[j]['name']) {
-                    legendIndex = i;
+                    actualIndex = i;
                 }
             }
         }
-        return legendIndex;
+        return { currentIndex: legendIndex, actualIndex: actualIndex };
     };
     Legend.prototype.shapeDataOnLegend = function (targetElement) {
         var shapeIndex;
@@ -7660,6 +8607,25 @@ var Legend = /** @__PURE__ @class */ (function () {
         }
         return null;
     };
+    Legend.prototype.shapesOfLegend = function (targetElement) {
+        var shapeIndex;
+        var layerIndex;
+        var dataIndex;
+        var idIndex = parseFloat(targetElement.id.charAt(targetElement.id.length - 1));
+        var data = this.maps.legendModule.legendCollection[idIndex]['data'];
+        var legendShapeElements = [];
+        for (var i = 0; i < data.length; i++) {
+            shapeIndex = data[i]['shapeIndex'];
+            layerIndex = data[i]['layerIndex'];
+            dataIndex = data[i]['dataIndex'];
+            var shapeElement = document.getElementById(this.maps.element.id + '_LayerIndex_' +
+                layerIndex + '_shapeIndex_' + shapeIndex + '_dataIndex_' + dataIndex);
+            if (!isNullOrUndefined(shapeElement)) {
+                legendShapeElements.push(shapeElement.id);
+            }
+        }
+        return legendShapeElements;
+    };
     //tslint:disable
     Legend.prototype.renderLegendBorder = function () {
         var map = this.maps;
@@ -7683,6 +8649,43 @@ var Legend = /** @__PURE__ @class */ (function () {
         this.legendGroup.setAttribute('transform', 'translate( ' + (this.translate.x + (-(this.legendBorderRect.x))) + ' ' +
             (this.translate.y + (-(this.legendBorderRect.y))) + ' )');
         map.svgObject.appendChild(this.legendGroup);
+        if (this.maps.selectedLegendElementId) {
+            // To maintain the state of legend selection during page resize.
+            for (var j = 0; j < this.maps.selectedLegendElementId.length; j++) {
+                var idIndex = legend.mode === 'Interactive' ? this.maps.element.id + '_Legend_Index_' : this.maps.element.id + '_Legend_Shape_Index_';
+                var selectedElement = map.svgObject.querySelector('#' + idIndex + this.maps.selectedLegendElementId[j]);
+                if (!isNullOrUndefined(selectedElement)) {
+                    var fill = !isNullOrUndefined(this.maps.legendSelectionClass.fill) ?
+                        this.maps.legendSelectionClass.fill : selectedElement.getAttribute('fill');
+                    this.setColor(selectedElement, fill, this.maps.legendSelectionClass.opacity.toString(), this.maps.legendSelectionClass.border.color, this.maps.legendSelectionClass.border.width.toString(), 'selection');
+                    for (var i = 0; i < this.maps.legendSelectionCollection.length; i++) {
+                        if (this.maps.legendSelectionCollection[i]['legendElement'].id === selectedElement.id) {
+                            this.maps.legendSelectionCollection[i]['legendElement'] = selectedElement;
+                        }
+                    }
+                    var legendSelectionIndex = this.getIndexofLegend(this.maps.legendSelectionCollection, selectedElement);
+                    if (legendSelectionIndex === -1) {
+                        var layerIndex = this.maps.legendModule.legendCollection[this.maps.selectedLegendElementId[j]]['data'][j]['layerIndex'];
+                        this.pushCollection(selectedElement, this.maps.legendSelectionCollection, this.maps.legendModule.legendCollection[this.maps.selectedLegendElementId[j]], this.maps.layers[layerIndex].shapeSettings);
+                    }
+                }
+            }
+            
+        }
+        if (this.maps.toggledLegendId) {
+            for (var j = 0; j < this.maps.toggledLegendId.length; j++) {
+                var legendTextId = legend.mode === 'Interactive' ? ('#' + this.maps.element.id + '_Legend_Index_' + this.maps.toggledLegendId[j] + '_Text') : ('#' + this.maps.element.id + '_Legend_Text_Index_' + this.maps.toggledLegendId[j]);
+                var textElement = map.svgObject.querySelector(legendTextId);
+                if (!isNullOrUndefined(textElement)) {
+                    textElement.setAttribute("fill", "#E5E5E5");
+                }
+                var legendShapeId = legend.mode === 'Interactive' ? ('#' + this.maps.element.id + '_Legend_Index_' + this.maps.toggledLegendId[j]) : ('#' + this.maps.element.id + '_Legend_Shape_Index_' + this.maps.toggledLegendId[j]);
+                var legendElement = map.svgObject.querySelector(legendShapeId);
+                if (!isNullOrUndefined(legendElement)) {
+                    legendElement.setAttribute("fill", "#E5E5E5");
+                }
+            }
+        }
     };
     Legend.prototype.changeNextPage = function (e) {
         this.currentPage = (e.target.id.indexOf('_Left_Page_') > -1) ? (this.currentPage - 1) :
@@ -7790,7 +8793,7 @@ var Legend = /** @__PURE__ @class */ (function () {
         var legendIndex = 0;
         var fill = this.maps.legendSettings.fill;
         var rangeData = [];
-        var _loop_3 = function (colorMap) {
+        var _loop_1 = function (colorMap) {
             if (!isNullOrUndefined(colorMap.from) && !isNullOrUndefined(colorMap.to)) {
                 legendText = !isNullOrUndefined(colorMap.label) ? colorMap.label : colorMap.from + ' - ' + colorMap.to;
                 rangeData = [];
@@ -7809,16 +8812,16 @@ var Legend = /** @__PURE__ @class */ (function () {
                     });
                 }
                 var legendFill = (isNullOrUndefined(fill)) ? Object.prototype.toString.call(colorMap.color) === '[object Array]' ?
-                    !isNullOrUndefined(colorMap.value) ? colorMap.color[0] : this_3.legendGradientColor(colorMap, legendIndex) :
+                    !isNullOrUndefined(colorMap.value) ? colorMap.color[0] : this_1.legendGradientColor(colorMap, legendIndex) :
                     colorMap.color : fill;
                 legendIndex++;
-                this_3.getOverallLegendItemsCollection(legendText, legendFill, rangeData, colorMap.showLegend);
+                this_1.getOverallLegendItemsCollection(legendText, legendFill, rangeData, colorMap.showLegend);
             }
         };
-        var this_3 = this;
+        var this_1 = this;
         for (var _i = 0, colorMapping_1 = colorMapping; _i < colorMapping_1.length; _i++) {
             var colorMap = colorMapping_1[_i];
-            _loop_3(colorMap);
+            _loop_1(colorMap);
         }
     };
     Legend.prototype.getOverallLegendItemsCollection = function (legendText, legendFill, legendData, showLegend) {
@@ -7868,7 +8871,7 @@ var Legend = /** @__PURE__ @class */ (function () {
         var equalData = [];
         var outOfRangeValues = [];
         var outOfRange = [];
-        var _loop_4 = function (colorMap) {
+        var _loop_2 = function (colorMap) {
             if (!isNullOrUndefined(colorMap.value)) {
                 legendText = !isNullOrUndefined(colorMap.label) ? colorMap.label : colorMap.value;
                 equalData = [];
@@ -7904,7 +8907,7 @@ var Legend = /** @__PURE__ @class */ (function () {
                 }
                 var legendFill = (isNullOrUndefined(fill)) ? Object.prototype.toString.call(colorMap.color) === '[object Array]'
                     ? colorMap.color[0] : colorMap.color : fill;
-                this_4.getOverallLegendItemsCollection(legendText, legendFill, equalData, colorMap.showLegend);
+                this_2.getOverallLegendItemsCollection(legendText, legendFill, equalData, colorMap.showLegend);
             }
             else if (isNullOrUndefined(colorMap.minOpacity) && isNullOrUndefined(colorMap.maxOpacity) && isNullOrUndefined(colorMap.value)
                 && isNullOrUndefined(colorMap.from) && isNullOrUndefined(colorMap.to) && !isNullOrUndefined(colorMap.color)) {
@@ -7940,13 +8943,13 @@ var Legend = /** @__PURE__ @class */ (function () {
                 var outfill = ((Object.prototype.toString.call(colorMap.color) === '[object Array]'))
                     ? colorMap.color[0] : colorMap.color;
                 var legendOutFill = outfill;
-                this_4.getOverallLegendItemsCollection(legendText, legendOutFill, outOfRange, colorMap.showLegend);
+                this_2.getOverallLegendItemsCollection(legendText, legendOutFill, outOfRange, colorMap.showLegend);
             }
         };
-        var this_4 = this;
+        var this_2 = this;
         for (var _i = 0, colorMapping_2 = colorMapping; _i < colorMapping_2.length; _i++) {
             var colorMap = colorMapping_2[_i];
-            _loop_4(colorMap);
+            _loop_2(colorMap);
         }
     };
     Legend.prototype.getDataLegendCollection = function (layerIndex, layerData, colorMapping, dataSource, dataPath, colorValuePath, propertyPath) {
@@ -8128,18 +9131,31 @@ var Legend = /** @__PURE__ @class */ (function () {
             }
             if (this.maps.legendSettings.type === "Layers" && this.maps.legendSettings.toggleLegendSettings.enable) {
                 var layerElement = void 0;
-                for (var k = 0; k < this.maps.layers.length; k++) {
+                this.removeCollections(targetEle, legendIndex);
+                var toggledLegendIdIndex = this.maps.toggledLegendId.indexOf(legendIndex);
+                if (toggledLegendIdIndex !== -1) {
+                    isVisible = false;
+                }
+                
+                for (var j = 0; j < this.maps.layers.length; j++) {
                     for (var i = 0; i < selectedItem.length; i++) {
                         shape = this.legendCollection[legendIndex]['data'][i];
                         layerElement = querySelector(this.maps.element.id + '_LayerIndex_' + shape['layerIndex'] +
                             '_shapeIndex_' + shape['shapeIndex'] + '_dataIndex_' + shape['dataIndex'], this.maps.element.id);
                         if (layerElement !== null) {
+                            var toggledShapeIdIndex = this.maps.toggledShapeElementId.indexOf(layerElement.id);
                             if (isVisible) {
+                                if (i === 0) {
+                                    this.maps.toggledLegendId.push(legendIndex);
+                                }
+                                if (toggledShapeIdIndex === -1) {
+                                    this.maps.toggledShapeElementId.push(layerElement.id);
+                                }
                                 if (this.maps.legendSettings.toggleLegendSettings.applyShapeSettings) {
-                                    layerElement.setAttribute('fill', this.maps.layers[k].shapeSettings.fill);
-                                    layerElement.setAttribute('opacity', (this.maps.layers[k].shapeSettings.opacity).toString());
-                                    layerElement.setAttribute('stroke', this.maps.layers[k].shapeSettings.border.color);
-                                    layerElement.setAttribute('stroke-width', (this.maps.layers[k].shapeSettings.border.width).toString());
+                                    layerElement.setAttribute('fill', this.maps.layers[j].shapeSettings.fill);
+                                    layerElement.setAttribute('opacity', (this.maps.layers[j].shapeSettings.opacity).toString());
+                                    layerElement.setAttribute('stroke', this.maps.layers[j].shapeSettings.border.color);
+                                    layerElement.setAttribute('stroke-width', (this.maps.layers[j].shapeSettings.border.width).toString());
                                 }
                                 else {
                                     layerElement.setAttribute("fill", legendToggleFill);
@@ -8155,10 +9171,16 @@ var Legend = /** @__PURE__ @class */ (function () {
                                 }
                             }
                             else {
+                                if (toggledLegendIdIndex !== -1 && i === 0) {
+                                    this.maps.toggledLegendId.splice(toggledLegendIdIndex, 1);
+                                }
+                                if (toggledShapeIdIndex !== -1) {
+                                    this.maps.toggledShapeElementId.splice(toggledShapeIdIndex, 1);
+                                }
                                 layerElement.setAttribute('fill', this.legendCollection[legendIndex]['fill']);
-                                layerElement.setAttribute('opacity', (this.maps.layers[k].shapeSettings.opacity).toString());
-                                layerElement.setAttribute('stroke', this.maps.layers[k].shapeSettings.border.color);
-                                layerElement.setAttribute('stroke-width', (this.maps.layers[k].shapeSettings.border.width).toString());
+                                layerElement.setAttribute('opacity', (this.maps.layers[j].shapeSettings.opacity).toString());
+                                layerElement.setAttribute('stroke', this.maps.layers[j].shapeSettings.border.color);
+                                layerElement.setAttribute('stroke-width', (this.maps.layers[j].shapeSettings.border.width).toString());
                                 if (targetEle !== null) {
                                     legendTextId = querySelector(this.maps.element.id + '_Legend_Text_Index_' + legendIndex, this.maps.element.id);
                                     legendTextId.setAttribute("fill", "#757575");
@@ -8226,13 +9248,26 @@ var Legend = /** @__PURE__ @class */ (function () {
             }
             if (this.maps.legendSettings.type === "Layers" && this.maps.legendSettings.toggleLegendSettings.enable) {
                 var mapLegendElement = void 0;
+                this.removeCollections(targetEle, legendIndex);
+                var toggleLegendIdIndex = this.maps.toggledLegendId.indexOf(legendIndex);
+                if (toggleLegendIdIndex !== -1) {
+                    isVisible = false;
+                }
+                
                 for (var k = 0; k < this.maps.layers.length; k++) {
                     for (var i = 0; i < selectedItem.length; i++) {
                         mapdata = this.legendCollection[legendIndex]['data'][i];
                         mapLegendElement = querySelector(this.maps.element.id + '_LayerIndex_' + mapdata['layerIndex'] +
                             '_shapeIndex_' + mapdata['shapeIndex'] + '_dataIndex_' + mapdata['dataIndex'], this.maps.element.id);
                         if (mapLegendElement !== null) {
+                            var toggledShapeIdIndex = this.maps.toggledShapeElementId.indexOf(mapLegendElement.id);
                             if (isVisible) {
+                                if (i === 0) {
+                                    this.maps.toggledLegendId.push(legendIndex);
+                                }
+                                if (toggledShapeIdIndex === -1) {
+                                    this.maps.toggledShapeElementId.push(mapLegendElement.id);
+                                }
                                 if (this.maps.legendSettings.toggleLegendSettings.applyShapeSettings) {
                                     mapLegendElement.setAttribute('fill', this.maps.layers[0].shapeSettings.fill);
                                     mapLegendElement.setAttribute('stroke', this.maps.layers[0].shapeSettings.border.color);
@@ -8253,6 +9288,12 @@ var Legend = /** @__PURE__ @class */ (function () {
                                 }
                             }
                             else {
+                                if (toggleLegendIdIndex !== -1 && i === 0) {
+                                    this.maps.toggledLegendId.splice(toggleLegendIdIndex, 1);
+                                }
+                                if (toggledShapeIdIndex !== -1) {
+                                    this.maps.toggledShapeElementId.splice(toggledShapeIdIndex, 1);
+                                }
                                 mapLegendElement.setAttribute('fill', this.legendCollection[legendIndex]['fill']);
                                 mapLegendElement.setAttribute('stroke', this.maps.layers[0].shapeSettings.border.color);
                                 mapLegendElement.setAttribute('opacity', (this.maps.layers[k].shapeSettings.opacity).toString());
@@ -8269,6 +9310,25 @@ var Legend = /** @__PURE__ @class */ (function () {
                 }
                 selectedItem['_isVisible'] = isVisible ? false : true;
             }
+        }
+    };
+    Legend.prototype.removeCollections = function (targetEle, legendIndex) {
+        this.removeLegendSelectionCollection(targetEle);
+        var legendSelectionIndex = this.getIndexofLegend(this.maps.legendSelectionCollection, targetEle);
+        if (legendSelectionIndex !== -1) {
+            this.maps.legendSelectionCollection.splice(legendSelectionIndex, 1);
+        }
+        var legendHighlightIndex = this.getIndexofLegend(this.legendHighlightCollection, targetEle);
+        if (legendHighlightIndex !== -1) {
+            this.legendHighlightCollection.splice(legendSelectionIndex, 1);
+        }
+        var shapeHighlightIndex = this.getIndexofLegend(this.shapeHighlightCollection, targetEle);
+        if (shapeHighlightIndex !== -1) {
+            this.shapeHighlightCollection.splice(shapeHighlightIndex, 1);
+        }
+        var selectedIndex = this.maps.selectedLegendElementId.indexOf(legendIndex);
+        if (selectedIndex !== -1) {
+            this.maps.selectedLegendElementId.splice(selectedIndex, 1);
         }
     };
     Legend.prototype.removeEventListener = function () {
@@ -8306,7 +9366,7 @@ var Legend = /** @__PURE__ @class */ (function () {
             var y2 = void 0;
             x2 = position === 'Top' || position === 'Bottom' ? '100' : '0';
             y2 = position === 'Top' || position === 'Bottom' ? '0' : '100';
-            linerGradientEle.setAttribute('id', 'linear_' + legendIndex);
+            linerGradientEle.setAttribute('id', 'linear_' + legendIndex + '_' + this.maps.element.id);
             linerGradientEle.setAttribute('x1', 0 + '%');
             linerGradientEle.setAttribute('y1', 0 + '%');
             linerGradientEle.setAttribute('x2', x2 + '%');
@@ -8320,7 +9380,7 @@ var Legend = /** @__PURE__ @class */ (function () {
                 linerGradientEle.appendChild(stopEle);
             }
             this.legendLinearGradient = linerGradientEle;
-            var color = 'url(' + '#linear_' + legendIndex + ')';
+            var color = 'url(' + '#linear_' + legendIndex + '_' + this.maps.element.id + ')';
             this.defsElement.appendChild(linerGradientEle);
             legendFillColor = color;
         }
@@ -8402,7 +9462,9 @@ var Highlight = /** @__PURE__ @class */ (function () {
         var isTouch = e.pointerType === 'touch' || e.pointerType === '2' || (e.type.indexOf('touch') > -1);
         if ((targetEle.id.indexOf('LayerIndex') !== -1 || targetEle.id.indexOf('NavigationIndex') > -1) &&
             targetEle.getAttribute('class') !== 'ShapeselectionMapStyle' && !isTouch &&
-            targetEle.getAttribute('class') !== 'MarkerselectionMapStyle') {
+            targetEle.getAttribute('class') !== 'MarkerselectionMapStyle' &&
+            targetEle.getAttribute('class') !== 'BubbleselectionMapStyle' &&
+            targetEle.getAttribute('class') !== 'navigationlineselectionMapStyle') {
             layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
             var shapeData = void 0;
             var data = void 0;
@@ -8442,7 +9504,11 @@ var Highlight = /** @__PURE__ @class */ (function () {
                 if (this.maps.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1) {
                     this.maps.legendModule.shapeHighLightAndSelection(targetEle, data, this.highlightSettings, 'highlight', layerIndex);
                 }
-                this.mapHighlight(targetEle, shapeData, data);
+                var selectHighLight = targetEle.id.indexOf('shapeIndex') > -1 && this.maps.legendSettings.visible ?
+                    this.maps.legendModule.shapeToggled : true;
+                if (selectHighLight) {
+                    this.mapHighlight(targetEle, shapeData, data);
+                }
             }
             else {
                 var element = document.getElementsByClassName('highlightMapStyle')[0];
@@ -8489,31 +9555,29 @@ var Highlight = /** @__PURE__ @class */ (function () {
             var marker$$1 = parseInt(targetEle.id.split('_MarkerIndex_')[1].split('_')[0], 10);
             isMarkerSelect = this.maps.layers[layerIndex].markerSettings[marker$$1].highlightSettings.enable;
         }
-        if (this.maps.legendSettings.visible ? (this.maps.legendModule.legendElement !== this.maps.legendModule.oldShapeElement) : true) {
-            var border = {
-                color: this.highlightSettings.border.color,
-                width: this.highlightSettings.border.width / (isMarkerSelect ? 1 : this.maps.scale)
-            };
-            var eventArgs_1 = {
-                opacity: this.highlightSettings.opacity,
-                fill: targetEle.id.indexOf('NavigationIndex') === -1 ? !isNullOrUndefined(this.highlightSettings.fill)
-                    ? this.highlightSettings.fill : targetEle.getAttribute('fill') : 'none',
-                border: border,
-                name: itemHighlight,
-                target: targetEle.id,
-                cancel: false,
-                shapeData: shapeData,
-                data: data,
-                maps: this.maps
-            };
-            if (this.maps.isBlazor) {
-                var shapeData_1 = eventArgs_1.shapeData, maps = eventArgs_1.maps, blazorEventArgs = __rest$5(eventArgs_1, ["shapeData", "maps"]);
-                eventArgs_1 = blazorEventArgs;
-            }
-            this.maps.trigger(itemHighlight, eventArgs_1, function () {
-                _this.highlightMap(targetEle, eventArgs_1);
-            });
+        var border = {
+            color: this.highlightSettings.border.color,
+            width: this.highlightSettings.border.width / (isMarkerSelect ? 1 : this.maps.scale)
+        };
+        var eventArgs = {
+            opacity: this.highlightSettings.opacity,
+            fill: targetEle.id.indexOf('NavigationIndex') === -1 ? !isNullOrUndefined(this.highlightSettings.fill)
+                ? this.highlightSettings.fill : targetEle.getAttribute('fill') : 'none',
+            border: border,
+            name: itemHighlight,
+            target: targetEle.id,
+            cancel: false,
+            shapeData: shapeData,
+            data: data,
+            maps: this.maps
+        };
+        if (this.maps.isBlazor) {
+            var shapeData_1 = eventArgs.shapeData, maps = eventArgs.maps, blazorEventArgs = __rest$5(eventArgs, ["shapeData", "maps"]);
+            eventArgs = blazorEventArgs;
         }
+        this.maps.trigger(itemHighlight, eventArgs, function () {
+            _this.highlightMap(targetEle, eventArgs);
+        });
     };
     Highlight.prototype.highlightMap = function (targetEle, eventArgs) {
         if (targetEle.getAttribute('class') === 'highlightMapStyle') {
@@ -8596,42 +9660,44 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.maps.off(click, this.mouseClick);
         this.maps.off(Browser.touchEndEvent, this.mouseClick);
     };
-    Selection.prototype.mouseClick = function (targetEle) {
-        if (!isNullOrUndefined(targetEle['type']) && targetEle['type'].indexOf('touch') !== -1 && isNullOrUndefined(targetEle.id)) {
-            targetEle = targetEle['target'];
+    Selection.prototype.mouseClick = function (targetElement) {
+        if (!isNullOrUndefined(targetElement['type']) && targetElement['type'].indexOf('touch') !== -1 &&
+            isNullOrUndefined(targetElement.id)) {
+            targetElement = targetElement['target'];
         }
-        if (!isNullOrUndefined(targetEle.id) && (targetEle.id.indexOf('LayerIndex') > -1 || targetEle.id.indexOf('NavigationIndex') > -1)) {
+        if (!isNullOrUndefined(targetElement.id) && (targetElement.id.indexOf('LayerIndex') > -1 ||
+            targetElement.id.indexOf('NavigationIndex') > -1)) {
             var layerIndex = void 0;
             var shapeData = void 0;
             var data = void 0;
             var shapeIndex = void 0;
             var dataIndex = void 0;
-            layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
-            if (targetEle.id.indexOf('shapeIndex') > -1) {
-                shapeIndex = parseInt(targetEle.id.split('_shapeIndex_')[1].split('_')[0], 10);
+            layerIndex = parseInt(targetElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
+            if (targetElement.id.indexOf('shapeIndex') > -1) {
+                shapeIndex = parseInt(targetElement.id.split('_shapeIndex_')[1].split('_')[0], 10);
                 shapeData = this.maps.layers[layerIndex].shapeData['features']['length'] > shapeIndex ?
                     this.maps.layers[layerIndex].shapeData['features'][shapeIndex]['properties'] : null;
-                dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
+                dataIndex = parseInt(targetElement.id.split('_dataIndex_')[1].split('_')[0], 10);
                 data = isNullOrUndefined(dataIndex) ? null : this.maps.layers[layerIndex].dataSource[dataIndex];
                 this.selectionsettings = this.maps.layers[layerIndex].selectionSettings;
                 this.selectionType = 'Shape';
             }
-            else if (targetEle.id.indexOf('BubbleIndex') > -1) {
-                var bubbleIndex = parseInt(targetEle.id.split('_BubbleIndex_')[1].split('_')[0], 10);
-                dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
+            else if (targetElement.id.indexOf('BubbleIndex') > -1) {
+                var bubbleIndex = parseInt(targetElement.id.split('_BubbleIndex_')[1].split('_')[0], 10);
+                dataIndex = parseInt(targetElement.id.split('_dataIndex_')[1].split('_')[0], 10);
                 data = this.maps.layers[layerIndex].bubbleSettings[bubbleIndex].dataSource[dataIndex];
                 this.selectionsettings = this.maps.layers[layerIndex].bubbleSettings[bubbleIndex].selectionSettings;
                 this.selectionType = 'Bubble';
             }
-            else if (targetEle.id.indexOf('MarkerIndex') > -1) {
-                var markerIndex = parseInt(targetEle.id.split('_MarkerIndex_')[1].split('_')[0], 10);
-                dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
+            else if (targetElement.id.indexOf('MarkerIndex') > -1) {
+                var markerIndex = parseInt(targetElement.id.split('_MarkerIndex_')[1].split('_')[0], 10);
+                dataIndex = parseInt(targetElement.id.split('_dataIndex_')[1].split('_')[0], 10);
                 data = this.maps.layers[layerIndex].markerSettings[markerIndex].dataSource[dataIndex];
                 this.selectionsettings = this.maps.layers[layerIndex].markerSettings[markerIndex].selectionSettings;
                 this.selectionType = 'Marker';
             }
             else {
-                var index = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
+                var index = parseInt(targetElement.id.split('_NavigationIndex_')[1].split('_')[0], 10);
                 shapeData = null;
                 data = {
                     latitude: this.maps.layers[layerIndex].navigationLineSettings[index].latitude,
@@ -8641,36 +9707,39 @@ var Selection = /** @__PURE__ @class */ (function () {
                 this.selectionType = 'navigationline';
             }
             if (this.selectionsettings.enable) {
-                if (this.maps.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1) {
-                    this.maps.legendModule.shapeHighLightAndSelection(targetEle, data, this.selectionsettings, 'selection', layerIndex);
+                if (this.maps.legendSettings.visible && targetElement.id.indexOf('_MarkerIndex_') === -1) {
+                    this.maps.legendModule.shapeHighLightAndSelection(targetElement, data, this.selectionsettings, 'selection', layerIndex);
                 }
-                if (this.maps.legendSettings.visible ? this.maps.legendModule.legendSelection : true) {
-                    this.selectMap(targetEle, shapeData, data);
+                var shapeToggled = (targetElement.id.indexOf('shapeIndex') > -1 && this.maps.legendSettings.visible) ?
+                    this.maps.legendModule.shapeToggled : true;
+                if (shapeToggled) {
+                    this.selectMap(targetElement, shapeData, data);
                 }
             }
         }
-        else if (!isNullOrUndefined(targetEle.id) && (targetEle.id.indexOf(this.maps.element.id + '_Legend_Shape_Index') > -1 ||
-            targetEle.id.indexOf(this.maps.element.id + '_Legend_Index') !== -1) && this.maps.legendSettings.visible &&
-            targetEle.id.indexOf('_Text') === -1) {
-            this.maps.legendModule.legendHighLightAndSelection(targetEle, 'selection');
+        else if (this.maps.legendSettings.visible && !this.maps.legendSettings.toggleLegendSettings.enable &&
+            !isNullOrUndefined(targetElement.id) && targetElement.id.indexOf('_Text') === -1 &&
+            (targetElement.id.indexOf(this.maps.element.id + '_Legend_Shape_Index') > -1 ||
+                targetElement.id.indexOf(this.maps.element.id + '_Legend_Index') !== -1)) {
+            this.maps.legendModule.legendHighLightAndSelection(targetElement, 'selection');
         }
     };
     /**
      * Public method for selection
      */
     Selection.prototype.addSelection = function (layerIndex, name, enable) {
-        var targetEle = getTargetElement(layerIndex, name, enable, this.maps);
+        var targetElement = getTargetElement(layerIndex, name, enable, this.maps);
         if (enable) {
-            this.selectMap(targetEle, null, null);
+            this.selectMap(targetElement, null, null);
         }
         else {
-            removeClass(targetEle);
+            removeClass(targetElement);
         }
     };
     /**
      * Method for selection
      */
-    Selection.prototype.selectMap = function (targetEle, shapeData, data) {
+    Selection.prototype.selectMap = function (targetElement, shapeData, data) {
         var _this = this;
         var selectionsettings = this.selectionsettings;
         var border = {
@@ -8682,7 +9751,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             fill: this.selectionType !== 'navigationline' ? this.selectionsettings.fill : 'none',
             border: border,
             name: itemSelection,
-            target: targetEle.id,
+            target: targetElement.id,
             cancel: false,
             shapeData: shapeData,
             data: data,
@@ -8693,27 +9762,35 @@ var Selection = /** @__PURE__ @class */ (function () {
             eventArgs = blazorEventArgs;
         }
         this.maps.trigger('itemSelection', eventArgs, function (observedArgs) {
-            // if (this.maps.legendSettings.visible && !this.maps.legendSettings.toggleVisibility
-            // && this.maps.legendSettings.legendSelection) {
-            //     this.removeLegendSelection(this.maps.legendModule.legendCollection, targetEle);
-            // }
-            if (targetEle.getAttribute('class') === _this.selectionType + 'selectionMapStyle') {
-                removeClass(targetEle);
-                if (targetEle.id.indexOf('NavigationIndex') > -1) {
-                    var index = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
-                    var layerIndex = parseInt(targetEle.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
-                    targetEle.setAttribute('stroke-width', _this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
-                    targetEle.setAttribute('stroke', _this.maps.layers[layerIndex].navigationLineSettings[index].color);
+            if (targetElement.getAttribute('class') === _this.selectionType + 'selectionMapStyle') {
+                removeClass(targetElement);
+                _this.removedSelectionList(targetElement);
+                if (targetElement.id.indexOf('NavigationIndex') > -1) {
+                    var index = parseInt(targetElement.id.split('_NavigationIndex_')[1].split('_')[0], 10);
+                    var layerIndex = parseInt(targetElement.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
+                    targetElement.setAttribute('stroke-width', _this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
+                    targetElement.setAttribute('stroke', _this.maps.layers[layerIndex].navigationLineSettings[index].color);
                 }
             }
             else {
-                if (!_this.selectionsettings.enableMultiSelect
-                    && getElementsByClassName(_this.selectionType + 'selectionMapStyle').length > 0) {
-                    var ele = getElementsByClassName(_this.selectionType + 'selectionMapStyle')[0];
+                var layetElement = getElementByID(_this.maps.element.id + '_Layer_Collections');
+                if (!_this.selectionsettings.enableMultiSelect &&
+                    layetElement.getElementsByClassName(_this.selectionType + 'selectionMapStyle').length > 0) {
+                    var ele = layetElement.getElementsByClassName(_this.selectionType + 'selectionMapStyle')[0];
                     removeClass(ele);
+                    _this.removedSelectionList(ele);
+                    if (_this.selectionType === 'Shape') {
+                        var selectionLength = _this.maps.selectedElementId.length;
+                        for (var i = 0; i < selectionLength; i++) {
+                            ele = layetElement.getElementsByClassName(_this.selectionType + 'selectionMapStyle')[0];
+                            removeClass(ele);
+                            var selectedElementIdIndex = _this.maps.selectedElementId.indexOf(ele.getAttribute('id'));
+                            _this.maps.selectedElementId.splice(selectedElementIdIndex, 1);
+                        }
+                    }
                     if (ele.id.indexOf('NavigationIndex') > -1) {
-                        var index = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
-                        var layerIndex = parseInt(targetEle.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
+                        var index = parseInt(targetElement.id.split('_NavigationIndex_')[1].split('_')[0], 10);
+                        var layerIndex = parseInt(targetElement.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
                         ele.setAttribute('stroke-width', _this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
                         ele.setAttribute('stroke', _this.maps.layers[layerIndex].navigationLineSettings[index].color);
                     }
@@ -8724,14 +9801,30 @@ var Selection = /** @__PURE__ @class */ (function () {
                 else {
                     customizeStyle(_this.selectionType + 'selectionMap', _this.selectionType + 'selectionMapStyle', eventArgs);
                 }
-                targetEle.setAttribute('class', _this.selectionType + 'selectionMapStyle');
+                targetElement.setAttribute('class', _this.selectionType + 'selectionMapStyle');
+                if (targetElement.getAttribute('class') === 'ShapeselectionMapStyle') {
+                    _this.maps.shapeSelectionClass = getElement(_this.selectionType + 'selectionMap');
+                    _this.maps.selectedElementId.push(targetElement.getAttribute('id'));
+                }
+                if (targetElement.getAttribute('class') === 'MarkerselectionMapStyle') {
+                    _this.maps.markerSelectionClass = getElement(_this.selectionType + 'selectionMap');
+                    _this.maps.selectedMarkerElementId.push(targetElement.getAttribute('id'));
+                }
+                if (targetElement.getAttribute('class') === 'BubbleselectionMapStyle') {
+                    _this.maps.bubbleSelectionClass = getElement(_this.selectionType + 'selectionMap');
+                    _this.maps.selectedBubbleElementId.push(targetElement.getAttribute('id'));
+                }
+                if (targetElement.getAttribute('class') === 'navigationlineselectionMapStyle') {
+                    _this.maps.navigationSelectionClass = getElement(_this.selectionType + 'selectionMap');
+                    _this.maps.selectedNavigationElementId.push(targetElement.getAttribute('id'));
+                }
             }
         });
     };
     /**
      * Remove legend selection
      */
-    // private removeLegendSelection(legendCollection: Object[], targetEle: Element): void {
+    // private removeLegendSelection(legendCollection: Object[], targetElement: Element): void {
     //     let shape: Element;
     //     if (!this.selectionsettings.enableMultiSelect) {
     //        for (let i: number = 0; i < legendCollection.length; i++) {
@@ -8743,6 +9836,23 @@ var Selection = /** @__PURE__ @class */ (function () {
     //         }
     //     }
     // }
+    /**
+     * Get module name.
+     */
+    Selection.prototype.removedSelectionList = function (targetElement) {
+        if (this.selectionType === 'Shape') {
+            this.maps.selectedElementId.splice(this.maps.selectedElementId.indexOf(targetElement.getAttribute('id')), 1);
+        }
+        if (this.selectionType === 'Bubble') {
+            this.maps.selectedBubbleElementId.splice(this.maps.selectedBubbleElementId.indexOf(targetElement.getAttribute('id')), 1);
+        }
+        if (this.selectionType === 'Marker') {
+            this.maps.selectedMarkerElementId.splice(this.maps.selectedMarkerElementId.indexOf(targetElement.getAttribute('id')), 1);
+        }
+        if (this.selectionType === 'navigationline') {
+            this.maps.selectedBubbleElementId.splice(this.maps.selectedBubbleElementId.indexOf(targetElement.getAttribute('id')), 1);
+        }
+    };
     /**
      * Get module name.
      */
@@ -8806,7 +9916,6 @@ var MapsTooltip = /** @__PURE__ @class */ (function () {
         var option;
         var currentData = '';
         var targetId = target.id;
-        this.targetID = targetId;
         var tooltipEle;
         var location;
         var templateData = [];
@@ -8911,6 +10020,16 @@ var MapsTooltip = /** @__PURE__ @class */ (function () {
             this.maps.trigger('tooltipRender', tooltipArgs, function (observedArgs) {
                 if (!tooltipArgs.cancel && option.visible && !isNullOrUndefined(currentData) &&
                     (targetId.indexOf('_cluster_') === -1 && targetId.indexOf('_dataLabel_') === -1)) {
+                    var blazTooltipName = void 0;
+                    if (targetId.indexOf('MarkerIndex') > 0) {
+                        blazTooltipName = 'MarkerTooltipTemplate';
+                    }
+                    else if (targetId.indexOf('BubbleIndex') > 0) {
+                        blazTooltipName = 'BubbleTooltipTemplate';
+                    }
+                    else {
+                        blazTooltipName = 'LayerTooltipTemplate';
+                    }
                     _this.maps['isProtectedOnChange'] = true;
                     tooltipArgs.options['textStyle']['color'] = _this.maps.themeStyle.tooltipFontColor
                         || tooltipArgs.options['textStyle']['color'];
@@ -8927,6 +10046,7 @@ var MapsTooltip = /** @__PURE__ @class */ (function () {
                         textStyle: tooltipArgs.options['textStyle'],
                         availableSize: _this.maps.availableSize,
                         fill: tooltipArgs.fill || _this.maps.themeStyle.tooltipFillColor,
+                        blazorTemplate: { name: blazTooltipName, parent: option }
                     });
                     _this.svgTooltip.opacity = _this.maps.themeStyle.tooltipFillOpacity || _this.svgTooltip.opacity;
                     _this.svgTooltip.appendTo(tooltipEle);
@@ -9072,6 +10192,8 @@ var Zoom = /** @__PURE__ @class */ (function () {
         this.startTouches = [];
         this.shapeZoomLocation = [];
         this.intersect = [];
+        this.mouseDownLatLong = { x: 0, y: 0 };
+        this.mouseMoveLatLong = { x: 0, y: 0 };
         /**
          * @private
          */
@@ -9289,6 +10411,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
     Zoom.prototype.applyTransform = function (animate$$1) {
         var layerIndex;
         this.templateCount = 0;
+        var markerStyle;
         var scale = this.maps.scale;
         var x = this.maps.translatePoint.x;
         var y = this.maps.translatePoint.y;
@@ -9327,6 +10450,10 @@ var Zoom = /** @__PURE__ @class */ (function () {
                             if (!isNullOrUndefined(currentEle)) {
                                 for (var k = 0; k < currentEle.childElementCount; k++) {
                                     this.markerTranslate(currentEle.childNodes[k], factor, x, y, scale, 'Marker', animate$$1);
+                                    if (!this.maps.isTileMap && this.currentLayer.animationDuration > 0) {
+                                        markerStyle = 'visibility:hidden';
+                                        currentEle.setAttribute('style', markerStyle);
+                                    }
                                 }
                                 if (this.isPanning && this.maps.markerModule.sameMarkerData.length > 0) {
                                     clusterSeparate(this.maps.markerModule.sameMarkerData, this.maps, currentEle, true);
@@ -9340,19 +10467,21 @@ var Zoom = /** @__PURE__ @class */ (function () {
                                 if (document.getElementById(this.maps.element.id + '_mapsTooltip') && this.maps.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_')) {
                                     var mapsTooltip = this.maps.mapsTooltipModule;
                                     var tooltipElement = currentEle.querySelector('#' + mapsTooltip.tooltipTargetID);
-                                    if (tooltipElement['style']['visibility'] === 'hidden') {
-                                        removeElement(this.maps.element.id + '_mapsTooltip');
-                                    }
-                                    else {
-                                        var x_1 = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[1]);
-                                        var y_1 = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[2]);
-                                        if (this.maps.isTileMap) {
-                                            x_1 += +getElement(this.maps.element.id + '_tile_parent')['style']['left'].split('px')[0];
-                                            y_1 += +getElement(this.maps.element.id + '_tile_parent')['style']['top'].split('px')[0];
+                                    if (!isNullOrUndefined(tooltipElement)) {
+                                        if (tooltipElement['style']['visibility'] === 'hidden') {
+                                            removeElement(this.maps.element.id + '_mapsTooltip');
                                         }
-                                        mapsTooltip.svgTooltip.location.x = x_1;
-                                        mapsTooltip.svgTooltip.location.y = y_1;
-                                        mapsTooltip.svgTooltip.enableAnimation = false;
+                                        else {
+                                            var x_1 = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[1]);
+                                            var y_1 = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[2]);
+                                            if (this.maps.isTileMap) {
+                                                x_1 += +getElement(this.maps.element.id + '_tile_parent')['style']['left'].split('px')[0];
+                                                y_1 += +getElement(this.maps.element.id + '_tile_parent')['style']['top'].split('px')[0];
+                                            }
+                                            mapsTooltip.svgTooltip.location.x = x_1;
+                                            mapsTooltip.svgTooltip.location.y = y_1;
+                                            mapsTooltip.svgTooltip.enableAnimation = false;
+                                        }
                                     }
                                 }
                             }
@@ -9441,14 +10570,15 @@ var Zoom = /** @__PURE__ @class */ (function () {
         if (document.getElementById(markerSVGObject.id)) {
             removeElement(markerSVGObject.id);
         }
+        var mapsAreaRect = this.maps.mapAreaRect;
         var markerTemplateElements = createElement('div', {
             id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_Markers_Template_Group',
             className: 'template',
             styles: 'overflow: hidden; position: absolute;pointer-events: none;' +
-                'top:' + (this.maps.isTileMap ? 10 : this.maps.mapAreaRect.y) + 'px;' +
-                'left:' + (this.maps.isTileMap ? 10 : this.maps.mapAreaRect.x) + 'px;' +
-                'height:' + this.maps.mapAreaRect.height + 'px;' +
-                'width:' + this.maps.mapAreaRect.width + 'px;'
+                'top:' + mapsAreaRect.y + 'px;' +
+                'left:' + mapsAreaRect.x + 'px;' +
+                'height:' + mapsAreaRect.height + 'px;' +
+                'width:' + mapsAreaRect.width + 'px;'
         });
         if (document.getElementById(markerTemplateElements.id)) {
             removeElement(markerTemplateElements.id);
@@ -9459,17 +10589,26 @@ var Zoom = /** @__PURE__ @class */ (function () {
             markerDatas.forEach(function (data, dataIndex) {
                 var eventArgs = {
                     template: markerSettings.template, data: data, maps: _this.maps, marker: markerSettings,
-                    cancel: false, name: markerRendering, fill: markerSettings.fill, height: markerSettings.height,
+                    cancel: false, name: markerRendering, fill: markerSettings.fill, colorValuePath: markerSettings.colorValuePath,
+                    shapeValuePath: markerSettings.shapeValuePath, height: markerSettings.height,
                     width: markerSettings.width, imageUrl: markerSettings.imageUrl, shape: markerSettings.shape,
                     border: markerSettings.border
                 };
-                if (isBlazor()) {
+                eventArgs = markerShapeChoose(eventArgs, data);
+                eventArgs = markerColorChoose(eventArgs, data);
+                if (_this.maps.isBlazor) {
                     var maps = eventArgs.maps, marker_1 = eventArgs.marker, blazorEventArgs = __rest$8(eventArgs, ["maps", "marker"]);
                     eventArgs = blazorEventArgs;
                 }
                 _this.maps.trigger('markerRendering', eventArgs, function (MarkerArgs) {
-                    var long = data['longitude'];
+                    if (markerSettings.shapeValuePath !== eventArgs.shapeValuePath) {
+                        eventArgs = markerShapeChoose(eventArgs, data);
+                    }
+                    if (markerSettings.colorValuePath !== eventArgs.colorValuePath) {
+                        eventArgs = markerColorChoose(eventArgs, data);
+                    }
                     var lati = data['latitude'];
+                    var long = data['longitude'];
                     var offset = markerSettings.offset;
                     if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(long) && !isNullOrUndefined(lati)) {
                         var markerID = _this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
@@ -9683,10 +10822,25 @@ var Zoom = /** @__PURE__ @class */ (function () {
             if (this.maps.isTileMap) {
                 if (type === 'Template') {
                     var templateOffset = element.getBoundingClientRect();
-                    element.style.left = (location_2.x - (templateOffset.width / 2)) + 'px';
-                    element.style.top = (location_2.y - (templateOffset.height / 2)) + 'px';
+                    element.style.left = ((location_2.x - (templateOffset.width / 2)) + marker$$1.offset.x) + 'px';
+                    element.style.top = ((location_2.y - (templateOffset.height / 2)) + marker$$1.offset.y) + 'px';
+                    if (this.maps.layers[this.maps.baseLayerIndex].layerType === 'GoogleStaticMap') {
+                        var staticMapOffset = getElementByID(this.maps.element.id + '_StaticGoogleMap').getBoundingClientRect();
+                        var staticMapOffsetWidth = 640;
+                        if (element['style']['display'] !== 'none') {
+                            if ((staticMapOffset['x'] > templateOffset['x'] || staticMapOffset['x'] + staticMapOffsetWidth < templateOffset['x'] + templateOffset['width'])
+                                && (staticMapOffset['y'] > templateOffset['y'] || staticMapOffset['y'] + staticMapOffset['height'] < templateOffset['y'] + templateOffset['height'])) {
+                                element['style']['display'] = 'none';
+                            }
+                            else if ((staticMapOffset['x'] > templateOffset['x'] || staticMapOffset['x'] + staticMapOffsetWidth < templateOffset['x'] + templateOffset['width'])) {
+                                element['style']['display'] = 'none';
+                            }
+                        }
+                    }
                 }
                 else {
+                    location_2.x += marker$$1.offset.x;
+                    location_2.y += marker$$1.offset.y;
                     element.setAttribute('transform', 'translate( ' + location_2.x + ' ' + location_2.y + ' )');
                 }
             }
@@ -9943,12 +11097,22 @@ var Zoom = /** @__PURE__ @class */ (function () {
                 this.applySelection(this.panElements, this.selectionColor);
                 break;
             case 'zoomin':
+                map.staticMapZoom = map.tileZoomLevel;
+                if (map.staticMapZoom > 0 && map.staticMapZoom < 22) {
+                    map.staticMapZoom += 1;
+                }
                 this.toolBarZooming((map.isTileMap ? map.tileZoomLevel : map.scale) + 1, 'ZoomIn');
                 break;
             case 'zoomout':
+                map.staticMapZoom = map.tileZoomLevel;
+                map.centerPosition.latitude = null;
+                map.centerPosition.longitude = null;
                 this.toolBarZooming((map.isTileMap ? map.tileZoomLevel : map.scale) - 1, 'ZoomOut');
                 break;
             case 'reset':
+                map.staticMapZoom = map.zoomSettings.enable ? map.zoomSettings.zoomFactor : 0;
+                map.centerPosition.latitude = null;
+                map.centerPosition.longitude = null;
                 this.toolBarZooming(1, 'ZoomOut');
                 this.applySelection(this.zoomElements, this.fillColor);
                 this.applySelection(this.panElements, this.selectionColor);
@@ -10050,12 +11214,13 @@ var Zoom = /** @__PURE__ @class */ (function () {
     };
     Zoom.prototype.mapMouseWheel = function (e) {
         if (this.maps.zoomSettings.enable && this.maps.zoomSettings.mouseWheelZoom) {
-            var position = this.getMousePosition(e.pageX, e.pageY);
             var map = this.maps;
             var size = map.availableSize;
+            var position = this.getMousePosition(e.pageX, e.pageY);
             var prevLevel = map.tileZoomLevel;
             var prevScale = map.scale;
             var delta = 1;
+            var staticMaxZoomLevel = 22; // google map maximum zoom level value
             var value = (map.isTileMap) ? prevLevel : prevScale;
             if (((position.x > map.mapAreaRect.x) && (position.x < (map.mapAreaRect.x + map.mapAreaRect.width))) &&
                 (position.y > map.mapAreaRect.y) && position.y < (map.mapAreaRect.y + map.mapAreaRect.height)) {
@@ -10063,9 +11228,19 @@ var Zoom = /** @__PURE__ @class */ (function () {
                 var direction = (this.browserName === 'mozilla' && !this.isPointer) ?
                     -(e.detail) / 3 > 0 ? 'ZoomIn' : 'ZoomOut' : (e.wheelDelta / 120) > 0 ? 'ZoomIn' : 'ZoomOut';
                 if (direction === 'ZoomIn') {
+                    map.mapScaleValue = value + delta;
+                    map.staticMapZoom = map.tileZoomLevel;
+                    if (map.staticMapZoom > 0 && map.staticMapZoom < staticMaxZoomLevel) {
+                        map.staticMapZoom += 1;
+                    }
                     this.performZooming(position, (value + delta), direction);
                 }
                 else {
+                    map.mapScaleValue = value - delta;
+                    map.staticMapZoom = map.tileZoomLevel;
+                    if (map.staticMapZoom > 1 && map.staticMapZoom < staticMaxZoomLevel) {
+                        map.staticMapZoom -= 1;
+                    }
                     this.performZooming(position, (value - delta), direction);
                 }
             }
@@ -10075,12 +11250,14 @@ var Zoom = /** @__PURE__ @class */ (function () {
         var pageX = e.pageX;
         var pageY = e.pageY;
         var target = e.target;
-        if (this.maps.zoomSettings.enable && this.maps.zoomSettings.doubleClickZoom) {
+        if (this.maps.zoomSettings.enable && this.maps.zoomSettings.doubleClickZoom
+            && !(e.target['id'].indexOf('_Zooming_') > -1)) {
             var position = this.getMousePosition(pageX, pageY);
             var map = this.maps;
             var size = map.availableSize;
             var prevLevel = map.tileZoomLevel;
             var prevScale = map.scale;
+            map.mapScaleValue = map.mapScaleValue + 1;
             var value = (map.isTileMap) ? prevLevel : prevScale;
             if (((position.x > map.mapAreaRect.x) && (position.x < (map.mapAreaRect.x + map.mapAreaRect.width))) &&
                 (position.y > map.mapAreaRect.y) && position.y < (map.mapAreaRect.y + map.mapAreaRect.height)) {
@@ -10107,6 +11284,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
             target = e.target;
         }
         this.isPanning = this.panColor === this.selectionColor ? true : this.zoomColor !== this.selectionColor;
+        this.mouseDownLatLong = { x: pageX, y: pageY };
         this.rectZoomingStart = ((!this.isPanning) && this.maps.zoomSettings.enable);
         this.mouseDownPoints = this.getMousePosition(pageX, pageY);
         if (this.isTouch) {
@@ -10165,7 +11343,12 @@ var Zoom = /** @__PURE__ @class */ (function () {
         if (zoom.enable && this.isPanning) {
             e.preventDefault();
             this.maps.element.style.cursor = 'pointer';
-            this.panning('None', null, null);
+            this.mouseMoveLatLong = { x: pageX, y: pageY };
+            if ((this.mouseDownLatLong['x'] !== this.mouseMoveLatLong['x']) && (this.mouseDownLatLong['y'] !== this.mouseMoveLatLong['y'])) {
+                this.panning('None', null, null);
+                this.mouseDownLatLong['x'] = pageX;
+                this.mouseDownLatLong['y'] = pageY;
+            }
         }
         if (this.isTouch ? (touches.length === 1 && this.rectZoomingStart) : this.rectZoomingStart) {
             e.preventDefault();
@@ -10191,6 +11374,8 @@ var Zoom = /** @__PURE__ @class */ (function () {
             remove(zoomRectElement);
             this.performRectZooming();
         }
+        this.mouseMoveLatLong = { x: 0, y: 0 };
+        this.mouseDownLatLong = { x: 0, y: 0 };
     };
     Zoom.prototype.mouseCancelHandler = function (e) {
         this.isPanning = false;
@@ -10209,7 +11394,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
     Zoom.prototype.click = function (e) {
         var map = this.maps;
         if ((map.markerModule && map.markerModule.sameMarkerData.length > 0) ||
-            +(e.target['id'].indexOf('MarkerIndex') > -1 && e.target['id'].indexOf('cluster') == -1)) {
+            (e.target['id'].indexOf('MarkerIndex') > -1 && e.target['id'].indexOf('cluster') == -1)) {
             return null;
         }
         if (this.isSingleClick && map.zoomSettings.zoomOnClick && !(e.target['id'].indexOf('_Zooming_') > -1) && !map.zoomSettings.doubleClickZoom
@@ -10219,6 +11404,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
             var position = this.getMousePosition(pageX, pageY);
             var prevLevel = map.tileZoomLevel;
             var prevScale = map.scale;
+            map.mapScaleValue = map.mapScaleValue + 1;
             var value = (map.isTileMap) ? prevLevel : prevScale;
             if (((position.x > map.mapAreaRect.x) && (position.x < (map.mapAreaRect.x + map.mapAreaRect.width))) &&
                 (position.y > map.mapAreaRect.y) && position.y < (map.mapAreaRect.y + map.mapAreaRect.height)) {
@@ -10289,5 +11475,5 @@ var Zoom = /** @__PURE__ @class */ (function () {
  * exporting all modules from maps index
  */
 
-export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClusterRendering, markerClick, markerClusterClick, markerMouseMove, markerClusterMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, ConnectorLineSettings, MarkerClusterSettings, MarkerClusterData, ColorMappingSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, ToggleLegendSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, drawSymbols, clusterTemplate, mergeSeparateCluster, clusterSeparate, marker, markerTemplate, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, getRatioOfBubble, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, getTranslate, getZoomTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
+export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClusterRendering, markerClick, markerClusterClick, markerMouseMove, markerClusterMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, ConnectorLineSettings, MarkerClusterSettings, MarkerClusterData, ColorMappingSettings, InitialShapeSelectionSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, ToggleLegendSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, drawSymbols, markerColorChoose, markerShapeChoose, clusterTemplate, mergeSeparateCluster, clusterSeparate, marker, markerTemplate, maintainSelection, maintainStyleClass, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, getRatioOfBubble, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, getTranslate, getZoomTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, triggerItemSelectionEvent, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
 //# sourceMappingURL=ej2-maps.es5.js.map

@@ -14,10 +14,10 @@ import { ColorPickerInput } from './color-picker';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { NodeSelection } from '../../selection/selection';
 import { InsertHtml } from '../../editor-manager/plugin/inserthtml';
-import { getTextNodesUnder } from '../base/util';
+import { getTextNodesUnder, sanitizeHelper } from '../base/util';
 import { isIDevice } from '../../common/util';
-import { SanitizeHtmlHelper } from './sanitize-helper';
 import { RichTextEditorModel } from '../base/rich-text-editor-model';
+import { XhtmlValidation } from './xhtml-validation';
 
 /**
  * `HtmlEditor` module is used to HTML editor
@@ -32,13 +32,13 @@ export class HtmlEditor {
     private nodeSelectionObj: NodeSelection;
     private rangeCollection: Range[] = [];
     private saveSelection: NodeSelection;
-    private sanitize: SanitizeHtmlHelper;
+    private xhtmlValidation: XhtmlValidation;
 
     constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.locator = serviceLocator;
         this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
-        this.sanitize = new SanitizeHtmlHelper();
+        this.xhtmlValidation = new XhtmlValidation(parent);
         this.addEventListener();
     }
     /**
@@ -46,6 +46,7 @@ export class HtmlEditor {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     public destroy(): void {
         this.removeEventListener();
@@ -53,9 +54,10 @@ export class HtmlEditor {
 
     /** 
      * @hidden
+     * @deprecated
      */
     public sanitizeHelper(value: string): string {
-        value = this.sanitize.initialize(value, this.parent);
+        value = sanitizeHelper(value, this.parent);
         return value;
     }
 
@@ -335,6 +337,9 @@ export class HtmlEditor {
         } else {
             this.parent.formatter.updateFormatter(editElement, this.contentRenderer.getDocument(), option);
         }
+        if (this.parent.enableXhtml) {
+            this.parent.notify(events.xhtmlValidation, {});
+        }
         if (this.parent.toolbarSettings.enable) {
             this.toolbarUpdate = new HtmlToolbarStatus(this.parent);
         }
@@ -344,6 +349,7 @@ export class HtmlEditor {
     /**
      * Called internally if any of the property value changed.
      * @hidden
+     * @deprecated
      */
     protected onPropertyChanged(e: { [key: string]: RichTextEditorModel }): void {
         // On property code change here

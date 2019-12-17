@@ -12,7 +12,7 @@ export type SortComparer = (x: ValueType, y: ValueType) => number;
 
 export type CustomSummaryType = (data: Object[] | Object, column: AggregateColumnModel) => Object;
 
-export type ReturnType = { result: Object[], count: number, aggregates?: Object };
+export type ReturnType = { result: Object[], count: number, aggregates?: Object, foreignColumnsData?: Object };
 
 export type SentinelType = {
     check?: (rect: ClientRect, info: SentinelType) => boolean,

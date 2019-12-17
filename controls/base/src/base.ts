@@ -1,4 +1,4 @@
-import { isUndefined, isNullOrUndefined, merge, setImmediate, setValue, getValue, isBlazor } from './util';
+import { isUndefined, isNullOrUndefined, merge, setImmediate, setValue, isBlazor, getValue, extend } from './util';
 import { addClass, removeClass } from './dom';
 import { Observer } from './observer';
 
@@ -25,11 +25,17 @@ export declare type EmitType<T> = AngularEventEmitter & ((arg?: T, ...rest: any[
 export abstract class Base<ElementType extends HTMLElement> {
     public element: ElementType;
     public isDestroyed: boolean;
+    protected isRendered: boolean = false;
+    protected isComplexArraySetter: boolean = false;
+    public isServerRendered: boolean = false;
+    public allowServerDataBinding: boolean = true;
     protected isProtectedOnChange: boolean = true;
     protected properties: { [key: string]: Object } = {};
     protected changedProperties: { [key: string]: Object } = {};
     protected oldProperties: { [key: string]: Object } = {};
+    protected bulkChanges: { [key: string]: Object } = {};
     protected refreshing: boolean = false;
+    public ignoreCollectionWatch : boolean = false;
     // tslint:disable-next-line:no-empty
     protected finalUpdate: Function = (): void => { };
     protected modelObserver: Observer;
@@ -50,6 +56,8 @@ export abstract class Base<ElementType extends HTMLElement> {
         if (muteOnChange !== true) {
             merge(this.changedProperties, prop);
             this.dataBind();
+        } else if (isBlazor() && this.isRendered) {
+            this.serverDataBind(prop);
         }
         this.finalUpdate();
         this.changedProperties = {};
@@ -101,8 +109,31 @@ export abstract class Base<ElementType extends HTMLElement> {
         }
     };
 
+    /* tslint:disable:no-any */
+    public serverDataBind(newChanges?: { [key: string]: any }): void {
+        if (!isBlazor()) {
+            return;
+        }
+        newChanges = newChanges ? newChanges : {};
+        extend(this.bulkChanges, {}, newChanges, true);
+        if (this.allowServerDataBinding) {
+            let ejsInterop: string = 'ejsInterop';
+            (window as any)[ejsInterop].updateModel(this);
+            this.bulkChanges = {};
+        }
+    }
+    /* tslint:enable:no-any */
+
     protected saveChanges(key: string, newValue: string, oldValue: string): void {
-        if (this.isProtectedOnChange) { return; }
+        if (isBlazor()) {
+            // tslint:disable-next-line:no-any
+            let newChanges: any = {};
+            newChanges[key] = newValue;
+            this.serverDataBind(newChanges);
+        }
+        if (this.isProtectedOnChange) {
+            return;
+        }
         this.oldProperties[key] = oldValue;
         this.changedProperties[key] = newValue;
         this.finalUpdate();
@@ -151,7 +182,7 @@ export abstract class Base<ElementType extends HTMLElement> {
                 let handler: Function = getValue(eventName, this);
                 if (handler) {
                     let blazor: string = 'Blazor';
-                    if (isBlazor()) {
+                    if (window[blazor]) {
                         let promise: Promise<object> = handler.call(this, eventProp);
                         if (promise && typeof promise.then === 'function') {
                             if (!successHandler) {
@@ -265,4 +296,23 @@ export function getComponent<T>(elem: HTMLElement | string, comp: string | any |
         }
     }
     return undefined;
+}
+
+/**
+ * Function to remove the child instances.
+ * @return {void}
+ * @private
+ */
+// tslint:disable-next-line:no-any
+export function removeChildInstance(element: HTMLElement): void {
+    // tslint:disable-next-line:no-any
+    let childEle: any = [].slice.call(element.getElementsByClassName('e-control'));
+    for (let i: number = 0; i < childEle.length; i++) {
+        let compName: string = childEle[i].classList[1].split('e-')[1];
+        // tslint:disable-next-line:no-any
+        let compInstance: any = getComponent(childEle[i], compName);
+        if (!isUndefined(compInstance)) {
+            compInstance.destroy();
+        }
+    }
 }

@@ -1,5 +1,5 @@
 import { ContextMenuType } from './enum';
-import { ContextMenuOpenEventArgs, ContextMenuClickEventArgs } from '@syncfusion/ej2-grids';
+import { ContextMenuOpenEventArgs, ContextMenuClickEventArgs, RecordDoubleClickEventArgs } from '@syncfusion/ej2-grids';
 import { RowSelectingEventArgs as GridRowSelectingEventArgs } from '@syncfusion/ej2-grids';
 import { CellSelectingEventArgs as GridCellSelectingEventArgs } from '@syncfusion/ej2-grids';
 import { RowDeselectEventArgs as GridRowDeselectEventArgs} from '@syncfusion/ej2-grids';
@@ -10,6 +10,7 @@ import { Column } from '../models/column';
 import { TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { TimelineViewMode } from '../base/enum';
 import { TimelineTierSettingsModel } from '../models/timeline-settings-model';
+import { EventMarkerModel } from '../models/event-marker-model';
 /**
  * Specifies Gantt-chart interfaces
  * 
@@ -98,6 +99,8 @@ export interface ITaskData {
     predecessor?: IPredecessor[];
     /** Defines the id of task. */
     taskId?: string;
+     /** Defines the parent id of task. */
+    parentId?: string;
     /** Defines the name of task. */
     taskName?: string;
     /** Defines the width of task. */
@@ -256,6 +259,8 @@ export interface ITimeSpanEventArgs {
     requestType?: string;
     /** Defines the event is cancel-able or not. */
     cancel?: boolean;
+    /** Defines the action. */
+    action?: string;
 }
 
 export interface IValidateMode {
@@ -270,6 +275,8 @@ export interface IActionBeginEventArgs {
     modifiedRecords?: IGanttData[];
     modifiedTaskData?: object[];
     cancel?: boolean;
+    taskBarEditAction?: string;
+    action?: string;
 }
 
 export interface IValidateLinkedTaskArgs {
@@ -445,6 +452,7 @@ export type ITimelineFormatter = (date?: Date, format?: string, tier?: string, m
 
 export interface ZoomEventArgs {
     requestType?: string;
+    action?: string;
     timeline?: ZoomTimelineSettings;
 }
 
@@ -509,6 +517,8 @@ export interface RowSelectEventArgs extends GridRowSelectEventArgs {
 export interface RowDataBoundEventArgs extends GridRowDataBoundEventArgs {
     /** Defines the data collections. */
     data: IGanttData;
+    /** Defines the row element. */
+    row?: Element;
 }
 
 export interface RowDeselectEventArgs extends GridRowDeselectEventArgs {
@@ -601,6 +611,8 @@ export interface CellSelectingEventArgs extends GridCellSelectingEventArgs {
 }
 
 export interface ScrollArgs {
+    /** Defines the action. */
+    action?: string;
     /** Defines the action type. */
     requestType?: string;
     /** Defines the scroll direction. */
@@ -614,3 +626,73 @@ export interface ScrollArgs {
     /** Defines the previous scroll left value. */
     previousScrollLeft?: number;
 }
+
+export interface ITaskbarClickEventArgs {
+    /** Defines the taskbar element. */
+    taskbarElement?: Element;
+    /** Defines the data of record. */
+    data?: IGanttData;
+    /** Defines the row index of record. */
+    rowIndex?: number;
+    /** Defines the target element. */
+    target?: Element;
+}
+
+export interface RecordDoubleClickEventArgs extends RecordDoubleClickEventArgs {
+    /** Defines the row element. */
+    row?: Element;
+    /** Defines the data of record. */
+    rowData?: IGanttData;
+    /** Defines the row index of record. */
+    rowIndex?: number;
+    /** Defines the target element. */
+    target?: Element;
+}
+
+export interface RowDropEventArgs {
+    /** Defines the selected row's element. */
+    rows?: Element[];
+    /** Defines the target element from which drag starts. */
+    target?: Element;
+    /** Defines the type of the element to be dragged.
+     * @hidden
+     */
+    draggableType?: string;
+    /** Defines the selected row data.
+     * @isGenericType true
+     */
+    data?: Object[];
+    /** Defines the drag element from index. */
+    fromIndex?: number;
+    /** Defines the target element from index. */
+    dropIndex?: number;
+    /** Define the mouse event */
+    originalEvent?: object;
+    cancel?: boolean;
+    /** Defines drop position of the dragged record */
+    dropPosition?: string;
+    /** Defines the request type. */
+    requestType?: string;
+    /** Defines the modified records. */
+    modifiedRecords?: IGanttData[];
+    /** Defines the modified records. */
+    dropRecord?: IGanttData;
+}
+
+export interface IMouseMoveEventArgs {
+    /** Defines the row data. */
+    data?: IGanttData;
+    /** Defines the column. */
+    column?: Object;
+    /** Defines the timeline date. */
+    date?: Date;
+    /** Defines the original event. */
+    originalEvent?: Object;
+    /** Defines the predecessor. */
+    predecessor?: PredecessorTooltip;
+    /** Defines the indicator. */
+    indicator?: IIndicator;
+    /** Defines the event markers. */
+    eventMarkers?: EventMarkerModel;
+}
+

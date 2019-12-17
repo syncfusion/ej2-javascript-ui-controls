@@ -328,6 +328,9 @@ export class Double {
 
     protected getFormat(axis: Axis): string {
         if (axis.labelFormat) {
+            if (axis.labelFormat.indexOf('p') === 0 && axis.labelFormat.indexOf('{value}') === -1 && axis.isStack100) {
+                return '{value}%';
+            }
             return axis.labelFormat;
         }
         return axis.isStack100 ? '{value}%' : '';
@@ -340,7 +343,7 @@ export class Double {
 
     public formatValue(axis: Axis, isCustom: boolean, format: string, tempInterval: number): string {
         return isCustom ? format.replace('{value}', axis.format(tempInterval))
-            : axis.format(tempInterval);
+            :  axis.format(tempInterval);
     }
 }
 

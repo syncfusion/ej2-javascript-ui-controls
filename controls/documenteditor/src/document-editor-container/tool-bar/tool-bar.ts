@@ -18,6 +18,7 @@ const INSERT_IMAGE_ONLINE_ID: string = '_image_url';
 const INSERT_TABLE_ID: string = '_table';
 const INSERT_LINK_ID: string = '_link';
 const BOOKMARK_ID: string = '_bookmark';
+const COMMENT_ID: string = '_comment';
 const TABLE_OF_CONTENT_ID: string = '_toc';
 const HEADER_ID: string = '_header';
 const FOOTER_ID: string = '_footer';
@@ -60,7 +61,10 @@ export class Toolbar {
      * @private
      */
     public importHandler: XmlHttpRequestHandler;
-
+    /**
+     * @private
+     */
+    public isCommentEditing: boolean = false;
     private restrictDropDwn: DropDownButton;
     private imgDropDwn: DropDownButton;
     private breakDropDwn: DropDownButton;
@@ -167,6 +171,7 @@ export class Toolbar {
     private showHidePropertiesPane(): void {
         if (this.container.propertiesPaneContainer.style.display === 'none') {
             this.container.showPropertiesPane = true;
+            this.container.trigger('beforePaneSwitch', { type: 'PropertiesPane' });
         } else {
             this.container.showPropertiesPane = false;
         }
@@ -234,6 +239,11 @@ export class Toolbar {
                     prefixIcon: 'e-de-ctnr-bookmark',
                     tooltipText: locale.getConstant('Insert a bookmark in a specific place in this document.'),
                     id: id + BOOKMARK_ID, text: locale.getConstant('Bookmark'), cssClass: 'e-de-toolbar-btn-middle'
+                },
+                {
+                    prefixIcon: 'e-de-cnt-cmt-add',
+                    tooltipText: locale.getConstant('New comment'),
+                    id: id + COMMENT_ID, text: locale.getConstant('Comments'), cssClass: 'e-de-toolbar-btn-middle'
                 },
                 {
                     prefixIcon: 'e-de-ctnr-tableofcontent',
@@ -314,6 +324,9 @@ export class Toolbar {
                 break;
             case id + BOOKMARK_ID:
                 this.container.documentEditor.showDialog('Bookmark');
+                break;
+            case id + COMMENT_ID:
+                this.documentEditor.editor.insertComment('');
                 break;
             case id + HEADER_ID:
                 this.container.documentEditor.selection.goToHeader();
@@ -441,12 +454,25 @@ export class Toolbar {
     /**
      * @private
      */
+    public enableDisableInsertComment(enable: boolean): void {
+        this.isCommentEditing = !enable;
+        let id: string = this.container.element.id + TOOLBAR_ID;
+        let commentId: string = id + COMMENT_ID;
+        let element: HTMLElement = document.getElementById(commentId);
+        this.toolbar.enableItems(element.parentElement, enable);
+    }
+    /**
+     * @private
+     */
     public enableDisableToolBarItem(enable: boolean, isProtectedContent: boolean): void {
         let id: string = this.container.element.id + TOOLBAR_ID;
         for (let item of this.toolbar.items) {
             let itemId: string = item.id;
             if (itemId !== id + NEW_ID && itemId !== id + OPEN_ID && itemId !== id + FIND_ID &&
                 itemId !== id + CLIPBOARD_ID && itemId !== id + RESTRICT_EDITING_ID && item.type !== 'Separator') {
+                if (enable && this.isCommentEditing && itemId === id + COMMENT_ID) {
+                    continue;
+                }
                 let element: HTMLElement = document.getElementById(item.id);
                 this.toolbar.enableItems(element.parentElement, enable);
             }

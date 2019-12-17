@@ -7,12 +7,14 @@ import { InsertHtml } from './inserthtml';
 /**
  * Link internal component
  * @hidden
+ * @deprecated
  */
 export class ImageCommand {
     private parent: EditorManager;
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     constructor(parent: EditorManager) {
         this.parent = parent;
@@ -21,6 +23,11 @@ export class ImageCommand {
     private addEventListener(): void {
         this.parent.observer.on(CONSTANT.IMAGE, this.imageCommand, this);
     }
+    /**
+     * imageCommand method
+     * @hidden
+     * @deprecated
+     */
     public imageCommand(e: IHtmlItem): void {
         switch (e.value.toString().toLocaleLowerCase()) {
             case 'image':
@@ -166,7 +173,11 @@ export class ImageCommand {
     }
     private removeImage(e: IHtmlItem): void {
         if (closest(e.item.selectNode[0], 'a')) {
-            detach(closest(e.item.selectNode[0], 'a'));
+            if (e.item.selectNode[0].parentElement.nodeName === 'A' && !isNullOrUndefined(e.item.selectNode[0].parentElement.innerText)) {
+                detach(e.item.selectNode[0]);
+            } else {
+                detach(closest(e.item.selectNode[0], 'a'));
+            }
         } else if (!isNullOrUndefined(closest(e.item.selectNode[0], '.' + classes.CLASS_CAPTION))) {
             detach(closest(e.item.selectNode[0], '.' + classes.CLASS_CAPTION));
         } else {

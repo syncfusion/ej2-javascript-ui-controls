@@ -6,12 +6,14 @@ import { InsertHtml } from './inserthtml';
 /**
  * Link internal component
  * @hidden
+ * @deprecated
  */
 export class TableCommand {
     private parent: EditorManager;
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     constructor(parent: EditorManager) {
         this.parent = parent;

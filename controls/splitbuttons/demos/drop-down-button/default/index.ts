@@ -136,6 +136,11 @@ document.getElementById('bootstrap').onclick = (e: Event) => {
     document.getElementById('theme').setAttribute('href', '../../theme-files/bootstrap.css');
     document.body.style.backgroundColor = 'white';
 };
+document.getElementById('bootstrap4').onclick = (e: Event) => {
+    enableRipple(false);
+    document.getElementById('theme').setAttribute('href', '../../theme-files/bootstrap4.css');
+    document.body.style.backgroundColor = 'white';
+};
 document.getElementById('highcontrast').onclick = (e: Event) => {
     enableRipple(false);
     document.getElementById('theme').setAttribute('href', '../../theme-files/highcontrast.css');

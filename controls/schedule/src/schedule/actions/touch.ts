@@ -35,7 +35,7 @@ export class ScheduleTouch {
     }
 
     private scrollHandler(e: ScrollEventArgs): void {
-        if (this.parent.currentView === 'Agenda' || this.parent.uiStateValues.action ||
+        if (isBlazor() || this.parent.currentView === 'Agenda' || this.parent.uiStateValues.action ||
             (e.originalEvent && ((<HTMLElement>e.originalEvent.target).classList.contains(cls.APPOINTMENT_CLASS) ||
                 closest(e.originalEvent.target as HTMLElement, '.' + cls.APPOINTMENT_CLASS)))) {
             return;
@@ -48,9 +48,7 @@ export class ScheduleTouch {
         }
         if (e.scrollDirection === 'Left' || e.scrollDirection === 'Right') {
             let args: ActionEventArgs = { requestType: 'dateNavigate', cancel: false, event: e.originalEvent };
-            if (!isBlazor()) {
-                this.parent.trigger(events.actionBegin, args);
-            }
+            this.parent.trigger(events.actionBegin, args);
             if (args.cancel) {
                 return;
             }
@@ -132,6 +130,9 @@ export class ScheduleTouch {
             this.parent.setProperties({ selectedDate: this.currentPanel.selectedDate }, true);
         }
         this.parent.setProperties({ selectedDate: this.parent.activeView.getNextPreviousDate(nextPrevType) }, true);
+        if (this.parent.headerModule) {
+            this.parent.headerModule.setCalendarDate(this.parent.selectedDate);
+        }
         this.parent.activeView.getRenderDates();
         this.parent.activeView.renderLayout(clsName);
     }
@@ -222,7 +223,9 @@ export class ScheduleTouch {
         this.nextPanel = null;
         this.timeStampStart = null;
         this.element.style.transform = '';
-        util.removeChildren(this.element);
+        if (!isBlazor()) {
+            util.removeChildren(this.element);
+        }
         removeClass([this.element], cls.TRANSLATE_CLASS);
     }
     /**

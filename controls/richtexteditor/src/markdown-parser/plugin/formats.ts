@@ -7,6 +7,7 @@ import * as CONSTANT from './../../markdown-parser/base/constant';
 /**
  * MDFormats internal plugin
  * @hidden
+ * @deprecated
  */
 export class MDFormats {
     private parent: MarkdownParser;
@@ -15,6 +16,7 @@ export class MDFormats {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     constructor(options: IMDFormats) {
         extend(this, this, options, true);

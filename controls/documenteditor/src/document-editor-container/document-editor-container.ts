@@ -11,7 +11,7 @@ import { TocProperties } from './properties-pane/table-of-content-pane';
 import { TableProperties } from './properties-pane/table-properties-pane';
 import { StatusBar } from './properties-pane/status-bar';
 // tslint:disable-next-line:max-line-length
-import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs } from '../document-editor/base';
+import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs } from '../document-editor/base';
 import { createSpinner } from '@syncfusion/ej2-popups';
 import { ContainerServerActionSettingsModel } from '../document-editor/document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';
@@ -119,7 +119,13 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     @Event()
     public customContextMenuBeforeOpen: EmitType<BeforeOpenCloseCustomContentMenuEventArgs>;
-
+    /**
+     * Trigger before switching panes in DocumentEditor.
+     * @event
+     * @blazorproperty 'BeforePaneSwitch'
+     */
+    @Event()
+    public beforePaneSwitch: EmitType<BeforePaneSwitchEventArgs>;
     /**
      * Document editor container's toolbar module
      * @private
@@ -371,7 +377,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Protections': 'Protections',
         'Error in establishing connection with web server': 'Error in establishing connection with web server',
         'Single': 'Single',
-        'Double': 'Double'
+        'Double': 'Double',
+        'New comment': 'New comment',
+        'Comments': 'Comments'
     };
 
     /**
@@ -420,6 +428,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                     if (this.documentEditor) {
                         this.documentEditor.headers = newModel.headers;
                     }
+                    break;
             }
         }
     }
@@ -444,7 +453,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             this.element.style.height = '320px';
         }
         this.element.style.minHeight = '320px';
-        this.initializeDocumentEditor(); this.textProperties = new TextProperties(this, this.element.id, false, this.enableRtl);
+        this.initializeDocumentEditor();
+        this.textProperties = new TextProperties(this, this.element.id, false, this.enableRtl);
         this.headerFooterProperties = new HeaderFooterProperties(this, this.enableRtl);
         this.imageProperties = new ImageProperties(this, this.enableRtl);
         this.tocProperties = new TocProperties(this, this.enableRtl);
@@ -545,6 +555,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             viewChange: this.onViewChange.bind(this),
             customContextMenuSelect: this.onCustomContextMenuSelect.bind(this),
             customContextMenuBeforeOpen: this.onCustomContextMenuBeforeOpen.bind(this),
+            beforePaneSwitch: this.onBeforePaneSwitch.bind(this),
+            commentBegin: this.onCommentBegin.bind(this),
+            commentEnd: this.onCommentEnd.bind(this),
             locale: this.locale,
             acceptTab: true,
             zIndex: this.zIndex,
@@ -556,6 +569,19 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.setFormat();
         this.documentEditor.appendTo(documentEditorTarget);
         this.documentEditor.resize();
+    }
+    private onCommentBegin(): void {
+        if (this.toolbarModule) {
+            this.toolbarModule.enableDisableInsertComment(false);
+        }
+    }
+    private onCommentEnd(): void {
+        if (this.toolbarModule) {
+            this.toolbarModule.enableDisableInsertComment(true);
+        }
+    }
+    private onBeforePaneSwitch(args: BeforePaneSwitchEventArgs): void {
+        this.trigger('beforePaneSwitch', args);
     }
     /**
      * @private
@@ -589,6 +615,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     public onDocumentChange(): void {
         if (this.toolbarModule) {
+            this.toolbarModule.isCommentEditing = false;
+            this.toolbarModule.enableDisableInsertComment(true);
             this.toolbarModule.enableDisableUndoRedo();
         }
         if (this.textProperties) {
@@ -655,7 +683,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * @private
      */
     public showPropertiesPaneOnSelection(): void {
-        if (this.restrictEditing) {
+        if (this.restrictEditing || this.textProperties === undefined) {
             return;
         }
         let isProtectedDocument: boolean = this.documentEditor.viewer.protectionType === 'ReadOnly';
@@ -754,7 +782,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             this.element.classList.remove('e-documenteditorcontainer');
             this.element.innerHTML = '';
         }
-        this.element = undefined;
+        if (!this.refreshing) {
+            this.element = undefined;
+        }
         if (this.toolbarContainer && this.toolbarContainer.parentElement) {
             this.toolbarContainer.innerHTML = '';
             this.toolbarContainer.parentElement.removeChild(this.toolbarContainer);

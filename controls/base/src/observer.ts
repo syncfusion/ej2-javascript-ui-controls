@@ -1,4 +1,4 @@
-import { isNullOrUndefined, getValue, extend, isBlazor } from './util';
+import { isNullOrUndefined, getValue, extend } from './util';
 /**
  * Observer is used to perform event handling based the object.
  * ```
@@ -110,7 +110,7 @@ export class Observer {
         }
         let blazor: string = 'Blazor';
         let curObject: BoundOptions[] = getValue(property, this.boundedEvents).slice(0);
-        if (isBlazor()) {
+        if (window[blazor]) {
            return this.blazorCallback(curObject, argument, successHandler, errorHandler, 0);
         } else {
             for (let cur of curObject) {

@@ -120,7 +120,8 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         return full || !even ? index : index + ~~(this.model.pageSize / 2);
     }
 
-    public getColumnIndexes(content: HTMLElement = (<HTMLElement>this.parent.getHeaderContent().firstChild)): number[] {
+    public getColumnIndexes(content: HTMLElement =
+        (<HTMLElement>this.parent.getHeaderContent().querySelector('.e-headercontent'))): number[] {
         if (this.parent.getFrozenColumns()) {
             content = content.querySelector('.e-movableheader');
         }

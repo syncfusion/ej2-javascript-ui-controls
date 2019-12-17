@@ -18,6 +18,8 @@ export class DataManipulation {
   private parentItems: Object[];
   private zerothLevelData: BeforeDataBoundArgs;
   private storedIndex: number;
+  private batchChanges: Object;
+  private addedRecords: string = 'addedRecords';
   private parent: TreeGrid;
   private dataResults: ReturnOption;
   private sortedData: Object[];
@@ -99,7 +101,8 @@ public isRemote(): boolean {
             this.parent.query.addParams('IdMapping', this.parent.idMapping);
           }
         }
-        if (!this.parent.hasChildMapping && !(this.parent.dataSource[adaptorName] === 'BlazorAdaptor')) {
+        let clientRender: string = 'isClientRender';
+        if (!this.parent.hasChildMapping && !(this.parent.dataSource[adaptorName] === 'BlazorAdaptor' && !this.parent[clientRender])) {
           let qry: Query = this.parent.query.clone();
           qry.queries = [];
           qry = qry.select([this.parent.parentIdMapping]);
@@ -193,12 +196,13 @@ public isRemote(): boolean {
   private updateParentRemoteData(args?: BeforeDataBoundArgs) : void {
     let records: ITreeData[] = args.result;
     let adaptorName: string = 'adaptorName';
+    let clientRender: string = 'isClientRender';
     if (!this.parent.hasChildMapping && !this.parentItems.length &&
-      (!(this.parent.dataSource[adaptorName] === 'BlazorAdaptor') && !this.parent.loadChildOnDemand)) {
+      (!(this.parent.dataSource[adaptorName] === 'BlazorAdaptor' && !this.parent[clientRender]) && !this.parent.loadChildOnDemand)) {
       this.zerothLevelData = args;
       setValue('cancel', true, args);
     } else {
-      if (!(this.parent.dataSource[adaptorName] === 'BlazorAdaptor') && !this.parent.loadChildOnDemand) {
+      if (!(this.parent.dataSource[adaptorName] === 'BlazorAdaptor' && !this.parent[clientRender]) && !this.parent.loadChildOnDemand) {
         for (let rec: number = 0; rec < records.length; rec++) {
           if ((records[rec][this.parent.hasChildMapping] || this.parentItems.indexOf(records[rec][this.parent.idMapping]) !== -1)
             && (isNullOrUndefined(records[rec].index))) {
@@ -214,7 +218,8 @@ public isRemote(): boolean {
         this.convertToFlatData(records);
       }
     }
-    args.result = this.parent.dataSource[adaptorName] === 'BlazorAdaptor' || this.parent.loadChildOnDemand ? this.parent.flatData : records;
+    args.result = (this.parent.dataSource[adaptorName] === 'BlazorAdaptor' && !this.parent[clientRender])
+                      || this.parent.loadChildOnDemand ? this.parent.flatData : records;
     this.parent.notify('updateResults', args);
   }
   /**
@@ -231,11 +236,18 @@ public isRemote(): boolean {
     let childRecord: ITreeData;
     let adaptorName: string = 'adaptorName';
     let args: RowExpandedEventArgs = {row: rowDetails.parentRow, data: rowDetails.record};
+    let clientRender: string = 'isClientRender';
     if (rowDetails.rows.length > 0) {
       rowDetails.record.expanded = true;
       for (let i: number = 0; i < rowDetails.rows.length; i++) {
-        rowDetails.rows[i].style.display = 'table-row';
-        if ((isBlazor() && this.parent.dataSource[adaptorName] === 'BlazorAdaptor') || !this.parent.loadChildOnDemand) {
+        if (isBlazor() && this.parent.isServerRendered) {
+          removeClass([rowDetails.rows[i]], 'e-treerowcollapsed');
+          addClass([rowDetails.rows[i]], 'e-treerowexpanded');
+        } else {
+          rowDetails.rows[i].style.display = 'table-row';
+        }
+        if ((isBlazor() && (this.parent.dataSource[adaptorName] === 'BlazorAdaptor' && !this.parent[clientRender]))
+            || !this.parent.loadChildOnDemand) {
           let targetEle: Element = rowDetails.rows[i].getElementsByClassName('e-treegridcollapse')[0];
           if (!isNullOrUndefined(targetEle)) {
             addClass([targetEle], 'e-treegridexpand');
@@ -243,10 +255,11 @@ public isRemote(): boolean {
           }
           childRecord = this.parent.rowTemplate ? this.parent.grid.getCurrentViewRecords()[rowDetails.rows[i].rowIndex] :
               this.parent.grid.getRowObjectFromUID(rowDetails.rows[i].getAttribute('data-Uid')).data;
-          let childRows: HTMLTableRowElement[] = gridRows.filter(
+          let childRows: HTMLTableRowElement[] = [];
+          childRows = gridRows.filter(
             (r: HTMLTableRowElement) =>
-              r.classList.contains(
-                'e-gridrowindex' + childRecord.index + 'level' + (childRecord.level + 1)
+              r.querySelector(
+                '.e-gridrowindex' + childRecord.index + 'level' + (childRecord.level + 1)
               )
           );
           if (childRows.length) {
@@ -311,7 +324,9 @@ public isRemote(): boolean {
       currentData.taskData = data[i];
       let level: number = 0;
       this.storedIndex++;
-      currentData.index = this.storedIndex;
+      if (!currentData.hasOwnProperty('index')) {
+        currentData.index = this.storedIndex;
+      }
       if (!isNullOrUndefined(currentData[this.parent.childMapping]) ||
           (currentData[this.parent.hasChildMapping] && isCountRequired(this.parent))) {
         currentData.hasChildRecords = true;
@@ -323,7 +338,9 @@ public isRemote(): boolean {
             ? currentData[this.parent.expandStateMapping] : true;
           }
       }
-      currentData.index =  currentData.hasChildRecords ? this.storedIndex : this.storedIndex;
+      if (!currentData.hasOwnProperty('index')) {
+        currentData.index =  currentData.hasChildRecords ? this.storedIndex : this.storedIndex;
+      }
       if (this.isSelfReference && isNullOrUndefined(currentData[this.parent.parentIdMapping])) {
         this.parent.parentData.push(currentData);
       }
@@ -340,7 +357,9 @@ public isRemote(): boolean {
         currentData.parentUniqueID = parentData.uniqueID;
         level = parentRecords.level + 1;
       }
-      currentData.level = level;
+      if (!currentData.hasOwnProperty('level')) {
+        currentData.level = level;
+      }
       currentData.checkboxState = 'uncheck';
       if (isNullOrUndefined(currentData[this.parent.parentIdMapping]) || currentData.parentItem) {
         this.parent.flatData.push(currentData);
@@ -373,13 +392,15 @@ public isRemote(): boolean {
       requestType = requestType ? requestType : actionArgs.requestType.toString();
       actionData = actionData ? actionData : getObject('data', actionArgs);
       action = action ? action : getObject('action', actionArgs);
-      if (action === 'add') {
+      if (this.parent.editSettings.mode === 'Batch') {
+          this.batchChanges = this.parent.grid.editModule.getBatchChanges();
+      }
+      if (action === 'add' || (requestType === 'batchsave' && (this.parent.editSettings.mode === 'Batch'
+          && this.batchChanges[this.addedRecords].length))) {
         this.parent.grid.currentViewData = args.result;
       }
       if (this.parent.isLocalData) {
-        if ((requestType === 'delete' || requestType === 'save')) {
-          this.parent.notify(events.crudAction, { value: actionData, action: action || requestType });
-        }
+        this.updateAction(actionData, action, requestType);
       }
     }
     if (isExport && !isNullOrUndefined(expresults)) {
@@ -406,7 +427,6 @@ public isRemote(): boolean {
       this.parent.notify('updateFilterRecs', { data: filteredData });
       results = <ITreeData[]>this.dataResults.result;
       this.dataResults.result = null;
-      //this.parent.filterModule.updatedFilteredRecord(filteredData);
       if (this.parent.grid.aggregates.length > 0) {
         let query: Query = getObject('query', args);
         if (isNullOrUndefined(gridQuery)) {
@@ -431,8 +451,7 @@ public isRemote(): boolean {
       this.isSortAction = false; let parentData: Object;
       let action: string = 'action'; let collpasedIndexes: number[] = [];
       parentData = this.parent.parentData; let sortedData: Object[];
-      let query: Query = getObject('query', args);
-      let srtQry: Query = new Query();
+      let query: Query = getObject('query', args); let srtQry: Query = new Query();
       for (let srt: number = this.parent.grid.sortSettings.columns.length - 1; srt >= 0; srt--) {
         let col: Column = this.parent.getColumnByField(this.parent.grid.sortSettings.columns[srt].field);
         let compFun: Function | string = col.sortComparer && !this.isRemote() ?
@@ -483,5 +502,13 @@ public isRemote(): boolean {
    */
   private updateData(dataResult: {result: ITreeData, count: number}): void {
     this.dataResults = <ReturnOption>dataResult;
+  }
+  private updateAction(actionData: ITreeData, action: string, requestType: string): void {
+    if ((requestType === 'delete' || requestType === 'save')) {
+      this.parent.notify(events.crudAction, { value: actionData, action: action || requestType });
+    }
+    if (requestType === 'batchsave' && this.parent.editSettings.mode === 'Batch') {
+      this.parent.notify(events.batchSave, {});
+    }
   }
 }

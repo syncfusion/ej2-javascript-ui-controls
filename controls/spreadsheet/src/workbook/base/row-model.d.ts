@@ -31,4 +31,11 @@ export interface RowModel {
      */
     customHeight?: boolean;
 
+    /**
+     * To hide/show the row in spreadsheet.
+     * @default false
+     * @hidden
+     */
+    hidden?: boolean;
+
 }

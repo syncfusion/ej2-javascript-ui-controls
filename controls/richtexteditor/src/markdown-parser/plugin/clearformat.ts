@@ -5,6 +5,7 @@ import { IMarkdownSubCommands } from './../base/interface';
 /**
  * Link internal component
  * @hidden
+ * @deprecated
  */
 export class ClearFormat {
     private parent: MarkdownParser;
@@ -13,6 +14,7 @@ export class ClearFormat {
     /**
      * Constructor for creating the clear format plugin
      * @hidden
+     * @deprecated
      */
     constructor(parent: MarkdownParser) {
         this.parent = parent;

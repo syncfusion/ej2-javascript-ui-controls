@@ -20,15 +20,13 @@ export class Render {
 
     public render(viewName: View, isDataRefresh: boolean = true): void {
         this.initializeLayout(viewName);
-        if (isDataRefresh) {
+        if (isDataRefresh && !this.parent.isServerRenderer()) {
             this.refreshDataManager();
         }
     }
 
     private initializeLayout(viewName: View): void {
         if (this.parent.activeView) {
-            this.parent.resetLayoutTemplates();
-            this.parent.resetEventTemplates();
             this.parent.activeView.removeEventListener();
             this.parent.activeView.destroy();
         }
@@ -76,7 +74,8 @@ export class Render {
         if (isNullOrUndefined(this.parent.activeView)) {
             let firstView: View = this.parent.viewCollections[0].option;
             if (firstView) {
-                this.parent.setProperties({ currentView: firstView }, true);
+                this.parent.setScheduleProperties({ currentView: firstView });
+                this.parent.serverDataBind();
                 if (this.parent.headerModule) {
                     this.parent.headerModule.updateActiveView();
                     this.parent.headerModule.setCalendarView();
@@ -85,6 +84,7 @@ export class Render {
             }
             throw Error('Inject required modules');
         }
+        this.parent.activeView.viewIndex = this.parent.viewIndex;
         this.updateLabelText(viewName);
         this.parent.activeView.addEventListener();
         this.parent.activeView.getRenderDates();

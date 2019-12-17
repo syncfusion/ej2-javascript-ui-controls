@@ -248,7 +248,14 @@ export class RowDD {
             } else {
                 let fromIdx: number = parseInt(this.startedRow.getAttribute('aria-rowindex'), 10);
                 let currentVdata: object[] = [];
-                currentVdata[0] = this.parent.currentViewData[fromIdx];
+                let ind: number = 0;
+                selectedIndexes.forEach((rec : number) => {
+                    currentVdata[ind] = this.parent.currentViewData[rec];
+                    ind++;
+                });
+                if (!(this.parent.rowDropSettings.targetID && selectedIndexes.length)) {
+                    currentVdata[ind] = this.parent.currentViewData[fromIdx];
+                }
                 let draggedData: object[] = this.parent.getSelectedRecords().length ? this.parent.getSelectedRecords() : (currentVdata);
                 let changeRecords: { addedRecords: Object[], deletedRecords: Object[], changedRecords: Object[] } = {
                     addedRecords: [],
@@ -256,7 +263,7 @@ export class RowDD {
                     changedRecords: []
                 };
                 let toIdx: number = this.dragTarget ? this.dragTarget : args.dropIndex;
-                toIdx = (toIdx - draggedData.length + 1) >= 0 ? (toIdx - draggedData.length + 1) : toIdx;
+                toIdx = (toIdx - draggedData.length + 1) > 0 ? (toIdx - draggedData.length + 1) : toIdx;
                 let dragDropDestinationIndex: string = 'dragDropDestinationIndex';
                 let query: Query = new Query;
                 query[dragDropDestinationIndex] = toIdx;
@@ -549,6 +556,14 @@ export class RowDD {
                     type: events.actionBegin, requestType: 'rowdraganddrop'
                 });
             } else {
+                let currentVdata: object[] = [];
+                let ind: number = 0;
+                let selectedIndex: number[] = srcControl.getSelectedRowIndexes();
+                selectedIndex.forEach((rec: number) => {
+                    currentVdata[ind] = srcControl.currentViewData[rec];
+                    ind++;
+                });
+                records =  currentVdata;
                 let changes: { addedRecords: Object[], deletedRecords: Object[], changedRecords: Object[] } = {
                     addedRecords: records,
                     deletedRecords: [],

@@ -14,3 +14,4 @@ export * from './writer/index';
 export * from './dialogs/index';
 export * from './spell-check/index';
 export * from './restrict-editing/index';
+export * from './comments/index';

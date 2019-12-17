@@ -1,4 +1,4 @@
-import { remove, addClass, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { remove, addClass, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { IGrid, IRenderer, IModelGenerator, NotifyArgs } from '../base/interface';
 import { Column } from '../models/column';
 import { HeaderRender } from './header-renderer';
@@ -22,15 +22,20 @@ export class FreezeContentRender extends ContentRender implements IRenderer {
 
     public renderPanel(): void {
         super.renderPanel();
-        let fDiv: Element = this.parent.createElement('div', { className: 'e-frozencontent' });
-        let mDiv: Element = this.parent.createElement('div', { className: 'e-movablecontent' });
-        this.getPanel().firstChild.appendChild(fDiv);
-        this.getPanel().firstChild.appendChild(mDiv);
+        let fDiv: Element = this.parent.element.querySelector('.e-frozencontent');
+        let mDiv: Element = this.parent.element.querySelector('.e-movablecontent');
+        if (isNullOrUndefined(fDiv)) {
+            fDiv = this.parent.createElement('div', { className: 'e-frozencontent' });
+            mDiv = this.parent.createElement('div', { className: 'e-movablecontent' });
+            this.getPanel().querySelector('.e-content').appendChild(fDiv);
+            this.getPanel().querySelector('.e-content').appendChild(mDiv);
+        }
         this.setFrozenContent(fDiv);
         this.setMovableContent(mDiv);
     }
 
     public renderEmpty(tbody: HTMLElement): void {
+        if (isBlazor() && !this.parent.isJsComponent) { return; }
         super.renderEmpty(tbody);
         this.getMovableContent().querySelector('tbody').innerHTML = '<tr><td></td></tr>';
         this.getFrozenContent().querySelector('.e-emptyrow').querySelector('td').colSpan = this.parent.getFrozenColumns();
@@ -62,11 +67,24 @@ export class FreezeContentRender extends ContentRender implements IRenderer {
     }
 
     public renderTable(): void {
-        super.renderTable();
-        this.getFrozenContent().appendChild(this.getTable());
-        let mTbl: Element = this.getTable().cloneNode(true) as Element;
-        this.getMovableContent().appendChild(mTbl);
-        remove(this.getMovableContent().querySelector('colgroup'));
+        let mTbl: Element;
+        if (this.getFrozenContent().querySelector('.e-table') == null) {
+            super.renderTable();
+            this.getFrozenContent().appendChild(this.getTable());
+            mTbl = this.getTable().cloneNode(true) as Element;
+            this.getMovableContent().appendChild(mTbl);
+        } else {
+            this.setTable(this.getFrozenContent().querySelector('.e-table'));
+            this.setColGroup(<Element>this.parent.element.querySelector('.e-gridheader').querySelector('colgroup').cloneNode(true));
+            this.getFrozenContent().querySelector('.e-table').appendChild(this.getColGroup());
+            mTbl = this.getMovableContent().querySelector('.e-table');
+            if (this.parent.frozenRows) {
+                this.parent.getHeaderContent().classList.add('e-frozenhdrcont');
+            }
+        }
+        if (this.getMovableContent().querySelector('colgroup')) {
+            remove(this.getMovableContent().querySelector('colgroup'));
+        }
         let colGroup: Element
             = ((this.parent.getHeaderContent().querySelector('.e-movableheader').querySelector('colgroup')).cloneNode(true)) as Element;
         mTbl.insertBefore(colGroup, mTbl.querySelector('tbody'));
@@ -95,7 +113,13 @@ export class FreezeRender extends HeaderRender implements IRenderer {
     }
 
     public renderTable(): void {
-        super.renderTable();
+        if (!isBlazor()) {
+            super.renderTable();
+        } else {
+            this.setTable(this.createTable(this.getFrozenHeader().querySelector('.e-table')));
+            this.parent.notify(events.headerRefreshed, { rows: this.rows, args: { isFrozen: true } });
+            this.createTable(this.getMovableHeader().querySelector('.e-table'));
+        }
         this.rfshMovable();
         this.updateColgroup();
         this.initializeHeaderDrag();
@@ -104,35 +128,49 @@ export class FreezeRender extends HeaderRender implements IRenderer {
     }
 
     public renderPanel(): void {
+        let fDiv: Element = this.parent.element.querySelector('.e-frozenheader');
+        let mDiv: Element = this.parent.element.querySelector('.e-movableheader');
         super.renderPanel();
-        let fDiv: Element = this.parent.createElement('div', { className: 'e-frozenheader' });
-        let mDiv: Element = this.parent.createElement('div', { className: 'e-movableheader' });
-        this.getPanel().firstChild.appendChild(fDiv);
-        this.getPanel().firstChild.appendChild(mDiv);
+        if (isNullOrUndefined(fDiv)) {
+            fDiv = this.parent.createElement('div', { className: 'e-frozenheader' });
+            mDiv = this.parent.createElement('div', { className: 'e-movableheader' });
+            this.getPanel().querySelector('.e-headercontent').appendChild(fDiv);
+            this.getPanel().querySelector('.e-headercontent').appendChild(mDiv);
+        }
         this.setFrozenHeader(fDiv);
         this.setMovableHeader(mDiv);
     }
 
     public refreshUI(): void {
-        let tbody: Element = this.getMovableHeader().querySelector('tbody');
-        remove(this.getMovableHeader().querySelector('table'));
-        super.refreshUI();
-        this.rfshMovable();
-        this.getMovableHeader().querySelector('tbody').innerHTML = tbody.innerHTML;
-        this.updateColgroup();
+        if (!isBlazor() || this.parent.frozenRows === 0) {
+            let tbody: Element = this.getMovableHeader().querySelector('tbody');
+            remove(this.getMovableHeader().querySelector('table'));
+            super.refreshUI();
+            this.rfshMovable();
+            this.getMovableHeader().querySelector('tbody').innerHTML = tbody.innerHTML;
+        } else {
+            this.rfshMovable();
+        }
+        if (!isBlazor() || this.parent.frozenRows === 0) {
+            this.updateColgroup();
+        }
         this.widthService.setWidthToTable();
         if (this.parent.allowTextWrap && this.parent.textWrapSettings.wrapMode === 'Header') {
             wrap([].slice.call(this.movableHeader.querySelectorAll('tr.e-columnheader')), true);
         }
         this.parent.updateDefaultCursor();
-        renderMovable(this.parent.getContentTable().querySelector('colgroup'), this.parent.getFrozenColumns());
+        if (!isBlazor() || this.parent.frozenRows === 0) {
+            renderMovable(this.parent.getContentTable().querySelector('colgroup'), this.parent.getFrozenColumns());
+        }
         this.initializeHeaderDrag();
         this.parent.notify(events.headerRefreshed, { rows: this.rows, args: { isFrozen: false } });
     }
 
     private rfshMovable(): void {
-        this.getFrozenHeader().appendChild(this.getTable());
-        this.getMovableHeader().appendChild(this.createTable());
+        if (!isBlazor() || this.parent.frozenRows === 0) {
+            this.getFrozenHeader().appendChild(this.getTable());
+            this.getMovableHeader().appendChild(this.createTable());
+        }
         this.refreshStackedHdrHgt();
         this.addMovableFirstCls();
     }
@@ -170,7 +208,7 @@ export class FreezeRender extends HeaderRender implements IRenderer {
             let mHdr: Element = this.getMovableHeader();
             let cont: Element = this.parent.getContent();
             let wrapMode: string = this.parent.textWrapSettings.wrapMode;
-            let hdrClassList: DOMTokenList = (this.parent.getHeaderContent().firstChild as Element).classList;
+            let hdrClassList: DOMTokenList = (this.parent.getHeaderContent().querySelector('.e-headercontent') as Element).classList;
             if (obj.case === 'textwrap') {
                 if (wrapMode !== 'Header' || obj.isModeChg) {
                     fRows = cont.querySelector('.e-frozencontent').querySelectorAll('tr') as NodeListOf<HTMLElement>;
@@ -196,14 +234,16 @@ export class FreezeRender extends HeaderRender implements IRenderer {
                 }
                 this.refreshStackedHdrHgt();
             } else if (obj.case === 'refreshHeight') {
-            this.setWrapHeight(cont.querySelector('.e-frozencontent').querySelectorAll('tr'),
-                               cont.querySelector('.e-movablecontent').querySelectorAll('tr'), obj.isModeChg);
-            if (!this.parent.getHeaderContent().querySelectorAll('.e-stackedheadercell').length) {
-                this.setWrapHeight(fHdr.querySelectorAll('tr'), mHdr.querySelectorAll('tr'), obj.isModeChg);
-            }
+                this.setWrapHeight(
+                    cont.querySelector('.e-frozencontent').querySelectorAll('tr'),
+                    cont.querySelector('.e-movablecontent').querySelectorAll('tr'), obj.isModeChg);
+                if (!this.parent.getHeaderContent().querySelectorAll('.e-stackedheadercell').length) {
+                    this.setWrapHeight(fHdr.querySelectorAll('tr'), mHdr.querySelectorAll('tr'), obj.isModeChg);
+                }
             }
         }
     }
+
     private enableAfterRender(e: NotifyArgs): void {
         if (e.module === 'scroll') {
             this.setFrozenHeight();
@@ -228,7 +268,7 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         let height: number[] = [];
         let width: number[] = [];
         for (let i: number = 0, len: number = fRows.length; i < len; i++) { //separate loop for performance issue 
-            if (!isNullOrUndefined(fRows[i]) && !isNullOrUndefined(mRows[i])) {
+            if (!fRows[i].classList.contains('e-columnheader') && !isNullOrUndefined(fRows[i]) && !isNullOrUndefined(mRows[i])) {
                 height[i] = fRows[i].offsetHeight; //https://pagebuildersandwich.com/increased-plugins-performance-200/
                 width[i] = mRows[i].offsetHeight;
             }

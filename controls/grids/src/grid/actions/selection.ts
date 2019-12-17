@@ -2,7 +2,10 @@ import { Browser, EventHandler, MouseEventArgs, createElement, isBlazor } from '
 import { isNullOrUndefined, isUndefined, addClass, removeClass } from '@syncfusion/ej2-base';
 import { remove, closest, classList } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/ej2-data';
-import { IGrid, IAction, IIndex, ISelectedCell, IPosition, IRenderer, EJ2Intance, NotifyArgs, CellFocusArgs } from '../base/interface';
+import {
+    IGrid, IAction, IIndex, ISelectedCell, IPosition, IRenderer, EJ2Intance, NotifyArgs, CellFocusArgs,
+    BeforeAutoFillEventArgs
+} from '../base/interface';
 import { SelectionSettings } from '../base/grid';
 import { setCssInGridPopUp, getPosition, isGroupAdaptive, parentsUntil, addRemoveActiveClasses, removeAddCboxClasses } from '../base/util';
 import * as events from '../base/constant';
@@ -46,8 +49,11 @@ export class Selection implements IAction {
      * @hidden
      */
     public preventFocus: boolean = false;
+    /**
+     * @hidden
+     */
+    public prevRowIndex: number;
     private selectionSettings: SelectionSettings;
-    private prevRowIndex: number;
     private prevCIdxs: IIndex;
     private prevECIdxs: IIndex;
     private selectedRowIndex: number;
@@ -114,6 +120,10 @@ export class Selection implements IAction {
     private isPersisted: boolean = false;
     private cmdKeyPressed: boolean = false;
     private isMacOS: boolean;
+    /**
+     * @hidden
+     */
+    public autoFillRLselection: boolean = true;
 
     /**
      * Constructor for the Grid selection module
@@ -191,7 +201,7 @@ export class Selection implements IAction {
 
     private getSelectedMovableRow(index: number): Element {
         let gObj: IGrid = this.parent;
-        if (gObj.getFrozenColumns()) {
+        if (gObj.getFrozenColumns() && this.parent.getContent().querySelector('.e-movablecontent')) {
             return gObj.getMovableRowByIndex(index);
         }
         return null;
@@ -270,29 +280,37 @@ export class Selection implements IAction {
                 previousRowIndex: this.prevRowIndex, target: this.actualTarget, cancel: false
             };
             args = this.addMovableArgs(args, selectedMovableRow);
-            this.onActionBegin(args, events.rowSelecting);
-        }
-        if (!isNullOrUndefined(args) && args[can] === true) {
-            return;
-        }
-        this.index = index; this.toggle = isToggle; this.data = selectData; this.removed = isRemoved;
-
-        if (isRowSelected && this.selectionSettings.persistSelection) {
-            this.clearSelectedRow(index);
-            isRemoved = true;
-            this.removed = isRemoved;
-            this.selectRowCallBack();
-        } else if (!isRowSelected && this.selectionSettings.persistSelection) {
-            this.selectRowCallBack();
-        }
-        if (!this.selectionSettings.persistSelection) {
-            this.selectRowCheck = true;
-            this.clearRow();
+            this.parent.trigger(events.rowSelecting, this.fDataUpdate(args),
+                                this.rowSelectingCallBack(args, isToggle, index, selectData, isRemoved, isRowSelected, can));
+        } else {
+            this.rowSelectingCallBack(args, isToggle, index, selectData, isRemoved, isRowSelected, can)(args);
         }
     }
 
-    private selectRowCallBack(): void {
-        let gObj: IGrid = this.parent;
+    private rowSelectingCallBack(args: Object, isToggle: boolean, index: number, selectData: object, isRemoved: boolean,
+                                 isRowSelected: boolean, can: string): Function {
+        return (args: Object) => {
+            if (!isNullOrUndefined(args) && args[can] === true) {
+                return;
+            }
+            this.index = index;  this.toggle =  isToggle; this.data =  selectData; this.removed = isRemoved;
+            if (isRowSelected && this.selectionSettings.persistSelection) {
+                this.clearSelectedRow(index);
+                isRemoved = true;
+                this.removed = isRemoved;
+                this.selectRowCallBack();
+            } else if (!isRowSelected && this.selectionSettings.persistSelection) {
+                this.selectRowCallBack();
+            }
+            if (!this.selectionSettings.persistSelection) {
+                this.selectRowCheck = true;
+                this.clearRow();
+            }
+        };
+    }
+
+    private selectRowCallBack(): void  {
+        let gObj: IGrid =  this.parent;
         let args: Object;
         let index: number = this.index;
         let isToggle: boolean = this.toggle;
@@ -362,30 +380,31 @@ export class Selection implements IAction {
             data: selectedData
         };
         args = this.addMovableArgs(args, selectedMovableRow);
-        this.onActionBegin(args, events.rowSelecting);
-        if (!isNullOrUndefined(args) && args[can] === true) {
-            return;
-        }
-        this.clearRow();
-        this.selectRowIndex(rowIndexes.slice(-1)[0]);
-        if (!this.isSingleSel()) {
-            for (let rowIdx of rowIndexes) {
-                this.updateRowSelection(gObj.getRowByIndex(rowIdx), rowIdx);
-                if (frzCols) { this.updateRowSelection(gObj.getMovableRowByIndex(rowIdx), rowIdx); }
+        this.parent.trigger(events.rowSelecting, this.fDataUpdate(args), (args: Object) => {
+            if (!isNullOrUndefined(args) && args[can] === true) {
+                return;
+            }
+            this.clearRow();
+            this.selectRowIndex(rowIndexes.slice(-1)[0]);
+            if (!this.isSingleSel()) {
+                for (let rowIdx of rowIndexes) {
+                    this.updateRowSelection(gObj.getRowByIndex(rowIdx), rowIdx);
+                    if (frzCols) { this.updateRowSelection(gObj.getMovableRowByIndex(rowIdx), rowIdx); }
+                    this.updateRowProps(rowIndex);
+                }
+            } else {
+                this.updateRowSelection(gObj.getRowByIndex(rowIndex), rowIndex);
+                if (frzCols) { this.updateRowSelection(gObj.getMovableRowByIndex(rowIndex), rowIndex); }
                 this.updateRowProps(rowIndex);
             }
-        } else {
-            this.updateRowSelection(gObj.getRowByIndex(rowIndex), rowIndex);
-            if (frzCols) { this.updateRowSelection(gObj.getMovableRowByIndex(rowIndex), rowIndex); }
-            this.updateRowProps(rowIndex);
-        }
-        args = {
-            rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: this.actualTarget,
-            prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
-            data: isBlazor() ? selectedData : this.getSelectedRecords(), isInteracted: this.isInteracted
-        };
-        args = this.addMovableArgs(args, selectedMovableRow);
-        this.onActionComplete(args, events.rowSelected);
+            args = {
+                rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: this.actualTarget,
+                prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
+                data: isBlazor() ? selectedData : this.getSelectedRecords(), isInteracted: this.isInteracted
+            };
+            args = this.addMovableArgs(args, selectedMovableRow);
+            this.onActionComplete(args, events.rowSelected);
+        });
     }
 
     /** 
@@ -438,15 +457,16 @@ export class Selection implements IAction {
                     foreignKeyData: rowObj.foreignKeyData
                 };
                 args = this.addMovableArgs(args, selectedMovableRow);
-                this.onActionBegin(args, events.rowSelecting);
-                if (!isNullOrUndefined(args) && args[can] === true) {
-                    return;
-                }
-                if (this.isSingleSel()) {
-                    this.clearRow();
-                }
-                this.updateRowSelection(selectedRow, rowIndex);
-                if (frzCols) { this.updateRowSelection(selectedMovableRow, rowIndex); }
+                this.parent.trigger(events.rowSelecting, this.fDataUpdate(args), (args: Object) => {
+                    if (!isNullOrUndefined(args) && args[can] === true) {
+                        return;
+                    }
+                    if (this.isSingleSel()) {
+                        this.clearRow();
+                    }
+                    this.updateRowSelection(selectedRow, rowIndex);
+                    if (frzCols) { this.updateRowSelection(selectedMovableRow, rowIndex); }
+                });
             }
             if (!isUnSelected) {
                 args = {
@@ -482,7 +502,7 @@ export class Selection implements IAction {
         this.clearRowSelection();
     }
 
-    private clearRowCallBack(): void {
+    private clearRowCallBack(): void  {
         if (this.isCancelDeSelect && this.parent.checkAllRows !== 'Check') {
             return;
         }
@@ -660,9 +680,9 @@ export class Selection implements IAction {
                     return;
                 }
                 rows.filter((record: HTMLElement) => record.hasAttribute('aria-selected')).forEach((ele: HTMLElement) => {
-                    if (!this.disableUI) {
-                        ele.removeAttribute('aria-selected');
-                        this.addRemoveClassesForRow(ele, false, true, 'e-selectionbackground', 'e-active');
+                    if (!this.disableUI || isBlazor()) {
+                            ele.removeAttribute('aria-selected');
+                            this.addRemoveClassesForRow(ele, false, true, 'e-selectionbackground', 'e-active');
                     }
                     this.updatePersistCollection(ele, false);
                     this.updateCheckBoxes(ele);
@@ -670,7 +690,7 @@ export class Selection implements IAction {
                 for (let i: number = 0, len: number = this.selectedRowIndexes.length; i < len; i++) {
                     let movableRow: Element = this.getSelectedMovableRow(this.selectedRowIndexes[i]);
                     if (movableRow) {
-                        if (!this.disableUI) {
+                        if (!this.disableUI || isBlazor()) {
                             movableRow.removeAttribute('aria-selected');
                             this.addRemoveClassesForRow(movableRow, false, true, 'e-selectionbackground', 'e-active');
                         }
@@ -1473,14 +1493,27 @@ export class Selection implements IAction {
     }
 
     private updateValue(rIdx: number, cIdx: number, cell: HTMLElement): void {
-        let col: Column = this.parent.getColumnByIndex(cIdx);
-        if (this.parent.editModule && cell) {
-            if (col.type === 'number') {
-                this.parent.editModule.updateCell(rIdx, col.field, parseInt(cell.textContent, 10));
-            } else {
-                this.parent.editModule.updateCell(rIdx, col.field, cell.textContent);
+        let args: BeforeAutoFillEventArgs = this.createBeforeAutoFill(rIdx, cIdx, cell);
+        if (!args.cancel) {
+            let col: Column = this.parent.getColumnByIndex(cIdx);
+            if (this.parent.editModule && cell) {
+                if (col.type === 'number') {
+                    this.parent.editModule.updateCell(rIdx, col.field, parseInt(args.value, 10));
+                } else {
+                    this.parent.editModule.updateCell(rIdx, col.field, args.value);
+                }
             }
         }
+    }
+
+    private createBeforeAutoFill(rowIndex: number, colIndex: number, cell: HTMLElement): BeforeAutoFillEventArgs {
+        let col: Column = this.parent.getColumnByIndex(colIndex);
+        let args: BeforeAutoFillEventArgs = {
+            column: col,
+            value: cell.innerText
+        };
+        this.parent.trigger(events.beforeAutoFill, args);
+        return args;
     }
 
     /* tslint:disable-next-line:max-func-body-length */
@@ -1500,7 +1533,7 @@ export class Selection implements IAction {
                 this.endAFCell = this.parent.getCellFromIndex(startrowIdx + rowLen, startCellIdx + colLen);
                 this.drawAFBorders();
                 break;
-            case startCellIdx + colLen < endCellIdx && //right
+            case this.autoFillRLselection && startCellIdx + colLen < endCellIdx && //right
                 endCellIdx - startCellIdx - colLen + 1 > endrowIdx - startrowIdx - rowLen // right bottom
                 && endCellIdx - startCellIdx - colLen + 1 > startrowIdx - endrowIdx: //right top
                 this.endAFCell = this.parent.getCellFromIndex(startrowIdx + rowLen, endCellIdx);
@@ -1527,7 +1560,7 @@ export class Selection implements IAction {
                         { rowIndex: endrowIdx, cellIndex: endCellIdx });
                 }
                 break;
-            case startCellIdx > endCellIdx && // left
+            case this.autoFillRLselection && startCellIdx > endCellIdx && // left
                 startCellIdx - endCellIdx + 1 > endrowIdx - startrowIdx - rowLen && //left top
                 startCellIdx - endCellIdx + 1 > startrowIdx - endrowIdx: // left bottom
                 this.startAFCell = this.parent.getCellFromIndex(startrowIdx, endCellIdx);
@@ -1985,7 +2018,7 @@ export class Selection implements IAction {
             let indexes: number[] = [];
             for (let j: number = 0; j < rows.length; j++) {
                 let rowObj: Row<Column> = this.getRowObj(rows[j]);
-                let pKey: string = rowObj ? rowObj.data[this.primaryKey] : null;
+                let pKey: string = rowObj ? rowObj.data ? rowObj.data[this.primaryKey] : null : null;
                 if (pKey === null) { return; }
                 let checkState: boolean;
                 let chkBox: HTMLInputElement = (rows[j].querySelector('.e-checkselect') as HTMLInputElement);

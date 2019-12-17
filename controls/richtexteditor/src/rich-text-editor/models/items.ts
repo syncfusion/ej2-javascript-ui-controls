@@ -393,8 +393,8 @@ export let tools: { [key: string]: IToolsItems } = {
         'id': 'InsertCode',
         'icon': 'e-insert-code',
         'tooltip': 'Insert Code',
-        'command': 'InsertCode',
-        'subCommand': 'InsertCode'
+        'command': 'Formats',
+        'subCommand': 'Pre'
     },
     'tableheader': {
         'id': 'TableHeader',

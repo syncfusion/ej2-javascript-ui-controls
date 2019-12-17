@@ -202,11 +202,10 @@ export class Table {
         }
     }
     private verticalAlign(args: ITableNotifyArgs, e: ClickEventArgs): void {
-        let tdEle: Element = (args.selection.range.startContainer.nodeName === 'TD' ||
-            args.selection.range.startContainer.nodeName === 'TH') ? args.selection.range.startContainer as HTMLElement :
-            (<Element>(args.selection.range.startContainer as HTMLElement).parentNode);
-        if (tdEle.nodeName !== 'TD' && tdEle.nodeName !== 'TH') { return; }
+        let tdEle : Element = closest(args.selectParent[0], 'td') || closest(args.selectParent[0], 'th');
+        if (tdEle) {
         this.parent.formatter.process(this.parent, e, e, { tableCell: tdEle, subCommand: (e.item as IDropDownItemModel).subCommand });
+        }
     }
 
     private tableStyles(args: ITableNotifyArgs, command: string): void {
@@ -357,6 +356,9 @@ export class Table {
             { selection: selection, subCommand: ((e as ClickEventArgs).item as IDropDownItemModel).subCommand });
     }
     private editAreaClickHandler(e: ITableNotifyArgs): void {
+        if (this.parent.readonly) {
+            return;
+        }
         let args: MouseEvent = e.args as MouseEvent;
         let showOnRightClick: boolean = this.parent.quickToolbarSettings.showOnRightClick;
         if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) { return; }
@@ -456,6 +458,9 @@ export class Table {
         }
     }
     private resizeHelper(e: PointerEvent | TouchEvent): void {
+        if (this.parent.readonly) {
+            return;
+        }
         let target: HTMLElement = e.target as HTMLElement || (e as TouchEvent).targetTouches[0].target as HTMLElement;
         let closestTable: Element = closest(target, 'table');
         if (target.nodeName === 'TABLE' || target.nodeName === 'TD' || target.nodeName === 'TH') {
@@ -561,6 +566,9 @@ export class Table {
     }
 
     private resizeStart(e: PointerEvent | TouchEvent): void {
+        if (this.parent.readonly) {
+            return;
+        }
         if (Browser.isDevice) {
             this.resizeHelper(e);
         }
@@ -1091,6 +1099,7 @@ export class Table {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     public destroy(): void {
         this.removeEventListener();

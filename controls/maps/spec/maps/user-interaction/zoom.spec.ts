@@ -75,6 +75,24 @@ describe('Zoom feature tesing for map control', () => {
             };
             map.refresh();
         });
+        it('Checking with Zoom in button -geometry with persistence ', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                let eventObj: Object = {
+                    target: element,
+                    type: 'touchstart',
+                    stopImmediatePropagation: prevent,
+                    pageX: element.getBoundingClientRect().left,
+                    pageY: element.getBoundingClientRect().top
+                };
+                for (let i: number = 0; i < 5; i++) {
+                    map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+                }
+            };
+            map.enablePersistence = true;
+            map.mapsArea.border.width = 0;
+            map.refresh(); 
+        });
 
         it('Checking with Zoom out button -geometry ', () => {
             map.loaded = (args: ILoadedEventArgs) => {
@@ -142,6 +160,21 @@ describe('Zoom feature tesing for map control', () => {
                 };
                 map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
             };
+            map.refresh();
+        });
+        it('Checking with reset button with persistence', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_Reset_Rect');
+                let eventObj: Object = {
+                    target: element,
+                    type: 'touchstart',
+                    stopImmediatePropagation: prevent,
+                    pageX: element.getBoundingClientRect().left,
+                    pageY: element.getBoundingClientRect().top
+                };
+                map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+            };
+            map.enablePersistence = true;
             map.refresh();
         });
 
@@ -1574,6 +1607,19 @@ describe('Zoom feature tesing for map control', () => {
             };
             map.refresh();
         });
+        it('Checking with sub layer rendering on osm map with persistence', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_svg');
+                let eventObj: Object = {
+                    target: element,
+                    type: 'mouseup'
+                };
+                map.zoomModule['distanceX'] = 40;
+                map.zoomModule.mouseUpHandler(eventObj as PointerEvent);
+            };
+            map.enablePersistence = true;
+            map.refresh();
+        });
     });
 
     describe('Checking with Zoom Factor with Center Position', () => {
@@ -1888,7 +1934,22 @@ describe('Zoom feature tesing for map control', () => {
             map.layers[0].dataLabelSettings.smartLabelMode = "Hide";
             map.refresh();
         });
-      
+        it('Checking with while zooming with persistence', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_Zooming_ToolBar_ZoomOut_Rect');
+                let eventObj: Object = {
+                    target: element,
+                    type: 'mousedown',
+                    stopImmediatePropagation: prevent,
+                    pageX: element.getBoundingClientRect().left,
+                    pageY: element.getBoundingClientRect().top
+                };  
+                map.zoomModule.performToolBarAction(<PointerEvent>eventObj); 
+            };
+            map.scale = 1;
+            map.enablePersistence = true;
+            map.refresh();
+        });      
     });
     it('memory leak', () => {
         profile.sample();

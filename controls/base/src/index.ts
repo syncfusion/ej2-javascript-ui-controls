@@ -1,6 +1,7 @@
 /**
  * Base modules
  */
+export * from './intl/intl-base';
 export * from './ajax';
 export * from './animation';
 export * from './animation-model';
@@ -25,3 +26,4 @@ export * from './template-engine';
 export * from './util';
 export * from './dom';
 export * from './observer';
+export * from './sanitize-helper';

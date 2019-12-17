@@ -18,6 +18,11 @@ export class FullScreen {
         this.addEventListener();
     }
 
+    /**
+     * showFullScreen method
+     * @hidden
+     * @deprecated
+     */
     public showFullScreen(event?: MouseEvent | KeyboardEventArgs): void {
         if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown') {
             this.parent.quickToolbarModule.hideQuickToolbars();
@@ -48,6 +53,11 @@ export class FullScreen {
         }
     }
 
+    /**
+     * hideFullScreen method
+     * @hidden
+     * @deprecated
+     */
     public hideFullScreen(event?: MouseEvent | KeyboardEventArgs): void {
         if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown') {
             this.parent.quickToolbarModule.hideQuickToolbars();
@@ -112,6 +122,11 @@ export class FullScreen {
         this.parent.off(events.destroy, this.removeEventListener);
     }
 
+    /**
+     * destroy method
+     * @hidden
+     * @deprecated
+     */
     public destroy(): void {
         if (this.parent.element.classList.contains(classes.CLS_FULL_SCREEN)) {
             this.toggleParentOverflow(false);

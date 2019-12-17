@@ -1,4 +1,4 @@
-import { createElement, remove, isBlazor, extend } from '@syncfusion/ej2-base';
+import { createElement, remove, isBlazor, extend, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { EventFieldsMapping } from '../base/interface';
 /**
  * Schedule common utilities
@@ -170,4 +170,21 @@ export function addLocalOffsetToEvent(event: { [key: string]: Object }, eventFie
         return eventObj;
     }
     return event;
+}
+
+export function capitalizeFirstWord(inputString: string, type: string): string {
+    switch (type) {
+        case 'multiple':
+            inputString = inputString.split(' ').map((e: string) => e.charAt(0).toLocaleUpperCase() + e.substring(1)).join(' ');
+            break;
+        case 'single':
+            if (inputString[0] >= '0' && inputString[0] <= '9') {
+                let array: RegExpMatchArray = inputString.match(/[a-zA-Z]/);
+                inputString = isNullOrUndefined(array) ? inputString :
+                    inputString.slice(0, array.index) + inputString[array.index].toLocaleUpperCase() + inputString.slice(array.index + 1);
+            }
+            inputString = inputString[0].toLocaleUpperCase() + inputString.slice(1);
+            break;
+    }
+    return inputString;
 }

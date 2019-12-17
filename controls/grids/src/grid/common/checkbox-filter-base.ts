@@ -1,6 +1,6 @@
 /* tslint:disable-next-line:max-line-length */
 import { EventHandler, L10n, isNullOrUndefined, extend, classList, addClass, removeClass, Browser, getValue, setValue, isBlazor } from '@syncfusion/ej2-base';
-import { parentsUntil, getUid, appendChildren, getDatePredicate, getObject } from '../base/util';
+import { parentsUntil, getUid, appendChildren, getDatePredicate, getObject, extendObjWithFn } from '../base/util';
 import { remove, debounce } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DataUtil, Query, DataManager, Predicate, UrlAdaptor, Deferred } from '@syncfusion/ej2-data';
@@ -284,6 +284,7 @@ export class CheckBoxFilterBase {
         });
         let isStringTemplate: string = 'isStringTemplate';
         this.dialogObj[isStringTemplate] = true;
+        this.dlg.setAttribute('aria-label', this.getLocalizedLabel('ExcelFilterDialogARIA'));
         this.dialogObj.appendTo(this.dlg as HTMLElement);
         this.dialogObj.element.style.maxHeight = this.options.height + 'px';
         this.dialogObj.show();
@@ -483,15 +484,14 @@ export class CheckBoxFilterBase {
         let field: string = this.isForeignColumn(column) ? column.foreignKeyValue : column.field;
         parsed = (parsed === '' || parsed === undefined) ? undefined : parsed;
         let predicte: Predicate;
+        let moduleName : Function = (<{ getModuleName?: Function }>this.options.dataManager.adaptor).getModuleName;
         if (this.options.type === 'boolean') {
             if (parsed !== undefined &&
-                this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf((parsed as string).toLowerCase()) !== -1) {
-                parsed = ((<{ getModuleName?: Function }>this.options.dataManager.adaptor).getModuleName()
-                    === 'ODataAdaptor' || 'ODataV4Adaptor') ? true : 'true';
+                this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf((parsed as string).toLowerCase()) !== -1 && moduleName) {
+                parsed = (moduleName() === 'ODataAdaptor' || 'ODataV4Adaptor') ? true : 'true';
             } else if (parsed !== undefined &&
-                this.getLocalizedLabel('FilterFalse').toLowerCase().indexOf((parsed as string).toLowerCase()) !== -1) {
-                parsed = ((<{ getModuleName?: Function }>this.options.dataManager.adaptor).getModuleName()
-                    === 'ODataAdaptor' || 'ODataV4Adaptor') ? false : 'false';
+                this.getLocalizedLabel('FilterFalse').toLowerCase().indexOf((parsed as string).toLowerCase()) !== -1 && moduleName) {
+                parsed = (moduleName() === 'ODataAdaptor' || 'ODataV4Adaptor') ? false : 'false';
             }
             operator = 'equal';
         }
@@ -503,6 +503,10 @@ export class CheckBoxFilterBase {
             operator: operator, matchCase: matchCase, ignoreAccent: ignoreAccent, filterChoiceCount: null,
             query: query
         };
+        if (isBlazor() && !this.parent.isJsComponent) {
+            let filterModel: string = 'filterModel';
+            args[filterModel] = {};
+        }
         this.parent.notify(events.cBoxFltrBegin, args);
         predicte = new Predicate(field, args.operator, parsed, args.matchCase, args.ignoreAccent);
         if (this.options.type === 'date' || this.options.type === 'datetime') {
@@ -767,12 +771,13 @@ export class CheckBoxFilterBase {
         let elem: Element = checked ? this.cBoxTrue.cloneNode(true) as Element :
             this.cBoxFalse.cloneNode(true) as Element;
         let label: Element = elem.querySelector('.e-label');
+        let dummyData: Object = extendObjWithFn({}, data, { column: this.options.column, parent: this.parent });
         label.innerHTML = !isNullOrUndefined(value) && value.toString().length ? value :
             this.getLocalizedLabel('Blanks');
         addClass([label], ['e-checkboxfiltertext']);
         if (this.options.template && data[this.options.column.field] !== this.getLocalizedLabel('SelectAll')) {
             label.innerHTML = '';
-            appendChildren(label, this.options.template(data, this.parent, 'filterItemTemplate'));
+            appendChildren(label, this.options.template(dummyData, this.parent, 'filterItemTemplate'));
         }
         return elem;
     }
@@ -857,7 +862,8 @@ export class CheckBoxFilterBase {
         let args: {
             dataSource?: Object[], requestType?: string,
             filterModel?: CheckBoxFilterBase
-        } = { requestType: events.filterChoiceRequest, dataSource: this.renderEmpty ? [] : data };
+        } = { requestType: events.filterChoiceRequest, dataSource: this.renderEmpty ||
+            (isBlazor() && this.parent.isServerRendered) ? [] : data };
         if (!isBlazor() || this.parent.isJsComponent) {
             let filterModel: string = 'filterModel';
             args[filterModel] = this;

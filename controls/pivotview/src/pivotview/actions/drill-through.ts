@@ -4,7 +4,7 @@ import * as events from '../../common/base/constant';
 import { IAxisSet, IDataSet, PivotEngine, OlapEngine, ITupInfo } from '../../base';
 import { DrillThroughEventArgs } from '../../common';
 import { DrillThroughDialog } from '../../common/popups/drillthrough-dialog';
-import { EventHandler, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { EventHandler, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 
 /**
  * `DrillThrough` module.
@@ -103,37 +103,59 @@ export class DrillThrough {
                 valueCaption = engine.fieldList[pivotValue.actualText.toString()] ?
                     engine.fieldList[pivotValue.actualText.toString()].caption : pivotValue.actualText.toString();
                 aggType = engine.fieldList[pivotValue.actualText] ? engine.fieldList[pivotValue.actualText].aggregateType : '';
-                if (this.parent.enableVirtualization && this.parent.allowDataCompression) {
-                    let indexArray: string[] = Object.keys(pivotValue.indexObject);
-                    this.drillThroughDialog.indexString = [];
-                    for (let cIndex of indexArray) {
-                        for (let aIndex of this.parent.engineModule.groupRawIndex[Number(cIndex)]) {
-                            rawData.push((this.parent.engineModule.actualData as IDataSet[])[aIndex]);
-                            this.drillThroughDialog.indexString.push(aIndex.toString());
-                        }
-                    }
+                let currModule: DrillThrough = this;
+                if (isBlazor() && this.parent.enableVirtualization) {
+                    /* tslint:disable:no-any */
+                    (currModule.parent as any).interopAdaptor.invokeMethodAsync(
+                        'PivotInteropMethod', 'fetchRawData', { 'RowIndex': rowIndex, 'ColumnIndex': colIndex }).then((data: any) => {
+                            rawData = JSON.parse(data.rawData);
+                            let parsedObj: any = JSON.parse(data.indexObject);
+                            let indexObject: any = {};
+                            for (let len: number = 0; len < parsedObj.length; len++) {
+                                indexObject[parsedObj[len].Key] = parsedObj[len].Value;
+                            }
+                            pivotValue.indexObject = indexObject;
+                            currModule.triggerDialog(valueCaption, aggType, rawData, pivotValue, ele);
+                        });
                 } else {
-                    let indexArray: string[] = Object.keys(pivotValue.indexObject);
-                    for (let index of indexArray) {
-                        rawData.push((this.parent.engineModule.data as IDataSet[])[Number(index)]);
+                    if (this.parent.enableVirtualization && this.parent.allowDataCompression) {
+                        let indexArray: string[] = Object.keys(pivotValue.indexObject);
+                        this.drillThroughDialog.indexString = [];
+                        for (let cIndex of indexArray) {
+                            for (let aIndex of this.parent.engineModule.groupRawIndex[Number(cIndex)]) {
+                                rawData.push((this.parent.engineModule.actualData as IDataSet[])[aIndex]);
+                                this.drillThroughDialog.indexString.push(aIndex.toString());
+                            }
+                        }
+                    } else {
+                        let indexArray: string[] = Object.keys(pivotValue.indexObject);
+                        for (let index of indexArray) {
+                            rawData.push((this.parent.engineModule.data as IDataSet[])[Number(index)]);
+                        }
                     }
                 }
             }
-            let valuetText: string = aggType === 'CalculatedField' ? valueCaption.toString() : aggType !== '' ?
-                (this.parent.localeObj.getConstant(aggType) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + valueCaption) :
-                valueCaption;
-            let eventArgs: DrillThroughEventArgs = {
-                currentTarget: ele,
-                currentCell: pivotValue,
-                rawData: rawData,
-                rowHeaders: pivotValue.rowHeaders === '' ? '' : pivotValue.rowHeaders.toString().split('.').join(' - '),
-                columnHeaders: pivotValue.columnHeaders === '' ? '' : pivotValue.columnHeaders.toString().split('.').join(' - '),
-                value: valuetText + '(' + pivotValue.formattedText + ')'
-            };
-            let drillThrough: DrillThrough = this;
-            this.parent.trigger(events.drillThrough, eventArgs, (observedArgs: DrillThroughEventArgs) => {
-                drillThrough.drillThroughDialog.showDrillThroughDialog(observedArgs);
-            });
+            if (!(isBlazor() && this.parent.enableVirtualization)) {
+                this.triggerDialog(valueCaption, aggType, rawData, pivotValue, ele);
+            }
         }
+    }
+
+    private triggerDialog(valueCaption: string, aggType: string, rawData: IDataSet[], pivotValue: IAxisSet, ele: Element): void {
+        let valuetText: string = aggType === 'CalculatedField' ? valueCaption.toString() : aggType !== '' ?
+            (this.parent.localeObj.getConstant(aggType) + ' ' + this.parent.localeObj.getConstant('of') + ' ' + valueCaption) :
+            valueCaption;
+        let eventArgs: DrillThroughEventArgs = {
+            currentTarget: ele,
+            currentCell: pivotValue,
+            rawData: rawData,
+            rowHeaders: pivotValue.rowHeaders === '' ? '' : pivotValue.rowHeaders.toString().split('.').join(' - '),
+            columnHeaders: pivotValue.columnHeaders === '' ? '' : pivotValue.columnHeaders.toString().split('.').join(' - '),
+            value: valuetText + '(' + pivotValue.formattedText + ')'
+        };
+        let drillThrough: DrillThrough = this;
+        this.parent.trigger(events.drillThrough, eventArgs, (observedArgs: DrillThroughEventArgs) => {
+            drillThrough.drillThroughDialog.showDrillThroughDialog(observedArgs);
+        });
     }
 }

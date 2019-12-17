@@ -103,6 +103,8 @@ export const beforeCopy: string = 'beforeCopy';
 /** @hidden */
 export const beforePaste: string = 'beforePaste';
 /** @hidden */
+export const beforeAutoFill: string = 'beforeAutoFill';
+/** @hidden */
 export const filterChoiceRequest: string = 'filterchoicerequest';
 /** @hidden */
 export const filterAfterOpen: string = 'filterafteropen';
@@ -368,5 +370,7 @@ export const beforeFltrcMenuOpen: string = 'before-filter-cmenu-open';
 export const valCustomPlacement: string = 'validation-custom-placement';
 /** @hidden */
 export const filterCboxValue: string = 'filter-cbox-value';
+/** @hidden */
+export const componentRendered: string = 'component-rendered';
 /** @hidden */
 export const restoreFocus: string = 'restore-Focus';

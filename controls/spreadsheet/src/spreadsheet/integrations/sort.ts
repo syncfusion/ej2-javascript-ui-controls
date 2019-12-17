@@ -1,7 +1,9 @@
-import { Spreadsheet, ICellRenderer, initiateCustomSort, locale, dialog } from '../index';
-import { sortComplete, beforeSort, getFormattedCellObject, sortRangeAlert } from '../../workbook/common/event';
-import { getIndexesFromAddress, getSwapRange, SheetModel, getCell, getColumnHeaderText, CellModel } from '../../workbook/index';
-import { SortEventArgs } from '../../workbook/common/interface';
+import { Spreadsheet, ICellRenderer, initiateCustomSort, locale, dialog, getFilterRange } from '../index';
+import { applySort, completeAction, beginAction } from '../index';
+import { sortComplete, beforeSort, getFormattedCellObject } from '../../workbook/common/event';
+import { getIndexesFromAddress, getSwapRange, SheetModel, getCell } from '../../workbook/index';
+import { getColumnHeaderText, CellModel, getRangeAddress } from '../../workbook/index';
+import { SortEventArgs, BeforeSortEventArgs, SortOptions } from '../../workbook/common/interface';
 import { L10n, getUniqueID, getComponent, enableRipple } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { DropDownList, ChangeEventArgs as DropdownChangeEventArgs, FieldSettingsModel } from '@syncfusion/ej2-dropdowns';
@@ -32,16 +34,14 @@ export class Sort {
     }
 
     private addEventListener(): void {
-        this.parent.on(beforeSort, this.beforeSortHandler, this);
-        this.parent.on(sortRangeAlert, this.sortRangeAlertHandler, this);
+        this.parent.on(applySort, this.applySortHandler, this);
         this.parent.on(sortComplete, this.sortCompleteHandler, this);
         this.parent.on(initiateCustomSort, this.initiateCustomSortHandler, this);
     }
 
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
-            this.parent.off(beforeSort, this.beforeSortHandler);
-            this.parent.off(sortRangeAlert, this.sortRangeAlertHandler);
+            this.parent.off(applySort, this.applySortHandler);
             this.parent.off(sortComplete, this.sortCompleteHandler);
             this.parent.off(initiateCustomSort, this.initiateCustomSortHandler);
         }
@@ -71,7 +71,7 @@ export class Sort {
      * Shows the range error alert dialog.
      * @param error - range error string.
      */
-    private sortRangeAlertHandler(args: {error: string}): void {
+    private sortRangeAlertHandler(args: { error: string }): void {
         let dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
         dialogInst.show({
             height: 180, width: 400, isModal: true, showCloseIcon: true,
@@ -81,28 +81,12 @@ export class Sort {
     }
 
     /**
-     * Initiates sort process.
-     */
-    private beforeSortHandler(): void {
-        this.parent.showSpinner();
-    }
-
-    /**
-     * Invoked when the sort action is completed.
-     */
-    private sortCompleteHandler(args: SortEventArgs): void {
-        let range: number[] = getIndexesFromAddress(args.range);
-        this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(range);
-        this.parent.hideSpinner();
-    }
-
-    /**
      * Initiates the custom sort dialog.
      */
     private initiateCustomSortHandler(): void {
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
         if (!this.isValidSortRange()) {
-            this.sortRangeAlertHandler({error: l10n.getConstant('SortOutOfRangeError')});
+            this.sortRangeAlertHandler({ error: l10n.getConstant('SortOutOfRangeError') });
             return;
         }
         let dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
@@ -129,8 +113,11 @@ export class Sort {
                         dialogInst.hide();
                         let headercheck: HTMLElement = element.getElementsByClassName('e-sort-checkheader')[0] as HTMLElement;
                         let headerCheckbox: CheckBox = getComponent(headercheck, 'checkbox') as CheckBox;
+                        let caseCheckbox: CheckBox = getComponent(
+                            element.getElementsByClassName('e-sort-checkcase')[0] as HTMLElement, 'checkbox') as CheckBox;
                         let hasHeader: boolean = headerCheckbox.checked;
-                        this.parent.sort({ sortDescriptors: data, containsHeader: hasHeader });
+                        this.applySortHandler(
+                            { sortOptions: { sortDescriptors: data, containsHeader: hasHeader, caseSensitive: caseCheckbox.checked } });
                     }
                 }
             }]
@@ -218,6 +205,11 @@ export class Sort {
 
         if (range[0] === range[2] && (range[2] - range[0]) === 0) { //for entire range
             range[0] = 0; range[1] = 0; range[3] = sheet.usedRange.colIndex;
+            let args: { [key: string]: number[] | boolean } = { filterRange: [], hasFilter: false };
+            this.parent.notify(getFilterRange, args);
+            if (args.hasFilter && args.filterRange) {
+                range[0] = args.filterRange[0];
+            }
         }
         let fields: { [key: string]: string }[] = [];
         let fieldName: string;
@@ -292,6 +284,18 @@ export class Sort {
         headerTabElement.appendChild(headerCheckbox);
         checkHeaderObj.createElement = this.parent.createElement;
         checkHeaderObj.appendTo(headerCheckbox);
+
+        let checkCaseObj: CheckBox = new CheckBox({
+            label: l10n.getConstant('CaseSensitive'),
+            checked: false,
+            cssClass: 'e-sort-casecheckbox'
+        });
+        let caseCheckbox: HTMLElement = this.parent.createElement('input', {
+            className: 'e-sort-checkcase', attrs: { type: 'checkbox' }
+        });
+        headerTabElement.appendChild(caseCheckbox);
+        checkCaseObj.createElement = this.parent.createElement;
+        checkCaseObj.appendTo(caseCheckbox);
     }
 
     /**
@@ -347,13 +351,14 @@ export class Sort {
         let dropDownListObj: DropDownList = new DropDownList({
             dataSource: fields,
             width: 'auto',
+            cssClass: 'e-sort-field-ddl',
             fields: fieldsMap,
             placeholder: l10n.getConstant('SelectAColumn'),
             change: (args: DropdownChangeEventArgs) => {
                 if (!args.value) { return; }
                 Array.prototype.some.call(lvObj.dataSource, (item: { [key: string]: string }) => {
                     if (item.id === id) {
-                        item.field = args.value as string;
+                        item.field = args.value.toString().replace('Column ', '') as string;
                     }
                     return item.id === id; //breaks the loop when proper id found
                 });
@@ -426,5 +431,47 @@ export class Sort {
                 element.classList.remove('e-error');
             });
         }
+    }
+
+    /**
+     * Triggers sort events and applies sorting.
+     */
+    private applySortHandler(args: { sortOptions?: SortOptions, range?: string }): void {
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        let address: string = args && args.range || sheet.selectedRange;
+        let sortOptions: SortOptions = args && args.sortOptions || { sortDescriptors: {} };
+        let beforeArgs: BeforeSortEventArgs = { range: address, sortOptions: sortOptions, cancel: false };
+        this.parent.trigger(beforeSort, beforeArgs);
+        if (beforeArgs.cancel) { return; }
+        this.parent.notify(beginAction, { eventArgs: beforeArgs, action: 'beforeSort' });
+        this.parent.showSpinner();
+        let range: number[] = getSwapRange(getIndexesFromAddress(beforeArgs.range));
+        let eventArgs: { [key: string]: number[] | boolean } = { filterRange: [], hasFilter: false };
+        if (range[0] === range[2] && (range[2] - range[0]) === 0) { //check for filter range
+            this.parent.notify(getFilterRange, eventArgs);
+            if (eventArgs.hasFilter && eventArgs.filterRange) {
+                range[0] = eventArgs.filterRange[0]; range[1] = 0;
+                range[2] = sheet.usedRange.rowIndex - 1; range[3] = sheet.usedRange.colIndex;
+                beforeArgs.sortOptions.containsHeader = true;
+            }
+        }
+        this.parent.sort(beforeArgs.sortOptions, getRangeAddress(range)).then((sortArgs: SortEventArgs) => {
+            this.parent.trigger(sortComplete, sortArgs);
+            this.parent.notify(completeAction, { eventArgs: sortArgs, action: 'sorting' });
+            return Promise.resolve(sortArgs);
+        }).catch((error: string) => {
+            this.sortRangeAlertHandler({ error: error });
+            return Promise.reject(error);
+        });
+    }
+
+    /**
+     * Invoked when the sort action is completed.
+     */
+    private sortCompleteHandler(args: SortEventArgs): void {
+        let range: number[] = getIndexesFromAddress(args.range);
+        if (args.sortOptions.containsHeader) { range[0] += 1; }
+        this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(range);
+        this.parent.hideSpinner();
     }
 }

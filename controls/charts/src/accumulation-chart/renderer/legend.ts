@@ -1,7 +1,7 @@
 /**
  * AccumulationChart legend
  */
-import { extend, isNullOrUndefined, Animation, AnimationOptions, isVisible, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined, Animation, AnimationOptions } from '@syncfusion/ej2-base';
 import { AccumulationSeries, AccPoints, pointByIndex } from '../model/acc-base';
 import { MarginModel } from '../../common/model/base-model';
 import { AccumulationChart } from '../accumulation';
@@ -9,7 +9,7 @@ import { AccumulationType } from '../model/enum';
 import { BaseLegend, LegendOptions } from '../../common/legend/legend';
 import { LegendSettingsModel } from '../../common/legend/legend-model';
 import { Rect, Size, measureText } from '@syncfusion/ej2-svg-base';
-import { ChartLocation, textTrim, getElement} from '../../common/utils/helper';
+import { ChartLocation, textTrim, getElement, blazorTemplatesReset} from '../../common/utils/helper';
 import { IAccLegendRenderEventArgs } from '../../accumulation-chart/model/pie-interface';
 import { Indexes } from '../../common/model/base';
 
@@ -283,8 +283,8 @@ export class AccumulationLegend extends BaseLegend {
                     chart.redraw = chart.enableAnimation;
                     this.sliceVisibility(pointIndex, point.visible);
                     chart.removeSvg();
-                    //To remove the blazor templates
-                    resetBlazorTemplate(chart.element.id + '_DataLabel');
+                    //To remove the blazor templates                  
+                    blazorTemplatesReset(chart);
                     (<AccumulationChart>this.chart).refreshPoints(currentSeries.points);
                     (<AccumulationChart>this.chart).renderElements();
                 } else if ((<AccumulationChart>this.chart).accumulationSelectionModule && !isNaN(pointIndex)) {

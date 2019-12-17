@@ -42,8 +42,7 @@ export class Virtualization {
      * @private
      */
     public isNgTemplate(): boolean {
-        return !isNullOrUndefined(this.listViewInstance.templateRef) && typeof this.listViewInstance.templateRef !== 'string'
-            && isNullOrUndefined(this.listViewInstance.fields.groupBy);
+        return !isNullOrUndefined(this.listViewInstance.templateRef) && typeof this.listViewInstance.templateRef !== 'string';
     }
 
     /**

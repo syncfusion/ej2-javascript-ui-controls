@@ -269,7 +269,7 @@ describe('AutoComplete', () => {
             };
             atcObj.filterInput.value = 'türkiye';
             keyEventArgs.keyCode = 40;
-            atcObj.onInput();
+            atcObj.onInput(keyEventArgs);
             atcObj.onFilterUp(keyEventArgs);
         });
         it('press tab key while hide a popup', (done) => {
@@ -279,7 +279,7 @@ describe('AutoComplete', () => {
             };
             e.keyCode = 9;
             atcObj.onFilterDown(e);
-            atcObj.onInput();
+            atcObj.onInput(e);
             atcObj.onFilterUp(e);
             e.action = 'tab';
             atcObj.isPopupOpen = true;
@@ -322,7 +322,7 @@ describe('AutoComplete', () => {
                 };
                 atcObj.filterInput.value = 'türkiye';
                 keyEventArgs.keyCode = 40;
-                atcObj.onInput();
+                atcObj.onInput(keyEventArgs);
                 atcObj.onFilterUp(keyEventArgs);
             });
             it('press tab key while hide a popup', (done) => {
@@ -332,7 +332,7 @@ describe('AutoComplete', () => {
                 };
                 e.keyCode = 9;
                 atcObj.onFilterDown(e);
-                atcObj.onInput();
+                atcObj.onInput(e);
                 atcObj.onFilterUp(e);
                 e.action = 'tab';
                 atcObj.isPopupOpen = true;
@@ -377,7 +377,7 @@ describe('AutoComplete', () => {
                 };
                 atcObj.filterInput.value = 'türkiye';
                 keyEventArgs.keyCode = 40;
-                atcObj.onInput();
+                atcObj.onInput(keyEventArgs);
                 atcObj.onFilterUp(keyEventArgs);
             });
             it('press tab key while hide a popup', (done) => {
@@ -387,7 +387,7 @@ describe('AutoComplete', () => {
                 };
                 e.keyCode = 9;
                 atcObj.onFilterDown(e);
-                atcObj.onInput();
+                atcObj.onInput(e);
                 atcObj.onFilterUp(e);
                 e.action = 'tab';
                 atcObj.isPopupOpen = true;
@@ -432,7 +432,7 @@ describe('AutoComplete', () => {
                 };
                 atcObj.filterInput.value = 'Bas';
                 keyEventArgs.keyCode = 40;
-                atcObj.onInput();
+                atcObj.onInput(keyEventArgs);
                 atcObj.onFilterUp(keyEventArgs);
             });
             it('press tab key while hide a popup', (done) => {
@@ -442,7 +442,7 @@ describe('AutoComplete', () => {
                 };
                 e.keyCode = 9;
                 atcObj.onFilterDown(e);
-                atcObj.onInput();
+                atcObj.onInput(e);
                 atcObj.onFilterUp(e);
                 e.action = 'tab';
                 atcObj.isPopupOpen = true;
@@ -494,7 +494,7 @@ describe('AutoComplete', () => {
         it('search data', () => {
             atcObj.filterInput.value = 'sa';
             keyEventArgs.keyCode = 40;
-            atcObj.onInput();
+            atcObj.onInput(keyEventArgs);
             atcObj.onFilterUp(keyEventArgs);
         });
     });

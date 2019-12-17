@@ -1,9 +1,9 @@
-import { Component, EventHandler, Property, Event, EmitType, BaseEventArgs } from '@syncfusion/ej2-base';
+﻿import { Component, EventHandler, Property, Event, EmitType, BaseEventArgs, append } from '@syncfusion/ej2-base';
 import { addClass, removeClass, isVisible, closest, attributes, detach, classList, KeyboardEvents } from '@syncfusion/ej2-base';
 import { selectAll, setStyleAttribute as setStyle, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, getUniqueID, formatUnit, Collection, compile as templateCompiler } from '@syncfusion/ej2-base';
-import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Browser } from '@syncfusion/ej2-base';
-import { updateBlazorTemplate, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
+import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Browser, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { isBlazor } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { calculatePosition } from '@syncfusion/ej2-popups';
 import { Button, IconPosition } from '@syncfusion/ej2-buttons';
@@ -35,6 +35,7 @@ export type ItemAlign = 'Left' | 'Center' | 'Right';
 
 const CLS_VERTICAL: Str = 'e-vertical';
 const CLS_ITEMS: Str = 'e-toolbar-items';
+const BZ_ITEMS: Str = 'e-blazor-toolbar-items';
 const CLS_ITEM: Str = 'e-toolbar-item';
 const CLS_RTL: Str = 'e-rtl';
 const CLS_SEPARATOR: Str = 'e-separator';
@@ -99,6 +100,10 @@ export interface BeforeCreateArgs extends BaseEventArgs {
     enableCollision: boolean;
     /** Specifies the scrolling distance in scroller. */
     scrollStep: number;
+}
+/** @hidden */
+interface EJ2Instance extends HTMLElement {
+    ej2_instances: Object[];
 }
 
 /**
@@ -306,6 +311,12 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     @Property('auto')
     public height: string | number;
     /**
+     * Sets the CSS classes to root element of the Tab that helps to customize component styles.
+     * @default ''
+     */
+    @Property('')
+    public cssClass: string;
+    /**
      * Specifies the Toolbar display mode when Toolbar content exceeds the viewing area.
      * Possible modes are:
      * - Scrollable: All the elements are displayed in a single line with horizontal scrolling enabled.
@@ -363,27 +374,43 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
      * @returns void.
      */
     public destroy(): void {
-        let ele: HTEle = this.element;
         super.destroy();
         this.unwireEvents();
         this.tempId.forEach((ele: Str): void => {
             if (!isNOU(this.element.querySelector(ele))) {
-              (<HTEle>document.body.appendChild(this.element.querySelector(ele))).style.display = 'none'; }
-          });
-        while (ele.firstElementChild) {
-            ele.removeChild(ele.firstElementChild);
+                (<HTEle>document.body.appendChild(this.element.querySelector(ele))).style.display = 'none';
+            }
+        });
+        if (isBlazor() && this.isServerRendered) {
+            this.resetServerItems();
+        } else {
+            let subControls: NodeListOf<Element> = this.element.querySelectorAll('.e-control');
+            subControls.forEach((node: HTMLElement): void => {
+                let instances: object[] = (node as EJ2Instance).ej2_instances;
+                if (instances) {
+                    let instance: Toolbar = instances[0] as Toolbar;
+                    if (instance) {
+                        instance.destroy();
+                    }
+                }
+            });
+        }
+        while (this.element.lastElementChild && !this.element.lastElementChild.classList.contains(BZ_ITEMS)) {
+            this.element.removeChild(this.element.lastElementChild);
         }
         if (this.trgtEle) {
-            ele.appendChild(this.ctrlTem);
+            this.element.appendChild(this.ctrlTem);
         }
         this.clearProperty();
         this.popObj = null;
         this.tbarAlign = null;
         this.remove(this.element, 'e-toolpop');
-        ele.removeAttribute('style');
-        ['aria-disabled', 'aria-orientation', 'aria-haspopup', 'role'].forEach((attrb: string): void => {
-            this.element.removeAttribute(attrb);
-        });
+        if (this.cssClass) {
+            removeClass([this.element], this.cssClass.split(' '));
+        }
+        this.element.removeAttribute('style');
+        ['aria-disabled', 'aria-orientation', 'aria-haspopup', 'role'].forEach((attrb: string): void =>
+            this.element.removeAttribute(attrb));
     }
     /**
      * Initialize the event handler
@@ -754,11 +781,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         this.initialize();
         this.renderControl();
         this.separator();
-        this.refreshToolbarTemplate();
         this.wireEvents();
-        if (isBlazor()) {
-            this.renderComplete();
-        }
+        this.renderComplete();
     }
     private initialize(): void {
         let width: Str = formatUnit(this.width);
@@ -772,17 +796,83 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             'aria-orientation': !this.isVertical ? 'horizontal' : 'vertical',
         };
         attributes(this.element, ariaAttr);
+        if (this.cssClass) {
+            addClass([this.element], this.cssClass.split(' '));
+        }
     }
     private renderControl(): void {
-        this.trgtEle = (this.element.children.length > 0) ? <HTEle>this.element.querySelector('div') : null;
+        let ele: HTEle = this.element;
+        this.trgtEle = (ele.children.length > 0 && (!isBlazor() && !this.isServerRendered)) ? <HTEle>ele.querySelector('div') : null;
         this.tbarAlgEle = { lefts: [], centers: [], rights: [] };
         this.renderItems();
+        this.renderOverflowMode();
+        if (this.tbarAlign) { this.itemPositioning(); }
+        if (this.popObj && this.popObj.element.childElementCount > 1 && this.checkPopupRefresh(ele, this.popObj.element)) {
+            this.popupRefresh(this.popObj.element, false);
+        }
+    }
+
+    private itemsAlign(items: ItemModel[], itemEleDom: HTEle): void {
+        let innerItem: HTEle;
+        let innerPos: HTEle;
+        if (!this.tbarEle) {
+            this.tbarEle = [];
+        }
+        for (let i: number = 0; i < items.length; i++) {
+            if (isBlazor() && this.isServerRendered) {
+                let itemEleBlaDom: HTEle = this.element.querySelector('.' + BZ_ITEMS);
+                innerItem = itemEleBlaDom.querySelector('.' + CLS_ITEM + '[data-index="' + i + '"]');
+                if (items[i].overflow !== 'Show' && items[i].showAlwaysInPopup && !innerItem.classList.contains(CLS_SEPARATOR)) {
+                    this.popupPriCount++;
+                }
+                if (items[i].htmlAttributes) {
+                    this.setAttr(items[i].htmlAttributes, innerItem);
+                }
+                if (items[i].type === 'Button') {
+                    EventHandler.clearEvents(innerItem);
+                    EventHandler.add(innerItem, 'click', this.itemClick, this);
+                }
+            } else {
+                innerItem = this.renderSubComponent(items[i], i);
+            }
+            if (this.tbarEle.indexOf(innerItem) === -1) {
+                this.tbarEle.push(innerItem);
+            }
+            if (!this.tbarAlign) {
+                this.tbarItemAlign(items[i], itemEleDom, i);
+            }
+            innerPos = <HTEle>itemEleDom.querySelector('.e-toolbar-' + items[i].align.toLowerCase());
+            if (innerPos) {
+                if (!(items[i].showAlwaysInPopup && items[i].overflow !== 'Show')) {
+                    this.tbarAlgEle[(items[i].align + 's').toLowerCase() as ItmAlign].push(innerItem);
+                }
+                innerPos.appendChild(innerItem);
+            } else {
+                itemEleDom.appendChild(innerItem);
+            }
+        }
+    }
+
+    private serverItemsRerender(): void {
+        this.destroyMode();
+        this.resetServerItems();
+        this.itemsAlign(this.items, <HTEle>this.element.querySelector('.' + CLS_ITEMS));
         this.renderOverflowMode();
         if (this.tbarAlign) { this.itemPositioning(); }
         if (this.popObj && this.popObj.element.childElementCount > 1 && this.checkPopupRefresh(this.element, this.popObj.element)) {
             this.popupRefresh(this.popObj.element, false);
         }
+        this.separator();
+        this.refreshOverflow();
     }
+
+    private resetServerItems(): void {
+        let wrapBlaEleDom: HTEle = <HTEle>this.element.querySelector('.' + BZ_ITEMS);
+        let itemEles: HTEle[] = [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, this.element));
+        append(itemEles, wrapBlaEleDom);
+        this.clearProperty();
+    }
+
     /** @hidden */
     public changeOrientation(): void {
         let ele: HTEle = this.element;
@@ -1492,8 +1582,6 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     private renderItems(): void {
         let ele: HTEle = this.element;
         let itemEleDom: HTEle;
-        let innerItem: HTEle;
-        let innerPos: HTEle;
         let items: Item[] = <Item[]>this.items;
         if (ele && ele.children.length > 0) {
             itemEleDom = <HTEle>ele.querySelector('.' + CLS_ITEMS);
@@ -1504,24 +1592,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             if (!itemEleDom) {
                 itemEleDom = this.createElement('div', { className: CLS_ITEMS });
             }
-            for (let i: number = 0; i < items.length; i++) {
-                innerItem = this.renderSubComponent(items[i], i);
-                if (this.tbarEle.indexOf(innerItem) === -1) {
-                    this.tbarEle.push(innerItem);
-                }
-                if (!this.tbarAlign) {
-                    this.tbarItemAlign(items[i], itemEleDom, i);
-                }
-                innerPos = <HTEle>itemEleDom.querySelector('.e-toolbar-' + items[i].align.toLowerCase());
-                if (innerPos) {
-                    if (!(items[i].showAlwaysInPopup && items[i].overflow !== 'Show')) {
-                        this.tbarAlgEle[(items[i].align + 's').toLowerCase() as ItmAlign].push(innerItem);
-                    }
-                    innerPos.appendChild(innerItem);
-                } else {
-                    itemEleDom.appendChild(innerItem);
-                }
-            }
+            this.itemsAlign(items, itemEleDom);
             ele.appendChild(itemEleDom);
         }
     }
@@ -1595,6 +1666,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
      * @param  {ItemsModel[]} items - DOM element or an array of items to be added to the Toolbar.
      * @param  {number} index - Number value that determines where the command is to be added. By default, index is 0.
      * @returns void.
+     * @deprecated
      */
     public addItems(items: ItemModel[], index?: number): void {
         let innerItems: HTEle[];
@@ -1657,6 +1729,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
      * @param  {number|HTMLElement|NodeList|HTMLElement[]} args
      * Index or DOM element or an Array of item which is to be removed from the Toolbar.
      * @returns void.
+     * @deprecated
      */
     public removeItems(args: number | HTMLElement | NodeList | Element | HTMLElement[]): void {
         let elements: NodeList = <NodeList>args;
@@ -1751,7 +1824,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         item.id ? (dom.id = item.id) : dom.id = getUniqueID('e-tbr-btn');
         let btnTxt: HTEle = this.createElement('span', { className: 'e-tbar-btn-text' });
         if (textStr) {
-            btnTxt.innerHTML = textStr;
+            btnTxt.innerHTML = SanitizeHtmlHelper.sanitize(textStr);
             dom.appendChild(btnTxt);
             dom.classList.add('e-tbtn-txt');
         } else {
@@ -1779,6 +1852,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         let dom: HTEle;
         innerEle = this.createElement('div', { className: CLS_ITEM });
         innerEle.setAttribute('aria-disabled', 'false');
+        let tempDom: HTEle = this.createElement('div', {innerHTML: SanitizeHtmlHelper.sanitize(item.tooltipText)});
         if (!this.tbarEle) {
             this.tbarEle = [];
         }
@@ -1786,7 +1860,6 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             this.setAttr(item.htmlAttributes, innerEle);
         }
         if (item.tooltipText) {
-            let tempDom: HTEle = this.createElement('div', {innerHTML: item.tooltipText});
             innerEle.setAttribute('title', tempDom.textContent );
         }
         if (item.cssClass) {
@@ -1832,17 +1905,6 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             this.popupPriCount++;
         }
         return innerEle;
-    }
-
-    private refreshToolbarTemplate(): void {
-        let blazorContain: string[] = Object.keys(window) as string[];
-        for (let a: number = 0, length: number = this.items.length; a < length; a++) {
-            let item: ItemModel = this.items[a];
-            if (item.template && blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate && (<string>item.template).indexOf('<div>Blazor') === 0) {
-                resetBlazorTemplate(this.element.id + a + '_template', 'Template');
-                updateBlazorTemplate(this.element.id + a + '_template', 'Template', item);
-            }
-        }
     }
 
     private itemClick(e: Event): void {
@@ -1936,12 +1998,11 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'items':
-                    if (!(newProp.items instanceof Array && oldProp.items instanceof Array)) {
+                    if (!(newProp.items instanceof Array && oldProp.items instanceof Array) && !this.isServerRendered) {
                         let changedProb: Object[] = Object.keys(newProp.items);
                         for (let i: number = 0; i < changedProb.length; i++) {
                             let index: number = parseInt(Object.keys(newProp.items)[i], 10);
                             let property: Str = Object.keys(newProp.items[index])[0];
-                            let oldProperty: Str = Object(oldProp.items[index])[property];
                             let newProperty: Str = Object(newProp.items[index])[property];
                             if (this.tbarAlign || property === 'align') {
                                 this.refresh();
@@ -1964,6 +2025,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                                 this.tbarEle.splice(this.items.length, 1);
                             }
                         }
+                    } else if (isBlazor() && this.isServerRendered) {
+                        this.serverItemsRerender();
+                        this.notify('onItemsChanged', {});
                     } else {
                         this.itemsRerender(newProp.items);
                     }
@@ -2006,6 +2070,10 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                     if (this.popObj) {
                         this.popObj.collision = { Y: this.enableCollision ? 'flip' : 'none' };
                     }
+                    break;
+                case 'cssClass':
+                    if (oldProp.cssClass) { removeClass([this.element], oldProp.cssClass.split(' ')); }
+                    if (newProp.cssClass) { addClass([this.element], newProp.cssClass.split(' ')); }
                     break;
             }
         }

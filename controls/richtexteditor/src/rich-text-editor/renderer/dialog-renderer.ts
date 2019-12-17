@@ -11,6 +11,11 @@ export class DialogRenderer {
     constructor(parent?: IRichTextEditor) {
         this.parent = parent;
     }
+    /**
+     * dialog render method
+     * @hidden
+     * @deprecated
+     */
     public render(e: DialogModel): Dialog {
         let dlgObj: Dialog;
         if (isNOU(e.beforeOpen)) {
@@ -32,6 +37,11 @@ export class DialogRenderer {
     private open(args: Object): void {
         this.parent.trigger(events.dialogOpen, args);
     }
+    /**
+     * dialog close method
+     * @hidden
+     * @deprecated
+     */
     public close(args: Object): void {
         this.parent.trigger(events.dialogClose, args);
     }

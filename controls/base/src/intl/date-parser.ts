@@ -1,7 +1,7 @@
 import { DateFormatOptions } from '../internationalization';
 import { IntlBase as base } from './intl-base';
 import { ParserBase as parser, NumericOptions, NumberMapper } from './parser-base';
-import { isUndefined, throwError, getValue, isNullOrUndefined } from '../util';
+import { isUndefined, throwError, getValue, isNullOrUndefined, isBlazor } from '../util';
 import { datePartMatcher } from './date-formatter';
 import { HijriParser } from '../hijri-parser';
 const number: string = 'numbers';
@@ -16,7 +16,8 @@ const timeSetter: Object = {
     hour: 'setHours',
     second: 'setSeconds',
     day: 'setDate',
-    month: 'setMonth'
+    month: 'setMonth',
+    milliseconds: 'setMilliseconds'
 };
 /**
  * Interface for date parsing options
@@ -76,6 +77,9 @@ export class DateParser {
         let dependable: base.Dependables = base.getDependables(cldr, culture, option.calendar);
         let numOptions: NumericOptions = parser.getCurrentNumericOptions(dependable.parserObject, parser.getNumberingSystem(cldr));
         let parseOptions: ParseOptions = {};
+        if (isBlazor() && option.isServerRendered) {
+            option = base.compareBlazorDateFormats(option, culture);
+        }
         let resPattern: string = option.format || base.getResultantPattern(option.skeleton, dependable.dateObject, option.type);
         let regexString: string = '';
         let hourOnly: boolean;
@@ -116,12 +120,19 @@ export class DateParser {
                     case 's':
                     case 'h':
                     case 'H':
+                    case 'f':
                         canUpdate = true;
                         if ((char === 'M' || char === 'L') && len > 2) {
                             // tslint:disable-next-line
                             (<any>parseOptions)[charKey] = parser.reverseObject((<any>dependable).dateObject[month][standalone][(<any>base).monthIndex[len]]);
                             /* tslint:disable no-any */
                             regexString += '(' + Object.keys((<any>parseOptions)[charKey]).join('|') + ')';
+                        } else if (char === 'f') {
+                            if (len > 3) {
+                                continue;
+                            }
+                            isNumber = true;
+                            regexString += '(' + nRegx + nRegx + '?' + nRegx + '?' + ')';
                         } else {
                             isNumber = true;
                             regexString += '(' + nRegx + nRegx + optional + ')';
@@ -206,7 +217,7 @@ export class DateParser {
             return this.getDateObject(parsedDateParts);
         };
     }
-      /* tslint:disable */
+    /* tslint:disable */
     /**
      * Returns date object for provided date options
      * @param {DateParts} options 
@@ -216,7 +227,7 @@ export class DateParser {
     private static getDateObject(options: DateParts, value?: Date): Date {
         let res: Date = value || new Date();
         res.setMilliseconds(0);
-        let tKeys: string[] = ['hour', 'minute', 'second', 'month', 'day'];
+        let tKeys: string[] = ['hour', 'minute', 'second', 'milliseconds', 'month', 'day'];
         let y: number = options.year;
         let desig: string = options.designator;
         let tzone: number = options.timeZone;
@@ -230,7 +241,7 @@ export class DateParser {
         }
         for (let key of tKeys) {
             let tValue: number = (<any>options)[key];
-            if (isUndefined(tValue) && key === "day"){
+            if (isUndefined(tValue) && key === "day") {
                 res.setDate(1);
             }
             if (!isUndefined(tValue)) {

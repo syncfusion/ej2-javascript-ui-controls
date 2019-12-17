@@ -1,6 +1,6 @@
 import { IGrid } from '../base/interface';
 import { Column } from '../models/column';
-import { isNullOrUndefined, addClass, extend, closest, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, addClass, extend, closest, updateBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
 import { appendChildren } from '../base/util';
 
@@ -98,22 +98,39 @@ export class InlineEditRender {
 
     public update(elements: Object, args: { row?: Element, rowData?: Object }): void {
         this.isEdit = true;
+        let cloneRow: string = 'cloneRow';
         if (closest(args.row, '.e-movablecontent')) {
             args.row = this.getFreezeRow(args.row);
+            if (isBlazor() && this.parent.isServerRendered) {
+                args[cloneRow] = args.row.cloneNode(true);
+            }
         }
-        let tdElement: HTMLElement[] = [].slice.call(args.row.querySelectorAll('td.e-rowcell'));
-        args.row.innerHTML = '';
-        tdElement = this.updateFreezeEdit(args.row, tdElement);
-        args.row.appendChild(this.getEditElement(elements, true, tdElement, args, true));
-        args.row.classList.add('e-editedrow');
-        this.parent.editModule.checkLastRow(args.row, args);
-        this.refreshFreezeEdit(args.row, args);
+        if (isBlazor() && this.parent.isServerRendered) {
+            args.row.parentNode.insertBefore(args[cloneRow], args.row);
+            args.row.classList.add('e-hiddenrow');
+            let tdElement: HTMLElement[] = [].slice.call(args[cloneRow].querySelectorAll('td.e-rowcell'));
+            args[cloneRow].innerHTML = '';
+            tdElement = this.updateFreezeEdit(args[cloneRow], tdElement);
+            args[cloneRow].appendChild(this.getEditElement(elements, true, tdElement, args, true));
+            args[cloneRow].classList.add('e-editedrow');
+            this.refreshFreezeEdit(args[cloneRow], args);
+        } else {
+            let tdElement: HTMLElement[] = [].slice.call(args.row.querySelectorAll('td.e-rowcell'));
+            args.row.innerHTML = '';
+            tdElement = this.updateFreezeEdit(args.row, tdElement);
+            args.row.appendChild(this.getEditElement(elements, true, tdElement, args, true));
+            args.row.classList.add('e-editedrow');
+            this.parent.editModule.checkLastRow(args.row, args);
+            this.refreshFreezeEdit(args.row, args);
+        }
     }
 
     private refreshFreezeEdit(row: Element, args: {rowData?: Object, movableForm?: HTMLFormElement }): void {
         let td: Element = row.firstChild as Element;
         let fCls: string;
         let cont: Element;
+        let frozen: string = 'frozen';
+        let cloneFrozen: string = 'cloneFrozen';
         let idx: number = parseInt(row.getAttribute('aria-rowindex'), 10);
         if (this.parent.getFrozenColumns()) {
             if (idx < this.parent.frozenRows) {
@@ -132,13 +149,34 @@ export class InlineEditRender {
             let fRows: Element;
             if (cont.querySelector(fCls).contains(row)) {
                 fRows = this.parent.getMovableRowByIndex(idx);
-                this.updateFrozenCont(fRows, td, mTd);
+                if (isBlazor() && this.parent.isServerRendered) {
+                    args[frozen] = fRows;
+                    args[cloneFrozen] = fRows.cloneNode(true);
+                    fRows.classList.add('e-hiddenrow');
+                    fRows.parentNode.insertBefore(args[cloneFrozen], fRows);
+                    this.updateFrozenCont(args[cloneFrozen], td, mTd);
+                } else {
+                    this.updateFrozenCont(fRows, td, mTd);
+                }
             } else {
                 fRows = this.parent.getRowByIndex(idx);
-                this.updateFrozenCont(fRows, mTd, td);
+                if (isBlazor() && this.parent.isServerRendered) {
+                    args[frozen] = fRows;
+                    args[cloneFrozen] = fRows.cloneNode(true);
+                    fRows.parentNode.insertBefore(args[cloneFrozen], fRows);
+                    fRows.classList.add('e-hiddenrow');
+                    this.updateFrozenCont(args[cloneFrozen], mTd, td);
+                } else {
+                    this.updateFrozenCont(fRows, mTd, td);
+                }
             }
-            fRows.appendChild(mTd);
-            fRows.classList.add('e-editedrow');
+            if (isBlazor() && this.parent.isServerRendered) {
+                args[cloneFrozen].appendChild(mTd);
+                args[cloneFrozen].classList.add('e-editedrow');
+            } else {
+                fRows.appendChild(mTd);
+                fRows.classList.add('e-editedrow');
+            }
         }
     }
 
@@ -238,6 +276,14 @@ export class InlineEditRender {
         let dummyData: Object = extend({}, data, {isAdd: !this.isEdit, isFrozen: isFrozen}, true);
         let editTemplateID: string = this.parent.element.id + 'editSettingsTemplate';
         appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
-        updateBlazorTemplate(editTemplateID, 'Template', this.parent.editSettings);
+        let setRules: Function = () => {
+            let cols: Column[] = this.parent.getColumns();
+            cols.forEach((col: Column) => {
+                if (col.validationRules) {
+                    this.parent.editModule.formObj.rules[col.field] = col.validationRules as {[rule: string]: Object};
+                }
+            });
+        };
+        updateBlazorTemplate(editTemplateID, 'Template', this.parent.editSettings, true, setRules);
     }
 }

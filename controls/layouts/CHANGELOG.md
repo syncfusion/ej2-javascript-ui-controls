@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 17.3.34 (2019-12-10)
+## 17.4.39 (2019-12-17)
+
+### Splitter
+
+#### New Features
+
+- `#255003` - Provided the cssClass property to individual panes also to customize it in the Splitter.
+
+## 17.3.29 (2019-11-26)
 
 ### Dashboard Layout
 

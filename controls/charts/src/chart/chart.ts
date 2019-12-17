@@ -1262,7 +1262,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         // It is used for checking blazor framework or not.
         let blazor: string = 'Blazor';
         this.isBlazor = window[blazor];
-
+        this.allowServerDataBinding = false;
         this.unWireEvents();
         this.initPrivateVariable();
         this.setCulture();
@@ -1317,6 +1317,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.processData();
 
         this.renderComplete();
+
+        this.allowServerDataBinding = true;
 
     }
 
@@ -1791,6 +1793,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * Defines the trendline initialization
      */
     private initTrendLines(): void {
+        this.isProtectedOnChange = true;
         for (let series of this.visibleSeries) {
             let trendIndex: number = 0;
             for (let trendline of series.trendlines) {
@@ -1809,6 +1812,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 trendIndex++;
             }
         }
+        this.isProtectedOnChange = false;
     }
 
     private calculateAreaType(): void {
@@ -3100,10 +3104,15 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                         let len: number = this.series.length;
                         let seriesRefresh: boolean = false;
                         let series: SeriesModel;
+                        let blazorProp: boolean;
                         for (let i: number = 0; i < len; i++) {
                             series = newProp.series[i];
+                            if (this.isBlazor && (series.isClosed || series.marker ||
+                                series.emptyPointSettings || series.type || series.boxPlotMode || series.showMean)) {
+                                    blazorProp = true;
+                            }
                             if (series && (series.dataSource || series.xName || series.yName || series.size ||
-                                series.high || series.low || series.open || series.close || series.fill || series.name)) {
+                                series.high || series.low || series.open || series.close || series.fill || series.name || blazorProp)) {
                                 extend(this.getVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }

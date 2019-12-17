@@ -62,7 +62,7 @@ export class ContextMenu extends MenuBase implements INotifyPropertyChanged {
 
     protected initialize(): void {
         super.initialize();
-        attributes(this.element, <{ [key: string]: string }>{ 'role': 'menu', 'tabindex': '0' });
+        attributes(this.element, <{ [key: string]: string }>{ 'role': 'context menu', 'tabindex': '0' });
         this.element.style.zIndex = getZindexPartial(this.element).toString();
     }
 

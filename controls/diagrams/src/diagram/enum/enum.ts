@@ -2318,12 +2318,12 @@ export enum DiagramEvent {
  * @private
  */
 export type HistoryChangeAction =
-    /** Node - Defines the history entry type is node */
-    'CustomAction' |
-    /** Connector - Defines the history entry type is Connector */
-    'Undo' |
-    /** Selector - Defines the history entry type is Selector Model */
-    'Redo';
+/** Node - Defines the history entry type is node */
+'CustomAction' |
+/** Connector - Defines the history entry type is Connector */
+'Undo' |
+/** Selector - Defines the history entry type is Selector Model */
+'Redo';
 
 export type HistoryEntryType =
     /** Node - Defines the history entry type is node */

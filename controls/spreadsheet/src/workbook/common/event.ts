@@ -4,6 +4,10 @@
 /** @hidden */
 export const workbookDestroyed: string = 'workbookDestroyed';
 /** @hidden */
+export const updateSheetFromDataSource: string = 'updateSheetFromDataSource';
+/** @hidden */
+export const dataSourceChanged: string = 'dataSourceChanged';
+/** @hidden */
 export const workbookOpen: string = 'workbookOpen';
 /** @hidden */
 export const beginSave: string = 'beginSave';
@@ -51,3 +55,27 @@ export const initiateSort: string = 'initiateSort';
 export const sortComplete: string = 'sortComplete';
 /** @hidden */
 export const sortRangeAlert: string = 'sortRangeAlert';
+/** @hidden */
+export const initiatelink: string = 'initiatelink';
+/** @hidden */
+export const beforeHyperlinkCreate: string = 'beforeHyperlinkCreate';
+/** @hidden */
+export const afterHyperlinkCreate: string = 'afterHyperlinkCreate';
+/** @hidden */
+export const beforeHyperlinkClick: string = 'beforeHyperlinkCreate';
+/** @hidden */
+export const afterHyperlinkClick: string = 'afterHyperlinkCreate';
+/** @hidden */
+export const addHyperlink: string = 'addHyperlink';
+/** @hidden */
+export const setLinkModel: string = 'setLinkModel';
+/** @hidden */
+export const beforeFilter: string = 'beforeFilter';
+/** @hidden */
+export const initiateFilter: string = 'initiateFilter';
+/** @hidden */
+export const filterComplete: string = 'filterComplete';
+/** @hidden */
+export const filterRangeAlert: string = 'filterRangeAlert';
+/** @hidden */
+export const clearAllFilter: string = 'clearAllFilter';

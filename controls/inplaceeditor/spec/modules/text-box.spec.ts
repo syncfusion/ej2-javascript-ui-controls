@@ -81,6 +81,14 @@ describe('TextBox Control', () => {
             editorObj.save();
             expect(valueEle.innerHTML === 'testing').toEqual(true);
         });
+        it('Dynamically changing the css class with empty string and mode as popup', () => {
+            editorObj.mode = 'Popup';
+            editorObj.model.cssClass = '';
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(editorObj.model.cssClass === 'e-editable-elements').toEqual(true);
+        });
     });
     describe('Duplicate ID availability testing', () => {
         let editorObj: any;

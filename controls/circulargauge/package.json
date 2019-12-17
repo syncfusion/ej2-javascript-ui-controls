@@ -1,13 +1,12 @@
 {
 	"name": "@syncfusion/ej2-circulargauge",
-	"version": "17.3.27",
+	"version": "17.2.48",
 	"description": "Essential JS 2 CircularGauge Components",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
 	"dependencies": {
 		"@syncfusion/ej2-base": "*",
-		"@syncfusion/ej2-svg-base": "*",
-		"@syncfusion/ej2-popups": "*"
+		"@syncfusion/ej2-svg-base": "*"
 	},
 	"devDependencies": {
 		"@types/chai": "^3.4.28",

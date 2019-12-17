@@ -1,6 +1,6 @@
 import { Property, ChildProperty, Complex, extend } from '@syncfusion/ej2-base';
 import { SheetModel, getRowsHeight, getColumnsWidth, CellModel } from './index';
-import { CellStyleModel, CellStyle } from '../common/index';
+import { CellStyleModel, CellStyle, HyperlinkModel } from '../common/index';
 import { getRow } from './row';
 import { RowModel } from './row-model';
 /**
@@ -8,7 +8,7 @@ import { RowModel } from './row-model';
  */
 export class Cell extends ChildProperty<RowModel> {
     /**
-     * Defines the value of the cell which can be text or number with formatting.
+     * Defines the value of the cell which can be text or number.
      * @default ''
      */
     @Property('')
@@ -57,6 +57,14 @@ export class Cell extends ChildProperty<RowModel> {
      */
     @Complex<CellStyleModel>({}, CellStyle)
     public style: CellStyleModel;
+
+    /**
+     * Specifies the hyperlink of the cell.
+     * @default ''
+     * @aspType SpreadsheetHyperlink
+     */
+    @Property('')
+    public hyperlink: string | HyperlinkModel;
 }
 
 /**

@@ -1069,6 +1069,7 @@ export interface MethodArgumentsModel {
      * Sets the shape style of the node
      * @default new ShapeStyle()
      * @aspType object
+     * @blazorType object
      */
     style?: ShapeStyleModel | TextStyleModel;
 
@@ -1189,6 +1190,7 @@ export interface UmlEnumerationMemberModel {
      * Sets the shape style of the node
      * @default new ShapeStyle()
      * @aspType object
+     * @blazorType object
      */
     style?: ShapeStyleModel | TextStyleModel;
 
@@ -1217,6 +1219,7 @@ export interface UmlEnumerationModel {
      * Sets the shape style of the node
      * @default new ShapeStyle()
      * @aspType object
+     * @blazorType object
      */
     style?: ShapeStyleModel | TextStyleModel;
 
@@ -1364,6 +1367,7 @@ export interface NodeModel extends NodeBaseModel{
      * Sets the shape style of the node
      * @default new ShapeStyle()
      * @aspType object
+     * @blazorType object
      */
     style?: ShapeStyleModel | TextStyleModel;
 

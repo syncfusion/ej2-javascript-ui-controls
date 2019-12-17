@@ -1,8 +1,10 @@
-import { Property, NotifyPropertyChanges, INotifyPropertyChanged, Component, isBlazor } from '@syncfusion/ej2-base';
-import { addClass, Event, EmitType, detach, removeClass, rippleEffect, EventHandler, isRippleEnabled } from '@syncfusion/ej2-base';
+import { Property, NotifyPropertyChanges, INotifyPropertyChanged, Component, isBlazor, isRippleEnabled } from '@syncfusion/ej2-base';
+import { addClass, Event, EmitType, detach, removeClass } from '@syncfusion/ej2-base';
+import { rippleEffect, EventHandler, Observer, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { ButtonModel } from './button-model';
 import { getTextNode } from '../common/common';
 export type IconPosition = 'Left' | 'Right' | 'Top' | 'Bottom';
+export const buttonObserver: Observer = new Observer();
 
 const cssClassName: CssClassNameT = {
     RTL: 'e-rtl',
@@ -63,6 +65,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
      * Defines class/multiple classes separated by a space in the Button element. The Button types, styles, and
      * size can be defined by using
      * [`this`](http://ej2.syncfusion.com/documentation/button/howto.html?lang=typescript#create-a-block-button).
+     * {% codeBlock src='button/cssClass/index.md' %}{% endcodeBlock %}
      * @default ""
      */
     @Property('')
@@ -70,6 +73,7 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
 
     /**
      * Defines the text `content` of the Button element.
+     * {% codeBlock src='button/content/index.md' %}{% endcodeBlock %}
      * @default ""
      */
     @Property('')
@@ -88,6 +92,13 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
      */
     @Property()
     public locale: string;
+
+    /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default false
+     */
+    @Property(false)
+    public enableHtmlSanitizer: boolean;
 
     /**
      * Triggers once the component rendering is completed.
@@ -116,7 +127,15 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
      * @private
      */
     public render(): void {
-        this.initialize();
+        if (isBlazor() && this.isServerRendered) {
+            if (!this.disabled) {
+                this.wireEvents();
+            }
+            buttonObserver.notify('component-rendered', { id: this.element.id, instance: this });
+        } else {
+            this.initialize();
+        }
+        this.removeRippleEffect = rippleEffect(this.element, { selector: '.' + cssClassName.BUTTON });
         this.renderComplete();
     }
 
@@ -129,7 +148,8 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
         }
         if (!isBlazor() || (isBlazor() && this.getModuleName() !== 'progress-btn')) {
             if (this.content) {
-                this.element.innerHTML = this.content;
+                let tempContent: string = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(this.content) : this.content;
+                this.element.innerHTML = tempContent;
             }
             this.setIconCss();
         }
@@ -141,7 +161,6 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
         } else {
             this.wireEvents();
         }
-        this.removeRippleEffect = rippleEffect(this.element, { selector: '.' + cssClassName.BUTTON });
     }
 
     private controlStatus(disabled: boolean): void {
@@ -194,27 +213,29 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
      * @returns void
      */
     public destroy(): void {
-        let span: Element;
-        let classList: string[] = [cssClassName.PRIMARY, cssClassName.RTL, cssClassName.ICONBTN, 'e-success', 'e-info', 'e-danger',
-            'e-warning', 'e-flat', 'e-outline', 'e-small', 'e-bigger', 'e-active', 'e-round',
-            'e-top-icon-btn', 'e-bottom-icon-btn'];
-        if (this.cssClass) {
-            classList = classList.concat(this.cssClass.split(' '));
-        }
-        super.destroy();
-        removeClass([this.element], classList);
-        if (!this.element.getAttribute('class')) {
-            this.element.removeAttribute('class');
-        }
-        if (this.disabled) {
-            this.element.removeAttribute('disabled');
-        }
-        if (this.content) {
-            this.element.innerHTML = this.element.innerHTML.replace(this.content, '');
-        }
-        span = this.element.querySelector('span.e-btn-icon');
-        if (span) {
-            detach(span);
+        if (!(isBlazor() && this.isServerRendered)) {
+            let span: Element;
+            let classList: string[] = [cssClassName.PRIMARY, cssClassName.RTL, cssClassName.ICONBTN, 'e-success', 'e-info', 'e-danger',
+                'e-warning', 'e-flat', 'e-outline', 'e-small', 'e-bigger', 'e-active', 'e-round',
+                'e-top-icon-btn', 'e-bottom-icon-btn'];
+            if (this.cssClass) {
+                classList = classList.concat(this.cssClass.split(' '));
+            }
+            super.destroy();
+            removeClass([this.element], classList);
+            if (!this.element.getAttribute('class')) {
+                this.element.removeAttribute('class');
+            }
+            if (this.disabled) {
+                this.element.removeAttribute('disabled');
+            }
+            if (this.content) {
+                this.element.innerHTML = this.element.innerHTML.replace(this.content, '');
+            }
+            span = this.element.querySelector('span.e-btn-icon');
+            if (span) {
+                detach(span);
+            }
         }
         this.unWireEvents();
         if (isRippleEnabled) {
@@ -316,7 +337,10 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
                     if (!node) {
                         this.element.classList.remove(cssClassName.ICONBTN);
                     }
-                    if (!isBlazor() || (isBlazor() && this.getModuleName() !== 'progress-btn')) {
+                    if (!isBlazor()) {
+                        if (this.enableHtmlSanitizer) {
+                            newProp.content = SanitizeHtmlHelper.sanitize(newProp.content);
+                        }
                         this.element.innerHTML = newProp.content;
                         this.setIconCss();
                     }

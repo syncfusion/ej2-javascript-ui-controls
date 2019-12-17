@@ -351,7 +351,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         bodeElem.innerHTML = '';
         (this.element.querySelector('.e-btngroup-and') as HTMLInputElement).checked = true;
         if (this.enableNotCondition) {
-            (getInstance(this.element.querySelector('.e-checkbox') as HTMLElement, CheckBox) as CheckBox).checked = false;
+            removeClass(this.element.querySelectorAll('.e-qb-toggle'), 'e-active-toggle');
         }
         bodeElem.appendChild(this.createElement('div', { attrs: { class: 'e-rule-list' } }));
         this.levelColl[this.element.id + '_group0'] = [0];
@@ -449,7 +449,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             summaryElem.style.display = 'block';
             txtareaElem.style.height = txtareaElem.scrollHeight + 'px';
         }
-        if (target.tagName === 'BUTTON') {
+        if (target.tagName === 'BUTTON' && target.className.indexOf('e-qb-toggle') < 0) {
             if (target.className.indexOf('e-removerule') > -1) {
                 this.actionButton = target;
                 this.deleteRule(target);
@@ -473,28 +473,35 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     groupElem.style.display = 'block';
                 }
             }
-        } else if (target.tagName === 'LABEL' && target.parentElement.className.indexOf('e-btn-group') > -1 ||
-                    target.parentElement.className.indexOf('e-checkbox-wrapper') > -1) {
+        } else if ((target.tagName === 'LABEL' && target.parentElement.className.indexOf('e-btn-group') > -1) ||
+        target.className.indexOf('e-qb-toggle') > -1) {
             let element: Element = closest(target, '.e-group-container');
             let forIdValue: string = target.getAttribute('for');
-            let targetValue: string = document.getElementById(forIdValue).getAttribute('value');
+            let targetValue: string;
+            if (forIdValue) {
+                targetValue = document.getElementById(forIdValue).getAttribute('value');
+            }
             groupID = element.id.replace(this.element.id + '_', '');
-            let ariaChecked: string;
+            let ariaChecked: boolean;
             if (this.enableNotCondition) {
-                ariaChecked = element.getElementsByClassName('e-checkbox-wrapper')[0].getAttribute('aria-checked');
-                if (target.parentElement.className.indexOf('e-checkbox-wrapper') > -1) {
-                    if (ariaChecked === 'true') {
-                        ariaChecked = 'false';
+                if (target.className.indexOf('e-qb-toggle') > -1) {
+                    let toggleElem: Element = element.getElementsByClassName('e-qb-toggle')[0];
+                    if (toggleElem.className.indexOf('e-active-toggle') > -1) {
+                        removeClass([toggleElem], 'e-active-toggle');
+                        ariaChecked = false;
                     } else {
-                        ariaChecked = 'true';
+                        addClass([toggleElem], 'e-active-toggle');
+                        ariaChecked = true;
                     }
                     targetValue = this.rule.condition;
+                } else {
+                    ariaChecked = this.rule.not;
                 }
             }
             args = { groupID: groupID, cancel: false, type: 'condition', value: targetValue.toLowerCase() };
             if (this.enableNotCondition) {
                 args = { groupID: groupID, cancel: false, type: 'condition', value: targetValue.toLowerCase(),
-                'not': JSON.parse(ariaChecked) };
+                'not': ariaChecked };
             }
             if (!this.isImportRules) {
                 this.trigger('beforeChange', args, (observedChangeArgs: ChangeEventArgs) => {
@@ -505,7 +512,6 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
         }
     }
-
     private beforeSuccessCallBack(args: ChangeEventArgs, target: Element): void {
         if (!args.cancel) {
             let element: Element = closest(target, '.e-group-container');
@@ -746,8 +752,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         groupElem.appendChild(grpBodyElem);
         // create button group in OR and AND process
         glueElem = this.createElement('div', { attrs: { class: 'e-btn-group' } });
-        inputElem = this.createElement('input', { attrs: { type: 'checkbox', class: 'e-checkbox' }});
-        glueElem.appendChild(inputElem);
+        if (this.enableNotCondition) {
+            inputElem = this.createElement('button', { attrs: { type: 'button', class: 'e-qb-toggle' }});
+            glueElem.appendChild(inputElem);
+        }
         inputElem = this.createElement('input', { attrs: { type: 'radio', class: 'e-btngroup-and', value: 'AND' } });
         inputElem.setAttribute('checked', 'true');
         glueElem.appendChild(inputElem);
@@ -814,7 +822,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             let orInpElem: Element = groupElem.querySelector('.e-btngroup-or');
             let andLblElem: Element = groupElem.querySelector('.e-btngroup-and-lbl');
             let orLblElem: Element = groupElem.querySelector('.e-btngroup-or-lbl');
-            let notElem: HTMLElement = groupElem.querySelector('.e-checkbox');
+            let notElem: HTMLElement = groupElem.querySelector('.e-qb-toggle');
             andInpElem.setAttribute('id', this.element.id + '_and' + this.btnGroupId);
             orInpElem.setAttribute('id', this.element.id + '_or' + this.btnGroupId);
             andInpElem.setAttribute('name', this.element.id + '_and' + this.btnGroupId);
@@ -854,8 +862,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 this.levelColl[groupElem.id] = [0];
             }
             if (this.enableNotCondition) {
-                let checkbox: CheckBox = new CheckBox({ label: this.l10n.getConstant('NOT'), cssClass: 'e-btn e-small' });
-                checkbox.appendTo(notElem);
+                let tglBtn: Button = new Button({ content: this.l10n.getConstant('NOT'), cssClass: 'e-btn e-small' });
+                tglBtn.appendTo(notElem);
                 groupElem.querySelector('.e-btngroup-and-lbl').classList.add('e-not');
             }
             groupElem.querySelector('.e-btngroup-and').setAttribute('checked', 'true');
@@ -1213,11 +1221,13 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private templateDestroy(column: ColumnsModel, elemId: string): void {
         let temp: Function = column.template.destroy as Function;
         if (column.template && column.template.destroy) {
+            let templateElements: NodeListOf<Element>;
+            templateElements = closest(document.getElementById(elemId), '.e-rule-field').querySelectorAll('.e-template');
             if (typeof temp === 'string') {
                 temp = getValue(temp, window);
-                temp({ elementId: elemId });
+                temp({ elementId: elemId, elements: templateElements });
             } else {
-                (column.template.destroy as Function)({ elementId: elemId });
+                (column.template.destroy as Function)({ elementId: elemId, elements: templateElements });
             }
         }
     }
@@ -1458,6 +1468,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         let formatOpt: DateFormatOptions; let selectedValue: Date;
         if (format) {
             let dParser: Function = this.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
+            if (format.indexOf('/') > -1) {
+                formatOpt = { type: 'dateTime', format: format } as DateFormatOptions;
+            } else {
+                formatOpt = { type: 'dateTime', skeleton: format } as DateFormatOptions;
+            }
             formatOpt = { type: 'dateTime', format: format } as DateFormatOptions;
             selectedValue = dParser(value);
             if (isNullOrUndefined(selectedValue)) {
@@ -1605,9 +1620,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             itemData.template = this.columns[filtObj.index].template;
             let valElem: Element | Element[];
             if (itemData.template && typeof itemData.template.create === 'string') {
-                valElem = getValue(itemData.template.create, window)();
+                valElem = getValue(itemData.template.create, window)({ operator: itemData.value || tempRule.operator });
             } else if (itemData.template && itemData.template.create) {
-                valElem = (itemData.template.create as Function)();
+                valElem = (itemData.template.create as Function)({ operator: itemData.value || tempRule.operator });
             }
             if (valElem instanceof Element) {
                 valElem.id = parentId + '_valuekey0';
@@ -1628,8 +1643,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 parentElem.style.minWidth = '200px';
             }
         } else {
-            removeClass([target.nextElementSibling], 'e-template-value');
-            let inputLen: number = 1;
+            removeClass([target.nextElementSibling], 'e-template-value'); let inputLen: number = 1;
             if (tempRule.type === 'boolean') {
                 inputLen = this.selectedColumn.values ? this.selectedColumn.values.length : 2;
             } else {
@@ -1677,7 +1691,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 break;
             case 'datepicker':
                 let column: ColumnsModel = this.getColumn(rule.field);
-                let format: DateFormatOptions = { type: 'dateTime', format: column.format || 'MM/dd/yyyy' } as DateFormatOptions;
+                let format: DateFormatOptions;
+                if (column.format && column.format.indexOf('/')) {
+                    format = { type: 'dateTime', format: column.format } as DateFormatOptions;
+                } else {
+                    format = { type: 'dateTime', skeleton: column.format || 'yMd' } as DateFormatOptions;
+                }
                 let selectedDate: Date = (getComponent(element, controlName) as DatePicker).value;
                 if (rule.operator.indexOf('between') > -1) {
                     if (typeof rule.value === 'string' ) {
@@ -1843,8 +1862,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             } else if (target.className.indexOf('e-datepicker') > -1) {
                 let ddlInst: DropDownList =
                     getInstance(ruleElem.querySelector('.e-rule-filter input') as HTMLElement, DropDownList) as DropDownList;
-                let format: DateFormatOptions =
-                    { type: 'dateTime', format: this.columns[ddlInst.index].format || 'MM/dd/yyyy' } as DateFormatOptions;
+                let format: DateFormatOptions;
+                if (this.columns[ddlInst.index].format && this.columns[ddlInst.index].format.indexOf('/') > -1) {
+                    format = { type: 'dateTime', format: this.columns[ddlInst.index].format } as DateFormatOptions;
+                } else {
+                    format = { type: 'dateTime', skeleton: this.columns[ddlInst.index].format || 'yMd' } as DateFormatOptions;
+                }
                 if ((<DateFormatOptions>format).type) {
                     if (arrOperator.indexOf(oper) > -1) {
                         if (typeof rule.rules[index].value === 'string') {
@@ -1896,7 +1919,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     public destroy(): void {
         let queryElement: Element = this.element;
         if (!queryElement) { return; }
-        let element: NodeListOf<HTMLElement>; let i: number; let len: number;
+        let element: NodeListOf<HTMLElement>; let i: number; let len: number; let tooltip: NodeListOf<HTMLElement>;
         super.destroy();
         element = this.element.querySelectorAll('.e-addrulegroup') as NodeListOf<HTMLElement>;
         len = element.length;
@@ -1904,17 +1927,29 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             (getComponent(element[i], 'dropdown-btn') as DropDownButton).destroy();
             detach(element[i]);
         }
-        element = this.element.querySelectorAll('.e-rule-filter .e-control') as NodeListOf<HTMLElement>;
+        tooltip = this.element.querySelectorAll('.e-rule-filter .e-control.e-tooltip') as NodeListOf<HTMLElement>;
+        for (i = 0; i < tooltip.length; i++) {
+            (getComponent(tooltip[i], 'tooltip') as Tooltip).destroy();
+        }
+        element = this.element.querySelectorAll('.e-rule-filter .e-control:not(.e-tooltip)') as NodeListOf<HTMLElement>;
         len = element.length;
         for (i = 0; i < len; i++) {
             (getComponent(element[i], 'dropdownlist') as DropDownList).destroy();
             detach(element[i]);
         }
-        element = this.element.querySelectorAll('.e-rule-operator .e-control') as NodeListOf<HTMLElement>;
+        tooltip = this.element.querySelectorAll('.e-rule-operator .e-control.e-tooltip') as NodeListOf<HTMLElement>;
+        for (i = 0; i < tooltip.length; i++) {
+            (getComponent(tooltip[i], 'tooltip') as Tooltip).destroy();
+        }
+        element = this.element.querySelectorAll('.e-rule-operator .e-control:not(.e-tooltip)') as NodeListOf<HTMLElement>;
         len = element.length;
         for (i = 0; i < len; i++) {
             (getComponent(element[i], 'dropdownlist') as DropDownList).destroy();
             detach(element[i]);
+        }
+        tooltip = this.element.querySelectorAll('.e-rule-value .e-control.e-tooltip') as NodeListOf<HTMLElement>;
+        for (i = 0; i < tooltip.length; i++) {
+            (getComponent(tooltip[i], 'tooltip') as Tooltip).destroy();
         }
         this.isImportRules = false;
         this.unWireEvents();
@@ -2045,18 +2080,22 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private onChangeNotGroup(): void {
         this.element.innerHTML = '';
         this.groupIdCounter = 0;
+        if (this.enableNotCondition) {
+            if (this.enableNotCondition) {
+                let inputElem: HTMLElement = this.createElement('button', { attrs: { type: 'button', class: 'e-qb-toggle' }});
+                this.groupElem.querySelector('.e-btn-group').insertBefore(inputElem, this.groupElem.querySelector('.e-btngroup-and'));
+            }
+        } else {
+            this.groupElem.querySelector('.e-qb-toggle').remove();
+        }
         this.rule = this.checkNotGroup(this.rule);
         this.initWrapper();
     }
     private notGroupRtl(): void {
         if (this.enableRtl) {
-            this.element.querySelectorAll('.e-checkbox-wrapper').forEach((el: Element) => {
-                el.classList.add('e-rtl');
-            });
+            addClass(this.element.querySelectorAll('.e-btn-group'), 'e-rtl');
         } else {
-            this.element.querySelectorAll('.e-checkbox-wrapper').forEach((el: Element) => {
-                el.classList.remove('e-rtl');
-            });
+            removeClass(this.element.querySelectorAll('.e-btn-group'), 'e-rtl');
         }
     }
     private checkNotGroup(rule: RuleModel): RuleModel {
@@ -2641,7 +2680,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     } else {
                         format = { type: 'dateTime', skeleton: column.format || 'yMd' } as DateFormatOptions;
                     }
-                    ruleValue = this.intl.parseDate(ruleColl[i].value as string, format) as Date;
+                    ruleValue = this.getDate(ruleColl[i].value as string, format);
                     if (dateOperColl.indexOf(oper) > -1) {
                         isDateFilter = true;
                     }
@@ -2766,14 +2805,14 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     switch (ruleColl.operator) {
                         case 'between':
                             if (column.type === 'date') {
-                                pred = new Predicate(ruleColl.field, 'greaterthan', this.intl.parseDate(value[j] as string, format));
+                                pred = new Predicate(ruleColl.field, 'greaterthan', this.getDate(value[j] as string, format));
                             } else {
                                 pred = new Predicate(ruleColl.field, 'greaterthan', value[j]);
                             }
                             break;
                         case 'notbetween':
                             if (column.type === 'date') {
-                                pred = new Predicate(ruleColl.field, 'lessthan', this.intl.parseDate(value[j] as string, format));
+                                pred = new Predicate(ruleColl.field, 'lessthan', this.getDate(value[j] as string, format));
                             } else {
                                 pred = new Predicate(ruleColl.field, 'lessthan', value[j]);
                             }
@@ -2788,15 +2827,15 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 } else {
                     switch (ruleColl.operator) {
                         case 'between':
-                            if (column.type === 'date') {
-                                pred = pred.and(ruleColl.field, 'lessthan', this.intl.parseDate(value[j] as string, format));
-                            } else {
-                                pred = pred.and(ruleColl.field, 'lessthan', value[j]);
-                            }
+                        if (column.type === 'date') {
+                            pred = pred.and(ruleColl.field, 'lessthan', this.getDate(value[j] as string, format));
+                        } else {
+                            pred = pred.and(ruleColl.field, 'lessthan', value[j]);
+                        }
                             break;
                         case 'notbetween':
                             if (column.type === 'date') {
-                                pred = pred.or(ruleColl.field, 'greaterthan', this.intl.parseDate(value[j] as string, format));
+                                pred = pred.or(ruleColl.field, 'greaterthan', this.getDate(value[j] as string, format));
                             } else {
                                 pred = pred.or(ruleColl.field, 'greaterthan', value[j]);
                             }
@@ -2825,6 +2864,13 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
         return predicate;
     }
+    private getDate(value: string, format: DateFormatOptions): Date {
+        let currDate: Date = this.intl.parseDate(value as string, format);
+        if ((value as string).indexOf(':') > -1 && ((value as string).indexOf('/') < 0 || (value as string).indexOf(',') < 0)) {
+            currDate.setDate(new Date().getDate());
+        }
+        return currDate;
+    }
     private importRules(rule: RuleModel, parentElem?: Element, isReset?: boolean): Element {
         if (!isReset) {
             parentElem = this.renderGroup(rule.condition, parentElem);
@@ -2835,11 +2881,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 (parentElem.querySelector('.e-btngroup-and') as HTMLInputElement).checked = true;
             }
             if (this.enableNotCondition) {
-                let check: CheckBox = getInstance(parentElem.querySelector('.e-checkbox') as HTMLElement, CheckBox) as CheckBox;
+                let tglBtnElem: Element = parentElem.querySelector('.e-qb-toggle');
                 if (rule.not) {
-                    check.checked = true;
+                    addClass([tglBtnElem], 'e-active-toggle');
                 } else {
-                    check.checked = false;
+                    removeClass([tglBtnElem], 'e-active-toggle');
                 }
             }
         }
@@ -3094,10 +3140,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     }
 
     private processParser(parser: string[][], rules: RuleModel, levelColl: number[]): RuleModel {
-        let rule: RuleModel; let subRules: RuleModel;
-        let numVal: number[] = []; let strVal: string[] = [];
-        let j: number; let jLen: number; let k: number; let kLen: number;
-        let l: number; let lLen: number; let grpCount: number; let operator: string;
+        let j: number; let jLen: number; let rule: RuleModel; let subRules: RuleModel; let numVal: number[] = []; let strVal: string[] = [];
+        let k: number; let kLen: number; let l: number; let lLen: number; let grpCount: number; let operator: string;
         for (let i: number = 0, iLen: number = parser.length; i < iLen; i++) {
             if (parser[i][0] === 'Literal') {
                 rule = { label: parser[i][1], field: parser[i][1] };
@@ -3117,7 +3161,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                                 break;
                             }
                             if (operator.indexOf('like') > -1 && parser[j][0] === 'String') {
-                                rule.value = parser[j][1].replace(/'/g, '').replace(/%/g, ''); rule.type = 'string';
+                                rule.value = parser[j][1].replace(/'/g, '').replace(/%/g, '');
+                                rule.type = 'string';
                             } else if (operator === 'between') {
                                 if (parser[j][0] === 'Literal' || parser[j][0] === 'Left') {
                                     break;
@@ -3181,7 +3226,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     rules.condition = parser[i][1];
                 }
             } else if (parser[i][0] === 'Right') {
-                this.parser = parser.splice(i + 1, iLen - (i + 1)); levelColl.pop(); //To get the parent Group
+                this.parser = parser.splice(i + 1, iLen - (i + 1));
+                levelColl.pop();   //To get the parent Group
                 rules = this.rule; lLen = levelColl.length;
                 for (l = 0; l < lLen; l++) {
                     rules = this.findGroupByIdx(levelColl[l], rules, l === 0);

@@ -1,5 +1,5 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, closest } from '@syncfusion/ej2-base';
-import { EmitType, Event, EventHandler, MouseEventArgs } from '@syncfusion/ej2-base';
+import { EmitType, Event, EventHandler, MouseEventArgs, isBlazor } from '@syncfusion/ej2-base';
 import { addClass, isRippleEnabled, removeClass, rippleEffect, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { SwitchModel } from './switch-model';
 import { rippleMouseHandler, destroy, preRender, ChangeEventArgs, setHiddenInput } from './../common/common';
@@ -150,11 +150,17 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
      * @returns void
      */
     public destroy(): void {
-        super.destroy();
-        if (!this.disabled) {
-            this.unWireEvents();
+        if (isBlazor() && this.isServerRendered) {
+            if (!this.disabled) {
+                this.unWireEvents();
+            }
+        } else {
+            super.destroy();
+            if (!this.disabled) {
+                this.unWireEvents();
+            }
+            destroy(this, this.getWrapper(), this.tagName);
         }
-        destroy(this, this.getWrapper(), this.tagName);
     }
     private focusHandler(): void {
         this.isFocused = true;
@@ -285,6 +291,9 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
      * @private
      */
     protected preRender(): void {
+        if (isBlazor() && this.isServerRendered) {
+            return;
+        }
         let element: HTMLInputElement = this.element;
         this.formElement = <HTMLFormElement>closest(this.element, 'form');
         this.tagName = this.element.tagName;
@@ -295,8 +304,14 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
      * @private
      */
     protected render(): void {
-        this.initWrapper();
-        this.initialize();
+        if (isBlazor() && this.isServerRendered) {
+            if (isRippleEnabled) {
+                rippleEffect(this.element.parentElement, { duration: 400, isCenterRipple: true });
+            }
+        } else {
+            this.initWrapper();
+            this.initialize();
+        }
         if (!this.disabled) {
             this.wireEvents();
         }

@@ -1,9 +1,9 @@
 // tslint:disable-next-line:max-line-length
-import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty, isBlazor } from '@syncfusion/ej2-base';
+import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty, isBlazor, classList } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
 import { Save } from '@syncfusion/ej2-file-utils';
 // tslint:disable-next-line:max-line-length
-import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle } from './index';
+import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs } from './index';
 // tslint:disable-next-line:max-line-length
 import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs } from './index';
 import { LayoutViewer, PageLayoutViewer, BulletsAndNumberingDialog } from './index';
@@ -32,6 +32,7 @@ import { SpellCheckDialog } from './implementation/dialogs/spellCheck-dialog';
 import { DocumentEditorModel, ServerActionSettingsModel } from './document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from './implementation';
 import { PasteOptions } from './index';
+import { CommentReviewPane } from './implementation/index';
 
 /**
  * The Document editor component is used to draft, save or print rich text contents as page by page.
@@ -434,6 +435,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Property([])
     public headers: object[];
+    /**
+     * Show comment in the document.
+     * @default false
+     */
+    @Property(false)
+    public showComments: boolean;
 
     /**
      * Triggers whenever document changes in the document editor.
@@ -520,6 +527,27 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     @Event()
     public customContextMenuBeforeOpen: EmitType<BeforeOpenCloseCustomContentMenuEventArgs>;
     /**
+     * Triggers before opening comment pane.
+     * @event
+     * @blazorproperty 'BeforePaneSwitch'
+     */
+    @Event()
+    public beforePaneSwitch: EmitType<BeforePaneSwitchEventArgs>;
+    /**
+     * Triggers after inserting comment.
+     * @blazorproperty 'OnCommentBegin'
+     * @event
+     */
+    @Event()
+    public commentBegin: EmitType<Object>;
+    /**
+     * Triggers after posting comment.
+     * @event
+     * @blazorproperty 'AfterCommentEnd'
+     */
+    @Event()
+    public commentEnd: EmitType<Object>;
+    /**
      * @private
      */
     public characterFormat: CharacterFormatProperties;
@@ -531,6 +559,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public sectionFormat: SectionFormatProperties;
+    /**
+     * @private
+     */
+    public commentReviewPane: CommentReviewPane;
     /**
      * Gets the total number of pages.
      * @returns {number}
@@ -731,6 +763,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                         this.viewer.dialog2.zIndex = model.zIndex;
                     }
                     break;
+                case 'showComments':
+                    if (this.viewer) {
+                        this.viewer.showComments(model.showComments);
+                    }
+                    break;
             }
         }
     }
@@ -754,6 +791,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 this.hyperlinkDialogModule.initHyperlinkDialog(l10n);
             }
             if (this.contextMenuModule) {
+                this.contextMenuModule.contextMenuInstance.destroy();
                 this.contextMenuModule.initContextMenu(l10n);
             }
             if (this.listDialogModule) {
@@ -779,6 +817,13 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             }
             if (this.tableOfContentsDialogModule) {
                 this.tableOfContentsDialogModule.initTableOfContentDialog(l10n);
+            }
+            if (this.commentReviewPane && this.commentReviewPane.reviewPane) {
+                if (this.enableRtl) {
+                    classList(this.commentReviewPane.reviewPane, ['e-rtl'], []);
+                } else {
+                    classList(this.commentReviewPane.reviewPane, [], ['e-rtl']);
+                }
             }
         }
     }
@@ -1211,7 +1256,6 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Orientation': 'Orientation',
         'Landscape': 'Landscape',
         'Portrait': 'Portrait',
-        'Table Of Contents': 'Table Of Contents',
         'Show page numbers': 'Show page numbers',
         'Right align page numbers': 'Right align page numbers',
         'Nothing': 'Nothing',
@@ -1440,7 +1484,23 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Find Next Region I Can Edit': 'Find Next Region I Can Edit',
         'Keep source formatting': 'Keep source formatting',
         'Match destination formatting': 'Match destination formatting',
-        'Text only': 'Text only'
+        'Text only': 'Text only',
+        'Comments': 'Comments',
+        'Type your comment': 'Type your comment',
+        'Post': 'Post',
+        'Reply': 'Reply',
+        'New Comment': 'New Comment',
+        'Edit': 'Edit',
+        'Resolve': 'Resolve',
+        'Reopen': 'Reopen',
+        'No comments in this document': 'No comments in this document',
+        'more': 'more',
+        'Type your comment hear': 'Type your comment hear',
+        'Next Comment': 'Next Comment',
+        'Previous Comment': 'Previous Comment',
+        'Un-posted comments': 'Un-posted comments',
+        // tslint:disable-next-line:max-line-length
+        'Added comments not posted. If you continue, that comment will be discarded.': 'Added comments not posted. If you continue, that comment will be discarded.'
     };
     // Public Implementation Starts
     /**
@@ -1449,6 +1509,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     public open(sfdtText: string): void {
         if (!isNullOrUndefined(this.viewer)) {
+            this.showComments = false;
             this.clearPreservedCollectionsInViewer();
             this.viewer.userCollection.push('Everyone');
             this.viewer.lists = [];
@@ -1760,6 +1821,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         if (this.optionsPaneModule) {
             this.optionsPaneModule.destroy();
             this.optionsPaneModule = undefined;
+        }
+        if (this.commentReviewPane) {
+            this.commentReviewPane.destroy();
+            this.commentReviewPane = undefined;
         }
         if (!isNullOrUndefined(this.hyperlinkDialogModule)) {
             this.hyperlinkDialogModule.destroy();

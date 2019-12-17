@@ -1207,7 +1207,7 @@ describe("Toolbar - Actions Module", () => {
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['Bold', '|', 'Italic', 'SubScript', 'SuperScript', 'StrikeThrough', 'OrderedList',
-                        'UnorderedList', 'UnderLine', 'Formats', 'FontName', 'FontSize', 'Alignments']
+                        'UnorderedList', 'UnderLine', 'Formats', 'FontName', 'FontSize', 'Alignments', 'InsertCode']
                 }
             });
             rteEle = rteObj.element;
@@ -1233,6 +1233,7 @@ describe("Toolbar - Actions Module", () => {
             expect((<HTMLElement>tbItemsEle[11].firstElementChild).innerText.trim()).toBe('10 pt');
             expect((<HTMLElement>tbItemsEle[12].firstElementChild).firstElementChild.classList.contains('e-justify-left')).toBe(true);
             expect((<HTMLElement>tbItemsEle[12].firstElementChild).firstElementChild.classList.contains('e-icons')).toBe(true);
+            expect(tbItemsEle[13].classList.contains('e-active')).not.toBe(true);
         });
 
         it("Add toolbar status testing", () => {
@@ -1248,7 +1249,8 @@ describe("Toolbar - Actions Module", () => {
                 formats: 'Pre',
                 fontname: 'Segoe UI',
                 fontsize: '12pt',
-                alignments: 'JustifyRight'
+                alignments: 'JustifyRight',
+                insertcode: true
             } as IToolbarStatus);
             let tbItemsEle: HTMLElement[] = selectAll(".e-toolbar-item", rteObj.element);
             expect(tbItemsEle[0].classList.contains('e-active')).toBe(true);
@@ -1265,6 +1267,7 @@ describe("Toolbar - Actions Module", () => {
             expect((<HTMLElement>tbItemsEle[11].firstElementChild).innerText.trim()).toBe('12 pt');
             expect((<HTMLElement>tbItemsEle[12].firstElementChild).firstElementChild.classList.contains('e-justify-right')).toBe(true);
             expect((<HTMLElement>tbItemsEle[12].firstElementChild).firstElementChild.classList.contains('e-icons')).toBe(true);
+            expect(tbItemsEle[13].classList.contains('e-active')).toBe(true);
         });
 
         it("Remove toolbar status testing", () => {
@@ -1280,7 +1283,8 @@ describe("Toolbar - Actions Module", () => {
                 formats: 'P',
                 fontname: 'Georgia,serif',
                 fontsize: '14pt',
-                alignments: 'JustifyLeft'
+                alignments: 'JustifyLeft',
+                insertcode: false
             } as IToolbarStatus);
             let tbItemsEle: HTMLElement[] = selectAll(".e-toolbar-item", rteObj.element);
             expect(tbItemsEle[0].classList.contains('e-active')).not.toBe(true);
@@ -1297,6 +1301,34 @@ describe("Toolbar - Actions Module", () => {
             expect((<HTMLElement>tbItemsEle[11].firstElementChild).innerText.trim()).toBe('14 pt');
             expect((<HTMLElement>tbItemsEle[12].firstElementChild).firstElementChild.classList.contains('e-justify-left')).toBe(true);
             expect((<HTMLElement>tbItemsEle[12].firstElementChild).firstElementChild.classList.contains('e-icons')).toBe(true);
+            expect(tbItemsEle[13].classList.contains('e-active')).not.toBe(true);
+        });
+    });
+
+    describe("Toolbar status update method testing", () => {
+        let rteEle: HTMLElement;
+        let rteObj: any;
+
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['InsertCode', 'SourceCode']
+                }
+            });
+            rteEle = rteObj.element;
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it("Status update after source code view", () => {
+            rteObj.toolbarModule.updateToolbarStatus({
+                insertcode: true
+            } as IToolbarStatus);
+            let tbItemsEle: HTMLElement[] = selectAll(".e-toolbar-item", rteObj.element);
+            expect(tbItemsEle[0].classList.contains('e-active')).toBe(true);
+            tbItemsEle[1].click();
+            expect(tbItemsEle[0].classList.contains('e-active')).toBe(false);
         });
     });
 
@@ -1400,53 +1432,42 @@ describe("Toolbar - Actions Module", () => {
         });
     });
 
-    describe("Color picker shows transparent color as white", () => {
+    describe("EJ2-31670 - Need to provide callback (event action) support for RTE custom toolbar", () => {
         let rteEle: HTMLElement;
-        let rteObj: RichTextEditor;
+        let rteObj: any;
+        let clickEventSpy: jasmine.Spy = jasmine.createSpy('customclick');
+        let container: HTMLElement = createElement('div', { id: getUniqueID('container'), styles: 'height:800px;' });
+        let element1: HTMLElement = createElement('div', { id: getUniqueID('rte-test'),  });
+
         beforeEach(() => {
-            rteObj = renderRTE({
-                toolbarSettings: {
-                    items: ['FontColor', 'BackgroundColor']
-                },
-                fontColor: {
-                    columns: 5,
-                    colorCode: {
-                        'Custom': ['#00ff00',
-                            '#00ffff', '#ff00ff', '#0000ff', '', '#ff0000', '#000080', '#008080', '#008000', '#800080',
-                            '#800000', '#808000', '#c0c0c0', '#000000'
-                        ]
-                    }
-                },
-                backgroundColor: {
-                    columns: 5,
-                    colorCode: {
-                        'Custom': ['#00ff00',
-                            '#00ffff', '#ff00ff', '#0000ff', '', '#ff0000', '#000080', '#008080', '#008000', '#800080',
-                            '#800000', '#808000', '#c0c0c0', '#000000'
-                        ]
-                    }
-                },
+            document.body.appendChild(container);
+            container.appendChild(element1);
+            rteObj = new RichTextEditor({
+                toolbarSettings: { 
+                    enableFloating: true,
+                    items: ['Bold', 'Italic', 'Underline', '|', 'Undo','Redo',
+                        {
+                            tooltipText: 'Insert Symbol',
+                            template: '<button class="e-tbar-btn e-btn" tabindex="-1" id="custom_tbar"  style="width:100%"><div class="e-tbar-btn-text" style="font-weight: 500;"> &#937;</div></button>',
+                            click: clickEventSpy,
+                            undo: true
+                        }, '|', 'FullScreen']
+                }
             });
+            rteObj.appendTo(element1);
             rteEle = rteObj.element;
         });
+
         afterEach(() => {
             destroy(rteObj);
         });
-        it("Check Font color picker", () => {
-            let trgtEle : HTMLElement = document.querySelectorAll('.e-icon-right.e-caret')[0] as HTMLElement;
-                trgtEle.click();
-            let palette : HTMLElement = document.querySelector('.e-palette');
-            expect(palette.childElementCount).toBe(3);
-            expect(palette.firstChild.childNodes.length).toBe(5);
-            expect((palette.firstChild.childNodes[4] as HTMLElement).classList.contains('e-nocolor-item')).toBe(true);
-        });
-        it("Check background color picker", () => {
-            let trgtEle : HTMLElement = document.querySelectorAll('.e-icon-right.e-caret')[1] as HTMLElement;
-                trgtEle.click();
-            let palette : HTMLElement = document.querySelector('.e-palette');
-            expect(palette.childElementCount).toBe(3);
-            expect(palette.firstChild.childNodes.length).toBe(5);
-            expect((palette.firstChild.childNodes[4] as HTMLElement).classList.contains('e-nocolor-item')).toBe(true);
+
+        it("Testing custom toolbar event", (done) => {
+            document.getElementById('custom_tbar').click();
+            setTimeout(() => {
+                expect(clickEventSpy).toHaveBeenCalled();
+                done();
+            }, 500);
         });
     });
 });

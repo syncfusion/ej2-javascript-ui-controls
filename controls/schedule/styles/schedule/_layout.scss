@@ -5,6 +5,7 @@
     display: block;
     outline: medium none;
     overflow: hidden;
+    position: relative;
     user-select: none;
 
     .e-schedule-toolbar {
@@ -731,6 +732,22 @@
             text-decoration: underline;
           }
         }
+
+        &.e-disable-dates {
+          .e-header-day {
+            cursor: default;
+            opacity: .35;
+          }
+
+          .e-header-date {
+            cursor: default;
+            opacity: .35;
+
+            &:hover {
+              text-decoration: none;
+            }
+          }
+        }
       }
 
       .e-row-count-wrapper {
@@ -825,7 +842,15 @@
 
       .e-work-cells {
         width: $schedule-work-cells-width;
-       }
+
+        &.e-disable-dates {
+          background-color: $schedule-disable-dates-color;
+
+          &:hover {
+            background-color: $schedule-disable-dates-color;
+          }
+        }
+      }
 
       .e-current-time {
         font-size: $schedule-current-time-nrml-font-size;
@@ -1187,13 +1212,30 @@
       }
 
       .e-work-cells {
-        height: 70px;
+        height: $schedule-month-work-cells-height;
         vertical-align: top;
         width: $schedule-work-cells-width;
 
         &.e-disable-date {
           .e-date-header {
             visibility: hidden;
+          }
+        }
+
+        &.e-disable-dates {
+          background-color: $schedule-disable-dates-color;
+
+          .e-date-header {
+            cursor: default;
+            opacity: .35;
+
+            &:hover {
+              text-decoration: none;
+            }
+          }
+
+          &:hover {
+            background-color: $schedule-disable-dates-color;
           }
         }
       }
@@ -1689,6 +1731,14 @@
 
       .e-work-cells {
         height: $schedule-timeline-work-cells-height;
+
+        &.e-disable-dates {
+          background-color: $schedule-disable-dates-color;
+
+          &:hover {
+            background-color: $schedule-disable-dates-color;
+          }
+        }
       }
 
       .e-resource-text {
@@ -2030,6 +2080,14 @@
         height: 40px;
         position: relative;
         vertical-align: top;
+
+        &.e-disable-dates {
+          background-color: $schedule-disable-dates-color;
+
+          &:hover {
+            background-color: $schedule-disable-dates-color;
+          }
+        }
       }
 
       .e-date-header {
@@ -3407,7 +3465,11 @@
         border: $schedule-popup-btn-border;
         margin-right: 8px;
         right: auto;
-        text-transform: uppercase;
+        text-transform: capitalize;
+
+        @if ($schedule-skin == 'material' or $schedule-skin == 'material-dark') {
+          text-transform: uppercase;
+        }
       }
     }
 
@@ -3474,6 +3536,7 @@
       max-width: 100%;
       overflow: hidden;
       padding: 0;
+      position: fixed;
       right: 0;
       top: 0;
       width: 100%;

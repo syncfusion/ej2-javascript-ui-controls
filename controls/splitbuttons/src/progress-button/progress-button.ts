@@ -1,6 +1,7 @@
 import { Button, IconPosition } from '@syncfusion/ej2-buttons';
 import { EventHandler, Property, INotifyPropertyChanged, NotifyPropertyChanges, Animation, Effect, attributes } from '@syncfusion/ej2-base';
-import { EmitType, Event, BaseEventArgs, remove, removeClass, Complex, ChildProperty, isBlazor } from '@syncfusion/ej2-base';
+import { EmitType, Event, BaseEventArgs, remove, removeClass } from '@syncfusion/ej2-base';
+import { Complex, ChildProperty, isBlazor, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { ProgressButtonModel, SpinSettingsModel, AnimationSettingsModel } from './progress-button-model';
 
@@ -155,6 +156,13 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
     public isToggle: boolean;
 
     /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default false
+     */
+    @Property(false)
+    public enableHtmlSanitizer: boolean;
+
+    /**
      * Specifies a spinner and its related properties.
      */
     @Complex<SpinSettingsModel>({}, SpinSettings)
@@ -225,6 +233,9 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
      * @private
      */
     public render(): void {
+        if (isBlazor()) {
+            this.isServerRendered = false;
+        }
         super.render();
         this.init();
         this.wireEvents();
@@ -339,9 +350,15 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
         let cont: string;
         if (isBlazor()) {
             cont = this.content;
+            if (this.enableHtmlSanitizer) {
+                cont = SanitizeHtmlHelper.sanitize(this.content);
+            }
             this.setContentIcon(cont);
         } else {
             cont = this.element.innerHTML;
+            if (this.enableHtmlSanitizer) {
+                cont = SanitizeHtmlHelper.sanitize(this.element.innerHTML);
+            }
             this.element.innerHTML = '';
             this.element.appendChild(this.createElement('span', { className: CONTENTCLS, innerHTML: cont }));
         }

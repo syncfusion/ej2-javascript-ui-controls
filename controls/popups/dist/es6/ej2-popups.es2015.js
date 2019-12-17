@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, classList, closest, compile, createElement, detach, formatUnit, getUniqueID, isBlazor, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getUniqueID, isBlazor, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 
 /**
@@ -1624,13 +1624,15 @@ let Dialog = class Dialog extends Component {
         this.allowMaxHeight = true;
         this.preventVisibility = true;
         let classArray = [];
-        for (let j = 0; j < this.element.classList.length; j++) {
-            if (!isNullOrUndefined(this.element.classList[j].match('e-control')) ||
-                !isNullOrUndefined(this.element.classList[j].match(ROOT))) {
-                classArray.push(this.element.classList[j]);
+        if (!(isBlazor() && this.isServerRendered)) {
+            for (let j = 0; j < this.element.classList.length; j++) {
+                if (!isNullOrUndefined(this.element.classList[j].match('e-control')) ||
+                    !isNullOrUndefined(this.element.classList[j].match(ROOT))) {
+                    classArray.push(this.element.classList[j]);
+                }
             }
+            removeClass([this.element], classArray);
         }
-        removeClass([this.element], classArray);
         this.clonedEle = this.element.cloneNode(true);
         this.closeIconClickEventHandler = (event) => {
             this.hide(event);
@@ -1713,6 +1715,9 @@ let Dialog = class Dialog extends Component {
     }
     setResize() {
         if (this.enableResize) {
+            if (isBlazor() && this.isServerRendered && !isNullOrUndefined(this.element.querySelector('.e-icons.e-resize-handle'))) {
+                return;
+            }
             this.element.classList.add(DLG_RESIZABLE);
             let computedHeight = getComputedStyle(this.element).minHeight;
             let computedWidth = getComputedStyle(this.element).minWidth;
@@ -1802,11 +1807,15 @@ let Dialog = class Dialog extends Component {
             this.targetEle = ((typeof this.target) === 'string') ?
                 document.querySelector(this.target) : this.target;
         }
-        addClass([this.element], ROOT);
+        if (!(isBlazor() && this.isServerRendered)) {
+            addClass([this.element], ROOT);
+        }
         if (Browser.isDevice) {
             addClass([this.element], DEVICE);
         }
-        this.setCSSClass();
+        if (!(isBlazor() && this.isServerRendered)) {
+            this.setCSSClass();
+        }
         this.setMaxHeight();
     }
     /**
@@ -1815,7 +1824,9 @@ let Dialog = class Dialog extends Component {
      */
     initRender() {
         this.initialRender = true;
-        attributes(this.element, { role: 'dialog' });
+        if (!(isBlazor() && this.isServerRendered)) {
+            attributes(this.element, { role: 'dialog' });
+        }
         if (this.zIndex === 1000) {
             this.setzIndex(this.element, false);
             this.calculatezIndex = true;
@@ -1823,26 +1834,42 @@ let Dialog = class Dialog extends Component {
         else {
             this.calculatezIndex = false;
         }
-        this.setTargetContent();
-        if (this.header !== '' && !isNullOrUndefined(this.header)) {
-            this.setHeader();
+        if (isBlazor() && this.isServerRendered && isNullOrUndefined(this.headerContent)) {
+            this.headerContent = this.element.getElementsByClassName('e-dlg-header-content')[0];
         }
-        if (this.showCloseIcon) {
-            this.renderCloseIcon();
+        if (!(isBlazor() && this.isServerRendered)) {
+            this.setTargetContent();
+            if (this.header !== '' && !isNullOrUndefined(this.header)) {
+                this.setHeader();
+            }
+            if (this.showCloseIcon) {
+                this.renderCloseIcon();
+            }
+            this.setContent();
+            if (this.footerTemplate !== '' && !isNullOrUndefined(this.footerTemplate)) {
+                this.setFooterTemplate();
+            }
+            else if (!isNullOrUndefined(this.buttons[0].buttonModel)) {
+                this.setButton();
+            }
         }
-        this.setContent();
-        if (this.footerTemplate !== '' && !isNullOrUndefined(this.footerTemplate)) {
-            this.setFooterTemplate();
-        }
-        else if (!isNullOrUndefined(this.buttons[0].buttonModel)) {
-            this.setButton();
+        if (isBlazor() && this.isServerRendered) {
+            if (!isNullOrUndefined(this.buttons[0].buttonModel) && this.footerTemplate === '') {
+                this.setButton();
+            }
         }
         if (this.allowDragging && (!isNullOrUndefined(this.headerContent))) {
             this.setAllowDragging();
         }
-        attributes(this.element, { 'aria-modal': (this.isModal ? 'true' : 'false') });
-        if (this.isModal) {
-            this.setIsModal();
+        if (!(isBlazor() && this.isServerRendered)) {
+            attributes(this.element, { 'aria-modal': (this.isModal ? 'true' : 'false') });
+            if (this.isModal) {
+                this.setIsModal();
+            }
+        }
+        if (isBlazor() && this.isServerRendered && isNullOrUndefined(this.dlgContainer)) {
+            this.dlgContainer = this.element.parentElement;
+            this.dlgOverlay = this.element.parentElement.getElementsByClassName('e-dlg-overlay')[0];
         }
         if (!isNullOrUndefined(this.targetEle)) {
             this.isModal ? this.targetEle.appendChild(this.dlgContainer) : this.targetEle.appendChild(this.element);
@@ -1889,9 +1916,11 @@ let Dialog = class Dialog extends Component {
         });
         this.positionChange();
         this.setEnableRTL();
-        addClass([this.element], DLG_HIDE);
-        if (this.isModal) {
-            this.setOverlayZindex();
+        if (!(isBlazor() && this.isServerRendered)) {
+            addClass([this.element], DLG_HIDE);
+            if (this.isModal) {
+                this.setOverlayZindex();
+            }
         }
         if (this.visible) {
             this.show();
@@ -1926,11 +1955,7 @@ let Dialog = class Dialog extends Component {
             else {
                 this.element.style.top = '0px';
                 this.element.style.left = '0px';
-                let positonX = typeof (this.position.X) === 'number' ? this.position.X :
-                    this.position.X.toLocaleLowerCase();
-                let positionY = typeof (this.position.Y) === 'number' ? this.position.Y :
-                    this.position.Y.toLocaleLowerCase();
-                this.dlgContainer.classList.add('e-dlg-' + positonX + '-' + positionY);
+                this.dlgContainer.classList.add('e-dlg-' + this.position.X + '-' + this.position.Y);
             }
         }
         else {
@@ -1940,8 +1965,7 @@ let Dialog = class Dialog extends Component {
     setPopupPosition() {
         this.popupObj.setProperties({
             position: {
-                X: typeof (this.position.X) === 'number' ? this.position.X : this.position.X.toLocaleLowerCase(),
-                Y: typeof (this.position.Y) === 'number' ? this.position.Y : this.position.Y.toLocaleLowerCase()
+                X: this.position.X, Y: this.position.Y
             }
         });
     }
@@ -1950,7 +1974,6 @@ let Dialog = class Dialog extends Component {
         this.dragObj = new Draggable(this.element, {
             clone: false,
             abort: '.e-dlg-closeicon-btn',
-            isDragScroll: true,
             handle: handleContent,
             dragStart: (event) => {
                 this.trigger('dragStart', event, (dragEventArgs) => {
@@ -1979,22 +2002,31 @@ let Dialog = class Dialog extends Component {
         }
     }
     setButton() {
-        this.buttonContent = [];
-        this.btnObj = [];
-        for (let i = 0; i < this.buttons.length; i++) {
-            let buttonType = !isNullOrUndefined(this.buttons[i].type) ? this.buttons[i].type.toLowerCase() : 'button';
-            let btn = this.createElement('button', { attrs: { type: buttonType } });
-            this.buttonContent.push(btn.outerHTML);
+        if (!(isBlazor() && this.isServerRendered)) {
+            this.buttonContent = [];
+            this.btnObj = [];
+            for (let i = 0; i < this.buttons.length; i++) {
+                let buttonType = !isNullOrUndefined(this.buttons[i].type) ? this.buttons[i].type.toLowerCase() : 'button';
+                let btn = this.createElement('button', { attrs: { type: buttonType } });
+                this.buttonContent.push(btn.outerHTML);
+            }
+            this.setFooterTemplate();
         }
-        this.setFooterTemplate();
         for (let i = 0; i < this.buttons.length; i++) {
-            this.btnObj[i] = new Button(this.buttons[i].buttonModel);
+            if (!(isBlazor() && this.isServerRendered)) {
+                this.btnObj[i] = new Button(this.buttons[i].buttonModel);
+            }
+            if (isBlazor() && this.isServerRendered) {
+                this.ftrTemplateContent = this.element.querySelector('.e-footer-content');
+            }
             if (typeof (this.buttons[i].click) === 'function') {
                 EventHandler.add(this.ftrTemplateContent.children[i], 'click', this.buttons[i].click, this);
             }
-            this.btnObj[i].appendTo(this.ftrTemplateContent.children[i]);
-            this.btnObj[i].element.classList.add('e-flat');
-            this.primaryButtonEle = this.element.getElementsByClassName('e-primary')[0];
+            if (!(isBlazor() && this.isServerRendered)) {
+                this.btnObj[i].appendTo(this.ftrTemplateContent.children[i]);
+                this.btnObj[i].element.classList.add('e-flat');
+                this.primaryButtonEle = this.element.getElementsByClassName('e-primary')[0];
+            }
         }
     }
     setContent() {
@@ -2006,7 +2038,7 @@ let Dialog = class Dialog extends Component {
         else if (!isNullOrUndefined(this.content) && this.content !== '' || !this.initialRender) {
             let blazorContain = Object.keys(window);
             if (typeof (this.content) === 'string' && blazorContain.indexOf('ejsInterop') === -1) {
-                this.contentEle.innerHTML = this.content;
+                this.contentEle.innerHTML = this.sanitizeHelper(this.content);
             }
             else if (this.content instanceof HTMLElement) {
                 this.contentEle.appendChild(this.content);
@@ -2047,7 +2079,7 @@ let Dialog = class Dialog extends Component {
             templateValue = template;
         }
         else {
-            toElement.innerHTML = template;
+            toElement.innerHTML = this.sanitizeHelper(template);
         }
         let fromElements = [];
         if (!isNullOrUndefined(templateFn)) {
@@ -2062,6 +2094,27 @@ let Dialog = class Dialog extends Component {
                 this.blazorTemplate(templateProps);
             }
         }
+    }
+    /**
+     * @hidden
+     */
+    sanitizeHelper(value) {
+        if (this.enableHtmlSanitizer) {
+            let item = SanitizeHtmlHelper.beforeSanitize();
+            let beforeEvent = {
+                cancel: false,
+                helper: null
+            };
+            extend(item, item, beforeEvent);
+            this.trigger('beforeSanitizeHtml', item);
+            if (item.cancel && !isNullOrUndefined(item.helper)) {
+                value = item.helper(value);
+            }
+            else if (!item.cancel) {
+                value = SanitizeHtmlHelper.serializeValue(item, value);
+            }
+        }
+        return value;
     }
     blazorTemplate(templateProps) {
         if (templateProps === this.element.id + 'header') {
@@ -2083,13 +2136,11 @@ let Dialog = class Dialog extends Component {
         this.element.style.maxHeight = (!isNullOrUndefined(this.target)) && (this.targetEle.offsetHeight < window.innerHeight) ?
             (this.targetEle.offsetHeight - 20) + 'px' : (window.innerHeight - 20) + 'px';
         this.element.style.display = display;
-        if (Browser.isIE && this.contentEle && this.height === 'auto' && (this.element.offsetHeight <
-            this.contentEle.offsetHeight)) {
-            this.element.style.height = '100%';
-        }
     }
     setEnableRTL() {
-        this.enableRtl ? addClass([this.element], RTL) : removeClass([this.element], RTL);
+        if (!(isBlazor() && this.isServerRendered)) {
+            this.enableRtl ? addClass([this.element], RTL) : removeClass([this.element], RTL);
+        }
         if (!isNullOrUndefined(this.element.querySelector('.e-resize-handle'))) {
             removeResize();
             this.setResize();
@@ -2205,6 +2256,9 @@ let Dialog = class Dialog extends Component {
         let value = '[autofocus]';
         let items = container.querySelectorAll(value);
         let validNode = this.getValidFocusNode(items);
+        if (isBlazor()) {
+            this.primaryButtonEle = this.element.getElementsByClassName('e-primary')[0];
+        }
         if (!isNullOrUndefined(validNode)) {
             node = validNode;
         }
@@ -2262,15 +2316,24 @@ let Dialog = class Dialog extends Component {
             switch (prop) {
                 case 'content':
                     if (!isNullOrUndefined(this.content) && this.content !== '') {
+                        if (isBlazor() && this.isServerRendered) {
+                            this.contentEle = this.element.querySelector('.e-dlg-content');
+                        }
                         if (!isNullOrUndefined(this.contentEle) && this.contentEle.getAttribute('role') !== 'dialog') {
-                            this.contentEle.innerHTML = '';
-                            typeof (this.content) === 'function' ? this.setTemplate(this.content, this.contentEle) :
-                                (typeof (this.content) === 'string' ? this.contentEle.innerHTML = this.content :
-                                    this.contentEle.appendChild(this.content));
+                            if (!(isBlazor() && this.isServerRendered)) {
+                                this.contentEle.innerHTML = '';
+                            }
+                            typeof (this.content) === 'string' ? (isBlazor() && this.isServerRendered
+                                && (this.contentEle.innerText === '')) ?
+                                this.contentEle.insertAdjacentHTML('beforeend', this.sanitizeHelper(this.content)) :
+                                this.contentEle.innerHTML = this.sanitizeHelper(this.content) : this.contentEle.appendChild(this.content);
                             this.setMaxHeight();
                         }
                         else {
-                            this.setContent();
+                            if (!(isBlazor() && this.isServerRendered) ||
+                                isNullOrUndefined(this.element.querySelector('.e-dlg-content'))) {
+                                this.setContent();
+                            }
                         }
                     }
                     else if (!isNullOrUndefined(this.contentEle)) {
@@ -2286,7 +2349,10 @@ let Dialog = class Dialog extends Component {
                         }
                     }
                     else {
-                        this.setHeader();
+                        if (!(isBlazor() && this.isServerRendered) ||
+                            isNullOrUndefined(this.element.querySelector('.e-dlg-header-content'))) {
+                            this.setHeader();
+                        }
                     }
                     break;
                 case 'footerTemplate':
@@ -2299,7 +2365,10 @@ let Dialog = class Dialog extends Component {
                         this.buttons = [{}];
                     }
                     else {
-                        this.setFooterTemplate();
+                        if (!(isBlazor() && this.isServerRendered) ||
+                            isNullOrUndefined(this.element.querySelector('.e-footer-content'))) {
+                            this.setFooterTemplate();
+                        }
                         this.buttons = [{}];
                     }
                     break;
@@ -2312,9 +2381,16 @@ let Dialog = class Dialog extends Component {
                         else if (!this.showCloseIcon) {
                             detach(this.closeIcon);
                         }
+                        else {
+                            if (isBlazor() && this.isServerRendered) {
+                                this.wireEvents();
+                            }
+                        }
                     }
                     else {
-                        this.renderCloseIcon();
+                        if (!(isBlazor() && this.isServerRendered)) {
+                            this.renderCloseIcon();
+                        }
                         this.wireEvents();
                     }
                     break;
@@ -2457,17 +2533,33 @@ let Dialog = class Dialog extends Component {
                     this.btnObj[i].destroy();
                 }
             }
-            if (this.isModal) {
+            if (this.isModal && (!(isBlazor() && this.isServerRendered))) {
                 detach(this.dlgOverlay);
                 this.dlgContainer.parentNode.insertBefore(this.element, this.dlgContainer);
                 detach(this.dlgContainer);
             }
-            this.element.innerHTML = this.clonedEle.innerHTML;
+            if (!(isBlazor() && this.isServerRendered)) {
+                this.element.innerHTML = '';
+            }
+            if (isBlazor() && this.isServerRendered) {
+                if (!isNullOrUndefined(this.element.children)) {
+                    for (let i = 0; i <= this.element.children.length; i++) {
+                        i = i - i;
+                        detach(this.element.children[i]);
+                    }
+                }
+            }
             while (this.element.attributes.length > 0) {
                 this.element.removeAttribute(this.element.attributes[0].name);
             }
             for (let k = 0; k < this.clonedEle.attributes.length; k++) {
-                this.element.setAttribute(this.clonedEle.attributes[k].name, this.clonedEle.attributes[k].value);
+                if (isBlazor() && this.isServerRendered && this.clonedEle.attributes[k].name === 'id') {
+                    this.element.setAttribute(this.clonedEle.attributes[k].name, this.clonedEle.attributes[k].value);
+                    return;
+                }
+                else {
+                    this.element.setAttribute(this.clonedEle.attributes[k].name, this.clonedEle.attributes[k].value);
+                }
             }
         }
     }
@@ -2476,6 +2568,9 @@ let Dialog = class Dialog extends Component {
      * @hidden
      */
     wireEvents() {
+        if (isBlazor() && this.isServerRendered && this.showCloseIcon) {
+            this.closeIcon = this.element.getElementsByClassName('e-dlg-closeicon-btn')[0];
+        }
         if (this.showCloseIcon) {
             EventHandler.add(this.closeIcon, 'click', this.closeIconClickEventHandler, this);
         }
@@ -2495,9 +2590,18 @@ let Dialog = class Dialog extends Component {
             EventHandler.remove(this.dlgOverlay, 'click', this.dlgOverlayClickEventHandler);
         }
         if (!isNullOrUndefined(this.buttons[0].buttonModel)) {
-            for (let i = 0; i < this.buttons.length; i++) {
-                if (typeof (this.buttons[i].click) === 'function') {
-                    EventHandler.remove(this.ftrTemplateContent.children[i], 'click', this.buttons[i].click);
+            if (!(isBlazor() && this.isServerRendered)) {
+                for (let i = 0; i < this.buttons.length; i++) {
+                    if (typeof (this.buttons[i].click) === 'function') {
+                        EventHandler.remove(this.ftrTemplateContent.children[i], 'click', this.buttons[i].click);
+                    }
+                }
+            }
+            else if (isBlazor() && this.isServerRendered && this.footerTemplate === '') {
+                for (let i = 0; i < this.buttons.length; i++) {
+                    if (typeof (this.buttons[i].click) === 'function') {
+                        EventHandler.remove(this.ftrTemplateContent.children[i], 'click', this.buttons[i].click);
+                    }
                 }
             }
         }
@@ -2679,6 +2783,9 @@ __decorate$1([
     Property('')
 ], Dialog.prototype, "content", void 0);
 __decorate$1([
+    Property(true)
+], Dialog.prototype, "enableHtmlSanitizer", void 0);
+__decorate$1([
     Property(false)
 ], Dialog.prototype, "showCloseIcon", void 0);
 __decorate$1([
@@ -2735,6 +2842,9 @@ __decorate$1([
 __decorate$1([
     Event()
 ], Dialog.prototype, "open", void 0);
+__decorate$1([
+    Event()
+], Dialog.prototype, "beforeSanitizeHtml", void 0);
 __decorate$1([
     Event()
 ], Dialog.prototype, "beforeOpen", void 0);
@@ -2991,6 +3101,7 @@ const POPUP_ROOT$1 = 'e-popup';
 const POPUP_OPEN = 'e-popup-open';
 const POPUP_CLOSE = 'e-popup-close';
 const POPUP_LIB = 'e-lib';
+const HIDE_POPUP = 'e-hidden';
 class Animation$1 extends ChildProperty {
 }
 __decorate$2([
@@ -3017,10 +3128,16 @@ let Tooltip = class Tooltip extends Component {
      */
     constructor(options, element) {
         super(options, element);
+        this.isBlazorTooltip = false;
+        this.contentTargetValue = null;
+        this.contentEvent = null;
+        this.contentAnimation = null;
     }
     initialize() {
         this.formatPosition();
-        addClass([this.element], ROOT$1);
+        if (!(isBlazor() && this.isServerRendered)) {
+            addClass([this.element], ROOT$1);
+        }
     }
     formatPosition() {
         if (this.position.indexOf('Top') === 0 || this.position.indexOf('Bottom') === 0) {
@@ -3032,10 +3149,18 @@ let Tooltip = class Tooltip extends Component {
     }
     renderArrow() {
         this.setTipClass(this.position);
-        let tip = this.createElement('div', { className: ARROW_TIP + ' ' + this.tipClass });
-        tip.appendChild(this.createElement('div', { className: ARROW_TIP_OUTER + ' ' + this.tipClass }));
-        tip.appendChild(this.createElement('div', { className: ARROW_TIP_INNER + ' ' + this.tipClass }));
-        this.tooltipEle.appendChild(tip);
+        if (!(isBlazor() && this.isServerRendered)) {
+            let tip = this.createElement('div', { className: ARROW_TIP + ' ' + this.tipClass });
+            tip.appendChild(this.createElement('div', { className: ARROW_TIP_OUTER + ' ' + this.tipClass }));
+            tip.appendChild(this.createElement('div', { className: ARROW_TIP_INNER + ' ' + this.tipClass }));
+            this.tooltipEle.appendChild(tip);
+        }
+        else {
+            let tip = this.tooltipEle.querySelector('.' + ARROW_TIP);
+            addClass([tip.querySelector('.' + ARROW_TIP_OUTER)], this.tipClass);
+            addClass([tip.querySelector('.' + ARROW_TIP_INNER)], this.tipClass);
+            this.tooltipEle.appendChild(tip);
+        }
     }
     setTipClass(position) {
         if (position.indexOf('Right') === 0) {
@@ -3054,17 +3179,24 @@ let Tooltip = class Tooltip extends Component {
     renderPopup(target) {
         let elePos = this.mouseTrail ? { top: 0, left: 0 } : this.getTooltipPosition(target);
         this.tooltipEle.classList.remove(POPUP_LIB);
-        this.popupObj = new Popup(this.tooltipEle, {
-            height: this.height,
-            width: this.width,
-            position: {
-                X: elePos.left,
-                Y: elePos.top
-            },
-            enableRtl: this.enableRtl,
-            open: this.openPopupHandler.bind(this),
-            close: this.closePopupHandler.bind(this)
-        });
+        if (isBlazor() && this.isServerRendered) {
+            this.popupObj = new Popup(this.tooltipEle, {
+                position: { X: elePos.left, Y: elePos.top },
+                open: this.openPopupHandler.bind(this),
+                close: this.closePopupHandler.bind(this),
+                enableRtl: this.enableRtl
+            });
+        }
+        else {
+            this.popupObj = new Popup(this.tooltipEle, {
+                height: this.height,
+                width: this.width,
+                position: { X: elePos.left, Y: elePos.top },
+                enableRtl: this.enableRtl,
+                open: this.openPopupHandler.bind(this),
+                close: this.closePopupHandler.bind(this)
+            });
+        }
     }
     getTooltipPosition(target) {
         this.tooltipEle.style.display = 'none';
@@ -3080,7 +3212,7 @@ let Tooltip = class Tooltip extends Component {
         this.popupObj.dataBind();
     }
     openPopupHandler() {
-        if (this.needTemplateReposition() && !this.mouseTrail) {
+        if (!this.mouseTrail && this.needTemplateReposition()) {
             this.reposition(this.findTarget());
         }
         this.trigger('afterOpen', this.tooltipEventArgs);
@@ -3188,15 +3320,17 @@ let Tooltip = class Tooltip extends Component {
                 // Arrow icon aligned -6px height from ArrowOuterTip div
                 arrowInnerELe.style.top = '-' + (tipHeight - 6) + 'px';
             }
-            let tipPosExclude = tooltipPositionX !== 'Center' || (tooltipWidth > target.offsetWidth) || this.mouseTrail;
-            if ((tipPosExclude && tooltipPositionX === 'Left') || (!tipPosExclude && this.tipPointerPosition === 'End')) {
-                leftValue = (tooltipWidth - tipWidth - POINTER_ADJUST) + 'px';
-            }
-            else if ((tipPosExclude && tooltipPositionX === 'Right') || (!tipPosExclude && this.tipPointerPosition === 'Start')) {
-                leftValue = POINTER_ADJUST + 'px';
-            }
-            else {
-                leftValue = ((tooltipWidth / 2) - (tipWidth / 2)) + 'px';
+            if (target) {
+                let tipPosExclude = tooltipPositionX !== 'Center' || (tooltipWidth > target.offsetWidth) || this.mouseTrail;
+                if ((tipPosExclude && tooltipPositionX === 'Left') || (!tipPosExclude && this.tipPointerPosition === 'End')) {
+                    leftValue = (tooltipWidth - tipWidth - POINTER_ADJUST) + 'px';
+                }
+                else if ((tipPosExclude && tooltipPositionX === 'Right') || (!tipPosExclude && this.tipPointerPosition === 'Start')) {
+                    leftValue = POINTER_ADJUST + 'px';
+                }
+                else {
+                    leftValue = ((tooltipWidth / 2) - (tipWidth / 2)) + 'px';
+                }
             }
         }
         else {
@@ -3231,19 +3365,24 @@ let Tooltip = class Tooltip extends Component {
             target.removeAttribute('title');
         }
         if (!isNullOrUndefined(this.content)) {
-            tooltipContent.innerHTML = '';
-            if (this.content instanceof HTMLElement) {
-                tooltipContent.appendChild(this.content);
-            }
-            else if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') < 0) {
-                tooltipContent.innerHTML = this.content;
-            }
-            else {
-                let templateFunction = compile(this.content);
-                append(templateFunction({}, null, null, this.element.id + 'content'), tooltipContent);
-                if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') >= 0) {
-                    this.isBlazorTemplate = true;
-                    updateBlazorTemplate(this.element.id + 'content', 'Content', this);
+            if (this.isBlazorTooltip || !(isBlazor() && this.isServerRendered)) {
+                tooltipContent.innerHTML = '';
+                if (this.content instanceof HTMLElement) {
+                    tooltipContent.appendChild(this.content);
+                }
+                else if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') < 0) {
+                    if (this.enableHtmlSanitizer) {
+                        this.setProperties({ content: SanitizeHtmlHelper.sanitize(this.content) }, true);
+                    }
+                    tooltipContent.innerHTML = this.content;
+                }
+                else {
+                    let templateFunction = compile(this.content);
+                    append(templateFunction({}, null, null, this.element.id + 'content'), tooltipContent);
+                    if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') >= 0) {
+                        this.isBlazorTemplate = true;
+                        updateBlazorTemplate(this.element.id + 'content', 'Content', this);
+                    }
                 }
             }
         }
@@ -3344,6 +3483,7 @@ let Tooltip = class Tooltip extends Component {
         this.trigger('beforeRender', this.tooltipEventArgs, observeCallback.bind(this));
     }
     beforeRenderCallback(beforeRenderArgs, target, e, showAnimation) {
+        let isBlazorTooltipRendered = false;
         if (beforeRenderArgs.cancel) {
             this.isHidden = true;
             this.clear();
@@ -3351,52 +3491,105 @@ let Tooltip = class Tooltip extends Component {
         else {
             this.isHidden = false;
             if (isNullOrUndefined(this.tooltipEle)) {
-                this.ctrlId = this.element.getAttribute('id') ?
-                    getUniqueID(this.element.getAttribute('id')) : getUniqueID('tooltip');
-                this.tooltipEle = this.createElement('div', {
-                    className: TOOLTIP_WRAP + ' ' + POPUP_ROOT$1 + ' ' + POPUP_LIB, attrs: {
-                        role: 'tooltip', 'aria-hidden': 'false', 'id': this.ctrlId + '_content'
-                    }, styles: 'width:' +
-                        formatUnit(this.width) + ';height:' + formatUnit(this.height) + ';position:absolute;'
-                });
-                if (this.cssClass) {
-                    addClass([this.tooltipEle], this.cssClass.split(' '));
+                if (isBlazor() && this.isServerRendered) {
+                    this.contentTargetValue = target;
+                    this.contentEvent = e;
+                    this.contentAnimation = showAnimation;
+                    let args = { 'enableTooltip': 'true' };
+                    // tslint:disable
+                    this.interopAdaptor.invokeMethodAsync('OnTooltipServerCall', args);
+                    // tslint:enable
+                    isBlazorTooltipRendered = true;
                 }
-                if (Browser.isDevice) {
-                    addClass([this.tooltipEle], DEVICE$1);
+                else {
+                    this.ctrlId = this.element.getAttribute('id') ?
+                        getUniqueID(this.element.getAttribute('id')) : getUniqueID('tooltip');
+                    this.tooltipEle = this.createElement('div', {
+                        className: TOOLTIP_WRAP + ' ' + POPUP_ROOT$1 + ' ' + POPUP_LIB, attrs: {
+                            role: 'tooltip', 'aria-hidden': 'false', 'id': this.ctrlId + '_content'
+                        }, styles: 'width:' +
+                            formatUnit(this.width) + ';height:' + formatUnit(this.height) + ';position:absolute;'
+                    });
+                    if (this.cssClass) {
+                        addClass([this.tooltipEle], this.cssClass.split(' '));
+                    }
+                    this.beforeRenderBlazor(target, this);
                 }
-                if (this.width !== 'auto') {
-                    this.tooltipEle.style.maxWidth = formatUnit(this.width);
+                if (!isBlazorTooltipRendered) {
+                    this.afterRenderBlazor(target, e, showAnimation, this);
                 }
-                this.tooltipEle.appendChild(this.createElement('div', { className: CONTENT }));
-                document.body.appendChild(this.tooltipEle);
-                this.addDescribedBy(target, this.ctrlId + '_content');
-                this.renderContent(target);
-                addClass([this.tooltipEle], POPUP_OPEN);
-                if (this.showTipPointer) {
-                    this.renderArrow();
-                }
-                this.renderCloseIcon();
-                this.renderPopup(target);
             }
             else {
-                this.adjustArrow(target, this.position, this.tooltipPositionX, this.tooltipPositionY);
-                this.addDescribedBy(target, this.ctrlId + '_content');
-                this.renderContent(target);
-                Animation.stop(this.tooltipEle);
-                this.reposition(target);
+                if (isBlazor() && this.isServerRendered) {
+                    addClass([this.tooltipEle], POPUP_OPEN);
+                    document.body.appendChild(this.tooltipEle);
+                    this.renderCloseIcon();
+                    this.renderPopup(target);
+                }
+                if (target) {
+                    this.adjustArrow(target, this.position, this.tooltipPositionX, this.tooltipPositionY);
+                    this.addDescribedBy(target, this.ctrlId + '_content');
+                    this.renderContent(target);
+                    Animation.stop(this.tooltipEle);
+                    this.reposition(target);
+                    this.afterRenderBlazor(target, e, showAnimation, this);
+                }
             }
-            removeClass([this.tooltipEle], POPUP_OPEN);
-            addClass([this.tooltipEle], POPUP_CLOSE);
-            this.tooltipEventArgs = e ? { type: e.type, cancel: false, target: target, event: e, element: this.tooltipEle } :
-                { type: null, cancel: false, target: target, event: null, element: this.tooltipEle };
-            if (this.needTemplateReposition() && !this.mouseTrail) {
-                this.tooltipEle.style.display = 'none';
+        }
+    }
+    ;
+    contentUpdated(args) {
+        if (isNullOrUndefined(this.tooltipEle)) {
+            if (isBlazor() && this.isServerRendered) {
+                this.ctrlId = this.element.id;
+                this.tooltipEle = document.querySelector('#' + this.ctrlId + '_content');
+                this.beforeRenderBlazor(this.contentTargetValue, this);
+                this.afterRenderBlazor(this.contentTargetValue, this.contentEvent, this.contentAnimation, this);
+                this.contentTargetValue = this.contentEvent = this.contentAnimation = null;
+            }
+        }
+    }
+    ;
+    beforeRenderBlazor(target, ctrlObj) {
+        if (target) {
+            if (Browser.isDevice) {
+                addClass([ctrlObj.tooltipEle], DEVICE$1);
+            }
+            if (ctrlObj.width !== 'auto') {
+                ctrlObj.tooltipEle.style.maxWidth = formatUnit(ctrlObj.width);
+            }
+            if (!(isBlazor() && this.isServerRendered)) {
+                ctrlObj.tooltipEle.appendChild(ctrlObj.createElement('div', { className: CONTENT }));
+            }
+            document.body.appendChild(ctrlObj.tooltipEle);
+            removeClass([ctrlObj.tooltipEle], HIDE_POPUP);
+            ctrlObj.addDescribedBy(target, ctrlObj.ctrlId + '_content');
+            ctrlObj.renderContent(target);
+            addClass([ctrlObj.tooltipEle], POPUP_OPEN);
+            if (ctrlObj.showTipPointer) {
+                ctrlObj.renderArrow();
+            }
+            ctrlObj.renderCloseIcon();
+            ctrlObj.renderPopup(target);
+            ctrlObj.adjustArrow(target, ctrlObj.position, ctrlObj.tooltipPositionX, ctrlObj.tooltipPositionY);
+            Animation.stop(ctrlObj.tooltipEle);
+            ctrlObj.reposition(target);
+        }
+    }
+    afterRenderBlazor(target, e, showAnimation, ctrlObj) {
+        if (target) {
+            removeClass([ctrlObj.tooltipEle], POPUP_OPEN);
+            addClass([ctrlObj.tooltipEle], POPUP_CLOSE);
+            ctrlObj.tooltipEventArgs = e ?
+                { type: e.type, cancel: false, target: target, event: e, element: ctrlObj.tooltipEle } :
+                { type: null, cancel: false, target: target, event: null, element: ctrlObj.tooltipEle };
+            if (ctrlObj.needTemplateReposition() && !ctrlObj.mouseTrail) {
+                ctrlObj.tooltipEle.style.display = 'none';
             }
             const observeCallback = (observedArgs) => {
-                this.beforeOpenCallback(observedArgs, target, showAnimation, e);
+                ctrlObj.beforeOpenCallback(observedArgs, target, showAnimation, e);
             };
-            this.trigger('beforeOpen', this.tooltipEventArgs, observeCallback.bind(this));
+            ctrlObj.trigger('beforeOpen', ctrlObj.tooltipEventArgs, observeCallback.bind(ctrlObj));
         }
     }
     beforeOpenCallback(observedArgs, target, showAnimation, e) {
@@ -3436,7 +3629,7 @@ let Tooltip = class Tooltip extends Component {
         const tooltip = this;
         return !isNullOrUndefined(tooltip.viewContainerRef)
             && typeof tooltip.viewContainerRef !== 'string'
-            || isBlazor() && this.isBlazorTemplate;
+            || (isBlazor() && this.isServerRendered) && this.isBlazorTemplate;
     }
     checkCollision(target, x, y) {
         let elePos = {
@@ -3570,7 +3763,16 @@ let Tooltip = class Tooltip extends Component {
             if (this.popupObj) {
                 this.popupObj.destroy();
             }
-            if (this.tooltipEle) {
+            if (isBlazor() && this.isServerRendered && this.tooltipEle) {
+                this.tooltipEle.style.display = 'none';
+                this.tooltipEle = null;
+                let args = { 'enableTooltip': 'false' };
+                // tslint:disable
+                this.interopAdaptor.invokeMethodAsync('OnTooltipServerCall', args);
+                // tslint:enable
+                remove(this.tooltipEle);
+            }
+            else if (this.tooltipEle) {
                 remove(this.tooltipEle);
             }
             this.tooltipEle = null;
@@ -3818,20 +4020,51 @@ let Tooltip = class Tooltip extends Component {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'width':
-                    if (this.tooltipEle && targetElement) {
-                        this.tooltipEle.style.width = formatUnit(newProp.width);
-                        this.reposition(targetElement);
+                    if (this.tooltipEle) {
+                        if (targetElement) {
+                            this.tooltipEle.style.width = formatUnit(newProp.width);
+                            this.reposition(targetElement);
+                        }
+                    }
+                    else if (isBlazor() && this.isServerRendered) {
+                        let args = { 'width': formatUnit(newProp.width) };
+                        // tslint:disable
+                        this.interopAdaptor.invokeMethodAsync('OnTooltipServerCall', args);
+                        // tslint:enable
+                        if (targetElement) {
+                            this.reposition(targetElement);
+                        }
                     }
                     break;
                 case 'height':
-                    if (this.tooltipEle && targetElement) {
-                        this.tooltipEle.style.height = formatUnit(newProp.height);
-                        this.reposition(targetElement);
+                    if (this.tooltipEle) {
+                        if (targetElement) {
+                            this.tooltipEle.style.height = formatUnit(newProp.height);
+                            this.reposition(targetElement);
+                        }
+                    }
+                    else if (isBlazor() && this.isServerRendered) {
+                        let args = { 'height': formatUnit(newProp.height) };
+                        // tslint:disable
+                        this.interopAdaptor.invokeMethodAsync('OnTooltipServerCall', args);
+                        // tslint:enable
+                        if (targetElement) {
+                            this.reposition(targetElement);
+                        }
                     }
                     break;
                 case 'content':
                     if (this.tooltipEle) {
+                        if (isBlazor() && this.isServerRendered) {
+                            this.isBlazorTooltip = true;
+                        }
                         this.renderContent();
+                    }
+                    else if (isBlazor() && this.isServerRendered) {
+                        let args = { 'content': newProp.content };
+                        // tslint:disable
+                        this.interopAdaptor.invokeMethodAsync('OnTooltipServerCall', args);
+                        // tslint:enable
                     }
                     break;
                 case 'opensOn':
@@ -3871,6 +4104,12 @@ let Tooltip = class Tooltip extends Component {
                         if (newProp.cssClass) {
                             addClass([this.tooltipEle], newProp.cssClass.split(' '));
                         }
+                    }
+                    else if (isBlazor() && this.isServerRendered) {
+                        let args = { 'cssClass': newProp.cssClass };
+                        // tslint:disable
+                        this.interopAdaptor.invokeMethodAsync('OnTooltipServerCall', args);
+                        // tslint:enable
                     }
                     break;
                 case 'enableRtl':
@@ -3988,6 +4227,9 @@ __decorate$2([
 __decorate$2([
     Property()
 ], Tooltip.prototype, "cssClass", void 0);
+__decorate$2([
+    Property(false)
+], Tooltip.prototype, "enableHtmlSanitizer", void 0);
 __decorate$2([
     Event()
 ], Tooltip.prototype, "beforeRender", void 0);

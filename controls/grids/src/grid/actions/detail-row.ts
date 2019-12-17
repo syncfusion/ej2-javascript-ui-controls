@@ -1,5 +1,5 @@
 import { KeyboardEventArgs, isBlazor } from '@syncfusion/ej2-base';
-import { closest, classList, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { closest, classList, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { IGrid } from '../base/interface';
 import { Grid } from '../base/grid';
 import { parents, getUid, appendChildren } from '../base/util';
@@ -23,7 +23,6 @@ export class DetailRow {
     //Module declarations
     private parent: IGrid;
     private focus: FocusStrategy;
-
     /**
      * Constructor for the Grid detail template module
      * @hidden
@@ -47,8 +46,13 @@ export class DetailRow {
     private toogleExpandcollapse(target: Element): void {
         let gObj: IGrid = this.parent;
         let parent: string = 'parentDetails';
+        let isServerRendered: string = 'isServerRendered';
         let childGrid: Grid;
         if (!(target && (target.classList.contains('e-detailrowcollapse') || target.classList.contains('e-detailrowexpand')))) {
+            return;
+        }
+        if (isBlazor() && this.parent[isServerRendered]) {
+            this.parent.notify('detailclick', target);
             return;
         }
         let tr: HTMLTableRowElement = target.parentElement as HTMLTableRowElement;
@@ -87,7 +91,6 @@ export class DetailRow {
                     let detailTemplateID: string = gObj.element.id + 'detailTemplate';
                     appendChildren(detailCell, gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID));
                     if (isBlazor()) {
-                        //resetBlazorTemplate(detailTemplateID, 'DetailTemplate');
                         updateBlazorTemplate(detailTemplateID, 'DetailTemplate', gObj, false);
                     }
                 } else {

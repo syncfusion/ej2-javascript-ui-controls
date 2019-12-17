@@ -232,6 +232,7 @@ describe('Testing bubble, marker and navigation line highlight', () => {
         };
         world.refresh();
     });
+
 });
 describe('Highlight Settings', () => {
     describe('Testing highlight is applied or not', () => {
@@ -344,12 +345,16 @@ describe('Highlight Settings', () => {
             highlight.loaded = (args: ILoadedEventArgs) => {
             spec = getElement('container_LayerIndex_0_shapeIndex_26_dataIndex_25');
             trigger.clickEvent(spec);
+            trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
+            expect(spec.getAttribute('class') === 'ShapeselectionMapStyle').toBe(true);
             spec = getElement('container_LayerIndex_0_shapeIndex_108_dataIndex_95');
             trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
             spec = getElement('container_MapAreaBorder');
             trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
             spec = getElement('container_LayerIndex_0_shapeIndex_29_dataIndex_29');
             trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
+            spec = getElement('container_LayerIndex_0_shapeIndex_26_dataIndex_25');
+            trigger.clickEvent(spec);
             done();
         };
             highlight.refresh();
@@ -369,9 +374,27 @@ describe('Highlight Settings', () => {
             trigger.mousemoveEvent(spec, 0, 0, 0, 0);
             spec = getElement('container_MapAreaBorder');
             trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
+            spec = getElement('container_Legend_Index_0');
+            trigger.clickEvent(spec);
             done();
         };
             highlight.legendSettings.mode = 'Interactive';
+            highlight.refresh();
+        });
+        it('Legend and shape highlight with toggled legend', (done: Function) => {
+            highlight.loaded = (args: ILoadedEventArgs) => {
+            spec = getElement('container_Legend_Index_0');
+            trigger.clickEvent(spec);
+            trigger.mousemoveEvent(spec, 0, 0, 0, 0);
+            expect(spec.getAttribute('stroke') === 'orange').toBe(true);
+            let shapeEle = getElement('container_LayerIndex_0_shapeIndex_4_dataIndex_4');
+            trigger.mousemoveEvent(shapeEle, 0, 0, 0, 0);
+            expect(shapeEle.getAttribute('stroke') === 'lime').toBe(true);
+            spec = getElement('container_Legend_Index_0');
+            trigger.clickEvent(spec);
+            done();
+        };
+            highlight.legendSettings.toggleLegendSettings.enable = true;
             highlight.refresh();
         });
         it('Shape highlight with other window', (done: Function) => {
@@ -388,6 +411,7 @@ describe('Highlight Settings', () => {
             highlight.mouseLeaveOnMap(<PointerEvent>eventObj);
             done();
         };
+            highlight.legendSettings.toggleLegendSettings.enable = true;
             highlight.legendSettings.mode = 'Interactive';
             highlight.refresh();
         });
@@ -416,6 +440,7 @@ describe('Highlight Settings', () => {
                         },
                         selectionSettings: {
                             enable: true,
+                            enableMultiSelect: true
                         },
                         shapeData: World_Map,
                         shapeDataPath: 'name',
@@ -461,6 +486,15 @@ describe('Highlight Settings', () => {
                 spec = getElement('container_LayerIndex_0_shapeIndex_72_dataIndex_65');
                 trigger.clickEvent(spec);
                 expect(spec.getAttribute('fill')).toBe('rgb(38,82,168)');
+                trigger.clickEvent(spec);
+                done();
+            });
+            it('Check highlight with multiple legend selection', (done: Function) => {
+                trigger.clickEvent(getElement('container_Legend_Shape_Index_3'));
+                trigger.clickEvent(getElement('container_Legend_Shape_Index_4'));
+                spec = getElement('container_LayerIndex_0_shapeIndex_72_dataIndex_65');
+                trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
+                expect(spec.getAttribute('class')).toBe('ShapeselectionMapStyle');
                 done();
             });
         });

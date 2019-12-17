@@ -1,7 +1,7 @@
 import { Grid, getObject, Row, DetailDataBoundEventArgs, Cell } from '@syncfusion/ej2-grids';
 import { DetailRow as detailrow } from '@syncfusion/ej2-grids';
 import { TreeGrid, ITreeData, CellSaveEventArgs } from '../base';
-import { isNullOrUndefined, addClass } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, addClass, isBlazor } from '@syncfusion/ej2-base';
 import { getExpandStatus, isRemoteData  } from '../utils';
 import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-strategy';
 
@@ -73,14 +73,19 @@ export class DetailRow {
       args.detailrows[i].style.display = args.action;
     }
   }
-    private detaildataBound(args: DetailDataBoundEventArgs): void {
-    let data: ITreeData = <ITreeData> args.data;
-    let gridClas: string[] = [].slice.call((args.detailElement.parentElement.previousSibling as HTMLElement).classList ).filter(
-    (gridclass: string) => (gridclass !== 'e-row' && gridclass !== 'e-altrow'));
-    let newNo: number = gridClas[0].length;
-    let slicedclas: string = gridClas.toString().slice(6, newNo);
-    let detailClass: string = 'e-griddetail' + slicedclas;
-    addClass([args.detailElement.parentElement], detailClass);
+  private detaildataBound(args: DetailDataBoundEventArgs): void {
+    if (!isBlazor() || !this.parent.isServerRendered) {
+      let data: ITreeData = <ITreeData>args.data;
+      let row: HTMLElement = args.detailElement.parentElement.previousSibling as HTMLElement;
+      let index: number = !isNullOrUndefined(data.parentItem) ? data.parentItem.index : data.index;
+      let expandClass: string = 'e-gridrowindex' + index + 'level' + data.level;
+      let classlist: DOMTokenList = row.querySelector('.' + expandClass).classList;
+      let gridClas: string[] = [].slice.call(classlist).filter((gridclass: string) => (gridclass === expandClass));
+      let newNo: number = gridClas[0].length;
+      let slicedclas: string = gridClas.toString().slice(6, newNo);
+      let detailClass: string = 'e-griddetail' + slicedclas;
+      addClass([args.detailElement.parentElement], detailClass);
+    }
   };
 
   private actioncomplete(args: CellSaveEventArgs): void {

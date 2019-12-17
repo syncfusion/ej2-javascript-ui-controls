@@ -116,7 +116,10 @@ export class TextMarkupAnnotation {
      * @private
      */
     public isLeftDropletClicked: boolean = false;
-    private isSelectionMaintained: boolean = false;
+    /**
+     * @private
+     */
+    public isSelectionMaintained: boolean = false;
     private isExtended: boolean = false;
     private isNewAnnotation: boolean = false;
     private selectAnnotationCollection: ITextMarkupAnnotation[] = [];
@@ -204,10 +207,11 @@ export class TextMarkupAnnotation {
     public textSelect(target: any, x: any, y: any) {
         if (this.isLeftDropletClicked) {
             let leftElement: ClientRect = this.dropDivAnnotationRight.getBoundingClientRect();
+            let rightElement: ClientRect = this.dropDivAnnotationLeft.getBoundingClientRect();
             let clientX: number = x;
             let clientY: number = y;
             if (target.classList.contains('e-pv-text')) {
-                if ((clientY) >= leftElement.top && clientX > leftElement.left) {
+                if ((rightElement.top - 25) > leftElement.top) {
                     this.pdfViewer.textSelectionModule.textSelectionOnDrag(target, clientX, clientY, true);
                 } else {
                     this.pdfViewer.textSelectionModule.textSelectionOnDrag(target, clientX, clientY, false);
@@ -219,7 +223,7 @@ export class TextMarkupAnnotation {
             let clientX: number = x;
             let clientY: number = y;
             if (target.classList.contains('e-pv-text')) {
-                if ((clientY) >= leftElement.top && clientX > leftElement.left) {
+                if ((clientY) >= leftElement.top) {
                     this.pdfViewer.textSelectionModule.textSelectionOnDrag(target, clientX, clientY, true);
                 } else {
                     this.pdfViewer.textSelectionModule.textSelectionOnDrag(target, clientX, clientY, false);

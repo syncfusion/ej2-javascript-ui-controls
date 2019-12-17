@@ -202,6 +202,9 @@ export class DragAndDrop extends ActionBase {
 
     private drag(e: MouseEvent & TouchEvent): void {
         this.parent.quickPopup.quickPopupHide(true);
+        if ((!isNullOrUndefined(e.target)) && (e.target as HTMLElement).classList.contains(cls.DISABLE_DATES)) {
+            return;
+        }
         let eventObj: { [key: string]: Object } = extend({}, this.actionObj.event, null, true) as { [key: string]: Object };
         let eventArgs: (MouseEvent & TouchEvent) | Touch = this.getPageCoordinates(e);
         this.actionObj.Y = this.actionObj.pageY = eventArgs.pageY;
@@ -219,11 +222,14 @@ export class DragAndDrop extends ActionBase {
             this.calculateMinutesDiff(eventObj);
         }
         if ((this.parent.currentView === 'Month' || this.isAllDayDrag) && this.daysVariation < 0) {
-            let currentDate: Date =
-                util.resetTime(new Date(parseInt(((this.actionObj.target) as HTMLElement).getAttribute('data-date'), 10)));
-            let startDate: Date = util.resetTime(new Date((eventObj[this.parent.eventFields.startTime] as Date).getTime()));
-            this.daysVariation = (currentDate.getTime() - startDate.getTime()) / (1440 * 60000);
-            this.daysVariation = isNaN(this.daysVariation) ? 0 : this.daysVariation;
+            let date: Date = this.parent.getDateFromElement(this.actionObj.target as HTMLElement);
+            if (!isNullOrUndefined(date)) {
+                let currentDate: Date = util.resetTime(date);
+                let startDate: Date = util.resetTime(new Date((eventObj[this.parent.eventFields.startTime] as Date).getTime()));
+                this.daysVariation = (currentDate.getTime() - startDate.getTime()) / util.MS_PER_DAY;
+            } else {
+                this.daysVariation = 0;
+            }
         }
         if (this.parent.eventDragArea) {
             let targetElement: HTMLElement = eventArgs.target as HTMLElement;
@@ -405,7 +411,7 @@ export class DragAndDrop extends ActionBase {
         let eventDuration: number = (<Date>eventObj[this.parent.eventFields.endTime]).getTime() -
             (<Date>eventObj[this.parent.eventFields.startTime]).getTime();
         let td: HTMLElement = closest((<HTMLTableCellElement>e.target), 'td') as HTMLElement;
-        let dragStart: Date = new Date(parseInt(td.getAttribute('data-date'), 10));
+        let dragStart: Date = this.parent.getDateFromElement(td);
         let dragEnd: Date = new Date(dragStart.getTime());
         dragEnd.setMilliseconds(eventDuration);
         if (this.parent.activeViewOptions.group.resources.length > 0) {
@@ -445,7 +451,7 @@ export class DragAndDrop extends ActionBase {
         let eventStart: Date = eventObj[this.parent.eventFields.startTime] as Date;
         let eventEnd: Date = eventObj[this.parent.eventFields.endTime] as Date;
         let eventDuration: number = eventEnd.getTime() - eventStart.getTime();
-        let offsetTop: number = Math.floor(parseInt(this.actionObj.clone.style.top, 0) / this.actionObj.cellHeight)
+        let offsetTop: number = Math.floor(parseInt(this.actionObj.clone.style.top, 10) / this.actionObj.cellHeight)
             * this.actionObj.cellHeight;
         offsetTop = offsetTop < 0 ? 0 : offsetTop;
         if (this.scrollEdges.top || this.scrollEdges.bottom) {
@@ -456,7 +462,7 @@ export class DragAndDrop extends ActionBase {
             this.actionObj.clone.style.top = formatUnit(offsetTop);
         }
         let rowIndex: number = offsetTop / this.actionObj.cellHeight;
-        let diffInMinutes: number = parseInt(this.actionObj.clone.style.top, 0) - offsetTop;
+        let diffInMinutes: number = parseInt(this.actionObj.clone.style.top, 10) - offsetTop;
         let tr: HTMLElement;
         if (this.isAllDayDrag) {
             tr = this.parent.element.querySelector('.' + cls.ALLDAY_ROW_CLASS) as HTMLElement;
@@ -474,7 +480,7 @@ export class DragAndDrop extends ActionBase {
         if (isNullOrUndefined(tr)) {
             return;
         }
-        let td: HTMLElement = tr.childNodes.item(colIndex) as HTMLElement;
+        let td: HTMLElement = tr.children[colIndex] as HTMLElement;
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             this.actionObj.groupIndex = parseInt(td.getAttribute('data-group-index'), 10);
         }
@@ -482,7 +488,7 @@ export class DragAndDrop extends ActionBase {
         if (this.parent.activeViewOptions.timeScale.enable && !this.isAllDayDrag) {
             this.appendCloneElement(this.getEventWrapper(colIndex));
             let spanHours: number = -(((this.actionObj.slotInterval / this.actionObj.cellHeight) * diffInMinutes) * (util.MS_PER_MINUTE));
-            dragStart = new Date(parseInt(td.getAttribute('data-date'), 10));
+            dragStart = this.parent.getDateFromElement(td);
             if (this.actionObj.slotInterval === this.actionObj.interval) {
                 if (this.actionObj.clone.querySelector('.' + cls.EVENT_ICON_UP_CLASS)) {
                     let startTime: Date = new Date(eventStart.getTime());
@@ -508,7 +514,7 @@ export class DragAndDrop extends ActionBase {
                 dragEnd.setMilliseconds(eventDuration);
             }
         } else {
-            dragStart = new Date(parseInt(td.getAttribute('data-date'), 10));
+            dragStart = this.parent.getDateFromElement(td);
             dragStart.setDate(dragStart.getDate() - this.daysVariation);
             dragStart.setHours(eventStart.getHours(), eventStart.getMinutes(), eventStart.getSeconds());
             dragEnd = new Date(dragStart.getTime());
@@ -532,7 +538,8 @@ export class DragAndDrop extends ActionBase {
         for (let i: number = 0; i < this.actionObj.groupIndex; i++) {
             datesCount = datesCount + this.verticalEvent.dateRender[i].length;
         }
-        let dayIndex: number = this.actionObj.index - datesCount;
+        let dayIndex: number = !this.parent.activeViewOptions.group.byDate ? this.actionObj.index - datesCount
+            : this.parent.getDateFromElement(this.actionObj.target as HTMLElement).getDay();
         let record: { [key: string]: Object } = this.verticalEvent.isSpannedEvent(event, dayIndex, this.actionObj.groupIndex);
         let eStart: Date = record[this.verticalEvent.fields.startTime] as Date;
         let eEnd: Date = record[this.verticalEvent.fields.endTime] as Date;
@@ -556,7 +563,8 @@ export class DragAndDrop extends ActionBase {
             this.parent.eventBase.slots.push(renderDates.map((date: Date) => { return +date; }));
         }
         let events: { [key: string]: Object }[] = this.parent.eventBase.splitEvent(event, renderDates);
-        let query: string = '.e-all-day-cells[data-date="' + (<Date>events[0][this.parent.eventFields.startTime]).getTime() + '"]';
+        let query: string = '.e-all-day-cells[data-date="' +
+            this.parent.getMsFromDate(<Date>events[0][this.parent.eventFields.startTime]) + '"]';
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             query = query.concat('[data-group-index = "' + this.actionObj.groupIndex + '"]');
         }
@@ -614,15 +622,14 @@ export class DragAndDrop extends ActionBase {
         let td: HTMLTableCellElement = closest((<HTMLTableCellElement>this.actionObj.target), 'td') as HTMLTableCellElement;
         if (!isNullOrUndefined(td)) {
             let tr: HTMLTableRowElement = td.parentElement as HTMLTableRowElement;
-            this.actionObj.index = (tr.rowIndex * tr.childNodes.length) + td.cellIndex;
+            this.actionObj.index = (tr.rowIndex * tr.children.length) + td.cellIndex;
             let workCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS));
             td = <HTMLTableCellElement>workCells[this.actionObj.index];
-            let tdDate: number = parseInt(td.getAttribute('data-date'), 10);
-            if (!isNaN(tdDate)) {
+            let currentDate: Date = this.parent.getDateFromElement(td);
+            if (!isNullOrUndefined(currentDate)) {
                 if (this.parent.activeViewOptions.group.resources.length > 0) {
                     this.actionObj.groupIndex = parseInt(td.getAttribute('data-group-index'), 10);
                 }
-                let currentDate: Date = new Date(tdDate);
                 let timeString: Date = new Date(currentDate.setDate(currentDate.getDate() - this.daysVariation));
                 let dragStart: Date = new Date(timeString.getTime());
                 let dragEnd: Date = new Date(dragStart.getTime());
@@ -665,7 +672,7 @@ export class DragAndDrop extends ActionBase {
         let index: number = this.getCursorCurrentIndex(colIndex, cloneIndex, tr);
         index = index < 0 ? 0 : index;
         let eventStart: Date = this.isHeaderRows ? new Date(this.timelineEventModule.dateRender[index].getTime()) :
-            new Date(parseInt((<HTMLElement>tr.childNodes.item(index)).getAttribute('data-date'), 10));
+            this.parent.getDateFromElement(<HTMLElement>tr.children[index]);
         if (this.isStepDragging) {
             let widthDiff: number = this.getWidthDiff(tr, index);
             if (widthDiff !== 0) {
@@ -752,7 +759,7 @@ export class DragAndDrop extends ActionBase {
     private getHeightDiff(tr: HTMLElement, index: number): number {
         let pages: ClientRect | DOMRect = this.scrollArgs.element.getBoundingClientRect();
         if (pages.top <= this.actionObj.pageY && pages.bottom >= this.actionObj.pageY) {
-            let targetTop: number = (<HTMLElement>tr.childNodes.item(index)).offsetTop;
+            let targetTop: number = (<HTMLElement>tr.children[index]).offsetTop;
             let pageY: number = this.actionObj.pageY - pages.top;
             if (this.parent.enableRtl) {
                 return (targetTop + this.actionObj.cellHeight) - (this.scrollArgs.element.scrollTop + pageY);
@@ -766,7 +773,7 @@ export class DragAndDrop extends ActionBase {
     private getWidthDiff(tr: HTMLTableRowElement, index: number): number {
         let pages: ClientRect | DOMRect = this.scrollArgs.element.getBoundingClientRect();
         if (pages.left <= this.actionObj.pageX && pages.right >= this.actionObj.pageX) {
-            let targetLeft: number = (<HTMLElement>tr.childNodes.item(index)).offsetLeft;
+            let targetLeft: number = (<HTMLElement>tr.children[index]).offsetLeft;
             let pageX: number = this.actionObj.pageX - pages.left;
             if (this.parent.enableRtl) {
                 return (targetLeft + this.actionObj.cellWidth) - (this.scrollArgs.element.scrollLeft + pageX);
@@ -791,13 +798,13 @@ export class DragAndDrop extends ActionBase {
             let dateLength: number = Math.floor(tr.offsetWidth / this.actionObj.cellWidth);
             return (index > dateLength - 1) ? dateLength - 1 : index;
         }
-        return (index > tr.childNodes.length - 1) ? tr.childNodes.length - 1 : index;
+        return (index > tr.children.length - 1) ? tr.children.length - 1 : index;
     }
 
     private cursorIndex(e: MouseEvent & TouchEvent, event: { [key: string]: Object }, left: number, index: number): void {
         let td: HTMLElement = (<HTMLElement>closest(e.target as Element, '.e-work-cells'));
         if (!isNullOrUndefined(td) && !this.isMorePopupOpened) {
-            let targetDate: Date = new Date(parseInt(td.getAttribute('data-date'), 10));
+            let targetDate: Date = this.parent.getDateFromElement(td);
             if (this.isHeaderRows) {
                 let currentIndex: number = Math.floor(left / this.actionObj.cellWidth);
                 targetDate = new Date(this.timelineEventModule.dateRender[currentIndex + index].getTime());

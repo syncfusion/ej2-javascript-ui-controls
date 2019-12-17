@@ -7,6 +7,7 @@ import * as events from '../base/constant';
 /**
  * `Popup renderer` module is used to render popup in RichTextEditor.
  * @hidden
+ * @deprecated
  */
 export class PopupRenderer implements IRenderer {
     private popupObj: Popup;
@@ -25,6 +26,11 @@ export class PopupRenderer implements IRenderer {
         this.parent.trigger(events.quickToolbarOpen, args);
     }
 
+    /**
+     * renderPopup method
+     * @hidden
+     * @deprecated  
+     */
     public renderPopup(args: BaseQuickToolbar): void {
         this.setPanel(args.element);
         this.renderPanel();
@@ -39,6 +45,8 @@ export class PopupRenderer implements IRenderer {
 
     /**
      * The function is used to add popup class in Quick Toolbar
+     * @hidden
+     * @deprecated
      */
     public renderPanel(): void {
         this.getPanel().classList.add(CLS_QUICK_POP);
@@ -47,6 +55,8 @@ export class PopupRenderer implements IRenderer {
     /**
      * Get the popup element of RichTextEditor
      * @return {Element}
+     * @hidden
+     * @deprecated
      */
     public getPanel(): Element {
         return this.popupPanel;
@@ -55,6 +65,8 @@ export class PopupRenderer implements IRenderer {
     /**
      * Set the popup element of RichTextEditor
      * @param  {Element} panel
+     * @hidden
+     * @deprecated
      */
     public setPanel(panel: Element): void {
         this.popupPanel = panel;

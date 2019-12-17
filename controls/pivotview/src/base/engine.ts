@@ -117,6 +117,8 @@ export class PivotEngine {
     public rMembers: IAxisSet[] = [];
     /** @hidden */
     public cMembers: IAxisSet[] = [];
+    /** @hidden */
+    public groupingFields: { [key: string]: string } = {};
     private allowValueFilter: boolean;
     private isValueFiltered: boolean;
     private isValueFiltersAvail: boolean;
@@ -151,7 +153,6 @@ export class PivotEngine {
     private localeObj: L10n;
     private getValueCellInfo: Function;
     private fieldsType: IStringIndex;
-    private groupingFields: { [key: string]: string } = {};
     private columnKeys: { [key: string]: IFieldOptions } = {};
     private fieldDrillCollection: { [key: string]: string } = {};
     /* tslint:disable-next-line:max-line-length */
@@ -368,41 +369,46 @@ export class PivotEngine {
     /* tslint:disable */
     private getGroupData(data: IDataSet[]): IDataSet {
         let fieldkeySet: IDataSet = data[0];
-        for (let dategroup of this.groups) {
-            let fieldName: string = dategroup.name;
+        for (let group of this.groups) {
+            let fieldName: string = group.name;
+            let caption: string = group.caption;
             if (this.fields.indexOf(fieldName) > -1) {
                 let groupFields: { [key: string]: string } = {};
-                if (dategroup.type === 'Number') {
-                    if (PivotUtil.getType(fieldkeySet[fieldName] as Date) === 'number') {
-                        if (dategroup.rangeInterval) {
+                let customGroupFieldName: string;
+                if (group.type === 'Date' && this.groupingFields[fieldName]) {
+                    return fieldkeySet;
+                } else if (group.type === 'Number') {
+                    if (PivotUtil.getType(fieldkeySet[fieldName] as Date) === 'number' || !this.groupingFields[fieldName]) {
+                        if (group.rangeInterval) {
                             data.sort((a, b) => (a[fieldName] > b[fieldName]) ? 1 : ((b[fieldName] > a[fieldName]) ? -1 : 0));
                         }
                     } else {
                         return fieldkeySet;
                     }
+                } else if (group.type === 'Custom' && this.fields.indexOf(fieldName + '_custom_group') > -1) {
+                    return fieldkeySet;
                 }
                 let len: number = data.length;
                 while (len--) {
                     let item: IDataSet = data[len];
-                    if (item[fieldName] && dategroup.type === 'Date') {
+                    if (item[fieldName] && group.type === 'Date') {
                         let date: Date = new Date(item[fieldName].toString());
-                        if (!isNullOrUndefined(date) && dategroup.groupInterval.length > 0) {
-                            let isGrouped: boolean = false;
-                            for (let interval of dategroup.groupInterval) {
-                                isGrouped = true;
-                                let isInRangeAvail: boolean = this.getRange(dategroup, date.getTime());
+                        if (!isNullOrUndefined(date) && group.groupInterval.length > 0) {
+                            for (let i: number = 0, len: number = group.groupInterval.length; i < len; i++) {
+                                let interval: DateGroup = group.groupInterval[i];
+                                let isInRangeAvail: boolean = this.getRange(group, date.getTime());
                                 let newDate: Date = PivotUtil.resetTime(new Date());
                                 switch (interval) {
                                     case 'Years':
                                         {
-                                            let newFieldName: string = fieldName + '_years';
+                                            let newFieldName: string = (i === group.groupInterval.length - 1) ? fieldName : fieldName + '_date_group_years';
                                             groupFields[newFieldName] = interval;
                                             item[newFieldName] = (isInRangeAvail ? undefined : new Date(newDate.setFullYear(date.getFullYear())).toString());
                                         }
                                         break;
                                     case 'Quarters':
                                         {
-                                            let newFieldName: string = fieldName + '_quarters';
+                                            let newFieldName: string = (i === group.groupInterval.length - 1) ? fieldName : fieldName + '_date_group_quarters';
                                             groupFields[newFieldName] = interval;
                                             let month: number = Math.ceil((date.getMonth() + 1) / 3);
                                             item[newFieldName] = (isInRangeAvail ? undefined : ((this.localeObj ? this.localeObj.getConstant('qtr') : 'Qtr') + month.toString()));
@@ -410,7 +416,7 @@ export class PivotEngine {
                                         break;
                                     case 'QuarterYear':
                                         {
-                                            let newFieldName: string = fieldName + '_quarterYear';
+                                            let newFieldName: string = (i === group.groupInterval.length - 1) ? fieldName : fieldName + '_date_group_quarterYear';
                                             groupFields[newFieldName] = interval;
                                             let month: number = Math.ceil((date.getMonth() + 1) / 3);
                                             item[newFieldName] = (isInRangeAvail ? undefined :
@@ -421,55 +427,70 @@ export class PivotEngine {
                                         break;
                                     case 'Months':
                                         {
-                                            let newFieldName: string = fieldName + '_months';
+                                            let newFieldName: string = (i === group.groupInterval.length - 1) ? fieldName : fieldName + '_date_group_months';
                                             groupFields[newFieldName] = interval;
                                             item[newFieldName] = (isInRangeAvail ? undefined : new Date(newDate.setMonth(date.getMonth(), newDate.getDate())).toString());
                                         }
                                         break;
                                     case 'Days':
                                         {
-                                            let newFieldName: string = fieldName + '_days';
+                                            let newFieldName: string = (i === group.groupInterval.length - 1) ? fieldName : fieldName + '_date_group_days';
                                             groupFields[newFieldName] = interval;
                                             item[newFieldName] = (isInRangeAvail ? undefined : new Date(newDate.setMonth(date.getMonth(), date.getDate())).toString());
                                         }
                                         break;
                                     case 'Hours':
                                         {
-                                            let newFieldName: string = fieldName + '_hours';
+                                            let newFieldName: string = (i === group.groupInterval.length - 1) ? fieldName : fieldName + '_date_group_hours';
                                             groupFields[newFieldName] = interval;
                                             item[newFieldName] = (isInRangeAvail ? undefined : new Date(newDate.setHours(date.getHours())).toString());
                                         }
                                         break;
                                     case 'Minutes':
                                         {
-                                            let newFieldName: string = fieldName + '_minutes';
+                                            let newFieldName: string = (i === group.groupInterval.length - 1) ? fieldName : fieldName + '_date_group_minutes';
                                             groupFields[newFieldName] = interval;
                                             item[newFieldName] = (isInRangeAvail ? undefined : new Date(newDate.setMinutes(date.getMinutes())).toString());
                                         }
                                         break;
                                     case 'Seconds':
                                         {
-                                            let newFieldName: string = fieldName + '_seconds';
+                                            let newFieldName: string = (i === group.groupInterval.length - 1) ? fieldName : fieldName + '_date_group_seconds';
                                             groupFields[newFieldName] = interval;
                                             item[newFieldName] = (isInRangeAvail ? undefined : new Date(newDate.setSeconds(date.getSeconds())).toString());
                                         }
                                         break;
                                 }
                             }
-                            if (isGrouped) {
-                                delete item[fieldName];
+                        }
+                    } else if (item[fieldName] && group.type === 'Number') {
+                        let isInRangeAvail: boolean = this.getRange(group, item[fieldName] as number);
+                        item[fieldName] = isInRangeAvail ? undefined : item[fieldName];
+                    } else if (item[fieldName] && group.type === 'Custom' && group.customGroups && group.customGroups.length > 0) {
+                        let newFieldName: string = fieldName + '_custom_group';
+                        let customGroups: ICustomGroups[] = group.customGroups;
+                        let groupValue: string;
+                        for (let i: number = 0, len: number = customGroups.length; i < len; i++) {
+                            {
+                                let cGroup: ICustomGroups = customGroups[i];
+                                if (cGroup.items && cGroup.items.length > 1) {
+                                    customGroupFieldName = newFieldName;
+                                    let isDataMatch: boolean = PivotUtil.inArray(item[fieldName].toString(), cGroup.items) == -1 ? false : true;
+                                    item[newFieldName] = (isDataMatch ? (cGroup.groupName && cGroup.groupName != '') ? cGroup.groupName :
+                                        this.localeObj.getConstant('group') + ' ' + i : (groupValue && groupValue !== item[fieldName].toString()) ?
+                                            groupValue : item[fieldName].toString());
+                                    groupValue = item[newFieldName] as string;
+                                }
                             }
                         }
-                    } else {
-                        let isInRangeAvail: boolean = this.getRange(dategroup, item[fieldName] as number);
-                        item[fieldName] = isInRangeAvail ? undefined : item[fieldName];
                     }
                     let keys: string[] = Object.keys(item);
                     let isCompleteSet: boolean[] = [];
                     for (let key of keys) { isCompleteSet.push((item[key]) ? true : false); };
                     fieldkeySet = (((isCompleteSet.indexOf(false) === -1) && keys.length === Object.keys(data[0]).length) ? item : fieldkeySet);
+                    this.fields = Object.keys(fieldkeySet);
                 }
-                if (dategroup.type === 'Date') {
+                if (group.type === 'Date') {
                     let isDataSource: boolean = false;
                     let axisFields: IFieldOptions[][] = [this.rows, this.columns, this.values, this.filters];
                     let groupKeys: string[] = Object.keys(groupFields);
@@ -484,17 +505,21 @@ export class PivotEngine {
                                     isDataSource = true;
                                     let actualField: IFieldOptions = axis[i];
                                     axis.splice(i, 1);
+                                    let dataFields: IFieldOptions[] = this.rows;
+                                    dataFields = dataFields.concat(this.columns, this.values, this.filters);
                                     while (gCnt--) {
-                                        groupField = groupFields[groupKeys[gCnt]];
-                                        let newField: IFieldOptions = {
-                                            name: groupKeys[gCnt],
-                                            caption: (this.localeObj ? this.localeObj.getConstant(groupField) : groupField) + ' (' + fieldName + ')',
-                                            type: 'Count' as SummaryTypes,
-                                            showNoDataItems: actualField.showNoDataItems,
-                                            baseField: actualField.baseField,
-                                            baseItem: actualField.baseItem,
-                                        };
-                                        axis.splice(i, 0, newField);
+                                        if (!PivotUtil.getFieldByName(groupKeys[gCnt], dataFields)) {
+                                            groupField = groupFields[groupKeys[gCnt]];
+                                            let newField: IFieldOptions = {
+                                                name: groupKeys[gCnt],
+                                                caption: (this.localeObj ? this.localeObj.getConstant(groupField) : groupField) + ' (' + (actualField.caption ? actualField.caption : actualField.name) + ')',
+                                                type: 'Count' as SummaryTypes,
+                                                showNoDataItems: actualField.showNoDataItems,
+                                                baseField: actualField.baseField,
+                                                baseItem: actualField.baseItem,
+                                            };
+                                            axis.splice(i, 0, newField);
+                                        }
                                     }
                                     break;
                                 }
@@ -508,8 +533,13 @@ export class PivotEngine {
                     gCnt = Object.keys(groupKeys).length;
                     while (gCnt--) {
                         groupField = groupFields[groupKeys[gCnt]];
-                        let formatfield: IFormatSettings = new DataManager({ json: this.formats }).executeLocal(new Query().where('name', 'equal', groupKeys[gCnt]))[0] as IFormatSettings;
-                        if (groupField !== 'Quarters' && groupField !== 'QuarterYear' && !formatfield) {
+                        for (let i: number = 0, len: number = this.formats.length; i < len; i++) {
+                            if (this.formats[i].name === groupKeys[gCnt]) {
+                                this.formats.splice(i, 1);
+                                break;
+                            }
+                        }
+                        if (groupField !== 'Quarters' && groupField !== 'QuarterYear') {
                             let formatSettings: IFormatSettings = {
                                 name: groupKeys[gCnt],
                                 type: ['Years', 'Months', 'Days'].indexOf(groupField) > -1 ? 'date' : 'time',
@@ -520,7 +550,7 @@ export class PivotEngine {
                             this.formats.push(formatSettings);
                         }
                     }
-                } else if (dategroup.type === 'Number' && dategroup.rangeInterval) {
+                } else if (group.type === 'Number' && group.rangeInterval) {
                     let startValue: number;
                     let endValue: number;
                     let cStartValue: number;
@@ -552,14 +582,14 @@ export class PivotEngine {
                     while (cnt < dataLength) {
                         if (data[cnt] && data[cnt][fieldName]) {
                             cStartValue = data[cnt][fieldName] as number;
-                            cEndValue = (cStartValue as number) + (dategroup.rangeInterval - 1);
+                            cEndValue = (cStartValue as number) + (group.rangeInterval - 1);
                             startValue = (!startValue) ? cStartValue : startValue;
                             endValue = ((!endValue) ? ((cEndValue > framedSetLength) ? framedSetLength : cEndValue) : ((endValue > framedSetLength) ? framedSetLength : endValue));
                             if (cStartValue >= startValue && cStartValue <= endValue) {
                                 data[cnt][fieldName] = ((startValue === endValue) ? startValue.toString() : startValue.toString() + '-' + endValue.toString());
                             } else if (cStartValue > endValue && cStartValue === endValue + 1) {
                                 startValue = endValue + 1;
-                                endValue = ((startValue + (dategroup.rangeInterval - 1) > framedSetLength) ? framedSetLength : startValue + (dategroup.rangeInterval - 1));
+                                endValue = ((startValue + (group.rangeInterval - 1) > framedSetLength) ? framedSetLength : startValue + (group.rangeInterval - 1));
                                 data[cnt][fieldName] = ((startValue === endValue) ? startValue.toString() : startValue.toString() + '-' + endValue.toString());
                             }
                             let keys: string[] = Object.keys(data[cnt]);
@@ -582,6 +612,62 @@ export class PivotEngine {
                             this.formats.splice(i, 1);
                             break;
                         }
+                    }
+                } else if (group.type === 'Custom' && customGroupFieldName) {
+                    let customFieldName: string = customGroupFieldName;
+                    // this.groupingFields[customFieldName] = customFieldName;
+                    let isDataSource: boolean = false;
+                    let axisFields: IFieldOptions[][] = [this.rows, this.columns, this.values, this.filters];
+                    let dataFields: IFieldOptions[] = this.rows;
+                    dataFields = dataFields.concat(this.columns, this.values, this.filters);
+                    let pattern: string[] = [];
+                    if (!caption || caption == '') {
+                        pattern = customFieldName.match(/_custom_group/g);
+                    }
+                    // let actualFieldName: string = fieldName.replace(/_custom_group/g, '');
+                    let parentField: IFieldOptions = PivotUtil.getFieldByName(fieldName.replace(/_custom_group/g, ''), dataFields);
+                    let customGroupField: IFieldOptions = PivotUtil.getFieldByName(customFieldName, dataFields);
+                    for (let axis of axisFields) {
+                        if (!isDataSource && axis) {
+                            let cnt: number = axis.length;
+                            let i: number = 0;
+                            while (i < cnt) {
+                                if (axis[i].name === group.name && !customGroupField) {
+                                    isDataSource = true;
+                                    let actualField: IFieldOptions = axis[i];
+                                    let newField: IFieldOptions = {
+                                        name: customFieldName,
+                                        caption: (!caption || caption == '') ? (parentField.caption ? parentField.caption : parentField.name) + (pattern.length + 1) : caption,
+                                        type: 'Count' as SummaryTypes,
+                                        showNoDataItems: actualField.showNoDataItems,
+                                        baseField: actualField.baseField,
+                                        baseItem: actualField.baseItem,
+                                    };
+                                    axis.splice(i, 0, newField);
+                                    break;
+                                } else if (axis[i].name === customFieldName && customGroupField) {
+                                    let newField: IFieldOptions = {
+                                        name: customGroupField.name,
+                                        caption: (!caption || caption == '') ? customGroupField.caption : caption,
+                                        type: customGroupField.type,
+                                        showNoDataItems: customGroupField.showNoDataItems,
+                                        baseField: customGroupField.baseField,
+                                        baseItem: customGroupField.baseItem,
+                                    };
+                                    axis.splice(i, 1, newField);
+                                    break;
+                                }
+                                i++;
+                            }
+                            if (isDataSource) {
+                                break;
+                            }
+                        }
+                    }
+                    let formatfield: IFormatSettings = PivotUtil.getFormatItemByName(fieldName, PivotUtil.cloneFormatSettings(this.formats)) as IFormatSettings;
+                    if (formatfield) {
+                        formatfield.name = customFieldName;
+                        this.formats.push(formatfield);
                     }
                 }
                 this.groupingFields = extend(this.groupingFields, groupFields) as { [key: string]: string };
@@ -686,31 +772,33 @@ export class PivotEngine {
                     this.fieldList[key] = {
                         id: key,
                         caption: key,
-                        type: (type === undefined || type === 'undefined') ? 'number' : type,
+                        type: ((key.indexOf('_custom_group') !== -1) || (key.indexOf('_date_group') !== -1)) ?
+                            'string' : (type === undefined || type === 'undefined') ? 'number' : type,
+                        sort: isSort ? 'Ascending' : 'None',
+                        isSelected: false,
                         filterType: '',
                         index: len,
                         filter: [],
-                        sort: isSort ? 'Ascending' : 'None',
-                        isSelected: false
+                        isCustomField: ((key.indexOf('_custom_group') !== -1) || (key.indexOf('_date_group') !== -1))
                     };
                 }
             }
         } else {
+            this.fieldList = {};
             while (len--) { /** while is used for better performance than for */
                 let key: string = keys[len];
                 type = (this.fieldsType && this.fieldsType[key]) ? this.fieldsType[key] : PivotUtil.getType(fields[key] as Date);
-                if (!this.fieldList) {
-                    this.fieldList = {};
-                }
                 this.fieldList[key] = {
                     id: key,
                     caption: key,
-                    type: (type === undefined || type === 'undefined') ? 'number' : type,
+                    type: ((key.indexOf('_custom_group') !== -1) || (key.indexOf('_date_group') !== -1)) ?
+                        'string' : (type === undefined || type === 'undefined') ? 'number' : type,
                     filterType: '',
                     index: len,
                     filter: [],
                     sort: isSort ? 'Ascending' : 'None',
-                    isSelected: false
+                    isSelected: false,
+                    isCustomField: ((key.indexOf('_custom_group') !== -1) || (key.indexOf('_date_group') !== -1))
                 };
             }
         }
@@ -3703,32 +3791,52 @@ export class PivotEngine {
             dateText: commonValue
         };
         if (this.formatFields[fieldName] && value) {
-            let formatField: IFormatSettings = ((<{ [key: string]: Object }>this.formatFields[fieldName]).properties ?
-                (<{ [key: string]: Object }>this.formatFields[fieldName]).properties : this.formatFields[fieldName]);
-            let formatSetting: IFormatSettings = extend({}, formatField, null, true) as IFormatSettings;
+            try {
+                let formatField: IFormatSettings = ((<{ [key: string]: Object }>this.formatFields[fieldName]).properties ?
+                    (<{ [key: string]: Object }>this.formatFields[fieldName]).properties : this.formatFields[fieldName]);
+                let formatSetting: IFormatSettings = extend({}, formatField, null, true) as IFormatSettings;
 
-            delete formatSetting.name;
-            if (!formatSetting.minimumSignificantDigits && formatSetting.minimumSignificantDigits < 1) {
-                delete formatSetting.minimumSignificantDigits;
-            }
-            if (!formatSetting.maximumSignificantDigits && formatSetting.maximumSignificantDigits < 1) {
-                delete formatSetting.maximumSignificantDigits;
-            }
-            if (formatSetting.type) {
-                formattedValue.formattedText = this.dateFormatFunction[fieldName].exactFormat(new Date(value as string));
-            } else {
-                delete formatSetting.type;
-                if ((formatSetting.format) && !(this.formatRegex.test(formatSetting.format))) {
-                    let pattern: string[] = formatSetting.format.match(this.customRegex);
-                    let integerPart: string = pattern[6];
-                    formatSetting.useGrouping = integerPart.indexOf(',') !== -1;
+                delete formatSetting.name;
+                if (!formatSetting.minimumSignificantDigits && formatSetting.minimumSignificantDigits < 1) {
+                    delete formatSetting.minimumSignificantDigits;
                 }
-                formattedValue.formattedText = this.globalize.formatNumber(value as number, formatSetting);
-            }
-            formattedValue.actualText = value;
-            if (this.fieldList[fieldName].sort !== 'None' && formatSetting.type &&
-                ['date', 'dateTime', 'time'].indexOf(this.formatFields[fieldName].type) > -1) {
-                formattedValue.dateText = this.dateFormatFunction[fieldName].fullFormat(new Date(value as string));
+                if (!formatSetting.maximumSignificantDigits && formatSetting.maximumSignificantDigits < 1) {
+                    delete formatSetting.maximumSignificantDigits;
+                }
+                if (formatSetting.type) {
+                    formattedValue.formattedText = this.dateFormatFunction[fieldName].exactFormat(new Date(value as string));
+                } else {
+                    delete formatSetting.type;
+                    if ((formatSetting.format) && !(this.formatRegex.test(formatSetting.format))) {
+                        let pattern: string[] = formatSetting.format.match(this.customRegex);
+                        let integerPart: string = pattern[6];
+                        formatSetting.useGrouping = integerPart.indexOf(',') !== -1;
+                    }
+                    formattedValue.formattedText = this.globalize.formatNumber(value as number, formatSetting);
+                }
+                formattedValue.actualText = value;
+                if (this.fieldList[fieldName].sort !== 'None' && formatSetting.type &&
+                    ['date', 'dateTime', 'time'].indexOf(this.formatFields[fieldName].type) > -1) {
+                    formattedValue.dateText = this.dateFormatFunction[fieldName].fullFormat(new Date(value as string));
+                }
+                if (this.fieldList[fieldName].isCustomField) {
+                    formattedValue.formattedText = formattedValue.formattedText === 'NaN' ?
+                        commonValue.toString() : formattedValue.formattedText;
+                    formattedValue.dateText = formattedValue.dateText === 'NaN' ?
+                        commonValue.toString() : formattedValue.dateText;
+                }
+            } catch (exception) {
+                if (!this.fieldList[fieldName].isCustomField) {
+                    throw exception;
+                }
+            } finally {
+                if (this.fieldList[fieldName].isCustomField) {
+                    formattedValue.formattedText =
+                    (isNullOrUndefined(formattedValue.formattedText) || formattedValue.formattedText === 'NaN') ?
+                        commonValue.toString() : formattedValue.formattedText;
+                    formattedValue.dateText = (isNullOrUndefined(formattedValue.formattedText) || formattedValue.formattedText === 'NaN') ?
+                        commonValue.toString() : formattedValue.dateText;
+                }
             }
         }
         return formattedValue;
@@ -3819,6 +3927,9 @@ export interface IValueSortSettings {
     headerText?: string;
     headerDelimiter?: string;
     sortOrder?: Sorting;
+    /**
+     * @blazorType Nullable<int>
+     */
     columnIndex?: number;
     measure?: string;
     // preserveHierarchy?: boolean;
@@ -3923,6 +4034,9 @@ export interface IFieldOptions {
     showNoDataItems?: boolean;
     baseField?: string;
     baseItem?: string;
+    /**
+     * @blazorType Nullable<bool>
+     */
     showSubTotals?: boolean;
     isNamedSet?: boolean;
     isCalculatedField?: boolean;
@@ -3997,9 +4111,21 @@ export interface IField {
     caption?: string;
     type?: string;
     formatString?: string;
+    /**
+     * @blazorType int
+     */
     index?: number;
+    /**
+     * @blazorType Dictionary<string, IMembers>
+     */
     members?: IMembers;
+    /**
+     * @blazorType Dictionary<string, IMembers>
+     */
     formattedMembers?: IMembers;
+    /**
+     * @blazorType List<IDateMembers>
+     */
     dateMember?: IAxisSet[];
     filter?: string[];
     sort?: string;
@@ -4012,6 +4138,7 @@ export interface IField {
     isSelected?: boolean;
     isExcelFilter?: boolean;
     showNoDataItems?: boolean;
+    isCustomField?: boolean;
 }
 
 export interface IAxisSet {
@@ -4020,16 +4147,40 @@ export interface IAxisSet {
     type?: string;
     isDrilled?: boolean;
     hasChild?: boolean;
+    /**
+     * @blazorType List<IAxisSet>
+     */
     members?: this[];
+    /**
+     * @blazorType List<int>
+     */
     index?: number[];
+    /**
+     * @blazorType SortedDictionary<int,int>
+     */
     indexObject?: INumberIndex;
     ordinal?: number;
+    /**
+     * @blazorType int
+     */
     level?: number;
     axis?: string;
     value?: number;
+    /**
+     * @blazorType int
+     */
     colSpan?: number;
+    /**
+     * @blazorType int
+     */
     rowSpan?: number;
+    /**
+     * @blazorType Dictionary<string,object>
+     */
     valueSort?: IDataSet;
+    /**
+     * @blazorType int
+     */
     colIndex?: number;
     rowIndex?: number;
     columnHeaders?: string | number | Date;
@@ -4039,7 +4190,13 @@ export interface IAxisSet {
     cssClass?: string;
     style?: IStyle;
     enableHyperlink?: boolean;
+    /**
+     * @blazorType Nullable<bool>
+     */
     showSubTotals?: boolean;
+    /**
+     * @blazorType string
+     */
     dateText?: number | string;
     memberType?: number;
     parentUniqueName?: string;
@@ -4125,10 +4282,26 @@ interface IValueFields {
 export interface IGroupSettings {
     name?: string;
     groupInterval?: DateGroup[];
+    /**
+     * @blazorType string
+     */
     startingAt?: Date | number | string;
+    /**
+     * @blazorType string
+     */
     endingAt?: Date | number | string;
+    /**
+     * @blazorType int
+     */
     rangeInterval?: number;
     type?: GroupType;
+    caption?: string;
+    customGroups?: ICustomGroups[];
+}
+
+export interface ICustomGroups {
+    groupName?: string;
+    items?: string[];
 }
 
 export interface IGroupRange {

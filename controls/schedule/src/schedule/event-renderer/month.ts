@@ -101,13 +101,14 @@ export class MonthEvent extends EventBase {
         this.cellWidth = this.workCells.slice(-1)[0].offsetWidth;
         this.cellHeight = this.workCells.slice(-1)[0].offsetHeight;
         this.dateRender = dateRender;
+        let filteredDates: Date[] = this.getRenderedDates(dateRender);
         this.getSlotDates(workDays);
         this.processBlockEvents(blockList, resIndex, resData);
         for (let event of eventsList) {
             if (this.parent.resourceBase && !resData) {
                 this.cssClass = this.parent.resourceBase.getCssClass(event);
             }
-            let splittedEvents: { [key: string]: Object }[] = this.splitEvent(event, this.dateRender);
+            let splittedEvents: { [key: string]: Object }[] = this.splitEvent(event, filteredDates || this.dateRender);
             for (let event of splittedEvents) {
                 this.updateIndicatorIcon(<{ [key: string]: Object }>event);
                 this.renderEvents(<{ [key: string]: Object }>event, resIndex, eventsList);
@@ -259,8 +260,7 @@ export class MonthEvent extends EventBase {
             attrs: {
                 'data-id': 'Appointment_' + record[this.fields.id],
                 'role': 'button', 'tabindex': '0',
-                'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true',
-                'aria-label': eventSubject
+                'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true'
             }
         });
         if (!isCloneElement) {
@@ -374,6 +374,9 @@ export class MonthEvent extends EventBase {
         if (day < 0) {
             return;
         }
+        if ((startTime.getTime() < this.parent.minDate.getTime()) || (endTime.getTime() > this.parent.maxDate.getTime())) {
+            return;
+        }
         let overlapCount: number = this.getIndex(startTime);
         event.Index = overlapCount;
         let appHeight: number = this.eventHeight;
@@ -393,7 +396,7 @@ export class MonthEvent extends EventBase {
                 setStyleAttribute(appointmentElement, { 'width': appWidth + 'px', 'top': appTop + 'px' });
                 this.renderEventElement(event, appointmentElement, cellTd);
                 if (this.parent.rowAutoHeight) {
-                    let firstChild: HTMLElement = cellTd.parentElement.firstChild as HTMLElement;
+                    let firstChild: HTMLElement = cellTd.parentElement.firstElementChild as HTMLElement;
                     this.updateCellHeight(firstChild, height);
                 }
             } else {
@@ -433,7 +436,7 @@ export class MonthEvent extends EventBase {
             let target: HTMLElement = closest(element, 'tr') as HTMLElement;
             this.monthHeaderHeight = (<HTMLElement>element.offsetParent).offsetTop - target.offsetTop;
             element.style.height = ((target.offsetHeight - 1) - this.monthHeaderHeight) + 'px';
-            let firstChild: HTMLElement = target.firstChild as HTMLElement;
+            let firstChild: HTMLElement = target.firstElementChild as HTMLElement;
             let width: number = Math.round(element.offsetWidth / firstChild.offsetWidth);
             element.style.width = (firstChild.offsetWidth * width) + 'px';
         }
@@ -496,7 +499,7 @@ export class MonthEvent extends EventBase {
                     let moreEventArgs: EventClickArgs = { date: startDate, event: filteredEvents, element: event.target } as EventClickArgs;
                     this.parent.quickPopup.moreEventClick(moreEventArgs, endDate, groupIndex);
                 } else {
-                    this.parent.setProperties({ selectedDate: startDate }, true);
+                    this.parent.setScheduleProperties({ selectedDate: startDate });
                     this.parent.changeView(clickArgs.viewName, event);
                 }
             }
@@ -551,7 +554,8 @@ export class MonthEvent extends EventBase {
             attrs: {
                 'tabindex': '0',
                 'data-start-date': startDate.getTime().toString(),
-                'data-end-date': endDate.getTime().toString()
+                'data-end-date': endDate.getTime().toString(),
+                'role': 'list'
             }
         });
         return moreIndicatorElement;
@@ -560,7 +564,7 @@ export class MonthEvent extends EventBase {
     public removeHeightProperty(selector: string): void {
         let rows: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + selector + ' tbody tr'));
         for (let row of rows) {
-            (row.firstChild as HTMLElement).style.height = '';
+            (row.firstElementChild as HTMLElement).style.height = '';
         }
     }
 }

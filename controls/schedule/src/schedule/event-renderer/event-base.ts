@@ -315,6 +315,16 @@ export class EventBase {
             let cStart: number = start;
             for (let level: number = 0; level < this.slots.length; level++) {
                 let slot: number[] = <[number]>this.slots[level];
+                if (this.parent.currentView === 'WorkWeek' || this.parent.currentView === 'TimelineWorkWeek'
+                    || this.parent.activeViewOptions.group.byDate || this.parent.activeViewOptions.showWeekend) {
+                    let slotDates: Date[] = [];
+                    slot.forEach((x: number) => slotDates.push(new Date(x)));
+                    let renderedDates: Date[] = this.getRenderedDates(slotDates);
+                    if (!isNullOrUndefined(renderedDates) && renderedDates.length > 0) {
+                        slot = [];
+                        renderedDates.forEach((date: Date) => slot.push(date.getTime()));
+                    }
+                }
                 let firstSlot: number = <number>slot[0];
                 cStart = (cStart <= firstSlot && end >= firstSlot) ? firstSlot : cStart;
                 if (cStart > end || firstSlot > end) {
@@ -481,7 +491,7 @@ export class EventBase {
             } else {
                 targetArea = this.parent.getContentTable();
             }
-            let queryString: string = '[data-date="' + nearestTime + '"]';
+            let queryString: string = '[data-date="' + this.parent.getMsFromDate(new Date(nearestTime)) + '"]';
             if (this.parent.activeViewOptions.group.resources.length > 0) {
                 queryString += '[data-group-index="' + this.getGroupIndexFromEvent(selectedObject) + '"]';
             }
@@ -778,13 +788,6 @@ export class EventBase {
         return occurrenceCollection;
     }
 
-    public getRecurrenceEvent(eventData: { [key: string]: Object }): { [key: string]: Object } {
-        let eventFields: EventFieldsMapping = this.parent.eventFields;
-        let parentApp: { [key: string]: Object }[] = <{ [key: string]: Object }[]>new DataManager(this.parent.eventsData).
-            executeLocal(new Query().where(eventFields.id, 'equal', eventData[eventFields.recurrenceID] as string | number));
-        return parentApp[0];
-    }
-
     public getParentEvent(eventObj: { [key: string]: Object }, isParent: boolean = false): { [key: string]: Object } {
         let parentEvent: { [key: string]: Object };
         do {
@@ -945,7 +948,7 @@ export class EventBase {
             className: cls.BLOCK_APPOINTMENT_CLASS,
             attrs: {
                 'data-id': 'Appointment_' + record[this.parent.eventFields.id],
-                'aria-readonly': 'true', 'aria-selected': 'false', 'aria-label': eventSubject
+                'aria-readonly': 'true', 'aria-selected': 'false'
             }
         });
         let templateElement: HTMLElement[];
@@ -1048,5 +1051,25 @@ export class EventBase {
             deleteRecurrenceEventList = deleteRecurrenceEventList.concat(delEditedEvents);
         }
         return deleteRecurrenceEventList;
+    }
+
+    public getRenderedDates(dateRender: Date[]): Date[] {
+        let firstDate: number = 0;
+        let lastDate: number = dateRender.length;
+        let filteredDates: Date[];
+        if ((dateRender[0] < this.parent.minDate) && dateRender[dateRender.length - 1] > this.parent.maxDate) {
+            for (let i: number = 0; i < dateRender.length; i++) {
+                if (dateRender[i].getTime() === this.parent.minDate.getTime()) {
+                    firstDate = i;
+                }
+                if (dateRender[i].getTime() === this.parent.maxDate.getTime()) {
+                    lastDate = i;
+                }
+            }
+            filteredDates = dateRender.filter((date: Date) => {
+                return ((date >= dateRender[firstDate]) && (date <= dateRender[lastDate]));
+            });
+        }
+        return filteredDates;
     }
 }

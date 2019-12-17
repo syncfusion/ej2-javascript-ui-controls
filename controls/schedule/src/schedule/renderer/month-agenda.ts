@@ -15,15 +15,21 @@ export class MonthAgenda extends Month {
     public viewClass: string = 'e-month-agenda-view';
     public agendaDates: { [key: string]: Date } = {};
     public agendaBase: AgendaBase;
+    private monthAgendaDate: Date;
     /**
      * Constructor
      */
     constructor(parent: Schedule) {
         super(parent);
         this.agendaBase = new AgendaBase(parent);
+        this.monthAgendaDate = parent.selectedDate;
     }
 
     public renderAppointmentContainer(): void {
+        if (this.parent.isServerRenderer()) {
+            this.setEventWrapperHeight();
+            return;
+        }
         let contentArea: HTMLElement = this.getContentAreaElement();
         let wrapperContainer: HTMLElement = createElement('div', { className: cls.WRAPPER_CONTAINER_CLASS });
         contentArea.appendChild(wrapperContainer);
@@ -46,7 +52,7 @@ export class MonthAgenda extends Month {
         if (resourceWrapper) {
             headerHeight += resourceWrapper.offsetHeight;
         }
-        let contentArea: HTMLElement = this.getContentAreaElement().firstChild as HTMLElement;
+        let contentArea: HTMLElement = this.getContentAreaElement().firstElementChild as HTMLElement;
         let dateHeader: HTMLElement = this.element.querySelector('.' + cls.DATE_HEADER_WRAP_CLASS) as HTMLElement;
         let availableHeight: number = this.parent.element.offsetHeight - headerHeight - dateHeader.offsetHeight - contentArea.offsetHeight;
         let wrapperContainer: HTMLElement = this.element.querySelector('.' + cls.WRAPPER_CONTAINER_CLASS) as HTMLElement;
@@ -86,7 +92,7 @@ export class MonthAgenda extends Month {
         this.parent.resetEventTemplates();
         this.onEventRender(filterData, event.startTime);
         this.parent.notify(events.eventsLoaded, {});
-        this.parent.setProperties({ selectedDate: new Date('' + event.startTime) }, true);
+        this.monthAgendaDate = new Date('' + event.startTime);
     }
 
     private onEventRender(events: Object[], date?: Date): void {
@@ -134,6 +140,17 @@ export class MonthAgenda extends Month {
         app.innerHTML = this.parent.localeObj.getConstant('noEvents');
         util.removeChildren(appWrap);
         appWrap.appendChild(app);
+    }
+
+    public getNextPreviousDate(type: string): Date {
+        let selectedDate: Date = this.parent.selectedDate;
+        let interval: number = (type === 'next') ? this.parent.activeViewOptions.interval : -this.parent.activeViewOptions.interval;
+        let navigateDate: Date = util.addMonths(this.parent.selectedDate, interval);
+        let month: number = (type === 'next') ? 2 : 0;
+        let lastDate: number = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + month, 0).getDate();
+        let date: number = (lastDate >= this.monthAgendaDate.getDate()) ? this.monthAgendaDate.getDate() : lastDate;
+        this.monthAgendaDate = new Date(navigateDate.getFullYear(), navigateDate.getMonth(), date);
+        return this.monthAgendaDate;
     }
 
     /**

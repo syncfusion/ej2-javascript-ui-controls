@@ -45,7 +45,8 @@ export interface ResourcesModel {
     /**
      * Defines the external [`query`](http://ej2.syncfusion.com/documentation/data/api-query.html) 
      * that will be executed along with the data processing.    
-     * @default null    
+     * @default null
+     * @blazorType Syncfusion.EJ2.Blazor.Data.Query
      */
     query?: Query;
 

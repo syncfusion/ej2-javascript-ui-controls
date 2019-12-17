@@ -71,7 +71,7 @@ export class NumberFormat {
         let dependable: base.Dependables = base.getDependables(cldr, culture, '', true);
         dOptions.numberMapper = parser.getNumberMapper(dependable.parserObject, parser.getNumberingSystem(cldr), true);
         dOptions.currencySymbol = base.getCurrencySymbol(
-            dependable.numericObject, fOptions.currency || defaultCurrencyCode);
+            dependable.numericObject, fOptions.currency || defaultCurrencyCode, option.altSymbol);
         /* tslint:disable no-any */
         dOptions.percentSymbol = (<any>dOptions).numberMapper.numberSymbols[percentSign];
         dOptions.minusSymbol = (<any>dOptions).numberMapper.numberSymbols[minusSign];

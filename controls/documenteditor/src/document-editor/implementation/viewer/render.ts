@@ -6,11 +6,12 @@ import { WBorders } from '../index';
 import {
     Page, Rect, Widget, ImageElementBox, LineWidget, ParagraphWidget,
     BodyWidget, TextElementBox, ElementBox, HeaderFooterWidget, ListTextElementBox,
-    TableRowWidget, TableWidget, TableCellWidget, FieldElementBox, TabElementBox, BlockWidget, ErrorTextElementBox
+    TableRowWidget, TableWidget, TableCellWidget, FieldElementBox, TabElementBox, BlockWidget, ErrorTextElementBox,
+    CommentCharacterElementBox
 } from './page';
 import { BaselineAlignment, HighlightColor, Underline, Strikethrough, TabLeader } from '../../index';
 import { Layout } from './layout';
-import { LayoutViewer } from './viewer';
+import { LayoutViewer, PageLayoutViewer } from './viewer';
 // tslint:disable-next-line:max-line-length
 import { HelperMethods, ErrorInfo, Point, SpecialCharacterInfo, SpaceCharacterInfo, WordSpellInfo } from '../editor/editor-helper';
 import { SearchWidgetInfo } from '../index';
@@ -454,9 +455,34 @@ export class Renderer {
                 this.pageContext.fillRect(this.getScaledValue(widgetInfo[i].left, 1), this.getScaledValue(top, 2), this.getScaledValue(widgetInfo[i].width), this.getScaledValue(lineWidget.height));
             }
         }
-
+        let isCommentMark: boolean = false;
         for (let i: number = 0; i < lineWidget.children.length; i++) {
             let elementBox: ElementBox = lineWidget.children[i] as ElementBox;
+            if (elementBox instanceof CommentCharacterElementBox &&
+                elementBox.commentType === 0 && this.viewer.owner.selectionModule) {
+                if (!isCommentMark) {
+                    isCommentMark = true;
+                    elementBox.renderCommentMark();
+                    let pageGap: number = 0;
+                    if (this.viewer instanceof PageLayoutViewer) {
+                        pageGap = (this.viewer as PageLayoutViewer).pageGap;
+                    }
+                    let style: string = 'display:block;position:absolute;';
+                    elementBox.commentMark.style.display = 'block';
+                    elementBox.commentMark.style.position = 'absolute';
+                    let rightMargin: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.rightMargin);
+                    let pageWidth: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.pageWidth);
+                    // tslint:disable-next-line:max-line-length
+                    let leftPosition: string = page.boundingRectangle.x + this.getScaledValue((pageWidth - rightMargin) + (rightMargin / 4)) + 'px;';
+                    let topPosition: string = this.getScaledValue(top + (page.boundingRectangle.y - (pageGap * (page.index + 1)))) + (pageGap * (page.index + 1)) + 'px;';
+                    style = style + 'left:' + leftPosition + 'top:' + topPosition;
+                    elementBox.commentMark.setAttribute('style', style);
+                } else {
+                    if (elementBox.commentMark) {
+                        elementBox.commentMark.setAttribute('style', 'display:none');
+                    }
+                }
+            }
 
             if (elementBox instanceof FieldElementBox || this.isFieldCode ||
                 (elementBox.width === 0 && elementBox.height === 0)) {

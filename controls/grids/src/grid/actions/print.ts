@@ -14,7 +14,8 @@ export function getCloneProperties(): string[] {
         'allowTextWrap', 'childGrid', 'columns', 'currentViewData', 'dataSource', 'detailTemplate', 'enableAltRow',
         'enableColumnVirtualization', 'filterSettings', 'gridLines',
         'groupSettings', 'height', 'locale', 'pageSettings', 'printMode', 'query', 'queryString', 'enableRtl',
-        'rowHeight', 'rowTemplate', 'sortSettings', 'textWrapSettings', 'allowPaging', 'hierarchyPrintMode', 'searchSettings'];
+        'rowHeight', 'rowTemplate', 'sortSettings', 'textWrapSettings', 'allowPaging', 'hierarchyPrintMode', 'searchSettings',
+        'queryCellInfo', 'beforeDataBound'];
 }
 
 /**
@@ -218,7 +219,11 @@ export class Print {
         }
     }
 
-    private isPrintGrid(): boolean {
+    /**
+     * To destroy the print
+     * @hidden
+     */
+    public isPrintGrid(): boolean {
         return this.parent.element.id.indexOf('_print') > 0 && this.parent.isPrinting;
     }
 

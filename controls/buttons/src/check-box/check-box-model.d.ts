@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';import { EmitType, Event, EventHandler, KeyboardEvents, isNullOrUndefined } from '@syncfusion/ej2-base';import { addClass, detach, getUniqueID, isRippleEnabled, removeClass, rippleEffect, closest } from '@syncfusion/ej2-base';import { wrapperInitialize, rippleMouseHandler, ChangeEventArgs, setHiddenInput } from './../common/common';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';import { EmitType, Event, EventHandler, KeyboardEvents, isNullOrUndefined, isBlazor, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { addClass, detach, getUniqueID, isRippleEnabled, removeClass, rippleEffect, closest } from '@syncfusion/ej2-base';import { wrapperInitialize, rippleMouseHandler, ChangeEventArgs, setHiddenInput } from './../common/common';
 import {LabelPosition} from "./check-box";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -77,6 +77,12 @@ export interface CheckBoxModel extends ComponentModel{
      * @default ''
      */
     value?: string;
+
+    /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default false
+     */
+    enableHtmlSanitizer?: boolean;
 
     /**
      * You can add the additional html attributes such as disabled, value etc., to the element.

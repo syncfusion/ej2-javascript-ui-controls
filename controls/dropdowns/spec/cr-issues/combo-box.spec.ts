@@ -188,7 +188,7 @@ describe('ComboBox', () => {
 
         it('when passing fields in updateData', (done) => {
             comboObj.filterInput.value = "can";
-            comboObj.onInput();
+            comboObj.onInput(keyEventArgs);
             comboObj.onFilterUp(keyEventArgs);
             setTimeout(() => {
                 let liElement: any = comboObj.list.querySelector('[data-value="CA"]');
@@ -483,14 +483,14 @@ describe('ComboBox', () => {
         });
         it('tempalte data filtering', () => {
             listObj.filterInput.value = "a";
-            listObj.onInput();
+            listObj.onInput(keyEventArgs);
             listObj.onFilterUp(keyEventArgs);
             expect(((listObj as any).ulElement.querySelector('li').firstElementChild as HTMLElement).innerText === 'Andrew Fuller').toBe(true);
                 
         });
         it('empty data filtering', () => {
             listObj.filterInput.value = "";
-            listObj.onInput();
+            listObj.onInput(keyEventArgs);
             listObj.onFilterUp(keyEventArgs); 
             let liElement = listObj.list.querySelectorAll('li');
             expect(liElement.length === listObj.dataSource.length).toBe(true);
@@ -529,7 +529,7 @@ describe('ComboBox', () => {
             comboObj.showPopup();
             comboObj.filterInput.value = 'b';
             keyEventArgs.keyCode = 67;
-            comboObj.onInput();
+            comboObj.onInput(keyEventArgs);
             comboObj.onFilterUp(keyEventArgs);
             setTimeout(() => {
                 let item: HTMLElement[] = comboObj.popupObj.element.querySelectorAll('li');
@@ -588,7 +588,7 @@ describe('ComboBox', () => {
             comboObj.readonly = false;
             comboObj.dataBind();
             comboObj.filterInput.value = "can";
-            comboObj.onInput();
+            comboObj.onInput(keyEventArgs);
             comboObj.onFilterUp(keyEventArgs);
             setTimeout(() => {
                 let liElement: any = comboObj.list.querySelector('[data-value="CA"]');
@@ -643,7 +643,7 @@ describe('ComboBox', () => {
             comboObj.readonly = false;
             comboObj.dataBind();
             comboObj.filterInput.value = "can";
-            comboObj.onInput();
+            comboObj.onInput(keyEventArgs);
             comboObj.onFilterUp(keyEventArgs);
             setTimeout(() => {
                 let liElement: any = comboObj.list.querySelector('[data-value="CA"]');
@@ -683,21 +683,21 @@ describe('ComboBox', () => {
             listObj.showPopup();
             listObj.filterInput.value = 'java';
             e.keyCode = 72;
-            listObj.onInput();
+            listObj.onInput(e);
             listObj.onFilterUp(e);
             expect(listObj.liCollections[0].getAttribute('data-value') === 'list1').toBe(true);
             listObj.filterType = 'Contains';
             listObj.dataBind();
             listObj.filterInput.value = 'o';
             e.keyCode = 72;
-            listObj.onInput();
+            listObj.onInput(e);
             listObj.onFilterUp(e);
             expect(listObj.liCollections.length >1).toBe(true);
             listObj.filterType = 'EndsWith';   
             listObj.dataBind();
             listObj.filterInput.value = 'n';
             e.keyCode = 72;
-            listObj.onInput();
+            listObj.onInput(e);
             listObj.onFilterUp(e);
             expect(listObj.liCollections.length >=1).toBe(true);
         });

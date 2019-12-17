@@ -1,4 +1,4 @@
-import { Component, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, attributes, closest, deleteObject, detach, getElement, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, isRippleEnabled, removeClass, rippleEffect, setValue } from '@syncfusion/ej2-base';
+import { Component, Event, EventHandler, NotifyPropertyChanges, Observer, Property, SanitizeHtmlHelper, addClass, append, attributes, closest, deleteObject, detach, getElement, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, isRippleEnabled, removeClass, rippleEffect, setValue } from '@syncfusion/ej2-base';
 
 /**
  * Initialize wrapper element for angular.
@@ -135,6 +135,7 @@ var __decorate = (undefined && undefined.__decorate) || function (decorators, ta
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var buttonObserver = new Observer();
 var cssClassName = {
     RTL: 'e-rtl',
     BUTTON: 'e-btn',
@@ -172,7 +173,16 @@ var Button = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Button.prototype.render = function () {
-        this.initialize();
+        if (isBlazor() && this.isServerRendered) {
+            if (!this.disabled) {
+                this.wireEvents();
+            }
+            buttonObserver.notify('component-rendered', { id: this.element.id, instance: this });
+        }
+        else {
+            this.initialize();
+        }
+        this.removeRippleEffect = rippleEffect(this.element, { selector: '.' + cssClassName.BUTTON });
         this.renderComplete();
     };
     Button.prototype.initialize = function () {
@@ -184,7 +194,8 @@ var Button = /** @__PURE__ @class */ (function (_super) {
         }
         if (!isBlazor() || (isBlazor() && this.getModuleName() !== 'progress-btn')) {
             if (this.content) {
-                this.element.innerHTML = this.content;
+                var tempContent = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(this.content) : this.content;
+                this.element.innerHTML = tempContent;
             }
             this.setIconCss();
         }
@@ -197,7 +208,6 @@ var Button = /** @__PURE__ @class */ (function (_super) {
         else {
             this.wireEvents();
         }
-        this.removeRippleEffect = rippleEffect(this.element, { selector: '.' + cssClassName.BUTTON });
     };
     Button.prototype.controlStatus = function (disabled) {
         this.element.disabled = disabled;
@@ -246,27 +256,29 @@ var Button = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     Button.prototype.destroy = function () {
-        var span;
-        var classList = [cssClassName.PRIMARY, cssClassName.RTL, cssClassName.ICONBTN, 'e-success', 'e-info', 'e-danger',
-            'e-warning', 'e-flat', 'e-outline', 'e-small', 'e-bigger', 'e-active', 'e-round',
-            'e-top-icon-btn', 'e-bottom-icon-btn'];
-        if (this.cssClass) {
-            classList = classList.concat(this.cssClass.split(' '));
-        }
-        _super.prototype.destroy.call(this);
-        removeClass([this.element], classList);
-        if (!this.element.getAttribute('class')) {
-            this.element.removeAttribute('class');
-        }
-        if (this.disabled) {
-            this.element.removeAttribute('disabled');
-        }
-        if (this.content) {
-            this.element.innerHTML = this.element.innerHTML.replace(this.content, '');
-        }
-        span = this.element.querySelector('span.e-btn-icon');
-        if (span) {
-            detach(span);
+        if (!(isBlazor() && this.isServerRendered)) {
+            var span = void 0;
+            var classList = [cssClassName.PRIMARY, cssClassName.RTL, cssClassName.ICONBTN, 'e-success', 'e-info', 'e-danger',
+                'e-warning', 'e-flat', 'e-outline', 'e-small', 'e-bigger', 'e-active', 'e-round',
+                'e-top-icon-btn', 'e-bottom-icon-btn'];
+            if (this.cssClass) {
+                classList = classList.concat(this.cssClass.split(' '));
+            }
+            _super.prototype.destroy.call(this);
+            removeClass([this.element], classList);
+            if (!this.element.getAttribute('class')) {
+                this.element.removeAttribute('class');
+            }
+            if (this.disabled) {
+                this.element.removeAttribute('disabled');
+            }
+            if (this.content) {
+                this.element.innerHTML = this.element.innerHTML.replace(this.content, '');
+            }
+            span = this.element.querySelector('span.e-btn-icon');
+            if (span) {
+                detach(span);
+            }
         }
         this.unWireEvents();
         if (isRippleEnabled) {
@@ -370,7 +382,10 @@ var Button = /** @__PURE__ @class */ (function (_super) {
                     if (!node) {
                         this.element.classList.remove(cssClassName.ICONBTN);
                     }
-                    if (!isBlazor() || (isBlazor() && this.getModuleName() !== 'progress-btn')) {
+                    if (!isBlazor()) {
+                        if (this.enableHtmlSanitizer) {
+                            newProp.content = SanitizeHtmlHelper.sanitize(newProp.content);
+                        }
                         this.element.innerHTML = newProp.content;
                         this.setIconCss();
                     }
@@ -427,6 +442,9 @@ var Button = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property()
     ], Button.prototype, "locale", void 0);
+    __decorate([
+        Property(false)
+    ], Button.prototype, "enableHtmlSanitizer", void 0);
     __decorate([
         Event()
     ], Button.prototype, "created", void 0);
@@ -558,26 +576,33 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
     CheckBox.prototype.destroy = function () {
         var _this = this;
         var wrapper = this.getWrapper();
-        _super.prototype.destroy.call(this);
-        if (!this.disabled) {
-            this.unWireEvents();
-        }
-        if (this.tagName === 'INPUT') {
-            wrapper.parentNode.insertBefore(this.element, wrapper);
-            detach(wrapper);
-            this.element.checked = false;
-            if (this.indeterminate) {
-                this.element.indeterminate = false;
+        if (isBlazor() && this.isServerRendered) {
+            if (!this.disabled) {
+                this.unWireEvents();
             }
-            ['name', 'value', 'disabled'].forEach(function (key) {
-                _this.element.removeAttribute(key);
-            });
         }
         else {
-            ['role', 'aria-checked', 'class'].forEach(function (key) {
-                wrapper.removeAttribute(key);
-            });
-            wrapper.innerHTML = '';
+            _super.prototype.destroy.call(this);
+            if (!this.disabled) {
+                this.unWireEvents();
+            }
+            if (this.tagName === 'INPUT') {
+                wrapper.parentNode.insertBefore(this.element, wrapper);
+                detach(wrapper);
+                this.element.checked = false;
+                if (this.indeterminate) {
+                    this.element.indeterminate = false;
+                }
+                ['name', 'value', 'disabled'].forEach(function (key) {
+                    _this.element.removeAttribute(key);
+                });
+            }
+            else {
+                ['role', 'aria-checked', 'class'].forEach(function (key) {
+                    wrapper.removeAttribute(key);
+                });
+                wrapper.innerHTML = '';
+            }
         }
     };
     CheckBox.prototype.focusHandler = function () {
@@ -623,7 +648,6 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
         if (this.disabled) {
             this.setDisabled();
         }
-        this.updateHtmlAttributeToWrapper();
     };
     CheckBox.prototype.initWrapper = function () {
         var wrapper = this.element.parentElement;
@@ -752,6 +776,9 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     CheckBox.prototype.preRender = function () {
+        if (isBlazor() && this.isServerRendered) {
+            return;
+        }
         var element = this.element;
         this.formElement = closest(this.element, 'form');
         this.tagName = this.element.tagName;
@@ -769,11 +796,19 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     CheckBox.prototype.render = function () {
-        this.initWrapper();
-        this.initialize();
+        if (isBlazor() && this.isServerRendered) {
+            if (isRippleEnabled) {
+                rippleEffect(this.getWrapper().getElementsByClassName(RIPPLE)[0], { duration: 400, isCenterRipple: true });
+            }
+        }
+        else {
+            this.initWrapper();
+            this.initialize();
+        }
         if (!this.disabled) {
             this.wireEvents();
         }
+        this.updateHtmlAttributeToWrapper();
         this.renderComplete();
     };
     CheckBox.prototype.setDisabled = function () {
@@ -788,6 +823,7 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
             label.textContent = text;
         }
         else {
+            text = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(text) : text;
             label = this.createElement('span', { className: LABEL, innerHTML: text });
             var labelWrap = this.getWrapper().getElementsByTagName('label')[0];
             if (this.labelPosition === 'Before') {
@@ -907,6 +943,9 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
         Property('')
     ], CheckBox.prototype, "value", void 0);
     __decorate$1([
+        Property(false)
+    ], CheckBox.prototype, "enableHtmlSanitizer", void 0);
+    __decorate$1([
         Property({})
     ], CheckBox.prototype, "htmlAttributes", void 0);
     CheckBox = __decorate$1([
@@ -995,24 +1034,31 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
      */
     RadioButton.prototype.destroy = function () {
         var _this = this;
-        var radioWrap = this.element.parentElement;
-        _super.prototype.destroy.call(this);
-        if (!this.disabled) {
-            this.unWireEvents();
-        }
-        if (this.tagName === 'INPUT') {
-            radioWrap.parentNode.insertBefore(this.element, radioWrap);
-            detach(radioWrap);
-            this.element.checked = false;
-            ['name', 'value', 'disabled'].forEach(function (key) {
-                _this.element.removeAttribute(key);
-            });
+        if (isBlazor() && this.isServerRendered) {
+            if (!this.disabled) {
+                this.unWireEvents();
+            }
         }
         else {
-            ['role', 'aria-checked', 'class'].forEach(function (key) {
-                radioWrap.removeAttribute(key);
-            });
-            radioWrap.innerHTML = '';
+            var radioWrap_1 = this.element.parentElement;
+            _super.prototype.destroy.call(this);
+            if (!this.disabled) {
+                this.unWireEvents();
+            }
+            if (this.tagName === 'INPUT') {
+                radioWrap_1.parentNode.insertBefore(this.element, radioWrap_1);
+                detach(radioWrap_1);
+                this.element.checked = false;
+                ['name', 'value', 'disabled'].forEach(function (key) {
+                    _this.element.removeAttribute(key);
+                });
+            }
+            else {
+                ['role', 'aria-checked', 'class'].forEach(function (key) {
+                    radioWrap_1.removeAttribute(key);
+                });
+                radioWrap_1.innerHTML = '';
+            }
         }
     };
     RadioButton.prototype.focusHandler = function () {
@@ -1181,6 +1227,9 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     RadioButton.prototype.preRender = function () {
+        if (isBlazor() && this.isServerRendered) {
+            return;
+        }
         var element = this.element;
         this.formElement = closest(this.element, 'form');
         this.tagName = this.element.tagName;
@@ -1205,7 +1254,15 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     RadioButton.prototype.render = function () {
-        this.initialize();
+        if (isBlazor() && this.isServerRendered) {
+            if (isRippleEnabled) {
+                var rippleSpan = this.element.parentElement.getElementsByClassName(RIPPLE$1)[0];
+                rippleEffect(rippleSpan, { duration: 400, isCenterRipple: true });
+            }
+        }
+        else {
+            this.initialize();
+        }
         if (!this.disabled) {
             this.wireEvents();
         }
@@ -1221,6 +1278,7 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
             textLabel.textContent = text;
         }
         else {
+            text = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(text) : text;
             textLabel = this.createElement('span', { className: LABEL$1, innerHTML: text });
             label.appendChild(textLabel);
         }
@@ -1305,6 +1363,9 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
     __decorate$2([
         Property('')
     ], RadioButton.prototype, "value", void 0);
+    __decorate$2([
+        Property(false)
+    ], RadioButton.prototype, "enableHtmlSanitizer", void 0);
     RadioButton = RadioButton_1 = __decorate$2([
         NotifyPropertyChanges
     ], RadioButton);
@@ -1404,11 +1465,18 @@ var Switch = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     Switch.prototype.destroy = function () {
-        _super.prototype.destroy.call(this);
-        if (!this.disabled) {
-            this.unWireEvents();
+        if (isBlazor() && this.isServerRendered) {
+            if (!this.disabled) {
+                this.unWireEvents();
+            }
         }
-        destroy(this, this.getWrapper(), this.tagName);
+        else {
+            _super.prototype.destroy.call(this);
+            if (!this.disabled) {
+                this.unWireEvents();
+            }
+            destroy(this, this.getWrapper(), this.tagName);
+        }
     };
     Switch.prototype.focusHandler = function () {
         this.isFocused = true;
@@ -1542,6 +1610,9 @@ var Switch = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Switch.prototype.preRender = function () {
+        if (isBlazor() && this.isServerRendered) {
+            return;
+        }
         var element = this.element;
         this.formElement = closest(this.element, 'form');
         this.tagName = this.element.tagName;
@@ -1552,8 +1623,15 @@ var Switch = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Switch.prototype.render = function () {
-        this.initWrapper();
-        this.initialize();
+        if (isBlazor() && this.isServerRendered) {
+            if (isRippleEnabled) {
+                rippleEffect(this.element.parentElement, { duration: 400, isCenterRipple: true });
+            }
+        }
+        else {
+            this.initWrapper();
+            this.initialize();
+        }
         if (!this.disabled) {
             this.wireEvents();
         }
@@ -1760,16 +1838,27 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
     function ChipList(options, element) {
         return _super.call(this, options, element) || this;
     }
+    /**
+     * Initialize the event handler
+     * @private
+     */
     ChipList.prototype.preRender = function () {
         //prerender
     };
+    /**
+     * To Initialize the control rendering.
+     * @returns void
+     * @private
+     */
     ChipList.prototype.render = function () {
         this.type = this.chips.length ? 'chipset' : (this.text || this.element.innerText ? 'chip' : 'chipset');
-        this.setAttributes();
-        this.createChip();
-        this.setRtl();
+        if (!isBlazor() || !this.isServerRendered) {
+            this.setAttributes();
+            this.createChip();
+            this.setRtl();
+            this.select(this.selectedChips);
+        }
         this.wireEvent(false);
-        this.select(this.selectedChips);
         this.rippleFunctin = rippleEffect(this.element, {
             selector: '.e-chip'
         });
@@ -1777,7 +1866,17 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
     };
     ChipList.prototype.createChip = function () {
         this.innerText = this.element.innerText.trim();
-        this.element.innerHTML = '';
+        if (isBlazor()) {
+            var childElement = this.element.querySelectorAll('.e-chip');
+            for (var i = 0; i < childElement.length; i++) {
+                if (childElement[i] != null) {
+                    detach(childElement[i]);
+                }
+            }
+        }
+        else {
+            this.element.innerHTML = '';
+        }
         this.chipCreation(this.type === 'chip' ? [this.innerText ? this.innerText : this.text] : this.chips);
     };
     ChipList.prototype.setAttributes = function () {
@@ -1914,7 +2013,17 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
      *  or chip element or array of chip element.
      */
     ChipList.prototype.select = function (fields) {
+        this.onSelect(fields, false);
+    };
+    ChipList.prototype.onSelect = function (fields, callFromProperty) {
         if (this.type !== 'chip' && this.selection !== 'None') {
+            if (callFromProperty) {
+                var chipElements = this.element.querySelectorAll('.' + classNames.chip);
+                for (var i = 0; i < chipElements.length; i++) {
+                    chipElements[i].setAttribute('aria-selected', 'false');
+                    chipElements[i].classList.remove(classNames.active);
+                }
+            }
             var fieldData = fields instanceof Array ? fields : [fields];
             for (var i = 0; i < fieldData.length; i++) {
                 var chipElement = fieldData[i] instanceof HTMLElement ? fieldData[i]
@@ -2068,6 +2177,10 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
                 activeElement.classList.remove(classNames.active);
                 chipWrapper.setAttribute('aria-selected', 'false');
             }
+            this.setProperties({ selectedChips: null }, true);
+        }
+        else {
+            this.setProperties({ selectedChips: [] }, true);
         }
         if (chipWrapper.classList.contains(classNames.active)) {
             chipWrapper.classList.remove(classNames.active);
@@ -2077,6 +2190,24 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
             chipWrapper.classList.add(classNames.active);
             chipWrapper.setAttribute('aria-selected', 'true');
         }
+        this.updateSelectedChips();
+    };
+    ChipList.prototype.updateSelectedChips = function () {
+        var chipListEle = this.element.querySelectorAll('.e-chip');
+        var chipColl = [];
+        var chip;
+        for (var i = 0; i < chipListEle.length; i++) {
+            if (this.element.querySelectorAll('.e-chip')[i].getAttribute('aria-selected') === 'true') {
+                if (this.selection === 'Single' && this.element.querySelectorAll('.e-chip')[i].classList.contains('e-active')) {
+                    chip = i;
+                    break;
+                }
+                else {
+                    chipColl.push(i);
+                }
+            }
+        }
+        this.setProperties({ selectedChips: this.selection === 'Single' ? chip : chipColl }, true);
     };
     ChipList.prototype.deleteHandler = function (chipWrapper, index) {
         this.chips.splice(index, 1);
@@ -2093,8 +2224,18 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
         this.removeMultipleAttributes(['tabindex', 'role', 'aria-label', 'aria-multiselectable'], this.element);
         this.wireEvent(true);
         this.rippleFunctin();
-        this.element.innerHTML = '';
-        this.element.innerText = this.innerText;
+        if (isBlazor()) {
+            var chipChildElement = this.element.querySelectorAll('.e-chip');
+            for (var i = 0; i < chipChildElement.length; i++) {
+                if (chipChildElement[i] != null) {
+                    detach(chipChildElement[i]);
+                }
+            }
+        }
+        else {
+            this.element.innerHTML = '';
+            this.element.innerText = this.innerText;
+        }
     };
     ChipList.prototype.removeMultipleAttributes = function (attributes$$1, element) {
         attributes$$1.forEach(function (attr) {
@@ -2107,6 +2248,11 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
     ChipList.prototype.getModuleName = function () {
         return 'chip-list';
     };
+    /**
+     * Called internally if any of the property value changed.
+     * @returns void
+     * @private
+     */
     ChipList.prototype.onPropertyChanged = function (newProp, oldProp) {
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
@@ -2120,7 +2266,9 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
                 case 'selection':
                 case 'enableDelete':
                 case 'enabled':
+                    this.isServerRendered = false;
                     this.refresh();
+                    this.isServerRendered = true;
                     break;
                 case 'cssClass':
                     if (this.type === 'chip') {
@@ -2128,12 +2276,14 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
                         addClass([this.element], newProp.cssClass.toString().split(' ').filter(function (css) { return css; }));
                     }
                     else {
+                        this.isServerRendered = false;
                         this.refresh();
+                        this.isServerRendered = true;
                     }
                     break;
                 case 'selectedChips':
                     removeClass(this.element.querySelectorAll('.e-active'), 'e-active');
-                    this.select(newProp.selectedChips);
+                    this.onSelect(newProp.selectedChips, true);
                     break;
                 case 'enableRtl':
                     this.setRtl();
@@ -2206,5 +2356,5 @@ var Chip = /** @__PURE__ @class */ (function () {
  * Button all modules
  */
 
-export { wrapperInitialize, getTextNode, destroy, preRender, createCheckBox, rippleMouseHandler, setHiddenInput, Button, CheckBox, RadioButton, Switch, classNames, ChipList, Chip };
+export { wrapperInitialize, getTextNode, destroy, preRender, createCheckBox, rippleMouseHandler, setHiddenInput, buttonObserver, Button, CheckBox, RadioButton, Switch, classNames, ChipList, Chip };
 //# sourceMappingURL=ej2-buttons.es5.js.map

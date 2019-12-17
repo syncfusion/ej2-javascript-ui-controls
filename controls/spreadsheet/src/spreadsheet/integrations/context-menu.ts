@@ -4,6 +4,9 @@ import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { closest, extend, detach, L10n } from '@syncfusion/ej2-base';
 import { MenuSelectArgs, addSheetTab, removeSheetTab, cMenuBeforeOpen, renameSheetTab, cut, copy, paste, locale } from '../common/index';
 import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, initiateCustomSort } from '../common/index';
+import { openHyperlink, initiateHyperlink, editHyperlink } from '../common/index';
+import { filterByCellValue, reapplyFilter, clearFilter, getFilteredColumn, applySort } from '../common/index';
+import { getRangeIndexes, getColumnHeaderText, getCellIndexes } from '../../workbook/common/index';
 
 /**
  * Represents context menu for Spreadsheet.
@@ -56,40 +59,71 @@ export class ContextMenu {
         let selectArgs: MenuSelectArgs = extend({ cancel: false }, args) as MenuSelectArgs;
         this.parent.trigger('contextMenuItemSelect', selectArgs);
         if (!selectArgs.cancel) {
-            let l10n: L10n = this.parent.serviceLocator.getService(locale);
-            switch (args.item.text) {
-                case l10n.getConstant('Cut'):
-                    this.parent.notify(cut, { isClick: true });
+            let l10n: L10n = this.parent.serviceLocator.getService(locale); let indexes: number[];
+            let id: string = this.parent.element.id + '_cmenu';
+            switch (args.item.id) {
+                case id + '_cut':
+                    this.parent.notify(cut, { isAction: true, promise: Promise });
                     break;
-                case l10n.getConstant('Copy'):
-                    this.parent.notify(copy, { isClick: true });
+                case id + '_copy':
+                    this.parent.notify(copy, { isAction: true, promise: Promise });
                     break;
-                case l10n.getConstant('Paste'):
-                    this.parent.notify(paste, { isClick: true });
+                case id + '_paste':
+                    this.parent.notify(paste, { isAction: true });
                     break;
-                case l10n.getConstant('Values'):
-                    this.parent.notify(paste, { type: 'Values' });
+                case id + '_pastevalues':
+                    this.parent.notify(paste, { type: 'Values', isAction: true });
                     break;
-                case l10n.getConstant('Formats'):
-                    this.parent.notify(paste, { type: 'Formats' });
+                case id + '_pasteformats':
+                    this.parent.notify(paste, { type: 'Formats', isAction: true });
                     break;
-                case l10n.getConstant('Rename'):
+                case id + '_rename':
                     this.parent.notify(renameSheetTab, {});
                     break;
-                case l10n.getConstant('Delete'):
+                case id + '_delete':
                     this.parent.notify(removeSheetTab, {});
                     break;
-                case l10n.getConstant('Insert'):
+                case id + '_insert':
                     this.parent.notify(addSheetTab, { text: 'Insert' });
                     break;
-                case l10n.getConstant('SortAscending'):
-                    this.parent.sort();
+                case id + '_ascending':
+                    this.parent.notify(applySort, null);
                     break;
-                case l10n.getConstant('SortDescending'):
-                    this.parent.sort({ sortDescriptors: { order: 'Descending' }});
+                case id + '_descending':
+                    this.parent.notify(applySort, { sortOptions: { sortDescriptors: { order: 'Descending' } } });
                     break;
-                case l10n.getConstant('CustomSort') + '...':
+                case id + '_customsort':
                     this.parent.notify(initiateCustomSort, null);
+                    break;
+                case id + '_filtercellvalue':
+                    this.parent.notify(filterByCellValue, null);
+                    break;
+                case id + '_clearfilter':
+                    let field: string = getColumnHeaderText(getCellIndexes(this.parent.getActiveSheet().activeCell)[1] + 1);
+                    this.parent.notify(clearFilter, { field: field });
+                    break;
+                case id + '_reapplyfilter':
+                    this.parent.notify(reapplyFilter, null);
+                    break;
+                case id + '_hiderow':
+                    indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+                    this.parent.showHideRow(true, indexes[0], indexes[2]);
+                    break;
+                case id + '_unhiderow':
+                    indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+                    this.parent.showHideRow(false, indexes[0], indexes[2]);
+                    break;
+                case id + '_hyperlink':
+                    this.parent.notify(initiateHyperlink, null);
+                    break;
+                case id + '_editHyperlink':
+                    this.parent.notify(editHyperlink, null);
+                    break;
+                case id + '_openHyperlink':
+                    this.parent.notify(openHyperlink, null);
+                    break;
+                case id + '_removeHyperlink':
+                    this.parent.removeHyperlink(this.parent.getActiveSheet().selectedRange);
                     break;
                 default:
                 // Rename functionality goes here
@@ -136,26 +170,33 @@ export class ContextMenu {
     private getDataSource(target: string): MenuItemModel[] {
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
         let items: MenuItemModel[] = [];
+        let id: string = this.parent.element.id + '_cmenu';
         if (target === 'Content') {
-            this.setClipboardData(items, l10n);
-            //push sort items here
-            this.setSortItems(items);
+            this.setClipboardData(items, l10n, id);
+            items.push({ separator: true });
+            //push filter and sort items here
+            this.setFilterItems(items, id);
+            this.setSortItems(items, id);
+            items.push({ separator: true });
+            this.setHyperLink(items, id);
         } else if (target === 'RowHeader') {
-            this.setClipboardData(items, l10n);
+            this.setClipboardData(items, l10n, id);
+            //this.setHideShowItems(items, l10n, 'Row', id);
         } else if (target === 'ColumnHeader') {
-            this.setClipboardData(items, l10n);
+            this.setClipboardData(items, l10n, id);
         } else if (target === 'SelectAll') {
-            this.setClipboardData(items, l10n);
-            this.setSortItems(items);
+            this.setClipboardData(items, l10n, id);
+            this.setFilterItems(items, id);
+            this.setSortItems(items, id);
         } else if (target === 'Footer') {
             items.push({
-                text: l10n.getConstant('Insert')
+                text: l10n.getConstant('Insert'), id: id + '_insert'
             });
             items.push({
-                text: l10n.getConstant('Delete'), iconCss: 'e-icons e-delete'
+                text: l10n.getConstant('Delete'), iconCss: 'e-icons e-delete', id: id + '_delete'
             });
             items.push({
-                text: l10n.getConstant('Rename')
+                text: l10n.getConstant('Rename'), id: id + '_rename'
             });
         }
         return items;
@@ -164,42 +205,94 @@ export class ContextMenu {
     /**
      * Sets sorting related items to the context menu.
      */
-    private setSortItems(items: MenuItemModel[]): void {
-        let l10n: L10n = this.parent.serviceLocator.getService(locale);
-        if (this.parent.allowSorting) {
+    private setFilterItems(items: MenuItemModel[], id: string): void {
+        if (this.parent.allowFiltering) {
+            let l10n: L10n = this.parent.serviceLocator.getService(locale);
+            let args: {[key: string]: string | boolean} = { clearFilterText: null, isFiltered: false };
+            this.parent.notify(getFilteredColumn, args);
             items.push({
-                text: l10n.getConstant('Sort'),
-                iconCss: 'e-icons e-sort-icon',
+                text: l10n.getConstant('Filter'), id: id + '_filter',
+                iconCss: '',
                 items: [
-                    { text: l10n.getConstant('SortAscending'), iconCss: 'e-icons e-sort-asc' },
-                    { text: l10n.getConstant('SortDescending'), iconCss: 'e-icons e-sort-desc' },
-                    { text: l10n.getConstant('CustomSort') + '...', iconCss: 'e-icons e-sort-custom' }
+                    { text: args.clearFilterText as string, iconCss: 'e-icons e-filter-clear', id: id + '_clearfilter' },
+                    { text: l10n.getConstant('ReapplyFilter'), iconCss: 'e-icons e-filter-reapply', id: id + '_reapplyfilter' },
+                    { separator: true },
+                    { text: l10n.getConstant('FilterCellValue'), iconCss: '', id: id + '_filtercellvalue' }
                 ]
             });
         }
     }
 
-    private setClipboardData(items: MenuItemModel[], l10n: L10n): void {
+    /**
+     * Sets sorting related items to the context menu.
+     */
+    private setSortItems(items: MenuItemModel[], id: string): void {
+        let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        if (this.parent.allowSorting) {
+            items.push({
+                text: l10n.getConstant('Sort'), id: id + '_sort',
+                iconCss: 'e-icons e-sort-icon',
+                items: [
+                    { text: l10n.getConstant('SortAscending'), iconCss: 'e-icons e-sort-asc', id: id + '_ascending' },
+                    { text: l10n.getConstant('SortDescending'), iconCss: 'e-icons e-sort-desc', id: id + '_descending' },
+                    { text: l10n.getConstant('CustomSort') + '...', iconCss: 'e-icons e-sort-custom', id: id + '_customsort' }
+                ]
+            });
+        }
+    }
+
+    private setHyperLink(items: MenuItemModel[], id: string): void {
+        if (this.parent.allowHyperlink) {
+            let l10n: L10n = this.parent.serviceLocator.getService(locale);
+            if (!document.activeElement.getElementsByClassName('e-hyperlink')[0] &&
+             !document.activeElement.classList.contains('e-hyperlink')) {
+                items.push({
+                    text: l10n.getConstant('Hyperlink'), iconCss: 'e-icons e-hyperlink-icon', id: id + '_hyperlink'
+                });
+            } else {
+                items.push(
+                    { text: l10n.getConstant('EditHyperlink'), iconCss: 'e-icons e-edithyperlink-icon', id: id + '_editHyperlink' },
+                    { text: l10n.getConstant('OpenHyperlink'), iconCss: 'e-icons e-openhyperlink-icon', id: id + '_openHyperlink' },
+                    { text: l10n.getConstant('RemoveHyperlink'), iconCss: 'e-icons e-removehyperlink-icon', id: id + '_removeHyperlink' }
+                );
+            }
+        }
+    }
+
+    private setClipboardData(items: MenuItemModel[], l10n: L10n, id: string): void {
         if (this.parent.enableClipboard) {
             items.push({
                 text: l10n.getConstant('Cut'),
-                iconCss: 'e-icons e-cut-icon'
+                iconCss: 'e-icons e-cut-icon', id: id + '_cut'
             });
             items.push({
                 text: l10n.getConstant('Copy'),
-                iconCss: 'e-icons e-copy-icon'
+                iconCss: 'e-icons e-copy-icon', id: id + '_copy'
             });
             items.push({
                 text: l10n.getConstant('Paste'),
-                iconCss: 'e-icons e-paste-icon'
+                iconCss: 'e-icons e-paste-icon', id: id + '_paste'
             });
             items.push({
-                text: l10n.getConstant('PasteSpecial'),
+                text: l10n.getConstant('PasteSpecial'), id: id + '_pastespecial',
                 items: [
-                    { text: l10n.getConstant('Values') },
-                    { text: l10n.getConstant('Formats') }
+                    { text: l10n.getConstant('Values'), id: id + '_pastevalues' },
+                    { text: l10n.getConstant('Formats'), id: id + '_pasteformats' }
                 ]
             });
+        }
+    }
+
+    private setHideShowItems(items: MenuItemModel[], l10n: L10n, layout: string, id: string): void {
+        items.push({ separator: true });
+        let indexes: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+        if (indexes[0] === indexes[2] || indexes[1] === indexes[3]) {
+            items.push({ text: l10n.getConstant('Hide' + layout), id: id + '_hide' + layout.toLowerCase() });
+        } else {
+            items.push({ text: l10n.getConstant('Hide' + layout + 's'), id: id + '_hide' + layout.toLowerCase() });
+        }
+        if (this.parent.hiddenRowsCount(indexes[0], indexes[2])) {
+            items.push({ text: l10n.getConstant('UnHide' + layout + 's'), id: id + '_unhide' + layout.toLowerCase() });
         }
     }
 

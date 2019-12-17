@@ -1,417 +1,420 @@
-import { Base, Browser, ChildProperty, Complex, Component, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Observer, Property, Touch, addClass, append, attributes, closest, compile, createElement, debounce, detach, extend, formatUnit, getEnumValue, getInstance, getUniqueID, isBlazor, isNullOrUndefined, prepend, print, removeClass, select, selectAll, setStyleAttribute } from '@syncfusion/ej2-base';
+import { Base, Browser, ChildProperty, Complex, Component, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Observer, Property, SanitizeHtmlHelper, Touch, addClass, append, attributes, closest, compile, createElement, debounce, detach, extend, formatUnit, getEnumValue, getInstance, getUniqueID, isBlazor, isNullOrUndefined, prepend, print, removeClass, select, selectAll, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Toolbar } from '@syncfusion/ej2-navigations';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
 import { Dialog, Popup, getScrollableParent, isCollide } from '@syncfusion/ej2-popups';
 import { ColorPicker, NumericTextBox, Uploader } from '@syncfusion/ej2-inputs';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 
-/** @hidden */
+/** @hidden @deprecated */
 var created = 'create';
-/** @hidden */
+/** @hidden @deprecated */
 var destroyed = 'destroy';
-/** @hidden */
+/** @hidden @deprecated */
 var load = 'load';
 /**
  * Specifies RichTextEditor internal events
  */
-/** @hidden */
+/** @hidden @deprecated */
 var initialLoad = 'initial-load';
-/** @hidden */
+/** @hidden @deprecated */
 var initialEnd = 'initial-end';
-/** @hidden */
+/** @hidden @deprecated */
 var iframeMouseDown = 'iframe-click';
-/** @hidden */
+/** @hidden @deprecated */
 var destroy = 'destroy';
-/** @hidden */
+/** @hidden @deprecated */
 var toolbarClick = 'toolbarClick';
-/** @hidden */
+/** @hidden @deprecated */
 var toolbarRefresh = 'toolbar-refresh';
-/** @hidden */
+/** @hidden @deprecated */
 var refreshBegin = 'refresh-begin';
-/** @hidden */
+/** @hidden @deprecated */
 var toolbarUpdated = 'toolbar-updated';
-/** @hidden */
+/** @hidden @deprecated */
 var bindOnEnd = 'bind-on-end';
-/** @hidden */
+/** @hidden @deprecated */
 var renderColorPicker = 'render-color-picker';
-/** @hidden */
+/** @hidden @deprecated */
 var htmlToolbarClick = 'html-toolbar-click';
-/** @hidden */
+/** @hidden @deprecated */
 var markdownToolbarClick = 'markdown-toolbar-click';
-/** @hidden */
+/** @hidden @deprecated */
 var destroyColorPicker = 'destroy-color-picker';
-/** @hidden */
+/** @hidden @deprecated */
 var modelChanged = 'model-changed';
-/** @hidden */
+/** @hidden @deprecated */
 var keyUp = 'keyUp';
-/** @hidden */
+/** @hidden @deprecated */
 var keyDown = 'keyDown';
-/** @hidden */
+/** @hidden @deprecated */
 var mouseUp = 'mouseUp';
-/** @hidden */
+/** @hidden @deprecated */
 var toolbarCreated = 'toolbarCreated';
-/** @hidden */
+/** @hidden @deprecated */
 var toolbarRenderComplete = 'toolbarRenderComplete';
-/** @hidden */
+/** @hidden @deprecated */
 var enableFullScreen = 'enableFullScreen';
-/** @hidden */
+/** @hidden @deprecated */
 var disableFullScreen = 'disableFullScreen';
-/** @hidden */
+/** @hidden @deprecated */
 var dropDownSelect = 'dropDownSelect';
-/** @hidden */
+/** @hidden @deprecated */
 var beforeDropDownItemRender = 'beforeDropDownItemRender';
-/** @hidden */
+/** @hidden @deprecated */
 var execCommandCallBack = 'execCommandCallBack';
-/** @hidden */
+/** @hidden @deprecated */
 var imageToolbarAction = 'image-toolbar-action';
-/** @hidden */
+/** @hidden @deprecated */
 var linkToolbarAction = 'link-toolbar-action';
-/** @hidden */
+/** @hidden @deprecated */
 var resizeStart = 'resizeStart';
-/** @hidden */
+/** @hidden @deprecated */
 var onResize = 'resizing';
-/** @hidden */
+/** @hidden @deprecated */
 var resizeStop = 'resizeStop';
-/** @hidden */
+/** @hidden @deprecated */
 var undo = 'undo';
-/** @hidden */
+/** @hidden @deprecated */
 var redo = 'redo';
-/** @hidden */
+/** @hidden @deprecated */
 var insertLink = 'insertLink';
-/** @hidden */
+/** @hidden @deprecated */
 var unLink = 'unLink';
-/** @hidden */
+/** @hidden @deprecated */
 var editLink = 'editLink';
-/** @hidden */
+/** @hidden @deprecated */
 var openLink = 'openLink';
-/** @hidden */
+/** @hidden @deprecated */
 var actionBegin = 'actionBegin';
-/** @hidden */
+/** @hidden @deprecated */
 var actionComplete = 'actionComplete';
-/** @hidden */
+/** @hidden @deprecated */
 var toolbarStatusUpdate = 'toolbarStatusUpdate';
-/** @hidden */
+/** @hidden @deprecated */
 var actionSuccess = 'actionSuccess';
-/** @hidden */
+/** @hidden @deprecated */
 var updateToolbarItem = 'updateToolbarItem';
-/** @hidden */
+/** @hidden @deprecated */
 var insertImage = 'insertImage';
-/** @hidden */
+/** @hidden @deprecated */
 var insertCompleted = 'insertCompleted';
-/** @hidden */
+/** @hidden @deprecated */
 var imageLeft = 'justifyLeft';
-/** @hidden */
+/** @hidden @deprecated */
 var imageRight = 'justifyRight';
-/** @hidden */
+/** @hidden @deprecated */
 var imageCenter = 'justifyCenter';
-/** @hidden */
+/** @hidden @deprecated */
 var imageBreak = 'break';
-/** @hidden */
+/** @hidden @deprecated */
 var imageInline = 'inline';
-/** @hidden */
+/** @hidden @deprecated */
 var imageLink = 'insertImgLink';
-/** @hidden */
+/** @hidden @deprecated */
 var imageAlt = 'imgAltText';
-/** @hidden */
+/** @hidden @deprecated */
 var imageDelete = 'delete';
-/** @hidden */
+/** @hidden @deprecated */
 var imageCaption = 'caption';
-/** @hidden */
+/** @hidden @deprecated */
 var imageSize = 'imageSize';
-/** @hidden */
+/** @hidden @deprecated */
 var sourceCode = 'sourceCode';
-/** @hidden */
+/** @hidden @deprecated */
 var updateSource = 'updateSource';
-/** @hidden */
+/** @hidden @deprecated */
 var toolbarOpen = 'toolbarOpen';
-/** @hidden */
+/** @hidden @deprecated */
 var beforeDropDownOpen = 'beforeDropDownOpen';
-/** @hidden */
+/** @hidden @deprecated */
 var selectionSave = 'selection-save';
-/** @hidden */
+/** @hidden @deprecated */
 var selectionRestore = 'selection-restore';
-/** @hidden */
+/** @hidden @deprecated */
 var expandPopupClick = 'expandPopupClick';
-/** @hidden */
+/** @hidden @deprecated */
 var count = 'count';
-/** @hidden */
+/** @hidden @deprecated */
 var contentFocus = 'contentFocus';
-/** @hidden */
+/** @hidden @deprecated */
 var contentBlur = 'contentBlur';
-/** @hidden */
+/** @hidden @deprecated */
 var mouseDown = 'mouseDown';
-/** @hidden */
+/** @hidden @deprecated */
 var sourceCodeMouseDown = 'sourceCodeMouseDown';
-/** @hidden */
+/** @hidden @deprecated */
 var editAreaClick = 'editAreaClick';
-/** @hidden */
+/** @hidden @deprecated */
 var scroll = 'scroll';
-/** @hidden */
+/** @hidden @deprecated */
 var contentscroll = 'contentscroll';
-/** @hidden */
+/** @hidden @deprecated */
 var colorPickerChanged = 'colorPickerChanged';
-/** @hidden */
+/** @hidden @deprecated */
 var tableColorPickerChanged = 'tableColorPickerChanged';
-/** @hidden */
+/** @hidden @deprecated */
 var focusChange = 'focusChange';
-/** @hidden */
+/** @hidden @deprecated */
 var selectAll$1 = 'selectAll';
-/** @hidden */
+/** @hidden @deprecated */
 var selectRange = 'selectRange';
-/** @hidden */
+/** @hidden @deprecated */
 var getSelectedHtml = 'getSelectedHtml';
-/** @hidden */
+/** @hidden @deprecated */
 var renderInlineToolbar = 'renderInlineToolbar';
-/** @hidden */
+/** @hidden @deprecated */
 var paste = 'paste-content';
-/** @hidden */
+/** @hidden @deprecated */
 var imgModule = 'imageModule';
-/** @hidden */
+/** @hidden @deprecated */
 var rtlMode = 'rtl-mode';
-/** @hidden */
+/** @hidden @deprecated */
 var createTable = 'createTable';
-/** @hidden */
+/** @hidden @deprecated */
 var docClick = 'docClick';
-/** @hidden */
+/** @hidden @deprecated */
 var tableToolbarAction = 'table-toolbar-action';
-/** @hidden */
+/** @hidden @deprecated */
 var checkUndo = 'checkUndoStack';
-/** @hidden */
+/** @hidden @deprecated */
 var readOnlyMode = 'readOnlyMode';
-/** @hidden */
+/** @hidden @deprecated */
 var pasteClean = 'pasteClean';
-/** @hidden */
+/** @hidden @deprecated */
 var beforeDialogOpen = 'beforeDialogOpen';
-/** @hidden */
+/** @hidden @deprecated */
 var dialogOpen = 'dialogOpen';
-/** @hidden */
+/** @hidden @deprecated */
 var dialogClose = 'dialogClose';
-/** @hidden */
+/** @hidden @deprecated */
 var beforeQuickToolbarOpen = 'beforeQuickToolbarOpen';
-/** @hidden */
+/** @hidden @deprecated */
 var quickToolbarOpen = 'quickToolbarOpen';
-/** @hidden */
+/** @hidden @deprecated */
 var quickToolbarClose = 'quickToolbarClose';
-/** @hidden */
+/** @hidden @deprecated */
 var popupHide = 'popupHide';
-/** @hidden */
+/** @hidden @deprecated */
 var imageSelected = 'imageSelected';
-/** @hidden */
+/** @hidden @deprecated */
 var imageUploading = 'imageUploading';
-/** @hidden */
+/** @hidden @deprecated */
 var imageUploadSuccess = 'imageUploadSuccess';
-/** @hidden */
+/** @hidden @deprecated */
 var imageUploadFailed = 'imageUploadFailed';
-/** @hidden */
+/** @hidden @deprecated */
 var imageRemoving = 'imageRemoving';
-/** @hidden */
+/** @hidden @deprecated */
 var drop = 'drop';
+/** @hidden @deprecated */
+var xhtmlValidation = 'xhtmlValidation';
 
 /**
  * RichTextEditor classes defined here.
  */
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_RTE = 'e-richtexteditor';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_RTL = 'e-rtl';
-/** @hidden */
-
-/** @hidden */
+/** @hidden @deprecated */
+var CLS_CONTENT = 'e-content';
+/** @hidden @deprecated */
 var CLS_DISABLED = 'e-disabled';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_SCRIPT_SHEET = 'rte-iframe-script-sheet';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_STYLE_SHEET = 'rte-iframe-style-sheet';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_TOOLBAR = 'e-rte-toolbar';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_TB_FIXED = 'e-rte-tb-fixed';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_TB_FLOAT = 'e-rte-tb-float';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_TB_ABS_FLOAT = 'e-rte-tb-abs-float';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_INLINE = 'e-rte-inline';
-/** @hidden */
-
-/** @hidden */
+/** @hidden @deprecated */
+var CLS_TB_INLINE = 'e-rte-tb-inline';
+/** @hidden @deprecated */
 var CLS_RTE_EXPAND_TB = 'e-rte-tb-expand';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_FULL_SCREEN = 'e-rte-full-screen';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_QUICK_TB = 'e-rte-quick-toolbar';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_POP = 'e-rte-pop';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_QUICK_POP = 'e-rte-quick-popup';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_QUICK_DROPDOWN = 'e-quick-dropdown';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_IMAGE_POP = 'e-rte-image-popup';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_INLINE_POP = 'e-rte-inline-popup';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_INLINE_DROPDOWN = 'e-rte-inline-dropdown';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_DROPDOWN_POPUP = 'e-rte-dropdown-popup';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_DROPDOWN_ICONS = 'e-rte-dropdown-icons';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_DROPDOWN_ITEMS = 'e-rte-dropdown-items';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_DROPDOWN_BTN = 'e-rte-dropdown-btn';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_RTE_CONTENT = 'e-rte-content';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_TB_ITEM = 'e-toolbar-item';
-/** @hidden */
-
-/** @hidden */
+/** @hidden @deprecated */
+var CLS_TB_EXTENDED = 'e-toolbar-extended';
+/** @hidden @deprecated */
 var CLS_TB_WRAP = 'e-toolbar-wrapper';
-/** @hidden */
-
-/** @hidden */
-
-/** @hidden */
-
-/** @hidden */
-
-/** @hidden */
-
-/** @hidden */
+/** @hidden @deprecated */
+var CLS_POPUP = 'e-popup';
+/** @hidden @deprecated */
+var CLS_SEPARATOR = 'e-separator';
+/** @hidden @deprecated */
+var CLS_MINIMIZE = 'e-minimize';
+/** @hidden @deprecated */
+var CLS_MAXIMIZE = 'e-maximize';
+/** @hidden @deprecated */
+var CLS_BACK = 'e-back';
+/** @hidden @deprecated */
 var CLS_SHOW = 'e-show';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_HIDE = 'e-hide';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_VISIBLE = 'e-visible';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_FOCUS = 'e-focused';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_RM_WHITE_SPACE = 'e-remove-white-space';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_IMGRIGHT = 'e-imgright';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_IMGLEFT = 'e-imgleft';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_IMGCENTER = 'e-imgcenter';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_IMGBREAK = 'e-imgbreak';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_CAPTION = 'e-img-caption';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_CAPINLINE = 'e-caption-inline';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_IMGINLINE = 'e-imginline';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_COUNT = 'e-rte-character-count';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_WARNING = 'e-warning';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_ERROR = 'e-error';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_ICONS = 'e-icons';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_ACTIVE = 'e-active';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_EXPAND_OPEN = 'e-expand-open';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_RTE_ELEMENTS = 'e-rte-elements';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_TB_BTN = 'e-tbar-btn';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_HR_SEPARATOR = 'e-rte-horizontal-separator';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_TB_IOS_FIX = 'e-tbar-ios-fixed';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_TB_STATIC = 'e-tb-static';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_FORMATS_TB_BTN = 'e-formats-tbar-btn';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_FONT_NAME_TB_BTN = 'e-font-name-tbar-btn';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_FONT_SIZE_TB_BTN = 'e-font-size-tbar-btn';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_FONT_COLOR_TARGET = 'e-rte-fontcolor-element';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_BACKGROUND_COLOR_TARGET = 'e-rte-backgroundcolor-element';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_COLOR_CONTENT = 'e-rte-color-content';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_FONT_COLOR_DROPDOWN = 'e-rte-fontcolor-dropdown';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_BACKGROUND_COLOR_DROPDOWN = 'e-rte-backgroundcolor-dropdown';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_COLOR_PALETTE = 'e-rte-square-palette';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_FONT_COLOR_PICKER = 'e-rte-fontcolor-colorpicker';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_BACKGROUND_COLOR_PICKER = 'e-rte-backgroundcolor-colorpicker';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_RTE_READONLY = 'e-rte-readonly';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_TABLE_SEL = 'e-cell-select';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_TB_DASH_BOR = 'e-dashed-border';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_TB_ALT_BOR = 'e-alternate-border';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_TB_COL_RES = 'e-column-resize';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_TB_ROW_RES = 'e-row-resize';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_TB_BOX_RES = 'e-table-box';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_RTE_HIDDEN = 'e-rte-hidden';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_RTE_PASTE_KEEP_FORMAT = 'e-rte-keepformat';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_RTE_PASTE_REMOVE_FORMAT = 'e-rte-removeformat';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_RTE_PASTE_PLAIN_FORMAT = 'e-rte-plainformat';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_RTE_PASTE_OK = 'e-rte-pasteok';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_RTE_PASTE_CANCEL = 'e-rte-pastecancel';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_RTE_DIALOG_MIN_HEIGHT = 'e-rte-dialog-minheight';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_RTE_RES_HANDLE = 'e-resize-handle';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_RTE_RES_EAST = 'e-south-east';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_RTE_IMAGE = 'e-rte-image';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_RESIZE = 'e-resize';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_IMG_FOCUS = 'e-img-focus';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_RTE_DRAG_IMAGE = 'e-rte-drag-image';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_RTE_UPLOAD_POPUP = 'e-rte-upload-popup';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_POPUP_OPEN = 'e-popup-open';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_IMG_RESIZE = 'e-img-resize';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_DROPAREA = 'e-droparea';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_IMG_INNER = 'e-img-inner';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_UPLOAD_FILES = 'e-upload-files';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_RTE_DIALOG_UPLOAD = 'e-rte-dialog-upload';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_RTE_RES_CNT = 'e-rte-resize';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_CUSTOM_TILE = 'e-custom-tile';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_NOCOLOR_ITEM = 'e-nocolor-item';
-/** @hidden */
+/** @hidden @deprecated */
 var CLS_TABLE_BORDER = 'e-rte-table-border';
 
 /**
  * Defines types of Render
  * @hidden
+ * @deprecated
  */
 var RenderType;
 (function (RenderType) {
@@ -830,8 +833,8 @@ var tools = {
         'id': 'InsertCode',
         'icon': 'e-insert-code',
         'tooltip': 'Insert Code',
-        'command': 'InsertCode',
-        'subCommand': 'InsertCode'
+        'command': 'Formats',
+        'subCommand': 'Pre'
     },
     'tableheader': {
         'id': 'TableHeader',
@@ -1290,7 +1293,8 @@ function setToolbarStatus(e, isPopToolbar) {
         for (var j = 0; j < e.tbItems.length; j++) {
             var item = e.tbItems[j].subCommand;
             var itemStr = item && item.toLocaleLowerCase();
-            if (item && (itemStr === key) || (item === 'UL' && key === 'unorderedlist') || (item === 'OL' && key === 'orderedlist')) {
+            if (item && (itemStr === key) || (item === 'UL' && key === 'unorderedlist') || (item === 'OL' && key === 'orderedlist') ||
+                (itemStr === 'pre' && key === 'insertcode')) {
                 if (typeof data[key] === 'boolean') {
                     if (data[key] === true) {
                         addClass([e.tbElements[j]], [CLS_ACTIVE]);
@@ -1392,6 +1396,10 @@ function getTBarItemsIndex(items, toolbarItems) {
                     itemsIndex.push(j);
                     break;
                 }
+                else if (items[i] === 'InsertCode' && toolbarItems[j].subCommand === 'Pre') {
+                    itemsIndex.push(j);
+                    break;
+                }
                 else if (items[i] === toolbarItems[j].subCommand) {
                     itemsIndex.push(j);
                     break;
@@ -1418,6 +1426,7 @@ function updateUndoRedoStatus(baseToolbar, undoRedoStatus) {
 /**
  * To dispatch the event manually
  * @hidden
+ * @deprecated
  */
 function dispatchEvent(element, type) {
     var evt = document.createEvent('HTMLEvents');
@@ -1471,8 +1480,9 @@ function updateTextNode(value) {
     var childNodes = tempNode.childNodes;
     if (childNodes.length > 0) {
         [].slice.call(childNodes).forEach(function (childNode) {
-            if (childNode.nodeType === Node.TEXT_NODE && childNode.parentNode === tempNode
-                && childNode.textContent.trim() !== '') {
+            if ((childNode.nodeType === Node.TEXT_NODE && childNode.parentNode === tempNode
+                && childNode.textContent.trim() !== '') || (childNode.nodeName === 'IMG' &&
+                childNode.parentNode === tempNode)) {
                 var defaultTag = document.createElement('p');
                 var parentNode = childNode.parentNode;
                 parentNode.insertBefore(defaultTag, childNode);
@@ -1491,10 +1501,29 @@ function decode(value) {
         .replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ')
         .replace(/&amp;nbsp;/g, ' ').replace(/&quot;/g, '');
 }
+function sanitizeHelper(value, parent) {
+    if (parent.enableHtmlSanitizer) {
+        var item = SanitizeHtmlHelper.beforeSanitize();
+        var beforeEvent = {
+            cancel: false,
+            helper: null
+        };
+        extend(item, item, beforeEvent);
+        parent.trigger('beforeSanitizeHtml', item);
+        if (item.cancel && !isNullOrUndefined(item.helper)) {
+            value = item.helper(value);
+        }
+        else if (!item.cancel) {
+            value = SanitizeHtmlHelper.serializeValue(item, value);
+        }
+    }
+    return value;
+}
 
 /**
  * `Toolbar renderer` module is used to render toolbar in RichTextEditor.
  * @hidden
+ * @deprecated
  */
 var ToolbarRenderer = /** @__PURE__ @class */ (function () {
     /**
@@ -1547,6 +1576,11 @@ var ToolbarRenderer = /** @__PURE__ @class */ (function () {
     ToolbarRenderer.prototype.dropDownClose = function (args) {
         this.parent.notify(selectionRestore, args);
     };
+    /**
+     * renderToolbar method
+     * @hidden
+     * @deprecated
+     */
     ToolbarRenderer.prototype.renderToolbar = function (args) {
         this.setPanel(args.target);
         this.renderPanel();
@@ -1565,6 +1599,11 @@ var ToolbarRenderer = /** @__PURE__ @class */ (function () {
         args.rteToolbarObj.toolbarObj.createElement = this.parent.createElement;
         args.rteToolbarObj.toolbarObj.appendTo(args.target);
     };
+    /**
+     * renderDropDownButton method
+     * @hidden
+     * @deprecated
+     */
     ToolbarRenderer.prototype.renderDropDownButton = function (args) {
         var _this = this;
         var css;
@@ -1656,6 +1695,11 @@ var ToolbarRenderer = /** @__PURE__ @class */ (function () {
             }
         }));
     };
+    /**
+     * renderColorPickerDropDown method
+     * @hidden
+     * @deprecated
+     */
     ToolbarRenderer.prototype.renderColorPickerDropDown = function (args, item, colorPicker) {
         var _this = this;
         var proxy = this;
@@ -1802,6 +1846,11 @@ var ToolbarRenderer = /** @__PURE__ @class */ (function () {
                 + borderWidth + borderWidth);
         }
     };
+    /**
+     * renderColorPicker method
+     * @hidden
+     * @deprecated
+     */
     ToolbarRenderer.prototype.renderColorPicker = function (args, item) {
         var _this = this;
         var proxy = this;
@@ -1856,6 +1905,8 @@ var ToolbarRenderer = /** @__PURE__ @class */ (function () {
     };
     /**
      * The function is used to render RichTextEditor toolbar
+     * @hidden
+     * @deprecated
      */
     ToolbarRenderer.prototype.renderPanel = function () {
         this.getPanel().classList.add(CLS_TOOLBAR);
@@ -1863,6 +1914,8 @@ var ToolbarRenderer = /** @__PURE__ @class */ (function () {
     /**
      * Get the toolbar element of RichTextEditor
      * @return {Element}
+     * @hidden
+     * @deprecated
      */
     ToolbarRenderer.prototype.getPanel = function () {
         return this.toolbarPanel;
@@ -1870,6 +1923,8 @@ var ToolbarRenderer = /** @__PURE__ @class */ (function () {
     /**
      * Set the toolbar element of RichTextEditor
      * @param  {Element} panel
+     * @hidden
+     * @deprecated
      */
     ToolbarRenderer.prototype.setPanel = function (panel) {
         this.toolbarPanel = panel;
@@ -1928,6 +1983,11 @@ var BaseToolbar = /** @__PURE__ @class */ (function () {
             tooltipText: getTooltipText(itemStr, this.locator)
         };
     };
+    /**
+     * getObject method
+     * @hidden
+     * @deprecated
+     */
     BaseToolbar.prototype.getObject = function (item, container) {
         var itemStr = item.toLowerCase();
         if (templateItems.indexOf(itemStr) !== -1) {
@@ -1952,21 +2012,40 @@ var BaseToolbar = /** @__PURE__ @class */ (function () {
     };
     /**
      * @hidden
+     * @deprecated
      */
     BaseToolbar.prototype.getItems = function (tbItems, container) {
+        var _this = this;
         if (this.parent.toolbarSettings.items.length < 1) {
             return [];
         }
         var items = [];
-        for (var _i = 0, tbItems_1 = tbItems; _i < tbItems_1.length; _i++) {
-            var item = tbItems_1[_i];
+        var _loop_1 = function (item) {
             switch (typeof item) {
                 case 'string':
-                    items.push(this.getObject(item, container));
+                    items.push(this_1.getObject(item, container));
                     break;
                 default:
+                    if (!isNullOrUndefined(item.click)) {
+                        var proxy_1 = item;
+                        var callback_1 = proxy_1.click;
+                        proxy_1.click = function () {
+                            if (proxy_1.undo && _this.parent.formatter.getUndoRedoStack().length === 0) {
+                                _this.parent.formatter.saveData();
+                            }
+                            callback_1.call(_this);
+                            if (proxy_1.undo) {
+                                _this.parent.formatter.saveData();
+                            }
+                        };
+                    }
                     items.push(item);
             }
+        };
+        var this_1 = this;
+        for (var _i = 0, tbItems_1 = tbItems; _i < tbItems_1.length; _i++) {
+            var item = tbItems_1[_i];
+            _loop_1(item);
         }
         return items;
     };
@@ -1980,6 +2059,11 @@ var BaseToolbar = /** @__PURE__ @class */ (function () {
             enableRtl: this.parent.enableRtl
         };
     };
+    /**
+     * render method
+     * @hidden
+     * @deprecated
+     */
     BaseToolbar.prototype.render = function (args) {
         this.toolbarRenderer = this.renderFactory.getRenderer(RenderType.Toolbar);
         this.toolbarRenderer.renderToolbar(this.getToolbarOptions(args));
@@ -2014,6 +2098,11 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
         return ('<span style="display: inline-flex;' + 'width:' + ((type === 'quick') ? 'auto' : width) + '" >' +
             '<span class="e-rte-dropdown-btn-text">' + content + '</span></span>');
     };
+    /**
+     * renderDropDowns method
+     * @hidden
+     * @deprecated
+     */
     DropDownButtons.prototype.renderDropDowns = function (args) {
         var _this = this;
         this.initializeInstance();
@@ -2312,6 +2401,11 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
             CLS_DROPDOWN_ITEMS
         ]);
     };
+    /**
+     * destroyDropDowns method
+     * @hidden
+     * @deprecated
+     */
     DropDownButtons.prototype.destroyDropDowns = function () {
         if (this.formatDropDown) {
             this.removeDropDownClasses(this.formatDropDown.element);
@@ -2399,16 +2493,27 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
 /**
  * ServiceLocator
  * @hidden
+ * @deprecated
  */
 var ServiceLocator = /** @__PURE__ @class */ (function () {
     function ServiceLocator() {
         this.services = {};
     }
+    /**
+     * register method
+     * @hidden
+     * @deprecated
+     */
     ServiceLocator.prototype.register = function (name, type) {
         if (isNullOrUndefined(this.services[name])) {
             this.services[name] = type;
         }
     };
+    /**
+     * getService method
+     * @hidden
+     * @deprecated
+     */
     ServiceLocator.prototype.getService = function (name) {
         if (isNullOrUndefined(this.services[name])) {
             throw "The service " + name + " is not registered";
@@ -2421,17 +2526,28 @@ var ServiceLocator = /** @__PURE__ @class */ (function () {
 /**
  * RendererFactory
  * @hidden
+ * @deprecated
  */
 var RendererFactory = /** @__PURE__ @class */ (function () {
     function RendererFactory() {
         this.rendererMap = {};
     }
+    /**
+     * addRenderer method
+     * @hidden
+     * @deprecated
+     */
     RendererFactory.prototype.addRenderer = function (name, type) {
         var rName = getEnumValue(RenderType, name);
         if (isNullOrUndefined(this.rendererMap[rName])) {
             this.rendererMap[rName] = type;
         }
     };
+    /**
+     * getRenderer method
+     * @hidden
+     * @deprecated
+     */
     RendererFactory.prototype.getRenderer = function (name) {
         var rName = getEnumValue(RenderType, name);
         if (isNullOrUndefined(this.rendererMap[rName])) {
@@ -2732,9 +2848,19 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             this.parent.disableToolbarItem(this.parent.toolbarSettings.items);
         }
     };
+    /**
+     * addFixedTBarClass method
+     * @hidden
+     * @deprecated
+     */
     Toolbar$$1.prototype.addFixedTBarClass = function () {
         addClass([this.tbElement], [CLS_TB_FIXED]);
     };
+    /**
+     * removeFixedTBarClass method
+     * @hidden
+     * @deprecated
+     */
     Toolbar$$1.prototype.removeFixedTBarClass = function () {
         removeClass([this.tbElement], [CLS_TB_FIXED]);
     };
@@ -2747,6 +2873,11 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
     Toolbar$$1.prototype.hideFixedTBar = function () {
         (!this.isToolbar) ? removeClass([this.tbElement], [CLS_SHOW, CLS_TB_IOS_FIX]) : this.isToolbar = false;
     };
+    /**
+     * updateItem method
+     * @hidden
+     * @deprecated
+     */
     Toolbar$$1.prototype.updateItem = function (args) {
         var item = this.tools[args.updateItem.toLocaleLowerCase()];
         var trgItem = this.tools[args.targetItem.toLocaleLowerCase()];
@@ -2782,12 +2913,27 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
     Toolbar$$1.prototype.hideScreen = function (e) {
         this.parent.fullScreenModule.hideFullScreen(e);
     };
+    /**
+     * getBaseToolbar method
+     * @hidden
+     * @deprecated
+     */
     Toolbar$$1.prototype.getBaseToolbar = function () {
         return this.baseToolbar;
     };
+    /**
+     * addTBarItem method
+     * @hidden
+     * @deprecated
+     */
     Toolbar$$1.prototype.addTBarItem = function (args, index) {
         args.baseToolbar.toolbarObj.addItems([args.baseToolbar.getObject(args.updateItem, 'toolbar')], index);
     };
+    /**
+     * enableTBarItems method
+     * @hidden
+     * @deprecated
+     */
     Toolbar$$1.prototype.enableTBarItems = function (baseToolbar, items, isEnable, muteToolbarUpdate) {
         var trgItems = getTBarItemsIndex(getCollection(items), baseToolbar.toolbarObj.items);
         this.tbItems = selectAll('.' + CLS_TB_ITEM, baseToolbar.toolbarObj.element);
@@ -2801,6 +2947,11 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             updateUndoRedoStatus(baseToolbar, this.parent.formatter.editorManager.undoRedoManager.getUndoStatus());
         }
     };
+    /**
+     * removeTBarItems method
+     * @hidden
+     * @deprecated
+     */
     Toolbar$$1.prototype.removeTBarItems = function (items) {
         if (isNullOrUndefined(this.baseToolbar.toolbarObj)) {
             this.baseToolbar = this.parent.getBaseToolbarObject();
@@ -2812,6 +2963,11 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             this.baseToolbar.toolbarObj.removeItems(this.tbItems[trgItems[i]]);
         }
     };
+    /**
+     * getExpandTBarPopHeight method
+     * @hidden
+     * @deprecated
+     */
     Toolbar$$1.prototype.getExpandTBarPopHeight = function () {
         var popHeight = 0;
         if (this.parent.toolbarSettings.type === ToolbarType.Expand && this.tbElement.classList.contains('e-extended-toolbar')) {
@@ -2828,12 +2984,27 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         }
         return popHeight;
     };
+    /**
+     * getToolbarHeight method
+     * @hidden
+     * @deprecated
+     */
     Toolbar$$1.prototype.getToolbarHeight = function () {
         return this.tbElement.offsetHeight;
     };
+    /**
+     * getToolbarElement method
+     * @hidden
+     * @deprecated
+     */
     Toolbar$$1.prototype.getToolbarElement = function () {
         return select('.' + CLS_TOOLBAR, this.parent.element);
     };
+    /**
+     * refreshToolbarOverflow method
+     * @hidden
+     * @deprecated
+     */
     Toolbar$$1.prototype.refreshToolbarOverflow = function () {
         this.baseToolbar.toolbarObj.refreshOverflow();
     };
@@ -2864,6 +3035,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     Toolbar$$1.prototype.destroy = function () {
         if (this.isToolbarDestroyed()) {
@@ -2976,6 +3148,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
     /**
      * Called internally if any of the property value changed.
      * @hidden
+     * @deprecated
      */
     Toolbar$$1.prototype.onPropertyChanged = function (e) {
         if (!isNullOrUndefined(e.newProp.inlineMode)) {
@@ -3103,6 +3276,7 @@ var keyCode = {
  * </script>
  * ```
  * @hidden
+ * @deprecated
  */
 var KeyboardEvents$1 = /** @__PURE__ @class */ (function (_super) {
     __extends(KeyboardEvents$$1, _super);
@@ -3249,6 +3423,11 @@ var ColorPickerInput = /** @__PURE__ @class */ (function () {
     ColorPickerInput.prototype.initializeInstance = function () {
         this.toolbarRenderer = this.renderFactory.getRenderer(RenderType.Toolbar);
     };
+    /**
+     * renderColorPickerInput method
+     * @hidden
+     * @deprecated
+     */
     ColorPickerInput.prototype.renderColorPickerInput = function (args) {
         var _this = this;
         this.initializeInstance();
@@ -3303,6 +3482,11 @@ var ColorPickerInput = /** @__PURE__ @class */ (function () {
         this.removeEventListener();
         this.destroyColorPicker();
     };
+    /**
+     * destroyColorPicker method
+     * @hidden
+     * @deprecated
+     */
     ColorPickerInput.prototype.destroyColorPicker = function () {
         if (this.fontColorPicker && !this.fontColorPicker.isDestroyed) {
             this.fontColorPicker.destroy();
@@ -3433,6 +3617,11 @@ var BaseQuickToolbar = /** @__PURE__ @class */ (function () {
         this.toolbarElement = this.parent.createElement('div', { className: CLS_QUICK_TB });
         this.element.appendChild(this.toolbarElement);
     };
+    /**
+     * render method
+     * @hidden
+     * @deprecated
+     */
     BaseQuickToolbar.prototype.render = function (args) {
         var className;
         if (args.popupType === 'Image') {
@@ -3487,7 +3676,7 @@ var BaseQuickToolbar = /** @__PURE__ @class */ (function () {
             x = e.parentData.left + target.offsetLeft;
         }
         this.popupObj.position.X = ((x + e.popWidth) > e.parentData.right) ? e.parentData.right - e.popWidth : x;
-        this.popupObj.position.Y = y;
+        this.popupObj.position.Y = (y >= 0) ? y : e.y + 5;
         this.popupObj.dataBind();
         removeClass([this.toolbarElement], [CLS_RM_WHITE_SPACE]);
     };
@@ -3565,6 +3754,11 @@ var BaseQuickToolbar = /** @__PURE__ @class */ (function () {
         this.popupObj.position.Y = (y) ? y : this.popupObj.position.Y;
         this.popupObj.dataBind();
     };
+    /**
+     * showPopup method
+     * @hidden
+     * @deprecated
+     */
     BaseQuickToolbar.prototype.showPopup = function (x, y, target) {
         var _this = this;
         var eventArgs = isBlazor() ? { cancel: false, targetElement: target } :
@@ -3649,6 +3843,11 @@ var BaseQuickToolbar = /** @__PURE__ @class */ (function () {
             }
         });
     };
+    /**
+     * hidePopup method
+     * @hidden
+     * @deprecated
+     */
     BaseQuickToolbar.prototype.hidePopup = function () {
         var viewSourcePanel = this.parent.sourceCodeModule.getViewPanel();
         if (Browser.isDevice && !isIDevice()) {
@@ -3664,12 +3863,14 @@ var BaseQuickToolbar = /** @__PURE__ @class */ (function () {
     };
     /**
      * @hidden
+     * @deprecated
      */
     BaseQuickToolbar.prototype.addQTBarItem = function (item, index) {
         this.quickTBarObj.toolbarObj.addItems(this.quickTBarObj.getItems(item, 'toolbar'), index);
     };
     /**
      * @hidden
+     * @deprecated
      */
     BaseQuickToolbar.prototype.removeQTBarItem = function (index) {
         this.quickTBarObj.toolbarObj.removeItems(index);
@@ -3703,6 +3904,7 @@ var BaseQuickToolbar = /** @__PURE__ @class */ (function () {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     BaseQuickToolbar.prototype.destroy = function () {
         if (this.popupObj && !this.popupObj.isDestroyed) {
@@ -3711,6 +3913,11 @@ var BaseQuickToolbar = /** @__PURE__ @class */ (function () {
         }
         this.removeEventListener();
     };
+    /**
+     * addEventListener method
+     * @hidden
+     * @deprecated
+     */
     BaseQuickToolbar.prototype.addEventListener = function () {
         if (this.parent.isDestroyed) {
             return;
@@ -3724,6 +3931,7 @@ var BaseQuickToolbar = /** @__PURE__ @class */ (function () {
     /**
      * Called internally if any of the property value changed.
      * @hidden
+     * @deprecated
      */
     BaseQuickToolbar.prototype.onPropertyChanged = function (e) {
         if (!isNullOrUndefined(e.newProp.inlineMode)) {
@@ -3742,6 +3950,11 @@ var BaseQuickToolbar = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    /**
+     * removeEventListener method
+     * @hidden
+     * @deprecated
+     */
     BaseQuickToolbar.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
             return;
@@ -3758,6 +3971,7 @@ var BaseQuickToolbar = /** @__PURE__ @class */ (function () {
 /**
  * `Popup renderer` module is used to render popup in RichTextEditor.
  * @hidden
+ * @deprecated
  */
 var PopupRenderer = /** @__PURE__ @class */ (function () {
     /**
@@ -3770,6 +3984,11 @@ var PopupRenderer = /** @__PURE__ @class */ (function () {
         var args = isBlazor() ? { element: this.popupObj.element } : this.popupObj;
         this.parent.trigger(quickToolbarOpen, args);
     };
+    /**
+     * renderPopup method
+     * @hidden
+     * @deprecated
+     */
     PopupRenderer.prototype.renderPopup = function (args) {
         this.setPanel(args.element);
         this.renderPanel();
@@ -3783,6 +4002,8 @@ var PopupRenderer = /** @__PURE__ @class */ (function () {
     };
     /**
      * The function is used to add popup class in Quick Toolbar
+     * @hidden
+     * @deprecated
      */
     PopupRenderer.prototype.renderPanel = function () {
         this.getPanel().classList.add(CLS_QUICK_POP);
@@ -3790,6 +4011,8 @@ var PopupRenderer = /** @__PURE__ @class */ (function () {
     /**
      * Get the popup element of RichTextEditor
      * @return {Element}
+     * @hidden
+     * @deprecated
      */
     PopupRenderer.prototype.getPanel = function () {
         return this.popupPanel;
@@ -3797,6 +4020,8 @@ var PopupRenderer = /** @__PURE__ @class */ (function () {
     /**
      * Set the popup element of RichTextEditor
      * @param  {Element} panel
+     * @hidden
+     * @deprecated
      */
     PopupRenderer.prototype.setPanel = function (panel) {
         this.popupPanel = panel;
@@ -3848,6 +4073,11 @@ var QuickToolbar = /** @__PURE__ @class */ (function () {
             renderType: type
         };
     };
+    /**
+     * createQTBar method
+     * @hidden
+     * @deprecated
+     */
     QuickToolbar.prototype.createQTBar = function (popupType, mode, items, type) {
         if (items.length < 1) {
             return null;
@@ -3901,6 +4131,9 @@ var QuickToolbar = /** @__PURE__ @class */ (function () {
         }
     };
     QuickToolbar.prototype.showInlineQTBar = function (x, y, target) {
+        if (this.parent.readonly) {
+            return;
+        }
         this.inlineQTBar.showPopup(x, y, target);
     };
     QuickToolbar.prototype.hideInlineQTBar = function () {
@@ -3911,6 +4144,7 @@ var QuickToolbar = /** @__PURE__ @class */ (function () {
     /**
      * Method for hidding the quick toolbar
      * @hidden
+     * @deprecated
      */
     QuickToolbar.prototype.hideQuickToolbars = function () {
         if (this.linkQTBar && !hasClass(this.linkQTBar.element, 'e-popup-close') && document.body.contains(this.linkQTBar.element)) {
@@ -4000,6 +4234,11 @@ var QuickToolbar = /** @__PURE__ @class */ (function () {
             this.mouseUpHandler({ args: e });
         }
     };
+    /**
+     * getInlineBaseToolbar method
+     * @hidden
+     * @deprecated
+     */
     QuickToolbar.prototype.getInlineBaseToolbar = function () {
         return this.inlineQTBar && this.inlineQTBar.quickTBarObj;
     };
@@ -4008,6 +4247,7 @@ var QuickToolbar = /** @__PURE__ @class */ (function () {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     QuickToolbar.prototype.destroy = function () {
         if (this.linkQTBar) {
@@ -4062,6 +4302,11 @@ var QuickToolbar = /** @__PURE__ @class */ (function () {
             this.tableQTBar.hidePopup();
         }
     };
+    /**
+     * addEventListener
+     * @hidden
+     * @deprecated
+     */
     QuickToolbar.prototype.addEventListener = function () {
         if (this.parent.isDestroyed) {
             return;
@@ -4105,6 +4350,11 @@ var QuickToolbar = /** @__PURE__ @class */ (function () {
             this.imageQTBar.quickTBarObj.toolbarObj.setProperties({ enableRtl: args.enableRtl });
         }
     };
+    /**
+     * removeEventListener
+     * @hidden
+     * @deprecated
+     */
     QuickToolbar.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
             return;
@@ -4127,6 +4377,7 @@ var QuickToolbar = /** @__PURE__ @class */ (function () {
     /**
      * Called internally if any of the property value changed.
      * @hidden
+     * @deprecated
      */
     QuickToolbar.prototype.onPropertyChanged = function (e) {
         if (!isNullOrUndefined(e.newProp.quickToolbarSettings)) {
@@ -4182,6 +4433,11 @@ var Count = /** @__PURE__ @class */ (function () {
         this.contentRenderer = this.renderFactory.getRenderer(RenderType.Content);
         this.editPanel = this.contentRenderer.getEditPanel();
     };
+    /**
+     * renderCount method
+     * @hidden
+     * @deprecated
+     */
     Count.prototype.renderCount = function () {
         this.initializeInstance();
         this.element = this.parent.createElement('span', { className: CLS_COUNT });
@@ -4215,6 +4471,7 @@ var Count = /** @__PURE__ @class */ (function () {
     };
     /**
      * @hidden
+     * @deprecated
      */
     Count.prototype.refresh = function () {
         if (!isNullOrUndefined(this.editPanel)) {
@@ -4229,6 +4486,7 @@ var Count = /** @__PURE__ @class */ (function () {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     Count.prototype.destroy = function () {
         this.removeEventListener();
@@ -4279,30 +4537,61 @@ var Count = /** @__PURE__ @class */ (function () {
 /**
  * MarkdownSelection internal module
  * @hidden
+ * @deprecated
  */
 var MarkdownSelection = /** @__PURE__ @class */ (function () {
     function MarkdownSelection() {
     }
+    /**
+     * markdown getLineNumber method
+     * @hidden
+     * @deprecated
+     */
     MarkdownSelection.prototype.getLineNumber = function (textarea, point) {
         return textarea.value.substr(0, point).split('\n').length;
     };
+    /**
+     * markdown getSelectedText method
+     * @hidden
+     * @deprecated
+     */
     MarkdownSelection.prototype.getSelectedText = function (textarea) {
         var start = textarea.selectionStart;
         var end = textarea.selectionEnd;
         return textarea.value.substring(start, end);
     };
+    /**
+     * markdown getAllParents method
+     * @hidden
+     * @deprecated
+     */
     MarkdownSelection.prototype.getAllParents = function (value) {
         return value.split('\n');
     };
+    /**
+     * markdown getSelectedLine method
+     * @hidden
+     * @deprecated
+     */
     MarkdownSelection.prototype.getSelectedLine = function (textarea) {
         var lines = this.getAllParents(textarea.value);
         var index = this.getLineNumber(textarea, textarea.selectionStart);
         return lines[index - 1];
     };
+    /**
+     * markdown getLine method
+     * @hidden
+     * @deprecated
+     */
     MarkdownSelection.prototype.getLine = function (textarea, index) {
         var lines = this.getAllParents(textarea.value);
         return lines[index];
     };
+    /**
+     * markdown getSelectedParentPoints method
+     * @hidden
+     * @deprecated
+     */
     MarkdownSelection.prototype.getSelectedParentPoints = function (textarea) {
         var lines = this.getAllParents(textarea.value);
         var start = this.getLineNumber(textarea, textarea.selectionStart);
@@ -4336,17 +4625,37 @@ var MarkdownSelection = /** @__PURE__ @class */ (function () {
         }
         return selectedPoints;
     };
+    /**
+     * markdown setSelection method
+     * @hidden
+     * @deprecated
+     */
     MarkdownSelection.prototype.setSelection = function (textarea, start, end) {
         textarea.setSelectionRange(start, end);
         textarea.focus();
     };
+    /**
+     * markdown save method
+     * @hidden
+     * @deprecated
+     */
     MarkdownSelection.prototype.save = function (start, end) {
         this.selectionStart = start;
         this.selectionEnd = end;
     };
+    /**
+     * markdown restore method
+     * @hidden
+     * @deprecated
+     */
     MarkdownSelection.prototype.restore = function (textArea) {
         this.setSelection(textArea, this.selectionStart, this.selectionEnd);
     };
+    /**
+     * markdown isStartWith method
+     * @hidden
+     * @deprecated
+     */
     MarkdownSelection.prototype.isStartWith = function (line, command) {
         var isStart = false;
         if (line) {
@@ -4357,9 +4666,19 @@ var MarkdownSelection = /** @__PURE__ @class */ (function () {
         }
         return isStart;
     };
+    /**
+     * markdown replaceSpecialChar method
+     * @hidden
+     * @deprecated
+     */
     MarkdownSelection.prototype.replaceSpecialChar = function (value) {
         return value.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/g, '\\$&');
     };
+    /**
+     * markdown isClear method
+     * @hidden
+     * @deprecated
+     */
     MarkdownSelection.prototype.isClear = function (parents, regex) {
         var isClear = false;
         for (var i = 0; i < parents.length; i++) {
@@ -4369,6 +4688,11 @@ var MarkdownSelection = /** @__PURE__ @class */ (function () {
         }
         return isClear;
     };
+    /**
+     * markdown getSelectedInlinePoints method
+     * @hidden
+     * @deprecated
+     */
     MarkdownSelection.prototype.getSelectedInlinePoints = function (textarea) {
         var start = textarea.selectionStart;
         var end = textarea.selectionEnd;
@@ -4589,6 +4913,7 @@ var MS_WORD_CLEANUP = 'ms_word_cleanup';
 /**
  * Formatter
  * @hidden
+ * @deprecated
  */
 var Formatter = /** @__PURE__ @class */ (function () {
     function Formatter() {
@@ -4599,6 +4924,8 @@ var Formatter = /** @__PURE__ @class */ (function () {
      * @param  {ActionBeginEventArgs} args
      * @param  {MouseEvent|KeyboardEvent} event
      * @param  {IItemCollectionArgs} value
+     * @hidden
+     * @deprecated
      */
     Formatter.prototype.process = function (self, args, event, value) {
         var _this = this;
@@ -4648,7 +4975,9 @@ var Formatter = /** @__PURE__ @class */ (function () {
                     }
                 });
             }
-            if ((event.which === 9 && self.tableModule ? self.tableModule.ensureInsideTableList : false) || event.which !== 9) {
+            var isTableModule = isNullOrUndefined(self.tableModule) ? true : self.tableModule ?
+                self.tableModule.ensureInsideTableList : false;
+            if ((event.which === 9 && isTableModule) || event.which !== 9) {
                 this.editorManager.observer.notify((event.type === 'keydown' ? KEY_DOWN : KEY_UP), {
                     event: event,
                     callBack: this.onSuccess.bind(this, self),
@@ -4679,7 +5008,8 @@ var Formatter = /** @__PURE__ @class */ (function () {
                     }
                     else {
                         _this.editorManager.observer.notify(checkUndo, { subCommand: actionBeginArgs.item.subCommand });
-                        _this.editorManager.execCommand(actionBeginArgs.item.command, actionBeginArgs.item.subCommand, event, _this.onSuccess.bind(_this, self), actionBeginArgs.item.value, value, ('#' + self.getID() + ' iframe'));
+                        _this.editorManager.execCommand(actionBeginArgs.item.command, actionBeginArgs.item.subCommand, event, _this.onSuccess.bind(_this, self), actionBeginArgs.item.value, actionBeginArgs.item.subCommand === 'Pre' && args.name === 'dropDownSelect' ?
+                            { name: args.name } : value, ('#' + self.getID() + ' iframe'));
                     }
                 }
             });
@@ -4692,6 +5022,11 @@ var Formatter = /** @__PURE__ @class */ (function () {
         node = node.nodeType === 3 ? node.parentNode : node;
         return node;
     };
+    /**
+     * onKeyHandler method
+     * @hidden
+     * @deprecated
+     */
     Formatter.prototype.onKeyHandler = function (self, e) {
         var _this = this;
         this.editorManager.observer.notify(KEY_UP, {
@@ -4700,6 +5035,11 @@ var Formatter = /** @__PURE__ @class */ (function () {
             }
         });
     };
+    /**
+     * onSuccess method
+     * @hidden
+     * @deprecated
+     */
     Formatter.prototype.onSuccess = function (self, events) {
         if (isNullOrUndefined(events.event) || (events && events.event.action !== 'copy')) {
             this.enableUndo(self);
@@ -4727,16 +5067,33 @@ var Formatter = /** @__PURE__ @class */ (function () {
     };
     /**
      * Save the data for undo and redo action.
+     * @hidden
+     * @deprecated
      */
     Formatter.prototype.saveData = function (e) {
         this.editorManager.undoRedoManager.saveData(e);
     };
+    /**
+     * getUndoStatus method
+     * @hidden
+     * @deprecated
+     */
     Formatter.prototype.getUndoStatus = function () {
         return this.editorManager.undoRedoManager.getUndoStatus();
     };
+    /**
+     * getUndoRedoStack method
+     * @hidden
+     * @deprecated
+     */
     Formatter.prototype.getUndoRedoStack = function () {
         return this.editorManager.undoRedoManager.undoRedoStack;
     };
+    /**
+     * enableUndo method
+     * @hidden
+     * @deprecated
+     */
     Formatter.prototype.enableUndo = function (self) {
         var status = this.getUndoStatus();
         if (self.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
@@ -5031,8 +5388,11 @@ var MDLists = /** @__PURE__ @class */ (function () {
         var prevLine = this.selection.getLine(textArea, parents[0].line - 1);
         var listFormat = this.olListType();
         var regex = this.getListRegex();
-        var prevLineSplit = prevLine.split('. ');
-        this.currentAction = this.getAction(prevLine);
+        var prevLineSplit = [];
+        if (!isNullOrUndefined(prevLine)) {
+            prevLineSplit = prevLine.split('. ');
+            this.currentAction = this.getAction(prevLine);
+        }
         var addedLength = 0;
         if (this.currentAction === 'OL' && prevLineSplit.length > 1 && /^\d+$/.test(prevLineSplit[0].trim()) && listFormat
             && prevLineSplit[1] !== '') {
@@ -5232,11 +5592,13 @@ var MDLists = /** @__PURE__ @class */ (function () {
 /**
  * MDFormats internal plugin
  * @hidden
+ * @deprecated
  */
 var MDFormats = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     function MDFormats(options) {
         extend(this, this, options, true);
@@ -5445,6 +5807,7 @@ var MDFormats = /** @__PURE__ @class */ (function () {
 /**
  * SelectionCommands internal component
  * @hidden
+ * @deprecated
  */
 var MDSelectionFormats = /** @__PURE__ @class */ (function () {
     function MDSelectionFormats(parent) {
@@ -5515,6 +5878,11 @@ var MDSelectionFormats = /** @__PURE__ @class */ (function () {
     MDSelectionFormats.prototype.singleCharRegx = function (cmd) {
         return new RegExp('(\\' + cmd + ')', 'g');
     };
+    /**
+     * markdown isAppliedCommand method
+     * @hidden
+     * @deprecated
+     */
     MDSelectionFormats.prototype.isAppliedCommand = function (cmd) {
         var isFormat = false;
         var textArea = this.parent.element;
@@ -5931,10 +6299,17 @@ var UndoRedoCommands = /** @__PURE__ @class */ (function () {
      * Destroys the ToolBar.
      * @method destroy
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     UndoRedoCommands.prototype.destroy = function () {
         this.removeEventListener();
     };
+    /**
+     * onAction method
+     * @hidden
+     * @deprecated
+     */
     UndoRedoCommands.prototype.onAction = function (e) {
         if (e.subCommand === 'Undo') {
             this.undo(e);
@@ -5966,6 +6341,8 @@ var UndoRedoCommands = /** @__PURE__ @class */ (function () {
      * MD collection stored string format.
      * @method saveData
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     UndoRedoCommands.prototype.saveData = function (e) {
         var textArea = this.parent.element;
@@ -5995,6 +6372,8 @@ var UndoRedoCommands = /** @__PURE__ @class */ (function () {
      * Undo the editable text.
      * @method undo
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     UndoRedoCommands.prototype.undo = function (e) {
         if (this.steps > 0) {
@@ -6012,6 +6391,8 @@ var UndoRedoCommands = /** @__PURE__ @class */ (function () {
      * Redo the editable text.
      * @method redo
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     UndoRedoCommands.prototype.redo = function (e) {
         if (this.undoRedoStack[this.steps + 1] != null) {
@@ -6036,6 +6417,11 @@ var UndoRedoCommands = /** @__PURE__ @class */ (function () {
             });
         }
     };
+    /**
+     * getUndoStatus method
+     * @hidden
+     * @deprecated
+     */
     UndoRedoCommands.prototype.getUndoStatus = function () {
         var status = { undo: false, redo: false };
         if (this.steps > 0) {
@@ -6052,11 +6438,13 @@ var UndoRedoCommands = /** @__PURE__ @class */ (function () {
 /**
  * Link internal component
  * @hidden
+ * @deprecated
  */
 var MDLink = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     function MDLink(parent) {
         this.parent = parent;
@@ -6098,11 +6486,13 @@ var MDLink = /** @__PURE__ @class */ (function () {
 /**
  * Link internal component
  * @hidden
+ * @deprecated
  */
 var MDTable = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     function MDTable(options) {
         extend(this, this, options, true);
@@ -6117,6 +6507,11 @@ var MDTable = /** @__PURE__ @class */ (function () {
         this.parent.observer.off(MD_TABLE, this.createTable);
         this.parent.observer.off(KEY_DOWN_HANDLER, this.onKeyDown);
     };
+    /**
+     * markdown destroy method
+     * @hidden
+     * @deprecated
+     */
     MDTable.prototype.destroy = function () {
         this.removeEventListener();
     };
@@ -6313,11 +6708,13 @@ var MDTable = /** @__PURE__ @class */ (function () {
 /**
  * Link internal component
  * @hidden
+ * @deprecated
  */
 var ClearFormat = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for creating the clear format plugin
      * @hidden
+     * @deprecated
      */
     function ClearFormat(parent) {
         this.parent = parent;
@@ -6420,11 +6817,13 @@ var ClearFormat = /** @__PURE__ @class */ (function () {
 /**
  * MarkdownParser internal component
  * @hidden
+ * @deprecated
  */
 var MarkdownParser = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for creating the component
      * @hidden
+     * @deprecated
      */
     function MarkdownParser(options) {
         this.initialize();
@@ -6459,6 +6858,11 @@ var MarkdownParser = /** @__PURE__ @class */ (function () {
     MarkdownParser.prototype.editorKeyUp = function (e) {
         this.observer.notify(KEY_UP_HANDLER, e);
     };
+    /**
+     * markdown execCommand method
+     * @hidden
+     * @deprecated
+     */
     MarkdownParser.prototype.execCommand = function (command, value, event, callBack, text, exeValue) {
         switch (command.toLocaleLowerCase()) {
             case 'lists':
@@ -6510,6 +6914,7 @@ var __extends$1 = (undefined && undefined.__extends) || (function () {
 /**
  * Markdown adapter
  * @hidden
+ * @deprecated
  */
 var MarkdownFormatter = /** @__PURE__ @class */ (function (_super) {
     __extends$1(MarkdownFormatter, _super);
@@ -6532,6 +6937,8 @@ var MarkdownFormatter = /** @__PURE__ @class */ (function (_super) {
      * Update the formatter of RichTextEditor
      * @param  {Element} editElement
      * @param  {Document} doc
+     * @hidden
+     * @deprecated
      */
     MarkdownFormatter.prototype.updateFormatter = function (editElement, doc, options) {
         if (editElement) {
@@ -6550,6 +6957,7 @@ var MarkdownFormatter = /** @__PURE__ @class */ (function (_super) {
 /**
  * Markdown module is used to render RichTextEditor as Markdown editor content
  * @hidden
+ * @deprecated
  */
 var MarkdownRender = /** @__PURE__ @class */ (function () {
     /**
@@ -6560,6 +6968,8 @@ var MarkdownRender = /** @__PURE__ @class */ (function () {
     }
     /**
      * The function is used to render RichTextEditor content div
+     * @hidden
+     * @deprecated
      */
     MarkdownRender.prototype.renderPanel = function () {
         var rteObj = this.parent;
@@ -6575,6 +6985,8 @@ var MarkdownRender = /** @__PURE__ @class */ (function () {
     /**
      * Get the content div element of RichTextEditor
      * @return {Element}
+     * @hidden
+     * @deprecated
      */
     MarkdownRender.prototype.getPanel = function () {
         return this.contentPanel;
@@ -6582,6 +6994,8 @@ var MarkdownRender = /** @__PURE__ @class */ (function () {
     /**
      * Get the editable element of RichTextEditor
      * @return {Element}
+     * @hidden
+     * @deprecated
      */
     MarkdownRender.prototype.getEditPanel = function () {
         return this.editableElement;
@@ -6596,6 +7010,8 @@ var MarkdownRender = /** @__PURE__ @class */ (function () {
     /**
      * Set the content div element of RichTextEditor
      * @param  {Element} panel
+     * @hidden
+     * @deprecated
      */
     MarkdownRender.prototype.setPanel = function (panel) {
         this.contentPanel = panel;
@@ -6603,6 +7019,8 @@ var MarkdownRender = /** @__PURE__ @class */ (function () {
     /**
      * Get the document of RichTextEditor
      * @param  {Document}
+     * @hidden
+     * @deprecated
      */
     MarkdownRender.prototype.getDocument = function () {
         return this.getEditPanel().ownerDocument;
@@ -6625,6 +7043,7 @@ var MarkdownEditor = /** @__PURE__ @class */ (function () {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     MarkdownEditor.prototype.destroy = function () {
         this.removeEventListener();
@@ -6740,6 +7159,7 @@ var MarkdownEditor = /** @__PURE__ @class */ (function () {
     /**
      * Called internally if any of the property value changed.
      * @hidden
+     * @deprecated
      */
     MarkdownEditor.prototype.onPropertyChanged = function (e) {
         // On property code change here
@@ -6856,13 +7276,28 @@ var NodeSelection = /** @__PURE__ @class */ (function () {
         return (range.startContainer !== docElement || range.endContainer !== docElement
             || range.startOffset || range.endOffset || (range.setStart(docElement.body, 0), range.collapse(!0)), range);
     };
+    /**
+     * get method
+     * @hidden
+     * @deprecated
+     */
     NodeSelection.prototype.get = function (docElement) {
         return docElement.defaultView.getSelection();
     };
+    /**
+     * save method
+     * @hidden
+     * @deprecated
+     */
     NodeSelection.prototype.save = function (range, docElement) {
         range = (range) ? range.cloneRange() : this.getRange(docElement);
         return this.saveInstance(range, docElement.body);
     };
+    /**
+     * getIndex method
+     * @hidden
+     * @deprecated
+     */
     NodeSelection.prototype.getIndex = function (node) {
         var index;
         var num = 0;
@@ -6904,6 +7339,11 @@ var NodeSelection = /** @__PURE__ @class */ (function () {
             return startNode.parentNode;
         }
     };
+    /**
+     * getNodeCollection method
+     * @hidden
+     * @deprecated
+     */
     NodeSelection.prototype.getNodeCollection = function (range) {
         var startNode = range.startContainer.childNodes[range.startOffset]
             || range.startContainer;
@@ -6911,6 +7351,9 @@ var NodeSelection = /** @__PURE__ @class */ (function () {
             || range.endContainer;
         if (startNode === endNode && startNode.childNodes.length === 0) {
             return [startNode];
+        }
+        if (range.startOffset === range.endOffset && range.startOffset !== 0 && range.startContainer.nodeName === 'PRE') {
+            return [startNode.nodeName === 'BR' || startNode.nodeName === '#text' ? startNode : startNode.childNodes[0]];
         }
         var nodeCollection = [];
         do {
@@ -6921,9 +7364,19 @@ var NodeSelection = /** @__PURE__ @class */ (function () {
         } while (startNode);
         return nodeCollection;
     };
+    /**
+     * getParentNodeCollection method
+     * @hidden
+     * @deprecated
+     */
     NodeSelection.prototype.getParentNodeCollection = function (range) {
         return this.getParentNodes(this.getNodeCollection(range), range);
     };
+    /**
+     * getParentNodes method
+     * @hidden
+     * @deprecated
+     */
     NodeSelection.prototype.getParentNodes = function (nodeCollection, range) {
         nodeCollection = nodeCollection.reverse();
         for (var index = 0; index < nodeCollection.length; index++) {
@@ -6940,9 +7393,19 @@ var NodeSelection = /** @__PURE__ @class */ (function () {
         }
         return nodeCollection;
     };
+    /**
+     * getSelectionNodeCollection method
+     * @hidden
+     * @deprecated
+     */
     NodeSelection.prototype.getSelectionNodeCollection = function (range) {
         return this.getSelectionNodes(this.getNodeCollection(range));
     };
+    /**
+     * getParentNodes method
+     * @hidden
+     * @deprecated
+     */
     NodeSelection.prototype.getSelectionNodes = function (nodeCollection) {
         nodeCollection = nodeCollection.reverse();
         for (var index = 0; index < nodeCollection.length; index++) {
@@ -6953,9 +7416,19 @@ var NodeSelection = /** @__PURE__ @class */ (function () {
         }
         return nodeCollection.reverse();
     };
+    /**
+     * getInsertNodeCollection method
+     * @hidden
+     * @deprecated
+     */
     NodeSelection.prototype.getInsertNodeCollection = function (range) {
         return this.getInsertNodes(this.getNodeCollection(range));
     };
+    /**
+     * getInsertNodes method
+     * @hidden
+     * @deprecated
+     */
     NodeSelection.prototype.getInsertNodes = function (nodeCollection) {
         nodeCollection = nodeCollection.reverse();
         for (var index = 0; index < nodeCollection.length; index++) {
@@ -6969,6 +7442,11 @@ var NodeSelection = /** @__PURE__ @class */ (function () {
         }
         return nodeCollection.reverse();
     };
+    /**
+     * getNodeArray method
+     * @hidden
+     * @deprecated
+     */
     NodeSelection.prototype.getNodeArray = function (node, isStart, root) {
         var array = [];
         ((isStart) ? (this.startNodeName = []) : (this.endNodeName = []));
@@ -6991,6 +7469,11 @@ var NodeSelection = /** @__PURE__ @class */ (function () {
         }
         return range;
     };
+    /**
+     * restore method
+     * @hidden
+     * @deprecated
+     */
     NodeSelection.prototype.restore = function () {
         var range = this.range.cloneRange();
         range = this.setRangePoint(range, true, this.startContainer, this.startOffset);
@@ -7002,37 +7485,77 @@ var NodeSelection = /** @__PURE__ @class */ (function () {
         this.setRange(docElement, range);
         this.save(range, docElement);
     };
+    /**
+     * setRange method
+     * @hidden
+     * @deprecated
+     */
     NodeSelection.prototype.setRange = function (docElement, range) {
         var selection = this.get(docElement);
         selection.removeAllRanges();
         selection.addRange(range);
     };
+    /**
+     * setSelectionText method
+     * @hidden
+     * @deprecated
+     */
     NodeSelection.prototype.setSelectionText = function (docElement, startNode, endNode, startIndex, endIndex) {
         var range = docElement.createRange();
         range.setStart(startNode, startIndex);
         range.setEnd(endNode, endIndex);
         this.setRange(docElement, range);
     };
+    /**
+     * setSelectionContents method
+     * @hidden
+     * @deprecated
+     */
     NodeSelection.prototype.setSelectionContents = function (docElement, element) {
         var range = docElement.createRange();
         range.selectNode(element);
         this.setRange(docElement, range);
     };
+    /**
+     * setSelectionNode method
+     * @hidden
+     * @deprecated
+     */
     NodeSelection.prototype.setSelectionNode = function (docElement, element) {
         var range = docElement.createRange();
         range.selectNodeContents(element);
         this.setRange(docElement, range);
     };
+    /**
+     * getSelectedNodes method
+     * @hidden
+     * @deprecated
+     */
     NodeSelection.prototype.getSelectedNodes = function (docElement) {
         return this.getNodeCollection(this.getRange(docElement));
     };
+    /**
+     * Clear method
+     * @hidden
+     * @deprecated
+     */
     NodeSelection.prototype.Clear = function (docElement) {
         this.get(docElement).removeAllRanges();
     };
+    /**
+     * insertParentNode method
+     * @hidden
+     * @deprecated
+     */
     NodeSelection.prototype.insertParentNode = function (docElement, newNode, range) {
         range.surroundContents(newNode);
         this.selectRange(docElement, range);
     };
+    /**
+     * setCursorPoint method
+     * @hidden
+     * @deprecated
+     */
     NodeSelection.prototype.setCursorPoint = function (docElement, element, point) {
         var range = docElement.createRange();
         var selection = docElement.defaultView.getSelection();
@@ -7055,26 +7578,48 @@ var markerClassName = {
 /**
  * DOMNode internal plugin
  * @hidden
+ * @deprecated
  */
 var DOMNode = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for creating the DOMNode plugin
      * @hidden
+     * @deprecated
      */
     function DOMNode(parent, currentDocument) {
         this.parent = parent;
         this.nodeSelection = new NodeSelection();
         this.currentDocument = currentDocument;
     }
+    /**
+     * contents method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.contents = function (element) {
         return (element && 'IFRAME' !== element.tagName ? Array.prototype.slice.call(element.childNodes || []) : []);
     };
+    /**
+     * isBlockNode method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.isBlockNode = function (element) {
         return (!!element && (element.nodeType === Node.ELEMENT_NODE && BLOCK_TAGS.indexOf(element.tagName.toLowerCase()) >= 0));
     };
+    /**
+     * isLink method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.isLink = function (element) {
         return (!!element && (element.nodeType === Node.ELEMENT_NODE && 'a' === element.tagName.toLowerCase()));
     };
+    /**
+     * blockParentNode method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.blockParentNode = function (element) {
         for (; element && element.parentNode !== this.parent && ((!element.parentNode ||
             !this.hasClass(element.parentNode, 'e-node-inner'))); null) {
@@ -7085,6 +7630,11 @@ var DOMNode = /** @__PURE__ @class */ (function () {
         }
         return element;
     };
+    /**
+     * rawAttributes method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.rawAttributes = function (element) {
         var rawAttr = {};
         var attributes$$1 = element.attributes;
@@ -7096,6 +7646,11 @@ var DOMNode = /** @__PURE__ @class */ (function () {
         }
         return rawAttr;
     };
+    /**
+     * attributes method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.attributes = function (element) {
         if (!element) {
             return '';
@@ -7121,39 +7676,89 @@ var DOMNode = /** @__PURE__ @class */ (function () {
         }
         return attr;
     };
+    /**
+     * clearAttributes method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.clearAttributes = function (element) {
         for (var attr = element.attributes, c = attr.length - 1; c >= 0; c--) {
             var key = attr[c];
             element.removeAttribute(key.nodeName);
         }
     };
+    /**
+     * openTagString method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.openTagString = function (element) {
         return '<' + element.tagName.toLowerCase() + this.attributes(element) + '>';
     };
+    /**
+     * closeTagString method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.closeTagString = function (element) {
         return '</' + element.tagName.toLowerCase() + '>';
     };
+    /**
+     * createTagString method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.createTagString = function (tagName, relativeElement, innerHTML) {
         return '<' + tagName.toLowerCase() + this.attributes(relativeElement) + '>' + innerHTML + '</' + tagName.toLowerCase() + '>';
     };
+    /**
+     * isList method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.isList = function (element) {
         return !!element && ['UL', 'OL'].indexOf(element.tagName) >= 0;
     };
+    /**
+     * isElement method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.isElement = function (element) {
         return element === this.parent;
     };
+    /**
+     * isEditable method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.isEditable = function (element) {
         return ((!element.getAttribute || element.getAttribute('contenteditable') === 'true')
             && ['STYLE', 'SCRIPT'].indexOf(element.tagName) < 0);
     };
+    /**
+     * hasClass method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.hasClass = function (element, className) {
         return element && element.classList && element.classList.contains(className);
     };
+    /**
+     * replaceWith method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.replaceWith = function (element, value) {
         var parentNode = element.parentNode;
         parentNode.insertBefore(this.parseHTMLFragment(value), element);
         detach(element);
     };
+    /**
+     * parseHTMLFragment method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.parseHTMLFragment = function (value) {
         /* tslint:disable */
         var temp = createElement('template');
@@ -7166,15 +7771,30 @@ var DOMNode = /** @__PURE__ @class */ (function () {
         }
         /* tslint:enable */
     };
+    /**
+     * wrap method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.wrap = function (element, wrapper) {
         element.parentNode.insertBefore(wrapper, element);
         wrapper = element.previousSibling;
         wrapper.appendChild(element);
         return wrapper;
     };
+    /**
+     * insertAfter method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.insertAfter = function (newNode, referenceNode) {
         referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
     };
+    /**
+     * wrapInner method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.wrapInner = function (parent, wrapper) {
         parent.appendChild(wrapper);
         wrapper = parent.querySelector('.e-rte-wrap-inner');
@@ -7187,6 +7807,11 @@ var DOMNode = /** @__PURE__ @class */ (function () {
         }
         return wrapper;
     };
+    /**
+     * unWrap method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.unWrap = function (element) {
         var parent = element.parentNode;
         var unWrapNode = [];
@@ -7198,6 +7823,11 @@ var DOMNode = /** @__PURE__ @class */ (function () {
         parent.removeChild(element);
         return unWrapNode;
     };
+    /**
+     * getSelectedNode method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.getSelectedNode = function (element, index) {
         if (element.nodeType === Node.ELEMENT_NODE && element.childNodes.length > 0 &&
             element.childNodes[index - 1] && element.childNodes[index - 1].nodeType === Node.ELEMENT_NODE &&
@@ -7213,6 +7843,11 @@ var DOMNode = /** @__PURE__ @class */ (function () {
         }
         return element;
     };
+    /**
+     * nodeFinds method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.nodeFinds = function (element, elements) {
         var existNodes = [];
         for (var i = 0; i < elements.length; i++) {
@@ -7222,6 +7857,11 @@ var DOMNode = /** @__PURE__ @class */ (function () {
         }
         return existNodes;
     };
+    /**
+     * isEditorArea method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.isEditorArea = function () {
         var range = this.getRangePoint(0);
         var element;
@@ -7230,6 +7870,11 @@ var DOMNode = /** @__PURE__ @class */ (function () {
         }
         return !!this.isElement(element);
     };
+    /**
+     * getRangePoint method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.getRangePoint = function (point) {
         var selection = this.getSelection();
         var ranges = [];
@@ -7247,6 +7892,11 @@ var DOMNode = /** @__PURE__ @class */ (function () {
     DOMNode.prototype.getSelection = function () {
         return this.nodeSelection.get(this.currentDocument);
     };
+    /**
+     * getPreviousNode method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.getPreviousNode = function (element) {
         element = element.previousElementSibling;
         for (; element && element.textContent === '\n'; null) {
@@ -7254,11 +7904,21 @@ var DOMNode = /** @__PURE__ @class */ (function () {
         }
         return element;
     };
+    /**
+     * encode method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.encode = function (value) {
         var divNode = document.createElement('div');
         divNode.innerText = value;
         return divNode.innerHTML.replace(/<br\s*[\/]?>/gi, '\n');
     };
+    /**
+     * saveMarker method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.saveMarker = function (save, action) {
         var start = this.parent.querySelector('.' + markerClassName.startSelection);
         var end = this.parent.querySelector('.' + markerClassName.endSelection);
@@ -7299,6 +7959,11 @@ var DOMNode = /** @__PURE__ @class */ (function () {
     DOMNode.prototype.marker = function (className, textContent) {
         return '<span class="' + className + '">' + textContent + '</span>';
     };
+    /**
+     * setMarker method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.setMarker = function (save) {
         var range = save.range;
         var start = (range.startContainer.childNodes[range.startOffset]
@@ -7359,6 +8024,11 @@ var DOMNode = /** @__PURE__ @class */ (function () {
             this.ensureSelfClosingTag(start, markerClassName.startSelection, range);
         }
     };
+    /**
+     * ensureSelfClosingTag method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.ensureSelfClosingTag = function (start, className, range) {
         var isTable = false;
         if (start.nodeType === 3) {
@@ -7379,7 +8049,8 @@ var DOMNode = /** @__PURE__ @class */ (function () {
             if (start.tagName === 'TABLE') {
                 isTable = true;
                 if (start.textContent === '') {
-                    start = start.querySelectorAll('td')[start.querySelectorAll('td').length - 1];
+                    var tdNode = start.querySelectorAll('td');
+                    start = tdNode[tdNode.length - 1];
                     start = !isNullOrUndefined(start.childNodes[0]) ? start.childNodes[0] : start;
                 }
                 else {
@@ -7407,6 +8078,11 @@ var DOMNode = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    /**
+     * createTempNode method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.createTempNode = function (element) {
         var textContent = element.textContent;
         if (element.tagName === 'BR') {
@@ -7433,6 +8109,11 @@ var DOMNode = /** @__PURE__ @class */ (function () {
         }
         return element;
     };
+    /**
+     * getImageTagInSelection method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.getImageTagInSelection = function () {
         var selection = this.getSelection();
         if (this.isEditorArea() && selection.rangeCount) {
@@ -7440,6 +8121,11 @@ var DOMNode = /** @__PURE__ @class */ (function () {
         }
         return null;
     };
+    /**
+     * blockNodes method
+     * @hidden
+     * @deprecated
+     */
     DOMNode.prototype.blockNodes = function () {
         var collectionNodes = [];
         var selection = this.getSelection();
@@ -7479,17 +8165,18 @@ var DOMNode = /** @__PURE__ @class */ (function () {
                         nodes.push(node);
                         node = node.childNodes[0];
                     }
-                    else if (node && (node.tagName === 'BR' || (node.nodeType === Node.TEXT_NODE &&
+                    else if (node && node.nodeType !== 8 && (node.tagName === 'BR' || (node.nodeType === Node.TEXT_NODE &&
                         node.textContent.trim() !== '') || (node.nodeType !== Node.TEXT_NODE &&
                         (node.classList.contains(markerClassName.startSelection) ||
                             node.classList.contains(markerClassName.endSelection)))) &&
                         IGNORE_BLOCK_TAGS.indexOf(node.parentNode.tagName.toLocaleLowerCase()) >= 0) {
                         node = this.createTempNode(node);
                     }
-                    else if (node.nextSibling && (node.nextSibling.tagName === 'BR' ||
-                        node.nextSibling.nodeType === Node.TEXT_NODE ||
-                        node.nextSibling.classList.contains(markerClassName.startSelection) ||
-                        node.nextSibling.classList.contains(markerClassName.endSelection)) &&
+                    else if (node.nextSibling && node.nextSibling.nodeType !== 8 &&
+                        (node.nextSibling.tagName === 'BR' ||
+                            node.nextSibling.nodeType === Node.TEXT_NODE ||
+                            node.nextSibling.classList.contains(markerClassName.startSelection) ||
+                            node.nextSibling.classList.contains(markerClassName.endSelection)) &&
                         IGNORE_BLOCK_TAGS.indexOf(node.nextSibling.parentNode.tagName.toLocaleLowerCase()) >= 0) {
                         node = this.createTempNode(node.nextSibling);
                     }
@@ -7563,11 +8250,13 @@ function setEditFrameFocus(editableElement, selector) {
 /**
  * Lists internal component
  * @hidden
+ * @deprecated
  */
 var Lists = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for creating the Lists plugin
      * @hidden
+     * @deprecated
      */
     function Lists(parent) {
         this.parent = parent;
@@ -7636,7 +8325,9 @@ var Lists = /** @__PURE__ @class */ (function () {
         }
         if (e.event.which === 9) {
             var range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
-            this.saveSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
+            if (!(e.event.action && e.event.action === 'indent')) {
+                this.saveSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
+            }
             var blockNodes = void 0;
             var startOffset = range.startOffset;
             var endOffset = range.endOffset;
@@ -7995,6 +8686,9 @@ var Lists = /** @__PURE__ @class */ (function () {
         var viewNode = [];
         for (var i = 0; i < elements.length; i++) {
             var element = elements[i];
+            if (this.domNode.contents(element)[0].nodeType === 3 && this.domNode.contents(element)[0].textContent.trim().length === 0) {
+                detach(this.domNode.contents(element)[0]);
+            }
             var parentNode = elements[i].parentNode;
             var className = element.getAttribute('class');
             if (temp.length === 0) {
@@ -8079,103 +8773,17 @@ var Lists = /** @__PURE__ @class */ (function () {
 }());
 
 /**
- * Formats internal component
- * @hidden
- */
-var Formats = /** @__PURE__ @class */ (function () {
-    /**
-     * Constructor for creating the Formats plugin
-     * @hidden
-     */
-    function Formats(parent) {
-        this.parent = parent;
-        this.addEventListener();
-    }
-    Formats.prototype.addEventListener = function () {
-        this.parent.observer.on(FORMAT_TYPE, this.applyFormats, this);
-    };
-    Formats.prototype.getParentNode = function (node) {
-        for (; node.parentNode && node.parentNode !== this.parent.editableElement; null) {
-            node = node.parentNode;
-        }
-        return node;
-    };
-    Formats.prototype.applyFormats = function (e) {
-        var range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
-        var isSelectAll = false;
-        if (this.parent.editableElement === range.endContainer &&
-            !isNullOrUndefined(this.parent.editableElement.children[range.endOffset - 1]) &&
-            this.parent.editableElement.children[range.endOffset - 1].tagName === 'TABLE') {
-            isSelectAll = true;
-        }
-        var save = this.parent.nodeSelection.save(range, this.parent.currentDocument);
-        this.parent.domNode.setMarker(save);
-        var formatsNodes = this.parent.domNode.blockNodes();
-        for (var i = 0; i < formatsNodes.length; i++) {
-            var parentNode = void 0;
-            var replaceHTML = void 0;
-            if (e.subCommand.toLowerCase() === 'blockquote') {
-                parentNode = this.getParentNode(formatsNodes[i]);
-                replaceHTML = this.parent.domNode.isList(parentNode) ||
-                    parentNode.tagName === 'TABLE' ? parentNode.outerHTML : parentNode.innerHTML;
-            }
-            else {
-                parentNode = formatsNodes[i];
-                replaceHTML = parentNode.innerHTML;
-            }
-            if (e.subCommand.toLowerCase() === parentNode.tagName.toLowerCase() ||
-                isNullOrUndefined(parentNode.parentNode) || parentNode.tagName === 'LI') {
-                continue;
-            }
-            this.cleanFormats(parentNode, e.subCommand);
-            var replaceTag = this.parent.domNode.createTagString(e.subCommand, parentNode, replaceHTML.replace(/>\s+</g, '><'));
-            this.parent.domNode.replaceWith(parentNode, replaceTag);
-        }
-        this.parent.editableElement.focus();
-        var startNode;
-        var endNode;
-        if (!isNullOrUndefined(this.parent.editableElement.querySelector('.' + markerClassName.startSelection)) &&
-            !isNullOrUndefined(this.parent.editableElement.querySelector('.' + markerClassName.endSelection))) {
-            startNode = this.parent.editableElement.querySelector('.' + markerClassName.startSelection).lastChild;
-            endNode = this.parent.editableElement.querySelector('.' + markerClassName.endSelection).lastChild;
-        }
-        save = this.parent.domNode.saveMarker(save);
-        if (isIDevice$1()) {
-            setEditFrameFocus(this.parent.editableElement, e.selector);
-        }
-        if (isSelectAll) {
-            this.parent.nodeSelection.setSelectionText(this.parent.currentDocument, startNode, endNode, 0, endNode.textContent.length);
-        }
-        else {
-            save.restore();
-        }
-        if (e.callBack) {
-            e.callBack({
-                requestType: e.subCommand,
-                editorMode: 'HTML',
-                event: e.event,
-                range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
-                elements: this.parent.domNode.blockNodes()
-            });
-        }
-    };
-    Formats.prototype.cleanFormats = function (element, tagName) {
-        var ignoreAttr = ['display', 'font-size', 'margin-top', 'margin-bottom', 'margin-left', 'margin-right', 'font-weight'];
-        tagName = tagName.toLowerCase();
-        for (var i = 0; i < ignoreAttr.length && (tagName !== 'p' && tagName !== 'blockquote' && tagName !== 'pre'); i++) {
-            element.style.removeProperty(ignoreAttr[i]);
-        }
-    };
-    return Formats;
-}());
-
-/**
  * Node appending methods.
  * @hidden
  */
 var InsertMethods = /** @__PURE__ @class */ (function () {
     function InsertMethods() {
     }
+    /**
+     * WrapBefore method
+     * @hidden
+     * @deprecated
+     */
     InsertMethods.WrapBefore = function (textNode, parentNode, isAfter) {
         parentNode.innerText = textNode.textContent;
         (!isAfter) ? this.AppendBefore(parentNode, textNode) : this.AppendBefore(parentNode, textNode, true);
@@ -8184,11 +8792,21 @@ var InsertMethods = /** @__PURE__ @class */ (function () {
         }
         return parentNode.childNodes[0];
     };
+    /**
+     * Wrap method
+     * @hidden
+     * @deprecated
+     */
     InsertMethods.Wrap = function (childNode, parentNode) {
         this.AppendBefore(parentNode, childNode);
         parentNode.appendChild(childNode);
         return childNode;
     };
+    /**
+     * unwrap method
+     * @hidden
+     * @deprecated
+     */
     InsertMethods.unwrap = function (node) {
         var parent = node.parentNode;
         var child = [];
@@ -8198,6 +8816,11 @@ var InsertMethods = /** @__PURE__ @class */ (function () {
         parent.removeChild(node);
         return child;
     };
+    /**
+     * AppendBefore method
+     * @hidden
+     * @deprecated
+     */
     InsertMethods.AppendBefore = function (textNode, parentNode, isAfter) {
         return (parentNode.parentNode) ? ((!isAfter) ? parentNode.parentNode.insertBefore(textNode, parentNode)
             : parentNode.parentNode.insertBefore(textNode, parentNode.nextSibling)) :
@@ -8209,6 +8832,7 @@ var InsertMethods = /** @__PURE__ @class */ (function () {
 /**
  * Split the Node based on selection
  * @hidden
+ * @deprecated
  */
 var NodeCutter = /** @__PURE__ @class */ (function () {
     function NodeCutter() {
@@ -8216,6 +8840,11 @@ var NodeCutter = /** @__PURE__ @class */ (function () {
         this.nodeSelection = new NodeSelection();
     }
     // Split Selection Node
+    /**
+     * GetSpliceNode method
+     * @hidden
+     * @deprecated
+     */
     NodeCutter.prototype.GetSpliceNode = function (range, node) {
         node = this.SplitNode(range, node, true);
         node = this.SplitNode(range, node, false);
@@ -8223,6 +8852,7 @@ var NodeCutter = /** @__PURE__ @class */ (function () {
     };
     /**
      * @hidden
+     * @deprecated
      */
     NodeCutter.prototype.SplitNode = function (range, node, isCollapsed) {
         if (node) {
@@ -8308,6 +8938,11 @@ var NodeCutter = /** @__PURE__ @class */ (function () {
         }
         return position;
     };
+    /**
+     * GetCursorRange method
+     * @hidden
+     * @deprecated
+     */
     NodeCutter.prototype.GetCursorRange = function (docElement, range, node) {
         var cursorRange = docElement.createRange();
         var indexes = [];
@@ -8342,9 +8977,19 @@ var NodeCutter = /** @__PURE__ @class */ (function () {
         }
         return cursorRange;
     };
+    /**
+     * GetCursorNode method
+     * @hidden
+     * @deprecated
+     */
     NodeCutter.prototype.GetCursorNode = function (docElement, range, node) {
         return this.GetSpliceNode(this.GetCursorRange(docElement, range, node), node);
     };
+    /**
+     * TrimLineBreak method
+     * @hidden
+     * @deprecated
+     */
     NodeCutter.prototype.TrimLineBreak = function (line) {
         return line.replace(/(\r\n\t|\n|\r\t)/gm, ' ');
     };
@@ -8352,12 +8997,278 @@ var NodeCutter = /** @__PURE__ @class */ (function () {
 }());
 
 /**
+ * Formats internal component
+ * @hidden
+ * @deprecated
+ */
+var Formats = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for creating the Formats plugin
+     * @hidden
+     * @deprecated
+     */
+    function Formats(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    Formats.prototype.addEventListener = function () {
+        this.parent.observer.on(FORMAT_TYPE, this.applyFormats, this);
+        this.parent.observer.on(KEY_DOWN_HANDLER, this.onKeyDown, this);
+    };
+    Formats.prototype.getParentNode = function (node) {
+        for (; node.parentNode && node.parentNode !== this.parent.editableElement; null) {
+            node = node.parentNode;
+        }
+        return node;
+    };
+    Formats.prototype.onKeyDown = function (e) {
+        var range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        var startCon = (range.startContainer.textContent.length === 0 || range.startContainer.nodeName === 'PRE')
+            ? range.startContainer : range.startContainer.parentElement;
+        var endCon = (range.endContainer.textContent.length === 0 || range.endContainer.nodeName === 'PRE')
+            ? range.endContainer : range.endContainer.parentElement;
+        var preElem = closest(startCon, 'pre');
+        var endPreElem = closest(endCon, 'pre');
+        var liParent = !isNullOrUndefined(preElem) && !isNullOrUndefined(preElem.parentElement) && preElem.parentElement.tagName === 'LI';
+        if (liParent) {
+            return;
+        }
+        if (((isNullOrUndefined(preElem) && !isNullOrUndefined(endPreElem)) || (!isNullOrUndefined(preElem) && isNullOrUndefined(endPreElem)))) {
+            e.event.preventDefault();
+            this.deleteContent(range);
+            this.removeCodeContent(range);
+            range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+            this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, endCon, 0);
+        }
+        if (e.event.which === 13 && !isNullOrUndefined(preElem) && !isNullOrUndefined(endPreElem)) {
+            e.event.preventDefault();
+            this.deleteContent(range);
+            this.removeCodeContent(range);
+            range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+            var lastEmpty = range.startContainer.childNodes[range.endOffset];
+            var lastBeforeBr = range.startContainer.childNodes[range.endOffset - 1];
+            var startParent = range.startContainer;
+            if (!isNullOrUndefined(lastEmpty) && !isNullOrUndefined(lastBeforeBr) && isNullOrUndefined(lastEmpty.nextSibling) &&
+                lastEmpty.nodeName === 'BR' && lastBeforeBr.nodeName === 'BR') {
+                this.paraFocus(range.startContainer);
+            }
+            else if ((startParent.textContent.charCodeAt(0) === 8203 &&
+                startParent.textContent.length === 1) || startParent.textContent.length === 0) {
+                //Double enter with any parent tag for the node
+                while (startParent.parentElement.nodeName !== 'PRE' &&
+                    (startParent.textContent.length === 1 || startParent.textContent.length === 0)) {
+                    startParent = startParent.parentElement;
+                }
+                if (!isNullOrUndefined(startParent.previousSibling) && startParent.previousSibling.nodeName === 'BR' &&
+                    isNullOrUndefined(startParent.nextSibling)) {
+                    this.paraFocus(startParent.parentElement);
+                }
+                else {
+                    this.isNotEndCursor(preElem, range);
+                }
+            }
+            else {
+                //Cursor at start and middle
+                this.isNotEndCursor(preElem, range);
+            }
+        }
+    };
+    Formats.prototype.removeCodeContent = function (range) {
+        var regEx = new RegExp(String.fromCharCode(65279), 'g');
+        if (!isNullOrUndefined(range.endContainer.textContent.match(regEx))) {
+            var pointer = range.endContainer.textContent.charCodeAt(range.endOffset - 1) === 65279 ?
+                range.endOffset - 2 : range.endOffset;
+            range.endContainer.textContent = range.endContainer.textContent.replace(regEx, '');
+            if (range.endContainer.textContent === '') {
+                this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, range.endContainer.parentElement, 0);
+            }
+            else {
+                this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, range.endContainer, pointer);
+            }
+        }
+    };
+    Formats.prototype.deleteContent = function (range) {
+        if (range.startContainer !== range.endContainer || range.startOffset !== range.endOffset) {
+            range.deleteContents();
+        }
+    };
+    Formats.prototype.paraFocus = function (referNode) {
+        var pTag = createElement('p');
+        pTag.innerHTML = '<br>';
+        this.parent.domNode.insertAfter(pTag, referNode);
+        this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, pTag, 0);
+    };
+    Formats.prototype.isNotEndCursor = function (preElem, range) {
+        var nodeCutter = new NodeCutter();
+        var isEnd = range.startOffset === preElem.lastChild.textContent.length &&
+            preElem.lastChild.textContent === range.startContainer.textContent;
+        //Cursor at start point
+        if (preElem.textContent.indexOf(range.startContainer.textContent) === 0 &&
+            ((range.startOffset === 0 && range.endOffset === 0) || range.startContainer.nodeName === 'PRE')) {
+            this.insertMarker(preElem, range);
+            var brTag = createElement('br');
+            preElem.childNodes[range.endOffset].parentElement.insertBefore(brTag, preElem.childNodes[range.endOffset]);
+        }
+        else {
+            //Cursor at middle
+            var cloneNode = nodeCutter.SplitNode(range, preElem, true);
+            this.insertMarker(preElem, range);
+            var previousSib = preElem.previousElementSibling;
+            if (previousSib.tagName === 'PRE') {
+                previousSib.insertAdjacentHTML('beforeend', '<br>' + cloneNode.innerHTML);
+                detach(preElem);
+            }
+        }
+        //To place the cursor position          
+        this.setCursorPosition(isEnd, preElem);
+    };
+    Formats.prototype.setCursorPosition = function (isEnd, preElem) {
+        var isEmpty = false;
+        var markerElem = this.parent.editableElement.querySelector('.tempSpan');
+        var mrkParentElem = markerElem.parentElement;
+        markerElem.parentNode.textContent === '' ? isEmpty = true :
+            this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, markerElem, 0);
+        if (isEnd) {
+            if (isEmpty) {
+                //Enter press when pre element is empty
+                if (mrkParentElem === preElem) {
+                    this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, markerElem, 0);
+                    detach(markerElem);
+                }
+                else {
+                    this.focusSelectionParent(markerElem, mrkParentElem);
+                }
+            }
+            else {
+                var brElm = createElement('br');
+                this.parent.domNode.insertAfter(brElm, markerElem);
+                this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, markerElem, 0);
+                detach(markerElem);
+            }
+        }
+        else {
+            isEmpty ? this.focusSelectionParent(markerElem, mrkParentElem) : detach(markerElem);
+        }
+    };
+    Formats.prototype.focusSelectionParent = function (markerElem, tempSpanPElem) {
+        detach(markerElem);
+        tempSpanPElem.innerHTML = '\u200B';
+        this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, tempSpanPElem, 0);
+    };
+    Formats.prototype.insertMarker = function (preElem, range) {
+        var tempSpan = createElement('span', { className: 'tempSpan' });
+        if (range.startContainer.nodeName === 'PRE') {
+            preElem.childNodes[range.endOffset].parentElement.insertBefore(tempSpan, preElem.childNodes[range.endOffset]);
+        }
+        else {
+            range.startContainer.parentElement.insertBefore(tempSpan, range.startContainer);
+        }
+    };
+    Formats.prototype.applyFormats = function (e) {
+        var range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        var isSelectAll = false;
+        if (this.parent.editableElement === range.endContainer &&
+            !isNullOrUndefined(this.parent.editableElement.children[range.endOffset - 1]) &&
+            this.parent.editableElement.children[range.endOffset - 1].tagName === 'TABLE') {
+            isSelectAll = true;
+        }
+        var save = this.parent.nodeSelection.save(range, this.parent.currentDocument);
+        this.parent.domNode.setMarker(save);
+        var formatsNodes = this.parent.domNode.blockNodes();
+        for (var i = 0; i < formatsNodes.length; i++) {
+            var parentNode = void 0;
+            var replaceHTML = void 0;
+            if (e.subCommand.toLowerCase() === 'blockquote') {
+                parentNode = this.getParentNode(formatsNodes[i]);
+                replaceHTML = this.parent.domNode.isList(parentNode) ||
+                    parentNode.tagName === 'TABLE' ? parentNode.outerHTML : parentNode.innerHTML;
+            }
+            else {
+                parentNode = formatsNodes[i];
+                replaceHTML = parentNode.innerHTML;
+            }
+            if ((e.subCommand.toLowerCase() === parentNode.tagName.toLowerCase() &&
+                (e.subCommand.toLowerCase() !== 'pre' ||
+                    (!isNullOrUndefined(e.exeValue) && e.exeValue.name === 'dropDownSelect'))) ||
+                isNullOrUndefined(parentNode.parentNode) ||
+                (parentNode.tagName === 'LI' && e.subCommand.toLowerCase() !== 'pre') ||
+                (parentNode.tagName === 'TABLE' && e.subCommand.toLowerCase() === 'pre')) {
+                continue;
+            }
+            this.cleanFormats(parentNode, e.subCommand);
+            var replaceNode = (e.subCommand.toLowerCase() === 'pre' && parentNode.tagName.toLowerCase() === 'pre') ?
+                'p' : e.subCommand;
+            var replaceTag = this.parent.domNode.createTagString(replaceNode, parentNode, replaceHTML.replace(/>\s+</g, '><'));
+            if (parentNode.tagName === 'LI') {
+                parentNode.innerHTML = '';
+                parentNode.insertAdjacentHTML('beforeend', replaceTag);
+            }
+            else {
+                this.parent.domNode.replaceWith(parentNode, replaceTag);
+            }
+        }
+        this.preFormatMerge();
+        var startNode = this.parent.editableElement.querySelector('.' + markerClassName.startSelection);
+        var endNode = this.parent.editableElement.querySelector('.' + markerClassName.endSelection);
+        if (!isNullOrUndefined(startNode) && !isNullOrUndefined(endNode)) {
+            startNode = startNode.lastChild;
+            endNode = endNode.lastChild;
+        }
+        save = this.parent.domNode.saveMarker(save, null);
+        if (isIDevice$1()) {
+            setEditFrameFocus(this.parent.editableElement, e.selector);
+        }
+        if (isSelectAll) {
+            this.parent.nodeSelection.setSelectionText(this.parent.currentDocument, startNode, endNode, 0, endNode.textContent.length);
+        }
+        else {
+            save.restore();
+        }
+        if (e.callBack) {
+            e.callBack({
+                requestType: e.subCommand,
+                editorMode: 'HTML',
+                event: e.event,
+                range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
+                elements: this.parent.domNode.blockNodes()
+            });
+        }
+    };
+    Formats.prototype.preFormatMerge = function () {
+        var preNodes = this.parent.editableElement.querySelectorAll('PRE');
+        if (!isNullOrUndefined(preNodes)) {
+            for (var i = 0; i < preNodes.length; i++) {
+                var previousSib = preNodes[i].previousElementSibling;
+                if (!isNullOrUndefined(previousSib) && previousSib.tagName === 'PRE') {
+                    previousSib.insertAdjacentHTML('beforeend', '<br>' + preNodes[i].innerHTML);
+                    detach(preNodes[i]);
+                }
+            }
+        }
+    };
+    Formats.prototype.cleanFormats = function (element, tagName) {
+        var ignoreAttr = ['display', 'font-size', 'margin-top', 'margin-bottom', 'margin-left', 'margin-right', 'font-weight'];
+        tagName = tagName.toLowerCase();
+        for (var i = 0; i < ignoreAttr.length && (tagName !== 'p' && tagName !== 'blockquote' && tagName !== 'pre'); i++) {
+            element.style.removeProperty(ignoreAttr[i]);
+        }
+    };
+    return Formats;
+}());
+
+/**
  * Insert a HTML Node or Text
  * @hidden
+ * @deprecated
  */
 var InsertHtml = /** @__PURE__ @class */ (function () {
     function InsertHtml() {
     }
+    /**
+     * Insert method
+     * @hidden
+     * @deprecated
+     */
     InsertHtml.Insert = function (docElement, insertNode, editNode) {
         var node;
         if (typeof insertNode === 'string') {
@@ -8371,6 +9282,8 @@ var InsertHtml = /** @__PURE__ @class */ (function () {
         var nodeSelection = new NodeSelection();
         var nodeCutter = new NodeCutter();
         var range = nodeSelection.getRange(docElement);
+        var isCursor = range.startOffset === range.endOffset && range.startOffset === 0 &&
+            range.startContainer === range.endContainer;
         var isCollapsed = range.collapsed;
         var nodes = nodeSelection.getInsertNodeCollection(range);
         var closestParentNode = (node.nodeName.toLowerCase() === 'table') ? this.closestEle(nodes[0].parentNode, editNode) : nodes[0];
@@ -8418,8 +9331,10 @@ var InsertHtml = /** @__PURE__ @class */ (function () {
                 if (previousNode !== null) {
                     parentNode = previousNode;
                 }
-                if (parentNode.firstChild && parentNode.contentEditable !== 'true') {
-                    if (parentNode.textContent.trim() === '') {
+                if (parentNode.firstChild && (parentNode !== editNode ||
+                    (node.nodeName === 'TABLE' && isCursor && parentNode === range.startContainer &&
+                        parentNode === range.endContainer))) {
+                    if (parentNode.textContent.trim() === '' && parentNode !== editNode) {
                         InsertMethods.AppendBefore(node, parentNode, false);
                         detach(parentNode);
                     }
@@ -8513,11 +9428,13 @@ var InsertHtml = /** @__PURE__ @class */ (function () {
 /**
  * Link internal component
  * @hidden
+ * @deprecated
  */
 var LinkCommand = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     function LinkCommand(parent) {
         this.parent = parent;
@@ -8549,6 +9466,7 @@ var LinkCommand = /** @__PURE__ @class */ (function () {
             var anchorEle = closestAnchor;
             anchorEle.setAttribute('href', e.item.url);
             anchorEle.setAttribute('title', e.item.title);
+            var linkText = anchorEle.innerText;
             anchorEle.innerText = e.item.text;
             if (!isNullOrUndefined(e.item.target)) {
                 anchorEle.setAttribute('target', e.item.target);
@@ -8556,30 +9474,38 @@ var LinkCommand = /** @__PURE__ @class */ (function () {
             else {
                 anchorEle.removeAttribute('target');
             }
-            e.item.selection.setSelectionText(this.parent.currentDocument, anchorEle, anchorEle, 1, 1);
-            e.item.selection.restore();
-        }
-        else {
-            var anchor = createElement('a', {
-                className: 'e-rte-anchor', attrs: {
-                    href: e.item.url,
-                    title: isNullOrUndefined(e.item.title) || e.item.title === '' ? e.item.url : e.item.title
-                }
-            });
-            if (!isNullOrUndefined(e.item.target)) {
-                anchor.setAttribute('target', e.item.target);
-            }
-            anchor.innerText = e.item.text === '' ? e.item.url : e.item.text;
-            e.item.selection.restore();
-            InsertHtml.Insert(this.parent.currentDocument, anchor, this.parent.editableElement);
-            if (e.event && e.event.type === 'keydown' && (e.event.keyCode === 32
-                || e.event.keyCode === 13)) {
-                var startContainer = e.item.selection.range.startContainer;
-                startContainer.textContent = this.removeText(startContainer.textContent, e.item.text);
+            if (linkText === e.item.text) {
+                e.item.selection.setSelectionText(this.parent.currentDocument, anchorEle, anchorEle, 1, 1);
+                e.item.selection.restore();
             }
             else {
-                var startIndex = e.item.action === 'Paste' ? anchor.childNodes[0].textContent.length : 0;
-                e.item.selection.setSelectionText(this.parent.currentDocument, anchor.childNodes[0], anchor.childNodes[0], startIndex, anchor.childNodes[0].textContent.length);
+                var startIndex = e.item.action === 'Paste' ? anchorEle.childNodes[0].textContent.length : 0;
+                e.item.selection.setSelectionText(this.parent.currentDocument, anchorEle.childNodes[0], anchorEle.childNodes[0], startIndex, anchorEle.childNodes[0].textContent.length);
+            }
+        }
+        else {
+            var domSelection = new NodeSelection();
+            var range = domSelection.getRange(this.parent.currentDocument);
+            var text = isNullOrUndefined(e.item.text) ? true : e.item.text.replace(/ /g, '').localeCompare(range.toString()
+                .replace(/\n/g, ' ').replace(/ /g, '')) < 0;
+            if (e.event && e.event.type === 'keydown' && (e.event.keyCode === 32
+                || e.event.keyCode === 13) || e.item.action === 'Paste' || range.collapsed || text) {
+                var anchor = this.createAchorNode(e);
+                anchor.innerText = e.item.text === '' ? e.item.url : e.item.text;
+                e.item.selection.restore();
+                InsertHtml.Insert(this.parent.currentDocument, anchor, this.parent.editableElement);
+                if (e.event && e.event.type === 'keydown' && (e.event.keyCode === 32
+                    || e.event.keyCode === 13)) {
+                    var startContainer = e.item.selection.range.startContainer;
+                    startContainer.textContent = this.removeText(startContainer.textContent, e.item.text);
+                }
+                else {
+                    var startIndex = e.item.action === 'Paste' ? anchor.childNodes[0].textContent.length : 0;
+                    e.item.selection.setSelectionText(this.parent.currentDocument, anchor.childNodes[0], anchor.childNodes[0], startIndex, anchor.childNodes[0].textContent.length);
+                }
+            }
+            else {
+                this.createLinkNode(e);
             }
         }
         if (e.callBack) {
@@ -8591,6 +9517,133 @@ var LinkCommand = /** @__PURE__ @class */ (function () {
                 elements: this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument)
             });
         }
+    };
+    
+    LinkCommand.prototype.createLinkNode = function (e) {
+        var domSelection = new NodeSelection();
+        var nodeCutter = new NodeCutter();
+        var range = domSelection.getRange(this.parent.currentDocument);
+        var nodes = this.getSelectionNodes(domSelection.getNodeCollection(range));
+        var save = domSelection.save(range, this.parent.currentDocument);
+        var txtArray = [];
+        var inlineNodes = [];
+        var currentNode;
+        var removeNodes = [];
+        var anchorNodes = [];
+        var finalinlineNodes = [];
+        var cloneNode;
+        for (var index = 0; index < nodes.length; index++) {
+            nodes[index] = nodeCutter.GetSpliceNode(range, nodes[index]);
+            txtArray[index] = nodes[index];
+        }
+        for (var i = 0; i < txtArray.length; i++) {
+            var check = true;
+            currentNode = txtArray[i];
+            while (check === true) {
+                if (currentNode.parentElement.nodeName === 'A') {
+                    var anchorEle = currentNode.parentElement;
+                    currentNode.parentElement.parentElement.insertBefore(anchorEle.firstChild, anchorEle);
+                    currentNode.parentElement.removeChild(anchorEle);
+                }
+                if (this.isBlockNode(currentNode.parentElement) || txtArray.length === 0 || i === 0 || i === txtArray.length - 1) {
+                    inlineNodes[i] = currentNode;
+                    check = false;
+                }
+                else {
+                    currentNode = currentNode.parentElement;
+                }
+            }
+        }
+        for (var i = 0, j_1 = 0; i < inlineNodes.length; i++) {
+            if (i === 0) {
+                finalinlineNodes[j_1] = inlineNodes[i];
+            }
+            if (inlineNodes.length > 1 && i < inlineNodes.length - 1) {
+                if ((inlineNodes[i].parentElement === inlineNodes[i + 1].parentElement) && (inlineNodes[i] === inlineNodes[i + 1])) {
+                    continue;
+                }
+                else {
+                    finalinlineNodes[j_1 + 1] = inlineNodes[i + 1];
+                    j_1++;
+                }
+            }
+        }
+        var j = 0;
+        anchorNodes[j] = this.createAchorNode(e);
+        for (var i = 0; i < finalinlineNodes.length; i++) {
+            if (i === 0) {
+                cloneNode = finalinlineNodes[i].cloneNode(true);
+                anchorNodes[i].appendChild(cloneNode);
+            }
+            if (i < finalinlineNodes.length - 1) {
+                if (finalinlineNodes[i].parentNode === finalinlineNodes[i + 1].parentNode) {
+                    var cln = finalinlineNodes[i + 1].cloneNode(true);
+                    anchorNodes[j].appendChild(cln);
+                }
+                else {
+                    j = j + 1;
+                    anchorNodes[j] = this.createAchorNode(e);
+                    cloneNode = finalinlineNodes[i + 1].cloneNode(true);
+                    anchorNodes[j].appendChild(cloneNode);
+                }
+            }
+        }
+        this.parent.nodeSelection.setRange(document, save.range);
+        for (var i = 0, j_2 = 0, k = 0; i <= finalinlineNodes.length; i++) {
+            if (i === 0) {
+                finalinlineNodes[i].parentNode.insertBefore(anchorNodes[j_2], finalinlineNodes[i].nextSibling);
+                if (this.parent.domNode.blockNodes().length === 1) {
+                    this.parent.nodeSelection.setSelectionNode(this.parent.currentDocument, anchorNodes[j_2]);
+                }
+                removeNodes[k] = finalinlineNodes[i];
+                k++;
+            }
+            if (i < finalinlineNodes.length - 1) {
+                if (finalinlineNodes[i].parentNode === finalinlineNodes[i + 1].parentNode) {
+                    removeNodes[k] = finalinlineNodes[i + 1];
+                    k++;
+                }
+                else {
+                    j_2 = j_2 + 1;
+                    finalinlineNodes[i + 1].parentNode.insertBefore(anchorNodes[j_2], finalinlineNodes[i + 1]);
+                    removeNodes[k] = finalinlineNodes[i + 1];
+                    k++;
+                }
+            }
+        }
+        for (var i = 0; i < removeNodes.length; i++) {
+            if (removeNodes[i].parentNode) {
+                removeNodes[i].parentNode.removeChild(removeNodes[i]);
+            }
+        }
+    };
+    LinkCommand.prototype.createAchorNode = function (e) {
+        var anchorEle = createElement('a', {
+            className: 'e-rte-anchor',
+            attrs: {
+                href: e.item.url,
+                title: isNullOrUndefined(e.item.title) || e.item.title === '' ? e.item.url : e.item.title
+            }
+        });
+        if (!isNullOrUndefined(e.item.target)) {
+            anchorEle.setAttribute('target', e.item.target);
+        }
+        return anchorEle;
+    };
+    LinkCommand.prototype.getSelectionNodes = function (nodeCollection) {
+        nodeCollection = nodeCollection.reverse();
+        for (var index = 0; index < nodeCollection.length; index++) {
+            if (nodeCollection[index].nodeType !== 3 || nodeCollection[index].textContent.trim() === '') {
+                if (nodeCollection[index].nodeName !== 'IMG') {
+                    nodeCollection.splice(index, 1);
+                    index--;
+                }
+            }
+        }
+        return nodeCollection.reverse();
+    };
+    LinkCommand.prototype.isBlockNode = function (element) {
+        return (!!element && (element.nodeType === Node.ELEMENT_NODE && BLOCK_TAGS.indexOf(element.tagName.toLowerCase()) >= 0));
     };
     LinkCommand.prototype.removeText = function (text, val) {
         var arr = text.split(' ');
@@ -8607,20 +9660,33 @@ var LinkCommand = /** @__PURE__ @class */ (function () {
         this.callBack(e);
     };
     LinkCommand.prototype.removeLink = function (e) {
-        this.parent.domNode.setMarker(e.item.selection);
-        var closestAnchor = closest(e.item.selectParent[0], 'a');
-        var selectParent = closestAnchor ? closestAnchor : e.item.selectParent[0];
-        var parent = selectParent.parentNode;
-        var child = [];
-        for (; selectParent.firstChild; null) {
-            child.push(parent.insertBefore(selectParent.firstChild, selectParent));
+        var blockNodes = this.parent.domNode.blockNodes();
+        if (blockNodes.length < 2) {
+            this.parent.domNode.setMarker(e.item.selection);
+            var closestAnchor = closest(e.item.selectParent[0], 'a');
+            var selectParent = closestAnchor ? closestAnchor : e.item.selectParent[0];
+            var parent_1 = selectParent.parentNode;
+            var child = [];
+            for (; selectParent.firstChild; null) {
+                child.push(parent_1.insertBefore(selectParent.firstChild, selectParent));
+            }
+            parent_1.removeChild(selectParent);
+            if (child && child.length === 1) {
+                e.item.selection.startContainer = e.item.selection.getNodeArray(child[child.length - 1], true);
+                e.item.selection.endContainer = e.item.selection.startContainer;
+            }
+            e.item.selection = this.parent.domNode.saveMarker(e.item.selection);
         }
-        parent.removeChild(selectParent);
-        if (child && child.length === 1) {
-            e.item.selection.startContainer = e.item.selection.getNodeArray(child[child.length - 1], true);
-            e.item.selection.endContainer = e.item.selection.startContainer;
+        else {
+            for (var i = 0; i < blockNodes.length; i++) {
+                var linkNode = blockNodes[i].querySelectorAll('a');
+                for (var j = 0; j < linkNode.length; j++) {
+                    if (document.getSelection().containsNode(linkNode[j], true)) {
+                        linkNode[j].outerHTML = linkNode[j].innerHTML;
+                    }
+                }
+            }
         }
-        e.item.selection = this.parent.domNode.saveMarker(e.item.selection);
         e.item.selection.restore();
         this.callBack(e);
     };
@@ -8641,11 +9707,13 @@ var LinkCommand = /** @__PURE__ @class */ (function () {
 /**
  * Formats internal component
  * @hidden
+ * @deprecated
  */
 var Alignments = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     function Alignments(parent) {
         this.alignments = {
@@ -8737,11 +9805,13 @@ var Alignments = /** @__PURE__ @class */ (function () {
 /**
  * Indents internal component
  * @hidden
+ * @deprecated
  */
 var Indents = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     function Indents(parent) {
         this.indentValue = 20;
@@ -8828,7 +9898,7 @@ var Indents = /** @__PURE__ @class */ (function () {
 /**
  * RichTextEditor classes defined here.
  */
-/** @hidden */
+/** @hidden @deprecated */
 var CLASS_IMAGE_RIGHT = 'e-imgright';
 var CLASS_IMAGE_LEFT = 'e-imgleft';
 var CLASS_IMAGE_CENTER = 'e-imgcenter';
@@ -8840,11 +9910,13 @@ var CLASS_IMAGE_INLINE = 'e-imginline';
 /**
  * Link internal component
  * @hidden
+ * @deprecated
  */
 var ImageCommand = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     function ImageCommand(parent) {
         this.parent = parent;
@@ -8853,6 +9925,11 @@ var ImageCommand = /** @__PURE__ @class */ (function () {
     ImageCommand.prototype.addEventListener = function () {
         this.parent.observer.on(IMAGE, this.imageCommand, this);
     };
+    /**
+     * imageCommand method
+     * @hidden
+     * @deprecated
+     */
     ImageCommand.prototype.imageCommand = function (e) {
         switch (e.value.toString().toLocaleLowerCase()) {
             case 'image':
@@ -9003,7 +10080,12 @@ var ImageCommand = /** @__PURE__ @class */ (function () {
     };
     ImageCommand.prototype.removeImage = function (e) {
         if (closest(e.item.selectNode[0], 'a')) {
-            detach(closest(e.item.selectNode[0], 'a'));
+            if (e.item.selectNode[0].parentElement.nodeName === 'A' && !isNullOrUndefined(e.item.selectNode[0].parentElement.innerText)) {
+                detach(e.item.selectNode[0]);
+            }
+            else {
+                detach(closest(e.item.selectNode[0], 'a'));
+            }
         }
         else if (!isNullOrUndefined(closest(e.item.selectNode[0], '.' + CLASS_CAPTION))) {
             detach(closest(e.item.selectNode[0], '.' + CLASS_CAPTION));
@@ -9128,11 +10210,13 @@ var ImageCommand = /** @__PURE__ @class */ (function () {
 /**
  * Link internal component
  * @hidden
+ * @deprecated
  */
 var TableCommand = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     function TableCommand(parent) {
         this.parent = parent;
@@ -9414,10 +10498,16 @@ var TableCommand = /** @__PURE__ @class */ (function () {
 /**
  * Is formatted or not.
  * @hidden
+ * @deprecated
  */
 var IsFormatted = /** @__PURE__ @class */ (function () {
     function IsFormatted() {
     }
+    /**
+     * getFormattedNode method
+     * @hidden
+     * @deprecated
+     */
     IsFormatted.prototype.getFormattedNode = function (node, format, endNode) {
         var parentNode = this.getFormatParent(node, format, endNode);
         if (parentNode !== null && parentNode !== endNode) {
@@ -9457,6 +10547,11 @@ var IsFormatted = /** @__PURE__ @class */ (function () {
                 return false;
         }
     };
+    /**
+     * isBold method
+     * @hidden
+     * @deprecated
+     */
     IsFormatted.isBold = function (node) {
         var validTags = ['strong', 'b'];
         if (validTags.indexOf(node.nodeName.toLowerCase()) !== -1) {
@@ -9470,6 +10565,11 @@ var IsFormatted = /** @__PURE__ @class */ (function () {
             return false;
         }
     };
+    /**
+     * isItalic method
+     * @hidden
+     * @deprecated
+     */
     IsFormatted.isItalic = function (node) {
         var validTags = ['em', 'i'];
         if (validTags.indexOf(node.nodeName.toLowerCase()) !== -1) {
@@ -9483,6 +10583,11 @@ var IsFormatted = /** @__PURE__ @class */ (function () {
             return false;
         }
     };
+    /**
+     * isUnderline method
+     * @hidden
+     * @deprecated
+     */
     IsFormatted.isUnderline = function (node) {
         var validTags = ['u'];
         if (validTags.indexOf(node.nodeName.toLowerCase()) !== -1) {
@@ -9496,6 +10601,11 @@ var IsFormatted = /** @__PURE__ @class */ (function () {
             return false;
         }
     };
+    /**
+     * isStrikethrough method
+     * @hidden
+     * @deprecated
+     */
     IsFormatted.isStrikethrough = function (node) {
         var validTags = ['del', 'strike'];
         if (validTags.indexOf(node.nodeName.toLowerCase()) !== -1) {
@@ -9509,6 +10619,11 @@ var IsFormatted = /** @__PURE__ @class */ (function () {
             return false;
         }
     };
+    /**
+     * isSuperscript method
+     * @hidden
+     * @deprecated
+     */
     IsFormatted.isSuperscript = function (node) {
         var validTags = ['sup'];
         if (validTags.indexOf(node.nodeName.toLowerCase()) !== -1) {
@@ -9518,6 +10633,11 @@ var IsFormatted = /** @__PURE__ @class */ (function () {
             return false;
         }
     };
+    /**
+     * isSubscript method
+     * @hidden
+     * @deprecated
+     */
     IsFormatted.isSubscript = function (node) {
         var validTags = ['sub'];
         if (validTags.indexOf(node.nodeName.toLowerCase()) !== -1) {
@@ -9602,6 +10722,11 @@ var IsFormatted = /** @__PURE__ @class */ (function () {
 var SelectionCommands = /** @__PURE__ @class */ (function () {
     function SelectionCommands() {
     }
+    /**
+     * applyFormat method
+     * @hidden
+     * @deprecated
+     */
     SelectionCommands.applyFormat = function (docElement, format, endNode, value, selector) {
         var validFormats = ['bold', 'italic', 'underline', 'strikethrough', 'superscript',
             'subscript', 'uppercase', 'lowercase', 'fontcolor', 'fontname', 'fontsize', 'backgroundcolor'];
@@ -9864,11 +10989,13 @@ var SelectionCommands = /** @__PURE__ @class */ (function () {
 /**
  * Selection EXEC internal component
  * @hidden
+ * @deprecated
  */
 var SelectionBasedExec = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     function SelectionBasedExec(parent) {
         this.parent = parent;
@@ -9908,11 +11035,13 @@ var SelectionBasedExec = /** @__PURE__ @class */ (function () {
 /**
  * Selection EXEC internal component
  * @hidden
+ * @deprecated
  */
 var InsertHtmlExec = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     function InsertHtmlExec(parent) {
         this.parent = parent;
@@ -9951,6 +11080,11 @@ var InsertHtmlExec = /** @__PURE__ @class */ (function () {
 var ClearFormat$1 = /** @__PURE__ @class */ (function () {
     function ClearFormat() {
     }
+    /**
+     * clear method
+     * @hidden
+     * @deprecated
+     */
     ClearFormat.clear = function (docElement, endNode, selector) {
         var nodeSelection = new NodeSelection();
         var nodeCutter = new NodeCutter();
@@ -10154,11 +11288,13 @@ var ClearFormat$1 = /** @__PURE__ @class */ (function () {
 /**
  * Clear Format EXEC internal component
  * @hidden
+ * @deprecated
  */
 var ClearFormatExec = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     function ClearFormatExec(parent) {
         this.parent = parent;
@@ -10229,6 +11365,11 @@ var UndoRedoManager = /** @__PURE__ @class */ (function () {
         this.parent.observer.off(KEY_DOWN_HANDLER, this.keyDown);
         this.parent.observer.off(ACTION, this.onAction);
     };
+    /**
+     * onAction method
+     * @hidden
+     * @deprecated
+     */
     UndoRedoManager.prototype.onAction = function (e) {
         if (e.subCommand === 'Undo') {
             this.undo(e);
@@ -10241,6 +11382,8 @@ var UndoRedoManager = /** @__PURE__ @class */ (function () {
      * Destroys the ToolBar.
      * @method destroy
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     UndoRedoManager.prototype.destroy = function () {
         this.removeEventListener();
@@ -10268,6 +11411,8 @@ var UndoRedoManager = /** @__PURE__ @class */ (function () {
      * RTE collection stored html format.
      * @method saveData
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     UndoRedoManager.prototype.saveData = function (e) {
         var range = new NodeSelection().getRange(this.parent.currentDocument);
@@ -10298,6 +11443,8 @@ var UndoRedoManager = /** @__PURE__ @class */ (function () {
      * Undo the editable text.
      * @method undo
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     UndoRedoManager.prototype.undo = function (e) {
         if (this.steps > 0) {
@@ -10325,6 +11472,8 @@ var UndoRedoManager = /** @__PURE__ @class */ (function () {
      * Redo the editable text.
      * @method redo
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     UndoRedoManager.prototype.redo = function (e) {
         if (this.undoRedoStack[this.steps + 1] != null) {
@@ -10347,6 +11496,11 @@ var UndoRedoManager = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    /**
+     * getUndoStatus method
+     * @hidden
+     * @deprecated
+     */
     UndoRedoManager.prototype.getUndoStatus = function () {
         var status = { undo: false, redo: false };
         if (this.steps > 0) {
@@ -10363,6 +11517,7 @@ var UndoRedoManager = /** @__PURE__ @class */ (function () {
 /**
  * PasteCleanup for MsWord content
  * @hidden
+ * @deprecated
  */
 var MsWordPaste = /** @__PURE__ @class */ (function () {
     function MsWordPaste(parent) {
@@ -10417,7 +11572,10 @@ var MsWordPaste = /** @__PURE__ @class */ (function () {
             this.imageConversion(elm, rtfData);
             tempHTMLContent = tempHTMLContent.replace(/<img[^>]+>/i, '');
             listNodes = this.cleanUp(elm, listNodes);
-            this.listConverter(listNodes);
+            if (!isNullOrUndefined(listNodes[0]) && listNodes[0].parentElement.tagName !== 'UL' &&
+                listNodes[0].parentElement.tagName !== 'OL') {
+                this.listConverter(listNodes);
+            }
             this.styleCorrection(elm, wordPasteStyleConfig);
             this.removingComments(elm);
             this.removeUnwantedElements(elm);
@@ -10869,11 +12027,13 @@ var MsWordPaste = /** @__PURE__ @class */ (function () {
 /**
  * Insert a Text Node or Text
  * @hidden
+ * @deprecated
  */
 var InsertTextExec = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for creating the InsertText plugin
      * @hidden
+     * @deprecated
      */
     function InsertTextExec(parent) {
         this.parent = parent;
@@ -10901,11 +12061,13 @@ var InsertTextExec = /** @__PURE__ @class */ (function () {
 /**
  * EditorManager internal component
  * @hidden
+ * @deprecated
  */
 var EditorManager = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for creating the component
      * @hidden
+     * @deprecated
      */
     function EditorManager(options) {
         this.currentDocument = options.document;
@@ -10947,13 +12109,20 @@ var EditorManager = /** @__PURE__ @class */ (function () {
     EditorManager.prototype.editorKeyUp = function (e) {
         this.observer.notify(KEY_UP_HANDLER, e);
     };
+    /**
+     * execCommand
+     * @hidden
+     * @deprecated
+     */
     EditorManager.prototype.execCommand = function (command, value, event, callBack, text, exeValue, selector) {
         switch (command.toLocaleLowerCase()) {
             case 'lists':
                 this.observer.notify(LIST_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
                 break;
             case 'formats':
-                this.observer.notify(FORMAT_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
+                this.observer.notify(FORMAT_TYPE, { subCommand: value, event: event, callBack: callBack,
+                    selector: selector, exeValue: exeValue
+                });
                 break;
             case 'alignments':
                 this.observer.notify(ALIGNMENT_TYPE, {
@@ -11044,6 +12213,7 @@ var __extends$2 = (undefined && undefined.__extends) || (function () {
 /**
  * HTML adapter
  * @hidden
+ * @deprecated
  */
 var HTMLFormatter = /** @__PURE__ @class */ (function (_super) {
     __extends$2(HTMLFormatter, _super);
@@ -11063,6 +12233,8 @@ var HTMLFormatter = /** @__PURE__ @class */ (function (_super) {
      * Update the formatter of RichTextEditor
      * @param  {Element} editElement
      * @param  {Document} doc
+     * @hidden
+     * @deprecated
      */
     HTMLFormatter.prototype.updateFormatter = function (editElement, doc, options) {
         if (editElement && doc) {
@@ -11079,6 +12251,7 @@ var HTMLFormatter = /** @__PURE__ @class */ (function (_super) {
 /**
  * Update Toolbar Status
  * @hidden
+ * @deprecated
  */
 var statusCollection = {
     bold: false,
@@ -11095,11 +12268,17 @@ var statusCollection = {
     fontname: null,
     fontsize: null,
     formats: null,
-    createlink: false
+    createlink: false,
+    insertcode: false
 };
 var ToolbarStatus = /** @__PURE__ @class */ (function () {
     function ToolbarStatus() {
     }
+    /**
+     * get method
+     * @hidden
+     * @deprecated
+     */
     ToolbarStatus.get = function (docElement, targetNode, formatNode, fontSize, fontName, documentNode) {
         var formatCollection = JSON.parse(JSON.stringify(statusCollection));
         var nodeCollection = JSON.parse(JSON.stringify(statusCollection));
@@ -11107,7 +12286,8 @@ var ToolbarStatus = /** @__PURE__ @class */ (function () {
         var nodes = documentNode ? [documentNode] : nodeSelection.getNodeCollection(nodeSelection.getRange(docElement));
         var nodesLength = nodes.length;
         for (var index = 0; index < nodes.length; index++) {
-            if (nodes[index].nodeType !== 3 || (nodesLength > 1 && nodes[index].nodeType === 3 && nodes[index].textContent.trim() === '')) {
+            if ((nodes[index].nodeName !== 'BR' && nodes[index].nodeType !== 3) ||
+                (nodesLength > 1 && nodes[index].nodeType === 3 && nodes[index].textContent.trim() === '')) {
                 nodes.splice(index, 1);
                 index--;
             }
@@ -11116,6 +12296,9 @@ var ToolbarStatus = /** @__PURE__ @class */ (function () {
             formatCollection = this.getFormatParent(docElement, formatCollection, nodes[index], targetNode, formatNode, fontSize, fontName);
             if ((index === 0 && formatCollection.bold) || !formatCollection.bold) {
                 nodeCollection.bold = formatCollection.bold;
+            }
+            if ((index === 0 && formatCollection.insertcode) || !formatCollection.insertcode) {
+                nodeCollection.insertcode = formatCollection.insertcode;
             }
             if ((index === 0 && formatCollection.italic) || !formatCollection.italic) {
                 nodeCollection.italic = formatCollection.italic;
@@ -11215,6 +12398,9 @@ var ToolbarStatus = /** @__PURE__ @class */ (function () {
         }
         if (!formatCollection.formats) {
             formatCollection.formats = this.isFormats(node, formatNode);
+            if (formatCollection.formats === 'pre') {
+                formatCollection.insertcode = true;
+            }
         }
         if (!formatCollection.createlink) {
             formatCollection.createlink = this.isLink(node);
@@ -11347,6 +12533,9 @@ var HtmlToolbarStatus = /** @__PURE__ @class */ (function () {
         this.parent.off(toolbarRefresh, this.onRefreshHandler);
     };
     HtmlToolbarStatus.prototype.onRefreshHandler = function (args) {
+        if (this.parent.readonly) {
+            return;
+        }
         var fontsize = [];
         var fontName = [];
         var formats = [];
@@ -11364,6 +12553,7 @@ var HtmlToolbarStatus = /** @__PURE__ @class */ (function () {
 /**
  * Content module is used to render RichTextEditor content
  * @hidden
+ * @deprecated
  */
 var ContentRender = /** @__PURE__ @class */ (function () {
     /**
@@ -11375,6 +12565,8 @@ var ContentRender = /** @__PURE__ @class */ (function () {
     }
     /**
      * The function is used to render RichTextEditor content div
+     * @hidden
+     * @deprecated
      */
     ContentRender.prototype.renderPanel = function () {
         var rteObj = this.parent;
@@ -11395,6 +12587,8 @@ var ContentRender = /** @__PURE__ @class */ (function () {
     /**
      * Get the content div element of RichTextEditor
      * @return {Element}
+     * @hidden
+     * @deprecated
      */
     ContentRender.prototype.getPanel = function () {
         return this.contentPanel;
@@ -11402,6 +12596,8 @@ var ContentRender = /** @__PURE__ @class */ (function () {
     /**
      * Get the editable element of RichTextEditor
      * @return {Element}
+     * @hidden
+     * @deprecated
      */
     ContentRender.prototype.getEditPanel = function () {
         return this.editableElement;
@@ -11416,6 +12612,8 @@ var ContentRender = /** @__PURE__ @class */ (function () {
     /**
      * Set the content div element of RichTextEditor
      * @param {Element} panel
+     * @hidden
+     * @deprecated
      */
     ContentRender.prototype.setPanel = function (panel) {
         this.contentPanel = panel;
@@ -11423,6 +12621,8 @@ var ContentRender = /** @__PURE__ @class */ (function () {
     /**
      * Get the document of RichTextEditor
      * @return {Document}
+     * @hidden
+     * @deprecated
      */
     ContentRender.prototype.getDocument = function () {
         return this.getEditPanel().ownerDocument;
@@ -11449,6 +12649,7 @@ var IFRAMEHEADER = "\n<!DOCTYPE html> \n    <html>\n         <head>\n           
 /**
  * Content module is used to render RichTextEditor content
  * @hidden
+ * @deprecated
  */
 var IframeContentRender = /** @__PURE__ @class */ (function (_super) {
     __extends$3(IframeContentRender, _super);
@@ -11457,6 +12658,8 @@ var IframeContentRender = /** @__PURE__ @class */ (function (_super) {
     }
     /**
      * The function is used to render RichTextEditor iframe
+     * @hidden
+     * @deprecated
      */
     IframeContentRender.prototype.renderPanel = function () {
         var rteObj = this.parent;
@@ -11486,6 +12689,8 @@ var IframeContentRender = /** @__PURE__ @class */ (function (_super) {
     /**
      * Get the editable element of RichTextEditor
      * @return {Element}
+     * @hidden
+     * @deprecated
      */
     IframeContentRender.prototype.getEditPanel = function () {
         var editNode;
@@ -11500,6 +12705,8 @@ var IframeContentRender = /** @__PURE__ @class */ (function (_super) {
     /**
      * Get the document of RichTextEditor
      * @param  {Document}
+     * @hidden
+     * @deprecated
      */
     IframeContentRender.prototype.getDocument = function () {
         return this.getEditPanel().ownerDocument;
@@ -11508,177 +12715,138 @@ var IframeContentRender = /** @__PURE__ @class */ (function (_super) {
 }(ContentRender));
 
 /**
- * SanitizeHtmlHelper for sanitize the value.
+ * XhtmlValidation module called when set enableXhtml as true
  */
-var removeTags = [
-    'script',
-    'iframe[src]',
-    'link[href*="javascript:"]',
-    'object[type="text/x-scriptlet"]',
-    'object[data^="data:text/html;base64"]',
-    'img[src^="data:text/html;base64"]',
-    '[src^="javascript:"]',
-    '[dynsrc^="javascript:"]',
-    '[lowsrc^="javascript:"]',
-    '[type^="application/x-shockwave-flash"]'
-];
-var removeAttrs = [
-    { attribute: 'href', selector: '[href*="javascript:"]' },
-    { attribute: 'background', selector: '[background^="javascript:"]' },
-    { attribute: 'style', selector: '[style*="javascript:"]' },
-    { attribute: 'style', selector: '[style*="expression("]' },
-    { attribute: 'href', selector: 'a[href^="data:text/html;base64"]' }
-];
-var jsEvents = ['onchange',
-    'onclick',
-    'onmouseover',
-    'onmouseout',
-    'onkeydown',
-    'onload',
-    'onerror',
-    'onblur',
-    'onfocus',
-    'onbeforeload',
-    'onbeforeunload',
-    'onkeyup',
-    'onsubmit',
-    'onafterprint',
-    'onbeforeonload',
-    'onbeforeprint',
-    'onblur',
-    'oncanplay',
-    'oncanplaythrough',
-    'onchange',
-    'onclick',
-    'oncontextmenu',
-    'ondblclick',
-    'ondrag',
-    'ondragend',
-    'ondragenter',
-    'ondragleave',
-    'ondragover',
-    'ondragstart',
-    'ondrop',
-    'ondurationchange',
-    'onemptied',
-    'onended',
-    'onerror',
-    'onerror',
-    'onfocus',
-    'onformchange',
-    'onforminput',
-    'onhaschange',
-    'oninput',
-    'oninvalid',
-    'onkeydown',
-    'onkeypress',
-    'onkeyup',
-    'onload',
-    'onloadeddata',
-    'onloadedmetadata',
-    'onloadstart',
-    'onmessage',
-    'onmousedown',
-    'onmousemove',
-    'onmouseout',
-    'onmouseover',
-    'onmouseup',
-    'onmousewheel',
-    'onoffline',
-    'onoine',
-    'ononline',
-    'onpagehide',
-    'onpageshow',
-    'onpause',
-    'onplay',
-    'onplaying',
-    'onpopstate',
-    'onprogress',
-    'onratechange',
-    'onreadystatechange',
-    'onredo',
-    'onresize',
-    'onscroll',
-    'onseeked',
-    'onseeking',
-    'onselect',
-    'onstalled',
-    'onstorage',
-    'onsubmit',
-    'onsuspend',
-    'ontimeupdate',
-    'onundo',
-    'onunload',
-    'onvolumechange',
-    'onwaiting',
-    'onmouseenter',
-    'onmouseleave',
-    'onmousewheel',
-    'onstart',
-    'onpropertychange'
-];
-var SanitizeHtmlHelper = /** @__PURE__ @class */ (function () {
-    function SanitizeHtmlHelper() {
+var XhtmlValidation = /** @__PURE__ @class */ (function () {
+    function XhtmlValidation(parent) {
+        this.parent = parent;
+        this.addEventListener();
     }
-    SanitizeHtmlHelper.prototype.initialize = function (value, parent) {
-        var item = {
-            selectors: {
-                tags: removeTags,
-                attributes: removeAttrs
-            },
-            helper: null
-        };
-        parent.trigger('beforeSanitizeHtml', item);
-        if (item.helper) {
-            value = item.helper(value);
-        }
-        if (!item.cancel) {
-            value = this.serializeValue(item, value);
-        }
-        return value;
+    XhtmlValidation.prototype.addEventListener = function () {
+        this.parent.on(xhtmlValidation, this.enableXhtmlValidation, this);
     };
-    SanitizeHtmlHelper.prototype.serializeValue = function (item, value) {
-        this.removeAttrs = item.selectors.attributes;
-        this.removeTags = item.selectors.tags;
-        this.wrapElement = document.createElement('div');
-        this.wrapElement.innerHTML = value;
-        this.removeXssTags();
-        this.removeJsEvents();
-        this.removeXssAttrs();
-        return this.wrapElement.innerHTML;
-    };
-    SanitizeHtmlHelper.prototype.removeXssTags = function () {
-        var elements = this.wrapElement.querySelectorAll(this.removeTags.join(','));
-        if (elements.length > 0) {
-            elements.forEach(function (element) {
-                detach(element);
-            });
+    XhtmlValidation.prototype.enableXhtmlValidation = function () {
+        if (this.parent.enableXhtml) {
+            this.clean(this.parent.inputElement);
+            this.AddRootElement();
+            this.ImageTags();
+            this.removeTags();
+            this.RemoveUnsupported();
+            this.parent.setProperties({ value: this.parent.inputElement.innerHTML }, true);
         }
     };
-    SanitizeHtmlHelper.prototype.removeJsEvents = function () {
-        var elements = this.wrapElement.querySelectorAll('[' + jsEvents.join('],[') + ']');
-        if (elements.length > 0) {
-            elements.forEach(function (element) {
-                jsEvents.forEach(function (attr) {
-                    if (element.hasAttribute(attr)) {
-                        element.removeAttribute(attr);
-                    }
-                });
-            });
-        }
-    };
-    SanitizeHtmlHelper.prototype.removeXssAttrs = function () {
-        var _this = this;
-        this.removeAttrs.forEach(function (item, index) {
-            var elements = _this.wrapElement.querySelectorAll(item.selector);
-            if (elements.length > 0) {
-                elements.forEach(function (element) {
-                    element.removeAttribute(item.attribute);
-                });
+    XhtmlValidation.prototype.AddRootElement = function () {
+        if ((this.parent.inputElement.childNodes.length === 1 && this.parent.inputElement.firstChild.nodeName !== 'DIV') ||
+            this.parent.inputElement.childNodes.length > 1) {
+            var parentEle = this.parent.createElement('div');
+            while (this.parent.inputElement.childNodes.length > 0) {
+                parentEle.appendChild(this.parent.inputElement.childNodes[0]);
             }
-        });
+            this.parent.inputElement.appendChild(parentEle);
+        }
     };
-    return SanitizeHtmlHelper;
+    
+    XhtmlValidation.prototype.clean = function (node) {
+        for (var n = 0; n < node.childNodes.length; n++) {
+            var child = node.childNodes[n];
+            if (child.nodeType === 8 || child.nodeName === 'V:IMAGE') {
+                node.removeChild(child);
+                n--;
+            }
+            else if (child.nodeType === 1) {
+                this.clean(child);
+            }
+        }
+        return this.parent.inputElement.innerHTML;
+    };
+    XhtmlValidation.prototype.ImageTags = function () {
+        var imgNodes = this.parent.inputElement.querySelectorAll('IMG');
+        for (var i = imgNodes.length - 1; i >= 0; i--) {
+            if (!imgNodes[i].hasAttribute('alt')) {
+                var img = imgNodes[i];
+                img.setAttribute('alt', '');
+            }
+        }
+    };
+    
+    XhtmlValidation.prototype.removeTags = function () {
+        var removeAttribute = [['br', 'ul'], ['br', 'ol'], ['table', 'span'], ['div', 'span'], ['p', 'span']];
+        for (var i = 0; i < removeAttribute.length; i++) {
+            this.RemoveElementNode(removeAttribute[i][0], removeAttribute[i][1]);
+        }
+    };
+    
+    XhtmlValidation.prototype.RemoveElementNode = function (rmvNode, parentNode) {
+        var parentArray = this.parent.inputElement.querySelectorAll(parentNode);
+        for (var i = 0; i < parentArray.length; i++) {
+            var rmvArray = parentArray[i].querySelectorAll(rmvNode);
+            for (var j = rmvArray.length; j > 0; j--) {
+                detach(rmvArray[j - 1]);
+            }
+        }
+    };
+    
+    XhtmlValidation.prototype.RemoveUnsupported = function () {
+        var underlineEle = this.parent.inputElement.querySelectorAll('u');
+        for (var i = underlineEle.length - 1; i >= 0; i--) {
+            var spanEle = this.parent.createElement('span');
+            spanEle.style.textDecoration = 'underline';
+            spanEle.innerHTML = underlineEle[i].innerHTML;
+            underlineEle[i].parentNode.insertBefore(spanEle, underlineEle[i]);
+            detach(underlineEle[i]);
+        }
+        var strongEle = this.parent.inputElement.querySelectorAll('strong');
+        for (var i = strongEle.length - 1; i >= 0; i--) {
+            var boldEle = this.parent.createElement('b');
+            boldEle.innerHTML = strongEle[i].innerHTML;
+            strongEle[i].parentNode.insertBefore(boldEle, strongEle[i]);
+            detach(strongEle[i]);
+        }
+        var attrArray = ['language', 'role', 'target', 'contenteditable', 'cellspacing',
+            'cellpadding', 'border', 'valign', 'colspan'];
+        for (var i = 0; i <= attrArray.length; i++) {
+            this.RemoveAttributeByName(attrArray[i]);
+        }
+    };
+    
+    XhtmlValidation.prototype.RemoveAttributeByName = function (attrName) {
+        if (this.parent.inputElement.firstChild !== null) {
+            if (this.parent.inputElement.firstChild.nodeType !== 3) {
+                for (var i = 0; i < this.parent.inputElement.childNodes.length; i++) {
+                    var ele = this.parent.inputElement.childNodes[i];
+                    if (ele.nodeType !== 3 && ele.nodeName !== 'TABLE' && ele.nodeName !== 'TBODY' && ele.nodeName !== 'THEAD' &&
+                        ele.nodeName !== 'TH' && ele.nodeName !== 'TR' && ele.nodeName !== 'TD') {
+                        if (ele.hasAttribute(attrName)) {
+                            ele.removeAttribute(attrName);
+                        }
+                        if (ele.hasChildNodes()) {
+                            for (var j = 0; j < ele.childNodes.length; j++) {
+                                var childEle = ele.childNodes[j];
+                                if (childEle.nodeType !== 3 && childEle.nodeName !== 'TABLE' && childEle.nodeName !== 'TBODY' &&
+                                    childEle.nodeName !== 'THEAD' && childEle.nodeName !== 'TH' && childEle.nodeName !== 'TR' &&
+                                    childEle.nodeName !== 'TD' && childEle.hasAttribute(attrName)) {
+                                    childEle.removeAttribute(attrName);
+                                }
+                                if (childEle.hasChildNodes()) {
+                                    for (var k = 0; k < childEle.childNodes.length; k++) {
+                                        if (childEle.childNodes[k].nodeType !== 3 && childEle.childNodes[k].nodeName !== 'TABLE' &&
+                                            childEle.childNodes[k].nodeName !== 'TBODY' && childEle.childNodes[k].nodeName !== 'THEAD' &&
+                                            childEle.childNodes[k].nodeName !== 'TH' && childEle.childNodes[k].nodeName !== 'TR'
+                                            && childEle.childNodes[k].nodeName !== 'TD'
+                                            && childEle.childNodes[k].hasAttribute(attrName)) {
+                                            childEle.childNodes[k].removeAttribute(attrName);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    };
+    
+    return XhtmlValidation;
 }());
 
 /**
@@ -11690,7 +12858,7 @@ var HtmlEditor = /** @__PURE__ @class */ (function () {
         this.parent = parent;
         this.locator = serviceLocator;
         this.renderFactory = this.locator.getService('rendererFactory');
-        this.sanitize = new SanitizeHtmlHelper();
+        this.xhtmlValidation = new XhtmlValidation(parent);
         this.addEventListener();
     }
     /**
@@ -11698,15 +12866,17 @@ var HtmlEditor = /** @__PURE__ @class */ (function () {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     HtmlEditor.prototype.destroy = function () {
         this.removeEventListener();
     };
     /**
      * @hidden
+     * @deprecated
      */
     HtmlEditor.prototype.sanitizeHelper = function (value) {
-        value = this.sanitize.initialize(value, this.parent);
+        value = sanitizeHelper(value, this.parent);
         return value;
     };
     HtmlEditor.prototype.addEventListener = function () {
@@ -11990,6 +13160,9 @@ var HtmlEditor = /** @__PURE__ @class */ (function () {
         else {
             this.parent.formatter.updateFormatter(editElement, this.contentRenderer.getDocument(), option);
         }
+        if (this.parent.enableXhtml) {
+            this.parent.notify(xhtmlValidation, {});
+        }
         if (this.parent.toolbarSettings.enable) {
             this.toolbarUpdate = new HtmlToolbarStatus(this.parent);
         }
@@ -11998,6 +13171,7 @@ var HtmlEditor = /** @__PURE__ @class */ (function () {
     /**
      * Called internally if any of the property value changed.
      * @hidden
+     * @deprecated
      */
     HtmlEditor.prototype.onPropertyChanged = function (e) {
         // On property code change here
@@ -12062,7 +13236,6 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
         this.renderFactory = this.locator.getService('rendererFactory');
         this.i10n = serviceLocator.getService('rteLocale');
         this.dialogRenderObj = serviceLocator.getService('dialogRenderObject');
-        this.sanitize = new SanitizeHtmlHelper();
         this.addEventListener();
     }
     PasteCleanup.prototype.addEventListener = function () {
@@ -12142,7 +13315,12 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
             this.saveSelection = this.nodeSelectionObj.save(range, currentDocument);
             if (this.parent.pasteCleanupSettings.prompt) {
                 e.args.preventDefault();
-                this.pasteDialog(value, args);
+                var tempDivElem = this.parent.createElement('div');
+                tempDivElem.innerHTML = value;
+                if (tempDivElem.textContent !== '' || !isNullOrUndefined(tempDivElem.querySelector('img')) ||
+                    !isNullOrUndefined(tempDivElem.querySelector('table'))) {
+                    this.pasteDialog(value, args);
+                }
             }
             else if (this.parent.pasteCleanupSettings.plainText) {
                 e.args.preventDefault();
@@ -12324,6 +13502,7 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
     /**
      * Method for image formatting when pasting
      * @hidden
+     * @deprecated
      */
     PasteCleanup.prototype.imageFormatting = function (pasteArgs, imgElement) {
         var imageElement = this.parent.createElement('span');
@@ -12464,17 +13643,20 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
         }
         this.saveSelection.restore();
         clipBoardElem.innerHTML = this.sanitizeHelper(clipBoardElem.innerHTML);
-        this.parent.formatter.editorManager.execCommand('inserthtml', 'pasteCleanup', args, function (returnArgs) {
-            extend(args, { elements: [returnArgs.elements] }, true);
-            _this.parent.formatter.onSuccess(_this.parent, args);
-        }, clipBoardElem);
-        this.parent.notify(toolbarRefresh, {});
-        if (!isNullOrUndefined(this.parent.insertImageSettings.saveUrl)) {
-            this.imgUploading(this.parent.inputElement);
+        if (clipBoardElem.textContent !== '' || !isNullOrUndefined(clipBoardElem.querySelector('img')) ||
+            !isNullOrUndefined(clipBoardElem.querySelector('table'))) {
+            this.parent.formatter.editorManager.execCommand('inserthtml', 'pasteCleanup', args, function (returnArgs) {
+                extend(args, { elements: [returnArgs.elements] }, true);
+                _this.parent.formatter.onSuccess(_this.parent, args);
+            }, clipBoardElem);
+            this.parent.notify(toolbarRefresh, {});
+            if (!isNullOrUndefined(this.parent.insertImageSettings.saveUrl)) {
+                this.imgUploading(this.parent.inputElement);
+            }
         }
     };
     PasteCleanup.prototype.sanitizeHelper = function (value) {
-        value = this.sanitize.initialize(value, this.parent);
+        value = sanitizeHelper(value, this.parent);
         return value;
     };
     //Plain Formatting
@@ -12839,6 +14021,179 @@ var Resize = /** @__PURE__ @class */ (function () {
 }());
 
 /**
+ * `FullScreen` module is used to maximize and minimize screen
+ */
+var FullScreen = /** @__PURE__ @class */ (function () {
+    function FullScreen(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    /**
+     * showFullScreen method
+     * @hidden
+     * @deprecated
+     */
+    FullScreen.prototype.showFullScreen = function (event) {
+        if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown') {
+            this.parent.quickToolbarModule.hideQuickToolbars();
+        }
+        this.scrollableParent = getScrollableParent(this.parent.element);
+        if (!this.parent.element.classList.contains(CLS_FULL_SCREEN)) {
+            this.parent.trigger(actionBegin, { requestType: 'Maximize', targetItem: 'Maximize', args: event });
+            if (this.parent.toolbarSettings.enableFloating &&
+                !this.parent.inlineMode.enable && this.parent.toolbarSettings.enable) {
+                this.parent.getToolbarElement().style.width = '100%';
+                this.parent.getToolbarElement().style.top = '0px';
+            }
+            this.parent.element.classList.add(CLS_FULL_SCREEN);
+            this.toggleParentOverflow(true);
+            this.parent.setContentHeight();
+            if (this.parent.toolbarModule) {
+                if (!this.parent.getBaseToolbarObject().toolbarObj.items[0].properties) {
+                    this.parent.getBaseToolbarObject().toolbarObj.removeItems(0);
+                }
+                if (Browser.isDevice) {
+                    this.parent.toolbarModule.removeFixedTBarClass();
+                }
+                this.parent.toolbarModule.updateItem({
+                    targetItem: 'Maximize',
+                    updateItem: 'Minimize',
+                    baseToolbar: this.parent.getBaseToolbarObject()
+                });
+            }
+            this.parent.trigger(actionComplete, { requestType: 'Maximize', targetItem: 'Maximize', args: event });
+        }
+    };
+    /**
+     * hideFullScreen method
+     * @hidden
+     * @deprecated
+     */
+    FullScreen.prototype.hideFullScreen = function (event) {
+        if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown') {
+            this.parent.quickToolbarModule.hideQuickToolbars();
+        }
+        if (this.parent.element.classList.contains(CLS_FULL_SCREEN)) {
+            this.parent.element.classList.remove(CLS_FULL_SCREEN);
+            var elem = document.querySelectorAll('.e-rte-overflow');
+            for (var i = 0; i < elem.length; i++) {
+                removeClass([elem[i]], ['e-rte-overflow']);
+            }
+            this.parent.trigger(actionBegin, { requestType: 'Minimize', targetItem: 'Minimize', args: event });
+            this.parent.setContentHeight();
+            if (this.parent.toolbarModule) {
+                if (!this.parent.getBaseToolbarObject().toolbarObj.items[0].properties) {
+                    this.parent.getBaseToolbarObject().toolbarObj.removeItems(0);
+                }
+                this.parent.toolbarModule.updateItem({
+                    targetItem: 'Minimize',
+                    updateItem: 'Maximize',
+                    baseToolbar: this.parent.getBaseToolbarObject()
+                });
+                if (Browser.isDevice && this.parent.inlineMode.enable) {
+                    this.parent.toolbarModule.addFixedTBarClass();
+                }
+            }
+            this.parent.trigger(actionComplete, { requestType: 'Minimize', targetItem: 'Minimize', args: event });
+        }
+    };
+    FullScreen.prototype.toggleParentOverflow = function (isAdd) {
+        if (isNullOrUndefined(this.scrollableParent)) {
+            return;
+        }
+        for (var i = 0; i < this.scrollableParent.length; i++) {
+            if (this.scrollableParent[i].nodeName === '#document') {
+                var elem = document.querySelector('body');
+                addClass([elem], ['e-rte-overflow']);
+            }
+            else {
+                var elem = this.scrollableParent[i];
+                addClass([elem], ['e-rte-overflow']);
+            }
+        }
+    };
+    FullScreen.prototype.onKeyDown = function (event) {
+        var originalEvent = event.args;
+        switch (originalEvent.action) {
+            case 'full-screen':
+                this.showFullScreen(event.args);
+                originalEvent.preventDefault();
+                break;
+            case 'escape':
+                this.hideFullScreen(event.args);
+                originalEvent.preventDefault();
+                break;
+        }
+    };
+    FullScreen.prototype.addEventListener = function () {
+        this.parent.on(keyDown, this.onKeyDown, this);
+        this.parent.on(destroy, this.destroy, this);
+    };
+    FullScreen.prototype.removeEventListener = function () {
+        this.parent.on(keyDown, this.onKeyDown, this);
+        this.parent.off(destroy, this.removeEventListener);
+    };
+    /**
+     * destroy method
+     * @hidden
+     * @deprecated
+     */
+    FullScreen.prototype.destroy = function () {
+        if (this.parent.element.classList.contains(CLS_FULL_SCREEN)) {
+            this.toggleParentOverflow(false);
+        }
+        this.removeEventListener();
+    };
+    return FullScreen;
+}());
+
+function setAttributes(htmlAttributes, rte, isFrame, initial) {
+    var target;
+    if (isFrame) {
+        var iFrame = rte.contentModule.getDocument();
+        target = iFrame.querySelector('body');
+    }
+    else {
+        target = rte.element;
+    }
+    if (Object.keys(htmlAttributes).length) {
+        for (var _i = 0, _a = Object.keys(htmlAttributes); _i < _a.length; _i++) {
+            var htmlAttr = _a[_i];
+            if (htmlAttr === 'class') {
+                target.classList.add(htmlAttributes[htmlAttr]);
+            }
+            else if (htmlAttr === 'disabled' && htmlAttributes[htmlAttr] === 'disabled') {
+                rte.enabled = false;
+                rte.setEnable();
+            }
+            else if (htmlAttr === 'readonly' && htmlAttributes[htmlAttr] === 'readonly') {
+                rte.readonly = true;
+                rte.setReadOnly(initial);
+            }
+            else if (htmlAttr === 'style') {
+                target.setAttribute('style', htmlAttributes[htmlAttr]);
+            }
+            else if (htmlAttr === 'tabindex') {
+                rte.inputElement.setAttribute('tabindex', htmlAttributes[htmlAttr]);
+            }
+            else if (htmlAttr === 'placeholder') {
+                rte.placeholder = htmlAttributes[htmlAttr];
+                rte.setPlaceHolder();
+            }
+            else {
+                var validateAttr = ['name', 'required'];
+                if (validateAttr.indexOf(htmlAttr) > -1) {
+                    rte.valueContainer.setAttribute(htmlAttr, htmlAttributes[htmlAttr]);
+                }
+                else {
+                    target.setAttribute(htmlAttr, htmlAttributes[htmlAttr]);
+                }
+            }
+        }
+    }
+}
+
+/**
  * Action export
  */
 
@@ -12849,6 +14204,7 @@ var Resize = /** @__PURE__ @class */ (function () {
 /**
  * Content module is used to render RichTextEditor content
  * @hidden
+ * @deprecated
  */
 var Render = /** @__PURE__ @class */ (function () {
     /**
@@ -12862,6 +14218,8 @@ var Render = /** @__PURE__ @class */ (function () {
     }
     /**
      * To initialize RichTextEditor header, content and footer rendering
+     * @hidden
+     * @deprecated
      */
     Render.prototype.render = function () {
         var rteObj = this.parent;
@@ -13023,6 +14381,10 @@ var Link = /** @__PURE__ @class */ (function () {
         }
     };
     Link.prototype.editAreaClickHandler = function (e) {
+        if (this.parent.readonly) {
+            this.hideLinkQuickToolbar();
+            return;
+        }
         var args = e.args;
         var showOnRightClick = this.parent.quickToolbarSettings.showOnRightClick;
         if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) {
@@ -13189,7 +14551,7 @@ var Link = /** @__PURE__ @class */ (function () {
             e.selection.range.endOffset)) || e.module === 'Markdown') {
             linkText.value = selectText;
         }
-        EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
+        EventHandler.add(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick, this);
         if (this.quickToolObj) {
             this.hideLinkQuickToolbar();
             if (this.quickToolObj.inlineQTBar && document.body.contains(this.quickToolObj.inlineQTBar.element)) {
@@ -13298,7 +14660,9 @@ var Link = /** @__PURE__ @class */ (function () {
         return (selectParent ? selectParent : element);
     };
     Link.prototype.editLink = function (e) {
+        var selectedNode = this.getAnchorNode(e.selectNode[0]);
         var selectParentEle = this.getAnchorNode(e.selectParent[0]);
+        selectParentEle = selectedNode.nodeName === 'A' ? selectedNode : selectParentEle;
         if (selectParentEle.classList.contains('e-rte-anchor') || selectParentEle.tagName === 'A') {
             var linkUpdate = this.i10n.getConstant('dialogUpdate');
             var inputDetails = {
@@ -13337,6 +14701,7 @@ var Link = /** @__PURE__ @class */ (function () {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     Link.prototype.destroy = function () {
         this.removeEventListener();
@@ -13403,16 +14768,16 @@ var Image = /** @__PURE__ @class */ (function () {
         this.parent.off(initialEnd, this.afterRender);
         this.parent.off(paste, this.imagePaste);
         this.parent.off(destroy, this.removeEventListener);
-        this.parent.element.removeEventListener('drop', this.dragDrop.bind(this), true);
-        this.parent.element.removeEventListener('dragstart', this.dragStart.bind(this), true);
-        this.parent.element.removeEventListener('dragenter', this.dragEnter.bind(this), true);
-        this.parent.element.removeEventListener('dragover', this.dragOver.bind(this), true);
+        this.parent.inputElement.ownerDocument.removeEventListener('drop', this.dragDrop.bind(this), true);
+        this.parent.inputElement.ownerDocument.removeEventListener('dragstart', this.dragStart.bind(this), true);
+        this.parent.inputElement.ownerDocument.removeEventListener('dragenter', this.dragEnter.bind(this), true);
+        this.parent.inputElement.ownerDocument.removeEventListener('dragover', this.dragOver.bind(this), true);
         if (!isNullOrUndefined(this.contentModule)) {
             EventHandler.remove(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.imageClick);
             this.parent.formatter.editorManager.observer.off(checkUndo, this.undoStack);
             if (this.parent.insertImageSettings.resize) {
                 EventHandler.remove(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart);
-                EventHandler.remove(this.contentModule.getDocument(), 'mousedown', this.onDocumentClick);
+                EventHandler.remove(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick);
             }
         }
     };
@@ -13426,7 +14791,7 @@ var Image = /** @__PURE__ @class */ (function () {
         EventHandler.add(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.imageClick, this);
         if (this.parent.insertImageSettings.resize) {
             EventHandler.add(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart, this);
-            EventHandler.add(this.contentModule.getDocument(), 'mousedown', this.onDocumentClick, this);
+            EventHandler.add(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick, this);
         }
         this.parent.inputElement.ownerDocument.addEventListener('drop', this.dragDrop.bind(this), true);
         this.parent.inputElement.ownerDocument.addEventListener('dragstart', this.dragStart.bind(this), true);
@@ -13466,6 +14831,9 @@ var Image = /** @__PURE__ @class */ (function () {
     };
     Image.prototype.resizeStart = function (e, ele) {
         var _this = this;
+        if (this.parent.readonly) {
+            return;
+        }
         var target = ele ? ele : e.target;
         if (target.tagName === 'IMG') {
             this.parent.preventDefaultResize(e);
@@ -13980,6 +15348,10 @@ var Image = /** @__PURE__ @class */ (function () {
         }
     };
     Image.prototype.editAreaClickHandler = function (e) {
+        if (this.parent.readonly) {
+            this.hideImageQuickToolbar();
+            return;
+        }
         var args = e.args;
         var showOnRightClick = this.parent.quickToolbarSettings.showOnRightClick;
         if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) {
@@ -14631,7 +16003,8 @@ var Image = /** @__PURE__ @class */ (function () {
                             var url = _this.parent.insertImageSettings.saveFormat === 'Base64' ? reader_1.result :
                                 URL.createObjectURL(proxy.url(reader_1.result));
                             proxy.uploadUrl = {
-                                url: url, selection: save, altText: altText, selectParent: selectParent,
+                                url: url, selection: save, altText: altText,
+                                selectParent: selectParent,
                                 width: {
                                     width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
                                     maxWidth: proxy.parent.insertImageSettings.maxWidth
@@ -14654,8 +16027,7 @@ var Image = /** @__PURE__ @class */ (function () {
                     if (!isNullOrUndefined(_this.parent.insertImageSettings.path)) {
                         var url = _this.parent.insertImageSettings.path + e.file.name;
                         proxy.uploadUrl = {
-                            url: url, selection: save, altText: e.file.name,
-                            selectParent: selectParent,
+                            url: url, selection: save, altText: altText, selectParent: selectParent,
                             width: {
                                 width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
                                 maxWidth: proxy.parent.insertImageSettings.maxWidth
@@ -14720,10 +16092,12 @@ var Image = /** @__PURE__ @class */ (function () {
     };
     
     Image.prototype.dragOver = function (e) {
-        e.dataTransfer.dropEffect = 'copy';
         if ((Browser.info.name === 'edge' && e.dataTransfer.items[0].type.split('/')[0].indexOf('image') > -1) ||
             (Browser.isIE && e.dataTransfer.types[0] === 'Files')) {
             e.preventDefault();
+        }
+        else {
+            return true;
         }
     };
     
@@ -15001,7 +16375,7 @@ var Image = /** @__PURE__ @class */ (function () {
     };
     Image.prototype.imagePaste = function (args) {
         var _this = this;
-        if (args.text.length === 0) {
+        if (args.text.length === 0 && !isNullOrUndefined(args.file)) {
             var proxy_1 = this;
             var reader_2 = new FileReader();
             args.args.preventDefault();
@@ -15062,6 +16436,7 @@ var Image = /** @__PURE__ @class */ (function () {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     Image.prototype.destroy = function () {
         this.removeEventListener();
@@ -15078,6 +16453,7 @@ var Image = /** @__PURE__ @class */ (function () {
 /**
  * Content module is used to render RichTextEditor content
  * @hidden
+ * @deprecated
  */
 var ViewSource = /** @__PURE__ @class */ (function () {
     /**
@@ -15153,6 +16529,12 @@ var ViewSource = /** @__PURE__ @class */ (function () {
                 break;
         }
     };
+    /**
+     * sourceCode method
+     * @param  {Element} panel
+     * @hidden
+     * @deprecated
+     */
     ViewSource.prototype.sourceCode = function (args) {
         this.parent.isBlur = false;
         this.parent.trigger(actionBegin, { requestType: 'SourceCode', targetItem: 'SourceCode', args: args });
@@ -15209,6 +16591,12 @@ var ViewSource = /** @__PURE__ @class */ (function () {
         this.parent.trigger(actionComplete, { requestType: 'SourceCode', targetItem: 'SourceCode', args: args });
         this.parent.invokeChangeEvent();
     };
+    /**
+     * updateSourceCode method
+     * @param  {Element} panel
+     * @hidden
+     * @deprecated
+     */
     ViewSource.prototype.updateSourceCode = function (args) {
         this.parent.isBlur = false;
         this.parent.trigger(actionBegin, { requestType: 'Preview', targetItem: 'Preview', args: args });
@@ -15254,15 +16642,29 @@ var ViewSource = /** @__PURE__ @class */ (function () {
                 this.contentModule.getEditPanel().childNodes[0].tagName === 'P' &&
                 this.contentModule.getEditPanel().innerHTML.length === 7) ? '' : this.parent.value;
     };
+    /**
+     * getPanel method
+     * @param  {Element} panel
+     * @hidden
+     * @deprecated
+     */
     ViewSource.prototype.getPanel = function () {
         return this.parent.element.querySelector('.e-rte-srctextarea');
     };
+    /**
+     * getViewPanel method
+     * @param  {Element} panel
+     * @hidden
+     * @deprecated
+     */
     ViewSource.prototype.getViewPanel = function () {
         return (this.parent.iframeSettings.enable && this.getPanel()) ? this.getPanel().parentElement : this.getPanel();
     };
     /**
      * Destroy the entire RichTextEditor.
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     ViewSource.prototype.destroy = function () {
         this.removeEventListener();
@@ -15432,13 +16834,10 @@ var Table = /** @__PURE__ @class */ (function () {
         }
     };
     Table.prototype.verticalAlign = function (args, e) {
-        var tdEle = (args.selection.range.startContainer.nodeName === 'TD' ||
-            args.selection.range.startContainer.nodeName === 'TH') ? args.selection.range.startContainer :
-            args.selection.range.startContainer.parentNode;
-        if (tdEle.nodeName !== 'TD' && tdEle.nodeName !== 'TH') {
-            return;
+        var tdEle = closest(args.selectParent[0], 'td') || closest(args.selectParent[0], 'th');
+        if (tdEle) {
+            this.parent.formatter.process(this.parent, e, e, { tableCell: tdEle, subCommand: e.item.subCommand });
         }
-        this.parent.formatter.process(this.parent, e, e, { tableCell: tdEle, subCommand: e.item.subCommand });
     };
     Table.prototype.tableStyles = function (args, command) {
         var table = closest(args.selectParent[0], 'table');
@@ -15586,6 +16985,9 @@ var Table = /** @__PURE__ @class */ (function () {
         this.parent.formatter.process(this.parent, e, e.originalEvent, { selection: selection, subCommand: e.item.subCommand });
     };
     Table.prototype.editAreaClickHandler = function (e) {
+        if (this.parent.readonly) {
+            return;
+        }
         var args = e.args;
         var showOnRightClick = this.parent.quickToolbarSettings.showOnRightClick;
         if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) {
@@ -15692,6 +17094,9 @@ var Table = /** @__PURE__ @class */ (function () {
         }
     };
     Table.prototype.resizeHelper = function (e) {
+        if (this.parent.readonly) {
+            return;
+        }
         var target = e.target || e.targetTouches[0].target;
         var closestTable = closest(target, 'table');
         if (target.nodeName === 'TABLE' || target.nodeName === 'TD' || target.nodeName === 'TH') {
@@ -15797,6 +17202,9 @@ var Table = /** @__PURE__ @class */ (function () {
     };
     Table.prototype.resizeStart = function (e) {
         var _this = this;
+        if (this.parent.readonly) {
+            return;
+        }
         if (Browser.isDevice) {
             this.resizeHelper(e);
         }
@@ -16341,6 +17749,7 @@ var Table = /** @__PURE__ @class */ (function () {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     Table.prototype.destroy = function () {
         this.removeEventListener();
@@ -16355,10 +17764,54 @@ var Table = /** @__PURE__ @class */ (function () {
 }());
 
 /**
- * Models
+ * Dialog Renderer
+ */
+var DialogRenderer = /** @__PURE__ @class */ (function () {
+    function DialogRenderer(parent) {
+        this.parent = parent;
+    }
+    /**
+     * dialog render method
+     * @hidden
+     * @deprecated
+     */
+    DialogRenderer.prototype.render = function (e) {
+        var dlgObj;
+        if (isNullOrUndefined(e.beforeOpen)) {
+            e.beforeOpen = this.beforeOpen.bind(this);
+        }
+        if (isNullOrUndefined(e.open)) {
+            e.open = this.open.bind(this);
+        }
+        if (isNullOrUndefined(e.close)) {
+            e.close = this.close.bind(this);
+        }
+        dlgObj = new Dialog(e);
+        dlgObj.isStringTemplate = true;
+        return dlgObj;
+    };
+    DialogRenderer.prototype.beforeOpen = function (args) {
+        this.parent.trigger(beforeDialogOpen, args);
+    };
+    DialogRenderer.prototype.open = function (args) {
+        this.parent.trigger(dialogOpen, args);
+    };
+    /**
+     * dialog close method
+     * @hidden
+     * @deprecated
+     */
+    DialogRenderer.prototype.close = function (args) {
+        this.parent.trigger(dialogClose, args);
+    };
+    return DialogRenderer;
+}());
+
+/**
+ * Renderer
  */
 
-/** @hidden  */
+/** @hidden @deprecated  */
 var executeGroup = {
     'bold': {
         command: 'Style',
@@ -16379,6 +17832,11 @@ var executeGroup = {
         command: 'Style',
         subCommand: 'StrikeThrough',
         value: 'span'
+    },
+    'insertCode': {
+        command: 'Formats',
+        subCommand: 'Pre',
+        value: 'pre'
     },
     'superscript': {
         command: 'Effects',
@@ -16930,198 +18388,6 @@ var InlineMode = /** @__PURE__ @class */ (function (_super) {
     return InlineMode;
 }(ChildProperty));
 
-function setAttributes(htmlAttributes, rte, isFrame, initial) {
-    var target;
-    if (isFrame) {
-        var iFrame = rte.contentModule.getDocument();
-        target = iFrame.querySelector('body');
-    }
-    else {
-        target = rte.element;
-    }
-    if (Object.keys(htmlAttributes).length) {
-        for (var _i = 0, _a = Object.keys(htmlAttributes); _i < _a.length; _i++) {
-            var htmlAttr = _a[_i];
-            if (htmlAttr === 'class') {
-                target.classList.add(htmlAttributes[htmlAttr]);
-            }
-            else if (htmlAttr === 'disabled' && htmlAttributes[htmlAttr] === 'disabled') {
-                rte.enabled = false;
-                rte.setEnable();
-            }
-            else if (htmlAttr === 'readonly' && htmlAttributes[htmlAttr] === 'readonly') {
-                rte.readonly = true;
-                rte.setReadOnly(initial);
-            }
-            else if (htmlAttr === 'style') {
-                target.setAttribute('style', htmlAttributes[htmlAttr]);
-            }
-            else if (htmlAttr === 'tabindex') {
-                rte.inputElement.setAttribute('tabindex', htmlAttributes[htmlAttr]);
-            }
-            else if (htmlAttr === 'placeholder') {
-                rte.placeholder = htmlAttributes[htmlAttr];
-                rte.setPlaceHolder();
-            }
-            else {
-                var validateAttr = ['name', 'required'];
-                if (validateAttr.indexOf(htmlAttr) > -1) {
-                    rte.valueContainer.setAttribute(htmlAttr, htmlAttributes[htmlAttr]);
-                }
-                else {
-                    target.setAttribute(htmlAttr, htmlAttributes[htmlAttr]);
-                }
-            }
-        }
-    }
-}
-
-/**
- * `FullScreen` module is used to maximize and minimize screen
- */
-var FullScreen = /** @__PURE__ @class */ (function () {
-    function FullScreen(parent) {
-        this.parent = parent;
-        this.addEventListener();
-    }
-    FullScreen.prototype.showFullScreen = function (event) {
-        if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown') {
-            this.parent.quickToolbarModule.hideQuickToolbars();
-        }
-        this.scrollableParent = getScrollableParent(this.parent.element);
-        if (!this.parent.element.classList.contains(CLS_FULL_SCREEN)) {
-            this.parent.trigger(actionBegin, { requestType: 'Maximize', targetItem: 'Maximize', args: event });
-            if (this.parent.toolbarSettings.enableFloating &&
-                !this.parent.inlineMode.enable && this.parent.toolbarSettings.enable) {
-                this.parent.getToolbarElement().style.width = '100%';
-                this.parent.getToolbarElement().style.top = '0px';
-            }
-            this.parent.element.classList.add(CLS_FULL_SCREEN);
-            this.toggleParentOverflow(true);
-            this.parent.setContentHeight();
-            if (this.parent.toolbarModule) {
-                if (!this.parent.getBaseToolbarObject().toolbarObj.items[0].properties) {
-                    this.parent.getBaseToolbarObject().toolbarObj.removeItems(0);
-                }
-                if (Browser.isDevice) {
-                    this.parent.toolbarModule.removeFixedTBarClass();
-                }
-                this.parent.toolbarModule.updateItem({
-                    targetItem: 'Maximize',
-                    updateItem: 'Minimize',
-                    baseToolbar: this.parent.getBaseToolbarObject()
-                });
-            }
-            this.parent.trigger(actionComplete, { requestType: 'Maximize', targetItem: 'Maximize', args: event });
-        }
-    };
-    FullScreen.prototype.hideFullScreen = function (event) {
-        if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown') {
-            this.parent.quickToolbarModule.hideQuickToolbars();
-        }
-        if (this.parent.element.classList.contains(CLS_FULL_SCREEN)) {
-            this.parent.element.classList.remove(CLS_FULL_SCREEN);
-            var elem = document.querySelectorAll('.e-rte-overflow');
-            for (var i = 0; i < elem.length; i++) {
-                removeClass([elem[i]], ['e-rte-overflow']);
-            }
-            this.parent.trigger(actionBegin, { requestType: 'Minimize', targetItem: 'Minimize', args: event });
-            this.parent.setContentHeight();
-            if (this.parent.toolbarModule) {
-                if (!this.parent.getBaseToolbarObject().toolbarObj.items[0].properties) {
-                    this.parent.getBaseToolbarObject().toolbarObj.removeItems(0);
-                }
-                this.parent.toolbarModule.updateItem({
-                    targetItem: 'Minimize',
-                    updateItem: 'Maximize',
-                    baseToolbar: this.parent.getBaseToolbarObject()
-                });
-                if (Browser.isDevice && this.parent.inlineMode.enable) {
-                    this.parent.toolbarModule.addFixedTBarClass();
-                }
-            }
-            this.parent.trigger(actionComplete, { requestType: 'Minimize', targetItem: 'Minimize', args: event });
-        }
-    };
-    FullScreen.prototype.toggleParentOverflow = function (isAdd) {
-        if (isNullOrUndefined(this.scrollableParent)) {
-            return;
-        }
-        for (var i = 0; i < this.scrollableParent.length; i++) {
-            if (this.scrollableParent[i].nodeName === '#document') {
-                var elem = document.querySelector('body');
-                addClass([elem], ['e-rte-overflow']);
-            }
-            else {
-                var elem = this.scrollableParent[i];
-                addClass([elem], ['e-rte-overflow']);
-            }
-        }
-    };
-    FullScreen.prototype.onKeyDown = function (event) {
-        var originalEvent = event.args;
-        switch (originalEvent.action) {
-            case 'full-screen':
-                this.showFullScreen(event.args);
-                originalEvent.preventDefault();
-                break;
-            case 'escape':
-                this.hideFullScreen(event.args);
-                originalEvent.preventDefault();
-                break;
-        }
-    };
-    FullScreen.prototype.addEventListener = function () {
-        this.parent.on(keyDown, this.onKeyDown, this);
-        this.parent.on(destroy, this.destroy, this);
-    };
-    FullScreen.prototype.removeEventListener = function () {
-        this.parent.on(keyDown, this.onKeyDown, this);
-        this.parent.off(destroy, this.removeEventListener);
-    };
-    FullScreen.prototype.destroy = function () {
-        if (this.parent.element.classList.contains(CLS_FULL_SCREEN)) {
-            this.toggleParentOverflow(false);
-        }
-        this.removeEventListener();
-    };
-    return FullScreen;
-}());
-
-/**
- * Dialog Renderer
- */
-var DialogRenderer = /** @__PURE__ @class */ (function () {
-    function DialogRenderer(parent) {
-        this.parent = parent;
-    }
-    DialogRenderer.prototype.render = function (e) {
-        var dlgObj;
-        if (isNullOrUndefined(e.beforeOpen)) {
-            e.beforeOpen = this.beforeOpen.bind(this);
-        }
-        if (isNullOrUndefined(e.open)) {
-            e.open = this.open.bind(this);
-        }
-        if (isNullOrUndefined(e.close)) {
-            e.close = this.close.bind(this);
-        }
-        dlgObj = new Dialog(e);
-        dlgObj.isStringTemplate = true;
-        return dlgObj;
-    };
-    DialogRenderer.prototype.beforeOpen = function (args) {
-        this.parent.trigger(beforeDialogOpen, args);
-    };
-    DialogRenderer.prototype.open = function (args) {
-        this.parent.trigger(dialogOpen, args);
-    };
-    DialogRenderer.prototype.close = function (args) {
-        this.parent.trigger(dialogClose, args);
-    };
-    return DialogRenderer;
-}());
-
 var __extends$4 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -17169,14 +18435,17 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         _this.defaultResetValue = null;
         /**
          * @hidden
+         * @deprecated
          */
         _this.isFocusOut = false;
         /**
          * @hidden
+         * @deprecated
          */
         _this.isRTE = false;
         /**
          * @hidden
+         * @deprecated
          */
         _this.isBlur = true;
         _this.needsID = true;
@@ -17186,6 +18455,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
      * To provide the array of modules needed for component rendering
      * @return {ModuleDeclaration[]}
      * @hidden
+     * @deprecated
      */
     RichTextEditor.prototype.requiredModules = function () {
         var modules = [];
@@ -17244,6 +18514,11 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             this.inputElement.setAttribute('tabindex', '-1');
         }
     };
+    /**
+     * setEnable method
+     * @hidden
+     * @deprecated
+     */
     RichTextEditor.prototype.setEnable = function () {
         this.updateEnable();
         (this.enabled) ? this.eventInitializer() : this.unWireEvents();
@@ -17332,6 +18607,11 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         addClass([this.valueContainer], CLS_RTE_HIDDEN);
         this.element.appendChild(this.valueContainer);
     };
+    /**
+     * getPersistData method
+     * @hidden
+     * @deprecated
+     */
     RichTextEditor.prototype.getPersistData = function () {
         return this.addOnPersist(['value']);
     };
@@ -17456,6 +18736,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     /**
      * For internal use only - To Initialize the component rendering.
      * @private
+     * @deprecated
      */
     RichTextEditor.prototype.render = function () {
         if (this.value && !this.valueTemplate) {
@@ -17487,6 +18768,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     /**
      * For internal use only - Initialize the event handler
      * @private
+     * @deprecated
      */
     RichTextEditor.prototype.eventInitializer = function () {
         this.wireEvents();
@@ -17494,10 +18776,24 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     /**
      * For internal use only - keydown the event handler;
      * @private
+     * @deprecated
      */
     RichTextEditor.prototype.keyDown = function (e) {
         this.notify(keyDown, { member: 'keydown', args: e });
         this.restrict(e);
+        if (this.editorMode === 'HTML' && ((e.which === 8 && e.code === 'Backspace') || (e.which === 46 && e.code === 'Delete'))) {
+            var range = this.getRange();
+            var startNode = range.startContainer.nodeName === '#text' ? range.startContainer.parentElement :
+                range.startContainer;
+            if (closest(startNode, 'pre') &&
+                (e.which === 8 && range.startContainer.textContent.charCodeAt(range.startOffset - 1) === 8203) ||
+                (e.which === 46 && range.startContainer.textContent.charCodeAt(range.startOffset) === 8203)) {
+                var regEx = new RegExp(String.fromCharCode(8203), 'g');
+                var pointer = e.which === 8 ? range.startOffset - 1 : range.startOffset;
+                range.startContainer.textContent = range.startContainer.textContent.replace(regEx, '');
+                this.formatter.editorManager.nodeSelection.setCursorPoint(this.contentModule.getDocument(), range.startContainer, pointer);
+            }
+        }
         if (this.formatter.getUndoRedoStack().length === 0) {
             this.formatter.saveData();
         }
@@ -17536,6 +18832,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * @hidden
+     * @deprecated
      */
     RichTextEditor.prototype.serializeValue = function (value) {
         if (this.editorMode === 'HTML' && !isNullOrUndefined(value)) {
@@ -17558,6 +18855,11 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     RichTextEditor.prototype.sanitizeHtml = function (value) {
         return this.serializeValue(value);
     };
+    /**
+     * updateValue method
+     * @hidden
+     * @deprecated
+     */
     RichTextEditor.prototype.updateValue = function (value) {
         if (isNullOrUndefined(value)) {
             var inputVal = this.inputElement.innerHTML;
@@ -17603,24 +18905,28 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * @hidden
+     * @deprecated
      */
     RichTextEditor.prototype.ensureModuleInjected = function (module) {
         return this.getInjectedModules().indexOf(module) >= 0;
     };
     /**
      * @hidden
+     * @deprecated
      */
     RichTextEditor.prototype.onCopy = function () {
         this.contentModule.getDocument().execCommand('copy', false, null);
     };
     /**
      * @hidden
+     * @deprecated
      */
     RichTextEditor.prototype.onCut = function () {
         this.contentModule.getDocument().execCommand('cut', false, null);
     };
     /**
      * @hidden
+     * @deprecated
      */
     RichTextEditor.prototype.onPaste = function (e) {
         var _this = this;
@@ -17664,6 +18970,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * @hidden
+     * @deprecated
      */
     RichTextEditor.prototype.clipboardAction = function (action, event) {
         switch (action.toLowerCase()) {
@@ -17801,6 +19108,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     /**
      * For internal use only - Get the module name.
      * @private
+     * @deprecated
      */
     RichTextEditor.prototype.getModuleName = function () {
         return 'richtexteditor';
@@ -17808,6 +19116,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     /**
      * Called internally if any of the property value changed.
      * @hidden
+     * @deprecated
      */
     RichTextEditor.prototype.onPropertyChanged = function (newProp, oldProp) {
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
@@ -17822,6 +19131,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
                     }
                     this.updatePanelValue();
                     this.setPlaceHolder();
+                    this.notify(xhtmlValidation, { module: 'XhtmlValidation', newProp: newProp, oldProp: oldProp });
                     if (this.showCharCount) {
                         this.countModule.refresh();
                     }
@@ -17917,6 +19227,9 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
                 case 'undoRedoTimer':
                     this.formatter.editorManager.observer.notify(MODEL_CHANGED, { newProp: newProp, oldProp: oldProp });
                     break;
+                case 'enableXhtml':
+                    this.notify(xhtmlValidation, { module: 'XhtmlValidation', newProp: newProp, oldProp: oldProp });
+                    break;
                 case 'quickToolbarSettings':
                     newProp.quickToolbarSettings.showOnRightClick ? this.wireContextEvent() : this.unWireContextEvent();
                     this.notify(modelChanged, { newProp: newProp, oldProp: oldProp });
@@ -17929,6 +19242,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * @hidden
+     * @deprecated
      */
     RichTextEditor.prototype.updateValueData = function () {
         if (this.enableHtmlEncode) {
@@ -17985,6 +19299,11 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             this.element.style.height = 'auto';
         }
     };
+    /**
+     * setPlaceHolder method
+     * @hidden
+     * @deprecated
+     */
     RichTextEditor.prototype.setPlaceHolder = function () {
         if (this.inputElement && this.placeholder && this.iframeSettings.enable !== true) {
             if (this.editorMode !== 'Markdown') {
@@ -18037,6 +19356,11 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     RichTextEditor.prototype.updateReadOnly = function () {
         this.notify(readOnlyMode, { editPanel: this.inputElement, mode: this.readonly });
     };
+    /**
+     * setReadOnly method
+     * @hidden
+     * @deprecated
+     */
     RichTextEditor.prototype.setReadOnly = function (initial) {
         this.updateReadOnly();
         if (!initial) {
@@ -18236,6 +19560,11 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    /**
+     * setContentHeight method
+     * @hidden
+     * @deprecated
+     */
     RichTextEditor.prototype.setContentHeight = function (target, isExpand) {
         var heightValue;
         var topValue = 0;
@@ -18304,6 +19633,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * @hidden
+     * @deprecated
      */
     RichTextEditor.prototype.getBaseToolbarObject = function () {
         var tbObj;
@@ -18317,16 +19647,23 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * @hidden
+     * @deprecated
      */
     RichTextEditor.prototype.getToolbar = function () {
         return this.toolbarModule ? this.toolbarModule.getToolbarElement() : null;
     };
     /**
      * @hidden
+     * @deprecated
      */
     RichTextEditor.prototype.getToolbarElement = function () {
         return this.toolbarModule && this.toolbarModule.getToolbarElement();
     };
+    /**
+     * getID method
+     * @hidden
+     * @deprecated
+     */
     RichTextEditor.prototype.getID = function () {
         return (this.originalElement.tagName === 'TEXTAREA' ? this.valueContainer.id : this.element.id);
     };
@@ -18342,6 +19679,11 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             e.preventDefault();
         }
     };
+    /**
+     * preventDefaultResize method
+     * @hidden
+     * @deprecated
+     */
     RichTextEditor.prototype.preventDefaultResize = function (e) {
         if (Browser.info.name === 'msie') {
             this.contentModule.getEditPanel().addEventListener('mscontrolselect', this.preventImgResize);
@@ -18487,6 +19829,11 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             this.isRTE = true;
         }
     };
+    /**
+     * invokeChangeEvent method
+     * @hidden
+     * @deprecated
+     */
     RichTextEditor.prototype.invokeChangeEvent = function () {
         var eventArgs = {
             value: this.value
@@ -18498,6 +19845,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * @hidden
+     * @deprecated
      */
     RichTextEditor.prototype.wireScrollElementsEvents = function () {
         this.scrollParentElements = getScrollableParent(this.element);
@@ -18525,6 +19873,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * @hidden
+     * @deprecated
      */
     RichTextEditor.prototype.unWireScrollElementsEvents = function () {
         this.scrollParentElements = getScrollableParent(this.element);
@@ -18553,6 +19902,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * @hidden
+     * @deprecated
      */
     RichTextEditor.prototype.autoResize = function () {
         var _this = this;
@@ -18562,7 +19912,8 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             }
             else if (this.iframeSettings.enable) {
                 var iframeElement_1 = this.element.querySelector('#' + this.getID() + '_rte-view');
-                setTimeout(function () { _this.setAutoHeight(iframeElement_1); }, 0);
+                setTimeout(function () { _this.setAutoHeight(iframeElement_1); }, 100);
+                this.inputElement.style.overflow = 'hidden';
             }
         }
         else {
@@ -18584,7 +19935,8 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     };
     RichTextEditor.prototype.restrict = function (e) {
         if (this.maxLength >= 0) {
-            var element = e.currentTarget.textContent.trim();
+            var element = this.editorMode === 'Markdown' ? this.contentModule.getText() :
+                e.currentTarget.textContent.trim();
             var array = [8, 16, 17, 37, 38, 39, 40, 46, 65];
             var arrayKey = void 0;
             for (var i = 0; i <= array.length - 1; i++) {
@@ -18726,8 +20078,14 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         Property(true)
     ], RichTextEditor.prototype, "enabled", void 0);
     __decorate$1([
+        Property(true)
+    ], RichTextEditor.prototype, "enableHtmlSanitizer", void 0);
+    __decorate$1([
         Property(false)
     ], RichTextEditor.prototype, "enableHtmlEncode", void 0);
+    __decorate$1([
+        Property(false)
+    ], RichTextEditor.prototype, "enableXhtml", void 0);
     __decorate$1([
         Property('auto')
     ], RichTextEditor.prototype, "height", void 0);
@@ -18907,5 +20265,5 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
  * RichTextEditor component exported items
  */
 
-export { Toolbar$1 as Toolbar, KeyboardEvents$1 as KeyboardEvents, BaseToolbar, BaseQuickToolbar, QuickToolbar, Count, ColorPickerInput, MarkdownToolbarStatus, ExecCommandCallBack, ToolbarAction, MarkdownEditor, HtmlEditor, PasteCleanup, Resize, HTMLFormatter, Formatter, MarkdownFormatter, ContentRender, Render, ToolbarRenderer, Link, Image, ViewSource, Table, RichTextEditor, RenderType, ToolbarType, executeGroup, created, destroyed, load, initialLoad, initialEnd, iframeMouseDown, destroy, toolbarClick, toolbarRefresh, refreshBegin, toolbarUpdated, bindOnEnd, renderColorPicker, htmlToolbarClick, markdownToolbarClick, destroyColorPicker, modelChanged, keyUp, keyDown, mouseUp, toolbarCreated, toolbarRenderComplete, enableFullScreen, disableFullScreen, dropDownSelect, beforeDropDownItemRender, execCommandCallBack, imageToolbarAction, linkToolbarAction, resizeStart, onResize, resizeStop, undo, redo, insertLink, unLink, editLink, openLink, actionBegin, actionComplete, toolbarStatusUpdate, actionSuccess, updateToolbarItem, insertImage, insertCompleted, imageLeft, imageRight, imageCenter, imageBreak, imageInline, imageLink, imageAlt, imageDelete, imageCaption, imageSize, sourceCode, updateSource, toolbarOpen, beforeDropDownOpen, selectionSave, selectionRestore, expandPopupClick, count, contentFocus, contentBlur, mouseDown, sourceCodeMouseDown, editAreaClick, scroll, contentscroll, colorPickerChanged, tableColorPickerChanged, focusChange, selectAll$1 as selectAll, selectRange, getSelectedHtml, renderInlineToolbar, paste, imgModule, rtlMode, createTable, docClick, tableToolbarAction, checkUndo, readOnlyMode, pasteClean, beforeDialogOpen, dialogOpen, dialogClose, beforeQuickToolbarOpen, quickToolbarOpen, quickToolbarClose, popupHide, imageSelected, imageUploading, imageUploadSuccess, imageUploadFailed, imageRemoving, drop, ServiceLocator, RendererFactory, EditorManager, IMAGE, TABLE, LINK, INSERT_ROW, INSERT_COLUMN, DELETEROW, DELETECOLUMN, REMOVETABLE, TABLEHEADER, TABLE_VERTICAL_ALIGN, ALIGNMENT_TYPE, INDENT_TYPE, DEFAULT_TAG, BLOCK_TAGS, IGNORE_BLOCK_TAGS, TABLE_BLOCK_TAGS, SELECTION_TYPE, INSERTHTML_TYPE, INSERT_TEXT_TYPE, CLEAR_TYPE, Lists, markerClassName, DOMNode, Alignments, Indents, Formats, LinkCommand, InsertMethods, InsertHtml, IsFormatted, NodeCutter, ImageCommand, SelectionCommands, SelectionBasedExec, ClearFormat$1 as ClearFormat, ClearFormatExec, UndoRedoManager, TableCommand, statusCollection, ToolbarStatus, NodeSelection, MarkdownParser, LISTS_COMMAND, selectionCommand, LINK_COMMAND, CLEAR_COMMAND, MD_TABLE, MDLists, MDFormats, MarkdownSelection, UndoRedoCommands, MDSelectionFormats, MDLink, markdownFormatTags, markdownSelectionTags, markdownListsTags, htmlKeyConfig, markdownKeyConfig, pasteCleanupGroupingTags, listConversionFilters, selfClosingTags, KEY_DOWN, ACTION, FORMAT_TYPE, KEY_DOWN_HANDLER, LIST_TYPE, KEY_UP_HANDLER, KEY_UP, MODEL_CHANGED_PLUGIN, MODEL_CHANGED, MS_WORD_CLEANUP_PLUGIN, MS_WORD_CLEANUP };
+export { Toolbar$1 as Toolbar, KeyboardEvents$1 as KeyboardEvents, BaseToolbar, BaseQuickToolbar, QuickToolbar, Count, ColorPickerInput, MarkdownToolbarStatus, ExecCommandCallBack, ToolbarAction, MarkdownEditor, HtmlEditor, PasteCleanup, Resize, DropDownButtons, FullScreen, setAttributes, HtmlToolbarStatus, XhtmlValidation, HTMLFormatter, Formatter, MarkdownFormatter, ContentRender, Render, ToolbarRenderer, Link, Image, ViewSource, Table, DialogRenderer, IframeContentRender, MarkdownRender, PopupRenderer, RichTextEditor, RenderType, ToolbarType, executeGroup, created, destroyed, load, initialLoad, initialEnd, iframeMouseDown, destroy, toolbarClick, toolbarRefresh, refreshBegin, toolbarUpdated, bindOnEnd, renderColorPicker, htmlToolbarClick, markdownToolbarClick, destroyColorPicker, modelChanged, keyUp, keyDown, mouseUp, toolbarCreated, toolbarRenderComplete, enableFullScreen, disableFullScreen, dropDownSelect, beforeDropDownItemRender, execCommandCallBack, imageToolbarAction, linkToolbarAction, resizeStart, onResize, resizeStop, undo, redo, insertLink, unLink, editLink, openLink, actionBegin, actionComplete, toolbarStatusUpdate, actionSuccess, updateToolbarItem, insertImage, insertCompleted, imageLeft, imageRight, imageCenter, imageBreak, imageInline, imageLink, imageAlt, imageDelete, imageCaption, imageSize, sourceCode, updateSource, toolbarOpen, beforeDropDownOpen, selectionSave, selectionRestore, expandPopupClick, count, contentFocus, contentBlur, mouseDown, sourceCodeMouseDown, editAreaClick, scroll, contentscroll, colorPickerChanged, tableColorPickerChanged, focusChange, selectAll$1 as selectAll, selectRange, getSelectedHtml, renderInlineToolbar, paste, imgModule, rtlMode, createTable, docClick, tableToolbarAction, checkUndo, readOnlyMode, pasteClean, beforeDialogOpen, dialogOpen, dialogClose, beforeQuickToolbarOpen, quickToolbarOpen, quickToolbarClose, popupHide, imageSelected, imageUploading, imageUploadSuccess, imageUploadFailed, imageRemoving, drop, xhtmlValidation, CLS_RTE, CLS_RTL, CLS_CONTENT, CLS_DISABLED, CLS_SCRIPT_SHEET, CLS_STYLE_SHEET, CLS_TOOLBAR, CLS_TB_FIXED, CLS_TB_FLOAT, CLS_TB_ABS_FLOAT, CLS_INLINE, CLS_TB_INLINE, CLS_RTE_EXPAND_TB, CLS_FULL_SCREEN, CLS_QUICK_TB, CLS_POP, CLS_QUICK_POP, CLS_QUICK_DROPDOWN, CLS_IMAGE_POP, CLS_INLINE_POP, CLS_INLINE_DROPDOWN, CLS_DROPDOWN_POPUP, CLS_DROPDOWN_ICONS, CLS_DROPDOWN_ITEMS, CLS_DROPDOWN_BTN, CLS_RTE_CONTENT, CLS_TB_ITEM, CLS_TB_EXTENDED, CLS_TB_WRAP, CLS_POPUP, CLS_SEPARATOR, CLS_MINIMIZE, CLS_MAXIMIZE, CLS_BACK, CLS_SHOW, CLS_HIDE, CLS_VISIBLE, CLS_FOCUS, CLS_RM_WHITE_SPACE, CLS_IMGRIGHT, CLS_IMGLEFT, CLS_IMGCENTER, CLS_IMGBREAK, CLS_CAPTION, CLS_CAPINLINE, CLS_IMGINLINE, CLS_COUNT, CLS_WARNING, CLS_ERROR, CLS_ICONS, CLS_ACTIVE, CLS_EXPAND_OPEN, CLS_RTE_ELEMENTS, CLS_TB_BTN, CLS_HR_SEPARATOR, CLS_TB_IOS_FIX, CLS_TB_STATIC, CLS_FORMATS_TB_BTN, CLS_FONT_NAME_TB_BTN, CLS_FONT_SIZE_TB_BTN, CLS_FONT_COLOR_TARGET, CLS_BACKGROUND_COLOR_TARGET, CLS_COLOR_CONTENT, CLS_FONT_COLOR_DROPDOWN, CLS_BACKGROUND_COLOR_DROPDOWN, CLS_COLOR_PALETTE, CLS_FONT_COLOR_PICKER, CLS_BACKGROUND_COLOR_PICKER, CLS_RTE_READONLY, CLS_TABLE_SEL, CLS_TB_DASH_BOR, CLS_TB_ALT_BOR, CLS_TB_COL_RES, CLS_TB_ROW_RES, CLS_TB_BOX_RES, CLS_RTE_HIDDEN, CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_REMOVE_FORMAT, CLS_RTE_PASTE_PLAIN_FORMAT, CLS_RTE_PASTE_OK, CLS_RTE_PASTE_CANCEL, CLS_RTE_DIALOG_MIN_HEIGHT, CLS_RTE_RES_HANDLE, CLS_RTE_RES_EAST, CLS_RTE_IMAGE, CLS_RESIZE, CLS_IMG_FOCUS, CLS_RTE_DRAG_IMAGE, CLS_RTE_UPLOAD_POPUP, CLS_POPUP_OPEN, CLS_IMG_RESIZE, CLS_DROPAREA, CLS_IMG_INNER, CLS_UPLOAD_FILES, CLS_RTE_DIALOG_UPLOAD, CLS_RTE_RES_CNT, CLS_CUSTOM_TILE, CLS_NOCOLOR_ITEM, CLS_TABLE_BORDER, getIndex, hasClass, getDropDownValue, isIDevice, getFormattedFontSize, pageYOffset, getTooltipText, setToolbarStatus, getCollection, getTBarItemsIndex, updateUndoRedoStatus, dispatchEvent, parseHtml, getTextNodesUnder, toObjectLowerCase, getEditValue, updateTextNode, isEditableValueEmpty, decode, sanitizeHelper, ServiceLocator, RendererFactory, EditorManager, IMAGE, TABLE, LINK, INSERT_ROW, INSERT_COLUMN, DELETEROW, DELETECOLUMN, REMOVETABLE, TABLEHEADER, TABLE_VERTICAL_ALIGN, ALIGNMENT_TYPE, INDENT_TYPE, DEFAULT_TAG, BLOCK_TAGS, IGNORE_BLOCK_TAGS, TABLE_BLOCK_TAGS, SELECTION_TYPE, INSERTHTML_TYPE, INSERT_TEXT_TYPE, CLEAR_TYPE, CLASS_IMAGE_RIGHT, CLASS_IMAGE_LEFT, CLASS_IMAGE_CENTER, CLASS_IMAGE_BREAK, CLASS_CAPTION, CLASS_CAPTION_INLINE, CLASS_IMAGE_INLINE, Lists, markerClassName, DOMNode, Alignments, Indents, Formats, LinkCommand, InsertMethods, InsertTextExec, InsertHtmlExec, InsertHtml, IsFormatted, MsWordPaste, NodeCutter, ImageCommand, SelectionCommands, SelectionBasedExec, ClearFormatExec, UndoRedoManager, TableCommand, statusCollection, ToolbarStatus, NodeSelection, MarkdownParser, LISTS_COMMAND, selectionCommand, LINK_COMMAND, CLEAR_COMMAND, MD_TABLE, ClearFormat, MDLists, MDFormats, MarkdownSelection, UndoRedoCommands, MDSelectionFormats, MDLink, MDTable, markdownFormatTags, markdownSelectionTags, markdownListsTags, htmlKeyConfig, markdownKeyConfig, pasteCleanupGroupingTags, listConversionFilters, selfClosingTags, KEY_DOWN, ACTION, FORMAT_TYPE, KEY_DOWN_HANDLER, LIST_TYPE, KEY_UP_HANDLER, KEY_UP, MODEL_CHANGED_PLUGIN, MODEL_CHANGED, MS_WORD_CLEANUP_PLUGIN, MS_WORD_CLEANUP };
 //# sourceMappingURL=ej2-richtexteditor.es5.js.map

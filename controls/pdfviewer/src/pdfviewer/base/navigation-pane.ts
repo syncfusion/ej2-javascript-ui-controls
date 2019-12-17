@@ -546,21 +546,9 @@ export class NavigationPane {
      * @private
      */
     public createTooltipMobile(text: string): void {
-        if (!this.isTooltipCreated) { //boolean to prevent again toast creation.
-            // tslint:disable-next-line:max-line-length
-            let tooltipDiv: HTMLElement = createElement('div', { className: 'e-pv-container-tooltip', id: this.pdfViewer.element.id + '_container_tooltip' });
-            this.pdfViewer.element.appendChild(tooltipDiv);
-            // tslint:disable-next-line:max-line-length
-            this.toastObject = new Toast({ title: text, target: this.pdfViewer.element, close: this.onTooltipClose.bind(this), position: { X: 0, Y: 0 }, animation: { hide: { duration: 200, effect: 'FadeOut' } } });
-            this.toastObject.appendTo(tooltipDiv);
-            let y: number = this.pdfViewer.element.clientHeight * 0.65;
-            let x: number = (this.pdfViewer.element.clientWidth - tooltipDiv.clientWidth) / 2;
-            this.isTooltipCreated = true;
-            this.toastObject.show({ position: { X: x, Y: y } });
-            let tooltipChild: HTMLElement = tooltipDiv.firstElementChild as HTMLElement;
-            if (tooltipChild) {
-                tooltipChild.style.width = 'auto';
-            }
+        if (!this.isTooltipCreated) {
+            //boolean to prevent again toast creation.
+            this.createMobileTooltip(text);
         } else {
             if (this.toastObject) {
                 this.toastObject.title = text;
@@ -569,18 +557,48 @@ export class NavigationPane {
                 if (tooltipChild) {
                     tooltipChild.style.width = 'auto';
                     tooltipChild.firstElementChild.firstElementChild.textContent = text;
+                } else {
+                    this.isTooltipCreated = false;
+                    let tooltipElement: HTMLElement = this.pdfViewerBase.getElement('_container_tooltip');
+                    if (this.toastObject) {
+                        this.toastObject.destroy();
+                    }
+                    tooltipElement.parentElement.removeChild(tooltipElement);
+                    this.toastObject = null;
+                    this.createMobileTooltip(text);
                 }
             }
         }
     }
 
+    private createMobileTooltip(text: string): void {
+        // tslint:disable-next-line:max-line-length
+        let tooltipDiv: HTMLElement = createElement('div', { className: 'e-pv-container-tooltip', id: this.pdfViewer.element.id + '_container_tooltip' });
+        this.pdfViewer.element.appendChild(tooltipDiv);
+        // tslint:disable-next-line:max-line-length
+        this.toastObject = new Toast({ title: text, target: this.pdfViewer.element, close: this.onTooltipClose.bind(this), position: { X: 0, Y: 0 }, animation: { hide: { duration: 200, effect: 'FadeOut' } } });
+        this.toastObject.appendTo(tooltipDiv);
+        let y: number = this.pdfViewer.element.clientHeight * 0.65;
+        let x: number = (this.pdfViewer.element.clientWidth - tooltipDiv.clientWidth) / 2;
+        this.isTooltipCreated = true;
+        this.toastObject.show({ position: { X: x, Y: y } });
+        let tooltipChild: HTMLElement = tooltipDiv.firstElementChild as HTMLElement;
+        if (tooltipChild) {
+            tooltipChild.style.width = 'auto';
+        }
+    }
+
     private onTooltipClose(args: ToastCloseArgs): void {
-        this.isTooltipCreated = false;
-        let tooltipElement: HTMLElement = this.pdfViewerBase.getElement('_container_tooltip');
-        this.pdfViewer.textSearchModule.isMessagePopupOpened = false;
-        this.toastObject.destroy();
-        tooltipElement.parentElement.removeChild(tooltipElement);
-        this.toastObject = null;
+        if (this.pdfViewer.textSearchModule) {
+            this.isTooltipCreated = false;
+            let tooltipElement: HTMLElement = this.pdfViewerBase.getElement('_container_tooltip');
+            this.pdfViewer.textSearchModule.isMessagePopupOpened = false;
+            if (this.toastObject) {
+                this.toastObject.destroy();
+            }
+            tooltipElement.parentElement.removeChild(tooltipElement);
+            this.toastObject = null;
+        }
     }
 
     /**

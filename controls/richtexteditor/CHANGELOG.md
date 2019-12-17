@@ -2,15 +2,33 @@
 
 ## [Unreleased]
 
-## 17.3.34 (2019-12-10)
+## 17.4.39 (2019-12-17)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#256452` - The Rich Text Editor is no longer allow to resize the image when `readonly` is enabled.
+
+- `#253296` - The issue with drag and drop text is not working inside the Rich Text Editor has been fixed.
+
+### RichTextEditor
+
+#### New Features
+
+- **Callback event to custom toolbar**: The feature allows to bind click event handler to the custom toolbar items in the Rich Text Editor.
+
+- **Code format as toolbar button**: Provided an option to add the code format as toolbar button with toggle state in the Rich Text Editor.
+
+- **XHTML validation**: Provided support to validate the content of Rich Text Editor with XHTML standard.
+
+## 17.3.29 (2019-11-26)
 
 ### RichTextEditor
 
 #### Bug Fixes
 
 - `#F149001` - The issue with customization of table cell padding and cell spacing in the Rich Text Editor has been resolved.
-
-- `#253296` - The issue with drag and drop text is not working inside the Rich Text Editor has been fixed.
 
 ## 17.3.28 (2019-11-19)
 
@@ -62,14 +80,11 @@
 
 #### New Features
 
-- **Drag and drop images from local system**
-    - The feature allows to insert the images to the editor by drag and drop from local path. The images can uploaded to the server before insert into the editor.
+- **Drag and drop images from local system**: The feature allows to insert the images to the editor by drag and drop from local path. The images can uploaded to the server before insert into the editor.
 
-- **Resizable Editor**
-    - `#236064` - This feature allows the editor to be resized. Users can enable or disable this feature using the `enableResize` property. If `enableResize` is true, the RichTextEditor component creates grip at the bottom right corner to resize it in diagonal direction.
+- **Resizable Editor**: `#236064` - This feature allows the editor to be resized. Users can enable or disable this feature using the `enableResize` property. If `enableResize` is true, the RichTextEditor component creates grip at the bottom right corner to resize it in diagonal direction.
 
-- **Pasting images from Microsoft Word and Microsoft Outlook**
-    - This feature allows you to paste the images in the editor by copying and pasting from Microsoft Word and Outlook. The images can be uploaded to the server before inserting into the editor.
+- **Pasting images from Microsoft Word and Microsoft Outlook**: This feature allows you to paste the images in the editor by copying and pasting from Microsoft Word and Outlook. The images can be uploaded to the server before inserting into the editor.
 
 #### Bug Fixes
 
@@ -114,8 +129,7 @@
 
 #### New Features
 
-- **Support for saving images in base64**
-    - `#240002`, `#242405` - This feature allows users to save the images in the RichTextEditor in base64 format along with the existing blob format.
+- **Support for saving images in base64**: `#240002`, `#242405` - This feature allows users to save the images in the RichTextEditor in base64 format along with the existing blob format.
 
 - `#242771` - Provided the support to handle both absolute and relative path links.
 
@@ -167,8 +181,7 @@
 
 #### New Features
 
-- **Paste from Microsoft Word**
-    - This feature allows users to paste clean-formatted HTML markup by removing all unnecessary elements, styles, and attributes from text while copying and pasting it from Microsoft Word.
+- **Paste from Microsoft Word**: This feature allows users to paste clean-formatted HTML markup by removing all unnecessary elements, styles, and attributes from text while copying and pasting it from Microsoft Word.
 
 #### Breaking Changes
 
@@ -236,8 +249,7 @@
 
 #### New Features
 
-- **Paste cleanup**
-    - This feature allows users to clean up HTML content when copying and pasting any other content from external sources.
+- **Paste cleanup**: This feature allows users to clean up HTML content when copying and pasting any other content from external sources.
 
 ## 16.4.55 (2019-02-27)
 

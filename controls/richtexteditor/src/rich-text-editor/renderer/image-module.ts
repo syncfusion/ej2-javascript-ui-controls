@@ -87,16 +87,16 @@ export class Image {
         this.parent.off(events.initialEnd, this.afterRender);
         this.parent.off(events.paste, this.imagePaste);
         this.parent.off(events.destroy, this.removeEventListener);
-        this.parent.element.removeEventListener('drop', this.dragDrop.bind(this), true);
-        this.parent.element.removeEventListener('dragstart', this.dragStart.bind(this), true);
-        this.parent.element.removeEventListener('dragenter', this.dragEnter.bind(this), true);
-        this.parent.element.removeEventListener('dragover', this.dragOver.bind(this), true);
+        this.parent.inputElement.ownerDocument.removeEventListener('drop', this.dragDrop.bind(this), true);
+        this.parent.inputElement.ownerDocument.removeEventListener('dragstart', this.dragStart.bind(this), true);
+        this.parent.inputElement.ownerDocument.removeEventListener('dragenter', this.dragEnter.bind(this), true);
+        this.parent.inputElement.ownerDocument.removeEventListener('dragover', this.dragOver.bind(this), true);
         if (!isNullOrUndefined(this.contentModule)) {
             EventHandler.remove(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.imageClick);
             this.parent.formatter.editorManager.observer.off(events.checkUndo, this.undoStack);
             if (this.parent.insertImageSettings.resize) {
                 EventHandler.remove(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart);
-                EventHandler.remove(this.contentModule.getDocument(), 'mousedown', this.onDocumentClick);
+                EventHandler.remove(this.parent.element.ownerDocument , 'mousedown', this.onDocumentClick);
             }
         }
     }
@@ -110,7 +110,7 @@ export class Image {
         EventHandler.add(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.imageClick, this);
         if (this.parent.insertImageSettings.resize) {
             EventHandler.add(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart, this);
-            EventHandler.add(this.contentModule.getDocument(), 'mousedown', this.onDocumentClick, this);
+            EventHandler.add(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick, this);
         }
         this.parent.inputElement.ownerDocument.addEventListener('drop', this.dragDrop.bind(this), true);
         this.parent.inputElement.ownerDocument.addEventListener('dragstart', this.dragStart.bind(this), true);
@@ -148,6 +148,9 @@ export class Image {
     }
 
     private resizeStart(e: PointerEvent | TouchEvent, ele?: Element): void {
+        if (this.parent.readonly) {
+            return;
+        }
         let target: HTMLElement = ele ? ele as HTMLElement : e.target as HTMLElement;
         if ((target as HTMLElement).tagName === 'IMG') {
             this.parent.preventDefaultResize(e as MouseEvent);
@@ -635,14 +638,18 @@ export class Image {
     }
 
     private editAreaClickHandler(e: IImageNotifyArgs): void {
+        if (this.parent.readonly) {
+            this.hideImageQuickToolbar();
+            return;
+        }
         let args: MouseEvent = e.args as MouseEvent;
         let showOnRightClick: boolean = this.parent.quickToolbarSettings.showOnRightClick;
         if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) {
             if ((showOnRightClick && args.which === 1) && !isNullOrUndefined((args.target as HTMLElement)) &&
-            (args.target as HTMLElement).tagName === 'IMG') {
+                (args.target as HTMLElement).tagName === 'IMG') {
                 this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.setSelectionContents(
-                this.contentModule.getDocument(), args.target as Node);
+                    this.contentModule.getDocument(), args.target as Node);
             }
             return;
         }
@@ -1285,7 +1292,8 @@ export class Image {
                             let url: string = this.parent.insertImageSettings.saveFormat === 'Base64' ? reader.result as string :
                                 URL.createObjectURL(proxy.url(reader.result as string));
                             proxy.uploadUrl = {
-                                url: url, selection: save, altText: altText, selectParent: selectParent,
+                                url: url, selection: save, altText: altText,
+                            selectParent: selectParent,
                                 width: {
                                     width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
                                     maxWidth: proxy.parent.insertImageSettings.maxWidth
@@ -1309,8 +1317,7 @@ export class Image {
                         let url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
                         let value: IImageCommandsArgs = { url: url, selection: save };
                         proxy.uploadUrl = {
-                            url: url, selection: save, altText: (e as MetaData).file.name,
-                            selectParent: selectParent,
+                            url: url, selection: save, altText: altText, selectParent: selectParent,
                             width: {
                                 width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
                                 maxWidth: proxy.parent.insertImageSettings.maxWidth
@@ -1366,11 +1373,12 @@ export class Image {
         e.dataTransfer.dropEffect = 'copy';
         e.preventDefault();
     };
-    private dragOver(e?: DragEvent): void {
-        e.dataTransfer.dropEffect = 'copy';
+    private dragOver(e?: DragEvent): void | boolean {
         if ((Browser.info.name === 'edge' && e.dataTransfer.items[0].type.split('/')[0].indexOf('image') > -1) ||
          (Browser.isIE && e.dataTransfer.types[0] === 'Files')) {
             e.preventDefault();
+        } else {
+            return true;
         }
     };
 
@@ -1641,7 +1649,7 @@ export class Image {
     }
 
     private imagePaste(args: NotifyArgs): void {
-        if (args.text.length === 0) {
+        if (args.text.length === 0 && !isNullOrUndefined((args as NotifyArgs).file)) {
             let proxy: Image = this;
             let reader: FileReader = new FileReader();
             (args.args as KeyboardEvent).preventDefault();
@@ -1702,6 +1710,7 @@ export class Image {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     public destroy(): void {
         this.removeEventListener();

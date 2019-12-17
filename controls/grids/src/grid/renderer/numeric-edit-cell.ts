@@ -1,4 +1,4 @@
-import { extend, Internationalization } from '@syncfusion/ej2-base';
+import { extend, Internationalization, isBlazor } from '@syncfusion/ej2-base';
 import { IGrid, IEditCell } from '../base/interface';
 import { Column } from '../models/column';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
@@ -47,6 +47,9 @@ export class NumericEditCell implements IEditCell {
             },
             col.edit.params));
         args.element.setAttribute('name', getComplexFieldID(args.column.field));
+        if (isBlazor()) {
+            this.obj.locale = this.parent.locale;
+        }
         this.obj.appendTo(args.element as HTMLElement);
     }
 

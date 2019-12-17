@@ -1,10 +1,22 @@
 import { NumberFormatOptions, DateFormatOptions, defaultCurrencyCode } from '../internationalization';
 import { NumericParts } from './number-parser';
-import { getValue, isNullOrUndefined, extend } from '../util';
+import { getValue, isNullOrUndefined, extend, isBlazor } from '../util';
 import { ParserBase as parser } from './parser-base';
 import { DateFormat, FormatOptions } from './date-formatter';
 import { NumberFormat, FormatParts, CommonOptions } from './number-formatter';
 import { isUndefined } from '../util';
+
+export const blazorCultureFormats: Object  = {
+    'en-US': {
+        'd': 'M/d/y',
+        'D': 'EEEE, MMMM d, y',
+        'f': 'EEEE, MMMM d, y h:mm a',
+        'F': 'EEEE, MMMM d, y h:mm:s a',
+        'g': 'M/d/y h:mm a',
+        't': 'h:mm a',
+        'T': 'h:m:s a'
+    }
+};
 /**
  * Date base common constants and function for date parser and formatter.
  */
@@ -571,6 +583,19 @@ export namespace IntlBase {
                 numSystem + '.standard',
                 obj) : '');
     }
+
+    export function compareBlazorDateFormats(formatOptions: DateFormatOptions, culture?: string): DateFormatOptions {
+        let format: string = formatOptions.format || formatOptions.skeleton;
+        let curFormatMapper : string  = getValue((culture || 'en-US') + '.' + format, blazorCultureFormats);
+        if (!curFormatMapper) {
+            curFormatMapper = getValue('en-US.' + format, blazorCultureFormats);
+        }
+        if (curFormatMapper) {
+            formatOptions.format = curFormatMapper.replace(/tt/, 'a');
+        }
+        return formatOptions;
+    }
+
     /**
      * Returns proper numeric skeleton
      * @private
@@ -641,8 +666,9 @@ export namespace IntlBase {
      * @param {string} currencyCode 
      * @returns {string}
      */
-    export function getCurrencySymbol(numericObject: Object, currencyCode: string): string {
-        let getCurrency: string = getValue('currencies.' + currencyCode + '.symbol', numericObject) ||
+    export function getCurrencySymbol(numericObject: Object, currencyCode: string, altSymbol?: string): string {
+        let symbol: string = altSymbol ? ('.' + altSymbol) : '.symbol';
+        let getCurrency: string = getValue('currencies.' + currencyCode + symbol, numericObject) ||
             getValue('currencies.' + currencyCode + '.symbol-alt-narrow', numericObject) || '$';
         return getCurrency;
     }
@@ -764,6 +790,9 @@ export namespace IntlBase {
      */
     export function getActualDateTimeFormat(culture: string, options: DateFormatOptions, cldr?: Object, isExcelFormat?: boolean): string {
         let dependable: Dependables = getDependables(cldr, culture, options.calendar);
+        if (isBlazor()) {
+            options = compareBlazorDateFormats(options, culture);
+        }
         let actualPattern: string = options.format || getResultantPattern(options.skeleton, dependable.dateObject, options.type);
         if (isExcelFormat) {
             actualPattern = actualPattern.replace(patternRegex, (pattern: string): string => {
@@ -809,7 +838,7 @@ export namespace IntlBase {
         if (curMatch) {
             let dOptions: CommonOptions = {};
             dOptions.numberMapper = parser.getNumberMapper(dependable.parserObject, parser.getNumberingSystem(cldr), true);
-            let curCode: string = getCurrencySymbol(dependable.numericObject, options.currency || defaultCurrencyCode);
+            let curCode: string = getCurrencySymbol(dependable.numericObject, options.currency || defaultCurrencyCode, options.altSymbol);
             let symbolPattern: string = getSymbolPattern(
                 'currency', dOptions.numberMapper.numberSystem, dependable.numericObject, (/a/i).test(options.format));
             symbolPattern = symbolPattern.replace(/\u00A4/g, curCode);

@@ -1,5 +1,5 @@
-import { Component, Property, ChildProperty, INotifyPropertyChanged, NotifyPropertyChanges, Animation } from '@syncfusion/ej2-base';import { Browser, isNullOrUndefined as isNOU,  getUniqueID, formatUnit, EventHandler } from '@syncfusion/ej2-base';import { EmitType, Collection, Complex, setStyleAttribute, Event, Effect, detach, AnimationModel } from '@syncfusion/ej2-base';import { attributes, extend, closest, compile as templateCompiler, classList, BaseEventArgs, isUndefined} from '@syncfusion/ej2-base';import { SwipeEventArgs, Touch, updateBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';import { ButtonModel, Button  } from '@syncfusion/ej2-buttons';import { getZindexPartial } from '@syncfusion/ej2-popups';
-import {PositionX,PositionY,ToastOpenArgs,ToastBeforeOpenArgs,ToastCloseArgs,ToastClickEventArgs} from "./toast";
+import { Component, Property, ChildProperty, INotifyPropertyChanged, NotifyPropertyChanges, Animation } from '@syncfusion/ej2-base';import { Browser, isNullOrUndefined as isNOU,  getUniqueID, formatUnit, EventHandler } from '@syncfusion/ej2-base';import { EmitType, Collection, Complex, setStyleAttribute, Event, Effect, detach, AnimationModel } from '@syncfusion/ej2-base';import { attributes, extend, closest, compile as templateCompiler, classList, BaseEventArgs, isUndefined} from '@syncfusion/ej2-base';import { SwipeEventArgs, Touch, updateBlazorTemplate, isBlazor, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { ButtonModel, Button  } from '@syncfusion/ej2-buttons';import { getZindexPartial } from '@syncfusion/ej2-popups';
+import {PositionX,PositionY,BeforeSanitizeHtmlArgs,ToastOpenArgs,ToastBeforeOpenArgs,ToastCloseArgs,ToastClickEventArgs} from "./toast";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -139,6 +139,12 @@ export interface ToastModel extends ComponentModel{
     content?: string | HTMLElement;
 
     /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default true
+     */
+    enableHtmlSanitizer?: boolean;
+
+    /**
      * Defines CSS classes to specify an icon for the Toast which is to be displayed at top left corner of the Toast.
      * @default null
      */
@@ -230,6 +236,13 @@ export interface ToastModel extends ComponentModel{
      * @blazorProperty 'Created'
      */
     created?: EmitType<Event>;
+
+    /**
+     * Event triggers before sanitize the value.
+     * @event 
+     * @blazorProperty 'OnSanitizeHtml'
+     */
+    beforeSanitizeHtml?: EmitType<BeforeSanitizeHtmlArgs>;
 
     /**
      * Triggers the event after the Toast gets destroyed.

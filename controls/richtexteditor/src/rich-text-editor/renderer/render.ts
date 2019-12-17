@@ -8,6 +8,7 @@ import { ContentRender } from '../renderer/content-renderer';
 /**
  * Content module is used to render RichTextEditor content
  * @hidden
+ * @deprecated
  */
 export class Render {
     //Module declarations
@@ -28,6 +29,8 @@ export class Render {
 
     /**
      * To initialize RichTextEditor header, content and footer rendering
+     * @hidden
+     * @deprecated
      */
     public render(): void {
         let rteObj: IRichTextEditor = this.parent;

@@ -6113,6 +6113,176 @@ export class ChartDataTable {
         this.isBorders = undefined;
     }
 }
+/**
+ * @private
+ */
+export class CommentCharacterElementBox extends ElementBox {
+    public commentType: number = 0;
+
+    public commentId: string = '';
+
+
+    private commentInternal: CommentElementBox;
+
+    public commentMark: HTMLElement;
+
+    get comment(): CommentElementBox {
+        return this.commentInternal;
+    }
+
+    set comment(value: CommentElementBox) {
+        this.commentInternal = value;
+    }
+    public getLength(): number {
+        return 1;
+    }
+    public clone(): ElementBox {
+        let comment: CommentCharacterElementBox = new CommentCharacterElementBox(this.commentType);
+        comment.commentId = this.commentId;
+        comment.commentType = this.commentType;
+        return comment;
+    }
+    constructor(type: number) {
+        super();
+        this.commentType = type;
+    }
+
+    public renderCommentMark(): void {
+        if (this.commentType === 0 && isNullOrUndefined(this.commentMark)) {
+            this.commentMark = document.createElement('div');
+            this.commentMark.style.display = 'none';
+            this.commentMark.classList.add('e-de-cmt-mark');
+            let span: HTMLElement = document.createElement('span');
+            span.classList.add('e-icons');
+            span.classList.add('e-de-cmt-mark-icon');
+            this.commentMark.appendChild(span);
+        }
+        if (this.line && isNullOrUndefined(this.commentMark.parentElement)) {
+            let viewer: LayoutViewer = this.line.paragraph.bodyWidget.page.viewer;
+            viewer.pageContainer.appendChild(this.commentMark);
+            this.commentMark.addEventListener('click', this.selectComment.bind(this));
+        }
+    }
+
+    public selectComment(): void {
+        let viewer: LayoutViewer = this.line.paragraph.bodyWidget.page.viewer;
+        if (viewer.owner) {
+            if (!viewer.owner.commentReviewPane.commentPane.isEditMode) {
+                viewer.selectComment(this.comment);
+            } else {
+                viewer.owner.showComments = true;
+            }
+        }
+    }
+
+    public removeCommentMark(): void {
+        if (this.commentMark && this.commentMark.parentElement) {
+            this.commentMark.removeEventListener('click', this.selectComment.bind(this));
+            this.commentMark.parentElement.removeChild(this.commentMark);
+        }
+    }
+
+    public destroy(): void {
+        if (this.commentMark) {
+            this.removeCommentMark();
+        }
+    }
+}
+
+/**
+ * @private
+ */
+export class CommentElementBox extends CommentCharacterElementBox {
+
+    private commentStartIn: CommentCharacterElementBox;
+
+    private commentEndIn: CommentCharacterElementBox;
+
+    private createdDate: string;
+
+    private authorIn: string = '';
+
+    private initialIn: string = '';
+
+    private done: boolean = false;
+
+    private textIn: string = '';
+
+    public replyComments: CommentElementBox[];
+
+    public isReply: boolean = false;
+
+    public ownerComment: CommentElementBox = undefined;
+
+    get commentStart(): CommentCharacterElementBox {
+        return this.commentStartIn;
+    }
+    set commentStart(value: CommentCharacterElementBox) {
+        this.commentStartIn = value;
+    }
+    get commentEnd(): CommentCharacterElementBox {
+        return this.commentEndIn;
+    }
+    set commentEnd(value: CommentCharacterElementBox) {
+        this.commentEndIn = value;
+    }
+    get author(): string {
+        return this.authorIn;
+    }
+    set author(value: string) {
+        this.authorIn = value;
+    }
+    get initial(): string {
+        return this.initialIn;
+    }
+    set initial(value: string) {
+        this.initialIn = value;
+    }
+    get isResolved(): boolean {
+        return this.done;
+    }
+    set isResolved(value: boolean) {
+        this.done = value;
+    }
+
+    get date(): string {
+        return this.createdDate;
+    }
+
+    get text(): string {
+        return this.textIn;
+    }
+
+    set text(value: string) {
+        this.textIn = value;
+    }
+
+    constructor(date: string) {
+        super(0);
+        this.createdDate = date;
+        this.replyComments = [];
+    }
+
+    public getLength(): number {
+        return 1;
+    }
+
+    public clone(): ElementBox {
+        let comment: CommentElementBox = new CommentElementBox(this.date);
+        comment.author = this.author;
+        comment.initial = this.initial;
+        comment.commentId = this.commentId;
+        comment.replyComments = this.replyComments;
+        comment.isResolved = this.isResolved;
+        comment.text = this.text;
+        return comment;
+    }
+
+    public destroy(): void {
+        this.ownerComment = undefined;
+    }
+}
+
 /** 
  * @private
  */

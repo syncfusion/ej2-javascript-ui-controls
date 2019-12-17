@@ -1,4 +1,4 @@
-import { Ajax, Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, compile, createElement, extend, isBlazor, isNullOrUndefined, merge, print, remove, resetBlazorTemplate, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Ajax, Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, compile, createElement, extend, isBlazor, isNullOrUndefined, merge, print, remove, resetBlazorTemplate, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { PdfBitmap, PdfDocument, PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
@@ -40,6 +40,16 @@ function stringToNumber(value, containerSize) {
 function calculateSize(maps) {
     let containerWidth = maps.element.clientWidth;
     let containerHeight = maps.element.clientHeight;
+    if (maps.isBlazor) {
+        if (maps.element.parentElement.style.height !== '' && maps.element.parentElement.style.width !== '') {
+            containerHeight = maps.element.parentElement.clientHeight;
+            containerWidth = maps.element.parentElement.clientWidth;
+        }
+        else {
+            containerHeight = maps.element.clientHeight;
+            containerWidth = maps.element.clientWidth;
+        }
+    }
     maps.availableSize = new Size(stringToNumber(maps.width, containerWidth) || containerWidth || 600, stringToNumber(maps.height, containerHeight) || containerHeight || (maps.isDevice ?
         Math.min(window.innerWidth, window.innerHeight) : 450));
 }
@@ -544,8 +554,29 @@ function drawSymbols(shape, imageUrl, location, markerID, shapeCustom, markerCol
     }
     return markerEle;
 }
+function markerColorChoose(eventArgs, data) {
+    eventArgs.fill = (!isNullOrUndefined(eventArgs.colorValuePath) &&
+        !isNullOrUndefined(data[eventArgs.colorValuePath])) ?
+        data[eventArgs.colorValuePath] : eventArgs.fill;
+    return eventArgs;
+}
+function markerShapeChoose(eventArgs, data) {
+    if (!isNullOrUndefined(eventArgs.shapeValuePath) && !isNullOrUndefined(data[eventArgs.shapeValuePath])) {
+        eventArgs.shape = data[eventArgs.shapeValuePath];
+        if (data[eventArgs.shapeValuePath] == 'Image') {
+            eventArgs.imageUrl = (!isNullOrUndefined(eventArgs.imageUrlValuePath) &&
+                !isNullOrUndefined(data[eventArgs.imageUrlValuePath])) ?
+                data[eventArgs.imageUrlValuePath] : eventArgs.imageUrl;
+        }
+    }
+    else {
+        eventArgs.shape = eventArgs.shape;
+        eventArgs.imageUrl = eventArgs.imageUrl;
+    }
+    return eventArgs;
+}
 //tslint:disable
-function clusterTemplate(currentLayer, markerTemplates, maps, layerIndex, markerCollection, layerElement, check) {
+function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerCollection, layerElement, check) {
     let bounds = [];
     let colloideBounds = [];
     let tempX = 0;
@@ -556,19 +587,20 @@ function clusterTemplate(currentLayer, markerTemplates, maps, layerIndex, marker
     let textElement;
     let postionY = (15 / 4);
     let m = 0;
+    let indexCollection = [];
     let clusters = currentLayer.markerClusterSettings;
     let clusterGroup = maps.renderer.createGroup({ id: maps.element.id + '_LayerIndex_' + layerIndex + '_markerCluster' });
-    for (let n = 0; n < markerTemplates.childElementCount; n++) {
-        let tempElement = markerTemplates.childNodes[n];
+    for (let n = 0; n < markerTemplate.childElementCount; n++) {
+        let tempElement = markerTemplate.childNodes[n];
         bounds.push(tempElement.getBoundingClientRect());
     }
     let eventArg = {
         cancel: false, name: markerClusterRendering, fill: clusters.fill, height: clusters.height,
         width: clusters.width, imageUrl: clusters.imageUrl, shape: clusters.shape,
-        data: data, maps: (isBlazor()) ? null : maps, cluster: clusters, border: clusters.border
+        data: data, maps: maps, cluster: clusters, border: clusters.border
     };
     if (isBlazor()) {
-        const blazorEventArgs = __rest(eventArg, []);
+        const { data, maps, cluster } = eventArg, blazorEventArgs = __rest(eventArg, ["data", "maps", "cluster"]);
         eventArg = blazorEventArgs;
     }
     maps.trigger('markerClusterRendering', eventArg, (clusterargs) => {
@@ -591,11 +623,13 @@ function clusterTemplate(currentLayer, markerTemplates, maps, layerIndex, marker
                         if (!isNullOrUndefined(bounds[k])) {
                             if (colloideBounds[q]['left'] === bounds[k]['left']) {
                                 delete bounds[k];
-                                for (let r = 0; r < markerTemplates.childElementCount; r++) {
-                                    let tempElement = markerTemplates.childNodes[r];
+                                for (let r = 0; r < markerTemplate.childElementCount; r++) {
+                                    let tempElement = markerTemplate.childNodes[r];
                                     if (colloideBounds[q]['left'] === tempElement.getBoundingClientRect()['left']) {
-                                        markerTemplates.childNodes[r]['style']['visibility'] = "hidden";
-                                        markerTemplates.childNodes[o]['style']['visibility'] = "hidden";
+                                        markerTemplate.childNodes[r]['style']['visibility'] = "hidden";
+                                        markerTemplate.childNodes[o]['style']['visibility'] = "hidden";
+                                        indexCollection.push(o);
+                                        indexCollection.push(r);
                                     }
                                 }
                             }
@@ -603,14 +637,15 @@ function clusterTemplate(currentLayer, markerTemplates, maps, layerIndex, marker
                     }
                 }
                 if (colloideBounds.length > 0) {
+                    indexCollection = indexCollection.filter((item, index, value) => value.indexOf(item) === index);
                     let container = maps.element.getBoundingClientRect();
                     tempX = Math.abs(container['left'] - tempX);
                     tempY = Math.abs(container['top'] - tempY);
                     let translate = (maps.isTileMap) ? new Object() : getTranslate(maps, currentLayer, false);
                     let transPoint = (maps.isTileMap) ? { x: 0, y: 0 } : (maps.translatePoint.x !== 0) ?
                         maps.translatePoint : translate['location'];
-                    let dataIndex = parseInt(markerTemplates.childNodes[o]['id'].split('_dataIndex_')[1].split('_')[0], 10);
-                    let markerIndex = parseInt(markerTemplates.childNodes[o]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
+                    let dataIndex = parseInt(markerTemplate.childNodes[o]['id'].split('_dataIndex_')[1].split('_')[0], 10);
+                    let markerIndex = parseInt(markerTemplate.childNodes[o]['id'].split('_MarkerIndex_')[1].split('_')[0], 10);
                     let clusters = currentLayer.markerClusterSettings;
                     let shapeCustom = {
                         size: new Size(clusters.width, clusters.height),
@@ -625,14 +660,20 @@ function clusterTemplate(currentLayer, markerTemplates, maps, layerIndex, marker
                     shapeCustom['shape'] = eventArg.shape;
                     shapeCustom['borderColor'] = eventArg.border.color;
                     shapeCustom['borderWidth'] = eventArg.border.width;
-                    tempX = (maps.isTileMap) ? tempX : (markerTemplates.id.indexOf('_Markers_Group') > -1) ? tempX : ((tempX + transPoint.x) * maps.mapScaleValue);
-                    tempY = (maps.isTileMap) ? tempY : (markerTemplates.id.indexOf('_Markers_Group') > -1) ? tempY : ((tempY + transPoint.y) * maps.mapScaleValue);
+                    tempX = (maps.isTileMap) ? tempX : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempX : ((tempX + transPoint.x) * maps.mapScaleValue);
+                    tempY = (maps.isTileMap) ? tempY : (markerTemplate.id.indexOf('_Markers_Group') > -1) ? tempY : ((tempY + transPoint.y) * maps.mapScaleValue);
                     let clusterID = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_cluster_' + (m);
                     let labelID = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_cluster_' + (m) + '_datalabel_' + m;
                     m++;
                     let imageShapeY = eventArg.shape === 'Image' ? eventArg.height / 2 : 0;
                     let ele = drawSymbols(eventArg.shape, eventArg.imageUrl, { x: 0, y: imageShapeY }, clusterID, shapeCustom, markerCollection, maps);
                     ele.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
+                    if (eventArg.shape === 'Balloon') {
+                        ele.children[0].innerHTML = indexCollection.toString();
+                    }
+                    else {
+                        ele.innerHTML = indexCollection.toString();
+                    }
                     options = new TextOption(labelID, (0), postionY, 'middle', (colloideBounds.length + 1).toString(), '', '');
                     textElement = renderTextElement(options, style, style.color, markerCollection);
                     textElement.setAttribute('transform', 'translate( ' + tempX + ' ' + tempY + ' )');
@@ -748,6 +789,7 @@ function marker(eventArgs, markerSettings, markerData, dataIndex, location, tran
     let x = (maps.isTileMap ? location.x : (location.x + transPoint.x) * scale) + offset.x;
     let y = (maps.isTileMap ? location.y : (location.y + transPoint.y) * scale) + offset.y;
     ele.setAttribute('transform', 'translate( ' + x + ' ' + y + ' )');
+    maintainSelection(maps.selectedMarkerElementId, maps.markerSelectionClass, ele, 'MarkerselectionMapStyle');
     markerCollection.appendChild(ele);
     let element = (markerData.length - 1) === dataIndex ? 'marker' : null;
     let markerPoint = new Point(x, y);
@@ -758,8 +800,8 @@ function marker(eventArgs, markerSettings, markerData, dataIndex, location, tran
 }
 function markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, markerTemplate, location, scale, offset, maps) {
     templateFn = getTemplateFunction(eventArgs.template);
-    if (templateFn && (!maps.isBlazor ? templateFn(data, null, null, maps.element.id + '_MarkerTemplate', false).length : {})) {
-        let templateElement = templateFn(data, null, null, maps.element.id + '_MarkerTemplate', false);
+    if (templateFn && (!maps.isBlazor ? templateFn(data, null, null, maps.element.id + '_MarkerTemplate' + markerIndex, false).length : {})) {
+        let templateElement = templateFn(data, null, null, maps.element.id + '_MarkerTemplate' + markerIndex, false);
         let markerElement = convertElement(templateElement, markerID, data, markerIndex, maps);
         for (let i = 0; i < markerElement.children.length; i++) {
             markerElement.children[i].style.pointerEvents = 'none';
@@ -769,8 +811,50 @@ function markerTemplate(eventArgs, templateFn, markerID, data, markerIndex, mark
         markerElement.style.top = ((maps.isTileMap ? location.y :
             ((Math.abs(maps.baseMapRectBounds['min']['y'] - location.y)) * scale)) + offset.y) + 'px';
         markerTemplate.appendChild(markerElement);
+        if (maps.layers[maps.baseLayerIndex].layerType === 'GoogleStaticMap') {
+            let staticMapOffset = getElementByID(maps.element.id + '_StaticGoogleMap').getBoundingClientRect();
+            let markerElementOffset = markerElement.getBoundingClientRect();
+            let staticMapOffsetWidth = 640;
+            if ((staticMapOffset['x'] > markerElementOffset['x'] || staticMapOffset['x'] + staticMapOffsetWidth < markerElementOffset['x'] + markerElementOffset['width'])
+                && (staticMapOffset['y'] > markerElementOffset['y'] || staticMapOffset['y'] + staticMapOffset['height'] < markerElementOffset['y'] + markerElementOffset['height'])) {
+                markerElement.style.display = 'none';
+            }
+        }
     }
     return markerTemplate;
+}
+/**
+ * To maintain selection during page resize
+ * @private
+ */
+function maintainSelection(elementId, elementClass, element, className) {
+    if (elementId) {
+        for (let index = 0; index < elementId.length; index++) {
+            if (element.getAttribute('id') === elementId[index]) {
+                if (isNullOrUndefined(getElement(elementClass.id)) || index === 0) {
+                    document.body.appendChild(elementClass);
+                }
+                element.setAttribute('class', className);
+            }
+        }
+    }
+}
+/**
+ * To maintain selection style class
+ * @private
+ */
+function maintainStyleClass(id, idClass, fill, opacity, borderColor, borderWidth, maps) {
+    if (!getElement(id)) {
+        let styleClass;
+        styleClass = createElement('style', {
+            id: id, innerHTML: '.' + idClass + '{fill:'
+                + fill + ';' + 'opacity:' + opacity + ';' +
+                'stroke-width:' + borderWidth + ';' +
+                'stroke:' + borderColor + ';' + '}'
+        });
+        maps.shapeSelectionClass = styleClass;
+        document.body.appendChild(styleClass);
+    }
 }
 /**
  * Internal use of append shape element
@@ -860,6 +944,21 @@ function calculateShapes(maps, shape, options, size, location, markerEle) {
         case 'VerticalLine':
             options.d = 'M ' + location.x + ' ' + (location.y - size.height / 2) + ' L ' + location.x + ' ' +
                 (location.y + size.height / 2);
+            break;
+        case 'InvertedTriangle':
+            options.d = 'M ' + (location.x - size.width / 2) + ' ' + (location.y - size.height / 2) + ' L ' + (location.x + size.width / 2) + ' ' +
+                (location.y - size.height / 2) + ' L ' + (location.x) + ' ' + (location.y + size.height / 2) + ' Z';
+            break;
+        case 'Pentagon':
+            let eq = 72;
+            let xValue;
+            let yValue;
+            for (let i = 0; i < 5; i++) {
+                xValue = (size.width / 2) * Math.cos((Math.PI / 180) * (i * eq));
+                yValue = (size.height / 2) * Math.sin((Math.PI / 180) * (i * eq));
+                options.d += (i == 0 ? 'M ' : 'L ') + (location.x + xValue) + ' ' + (location.y + yValue);
+            }
+            options.d += ' Z';
             break;
     }
     return shape === 'Balloon' ? tempGroup : maps.renderer.drawPath(options);
@@ -1172,20 +1271,32 @@ function removeElement(id) {
  * @private
  */
 function getTranslate(mapObject, layer, animate) {
+    let zoomFactorValue = mapObject.zoomSettings.zoomFactor;
+    let scaleFactor;
     if (isNullOrUndefined(mapObject.mapScaleValue)) {
-        mapObject.mapScaleValue = mapObject.zoomSettings.zoomFactor;
+        mapObject.mapScaleValue = zoomFactorValue;
     }
-    let zoomFactor = animate ? 1 : mapObject.mapScaleValue;
+    if (mapObject.zoomSettings.shouldZoomInitially) {
+        mapObject.mapScaleValue = scaleFactor = zoomFactorValue = ((mapObject.zoomSettings.shouldZoomInitially || mapObject.enablePersistence) && mapObject.scale == 1)
+            ? mapObject.scale : (isNullOrUndefined(mapObject.markerZoomFactor)) ? 1 : mapObject.markerZoomFactor;
+        if (mapObject.mapScaleValue !== mapObject.markerZoomFactor && !mapObject.enablePersistence) {
+            mapObject.mapScaleValue = zoomFactorValue = mapObject.markerZoomFactor;
+        }
+    }
     let min = mapObject.baseMapRectBounds['min'];
     let max = mapObject.baseMapRectBounds['max'];
+    let zoomFactor = animate ? 1 : mapObject.mapScaleValue;
+    if (isNullOrUndefined(mapObject.currentShapeDataLength)) {
+        mapObject.currentShapeDataLength = !isNullOrUndefined(layer.shapeData["features"])
+            ? layer.shapeData["features"].length : layer.shapeData["geometries"].length;
+    }
     let size = (mapObject.totalRect) ? mapObject.totalRect : mapObject.mapAreaRect;
     let availSize = mapObject.availableSize;
     let x;
     let y;
     let mapWidth = Math.abs(max['x'] - min['x']);
     let mapHeight = Math.abs(min['y'] - max['y']);
-    let factor = animate ? 1 : mapObject.zoomSettings.zoomFactor;
-    let scaleFactor;
+    let factor = animate ? 1 : mapObject.markerZoomFactor === 1 ? mapObject.mapScaleValue : zoomFactorValue;
     let center = mapObject.centerPosition;
     if (!isNullOrUndefined(center.longitude) && !isNullOrUndefined(center.latitude)) {
         let leftPosition = ((mapWidth + Math.abs(mapObject.mapAreaRect.width - mapWidth)) / 2) / factor;
@@ -1197,9 +1308,22 @@ function getTranslate(mapObject, layer, animate) {
             scaleFactor = zoomFactor;
         }
         else {
-            scaleFactor = mapObject.scale;
-            x = mapObject.zoomTranslatePoint.x;
-            y = mapObject.zoomTranslatePoint.y;
+            if (Math.floor(mapObject.scale) !== 1 && mapObject.zoomSettings.shouldZoomInitially) {
+                x = -point.x + leftPosition;
+                y = -point.y + topPosition;
+            }
+            else {
+                if (mapObject.zoomSettings.shouldZoomInitially) {
+                    x = -point.x + leftPosition;
+                    y = -point.y + topPosition;
+                    scaleFactor = zoomFactor;
+                }
+                else {
+                    x = mapObject.zoomTranslatePoint.x;
+                    y = mapObject.zoomTranslatePoint.y;
+                }
+            }
+            scaleFactor = mapObject.mapScaleValue;
         }
     }
     else {
@@ -1211,19 +1335,53 @@ function getTranslate(mapObject, layer, animate) {
             y = size.y + ((-(min['y'])) + ((size.height / 2) - (mapHeight / 2)));
         }
         else {
-            scaleFactor = mapObject.scale;
-            x = mapObject.zoomTranslatePoint.x;
-            y = mapObject.zoomTranslatePoint.y;
+            if (!mapObject.zoomSettings.shouldZoomInitially && mapObject.markerZoomFactor === 1 && mapObject.mapScaleValue === 1) {
+                scaleFactor = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
+                mapHeight *= scaleFactor;
+                mapWidth *= scaleFactor;
+                y = size.y + ((-(min['y'])) + ((size.height / 2) - (mapHeight / 2)));
+                x = size.x + ((-(min['x'])) + ((size.width / 2) - (mapWidth / 2)));
+            }
+            else {
+                scaleFactor = mapObject.mapScaleValue < 1 ? mapObject.mapScaleValue + 1 : mapObject.mapScaleValue;
+                if ((mapObject.currentShapeDataLength !== (!isNullOrUndefined(layer.shapeData["features"])
+                    ? layer.shapeData["features"].length : layer.shapeData["geometries"].length))) {
+                    let scale = parseFloat(Math.min(size.height / mapHeight, size.width / mapWidth).toFixed(2));
+                    mapHeight *= scale;
+                    mapWidth *= scale;
+                    y = size.y + ((-(min['y'])) + ((size.height / 2)
+                        - (mapHeight / 2)));
+                    scaleFactor = scale;
+                    x = size.x + ((-(min['x']))
+                        + ((size.width / 2) - (mapWidth / 2)));
+                }
+                else {
+                    x = mapObject.zoomTranslatePoint.x;
+                    y = mapObject.zoomTranslatePoint.y;
+                }
+            }
         }
     }
+    if (!isNullOrUndefined(mapObject.translatePoint)) {
+        x = (mapObject.enablePersistence && mapObject.translatePoint.x != 0) ? mapObject.translatePoint.x : x;
+        y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0) ? mapObject.translatePoint.y : y;
+    }
+    scaleFactor = (mapObject.enablePersistence) ? ((mapObject.mapScaleValue >= 1) ? mapObject.mapScaleValue : 1) : scaleFactor;
     return { scale: scaleFactor, location: new Point(x, y) };
 }
 /**
  * @private
  */
 function getZoomTranslate(mapObject, layer, animate) {
+    let zoomFactorValue = mapObject.zoomSettings.zoomFactor;
+    let scaleFactor;
     if (isNullOrUndefined(mapObject.mapScaleValue)) {
-        mapObject.mapScaleValue = mapObject.zoomSettings.zoomFactor;
+        mapObject.mapScaleValue = zoomFactorValue;
+    }
+    if (mapObject.zoomSettings.shouldZoomInitially) {
+        mapObject.mapScaleValue = zoomFactorValue = scaleFactor = ((mapObject.enablePersistence || mapObject.zoomSettings.shouldZoomInitially) && mapObject.scale == 1)
+            ? mapObject.scale : (isNullOrUndefined(mapObject.markerZoomFactor)) ? mapObject.mapScaleValue : mapObject.markerZoomFactor;
+        zoomFactorValue = mapObject.mapScaleValue;
     }
     let zoomFactor = animate ? 1 : mapObject.mapScaleValue;
     let size = mapObject.mapAreaRect;
@@ -1232,7 +1390,6 @@ function getZoomTranslate(mapObject, layer, animate) {
     let min = mapObject.baseMapRectBounds['min'];
     let max = mapObject.baseMapRectBounds['max'];
     let factor = animate ? 1 : mapObject.mapScaleValue;
-    let scaleFactor;
     let mapWidth = Math.abs(max['x'] - min['x']);
     let mapHeight = Math.abs(min['y'] - max['y']);
     let center = mapObject.centerPosition;
@@ -1254,7 +1411,11 @@ function getZoomTranslate(mapObject, layer, animate) {
             x = -point.x + leftPosition;
             y = -point.y + topPosition;
         }
-        scaleFactor = zoomFactor !== 0 ? zoomFactor : 1;
+        if (!isNullOrUndefined(mapObject.translatePoint)) {
+            x = (mapObject.enablePersistence && mapObject.translatePoint.x != 0) ? mapObject.translatePoint.x : x;
+            y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0) ? mapObject.translatePoint.y : y;
+        }
+        scaleFactor = zoomFactorValue !== 0 ? zoomFactorValue : 1;
     }
     else {
         let zoomFact = mapObject.zoomSettings.zoomFactor === 0 ? 1 : mapObject.zoomSettings.zoomFactor;
@@ -1287,10 +1448,13 @@ function getZoomTranslate(mapObject, layer, animate) {
                 }
             }
         }
-        x = leftPosition;
-        y = topPosition;
+        if (!isNullOrUndefined(mapObject.translatePoint)) {
+            x = (mapObject.enablePersistence && mapObject.translatePoint.x != 0) ? mapObject.translatePoint.x : leftPosition;
+            y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0) ? mapObject.translatePoint.y : topPosition;
+        }
     }
-    return { scale: scaleFactor, location: new Point(x, y) };
+    scaleFactor = (mapObject.enablePersistence) ? (mapObject.mapScaleValue == 0 ? 1 : mapObject.mapScaleValue) : scaleFactor;
+    return { scale: animate ? 1 : scaleFactor, location: new Point(x, y) };
 }
 /**
  * To get the html element by specified id
@@ -1363,7 +1527,7 @@ function triggerShapeEvent(targetId, selection, maps, eventName) {
         maps: maps
     };
     if (maps.isBlazor) {
-        const { data, maps, shapeData } = eventArgs, blazorEventArgs = __rest(eventArgs, ["data", "maps", "shapeData"]);
+        const { maps, shapeData } = eventArgs, blazorEventArgs = __rest(eventArgs, ["maps", "shapeData"]);
         eventArgs = blazorEventArgs;
     }
     maps.trigger(eventName, eventArgs);
@@ -1427,6 +1591,34 @@ function customizeStyle(id, className, eventArgs) {
         + eventArgs.fill + ';' + 'opacity:' + eventArgs.opacity.toString() + ';' +
         'stroke-width:' + eventArgs.border.width.toString() + ';' +
         'stroke:' + eventArgs.border.color + '}';
+}
+/**
+ * Function to trigger itemSelection event for legend selection and public method
+ */
+function triggerItemSelectionEvent(selectionSettings, map, targetElement, shapeData, data) {
+    let border = {
+        color: selectionSettings.border.color,
+        width: selectionSettings.border.width / map.scale
+    };
+    let eventArgs = {
+        opacity: selectionSettings.opacity,
+        fill: selectionSettings.fill,
+        border: border,
+        name: itemSelection,
+        target: targetElement.id,
+        cancel: false,
+        shapeData: shapeData,
+        data: data,
+        maps: map
+    };
+    map.trigger('itemSelection', eventArgs, (observedArgs) => {
+        if (!getElement('ShapeselectionMap')) {
+            document.body.appendChild(createStyle('ShapeselectionMap', 'ShapeselectionMapStyle', eventArgs));
+        }
+        else {
+            customizeStyle('ShapeselectionMap', 'ShapeselectionMapStyle', eventArgs);
+        }
+    });
 }
 /**
  * Function to remove class from element
@@ -1831,6 +2023,7 @@ function zoomAnimate(element, delay, duration, point, scale, size, maps) {
 function animate(element, delay, duration, process, end) {
     let start = null;
     let clearAnimation;
+    let markerStyle = 'visibility:visible';
     let startAnimation = (timestamp) => {
         if (!start) {
             start = timestamp;
@@ -1843,6 +2036,7 @@ function animate(element, delay, duration, process, end) {
         else {
             window.cancelAnimationFrame(clearAnimation);
             end.call(this, { element: element });
+            element.setAttribute('style', markerStyle);
         }
     };
     clearAnimation = window.requestAnimationFrame(startAnimation);
@@ -2467,6 +2661,17 @@ __decorate$1([
     Property(true)
 ], ColorMappingSettings.prototype, "showLegend", void 0);
 /**
+ * To configure the initial shape selection settings
+ */
+class InitialShapeSelectionSettings extends ChildProperty {
+}
+__decorate$1([
+    Property(null)
+], InitialShapeSelectionSettings.prototype, "shapePath", void 0);
+__decorate$1([
+    Property(null)
+], InitialShapeSelectionSettings.prototype, "shapeValue", void 0);
+/**
  * To configure the selection settings
  */
 class SelectionSettings extends ChildProperty {
@@ -2677,6 +2882,9 @@ __decorate$1([
 __decorate$1([
     Property(1)
 ], ZoomSettings.prototype, "minZoom", void 0);
+__decorate$1([
+    Property(false)
+], ZoomSettings.prototype, "shouldZoomInitially", void 0);
 /**
  * To configure the toggle legend settings in the maps
  */
@@ -2889,6 +3097,15 @@ __decorate$1([
     Property(1)
 ], MarkerBase.prototype, "opacity", void 0);
 __decorate$1([
+    Property(null)
+], MarkerBase.prototype, "colorValuePath", void 0);
+__decorate$1([
+    Property(null)
+], MarkerBase.prototype, "shapeValuePath", void 0);
+__decorate$1([
+    Property(null)
+], MarkerBase.prototype, "imageUrlValuePath", void 0);
+__decorate$1([
     Property('Balloon')
 ], MarkerBase.prototype, "shape", void 0);
 __decorate$1([
@@ -2961,6 +3178,9 @@ __decorate$1([
     Property('Aerial')
 ], LayerSettings.prototype, "bingMapType", void 0);
 __decorate$1([
+    Property('RoadMap')
+], LayerSettings.prototype, "staticMapType", void 0);
+__decorate$1([
     Property('')
 ], LayerSettings.prototype, "key", void 0);
 __decorate$1([
@@ -3008,6 +3228,9 @@ __decorate$1([
 __decorate$1([
     Complex({}, ToggleLegendSettings)
 ], LayerSettings.prototype, "toggleLegendSettings", void 0);
+__decorate$1([
+    Collection([], InitialShapeSelectionSettings)
+], LayerSettings.prototype, "initialShapeSelection", void 0);
 /**
  * Internal use for bing type layer rendering
  */
@@ -3066,8 +3289,8 @@ class Marker {
             id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_Markers_Template_Group',
             className: 'template',
             styles: 'overflow: hidden; position: absolute;pointer-events: none;' +
-                'top:' + (this.maps.isTileMap ? 0 : this.maps.mapAreaRect.y) + 'px;' +
-                'left:' + (this.maps.isTileMap ? 0 : this.maps.mapAreaRect.x) + 'px;' +
+                'top:' + this.maps.mapAreaRect.y + 'px;' +
+                'left:' + this.maps.mapAreaRect.x + 'px;' +
                 'height:' + this.maps.mapAreaRect.height + 'px;' +
                 'width:' + this.maps.mapAreaRect.width + 'px;'
         });
@@ -3079,27 +3302,39 @@ class Marker {
                     cancel: false, name: markerRendering, fill: markerSettings.fill, height: markerSettings.height,
                     width: markerSettings.width, imageUrl: markerSettings.imageUrl, shape: markerSettings.shape,
                     template: markerSettings.template, data: data, maps: this.maps, marker: markerSettings,
-                    border: markerSettings.border
+                    border: markerSettings.border, colorValuePath: markerSettings.colorValuePath,
+                    shapeValuePath: markerSettings.shapeValuePath, imageUrlValuePath: markerSettings.imageUrlValuePath
                 };
+                eventArgs = markerColorChoose(eventArgs, data);
+                eventArgs = markerShapeChoose(eventArgs, data);
                 if (this.maps.isBlazor) {
                     const { maps, marker: marker$$1 } = eventArgs, blazorEventArgs = __rest$1(eventArgs, ["maps", "marker"]);
                     eventArgs = blazorEventArgs;
                 }
                 this.maps.trigger('markerRendering', eventArgs, (MarkerArgs) => {
+                    if (markerSettings.colorValuePath !== eventArgs.colorValuePath) {
+                        eventArgs = markerColorChoose(eventArgs, data);
+                    }
+                    if (markerSettings.shapeValuePath !== eventArgs.shapeValuePath) {
+                        eventArgs = markerShapeChoose(eventArgs, data);
+                    }
                     let lng = data['longitude'];
                     let lat = data['latitude'];
-                    let data1 = {};
-                    let text = [];
-                    let j = 0;
-                    for (let i = 0; i < Object.keys(data).length; i++) {
-                        if (Object.keys(data)[i].toLowerCase() !== 'latitude' && Object.keys(data)[i].toLowerCase() !== 'longitude' && Object.keys(data)[i].toLowerCase() !== 'name'
-                            && Object.keys(data)[i].toLowerCase() !== 'blazortemplateid' && Object.keys(data)[i].toLowerCase() !== 'text') {
-                            text[j] = data[Object.keys(data)[i].toLowerCase()];
-                            data1['text'] = text;
-                            j++;
+                    if (this.maps.isBlazor) {
+                        let data1 = {};
+                        let text = [];
+                        let j = 0;
+                        for (let i = 0; i < Object.keys(data).length; i++) {
+                            if (Object.keys(data)[i].toLowerCase() !== 'latitude' && Object.keys(data)[i].toLowerCase() !== 'longitude'
+                                && Object.keys(data)[i].toLowerCase() !== 'name' && Object.keys(data)[i].toLowerCase() !== 'blazortemplateid'
+                                && Object.keys(data)[i].toLowerCase() !== 'text') {
+                                text[j] = data[Object.keys(data)[i].toLowerCase()];
+                                data1['text'] = text;
+                                j++;
+                            }
                         }
+                        data['text'] = data1['text'];
                     }
-                    data['text'] = data1['text'];
                     let offset = markerSettings.offset;
                     if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(lng) && !isNullOrUndefined(lat)) {
                         let markerID = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
@@ -3142,6 +3377,153 @@ class Marker {
         });
     }
     /**
+     * To find zoom level for the marker min and max latitude values
+     */
+    calculateMarkerZoomLevel(minLat, maxLat, minLong, maxLong, mapWidth, mapHeight) {
+        let latRatio;
+        let lngRatio;
+        let scaleFactor;
+        let maxZoomFact = 10;
+        let latZoom;
+        let lngZoom;
+        let result;
+        let maxLatSin = Math.sin(maxLat * Math.PI / 180);
+        let maxLatRad = Math.log((1 + maxLatSin) / (1 - maxLatSin)) / 2;
+        let maxLatValue = Math.max(Math.min(maxLatRad, Math.PI), -Math.PI) / 2;
+        let minLatSin = Math.sin(minLat * Math.PI / 180);
+        let minLatRad = Math.log((1 + minLatSin) / (1 - minLatSin)) / 2;
+        let minLatValue = Math.max(Math.min(minLatRad, Math.PI), -Math.PI) / 2;
+        latRatio = (maxLatValue - minLatValue) / Math.PI;
+        let lngDiff = maxLong - minLong;
+        lngRatio = ((lngDiff < 0) ? (lngDiff + 360) : lngDiff) / 360;
+        let WORLD_PX_HEIGHT = 256;
+        let WORLD_PX_WIDTH = 256;
+        latZoom = Math.floor(Math.log(mapHeight / WORLD_PX_HEIGHT / latRatio) / Math.LN2);
+        lngZoom = Math.floor(Math.log(mapWidth / WORLD_PX_WIDTH / lngRatio) / Math.LN2);
+        result = Math.min(latZoom, lngZoom);
+        scaleFactor = Math.min(result, maxZoomFact - 1);
+        return scaleFactor;
+    }
+    /**
+     * To find zoom level for individual layers like India, USA.
+     */
+    calculateIndividualLayerMarkerZoomLevel(mapWidth, mapHeight, maxZoomFact) {
+        let latZoom;
+        let lngZoom;
+        let result;
+        let scaleFactor;
+        let height = Math.abs(this.maps.baseMapBounds.latitude.max - this.maps.baseMapBounds.latitude.min);
+        let width = Math.abs(this.maps.baseMapBounds.longitude.max - this.maps.baseMapBounds.longitude.min);
+        latZoom = Math.floor(Math.log(mapHeight / height));
+        latZoom = (latZoom > maxZoomFact) ? maxZoomFact : latZoom;
+        lngZoom = Math.floor(Math.log(mapWidth / width));
+        lngZoom = (lngZoom > maxZoomFact) ? maxZoomFact : lngZoom;
+        result = Math.min(latZoom, lngZoom);
+        scaleFactor = Math.min(result, maxZoomFact - 1);
+        return scaleFactor;
+    }
+    /**
+     * To calculate center position and factor value dynamically
+     */
+    calculateZoomCenterPositionAndFactor(layersCollection) {
+        if (this.maps.zoomSettings.shouldZoomInitially && this.maps.markerModule) {
+            let minLong;
+            let maxLat;
+            let minLat;
+            let maxLong;
+            let zoomLevel;
+            let centerLat;
+            let centerLong;
+            let maxZoomFact = 10;
+            let mapWidth = this.maps.mapAreaRect.width;
+            let mapHeight = this.maps.mapAreaRect.height;
+            layersCollection.forEach((currentLayer, layerIndex) => {
+                let isMarker = currentLayer.markerSettings.length !== 0;
+                if (isMarker) {
+                    currentLayer.markerSettings.forEach((markerSetting, markerIndex) => {
+                        let markerData = markerSetting.dataSource;
+                        markerData.forEach((data, dataIndex) => {
+                            minLong = isNullOrUndefined(minLong) && dataIndex === 0 ?
+                                data['longitude'] : minLong;
+                            maxLat = isNullOrUndefined(maxLat) && dataIndex === 0 ?
+                                data['latitude'] : maxLat;
+                            minLat = isNullOrUndefined(minLat) && dataIndex === 0 ?
+                                data['latitude'] : minLat;
+                            maxLong = isNullOrUndefined(maxLong) && dataIndex === 0 ?
+                                data['longitude'] : maxLong;
+                            if (minLong > data['longitude']) {
+                                minLong = data['longitude'];
+                            }
+                            if (minLat > data['latitude']) {
+                                minLat = data['latitude'];
+                            }
+                            if (maxLong < data['longitude']) {
+                                maxLong = data['longitude'];
+                            }
+                            if (maxLat < data['latitude']) {
+                                maxLat = data['latitude'];
+                            }
+                        });
+                    });
+                }
+            });
+            if (!isNullOrUndefined(minLat) && !isNullOrUndefined(minLong) &&
+                !isNullOrUndefined(maxLong) && !isNullOrUndefined(maxLat)) {
+                // To find the center position
+                centerLat = (minLat + maxLat) / 2;
+                centerLong = (minLong + maxLong) / 2;
+                this.maps.centerPosition.latitude = centerLat;
+                this.maps.centerPosition.longitude = centerLong;
+                let markerFactor;
+                if (this.maps.isTileMap || this.maps.baseMapRectBounds['min']['x'] === 0) {
+                    zoomLevel = this.calculateMarkerZoomLevel(minLat, maxLat, minLong, maxLong, mapWidth, mapHeight);
+                    if (this.maps.isTileMap) {
+                        markerFactor = isNullOrUndefined(this.maps.markerZoomFactor) ?
+                            zoomLevel : isNullOrUndefined(this.maps.mapScaleValue) ?
+                            zoomLevel : this.maps.mapScaleValue > 1 && this.maps.markerZoomFactor !== 1 ?
+                            this.maps.mapScaleValue : zoomLevel;
+                    }
+                    else {
+                        markerFactor = isNullOrUndefined(this.maps.mapScaleValue) ? zoomLevel :
+                            (Math.floor(this.maps.scale) !== 1 &&
+                                this.maps.mapScaleValue !== zoomLevel)
+                                ? this.maps.mapScaleValue : zoomLevel;
+                        if (((markerFactor === this.maps.mapScaleValue &&
+                            (this.maps.markerZoomFactor === 1 || this.maps.mapScaleValue === 1))
+                            && (!this.maps.enablePersistence))) {
+                            markerFactor = zoomLevel;
+                        }
+                    }
+                }
+                else {
+                    zoomLevel = this.calculateIndividualLayerMarkerZoomLevel(mapWidth, mapHeight, maxZoomFact);
+                    markerFactor = isNullOrUndefined(this.maps.mapScaleValue) ? zoomLevel :
+                        (this.maps.mapScaleValue !== zoomLevel)
+                            ? this.maps.mapScaleValue : zoomLevel;
+                }
+                this.maps.markerZoomFactor = markerFactor;
+            }
+        }
+        else {
+            if (this.maps.markerZoomFactor > 1) {
+                this.maps.centerPosition.latitude = null;
+                this.maps.centerPosition.longitude = null;
+                this.maps.markerZoomFactor = 1;
+                if (!this.maps.enablePersistence) {
+                    this.maps.mapScaleValue = 1;
+                }
+            }
+            if (this.maps.isTileMap && !this.maps.enablePersistence
+                && this.maps.mapScaleValue <= 1) {
+                this.maps.tileZoomLevel = this.maps.mapScaleValue === 0 ? 1 : this.maps.mapScaleValue;
+                if (this.maps.mapScaleValue === 1 && this.maps.markerZoomFactor === 1) {
+                    this.maps.tileTranslatePoint.x = 0;
+                    this.maps.tileTranslatePoint.y = 0;
+                }
+            }
+        }
+    }
+    /**
      * To check and trigger marker click event
      */
     markerClick(e) {
@@ -3156,7 +3538,9 @@ class Marker {
         let eventArgs = {
             cancel: false, name: markerClick, data: options.data, maps: this.maps,
             marker: options.marker, target: target, x: e.clientX, y: e.clientY,
-            latitude: options.data["latitude"] || options.data["Latitude"], longitude: options.data["longitude"] || options.data["Longitude"]
+            latitude: options.data["latitude"] || options.data["Latitude"],
+            longitude: options.data["longitude"] || options.data["Longitude"],
+            value: options.data["name"]
         };
         if (this.maps.isBlazor) {
             const { maps, marker: marker$$1, data } = eventArgs, blazorEventArgs = __rest$1(eventArgs, ["maps", "marker", "data"]);
@@ -3176,15 +3560,16 @@ class Marker {
         if (isNullOrUndefined(options)) {
             return;
         }
-        if (options.clusterCollection.length > 0) {
-            let textElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? target : target + '_datalabel_' + target.split('_cluster_')[1]);
-            if (+textElement.textContent === options.clusterCollection[0].data.length) {
-                if (this.sameMarkerData.length > 0) {
-                    mergeSeparateCluster(this.sameMarkerData, this.maps, this.markerSVGObject);
-                }
-                this.sameMarkerData = options.clusterCollection;
-                clusterSeparate(this.sameMarkerData, this.maps, this.markerSVGObject, true);
+        if ((options.clusterCollection.length > 0) && options.clusterCollection[0].isClusterSame) {
+            if (getElement(this.maps.element.id + '_mapsTooltip') &&
+                this.maps.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_') > -1) {
+                removeElement(this.maps.element.id + '_mapsTooltip');
             }
+            if (this.sameMarkerData.length > 0) {
+                mergeSeparateCluster(this.sameMarkerData, this.maps, this.markerSVGObject);
+            }
+            this.sameMarkerData = options.clusterCollection;
+            clusterSeparate(this.sameMarkerData, this.maps, this.markerSVGObject, true);
         }
         let eventArgs = {
             cancel: false, name: markerClusterClick, data: options.data, maps: this.maps,
@@ -3214,15 +3599,32 @@ class Marker {
             if (!isNaN(markerIndex)) {
                 data = marker$$1.dataSource[dataIndex];
                 let collection = [];
-                if ((this.maps.layers[index].markerClusterSettings.allowClusterExpand) && target.indexOf('_cluster_') > -1) {
-                    marker$$1.dataSource.forEach((loc, index) => {
-                        if (loc['latitude'] === data['latitude'] && loc['longitude'] === data['longitude']) {
+                if (!marker$$1.template && (target.indexOf('_cluster_') > -1) && (this.maps.layers[index].markerClusterSettings.allowClusterExpand)) {
+                    marker$$1.dataSource.forEach((location, index) => {
+                        if (location['latitude'] === data['latitude'] && location['longitude'] === data['longitude']) {
                             collection.push({ data: data, index: index });
                         }
                     });
+                }
+                if ((target.indexOf('_cluster_') > -1)) {
+                    let textElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? target : target + '_datalabel_' + target.split('_cluster_')[1]);
+                    let isClusterSame = false;
+                    if (+textElement.textContent === collection.length) {
+                        isClusterSame = true;
+                    }
+                    else {
+                        let clusterElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? target.split('_datalabel_')[0] : target);
+                        let indexes = clusterElement.innerHTML.split(',').map(Number);
+                        collection = [];
+                        for (let i of indexes) {
+                            collection.push({ data: marker$$1.dataSource[i], index: i });
+                        }
+                        isClusterSame = false;
+                    }
                     clusterCollection.push({
                         data: collection, layerIndex: index, markerIndex: markerIndex,
-                        targetClusterIndex: +(target.split('_cluster_')[1].indexOf('_datalabel_') > -1 ? target.split('_cluster_')[1].split('_datalabel_')[0] : target.split('_cluster_')[1])
+                        targetClusterIndex: +(target.split('_cluster_')[1].indexOf('_datalabel_') > -1 ? target.split('_cluster_')[1].split('_datalabel_')[0] : target.split('_cluster_')[1]),
+                        isClusterSame: isClusterSame
                     });
                 }
                 return { marker: marker$$1, data: data, clusterCollection: clusterCollection };
@@ -3261,6 +3663,9 @@ class Marker {
             return;
         }
         let options = this.getMarker(targetId);
+        if (options.clusterCollection[0].isClusterSame) {
+            e.target.setAttribute('style', 'cursor: pointer');
+        }
         if (isNullOrUndefined(options)) {
             return;
         }
@@ -3719,18 +4124,33 @@ class LayerPanel {
         if (this.mapObject.isTileMap && secondaryEle) {
             this.tileSvgObject = this.mapObject.renderer.createSvg({
                 id: this.mapObject.element.id + '_Tile_SVG', width: areaRect.width,
-                height: areaRect.height
+                height: areaRect.height,
             });
-            secondaryEle.appendChild(this.tileSvgObject);
+            let parentElement = createElement('div', {
+                id: this.mapObject.element.id + '_Tile_SVG_Parent', styles: 'position: absolute; height: ' +
+                    (areaRect.height) + 'px; width: '
+                    + (areaRect.width) + 'px;'
+            });
+            parentElement.appendChild(this.tileSvgObject);
+            secondaryEle.appendChild(parentElement);
         }
         this.layerGroup = (this.mapObject.renderer.createGroup({
             id: this.mapObject.element.id + '_Layer_Collections',
             'clip-path': 'url(#' + this.mapObject.element.id + '_MapArea_ClipRect)'
         }));
-        this.clipRectElement = this.mapObject.renderer.drawClipPath(new RectOption(this.mapObject.element.id + '_MapArea_ClipRect', 'transparent', { width: 1, color: 'Gray' }, 1, {
-            x: this.mapObject.isTileMap ? 0 : areaRect.x, y: this.mapObject.isTileMap ? 0 : areaRect.y,
-            width: areaRect.width, height: areaRect.height
-        }));
+        if (this.mapObject.layers[this.mapObject.baseLayerIndex].layerType === 'GoogleStaticMap') {
+            let staticMapSize = 640;
+            this.clipRectElement = this.mapObject.renderer.drawClipPath(new RectOption(this.mapObject.element.id + '_MapArea_ClipRect', 'transparent', { width: 1, color: 'Gray' }, 1, {
+                x: ((areaRect.width - staticMapSize) / 2), y: 0,
+                width: staticMapSize, height: areaRect.height
+            }));
+        }
+        else {
+            this.clipRectElement = this.mapObject.renderer.drawClipPath(new RectOption(this.mapObject.element.id + '_MapArea_ClipRect', 'transparent', { width: 1, color: 'Gray' }, 1, {
+                x: this.mapObject.isTileMap ? 0 : areaRect.x, y: this.mapObject.isTileMap ? 0 : areaRect.y,
+                width: areaRect.width, height: areaRect.height
+            }));
+        }
         this.layerGroup.appendChild(this.clipRectElement);
         this.mapObject.baseMapBounds = null;
         this.mapObject.baseMapRectBounds = null;
@@ -3746,14 +4166,24 @@ class LayerPanel {
      * @private
      */
     renderTileLayer(panel, layer, layerIndex, bing) {
-        let center = new Point(panel.mapObject.centerPosition.longitude, panel.mapObject.centerPosition.latitude);
         panel.currentFactor = panel.calculateFactor(layer);
-        if (isNullOrUndefined(panel.mapObject.tileZoomLevel)) {
-            panel.mapObject.tileZoomLevel = panel.mapObject.zoomSettings.zoomFactor;
+        if ((this.mapObject.isTileMap && panel.mapObject.markerModule) && panel.mapObject.zoomSettings.enable) {
+            panel.mapObject.markerModule.calculateZoomCenterPositionAndFactor(this.mapObject.layersCollection);
         }
-        else if (panel.mapObject.zoomSettings.zoomFactor !== 1) {
-            panel.mapObject.tileZoomLevel = panel.mapObject.zoomSettings.zoomFactor;
-            if (!isNullOrUndefined(panel.mapObject.tileTranslatePoint)) {
+        let center = new Point(panel.mapObject.centerPosition.longitude, panel.mapObject.centerPosition.latitude);
+        let zoomFactorValue = panel.mapObject.zoomSettings.shouldZoomInitially &&
+            panel.mapObject.zoomSettings.zoomFactor === 1 ? isNullOrUndefined(panel.mapObject.markerZoomFactor) ? 1 :
+            panel.mapObject.markerZoomFactor : panel.mapObject.zoomSettings.zoomFactor;
+        zoomFactorValue = (panel.mapObject.enablePersistence) ? ((isNullOrUndefined(panel.mapObject.mapScaleValue))
+            ? (isNullOrUndefined(panel.mapObject.markerZoomFactor) ? panel.mapObject.zoomSettings.zoomFactor :
+                panel.mapObject.markerZoomFactor) : panel.mapObject.mapScaleValue) : zoomFactorValue;
+        if (isNullOrUndefined(panel.mapObject.tileZoomLevel)) {
+            panel.mapObject.tileZoomLevel = zoomFactorValue;
+        }
+        else if (panel.mapObject.zoomSettings.zoomFactor !== 1 || panel.mapObject.zoomSettings.shouldZoomInitially) {
+            panel.mapObject.tileZoomLevel = zoomFactorValue;
+            if (!isNullOrUndefined(panel.mapObject.tileTranslatePoint) &&
+                panel.mapObject.markerZoomFactor !== panel.mapObject.mapScaleValue) {
                 panel.mapObject.tileTranslatePoint.x = 0;
                 panel.mapObject.tileTranslatePoint.y = 0;
             }
@@ -3773,6 +4203,11 @@ class LayerPanel {
         this.layerObject = (this.mapObject.renderer.createGroup({
             id: this.mapObject.element.id + '_LayerIndex_' + layerIndex
         }));
+        if (!this.mapObject.enablePersistence) {
+            if (!isNullOrUndefined(window.localStorage)) {
+                window.localStorage.clear();
+            }
+        }
         let eventArgs = {
             cancel: false, name: layerRendering, index: layerIndex,
             layer: layer, maps: this.mapObject, visible: layer.visible
@@ -4024,6 +4459,19 @@ class LayerPanel {
                     pathEle.setAttribute('aria-label', ((!isNullOrUndefined(currentShapeData['property'])) ?
                         (currentShapeData['property'][properties]) : ''));
                     pathEle.setAttribute('tabindex', (this.mapObject.tabIndex + i + 2).toString());
+                    maintainSelection(this.mapObject.selectedElementId, this.mapObject.shapeSelectionClass, pathEle, 'ShapeselectionMapStyle');
+                    if (this.mapObject.toggledShapeElementId) {
+                        for (let j = 0; j < this.mapObject.toggledShapeElementId.length; j++) {
+                            let styleProperty = this.mapObject.legendSettings.toggleLegendSettings.applyShapeSettings ?
+                                this.currentLayer.shapeSettings : this.mapObject.legendSettings.toggleLegendSettings;
+                            if (this.mapObject.toggledShapeElementId[j] === pathEle.id) {
+                                pathEle.setAttribute('fill', styleProperty.fill);
+                                pathEle.setAttribute('stroke', styleProperty.border.color);
+                                pathEle.setAttribute('opacity', (styleProperty.opacity).toString());
+                                pathEle.setAttribute('stroke-width', (styleProperty.border.width).toString());
+                            }
+                        }
+                    }
                     groupElement.appendChild(pathEle);
                 }
                 if (i === this.currentLayer.layerData.length - 1) {
@@ -4043,6 +4491,9 @@ class LayerPanel {
                             });
                             this.groupElements.push(bubbleG);
                         }
+                    }
+                    if ((this.mapObject.markerModule && !this.mapObject.isTileMap) && this.mapObject.zoomSettings.enable) {
+                        this.mapObject.markerModule.calculateZoomCenterPositionAndFactor(this.mapObject.layersCollection);
                     }
                     let group = (this.mapObject.renderer.createGroup({
                         id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_dataLableIndex_Group',
@@ -4393,30 +4844,87 @@ class LayerPanel {
         this.arrangeTiles();
     }
     arrangeTiles() {
-        let htmlString = this.templateCompiler(this.tiles);
-        if (getElementByID(this.mapObject.element.id + '_tile_parent')) {
-            document.getElementById(this.mapObject.element.id + '_tile_parent').innerHTML = htmlString;
+        if (this.mapObject.layers[this.mapObject.baseLayerIndex].layerType === 'GoogleStaticMap') {
+            this.renderGoogleMap(this.mapObject.layers[0].key, this.mapObject.staticMapZoom);
+        }
+        else {
+            let htmlString = this.templateCompiler(this.tiles);
+            if (getElementByID(this.mapObject.element.id + '_tile_parent')) {
+                document.getElementById(this.mapObject.element.id + '_tile_parent').innerHTML = htmlString;
+            }
         }
     }
     templateCompiler(tiles) {
         let tileElment = '';
         let id = 0;
         for (let tile of tiles) {
-            if (this.urlTemplate.indexOf('tileX') !== -1) {
-                tileElment += '<div><div id="tile' + id + '" style="position:absolute;left: ' + tile.left + 'px;top: ' + tile.top +
-                    'px;height: ' + tile.height + 'px;width: ' + tile.width + 'px;"><img src="' + tile.src + '"></img></div></div>';
-                id++;
-            }
-            else {
-                tileElment = '<div style="position:absolute;"><img src="' + this.urlTemplate + '"></div>';
-                break;
-            }
+            tileElment += '<div><div id="tile' + id + '" style="position:absolute;left: ' + tile.left + 'px;top: ' + tile.top +
+                'px;height: ' + tile.height + 'px;width: ' + tile.width + 'px;"><img src="' + tile.src + '"></img></div></div>';
+            id++;
         }
         return tileElment;
     }
+    /* tslint:disable:no-string-literal */
+    /**
+     * Static map rendering
+     * @param apikey
+     * @private
+     */
+    renderGoogleMap(apikey, zoom) {
+        let staticMapString;
+        let map = this.mapObject;
+        // zoom = this.mapObject.zoomSettings.shouldZoomInitially ? this.mapObject.markerZoomFactor : zoom;
+        zoom = this.mapObject.tileZoomLevel;
+        let x;
+        let y;
+        let totalSize = Math.pow(2, zoom) * 256;
+        x = (map.mapAreaRect.width / 2) - (totalSize / 2);
+        y = (map.mapAreaRect.height / 2) - (totalSize / 2);
+        let centerPoint = new Point(null, null);
+        let diffX = 0;
+        let diffY = 0;
+        let position = convertTileLatLongToPoint(centerPoint, zoom, { x: x, y: y }, this.isMapCoordinates);
+        if (map.zoomModule && map.zoomSettings.enable) {
+            diffX = map.zoomModule.mouseDownLatLong['x'] - map.zoomModule.mouseMoveLatLong['x'];
+            diffY = map.zoomModule.mouseDownLatLong['y'] - map.zoomModule.mouseMoveLatLong['y'];
+        }
+        let panLatLng = map.pointToLatLong(position.x - diffX, position.y - diffY);
+        map.centerPosition.latitude = panLatLng['latitude'];
+        map.centerPosition.longitude = panLatLng['longitude'];
+        let mapWidth;
+        let mapHeight;
+        if (isNullOrUndefined(parseInt(map.width, 10))) {
+            mapWidth = parseInt(map.width, 10) - 22;
+        }
+        else {
+            mapWidth = Math.round(map.mapAreaRect.width);
+        }
+        if (isNullOrUndefined(parseInt(map.height, 10))) {
+            mapHeight = parseInt(map.height, 10) - 22;
+        }
+        else {
+            mapHeight = Math.round(map.mapAreaRect.height);
+        }
+        let eleWidth = mapWidth > 640 ? (mapWidth - 640) / 2 : 0;
+        let eleHeight = mapHeight > 640 ? (mapHeight - 640) / 2 : 0;
+        let center;
+        let mapType = (map.layers[map.layers.length - 1].staticMapType).toString().toLowerCase();
+        if (map.centerPosition.latitude && map.centerPosition.longitude) {
+            center = map.centerPosition.latitude.toString() + ',' + map.centerPosition.longitude.toString();
+        }
+        else {
+            center = '0,0';
+        }
+        staticMapString = 'https://maps.googleapis.com/maps/api/staticmap?size=' + mapWidth + 'x' + mapHeight +
+            '&zoom=' + zoom + '&center=' + center + '&maptype=' + mapType + '&key=' + apikey;
+        document.getElementById(this.mapObject.element.id + '_tile_parent').innerHTML
+            = '<div id="' + this.mapObject.element.id + '_StaticGoogleMap"' + 'style="position:absolute; left:' + eleWidth + 'px; top:'
+                + eleHeight + 'px"><img src="' + staticMapString + '"></div>';
+    }
     panTileMap(factorX, factorY, centerPosition) {
         let level = this.mapObject.tileZoomLevel;
-        let padding = 20;
+        let padding = this.mapObject.layers[this.mapObject.layers.length - 1].layerType !== 'GoogleStaticMap' ?
+            20 : 0;
         let x;
         let y;
         let totalSize = Math.pow(2, level) * 256;
@@ -4718,12 +5226,49 @@ let Maps = class Maps extends Component {
         this.baseTileTranslatePoint = new Point(0, 0);
         /** @private */
         this.isDevice = false;
+        /** @private */
+        this.staticMapZoom = this.zoomSettings.enable ? this.zoomSettings.zoomFactor : 0;
         /** @public */
         this.dataLabelShape = [];
         this.zoomShapeCollection = [];
         this.zoomLabelPositions = [];
         this.mouseDownEvent = { x: null, y: null };
         this.mouseClickEvent = { x: null, y: null };
+        this.selectedElementId = [];
+        this.selectedMarkerElementId = [];
+        this.selectedBubbleElementId = [];
+        this.selectedNavigationElementId = [];
+        this.selectedLegendElementId = [];
+        this.legendSelectionCollection = [];
+        this.shapeSelections = true;
+        this.legendSelection = true;
+        this.toggledLegendId = [];
+        this.toggledShapeElementId = [];
+        this.checkInitialRender = true;
+        setValue('mergePersistData', this.mergePersistMapsData, this);
+    }
+    /**
+     * To manage persist maps data
+     */
+    mergePersistMapsData() {
+        let data;
+        if (!isNullOrUndefined(window.localStorage)) {
+            data = window.localStorage.getItem(this.getModuleName() + this.element.id);
+        }
+        if (!(isNullOrUndefined(data) || (data === ''))) {
+            let dataObj = JSON.parse(data);
+            let keys = Object.keys(dataObj);
+            this.isProtectedOnChange = true;
+            for (let key of keys) {
+                if ((typeof this[key] === 'object') && !isNullOrUndefined(this[key])) {
+                    extend(this[key], dataObj[key]);
+                }
+                else {
+                    this[key] = dataObj[key];
+                }
+            }
+            this.isProtectedOnChange = false;
+        }
     }
     /**
      * Gets the localized label by locale keyword.
@@ -4740,6 +5285,7 @@ let Maps = class Maps extends Component {
         this.isDevice = Browser.isDevice;
         this.isBlazor = isBlazor();
         this.initPrivateVariable();
+        this.allowServerDataBinding = false;
         this.trigger(load, this.isBlazor ? {} : { maps: this }, () => {
             this.unWireEVents();
             this.createSVG();
@@ -4833,7 +5379,7 @@ let Maps = class Maps extends Component {
         }
     }
     renderMap() {
-        if (this.legendModule && this.legendSettings.visible) {
+        if (!this.isTileMap && this.legendModule && this.legendSettings.visible) {
             this.legendModule.renderLegend();
         }
         this.createTile();
@@ -4846,6 +5392,21 @@ let Maps = class Maps extends Component {
         }
         this.mapLayerPanel.measureLayerPanel();
         this.element.appendChild(this.svgObject);
+        for (let i = 0; i < this.layers.length; i++) {
+            if (this.layers[i].selectionSettings && this.layers[i].selectionSettings.enable &&
+                this.layers[i].initialShapeSelection.length > 0 && this.checkInitialRender) {
+                let checkSelection = this.layers[i].selectionSettings.enableMultiSelect;
+                this.layers[i].selectionSettings.enableMultiSelect = checkSelection ? checkSelection : true;
+                let shapeSelection = this.layers[i].initialShapeSelection;
+                for (let j = 0; j < this.layers[i].initialShapeSelection.length; j++) {
+                    this.shapeSelection(i, shapeSelection[j].shapePath, shapeSelection[j].shapeValue, true);
+                }
+                this.layers[i].selectionSettings.enableMultiSelect = checkSelection;
+                if (i === this.layers.length - 1) {
+                    this.checkInitialRender = false;
+                }
+            }
+        }
         if (!isNullOrUndefined(document.getElementById(this.element.id + '_tile_parent'))) {
             let svg = this.svgObject.getBoundingClientRect();
             let element = document.getElementById(this.element.id);
@@ -4871,11 +5432,15 @@ let Maps = class Maps extends Component {
      * To append blazor templates
      */
     blazorTemplates() {
-        if (this.layers[this.layers.length - 1].dataLabelSettings || this.layers[this.layers.length - 1].markerSettings) {
-            updateBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate', this.layers[0].dataLabelSettings);
-            for (let i = 0; i < this.layers.length; i++) {
-                for (let j = 0; j < this.layers[i].markerSettings.length; j++) {
-                    updateBlazorTemplate(this.element.id + '_MarkerTemplate', 'MarkerTemplate', this.layers[i].markerSettings[j]);
+        let layerLength = this.layers.length - 1;
+        let markerLength = this.layers[layerLength].markerSettings.length - 1;
+        if (markerLength >= 0) {
+            if (this.layers[layerLength].dataLabelSettings.visible || this.layers[layerLength].markerSettings[markerLength].template) {
+                updateBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate', this.layers[layerLength].dataLabelSettings);
+                for (let i = 0; i < this.layers.length; i++) {
+                    for (let j = 0; j < this.layers[i].markerSettings.length; j++) {
+                        updateBlazorTemplate(this.element.id + '_MarkerTemplate' + j, 'MarkerTemplate', this.layers[i].markerSettings[j]);
+                    }
                 }
             }
         }
@@ -4918,7 +5483,8 @@ let Maps = class Maps extends Component {
             let tileSvgRect = getElementByID(this.element.id + '_Tile_SVG').getBoundingClientRect();
             left = (tileRect.left - tileSvgRect.left);
             top = (tileRect.top - tileSvgRect.top);
-            getElementByID(this.element.id + '_Tile_SVG').setAttribute('transform', 'translate(' + left + ' ' + top + ')');
+            getElementByID(this.element.id + '_Tile_SVG_Parent').style.left = left + 'px';
+            getElementByID(this.element.id + '_Tile_SVG_Parent').style.top = top + 'px';
             let markerTemplateElements = document.getElementsByClassName('template');
             if (!isNullOrUndefined(markerTemplateElements) && markerTemplateElements.length > 0) {
                 for (let i = 0; i < markerTemplateElements.length; i++) {
@@ -4994,7 +5560,8 @@ let Maps = class Maps extends Component {
     createTile() {
         let mainLayer = this.layersCollection[0];
         let padding = 0;
-        if (mainLayer.isBaseLayer && (mainLayer.layerType === 'OSM' || mainLayer.layerType === 'Bing')) {
+        if (mainLayer.isBaseLayer && (mainLayer.layerType === 'OSM' || mainLayer.layerType === 'Bing' ||
+            mainLayer.layerType === 'GoogleStaticMap')) {
             removeElement(this.element.id + '_tile_parent');
             // let elementRect: ClientRect = this.element.getBoundingClientRect();
             // let parentRect: ClientRect = this.element.parentElement.getBoundingClientRect();
@@ -5106,7 +5673,11 @@ let Maps = class Maps extends Component {
      */
     createSVG() {
         resetBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate');
-        resetBlazorTemplate(this.element.id + '_MarkerTemplate', 'MarkerTemplate');
+        for (let i = 0; i < this.layers.length; i++) {
+            for (let j = 0; j < this.layers[i].markerSettings.length; j++) {
+                resetBlazorTemplate(this.element.id + '_MarkerTemplate' + j, 'MarkerTemplate');
+            }
+        }
         this.removeSvg();
         createSvg(this);
     }
@@ -5209,6 +5780,10 @@ let Maps = class Maps extends Component {
                         mergeSeparateCluster(this.markerModule.sameMarkerData, this, getElement(this.element.id + '_Markers_Group'));
                         this.markerModule.sameMarkerData = [];
                     }
+                    if (getElement(this.element.id + '_mapsTooltip') &&
+                        this.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_') > -1) {
+                        removeElement(this.element.id + '_mapsTooltip');
+                    }
                 }
                 if (this.markerModule) {
                     this.markerModule.markerClick(e);
@@ -5262,6 +5837,23 @@ let Maps = class Maps extends Component {
         this.mouseDownEvent = { x: e.x, y: e.y };
         let rect = this.element.getBoundingClientRect();
         let element = e.target;
+        if (element.id.indexOf('_ToolBar') === -1) {
+            let markerModule = this.markerModule;
+            if (element.id.indexOf('shapeIndex') > -1 || element.id.indexOf('Tile') > -1) {
+                if (markerModule && (markerModule.sameMarkerData.length > 0) &&
+                    (this.zoomModule ? this.zoomModule.isSingleClick : true)) {
+                    mergeSeparateCluster(markerModule.sameMarkerData, this, getElement(this.element.id + '_Markers_Group'));
+                    markerModule.sameMarkerData = [];
+                }
+            }
+            if (markerModule) {
+                markerModule.markerClick(e);
+                markerModule.markerClusterClick(e);
+            }
+            if (this.bubbleModule) {
+                this.bubbleModule.bubbleClick(e);
+            }
+        }
         this.notify(Browser.touchStartEvent, e);
     }
     /**
@@ -5428,6 +6020,94 @@ let Maps = class Maps extends Component {
         }
     }
     /**
+     * Public method for selection
+     * @param layerIndex
+     * @param propertyName
+     * @param name
+     * @param enable
+     */
+    shapeSelection(layerIndex, propertyName, name, enable) {
+        let targetEle;
+        if (isNullOrUndefined(enable)) {
+            enable = true;
+        }
+        let selectionsettings = this.layers[layerIndex].selectionSettings;
+        if (!selectionsettings.enableMultiSelect && this.legendSelection && enable) {
+            this.removeShapeSelection();
+        }
+        if (selectionsettings.enable) {
+            let targetId;
+            let dataIndex;
+            let shapeIndex;
+            let shapeDataValue;
+            let data;
+            let shapeData = this.layers[layerIndex].shapeData['features'];
+            for (let i = 0; i < shapeData.length; i++) {
+                if (shapeData[i]['properties'][propertyName] === name) {
+                    let k = checkShapeDataFields(this.layers[layerIndex].dataSource, shapeData[i]['properties'], this.layers[layerIndex].shapeDataPath, this.layers[layerIndex].shapePropertyPath);
+                    targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' +
+                        (k ? k.toString() : 'undefined');
+                    targetEle = getElement(targetId);
+                    if (isNullOrUndefined(k) && isNullOrUndefined(targetEle)) {
+                        targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_null';
+                        targetEle = getElement(targetId);
+                    }
+                    shapeIndex = parseInt(targetEle.id.split('_shapeIndex_')[1].split('_')[0], 10);
+                    shapeDataValue = this.layers[layerIndex].shapeData['features']['length'] > shapeIndex ?
+                        this.layers[layerIndex].shapeData['features'][shapeIndex]['properties'] : null;
+                    dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
+                    data = isNullOrUndefined(dataIndex) ? null : this.layers[layerIndex].dataSource[dataIndex];
+                    if (enable) {
+                        triggerItemSelectionEvent(selectionsettings, this, targetEle, shapeDataValue, data);
+                        this.shapeSelectionClass = getElement('ShapeselectionMap');
+                        if (this.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1) {
+                            this.legendModule.shapeHighLightAndSelection(targetEle, data, selectionsettings, 'selection', layerIndex);
+                        }
+                        let shapeToggled = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
+                        if (shapeToggled) {
+                            targetEle.setAttribute('class', 'ShapeselectionMapStyle');
+                            if (this.selectedElementId.indexOf(targetEle.getAttribute('id')) === -1) {
+                                this.selectedElementId.push(targetEle.getAttribute('id'));
+                            }
+                            if (!selectionsettings.enableMultiSelect) {
+                                return;
+                            }
+                        }
+                    }
+                    else {
+                        this.legendSelection = (!selectionsettings.enableMultiSelect && !this.legendSelection) ?
+                            true : this.legendSelection;
+                        if (this.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1 &&
+                            targetEle.getAttribute('class') === 'ShapeselectionMapStyle') {
+                            this.legendModule.shapeHighLightAndSelection(targetEle, data, selectionsettings, 'selection', layerIndex);
+                        }
+                        let shapeToggled = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
+                        if (shapeToggled) {
+                            removeClass(targetEle);
+                            let selectedElementIdIndex = this.selectedElementId.indexOf(targetEle.getAttribute('id'));
+                            if (selectedElementIdIndex !== -1) {
+                                this.selectedElementId.splice(selectedElementIdIndex, 1);
+                                if (!selectionsettings.enableMultiSelect && this.legendSelection && this.selectedElementId.length > 0) {
+                                    this.removeShapeSelection();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    /**
+     * Method to romove multiple selected shapes maps
+     */
+    removeShapeSelection() {
+        let selectedElements = this.selectedElementId.length;
+        for (let i = 0; i < selectedElements; i++) {
+            removeClass(getElementByID(this.selectedElementId[0]));
+            this.selectedElementId.splice(0, 1);
+        }
+    }
+    /**
      * Method to set culture for maps
      */
     setCulture() {
@@ -5466,7 +6146,8 @@ let Maps = class Maps extends Component {
      * @private
      */
     getPersistData() {
-        return '';
+        let keyEntity = ['translatePoint', 'zoomSettings', 'mapScaleValue', 'tileTranslatePoint', 'baseTranslatePoint', 'scale'];
+        return this.addOnPersist(keyEntity);
     }
     /**
      * Called internally if any of the property value changed.
@@ -5474,6 +6155,8 @@ let Maps = class Maps extends Component {
      */
     onPropertyChanged(newProp, oldProp) {
         let render = false;
+        let isMarker = false;
+        let isStaticMapType = false;
         let newLayerLength = Object.keys(newProp).length;
         let layerEle = document.getElementById(this.element.id + '_LayerIndex_' + (newLayerLength - 1));
         for (let prop of Object.keys(newProp)) {
@@ -5487,12 +6170,33 @@ let Maps = class Maps extends Component {
                 case 'projectionType':
                 case 'legendSettings':
                 case 'zoomSettings':
+                case 'baseLayerIndex':
+                    if (prop === 'layers') {
+                        let layerPropLength = Object.keys(newProp.layers).length;
+                        for (let x = 0; x < layerPropLength; x++) {
+                            if (!isNullOrUndefined(newProp.layers[x])) {
+                                let collection = Object.keys(newProp.layers[x]);
+                                for (let collectionProp of collection) {
+                                    if (collectionProp === 'markerSettings') {
+                                        isMarker = true;
+                                    }
+                                    else if (collectionProp === 'staticMapType') {
+                                        isStaticMapType = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
                     render = true;
+                    break;
+                case 'locale':
+                case 'currencyCode':
+                    super.refresh();
                     break;
             }
         }
         if (render) {
-            if (newProp.layers && newProp.layers[newLayerLength - 1].markerSettings) {
+            if (newProp.layers && isMarker) {
                 removeElement(this.element.id + '_Markers_Group');
                 if (this.isTileMap) {
                     this.mapLayerPanel.renderTileLayer(this.mapLayerPanel, this.layers['currentFactor'], (newLayerLength - 1));
@@ -5500,6 +6204,9 @@ let Maps = class Maps extends Component {
                 else {
                     this.markerModule.markerRender(layerEle, (newLayerLength - 1), this.mapLayerPanel['currentFactor'], 'AddMarker');
                 }
+            }
+            else if (newProp.layers && isStaticMapType) {
+                this.mapLayerPanel.renderGoogleMap(this.layers[this.layers.length - 1].key, this.staticMapZoom);
             }
             else {
                 this.createSVG();
@@ -5756,11 +6463,12 @@ let Maps = class Maps extends Component {
         let ele = document.getElementById(this.element.id + '_tile_parent');
         let lastTile = this.mapLayerPanel.tiles[this.mapLayerPanel.tiles.length - 1];
         let tile0 = this.mapLayerPanel.tiles[0];
-        latLong = this.pointToLatLong(location.layerX - (ele.offsetLeft - container.offsetLeft), location.layerY - (ele.offsetTop - container.offsetTop));
+        latLong = this.pointToLatLong(location.layerX + this.mapAreaRect.x - (ele.offsetLeft - container.offsetLeft), location.layerY + this.mapAreaRect.y - (ele.offsetTop - container.offsetTop));
         return { latitude: latLong['latitude'], longitude: latLong['longitude'] };
     }
     pointToLatLong(pageX, pageY) {
-        pageY = (this.zoomSettings.enable) ? pageY + 10 : pageY;
+        let padding = this.layers[this.layers.length - 1].layerType === 'GoogleStaticMap' ? 0 : 10;
+        pageY = (this.zoomSettings.enable) ? pageY + padding : pageY;
         let mapSize = 256 * Math.pow(2, this.tileZoomLevel);
         let x1 = (this.clip(pageX - (this.translatePoint.x * this.scale), 0, mapSize - 1) / mapSize) - 0.5;
         let y1 = 0.5 - (this.clip(pageY - (this.translatePoint.y * this.scale), 0, mapSize - 1) / mapSize);
@@ -5853,6 +6561,9 @@ __decorate([
 __decorate([
     Event()
 ], Maps.prototype, "tooltipRender", void 0);
+__decorate([
+    Event()
+], Maps.prototype, "legendRendering", void 0);
 __decorate([
     Event()
 ], Maps.prototype, "tooltipRenderComplete", void 0);
@@ -6044,6 +6755,7 @@ class Bubble {
                     eventArgs.cy = y;
                     bubbleElement = drawRectangle(this.maps, rectangle, group);
                 }
+                maintainSelection(this.maps.selectedBubbleElementId, this.maps.bubbleSelectionClass, bubbleElement, 'BubbleselectionMapStyle');
                 this.bubbleCollection.push({
                     LayerIndex: layerIndex,
                     BubbleIndex: bubbleIndex,
@@ -6323,9 +7035,7 @@ class DataLabel {
                     return;
                 }
                 let position = [];
-                let width = zoomLabelsPosition && scaleZoomValue > 1
-                    ? this.maps.zoomShapeCollection[index]['width'] :
-                    location['rightMax']['x'] - location['leftMax']['x'];
+                let width = location['rightMax']['x'] - location['leftMax']['x'];
                 if (!isNullOrUndefined(this.maps.dataLabelShape)) {
                     shapeWidth = firstLevelMapLocation['rightMax']['x'] - firstLevelMapLocation['leftMax']['x'];
                     this.maps.dataLabelShape.push(shapeWidth);
@@ -6625,6 +7335,7 @@ class NavigationLine {
                         (arrowPosition === 'Start') ? navigationEle.setAttribute('marker-start', startArrow)
                             : navigationEle.setAttribute('marker-end', endArrow);
                     }
+                    maintainSelection(this.maps.selectedNavigationElementId, this.maps.navigationSelectionClass, navigationEle, 'navigationlineselectionMapStyle');
                     navigationGroup.appendChild(navigationEle);
                     group.appendChild(navigationGroup);
                 }
@@ -6671,13 +7382,11 @@ class Legend {
         this.widthIncrement = 0;
         this.textMaxWidth = 0;
         this.shapeHighlightCollection = [];
-        this.shapeSelectionCollection = [];
         this.legendHighlightCollection = [];
-        this.legendSelectionCollection = [];
+        this.shapePreviousColor = [];
+        this.selectedNonLegendShapes = [];
+        this.shapeToggled = true;
         this.legendElement = null;
-        this.shapeElement = null;
-        this.shapeSelection = true;
-        this.legendSelection = true;
         this.maps = maps;
         this.addEventListener();
     }
@@ -6732,6 +7441,25 @@ class Legend {
                 }
             }
         });
+        if (this.legendCollection.length > 0) {
+            for (let i = 0; i < this.legendCollection.length; i++) {
+                let legendItem = this.legendCollection[i];
+                let eventArgs = {
+                    name: legendRendering, cancel: false, fill: legendItem['fill'], shape: legend.shape,
+                    shapeBorder: legend.shapeBorder,
+                    text: typeof legendItem['text'] === 'number' ? legendItem['text'].toString() : legendItem['text']
+                };
+                map.trigger('legendRendering', eventArgs);
+                legendItem['fill'] = eventArgs.fill;
+                legendItem['shape'] = eventArgs.shape;
+                legendItem['shapeBorder'] = eventArgs.shapeBorder;
+                legendItem['text'] = eventArgs.text;
+                if (eventArgs.cancel) {
+                    this.legendCollection.splice(i, 1);
+                    i--;
+                }
+            }
+        }
         let defaultSize = 25;
         let legendTitle = map.legendSettings.title.text;
         let titleTextStyle = map.legendSettings.titleStyle;
@@ -6813,6 +7541,12 @@ class Legend {
                             textX - (itemTextSize.width / 2) : startX;
                         itemStartY = (arrangement === 'Horizontal') ? (position === 'After') ? startY :
                             textY - (itemTextSize.height / 2) : startY;
+                        if (this.legendCollection.length === 1) {
+                            legendWidth = (arrangement === 'Horizontal') ? Math.abs((startX + rectWidth) - itemStartX) :
+                                (rectWidth + maxTextWidth + textPadding);
+                            legendHeight = (arrangement === 'Horizontal') ? (rectHeight + (maxTextHeight / 2) + textPadding) :
+                                Math.abs((startY + rectHeight) - itemStartY);
+                        }
                     }
                     else if (i === this.legendCollection.length - 1) {
                         legendWidth = (arrangement === 'Horizontal') ? Math.abs((startX + rectWidth) - itemStartX) :
@@ -6824,7 +7558,8 @@ class Legend {
                         fill: this.legendCollection[i]['fill'], x: startX, y: startY,
                         width: rectWidth, height: rectHeight,
                         text: legendText, textX: textX, textY: textY,
-                        textWidth: itemTextSize.width, textHeight: itemTextSize.height
+                        textWidth: itemTextSize.width, textHeight: itemTextSize.height,
+                        shapeBorder: this.legendCollection[i]['shapeBorder']
                     });
                 }
                 if (this.legendCollection.length === 1) {
@@ -6909,6 +7644,9 @@ class Legend {
                         Shape: { x: shapeX, y: shapeY },
                         Text: { x: textX, y: textY },
                         Fill: legendItem['fill'],
+                        legendShape: legendItem['shape'],
+                        shapeBorder: legendItem['shapeBorder'],
+                        idIndex: i,
                         Rect: {
                             x: shapeLocation[j].x - (shapeWidth / 2),
                             y: (shapeLocation[j].y - (shapeHeight / 2)) < (textY - legendTextSize.height) ?
@@ -6962,10 +7700,6 @@ class Legend {
         let textOptions;
         let textFont = legend.textStyle;
         this.legendGroup = render.createGroup({ id: map.element.id + '_Legend_Group' });
-        let eventArgs = {
-            name: legendRendering, cancel: false, fill: '', shape: legend.shape,
-            shapeBorder: legend.shapeBorder
-        };
         if (legend.mode === 'Interactive') {
             for (let i = 0; i < this.legendRenderingCollections.length; i++) {
                 let itemId = map.element.id + '_Legend_Index_' + i;
@@ -6973,19 +7707,16 @@ class Legend {
                 let item = this.legendRenderingCollections[i];
                 let bounds = new Rect(item['x'], item['y'], item['width'], item['height']);
                 let textLocation = new Point(item['textX'], item['textY']);
-                eventArgs.fill = item['fill'];
-                map.trigger(legendRendering, eventArgs, () => {
-                    textFont.color = (textFont.color !== null) ? textFont.color : this.maps.themeStyle.legendTextColor;
-                    let rectOptions = new RectOption(itemId, eventArgs.fill, eventArgs.shapeBorder, legend.opacity, bounds);
-                    textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'middle', item['text'], '', '');
-                    textFont.fontFamily = map.themeStyle.fontFamily || textFont.fontFamily;
-                    textFont.size = map.themeStyle.legendFontSize || textFont.size;
-                    renderTextElement(textOptions, textFont, textFont.color, this.legendGroup);
-                    this.legendGroup.appendChild(render.drawRectangle(rectOptions));
-                    if (i === this.legendRenderingCollections.length - 1) {
-                        this.renderLegendBorder();
-                    }
-                });
+                textFont.color = (textFont.color !== null) ? textFont.color : this.maps.themeStyle.legendTextColor;
+                let rectOptions = new RectOption(itemId, item['fill'], item['shapeBorder'], legend.opacity, bounds);
+                textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'middle', item['text'], '', '');
+                textFont.fontFamily = map.themeStyle.fontFamily || textFont.fontFamily;
+                textFont.size = map.themeStyle.legendFontSize || textFont.size;
+                renderTextElement(textOptions, textFont, textFont.color, this.legendGroup);
+                this.legendGroup.appendChild(render.drawRectangle(rectOptions));
+                if (i === this.legendRenderingCollections.length - 1) {
+                    this.renderLegendBorder();
+                }
             }
         }
         else {
@@ -7000,92 +7731,87 @@ class Legend {
         let shapeSize = new Size(legend.shapeWidth, legend.shapeHeight);
         let textOptions;
         let render = map.renderer;
-        let shapeBorder = legend.shapeBorder;
-        let eventArgs = { name: legendRendering, cancel: false, fill: '', shape: legend.shape };
         if (page >= 0 && page < this.totalPages.length) {
             if (querySelector(this.legendGroup.id, this.maps.element.id)) {
                 remove(querySelector(this.legendGroup.id, this.maps.element.id));
             }
-            let strokeColor = (legend.shape === 'HorizontalLine' || legend.shape === 'VerticalLine'
-                || legend.shape === 'Cross') ? isNullOrUndefined(legend.fill) ? '#000000' : legend.fill : shapeBorder.color;
-            let strokeWidth = (legend.shape === 'HorizontalLine' || legend.shape === 'VerticalLine'
-                || legend.shape === 'Cross') ? (shapeBorder.width === 0) ?
-                1 : shapeBorder.width : shapeBorder.width;
-            eventArgs.shapeBorder = { width: strokeWidth, color: strokeColor };
             for (let i = 0; i < this.totalPages[page]['Collection'].length; i++) {
                 let collection = this.totalPages[page]['Collection'][i];
-                let legendElement = render.createGroup({ id: map.element.id + '_Legend_Index_' + i });
+                let shapeBorder = collection['shapeBorder'];
+                let legendElement = render.createGroup({ id: map.element.id + '_Legend_Index_' + collection['idIndex'] });
                 let legendText = collection['DisplayText'];
-                eventArgs.fill = collection['Fill'];
-                eventArgs.shape = ((legend.type === 'Markers') ? ((isNullOrUndefined(collection['ImageSrc'])) ?
-                    legend.shape : 'Image') : legend.shape);
-                map.trigger(legendRendering, eventArgs, () => {
-                    let shapeId = map.element.id + '_Legend_Shape_Index_' + i;
-                    let textId = map.element.id + '_Legend_Text_Index_' + i;
-                    let shapeLocation = collection['Shape'];
-                    let textLocation = collection['Text'];
-                    let imageUrl = ((isNullOrUndefined(collection['ImageSrc'])) ? legend.shape : collection['ImageSrc']);
-                    let renderOptions = new PathOption(shapeId, eventArgs.fill, eventArgs.shapeBorder.width, eventArgs.shapeBorder.color, legend.opacity, '');
-                    legend.textStyle.color = (legend.textStyle.color !== null) ? legend.textStyle.color :
-                        this.maps.themeStyle.legendTextColor;
-                    legend.textStyle.fontFamily = map.themeStyle.fontFamily || legend.textStyle.fontFamily;
-                    legend.textStyle.size = map.themeStyle.legendFontSize || legend.textStyle.size;
-                    legendElement.appendChild(drawSymbol(shapeLocation, eventArgs.shape, shapeSize, collection['ImageSrc'], renderOptions));
-                    textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
-                    renderTextElement(textOptions, legend.textStyle, legend.textStyle.color, legendElement);
-                    this.legendGroup.appendChild(legendElement);
-                    if (i === (this.totalPages[page]['Collection'].length - 1)) {
-                        let pagingGroup;
-                        let width = spacing;
-                        let height = (spacing / 2);
-                        if (this.page !== 0) {
-                            let pagingText = (page + 1) + '/' + this.totalPages.length;
-                            let pagingFont = legend.textStyle;
-                            let pagingTextSize = measureText(pagingText, pagingFont);
-                            let leftPageX = (this.legendItemRect.x + this.legendItemRect.width) - pagingTextSize.width -
-                                (width * 2) - spacing;
-                            let rightPageX = (this.legendItemRect.x + this.legendItemRect.width);
-                            let locY = (this.legendItemRect.y + this.legendItemRect.height) + (height / 2) + spacing;
-                            let pageTextX = rightPageX - width - (pagingTextSize.width / 2) - (spacing / 2);
-                            pagingGroup = render.createGroup({ id: map.element.id + '_Legend_Paging_Group' });
-                            let leftPageElement = render.createGroup({ id: map.element.id + '_Legend_Left_Paging_Group' });
-                            let rightPageElement = render.createGroup({ id: map.element.id + '_Legend_Right_Paging_Group' });
-                            let rightPath = ' M ' + rightPageX + ' ' + locY + ' L ' + (rightPageX - width) + ' ' + (locY - height) +
-                                ' L ' + (rightPageX - width) + ' ' + (locY + height) + ' z ';
-                            let leftPath = ' M ' + leftPageX + ' ' + locY + ' L ' + (leftPageX + width) + ' ' + (locY - height) +
-                                ' L ' + (leftPageX + width) + ' ' + (locY + height) + ' z ';
-                            let leftPageOptions = new PathOption(map.element.id + '_Left_Page', '#a6a6a6', 0, '#a6a6a6', 1, '', leftPath);
-                            leftPageElement.appendChild(render.drawPath(leftPageOptions));
-                            let leftRectPageOptions = new RectOption(map.element.id + '_Left_Page_Rect', 'transparent', {}, 1, new Rect(leftPageX - (width / 2), (locY - (height * 2)), width * 2, spacing * 2), null, null, '', '');
-                            leftPageElement.appendChild(render.drawRectangle(leftRectPageOptions));
-                            this.wireEvents(leftPageElement);
-                            let rightPageOptions = new PathOption(map.element.id + '_Right_Page', '#a6a6a6', 0, '#a6a6a6', 1, '', rightPath);
-                            rightPageElement.appendChild(render.drawPath(rightPageOptions));
-                            let rightRectPageOptions = new RectOption(map.element.id + '_Right_Page_Rect', 'transparent', {}, 1, new Rect((rightPageX - width), (locY - height), width, spacing), null, null, '', '');
-                            rightPageElement.appendChild(render.drawRectangle(rightRectPageOptions));
-                            this.wireEvents(rightPageElement);
-                            pagingGroup.appendChild(leftPageElement);
-                            pagingGroup.appendChild(rightPageElement);
-                            let pageTextOptions = {
-                                'id': map.element.id + '_Paging_Text',
-                                'x': pageTextX,
-                                'y': locY + (pagingTextSize.height / 4),
-                                'fill': '#a6a6a6',
-                                'font-size': '14px',
-                                'font-style': pagingFont.fontStyle,
-                                'font-family': pagingFont.fontFamily,
-                                'font-weight': pagingFont.fontWeight,
-                                'text-anchor': 'middle',
-                                'transform': '',
-                                'opacity': 1,
-                                'dominant-baseline': ''
-                            };
-                            pagingGroup.appendChild(render.createText(pageTextOptions, pagingText));
-                            this.legendGroup.appendChild(pagingGroup);
-                        }
-                        this.renderLegendBorder();
+                let shape = ((legend.type === 'Markers') ? ((isNullOrUndefined(collection['ImageSrc'])) ?
+                    legend.shape : 'Image') : collection['legendShape']);
+                let strokeColor = (legend.shape === 'HorizontalLine' || legend.shape === 'VerticalLine'
+                    || legend.shape === 'Cross') ? isNullOrUndefined(legend.fill) ? '#000000' : legend.fill : shapeBorder.color;
+                let strokeWidth = (legend.shape === 'HorizontalLine' || legend.shape === 'VerticalLine'
+                    || legend.shape === 'Cross') ? (shapeBorder.width === 0) ?
+                    1 : shapeBorder.width : shapeBorder.width;
+                let shapeId = map.element.id + '_Legend_Shape_Index_' + collection['idIndex'];
+                let textId = map.element.id + '_Legend_Text_Index_' + collection['idIndex'];
+                let shapeLocation = collection['Shape'];
+                let textLocation = collection['Text'];
+                let imageUrl = ((isNullOrUndefined(collection['ImageSrc'])) ? legend.shape : collection['ImageSrc']);
+                let renderOptions = new PathOption(shapeId, collection['Fill'], strokeWidth, strokeColor, legend.opacity, '');
+                legend.textStyle.color = (legend.textStyle.color !== null) ? legend.textStyle.color :
+                    this.maps.themeStyle.legendTextColor;
+                legend.textStyle.fontFamily = map.themeStyle.fontFamily || legend.textStyle.fontFamily;
+                legend.textStyle.size = map.themeStyle.legendFontSize || legend.textStyle.size;
+                legendElement.appendChild(drawSymbol(shapeLocation, shape, shapeSize, collection['ImageSrc'], renderOptions));
+                textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
+                renderTextElement(textOptions, legend.textStyle, legend.textStyle.color, legendElement);
+                this.legendGroup.appendChild(legendElement);
+                if (i === (this.totalPages[page]['Collection'].length - 1)) {
+                    let pagingGroup;
+                    let width = spacing;
+                    let height = (spacing / 2);
+                    if (this.page !== 0) {
+                        let pagingText = (page + 1) + '/' + this.totalPages.length;
+                        let pagingFont = legend.textStyle;
+                        let pagingTextSize = measureText(pagingText, pagingFont);
+                        let leftPageX = (this.legendItemRect.x + this.legendItemRect.width) - pagingTextSize.width -
+                            (width * 2) - spacing;
+                        let rightPageX = (this.legendItemRect.x + this.legendItemRect.width);
+                        let locY = (this.legendItemRect.y + this.legendItemRect.height) + (height / 2) + spacing;
+                        let pageTextX = rightPageX - width - (pagingTextSize.width / 2) - (spacing / 2);
+                        pagingGroup = render.createGroup({ id: map.element.id + '_Legend_Paging_Group' });
+                        let leftPageElement = render.createGroup({ id: map.element.id + '_Legend_Left_Paging_Group' });
+                        let rightPageElement = render.createGroup({ id: map.element.id + '_Legend_Right_Paging_Group' });
+                        let rightPath = ' M ' + rightPageX + ' ' + locY + ' L ' + (rightPageX - width) + ' ' + (locY - height) +
+                            ' L ' + (rightPageX - width) + ' ' + (locY + height) + ' z ';
+                        let leftPath = ' M ' + leftPageX + ' ' + locY + ' L ' + (leftPageX + width) + ' ' + (locY - height) +
+                            ' L ' + (leftPageX + width) + ' ' + (locY + height) + ' z ';
+                        let leftPageOptions = new PathOption(map.element.id + '_Left_Page', '#a6a6a6', 0, '#a6a6a6', 1, '', leftPath);
+                        leftPageElement.appendChild(render.drawPath(leftPageOptions));
+                        let leftRectPageOptions = new RectOption(map.element.id + '_Left_Page_Rect', 'transparent', {}, 1, new Rect(leftPageX - (width / 2), (locY - (height * 2)), width * 2, spacing * 2), null, null, '', '');
+                        leftPageElement.appendChild(render.drawRectangle(leftRectPageOptions));
+                        this.wireEvents(leftPageElement);
+                        let rightPageOptions = new PathOption(map.element.id + '_Right_Page', '#a6a6a6', 0, '#a6a6a6', 1, '', rightPath);
+                        rightPageElement.appendChild(render.drawPath(rightPageOptions));
+                        let rightRectPageOptions = new RectOption(map.element.id + '_Right_Page_Rect', 'transparent', {}, 1, new Rect((rightPageX - width), (locY - height), width, spacing), null, null, '', '');
+                        rightPageElement.appendChild(render.drawRectangle(rightRectPageOptions));
+                        this.wireEvents(rightPageElement);
+                        pagingGroup.appendChild(leftPageElement);
+                        pagingGroup.appendChild(rightPageElement);
+                        let pageTextOptions = {
+                            'id': map.element.id + '_Paging_Text',
+                            'x': pageTextX,
+                            'y': locY + (pagingTextSize.height / 4),
+                            'fill': '#a6a6a6',
+                            'font-size': '14px',
+                            'font-style': pagingFont.fontStyle,
+                            'font-family': pagingFont.fontFamily,
+                            'font-weight': pagingFont.fontWeight,
+                            'text-anchor': 'middle',
+                            'transform': '',
+                            'opacity': 1,
+                            'dominant-baseline': ''
+                        };
+                        pagingGroup.appendChild(render.createText(pageTextOptions, pagingText));
+                        this.legendGroup.appendChild(pagingGroup);
                     }
-                });
+                    this.renderLegendBorder();
+                }
             }
         }
     }
@@ -7102,28 +7828,43 @@ class Legend {
         let length;
         let selectLength = 0;
         let interactProcess = true;
+        let idIndex = parseFloat(targetElement.id.charAt(targetElement.id.length - 1));
+        this.updateLegendElement();
+        let toggleLegendCheck = this.maps.toggledLegendId.indexOf(idIndex);
+        if (this.maps.legendSettings.toggleLegendSettings.enable && value === 'highlight' && toggleLegendCheck !== -1) {
+            let collectionIndex = this.getIndexofLegend(this.legendHighlightCollection, targetElement);
+            if (collectionIndex !== -1) {
+                this.legendHighlightCollection.splice(collectionIndex, 1);
+            }
+            this.removeLegendHighlightCollection();
+            return null;
+        }
         if (value === 'selection') {
+            let multiSelectEnable = this.maps.layers[collection[0]['data'][0]['layerIndex']].selectionSettings.enableMultiSelect;
             this.shapeHighlightCollection = [];
-            if (this.legendSelectionCollection.length > 0) {
-                for (let k = 0; k < this.legendSelectionCollection.length; k++) {
-                    if (targetElement === this.legendSelectionCollection[k]['legendElement']) {
+            if (!this.maps.shapeSelections && !multiSelectEnable) {
+                this.removeAllSelections();
+                this.maps.shapeSelections = true;
+            }
+            if (this.maps.legendSelectionCollection.length > 0 && (!multiSelectEnable ? this.maps.shapeSelections : true)) {
+                for (let k = 0; k < this.maps.legendSelectionCollection.length; k++) {
+                    if (targetElement === this.maps.legendSelectionCollection[k]['legendElement']) {
+                        this.maps.legendSelectionCollection[k]['legendElement'] = targetElement;
                         interactProcess = false;
-                        this.removeLegendSelectionCollection();
-                        this.legendSelectionCollection.splice(k, 1);
+                        this.removeLegendSelectionCollection(this.maps.legendSelectionCollection[k]['legendElement']);
+                        this.maps.selectedLegendElementId.splice(this.maps.selectedLegendElementId.indexOf(idIndex), 1);
+                        this.maps.legendSelectionCollection.splice(k, 1);
+                        this.maps.legendSelection = this.maps.legendSelectionCollection.length > 0 ? false : true;
                         break;
-                    }
-                    else {
-                        this.removeLegendSelectionCollection();
-                        this.legendSelectionCollection.splice(k, 1);
                     }
                 }
             }
         }
         else {
-            if (this.legendSelectionCollection.length > 0) {
-                for (let k = 0; k < this.legendSelectionCollection.length; k++) {
-                    if ((targetElement.id.indexOf('_Legend_Shape') > -1 || targetElement.id.indexOf('_Legend_Index')) && targetElement ===
-                        this.legendSelectionCollection[k]['legendElement']) {
+            if (this.maps.legendSelectionCollection.length > 0) {
+                for (let k = 0; k < this.maps.legendSelectionCollection.length; k++) {
+                    if ((targetElement.id.indexOf('_Legend_Shape') > -1 || targetElement.id.indexOf('_Legend_Index')) &&
+                        targetElement === this.maps.legendSelectionCollection[k]['legendElement']) {
                         interactProcess = false;
                         break;
                     }
@@ -7136,13 +7877,17 @@ class Legend {
         }
         if (interactProcess) {
             for (let i = 0; i < collection.length; i++) {
-                if (textEle.textContent === collection[i]['text'] && collection[i]['data'].length > 0 &&
-                    parseFloat(targetElement.id.split('_Legend_Index_')[1]) === i) {
+                if (textEle.textContent === collection[i]['text'] && collection[i]['data'].length > 0) {
                     let layer = this.maps.layers[collection[i]['data'][0]['layerIndex']];
-                    let enable = (value === 'selection') ? layer.selectionSettings.enable : layer.highlightSettings.enable;
+                    let enable;
                     let module;
-                    module = (value === 'selection') ? layer.selectionSettings : layer.highlightSettings;
-                    let data = collection[i]['data'];
+                    let data;
+                    if (!isNullOrUndefined(layer)) {
+                        enable = (value === 'selection') ? layer.selectionSettings.enable : layer.highlightSettings.enable;
+                        module = void 0;
+                        module = (value === 'selection') ? layer.selectionSettings : layer.highlightSettings;
+                        data = collection[i]['data'];
+                    }
                     if (enable) {
                         for (let j = 0; j < data.length; j++) {
                             shapeIndex = data[j]['shapeIndex'];
@@ -7151,7 +7896,16 @@ class Legend {
                             let shapeEle = document.getElementById(this.maps.element.id + '_LayerIndex_' +
                                 layerIndex + '_shapeIndex_' + shapeIndex + '_dataIndex_' + dataIndex);
                             if (shapeEle !== null) {
-                                if (value === 'highlight' && this.shapeElement !== targetElement) {
+                                let shapeMatch = true;
+                                if (this.maps.legendSelectionCollection !== null) {
+                                    for (let i = 0; i < this.maps.legendSelectionCollection.length; i++) {
+                                        if (this.maps.legendSelectionCollection[i]['legendElement'] === targetElement) {
+                                            shapeMatch = false;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (value === 'highlight' && shapeMatch) {
                                     if (j === 0) {
                                         this.legendHighlightCollection = [];
                                         this.pushCollection(targetElement, this.legendHighlightCollection, collection[i], layer.shapeSettings);
@@ -7159,22 +7913,34 @@ class Legend {
                                     length = this.legendHighlightCollection.length;
                                     let legendHighlightColor = this.legendHighlightCollection[length - 1]['legendOldFill'];
                                     this.legendHighlightCollection[length - 1]['MapShapeCollection']['Elements'].push(shapeEle);
-                                    this.setColor(shapeEle, !isNullOrUndefined(module.fill) ? module.fill : legendHighlightColor, module.opacity.toString(), module.border.color, module.border.width.toString());
-                                    this.setColor(targetElement, !isNullOrUndefined(module.fill) ? module.fill : legendHighlightColor, module.opacity.toString(), module.border.color, module.border.width.toString());
+                                    let shapeItemCount = this.legendHighlightCollection[length - 1]['MapShapeCollection']['Elements'].length - 1;
+                                    let shapeOldFillColor = shapeEle.getAttribute('fill');
+                                    this.legendHighlightCollection[length - 1]['shapeOldFillColor'].push(shapeOldFillColor);
+                                    let shapeOldColor = this.legendHighlightCollection[length - 1]['shapeOldFillColor'][shapeItemCount];
+                                    this.shapePreviousColor = this.legendHighlightCollection[length - 1]['shapeOldFillColor'];
+                                    this.setColor(shapeEle, !isNullOrUndefined(module.fill) ? module.fill : shapeOldColor, module.opacity.toString(), module.border.color, module.border.width.toString(), 'highlight');
+                                    this.setColor(targetElement, !isNullOrUndefined(module.fill) ? module.fill : legendHighlightColor, module.opacity.toString(), module.border.color, module.border.width.toString(), 'highlight');
                                 }
-                                else if (value === 'selection' && this.shapeSelection) {
+                                else if (value === 'selection') {
                                     this.legendHighlightCollection = [];
+                                    this.maps.legendSelectionClass = module;
                                     if (j === 0) {
-                                        this.pushCollection(targetElement, this.legendSelectionCollection, collection[i], layer.shapeSettings);
+                                        this.pushCollection(targetElement, this.maps.legendSelectionCollection, collection[i], layer.shapeSettings);
+                                        this.maps.selectedLegendElementId.push(i);
                                     }
-                                    selectLength = this.legendSelectionCollection.length;
-                                    let legendSelectionColor = this.legendSelectionCollection[selectLength - 1]['legendOldFill'];
-                                    this.legendSelectionCollection[selectLength - 1]['MapShapeCollection']['Elements'].push(shapeEle);
-                                    this.setColor(targetElement, !isNullOrUndefined(module.fill) ? module.fill : legendSelectionColor, module.opacity.toString(), module.border.color, module.border.width.toString());
-                                    this.setColor(shapeEle, !isNullOrUndefined(module.fill) ? module.fill : legendSelectionColor, module.opacity.toString(), module.border.color, module.border.width.toString());
-                                    this.legendElement = targetElement;
+                                    selectLength = this.maps.legendSelectionCollection.length;
+                                    let legendSelectionColor;
+                                    legendSelectionColor = this.maps.legendSelectionCollection[selectLength - 1]['legendOldFill'];
+                                    this.maps.legendSelectionCollection[selectLength - 1]['MapShapeCollection']['Elements'].push(shapeEle);
+                                    this.maps.legendSelectionCollection[selectLength - 1]['shapeOldFillColor'] = this.shapePreviousColor;
+                                    this.setColor(targetElement, !isNullOrUndefined(module.fill) ? module.fill : legendSelectionColor, module.opacity.toString(), module.border.color, module.border.width.toString(), 'selection');
+                                    this.setColor(shapeEle, !isNullOrUndefined(module.fill) ? module.fill : legendSelectionColor, module.opacity.toString(), module.border.color, module.border.width.toString(), 'selection');
+                                    if (this.maps.selectedElementId.indexOf(shapeEle.getAttribute('id')) === -1) {
+                                        this.maps.selectedElementId.push(shapeEle.getAttribute('id'));
+                                    }
                                     if (j === data.length - 1) {
-                                        this.legendSelection = false;
+                                        this.maps.legendSelection = false;
+                                        this.removeLegend(this.maps.legendSelectionCollection);
                                     }
                                 }
                             }
@@ -7184,11 +7950,17 @@ class Legend {
             }
         }
     }
-    setColor(element, fill, opacity, borderColor, borderWidth) {
-        element.setAttribute('fill', fill);
-        element.setAttribute('opacity', opacity);
-        element.setAttribute('stroke', borderColor);
-        element.setAttribute('stroke-width', (Number(borderWidth) / this.maps.scale).toString());
+    setColor(element, fill, opacity, borderColor, borderWidth, type) {
+        if (type === 'selection') {
+            maintainStyleClass('ShapeselectionMap', 'ShapeselectionMapStyle', fill, opacity, borderColor, borderWidth, this.maps);
+            element.setAttribute('class', 'ShapeselectionMapStyle');
+        }
+        else {
+            element.setAttribute('fill', fill);
+            element.setAttribute('opacity', opacity);
+            element.setAttribute('stroke', borderColor);
+            element.setAttribute('stroke-width', (Number(borderWidth) / this.maps.scale).toString());
+        }
     }
     pushCollection(targetElement, collection, oldElement, shapeSettings) {
         collection.push({
@@ -7199,27 +7971,42 @@ class Legend {
         });
         length = collection.length;
         collection[length - 1]['MapShapeCollection'] = { Elements: [] };
+        collection[length - 1]['shapeOldFillColor'] = [];
     }
     removeLegend(collection) {
         for (let i = 0; i < collection.length; i++) {
             let item = collection[i];
-            this.setColor(item['legendElement'], item['legendOldFill'], item['legendOldOpacity'], item['legendOldBorderColor'], item['legendOldBorderWidth']);
+            this.setColor(item['legendElement'], item['legendOldFill'], item['legendOldOpacity'], item['legendOldBorderColor'], item['legendOldBorderWidth'], 'highlight');
             let dataCount = item['MapShapeCollection']['Elements'].length;
             for (let j = 0; j < dataCount; j++) {
-                this.setColor(item['MapShapeCollection']['Elements'][j], item['legendOldFill'], item['shapeOpacity'], item['shapeOldBorderColor'], item['shapeOldBorderWidth']);
+                let shapeFillColor = item['legendOldFill'].indexOf('url') !== -1
+                    ? item['shapeOldFillColor'][j] : item['legendOldFill'];
+                this.setColor(item['MapShapeCollection']['Elements'][j], shapeFillColor, item['shapeOpacity'], item['shapeOldBorderColor'], item['shapeOldBorderWidth'], 'highlight');
             }
         }
     }
     removeLegendHighlightCollection() {
         if (this.legendHighlightCollection.length > 0) {
             this.removeLegend(this.legendHighlightCollection);
+            this.legendHighlightCollection = [];
         }
     }
-    removeLegendSelectionCollection() {
-        if (this.legendSelectionCollection.length > 0) {
-            this.removeLegend(this.legendSelectionCollection);
-            this.legendElement = null;
-            this.legendSelection = true;
+    removeLegendSelectionCollection(targetElement) {
+        if (this.maps.legendSelectionCollection.length > 0) {
+            removeClass(targetElement);
+            let shapeElements = this.shapesOfLegend(targetElement);
+            let dataCount = shapeElements.length;
+            for (let j = 0; j < dataCount; j++) {
+                let shapeElement = getElement(shapeElements[j]);
+                if (shapeElement.getAttribute('class') === 'ShapeselectionMapStyle') {
+                    removeClass(shapeElement);
+                    let selectedElementIdIndex;
+                    selectedElementIdIndex = this.maps.selectedElementId.indexOf(shapeElement.id);
+                    if (selectedElementIdIndex !== -1) {
+                        this.maps.selectedElementId.splice(selectedElementIdIndex, 1);
+                    }
+                }
+            }
         }
     }
     removeShapeHighlightCollection() {
@@ -7227,83 +8014,198 @@ class Legend {
             for (let i = 0; i < this.shapeHighlightCollection.length; i++) {
                 let item = this.shapeHighlightCollection[i];
                 let removeFill = true;
-                for (let j = 0; j < this.shapeSelectionCollection.length; j++) {
-                    if (this.shapeSelectionCollection[j]['legendElement'] === item['legendElement']) {
+                for (let j = 0; j < this.maps.legendSelectionCollection.length; j++) {
+                    if (this.maps.legendSelectionCollection[j]['legendElement'] === item['legendElement']) {
                         removeFill = false;
                     }
                 }
                 if (removeFill) {
-                    this.setColor(item['legendElement'], item['legendOldFill'], item['legendOldOpacity'], item['legendOldBorderColor'], item['legendOldBorderWidth']);
+                    this.setColor(item['legendElement'], item['legendOldFill'], item['legendOldOpacity'], item['legendOldBorderColor'], item['legendOldBorderWidth'], 'highlight');
                 }
             }
         }
     }
+    // tslint:disable-next-line:max-func-body-length
     shapeHighLightAndSelection(targetElement, data, module, getValue, layerIndex) {
         if (data !== undefined) {
+            this.updateLegendElement();
+            this.shapeToggled = true;
             let collection = this.maps.legendModule.legendCollection;
-            let index = this.legendIndexOnShape(data, layerIndex);
-            let text = collection[index]['text'];
+            let indexes = this.legendIndexOnShape(data, layerIndex);
+            let shapeElement = this.shapeDataOnLegend(targetElement);
+            let toggleLegendCheck = this.maps.toggledLegendId.indexOf(indexes['actualIndex']);
+            if (this.maps.legendSettings.toggleLegendSettings.enable && toggleLegendCheck !== -1) {
+                this.shapeToggled = false;
+                this.legendHighlightCollection = [];
+                let collectionIndex = this.getIndexofLegend(this.shapeHighlightCollection, shapeElement['LegendEle']);
+                if (collectionIndex !== -1) {
+                    this.shapeHighlightCollection.splice(collectionIndex, 1);
+                }
+                this.removeShapeHighlightCollection();
+                return null;
+            }
+            if (indexes['currentIndex'] === undefined && indexes['actualIndex'] === undefined) {
+                this.removeShapeHighlightCollection();
+                return null;
+            }
+            if (indexes['currentIndex'] === undefined && getValue === 'selection'
+                && !this.maps.layers[layerIndex].selectionSettings.enableMultiSelect &&
+                targetElement.getAttribute('class') !== 'ShapeselectionMapStyle') {
+                this.maps.legendSelection = false;
+            }
+            if (getValue === 'selection' && !this.maps.layers[layerIndex].selectionSettings.enableMultiSelect &&
+                !this.maps.legendSelection) {
+                this.removeAllSelections();
+                this.maps.legendSelection = true;
+            }
+            if (indexes['currentIndex'] === undefined) {
+                if (getValue === 'selection' && indexes['actualIndex'] !== undefined) {
+                    let checkSelection = 0;
+                    for (let i = 0; i < shapeElement['Elements'].length; i++) {
+                        if (shapeElement['Elements'][i].getAttribute('class') === 'ShapeselectionMapStyle') {
+                            checkSelection++;
+                        }
+                    }
+                    let selectionIndex = this.maps.selectedLegendElementId.indexOf(indexes['actualIndex']);
+                    if (selectionIndex === -1) {
+                        this.maps.selectedLegendElementId.push(indexes['actualIndex']);
+                        this.maps.legendSelectionClass = module;
+                    }
+                    else {
+                        if ((checkSelection <= 1) && targetElement.getAttribute('class') === 'ShapeselectionMapStyle') {
+                            if (!this.maps.layers[layerIndex].selectionSettings.enableMultiSelect) {
+                                this.maps.selectedLegendElementId.splice(selectionIndex, 1);
+                            }
+                            else {
+                                if (checkSelection <= 1 && targetElement.getAttribute('class') === 'ShapeselectionMapStyle') {
+                                    this.maps.selectedLegendElementId.splice(selectionIndex, 1);
+                                }
+                            }
+                        }
+                    }
+                }
+                this.removeShapeHighlightCollection();
+                return null;
+            }
+            let text = collection[indexes['actualIndex']]['text'];
             let content;
             let legendShape;
             if (this.maps.legendSettings.mode === 'Default') {
-                content = document.getElementById(this.maps.element.id + '_Legend_Text_Index_' + index).textContent;
-                legendShape = document.getElementById(this.maps.element.id + '_Legend_Shape_Index_' + index);
+                if (indexes['currentIndex'] !== undefined) {
+                    content = document.getElementById(this.maps.element.id + '_Legend_Text_Index_' + indexes['actualIndex']).textContent;
+                    legendShape = document.getElementById(this.maps.element.id + '_Legend_Shape_Index_' + indexes['actualIndex']);
+                }
             }
             else {
-                content = document.getElementById(this.maps.element.id + '_Legend_Index_' + index + '_Text').textContent;
-                legendShape = document.getElementById(this.maps.element.id + '_Legend_Index_' + index);
+                content = document.getElementById(this.maps.element.id + '_Legend_Index_' + indexes['actualIndex']
+                    + '_Text').textContent;
+                legendShape = document.getElementById(this.maps.element.id + '_Legend_Index_' + indexes['actualIndex']);
             }
-            let shapeElement = this.shapeDataOnLegend(targetElement);
             this.oldShapeElement = shapeElement['LegendEle'];
-            let length = this.shapeSelectionCollection.length;
+            let length = this.maps.legendSelectionCollection.length;
             if (text === content) {
-                if (getValue === 'highlight' && shapeElement['LegendEle'] !== this.legendElement) {
+                let shapeMatched = true;
+                if (this.maps.legendSelectionCollection) {
+                    for (let i = 0; i < this.maps.legendSelectionCollection.length; i++) {
+                        if (this.maps.legendSelectionCollection[i]['legendElement'] === shapeElement['LegendEle']) {
+                            shapeMatched = false;
+                            break;
+                        }
+                    }
+                }
+                if (getValue === 'highlight' && shapeMatched) {
                     let selectionEle = this.isTargetSelected(shapeElement, this.shapeHighlightCollection);
                     if (selectionEle === undefined || (selectionEle && !selectionEle['IsSelected'])) {
-                        this.pushCollection(legendShape, this.shapeHighlightCollection, collection[index], this.maps.layers[layerIndex].shapeSettings);
+                        this.pushCollection(legendShape, this.shapeHighlightCollection, collection[indexes['actualIndex']], this.maps.layers[layerIndex].shapeSettings);
+                    }
+                    for (let j = 0; j < this.shapeHighlightCollection.length; j++) {
+                        if (shapeElement['LegendEle'].id === this.shapeHighlightCollection[j]['legendElement'].id) {
+                            this.shapeHighlightCollection[j]['legendElement'] = shapeElement['LegendEle'];
+                        }
                     }
                     if (length > 0) {
                         for (let j = 0; j < length; j++) {
-                            if (shapeElement['LegendEle'] === this.shapeSelectionCollection[j]['legendElement']) {
+                            if (shapeElement['LegendEle'] === this.maps.legendSelectionCollection[j]['legendElement']) {
+                                this.maps.legendSelectionCollection[j]['legendElement'] = shapeElement['LegendEle'];
+                                this.removeShapeHighlightCollection();
                                 break;
                             }
                             else if (j === length - 1) {
                                 this.removeShapeHighlightCollection();
-                                this.setColor(legendShape, !isNullOrUndefined(module.fill) ? module.fill : legendShape.getAttribute('fill'), module.opacity.toString(), module.border.color, module.border.width.toString());
+                                this.setColor(legendShape, !isNullOrUndefined(module.fill) ? module.fill : legendShape.getAttribute('fill'), module.opacity.toString(), module.border.color, module.border.width.toString(), 'highlight');
                             }
                         }
                     }
                     else {
                         this.removeShapeHighlightCollection();
-                        this.setColor(legendShape, !isNullOrUndefined(module.fill) ? module.fill : legendShape.getAttribute('fill'), module.opacity.toString(), module.border.color, module.border.width.toString());
+                        this.setColor(legendShape, !isNullOrUndefined(module.fill) ? module.fill : legendShape.getAttribute('fill'), module.opacity.toString(), module.border.color, module.border.width.toString(), 'highlight');
                     }
                 }
                 else if (getValue === 'selection') {
-                    let selectionEle = this.isTargetSelected(shapeElement, this.shapeSelectionCollection);
+                    let selectionEle = this.isTargetSelected(shapeElement, this.maps.legendSelectionCollection);
                     if (length > 0) {
-                        for (let j = 0; j < length; j++) {
-                            if (shapeElement['LegendEle'] !== this.shapeSelectionCollection[j]['legendElement']) {
-                                let element = this.shapeSelectionCollection[j];
-                                this.setColor(element['legendElement'], element['legendOldFill'], element['legendOldOpacity'], element['legendOldBorderColor'], element['legendOldBorderWidth']);
-                                this.shapeSelection = true;
-                                this.shapeElement = null;
+                        let j = 0;
+                        while (j < this.maps.legendSelectionCollection.length) {
+                            if (shapeElement['LegendEle'] !== this.maps.legendSelectionCollection[j]['legendElement'] &&
+                                !module.enableMultiSelect) {
+                                let element = this.maps.legendSelectionCollection[j];
+                                let selectedLegendIndex = this.maps.selectedLegendElementId.indexOf(indexes['actualIndex']);
+                                this.maps.selectedLegendElementId.splice(selectedLegendIndex, 1);
+                                this.maps.legendSelectionCollection.splice(j, 1);
+                                removeClass(element['legendElement']);
+                                this.maps.shapeSelections = true;
+                                j = 0;
+                            }
+                            else {
+                                j++;
                             }
                         }
                     }
                     if (selectionEle && (selectionEle['IsSelected'] && targetElement.getAttribute('class') === 'ShapeselectionMapStyle')) {
-                        let element = this.shapeSelectionCollection[selectionEle['SelectionIndex']];
-                        this.setColor(shapeElement['LegendEle'], element['legendOldFill'], element['legendOldOpacity'], element['legendOldBorderColor'], element['legendOldBorderWidth']);
-                        this.shapeSelectionCollection.splice(selectionEle['SelectionIndex'], 1);
-                        this.shapeSelection = true;
-                        this.shapeElement = null;
-                    }
-                    if (targetElement.getAttribute('class') !== 'ShapeselectionMapStyle' && this.legendSelection) {
-                        if (selectionEle === undefined || (selectionEle && !selectionEle['IsSelected'])) {
-                            this.pushCollection(legendShape, this.shapeSelectionCollection, collection[index], this.maps.layers[layerIndex].shapeSettings);
+                        let element = this.maps.legendSelectionCollection[selectionEle['SelectionIndex']];
+                        let multiSelection = 0;
+                        if (module.enableMultiSelect) {
+                            for (let i = 0; i < shapeElement['Elements'].length; i++) {
+                                if (targetElement.getAttribute('class') === shapeElement['Elements'][i].getAttribute('class')) {
+                                    multiSelection++;
+                                }
+                            }
                         }
-                        this.setColor(legendShape, !isNullOrUndefined(module.fill) ? module.fill : legendShape.getAttribute('fill'), module.opacity.toString(), module.border.color, module.border.width.toString());
-                        this.shapeElement = shapeElement['LegendEle'];
-                        this.shapeSelection = false;
+                        if (multiSelection <= 1 && (!module.enableMultiSelect ?
+                            this.maps.legendSelection : true)) {
+                            this.maps.selectedLegendElementId.splice(this.maps.selectedLegendElementId.indexOf(indexes['actualIndex']), 1);
+                            if (!isNullOrUndefined(shapeElement['LegendEle'])) {
+                                removeClass(shapeElement['LegendEle']);
+                            }
+                            this.maps.legendSelectionCollection.splice(selectionEle['SelectionIndex'], 1);
+                            this.maps.shapeSelections = true;
+                        }
+                    }
+                    else {
+                        if ((selectionEle === undefined || (selectionEle && !selectionEle['IsSelected'])) &&
+                            !isNullOrUndefined(legendShape)) {
+                            let legendSelectionIndex = this.getIndexofLegend(this.maps.legendSelectionCollection, legendShape);
+                            if (legendSelectionIndex === -1) {
+                                this.pushCollection(legendShape, this.maps.legendSelectionCollection, collection[indexes['actualIndex']], this.maps.layers[layerIndex].shapeSettings);
+                            }
+                        }
+                        let addId = true;
+                        for (let i = 0; i < this.maps.selectedLegendElementId.length; i++) {
+                            if (indexes['actualIndex'] === this.maps.selectedLegendElementId[i]) {
+                                addId = false;
+                            }
+                        }
+                        if (addId) {
+                            this.maps.selectedLegendElementId.push(indexes['actualIndex']);
+                        }
+                        this.maps.legendSelectionClass = module;
+                        this.removeLegend(this.shapeHighlightCollection);
+                        if (!isNullOrUndefined(legendShape)) {
+                            this.setColor(legendShape, !isNullOrUndefined(module.fill) ? module.fill : legendShape.getAttribute('fill'), module.opacity.toString(), module.border.color, module.border.width.toString(), 'selection');
+                            let legendSelectionIndex = this.getIndexofLegend(this.maps.legendSelectionCollection, legendShape);
+                            this.maps.legendSelectionCollection[legendSelectionIndex]['MapShapeCollection']['Elements'].push(targetElement);
+                        }
+                        this.maps.shapeSelections = false;
                     }
                 }
                 else if (document.getElementsByClassName('highlightMapStyle').length > 0) {
@@ -7319,26 +8221,73 @@ class Legend {
     isTargetSelected(target, collection) {
         let selectEle;
         for (let i = 0; i < collection.length; i++) {
-            if (target['LegendEle'] === collection[i]['legendElement']) {
+            if (!isNullOrUndefined(target['LegendEle'].getAttribute('id')) &&
+                (target['LegendEle'].getAttribute('id') === collection[i]['legendElement'].getAttribute('id'))) {
                 selectEle = { IsSelected: true, SelectionIndex: i };
             }
         }
         return selectEle;
     }
+    updateLegendElement() {
+        for (let i = 0; i < this.maps.legendSelectionCollection.length; i++) {
+            if (document.getElementById(this.maps.legendSelectionCollection[i]['legendElement'].id)) {
+                this.maps.legendSelectionCollection[i]['legendElement'] =
+                    document.getElementById(this.maps.legendSelectionCollection[i]['legendElement'].id);
+            }
+        }
+    }
+    getIndexofLegend(targetCollection, targetElement) {
+        let legendIndex = targetCollection.map((e) => { return e['legendElement']; }).indexOf(targetElement);
+        return legendIndex;
+    }
+    removeAllSelections() {
+        for (let i = 0; i < this.maps.selectedElementId.length; i++) {
+            let selectedElement = document.getElementById(this.maps.selectedElementId[i]);
+            removeClass(selectedElement);
+        }
+        for (let j = 0; j < this.maps.selectedLegendElementId.length; j++) {
+            let idIndex = this.maps.legendSettings.mode === 'Interactive' ?
+                'container_Legend_Index_' : 'container_Legend_Shape_Index_';
+            let selectedElement = idIndex + this.maps.selectedLegendElementId[j];
+            let legendElement = document.getElementById(selectedElement);
+            if (!isNullOrUndefined(legendElement)) {
+                removeClass(document.getElementById(selectedElement));
+            }
+        }
+        this.maps.legendSelectionCollection = [];
+        this.maps.selectedLegendElementId = [];
+        this.maps.selectedElementId = [];
+    }
     legendIndexOnShape(data, index) {
         let legendIndex;
+        let actualIndex;
         let path = this.maps.layers[index].shapeDataPath;
         let value = data[path];
+        let legendType = this.maps.legendSettings.mode;
         let collection = this.maps.legendModule.legendCollection;
+        let currentCollection;
+        if (legendType === 'Default' && !isNullOrUndefined(this.maps.legendModule.totalPages)) {
+            currentCollection = this.maps.legendModule.totalPages[this.maps.legendModule.currentPage]['Collection'];
+        }
+        let currentCollectionLength = legendType === 'Default' ? currentCollection['length'] : 1;
         for (let i = 0; i < collection.length; i++) {
             let dataValue = collection[i]['data'];
+            for (let k = 0; k < currentCollectionLength; k++) {
+                if (legendType !== 'Default' || collection[i]['text'] === currentCollection[k]['DisplayText']) {
+                    for (let j = 0; j < dataValue.length; j++) {
+                        if (value === dataValue[j]['name']) {
+                            legendIndex = k;
+                        }
+                    }
+                }
+            }
             for (let j = 0; j < dataValue.length; j++) {
                 if (value === dataValue[j]['name']) {
-                    legendIndex = i;
+                    actualIndex = i;
                 }
             }
         }
-        return legendIndex;
+        return { currentIndex: legendIndex, actualIndex: actualIndex };
     }
     shapeDataOnLegend(targetElement) {
         let shapeIndex;
@@ -7374,6 +8323,25 @@ class Legend {
         }
         return null;
     }
+    shapesOfLegend(targetElement) {
+        let shapeIndex;
+        let layerIndex;
+        let dataIndex;
+        let idIndex = parseFloat(targetElement.id.charAt(targetElement.id.length - 1));
+        let data = this.maps.legendModule.legendCollection[idIndex]['data'];
+        let legendShapeElements = [];
+        for (let i = 0; i < data.length; i++) {
+            shapeIndex = data[i]['shapeIndex'];
+            layerIndex = data[i]['layerIndex'];
+            dataIndex = data[i]['dataIndex'];
+            let shapeElement = document.getElementById(this.maps.element.id + '_LayerIndex_' +
+                layerIndex + '_shapeIndex_' + shapeIndex + '_dataIndex_' + dataIndex);
+            if (!isNullOrUndefined(shapeElement)) {
+                legendShapeElements.push(shapeElement.id);
+            }
+        }
+        return legendShapeElements;
+    }
     //tslint:disable
     renderLegendBorder() {
         let map = this.maps;
@@ -7397,6 +8365,43 @@ class Legend {
         this.legendGroup.setAttribute('transform', 'translate( ' + (this.translate.x + (-(this.legendBorderRect.x))) + ' ' +
             (this.translate.y + (-(this.legendBorderRect.y))) + ' )');
         map.svgObject.appendChild(this.legendGroup);
+        if (this.maps.selectedLegendElementId) {
+            // To maintain the state of legend selection during page resize.
+            for (let j = 0; j < this.maps.selectedLegendElementId.length; j++) {
+                let idIndex = legend.mode === 'Interactive' ? this.maps.element.id + '_Legend_Index_' : this.maps.element.id + '_Legend_Shape_Index_';
+                let selectedElement = map.svgObject.querySelector('#' + idIndex + this.maps.selectedLegendElementId[j]);
+                if (!isNullOrUndefined(selectedElement)) {
+                    let fill = !isNullOrUndefined(this.maps.legendSelectionClass.fill) ?
+                        this.maps.legendSelectionClass.fill : selectedElement.getAttribute('fill');
+                    this.setColor(selectedElement, fill, this.maps.legendSelectionClass.opacity.toString(), this.maps.legendSelectionClass.border.color, this.maps.legendSelectionClass.border.width.toString(), 'selection');
+                    for (let i = 0; i < this.maps.legendSelectionCollection.length; i++) {
+                        if (this.maps.legendSelectionCollection[i]['legendElement'].id === selectedElement.id) {
+                            this.maps.legendSelectionCollection[i]['legendElement'] = selectedElement;
+                        }
+                    }
+                    let legendSelectionIndex = this.getIndexofLegend(this.maps.legendSelectionCollection, selectedElement);
+                    if (legendSelectionIndex === -1) {
+                        let layerIndex = this.maps.legendModule.legendCollection[this.maps.selectedLegendElementId[j]]['data'][j]['layerIndex'];
+                        this.pushCollection(selectedElement, this.maps.legendSelectionCollection, this.maps.legendModule.legendCollection[this.maps.selectedLegendElementId[j]], this.maps.layers[layerIndex].shapeSettings);
+                    }
+                }
+            }
+            
+        }
+        if (this.maps.toggledLegendId) {
+            for (let j = 0; j < this.maps.toggledLegendId.length; j++) {
+                let legendTextId = legend.mode === 'Interactive' ? ('#' + this.maps.element.id + '_Legend_Index_' + this.maps.toggledLegendId[j] + '_Text') : ('#' + this.maps.element.id + '_Legend_Text_Index_' + this.maps.toggledLegendId[j]);
+                let textElement = map.svgObject.querySelector(legendTextId);
+                if (!isNullOrUndefined(textElement)) {
+                    textElement.setAttribute("fill", "#E5E5E5");
+                }
+                let legendShapeId = legend.mode === 'Interactive' ? ('#' + this.maps.element.id + '_Legend_Index_' + this.maps.toggledLegendId[j]) : ('#' + this.maps.element.id + '_Legend_Shape_Index_' + this.maps.toggledLegendId[j]);
+                let legendElement = map.svgObject.querySelector(legendShapeId);
+                if (!isNullOrUndefined(legendElement)) {
+                    legendElement.setAttribute("fill", "#E5E5E5");
+                }
+            }
+        }
     }
     changeNextPage(e) {
         this.currentPage = (e.target.id.indexOf('_Left_Page_') > -1) ? (this.currentPage - 1) :
@@ -7828,18 +8833,31 @@ class Legend {
             }
             if (this.maps.legendSettings.type === "Layers" && this.maps.legendSettings.toggleLegendSettings.enable) {
                 let layerElement;
-                for (let k = 0; k < this.maps.layers.length; k++) {
+                this.removeCollections(targetEle, legendIndex);
+                let toggledLegendIdIndex = this.maps.toggledLegendId.indexOf(legendIndex);
+                if (toggledLegendIdIndex !== -1) {
+                    isVisible = false;
+                }
+                
+                for (let j = 0; j < this.maps.layers.length; j++) {
                     for (let i = 0; i < selectedItem.length; i++) {
                         shape = this.legendCollection[legendIndex]['data'][i];
                         layerElement = querySelector(this.maps.element.id + '_LayerIndex_' + shape['layerIndex'] +
                             '_shapeIndex_' + shape['shapeIndex'] + '_dataIndex_' + shape['dataIndex'], this.maps.element.id);
                         if (layerElement !== null) {
+                            let toggledShapeIdIndex = this.maps.toggledShapeElementId.indexOf(layerElement.id);
                             if (isVisible) {
+                                if (i === 0) {
+                                    this.maps.toggledLegendId.push(legendIndex);
+                                }
+                                if (toggledShapeIdIndex === -1) {
+                                    this.maps.toggledShapeElementId.push(layerElement.id);
+                                }
                                 if (this.maps.legendSettings.toggleLegendSettings.applyShapeSettings) {
-                                    layerElement.setAttribute('fill', this.maps.layers[k].shapeSettings.fill);
-                                    layerElement.setAttribute('opacity', (this.maps.layers[k].shapeSettings.opacity).toString());
-                                    layerElement.setAttribute('stroke', this.maps.layers[k].shapeSettings.border.color);
-                                    layerElement.setAttribute('stroke-width', (this.maps.layers[k].shapeSettings.border.width).toString());
+                                    layerElement.setAttribute('fill', this.maps.layers[j].shapeSettings.fill);
+                                    layerElement.setAttribute('opacity', (this.maps.layers[j].shapeSettings.opacity).toString());
+                                    layerElement.setAttribute('stroke', this.maps.layers[j].shapeSettings.border.color);
+                                    layerElement.setAttribute('stroke-width', (this.maps.layers[j].shapeSettings.border.width).toString());
                                 }
                                 else {
                                     layerElement.setAttribute("fill", legendToggleFill);
@@ -7855,10 +8873,16 @@ class Legend {
                                 }
                             }
                             else {
+                                if (toggledLegendIdIndex !== -1 && i === 0) {
+                                    this.maps.toggledLegendId.splice(toggledLegendIdIndex, 1);
+                                }
+                                if (toggledShapeIdIndex !== -1) {
+                                    this.maps.toggledShapeElementId.splice(toggledShapeIdIndex, 1);
+                                }
                                 layerElement.setAttribute('fill', this.legendCollection[legendIndex]['fill']);
-                                layerElement.setAttribute('opacity', (this.maps.layers[k].shapeSettings.opacity).toString());
-                                layerElement.setAttribute('stroke', this.maps.layers[k].shapeSettings.border.color);
-                                layerElement.setAttribute('stroke-width', (this.maps.layers[k].shapeSettings.border.width).toString());
+                                layerElement.setAttribute('opacity', (this.maps.layers[j].shapeSettings.opacity).toString());
+                                layerElement.setAttribute('stroke', this.maps.layers[j].shapeSettings.border.color);
+                                layerElement.setAttribute('stroke-width', (this.maps.layers[j].shapeSettings.border.width).toString());
                                 if (targetEle !== null) {
                                     legendTextId = querySelector(this.maps.element.id + '_Legend_Text_Index_' + legendIndex, this.maps.element.id);
                                     legendTextId.setAttribute("fill", "#757575");
@@ -7926,13 +8950,26 @@ class Legend {
             }
             if (this.maps.legendSettings.type === "Layers" && this.maps.legendSettings.toggleLegendSettings.enable) {
                 let mapLegendElement;
+                this.removeCollections(targetEle, legendIndex);
+                let toggleLegendIdIndex = this.maps.toggledLegendId.indexOf(legendIndex);
+                if (toggleLegendIdIndex !== -1) {
+                    isVisible = false;
+                }
+                
                 for (let k = 0; k < this.maps.layers.length; k++) {
                     for (let i = 0; i < selectedItem.length; i++) {
                         mapdata = this.legendCollection[legendIndex]['data'][i];
                         mapLegendElement = querySelector(this.maps.element.id + '_LayerIndex_' + mapdata['layerIndex'] +
                             '_shapeIndex_' + mapdata['shapeIndex'] + '_dataIndex_' + mapdata['dataIndex'], this.maps.element.id);
                         if (mapLegendElement !== null) {
+                            let toggledShapeIdIndex = this.maps.toggledShapeElementId.indexOf(mapLegendElement.id);
                             if (isVisible) {
+                                if (i === 0) {
+                                    this.maps.toggledLegendId.push(legendIndex);
+                                }
+                                if (toggledShapeIdIndex === -1) {
+                                    this.maps.toggledShapeElementId.push(mapLegendElement.id);
+                                }
                                 if (this.maps.legendSettings.toggleLegendSettings.applyShapeSettings) {
                                     mapLegendElement.setAttribute('fill', this.maps.layers[0].shapeSettings.fill);
                                     mapLegendElement.setAttribute('stroke', this.maps.layers[0].shapeSettings.border.color);
@@ -7953,6 +8990,12 @@ class Legend {
                                 }
                             }
                             else {
+                                if (toggleLegendIdIndex !== -1 && i === 0) {
+                                    this.maps.toggledLegendId.splice(toggleLegendIdIndex, 1);
+                                }
+                                if (toggledShapeIdIndex !== -1) {
+                                    this.maps.toggledShapeElementId.splice(toggledShapeIdIndex, 1);
+                                }
                                 mapLegendElement.setAttribute('fill', this.legendCollection[legendIndex]['fill']);
                                 mapLegendElement.setAttribute('stroke', this.maps.layers[0].shapeSettings.border.color);
                                 mapLegendElement.setAttribute('opacity', (this.maps.layers[k].shapeSettings.opacity).toString());
@@ -7969,6 +9012,25 @@ class Legend {
                 }
                 selectedItem['_isVisible'] = isVisible ? false : true;
             }
+        }
+    }
+    removeCollections(targetEle, legendIndex) {
+        this.removeLegendSelectionCollection(targetEle);
+        let legendSelectionIndex = this.getIndexofLegend(this.maps.legendSelectionCollection, targetEle);
+        if (legendSelectionIndex !== -1) {
+            this.maps.legendSelectionCollection.splice(legendSelectionIndex, 1);
+        }
+        let legendHighlightIndex = this.getIndexofLegend(this.legendHighlightCollection, targetEle);
+        if (legendHighlightIndex !== -1) {
+            this.legendHighlightCollection.splice(legendSelectionIndex, 1);
+        }
+        let shapeHighlightIndex = this.getIndexofLegend(this.shapeHighlightCollection, targetEle);
+        if (shapeHighlightIndex !== -1) {
+            this.shapeHighlightCollection.splice(shapeHighlightIndex, 1);
+        }
+        let selectedIndex = this.maps.selectedLegendElementId.indexOf(legendIndex);
+        if (selectedIndex !== -1) {
+            this.maps.selectedLegendElementId.splice(selectedIndex, 1);
         }
     }
     removeEventListener() {
@@ -8006,7 +9068,7 @@ class Legend {
             let y2;
             x2 = position === 'Top' || position === 'Bottom' ? '100' : '0';
             y2 = position === 'Top' || position === 'Bottom' ? '0' : '100';
-            linerGradientEle.setAttribute('id', 'linear_' + legendIndex);
+            linerGradientEle.setAttribute('id', 'linear_' + legendIndex + '_' + this.maps.element.id);
             linerGradientEle.setAttribute('x1', 0 + '%');
             linerGradientEle.setAttribute('y1', 0 + '%');
             linerGradientEle.setAttribute('x2', x2 + '%');
@@ -8020,7 +9082,7 @@ class Legend {
                 linerGradientEle.appendChild(stopEle);
             }
             this.legendLinearGradient = linerGradientEle;
-            let color = 'url(' + '#linear_' + legendIndex + ')';
+            let color = 'url(' + '#linear_' + legendIndex + '_' + this.maps.element.id + ')';
             this.defsElement.appendChild(linerGradientEle);
             legendFillColor = color;
         }
@@ -8101,7 +9163,9 @@ class Highlight {
         let isTouch = e.pointerType === 'touch' || e.pointerType === '2' || (e.type.indexOf('touch') > -1);
         if ((targetEle.id.indexOf('LayerIndex') !== -1 || targetEle.id.indexOf('NavigationIndex') > -1) &&
             targetEle.getAttribute('class') !== 'ShapeselectionMapStyle' && !isTouch &&
-            targetEle.getAttribute('class') !== 'MarkerselectionMapStyle') {
+            targetEle.getAttribute('class') !== 'MarkerselectionMapStyle' &&
+            targetEle.getAttribute('class') !== 'BubbleselectionMapStyle' &&
+            targetEle.getAttribute('class') !== 'navigationlineselectionMapStyle') {
             layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
             let shapeData;
             let data;
@@ -8141,7 +9205,11 @@ class Highlight {
                 if (this.maps.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1) {
                     this.maps.legendModule.shapeHighLightAndSelection(targetEle, data, this.highlightSettings, 'highlight', layerIndex);
                 }
-                this.mapHighlight(targetEle, shapeData, data);
+                let selectHighLight = targetEle.id.indexOf('shapeIndex') > -1 && this.maps.legendSettings.visible ?
+                    this.maps.legendModule.shapeToggled : true;
+                if (selectHighLight) {
+                    this.mapHighlight(targetEle, shapeData, data);
+                }
             }
             else {
                 let element = document.getElementsByClassName('highlightMapStyle')[0];
@@ -8187,31 +9255,29 @@ class Highlight {
             let marker$$1 = parseInt(targetEle.id.split('_MarkerIndex_')[1].split('_')[0], 10);
             isMarkerSelect = this.maps.layers[layerIndex].markerSettings[marker$$1].highlightSettings.enable;
         }
-        if (this.maps.legendSettings.visible ? (this.maps.legendModule.legendElement !== this.maps.legendModule.oldShapeElement) : true) {
-            let border = {
-                color: this.highlightSettings.border.color,
-                width: this.highlightSettings.border.width / (isMarkerSelect ? 1 : this.maps.scale)
-            };
-            let eventArgs = {
-                opacity: this.highlightSettings.opacity,
-                fill: targetEle.id.indexOf('NavigationIndex') === -1 ? !isNullOrUndefined(this.highlightSettings.fill)
-                    ? this.highlightSettings.fill : targetEle.getAttribute('fill') : 'none',
-                border: border,
-                name: itemHighlight,
-                target: targetEle.id,
-                cancel: false,
-                shapeData: shapeData,
-                data: data,
-                maps: this.maps
-            };
-            if (this.maps.isBlazor) {
-                const { shapeData, maps } = eventArgs, blazorEventArgs = __rest$5(eventArgs, ["shapeData", "maps"]);
-                eventArgs = blazorEventArgs;
-            }
-            this.maps.trigger(itemHighlight, eventArgs, () => {
-                this.highlightMap(targetEle, eventArgs);
-            });
+        let border = {
+            color: this.highlightSettings.border.color,
+            width: this.highlightSettings.border.width / (isMarkerSelect ? 1 : this.maps.scale)
+        };
+        let eventArgs = {
+            opacity: this.highlightSettings.opacity,
+            fill: targetEle.id.indexOf('NavigationIndex') === -1 ? !isNullOrUndefined(this.highlightSettings.fill)
+                ? this.highlightSettings.fill : targetEle.getAttribute('fill') : 'none',
+            border: border,
+            name: itemHighlight,
+            target: targetEle.id,
+            cancel: false,
+            shapeData: shapeData,
+            data: data,
+            maps: this.maps
+        };
+        if (this.maps.isBlazor) {
+            const { shapeData, maps } = eventArgs, blazorEventArgs = __rest$5(eventArgs, ["shapeData", "maps"]);
+            eventArgs = blazorEventArgs;
         }
+        this.maps.trigger(itemHighlight, eventArgs, () => {
+            this.highlightMap(targetEle, eventArgs);
+        });
     }
     highlightMap(targetEle, eventArgs) {
         if (targetEle.getAttribute('class') === 'highlightMapStyle') {
@@ -8293,42 +9359,44 @@ class Selection {
         this.maps.off(click, this.mouseClick);
         this.maps.off(Browser.touchEndEvent, this.mouseClick);
     }
-    mouseClick(targetEle) {
-        if (!isNullOrUndefined(targetEle['type']) && targetEle['type'].indexOf('touch') !== -1 && isNullOrUndefined(targetEle.id)) {
-            targetEle = targetEle['target'];
+    mouseClick(targetElement) {
+        if (!isNullOrUndefined(targetElement['type']) && targetElement['type'].indexOf('touch') !== -1 &&
+            isNullOrUndefined(targetElement.id)) {
+            targetElement = targetElement['target'];
         }
-        if (!isNullOrUndefined(targetEle.id) && (targetEle.id.indexOf('LayerIndex') > -1 || targetEle.id.indexOf('NavigationIndex') > -1)) {
+        if (!isNullOrUndefined(targetElement.id) && (targetElement.id.indexOf('LayerIndex') > -1 ||
+            targetElement.id.indexOf('NavigationIndex') > -1)) {
             let layerIndex;
             let shapeData;
             let data;
             let shapeIndex;
             let dataIndex;
-            layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
-            if (targetEle.id.indexOf('shapeIndex') > -1) {
-                shapeIndex = parseInt(targetEle.id.split('_shapeIndex_')[1].split('_')[0], 10);
+            layerIndex = parseInt(targetElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
+            if (targetElement.id.indexOf('shapeIndex') > -1) {
+                shapeIndex = parseInt(targetElement.id.split('_shapeIndex_')[1].split('_')[0], 10);
                 shapeData = this.maps.layers[layerIndex].shapeData['features']['length'] > shapeIndex ?
                     this.maps.layers[layerIndex].shapeData['features'][shapeIndex]['properties'] : null;
-                dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
+                dataIndex = parseInt(targetElement.id.split('_dataIndex_')[1].split('_')[0], 10);
                 data = isNullOrUndefined(dataIndex) ? null : this.maps.layers[layerIndex].dataSource[dataIndex];
                 this.selectionsettings = this.maps.layers[layerIndex].selectionSettings;
                 this.selectionType = 'Shape';
             }
-            else if (targetEle.id.indexOf('BubbleIndex') > -1) {
-                let bubbleIndex = parseInt(targetEle.id.split('_BubbleIndex_')[1].split('_')[0], 10);
-                dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
+            else if (targetElement.id.indexOf('BubbleIndex') > -1) {
+                let bubbleIndex = parseInt(targetElement.id.split('_BubbleIndex_')[1].split('_')[0], 10);
+                dataIndex = parseInt(targetElement.id.split('_dataIndex_')[1].split('_')[0], 10);
                 data = this.maps.layers[layerIndex].bubbleSettings[bubbleIndex].dataSource[dataIndex];
                 this.selectionsettings = this.maps.layers[layerIndex].bubbleSettings[bubbleIndex].selectionSettings;
                 this.selectionType = 'Bubble';
             }
-            else if (targetEle.id.indexOf('MarkerIndex') > -1) {
-                let markerIndex = parseInt(targetEle.id.split('_MarkerIndex_')[1].split('_')[0], 10);
-                dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
+            else if (targetElement.id.indexOf('MarkerIndex') > -1) {
+                let markerIndex = parseInt(targetElement.id.split('_MarkerIndex_')[1].split('_')[0], 10);
+                dataIndex = parseInt(targetElement.id.split('_dataIndex_')[1].split('_')[0], 10);
                 data = this.maps.layers[layerIndex].markerSettings[markerIndex].dataSource[dataIndex];
                 this.selectionsettings = this.maps.layers[layerIndex].markerSettings[markerIndex].selectionSettings;
                 this.selectionType = 'Marker';
             }
             else {
-                let index = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
+                let index = parseInt(targetElement.id.split('_NavigationIndex_')[1].split('_')[0], 10);
                 shapeData = null;
                 data = {
                     latitude: this.maps.layers[layerIndex].navigationLineSettings[index].latitude,
@@ -8338,36 +9406,39 @@ class Selection {
                 this.selectionType = 'navigationline';
             }
             if (this.selectionsettings.enable) {
-                if (this.maps.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1) {
-                    this.maps.legendModule.shapeHighLightAndSelection(targetEle, data, this.selectionsettings, 'selection', layerIndex);
+                if (this.maps.legendSettings.visible && targetElement.id.indexOf('_MarkerIndex_') === -1) {
+                    this.maps.legendModule.shapeHighLightAndSelection(targetElement, data, this.selectionsettings, 'selection', layerIndex);
                 }
-                if (this.maps.legendSettings.visible ? this.maps.legendModule.legendSelection : true) {
-                    this.selectMap(targetEle, shapeData, data);
+                let shapeToggled = (targetElement.id.indexOf('shapeIndex') > -1 && this.maps.legendSettings.visible) ?
+                    this.maps.legendModule.shapeToggled : true;
+                if (shapeToggled) {
+                    this.selectMap(targetElement, shapeData, data);
                 }
             }
         }
-        else if (!isNullOrUndefined(targetEle.id) && (targetEle.id.indexOf(this.maps.element.id + '_Legend_Shape_Index') > -1 ||
-            targetEle.id.indexOf(this.maps.element.id + '_Legend_Index') !== -1) && this.maps.legendSettings.visible &&
-            targetEle.id.indexOf('_Text') === -1) {
-            this.maps.legendModule.legendHighLightAndSelection(targetEle, 'selection');
+        else if (this.maps.legendSettings.visible && !this.maps.legendSettings.toggleLegendSettings.enable &&
+            !isNullOrUndefined(targetElement.id) && targetElement.id.indexOf('_Text') === -1 &&
+            (targetElement.id.indexOf(this.maps.element.id + '_Legend_Shape_Index') > -1 ||
+                targetElement.id.indexOf(this.maps.element.id + '_Legend_Index') !== -1)) {
+            this.maps.legendModule.legendHighLightAndSelection(targetElement, 'selection');
         }
     }
     /**
      * Public method for selection
      */
     addSelection(layerIndex, name, enable) {
-        let targetEle = getTargetElement(layerIndex, name, enable, this.maps);
+        let targetElement = getTargetElement(layerIndex, name, enable, this.maps);
         if (enable) {
-            this.selectMap(targetEle, null, null);
+            this.selectMap(targetElement, null, null);
         }
         else {
-            removeClass(targetEle);
+            removeClass(targetElement);
         }
     }
     /**
      * Method for selection
      */
-    selectMap(targetEle, shapeData, data) {
+    selectMap(targetElement, shapeData, data) {
         let selectionsettings = this.selectionsettings;
         let border = {
             color: this.selectionsettings.border.color,
@@ -8378,7 +9449,7 @@ class Selection {
             fill: this.selectionType !== 'navigationline' ? this.selectionsettings.fill : 'none',
             border: border,
             name: itemSelection,
-            target: targetEle.id,
+            target: targetElement.id,
             cancel: false,
             shapeData: shapeData,
             data: data,
@@ -8389,27 +9460,35 @@ class Selection {
             eventArgs = blazorEventArgs;
         }
         this.maps.trigger('itemSelection', eventArgs, (observedArgs) => {
-            // if (this.maps.legendSettings.visible && !this.maps.legendSettings.toggleVisibility
-            // && this.maps.legendSettings.legendSelection) {
-            //     this.removeLegendSelection(this.maps.legendModule.legendCollection, targetEle);
-            // }
-            if (targetEle.getAttribute('class') === this.selectionType + 'selectionMapStyle') {
-                removeClass(targetEle);
-                if (targetEle.id.indexOf('NavigationIndex') > -1) {
-                    let index = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
-                    let layerIndex = parseInt(targetEle.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
-                    targetEle.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
-                    targetEle.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
+            if (targetElement.getAttribute('class') === this.selectionType + 'selectionMapStyle') {
+                removeClass(targetElement);
+                this.removedSelectionList(targetElement);
+                if (targetElement.id.indexOf('NavigationIndex') > -1) {
+                    let index = parseInt(targetElement.id.split('_NavigationIndex_')[1].split('_')[0], 10);
+                    let layerIndex = parseInt(targetElement.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
+                    targetElement.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
+                    targetElement.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
                 }
             }
             else {
-                if (!this.selectionsettings.enableMultiSelect
-                    && getElementsByClassName(this.selectionType + 'selectionMapStyle').length > 0) {
-                    let ele = getElementsByClassName(this.selectionType + 'selectionMapStyle')[0];
+                let layetElement = getElementByID(this.maps.element.id + '_Layer_Collections');
+                if (!this.selectionsettings.enableMultiSelect &&
+                    layetElement.getElementsByClassName(this.selectionType + 'selectionMapStyle').length > 0) {
+                    let ele = layetElement.getElementsByClassName(this.selectionType + 'selectionMapStyle')[0];
                     removeClass(ele);
+                    this.removedSelectionList(ele);
+                    if (this.selectionType === 'Shape') {
+                        let selectionLength = this.maps.selectedElementId.length;
+                        for (let i = 0; i < selectionLength; i++) {
+                            ele = layetElement.getElementsByClassName(this.selectionType + 'selectionMapStyle')[0];
+                            removeClass(ele);
+                            let selectedElementIdIndex = this.maps.selectedElementId.indexOf(ele.getAttribute('id'));
+                            this.maps.selectedElementId.splice(selectedElementIdIndex, 1);
+                        }
+                    }
                     if (ele.id.indexOf('NavigationIndex') > -1) {
-                        let index = parseInt(targetEle.id.split('_NavigationIndex_')[1].split('_')[0], 10);
-                        let layerIndex = parseInt(targetEle.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
+                        let index = parseInt(targetElement.id.split('_NavigationIndex_')[1].split('_')[0], 10);
+                        let layerIndex = parseInt(targetElement.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
                         ele.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
                         ele.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
                     }
@@ -8420,14 +9499,30 @@ class Selection {
                 else {
                     customizeStyle(this.selectionType + 'selectionMap', this.selectionType + 'selectionMapStyle', eventArgs);
                 }
-                targetEle.setAttribute('class', this.selectionType + 'selectionMapStyle');
+                targetElement.setAttribute('class', this.selectionType + 'selectionMapStyle');
+                if (targetElement.getAttribute('class') === 'ShapeselectionMapStyle') {
+                    this.maps.shapeSelectionClass = getElement(this.selectionType + 'selectionMap');
+                    this.maps.selectedElementId.push(targetElement.getAttribute('id'));
+                }
+                if (targetElement.getAttribute('class') === 'MarkerselectionMapStyle') {
+                    this.maps.markerSelectionClass = getElement(this.selectionType + 'selectionMap');
+                    this.maps.selectedMarkerElementId.push(targetElement.getAttribute('id'));
+                }
+                if (targetElement.getAttribute('class') === 'BubbleselectionMapStyle') {
+                    this.maps.bubbleSelectionClass = getElement(this.selectionType + 'selectionMap');
+                    this.maps.selectedBubbleElementId.push(targetElement.getAttribute('id'));
+                }
+                if (targetElement.getAttribute('class') === 'navigationlineselectionMapStyle') {
+                    this.maps.navigationSelectionClass = getElement(this.selectionType + 'selectionMap');
+                    this.maps.selectedNavigationElementId.push(targetElement.getAttribute('id'));
+                }
             }
         });
     }
     /**
      * Remove legend selection
      */
-    // private removeLegendSelection(legendCollection: Object[], targetEle: Element): void {
+    // private removeLegendSelection(legendCollection: Object[], targetElement: Element): void {
     //     let shape: Element;
     //     if (!this.selectionsettings.enableMultiSelect) {
     //        for (let i: number = 0; i < legendCollection.length; i++) {
@@ -8439,6 +9534,23 @@ class Selection {
     //         }
     //     }
     // }
+    /**
+     * Get module name.
+     */
+    removedSelectionList(targetElement) {
+        if (this.selectionType === 'Shape') {
+            this.maps.selectedElementId.splice(this.maps.selectedElementId.indexOf(targetElement.getAttribute('id')), 1);
+        }
+        if (this.selectionType === 'Bubble') {
+            this.maps.selectedBubbleElementId.splice(this.maps.selectedBubbleElementId.indexOf(targetElement.getAttribute('id')), 1);
+        }
+        if (this.selectionType === 'Marker') {
+            this.maps.selectedMarkerElementId.splice(this.maps.selectedMarkerElementId.indexOf(targetElement.getAttribute('id')), 1);
+        }
+        if (this.selectionType === 'navigationline') {
+            this.maps.selectedBubbleElementId.splice(this.maps.selectedBubbleElementId.indexOf(targetElement.getAttribute('id')), 1);
+        }
+    }
     /**
      * Get module name.
      */
@@ -8500,7 +9612,6 @@ class MapsTooltip {
         let option;
         let currentData = '';
         let targetId = target.id;
-        this.targetID = targetId;
         let tooltipEle;
         let location;
         let templateData = [];
@@ -8605,6 +9716,16 @@ class MapsTooltip {
             this.maps.trigger('tooltipRender', tooltipArgs, (observedArgs) => {
                 if (!tooltipArgs.cancel && option.visible && !isNullOrUndefined(currentData) &&
                     (targetId.indexOf('_cluster_') === -1 && targetId.indexOf('_dataLabel_') === -1)) {
+                    let blazTooltipName;
+                    if (targetId.indexOf('MarkerIndex') > 0) {
+                        blazTooltipName = 'MarkerTooltipTemplate';
+                    }
+                    else if (targetId.indexOf('BubbleIndex') > 0) {
+                        blazTooltipName = 'BubbleTooltipTemplate';
+                    }
+                    else {
+                        blazTooltipName = 'LayerTooltipTemplate';
+                    }
                     this.maps['isProtectedOnChange'] = true;
                     tooltipArgs.options['textStyle']['color'] = this.maps.themeStyle.tooltipFontColor
                         || tooltipArgs.options['textStyle']['color'];
@@ -8621,6 +9742,7 @@ class MapsTooltip {
                         textStyle: tooltipArgs.options['textStyle'],
                         availableSize: this.maps.availableSize,
                         fill: tooltipArgs.fill || this.maps.themeStyle.tooltipFillColor,
+                        blazorTemplate: { name: blazTooltipName, parent: option }
                     });
                     this.svgTooltip.opacity = this.maps.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                     this.svgTooltip.appendTo(tooltipEle);
@@ -8763,6 +9885,8 @@ class Zoom {
         this.startTouches = [];
         this.shapeZoomLocation = [];
         this.intersect = [];
+        this.mouseDownLatLong = { x: 0, y: 0 };
+        this.mouseMoveLatLong = { x: 0, y: 0 };
         /**
          * @private
          */
@@ -8980,6 +10104,7 @@ class Zoom {
     applyTransform(animate$$1) {
         let layerIndex;
         this.templateCount = 0;
+        let markerStyle;
         let scale = this.maps.scale;
         let x = this.maps.translatePoint.x;
         let y = this.maps.translatePoint.y;
@@ -9018,6 +10143,10 @@ class Zoom {
                             if (!isNullOrUndefined(currentEle)) {
                                 for (let k = 0; k < currentEle.childElementCount; k++) {
                                     this.markerTranslate(currentEle.childNodes[k], factor, x, y, scale, 'Marker', animate$$1);
+                                    if (!this.maps.isTileMap && this.currentLayer.animationDuration > 0) {
+                                        markerStyle = 'visibility:hidden';
+                                        currentEle.setAttribute('style', markerStyle);
+                                    }
                                 }
                                 if (this.isPanning && this.maps.markerModule.sameMarkerData.length > 0) {
                                     clusterSeparate(this.maps.markerModule.sameMarkerData, this.maps, currentEle, true);
@@ -9031,19 +10160,21 @@ class Zoom {
                                 if (document.getElementById(this.maps.element.id + '_mapsTooltip') && this.maps.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_')) {
                                     let mapsTooltip = this.maps.mapsTooltipModule;
                                     let tooltipElement = currentEle.querySelector('#' + mapsTooltip.tooltipTargetID);
-                                    if (tooltipElement['style']['visibility'] === 'hidden') {
-                                        removeElement(this.maps.element.id + '_mapsTooltip');
-                                    }
-                                    else {
-                                        let x = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[1]);
-                                        let y = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[2]);
-                                        if (this.maps.isTileMap) {
-                                            x += +getElement(this.maps.element.id + '_tile_parent')['style']['left'].split('px')[0];
-                                            y += +getElement(this.maps.element.id + '_tile_parent')['style']['top'].split('px')[0];
+                                    if (!isNullOrUndefined(tooltipElement)) {
+                                        if (tooltipElement['style']['visibility'] === 'hidden') {
+                                            removeElement(this.maps.element.id + '_mapsTooltip');
                                         }
-                                        mapsTooltip.svgTooltip.location.x = x;
-                                        mapsTooltip.svgTooltip.location.y = y;
-                                        mapsTooltip.svgTooltip.enableAnimation = false;
+                                        else {
+                                            let x = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[1]);
+                                            let y = parseFloat(tooltipElement.getAttribute('transform').split('(')[1].split(')')[0].split(' ')[2]);
+                                            if (this.maps.isTileMap) {
+                                                x += +getElement(this.maps.element.id + '_tile_parent')['style']['left'].split('px')[0];
+                                                y += +getElement(this.maps.element.id + '_tile_parent')['style']['top'].split('px')[0];
+                                            }
+                                            mapsTooltip.svgTooltip.location.x = x;
+                                            mapsTooltip.svgTooltip.location.y = y;
+                                            mapsTooltip.svgTooltip.enableAnimation = false;
+                                        }
                                     }
                                 }
                             }
@@ -9130,14 +10261,15 @@ class Zoom {
         if (document.getElementById(markerSVGObject.id)) {
             removeElement(markerSVGObject.id);
         }
+        let mapsAreaRect = this.maps.mapAreaRect;
         let markerTemplateElements = createElement('div', {
             id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_Markers_Template_Group',
             className: 'template',
             styles: 'overflow: hidden; position: absolute;pointer-events: none;' +
-                'top:' + (this.maps.isTileMap ? 10 : this.maps.mapAreaRect.y) + 'px;' +
-                'left:' + (this.maps.isTileMap ? 10 : this.maps.mapAreaRect.x) + 'px;' +
-                'height:' + this.maps.mapAreaRect.height + 'px;' +
-                'width:' + this.maps.mapAreaRect.width + 'px;'
+                'top:' + mapsAreaRect.y + 'px;' +
+                'left:' + mapsAreaRect.x + 'px;' +
+                'height:' + mapsAreaRect.height + 'px;' +
+                'width:' + mapsAreaRect.width + 'px;'
         });
         if (document.getElementById(markerTemplateElements.id)) {
             removeElement(markerTemplateElements.id);
@@ -9148,17 +10280,26 @@ class Zoom {
             markerDatas.forEach((data, dataIndex) => {
                 let eventArgs = {
                     template: markerSettings.template, data: data, maps: this.maps, marker: markerSettings,
-                    cancel: false, name: markerRendering, fill: markerSettings.fill, height: markerSettings.height,
+                    cancel: false, name: markerRendering, fill: markerSettings.fill, colorValuePath: markerSettings.colorValuePath,
+                    shapeValuePath: markerSettings.shapeValuePath, height: markerSettings.height,
                     width: markerSettings.width, imageUrl: markerSettings.imageUrl, shape: markerSettings.shape,
                     border: markerSettings.border
                 };
-                if (isBlazor()) {
+                eventArgs = markerShapeChoose(eventArgs, data);
+                eventArgs = markerColorChoose(eventArgs, data);
+                if (this.maps.isBlazor) {
                     const { maps, marker: marker$$1 } = eventArgs, blazorEventArgs = __rest$8(eventArgs, ["maps", "marker"]);
                     eventArgs = blazorEventArgs;
                 }
                 this.maps.trigger('markerRendering', eventArgs, (MarkerArgs) => {
-                    let long = data['longitude'];
+                    if (markerSettings.shapeValuePath !== eventArgs.shapeValuePath) {
+                        eventArgs = markerShapeChoose(eventArgs, data);
+                    }
+                    if (markerSettings.colorValuePath !== eventArgs.colorValuePath) {
+                        eventArgs = markerColorChoose(eventArgs, data);
+                    }
                     let lati = data['latitude'];
+                    let long = data['longitude'];
                     let offset = markerSettings.offset;
                     if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(long) && !isNullOrUndefined(lati)) {
                         let markerID = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
@@ -9370,10 +10511,25 @@ class Zoom {
             if (this.maps.isTileMap) {
                 if (type === 'Template') {
                     let templateOffset = element.getBoundingClientRect();
-                    element.style.left = (location.x - (templateOffset.width / 2)) + 'px';
-                    element.style.top = (location.y - (templateOffset.height / 2)) + 'px';
+                    element.style.left = ((location.x - (templateOffset.width / 2)) + marker$$1.offset.x) + 'px';
+                    element.style.top = ((location.y - (templateOffset.height / 2)) + marker$$1.offset.y) + 'px';
+                    if (this.maps.layers[this.maps.baseLayerIndex].layerType === 'GoogleStaticMap') {
+                        let staticMapOffset = getElementByID(this.maps.element.id + '_StaticGoogleMap').getBoundingClientRect();
+                        let staticMapOffsetWidth = 640;
+                        if (element['style']['display'] !== 'none') {
+                            if ((staticMapOffset['x'] > templateOffset['x'] || staticMapOffset['x'] + staticMapOffsetWidth < templateOffset['x'] + templateOffset['width'])
+                                && (staticMapOffset['y'] > templateOffset['y'] || staticMapOffset['y'] + staticMapOffset['height'] < templateOffset['y'] + templateOffset['height'])) {
+                                element['style']['display'] = 'none';
+                            }
+                            else if ((staticMapOffset['x'] > templateOffset['x'] || staticMapOffset['x'] + staticMapOffsetWidth < templateOffset['x'] + templateOffset['width'])) {
+                                element['style']['display'] = 'none';
+                            }
+                        }
+                    }
                 }
                 else {
+                    location.x += marker$$1.offset.x;
+                    location.y += marker$$1.offset.y;
                     element.setAttribute('transform', 'translate( ' + location.x + ' ' + location.y + ' )');
                 }
             }
@@ -9630,12 +10786,22 @@ class Zoom {
                 this.applySelection(this.panElements, this.selectionColor);
                 break;
             case 'zoomin':
+                map.staticMapZoom = map.tileZoomLevel;
+                if (map.staticMapZoom > 0 && map.staticMapZoom < 22) {
+                    map.staticMapZoom += 1;
+                }
                 this.toolBarZooming((map.isTileMap ? map.tileZoomLevel : map.scale) + 1, 'ZoomIn');
                 break;
             case 'zoomout':
+                map.staticMapZoom = map.tileZoomLevel;
+                map.centerPosition.latitude = null;
+                map.centerPosition.longitude = null;
                 this.toolBarZooming((map.isTileMap ? map.tileZoomLevel : map.scale) - 1, 'ZoomOut');
                 break;
             case 'reset':
+                map.staticMapZoom = map.zoomSettings.enable ? map.zoomSettings.zoomFactor : 0;
+                map.centerPosition.latitude = null;
+                map.centerPosition.longitude = null;
                 this.toolBarZooming(1, 'ZoomOut');
                 this.applySelection(this.zoomElements, this.fillColor);
                 this.applySelection(this.panElements, this.selectionColor);
@@ -9737,12 +10903,13 @@ class Zoom {
     }
     mapMouseWheel(e) {
         if (this.maps.zoomSettings.enable && this.maps.zoomSettings.mouseWheelZoom) {
-            let position = this.getMousePosition(e.pageX, e.pageY);
             let map = this.maps;
             let size = map.availableSize;
+            let position = this.getMousePosition(e.pageX, e.pageY);
             let prevLevel = map.tileZoomLevel;
             let prevScale = map.scale;
             let delta = 1;
+            let staticMaxZoomLevel = 22; // google map maximum zoom level value
             let value = (map.isTileMap) ? prevLevel : prevScale;
             if (((position.x > map.mapAreaRect.x) && (position.x < (map.mapAreaRect.x + map.mapAreaRect.width))) &&
                 (position.y > map.mapAreaRect.y) && position.y < (map.mapAreaRect.y + map.mapAreaRect.height)) {
@@ -9750,9 +10917,19 @@ class Zoom {
                 let direction = (this.browserName === 'mozilla' && !this.isPointer) ?
                     -(e.detail) / 3 > 0 ? 'ZoomIn' : 'ZoomOut' : (e.wheelDelta / 120) > 0 ? 'ZoomIn' : 'ZoomOut';
                 if (direction === 'ZoomIn') {
+                    map.mapScaleValue = value + delta;
+                    map.staticMapZoom = map.tileZoomLevel;
+                    if (map.staticMapZoom > 0 && map.staticMapZoom < staticMaxZoomLevel) {
+                        map.staticMapZoom += 1;
+                    }
                     this.performZooming(position, (value + delta), direction);
                 }
                 else {
+                    map.mapScaleValue = value - delta;
+                    map.staticMapZoom = map.tileZoomLevel;
+                    if (map.staticMapZoom > 1 && map.staticMapZoom < staticMaxZoomLevel) {
+                        map.staticMapZoom -= 1;
+                    }
                     this.performZooming(position, (value - delta), direction);
                 }
             }
@@ -9762,12 +10939,14 @@ class Zoom {
         let pageX = e.pageX;
         let pageY = e.pageY;
         let target = e.target;
-        if (this.maps.zoomSettings.enable && this.maps.zoomSettings.doubleClickZoom) {
+        if (this.maps.zoomSettings.enable && this.maps.zoomSettings.doubleClickZoom
+            && !(e.target['id'].indexOf('_Zooming_') > -1)) {
             let position = this.getMousePosition(pageX, pageY);
             let map = this.maps;
             let size = map.availableSize;
             let prevLevel = map.tileZoomLevel;
             let prevScale = map.scale;
+            map.mapScaleValue = map.mapScaleValue + 1;
             let value = (map.isTileMap) ? prevLevel : prevScale;
             if (((position.x > map.mapAreaRect.x) && (position.x < (map.mapAreaRect.x + map.mapAreaRect.width))) &&
                 (position.y > map.mapAreaRect.y) && position.y < (map.mapAreaRect.y + map.mapAreaRect.height)) {
@@ -9794,6 +10973,7 @@ class Zoom {
             target = e.target;
         }
         this.isPanning = this.panColor === this.selectionColor ? true : this.zoomColor !== this.selectionColor;
+        this.mouseDownLatLong = { x: pageX, y: pageY };
         this.rectZoomingStart = ((!this.isPanning) && this.maps.zoomSettings.enable);
         this.mouseDownPoints = this.getMousePosition(pageX, pageY);
         if (this.isTouch) {
@@ -9852,7 +11032,12 @@ class Zoom {
         if (zoom.enable && this.isPanning) {
             e.preventDefault();
             this.maps.element.style.cursor = 'pointer';
-            this.panning('None', null, null);
+            this.mouseMoveLatLong = { x: pageX, y: pageY };
+            if ((this.mouseDownLatLong['x'] !== this.mouseMoveLatLong['x']) && (this.mouseDownLatLong['y'] !== this.mouseMoveLatLong['y'])) {
+                this.panning('None', null, null);
+                this.mouseDownLatLong['x'] = pageX;
+                this.mouseDownLatLong['y'] = pageY;
+            }
         }
         if (this.isTouch ? (touches.length === 1 && this.rectZoomingStart) : this.rectZoomingStart) {
             e.preventDefault();
@@ -9878,6 +11063,8 @@ class Zoom {
             remove(zoomRectElement);
             this.performRectZooming();
         }
+        this.mouseMoveLatLong = { x: 0, y: 0 };
+        this.mouseDownLatLong = { x: 0, y: 0 };
     }
     mouseCancelHandler(e) {
         this.isPanning = false;
@@ -9896,7 +11083,7 @@ class Zoom {
     click(e) {
         let map = this.maps;
         if ((map.markerModule && map.markerModule.sameMarkerData.length > 0) ||
-            +(e.target['id'].indexOf('MarkerIndex') > -1 && e.target['id'].indexOf('cluster') == -1)) {
+            (e.target['id'].indexOf('MarkerIndex') > -1 && e.target['id'].indexOf('cluster') == -1)) {
             return null;
         }
         if (this.isSingleClick && map.zoomSettings.zoomOnClick && !(e.target['id'].indexOf('_Zooming_') > -1) && !map.zoomSettings.doubleClickZoom
@@ -9906,6 +11093,7 @@ class Zoom {
             let position = this.getMousePosition(pageX, pageY);
             let prevLevel = map.tileZoomLevel;
             let prevScale = map.scale;
+            map.mapScaleValue = map.mapScaleValue + 1;
             let value = (map.isTileMap) ? prevLevel : prevScale;
             if (((position.x > map.mapAreaRect.x) && (position.x < (map.mapAreaRect.x + map.mapAreaRect.width))) &&
                 (position.y > map.mapAreaRect.y) && position.y < (map.mapAreaRect.y + map.mapAreaRect.height)) {
@@ -9975,5 +11163,5 @@ class Zoom {
  * exporting all modules from maps index
  */
 
-export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClusterRendering, markerClick, markerClusterClick, markerMouseMove, markerClusterMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, ConnectorLineSettings, MarkerClusterSettings, MarkerClusterData, ColorMappingSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, ToggleLegendSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, drawSymbols, clusterTemplate, mergeSeparateCluster, clusterSeparate, marker, markerTemplate, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, getRatioOfBubble, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, getTranslate, getZoomTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
+export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClusterRendering, markerClick, markerClusterClick, markerMouseMove, markerClusterMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, ConnectorLineSettings, MarkerClusterSettings, MarkerClusterData, ColorMappingSettings, InitialShapeSelectionSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, ToggleLegendSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, drawSymbols, markerColorChoose, markerShapeChoose, clusterTemplate, mergeSeparateCluster, clusterSeparate, marker, markerTemplate, maintainSelection, maintainStyleClass, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, getRatioOfBubble, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, getTranslate, getZoomTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, triggerItemSelectionEvent, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
 //# sourceMappingURL=ej2-maps.es2015.js.map

@@ -1,7 +1,7 @@
 /**
  * Schedule header toolbar spec 
  */
-import { Browser } from '@syncfusion/ej2-base';
+import { Browser, remove } from '@syncfusion/ej2-base';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import {
     Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda,
@@ -14,12 +14,12 @@ Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda);
 
 describe('Schedule header bar', () => {
     beforeAll(() => {
-        // tslint:disable-next-line:no-any
+        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             // tslint:disable-next-line:no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); //Skips test (in Chai)
+            (this as any).skip(); //Skips test (in Chai)
             return;
         }
     });
@@ -35,7 +35,6 @@ describe('Schedule header bar', () => {
         });
 
         it('get module name', () => {
-            // tslint:disable-next-line:no-any
             expect((<any>schObj.headerModule).getModuleName()).toEqual('headerbar');
         });
 
@@ -85,7 +84,7 @@ describe('Schedule header bar', () => {
             let calendarEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-calendar');
             (calendarEle.querySelector('.e-day') as HTMLElement).click();
             expect(popupEle.classList.contains('e-popup-open')).toEqual(true);
-            // expect(calendarEle.querySelector('.e-header').classList.contains('e-year')).toEqual(true);
+            expect(calendarEle.querySelector('.e-header').classList.contains('e-year')).toEqual(true);
             (calendarEle.querySelector('.e-selected') as HTMLElement).click();
             expect(popupEle.classList.contains('e-popup-open')).toEqual(true);
             expect(calendarEle.querySelector('.e-header').classList.contains('e-month')).toEqual(true);
@@ -428,16 +427,30 @@ describe('Schedule header bar', () => {
             expect(schObj.element.querySelectorAll('.e-schedule-print').length).toEqual(1);
         });
         it('custom item after views collection change', (done: Function) => {
-            schObj.views = ['Day', 'Week', 'MonthAgenda'];
             schObj.dataBound = () => {
                 expect(schObj.element.querySelectorAll('.e-toolbar-item').length).toEqual(7);
                 expect(schObj.element.querySelectorAll('.e-schedule-print').length).toEqual(1);
-                (schObj.element.querySelector('.e-schedule-toolbar .e-month-agenda') as HTMLElement).click();
+                done();
+            };
+            schObj.views = ['Day', 'Week', 'MonthAgenda'];
+            schObj.dataBind();
+        });
+        it('month-agenda view testing', (done: DoneFn) => {
+            schObj.dataBound = () => {
                 expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-month-agenda');
                 expect(schObj.element.querySelector('.e-table-wrap').classList).toContain('e-month-agenda-view');
                 done();
             };
-            schObj.dataBind();
+            (schObj.element.querySelector('.e-schedule-toolbar .e-month-agenda') as HTMLElement).click();
+        });
+        it('toolbar destroy manually', () => {
+            schObj.dataBound = null;
+            expect(schObj.element.querySelectorAll('.e-toolbar-item').length).toEqual(7);
+            remove(schObj.element.querySelector('.e-date-range'));
+            schObj.headerModule.updateHeaderItems('remove');
+            schObj.headerModule.destroy();
+            schObj.headerModule.updateItems();
+            expect(schObj.element.querySelectorAll('.e-toolbar-item').length).toEqual(0);
         });
     });
 

@@ -1,4 +1,4 @@
-import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { IGrid, EJ2Intance, IEditCell } from '../base/interface';
 import { Column } from '../models/column';
 import { DropDownList, FilteringEventArgs } from '@syncfusion/ej2-dropdowns';
@@ -53,6 +53,9 @@ export class DropDownEditCell implements IEditCell {
                 sortOrder: 'Ascending'
             },
             args.column.edit.params));
+        if (isBlazor()) {
+            this.obj.locale = this.parent.locale;
+        }
         this.obj.appendTo(args.element as HTMLElement);
         /* tslint:disable-next-line:no-any */
         args.element.setAttribute('name', getComplexFieldID(args.column.field));

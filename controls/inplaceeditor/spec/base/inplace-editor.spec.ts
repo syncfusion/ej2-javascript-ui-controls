@@ -2,7 +2,7 @@
  * InPlace-Editor spec document
  */
 import { isNullOrUndefined as isNOU, select, selectAll, createElement, Browser } from '@syncfusion/ej2-base';
-import { InPlaceEditor } from '../../src/inplace-editor/base/index';
+import { InPlaceEditor, BeforeSanitizeHtmlArgs } from '../../src/inplace-editor/base/index';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy, triggerKeyBoardEvent, safariMobileUA } from './../render.spec';
 import { profile, inMB, getMemoryProfile } from './../common.spec';
@@ -2679,4 +2679,57 @@ describe('InPlace-Editor Control', () => {
         // Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
+
+    // XSS attack prevent test-cases
+    describe('EJ2-33526 prevent xss at initial render', () => {
+        let ele: HTMLElement;
+        let valueEle: any;
+        let editorObj: InPlaceEditor;
+        beforeEach((): void => {
+            document.body.appendChild(createElement('input', { className: 'test-input' }));
+            document.body.appendChild(createElement('input', { id: 'testInput' }));
+            document.body.appendChild(createElement('input', { id: 'myElement' }));
+        });
+        afterEach((): void => {
+            destroy(editorObj);
+            editorObj = undefined;
+        });
+        it('String as "<style>body{width:100px;}</style>" testing', () => {
+            editorObj = renderEditor({
+                template: "<style>body{width:100px;}</style>",
+                mode: 'Inline'
+            });
+            ele = editorObj.element;
+            let inputEle: HTMLElement = (<HTMLElement>selectAll('.e-editable-overlay-icon', ele)[0]);
+            inputEle.click();
+            expect((<HTMLElement>selectAll('.e-editable-component', ele)[0]).querySelectorAll('style').length).toBe(0);
+        });
+        it('String beforeSanitizeHtml event args.cancel ar true testing', () => {
+            editorObj = renderEditor({
+                template:'<script>alert("1")</script>',
+                beforeSanitizeHtml: (args: BeforeSanitizeHtmlArgs) => {
+                    args.cancel = true;
+                    args.helper = (value: string) => {
+                        return value;
+                    }
+                },
+                mode: 'Inline'
+            });
+            ele = editorObj.element;
+            let inputEle: HTMLElement = (<HTMLElement>selectAll('.e-editable-overlay-icon', ele)[0]);
+            inputEle.click();
+            expect((<HTMLElement>selectAll('.e-editable-component', ele)[0]).querySelectorAll('script').length).toBeGreaterThan(0);
+        });
+        it('enableHtmlSanitizer as false', () => {
+            editorObj = renderEditor({
+                template:'<script>alert("1")</script>',
+                enableHtmlSanitizer: false,
+                mode: 'Inline'
+            });
+            ele = editorObj.element;
+            let inputEle: HTMLElement = (<HTMLElement>selectAll('.e-editable-overlay-icon', ele)[0]);
+            inputEle.click();
+            expect((<HTMLElement>selectAll('.e-editable-component', ele)[0]).querySelectorAll('script').length).toBeGreaterThan(0);
+        });
+    });
 });

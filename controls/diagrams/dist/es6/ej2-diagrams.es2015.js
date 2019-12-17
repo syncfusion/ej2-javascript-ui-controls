@@ -23820,7 +23820,7 @@ class DiagramEventHandler {
     /**
      * @private
      */
-    inputChange(evt) {
+    inputChange() {
         let minWidth = 90;
         let maxWidth;
         let minHeight = 12;

@@ -73,7 +73,7 @@ export class Edit implements IAction {
     }
 
     private updateColTypeObj(): void {
-        (<{ columnModel?: Column[] }>this.parent).columnModel.forEach((col: Column) => {
+        (<{columnModel?: Column[]}>this.parent).columnModel.forEach((col: Column) => {
             if (this.parent.editSettings.template || col.editTemplate) {
                 let templteCell: string = 'templateedit';
                 col.edit = extend(new Edit.editCellType[templteCell](this.parent), col.edit || {});
@@ -368,7 +368,7 @@ export class Edit implements IAction {
             case 'date':
             case 'datetime':
                 if (col.editType !== 'datepickeredit' && col.editType !== 'datetimepickeredit'
-                    && value && (value as string).length) {
+                && value && (value as string).length) {
                     val = new Date(value as string);
                 } else if (value === '') {
                     val = null;
@@ -454,6 +454,9 @@ export class Edit implements IAction {
             case this.l10n.getConstant('BatchSaveLostChanges'):
                 if (this.parent.editSettings.mode === 'Batch') {
                     this.editModule.addCancelWhilePaging();
+                    if (isBlazor() && this.parent.isServerRendered) {
+                        this.editModule.closeEdit();
+                    }
                 }
                 this.executeAction();
                 break;
@@ -537,12 +540,12 @@ export class Edit implements IAction {
             return editedData;
         }
 
-        (<{ columnModel?: Column[] }>gObj).columnModel.filter((col: Column) => col.editTemplate).forEach((col: Column) => {
+        (<{columnModel?: Column[]}>gObj).columnModel.filter((col: Column) => col.editTemplate).forEach((col: Column) => {
             if (form[getComplexFieldID(col.field)]) {
                 let inputElements: HTMLInputElement[] = [].slice.call(form[getComplexFieldID(col.field)]);
                 inputElements = inputElements.length ? inputElements : [form[getComplexFieldID(col.field)]];
                 inputElements.forEach((input: HTMLInputElement) => {
-                    let value: number | string | Date | boolean = this.getValue(col, input, editedData);
+                    let value: number | string | Date | boolean  = this.getValue(col, input, editedData);
                     DataUtil.setValue(col.field, value, editedData);
                 });
             }
@@ -552,7 +555,7 @@ export class Edit implements IAction {
         for (let i: number = 0, len: number = inputs.length; i < len; i++) {
             let col: Column = gObj.getColumnByUid(inputs[i].getAttribute('e-mappinguid'));
             if (col && col.field) {
-                let value: number | string | Date | boolean = this.getValue(col, inputs[i], editedData);
+                let value:  number | string | Date | boolean = this.getValue(col, inputs[i], editedData);
                 DataUtil.setValue(col.field, value, editedData);
             }
         }
@@ -720,14 +723,17 @@ export class Edit implements IAction {
         let gObj: IGrid = this.parent;
         let frzCols: number = gObj.getFrozenColumns();
         let form: HTMLFormElement = this.parent.editSettings.mode !== 'Dialog' ?
-            gObj.element.querySelector('.e-gridform') as HTMLFormElement :
-            document.querySelector('#' + gObj.element.id + '_dialogEdit_wrapper').querySelector('.e-gridform') as HTMLFormElement;
+        gObj.element.querySelector('.e-gridform') as HTMLFormElement :
+        document.querySelector('#' + gObj.element.id + '_dialogEdit_wrapper').querySelector('.e-gridform') as HTMLFormElement;
         let mForm: HTMLFormElement = gObj.element.querySelectorAll('.e-gridform')[1] as HTMLFormElement;
         let rules: Object = {};
         let mRules: Object = {};
         cols = cols ? cols : gObj.getColumns() as Column[];
         cols.forEach((col: Column, index: number) => {
             if (!col.visible) {
+                return;
+            }
+            if (isBlazor() && col.editTemplate) {
                 return;
             }
             if (index < frzCols && col.validationRules) {
@@ -741,7 +747,11 @@ export class Edit implements IAction {
         } else {
             rules = extend(rules, mRules);
         }
-        this.parent.editModule.formObj = this.createFormObj(form, rules);
+        if (isBlazor() && this.parent.editSettings.template) {
+            this.parent.editModule.formObj = this.createFormObj(form, {});
+        } else {
+            this.parent.editModule.formObj = this.createFormObj(form, rules);
+        }
     }
 
     private createFormObj(form: HTMLFormElement, rules: Object): FormValidator {
@@ -835,7 +845,7 @@ export class Edit implements IAction {
         content.appendChild(error);
         let validationForBottomRowPos: boolean;
         if (this.parent.editSettings.newRowPosition === 'Bottom' && this.parent.editSettings.mode !== 'Dialog' &&
-            ((this.editModule.args && this.editModule.args.requestType === 'add') || this.editModule.isAdded)) {
+        ((this.editModule.args && this.editModule.args.requestType === 'add') || this.editModule.isAdded)) {
             validationForBottomRowPos = true;
         }
         let arrow: Element;
@@ -852,7 +862,7 @@ export class Edit implements IAction {
         div.appendChild(arrow);
         if (this.parent.getFrozenColumns() && this.parent.editSettings.mode !== 'Dialog') {
             let getEditCell: HTMLElement = this.parent.editSettings.mode === 'Normal' ?
-                closest(element, '.e-editcell') as HTMLElement : closest(element, '.e-table') as HTMLElement;
+            closest(element, '.e-editcell') as HTMLElement : closest(element, '.e-table') as HTMLElement;
             getEditCell.style.position = 'relative';
             div.style.position = 'absolute';
             if (this.parent.editSettings.mode === 'Batch' ||
@@ -879,7 +889,8 @@ export class Edit implements IAction {
         } else {
             div.style.left = (parseInt(div.style.left, 10) - div.offsetWidth / 2) + 'px';
         }
-        if (!isScroll && isInline && !this.parent.allowPaging) {
+        if (isInline && !isScroll && (!this.parent.allowPaging || (this.parent.getFrozenColumns() && this.parent.frozenRows
+            && !isNullOrUndefined(parentsUntil(div, 'e-headercontent')) && this.parent.allowPaging))) {
             gcontent.style.position = 'static';
             let pos: OffsetPosition = calculateRelativeBasedPosition(input, div);
             div.style.top = pos.top + inputClient.height + 9 + 'px';

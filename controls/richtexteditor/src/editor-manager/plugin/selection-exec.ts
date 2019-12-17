@@ -7,12 +7,14 @@ import * as EVENTS from './../../common/constant';
 /**
  * Selection EXEC internal component
  * @hidden
+ * @deprecated
  */
 export class SelectionBasedExec {
     private parent: EditorManager;
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     constructor(parent: EditorManager) {
         this.parent = parent;

@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, blazorTemplates, classList, closest, compile, createElement, debounce, detach, extend, formatUnit, getEnumValue, getValue, isBlazor, isNullOrUndefined, isObject, isUndefined, matches, merge, print, remove, removeClass, resetBlazorTemplate, setCulture, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Observer, Property, addClass, append, attributes, blazorTemplates, classList, closest, compile, createElement, debounce, detach, extend, formatUnit, getEnumValue, getValue, isBlazor, isNullOrUndefined, isObject, isUndefined, matches, merge, print, remove, removeClass, resetBlazorTemplate, setCulture, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, DataUtil, Deferred, Predicate, Query, UrlAdaptor } from '@syncfusion/ej2-data';
 import { Dialog, Tooltip, calculatePosition, calculateRelativeBasedPosition, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { Button, CheckBox, RadioButton, Switch, createCheckBox } from '@syncfusion/ej2-buttons';
@@ -22,6 +22,10 @@ var ValueFormatter = /** @__PURE__ @class */ (function () {
     }
     ValueFormatter.prototype.getFormatFunction = function (format) {
         if (format.type) {
+            if (isBlazor()) {
+                var isServerRendered = 'isServerRendered';
+                format[isServerRendered] = true;
+            }
             return this.intl.getDateFormat(format);
         }
         else {
@@ -30,6 +34,10 @@ var ValueFormatter = /** @__PURE__ @class */ (function () {
     };
     ValueFormatter.prototype.getParserFunction = function (format) {
         if (format.type) {
+            if (isBlazor()) {
+                var isServerRendered = 'isServerRendered';
+                format[isServerRendered] = true;
+            }
             return this.intl.getDateParser(format);
         }
         else {
@@ -170,7 +178,9 @@ var Column = /** @__PURE__ @class */ (function () {
         if (this.editType) {
             this.editType = this.editType.toLowerCase();
         }
-        this.uid = getUid('grid-column');
+        if (isNullOrUndefined(this.uid)) {
+            this.uid = getUid('grid-column');
+        }
         var valueFormatter = new ValueFormatter();
         if (options.format && (options.format.skeleton || options.format.format)) {
             this.setFormatter(valueFormatter.getFormatFunction(options.format));
@@ -433,6 +443,8 @@ var checkBoxChange = 'checkBoxChange';
 var beforeCopy = 'beforeCopy';
 /** @hidden */
 var beforePaste = 'beforePaste';
+/** @hidden */
+var beforeAutoFill = 'beforeAutoFill';
 /** @hidden */
 var filterChoiceRequest = 'filterchoicerequest';
 /** @hidden */
@@ -698,6 +710,8 @@ var beforeFltrcMenuOpen = 'before-filter-cmenu-open';
 var valCustomPlacement = 'validation-custom-placement';
 /** @hidden */
 var filterCboxValue = 'filter-cbox-value';
+/** @hidden */
+var componentRendered = 'component-rendered';
 /** @hidden */
 var restoreFocus = 'restore-Focus';
 
@@ -1097,6 +1111,9 @@ var Data = /** @__PURE__ @class */ (function () {
                     }
                     break;
                 case 'save':
+                    if (isBlazor() && this.parent.isServerRendered) {
+                        this.parent.notify('offset', args);
+                    }
                     query = query ? query : this.generateQuery();
                     args.index = isNullOrUndefined(args.index) ? 0 : args.index;
                     crud = this.dataManager.insert(args.data, query.fromTable, query, args.index);
@@ -1163,6 +1180,9 @@ var Data = /** @__PURE__ @class */ (function () {
         }
         switch (args.requestType) {
             case 'save':
+                if (isBlazor() && this.parent.isServerRendered) {
+                    this.parent.notify('offset', args);
+                }
                 promise = this.dataManager.update(key, args.data, query.fromTable, query, args.previousData);
                 break;
         }
@@ -1186,6 +1206,21 @@ var Data = /** @__PURE__ @class */ (function () {
             return deff.promise;
         }
         else {
+            var changedRecords = 'changedRecords';
+            var addedRecords = 'addedRecords';
+            var data = 'data';
+            if (isBlazor() && this.parent.isServerRendered) {
+                for (var i = 0; i < changes[changedRecords].length; i++) {
+                    var args = { data: changes[changedRecords][i] };
+                    this.parent.notify('offset', args);
+                    changes[changedRecords][i] = args[data];
+                }
+                for (var i = 0; i < changes[addedRecords].length; i++) {
+                    var args = { data: changes[addedRecords][i] };
+                    this.parent.notify('offset', args);
+                    changes[addedRecords][i] = args[data];
+                }
+            }
             var promise = this.dataManager.saveChanges(changes, key, query.fromTable, query, original);
             return promise;
         }
@@ -1684,7 +1719,8 @@ var RowModelGenerator = /** @__PURE__ @class */ (function () {
     RowModelGenerator.prototype.generateRow = function (data, index, cssClass, indent, pid, tIndex) {
         var options = {};
         options.foreignKeyData = {};
-        options.uid = getUid('grid-row');
+        var isServerRendered = 'isServerRendered';
+        options.uid = isBlazor() && this.parent[isServerRendered] ? this.parent.getRowUid('grid-row') : getUid('grid-row');
         options.data = data;
         options.index = index;
         options.indent = indent;
@@ -2087,7 +2123,7 @@ var GroupModelGenerator = /** @__PURE__ @class */ (function (_super) {
         options.tIndex = tIndex;
         options.isCaptionRow = true;
         options.gSummary = !isNullOrUndefined(data.items[records]) ? data.items[records].length : data.items.length;
-        options.uid = getUid('grid-row');
+        options.uid = isBlazor() && this.parent.isServerRendered ? this.parent.getRowUid('grid-row') : getUid('grid-row');
         var row = new Row(options);
         row.indent = indent;
         this.getForeignKeyData(row);
@@ -2176,7 +2212,7 @@ var ContentRender = /** @__PURE__ @class */ (function () {
                         _this.isLoaded = mHdr.length === fHdr.length;
                     }
                 }
-                _this.ariaService.setBusy(_this.getPanel().firstChild, false);
+                _this.ariaService.setBusy(_this.getPanel().querySelector('.e-content'), false);
                 if (_this.parent.isDestroyed) {
                     return;
                 }
@@ -2225,7 +2261,13 @@ var ContentRender = /** @__PURE__ @class */ (function () {
      */
     ContentRender.prototype.renderPanel = function () {
         var gObj = this.parent;
-        var div = this.parent.createElement('div', { className: 'e-gridcontent' });
+        var div = this.parent.element.querySelector('.e-gridcontent');
+        if (div) {
+            this.ariaService.setOptions(this.parent.element.querySelector('.e-content'), { busy: false });
+            this.setPanel(div);
+            return;
+        }
+        div = this.parent.createElement('div', { className: 'e-gridcontent' });
         var innerDiv = this.parent.createElement('div', {
             className: 'e-content'
         });
@@ -2261,16 +2303,18 @@ var ContentRender = /** @__PURE__ @class */ (function () {
      * @hidden
      */
     ContentRender.prototype.createContentTable = function (id) {
-        var innerDiv = this.getPanel().firstChild;
-        if (this.getTable()) {
-            remove(this.getTable());
-        }
-        var table = this.parent.createElement('table', {
-            className: 'e-table', attrs: {
-                cellspacing: '0.25px', role: 'grid',
-                id: this.parent.element.id + id
+        var innerDiv = this.getPanel().firstElementChild;
+        if (!isBlazor()) {
+            if (this.getTable()) {
+                remove(this.getTable());
             }
-        });
+        }
+        var table = innerDiv.querySelector('.e-table') ? innerDiv.querySelector('.e-table') :
+            this.parent.createElement('table', { className: 'e-table', attrs: {
+                    cellspacing: '0.25px', role: 'grid',
+                    id: this.parent.element.id + id
+                }
+            });
         this.setColGroup(this.parent.element.querySelector('.e-gridheader').querySelector('colgroup').cloneNode(true));
         table.appendChild(this.getColGroup());
         table.appendChild(this.parent.createElement('tbody'));
@@ -2322,6 +2366,45 @@ var ContentRender = /** @__PURE__ @class */ (function () {
             }
         }
         var modelData;
+        var isServerRendered = 'isServerRendered';
+        if (isBlazor() && this.parent[isServerRendered]) {
+            modelData = this.generator.generateRows(dataSource, args);
+            this.rows = modelData;
+            this.freezeRows = modelData;
+            this.rowElements = [].slice.call(this.getTable().querySelectorAll('tr.e-row[data-uid]'));
+            if (frzCols) {
+                this.movableRows = modelData.map(function (mRow) {
+                    var sRow = new Row(mRow);
+                    sRow.cells = mRow.cells.slice(frzCols, mRow.cells.length);
+                    mRow.cells = mRow.cells.slice(0, frzCols);
+                    return sRow;
+                });
+                this.freezeRowElements = this.rowElements;
+            }
+            this.isLoaded = true;
+            this.parent.hideSpinner();
+            args.isFrozen = this.parent.getFrozenColumns() !== 0 && !args.isFrozen;
+            var arg = extend({ rows: this.rows }, args);
+            if (this.getTable().querySelector('.e-emptyrow')) {
+                remove(this.getTable().querySelector('.e-emptyrow'));
+            }
+            if (frzCols) {
+                cont.style.overflowY = 'hidden';
+                fCont.style.height = ((mCont.offsetHeight) - getScrollBarWidth()) + 'px';
+                mCont.style.overflowY = this.parent.height !== 'auto' ? 'scroll' : 'auto';
+                fCont.style.borderRightWidth = '1px';
+                this.parent.notify(contentReady, { rows: this.movableRows, args: extend({}, arg, { isFrozen: false }) });
+            }
+            if (!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
+                || (!this.parent.isPersistSelection)) {
+                if (this.parent.editSettings.mode === 'Normal') {
+                    var rowIndex = 'editRowIndex';
+                    this.parent.selectRow(args[rowIndex]);
+                }
+            }
+            this.rafCallback(arg)();
+            return;
+        }
         if (this.parent.enableVirtualization && this.parent.getFrozenColumns()) {
             if (this.parent.enableColumnVirtualization) {
                 if (args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo.axis === 'X') {
@@ -2638,6 +2721,9 @@ var ContentRender = /** @__PURE__ @class */ (function () {
      */
     ContentRender.prototype.setVisible = function (columns) {
         var gObj = this.parent;
+        if (isBlazor() && gObj.isServerRendered) {
+            this.parent.notify('setvisibility', columns);
+        }
         var frzCols = gObj.getFrozenColumns();
         var rows = [];
         if (frzCols) {
@@ -2929,12 +3015,17 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
      * The function is used to render grid header div
      */
     HeaderRender.prototype.renderPanel = function () {
-        var div = this.parent.createElement('div', { className: 'e-gridheader' });
-        var innerDiv = this.parent.createElement('div', { className: 'e-headercontent' });
+        var div = this.parent.element.querySelector('.e-gridheader');
+        var isRendered = (div != null);
+        div = isRendered ? div : this.parent.createElement('div', { className: 'e-gridheader' });
+        var innerDiv = isRendered ? div.querySelector('.e-headercontent') :
+            this.parent.createElement('div', { className: 'e-headercontent' });
         this.toggleStackClass(div);
         div.appendChild(innerDiv);
         this.setPanel(div);
-        this.parent.element.appendChild(div);
+        if (!isRendered) {
+            this.parent.element.appendChild(div);
+        }
     };
     /**
      * The function is used to render grid header table
@@ -3006,22 +3097,28 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
      * @hidden
      */
     HeaderRender.prototype.createHeaderTable = function () {
+        var skipDom = isBlazor() && this.parent.frozenRows !== 0;
         var table = this.createTable();
-        var innerDiv = this.getPanel().firstChild;
-        innerDiv.appendChild(table);
+        var innerDiv = this.getPanel().querySelector('.e-headercontent');
+        if (!skipDom) {
+            innerDiv.appendChild(table);
+        }
         return innerDiv;
     };
     /**
      * @hidden
      */
-    HeaderRender.prototype.createTable = function () {
+    HeaderRender.prototype.createTable = function (tableEle) {
+        if (tableEle === void 0) { tableEle = null; }
+        var skipDom = isBlazor() && this.parent.frozenRows !== 0;
         var gObj = this.parent;
-        if (this.getTable() && (!gObj.getFrozenColumns())) {
+        if (!(isBlazor() && !gObj.isJsComponent) && this.getTable() && (!gObj.getFrozenColumns())) {
             remove(this.getTable());
         }
         var columns = gObj.getColumns();
-        var table = this.parent.createElement('table', { className: 'e-table', attrs: { cellspacing: '0.25px', role: 'grid' } });
-        var innerDiv = this.getPanel().firstChild;
+        var innerDiv = this.getPanel().querySelector('.e-headercontent');
+        var table = skipDom ? tableEle || innerDiv.querySelector('.e-table') :
+            this.parent.createElement('table', { className: 'e-table', attrs: { cellspacing: '0.25px', role: 'grid' } });
         var findHeaderRow = this.createHeaderContent();
         var thead = findHeaderRow.thead;
         var tbody = this.parent.createElement('tbody', { className: this.parent.frozenRows ? '' : 'e-hide' });
@@ -3042,10 +3139,14 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
             table.classList.add('e-sortfilter');
         }
         this.updateColGroup(colGroup);
-        tbody.appendChild(rowBody);
+        if (!skipDom) {
+            tbody.appendChild(rowBody);
+        }
         table.appendChild(this.setColGroup(colGroup));
         table.appendChild(thead);
-        table.appendChild(tbody);
+        if (!skipDom) {
+            table.appendChild(tbody);
+        }
         table.appendChild(this.caption);
         this.ariaService.setOptions(table, { colcount: gObj.getColumns().length.toString() });
         return table;
@@ -3295,11 +3396,20 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
             displayVal = column.visible ? '' : 'none';
             if (frzCols) {
                 if (idx < frzCols) {
-                    setStyleAttribute(this.getColGroup().children[idx], { 'display': displayVal });
+                    if (isBlazor() && gObj.isServerRendered) {
+                        setStyleAttribute(this.getTable().querySelector('colgroup').children[idx], { 'display': displayVal });
+                        setStyleAttribute(this.getTable().querySelectorAll('th')[idx], { 'display': displayVal });
+                    }
+                    else {
+                        setStyleAttribute(this.getColGroup().children[idx], { 'display': displayVal });
+                    }
                 }
                 else {
                     var mTblColGrp = gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('colgroup');
                     setStyleAttribute(mTblColGrp.children[idx - frzCols], { 'display': displayVal });
+                    if (isBlazor() && gObj.isServerRendered) {
+                        setStyleAttribute(mTblColGrp.querySelectorAll('th')[idx - frzCols], { 'display': displayVal });
+                    }
                 }
             }
             else {
@@ -3327,8 +3437,14 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
             ? this.headerPanel.querySelector('.e-movableheader').querySelector('.e-table') : this.getTable();
         if (table) {
             remove(table);
-            table.removeChild(table.firstChild);
-            table.removeChild(table.childNodes[0]);
+            if (isBlazor() && this.parent.isServerRendered) {
+                table.removeChild(table.querySelector('colgroup'));
+                table.removeChild(table.querySelector('thead'));
+            }
+            else {
+                table.removeChild(table.firstChild);
+                table.removeChild(table.childNodes[0]);
+            }
             var colGroup = this.parent.createElement('colgroup');
             var findHeaderRow = this.createHeaderContent();
             this.rows = findHeaderRow.rows;
@@ -3372,7 +3488,7 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
         }
     };
     HeaderRender.prototype.appendContent = function (table) {
-        this.getPanel().firstChild.appendChild(table);
+        this.getPanel().querySelector('.e-headercontent').appendChild(table);
     };
     HeaderRender.prototype.getCellCnt = function (col, cnt) {
         if (col.columns) {
@@ -4365,6 +4481,7 @@ var Render = /** @__PURE__ @class */ (function () {
      */
     Render.prototype.render = function () {
         var gObj = this.parent;
+        var isServerRendered = 'isServerRendered';
         this.headerRenderer = this.renderer.getRenderer(RenderType.Header);
         this.contentRenderer = this.renderer.getRenderer(RenderType.Content);
         this.headerRenderer.renderPanel();
@@ -4380,7 +4497,9 @@ var Render = /** @__PURE__ @class */ (function () {
         if (this.parent.height !== 'auto') {
             this.parent.scrollModule.setPadding();
         }
-        this.refreshDataManager();
+        if (!(isBlazor() && this.parent[isServerRendered])) {
+            this.refreshDataManager();
+        }
     };
     /**
      * Refresh the entire Grid.
@@ -4390,9 +4509,31 @@ var Render = /** @__PURE__ @class */ (function () {
         var _this = this;
         if (e === void 0) { e = { requestType: 'refresh' }; }
         var gObj = this.parent;
+        var preventUpdate = 'preventUpdate';
         gObj.notify(e.requestType + "-begin", e);
         if (isBlazor()) {
             this.resetTemplates();
+        }
+        if (isBlazor() && gObj.isServerRendered) {
+            var bulkChanges = 'bulkChanges';
+            if (gObj[bulkChanges].dataSource) {
+                delete gObj[bulkChanges].dataSource;
+            }
+            gObj.notify('blazor-action-begin', e);
+            if (e.requestType === 'filtering') {
+                var columns = 'columns';
+                e[columns] = null;
+            }
+            if (e.requestType === 'sorting') {
+                var target = 'target';
+                e[target] = null;
+            }
+            if (gObj.editSettings.mode === 'Normal' && gObj.isEdit) {
+                gObj.notify('closeinline', {});
+            }
+            else if (gObj.editSettings.mode === 'Batch' && !gObj.isEdit) {
+                gObj.notify('closebatch', {});
+            }
         }
         gObj.trigger(actionBegin, e, function (args) {
             if (args === void 0) { args = { requestType: 'refresh' }; }
@@ -4417,7 +4558,26 @@ var Render = /** @__PURE__ @class */ (function () {
                     gObj.pagerModule.pagerObj.totalRecordsCount = count;
                 }
             }
-            _this.refreshDataManager(args);
+            if (isBlazor() && _this.parent.isServerRendered) {
+                if (_this.parent[preventUpdate]) {
+                    return;
+                }
+                if (e.requestType === 'refresh') {
+                    _this.parent.currentAction = e;
+                }
+                if (args.requestType !== 'virtualscroll') {
+                    _this.parent.showSpinner();
+                }
+                if (args.requestType === 'delete' || args.requestType === 'save') {
+                    _this.parent.notify(addDeleteAction, args);
+                }
+                _this.parent.allowServerDataBinding = true;
+                _this.parent.serverDataBind();
+                _this.parent.allowServerDataBinding = false;
+            }
+            else {
+                _this.refreshDataManager(args);
+            }
         });
     };
     Render.prototype.resetTemplates = function () {
@@ -4471,6 +4631,9 @@ var Render = /** @__PURE__ @class */ (function () {
         }
     };
     Render.prototype.refreshComplete = function (e) {
+        if (isBlazor() && !this.parent.isJsComponent) {
+            e.rows = null;
+        }
         this.parent.trigger(actionComplete, e);
     };
     /**
@@ -4486,7 +4649,7 @@ var Render = /** @__PURE__ @class */ (function () {
         this.emptyGrid = false;
         var dataManager;
         var isFActon = this.isNeedForeignAction();
-        this.ariaService.setBusy(this.parent.getContent().firstChild, true);
+        this.ariaService.setBusy(this.parent.getContent().querySelector('.e-content'), true);
         if (isFActon) {
             var deffered = new Deferred();
             dataManager = this.getFData(deffered);
@@ -4541,18 +4704,25 @@ var Render = /** @__PURE__ @class */ (function () {
         var _this = this;
         args.requestType = 'batchsave';
         var promise = this.data.saveChanges(args.changes, this.parent.getPrimaryKeyFieldNames()[0], args.original);
-        var query = this.data.generateQuery().requiresCount();
-        if (this.data.dataManager.dataSource.offline) {
-            this.refreshDataManager({ requestType: 'batchsave' });
-            return;
+        if (isBlazor() && !this.parent.isJsComponent) {
+            promise.then(function (e) {
+                _this.parent.notify('editsuccess', args);
+            });
         }
         else {
-            promise.then(function (e) {
-                _this.data.getData(args, query)
-                    .then(function (e) { return _this.dmSuccess(e, args); })
+            var query_1 = this.data.generateQuery().requiresCount();
+            if (this.data.dataManager.dataSource.offline) {
+                this.refreshDataManager({ requestType: 'batchsave' });
+                return;
+            }
+            else {
+                promise.then(function (e) {
+                    _this.data.getData(args, query_1)
+                        .then(function (e) { return _this.dmSuccess(e, args); })
+                        .catch(function (e) { return _this.dmFailure(e, args); });
+                })
                     .catch(function (e) { return _this.dmFailure(e, args); });
-            })
-                .catch(function (e) { return _this.dmFailure(e, args); });
+            }
         }
     };
     Render.prototype.dmSuccess = function (e, args) {
@@ -4632,7 +4802,9 @@ var Render = /** @__PURE__ @class */ (function () {
                 columns[i].setParser(valueFormatter.getParserFunction(columns[i].format));
             }
             if (typeof (columns[i].format) === 'string') {
-                setFormatter(this.locator, columns[i]);
+                var isServerRendered = 'isServerRendered';
+                var isServerDateMap = this.parent[isServerRendered] || this.parent.printModule.isPrintGrid();
+                setFormatter(this.locator, columns[i], isServerDateMap);
             }
             else if (!columns[i].format && columns[i].type === 'number') {
                 columns[i].setParser(fmtr.getParserFunction({ format: 'n2' }));
@@ -4719,7 +4891,7 @@ var Render = /** @__PURE__ @class */ (function () {
                 }
                 _this.contentRenderer.setRowElements([]);
                 _this.contentRenderer.setRowObjects([]);
-                _this.ariaService.setBusy(_this.parent.getContent().firstChild, false);
+                _this.ariaService.setBusy(_this.parent.getContent().querySelector('.e-content'), false);
                 _this.renderEmptyRow();
                 if (args) {
                     var action = (args.requestType || '').toLowerCase() + '-complete';
@@ -4736,8 +4908,9 @@ var Render = /** @__PURE__ @class */ (function () {
             _this.parent.notify(toolbarRefresh, {});
         });
     };
+    /** @hidden */
     Render.prototype.dataManagerFailure = function (e, args) {
-        this.ariaService.setOptions(this.parent.getContent().firstChild, { busy: false, invalid: true });
+        this.ariaService.setOptions(this.parent.getContent().querySelector('.e-content'), { busy: false, invalid: true });
         this.parent.trigger(actionFailure, { error: e });
         this.parent.hideSpinner();
         if (args.requestType === 'save' || args.requestType === 'delete'
@@ -5443,14 +5616,6 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
         this.currentInfo.element.tabIndex = -1;
     };
     /** @hidden */
-    FocusStrategy.prototype.addOutline = function () {
-        var info = this.getContent().getFocusInfo();
-        if (info.element) {
-            addClass([info.element], ['e-focused']);
-            addClass([info.elementToFocus], ['e-focus']);
-        }
-    };
-    /** @hidden */
     FocusStrategy.prototype.focusHeader = function () {
         this.setActive(false, this.parent.frozenColumns !== 0);
         this.resetFocus();
@@ -5464,7 +5629,6 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
         var current = this.getContent().matrix.get(0, -1, [0, 1], null, this.getContent().validator());
         this.getContent().matrix.select(current[0], current[1]);
         this.focus();
-        this.addOutline();
     };
     FocusStrategy.prototype.addFocus = function (info, e) {
         this.currentInfo = info;
@@ -5652,7 +5816,6 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
         }
         this.getContent().matrix.current = current;
         this.addFocus(this.getContent().getFocusInfo());
-        this.addOutline();
     };
     FocusStrategy.prototype.clearOutline = function () {
         this.getContent().matrix.current = this.getContent().matrix.get(0, -1, [0, 1], 'downArrow', this.getContent().validator());
@@ -5844,7 +6007,8 @@ var ContentFocus = /** @__PURE__ @class */ (function () {
             cellIndex = gObj.getColumnIndexByField(gObj.getVisibleColumns()[gObj.getVisibleColumns().length - 1].field);
         }
         return !cell.classList.contains('e-rowcell') && !cell.classList.contains('e-headercell') &&
-            !cell.classList.contains('e-groupcaption') ? this.editNextRow(rowIndex, cellIndex, action) : [rowIndex, cellIndex];
+            !cell.classList.contains('e-groupcaption') ?
+            this.editNextRow(rowIndex, cellIndex, action) : [rowIndex, cellIndex];
     };
     ContentFocus.prototype.getCurrentFromAction = function (action, navigator, isPresent, e) {
         if (navigator === void 0) { navigator = [0, 0]; }
@@ -5917,6 +6081,17 @@ var ContentFocus = /** @__PURE__ @class */ (function () {
         var frozenSwap = this.parent.frozenColumns > 0 &&
             ((action === 'leftArrow' || action === 'shiftTab') && current[1] === 0);
         var enterFrozen = this.parent.frozenRows !== 0 && action === 'shiftEnter';
+        if (action === 'tab' && !this.parent.isEdit &&
+            current[1] === this.matrix.matrix[current[0]].lastIndexOf(1) && this.matrix.matrix.length - 1 !== current[0]) {
+            this.matrix.current[0] = this.matrix.current[0] + 1;
+            this.matrix.current[1] = -1;
+            frozenSwap = this.parent.frozenColumns > 0;
+        }
+        if (action === 'shiftTab' && !this.parent.isEdit &&
+            current[0] !== 0 && this.matrix.matrix[current[0]].indexOf(1) === current[1]) {
+            this.matrix.current[0] = this.matrix.current[0] - 1;
+            this.matrix.current[1] = this.matrix.matrix[current[0]].length;
+        }
         var info = {
             swap: ((action === 'upArrow' || enterFrozen) && current[0] === 0) || frozenSwap,
             toHeader: (action === 'upArrow' || enterFrozen) && current[0] === 0,
@@ -6311,6 +6486,10 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.disableUI = false;
         this.isPersisted = false;
         this.cmdKeyPressed = false;
+        /**
+         * @hidden
+         */
+        this.autoFillRLselection = true;
         this.parent = parent;
         this.selectionSettings = selectionSettings;
         this.factory = locator.getService('rendererFactory');
@@ -6376,7 +6555,7 @@ var Selection = /** @__PURE__ @class */ (function () {
     };
     Selection.prototype.getSelectedMovableRow = function (index) {
         var gObj = this.parent;
-        if (gObj.getFrozenColumns()) {
+        if (gObj.getFrozenColumns() && this.parent.getContent().querySelector('.e-movablecontent')) {
             return gObj.getMovableRowByIndex(index);
         }
         return null;
@@ -6456,28 +6635,36 @@ var Selection = /** @__PURE__ @class */ (function () {
                 previousRowIndex: this.prevRowIndex, target: this.actualTarget, cancel: false
             };
             args = this.addMovableArgs(args, selectedMovableRow);
-            this.onActionBegin(args, rowSelecting);
+            this.parent.trigger(rowSelecting, this.fDataUpdate(args), this.rowSelectingCallBack(args, isToggle, index, selectData, isRemoved, isRowSelected, can));
         }
-        if (!isNullOrUndefined(args) && args[can] === true) {
-            return;
+        else {
+            this.rowSelectingCallBack(args, isToggle, index, selectData, isRemoved, isRowSelected, can)(args);
         }
-        this.index = index;
-        this.toggle = isToggle;
-        this.data = selectData;
-        this.removed = isRemoved;
-        if (isRowSelected && this.selectionSettings.persistSelection) {
-            this.clearSelectedRow(index);
-            isRemoved = true;
-            this.removed = isRemoved;
-            this.selectRowCallBack();
-        }
-        else if (!isRowSelected && this.selectionSettings.persistSelection) {
-            this.selectRowCallBack();
-        }
-        if (!this.selectionSettings.persistSelection) {
-            this.selectRowCheck = true;
-            this.clearRow();
-        }
+    };
+    Selection.prototype.rowSelectingCallBack = function (args, isToggle, index, selectData, isRemoved, isRowSelected, can) {
+        var _this = this;
+        return function (args) {
+            if (!isNullOrUndefined(args) && args[can] === true) {
+                return;
+            }
+            _this.index = index;
+            _this.toggle = isToggle;
+            _this.data = selectData;
+            _this.removed = isRemoved;
+            if (isRowSelected && _this.selectionSettings.persistSelection) {
+                _this.clearSelectedRow(index);
+                isRemoved = true;
+                _this.removed = isRemoved;
+                _this.selectRowCallBack();
+            }
+            else if (!isRowSelected && _this.selectionSettings.persistSelection) {
+                _this.selectRowCallBack();
+            }
+            if (!_this.selectionSettings.persistSelection) {
+                _this.selectRowCheck = true;
+                _this.clearRow();
+            }
+        };
     };
     Selection.prototype.selectRowCallBack = function () {
         var gObj = this.parent;
@@ -6531,6 +6718,7 @@ var Selection = /** @__PURE__ @class */ (function () {
      * @return {void}
      */
     Selection.prototype.selectRows = function (rowIndexes) {
+        var _this = this;
         var gObj = this.parent;
         var rowIndex = !this.isSingleSel() ? rowIndexes[0] : rowIndexes[rowIndexes.length - 1];
         var selectedRow = gObj.getRowByIndex(rowIndex);
@@ -6549,36 +6737,37 @@ var Selection = /** @__PURE__ @class */ (function () {
             data: selectedData
         };
         args = this.addMovableArgs(args, selectedMovableRow);
-        this.onActionBegin(args, rowSelecting);
-        if (!isNullOrUndefined(args) && args[can] === true) {
-            return;
-        }
-        this.clearRow();
-        this.selectRowIndex(rowIndexes.slice(-1)[0]);
-        if (!this.isSingleSel()) {
-            for (var _i = 0, rowIndexes_1 = rowIndexes; _i < rowIndexes_1.length; _i++) {
-                var rowIdx = rowIndexes_1[_i];
-                this.updateRowSelection(gObj.getRowByIndex(rowIdx), rowIdx);
-                if (frzCols) {
-                    this.updateRowSelection(gObj.getMovableRowByIndex(rowIdx), rowIdx);
+        this.parent.trigger(rowSelecting, this.fDataUpdate(args), function (args) {
+            if (!isNullOrUndefined(args) && args[can] === true) {
+                return;
+            }
+            _this.clearRow();
+            _this.selectRowIndex(rowIndexes.slice(-1)[0]);
+            if (!_this.isSingleSel()) {
+                for (var _i = 0, rowIndexes_1 = rowIndexes; _i < rowIndexes_1.length; _i++) {
+                    var rowIdx = rowIndexes_1[_i];
+                    _this.updateRowSelection(gObj.getRowByIndex(rowIdx), rowIdx);
+                    if (frzCols) {
+                        _this.updateRowSelection(gObj.getMovableRowByIndex(rowIdx), rowIdx);
+                    }
+                    _this.updateRowProps(rowIndex);
                 }
-                this.updateRowProps(rowIndex);
             }
-        }
-        else {
-            this.updateRowSelection(gObj.getRowByIndex(rowIndex), rowIndex);
-            if (frzCols) {
-                this.updateRowSelection(gObj.getMovableRowByIndex(rowIndex), rowIndex);
+            else {
+                _this.updateRowSelection(gObj.getRowByIndex(rowIndex), rowIndex);
+                if (frzCols) {
+                    _this.updateRowSelection(gObj.getMovableRowByIndex(rowIndex), rowIndex);
+                }
+                _this.updateRowProps(rowIndex);
             }
-            this.updateRowProps(rowIndex);
-        }
-        args = {
-            rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: this.actualTarget,
-            prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
-            data: isBlazor() ? selectedData : this.getSelectedRecords(), isInteracted: this.isInteracted
-        };
-        args = this.addMovableArgs(args, selectedMovableRow);
-        this.onActionComplete(args, rowSelected);
+            args = {
+                rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: _this.actualTarget,
+                prevRow: gObj.getRows()[_this.prevRowIndex], previousRowIndex: _this.prevRowIndex,
+                data: isBlazor() ? selectedData : _this.getSelectedRecords(), isInteracted: _this.isInteracted
+            };
+            args = _this.addMovableArgs(args, selectedMovableRow);
+            _this.onActionComplete(args, rowSelected);
+        });
     };
     /**
      * Select rows with existing row selection by passing row indexes.
@@ -6587,6 +6776,7 @@ var Selection = /** @__PURE__ @class */ (function () {
      * @hidden
      */
     Selection.prototype.addRowsToSelection = function (rowIndexes) {
+        var _this = this;
         var gObj = this.parent;
         var can = 'cancel';
         var target = this.target;
@@ -6600,62 +6790,71 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
         var args;
         var checkboxColumn = this.parent.getColumns().filter(function (col) { return col.type === 'checkbox'; });
-        for (var _i = 0, rowIndexes_2 = rowIndexes; _i < rowIndexes_2.length; _i++) {
-            var rowIndex = rowIndexes_2[_i];
-            var rowObj = this.getRowObj(rowIndex);
-            var isUnSelected = this.selectedRowIndexes.indexOf(rowIndex) > -1;
-            this.selectRowIndex(rowIndex);
-            if (isUnSelected && ((checkboxColumn.length ? true : this.selectionSettings.enableToggle) || this.isMultiCtrlRequest)) {
-                this.rowDeselect(rowDeselecting, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target);
-                if (this.isCancelDeSelect) {
-                    return;
+        var _loop_1 = function (rowIndex) {
+            var rowObj = this_1.getRowObj(rowIndex);
+            var isUnSelected = this_1.selectedRowIndexes.indexOf(rowIndex) > -1;
+            this_1.selectRowIndex(rowIndex);
+            if (isUnSelected && ((checkboxColumn.length ? true : this_1.selectionSettings.enableToggle) || this_1.isMultiCtrlRequest)) {
+                this_1.rowDeselect(rowDeselecting, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target);
+                if (this_1.isCancelDeSelect) {
+                    return { value: void 0 };
                 }
-                this.selectedRowIndexes.splice(this.selectedRowIndexes.indexOf(rowIndex), 1);
-                this.selectedRecords.splice(this.selectedRecords.indexOf(selectedRow), 1);
+                this_1.selectedRowIndexes.splice(this_1.selectedRowIndexes.indexOf(rowIndex), 1);
+                this_1.selectedRecords.splice(this_1.selectedRecords.indexOf(selectedRow), 1);
                 selectedRow.removeAttribute('aria-selected');
-                this.addRemoveClassesForRow(selectedRow, false, null, 'e-selectionbackground', 'e-active');
+                this_1.addRemoveClassesForRow(selectedRow, false, null, 'e-selectionbackground', 'e-active');
                 if (selectedMovableRow) {
-                    this.selectedRecords.splice(this.selectedRecords.indexOf(selectedMovableRow), 1);
+                    this_1.selectedRecords.splice(this_1.selectedRecords.indexOf(selectedMovableRow), 1);
                     selectedMovableRow.removeAttribute('aria-selected');
-                    this.addRemoveClassesForRow(selectedMovableRow, false, null, 'e-selectionbackground', 'e-active');
+                    this_1.addRemoveClassesForRow(selectedMovableRow, false, null, 'e-selectionbackground', 'e-active');
                 }
-                this.rowDeselect(rowDeselected, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target, [selectedMovableRow]);
-                this.isInteracted = false;
+                this_1.rowDeselect(rowDeselected, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target, [selectedMovableRow]);
+                this_1.isInteracted = false;
             }
             else {
                 args = {
                     cancel: false,
-                    data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this.actualTarget,
-                    prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
-                    isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
+                    data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this_1.actualTarget,
+                    prevRow: gObj.getRows()[this_1.prevRowIndex], previousRowIndex: this_1.prevRowIndex,
+                    isCtrlPressed: this_1.isMultiCtrlRequest, isShiftPressed: this_1.isMultiShiftRequest,
                     foreignKeyData: rowObj.foreignKeyData
                 };
-                args = this.addMovableArgs(args, selectedMovableRow);
-                this.onActionBegin(args, rowSelecting);
-                if (!isNullOrUndefined(args) && args[can] === true) {
-                    return;
-                }
-                if (this.isSingleSel()) {
-                    this.clearRow();
-                }
-                this.updateRowSelection(selectedRow, rowIndex);
-                if (frzCols) {
-                    this.updateRowSelection(selectedMovableRow, rowIndex);
-                }
+                args = this_1.addMovableArgs(args, selectedMovableRow);
+                this_1.parent.trigger(rowSelecting, this_1.fDataUpdate(args), function (args) {
+                    if (!isNullOrUndefined(args) && args[can] === true) {
+                        return;
+                    }
+                    if (_this.isSingleSel()) {
+                        _this.clearRow();
+                    }
+                    _this.updateRowSelection(selectedRow, rowIndex);
+                    if (frzCols) {
+                        _this.updateRowSelection(selectedMovableRow, rowIndex);
+                    }
+                });
             }
             if (!isUnSelected) {
                 args = {
-                    data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this.actualTarget,
-                    prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
+                    data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this_1.actualTarget,
+                    prevRow: gObj.getRows()[this_1.prevRowIndex], previousRowIndex: this_1.prevRowIndex,
                     foreignKeyData: rowObj.foreignKeyData
                 };
-                args = this.addMovableArgs(args, selectedMovableRow);
-                this.onActionComplete(args, rowSelected);
+                args = this_1.addMovableArgs(args, selectedMovableRow);
+                this_1.onActionComplete(args, rowSelected);
             }
-            this.updateRowProps(rowIndex);
-            if (this.isSingleSel()) {
+            this_1.updateRowProps(rowIndex);
+            if (this_1.isSingleSel()) {
+                return "break";
+            }
+        };
+        var this_1 = this;
+        for (var _i = 0, rowIndexes_2 = rowIndexes; _i < rowIndexes_2.length; _i++) {
+            var rowIndex = rowIndexes_2[_i];
+            var state_1 = _loop_1(rowIndex);
+            if (typeof state_1 === "object")
+                return state_1.value;
+            if (state_1 === "break")
                 break;
-            }
         }
     };
     Selection.prototype.getCollectionFromIndexes = function (startIndex, endIndex) {
@@ -6852,7 +7051,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                     return;
                 }
                 rows_1.filter(function (record) { return record.hasAttribute('aria-selected'); }).forEach(function (ele) {
-                    if (!_this.disableUI) {
+                    if (!_this.disableUI || isBlazor()) {
                         ele.removeAttribute('aria-selected');
                         _this.addRemoveClassesForRow(ele, false, true, 'e-selectionbackground', 'e-active');
                     }
@@ -6862,7 +7061,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                 for (var i = 0, len = _this.selectedRowIndexes.length; i < len; i++) {
                     var movableRow = _this.getSelectedMovableRow(_this.selectedRowIndexes[i]);
                     if (movableRow) {
-                        if (!_this.disableUI) {
+                        if (!_this.disableUI || isBlazor()) {
                             movableRow.removeAttribute('aria-selected');
                             _this.addRemoveClassesForRow(movableRow, false, true, 'e-selectionbackground', 'e-active');
                         }
@@ -7622,15 +7821,27 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
     };
     Selection.prototype.updateValue = function (rIdx, cIdx, cell) {
-        var col = this.parent.getColumnByIndex(cIdx);
-        if (this.parent.editModule && cell) {
-            if (col.type === 'number') {
-                this.parent.editModule.updateCell(rIdx, col.field, parseInt(cell.textContent, 10));
-            }
-            else {
-                this.parent.editModule.updateCell(rIdx, col.field, cell.textContent);
+        var args = this.createBeforeAutoFill(rIdx, cIdx, cell);
+        if (!args.cancel) {
+            var col = this.parent.getColumnByIndex(cIdx);
+            if (this.parent.editModule && cell) {
+                if (col.type === 'number') {
+                    this.parent.editModule.updateCell(rIdx, col.field, parseInt(args.value, 10));
+                }
+                else {
+                    this.parent.editModule.updateCell(rIdx, col.field, args.value);
+                }
             }
         }
+    };
+    Selection.prototype.createBeforeAutoFill = function (rowIndex, colIndex, cell) {
+        var col = this.parent.getColumnByIndex(colIndex);
+        var args = {
+            column: col,
+            value: cell.innerText
+        };
+        this.parent.trigger(beforeAutoFill, args);
+        return args;
     };
     /* tslint:disable-next-line:max-func-body-length */
     Selection.prototype.selectLikeAutoFill = function (e, isApply) {
@@ -7647,7 +7858,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                 this.endAFCell = this.parent.getCellFromIndex(startrowIdx + rowLen, startCellIdx + colLen);
                 this.drawAFBorders();
                 break;
-            case startCellIdx + colLen < endCellIdx && //right
+            case this.autoFillRLselection && startCellIdx + colLen < endCellIdx && //right
                 endCellIdx - startCellIdx - colLen + 1 > endrowIdx - startrowIdx - rowLen // right bottom
                 && endCellIdx - startCellIdx - colLen + 1 > startrowIdx - endrowIdx: //right top
                 this.endAFCell = this.parent.getCellFromIndex(startrowIdx + rowLen, endCellIdx);
@@ -7672,7 +7883,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                     this.selectCellsByRange({ rowIndex: startrowIdx, cellIndex: this.startCellIndex }, { rowIndex: endrowIdx, cellIndex: endCellIdx });
                 }
                 break;
-            case startCellIdx > endCellIdx && // left
+            case this.autoFillRLselection && startCellIdx > endCellIdx && // left
                 startCellIdx - endCellIdx + 1 > endrowIdx - startrowIdx - rowLen && //left top
                 startCellIdx - endCellIdx + 1 > startrowIdx - endrowIdx: // left bottom
                 this.startAFCell = this.parent.getCellFromIndex(startrowIdx, endCellIdx);
@@ -8103,7 +8314,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             var indexes = [];
             for (var j = 0; j < rows.length; j++) {
                 var rowObj = this.getRowObj(rows[j]);
-                var pKey = rowObj ? rowObj.data[this.primaryKey] : null;
+                var pKey = rowObj ? rowObj.data ? rowObj.data[this.primaryKey] : null : null;
                 if (pKey === null) {
                     return;
                 }
@@ -8910,6 +9121,9 @@ var Search = /** @__PURE__ @class */ (function () {
      * @hidden
      */
     Search.prototype.onSearchComplete = function (e) {
+        if (isBlazor() && !this.parent.isJsComponent) {
+            e.rows = null;
+        }
         this.parent.trigger(actionComplete, extend(e, {
             searchString: this.parent.searchSettings.key, requestType: 'searching', type: actionComplete
         }));
@@ -9072,10 +9286,10 @@ var Scroll = /** @__PURE__ @class */ (function () {
      */
     Scroll.prototype.setHeight = function () {
         var mHdrHeight = 0;
-        var content = this.parent.getContent().firstChild;
+        var content = this.parent.getContent().querySelector('.e-content');
         if (this.parent.frozenRows && this.parent.height !== 'auto') {
-            mHdrHeight =
-                this.parent.getHeaderContent().querySelector('tbody').offsetHeight;
+            var tbody = this.parent.getHeaderContent().querySelector('tbody');
+            mHdrHeight = tbody ? tbody.offsetHeight : 0;
             content.style.height = formatUnit(this.parent.height - mHdrHeight);
         }
         else {
@@ -9090,7 +9304,7 @@ var Scroll = /** @__PURE__ @class */ (function () {
         var content = this.parent.getHeaderContent();
         var scrollWidth = Scroll.getScrollBarWidth() - this.getThreshold();
         var cssProps = this.getCssProperties();
-        content.firstChild.style[cssProps.border] = scrollWidth > 0 ? '1px' : '0px';
+        content.querySelector('.e-headercontent').style[cssProps.border] = scrollWidth > 0 ? '1px' : '0px';
         content.style[cssProps.padding] = scrollWidth > 0 ? scrollWidth + 'px' : '0px';
     };
     /**
@@ -9098,8 +9312,9 @@ var Scroll = /** @__PURE__ @class */ (function () {
      */
     Scroll.prototype.removePadding = function (rtl) {
         var cssProps = this.getCssProperties(rtl);
-        this.parent.getHeaderContent().firstChild.style[cssProps.border] = '';
-        this.parent.getHeaderContent().firstChild.parentElement.style[cssProps.padding] = '';
+        var hDiv = this.parent.getHeaderContent().querySelector('.e-headercontent');
+        hDiv.style[cssProps.border] = '';
+        hDiv.parentElement.style[cssProps.padding] = '';
     };
     /**
      * Refresh makes the Grid adoptable with the height of parent container.
@@ -9230,7 +9445,8 @@ var Scroll = /** @__PURE__ @class */ (function () {
             var left = element.scrollLeft + (_this.pageXY.x - pageXY.x);
             if (_this.parent.getHeaderContent().contains(e.target)) {
                 mHdr = _this.parent.getFrozenColumns() ?
-                    _this.parent.getHeaderContent().querySelector('.e-movableheader') : _this.parent.getHeaderContent().firstChild;
+                    _this.parent.getHeaderContent().querySelector('.e-movableheader') :
+                    _this.parent.getHeaderContent().querySelector('.e-headercontent');
                 if (_this.previousValues.left === left || (left < 0 || (mHdr.scrollWidth - mHdr.clientWidth) < left)) {
                     return;
                 }
@@ -9279,8 +9495,8 @@ var Scroll = /** @__PURE__ @class */ (function () {
         var _this = this;
         if (this.oneTimeReady) {
             var frzCols = this.parent.getFrozenColumns();
-            this.content = this.parent.getContent().firstChild;
-            this.header = this.parent.getHeaderContent().firstChild;
+            this.content = this.parent.getContent().querySelector('.e-content');
+            this.header = this.parent.getHeaderContent().querySelector('.e-headercontent');
             var mCont = this.content.querySelector('.e-movablecontent');
             var fCont = this.content.querySelector('.e-frozencontent');
             var mHdr = this.header.querySelector('.e-movableheader');
@@ -9388,14 +9604,15 @@ var Scroll = /** @__PURE__ @class */ (function () {
         this.removeEventListener();
         //Remove padding
         this.removePadding();
-        removeClass([this.parent.getHeaderContent().firstChild], 'e-headercontent');
-        removeClass([this.parent.getContent().firstChild], 'e-content');
+        var cont = this.parent.getContent().querySelector('.e-content');
+        removeClass([this.parent.getHeaderContent().querySelector('.e-headercontent')], 'e-headercontent');
+        removeClass([cont], 'e-content');
         //Remove height
-        this.parent.getContent().firstChild.style.height = '';
+        cont.style.height = '';
         //Remove width
         this.parent.element.style.width = '';
         //Remove Dom event
-        EventHandler.remove(this.parent.getContent().firstChild, 'scroll', this.onContentScroll);
+        EventHandler.remove(cont, 'scroll', this.onContentScroll);
     };
     /**
      * Function to get the scrollbar width of the browser.
@@ -9634,12 +9851,14 @@ var Clipboard = /** @__PURE__ @class */ (function () {
                         data: value,
                     };
                     this.parent.trigger(beforePaste, args);
-                    if (grid.editModule) {
-                        if (col.type === 'number') {
-                            this.parent.editModule.updateCell(rIdx, col.field, parseInt(args.data, 10));
-                        }
-                        else {
-                            grid.editModule.updateCell(rIdx, col.field, args.data);
+                    if (!args.cancel) {
+                        if (grid.editModule) {
+                            if (col.type === 'number') {
+                                this.parent.editModule.updateCell(rIdx, col.field, parseInt(args.data, 10));
+                            }
+                            else {
+                                grid.editModule.updateCell(rIdx, col.field, args.data);
+                            }
                         }
                     }
                 }
@@ -9753,7 +9972,7 @@ var Clipboard = /** @__PURE__ @class */ (function () {
             }
             if (isElement) {
                 if (!cells[j].classList.contains('e-hide')) {
-                    this.copyContent += cells[j].textContent;
+                    this.copyContent += cells[j].innerText;
                 }
             }
             else {
@@ -9826,6 +10045,198 @@ var Clipboard = /** @__PURE__ @class */ (function () {
         return obj;
     };
     return Clipboard;
+}());
+
+var gridObserver = new Observer();
+/**
+ * BlazorAction is used for performing Blazor related Grid Actions.
+ * @hidden
+ */
+var BlazorAction = /** @__PURE__ @class */ (function () {
+    function BlazorAction(parent) {
+        this.aria = new AriaService();
+        this.actionArgs = {};
+        this.parent = parent;
+        this.addEventListener();
+    }
+    BlazorAction.prototype.addEventListener = function () {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.on('detailclick', this.onDetailRowClick, this);
+        this.parent.on('editsuccess', this.editSuccess, this);
+        this.parent.on('setvisibility', this.setColumnVisibility, this);
+        this.parent.on('offset', this.setServerOffSet, this);
+        this.parent.on(modelChanged, this.modelChanged, this);
+    };
+    BlazorAction.prototype.removeEventListener = function () {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.off('detailclick', this.onDetailRowClick);
+        this.parent.off('editsuccess', this.editSuccess);
+        this.parent.off('setvisibility', this.setColumnVisibility);
+        this.parent.off('offset', this.setServerOffSet);
+        this.parent.off(modelChanged, this.modelChanged);
+    };
+    BlazorAction.prototype.getModuleName = function () { return 'blazor'; };
+    
+    BlazorAction.prototype.modelChanged = function (args) {
+        this.actionArgs = args;
+        this.parent.currentAction = args;
+    };
+    BlazorAction.prototype.editSuccess = function (args) {
+        this.actionArgs = args;
+        this.parent.currentAction = args;
+        this.parent.allowServerDataBinding = true;
+        this.parent.serverDataBind();
+        this.parent.allowServerDataBinding = false;
+    };
+    BlazorAction.prototype.onDetailRowClick = function (target) {
+        var gObj = this.parent;
+        var adaptor = 'interopAdaptor';
+        var rIndex = 'rowIndex';
+        var invokeMethodAsync = 'invokeMethodAsync';
+        var tr = target.parentElement;
+        var uid = tr.getAttribute('data-uid');
+        var rowObj = gObj.getRowObjectFromUID(uid);
+        var args = {
+            uid: uid, classList: target.classList[0], index: tr.getAttribute('aria-rowindex'),
+            rowIndex: gObj.getRowsObject().indexOf(rowObj), colSpan: this.parent.getVisibleColumns().length
+        };
+        gObj[adaptor][invokeMethodAsync]('OnDetailClick', args);
+        if (target.classList.contains('e-detailrowcollapse')) {
+            var rows = gObj.getRowsObject();
+            var rowData = rowObj.data;
+            var gridRowId = this.parent.getRowUid('grid-row');
+            var len = gObj.groupSettings.columns.length;
+            var gridRow = new Row({
+                isDataRow: true,
+                isExpand: true,
+                uid: gridRowId,
+                isDetailRow: true,
+                cells: [new Cell({ cellType: CellType.Indent }), new Cell({ isDataCell: true, visible: true })]
+            });
+            for (var i = 0; i < len; i++) {
+                gridRow.cells.unshift(new Cell({ cellType: CellType.Indent }));
+            }
+            rows.splice(args[rIndex] + 1, 0, gridRow);
+            gObj.trigger(detailDataBound, { data: rowData });
+            gObj.notify(detailDataBound, { rows: gObj.getRowsObject() });
+            rowObj.isExpand = true;
+            this.aria.setExpand(target, true);
+        }
+        else {
+            gObj.getRowsObject().splice(args[rIndex] + 1, 1);
+            gObj.notify(detailDataBound, { rows: gObj.getRowsObject() });
+            rowObj.isExpand = false;
+            this.aria.setExpand(target, false);
+        }
+    };
+    BlazorAction.prototype.setColumnVisibility = function (columns) {
+        var visible = {};
+        var adaptor = 'interopAdaptor';
+        var invokeMethodAsync = 'invokeMethodAsync';
+        columns.forEach(function (column) {
+            visible[column.uid] = column.visible;
+        });
+        this.parent[adaptor][invokeMethodAsync]('setColumnVisibility', { visible: visible });
+    };
+    BlazorAction.prototype.dataSuccess = function (args) {
+        if (args.foreignColumnsData) {
+            var columns = this.parent.getColumns();
+            columns.forEach(function (column) {
+                if (args.foreignColumnsData[column.field]) {
+                    column.columnData = args.foreignColumnsData[column.field];
+                }
+            });
+        }
+        if (this.parent.allowGrouping && this.parent.groupSettings.columns) {
+            var agg_1 = [];
+            var aggRows = this.parent.aggregates;
+            aggRows.forEach(function (row) {
+                row.columns.forEach(function (col) {
+                    var aggr = {};
+                    var type = col.type.toString();
+                    aggr = { type: type.toLowerCase(), field: col.field };
+                    agg_1.push(aggr);
+                });
+            });
+            var data_1;
+            var aggrds_1;
+            var groupedCols = this.parent.groupSettings.columns;
+            groupedCols.forEach(function (field) {
+                aggrds_1 = data_1 ? data_1 : args.result;
+                data_1 = DataUtil.group(aggrds_1, field, agg_1, null, null);
+            });
+            args.result = data_1 ? data_1 : args.result;
+        }
+        var rowUid = 'rowUid';
+        var offsetTime = 'offsetTime';
+        var off = 'offset';
+        this.parent[rowUid] = args[rowUid];
+        this.parent[offsetTime] = args[off];
+        if (this.parent[offsetTime] !== Math.abs(new Date().getTimezoneOffset() / 60)) {
+            if (this.parent.editSettings.mode !== 'Batch') {
+                var action = 'action';
+                var rowIndex = 'rowIndex';
+                var index = 'index';
+                if (this.actionArgs[action] === 'edit') {
+                    this.setClientOffSet(args, this.actionArgs[rowIndex]);
+                }
+                else if (this.actionArgs[action] === 'add') {
+                    this.setClientOffSet(args, this.actionArgs[index]);
+                }
+            }
+            else if (this.parent.editSettings.mode === 'Batch') {
+                var changes = 'changes';
+                var changedRecords = 'changedRecords';
+                var addedRecords = 'addedRecords';
+                var keyField = this.parent.getPrimaryKeyFieldNames()[0];
+                var batchChanges = this.actionArgs[changes] || { changedRecords: [], addedRecords: [] };
+                for (var i = 0; i < batchChanges[changedRecords].length; i++) {
+                    for (var j = 0; j < args.result.length; j++) {
+                        if (batchChanges[changedRecords][i][keyField] === args.result[j][keyField]) {
+                            this.setClientOffSet(args, j);
+                        }
+                    }
+                }
+                for (var i = 0; i < batchChanges[addedRecords].length; i++) {
+                    for (var j = 0; j < args.result.length; j++) {
+                        if (batchChanges[addedRecords][i][keyField] === args.result[j][keyField]) {
+                            this.setClientOffSet(args, j);
+                        }
+                    }
+                }
+            }
+        }
+        this.parent.renderModule.dataManagerSuccess(args, this.actionArgs);
+        this.parent.getMediaColumns();
+        this.actionArgs = this.parent.currentAction = {};
+    };
+    BlazorAction.prototype.setClientOffSet = function (args, index) {
+        var timeZone = DataUtil.serverTimezoneOffset;
+        DataUtil.serverTimezoneOffset = 0;
+        args.result[index] = DataUtil.parse.parseJson(JSON.stringify(args.result[index]));
+        DataUtil.serverTimezoneOffset = timeZone;
+    };
+    BlazorAction.prototype.setServerOffSet = function (args) {
+        var serverTimeZone = DataUtil.serverTimezoneOffset;
+        var offsetTime = 'offsetTime';
+        var data = 'data';
+        var timeZone = new Date().getTimezoneOffset() / 60 * 2 + this.parent[offsetTime];
+        DataUtil.serverTimezoneOffset = timeZone;
+        args[data] = DataUtil.parse.parseJson(JSON.stringify(args[data]));
+        DataUtil.serverTimezoneOffset = serverTimeZone;
+    };
+    BlazorAction.prototype.dataFailure = function (args) {
+        this.parent.renderModule.dataManagerFailure(args, this.actionArgs);
+        this.actionArgs = this.parent.currentAction = {};
+    };
+    BlazorAction.prototype.destroy = function () {
+        this.removeEventListener();
+    };
+    return BlazorAction;
 }());
 
 var __extends = (undefined && undefined.__extends) || (function () {
@@ -10152,6 +10563,8 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         _this.vcRows = [];
         /** @hidden */
         _this.vGroupOffsets = {};
+        /** @hidden */
+        _this.rowUid = 0;
         /**
          * Gets the currently visible records of the Grid.
          */
@@ -10333,6 +10746,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         if (this.enableLogger) {
             modules.push({ member: 'logger', args: [this] });
         }
+        if (isBlazor()) {
+            modules.push({ member: 'blazor', args: [this] });
+        }
     };
     /**
      * For internal use only - Initialize the event handler;
@@ -10350,6 +10766,11 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         this.inViewIndexes = [];
         this.mediaCol = [];
         this.isInitialLoad = false;
+        this.allowServerDataBinding = false;
+        this.ignoreCollectionWatch = true;
+        if (this.enableVirtualization || this.enableColumnVirtualization) {
+            this.isServerRendered = false; //NEW
+        }
         this.mergeCells = {};
         this.isEdit = false;
         this.checkAllRows = 'None';
@@ -10445,7 +10866,13 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             CustomFilterDatePlaceHolder: 'Choose a date',
             AND: 'AND',
             OR: 'OR',
-            ShowRowsWhere: 'Show rows where:'
+            ShowRowsWhere: 'Show rows where:',
+            FilterMenuDialogARIA: 'Filter menu dialog',
+            ExcelFilterDialogARIA: 'Excel filter dialog',
+            DialogEditARIA: 'Edit dialog',
+            ColumnChooserDialogARIA: 'Column chooser dialog',
+            ColumnMenuDialogARIA: 'Column menu dialog',
+            CustomFilterDialogARIA: 'Customer filter dialog'
         };
         this.keyConfigs = {
             downArrow: 'downarrow',
@@ -10513,7 +10940,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         if (this.enablePersistence) {
             this.notify(columnsPrepared, {});
         }
-        this.getMediaColumns();
+        if (!(isBlazor() && this.isServerRendered)) {
+            this.getMediaColumns();
+        }
         setColumnIndex(this.columns);
         this.checkLockColumns(this.columns);
         this.getColumns();
@@ -10525,6 +10954,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         this.updateStackedFilter();
         this.showSpinner();
         this.notify(initialEnd, {});
+        if (isBlazor() && this.isServerRendered) {
+            gridObserver.notify(componentRendered, { id: this.element.id, grid: this });
+        }
     };
     /**
      * By default, grid shows the spinner for all its actions. You can use this method to show spinner at your needed time.
@@ -12940,6 +13372,10 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     Grid.prototype.pdfExport = function (pdfExportProperties, 
     /* tslint:disable-next-line:no-any */
     isMultipleExport, pdfDoc, isBlob) {
+        if (isBlazor()) {
+            this.pdfExportModule.Map(this, pdfExportProperties, isMultipleExport, pdfDoc, isBlob);
+            return null;
+        }
         return this.pdfExportModule ? this.pdfExportModule.Map(this, pdfExportProperties, isMultipleExport, pdfDoc, isBlob) : null;
     };
     /**
@@ -13125,6 +13561,14 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     /**
      * @hidden
      */
+    Grid.prototype.applyBiggerTheme = function (element) {
+        if (this.element.classList.contains('e-bigger')) {
+            element.classList.add('e-bigger');
+        }
+    };
+    /**
+     * @hidden
+     */
     Grid.prototype.getPreviousRowData = function () {
         var previousRowData = this.getRowsObject()[this.getRows().length - 1].data;
         return previousRowData;
@@ -13236,6 +13680,12 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                 this.notify(doubleTap, e);
             }
         }
+    };
+    /**
+     * @hidden
+     */
+    Grid.prototype.getRowUid = function (prefix) {
+        return "" + prefix + this.rowUid++;
     };
     /**
      * @hidden
@@ -13462,6 +13912,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         Property('All')
     ], Grid.prototype, "columnQueryMode", void 0);
     __decorate$1([
+        Property({})
+    ], Grid.prototype, "currentAction", void 0);
+    __decorate$1([
         Event()
     ], Grid.prototype, "created", void 0);
     __decorate$1([
@@ -13652,6 +14105,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     ], Grid.prototype, "beforePaste", void 0);
     __decorate$1([
         Event()
+    ], Grid.prototype, "beforeAutoFill", void 0);
+    __decorate$1([
+        Event()
     ], Grid.prototype, "dataStateChange", void 0);
     __decorate$1([
         Event()
@@ -13673,7 +14129,8 @@ function getCloneProperties() {
         'allowTextWrap', 'childGrid', 'columns', 'currentViewData', 'dataSource', 'detailTemplate', 'enableAltRow',
         'enableColumnVirtualization', 'filterSettings', 'gridLines',
         'groupSettings', 'height', 'locale', 'pageSettings', 'printMode', 'query', 'queryString', 'enableRtl',
-        'rowHeight', 'rowTemplate', 'sortSettings', 'textWrapSettings', 'allowPaging', 'hierarchyPrintMode', 'searchSettings'];
+        'rowHeight', 'rowTemplate', 'sortSettings', 'textWrapSettings', 'allowPaging', 'hierarchyPrintMode', 'searchSettings',
+        'queryCellInfo', 'beforeDataBound'];
 }
 /**
  *
@@ -13861,6 +14318,10 @@ var Print = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    /**
+     * To destroy the print
+     * @hidden
+     */
     Print.prototype.isPrintGrid = function () {
         return this.parent.element.id.indexOf('_print') > 0 && this.parent.isPrinting;
     };
@@ -14350,12 +14811,16 @@ function wrap(elem, action) {
     }
 }
 /** @hidden */
-function setFormatter(serviceLocator, column) {
+function setFormatter(serviceLocator, column, isServerRendered) {
     var fmtr = serviceLocator.getService('valueFormatter');
     var format = 'format';
     var args;
     if (column.type === 'date' || column.type === 'datetime') {
         args = { type: column.type, skeleton: column.format };
+        if (isBlazor() && isServerRendered) {
+            var isServer = 'isServerRendered';
+            args[isServer] = isServerRendered;
+        }
         if ((typeof (column.format) === 'string') && column.format !== 'yMd') {
             args[format] = column.format;
         }
@@ -14613,12 +15078,14 @@ function getCustomDateFormat(format, colType) {
     if (colType === 'date') {
         formatvalue = typeof (format) === 'object' ?
             intl.getDatePattern({ type: format[type] ? format[type] : 'date', format: format[formatter] }, false) :
-            intl.getDatePattern({ type: 'date', skeleton: format }, false);
+            isBlazor() ? intl.getDatePattern({ type: 'dateTime', format: format }, false) :
+                intl.getDatePattern({ type: 'dateTime', skeleton: format }, false);
     }
     else {
         formatvalue = typeof (format) === 'object' ?
             intl.getDatePattern({ type: format[type] ? format[type] : 'dateTime', format: format[formatter] }, false) :
-            intl.getDatePattern({ type: 'dateTime', skeleton: format }, false);
+            isBlazor() ? intl.getDatePattern({ type: 'dateTime', format: format }, false) :
+                intl.getDatePattern({ type: 'dateTime', skeleton: format }, false);
     }
     return formatvalue;
 }
@@ -14999,6 +15466,7 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
         });
         var isStringTemplate = 'isStringTemplate';
         this.dialogObj[isStringTemplate] = true;
+        this.dlg.setAttribute('aria-label', this.getLocalizedLabel('ExcelFilterDialogARIA'));
         this.dialogObj.appendTo(this.dlg);
         this.dialogObj.element.style.maxHeight = this.options.height + 'px';
         this.dialogObj.show();
@@ -15184,16 +15652,15 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
         var field = this.isForeignColumn(column) ? column.foreignKeyValue : column.field;
         parsed = (parsed === '' || parsed === undefined) ? undefined : parsed;
         var predicte;
+        var moduleName = this.options.dataManager.adaptor.getModuleName;
         if (this.options.type === 'boolean') {
             if (parsed !== undefined &&
-                this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf(parsed.toLowerCase()) !== -1) {
-                parsed = (this.options.dataManager.adaptor.getModuleName()
-                    === 'ODataAdaptor' || 'ODataV4Adaptor') ? true : 'true';
+                this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf(parsed.toLowerCase()) !== -1 && moduleName) {
+                parsed = (moduleName() === 'ODataAdaptor' || 'ODataV4Adaptor') ? true : 'true';
             }
             else if (parsed !== undefined &&
-                this.getLocalizedLabel('FilterFalse').toLowerCase().indexOf(parsed.toLowerCase()) !== -1) {
-                parsed = (this.options.dataManager.adaptor.getModuleName()
-                    === 'ODataAdaptor' || 'ODataV4Adaptor') ? false : 'false';
+                this.getLocalizedLabel('FilterFalse').toLowerCase().indexOf(parsed.toLowerCase()) !== -1 && moduleName) {
+                parsed = (moduleName() === 'ODataAdaptor' || 'ODataV4Adaptor') ? false : 'false';
             }
             operator = 'equal';
         }
@@ -15205,6 +15672,10 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
             operator: operator, matchCase: matchCase, ignoreAccent: ignoreAccent, filterChoiceCount: null,
             query: query
         };
+        if (isBlazor() && !this.parent.isJsComponent) {
+            var filterModel = 'filterModel';
+            args[filterModel] = {};
+        }
         this.parent.notify(cBoxFltrBegin, args);
         predicte = new Predicate(field, args.operator, parsed, args.matchCase, args.ignoreAccent);
         if (this.options.type === 'date' || this.options.type === 'datetime') {
@@ -15465,12 +15936,13 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
         var elem = checked ? this.cBoxTrue.cloneNode(true) :
             this.cBoxFalse.cloneNode(true);
         var label = elem.querySelector('.e-label');
+        var dummyData = extendObjWithFn({}, data, { column: this.options.column, parent: this.parent });
         label.innerHTML = !isNullOrUndefined(value) && value.toString().length ? value :
             this.getLocalizedLabel('Blanks');
         addClass([label], ['e-checkboxfiltertext']);
         if (this.options.template && data[this.options.column.field] !== this.getLocalizedLabel('SelectAll')) {
             label.innerHTML = '';
-            appendChildren(label, this.options.template(data, this.parent, 'filterItemTemplate'));
+            appendChildren(label, this.options.template(dummyData, this.parent, 'filterItemTemplate'));
         }
         return elem;
     };
@@ -15552,7 +16024,8 @@ var CheckBoxFilterBase = /** @__PURE__ @class */ (function () {
         }
         this.filterState = !btn.disabled;
         btn.dataBind();
-        var args = { requestType: filterChoiceRequest, dataSource: this.renderEmpty ? [] : data };
+        var args = { requestType: filterChoiceRequest, dataSource: this.renderEmpty ||
+                (isBlazor() && this.parent.isServerRendered) ? [] : data };
         if (!isBlazor() || this.parent.isJsComponent) {
             var filterModel = 'filterModel';
             args[filterModel] = this;
@@ -15952,6 +16425,7 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
         });
         var isStringTemplate = 'isStringTemplate';
         this.dlgObj[isStringTemplate] = true;
+        this.dlgDiv.setAttribute('aria-label', this.getLocalizedLabel('CustomFilterDialogARIA'));
         this.dlgObj.appendTo(this.dlgDiv);
     };
     ExcelFilterBase.prototype.removeDialog = function () {
@@ -16471,6 +16945,9 @@ var Sort = /** @__PURE__ @class */ (function () {
      * @hidden
      */
     Sort.prototype.onActionComplete = function (e) {
+        if (isBlazor() && !this.parent.isJsComponent) {
+            e.rows = null;
+        }
         var args = !this.isRemove ? {
             columnName: this.columnName, direction: this.direction, requestType: 'sorting', type: actionComplete
         } : { requestType: 'sorting', type: actionComplete };
@@ -16583,6 +17060,9 @@ var Sort = /** @__PURE__ @class */ (function () {
         for (var i = 0, len = cols.length; i < len; i++) {
             this.removeSortColumn(cols[i].field);
         }
+        if (isBlazor() && !this.parent.isJsComponent) {
+            this.sortSettings.columns = this.sortSettings.columns;
+        }
     };
     Sort.prototype.isActionPrevent = function () {
         return isActionPrevent(this.parent);
@@ -16641,6 +17121,10 @@ var Sort = /** @__PURE__ @class */ (function () {
     };
     Sort.prototype.initialEnd = function () {
         this.parent.off(contentReady, this.initialEnd);
+        var isServerRendered = 'isServerRendered';
+        if (isBlazor() && this.parent[isServerRendered]) {
+            return;
+        }
         if (this.parent.getColumns().length && this.sortSettings.columns.length) {
             var gObj = this.parent;
             this.contentRefresh = false;
@@ -16759,6 +17243,9 @@ var Sort = /** @__PURE__ @class */ (function () {
         if (e.shiftKey || (this.sortSettings.allowUnsort && target.querySelectorAll('.e-descending').length)
             && !(gObj.groupSettings.columns.indexOf(field) > -1)) {
             this.removeSortColumn(field);
+            if (isBlazor() && !this.parent.isJsComponent) {
+                this.sortSettings.columns = this.sortSettings.columns;
+            }
         }
         else {
             this.sortColumn(field, direction, e.ctrlKey || this.enableSortMultiTouch ||
@@ -17875,6 +18362,7 @@ var Page = /** @__PURE__ @class */ (function () {
             created: this.addAriaAttr.bind(this)
         }, ['parentObj', 'propName']);
         this.pagerObj = new Pager(pagerObj);
+        this.pagerObj.allowServerDataBinding = false;
     };
     Page.prototype.onSelect = function (e) {
         this.pageSettings.pageSize = e.pageSize;
@@ -17951,6 +18439,9 @@ var Page = /** @__PURE__ @class */ (function () {
      * @hidden
      */
     Page.prototype.onActionComplete = function (e) {
+        if (isBlazor() && !this.parent.isJsComponent) {
+            e.rows = null;
+        }
         this.parent.trigger(actionComplete, extend(e, {
             currentPage: this.parent.pageSettings.currentPage, requestType: 'paging',
             type: actionComplete
@@ -18593,6 +19084,7 @@ var FilterMenuRenderer = /** @__PURE__ @class */ (function () {
         this.parent.trigger(actionBegin, args);
         var mainDiv = this.parent.createElement('div', { className: 'e-flmenu-maindiv', id: column.uid + '-flmenu' });
         this.dlgDiv = this.parent.createElement('div', { className: 'e-flmenu', id: column.uid + '-flmdlg' });
+        this.dlgDiv.setAttribute('aria-label', this.l10n.getConstant('FilterMenuDialogARIA'));
         this.parent.element.appendChild(this.dlgDiv);
         this.dlgObj = new Dialog({
             showCloseIcon: false,
@@ -18759,6 +19251,9 @@ var FilterMenuRenderer = /** @__PURE__ @class */ (function () {
     };
     FilterMenuRenderer.prototype.clearBtnClick = function (column) {
         this.filterObj.removeFilteredColsByField(column.field);
+        if (isBlazor() && !this.parent.isJsComponent) {
+            this.parent.filterSettings.columns = this.parent.filterSettings.columns;
+        }
         this.closeDialog();
         var iconClass = this.parent.showColumnMenu ? '.e-columnmenu' : '.e-icon-filter';
         var col = this.parent.element.querySelector('[e-mappinguid="' + column.uid + '"]').parentElement;
@@ -19082,6 +19577,9 @@ var Filter = /** @__PURE__ @class */ (function () {
      * @hidden
      */
     Filter.prototype.onActionComplete = function (e) {
+        if (isBlazor() && !this.parent.isJsComponent) {
+            e.rows = null;
+        }
         var args = !this.isRemove ? {
             currentFilterObject: this.currentFilterObject,
             /* tslint:disable:no-string-literal */
@@ -19289,7 +19787,8 @@ var Filter = /** @__PURE__ @class */ (function () {
                 }
                 var filterElement = this.getFilterBarElement(this.column.field);
                 if (filterElement) {
-                    if (!isNullOrUndefined(this.cellText[this.filterSettings.columns[i].field])) {
+                    if (this.cellText[this.filterSettings.columns[i].field] !== ''
+                        && !isNullOrUndefined(this.cellText[this.filterSettings.columns[i].field])) {
                         filterElement.value = this.cellText[this.column.field];
                     }
                     else {
@@ -19343,6 +19842,9 @@ var Filter = /** @__PURE__ @class */ (function () {
         this.refresh = false;
         for (var i = 0, len = filteredcols.length; i < len; i++) {
             this.removeFilteredColsByField(this.parent.getColumnByUid(filteredcols[i]).field, false);
+        }
+        if (isBlazor() && !this.parent.isJsComponent) {
+            this.filterSettings.columns = this.filterSettings.columns;
         }
         this.refresh = true;
         if (filteredcols.length) {
@@ -19493,7 +19995,6 @@ var Filter = /** @__PURE__ @class */ (function () {
         if (e.action === 'escape' && this.filterSettings.type === 'Menu') {
             this.filterModule.closeDialog();
             gObj.notify(restoreFocus, {});
-            gObj.focusModule.addOutline();
         }
     };
     Filter.prototype.updateCrossIcon = function (element) {
@@ -19514,7 +20015,7 @@ var Filter = /** @__PURE__ @class */ (function () {
             if (columns.length > 0 && this.filterStatusMsg !== this.l10n.getConstant('InvalidFilterMessage')) {
                 this.filterStatusMsg = '';
                 for (var index = 0; index < columns.length; index++) {
-                    column = gObj.grabColumnByUidFromAllCols(columns[index].uid);
+                    column = gObj.grabColumnByUidFromAllCols(columns[index].uid) || gObj.grabColumnByFieldFromAllCols(columns[index].field);
                     if (index) {
                         this.filterStatusMsg += ' && ';
                     }
@@ -19598,6 +20099,9 @@ var Filter = /** @__PURE__ @class */ (function () {
         }
         if (isNullOrUndefined(this.value) || this.value === '') {
             this.removeFilteredColsByField(this.column.field);
+            if (isBlazor() && !this.parent.isJsComponent) {
+                this.filterSettings.columns = this.filterSettings.columns;
+            }
             return;
         }
         this.validateFilterValue(this.value);
@@ -19817,6 +20321,9 @@ var Filter = /** @__PURE__ @class */ (function () {
             if (index !== -1) {
                 this.filterSettings.columns.splice(index, 1);
             }
+        }
+        if (args.action === 'clear-filter' && isBlazor() && !this.parent.isJsComponent) {
+            this.filterSettings.columns = this.filterSettings.columns;
         }
         if (this.values[args.field]) {
             delete this.values[args.field];
@@ -20693,7 +21200,7 @@ var Reorder = /** @__PURE__ @class */ (function () {
     Reorder.prototype.isActionPrevent = function (gObj) {
         return isActionPrevent(gObj);
     };
-    Reorder.prototype.moveColumns = function (destIndex, column, reorderByColumn) {
+    Reorder.prototype.moveColumns = function (destIndex, column, reorderByColumn, preventRefresh) {
         var gObj = this.parent;
         if (this.isActionPrevent(gObj)) {
             gObj.notify(preventBatch, { instance: this, handler: this.moveColumns, arg1: destIndex, arg2: column });
@@ -20732,9 +21239,11 @@ var Reorder = /** @__PURE__ @class */ (function () {
         cols.splice(destIndex, 0, cols.splice(srcIdx, 1)[0]);
         gObj.getColumns(true);
         gObj.notify(columnPositionChanged, { fromIndex: destIndex, toIndex: srcIdx });
-        gObj.notify(modelChanged, {
-            type: actionBegin, requestType: 'reorder'
-        });
+        if (preventRefresh !== false) {
+            gObj.notify(modelChanged, {
+                type: actionBegin, requestType: 'reorder', fromIndex: destIndex, toIndex: srcIdx, toColumnUid: column.uid
+            });
+        }
     };
     Reorder.prototype.targetParentContainerIndex = function (srcElem, destElem) {
         var headers = this.getHeaderCells();
@@ -20836,11 +21345,21 @@ var Reorder = /** @__PURE__ @class */ (function () {
             var columns = parent_1 ? parent_1.columns : this.parent.columns;
             var destIndex = inArray(column, columns);
             if (destIndex > -1) {
-                this.moveColumns(destIndex, this.parent.getColumnByField(fromFNames[i]), true);
+                this.moveColumns(destIndex, this.parent.getColumnByField(fromFNames[i]), true, !(isBlazor() && !this.parent.isJsComponent));
             }
             if (this.parent.getColumnIndexByField(fromFNames[i + 1]) >= destIndex) {
                 toIndex++; //R to L
             }
+        }
+        if (isBlazor() && !this.parent.isJsComponent) {
+            var cols_1 = this.parent.getColumns();
+            this.parent.notify(modelChanged, {
+                fromColumnUid: fromFNames.map(function (name) { return cols_1.filter(function (col) { return col.field === name; })[0].uid; }),
+                toColumnUid: toColumn.uid,
+                isMultipleReorder: true,
+                requestType: 'reorder',
+                type: 'actionBegin'
+            });
         }
     };
     Reorder.prototype.moveTargetColumn = function (column, toIndex) {
@@ -20903,10 +21422,7 @@ var Reorder = /** @__PURE__ @class */ (function () {
         this.upArrow = header.appendChild(this.parent
             .createElement('div', { className: 'e-icons e-icon-reorderuparrow e-reorderuparrow', attrs: { style: 'display:none' } }));
         this.downArrow = header.appendChild(this.parent
-            .createElement('div', {
-            className: 'e-icons e-icon-reorderdownarrow e-reorderdownarrow',
-            attrs: { style: 'display:none' }
-        }));
+            .createElement('div', { className: 'e-icons e-icon-reorderdownarrow e-reorderdownarrow', attrs: { style: 'display:none' } }));
     };
     /**
      * The function used to trigger onActionComplete
@@ -20914,11 +21430,13 @@ var Reorder = /** @__PURE__ @class */ (function () {
      * @hidden
      */
     Reorder.prototype.onActionComplete = function (e) {
+        if (isBlazor() && !this.parent.isJsComponent) {
+            e.rows = null;
+        }
         this.parent.trigger(actionComplete, extend(e, { type: actionComplete }));
         var target = this.fromCol && this.parent.getColumnHeaderByField(this.fromCol);
         if (target) {
             this.parent.focusModule.onClick({ target: target }, true);
-            this.parent.focusModule.addOutline();
         }
     };
     /**
@@ -21294,16 +21812,23 @@ var RowDD = /** @__PURE__ @class */ (function () {
                 }
                 else {
                     var fromIdx = parseInt(_this.startedRow.getAttribute('aria-rowindex'), 10);
-                    var currentVdata = [];
-                    currentVdata[0] = _this.parent.currentViewData[fromIdx];
-                    var draggedData = _this.parent.getSelectedRecords().length ? _this.parent.getSelectedRecords() : (currentVdata);
+                    var currentVdata_1 = [];
+                    var ind_1 = 0;
+                    selectedIndexes.forEach(function (rec) {
+                        currentVdata_1[ind_1] = _this.parent.currentViewData[rec];
+                        ind_1++;
+                    });
+                    if (!(_this.parent.rowDropSettings.targetID && selectedIndexes.length)) {
+                        currentVdata_1[ind_1] = _this.parent.currentViewData[fromIdx];
+                    }
+                    var draggedData = _this.parent.getSelectedRecords().length ? _this.parent.getSelectedRecords() : (currentVdata_1);
                     var changeRecords = {
                         addedRecords: [],
                         deletedRecords: draggedData,
                         changedRecords: []
                     };
                     var toIdx = _this.dragTarget ? _this.dragTarget : args.dropIndex;
-                    toIdx = (toIdx - draggedData.length + 1) >= 0 ? (toIdx - draggedData.length + 1) : toIdx;
+                    toIdx = (toIdx - draggedData.length + 1) > 0 ? (toIdx - draggedData.length + 1) : toIdx;
                     var dragDropDestinationIndex = 'dragDropDestinationIndex';
                     var query = new Query;
                     query[dragDropDestinationIndex] = toIdx;
@@ -21576,6 +22101,14 @@ var RowDD = /** @__PURE__ @class */ (function () {
                 });
             }
             else {
+                var currentVdata_2 = [];
+                var ind_2 = 0;
+                var selectedIndex = srcControl_1.getSelectedRowIndexes();
+                selectedIndex.forEach(function (rec) {
+                    currentVdata_2[ind_2] = srcControl_1.currentViewData[rec];
+                    ind_2++;
+                });
+                records = currentVdata_2;
                 var changes = {
                     addedRecords: records,
                     deletedRecords: [],
@@ -21798,6 +22331,7 @@ var Group = /** @__PURE__ @class */ (function () {
         this.parent.on(onEmpty, this.initialEnd, this);
         this.parent.on(initialEnd, this.render, this);
         this.parent.on(groupAggregates, this.onGroupAggregates, this);
+        this.parent.on('blazor-action-begin', this.blazorActionBegin, this);
     };
     /**
      * @hidden
@@ -21819,6 +22353,12 @@ var Group = /** @__PURE__ @class */ (function () {
         this.parent.off(sortComplete, this.refreshSortIcons);
         this.parent.off(keyPressed, this.keyPressHandler);
         this.parent.off(groupAggregates, this.onGroupAggregates);
+        this.parent.off('blazor-action-begin', this.blazorActionBegin);
+    };
+    Group.prototype.blazorActionBegin = function () {
+        if (this.parent.allowGrouping) {
+            this.expandAll();
+        }
     };
     Group.prototype.initialEnd = function () {
         var gObj = this.parent;
@@ -22162,6 +22702,10 @@ var Group = /** @__PURE__ @class */ (function () {
                 }
             }
         }
+        var isServerRendered = 'isServerRendered';
+        if (isBlazor() && this.parent[isServerRendered]) {
+            gObj.sortSettings.columns = gObj.sortSettings.columns;
+        }
         this.groupSettings.columns = columns;
         if (gObj.allowGrouping) {
             this.isAppliedUnGroup = true;
@@ -22177,8 +22721,8 @@ var Group = /** @__PURE__ @class */ (function () {
         var gObj = this.parent;
         var columns = JSON.parse(JSON.stringify(this.groupSettings.columns));
         columns.push(this.colName);
-        this.groupSettings.columns = columns;
         this.groupAddSortingQuery(this.colName);
+        this.groupSettings.columns = columns;
         this.parent.dataBind();
     };
     /**
@@ -22187,6 +22731,9 @@ var Group = /** @__PURE__ @class */ (function () {
      * @hidden
      */
     Group.prototype.onActionComplete = function (e) {
+        if (isBlazor() && !this.parent.isJsComponent) {
+            e.rows = null;
+        }
         var gObj = this.parent;
         if (e.requestType === 'grouping') {
             this.addColToGroupDrop(this.colName);
@@ -22210,6 +22757,10 @@ var Group = /** @__PURE__ @class */ (function () {
         }
         if (this.parent.sortSettings.columns.length === i) {
             this.parent.sortSettings.columns.push({ field: colName, direction: 'Ascending', isFromGroup: true });
+            var isServerRendered = 'isServerRendered';
+            if (isBlazor() && this.parent[isServerRendered]) {
+                this.parent.sortSettings.columns = this.parent.sortSettings.columns;
+            }
         }
         else if (!this.parent.allowSorting) {
             this.parent.sortSettings.columns[i].direction = 'Ascending';
@@ -22545,8 +23096,13 @@ var DetailRow = /** @__PURE__ @class */ (function () {
     DetailRow.prototype.toogleExpandcollapse = function (target) {
         var gObj = this.parent;
         var parent = 'parentDetails';
+        var isServerRendered = 'isServerRendered';
         var childGrid;
         if (!(target && (target.classList.contains('e-detailrowcollapse') || target.classList.contains('e-detailrowexpand')))) {
+            return;
+        }
+        if (isBlazor() && this.parent[isServerRendered]) {
+            this.parent.notify('detailclick', target);
             return;
         }
         var tr = target.parentElement;
@@ -22585,7 +23141,6 @@ var DetailRow = /** @__PURE__ @class */ (function () {
                     var detailTemplateID = gObj.element.id + 'detailTemplate';
                     appendChildren(detailCell, gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID));
                     if (isBlazor()) {
-                        //resetBlazorTemplate(detailTemplateID, 'DetailTemplate');
                         updateBlazorTemplate(detailTemplateID, 'DetailTemplate', gObj, false);
                     }
                 }
@@ -23509,6 +24064,15 @@ var Aggregate = /** @__PURE__ @class */ (function () {
             column.setFormatter(_this.parent.locale);
             column.setPropertiesSilent({ columnName: column.columnName || column.field });
         });
+        if (isBlazor() && this.parent.isServerRendered) {
+            var bulkChanges_1 = 'bulkChanges';
+            var aggregates_1 = 'aggregates';
+            Object.keys(this.parent[bulkChanges_1]).forEach(function (prop) {
+                if (prop.startsWith(aggregates_1)) {
+                    delete _this.parent[bulkChanges_1][prop];
+                }
+            });
+        }
     };
     Aggregate.prototype.getFormatFromType = function (format, type) {
         if (isNullOrUndefined(type) || typeof format !== 'string') {
@@ -23785,7 +24349,7 @@ var VirtualRowModelGenerator = /** @__PURE__ @class */ (function () {
     };
     VirtualRowModelGenerator.prototype.getColumnIndexes = function (content) {
         var _this = this;
-        if (content === void 0) { content = this.parent.getHeaderContent().firstChild; }
+        if (content === void 0) { content = this.parent.getHeaderContent().querySelector('.e-headercontent'); }
         if (this.parent.getFrozenColumns()) {
             content = content.querySelector('.e-movableheader');
         }
@@ -23920,7 +24484,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         this.header = this.locator.getService('rendererFactory').getRenderer(RenderType.Header);
         _super.prototype.renderTable.call(this);
         this.virtualEle.table = this.getTable();
-        this.virtualEle.content = this.content = this.getPanel().firstChild;
+        this.virtualEle.content = this.content = this.getPanel().querySelector('.e-content');
         this.virtualEle.renderWrapper(this.parent.height);
         this.virtualEle.renderPlaceHolder();
         if (!this.parent.getFrozenColumns()) {
@@ -24489,10 +25053,10 @@ var VirtualHeaderRenderer = /** @__PURE__ @class */ (function (_super) {
     }
     VirtualHeaderRenderer.prototype.renderTable = function () {
         this.gen.refreshColOffsets();
-        this.parent.setColumnIndexesInView(this.gen.getColumnIndexes(this.getPanel().firstChild));
+        this.parent.setColumnIndexesInView(this.gen.getColumnIndexes(this.getPanel().querySelector('.e-headercontent')));
         _super.prototype.renderTable.call(this);
         this.virtualEle.table = this.getTable();
-        this.virtualEle.content = this.getPanel().firstChild;
+        this.virtualEle.content = this.getPanel().querySelector('.e-headercontent');
         this.virtualEle.content.style.position = 'relative';
         this.virtualEle.renderWrapper();
         this.virtualEle.renderPlaceHolder('absolute');
@@ -24506,7 +25070,7 @@ var VirtualHeaderRenderer = /** @__PURE__ @class */ (function (_super) {
                 .setTable(this.parent.getMovableVirtualContent().querySelector('.e-table'));
         }
         this.gen.refreshColOffsets();
-        this.parent.setColumnIndexesInView(this.gen.getColumnIndexes(this.getPanel().firstChild));
+        this.parent.setColumnIndexesInView(this.gen.getColumnIndexes(this.getPanel().querySelector('.e-headercontent')));
         _super.prototype.refreshUI.call(this);
         if (this.parent.getFrozenColumns() && this.parent.enableColumnVirtualization) {
             this.parent.contentModule.setTable(this.parent.getFrozenVirtualContent()
@@ -24731,21 +25295,39 @@ var InlineEditRender = /** @__PURE__ @class */ (function () {
     };
     InlineEditRender.prototype.update = function (elements, args) {
         this.isEdit = true;
+        var cloneRow = 'cloneRow';
         if (closest(args.row, '.e-movablecontent')) {
             args.row = this.getFreezeRow(args.row);
+            if (isBlazor() && this.parent.isServerRendered) {
+                args[cloneRow] = args.row.cloneNode(true);
+            }
         }
-        var tdElement = [].slice.call(args.row.querySelectorAll('td.e-rowcell'));
-        args.row.innerHTML = '';
-        tdElement = this.updateFreezeEdit(args.row, tdElement);
-        args.row.appendChild(this.getEditElement(elements, true, tdElement, args, true));
-        args.row.classList.add('e-editedrow');
-        this.parent.editModule.checkLastRow(args.row, args);
-        this.refreshFreezeEdit(args.row, args);
+        if (isBlazor() && this.parent.isServerRendered) {
+            args.row.parentNode.insertBefore(args[cloneRow], args.row);
+            args.row.classList.add('e-hiddenrow');
+            var tdElement = [].slice.call(args[cloneRow].querySelectorAll('td.e-rowcell'));
+            args[cloneRow].innerHTML = '';
+            tdElement = this.updateFreezeEdit(args[cloneRow], tdElement);
+            args[cloneRow].appendChild(this.getEditElement(elements, true, tdElement, args, true));
+            args[cloneRow].classList.add('e-editedrow');
+            this.refreshFreezeEdit(args[cloneRow], args);
+        }
+        else {
+            var tdElement = [].slice.call(args.row.querySelectorAll('td.e-rowcell'));
+            args.row.innerHTML = '';
+            tdElement = this.updateFreezeEdit(args.row, tdElement);
+            args.row.appendChild(this.getEditElement(elements, true, tdElement, args, true));
+            args.row.classList.add('e-editedrow');
+            this.parent.editModule.checkLastRow(args.row, args);
+            this.refreshFreezeEdit(args.row, args);
+        }
     };
     InlineEditRender.prototype.refreshFreezeEdit = function (row, args) {
         var td = row.firstChild;
         var fCls;
         var cont;
+        var frozen = 'frozen';
+        var cloneFrozen = 'cloneFrozen';
         var idx = parseInt(row.getAttribute('aria-rowindex'), 10);
         if (this.parent.getFrozenColumns()) {
             if (idx < this.parent.frozenRows) {
@@ -24765,14 +25347,38 @@ var InlineEditRender = /** @__PURE__ @class */ (function () {
             var fRows = void 0;
             if (cont.querySelector(fCls).contains(row)) {
                 fRows = this.parent.getMovableRowByIndex(idx);
-                this.updateFrozenCont(fRows, td, mTd);
+                if (isBlazor() && this.parent.isServerRendered) {
+                    args[frozen] = fRows;
+                    args[cloneFrozen] = fRows.cloneNode(true);
+                    fRows.classList.add('e-hiddenrow');
+                    fRows.parentNode.insertBefore(args[cloneFrozen], fRows);
+                    this.updateFrozenCont(args[cloneFrozen], td, mTd);
+                }
+                else {
+                    this.updateFrozenCont(fRows, td, mTd);
+                }
             }
             else {
                 fRows = this.parent.getRowByIndex(idx);
-                this.updateFrozenCont(fRows, mTd, td);
+                if (isBlazor() && this.parent.isServerRendered) {
+                    args[frozen] = fRows;
+                    args[cloneFrozen] = fRows.cloneNode(true);
+                    fRows.parentNode.insertBefore(args[cloneFrozen], fRows);
+                    fRows.classList.add('e-hiddenrow');
+                    this.updateFrozenCont(args[cloneFrozen], mTd, td);
+                }
+                else {
+                    this.updateFrozenCont(fRows, mTd, td);
+                }
             }
-            fRows.appendChild(mTd);
-            fRows.classList.add('e-editedrow');
+            if (isBlazor() && this.parent.isServerRendered) {
+                args[cloneFrozen].appendChild(mTd);
+                args[cloneFrozen].classList.add('e-editedrow');
+            }
+            else {
+                fRows.appendChild(mTd);
+                fRows.classList.add('e-editedrow');
+            }
         }
     };
     InlineEditRender.prototype.updateFrozenCont = function (row, ele, mEle) {
@@ -24862,10 +25468,19 @@ var InlineEditRender = /** @__PURE__ @class */ (function () {
         //To destroy the renderer
     };
     InlineEditRender.prototype.appendChildren = function (form, data, isFrozen) {
+        var _this = this;
         var dummyData = extend({}, data, { isAdd: !this.isEdit, isFrozen: isFrozen }, true);
         var editTemplateID = this.parent.element.id + 'editSettingsTemplate';
         appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
-        updateBlazorTemplate(editTemplateID, 'Template', this.parent.editSettings);
+        var setRules = function () {
+            var cols = _this.parent.getColumns();
+            cols.forEach(function (col) {
+                if (col.validationRules) {
+                    _this.parent.editModule.formObj.rules[col.field] = col.validationRules;
+                }
+            });
+        };
+        updateBlazorTemplate(editTemplateID, 'Template', this.parent.editSettings, true, setRules);
     };
     return InlineEditRender;
 }());
@@ -24882,11 +25497,21 @@ var BatchEditRender = /** @__PURE__ @class */ (function () {
         this.parent = parent;
     }
     BatchEditRender.prototype.update = function (elements, args) {
-        args.cell.innerHTML = '';
-        args.cell.appendChild(this.getEditElement(elements, args));
-        args.cell.classList.remove('e-ellipsistooltip');
-        args.cell.classList.add('e-editedbatchcell');
-        classList(args.row, ['e-editedrow', 'e-batchrow'], []);
+        if (isBlazor() && this.parent.isServerRendered) {
+            var cloneCell = 'cloneCell';
+            args[cloneCell].innerHTML = '';
+            args[cloneCell].appendChild(this.getEditElement(elements, args));
+            args[cloneCell].classList.remove('e-ellipsistooltip');
+            args[cloneCell].classList.add('e-editedbatchcell');
+            classList(args.row, ['e-editedrow', 'e-batchrow'], []);
+        }
+        else {
+            args.cell.innerHTML = '';
+            args.cell.appendChild(this.getEditElement(elements, args));
+            args.cell.classList.remove('e-ellipsistooltip');
+            args.cell.classList.add('e-editedbatchcell');
+            classList(args.row, ['e-editedrow', 'e-batchrow'], []);
+        }
     };
     BatchEditRender.prototype.getEditElement = function (elements, args) {
         var gObj = this.parent;
@@ -24938,6 +25563,7 @@ var DialogEditRender = /** @__PURE__ @class */ (function () {
     DialogEditRender.prototype.createDialog = function (elements, args) {
         var gObj = this.parent;
         this.dialog = this.parent.createElement('div', { id: gObj.element.id + '_dialogEdit_wrapper', styles: 'width: auto' });
+        this.dialog.setAttribute('aria-label', 'Dialog edit');
         gObj.element.appendChild(this.dialog);
         this.setLocaleObj();
         // let position: PositionDataModel = this.parent.element.getBoundingClientRect().height < 400 ?
@@ -24960,6 +25586,9 @@ var DialogEditRender = /** @__PURE__ @class */ (function () {
         }, gObj.editSettings.dialog.params));
         if (!isBlazor()) {
             args.dialog = this.dialogObj;
+        }
+        else {
+            this.dialogObj.locale = this.parent.locale;
         }
         var isStringTemplate = 'isStringTemplate';
         this.dialogObj[isStringTemplate] = true;
@@ -24990,6 +25619,7 @@ var DialogEditRender = /** @__PURE__ @class */ (function () {
         }
     };
     DialogEditRender.prototype.getEditElement = function (elements, args) {
+        var _this = this;
         var gObj = this.parent;
         var div = this.parent.createElement('div', { className: this.isEdit ? 'e-editedrow' : 'e-insertedrow' });
         var form = args.form =
@@ -24998,7 +25628,15 @@ var DialogEditRender = /** @__PURE__ @class */ (function () {
             var editTemplateID = this.parent.element.id + 'editSettingsTemplate';
             var dummyData = extend({}, args.rowData, { isAdd: !this.isEdit }, true);
             appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
-            updateBlazorTemplate(editTemplateID, 'Template', this.parent.editSettings);
+            var setRules = function () {
+                var columns = _this.parent.getColumns();
+                columns.forEach(function (column) {
+                    if (column.validationRules) {
+                        _this.parent.editModule.formObj.rules[column.field] = column.validationRules;
+                    }
+                });
+            };
+            updateBlazorTemplate(editTemplateID, 'Template', this.parent.editSettings, true, setRules);
             div.appendChild(form);
             return div;
         }
@@ -25160,6 +25798,7 @@ var EditRender = /** @__PURE__ @class */ (function () {
         }
     };
     EditRender.prototype.getEditElements = function (args) {
+        var _this = this;
         var gObj = this.parent;
         var elements = {};
         var cols = gObj.editSettings.mode !== 'Batch' ? gObj.getColumns() : [gObj.getColumnByField(args.columnName)];
@@ -25172,10 +25811,11 @@ var EditRender = /** @__PURE__ @class */ (function () {
                 continue;
             }
             if (col.commands || col.commandsTemplate) {
+                var cells = void 0;
                 var cellRendererFact = this.serviceLocator.getService('cellRendererFactory');
                 var model = new RowModelGenerator(this.parent);
                 var cellRenderer = cellRendererFact.getCellRenderer(CellType.CommandColumn);
-                var cells = model.generateRows(args.rowData)[0].cells;
+                cells = model.generateRows(args.rowData)[0].cells;
                 var cell = cells.filter(function (cell) { return cell.rowID; });
                 var td = cellRenderer.render(cell[i], args.rowData, { 'index': args.row ? args.row.getAttribute('aria-rowindex') : 0 });
                 var div = td.firstElementChild;
@@ -25193,7 +25833,14 @@ var EditRender = /** @__PURE__ @class */ (function () {
                 var tempData = extend({}, {}, args.rowData, true);
                 appendChildren(input, col.getEditTemplate()(tempData, this.parent, 'editTemplate', tempID));
                 if (isBlazor()) {
-                    updateBlazorTemplate(tempID, 'EditTemplate', col);
+                    var setRules = function (ruleColumn) {
+                        var column = ruleColumn;
+                        var func = function () {
+                            _this.parent.editModule.formObj.rules[column.field] = column.validationRules;
+                        };
+                        return func;
+                    };
+                    updateBlazorTemplate(tempID, 'EditTemplate', col, true, setRules(col));
                 }
             }
             else {
@@ -25286,6 +25933,9 @@ var BooleanEditCell = /** @__PURE__ @class */ (function () {
             disabled: !isEditable(args.column, args.requestType, args.element), enableRtl: this.parent.enableRtl,
             change: this.checkBoxChange.bind(this)
         }, args.column.edit.params));
+        if (isBlazor()) {
+            this.obj.locale = this.parent.locale;
+        }
         this.obj.appendTo(args.element);
     };
     BooleanEditCell.prototype.checkBoxChange = function (args) {
@@ -25344,6 +25994,9 @@ var DropDownEditCell = /** @__PURE__ @class */ (function () {
             floatLabelType: isInline ? 'Never' : 'Always', open: this.dropDownOpen.bind(this),
             sortOrder: 'Ascending'
         }, args.column.edit.params));
+        if (isBlazor()) {
+            this.obj.locale = this.parent.locale;
+        }
         this.obj.appendTo(args.element);
         /* tslint:disable-next-line:no-any */
         args.element.setAttribute('name', getComplexFieldID(args.column.field));
@@ -25409,6 +26062,9 @@ var NumericEditCell = /** @__PURE__ @class */ (function () {
             floatLabelType: this.parent.editSettings.mode !== 'Dialog' ? 'Never' : 'Always',
         }, col.edit.params));
         args.element.setAttribute('name', getComplexFieldID(args.column.field));
+        if (isBlazor()) {
+            this.obj.locale = this.parent.locale;
+        }
         this.obj.appendTo(args.element);
     };
     NumericEditCell.prototype.destroy = function () {
@@ -25492,11 +26148,17 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
      */
     NormalEdit.prototype.editComplete = function (e) {
         this.parent.isEdit = false;
+        var action = 'action';
+        if (isBlazor() && !this.parent.isJsComponent) {
+            e.rows = null;
+        }
         switch (e.requestType) {
             case 'save':
                 if (!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
                     || (!this.parent.isPersistSelection)) {
-                    this.parent.selectRow(0);
+                    if (e[action] !== 'edit') {
+                        this.parent.selectRow(0);
+                    }
                 }
                 this.parent.trigger(actionComplete, extend(e, {
                     requestType: 'save',
@@ -25555,8 +26217,16 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
             begineditargs.type = 'actionBegin';
             gObj.trigger(actionBegin, begineditargs, function (editargs) {
                 if (!editargs.cancel) {
+                    var cloneRow = 'cloneRow';
+                    var frozen = 'frozen';
+                    var cloneFrozen = 'cloneFrozen';
                     gObj.isEdit = true;
                     editargs.row = editargs.row ? editargs.row : tr;
+                    if (isBlazor() && gObj.isServerRendered) {
+                        _this.originalRow = editargs.row;
+                        _this.cloneRow = editargs.row.cloneNode(true);
+                        editargs[cloneRow] = _this.cloneRow;
+                    }
                     if (gObj.editSettings.mode !== 'Dialog') {
                         gObj.clearSelection();
                     }
@@ -25567,6 +26237,10 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
                     _this.renderer.update(editargs);
                     if (isBlazor()) {
                         editargs.form = null;
+                        _this.cloneFrozen = editargs[cloneFrozen];
+                        _this.frozen = editargs[frozen];
+                        _this.cloneRow = editargs[cloneRow];
+                        _this.originalRow = editargs.row;
                     }
                     _this.uid = tr.getAttribute('data-uid');
                     gObj.editModule.applyFormValidation();
@@ -25633,7 +26307,10 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
         }
         if (isBlazor()) {
             var form = 'form';
+            var movableForm = 'movableForm';
             args[form] = null;
+            args[movableForm] = null;
+            args.row = {};
         }
         if (isDlg ? dlgWrapper.querySelectorAll('.e-editedrow').length : gObj.element.querySelectorAll('.e-editedrow').length) {
             args.action = 'edit';
@@ -25694,16 +26371,29 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
             var rowData = 'rowData';
             args.data = extend({}, extend({}, args[rowData], args.data), e);
         }
+        var editArgs;
         this.requestSuccess(args);
         this.parent.trigger(beforeDataBound, args);
         args.type = actionComplete;
         this.parent.isEdit = false;
-        this.refreshRow(args.data);
+        if (isBlazor() && this.parent.isServerRendered) {
+            this.closeForm();
+            var rowIndex = 'rowIndex';
+            var action = 'action';
+            editArgs = { requestType: args.requestType,
+                rowIndex: args[rowIndex], action: args[action] };
+            this.parent.notify('editsuccess', editArgs);
+        }
+        else {
+            this.refreshRow(args.data);
+        }
         this.parent.editModule.checkLastRow(args.row);
         this.parent.editModule.isLastRow = false;
         this.updateCurrentViewData(args.data);
         this.blazorTemplate();
-        this.parent.trigger(actionComplete, args);
+        if (!(isBlazor() && this.parent.isServerRendered)) {
+            this.parent.trigger(actionComplete, args);
+        }
         if (isBlazor()) {
             this.parent.notify(toolbarRefresh, {});
         }
@@ -25711,9 +26401,26 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
             || (!this.parent.isPersistSelection)) {
             if (this.parent.editSettings.mode !== 'Dialog') {
                 this.parent.selectRow(this.rowIndex > -1 ? this.rowIndex : this.editRowIndex);
+                if (isBlazor() && this.parent.isServerRendered) {
+                    var rowIndex = 'editRowIndex';
+                    editArgs[rowIndex] = this.rowIndex > -1 ? this.rowIndex : this.editRowIndex;
+                }
             }
         }
         this.parent.hideSpinner();
+    };
+    NormalEdit.prototype.closeForm = function () {
+        if (!this.cloneRow && this.parent.isEdit) {
+            this.stopEditStatus();
+        }
+        if (this.cloneRow) {
+            this.cloneRow.remove();
+            this.originalRow.classList.remove('e-hiddenrow');
+        }
+        if (this.parent.getFrozenColumns() && this.cloneFrozen) {
+            this.cloneFrozen.remove();
+            this.frozen.classList.remove('e-hiddenrow');
+        }
     };
     NormalEdit.prototype.blazorTemplate = function () {
         var cols = this.parent.getColumns();
@@ -25781,7 +26488,12 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
             _this.stopEditStatus();
             closeEditArgs.type = actionComplete;
             if (gObj.editSettings.mode !== 'Dialog') {
-                _this.refreshRow(closeEditArgs.data);
+                if (isBlazor() && gObj.isServerRendered) {
+                    _this.closeForm();
+                }
+                else {
+                    _this.refreshRow(closeEditArgs.data);
+                }
             }
             if (!gObj.getContentTable().querySelector('tr.e-emptyrow') &&
                 !gObj.getContentTable().querySelector('tr.e-row')) {
@@ -25913,6 +26625,7 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
         this.parent.on(dblclick, this.dblClickHandler, this);
         this.parent.on(deleteComplete, this.editComplete, this);
         this.parent.on(saveComplete, this.editComplete, this);
+        this.parent.on('closeinline', this.closeForm, this);
     };
     /**
      * @hidden
@@ -25928,6 +26641,7 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
         this.parent.off(dblclick, this.dblClickHandler);
         this.parent.off(deleteComplete, this.editComplete);
         this.parent.off(saveComplete, this.editComplete);
+        this.parent.off('closeinline', this.closeForm);
     };
     /**
      * @hidden
@@ -25993,6 +26707,8 @@ var InlineEdit = /** @__PURE__ @class */ (function (_super) {
 var BatchEdit = /** @__PURE__ @class */ (function () {
     function BatchEdit(parent, serviceLocator, renderer) {
         this.cellDetails = {};
+        this.originalCell = {};
+        this.cloneCell = {};
         this.parent = parent;
         this.serviceLocator = serviceLocator;
         this.renderer = renderer;
@@ -26015,6 +26731,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         this.parent.on(doubleTap, this.dblClickHandler, this);
         this.parent.on(keyPressed, this.keyDownHandler, this);
         this.parent.on(editNextValCell, this.editNextValCell, this);
+        this.parent.on('closebatch', this.closeForm, this);
     };
     /**
      * @hidden
@@ -26031,6 +26748,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         this.parent.off(doubleTap, this.dblClickHandler);
         this.parent.off(keyPressed, this.keyDownHandler);
         this.parent.off(editNextValCell, this.editNextValCell);
+        this.parent.off('closebatch', this.closeForm);
     };
     BatchEdit.prototype.dataBound = function () {
         this.parent.notify(toolbarRefresh, {});
@@ -26131,7 +26849,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         if (argument.cancel) {
             return;
         }
-        if (gObj.frozenColumns && rows.length < this.parent.currentViewData.length * 2) {
+        if (gObj.frozenColumns && rows.length < this.parent.currentViewData.length * 2 && !(isBlazor() && gObj.isServerRendered)) {
             rows.push.apply(rows, this.parent.getMovableRowsObject());
         }
         var cols = this.parent.getColumns();
@@ -26193,8 +26911,17 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                         delete rows[i].edit;
                         rows[i].isDirty = false;
                         var ftr = mTr ? mTr : tr;
-                        classList(ftr, [], ['e-hiddenrow', 'e-updatedtd']);
-                        rowRenderer.refresh(rows[i], gObj.getColumns(), false);
+                        if (isBlazor() && gObj.isServerRendered) {
+                            if (gObj.getFrozenColumns()) {
+                                this.removeHideAndSelection(mTr);
+                            }
+                            this.removeHideAndSelection(tr);
+                            this.closeForm();
+                        }
+                        else {
+                            classList(ftr, [], ['e-hiddenrow', 'e-updatedtd']);
+                            rowRenderer.refresh(rows[i], gObj.getColumns(), false);
+                        }
                         if (this.parent.aggregates.length > 0) {
                             var type = 'type';
                             var editType = [];
@@ -26207,6 +26934,9 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                     }
                 }
             }
+        }
+        if (isBlazor() && gObj.isServerRendered) {
+            gObj.selectRow(gObj.selectionModule.prevRowIndex);
         }
         if (!gObj.getContentTable().querySelector('tr.e-row')) {
             gObj.renderModule.renderEmptyRow();
@@ -26227,6 +26957,15 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         if (gObj.frozenColumns) {
             rows.splice(this.parent.getMovableRowsObject().length, rows.length);
         }
+    };
+    BatchEdit.prototype.removeHideAndSelection = function (tr) {
+        if (tr.classList.contains('e-hiddenrow')) {
+            tr.removeAttribute('aria-selected');
+            tr.querySelectorAll('.e-selectionbackground').forEach(function (td) {
+                removeClass([td], ['e-selectionbackground', 'e-active']);
+            });
+        }
+        classList(tr, [], ['e-hiddenrow', 'e-updatedtd']);
     };
     BatchEdit.prototype.deleteRecord = function (fieldname, data) {
         this.saveCell();
@@ -26249,7 +26988,31 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         if (this.parent.isEdit && this.validateFormObj()) {
             return;
         }
+        if (isBlazor() && this.parent.isServerRendered) {
+            var content = this.parent.getContent();
+            this.closeForm();
+            removeClass(content.querySelectorAll('.e-updatedtd'), ['e-updatedtd']);
+            if (content.querySelector('.e-insertedrow, .e-hiddenrow')) {
+                removeClass(content.querySelectorAll('.e-hiddenrow'), ['e-hiddenrow']);
+                content.querySelectorAll('.e-insertedrow').forEach(function (el) { return el.remove(); });
+            }
+            this.refreshRowIdx();
+        }
         this.batchSave();
+    };
+    BatchEdit.prototype.closeForm = function () {
+        for (var i = 0; i < Object.keys(this.originalCell).length; i++) {
+            for (var j = 0; j < Object.keys(this.cloneCell).length; j++) {
+                if (Object.keys(this.originalCell)[i] === Object.keys(this.cloneCell)[j]) {
+                    this.cloneCell[Object.keys(this.cloneCell)[j]].replaceWith(this.originalCell[Object.keys(this.originalCell)[i]]);
+                    if (this.originalCell[Object.keys(this.originalCell)[i]].classList.contains('e-selectionbackground')) {
+                        this.originalCell[Object.keys(this.originalCell)[i]].classList.remove('e-selectionbackground', 'e-active');
+                    }
+                }
+            }
+        }
+        this.cloneCell = {};
+        this.originalCell = {};
     };
     BatchEdit.prototype.validateFormObj = function () {
         return this.parent.editModule.formObj && !this.parent.editModule.formObj.validate();
@@ -26305,8 +27068,6 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             changedRecords: []
         };
         var rows = this.parent.getRowsObject();
-        var mRows = this.parent.getMovableRowsObject();
-        var frzCols = this.parent.getFrozenColumns();
         for (var _i = 0, rows_1 = rows; _i < rows_1.length; _i++) {
             var row = rows_1[_i];
             if (row.isDirty) {
@@ -26723,6 +27484,24 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                     _this.isColored = true;
                     cellEditArgs.cell.classList.remove('e-updatedtd');
                 }
+                if (isBlazor() && gObj.isServerRendered) {
+                    var cell = 'cells';
+                    var cloneCell = 'cloneCell';
+                    _this.cloneCell["" + _this.cellDetails.rowIndex + cellEditArgs.columnObject.index] =
+                        cellEditArgs[cloneCell] = cellEditArgs.cell.cloneNode(true);
+                    if ((parentsUntil(cellEditArgs.cell, 'e-movableheader') ||
+                        parentsUntil(cellEditArgs.cell, 'e-movablecontent'))) {
+                        cellEditArgs.row.insertCell(cellEditArgs.columnObject.index - gObj.getFrozenColumns());
+                        cellEditArgs.row.replaceChild(cellEditArgs[cloneCell], cellEditArgs.row[cell][cellEditArgs.columnObject.index - gObj.getFrozenColumns()]);
+                    }
+                    else {
+                        cellEditArgs.row.insertCell(cellEditArgs.columnObject.index);
+                        cellEditArgs.row.replaceChild(cellEditArgs[cloneCell], cellEditArgs.row[cell][cellEditArgs.columnObject.index]);
+                    }
+                    _this.originalCell["" + _this.cellDetails.rowIndex + cellEditArgs.columnObject.index] =
+                        cellEditArgs.cell.parentElement.removeChild(cellEditArgs.cell);
+                    removeClass([_this.cloneCell["" + _this.cellDetails.rowIndex + cellEditArgs.columnObject.index]], ['e-focus', 'e-focused']);
+                }
                 gObj.isEdit = true;
                 gObj.clearSelection();
                 if (!gObj.isCheckBoxSelection || !gObj.isPersistSelection) {
@@ -26752,28 +27531,42 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             });
         }
     };
-    BatchEdit.prototype.setChanges = function (rowObj, field, value) {
-        var currentCol = this.parent.getColumnByField(field);
+    BatchEdit.prototype.setChanges = function (rowObj, field, value, td) {
         var currentRowObj;
-        if (this.parent.getFrozenColumns() || currentCol.isFrozen) {
-            currentRowObj = rowObj.isFreezeRow ? this.parent.getMovableRowsObject()[rowObj.index] :
-                this.parent.getRowsObject()[rowObj.index];
-        }
-        if (!rowObj.changes) {
-            rowObj.changes = extend({}, {}, rowObj.data, true);
-        }
-        if (!isNullOrUndefined(field)) {
-            DataUtil.setValue(field, value, rowObj.changes);
-        }
-        if (rowObj.data[field] !== value) {
-            rowObj.isDirty = true;
-        }
-        if (currentRowObj) {
-            currentRowObj.changes = extend({}, {}, rowObj.data, true);
-            if (!isNullOrUndefined(field)) {
-                DataUtil.setValue(field, value, currentRowObj.changes);
+        if (!this.parent.getFrozenColumns()) {
+            if (!rowObj.changes) {
+                rowObj.changes = extend({}, {}, rowObj.data, true);
             }
-            currentRowObj.isDirty = true;
+            if (!isNullOrUndefined(field)) {
+                DataUtil.setValue(field, value, rowObj.changes);
+            }
+            if (rowObj.data[field] !== value) {
+                rowObj.isDirty = true;
+            }
+        }
+        else {
+            var rowEle = this.parent.getRowElementByUID(rowObj.uid);
+            var rowIndex = parseInt(rowEle.getAttribute('aria-rowindex'), 10);
+            currentRowObj = this.parent.getRowsObject()[rowIndex];
+            if (!currentRowObj.changes) {
+                currentRowObj.changes = extend({}, {}, rowObj.data, true);
+            }
+            setValue(field, value, currentRowObj.changes);
+            var movableRowObject = void 0;
+            if (isBlazor() && this.parent.isServerRendered && (parentsUntil(td, 'e-movableheader') ||
+                parentsUntil(td, 'e-movablecontent'))) {
+                var movRowEle = this.parent.getMovableRowByIndex(this.cellDetails.rowIndex);
+                var movRowIndex = parseInt(movRowEle.getAttribute('aria-rowindex'), 10);
+                movableRowObject = this.parent.getMovableRowsObject()[movRowIndex];
+            }
+            else {
+                movableRowObject = this.parent.getRowObjectFromUID(rowObj.uid);
+            }
+            movableRowObject.changes = extend({}, {}, currentRowObj.changes, true);
+            if (rowObj.data[field] !== value) {
+                movableRowObject.isDirty = true;
+                currentRowObj.isDirty = true;
+            }
         }
     };
     BatchEdit.prototype.updateRow = function (index, data) {
@@ -26796,7 +27589,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
     BatchEdit.prototype.refreshTD = function (td, column, rowObj, value) {
         var cell = new CellRenderer(this.parent, this.serviceLocator);
         var rowcell;
-        this.setChanges(rowObj, column.field, value);
+        this.setChanges(rowObj, column.field, value, td);
         var frzCols = this.parent.getFrozenColumns();
         refreshForeignData(rowObj, this.parent.getForeignKeyColumns(), rowObj.changes);
         if (frzCols && this.getCellIdx(column.uid) >= frzCols && this.parent.getColumns().length === rowObj.cells.length) {
@@ -26898,7 +27691,13 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                 updateBlazorTemplate(gObj.element.id + column.uid, 'Template', column, false);
             }
             _this.parent.notify(tooltipDestroy, {});
-            _this.refreshTD(cellSaveArgs.cell, column, gObj.getRowObjectFromUID(tr.getAttribute('data-uid')), cellSaveArgs.value);
+            if (isBlazor() && gObj.isServerRendered && (parentsUntil(cellSaveArgs.cell, 'e-movableheader') ||
+                parentsUntil(cellSaveArgs.cell, 'e-movablecontent'))) {
+                _this.refreshTD(cellSaveArgs.cell, column, gObj.getMovableRowsObject()[_this.cellDetails.rowIndex], cellSaveArgs.value);
+            }
+            else {
+                _this.refreshTD(cellSaveArgs.cell, column, gObj.getRowObjectFromUID(tr.getAttribute('data-uid')), cellSaveArgs.value);
+            }
             removeClass([tr], ['e-editedrow', 'e-batchrow']);
             removeClass([cellSaveArgs.cell], ['e-editedbatchcell', 'e-boolcell']);
             if (!isNullOrUndefined(cellSaveArgs.value) && cellSaveArgs.value.toString() ===
@@ -26906,6 +27705,20 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                 || (isNullOrUndefined(cellSaveArgs.value) && isNullOrUndefined(_this.cellDetails.value) &&
                     !cellSaveArgs.cell.parentElement.classList.contains('e-insertedrow'))) {
                 cellSaveArgs.cell.classList.remove('e-updatedtd');
+                if (isBlazor() && gObj.isServerRendered && cellSaveArgs.value.toString() ===
+                    (!isNullOrUndefined(_this.cellDetails.value) ? _this.cellDetails.value : '').toString()) {
+                    if (_this.cloneCell["" + _this.cellDetails.rowIndex + cellSaveArgs.columnObject.index].
+                        classList.contains('e-selectionbackground')) {
+                        _this.originalCell["" + _this.cellDetails.rowIndex + cellSaveArgs.columnObject.index].
+                            classList.add('e-selectionbackground', 'e-active');
+                    }
+                    else {
+                        _this.originalCell["" + _this.cellDetails.rowIndex + cellSaveArgs.columnObject.index].
+                            classList.remove('e-selectionbackground', 'e-active');
+                    }
+                    _this.cloneCell["" + _this.cellDetails.rowIndex + cellSaveArgs.columnObject.index]
+                        .replaceWith(_this.originalCell["" + _this.cellDetails.rowIndex + cellSaveArgs.columnObject.index]);
+                }
             }
             gObj.trigger(cellSaved, cellSaveArgs);
             gObj.notify(toolbarRefresh, {});
@@ -27043,6 +27856,9 @@ var DatePickerEditCell = /** @__PURE__ @class */ (function () {
         }
         else if (args.column.editType === 'datetimepickeredit') {
             this.obj = new DateTimePicker(extend(dateanddatetimerender(args, this.parent.editSettings.mode, this.parent.enableRtl), args.column.edit.params));
+        }
+        if (isBlazor()) {
+            this.obj.locale = this.parent.locale;
         }
         this.obj.appendTo(args.element);
     };
@@ -27455,6 +28271,9 @@ var Edit = /** @__PURE__ @class */ (function () {
             case this.l10n.getConstant('BatchSaveLostChanges'):
                 if (this.parent.editSettings.mode === 'Batch') {
                     this.editModule.addCancelWhilePaging();
+                    if (isBlazor() && this.parent.isServerRendered) {
+                        this.editModule.closeEdit();
+                    }
                 }
                 this.executeAction();
                 break;
@@ -27726,6 +28545,9 @@ var Edit = /** @__PURE__ @class */ (function () {
             if (!col.visible) {
                 return;
             }
+            if (isBlazor() && col.editTemplate) {
+                return;
+            }
             if (index < frzCols && col.validationRules) {
                 rules[getComplexFieldID(col.field)] = col.validationRules;
             }
@@ -27739,7 +28561,12 @@ var Edit = /** @__PURE__ @class */ (function () {
         else {
             rules = extend(rules, mRules);
         }
-        this.parent.editModule.formObj = this.createFormObj(form, rules);
+        if (isBlazor() && this.parent.editSettings.template) {
+            this.parent.editModule.formObj = this.createFormObj(form, {});
+        }
+        else {
+            this.parent.editModule.formObj = this.createFormObj(form, rules);
+        }
     };
     Edit.prototype.createFormObj = function (form, rules) {
         var _this = this;
@@ -27876,7 +28703,8 @@ var Edit = /** @__PURE__ @class */ (function () {
         else {
             div.style.left = (parseInt(div.style.left, 10) - div.offsetWidth / 2) + 'px';
         }
-        if (!isScroll && isInline && !this.parent.allowPaging) {
+        if (isInline && !isScroll && (!this.parent.allowPaging || (this.parent.getFrozenColumns() && this.parent.frozenRows
+            && !isNullOrUndefined(parentsUntil(div, 'e-headercontent')) && this.parent.allowPaging))) {
             gcontent.style.position = 'static';
             var pos = calculateRelativeBasedPosition(input, div);
             div.style.top = pos.top + inputClient.height + 9 + 'px';
@@ -28059,6 +28887,11 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
                 requestType: 'beforeOpenColumnChooser', element: this.parent.element,
                 columns: this.getColumns(), cancel: false, searchOperator: this.searchOperator
             };
+            if (isBlazor() && !this.parent.isJsComponent) {
+                args1 = {
+                    requestType: 'beforeOpenColumnChooser', cancel: false, searchOperator: this.searchOperator
+                };
+            }
             this.parent.trigger(beforeOpenColumnChooser, args1);
             if (args1.cancel) {
                 return;
@@ -28165,6 +28998,7 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
     ColumnChooser.prototype.renderDlgContent = function () {
         var y;
         this.dlgDiv = this.parent.createElement('div', { className: 'e-ccdlg e-cc', id: this.parent.element.id + '_ccdlg' });
+        this.dlgDiv.setAttribute('aria-label', this.l10n.getConstant('ColumnChooserDialogARIA'));
         this.parent.element.appendChild(this.dlgDiv);
         var xpos = this.parent.element.getBoundingClientRect().width - 250;
         var dialoPos = this.parent.enableRtl ? 'left' : 'right';
@@ -31124,7 +31958,11 @@ var CommandColumn = /** @__PURE__ @class */ (function () {
                 col.commands.forEach(function (commandCol) {
                     var idInString = 'uid';
                     var typeInString = 'type';
-                    if (commandCol[idInString] === uid && commandCol[typeInString] === type) {
+                    if (isBlazor() && !gObj.isJsComponent && commandCol[idInString] === uid) {
+                        commandColumn = commandCol;
+                        type = commandCol[typeInString];
+                    }
+                    else if (commandCol[idInString] === uid && commandCol[typeInString] === type) {
                         commandColumn = commandCol;
                     }
                 });
@@ -31203,6 +32041,9 @@ var CommandColumn = /** @__PURE__ @class */ (function () {
         }
     };
     CommandColumn.prototype.load = function () {
+        if (isBlazor() && !this.parent.isJsComponent) {
+            return;
+        }
         var uid = 'uid';
         this.parent.columnModel.forEach(function (col, indexs) {
             if (col.commands) {
@@ -31806,6 +32647,9 @@ var FreezeRowModelGenerator = /** @__PURE__ @class */ (function () {
         }
         var row = this.parent.enableVirtualization ? virtualRows
             : this.rowModelGenerator.generateRows(data, notifyArgs);
+        if (isBlazor() && !this.parent.isJsComponent) {
+            return row;
+        }
         for (var i = 0, len = row.length; i < len; i++) {
             if (this.isFrzLoad % 2 === 0) {
                 row[i].cells = row[i].cells.slice(frzCols, row[i].cells.length);
@@ -31845,14 +32689,21 @@ var FreezeContentRender = /** @__PURE__ @class */ (function (_super) {
     }
     FreezeContentRender.prototype.renderPanel = function () {
         _super.prototype.renderPanel.call(this);
-        var fDiv = this.parent.createElement('div', { className: 'e-frozencontent' });
-        var mDiv = this.parent.createElement('div', { className: 'e-movablecontent' });
-        this.getPanel().firstChild.appendChild(fDiv);
-        this.getPanel().firstChild.appendChild(mDiv);
+        var fDiv = this.parent.element.querySelector('.e-frozencontent');
+        var mDiv = this.parent.element.querySelector('.e-movablecontent');
+        if (isNullOrUndefined(fDiv)) {
+            fDiv = this.parent.createElement('div', { className: 'e-frozencontent' });
+            mDiv = this.parent.createElement('div', { className: 'e-movablecontent' });
+            this.getPanel().querySelector('.e-content').appendChild(fDiv);
+            this.getPanel().querySelector('.e-content').appendChild(mDiv);
+        }
         this.setFrozenContent(fDiv);
         this.setMovableContent(mDiv);
     };
     FreezeContentRender.prototype.renderEmpty = function (tbody) {
+        if (isBlazor() && !this.parent.isJsComponent) {
+            return;
+        }
         _super.prototype.renderEmpty.call(this, tbody);
         this.getMovableContent().querySelector('tbody').innerHTML = '<tr><td></td></tr>';
         this.getFrozenContent().querySelector('.e-emptyrow').querySelector('td').colSpan = this.parent.getFrozenColumns();
@@ -31878,11 +32729,25 @@ var FreezeContentRender = /** @__PURE__ @class */ (function (_super) {
         return new FreezeRowModelGenerator(this.parent);
     };
     FreezeContentRender.prototype.renderTable = function () {
-        _super.prototype.renderTable.call(this);
-        this.getFrozenContent().appendChild(this.getTable());
-        var mTbl = this.getTable().cloneNode(true);
-        this.getMovableContent().appendChild(mTbl);
-        remove(this.getMovableContent().querySelector('colgroup'));
+        var mTbl;
+        if (this.getFrozenContent().querySelector('.e-table') == null) {
+            _super.prototype.renderTable.call(this);
+            this.getFrozenContent().appendChild(this.getTable());
+            mTbl = this.getTable().cloneNode(true);
+            this.getMovableContent().appendChild(mTbl);
+        }
+        else {
+            this.setTable(this.getFrozenContent().querySelector('.e-table'));
+            this.setColGroup(this.parent.element.querySelector('.e-gridheader').querySelector('colgroup').cloneNode(true));
+            this.getFrozenContent().querySelector('.e-table').appendChild(this.getColGroup());
+            mTbl = this.getMovableContent().querySelector('.e-table');
+            if (this.parent.frozenRows) {
+                this.parent.getHeaderContent().classList.add('e-frozenhdrcont');
+            }
+        }
+        if (this.getMovableContent().querySelector('colgroup')) {
+            remove(this.getMovableContent().querySelector('colgroup'));
+        }
         var colGroup = ((this.parent.getHeaderContent().querySelector('.e-movableheader').querySelector('colgroup')).cloneNode(true));
         mTbl.insertBefore(colGroup, mTbl.querySelector('tbody'));
     };
@@ -31908,7 +32773,14 @@ var FreezeRender = /** @__PURE__ @class */ (function (_super) {
         this.parent.off(uiUpdate, this.enableAfterRender);
     };
     FreezeRender.prototype.renderTable = function () {
-        _super.prototype.renderTable.call(this);
+        if (!isBlazor()) {
+            _super.prototype.renderTable.call(this);
+        }
+        else {
+            this.setTable(this.createTable(this.getFrozenHeader().querySelector('.e-table')));
+            this.parent.notify(headerRefreshed, { rows: this.rows, args: { isFrozen: true } });
+            this.createTable(this.getMovableHeader().querySelector('.e-table'));
+        }
         this.rfshMovable();
         this.updateColgroup();
         this.initializeHeaderDrag();
@@ -31916,33 +32788,48 @@ var FreezeRender = /** @__PURE__ @class */ (function (_super) {
         this.parent.notify(headerRefreshed, { rows: this.rows, args: { isFrozen: false } });
     };
     FreezeRender.prototype.renderPanel = function () {
+        var fDiv = this.parent.element.querySelector('.e-frozenheader');
+        var mDiv = this.parent.element.querySelector('.e-movableheader');
         _super.prototype.renderPanel.call(this);
-        var fDiv = this.parent.createElement('div', { className: 'e-frozenheader' });
-        var mDiv = this.parent.createElement('div', { className: 'e-movableheader' });
-        this.getPanel().firstChild.appendChild(fDiv);
-        this.getPanel().firstChild.appendChild(mDiv);
+        if (isNullOrUndefined(fDiv)) {
+            fDiv = this.parent.createElement('div', { className: 'e-frozenheader' });
+            mDiv = this.parent.createElement('div', { className: 'e-movableheader' });
+            this.getPanel().querySelector('.e-headercontent').appendChild(fDiv);
+            this.getPanel().querySelector('.e-headercontent').appendChild(mDiv);
+        }
         this.setFrozenHeader(fDiv);
         this.setMovableHeader(mDiv);
     };
     FreezeRender.prototype.refreshUI = function () {
-        var tbody = this.getMovableHeader().querySelector('tbody');
-        remove(this.getMovableHeader().querySelector('table'));
-        _super.prototype.refreshUI.call(this);
-        this.rfshMovable();
-        this.getMovableHeader().querySelector('tbody').innerHTML = tbody.innerHTML;
-        this.updateColgroup();
+        if (!isBlazor() || this.parent.frozenRows === 0) {
+            var tbody = this.getMovableHeader().querySelector('tbody');
+            remove(this.getMovableHeader().querySelector('table'));
+            _super.prototype.refreshUI.call(this);
+            this.rfshMovable();
+            this.getMovableHeader().querySelector('tbody').innerHTML = tbody.innerHTML;
+        }
+        else {
+            this.rfshMovable();
+        }
+        if (!isBlazor() || this.parent.frozenRows === 0) {
+            this.updateColgroup();
+        }
         this.widthService.setWidthToTable();
         if (this.parent.allowTextWrap && this.parent.textWrapSettings.wrapMode === 'Header') {
             wrap([].slice.call(this.movableHeader.querySelectorAll('tr.e-columnheader')), true);
         }
         this.parent.updateDefaultCursor();
-        renderMovable(this.parent.getContentTable().querySelector('colgroup'), this.parent.getFrozenColumns());
+        if (!isBlazor() || this.parent.frozenRows === 0) {
+            renderMovable(this.parent.getContentTable().querySelector('colgroup'), this.parent.getFrozenColumns());
+        }
         this.initializeHeaderDrag();
         this.parent.notify(headerRefreshed, { rows: this.rows, args: { isFrozen: false } });
     };
     FreezeRender.prototype.rfshMovable = function () {
-        this.getFrozenHeader().appendChild(this.getTable());
-        this.getMovableHeader().appendChild(this.createTable());
+        if (!isBlazor() || this.parent.frozenRows === 0) {
+            this.getFrozenHeader().appendChild(this.getTable());
+            this.getMovableHeader().appendChild(this.createTable());
+        }
         this.refreshStackedHdrHgt();
         this.addMovableFirstCls();
     };
@@ -31977,7 +32864,7 @@ var FreezeRender = /** @__PURE__ @class */ (function (_super) {
             var mHdr = this.getMovableHeader();
             var cont = this.parent.getContent();
             var wrapMode = this.parent.textWrapSettings.wrapMode;
-            var hdrClassList = this.parent.getHeaderContent().firstChild.classList;
+            var hdrClassList = this.parent.getHeaderContent().querySelector('.e-headercontent').classList;
             if (obj.case === 'textwrap') {
                 if (wrapMode !== 'Header' || obj.isModeChg) {
                     fRows = cont.querySelector('.e-frozencontent').querySelectorAll('tr');
@@ -32033,7 +32920,7 @@ var FreezeRender = /** @__PURE__ @class */ (function (_super) {
         var height = [];
         var width = [];
         for (var i = 0, len = fRows.length; i < len; i++) { //separate loop for performance issue 
-            if (!isNullOrUndefined(fRows[i]) && !isNullOrUndefined(mRows[i])) {
+            if (!fRows[i].classList.contains('e-columnheader') && !isNullOrUndefined(fRows[i]) && !isNullOrUndefined(mRows[i])) {
                 height[i] = fRows[i].offsetHeight; //https://pagebuildersandwich.com/increased-plugins-performance-200/
                 width[i] = mRows[i].offsetHeight;
             }
@@ -32491,6 +33378,7 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
     ColumnMenu.prototype.render = function () {
         this.l10n = this.serviceLocator.getService('localization');
         this.element = this.parent.createElement('ul', { id: this.gridID + '_columnmenu', className: 'e-colmenu' });
+        this.element.setAttribute('aria-label', this.l10n.getConstant('ColumnMenuDialogARIA'));
         this.parent.element.appendChild(this.element);
         this.columnMenu = new ContextMenu({
             cssClass: 'e-grid-menu',
@@ -32687,7 +33575,9 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
                 this.getFilter(args.element, args.element.id, true);
             }
         }
-        this.parent.notify(restoreFocus, {});
+        if (!this.parent.getFrozenColumns()) {
+            this.parent.notify(restoreFocus, {});
+        }
     };
     ColumnMenu.prototype.getDefaultItems = function () {
         return ['AutoFitAll', 'AutoFit', 'SortAscending', 'SortDescending', 'Group', 'Ungroup', 'ColumnChooser', 'Filter'];
@@ -33471,6 +34361,9 @@ var AutoCompleteEditCell = /** @__PURE__ @class */ (function () {
             placeholder: isInlineEdit ? '' : args.column.headerText,
             floatLabelType: isInlineEdit ? 'Never' : 'Always'
         }, args.column.edit.params));
+        if (isBlazor()) {
+            this.object.locale = this.parentObj.locale;
+        }
         this.object.appendTo(args.element);
         /* tslint:disable-next-line:no-any */
         args.element.setAttribute('name', getComplexFieldID(args.column.field));
@@ -33766,5 +34659,5 @@ var MaskedTextBoxCellEdit = /** @__PURE__ @class */ (function () {
  * Export Grid components
  */
 
-export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, getUpdateUsingRaf, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, restoreFocus, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
+export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, getUpdateUsingRaf, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
 //# sourceMappingURL=ej2-grids.es5.js.map

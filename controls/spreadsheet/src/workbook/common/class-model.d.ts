@@ -98,3 +98,16 @@ export interface DefineNameModel {
     refersTo?: string;
 
 }
+
+/**
+ * Interface for a class Hyperlink
+ */
+export interface HyperlinkModel {
+
+    /**
+     * Specifies Hyperlink Address.
+     * @default ''
+     */
+    address?: string;
+
+}

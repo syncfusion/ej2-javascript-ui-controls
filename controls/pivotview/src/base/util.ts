@@ -1,8 +1,9 @@
-import { IPivotValues, IDataOptions, IFieldOptions, IFilter, ISort } from './engine';
-import { IDrillOptions, IValueSortSettings, IGroupSettings, IConditionalFormatSettings } from './engine';
-import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { IPivotValues, IDataOptions, IFieldOptions, IFilter, ISort, IFormatSettings, ICalculatedFieldSettings } from './engine';
+import { IDrillOptions, IValueSortSettings, IGroupSettings, IConditionalFormatSettings, ICustomGroups } from './engine';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PivotView } from '../pivotview';
 import { PivotFieldList } from '../pivotfieldlist';
+import { DataManager, Query } from '@syncfusion/ej2-data';
 
 /**
  * This is a file to perform common utility for OLAP and Relational datasource
@@ -44,10 +45,12 @@ export class PivotUtil {
     public static getClonedPivotValues(pivotValues: IPivotValues): IPivotValues {
         let clonedSets: IPivotValues = [];
         for (let i: number = 0; i < pivotValues.length; i++) {
-            clonedSets[i] = [];
-            for (let j: number = 0; j < pivotValues[i].length; j++) {
-                if (pivotValues[i][j]) {
-                    clonedSets[i][j] = this.getClonedObj(pivotValues[i][j] as { [key: string]: Object });
+            if (pivotValues[i]) {
+                clonedSets[i] = [];
+                for (let j: number = 0; j < pivotValues[i].length; j++) {
+                    if (pivotValues[i][j]) {
+                        clonedSets[i][j] = this.getClonedObj(pivotValues[i][j] as { [key: string]: Object });
+                    }
                 }
             }
         }
@@ -71,13 +74,41 @@ export class PivotUtil {
     }
 
     public static inArray(value: Object, collection: Object[]): number {
-        for (let i: number = 0, cnt: number = collection.length; i < cnt; i++) {
-            if (collection[i] === value) {
-                return i;
+        if (collection) {
+            for (let i: number = 0, cnt: number = collection.length; i < cnt; i++) {
+                if (collection[i] === value) {
+                    return i;
+                }
             }
         }
         return -1;
     }
+
+    public static isContainCommonElements(collection1: Object[], collection2: Object[]): boolean {
+        let isContain: boolean = false;
+        for (let i: number = 0, cnt: number = collection1.length; i < cnt; i++) {
+            for (let j: number = 0, lnt: number = collection2.length; j < lnt; j++) {
+                if (collection2[j] === collection1[i]) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /* tslint:disable */
+    public static setPivotProperties(control: any, properties: any): void {
+        control.allowServerDataBinding = false;
+        if (control.pivotGridModule) {
+            control.pivotGridModule.allowServerDataBinding = false;
+        }
+        control.setProperties(properties, true);
+        control.allowServerDataBinding = true;
+        if (control.pivotGridModule) {
+            control.pivotGridModule.allowServerDataBinding = true;
+        }
+    }
+    /* tslint:enable */
 
     public static getClonedDataSourceSettings(dataSourceSettings: IDataOptions): IDataOptions {
         let clonesDataSource: IDataOptions = {
@@ -90,18 +121,19 @@ export class PivotUtil {
             expandAll: dataSourceSettings.expandAll,
             allowLabelFilter: dataSourceSettings.allowLabelFilter,
             allowValueFilter: dataSourceSettings.allowValueFilter,
+            allowMemberFilter: dataSourceSettings.allowMemberFilter,
             enableSorting: dataSourceSettings.enableSorting ? true : false,
-            rows: extend([], dataSourceSettings.rows, null, true) as IFieldOptions[],
-            columns: extend([], dataSourceSettings.columns, null, true) as IFieldOptions[],
-            filters: extend([], dataSourceSettings.filters, null, true) as IFieldOptions[],
-            values: extend([], dataSourceSettings.values, null, true) as IFieldOptions[],
-            filterSettings: extend([], dataSourceSettings.filterSettings, null, true) as IFilter[],
-            sortSettings: extend([], dataSourceSettings.sortSettings, null, true) as ISort[],
-            drilledMembers: extend([], dataSourceSettings.drilledMembers, null, true) as IDrillOptions[],
-            valueSortSettings: extend({}, dataSourceSettings.valueSortSettings, null, true) as IValueSortSettings,
+            rows: this.cloneFieldSettings(dataSourceSettings.rows),
+            columns: this.cloneFieldSettings(dataSourceSettings.columns),
+            filters: this.cloneFieldSettings(dataSourceSettings.filters),
+            values: this.cloneFieldSettings(dataSourceSettings.values),
+            filterSettings: this.cloneFilterSettings(dataSourceSettings.filterSettings),
+            sortSettings: this.cloneSortSettings(dataSourceSettings.sortSettings),
+            drilledMembers: this.cloneDrillMemberSettings(dataSourceSettings.drilledMembers),
+            valueSortSettings: this.CloneValueSortObject(dataSourceSettings.valueSortSettings),
             valueAxis: dataSourceSettings.valueAxis,
-            formatSettings: extend([], dataSourceSettings.formatSettings, null, true) as IDrillOptions[],
-            calculatedFieldSettings: extend([], dataSourceSettings.calculatedFieldSettings, null, true) as IDrillOptions[],
+            formatSettings: this.cloneFormatSettings(dataSourceSettings.formatSettings),
+            calculatedFieldSettings: this.cloneCalculatedFieldSettings(dataSourceSettings.calculatedFieldSettings),
             showSubTotals: dataSourceSettings.showSubTotals,
             showRowSubTotals: dataSourceSettings.showRowSubTotals,
             showColumnSubTotals: dataSourceSettings.showColumnSubTotals,
@@ -110,9 +142,9 @@ export class PivotUtil {
             showColumnGrandTotals: dataSourceSettings.showColumnGrandTotals,
             showHeaderWhenEmpty: dataSourceSettings.showHeaderWhenEmpty,
             alwaysShowValueHeader: dataSourceSettings.alwaysShowValueHeader,
-            conditionalFormatSettings: extend([], dataSourceSettings.conditionalFormatSettings, null, true) as IConditionalFormatSettings[],
+            conditionalFormatSettings: this.cloneConditionalFormattingSettings(dataSourceSettings.conditionalFormatSettings),
             emptyCellsTextContent: dataSourceSettings.emptyCellsTextContent,
-            groupSettings: extend([], dataSourceSettings.groupSettings, null, true) as IGroupSettings[]
+            groupSettings: this.cloneGroupSettings(dataSourceSettings.groupSettings)
         };
         return clonesDataSource;
     }
@@ -120,7 +152,7 @@ export class PivotUtil {
     public static updateDataSourceSettings(control: PivotView | PivotFieldList, dataSourceSettings: IDataOptions): void {
         if (control) {
             /* tslint:disable */
-            control.setProperties({
+            this.setPivotProperties(control, {
                 dataSourceSettings: {
                     catalog: dataSourceSettings.catalog,
                     cube: dataSourceSettings.cube,
@@ -131,6 +163,7 @@ export class PivotUtil {
                     expandAll: dataSourceSettings.expandAll,
                     allowLabelFilter: dataSourceSettings.allowLabelFilter,
                     allowValueFilter: dataSourceSettings.allowValueFilter,
+                    allowMemberFilter: dataSourceSettings.allowMemberFilter,
                     enableSorting: dataSourceSettings.enableSorting ? true : false,
                     rows: dataSourceSettings.rows,
                     columns: dataSourceSettings.columns,
@@ -155,7 +188,233 @@ export class PivotUtil {
                     emptyCellsTextContent: dataSourceSettings.emptyCellsTextContent,
                     groupSettings: dataSourceSettings.groupSettings
                 }
-            }, true);
+            });
         }
+    }
+
+    private static cloneFieldSettings(collection: IFieldOptions[]): IFieldOptions[] {
+        if (collection) {
+            let clonedCollection: IFieldOptions[] = [];
+            for (let set of collection) {
+                clonedCollection.push({
+                    name: set.name,
+                    caption: set.caption,
+                    axis: set.axis,
+                    baseField: set.baseField,
+                    baseItem: set.baseItem,
+                    isCalculatedField: set.isCalculatedField,
+                    isNamedSet: set.isNamedSet,
+                    showNoDataItems: set.showNoDataItems,
+                    showSubTotals: set.showSubTotals,
+                    type: set.type
+                });
+            }
+            return clonedCollection;
+        } else {
+            return collection;
+        }
+    }
+
+    private static cloneFilterSettings(collection: IFilter[]): IFilter[] {
+        if (collection) {
+            let clonedCollection: IFilter[] = [];
+            for (let set of collection) {
+                clonedCollection.push({
+                    name: set.name,
+                    type: set.type,
+                    condition: set.condition,
+                    items: set.items ? [...set.items] : set.items,
+                    levelCount: set.levelCount,
+                    measure: set.measure,
+                    selectedField: set.selectedField,
+                    showDateFilter: set.showDateFilter,
+                    showLabelFilter: set.showLabelFilter,
+                    showNumberFilter: set.showNumberFilter,
+                    value1: set.value1,
+                    value2: set.value2
+                });
+            }
+            return clonedCollection;
+        } else {
+            return collection;
+        }
+    }
+
+    private static cloneSortSettings(collection: ISort[]): ISort[] {
+        if (collection) {
+            let clonedCollection: ISort[] = [];
+            for (let set of collection) {
+                clonedCollection.push({
+                    name: set.name,
+                    order: set.order
+                });
+            }
+            return clonedCollection;
+        } else {
+            return collection;
+        }
+    }
+
+    private static cloneDrillMemberSettings(collection: IDrillOptions[]): IDrillOptions[] {
+        if (collection) {
+            let clonedCollection: IDrillOptions[] = [];
+            for (let set of collection) {
+                clonedCollection.push({
+                    name: set.name,
+                    delimiter: set.delimiter,
+                    items: set.items ? [...set.items] : set.items
+                });
+            }
+            return clonedCollection;
+        } else {
+            return collection;
+        }
+    }
+
+    public static cloneFormatSettings(collection: IFormatSettings[]): IFormatSettings[] {
+        if (collection) {
+            let clonedCollection: IFormatSettings[] = [];
+            for (let set of collection) {
+                clonedCollection.push({
+                    name: set.name,
+                    calendar: set.calendar,
+                    currency: set.currency,
+                    format: set.format,
+                    maximumFractionDigits: set.maximumFractionDigits,
+                    maximumSignificantDigits: set.maximumSignificantDigits,
+                    minimumFractionDigits: set.minimumFractionDigits,
+                    minimumIntegerDigits: set.minimumIntegerDigits,
+                    minimumSignificantDigits: set.minimumSignificantDigits,
+                    skeleton: set.skeleton,
+                    type: set.type,
+                    useGrouping: set.useGrouping
+                });
+            }
+            return clonedCollection;
+        } else {
+            return collection;
+        }
+    }
+
+    private static CloneValueSortObject(collection: IValueSortSettings): IValueSortSettings {
+        if (collection) {
+            let clonedCollection: IValueSortSettings = {
+                columnIndex: collection.columnIndex,
+                headerDelimiter: collection.headerDelimiter,
+                headerText: collection.headerText,
+                measure: collection.measure,
+                sortOrder: collection.sortOrder
+            }
+            return clonedCollection;
+        } else {
+            return collection;
+        }
+    }
+
+    private static cloneCalculatedFieldSettings(collection: ICalculatedFieldSettings[]): ICalculatedFieldSettings[] {
+        if (collection) {
+            let clonedCollection: ICalculatedFieldSettings[] = [];
+            for (let set of collection) {
+                clonedCollection.push({
+                    name: set.name,
+                    formatString: set.formatString,
+                    formula: set.formula,
+                    hierarchyUniqueName: set.hierarchyUniqueName
+                });
+            }
+            return clonedCollection;
+        } else {
+            return collection;
+        }
+    }
+
+    private static cloneConditionalFormattingSettings(collection: IConditionalFormatSettings[]): IConditionalFormatSettings[] {
+        if (collection) {
+            let clonedCollection: IConditionalFormatSettings[] = [];
+            for (let set of collection) {
+                clonedCollection.push({
+                    applyGrandTotals: set.applyGrandTotals,
+                    conditions: set.conditions,
+                    label: set.label,
+                    measure: set.measure,
+                    style: set.style ? {
+                        backgroundColor: set.style.backgroundColor,
+                        color: set.style.color,
+                        fontFamily: set.style.fontFamily,
+                        fontSize: set.style.fontSize
+                    } : set.style,
+                    value1: set.value1,
+                    value2: set.value2
+
+                });
+            }
+            return clonedCollection;
+        } else {
+            return collection;
+        }
+    }
+
+    private static cloneGroupSettings(collection: IGroupSettings[]): IGroupSettings[] {
+        if (collection) {
+            let clonedCollection: IGroupSettings[] = [];
+            for (let set of collection) {
+                clonedCollection.push({
+                    name: set.name,
+                    caption: set.caption,
+                    customGroups: this.cloneCustomGroups(set.customGroups),
+                    endingAt: set.endingAt,
+                    startingAt: set.startingAt,
+                    groupInterval: set.groupInterval,
+                    rangeInterval: set.rangeInterval,
+                    type: set.type
+                });
+            }
+            return clonedCollection;
+        } else {
+            return collection;
+        }
+    }
+
+    private static cloneCustomGroups(collection: ICustomGroups[]): ICustomGroups[] {
+        if (collection) {
+            let clonedCollection: ICustomGroups[] = [];
+            for (let set of collection) {
+                clonedCollection.push({
+                    groupName: set.groupName,
+                    items: set.items ? [...set.items] : set.items
+                });
+            }
+            return clonedCollection;
+        } else {
+            return collection;
+        }
+    }
+
+    public static getSortItemByName(fieldName: string, sortObjects: ISort[]): ISort {
+        return new DataManager({ json: sortObjects }).executeLocal(new Query().where('name', 'equal', fieldName))[0] as ISort;
+    }
+
+    public static getFilterItemByName(fieldName: string, filterObjects: IFilter[]): IFilter {
+        let filterItems: IFilter[] = new DataManager({ json: filterObjects }).executeLocal(new Query().where('name', 'equal', fieldName));
+        if (filterItems && filterItems.length > 0) {
+            return filterItems[filterItems.length - 1];
+        }
+        return undefined;
+    }
+
+    public static getFieldByName(fieldName: string, fields: IFieldOptions[]): IFieldOptions {
+        return new DataManager({ json: fields }).executeLocal(new Query().where('name', 'equal', fieldName))[0] as IFieldOptions;
+    }
+
+    public static getFormatItemByName(fieldName: string, formatObjects: IFormatSettings[]): IFormatSettings {
+        return new DataManager({ json: formatObjects }).executeLocal(new Query().where('name', 'equal', fieldName))[0] as IFormatSettings;
+    }
+
+    public static getDrillItemByName(fieldName: string, drillObjects: IDrillOptions[]): IDrillOptions {
+        return new DataManager({ json: drillObjects }).executeLocal(new Query().where('name', 'equal', fieldName))[0] as IDrillOptions;
+    }
+
+    public static getGroupItemByName(fieldName: string, drillObjects: IGroupSettings[]): IGroupSettings {
+        return new DataManager({ json: drillObjects }).executeLocal(new Query().where('name', 'equal', fieldName))[0] as IGroupSettings;
     }
 }

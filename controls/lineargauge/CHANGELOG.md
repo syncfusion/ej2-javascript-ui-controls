@@ -8,14 +8,6 @@
 
 ## [Unreleased]
 
-## 17.3.21 (2019-10-30)
-
-### LinearGauge
-
-#### Bug Fixes
-
-- Border for the linear gauge is rendering properly now.
-
 ## 17.2.28-beta (2019-06-27)
 
 ### LinearGauge

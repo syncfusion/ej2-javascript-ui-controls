@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.39 (2019-12-17)
+
+### Chips
+
+#### Bug Fixes
+
+- `#250583` - Now, the selected chips values are maintained after selecting and deselecting the chips.
+
 ## 17.3.16 (2019-10-09)
 
 ### CheckBox
@@ -20,7 +28,7 @@
 
 #### Bug Fixes
 
-- I239111 - Issue with getting selected chip using `getSelectedChips` method in Edge browser has been fixed.
+- `#239111` - Issue with getting selected chip using `getSelectedChips` method in Edge browser has been fixed.
 
 ## 17.2.28-beta (2019-06-27)
 

@@ -1,12 +1,15 @@
 import { detach, EventHandler, Browser, extend, L10n } from '@syncfusion/ej2-base';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/index';
-import { SheetModel, getRangeIndexes, getCell, setCell, getSheet, CellModel, getSwapRange, CellStyleModel } from '../../workbook/index';
+import { SheetModel, getRangeIndexes, getCell, setCell, getSheet, CellModel, getSwapRange } from '../../workbook/index';
+import { CellStyleModel, getRangeAddress } from '../../workbook/index';
 import { RowModel, getFormattedCellObject, workbookFormulaOperation, applyCellFormat, checkIsFormula, Sheet } from '../../workbook/index';
 import { ExtendedSheet, Cell } from '../../workbook/index';
-import { ribbonClick, ICellRenderer, cut, copy, paste, PasteSpecialType, enableRibbonItems, rowHeightChanged } from '../common/index';
+import { ribbonClick, ICellRenderer, cut, copy, paste, PasteSpecialType, BeforePasteEventArgs} from '../common/index';
+import { enableRibbonItems, rowHeightChanged, completeAction, beginAction  } from '../common/index';
 import { clearCopy, locateElem, selectRange, dialog, contentLoaded, tabSwitch, cMenuBeforeOpen, locale } from '../common/index';
 import { Dialog } from '../services/index';
+import { Deferred } from '@syncfusion/ej2-data';
 
 /**
  * Represents clipboard support for Spreadsheet.
@@ -64,10 +67,10 @@ export class Clipboard {
         let parentId: string = this.parent.element.id;
         switch (args.item.id) {
             case parentId + '_cut':
-                this.cut({ isClick: true } as CopyArgs & ClipboardEvent);
+                this.cut({ isAction: true } as CopyArgs & ClipboardEvent);
                 break;
             case parentId + '_copy':
-                this.copy({ isClick: true } as CopyArgs & ClipboardEvent);
+                this.copy({ isAction: true } as CopyArgs & ClipboardEvent);
                 break;
         }
         this.parent.element.focus();
@@ -102,7 +105,10 @@ export class Clipboard {
         this.setCopiedInfo(args, false);
     }
 
-    private paste(args?: { range: number[], sIdx: number, type: PasteSpecialType, isClick?: boolean } & ClipboardEvent): void {
+    private paste(args?: {
+        range: number[], sIdx: number, type: PasteSpecialType, isClick?: boolean,
+        isAction?: boolean
+    } & ClipboardEvent): void {
         if (this.parent.isEdit) {
             if (args as ClipboardEvent && (args as ClipboardEvent).type) {
                 args.preventDefault();
@@ -110,15 +116,14 @@ export class Clipboard {
                 return;
             }
         }
+        let rfshRange: number[];
         /* tslint:disable-next-line */
         let isExternal: DataTransfer = !this.copiedInfo && ((args && args.clipboardData) || window['clipboardData']);
         let copiedIdx: number = this.getCopiedIdx();
+        let copyInfo: { range: number[], sId: number, isCut: boolean } = Object.assign({}, this.copiedInfo);
         if (this.copiedInfo || isExternal) {
-            let cell: CellModel;
-            let isExtend: boolean;
             let cSIdx: number = (args && args.sIdx > -1) ? args.sIdx : this.parent.activeSheetTab - 1;
             let curSheet: SheetModel = getSheet(this.parent, cSIdx);
-            let prevSheet: SheetModel = getSheet(this.parent, isExternal ? cSIdx : copiedIdx);
             let selIdx: number[] = getSwapRange(args && args.range || getRangeIndexes(curSheet.selectedRange));
             let rows: RowModel[] = isExternal && this.getExternalCells(args);
             if (isExternal && !rows.length) { // If image pasted
@@ -128,7 +133,32 @@ export class Clipboard {
                 ? [0, 0, rows.length - 1, rows[0].cells.length - 1] : getSwapRange(this.copiedInfo.range);
             let isRepeative: boolean = (selIdx[2] - selIdx[0] + 1) % (cIdx[2] - cIdx[0] + 1) === 0
                 && (selIdx[3] - selIdx[1] + 1) % (cIdx[3] - cIdx[1] + 1) === 0;
-            let rfshRange: number[] = isRepeative ? selIdx : [selIdx[0], selIdx[1]]
+            rfshRange = isRepeative ? selIdx : [selIdx[0], selIdx[1]]
+                .concat([selIdx[0] + cIdx[2] - cIdx[0], selIdx[1] + cIdx[3] - cIdx[1] || selIdx[1]]);
+            let beginEventArgs: BeforePasteEventArgs = {
+                requestType: 'paste',
+                copiedInfo: this.copiedInfo,
+                copiedRange: getRangeAddress(cIdx),
+                pastedRange: getRangeAddress(rfshRange),
+                type: (args && args.type) || 'All',
+                cancel: false
+            };
+            if (args.isAction) {
+                this.parent.notify(beginAction, { eventArgs: beginEventArgs, action: 'clipboard' });
+            }
+            if (beginEventArgs.cancel) {
+                return;
+            }
+            let cell: CellModel;
+            let isExtend: boolean;
+            let prevSheet: SheetModel = getSheet(this.parent, isExternal ? cSIdx : copiedIdx);
+
+            selIdx = getRangeIndexes(beginEventArgs.pastedRange);
+            rowIdx = selIdx[0]; cIdx = isExternal
+                ? [0, 0, rows.length - 1, rows[0].cells.length - 1] : getSwapRange(this.copiedInfo.range);
+            isRepeative = (selIdx[2] - selIdx[0] + 1) % (cIdx[2] - cIdx[0] + 1) === 0
+                && (selIdx[3] - selIdx[1] + 1) % (cIdx[3] - cIdx[1] + 1) === 0;
+            rfshRange = isRepeative ? selIdx : [selIdx[0], selIdx[1]]
                 .concat([selIdx[0] + cIdx[2] - cIdx[0], selIdx[1] + cIdx[3] - cIdx[1] || selIdx[1]]);
             for (let i: number = cIdx[0], l: number = 0; i <= cIdx[2]; i++ , l++) {
                 for (let j: number = cIdx[1], k: number = 0; j <= cIdx[3]; j++ , k++) {
@@ -166,7 +196,7 @@ export class Clipboard {
                 }
                 rowIdx++;
             }
-            this.parent.setUsedRange(rfshRange[2], rfshRange[3]);
+            this.parent.setUsedRange(rfshRange[2] + 1, rfshRange[3]);
             if (cSIdx === this.parent.activeSheetTab - 1) {
                 this.parent.serviceLocator.getService<ICellRenderer>('cell').refreshRange(rfshRange);
                 this.parent.notify(selectRange, rfshRange);
@@ -177,12 +207,27 @@ export class Clipboard {
                 }
                 this.clearCopiedInfo();
             }
-            if (isExternal || (args && args.isClick)) {
+            if (isExternal || (args && args.isAction)) {
                 this.parent.element.focus();
+            }
+            if (args.isAction) {
+                let cSID: number = copyInfo && copyInfo.sId ? copyInfo.sId : this.parent.activeSheetTab;
+                let copyRange: number[] = copyInfo &&
+                    copyInfo.range ? copyInfo.range : getRangeIndexes(this.parent.sheets[cSID - 1].selectedRange);
+                let eventArgs: Object = {
+                    requestType: 'paste',
+                    copiedInfo: copyInfo,
+                    pasteSheetIdx: this.parent.activeSheetTab,
+                    copiedRange: this.parent.sheets[cSID - 1].name + '!' + getRangeAddress(copyRange),
+                    pastedRange: this.parent.sheets[this.parent.activeSheetTab - 1].name + '!' + getRangeAddress(rfshRange),
+                    type: (args && args.type) || 'All'
+                };
+                this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clipboard' });
             }
         } else {
             this.getClipboardEle().select();
         }
+
     }
 
     private setCell(rIdx: number, cIdx: number, sheet: SheetModel, cell: CellModel, isExtend?: boolean, isCut?: boolean): void {
@@ -221,10 +266,12 @@ export class Clipboard {
         return -1;
     }
 
-    private setCopiedInfo(args?: { range?: number[], sId?: number, isClick?: boolean } & ClipboardEvent, isCut?: boolean): void {
+    private setCopiedInfo(args?: SetClipboardInfo & ClipboardEvent, isCut?: boolean): void {
         if (this.parent.isEdit) {
             return;
         }
+        let deferred: Deferred = new Deferred();
+        args.promise = deferred.promise;
         let sheet: ExtendedSheet = this.parent.getActiveSheet() as Sheet;
         let range: number[] = (args && args.range) || getRangeIndexes(sheet.selectedRange);
         let option: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell> } = {
@@ -248,7 +295,7 @@ export class Clipboard {
                 if (!Browser.isIE) {
                     this.getClipboardEle().select();
                 }
-                if (args && args.isClick) {
+                if (args && args.isAction) {
                     document.execCommand(isCut ? 'cut' : 'copy');
                 }
                 this.parent.hideSpinner();
@@ -256,6 +303,7 @@ export class Clipboard {
             if (Browser.isIE) {
                 this.setExternalCells(args);
             }
+            deferred.resolve();
         });
         if (args && args.clipboardData) {
             this.setExternalCells(args);
@@ -295,7 +343,7 @@ export class Clipboard {
     }
 
     private hidePaste(isShow?: boolean): void {
-        this.parent.notify(enableRibbonItems, { id: this.parent.element.id + '_paste', isEnable: isShow || false });
+        this.parent.notify(enableRibbonItems, [{ id: this.parent.element.id + '_paste', isEnable: isShow || false }]);
     }
 
     private setExternalCells(args: ClipboardEvent): void {
@@ -440,5 +488,12 @@ export class Clipboard {
 interface CopyArgs {
     range?: number[];
     sIdx?: number;
-    isClick?: boolean;
+    isAction?: boolean;
+}
+
+interface SetClipboardInfo {
+    range?: number[];
+    sId?: number;
+    isAction?: boolean;
+    promise?: Promise<Object>;
 }

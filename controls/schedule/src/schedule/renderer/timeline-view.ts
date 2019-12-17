@@ -28,7 +28,7 @@ export class TimelineViews extends VerticalView {
         let currDateTime: number = this.isWorkDay(this.parent.selectedDate) && this.parent.workHours.highlight &&
             !isNullOrUndefined(start) ? new Date(+this.parent.selectedDate).setHours(start.getHours(), start.getMinutes())
             : new Date(+this.parent.selectedDate).setHours(0, 0, 0, 0);
-        let queryString: string = '[data-date="' + currDateTime + '"]';
+        let queryString: string = '[data-date="' + this.parent.getMsFromDate(new Date(currDateTime)) + '"]';
         let firstWorkHourCell: HTMLElement = this.element.querySelector(queryString) as HTMLElement;
         if (firstWorkHourCell) {
             this.getScrollableElement().scrollLeft = firstWorkHourCell.offsetLeft;
@@ -121,7 +121,7 @@ export class TimelineViews extends VerticalView {
             this.parent.activeViewOptions.timeScale.interval;
     }
     private getWorkCellWidth(): number {
-        return (this.element.querySelector('.e-work-cells') as HTMLElement).offsetWidth;
+        return (this.element.querySelector('.e-work-cells') as HTMLElement).getBoundingClientRect().width;
     }
     public renderHeader(): void {
         let tr: Element = createElement('tr');

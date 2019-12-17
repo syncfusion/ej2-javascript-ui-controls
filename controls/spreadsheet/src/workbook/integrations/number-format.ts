@@ -1,6 +1,5 @@
-import { Spreadsheet } from '../../spreadsheet/index';
-import { getRangeIndexes, BeforeCellFormatArgs, NumberFormatType } from '../common/index';
-import { CellModel, SheetModel, getCell, getSheet, setCell } from '../base/index';
+import { getRangeIndexes, NumberFormatType } from '../common/index';
+import { CellModel, SheetModel, getCell, getSheet, setCell, getSheetIndex, Workbook } from '../base/index';
 import { Internationalization, getNumberDependable, getNumericObject, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { isNumber, toFraction, intToDate, toDate, dateToInt, ToDateArgs } from '../common/math';
 import { applyNumberFormatting, getFormattedCellObject, refreshCellElement, checkDateFormat, getFormattedBarText } from '../common/event';
@@ -8,11 +7,11 @@ import { applyNumberFormatting, getFormattedCellObject, refreshCellElement, chec
  * Specifies number format.
  */
 export class WorkbookNumberFormat {
-    private parent: Spreadsheet;
+    private parent: Workbook;
     private localeObj: Object;
     private decimalSep: string;
     private groupSep: string;
-    constructor(parent: Spreadsheet) {
+    constructor(parent: Workbook) {
         this.parent = parent;
         this.localeObj = getNumericObject(this.parent.locale);
         /* tslint:disable:no-any */
@@ -21,13 +20,15 @@ export class WorkbookNumberFormat {
         this.addEventListener();
     }
 
-    /**
-     * @private
-     */
-    private numberFormatting(args: { format?: string, range?: string }): void {
+    private numberFormatting(args: { format?: string, range?: string, cancel?: boolean }): void {
         let activeSheetTab: number = this.parent.activeSheetTab;
+        if (args.range && args.range.indexOf('!') > -1) {
+            activeSheetTab = getSheetIndex(this.parent, args.range.split('!')[0]) + 1;
+        }
         let sheet: SheetModel = this.parent.sheets[activeSheetTab - 1];
-        let selectedRange: number[] = getRangeIndexes(args.range || sheet.selectedRange);
+        let formatRange: string = args.range ? ((args.range.indexOf('!') > -1) ?
+            args.range.split('!')[1] : args.range) : sheet.selectedRange;
+        let selectedRange: number[] = getRangeIndexes(formatRange);
         let cell: CellModel;
         for (let i: number = selectedRange[0]; i <= selectedRange[2]; i++) {
             for (let j: number = selectedRange[1]; j <= selectedRange[3]; j++) {
@@ -36,8 +37,8 @@ export class WorkbookNumberFormat {
                 this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
                 this.getFormattedCell({
                     type: getTypeFromFormat(cell.format), value: cell.value,
-                    format: cell.format, rowIndex: i, colIndex: j, sheetIndex: activeSheetTab,
-                    cell: cell
+                    format: cell.format, rowIndex: i, colIndex: j,
+                    sheetIndex: activeSheetTab, cell: cell
                 });
             }
         }
@@ -48,15 +49,11 @@ export class WorkbookNumberFormat {
      */
     public getFormattedCell(args: { [key: string]: string | number | boolean | CellModel }): string {
         let fResult: string = isNullOrUndefined(args.value as string) ? '' : args.value as string;
-        let sheet: SheetModel = this.parent.getActiveSheet();
+        let sheet: SheetModel = args.sheetIndex ? this.parent.sheets[(args.sheetIndex as number) - 1] : this.parent.getActiveSheet();
         let range: number[] = getRangeIndexes(sheet.activeCell);
         let cell: CellModel = args.cell as CellModel ? args.cell as CellModel : getCell(range[0], range[1], sheet);
         let rightAlign: boolean = false;
         let currencySymbol: string = getNumberDependable(this.parent.locale, 'USD');
-        let eventArgs: BeforeCellFormatArgs = {
-            range: range, format: <string>args.format, requestType: 'numberFormat', value: <string>args.value
-        };
-        this.parent.trigger('beforeCellFormat', eventArgs);
         if (args.format === '' || args.format === 'General') {
             cell = cell ? cell : {};
             let dateEventArgs: { [key: string]: string | number | boolean } = {
@@ -76,7 +73,7 @@ export class WorkbookNumberFormat {
         }
         args.type = args.format ? getTypeFromFormat(args.format as string) : 'General';
         let result: { [key: string]: string | boolean } = this.processFormats(args, fResult, rightAlign, cell);
-        if (!args.onLoad) {
+        if (!args.onLoad && (this.parent.getActiveSheet().id - 1 === (args.sheetIndex as number) - 1)) {
             this.parent.notify(refreshCellElement, {
                 isRightAlign: result.rightAlign, result: result.fResult || args.value as string,
                 rowIndex: args.rowIndex, colIndex: args.colIndex, sheetIndex: args.sheetIndex,
@@ -356,7 +353,7 @@ export class WorkbookNumberFormat {
         return 2;
     }
 
-    public checkDateFormat(args: { [key: string]: string | number | boolean | CellModel }): void {
+    public checkDateFormat(args: { [key: string]: string | number | boolean | Date | CellModel }): void {
         let dateObj: ToDateArgs;
         let intl: Internationalization = new Internationalization();
         let value: string = !isNullOrUndefined(args.value) ? args.value.toString() : '';
@@ -378,6 +375,7 @@ export class WorkbookNumberFormat {
                 this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
                 args.isDate = dateObj.type === 'date' || dateObj.type === 'datetime';
                 args.isTime = dateObj.type === 'time';
+                args.dateObj = dateObj.dateObj;
             }
         }
         args.updatedVal = value;

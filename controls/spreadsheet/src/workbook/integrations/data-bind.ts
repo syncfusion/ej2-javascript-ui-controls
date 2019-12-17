@@ -1,7 +1,7 @@
 import { DataManager, Query, Deferred, ReturnOption, QueryOptions } from '@syncfusion/ej2-data';
-import { Workbook, Sheet, getCell, CellModel, RangeSettingModel, RowModel, SheetModel, setCell } from '../base/index';
-import { getRangeIndexes, checkIsFormula, ExtendedSheet } from '../common/index';
-import { checkDateFormat } from '../common/event';
+import { Workbook, getCell, CellModel, RowModel, SheetModel, setCell } from '../base/index';
+import { getRangeIndexes, checkIsFormula, updateSheetFromDataSource, checkDateFormat, dataSourceChanged } from '../common/index';
+import { ExtendedSheet, ExtendedRange, AutoDetectInfo } from '../common/index';
 import { getFormatFromType } from './number-format';
 
 /**
@@ -16,8 +16,8 @@ export class DataBind {
     }
 
     private addEventListener(): void {
-        this.parent.on('updateSheetFromDataSource', this.updateSheetFromDataSourceHandler, this);
-        this.parent.on('dataSourceChanged', this.dataSourceChangedHandler, this);
+        this.parent.on(updateSheetFromDataSource, this.updateSheetFromDataSourceHandler, this);
+        this.parent.on(dataSourceChanged, this.dataSourceChangedHandler, this);
     }
 
     /**
@@ -31,8 +31,8 @@ export class DataBind {
 
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
-            this.parent.off('updateSheetFromDataSource', this.updateSheetFromDataSourceHandler);
-            this.parent.off('dataSourceChanged', this.dataSourceChangedHandler);
+            this.parent.off(updateSheetFromDataSource, this.updateSheetFromDataSourceHandler);
+            this.parent.off(dataSourceChanged, this.dataSourceChangedHandler);
         }
     }
 
@@ -256,27 +256,4 @@ export class DataBind {
     protected getModuleName(): string {
         return 'dataBind';
     }
-}
-
-interface ExtendedRange extends RangeSettingModel {
-    info?: RangeInfo;
-}
-
-interface RangeInfo {
-    loadedRange?: number[][];
-    count?: number;
-    fldLen?: number;
-}
-
-interface AutoDetectInfo {
-    value: string;
-    args: { sheet: Sheet, indexes: number[] };
-    cell: CellModel;
-    rowIndex: number;
-    colIndex: number;
-    i: number;
-    j: number;
-    k: number;
-    sRanges: number[];
-    range: ExtendedRange;
 }

@@ -127,7 +127,6 @@ export class FocusStrategy {
         if (th && closest(document.activeElement, '.e-filterbarcell') !== null) {
             this.removeFocus();
         }
-
         let filterCell: boolean = closest(document.activeElement, '.e-filterbarcell') !== null;
         if (this.parent.enableHeaderFocus && filterCell) {
             let matrix: Matrix = this.active.matrix;
@@ -175,14 +174,6 @@ export class FocusStrategy {
     }
 
     /** @hidden */
-    public addOutline(): void {
-        let info: FocusInfo = this.getContent().getFocusInfo();
-        if (info.element) {
-            addClass([info.element], ['e-focused']);
-            addClass([info.elementToFocus], ['e-focus']);
-        }
-    }
-    /** @hidden */
     public focusHeader(): void {
         this.setActive(false, this.parent.frozenColumns !== 0);
         this.resetFocus();
@@ -193,11 +184,10 @@ export class FocusStrategy {
         this.resetFocus();
     }
 
-    protected resetFocus(): void {
+    private resetFocus(): void {
         let current: number[] = this.getContent().matrix.get(0, -1, [0, 1], null, this.getContent().validator());
         this.getContent().matrix.select(current[0], current[1]);
         this.focus();
-        this.addOutline();
     }
 
     protected addFocus(info: FocusInfo, e?: KeyboardEventArgs): void {
@@ -375,7 +365,6 @@ export class FocusStrategy {
         }
         this.getContent().matrix.current = current;
         this.addFocus(this.getContent().getFocusInfo());
-        this.addOutline();
     }
 
     public clearOutline(): void {
@@ -568,7 +557,8 @@ export class ContentFocus implements IFocus {
             cellIndex = gObj.getColumnIndexByField(gObj.getVisibleColumns()[gObj.getVisibleColumns().length - 1].field);
         }
         return !cell.classList.contains('e-rowcell') && !cell.classList.contains('e-headercell') &&
-            !cell.classList.contains('e-groupcaption') ? this.editNextRow(rowIndex, cellIndex, action) : [rowIndex, cellIndex];
+        !cell.classList.contains('e-groupcaption') ?
+            this.editNextRow(rowIndex, cellIndex, action) : [rowIndex, cellIndex];
     }
 
     public getCurrentFromAction(action: string, navigator: number[] = [0, 0], isPresent?: boolean, e?: KeyboardEventArgs): number[] {
@@ -638,6 +628,17 @@ export class ContentFocus implements IFocus {
         let frozenSwap: boolean = this.parent.frozenColumns > 0 &&
             ((action === 'leftArrow' || action === 'shiftTab') && current[1] === 0);
         let enterFrozen: boolean = this.parent.frozenRows !== 0 && action === 'shiftEnter';
+        if (action === 'tab' && !this.parent.isEdit &&
+            current[1] === this.matrix.matrix[current[0]].lastIndexOf(1) && this.matrix.matrix.length - 1 !== current[0]) {
+            this.matrix.current[0] = this.matrix.current[0] + 1;
+            this.matrix.current[1] = -1;
+            frozenSwap = this.parent.frozenColumns > 0;
+        }
+        if (action === 'shiftTab' && !this.parent.isEdit &&
+            current[0] !== 0 && this.matrix.matrix[current[0]].indexOf(1) === current[1]) {
+            this.matrix.current[0] = this.matrix.current[0] - 1;
+            this.matrix.current[1] = this.matrix.matrix[current[0]].length;
+        }
         let info: SwapInfo = {
             swap: ((action === 'upArrow' || enterFrozen) && current[0] === 0) || frozenSwap,
             toHeader: (action === 'upArrow' || enterFrozen) && current[0] === 0,

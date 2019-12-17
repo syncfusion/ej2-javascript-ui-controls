@@ -115,10 +115,7 @@
           line-height: $drop-down-btn-li-height;
           margin-right: $drop-down-btn-icon-margin-right;
           vertical-align: middle;
-        }
-
-        &.e-blank-icon {
-          padding-left: $drop-down-btn-blank-icon;
+          width: 1em;
         }
 
         &.e-disabled {
@@ -140,10 +137,6 @@
   }
 
   .e-rtl#{&}.e-dropdown-popup .e-item {
-    &.e-blank-icon {
-      padding-right: $drop-down-btn-blank-icon;
-    }
-
     & .e-menu-icon {
       float: right;
       margin-left: $drop-down-btn-icon-margin-right;
@@ -167,10 +160,6 @@
       & .e-menu-icon {
         font-size: $drop-down-btn-menu-icon-bigger-font-size;
         line-height: $drop-down-btn-bigger-li-height;
-      }
-
-      &.e-blank-icon {
-        padding-left: $drop-down-btn-blank-icon-bigger;
       }
 
       &.e-separator {

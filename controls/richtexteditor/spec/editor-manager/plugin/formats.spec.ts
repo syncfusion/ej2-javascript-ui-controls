@@ -159,10 +159,8 @@ describe('Formats plugin', () => {
             editorObj.nodeSelection.setSelectionText(document, start, end, 0, 0);
             editorObj.execCommand("Formats", 'pre', null);
             start = elem.querySelector('.h1-tag-node');
-            end = elem.querySelector('.h2-tag-node');
             expect(start.tagName.toLowerCase() === 'pre').toBe(true);
-            expect(end.tagName.toLowerCase() === 'pre').toBe(true);
-
+            expect(start.innerHTML === 'Header 1<br>Header 2').toBe(true);
             editorObj.nodeSelection.Clear(document);
         });
         afterAll(() => {
@@ -504,4 +502,297 @@ describe('Formats plugin', () => {
         });
     });
 
+    describe(' Pre Formats testing', () => {
+        let editorObj: EditorManager;
+        let tableContent: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner"><ol><li class="l1">list1</li><li>list2</li><li class="l3">list3</li></ol></div>`;
+        let elem: HTMLElement = createElement('div', {
+            id: 'dom-node', innerHTML: tableContent
+        });
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+        });
+
+        it('Apply pre to List with out P tag in list', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('.l1');
+            let end: HTMLElement = elem.querySelector('.l3');
+            editorObj.nodeSelection.setSelectionText(document, start.childNodes[0], end.childNodes[0], 0, 2);
+            editorObj.execCommand("Formats", 'pre', null);
+            expect(elem.querySelector('pre.l1').textContent === 'list1').toBe(true);
+            expect(elem.querySelector('pre.l3').textContent === 'list3').toBe(true);
+            editorObj.nodeSelection.Clear(document);
+        });
+        afterAll(() => {
+            detach(elem);
+        });
+    });
+
+    describe(' Pre format testing', () => {
+        let editorObj: EditorManager;
+        let tableContent: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner"><p id='p1'>Paragraph 1</p><p id='p2'>Paragraph 2</p><p id='p3'>Paragraph 3</p><table><tbody><tr><td>cell 1 1</td><td>cell 1 2</td></tr><tr><td>cell 2 1</td><td id="lastCell">Cell 2 2</td></tr></tbody></table></div>`;
+        let elem: HTMLElement = createElement('div', {
+            id: 'dom-node', innerHTML: tableContent
+        });
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+        });
+
+        it('select all with last element as table', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('#p1');
+            let end: HTMLElement = elem.querySelector('#lastCell');
+            editorObj.nodeSelection.setSelectionText(document, start.childNodes[0], editorObj.editableElement, 0, 4);
+            editorObj.execCommand("Formats", 'pre', null);
+            expect(elem.querySelector('#p1').innerHTML === 'Paragraph 1<br>Paragraph 2<br>Paragraph 3').toBe(true);
+            expect(elem.querySelector('table').querySelectorAll('pre').length === 4).toBe(true);
+            editorObj.nodeSelection.Clear(document);
+        });
+        afterAll(() => {
+            detach(elem);
+        });        
+    });
+
+    describe(' Pre format Enter key testing', () => {
+        let editorObj: EditorManager;
+        let keyBoardEvent: any = { callBack: () => { }, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13 } };
+        let tableContent: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner">
+        <pre id='p1'>Paragraph 1<br>Paragraph 2<br>Paragraph 3<br>Paragraph 4<br>Paragraph 5<br>Paragraph 6</pre>
+        </div>`;
+        let elem: HTMLElement = createElement('div', {
+            id: 'dom-node', innerHTML: tableContent
+        });
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+        });
+
+        it('Enter key at the start of the pre text', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('#p1');
+            editorObj.nodeSelection.setCursorPoint(document, start.childNodes[0] as Element, 0);
+            expect(start.innerHTML === 'Paragraph 1<br>Paragraph 2<br>Paragraph 3<br>Paragraph 4<br>Paragraph 5<br>Paragraph 6').toBe(true);
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            expect(start.innerHTML === '<br>Paragraph 1<br>Paragraph 2<br>Paragraph 3<br>Paragraph 4<br>Paragraph 5<br>Paragraph 6').toBe(true);
+        });
+        it('Enter key at the middle of the pre text', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('#p1');
+            editorObj.nodeSelection.setCursorPoint(document, start.childNodes[1] as Element, 4);
+            expect(start.innerHTML === '<br>Paragraph 1<br>Paragraph 2<br>Paragraph 3<br>Paragraph 4<br>Paragraph 5<br>Paragraph 6').toBe(true);
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            let expectedElem: HTMLElement = elem.querySelector('#p1');
+            expect(expectedElem.innerHTML === '<br>Para<br>graph 1<br>Paragraph 2<br>Paragraph 3<br>Paragraph 4<br>Paragraph 5<br>Paragraph 6').toBe(true);
+        });
+        it('Enter key at the middle of the pre text but at the end of the current line', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('#p1');
+            editorObj.nodeSelection.setCursorPoint(document, start.childNodes[1] as Element, 4);
+            expect(start.innerHTML === '<br>Para<br>graph 1<br>Paragraph 2<br>Paragraph 3<br>Paragraph 4<br>Paragraph 5<br>Paragraph 6').toBe(true);
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            let expectedElem: HTMLElement = elem.querySelector('#p1');
+            expect(expectedElem.innerHTML === '<br>Para<br><br>graph 1<br>Paragraph 2<br>Paragraph 3<br>Paragraph 4<br>Paragraph 5<br>Paragraph 6').toBe(true);
+        });
+        it('Enter key at the start of the pre textbefore br tag', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('#p1');
+            editorObj.nodeSelection.setCursorPoint(document, start.childNodes[2] as Element, 0);
+            expect(start.innerHTML === '<br>Para<br><br>graph 1<br>Paragraph 2<br>Paragraph 3<br>Paragraph 4<br>Paragraph 5<br>Paragraph 6').toBe(true);
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            let expectedElem: HTMLElement = elem.querySelector('#p1');
+            expect(expectedElem.innerHTML === '<br><br>Para<br><br>graph 1<br>Paragraph 2<br>Paragraph 3<br>Paragraph 4<br>Paragraph 5<br>Paragraph 6').toBe(true);
+        });
+        it('Enter key at the middle of the pre text inbetween br tag', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('#p1');
+            editorObj.nodeSelection.setCursorPoint(document, start as Element, 4);
+            expect(start.innerHTML === '<br><br>Para<br><br>graph 1<br>Paragraph 2<br>Paragraph 3<br>Paragraph 4<br>Paragraph 5<br>Paragraph 6').toBe(true);
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            let expectedElem: HTMLElement = elem.querySelector('#p1');
+            expect(expectedElem.innerHTML === '<br><br>Para<br><br><br>graph 1<br>Paragraph 2<br>Paragraph 3<br>Paragraph 4<br>Paragraph 5<br>Paragraph 6').toBe(true);
+        });
+        it('Enter key with selection at the middle of the pre tag', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('#p1');
+            editorObj.nodeSelection.setSelectionText(document, start.childNodes[2], start.childNodes[6], 1, 3);
+            expect(start.innerHTML === '<br><br>Para<br><br><br>graph 1<br>Paragraph 2<br>Paragraph 3<br>Paragraph 4<br>Paragraph 5<br>Paragraph 6').toBe(true);
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            let expectedElem: HTMLElement = elem.querySelector('#p1');
+            expect(expectedElem.innerHTML === '<br><br>P<br>ph 1<br>Paragraph 2<br>Paragraph 3<br>Paragraph 4<br>Paragraph 5<br>Paragraph 6').toBe(true);
+        });
+        it('Enter key with selection as start to middle of the pre tag', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('#p1');
+            editorObj.nodeSelection.setSelectionText(document, start, start, 0, 10);
+            expect(start.innerHTML === '<br><br>P<br>ph 1<br>Paragraph 2<br>Paragraph 3<br>Paragraph 4<br>Paragraph 5<br>Paragraph 6').toBe(true);
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            let expectedElem: HTMLElement = elem.querySelector('#p1');
+            expect(expectedElem.innerHTML === '<br>Paragraph 4<br>Paragraph 5<br>Paragraph 6').toBe(true);
+        });
+        it('Enter key with end of the pre tag', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('#p1');
+            editorObj.nodeSelection.setCursorPoint(document, start.childNodes[5] as Element, 11);
+            expect(start.innerHTML === '<br>Paragraph 4<br>Paragraph 5<br>Paragraph 6').toBe(true);
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            let expectedElem: HTMLElement = elem.querySelector('#p1');
+            expect(expectedElem.innerHTML === '<br>Paragraph 4<br>Paragraph 5<br>Paragraph 6<br><br>').toBe(true);
+        });
+        it('Double enter key press at the end of the pre tag', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('#p1');
+            editorObj.nodeSelection.setCursorPoint(document, start.childNodes[7] as Element, 0);
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            let expectedElem: HTMLElement = elem.querySelector('#p1');
+            expect(expectedElem.nextElementSibling.tagName === 'P').toBe(true);
+        });
+        afterAll(() => {
+            detach(elem);
+        });
+    });
+
+    describe(' Pre format Enter key testing - 2', () => {
+        let editorObj: EditorManager;
+        let keyBoardEvent: any = { callBack: () => { }, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13 } };
+        let tableContent: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner">
+        <p id="prePara">previous paragraph</p><pre id='p1'>Paragraph 1<br>Paragraph 2</pre><p id="nextPara">Paragraph</p>
+        </div>`;
+        let elem: HTMLElement = createElement('div', {
+            id: 'dom-node', innerHTML: tableContent
+        });
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+        });
+
+        it('Enter key at the start of the pre text', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('#prePara');
+            let end: HTMLElement =  elem.querySelector('#p1');
+            editorObj.nodeSelection.setSelectionText(document, start.childNodes[0], end.childNodes[0], 0, 4);
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            expect(elem.querySelector('#prePara').textContent === '').toBe(true);
+            expect(elem.querySelector('#p1').innerHTML === 'graph 1<br>Paragraph 2').toBe(true);
+        });
+        it('Enter key at the start of the pre text', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('#p1');
+            let end: HTMLElement =  elem.querySelector('#nextPara');
+            editorObj.nodeSelection.setSelectionText(document, start.childNodes[2], end.childNodes[0], 4, 9);
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            expect(elem.querySelector('#nextPara').textContent === '').toBe(true);
+            expect(elem.querySelector('#p1').innerHTML === 'graph 1<br>Para').toBe(true);
+        });
+
+        '<pre><span;">span 1</span><br><span>span 2</span><br><span>span 3</span><br><br><span id="selectSpan">﻿﻿</span><br><span>span 5</span></pre>'
+        afterAll(() => {
+            detach(elem);
+        });
+    });
+
+    describe(' Pre format Enter key testing - 3', () => {
+        let editorObj: EditorManager;
+        let keyBoardEvent: any = { callBack: () => { }, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13 } };
+        let tableContent: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner">
+        <pre><span;">span 1</span><br><span>span 2</span><br><span>span 3</span><br><br><span id="selectSpan">revanth﻿﻿</span><br><span>span 5</span></pre>
+        </div>`;
+        let elem: HTMLElement = createElement('div', {
+            id: 'dom-node', innerHTML: tableContent
+        });
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+        });
+
+        it('Enter key at the middle of the pre text with style and span inside', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('#selectSpan');
+            editorObj.nodeSelection.setCursorPoint(document, start.childNodes[0] as Element, 7);
+            expect(elem.querySelectorAll('br').length === 5).toBe(true);
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            expect(elem.querySelectorAll('br').length === 6).toBe(true);
+        });
+        afterAll(() => {
+            detach(elem);
+        });
+    });
+
+    describe(' Pre format Enter key with list as parent testing - 3', () => {
+        let editorObj: EditorManager;
+        let keyBoardEvent: any = { callBack: () => { }, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13 } };
+        let tableContent: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner">
+        <ol><li><pre id='listPre'>para</pre></li></ol>
+        </div>`;
+        let elem: HTMLElement = createElement('div', {
+            id: 'dom-node', innerHTML: tableContent
+        });
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+        });
+
+        it('Enter key at the end of the list', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('#listPre');
+            editorObj.nodeSelection.setCursorPoint(document, start.childNodes[0] as Element, 4);
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            expect(elem.querySelectorAll('br').length === 0).toBe(true);
+        });
+        afterAll(() => {
+            detach(elem);
+        });
+    });
+
+    describe('Empty pre format with testing', () => {
+        let editorObj: EditorManager;
+        let keyBoardEvent: any = { callBack: () => { }, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13 } };
+        let tableContent: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner">
+        <pre id="selectPre">﻿﻿<br></pre>
+        </div>`;
+        let elem: HTMLElement = createElement('div', {
+            id: 'dom-node', innerHTML: tableContent
+        });
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+        });
+
+        it('Enter key press when pre is empty', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('#selectPre');
+            editorObj.nodeSelection.setCursorPoint(document, start.childNodes[0] as Element, 2);
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            expect(elem.querySelectorAll('br').length === 2).toBe(true);
+        });
+        afterAll(() => {
+            detach(elem);
+        });
+    });
+
+    describe(' Apply heading format with content having commensts tag testing', () => {
+        let editorObj: EditorManager;
+        let tableContent: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner"><p id="p1">The rich text editor is WYSIWYG ("what you see is what you get") editor useful to create and edit content, and return the valid <!-- /react-text --><a href="https://ej2.syncfusion.com/home/" target="_blank">HTML markup</a><!-- react-text: 30 --> or <!-- /react-text --><a href="https://ej2.syncfusion.com/home/" target="_blank">markdown</a><!-- react-text: 32 --> of the content<!-- /react-text --></p><!-- react-text: 33 --> <!-- /react-text --><p id="lastPara">Toolbar</p></div>`;
+        let elem: HTMLElement = createElement('div', {
+            id: 'dom-node', innerHTML: tableContent
+        });
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+        });
+
+        it('select all with last element as table', () => {
+            let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+            let start: HTMLElement = elem.querySelector('#p1');
+            let end: HTMLElement = elem.querySelector('#lastPara');
+            editorObj.nodeSelection.setSelectionText(document, start.childNodes[0], end.childNodes[0], 0, 7);
+            editorObj.execCommand("Formats", 'h1', null);
+            expect(elem.querySelector('#p1').tagName === 'H1').toBe(true);
+            expect(elem.querySelector('#lastPara').tagName === 'H1').toBe(true);
+            editorObj.nodeSelection.Clear(document);
+        });
+        afterAll(() => {
+            detach(elem);
+        });
+    });
 });

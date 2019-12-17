@@ -18,8 +18,8 @@ import { cutFiles, addBlur, openSearchFolder, copyFiles, removeActive, pasteHand
 import { hasReadAccess, hasEditAccess, hasDownloadAccess, doRename, getAccessClass, createDeniedDialog, rename } from '../common/index';
 import { createVirtualDragElement, dragStopHandler, dragStartHandler, draggingHandler, getModule, getFullPath } from '../common/index';
 import { getDirectoryPath, updateRenamingData, getItemName, doDeleteFiles, doDownloadFiles } from '../common/index';
-import { RecordDoubleClickEventArgs, RowDataBoundEventArgs, SortEventArgs, HeaderCellInfoEventArgs, RowSelectingEventArgs } from '@syncfusion/ej2-grids';
-import { BeforeDataBoundArgs, ColumnModel, SortDescriptorModel, BeforeCopyEventArgs } from '@syncfusion/ej2-grids';
+import { RecordDoubleClickEventArgs, RowDataBoundEventArgs, SortEventArgs, HeaderCellInfoEventArgs } from '@syncfusion/ej2-grids';
+import { BeforeDataBoundArgs, ColumnModel, SortDescriptorModel, BeforeCopyEventArgs, RowSelectingEventArgs } from '@syncfusion/ej2-grids';
 
 /**
  * DetailsView module
@@ -994,14 +994,15 @@ export class DetailsView {
 
     /* istanbul ignore next */
     private onSelection(action: string, args: RowSelectingEventArgs | RowDeselectEventArgs): void {
-        let eventArgs: FileSelectionEventArgs = { action: action, fileDetails: args.data, isInteracted: this.interaction, cancel: false, target: args.target };
+        let eventArgs: FileSelectionEventArgs = {
+            action: action, fileDetails: args.data, isInteracted: this.interaction, cancel: false, target: args.target
+        };
         this.parent.trigger('fileSelection', eventArgs);
         args.cancel = eventArgs.cancel;
     }
 
     /* istanbul ignore next */
     private onSelected(args: RowSelectEventArgs): void {
-        this.addFocus(this.gridObj.selectedRowIndex);
         this.parent.activeModule = 'detailsview';
         if (!this.parent.isLayoutChange || this.parent.isFiltered) { this.selectedRecords(); }
         this.parent.notify(events.selectionChanged, {});
@@ -1050,6 +1051,7 @@ export class DetailsView {
             let checkItem: HTMLElement = <HTMLElement>item.querySelector('.e-checkselect');
             checkItem.focus();
         }
+        this.addFocus(this.gridObj.selectedRowIndex);
         if (!this.parent.isLayoutChange) {
             this.isInteracted = true;
         }
@@ -1525,11 +1527,15 @@ export class DetailsView {
 
     private addFocus(item: number | null): void {
         let fItem: Element = this.getFocusedItem();
-        let itemElement: Element = this.gridObj.getRowByIndex(item);
+        let itemElement: HTMLElement = <HTMLElement>this.gridObj.getRowByIndex(item);
         if (fItem) {
+            fItem.removeAttribute('tabindex');
             removeClass([fItem], [CLS.FOCUS, CLS.FOCUSED]);
         }
         if (!isNOU(itemElement)) {
+            this.gridObj.element.setAttribute('tabindex', '-1');
+            itemElement.setAttribute('tabindex', '0');
+            itemElement.focus();
             addClass([itemElement], [CLS.FOCUS, CLS.FOCUSED]);
         }
     }

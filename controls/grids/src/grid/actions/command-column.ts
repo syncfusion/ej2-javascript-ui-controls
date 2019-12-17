@@ -1,4 +1,4 @@
-import { closest, KeyboardEventArgs, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { closest, KeyboardEventArgs, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { click, keyPressed, commandClick, initialEnd } from '../base/constant';
 import { CellType } from '../base/enum';
 import { ServiceLocator } from '../services/service-locator';
@@ -50,7 +50,10 @@ export class CommandColumn {
                 col.commands.forEach((commandCol: Object) => {
                     let idInString: string = 'uid';
                     let typeInString: string = 'type';
-                    if (commandCol[idInString] === uid && commandCol[typeInString] === type) {
+                    if (isBlazor() && !gObj.isJsComponent && commandCol[idInString] === uid) {
+                        commandColumn = commandCol;
+                        type = commandCol[typeInString];
+                    } else if (commandCol[idInString] === uid && commandCol[typeInString] === type) {
                         commandColumn = commandCol;
                     }
                 });
@@ -128,6 +131,7 @@ export class CommandColumn {
     }
 
     private load(): void {
+        if (isBlazor() && !this.parent.isJsComponent) { return; }
         let uid: string = 'uid';
         (<{ columnModel?: Column[] }>this.parent).columnModel.forEach((col: Column, indexs: number) => {
             if (col.commands) {

@@ -12,12 +12,12 @@ Schedule.Inject(Day, TimelineViews, TimelineYear);
 
 describe('Year and TimelineYear View Event Render Module', () => {
     beforeAll(() => {
-        // tslint:disable-next-line:no-any
+        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             // tslint:disable-next-line:no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); //Skips test (in Chai)
+            (this as any).skip(); //Skips test (in Chai)
             return;
         }
     });
@@ -122,7 +122,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
                 width: '500px', height: '550px', selectedDate: new Date(2019, 0, 1),
                 views: [
                     { option: 'TimelineDay' },
-                    { option: 'TimelineYear', displayName: 'Horizontal', isSelected: true },
+                    { option: 'TimelineYear', isSelected: true },
                     { option: 'TimelineYear', displayName: 'Vertical', orientation: 'Vertical' }
                 ]
             };
@@ -147,6 +147,19 @@ describe('Year and TimelineYear View Event Render Module', () => {
             let workCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
             expect(workCell.offsetWidth).toEqual(60);
             expect(workCell.offsetHeight).toEqual(70);
+        });
+
+        it('decade calendar testing', () => {
+            let dateRange: HTMLElement = schObj.element.querySelector('.e-date-range') as HTMLElement;
+            util.triggerMouseEvent(dateRange, 'click');
+            let headerPopup: HTMLElement = schObj.element.querySelector('.e-schedule .e-header-popup') as HTMLElement;
+            expect(headerPopup.classList.contains('e-popup-open')).toEqual(true);
+            expect(headerPopup.classList.contains('e-popup-close')).toEqual(false);
+            let headerCalendar: HTMLElement = schObj.element.querySelector('.e-schedule .e-header-calendar') as HTMLElement;
+            expect(headerCalendar.querySelector('.e-day.e-title').innerHTML).toEqual('2010 - 2019');
+            util.triggerMouseEvent(dateRange, 'click');
+            expect(headerPopup.classList.contains('e-popup-open')).toEqual(false);
+            expect(headerPopup.classList.contains('e-popup-close')).toEqual(true);
         });
 
         it('Scroll dimension checking', (done: DoneFn) => {

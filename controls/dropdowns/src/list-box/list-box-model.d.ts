@@ -1,4 +1,4 @@
-import { Input, InputObject } from '@syncfusion/ej2-inputs';import { DropDownBase, dropDownBaseClasses, FilteringEventArgs, SelectEventArgs } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { EventHandler, closest, removeClass, addClass, Complex, Property, ChildProperty, BaseEventArgs, L10n } from '@syncfusion/ej2-base';import { ModuleDeclaration, NotifyPropertyChanges, getComponent, EmitType, Event, extend, detach, attributes } from '@syncfusion/ej2-base';import { getUniqueID, Browser, formatUnit, isNullOrUndefined, getValue } from '@syncfusion/ej2-base';import { prepend, append , isBlazor, BlazorDragEventArgs, resetBlazorTemplate} from '@syncfusion/ej2-base';import { cssClass, Sortable, moveTo } from '@syncfusion/ej2-lists';import { Button } from '@syncfusion/ej2-buttons';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { DataManager, Query } from '@syncfusion/ej2-data';
+import { Input, InputObject } from '@syncfusion/ej2-inputs';import { DropDownBase, dropDownBaseClasses, FilteringEventArgs, SelectEventArgs } from '../drop-down-base/drop-down-base';import { FilterType, FieldSettings } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { EventHandler, closest, removeClass, addClass, Complex, Property, ChildProperty, BaseEventArgs, L10n } from '@syncfusion/ej2-base';import { ModuleDeclaration, NotifyPropertyChanges, getComponent, EmitType, Event, extend, detach, attributes } from '@syncfusion/ej2-base';import { getUniqueID, Browser, formatUnit, isNullOrUndefined, getValue } from '@syncfusion/ej2-base';import { prepend, append , isBlazor, BlazorDragEventArgs, resetBlazorTemplate} from '@syncfusion/ej2-base';import { cssClass, Sortable, moveTo, SortOrder } from '@syncfusion/ej2-lists';import { Button } from '@syncfusion/ej2-buttons';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { DataManager, Query } from '@syncfusion/ej2-data';
 import {SelectionMode,CheckBoxPosition,ToolBarPosition,BeforeItemRenderEventArgs,ListBoxChangeEventArgs,DragEventArgs} from "./list-box";
 import {DropDownBaseModel} from "../drop-down-base/drop-down-base-model";
 
@@ -62,6 +62,114 @@ export interface ToolbarSettingsModel {
  * Interface for a class ListBox
  */
 export interface ListBoxModel extends DropDownBaseModel{
+
+    /**
+     * The `fields` property maps the columns of the data table and binds the data to the component.
+     * * text - Maps the text column from data table for each list item.
+     * * value - Maps the value column from data table for each list item.
+     * * iconCss - Maps the icon class column from data table for each list item.
+     * * groupBy - Group the list items with it's related items by mapping groupBy field.
+     * ```html
+     * <input type="text" tabindex="1" id="list"> </input>
+     * ```
+     * ```typescript  
+     *   let customers: ListBox = new ListBox({
+     *      dataSource:new DataManager({ url:'http://js.syncfusion.com/demos/ejServices/Wcf/Northwind.svc/' }),
+     *      query: new Query().from('Customers').select(['ContactName', 'CustomerID']).take(5),
+     *      fields: { text: 'ContactName', value: 'CustomerID' },
+     *      placeholder: 'Select a customer'
+     *   });
+     *   customers.appendTo("#list");
+     * ```
+     * @default {text: null, value: null, iconCss: null, groupBy: null}
+     */
+    fields?: FieldSettingsModel;
+
+    /**
+     * Enable or disable persisting ListBox component's state between page reloads. 
+     * If enabled, following list of states will be persisted.
+     * 1. value
+     * @default false
+     */
+    enablePersistence?: boolean;
+
+    /**
+     * Accepts the template design and assigns it to each list item present in the popup.
+     * We have built-in `template engine`
+     * 
+     * which provides options to compile template string into a executable function. 
+     * For EX: We have expression evolution as like ES6 expression string literals. 
+     * @default null
+     */
+    itemTemplate?: string;
+
+    /**
+     * Specifies the `sortOrder` to sort the ListBox data source. The available type of sort orders are
+     * * `None` - The data source is not sorting.
+     * * `Ascending` - The data source is sorting with ascending order.
+     * * `Descending` - The data source is sorting with descending order.
+     * @default None
+     */
+    sortOrder?: SortOrder;
+
+    /**
+     * Specifies a value that indicates whether the ListBox component is enabled or not.
+     * @default true
+     */
+    enabled?: boolean;
+
+    /**
+     * Accepts the list items either through local or remote service and binds it to the ListBox component.
+     * It can be an array of JSON Objects or an instance of
+     * `DataManager`.
+     * @default []
+     */
+    dataSource?: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
+
+    /**
+     * Accepts the external `Query`
+     * which will execute along with the data processing.
+     * @default null
+     */
+    query?: Query;
+
+    /**
+     * Determines on which filter type, the component needs to be considered on search action. 
+     * The `FilterType` and its supported data types are 
+     * 
+     * <table> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * FilterType<br/></td><td colSpan=1 rowSpan=1> 
+     * Description<br/></td><td colSpan=1 rowSpan=1> 
+     * Supported Types<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * StartsWith<br/></td><td colSpan=1 rowSpan=1> 
+     * Checks whether a value begins with the specified value.<br/></td><td colSpan=1 rowSpan=1> 
+     * String<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * EndsWith<br/></td><td colSpan=1 rowSpan=1> 
+     * Checks whether a value ends with specified value.<br/><br/></td><td colSpan=1 rowSpan=1> 
+     * <br/>String<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * Contains<br/></td><td colSpan=1 rowSpan=1> 
+     * Checks whether a value contains with specified value.<br/><br/></td><td colSpan=1 rowSpan=1> 
+     * <br/>String<br/></td></tr> 
+     * </table>
+     * 
+     * The default value set to `StartsWith`, all the suggestion items which contain typed characters to listed in the suggestion popup.
+     * @default 'StartsWith'
+     */
+    filterType?: FilterType;
+
+    /**
+     * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
+     * @default 'en-US'
+     */
+    locale?: string;
 
     /**
      * Sets the CSS classes to root element of this component, which helps to customize the
@@ -193,7 +301,7 @@ export interface ListBoxModel extends DropDownBaseModel{
     noRecordsTemplate?: string;
 
     /**
-     * Accepts the template and assigns it to the list content of the component
+     * Accepts the template and assigns it to the list content of the ListBox component
      * when the data fetch request from the remote server fails.
      * @default 'The Request Failed'
      * @private

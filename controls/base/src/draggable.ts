@@ -242,7 +242,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
      * Defines the child element selector which will prevent dragging of element.
      */
     @Property()
-    public abort: string;
+    public abort: string | string[];
     /**
      * Defines the callback function for customizing the cloned  element.
      */
@@ -437,12 +437,19 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         this.target = <HTMLElement>(evt.currentTarget || curTarget);
         this.dragProcessStarted = false;
         if (this.abort) {
-            if (!isNullOrUndefined(closest((evt.target as Element), this.abort))) {
-                /* istanbul ignore next */
-                if (this.isDragStarted()) {
-                    this.isDragStarted(true);
+            /* tslint:disable no-any */
+            let abortSelectors: any = this.abort;
+            if (typeof abortSelectors === 'string') {
+                abortSelectors = [abortSelectors];
+            }
+            for (let i: number = 0; i < abortSelectors.length; i++) {
+                if (!isNullOrUndefined(closest((evt.target as Element), abortSelectors[i]))) {
+                    /* istanbul ignore next */
+                    if (this.isDragStarted()) {
+                        this.isDragStarted(true);
+                    }
+                    return;
                 }
-                return;
             }
         }
         if (this.preventDefault && !isUndefined(evt.changedTouches)) {

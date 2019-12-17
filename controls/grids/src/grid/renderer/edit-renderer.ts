@@ -157,10 +157,11 @@ export class EditRender {
                 continue;
             }
             if (col.commands || col.commandsTemplate) {
+                let cells: Cell<Column>[];
                 let cellRendererFact: CellRendererFactory = this.serviceLocator.getService<CellRendererFactory>('cellRendererFactory');
                 let model: IModelGenerator<Column> = new RowModelGenerator(this.parent);
                 let cellRenderer: ICellRenderer<{}> = cellRendererFact.getCellRenderer(CellType.CommandColumn);
-                let cells: Cell<Column>[] = model.generateRows(args.rowData)[0].cells;
+                cells = model.generateRows(args.rowData)[0].cells;
                 let cell: Cell<Column>[] = cells.filter((cell: Cell<Column>) => cell.rowID);
                 let td: Element = cellRenderer.render(
                     cell[i], args.rowData, <{ [x: string]: string }>{ 'index': args.row ? args.row.getAttribute('aria-rowindex') : 0 });
@@ -179,7 +180,14 @@ export class EditRender {
                 let tempData: object = extend({}, {}, args.rowData, true);
                 appendChildren(input, col.getEditTemplate()(tempData, this.parent, 'editTemplate', tempID));
                 if (isBlazor()) {
-                    updateBlazorTemplate(tempID, 'EditTemplate', col);
+                    let setRules: Function = (ruleColumn: Column) => {
+                        let column: Column = ruleColumn;
+                        let func: Function = () => {
+                            this.parent.editModule.formObj.rules[column.field] = column.validationRules as {[rule: string]: Object};
+                        };
+                        return func;
+                    };
+                    updateBlazorTemplate(tempID, 'EditTemplate', col, true, setRules(col));
                 }
             } else {
                 if (typeof temp === 'string') {

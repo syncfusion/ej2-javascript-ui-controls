@@ -253,16 +253,18 @@ describe('Util', () => {
 
     it('isBlazor true', () => {
         Util.enableBlazorMode();
+        window['Blazor'] = {};
         expect(Util.isBlazor()).toBe(true);
+        Util.disableBlazorMode();
     });
 
     it('GetElement with element', () => {
-        Util.enableBlazorMode();
+        window['Blazor'] = {};
         var element = document.createElement('span');
         expect(Util.getElement(element)).toBe(element);
-        Util.disableBlazorMode();
     });
     it('GetElement with xpath', () => {
+        window['Blazor'] = {};
         Util.enableBlazorMode();
         var element = document.createElement('span');
         element.id = "xpathelement";

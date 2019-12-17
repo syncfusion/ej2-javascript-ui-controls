@@ -639,7 +639,7 @@ describe('TreeGrid base module', () => {
       gridObj.collapseRow(<HTMLTableRowElement>(gridObj.getRowByIndex(2)));
       (<any>(gridObj.element.querySelectorAll('.e-gridrowindex2level3')))
         .forEach((args: any) => {
-           if (args.style['display'] === 'none') {
+          if (args.parentElement.style['display'] === 'none') {
               h++;
             }
           });

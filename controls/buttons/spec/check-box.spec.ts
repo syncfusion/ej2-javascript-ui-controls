@@ -156,6 +156,18 @@ describe('CheckBox', () => {
             expect(element.parentElement.children[1].getAttribute('value')).toEqual('false');
             element.removeAttribute('ejs-for');
         });
+
+        it('Enable Html Sanitizer testing', () => {
+            checkbox = new CheckBox({ label: '<style>body{background:rgb(0, 0, 255)}</style>', enableHtmlSanitizer: true, }, '#checkbox');
+            let htmlele: Element = document.body;
+            expect(window.getComputedStyle(htmlele).backgroundColor).not.toBe('rgb(0, 0, 255)');
+        });
+
+        it('Enable Html Sanitizer disabled testing', () => {
+            checkbox = new CheckBox({ label: 'Banking<style>body{background:rgb(0, 0, 255)}</style>' }, '#checkbox');
+            let htmlele: Element = document.body;
+            expect(window.getComputedStyle(htmlele).backgroundColor).toBe('rgb(0, 0, 255)');
+        });
     });
 
     describe('Property', () => {

@@ -1474,7 +1474,10 @@ export class DateRangePicker extends CalendarBase {
                 }
             }
             if (!this.strictMode) {
-                this.clearRange();
+                if (isNullOrUndefined(this.popupObj)) {
+                    this.currentDate = null;
+                }
+                this.previousStartValue = this.previousEndValue = null;
                 this.startValue = null;
                 this.endValue = null;
                 this.setValue();
@@ -4285,6 +4288,7 @@ export class DateRangePicker extends CalendarBase {
         this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
         Input.setPlaceholder(this.placeholder, this.inputElement);
         this.updateInput();
+        this.updateHiddenInput();
         this.changeTrigger();
     }
     private refreshChange(): void {

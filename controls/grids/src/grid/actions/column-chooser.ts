@@ -182,6 +182,11 @@ export class ColumnChooser implements IAction {
                 requestType: 'beforeOpenColumnChooser', element: this.parent.element,
                 columns: this.getColumns() as Column[], cancel: false, searchOperator: this.searchOperator
             };
+            if (isBlazor() && !this.parent.isJsComponent) {
+                args1 = {
+                    requestType: 'beforeOpenColumnChooser', cancel: false, searchOperator: this.searchOperator
+                };
+            }
             this.parent.trigger(events.beforeOpenColumnChooser, args1);
             if (args1.cancel) {
                 return;
@@ -277,6 +282,7 @@ export class ColumnChooser implements IAction {
     private customDialogOpen(): void {
         let searchElement: Element = (this.dlgObj.content as Element).querySelector('input.e-ccsearch');
         EventHandler.add(searchElement, 'keyup', this.columnChooserManualSearch, this);
+
     }
     private customDialogClose(): void {
         let searchElement: Element = (this.dlgObj.content as Element).querySelector('input.e-ccsearch');
@@ -284,15 +290,16 @@ export class ColumnChooser implements IAction {
     }
 
     private getColumns(): Column[] {
-        let columns: Column[] = this.parent.getColumns().filter((column: Column) => (column.type !== 'checkbox'
-            && column.showInColumnChooser === true) || (column.type === 'checkbox' && column.field !== undefined));
-        return columns;
+         let columns: Column[] = this.parent.getColumns().filter((column: Column) => (column.type !== 'checkbox'
+         && column.showInColumnChooser === true) || (column.type === 'checkbox' && column.field !== undefined));
+         return columns;
     }
 
 
     private renderDlgContent(): void {
         let y: number;
         this.dlgDiv = this.parent.createElement('div', { className: 'e-ccdlg e-cc', id: this.parent.element.id + '_ccdlg' });
+        this.dlgDiv.setAttribute('aria-label', this.l10n.getConstant('ColumnChooserDialogARIA'));
         this.parent.element.appendChild(this.dlgDiv);
         let xpos: number = this.parent.element.getBoundingClientRect().width - 250;
         let dialoPos: string = this.parent.enableRtl ? 'left' : 'right';
@@ -484,8 +491,8 @@ export class ColumnChooser implements IAction {
             let selectAll: Element = elem.querySelector('.e-selectall');
             if (selectAll) {
                 this.updateSelectAll(!elem.querySelector('.e-check'));
-            } else {
-                toogleCheckbox(elem.parentElement);
+            } else  {
+            toogleCheckbox(elem.parentElement);
             }
             (elem.querySelector('.e-chk-hidden') as HTMLElement).focus();
             if (elem.querySelector('.e-check')) {
@@ -497,9 +504,9 @@ export class ColumnChooser implements IAction {
             }
             this.updateIntermediateBtn();
             let columnUid: string = parentsUntil(elem, 'e-ccheck').getAttribute('uid');
-            let column: Column[] = this.parent.getColumns();
+            let column: Column[] =  this.parent.getColumns();
             if (columnUid === 'grid-selectAll') {
-                column.forEach((col: Column) => {
+                column.forEach((col: Column ) => {
                     if (col.showInColumnChooser) {
                         this.checkstatecolumn(checkstate, col.uid);
                     }
@@ -582,7 +589,7 @@ export class ColumnChooser implements IAction {
             this.checkState(selectAll.querySelector('.e-icons'), true);
             cclist.appendChild(selectAll);
             this.ulElement.appendChild(cclist);
-        }
+            }
         for (let i: number = 0; i < gdCol.length; i++) {
             let columns: Column = (gdCol[i] as Column);
             this.renderCheckbox(columns);
@@ -599,9 +606,8 @@ export class ColumnChooser implements IAction {
             let element: HTMLInputElement = currentCheckBoxColls[i] as HTMLInputElement;
             let columnUID: string;
             if (this.parent.childGrid || this.parent.detailTemplate) {
-                columnUID = parentsUntil(
-                    this.dlgObj.element.querySelectorAll('.e-cc-chbox:not(.e-selectall)')[i],
-                    'e-ccheck').getAttribute('uid');
+                columnUID = parentsUntil(this.dlgObj.element.querySelectorAll('.e-cc-chbox:not(.e-selectall)')[i],
+                                         'e-ccheck').getAttribute('uid');
             } else { columnUID = parentsUntil(element, 'e-ccheck').getAttribute('uid'); }
             let column: Column = gridObject.getColumnByUid(columnUID);
             if (column.visible) {

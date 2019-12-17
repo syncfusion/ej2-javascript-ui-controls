@@ -9,6 +9,7 @@ import { isIDevice, setEditFrameFocus } from '../../common/util';
 /**
  * Formats internal component
  * @hidden
+ * @deprecated
  */
 export class Alignments {
     private parent: EditorManager;
@@ -21,6 +22,7 @@ export class Alignments {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     constructor(parent: EditorManager) {
         this.parent = parent;

@@ -1,4 +1,4 @@
-import { Animation, Base, ChildProperty, Complex, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, blazorTemplates, closest, compareElementParent, compile, detach, extend, formatUnit, getComponent, getUniqueID, getValue, isBlazor, isNullOrUndefined, isVisible, merge, prepend, remove, removeClass, resetBlazorTemplate, rippleEffect, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Base, ChildProperty, Complex, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, append, attributes, blazorTemplates, closest, compareElementParent, compile, detach, extend, formatUnit, getComponent, getUniqueID, getValue, isBlazor, isNullOrUndefined, isVisible, merge, prepend, remove, removeClass, resetBlazorTemplate, rippleEffect, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 
@@ -60,6 +60,7 @@ var ListBase;
     let defaultListBaseOptions = {
         showCheckBox: false,
         showIcon: false,
+        enableHtmlSanitizer: false,
         expandCollapse: false,
         fields: ListBase.defaultMappedFields,
         ariaAttributes: defaultAriaAttributes,
@@ -651,6 +652,9 @@ var ListBase;
             grpLI = (item.hasOwnProperty('isHeader') && item.isHeader)
                 ? true : false;
         }
+        if (options && options.enableHtmlSanitizer) {
+            text = SanitizeHtmlHelper.sanitize(text);
+        }
         let li = createElement('li', {
             className: (grpLI === true ? cssClass.group : cssClass.li) + ' ' + (isNullOrUndefined(className) ? '' : className),
             attrs: (ariaAttributes.groupItemRole !== '' && ariaAttributes.itemRole !== '' ?
@@ -986,6 +990,9 @@ let ListView = class ListView extends Component {
     // Support Component Functions
     header(text, showBack) {
         if (this.headerEle === undefined && this.showHeader) {
+            if (this.enableHtmlSanitizer) {
+                this.setProperties({ headerTitle: SanitizeHtmlHelper.sanitize(this.headerTitle) }, true);
+            }
             this.headerEle = this.createElement('div', { className: classNames.header });
             let innerHeaderEle = this.createElement('span', { className: classNames.headerText, innerHTML: this.headerTitle });
             let textEle = this.createElement('div', { className: classNames.text, innerHTML: innerHeaderEle.outerHTML });
@@ -1013,6 +1020,9 @@ let ListView = class ListView extends Component {
                 this.headerEle.style.display = '';
                 let textEle = this.headerEle.querySelector('.' + classNames.headerText);
                 let hedBackButton = this.headerEle.querySelector('.' + classNames.backIcon);
+                if (this.enableHtmlSanitizer) {
+                    text = SanitizeHtmlHelper.sanitize(text);
+                }
                 textEle.innerHTML = text;
                 if (this.headerTemplate && showBack) {
                     textEle.parentElement.classList.remove('header');
@@ -1083,13 +1093,14 @@ let ListView = class ListView extends Component {
             headerTemplate: this.headerTemplate,
             groupTemplate: this.groupTemplate, expandCollapse: true, listClass: '',
             ariaAttributes: {
-                itemRole: 'listitem', listRole: 'list', itemText: '',
+                itemRole: 'option', listRole: 'presentation', itemText: '',
                 groupItemRole: 'group', wrapperRole: 'presentation'
             },
             fields: this.fields.properties, sortOrder: this.sortOrder, showIcon: this.showIcon,
             itemCreated: this.renderCheckbox.bind(this),
             templateID: `${this.element.id}${LISTVIEW_TEMPLATE_PROPERTY}`,
             groupTemplateID: `${this.element.id}${LISTVIEW_GROUPTEMPLATE_PROPERTY}`,
+            enableHtmlSanitizer: this.enableHtmlSanitizer,
             removeBlazorID: true
         };
         this.initialization();
@@ -1326,6 +1337,9 @@ let ListView = class ListView extends Component {
     ;
     homeKeyHandler(e, end) {
         if (Object.keys(this.dataSource).length && this.curUL) {
+            if (this.selectedItems) {
+                (this.selectedItems.item).setAttribute('aria-selected', 'false');
+            }
             let li = this.curUL.querySelectorAll('.' + classNames.listItem);
             let focusedElement = this.curUL.querySelector('.' + classNames.focused) ||
                 this.curUL.querySelector('.' + classNames.selected);
@@ -1341,6 +1355,12 @@ let ListView = class ListView extends Component {
             }
             else {
                 this.setSelectLI(li[index], e);
+            }
+            if (li[index]) {
+                this.element.setAttribute('aria-activedescendant', li[index].id.toString());
+            }
+            else {
+                this.element.removeAttribute('aria-activedescendant');
             }
         }
     }
@@ -1370,6 +1390,12 @@ let ListView = class ListView extends Component {
             li = this.curUL.querySelector('.' + classNames.selected);
             siblingLI = ListBase.getSiblingLI(this.curUL.querySelectorAll('.' + classNames.listItem), li, prev);
             this.setSelectLI(siblingLI, e);
+        }
+        if (siblingLI) {
+            this.element.setAttribute('aria-activedescendant', siblingLI.id.toString());
+        }
+        else {
+            this.element.removeAttribute('aria-activedescendant');
         }
         return siblingLI;
     }
@@ -1814,11 +1840,21 @@ let ListView = class ListView extends Component {
         this.createList();
         this.renderIntoDom(this.curUL);
     }
+    setAttributes(liElements) {
+        liElements.forEach((element) => {
+            if (element.classList.contains('e-list-item')) {
+                element.setAttribute('id', this.element.id + '_' + element.getAttribute('data-uid'));
+                element.setAttribute('aria-selected', 'false');
+                element.setAttribute('tabindex', '-1');
+            }
+        });
+    }
     createList() {
         this.currentLiElements = [];
         this.isNestedList = false;
         this.ulElement = this.curUL = ListBase.createList(this.createElement, this.curViewDS, this.listBaseOption);
         this.liCollection = this.curUL.querySelectorAll('.' + classNames.listItem);
+        this.setAttributes(this.liCollection);
         this.updateBlazorTemplates(true);
     }
     resetBlazorTemplates() {
@@ -1857,6 +1893,8 @@ let ListView = class ListView extends Component {
             if (!ele) {
                 let data = this.curViewDS;
                 ele = ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length);
+                let lists = ele.querySelectorAll('.' + classNames.listItem);
+                this.setAttributes(lists);
                 ele.setAttribute('pID', uID);
                 ele.style.display = 'none';
                 this.renderIntoDom(ele);
@@ -1908,7 +1946,7 @@ let ListView = class ListView extends Component {
      */
     render() {
         this.element.classList.add(classNames.root);
-        attributes(this.element, { role: 'list', tabindex: '0' });
+        attributes(this.element, { role: 'listbox', tabindex: '0' });
         this.setCSSClass();
         this.setEnableRTL();
         this.setEnable();
@@ -1971,6 +2009,9 @@ let ListView = class ListView extends Component {
             li.setAttribute('aria-selected', 'false');
         }
         this.liCollection = this.curUL.querySelectorAll('.' + classNames.listItem);
+        if (this.enableHtmlSanitizer) {
+            this.setProperties({ headerTitle: SanitizeHtmlHelper.sanitize(this.headerTitle) }, true);
+        }
         this.header((this.curDSLevel.length ? text : this.headerTitle), (this.curDSLevel.length ? true : false));
     }
     /**
@@ -2353,6 +2394,7 @@ let ListView = class ListView extends Component {
         // it becomes child viewable due to new child items are added now
         if (isTargetEmptyChild) {
             const targetRefreshedElement = ListBase.createListItemFromJson(this.createElement, targetDS, this.listBaseOption);
+            this.setAttributes(targetRefreshedElement);
             targetUL.insertBefore(targetRefreshedElement[0], targetLi);
             detach(targetLi);
             isRefreshTemplateNeeded = true;
@@ -2381,6 +2423,7 @@ let ListView = class ListView extends Component {
         let target = this.getLiFromObjOrElement(curViewDS[index + 1]) ||
             this.getLiFromObjOrElement(curViewDS[index + 2]) || null;
         let li = ListBase.createListItemFromJson(this.createElement, [dataSource], this.listBaseOption);
+        this.setAttributes(li);
         ulElement.insertBefore(li[0], target);
     }
     /**
@@ -2438,6 +2481,7 @@ let ListView = class ListView extends Component {
                 const parentLi = this.getLiFromObjOrElement(foundData.parent);
                 if (parentLi) {
                     let li = ListBase.createListItemFromJson(this.createElement, [foundData.parent], this.listBaseOption);
+                    this.setAttributes(li);
                     parentLi.parentElement.insertBefore(li[0], parentLi);
                     parentLi.parentElement.removeChild(parentLi);
                 }
@@ -2552,6 +2596,9 @@ __decorate([
     Property(false)
 ], ListView.prototype, "showHeader", void 0);
 __decorate([
+    Property(false)
+], ListView.prototype, "enableHtmlSanitizer", void 0);
+__decorate([
     Property('')
 ], ListView.prototype, "height", void 0);
 __decorate([
@@ -2591,8 +2638,7 @@ class Virtualization {
      * @private
      */
     isNgTemplate() {
-        return !isNullOrUndefined(this.listViewInstance.templateRef) && typeof this.listViewInstance.templateRef !== 'string'
-            && isNullOrUndefined(this.listViewInstance.fields.groupBy);
+        return !isNullOrUndefined(this.listViewInstance.templateRef) && typeof this.listViewInstance.templateRef !== 'string';
     }
     /**
      * For internal use only.

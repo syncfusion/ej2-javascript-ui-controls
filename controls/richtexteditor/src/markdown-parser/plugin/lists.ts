@@ -268,8 +268,11 @@ export class MDLists {
         let prevLine: string = this.selection.getLine(textArea, (parents[0].line as number) - 1);
         let listFormat: number = this.olListType();
         let regex: RegExp = this.getListRegex();
-        let prevLineSplit: string[] = prevLine.split('. ');
-        this.currentAction = this.getAction(prevLine);
+        let prevLineSplit: string[] = [];
+        if (!isNullOrUndefined(prevLine)) {
+            prevLineSplit = prevLine.split('. ');
+            this.currentAction = this.getAction(prevLine);
+        }
         let addedLength: number = 0;
         if (this.currentAction === 'OL' && prevLineSplit.length > 1 && /^\d+$/.test(prevLineSplit[0].trim()) && listFormat
         && prevLineSplit[1] !== '') {

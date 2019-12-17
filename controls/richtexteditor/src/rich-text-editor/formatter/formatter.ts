@@ -11,6 +11,7 @@ import { NodeSelection } from '../../selection/selection';
 /**
  * Formatter
  * @hidden
+ * @deprecated
  */
 export class Formatter {
     public editorManager: IEditorModel;
@@ -20,6 +21,8 @@ export class Formatter {
      * @param  {ActionBeginEventArgs} args
      * @param  {MouseEvent|KeyboardEvent} event
      * @param  {IItemCollectionArgs} value
+     * @hidden
+     * @deprecated
      */
     public process(self: IRichTextEditor, args: ActionBeginEventArgs, event: MouseEvent | KeyboardEvent, value: IItemCollectionArgs): void {
         let selection: Selection = self.contentModule.getDocument().getSelection();
@@ -68,7 +71,9 @@ export class Formatter {
                     }
                 });
             }
-            if ((event.which === 9 && self.tableModule ? self.tableModule.ensureInsideTableList : false) || event.which !== 9) {
+            let isTableModule : boolean = isNullOrUndefined(self.tableModule) ? true : self.tableModule ?
+             self.tableModule.ensureInsideTableList : false;
+            if ((event.which === 9 && isTableModule) || event.which !== 9) {
                 this.editorManager.observer.notify((event.type === 'keydown' ? KEY_DOWN : KEY_UP), {
                     event: event,
                     callBack: this.onSuccess.bind(this, self),
@@ -102,7 +107,9 @@ export class Formatter {
                             actionBeginArgs.item.subCommand,
                             event, this.onSuccess.bind(this, self),
                             (actionBeginArgs.item as IDropDownItemModel).value,
-                            value, ('#' + self.getID() + ' iframe')
+                            actionBeginArgs.item.subCommand === 'Pre' && args.name === 'dropDownSelect' ?
+                            { name: args.name } : value,
+                            ('#' + self.getID() + ' iframe')
                         );
                     }
                 }
@@ -116,6 +123,11 @@ export class Formatter {
         node = node.nodeType === 3 ? node.parentNode : node;
         return node;
     }
+    /**
+     * onKeyHandler method
+     * @hidden
+     * @deprecated
+     */
     public onKeyHandler(self: IRichTextEditor, e: KeyboardEvent): void {
         this.editorManager.observer.notify(KEY_UP, {
             event: e, callBack: () => {
@@ -123,6 +135,11 @@ export class Formatter {
             }
         });
     }
+    /**
+     * onSuccess method
+     * @hidden
+     * @deprecated
+     */
     public onSuccess(self: IRichTextEditor, events: IMarkdownFormatterCallBack | IHtmlFormatterCallBack): void {
         if (isNullOrUndefined(events.event) || (events && (events.event as KeyboardEventArgs).action !== 'copy')) {
             this.enableUndo(self);
@@ -150,19 +167,36 @@ export class Formatter {
     }
     /**
      * Save the data for undo and redo action.
+     * @hidden
+     * @deprecated
      */
     public saveData(e?: KeyboardEvent | MouseEvent | IUndoCallBack): void {
         this.editorManager.undoRedoManager.saveData(e);
     }
 
+    /**
+     * getUndoStatus method
+     * @hidden
+     * @deprecated
+     */
     public getUndoStatus(): { [key: string]: boolean } {
         return this.editorManager.undoRedoManager.getUndoStatus();
     }
 
+    /**
+     * getUndoRedoStack method
+     * @hidden
+     * @deprecated
+     */
     public getUndoRedoStack(): IHtmlUndoRedoData[] | MarkdownUndoRedoData[] {
         return this.editorManager.undoRedoManager.undoRedoStack;
     }
 
+    /**
+     * enableUndo method
+     * @hidden
+     * @deprecated
+     */
     public enableUndo(self: IRichTextEditor): void {
         let status: { [key: string]: boolean } = this.getUndoStatus();
         if (self.inlineMode.enable && (!Browser.isDevice || isIDevice())) {

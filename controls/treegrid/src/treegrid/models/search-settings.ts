@@ -48,7 +48,9 @@ export class SearchSettings extends ChildProperty<SearchSettings> {
      * notequal<br/></td><td colspan=1 rowspan=1> 
      * Checks for strings not equal to the specified string. <br/></td></tr> 
      * </table> 
-     * @default 'contains' 
+     * @default 'contains'
+     * @blazorType Syncfusion.EJ2.Blazor.Operator
+     * @blazorDefaultValue Syncfusion.EJ2.Blazor.Operator.Contains
      */
     @Property('contains')
     public operator: string;

@@ -51,6 +51,11 @@ export class BaseQuickToolbar {
         this.element.appendChild(this.toolbarElement);
     }
 
+    /**
+     * render method
+     * @hidden
+     * @deprecated
+     */
     public render(args: IQuickToolbarOptions): void {
         let className: string;
         if (args.popupType === 'Image') {
@@ -102,7 +107,7 @@ export class BaseQuickToolbar {
             x = e.parentData.left + target.offsetLeft;
         }
         this.popupObj.position.X = ((x + e.popWidth) > e.parentData.right) ? e.parentData.right - e.popWidth : x;
-        this.popupObj.position.Y = y;
+        this.popupObj.position.Y = (y >= 0) ? y : e.y + 5;
         this.popupObj.dataBind();
         removeClass([this.toolbarElement], [classes.CLS_RM_WHITE_SPACE]);
     }
@@ -173,6 +178,11 @@ export class BaseQuickToolbar {
         this.popupObj.dataBind();
     }
 
+    /**
+     * showPopup method
+     * @hidden
+     * @deprecated
+     */
     public showPopup(x: number, y: number, target: Element): void {
         let eventArgs: BeforeQuickToolbarOpenArgs = isBlazor() ? { cancel: false, targetElement: target } :
             { popup: this.popupObj, cancel: false, targetElement: target };
@@ -258,6 +268,11 @@ export class BaseQuickToolbar {
         });
     }
 
+    /**
+     * hidePopup method
+     * @hidden
+     * @deprecated
+     */
     public hidePopup(): void {
         let viewSourcePanel: HTMLElement = <HTMLElement>this.parent.sourceCodeModule.getViewPanel();
         if (Browser.isDevice && !isIDevice()) {
@@ -273,12 +288,14 @@ export class BaseQuickToolbar {
     }
     /** 
      * @hidden
+     * @deprecated
      */
     public addQTBarItem(item: (string | IToolbarItems)[], index: number): void {
         this.quickTBarObj.toolbarObj.addItems((this.quickTBarObj.getItems(item, 'toolbar') as IToolbarItemModel[]), index);
     }
     /** 
      * @hidden
+     * @deprecated
      */
     public removeQTBarItem(index: number | HTMLElement[] | Element[]): void {
         this.quickTBarObj.toolbarObj.removeItems(index as HTMLElement[] | number);
@@ -315,6 +332,7 @@ export class BaseQuickToolbar {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     public destroy(): void {
         if (this.popupObj && !this.popupObj.isDestroyed) {
@@ -323,7 +341,11 @@ export class BaseQuickToolbar {
         }
         this.removeEventListener();
     }
-
+    /**
+     * addEventListener method
+     * @hidden
+     * @deprecated
+     */
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.on(events.destroy, this.destroy, this);
@@ -335,6 +357,7 @@ export class BaseQuickToolbar {
    /**
     * Called internally if any of the property value changed.
     * @hidden
+    * @deprecated
     */
     protected onPropertyChanged(e: { [key: string]: RichTextEditorModel }): void {
         if (!isNullOrUndefined(e.newProp.inlineMode)) {
@@ -351,6 +374,11 @@ export class BaseQuickToolbar {
             }
         }
     }
+    /**
+     * removeEventListener method
+     * @hidden
+     * @deprecated
+     */
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.off(events.destroy, this.destroy);

@@ -2,13 +2,11 @@
 
 ## [Unreleased]
 
-## 17.3.16 (2019-10-09)
+## 17.4.39 (2019-12-17)
 
 ### Pdf Export
 
 #### Bug Fixes
-
-- Performance issue with true type font is fixed.
 
 - Preservation issue with PDF colour empty constructor is fixed.
 

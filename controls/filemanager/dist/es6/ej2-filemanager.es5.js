@@ -1046,7 +1046,12 @@ function getImageUrl(parent, item) {
         imgUrl = baseUrl + '?path=' + parent.path + fileName;
     }
     imgUrl = imgUrl + '&time=' + (new Date().getTime()).toString();
-    return imgUrl;
+    var eventArgs = {
+        fileDetails: [item],
+        imageUrl: imgUrl
+    };
+    parent.trigger('beforeImageLoad', eventArgs);
+    return eventArgs.imageUrl;
 }
 /* istanbul ignore next */
 function getFullPath(parent, data, path) {
@@ -1592,7 +1597,7 @@ function doDownloadFiles(parent, data, newIds) {
 }
 function createDeniedDialog(parent, data, action) {
     var message = getValue('message', getValue('permission', data));
-    message = (message === '') ? '"' + getValue('name', data) + '" is not accessible. You need permission to perform the ' +
+    message = (message === '') ? '"' + getValue('name', data) + '" is not accessible. you need permission to perform the ' +
         action + ' action.' : message;
     var response = {
         error: {
@@ -1612,11 +1617,11 @@ function hasReadAccess(data) {
 }
 function hasEditAccess(data) {
     var permission = getValue('permission', data);
-    return permission ? ((getValue('read', permission) && (getValue('write', permission)))) : true;
+    return permission ? ((getValue('read', permission) && getValue('write', permission))) : true;
 }
 function hasContentAccess(data) {
     var permission = getValue('permission', data);
-    return permission ? ((getValue('read', permission) && (getValue('writeContents', permission)))) : true;
+    return permission ? ((getValue('read', permission) && getValue('writeContents', permission))) : true;
 }
 function hasUploadAccess(data) {
     var permission = getValue('permission', data);
@@ -1781,6 +1786,7 @@ function createAjax(parent, data, fn, event, operation, targetPath) {
                     parent.notify(afterRequest, { action: 'success' });
                     var id = parent.expandedId ? parent.expandedId : parent.pathId[parent.pathId.length - 1];
                     if (!isNullOrUndefined(result.cwd) && (getValue('action', data) === 'read')) {
+                        result.cwd.name = parent.rootAliasName || result.cwd.name;
                         setValue('_fm_id', id, result.cwd);
                         setValue(id, result.cwd, parent.feParent);
                         if (!isNullOrUndefined(result.files) || result.error.code === '401') {
@@ -1805,6 +1811,23 @@ function createAjax(parent, data, fn, event, operation, targetPath) {
                             setNodeId(result, id);
                             setValue(id, result.files, parent.feFiles);
                         }
+                    }
+                    if (!isNullOrUndefined(result.details) && !isNullOrUndefined(parent.rootAliasName)) {
+                        var rootName = parent.rootAliasName || getValue('name', result.details);
+                        var location_1 = getValue('location', result.details).replace(new RegExp('/', 'g'), '\\');
+                        if ((getValue('path', data) === '/') || (parent.hasId && getValue('path', data).match(/[/]/g).length === 1)) {
+                            if (getValue('names', data).length === 0) {
+                                setValue('name', rootName, result.details);
+                                location_1 = rootName;
+                            }
+                            else {
+                                location_1 = location_1.replace(location_1.substring(0, location_1.indexOf('\\')), rootName);
+                            }
+                        }
+                        else {
+                            location_1 = location_1.replace(location_1.substring(0, location_1.indexOf('\\')), rootName);
+                        }
+                        setValue('location', location_1, result.details);
                     }
                     fn(parent, result, event, operation, targetPath);
                     if (!isNullOrUndefined(result.files) && (event === 'path-changed' || event === 'finalize-end' || event === 'open-end')) {
@@ -2055,18 +2078,23 @@ function searchSuccess(parent, result, event) {
 function Download(parent, path, items) {
     var downloadUrl = parent.ajaxSettings.downloadUrl ? parent.ajaxSettings.downloadUrl : parent.ajaxSettings.url;
     var data = { 'action': 'download', 'path': path, 'names': items, 'data': parent.itemData };
-    var form = createElement('form', {
-        id: parent.element.id + '_downloadForm',
-        attrs: { action: downloadUrl, method: 'post', name: 'downloadForm', 'download': '' }
+    var eventArgs = { data: data, cancel: false };
+    parent.trigger('beforeDownload', eventArgs, function (downloadArgs) {
+        if (!downloadArgs.cancel) {
+            var form = createElement('form', {
+                id: parent.element.id + '_downloadForm',
+                attrs: { action: downloadUrl, method: 'post', name: 'downloadForm', 'download': '' }
+            });
+            var input = createElement('input', {
+                id: parent.element.id + '_hiddenForm',
+                attrs: { name: 'downloadInput', value: JSON.stringify(downloadArgs.data), type: 'hidden' }
+            });
+            form.appendChild(input);
+            parent.element.appendChild(form);
+            document.forms.namedItem('downloadForm').submit();
+            parent.element.removeChild(form);
+        }
     });
-    var input = createElement('input', {
-        id: parent.element.id + '_hiddenForm',
-        attrs: { name: 'downloadInput', value: JSON.stringify(data), type: 'hidden' }
-    });
-    form.appendChild(input);
-    parent.element.appendChild(form);
-    document.forms.namedItem('downloadForm').submit();
-    parent.element.removeChild(form);
 }
 
 // tslint:disable-next-line
@@ -2137,6 +2165,10 @@ function createExtDialog(parent, text, replaceItems, newPath) {
         parent.extDialogObj.buttons = extOptions.buttons;
         parent.extDialogObj.enableRtl = parent.enableRtl;
         parent.extDialogObj.locale = parent.locale;
+        parent.extDialogObj.beforeOpen = beforeExtOpen.bind(this, parent, extOptions.dialogName);
+        parent.extDialogObj.beforeClose = function (args) {
+            triggerPopupBeforeClose(parent, parent.extDialogObj, args, extOptions.dialogName);
+        };
         parent.extDialogObj.dataBind();
         parent.extDialogObj.show();
     }
@@ -2643,6 +2675,10 @@ function changeOptions(parent, options) {
     parent.dialogObj.enableRtl = parent.enableRtl;
     parent.dialogObj.open = options.open;
     parent.dialogObj.close = options.close;
+    parent.dialogObj.beforeOpen = keydownAction.bind(this, parent, options.dialogName);
+    parent.dialogObj.beforeClose = function (args) {
+        triggerPopupBeforeClose(parent, parent.dialogObj, args, options.dialogName);
+    };
     parent.dialogObj.dataBind();
     parent.dialogObj.show();
 }
@@ -4329,7 +4365,8 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
         var searchContainer = this.parent.createElement('div');
         searchContainer.setAttribute('class', 'e-search-wrap');
         var id = this.parent.element.id + SEARCH_ID;
-        var searchInput = createElement('input', { id: id, attrs: { autocomplete: 'off' } });
+        var searchInput = createElement('input', { id: id,
+            attrs: { autocomplete: 'off', 'aria-label': getLocaleText(this.parent, 'Search') } });
         searchContainer.appendChild(searchInput);
         var searchEle = this.parent.breadCrumbBarNavigation.querySelector('.e-search-wrap .e-input');
         if (isNullOrUndefined(searchEle)) {
@@ -5506,7 +5543,7 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
         contentWrap.appendChild(gridWrap);
         var largeiconWrap = this.createElement('div', {
             id: this.element.id + LARGEICON_ID,
-            className: LARGE_ICONS
+            className: LARGE_ICONS, attrs: { 'role': 'group' }
         });
         contentWrap.appendChild(largeiconWrap);
         var overlay = this.createElement('span', { className: OVERLAY });
@@ -5892,6 +5929,7 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     /* istanbul ignore next */
+    // tslint:disable-next-line:max-func-body-length
     FileManager.prototype.onPropertyChanged = function (newProp, oldProp) {
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
@@ -5924,6 +5962,10 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'enableRtl':
                     this.enableRtl = newProp.enableRtl;
+                    this.refresh();
+                    break;
+                case 'rootAliasName':
+                    this.rootAliasName = newProp.rootAliasName;
                     this.refresh();
                     break;
                 case 'height':
@@ -6315,6 +6357,9 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
         Property(true)
     ], FileManager.prototype, "showFileExtension", void 0);
     __decorate$8([
+        Property(null)
+    ], FileManager.prototype, "rootAliasName", void 0);
+    __decorate$8([
         Property(false)
     ], FileManager.prototype, "showHiddenItems", void 0);
     __decorate$8([
@@ -6335,6 +6380,12 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
     __decorate$8([
         Event()
     ], FileManager.prototype, "fileOpen", void 0);
+    __decorate$8([
+        Event()
+    ], FileManager.prototype, "beforeDownload", void 0);
+    __decorate$8([
+        Event()
+    ], FileManager.prototype, "beforeImageLoad", void 0);
     __decorate$8([
         Event()
     ], FileManager.prototype, "beforePopupClose", void 0);
@@ -6574,7 +6625,8 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
                 iconCss: this.parent.view === 'Details' ? ICON_GRID : ICON_LARGE,
                 cssClass: getCssClass(this.parent, 'e-caret-hide ' + ROOT_POPUP),
                 items: layoutItems, select: this.layoutChange.bind(this),
-                enableRtl: this.parent.enableRtl
+                enableRtl: this.parent.enableRtl,
+                content: '<span class="e-tbar-btn-text">' + getLocaleText(this.parent, 'View') + '</span>'
             });
             this.layoutBtnObj.isStringTemplate = true;
             this.layoutBtnObj.appendTo('#' + this.getId('View'));
@@ -6674,12 +6726,16 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
                 case 'View':
                     item = {
                         id: itemId, tooltipText: itemTooltip, prefixIcon: this.parent.view === 'Details' ? ICON_GRID : ICON_LARGE,
-                        overflow: 'Show', align: 'Right',
-                        template: '<button id="' + itemId + '" class="e-tbar-btn e-tbtn-txt" tabindex="-1"></button>'
+                        overflow: 'Show', align: 'Right', text: itemText, showTextOn: 'Overflow',
+                        template: '<button id="' + itemId + '" class="e-tbar-btn e-tbtn-txt" tabindex="-1" aria-label=' +
+                            getLocaleText(this.parent, 'View') + '></button>'
                     };
                     break;
                 case 'Details':
-                    item = { id: itemId, tooltipText: itemTooltip, prefixIcon: ICON_DETAILS, overflow: 'Show', align: 'Right' };
+                    item = {
+                        id: itemId, tooltipText: itemTooltip, prefixIcon: ICON_DETAILS, overflow: 'Show', align: 'Right',
+                        text: itemText, showTextOn: 'Overflow'
+                    };
                     break;
                 case 'NewFolder':
                     item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: ICON_NEWFOLDER, showTextOn: mode };
@@ -8560,13 +8616,14 @@ var DetailsView = /** @__PURE__ @class */ (function () {
     };
     /* istanbul ignore next */
     DetailsView.prototype.onSelection = function (action, args) {
-        var eventArgs = { action: action, fileDetails: args.data, isInteracted: this.interaction, cancel: false, target: args.target };
+        var eventArgs = {
+            action: action, fileDetails: args.data, isInteracted: this.interaction, cancel: false, target: args.target
+        };
         this.parent.trigger('fileSelection', eventArgs);
         args.cancel = eventArgs.cancel;
     };
     /* istanbul ignore next */
     DetailsView.prototype.onSelected = function (args) {
-        this.addFocus(this.gridObj.selectedRowIndex);
         this.parent.activeModule = 'detailsview';
         if (!this.parent.isLayoutChange || this.parent.isFiltered) {
             this.selectedRecords();
@@ -8618,6 +8675,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
             var checkItem = item.querySelector('.e-checkselect');
             checkItem.focus();
         }
+        this.addFocus(this.gridObj.selectedRowIndex);
         if (!this.parent.isLayoutChange) {
             this.isInteracted = true;
         }
@@ -9097,9 +9155,13 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         var fItem = this.getFocusedItem();
         var itemElement = this.gridObj.getRowByIndex(item);
         if (fItem) {
+            fItem.removeAttribute('tabindex');
             removeClass([fItem], [FOCUS, FOCUSED]);
         }
         if (!isNullOrUndefined(itemElement)) {
+            this.gridObj.element.setAttribute('tabindex', '-1');
+            itemElement.setAttribute('tabindex', '0');
+            itemElement.focus();
             addClass([itemElement], [FOCUS, FOCUSED]);
         }
     };

@@ -1,5 +1,5 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';
-import { EmitType, Event, EventHandler, KeyboardEvents, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { EmitType, Event, EventHandler, KeyboardEvents, isNullOrUndefined, isBlazor, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { addClass, detach, getUniqueID, isRippleEnabled, removeClass, rippleEffect, closest } from '@syncfusion/ej2-base';
 import { CheckBoxModel } from './check-box-model';
 import { wrapperInitialize, rippleMouseHandler, ChangeEventArgs, setHiddenInput } from './../common/common';
@@ -120,6 +120,13 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     public value: string;
 
     /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default false
+     */
+    @Property(false)
+    public enableHtmlSanitizer: boolean;
+
+    /**
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
      * @default {}
@@ -197,25 +204,31 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
      */
     public destroy(): void {
         let wrapper: Element = this.getWrapper();
-        super.destroy();
-        if (!this.disabled) {
-            this.unWireEvents();
-        }
-        if (this.tagName === 'INPUT') {
-            wrapper.parentNode.insertBefore(this.element, wrapper);
-            detach(wrapper);
-            this.element.checked = false;
-            if (this.indeterminate) {
-                this.element.indeterminate = false;
+        if (isBlazor() && this.isServerRendered) {
+            if (!this.disabled) {
+                this.unWireEvents();
             }
-            ['name', 'value', 'disabled'].forEach((key: string) => {
-                this.element.removeAttribute(key);
-            });
         } else {
-            ['role', 'aria-checked', 'class'].forEach((key: string) => {
-                wrapper.removeAttribute(key);
-            });
-            wrapper.innerHTML = '';
+            super.destroy();
+            if (!this.disabled) {
+                this.unWireEvents();
+            }
+            if (this.tagName === 'INPUT') {
+                wrapper.parentNode.insertBefore(this.element, wrapper);
+                detach(wrapper);
+                this.element.checked = false;
+                if (this.indeterminate) {
+                    this.element.indeterminate = false;
+                }
+                ['name', 'value', 'disabled'].forEach((key: string) => {
+                    this.element.removeAttribute(key);
+                });
+            } else {
+                ['role', 'aria-checked', 'class'].forEach((key: string) => {
+                    wrapper.removeAttribute(key);
+                });
+                wrapper.innerHTML = '';
+            }
         }
     }
 
@@ -267,7 +280,6 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         if (this.disabled) {
             this.setDisabled();
         }
-        this.updateHtmlAttributeToWrapper();
     }
 
     private initWrapper(): void {
@@ -396,6 +408,9 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
      * @private
      */
     protected preRender(): void {
+        if (isBlazor() && this.isServerRendered) {
+            return;
+        }
         let element: HTMLInputElement = this.element;
         this.formElement = <HTMLFormElement>closest(this.element, 'form');
         this.tagName = this.element.tagName;
@@ -414,11 +429,18 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
      * @private
      */
     protected render(): void {
-        this.initWrapper();
-        this.initialize();
+        if (isBlazor() && this.isServerRendered) {
+            if (isRippleEnabled) {
+                rippleEffect(this.getWrapper().getElementsByClassName(RIPPLE)[0] as HTMLElement, { duration: 400, isCenterRipple: true });
+            }
+        } else {
+            this.initWrapper();
+            this.initialize();
+        }
         if (!this.disabled) {
             this.wireEvents();
         }
+        this.updateHtmlAttributeToWrapper();
         this.renderComplete();
     }
 
@@ -434,6 +456,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         if (label) {
             label.textContent = text;
         } else {
+            text = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(text) : text;
             label = this.createElement('span', { className: LABEL, innerHTML: text });
             let labelWrap: Element = this.getWrapper().getElementsByTagName('label')[0];
             if (this.labelPosition === 'Before') {

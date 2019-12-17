@@ -24836,7 +24836,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
-    DiagramEventHandler.prototype.inputChange = function (evt) {
+    DiagramEventHandler.prototype.inputChange = function () {
         var minWidth = 90;
         var maxWidth;
         var minHeight = 12;

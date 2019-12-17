@@ -2,9 +2,9 @@
  * Gantt base spec
  */
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter,  ContextMenu, Sort, ColumnMenu } from '../../src/index';
+import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter,  ContextMenu, Sort, ColumnMenu, ITaskbarClickEventArgs, RecordDoubleClickEventArgs } from '../../src/index';
 import { unscheduledData } from '../base/data-source.spec';
-import { createGantt, destroyGantt } from './gantt-util.spec';
+import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 Gantt.Inject(Edit, Selection, ContextMenu, Sort, Toolbar, Filter, DayMarkers, ColumnMenu);
 describe('Gantt - Base', () => {
 
@@ -54,6 +54,34 @@ describe('Gantt - Base', () => {
         });
         it('get component name testing', () => {
             expect(ganttObj.getModuleName()).toEqual('gantt');
+        });
+        it('record double click event testing on chart', () => {
+            let element: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td') as HTMLElement;
+            triggerMouseEvent(element, 'dblclick');
+            ganttObj.recordDoubleClick = function (args: RecordDoubleClickEventArgs) {
+                expect(args.rowIndex).toBe(0);
+            };
+        });
+        it('record double click event testing on treegrid', () => {
+            let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(2)') as HTMLElement;
+            triggerMouseEvent(element, 'dblclick');
+            ganttObj.recordDoubleClick = function (args: RecordDoubleClickEventArgs) {
+                expect(args.cellIndex).toBe(1);
+            };
+        });
+        it('Testing onTaskbarClick event for parent task', () => {
+            let taskbarElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > div.e-taskbar-main-container > div') as HTMLElement;
+            triggerMouseEvent(taskbarElement, 'click');
+            ganttObj.onTaskbarClick = function (args: ITaskbarClickEventArgs) {
+                expect(args.taskbarElement.classList.contains('e-gantt-parent-taskbar')).toBe(true);
+            };
+        });
+        it('Testing onTaskbarClick event for child task', () => {
+            let taskbarElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(2) > td > div.e-taskbar-main-container > div.e-gantt-child-taskbar-inner-div.e-gantt-child-taskbar') as HTMLElement;
+            triggerMouseEvent(taskbarElement, 'click');
+            ganttObj.onTaskbarClick = function (args: ITaskbarClickEventArgs) {
+                expect(args.taskbarElement.classList.contains('e-gantt-child-taskbar')).toBe(true);
+            };
         });
         it('property change check', () => {
             ganttObj.allowSelection = false;

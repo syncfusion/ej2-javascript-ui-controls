@@ -8,6 +8,7 @@ import { HtmlToolbarStatus } from '../actions/html-toolbar-status';
 /**
  * HTML adapter
  * @hidden
+ * @deprecated
  */
 export class HTMLFormatter extends Formatter {
     public keyConfig: { [key: string]: string };
@@ -31,6 +32,8 @@ export class HTMLFormatter extends Formatter {
      * Update the formatter of RichTextEditor
      * @param  {Element} editElement
      * @param  {Document} doc
+     * @hidden
+     * @deprecated
      */
     public updateFormatter(editElement: Element, doc?: Document, options?: { [key: string]: number }): void {
         if (editElement && doc) {

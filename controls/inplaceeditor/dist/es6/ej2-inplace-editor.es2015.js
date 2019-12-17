@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, Touch, addClass, closest, compile, detach, extend, isNullOrUndefined, removeClass, resetBlazorTemplate, select, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, closest, compile, detach, extend, isNullOrUndefined, removeClass, resetBlazorTemplate, select, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, ODataV4Adaptor, Query, UrlAdaptor, WebApiAdaptor } from '@syncfusion/ej2-data';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DatePicker, DateRangePicker, DateTimePicker, TimePicker } from '@syncfusion/ej2-calendars';
@@ -467,7 +467,8 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         this.isExtModule = (Array.prototype.indexOf.call(this.moduleList, this.type) > -1) ? true : false;
         let classProp;
         if (!isNullOrUndefined(this.model.cssClass)) {
-            classProp = this.model.cssClass.indexOf(ELEMENTS) < 0 ? this.model.cssClass + ' ' + ELEMENTS :
+            classProp = this.model.cssClass.indexOf(ELEMENTS) < 0 ?
+                this.model.cssClass === '' ? ELEMENTS : this.model.cssClass + ' ' + ELEMENTS :
                 this.model.cssClass;
         }
         else {
@@ -777,7 +778,29 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             }
         }
     }
+    /**
+     * @hidden
+     */
+    sanitizeHelper(value) {
+        if (this.enableHtmlSanitizer) {
+            let item = SanitizeHtmlHelper.beforeSanitize();
+            let beforeEvent = {
+                cancel: false,
+                helper: null
+            };
+            extend(item, item, beforeEvent);
+            this.trigger('beforeSanitizeHtml', item);
+            if (item.cancel && !isNullOrUndefined(item.helper)) {
+                value = item.helper(value);
+            }
+            else if (!item.cancel) {
+                value = SanitizeHtmlHelper.serializeValue(item, value);
+            }
+        }
+        return value;
+    }
     appendTemplate(trgEle, tempStr) {
+        tempStr = typeof (tempStr) === 'string' ? this.sanitizeHelper(tempStr) : tempStr;
         if (typeof tempStr === 'string' || isNullOrUndefined(tempStr.innerHTML)) {
             if (tempStr[0] === '.' || tempStr[0] === '#') {
                 if (document.querySelectorAll(tempStr).length) {
@@ -1132,8 +1155,8 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         classList.forEach((val) => {
             removeClass([this.element], [val]);
         });
-        while (this.element.firstChild) {
-            this.element.removeChild(this.element.firstChild);
+        while (this.element.firstElementChild) {
+            this.element.removeChild(this.element.firstElementChild);
         }
         super.destroy();
     }
@@ -1222,6 +1245,9 @@ __decorate$1([
     Property('')
 ], InPlaceEditor.prototype, "template", void 0);
 __decorate$1([
+    Property(true)
+], InPlaceEditor.prototype, "enableHtmlSanitizer", void 0);
+__decorate$1([
     Property('')
 ], InPlaceEditor.prototype, "cssClass", void 0);
 __decorate$1([
@@ -1281,6 +1307,9 @@ __decorate$1([
 __decorate$1([
     Event()
 ], InPlaceEditor.prototype, "created", void 0);
+__decorate$1([
+    Event()
+], InPlaceEditor.prototype, "beforeSanitizeHtml", void 0);
 __decorate$1([
     Event()
 ], InPlaceEditor.prototype, "actionBegin", void 0);

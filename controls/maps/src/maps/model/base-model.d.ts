@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { Alignment, LegendPosition, LegendType, LegendMode, ShapeLayerType, Type, MarkerType, Orientation, MapAjax } from '../../index';import { SmartLabelMode, IntersectAction } from '../../index';import { Theme } from './theme';import { Point, GeoLocation } from '../utils/helper';import { BingMapType, LegendArrangement, LegendShape, BubbleType } from '../utils/enum';import { AnnotationAlignment, GeometryType, LabelPosition, LabelIntersectAction } from '../index';
+import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { Alignment, LegendPosition, LegendType, LegendMode, ShapeLayerType, Type, MarkerType, Orientation, MapAjax } from '../../index';import { SmartLabelMode, IntersectAction } from '../../index';import { Theme } from './theme';import { Point, GeoLocation } from '../utils/helper';import { BingMapType, LegendArrangement, LegendShape, BubbleType, StaticMapType } from '../utils/enum';import { AnnotationAlignment, GeometryType, LabelPosition, LabelIntersectAction } from '../index';
 
 /**
  * Interface for a class Annotation
@@ -395,6 +395,25 @@ export interface ColorMappingSettingsModel {
 }
 
 /**
+ * Interface for a class InitialShapeSelectionSettings
+ */
+export interface InitialShapeSelectionSettingsModel {
+
+    /**
+     * To customize the fill color of the highlight.
+     * @default null
+     */
+    shapePath?: string;
+
+    /**
+     * Toggle the highlight settings.
+     * @default null
+     */
+    shapeValue?: string;
+
+}
+
+/**
  * Interface for a class SelectionSettings
  */
 export interface SelectionSettingsModel {
@@ -777,6 +796,11 @@ export interface ZoomSettingsModel {
      * @default 1
      */
     minZoom?: number;
+
+    /**
+     * Zoom map based on marker positions.
+     */
+    shouldZoomInitially?: boolean;
 
 }
 
@@ -1168,6 +1192,24 @@ export interface MarkerBaseModel {
     opacity?: number;
 
     /**
+     * To customize the color of marker from marker dataSource.
+     * @default null
+     */
+    colorValuePath?: string;
+
+    /**
+     * To customize the shape of marker from marker dataSource.
+     * @default null
+     */
+    shapeValuePath?: string;
+
+    /**
+     * To customize the shape image of marker from marker dataSource.
+     * @default null
+     */
+    imageUrlValuePath?: string;
+
+    /**
      * To customize the shape of the marker.
      * @default Balloon
      */
@@ -1290,6 +1332,12 @@ export interface LayerSettingsModel {
     bingMapType?: BingMapType;
 
     /**
+     * Specifies the type for the static map.
+     * @default RoadMap
+     */
+    staticMapType?: StaticMapType;
+
+    /**
      * Specifies the key for the layer.
      * @default ''
      */
@@ -1375,6 +1423,11 @@ export interface LayerSettingsModel {
      * To configure the legend toggle settings.
      */
     toggleLegendSettings?: ToggleLegendSettingsModel;
+
+    /**
+     * To select the shape at the rendering time.
+     */
+    initialShapeSelection?: InitialShapeSelectionSettingsModel[];
 
 }
 

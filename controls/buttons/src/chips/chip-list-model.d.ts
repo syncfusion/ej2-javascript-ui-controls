@@ -52,6 +52,8 @@ export interface ChipListModel extends ComponentModel{
     /**
      * This enabled property helps to enable/disable ChipList component.
      * @default true
+     * @blazorDefaultValue null
+     * @blazorType bool?
      */
     enabled?: boolean;
 

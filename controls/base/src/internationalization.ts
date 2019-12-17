@@ -35,6 +35,10 @@ export interface DateFormatOptions {
      * Specifies the calendar mode other than gregorian
      */
     calendar?: string;
+    /**
+     * Enable server side date formating.
+     */
+     isServerRendered?: boolean;
 }
 /**
  * Interface for numberFormatOptions
@@ -77,6 +81,10 @@ export interface NumberFormatOptions {
      * Specifies custom number format for formatting.
      */
     format?: string;
+    /**
+     *  Species which currency symbol to consider.
+     */
+    altSymbol?: string;
 }
 /**
  * Specifies the CLDR data loaded for internationalization functionalities.

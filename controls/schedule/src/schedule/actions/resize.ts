@@ -74,7 +74,7 @@ export class Resize extends ActionBase {
                 ['Date', 'Hour'].indexOf(headerRows.slice(-1)[0]) < 0) {
                 let tr: HTMLTableRowElement = this.parent.getContentTable().querySelector('tr') as HTMLTableRowElement;
                 let noOfDays: number = 0;
-                let tdCollections: HTMLElement[] = [].slice.call(tr.childNodes);
+                let tdCollections: HTMLElement[] = [].slice.call(tr.children);
                 tdCollections.forEach((td: HTMLElement) => noOfDays += parseInt(td.getAttribute('colspan'), 10));
                 this.actionObj.cellWidth = tr.offsetWidth / noOfDays;
                 this.actionObj.cellHeight = tr.offsetHeight;
@@ -103,6 +103,9 @@ export class Resize extends ActionBase {
         this.parent.quickPopup.quickPopupHide();
         if (this.parent.element.querySelectorAll('.' + cls.RESIZE_CLONE_CLASS).length === 0) {
             this.resizeHelper();
+        }
+        if ((!isNullOrUndefined(e.target)) && (e.target as HTMLElement).classList.contains(cls.DISABLE_DATES)) {
+            return;
         }
         let pages: (MouseEvent & TouchEvent) | Touch = this.getPageCoordinates(e);
         this.actionObj.pageX = pages.pageX;
@@ -178,7 +181,7 @@ export class Resize extends ActionBase {
         if (isNullOrUndefined(td)) {
             return;
         }
-        let resizeTime: Date = new Date(parseInt(td.getAttribute('data-date'), 10));
+        let resizeTime: Date = this.parent.getDateFromElement(td);
         let isSameCell: boolean = this.parent.activeViewOptions.group.resources.length > 0 ?
             parseInt(td.getAttribute('data-group-index'), 10) === this.actionObj.groupIndex : true;
         let startTime: Date = new Date((<Date>this.actionObj.event[this.parent.eventFields.startTime]).getTime());
@@ -225,7 +228,7 @@ export class Resize extends ActionBase {
         if (isNullOrUndefined(element)) {
             return;
         }
-        let resizeTime: Date = util.resetTime(new Date(parseInt(element.getAttribute('data-date'), 10)));
+        let resizeTime: Date = util.resetTime(this.parent.getDateFromElement(element));
         resizeTime.setHours(this.parent.activeView.getStartHour().getHours());
         resizeTime.setMinutes(minutes);
         if (isTop) {
@@ -252,7 +255,7 @@ export class Resize extends ActionBase {
             }
             resizeTime = isLeft ? eventStart : eventEnd;
             let cellIndex: number = 0;
-            let tdCollections: HTMLElement[] = [].slice.call(tr.childNodes);
+            let tdCollections: HTMLElement[] = [].slice.call(tr.children);
             let isLastCell: boolean = false;
             if (['Year', 'Month', 'Week', 'Date'].indexOf(headerName) !== -1) {
                 let noOfDays: number = 0;
@@ -290,7 +293,7 @@ export class Resize extends ActionBase {
             if (['Year', 'Month', 'Week', 'Date'].indexOf(headerName) !== -1) {
                 resizeDate = new Date(this.parent.activeView.renderDates[cellIndex].getTime());
             } else {
-                resizeDate = new Date(parseInt((<HTMLElement>tr.childNodes.item(cellIndex)).getAttribute('data-date'), 10));
+                resizeDate = this.parent.getDateFromElement(<HTMLElement>tr.children[cellIndex]);
             }
             if (['TimelineMonth', 'Year', 'Month', 'Week', 'Date'].indexOf(headerName) !== -1 ||
                 !this.parent.activeViewOptions.timeScale.enable) {
@@ -316,7 +319,7 @@ export class Resize extends ActionBase {
             let tr: HTMLTableRowElement = closest(this.actionObj.clone, 'tr') as HTMLTableRowElement;
             let dayIndex: number = isLeft ? cloneIndex - noOfDays : cloneIndex + noOfDays - 1;
             dayIndex = this.getIndex(dayIndex);
-            resizeTime = new Date(parseInt((<HTMLElement>tr.childNodes.item(dayIndex)).getAttribute('data-date'), 10));
+            resizeTime = this.parent.getDateFromElement(<HTMLElement>tr.children[dayIndex]);
             if (isLeft) {
                 resizeTime.setHours(eventStart.getHours(), eventStart.getMinutes(), eventStart.getSeconds());
             } else {

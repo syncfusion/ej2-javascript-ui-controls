@@ -1,11 +1,11 @@
 /// <reference path='../drop-down-button/drop-down-button-model.d.ts'/>
 import { Event, EmitType, remove, addClass, removeClass, detach, getValue, setValue } from '@syncfusion/ej2-base';
 import { EventHandler, Collection, BaseEventArgs, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
-import { attributes, getUniqueID, getInstance, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
-import { Button, ButtonModel } from '@syncfusion/ej2-buttons';
+import { attributes, getUniqueID, getInstance, KeyboardEvents, KeyboardEventArgs, isBlazor } from '@syncfusion/ej2-base';
+import { Button, ButtonModel, buttonObserver } from '@syncfusion/ej2-buttons';
 import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from './../common/common';
 import { getModel, SplitButtonIconPosition, Item } from './../common/common';
-import { DropDownButton } from '../drop-down-button/drop-down-button';
+import { DropDownButton, dropDownButtonObserver } from '../drop-down-button/drop-down-button';
 import { ItemModel } from './../common/common-model';
 import { SplitButtonModel } from './split-button-model';
 
@@ -164,6 +164,9 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
      * @private
      */
     protected preRender(): void {
+        if (isBlazor() && this.isServerRendered) {
+            return;
+        }
         let ele: Element = this.element;
         if (ele.tagName === TAGNAME) {
             let ejInstance: Object = getValue('ej2_instances', ele);
@@ -186,13 +189,47 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     }
 
     public render(): void {
-        this.initWrapper();
-        this.createPrimaryButton();
+        if (isBlazor() && this.isServerRendered) {
+            buttonObserver.on('component-rendered', this.buttonInstance, this, this.element.id);
+            dropDownButtonObserver.on('component-rendered', this.dropDownButtonInstance, this, this.element.id);
+        } else {
+            this.initWrapper();
+            this.createPrimaryButton();
+            this.renderControl();
+        }
+    }
+
+    private buttonInstance(args: { instance: Button, id: string }): void {
+        if (this.element.id === args.instance.element.id) {
+            this.primaryBtnObj = args.instance;
+            buttonObserver.off('component-rendered', this.buttonInstance, this.element.id);
+        }
+    }
+
+    private dropDownButtonInstance(args: { instance: DropDownButton, id: string }): void {
+        if (args.instance.element.id.indexOf(this.element.id) > -1) {
+            this.secondaryBtnObj = args.instance;
+            this.renderControl();
+            dropDownButtonObserver.off('component-rendered', this.dropDownButtonInstance, this.element.id);
+        }
+    }
+
+    private renderControl(): void {
         this.createSecondaryButton();
         this.setActiveElem([this.element, this.secondaryBtnObj.element]);
         this.setAria();
         this.wireEvents();
         this.renderComplete();
+    }
+
+    public addItems(items: ItemModel[], text?: string): void {
+        super.addItems(items, text);
+        this.secondaryBtnObj.items = this.items;
+    }
+
+    public removeItems(items: string[]): void {
+        super.removeItems(items);
+        this.secondaryBtnObj.items = this.items;
     }
 
     private initWrapper(): void {
@@ -227,30 +264,37 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     }
 
     private createSecondaryButton(): void {
-        let btnElem: HTMLButtonElement = this.createElement('button', {
-            className: 'e-icon-btn',
-            attrs: { 'tabindex': '-1' },
-            id: this.element.id + '_dropdownbtn'
-        }) as HTMLButtonElement;
-        this.wrapper.appendChild(btnElem);
-        let dropDownBtnModel: SplitButtonModel = {
-            cssClass: this.cssClass,
-            disabled: this.disabled,
-            enableRtl: this.enableRtl,
-            items: this.items,
-            target: this.target,
-            beforeItemRender: (args: MenuEventArgs) => {
-                this.trigger('beforeItemRender', args);
-            },
-            open: (args: OpenCloseMenuEventArgs) => {
-                this.trigger('open', args);
-            },
-            close: (args: OpenCloseMenuEventArgs) => {
-                this.trigger('close', args);
-            },
-            select: (args: MenuEventArgs) => {
-                this.trigger('select', args);
-            }
+        let dropDownBtnModel: SplitButtonModel;
+        let btnElem: HTMLButtonElement;
+        if (isBlazor() && this.isServerRendered) {
+            this.wrapper = this.element.parentElement;
+            dropDownBtnModel = this.secondaryBtnObj;
+        } else {
+            btnElem = this.createElement('button', {
+                className: 'e-icon-btn',
+                attrs: { 'tabindex': '-1' },
+                id: this.element.id + '_dropdownbtn'
+            }) as HTMLButtonElement;
+            this.wrapper.appendChild(btnElem);
+            dropDownBtnModel = {
+                cssClass: this.cssClass,
+                disabled: this.disabled,
+                enableRtl: this.enableRtl,
+                items: this.items,
+                target: this.target,
+            };
+        }
+        dropDownBtnModel.beforeItemRender = (args: MenuEventArgs): void => {
+            this.trigger('beforeItemRender', args);
+        };
+        dropDownBtnModel.open = (args: OpenCloseMenuEventArgs): void => {
+            this.trigger('open', args);
+        };
+        dropDownBtnModel.close = (args: OpenCloseMenuEventArgs): void => {
+            this.trigger('close', args);
+        };
+        dropDownBtnModel.select = (args: MenuEventArgs): void => {
+            this.trigger('select', args);
         };
         dropDownBtnModel.beforeOpen = (args: BeforeOpenCloseMenuEventArgs): Deferred | void => {
             let callBackPromise: Deferred = new Deferred();
@@ -266,20 +310,22 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
             });
             return callBackPromise;
         };
-        this.secondaryBtnObj = new DropDownButton(dropDownBtnModel);
-        this.secondaryBtnObj.createElement = this.createElement;
-        this.secondaryBtnObj.appendTo(btnElem);
-        (this.secondaryBtnObj as SplitButton).dropDown.relateTo = this.wrapper;
-        this.dropDown = (this.secondaryBtnObj as SplitButton).dropDown;
-        (this.secondaryBtnObj as SplitButton).activeElem = [this.element, this.secondaryBtnObj.element];
-        EventHandler.remove(this.getPopUpElement(), 'keydown', (this.secondaryBtnObj as SplitButton).keyBoardHandler);
+        if (!(isBlazor() && this.isServerRendered)) {
+            this.secondaryBtnObj = new DropDownButton(dropDownBtnModel);
+            this.secondaryBtnObj.createElement = this.createElement;
+            this.secondaryBtnObj.appendTo(btnElem);
+        }
+        this.secondaryBtnObj.dropDown.relateTo = this.wrapper;
+        this.dropDown = this.secondaryBtnObj.dropDown;
+        this.secondaryBtnObj.activeElem = [this.element, this.secondaryBtnObj.element];
+        EventHandler.remove(this.getPopUpElement(), 'keydown', this.secondaryBtnObj.keyBoardHandler);
         this.secondaryBtnObj.element.querySelector('.e-btn-icon').classList.remove('e-icon-right');
     }
 
     private setAria(): void {
         attributes(this.element, {
             'aria-expanded': 'false', 'aria-haspopup': 'true',
-            'aria-label': this.element.textContent + ' splitbutton', 'aria-owns': (this.secondaryBtnObj as SplitButton).dropDown.element.id
+            'aria-label': this.element.textContent + ' splitbutton', 'aria-owns': this.secondaryBtnObj.dropDown.element.id
         });
     }
 
@@ -367,8 +413,11 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
     public onPropertyChanged(newProp: SplitButtonModel, oldProp: SplitButtonModel): void {
         let model: string[] = ['content', 'iconCss', 'iconPosition', 'cssClass', 'disabled', 'enableRtl'];
         this.primaryBtnObj.setProperties(getModel(newProp, model));
-        model = ['items', 'beforeOpen', 'beforeItemRender', 'select', 'open',
+        model = ['beforeOpen', 'beforeItemRender', 'select', 'open',
             'close', 'cssClass', 'disabled', 'enableRtl'];
+        if (Object.keys(newProp)[0] === 'items') {
+            this.secondaryBtnObj.onPropertyChanged(newProp, oldProp);
+        }
         this.secondaryBtnObj.setProperties(getModel(newProp, model));
         for (let prop of Object.keys(newProp)) {
             switch (prop) {

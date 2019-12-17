@@ -185,6 +185,58 @@ describe('Tooltip Control', () => {
             expect(element.classList.contains('e-rtl')).toEqual(false);
             tooltip.close();
         });
+        it('enableHtmlSanitizer as false and content as string', () => {
+            tooltip = new Tooltip({
+                enableHtmlSanitizer: false, content: 'Tooltip Content<style>body{background:rgb(0, 0, 255)}<\/style>'
+            }, '#tstooltip');
+            tooltip.open(document.getElementById('tstooltip'));
+            var ele = document.body;
+            expect(window.getComputedStyle(ele).backgroundColor).toBe("rgb(0, 0, 255)");
+            tooltip.close();
+        });
+        it('enableHtmlSanitizer as true and content as string', () => {
+            tooltip = new Tooltip({
+                enableHtmlSanitizer: true, content: 'Tooltip Content<style>body{background:blue}<\/style>'
+            }, '#tstooltip');
+            tooltip.open(document.getElementById('tstooltip'));
+            var ele = document.body;
+            expect(window.getComputedStyle(ele).backgroundColor).not.toBe("rgb(0, 0, 255)");
+            tooltip.close();
+        });
+        it('enableHtmlSanitizer as false and content as HtmlElement', () => {
+            var tipcontent = createElement('p', { innerHTML: 'tooltip content from html<style>body{background:rgb(0, 0, 255)}<\/style>' });
+            tooltip = new Tooltip({
+                enableHtmlSanitizer: false, content: tipcontent
+            }, '#tstooltip');
+            tooltip.open(document.getElementById('tstooltip'));
+            var ele = document.body;
+            expect(window.getComputedStyle(ele).backgroundColor).toBe("rgb(0, 0, 255)");
+            tooltip.close();
+        });
+        it('enableHtmlSanitizer as true and content as HtmlElement', () => {
+            tooltip = new Tooltip({
+                enableHtmlSanitizer: true, content: 'Tooltip Content<style>body{background:rgb(0, 0, 255)}<\/style>'
+            }, '#tstooltip');
+            tooltip.open(document.getElementById('tstooltip'));
+            var ele = document.body;
+            expect(window.getComputedStyle(ele).backgroundColor).not.toBe("rgb(0, 0, 255)");
+            tooltip.close();
+        });
+        it('enableRtl at property change', () => {
+            tooltip = new Tooltip({
+                animation: { open: { effect: 'None' }, close: { effect: 'None' } },
+                content: 'Tooltip Content'
+            }, '#tstooltip');
+            tooltip.open(document.getElementById('tstooltip'));
+            tooltip.enableRtl = true;
+            tooltip.dataBind();
+            let element: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+            expect(element.classList.contains('e-rtl')).toEqual(true);
+            tooltip.enableRtl = false;
+            tooltip.dataBind();
+            expect(element.classList.contains('e-rtl')).toEqual(false);
+            tooltip.close();
+        });
         it('enableRtl popup element does not present in document at property change ', () => {
             tooltip = new Tooltip({
                 animation: { open: { effect: 'None' }, close: { effect: 'None' } },

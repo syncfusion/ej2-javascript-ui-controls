@@ -112,9 +112,12 @@ export class TimelineYear extends Year {
                     className: cls.DATE_HEADER_CLASS + ' ' + cls.NAVIGATE_CLASS,
                     innerHTML: (isDateAvail) ? date.getDate().toString() : ''
                 });
-                if (this.parent.activeViewOptions.workDays.indexOf(date.getDay()) > -1 && isDateAvail) {
-                    let classList: string[] = [cls.WORKDAY_CLASS];
+                if (isDateAvail) {
                     let tds: HTMLElement[] = [td];
+                    let classList: string[] = [];
+                    if (this.parent.activeViewOptions.workDays.indexOf(date.getDay()) > -1) {
+                        classList.push(cls.WORKDAY_CLASS);
+                    }
                     if (this.isCurrentDate(date)) {
                         classList.push(cls.CURRENT_DAY_CLASS);
                         if (this.parent.activeViewOptions.orientation === 'Horizontal') {
@@ -123,8 +126,10 @@ export class TimelineYear extends Year {
                             tds.push(this.element.querySelectorAll('.' + cls.MONTH_HEADER_CLASS).item(month) as HTMLElement);
                         }
                     }
-                    addClass(tds, classList);
-                } else if (!isDateAvail) {
+                    if (classList.length > 0) {
+                        addClass(tds, classList);
+                    }
+                } else {
                     addClass([td], cls.OTHERMONTH_CLASS);
                 }
                 td.appendChild(dateHeader);

@@ -74,6 +74,17 @@ describe('DropDownButton', () => {
             expect(drpButton.dropDown.element.classList.contains('e-rtl')).toEqual(true);
         });
 
+        it('Add items & Remove items testing', () => {
+            drpButton = new DropDownButton({ items: items });
+            drpButton.appendTo('#drp-button');
+            drpButton.addItems([{text: 'Insert'}, {text: 'Attach'}], 'Copy');
+            element.click();
+            expect(drpButton.dropDown.element.querySelectorAll('.e-item')[0].textContent).toEqual('Cut');
+            expect(drpButton.dropDown.element.querySelectorAll('.e-item')[1].textContent).toEqual('Insert');
+            drpButton.removeItems(['Cut']);
+            expect(drpButton.dropDown.element.querySelectorAll('.e-item')[2].textContent).toEqual('Copy');
+        });
+
         it('Dropdown Button without id', () => {
             let btn: HTMLElement = createElement('button');
             document.body.appendChild(btn);
@@ -99,6 +110,23 @@ describe('DropDownButton', () => {
             drpButton.mousedownHandler({ target: drpButton.getPopUpElement() });
             expect(drpButton.dropDown.element.classList.contains('e-popup-open')).toBe(true);
             drpButton.destroy();
+        });
+
+        it('Enable Html Sanitizer', () => {
+            drpButton = new DropDownButton({ items: [{ text: 'cut<style>body{background:rgb(0, 0, 255)}</style>' }, { text: 'copy' }, { text: 'paste' }], enableHtmlSanitizer: true });
+            drpButton.appendTo('#drp-button');
+            drpButton.toggle();
+            let htmlele: Element = document.body;
+            expect(window.getComputedStyle(htmlele).backgroundColor).not.toBe('rgb(0, 0, 255)');
+            drpButton.destroy();
+        });
+
+        it('Enable Html Sanitizer disabled', () => {
+            drpButton = new DropDownButton({ items: [{ text: 'cut<style>body{background:rgb(0, 0, 255)}</style>' }, { text: 'copy' }, { text: 'paste' }] });
+            drpButton.appendTo('#drp-button');
+            drpButton.toggle();
+            let htmlele: Element = document.body;
+            expect(window.getComputedStyle(htmlele).backgroundColor).toBe('rgb(0, 0, 255)');
         });
     });
 
@@ -261,7 +289,6 @@ describe('DropDownButton', () => {
             drpButton.items[0].text = 'Cut & Copy';
             drpButton.items[1].text = 'Paste Text';
             drpButton.dataBind();
-            element.click();
             expect(drpButton.dropDown.element.querySelectorAll('.e-item')[0].textContent).toEqual('Cut & Copy');
             expect(drpButton.dropDown.element.querySelectorAll('.e-item')[1].textContent).toEqual('Paste Text');
         });

@@ -1,5 +1,5 @@
 import { Browser, KeyboardEventArgs } from '@syncfusion/ej2-base';
-import { extend, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { closest, classList } from '@syncfusion/ej2-base';
 import { SortSettings } from '../base/grid';
 import { Column } from '../models/column';
@@ -96,6 +96,9 @@ export class Sort implements IAction {
      * @hidden
      */
     public onActionComplete(e: NotifyArgs): void {
+        if (isBlazor() && !this.parent.isJsComponent) {
+            e.rows = null;
+        }
         let args: Object = !this.isRemove ? {
             columnName: this.columnName, direction: this.direction, requestType: 'sorting', type: events.actionComplete
         } : { requestType: 'sorting', type: events.actionComplete };
@@ -215,6 +218,9 @@ export class Sort implements IAction {
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
             this.removeSortColumn(cols[i].field);
         }
+        if (isBlazor() && !this.parent.isJsComponent) {
+            this.sortSettings.columns = this.sortSettings.columns;
+        }
     }
 
     private isActionPrevent(): boolean {
@@ -278,6 +284,10 @@ export class Sort implements IAction {
 
     private initialEnd(): void {
         this.parent.off(events.contentReady, this.initialEnd);
+        let isServerRendered: string = 'isServerRendered';
+        if (isBlazor() && this.parent[isServerRendered]) {
+            return;
+        }
         if (this.parent.getColumns().length && this.sortSettings.columns.length) {
             let gObj: IGrid = this.parent;
             this.contentRefresh = false;
@@ -393,6 +403,9 @@ export class Sort implements IAction {
         if (e.shiftKey || (this.sortSettings.allowUnsort && target.querySelectorAll('.e-descending').length)
             && !(gObj.groupSettings.columns.indexOf(field) > -1)) {
             this.removeSortColumn(field);
+            if (isBlazor() && !this.parent.isJsComponent) {
+                this.sortSettings.columns = this.sortSettings.columns;
+            }
         } else {
             this.sortColumn(field, direction, e.ctrlKey || this.enableSortMultiTouch ||
                  (navigator.userAgent.indexOf('Mac OS') !== -1 && e.metaKey));

@@ -1,5 +1,5 @@
-import { Animation, ChildProperty, Collection, Complex, Component, Event, EventHandler, KeyboardEvents, NotifyPropertyChanges, Property, addClass, attributes, classList, closest, createElement, deleteObject, detach, extend, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, remove, removeClass, rippleEffect, select, setValue } from '@syncfusion/ej2-base';
-import { Button } from '@syncfusion/ej2-buttons';
+import { Animation, ChildProperty, Collection, Complex, Component, Event, EventHandler, KeyboardEvents, NotifyPropertyChanges, Observer, Property, SanitizeHtmlHelper, addClass, attributes, classList, closest, createElement, deleteObject, detach, extend, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, remove, removeClass, rippleEffect, select, setValue } from '@syncfusion/ej2-base';
+import { Button, buttonObserver } from '@syncfusion/ej2-buttons';
 import { Popup, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
@@ -49,6 +49,7 @@ var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, 
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+const dropDownButtonObserver = new Observer();
 const classNames = {
     DISABLED: 'e-disabled',
     FOCUS: 'e-focused',
@@ -104,11 +105,58 @@ let DropDownButton = class DropDownButton extends Component {
      * @private
      */
     render() {
-        this.initialize();
+        if (isBlazor() && this.isServerRendered) {
+            buttonObserver.on('component-rendered', this.buttonRendered, this, this.element.id);
+            this.createPopup();
+            this.setActiveElem([this.element]);
+        }
+        else {
+            this.initialize();
+        }
         if (!this.disabled) {
             this.wireEvents();
         }
         this.renderComplete();
+        if (isBlazor() && this.isServerRendered) {
+            dropDownButtonObserver.notify('component-rendered', { id: this.element.id, instance: this });
+        }
+    }
+    buttonRendered(args) {
+        if (this.element.id === args.instance.element.id) {
+            this.button = args.instance;
+            buttonObserver.off('component-rendered', this.buttonRendered, this.element.id);
+        }
+    }
+    addItems(items, text) {
+        let newItem;
+        let idx = this.items.length;
+        for (let j = 0, len = this.items.length; j < len; j++) {
+            if (text === this.items[j].text) {
+                idx = j;
+                break;
+            }
+        }
+        for (let i = items.length - 1; i >= 0; i--) {
+            // tslint:disable-next-line
+            newItem = new Item(this, 'items', items[i], true);
+            this.items.splice(idx, 0, newItem);
+        }
+        if (!this.canOpen()) {
+            this.createItems();
+        }
+    }
+    removeItems(items) {
+        for (let i = 0, len = items.length; i < len; i++) {
+            for (let j = 0, len = this.items.length; j < len; j++) {
+                if (items[i] === this.items[j].text) {
+                    this.items.splice(j, 1);
+                    break;
+                }
+            }
+        }
+        if (!this.canOpen()) {
+            this.createItems();
+        }
     }
     createPopup() {
         let div = this.createElement('div', {
@@ -139,19 +187,27 @@ let DropDownButton = class DropDownButton extends Component {
     getTargetElement() {
         return typeof (this.target) === 'string' ? select(this.target) : this.target;
     }
-    createItems(items) {
-        let showIcon = this.hasIcon(items, 'iconCss');
+    createItems(appendItems) {
+        let items = this.items;
+        let showIcon = this.hasIcon(this.items, 'iconCss');
         let span;
         let item;
         let li;
         let eventArgs;
-        let ul = this.createElement('ul', {
-            attrs: { 'role': 'menu', 'tabindex': '0' }
-        });
+        let ul = this.getULElement();
+        if (ul) {
+            ul.innerHTML = '';
+        }
+        else {
+            ul = this.createElement('ul', {
+                attrs: { 'role': 'menu', 'tabindex': '0' }
+            });
+        }
         for (let i = 0; i < items.length; i++) {
             item = items[i];
+            let tempItem = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(item.text) : item.text;
             li = this.createElement('li', {
-                innerHTML: item.url ? '' : item.text,
+                innerHTML: item.url ? '' : tempItem,
                 className: item.separator ? classNames.ITEM + ' ' + classNames.SEPARATOR : classNames.ITEM,
                 attrs: { 'role': 'menuItem', 'tabindex': '-1' },
                 id: item.id ? item.id : getUniqueID('e-' + this.getModuleName() + '-item')
@@ -172,7 +228,28 @@ let DropDownButton = class DropDownButton extends Component {
             this.trigger('beforeItemRender', eventArgs);
             ul.appendChild(li);
         }
-        return ul;
+        if (appendItems) {
+            this.getPopUpElement().appendChild(ul);
+        }
+        if (showIcon) {
+            let blankIconLi = [].slice.call(this.getPopUpElement().getElementsByClassName('e-blank-icon'));
+            let iconLi = this.getPopUpElement().querySelector('.e-item:not(.e-blank-icon)');
+            let icon = iconLi.querySelector('.e-menu-icon');
+            let cssProp;
+            if (this.enableRtl) {
+                cssProp = { padding: 'paddingRight', margin: 'marginLeft' };
+            }
+            else {
+                cssProp = { padding: 'paddingLeft', margin: 'marginRight' };
+            }
+            // tslint:disable
+            let size = `${parseInt(getComputedStyle(icon).fontSize, 10) + parseInt((this.enableRtl ? getComputedStyle(icon)[cssProp.margin] : getComputedStyle(icon)[cssProp.margin]), 10)
+                + parseInt(getComputedStyle(iconLi).paddingLeft, 10)}px`;
+            blankIconLi.forEach((li) => {
+                li.style[cssProp.padding] = size;
+            });
+            // tslint:enable
+        }
     }
     hasIcon(items, field) {
         for (let i = 0, len = items.length; i < len; i++) {
@@ -183,7 +260,8 @@ let DropDownButton = class DropDownButton extends Component {
         return false;
     }
     createAnchor(item) {
-        return this.createElement('a', { className: 'e-menu-text e-menu-url', innerHTML: item.text, attrs: { 'href': item.url } });
+        let tempItem = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(item.text) : item.text;
+        return this.createElement('a', { className: 'e-menu-text e-menu-url', innerHTML: tempItem, attrs: { 'href': item.url } });
     }
     initialize() {
         this.button = new Button({
@@ -271,6 +349,7 @@ let DropDownButton = class DropDownButton extends Component {
         EventHandler.add(popupElement, 'keydown', this.keyBoardHandler, this);
         this.rippleFn = rippleEffect(popupElement, { selector: '.' + classNames.ITEM });
     }
+    /** @hidden */
     keyBoardHandler(e) {
         if (e.target === this.element && (e.keyCode === 9 || (!e.altKey && e.keyCode === 40) || e.keyCode === 38)) {
             return;
@@ -402,7 +481,7 @@ let DropDownButton = class DropDownButton extends Component {
     }
     openPopUp(e = null) {
         if (!this.target) {
-            this.getPopUpElement().appendChild(this.createItems(this.items));
+            this.createItems(true);
         }
         let ul = this.getULElement();
         let beforeOpenArgs = { element: ul, items: this.items, event: e, cancel: false };
@@ -494,9 +573,8 @@ let DropDownButton = class DropDownButton extends Component {
                     this.dropDown.dataBind();
                     break;
                 case 'items':
-                    this.dropDown.refresh();
-                    if (popupElement.classList.contains('e-popup-open')) {
-                        classList(popupElement, ['e-popup-close'], ['e-popup-open']);
+                    if (!this.canOpen()) {
+                        this.createItems();
                     }
                     break;
             }
@@ -526,6 +604,9 @@ __decorate$1([
 __decorate$1([
     Property('Left')
 ], DropDownButton.prototype, "iconPosition", void 0);
+__decorate$1([
+    Property(false)
+], DropDownButton.prototype, "enableHtmlSanitizer", void 0);
 __decorate$1([
     Collection([], Item)
 ], DropDownButton.prototype, "items", void 0);
@@ -598,6 +679,9 @@ let SplitButton = class SplitButton extends DropDownButton {
      * @private
      */
     preRender() {
+        if (isBlazor() && this.isServerRendered) {
+            return;
+        }
         let ele = this.element;
         if (ele.tagName === TAGNAME) {
             let ejInstance = getValue('ej2_instances', ele);
@@ -619,13 +703,43 @@ let SplitButton = class SplitButton extends DropDownButton {
         }
     }
     render() {
-        this.initWrapper();
-        this.createPrimaryButton();
+        if (isBlazor() && this.isServerRendered) {
+            buttonObserver.on('component-rendered', this.buttonInstance, this, this.element.id);
+            dropDownButtonObserver.on('component-rendered', this.dropDownButtonInstance, this, this.element.id);
+        }
+        else {
+            this.initWrapper();
+            this.createPrimaryButton();
+            this.renderControl();
+        }
+    }
+    buttonInstance(args) {
+        if (this.element.id === args.instance.element.id) {
+            this.primaryBtnObj = args.instance;
+            buttonObserver.off('component-rendered', this.buttonInstance, this.element.id);
+        }
+    }
+    dropDownButtonInstance(args) {
+        if (args.instance.element.id.indexOf(this.element.id) > -1) {
+            this.secondaryBtnObj = args.instance;
+            this.renderControl();
+            dropDownButtonObserver.off('component-rendered', this.dropDownButtonInstance, this.element.id);
+        }
+    }
+    renderControl() {
         this.createSecondaryButton();
         this.setActiveElem([this.element, this.secondaryBtnObj.element]);
         this.setAria();
         this.wireEvents();
         this.renderComplete();
+    }
+    addItems(items, text) {
+        super.addItems(items, text);
+        this.secondaryBtnObj.items = this.items;
+    }
+    removeItems(items) {
+        super.removeItems(items);
+        this.secondaryBtnObj.items = this.items;
     }
     initWrapper() {
         if (!this.wrapper) {
@@ -657,30 +771,38 @@ let SplitButton = class SplitButton extends DropDownButton {
         this.wrapper.appendChild(this.element);
     }
     createSecondaryButton() {
-        let btnElem = this.createElement('button', {
-            className: 'e-icon-btn',
-            attrs: { 'tabindex': '-1' },
-            id: this.element.id + '_dropdownbtn'
-        });
-        this.wrapper.appendChild(btnElem);
-        let dropDownBtnModel = {
-            cssClass: this.cssClass,
-            disabled: this.disabled,
-            enableRtl: this.enableRtl,
-            items: this.items,
-            target: this.target,
-            beforeItemRender: (args) => {
-                this.trigger('beforeItemRender', args);
-            },
-            open: (args) => {
-                this.trigger('open', args);
-            },
-            close: (args) => {
-                this.trigger('close', args);
-            },
-            select: (args) => {
-                this.trigger('select', args);
-            }
+        let dropDownBtnModel;
+        let btnElem;
+        if (isBlazor() && this.isServerRendered) {
+            this.wrapper = this.element.parentElement;
+            dropDownBtnModel = this.secondaryBtnObj;
+        }
+        else {
+            btnElem = this.createElement('button', {
+                className: 'e-icon-btn',
+                attrs: { 'tabindex': '-1' },
+                id: this.element.id + '_dropdownbtn'
+            });
+            this.wrapper.appendChild(btnElem);
+            dropDownBtnModel = {
+                cssClass: this.cssClass,
+                disabled: this.disabled,
+                enableRtl: this.enableRtl,
+                items: this.items,
+                target: this.target,
+            };
+        }
+        dropDownBtnModel.beforeItemRender = (args) => {
+            this.trigger('beforeItemRender', args);
+        };
+        dropDownBtnModel.open = (args) => {
+            this.trigger('open', args);
+        };
+        dropDownBtnModel.close = (args) => {
+            this.trigger('close', args);
+        };
+        dropDownBtnModel.select = (args) => {
+            this.trigger('select', args);
         };
         dropDownBtnModel.beforeOpen = (args) => {
             let callBackPromise = new Deferred();
@@ -696,9 +818,11 @@ let SplitButton = class SplitButton extends DropDownButton {
             });
             return callBackPromise;
         };
-        this.secondaryBtnObj = new DropDownButton(dropDownBtnModel);
-        this.secondaryBtnObj.createElement = this.createElement;
-        this.secondaryBtnObj.appendTo(btnElem);
+        if (!(isBlazor() && this.isServerRendered)) {
+            this.secondaryBtnObj = new DropDownButton(dropDownBtnModel);
+            this.secondaryBtnObj.createElement = this.createElement;
+            this.secondaryBtnObj.appendTo(btnElem);
+        }
         this.secondaryBtnObj.dropDown.relateTo = this.wrapper;
         this.dropDown = this.secondaryBtnObj.dropDown;
         this.secondaryBtnObj.activeElem = [this.element, this.secondaryBtnObj.element];
@@ -789,8 +913,11 @@ let SplitButton = class SplitButton extends DropDownButton {
     onPropertyChanged(newProp, oldProp) {
         let model = ['content', 'iconCss', 'iconPosition', 'cssClass', 'disabled', 'enableRtl'];
         this.primaryBtnObj.setProperties(getModel(newProp, model));
-        model = ['items', 'beforeOpen', 'beforeItemRender', 'select', 'open',
+        model = ['beforeOpen', 'beforeItemRender', 'select', 'open',
             'close', 'cssClass', 'disabled', 'enableRtl'];
+        if (Object.keys(newProp)[0] === 'items') {
+            this.secondaryBtnObj.onPropertyChanged(newProp, oldProp);
+        }
         this.secondaryBtnObj.setProperties(getModel(newProp, model));
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
@@ -1032,6 +1159,9 @@ let ProgressButton = class ProgressButton extends Button {
      * @private
      */
     render() {
+        if (isBlazor()) {
+            this.isServerRendered = false;
+        }
         super.render();
         this.init();
         this.wireEvents();
@@ -1133,10 +1263,16 @@ let ProgressButton = class ProgressButton extends Button {
         let cont;
         if (isBlazor()) {
             cont = this.content;
+            if (this.enableHtmlSanitizer) {
+                cont = SanitizeHtmlHelper.sanitize(this.content);
+            }
             this.setContentIcon(cont);
         }
         else {
             cont = this.element.innerHTML;
+            if (this.enableHtmlSanitizer) {
+                cont = SanitizeHtmlHelper.sanitize(this.element.innerHTML);
+            }
             this.element.innerHTML = '';
             this.element.appendChild(this.createElement('span', { className: CONTENTCLS, innerHTML: cont }));
         }
@@ -1445,6 +1581,9 @@ __decorate$3([
     Property(false)
 ], ProgressButton.prototype, "isToggle", void 0);
 __decorate$3([
+    Property(false)
+], ProgressButton.prototype, "enableHtmlSanitizer", void 0);
+__decorate$3([
     Complex({}, SpinSettings)
 ], ProgressButton.prototype, "spinSettings", void 0);
 __decorate$3([
@@ -1477,5 +1616,5 @@ ProgressButton = __decorate$3([
  * SplitButton all module
  */
 
-export { getModel, Item, DropDownButton, SplitButton, Deferred, createButtonGroup, SpinSettings, AnimationSettings, ProgressButton };
+export { getModel, Item, dropDownButtonObserver, DropDownButton, SplitButton, Deferred, createButtonGroup, SpinSettings, AnimationSettings, ProgressButton };
 //# sourceMappingURL=ej2-splitbuttons.es2015.js.map

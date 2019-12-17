@@ -21,8 +21,8 @@ export class RangeSeries extends NiceInterval {
     private query: Query;
     public xMin: number;
     public xMax: number;
-    private yMin: number;
-    private yMax: number;
+    public yMin: number;
+    public yMax: number;
     private yAxis: Axis;
     public xAxis: Axis;
     private seriesLength: number;
@@ -79,6 +79,7 @@ export class RangeSeries extends NiceInterval {
      */
     private dataManagerSuccess(e: { result: Object, count: number }, control: RangeNavigator, series?: RangeNavigatorSeries): void {
         let viewData: Object = e.count ? e.result : [];
+        control.allowServerDataBinding = false;
         if (e.count) {
             this.findGMT(control, <object[]>viewData, (series ? series.xName : null) || control.xName);
         }

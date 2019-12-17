@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Component, Event, EventHandler, HijriParser, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, cldrData, closest, createElement, detach, extend, formatUnit, getDefaultDateObject, getUniqueID, getValue, isNullOrUndefined, isUndefined, merge, prepend, remove, removeClass, rippleEffect, select, setStyleAttribute, setValue, throwError } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Component, Event, EventHandler, HijriParser, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, cldrData, closest, createElement, detach, extend, formatUnit, getDefaultDateObject, getUniqueID, getValue, isBlazor, isNullOrUndefined, isUndefined, merge, prepend, remove, removeClass, rippleEffect, select, setStyleAttribute, setValue, throwError } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Input } from '@syncfusion/ej2-inputs';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -78,27 +78,6 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         _this.effect = '';
         _this.isPopupClicked = false;
         _this.isDateSelected = true;
-        _this.defaultKeyConfigs = {
-            controlUp: 'ctrl+38',
-            controlDown: 'ctrl+40',
-            moveDown: 'downarrow',
-            moveUp: 'uparrow',
-            moveLeft: 'leftarrow',
-            moveRight: 'rightarrow',
-            select: 'enter',
-            home: 'home',
-            end: 'end',
-            pageUp: 'pageup',
-            pageDown: 'pagedown',
-            shiftPageUp: 'shift+pageup',
-            shiftPageDown: 'shift+pagedown',
-            controlHome: 'ctrl+home',
-            controlEnd: 'ctrl+end',
-            altUpArrow: 'alt+uparrow',
-            spacebar: 'space',
-            altRightArrow: 'alt+rightarrow',
-            altLeftArrow: 'alt+leftarrow'
-        };
         return _this;
     }
     /**
@@ -161,6 +140,30 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         if (isNullOrUndefined(max)) {
             this.setProperties({ max: new Date(2099, 11, 31) }, true);
         }
+    };
+    CalendarBase.prototype.getDefaultKeyConfig = function () {
+        this.defaultKeyConfigs = {
+            controlUp: 'ctrl+38',
+            controlDown: 'ctrl+40',
+            moveDown: 'downarrow',
+            moveUp: 'uparrow',
+            moveLeft: 'leftarrow',
+            moveRight: 'rightarrow',
+            select: 'enter',
+            home: 'home',
+            end: 'end',
+            pageUp: 'pageup',
+            pageDown: 'pagedown',
+            shiftPageUp: 'shift+pageup',
+            shiftPageDown: 'shift+pagedown',
+            controlHome: 'ctrl+home',
+            controlEnd: 'ctrl+end',
+            altUpArrow: 'alt+uparrow',
+            spacebar: 'space',
+            altRightArrow: 'alt+rightarrow',
+            altLeftArrow: 'alt+leftarrow'
+        };
+        return this.defaultKeyConfigs;
     };
     CalendarBase.prototype.validateDate = function (value) {
         this.setProperties({ min: this.checkDateValue(new Date(this.checkValue(this.min))) }, true);
@@ -372,9 +375,18 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    CalendarBase.prototype.wireEvents = function () {
-        EventHandler.add(this.headerTitleElement, 'click', this.navigateTitle, this);
-        this.defaultKeyConfigs = extend(this.defaultKeyConfigs, this.keyConfigs);
+    CalendarBase.prototype.wireEvents = function (id, ref, keyConfig, moduleName) {
+        if (!(isBlazor() && ref)) {
+            EventHandler.add(this.headerTitleElement, 'click', this.navigateTitle, this);
+            this.defaultKeyConfigs = extend(this.defaultKeyConfigs, this.keyConfigs);
+        }
+        else {
+            this.element = document.getElementById(id);
+            this.defaultKeyConfigs = this.getDefaultKeyConfig();
+            this.defaultKeyConfigs = extend(this.defaultKeyConfigs, keyConfig);
+            this.blazorRef = ref;
+            this.serverModuleName = moduleName;
+        }
         if (this.getModuleName() === 'calendar') {
             this.keyboardModule = new KeyboardEvents(this.element, {
                 eventName: 'keydown',
@@ -389,6 +401,12 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
                 keyConfigs: this.defaultKeyConfigs
             });
         }
+    };
+    CalendarBase.prototype.dateWireEvents = function (id, ref, keyConfig, moduleName) {
+        this.defaultKeyConfigs = this.getDefaultKeyConfig();
+        this.defaultKeyConfigs = extend(this.defaultKeyConfigs, keyConfig);
+        this.blazorRef = ref;
+        this.serverModuleName = moduleName;
     };
     CalendarBase.prototype.todayButtonClick = function (value) {
         if (this.showTodayButton) {
@@ -408,7 +426,13 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
     };
     // tslint:disable-next-line:max-func-body-length
     CalendarBase.prototype.keyActionHandle = function (e, value, multiSelection) {
-        var view = this.getViewNumber(this.currentView());
+        if (isBlazor() && this.blazorRef) {
+            if (!this.tableBodyElement) {
+                this.element = closest(e.target, '.' + 'e-calendar');
+                this.tableBodyElement = this.element.querySelector('tbody');
+            }
+            multiSelection = false;
+        }
         var focusedDate = this.tableBodyElement.querySelector('tr td.e-focused-date');
         var selectedDate;
         if (multiSelection) {
@@ -422,106 +446,130 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         else {
             selectedDate = this.tableBodyElement.querySelector('tr td.e-selected');
         }
-        var depthValue = this.getViewNumber(this.depth);
-        var levelRestrict = (view === depthValue && this.getViewNumber(this.start) >= depthValue);
-        this.effect = '';
-        switch (e.action) {
-            case 'moveLeft':
-                this.KeyboardNavigate(-1, view, e, this.max, this.min);
-                e.preventDefault();
-                break;
-            case 'moveRight':
-                this.KeyboardNavigate(1, view, e, this.max, this.min);
-                e.preventDefault();
-                break;
-            case 'moveUp':
-                if (view === 0) {
-                    this.KeyboardNavigate(-7, view, e, this.max, this.min); // move the current date to the previous seven days.
-                }
-                else {
-                    this.KeyboardNavigate(-4, view, e, this.max, this.min); // move the current year to the previous four days.
-                }
-                e.preventDefault();
-                break;
-            case 'moveDown':
-                if (view === 0) {
-                    this.KeyboardNavigate(7, view, e, this.max, this.min);
-                }
-                else {
-                    this.KeyboardNavigate(4, view, e, this.max, this.min);
-                }
-                e.preventDefault();
-                break;
-            case 'select':
-                if (e.target === this.todayElement) {
-                    this.todayButtonClick(value);
-                }
-                else {
-                    var element = !isNullOrUndefined(focusedDate) ? focusedDate : selectedDate;
-                    if (!isNullOrUndefined(element) && !element.classList.contains(DISABLED)) {
-                        if (levelRestrict) {
-                            var d = new Date(parseInt('' + (element).id, 0));
-                            this.selectDate(e, d, (element));
-                        }
-                        else {
-                            this.contentClick(null, --view, (element), value);
+        if (isBlazor() && this.blazorRef) {
+            this.tableBodyElement.focus();
+            var targetEle = e.target;
+            var args = {
+                Action: e.action, Key: e.key, Events: e,
+                SelectDate: selectedDate ? selectedDate.id : null,
+                FocusedDate: focusedDate ? focusedDate.id : null,
+                classList: selectedDate ? selectedDate.classList.toString() : focusedDate ? focusedDate.classList.toString() : 'e-cell',
+                Id: focusedDate ? focusedDate.id : selectedDate ? selectedDate.id : null,
+                TargetClassList: targetEle.classList.toString()
+            };
+            // tslint:disable-next-line
+            this.blazorRef.invokeMethodAsync('OnCalendarKeyboardEvent', args);
+            if (targetEle.classList.contains('e-today')) {
+                targetEle.blur();
+                this.tableBodyElement.focus();
+            }
+            if (this.serverModuleName === 'ejs.calendars.Calendar') {
+                this.tableBodyElement = null;
+            }
+        }
+        else {
+            var view = this.getViewNumber(this.currentView());
+            var depthValue = this.getViewNumber(this.depth);
+            var levelRestrict = (view === depthValue && this.getViewNumber(this.start) >= depthValue);
+            this.effect = '';
+            switch (e.action) {
+                case 'moveLeft':
+                    this.KeyboardNavigate(-1, view, e, this.max, this.min);
+                    e.preventDefault();
+                    break;
+                case 'moveRight':
+                    this.KeyboardNavigate(1, view, e, this.max, this.min);
+                    e.preventDefault();
+                    break;
+                case 'moveUp':
+                    if (view === 0) {
+                        this.KeyboardNavigate(-7, view, e, this.max, this.min); // move the current date to the previous seven days.
+                    }
+                    else {
+                        this.KeyboardNavigate(-4, view, e, this.max, this.min); // move the current year to the previous four days.
+                    }
+                    e.preventDefault();
+                    break;
+                case 'moveDown':
+                    if (view === 0) {
+                        this.KeyboardNavigate(7, view, e, this.max, this.min);
+                    }
+                    else {
+                        this.KeyboardNavigate(4, view, e, this.max, this.min);
+                    }
+                    e.preventDefault();
+                    break;
+                case 'select':
+                    if (e.target === this.todayElement) {
+                        this.todayButtonClick(value);
+                    }
+                    else {
+                        var element = !isNullOrUndefined(focusedDate) ? focusedDate : selectedDate;
+                        if (!isNullOrUndefined(element) && !element.classList.contains(DISABLED)) {
+                            if (levelRestrict) {
+                                var d = new Date(parseInt('' + (element).id, 0));
+                                this.selectDate(e, d, (element));
+                            }
+                            else {
+                                this.contentClick(null, --view, (element), value);
+                            }
                         }
                     }
-                }
-                break;
-            case 'controlUp':
-                this.title();
-                e.preventDefault();
-                break;
-            case 'controlDown':
-                if (!isNullOrUndefined(focusedDate) || !isNullOrUndefined(selectedDate) && !levelRestrict) {
-                    this.contentClick(null, --view, (focusedDate || selectedDate), value);
-                }
-                e.preventDefault();
-                break;
-            case 'home':
-                this.currentDate = this.firstDay(this.currentDate);
-                detach(this.tableBodyElement);
-                (view === 0) ? this.renderMonths(e) : ((view === 1) ? this.renderYears(e) : this.renderDecades(e));
-                e.preventDefault();
-                break;
-            case 'end':
-                this.currentDate = this.lastDay(this.currentDate, view);
-                detach(this.tableBodyElement);
-                (view === 0) ? this.renderMonths(e) : ((view === 1) ? this.renderYears(e) : this.renderDecades(e));
-                e.preventDefault();
-                break;
-            case 'pageUp':
-                this.addMonths(this.currentDate, -1);
-                this.navigateTo('Month', this.currentDate);
-                e.preventDefault();
-                break;
-            case 'pageDown':
-                this.addMonths(this.currentDate, 1);
-                this.navigateTo('Month', this.currentDate);
-                e.preventDefault();
-                break;
-            case 'shiftPageUp':
-                this.addYears(this.currentDate, -1);
-                this.navigateTo('Month', this.currentDate);
-                e.preventDefault();
-                break;
-            case 'shiftPageDown':
-                this.addYears(this.currentDate, 1);
-                this.navigateTo('Month', this.currentDate);
-                e.preventDefault();
-                break;
-            case 'controlHome':
-                this.navigateTo('Month', new Date(this.currentDate.getFullYear(), 0, 1));
-                e.preventDefault();
-                break;
-            case 'controlEnd':
-                this.navigateTo('Month', new Date(this.currentDate.getFullYear(), 11, 31));
-                e.preventDefault();
-                break;
-        }
-        if (this.getModuleName() === 'calendar') {
-            this.table.focus();
+                    break;
+                case 'controlUp':
+                    this.title();
+                    e.preventDefault();
+                    break;
+                case 'controlDown':
+                    if (!isNullOrUndefined(focusedDate) || !isNullOrUndefined(selectedDate) && !levelRestrict) {
+                        this.contentClick(null, --view, (focusedDate || selectedDate), value);
+                    }
+                    e.preventDefault();
+                    break;
+                case 'home':
+                    this.currentDate = this.firstDay(this.currentDate);
+                    detach(this.tableBodyElement);
+                    (view === 0) ? this.renderMonths(e) : ((view === 1) ? this.renderYears(e) : this.renderDecades(e));
+                    e.preventDefault();
+                    break;
+                case 'end':
+                    this.currentDate = this.lastDay(this.currentDate, view);
+                    detach(this.tableBodyElement);
+                    (view === 0) ? this.renderMonths(e) : ((view === 1) ? this.renderYears(e) : this.renderDecades(e));
+                    e.preventDefault();
+                    break;
+                case 'pageUp':
+                    this.addMonths(this.currentDate, -1);
+                    this.navigateTo('Month', this.currentDate);
+                    e.preventDefault();
+                    break;
+                case 'pageDown':
+                    this.addMonths(this.currentDate, 1);
+                    this.navigateTo('Month', this.currentDate);
+                    e.preventDefault();
+                    break;
+                case 'shiftPageUp':
+                    this.addYears(this.currentDate, -1);
+                    this.navigateTo('Month', this.currentDate);
+                    e.preventDefault();
+                    break;
+                case 'shiftPageDown':
+                    this.addYears(this.currentDate, 1);
+                    this.navigateTo('Month', this.currentDate);
+                    e.preventDefault();
+                    break;
+                case 'controlHome':
+                    this.navigateTo('Month', new Date(this.currentDate.getFullYear(), 0, 1));
+                    e.preventDefault();
+                    break;
+                case 'controlEnd':
+                    this.navigateTo('Month', new Date(this.currentDate.getFullYear(), 11, 31));
+                    e.preventDefault();
+                    break;
+            }
+            if (this.getModuleName() === 'calendar') {
+                this.table.focus();
+            }
         }
     };
     CalendarBase.prototype.KeyboardNavigate = function (number, currentView, e, max, min) {
@@ -578,6 +626,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         this.navigatePreviousHandler = this.navigatePrevious.bind(this);
         this.navigateNextHandler = this.navigateNext.bind(this);
+        this.defaultKeyConfigs = this.getDefaultKeyConfig();
         this.navigateHandler = function (e) {
             _this.triggerNavigate(e);
         };
@@ -1065,6 +1114,9 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
     CalendarBase.prototype.getModuleName = function () {
         return 'calendar';
     };
+    /**
+     * @deprecated
+     */
     CalendarBase.prototype.requiredModules = function () {
         var modules = [];
         if (this) {
@@ -1830,6 +1882,9 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         Property(null)
     ], CalendarBase.prototype, "serverTimezoneOffset", void 0);
     __decorate([
+        Property('en-US')
+    ], CalendarBase.prototype, "locale", void 0);
+    __decorate([
         Event()
     ], CalendarBase.prototype, "created", void 0);
     __decorate([
@@ -2014,6 +2069,9 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
         _super.prototype.preRender.call(this, this.value);
     };
     
+    /**
+     * @deprecated
+     */
     Calendar.prototype.createContent = function () {
         this.previousDate = this.value;
         _super.prototype.createContent.call(this);
@@ -2173,6 +2231,7 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
      * @param  {string} view - Specifies the view of the Calendar.
      * @param  {Date} date - Specifies the focused date in a view.
      * @returns void
+     * @deprecated
      */
     Calendar.prototype.navigateTo = function (view, date) {
         this.minMaxUpdate();
@@ -2181,6 +2240,7 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
     /**
      * Gets the current view of the Calendar.
      * @returns string
+     * @deprecated
      */
     Calendar.prototype.currentView = function () {
         return _super.prototype.currentView.call(this);
@@ -2828,6 +2888,7 @@ var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /// <reference path='../calendar/calendar-model.d.ts'/>
+// tslint:disable-next-line
 //class constant defination
 var DATEWRAPPER = 'e-date-wrapper';
 var ROOT$1 = 'e-datepicker';
@@ -2843,6 +2904,7 @@ var ERROR = 'e-error';
 var ACTIVE = 'e-active';
 var OVERFLOW = 'e-date-overflow';
 var DATEICON = 'e-date-icon';
+var CLEARICON = 'e-clear-icon';
 var ICONS = 'e-icons';
 var OPENDURATION = 300;
 var OFFSETVALUE = 4;
@@ -2874,30 +2936,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         _this.isDateIconClicked = false;
         _this.isAltKeyPressed = false;
         _this.isInteracted = true;
+        _this.isBlazorServer = false;
         _this.invalidValueString = null;
         _this.checkPreviousValue = null;
-        _this.defaultKeyConfigs = {
-            altUpArrow: 'alt+uparrow',
-            altDownArrow: 'alt+downarrow',
-            escape: 'escape',
-            enter: 'enter',
-            controlUp: 'ctrl+38',
-            controlDown: 'ctrl+40',
-            moveDown: 'downarrow',
-            moveUp: 'uparrow',
-            moveLeft: 'leftarrow',
-            moveRight: 'rightarrow',
-            select: 'enter',
-            home: 'home',
-            end: 'end',
-            pageUp: 'pageup',
-            pageDown: 'pagedown',
-            shiftPageUp: 'shift+pageup',
-            shiftPageDown: 'shift+pagedown',
-            controlHome: 'ctrl+home',
-            controlEnd: 'ctrl+end',
-            tab: 'tab'
-        };
         _this.datepickerOptions = options;
         return _this;
     }
@@ -2952,11 +2993,29 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DatePicker.prototype.initialize = function () {
-        this.checkInvalidValue(this.value);
-        this.createInput();
-        this.updateHtmlAttributeToWrapper();
-        this.setAllowEdit();
-        this.updateInput();
+        if (!this.isBlazorServer) {
+            this.checkInvalidValue(this.value);
+            this.createInput();
+            this.updateHtmlAttributeToWrapper();
+            this.setAllowEdit();
+            this.updateInput();
+        }
+        else {
+            var parentElement = this.element.parentElement;
+            this.inputWrapper = {
+                container: parentElement,
+                clearButton: parentElement.querySelector('.' + CLEARICON),
+                buttons: [parentElement.querySelector('.' + DATEICON)]
+            };
+            Input.bindInitialEvent({
+                element: this.inputElement,
+                floatLabelType: this.floatLabelType
+            });
+            if (this.showClearButton && this.inputWrapper.clearButton) {
+                Input.wireClearBtnEvents(this.inputElement, this.inputWrapper.clearButton, this.inputWrapper.container);
+            }
+            this.setAllowEdit();
+        }
         this.previousElementValue = this.inputElement.value;
         this.previousDate = new Date(+this.value);
         this.inputElement.setAttribute('value', this.inputElement.value);
@@ -3010,7 +3069,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
     DatePicker.prototype.updateInput = function () {
         var formatOptions;
         if (this.value && !this.isCalendar()) {
-            this.disabledDates();
+            if (!this.isBlazorServer) {
+                this.disabledDates();
+            }
         }
         if (!+new Date(this.checkValue(this.value))) {
             this.setProperties({ value: null }, true);
@@ -3047,20 +3108,20 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 dateString = this.globalize.formatDate(this.value, formatOptions);
             }
             if ((+dateValue <= +this.max) && (+dateValue >= +this.min)) {
-                Input.setValue(dateString, this.inputElement, this.floatLabelType, this.showClearButton);
+                this.updateInputValue(dateString);
             }
             else {
                 var value = (+dateValue >= +this.max || !+this.value) || (!+this.value || +dateValue <= +this.min);
                 if (!this.strictMode && value) {
-                    Input.setValue(dateString, this.inputElement, this.floatLabelType, this.showClearButton);
+                    this.updateInputValue(dateString);
                 }
             }
         }
         if (isNullOrUndefined(this.value) && this.strictMode) {
-            Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
+            this.updateInputValue('');
         }
         if (!this.strictMode && isNullOrUndefined(this.value) && this.invalidValueString) {
-            Input.setValue(this.invalidValueString, this.inputElement, this.floatLabelType, this.showClearButton);
+            this.updateInputValue(this.invalidValueString);
         }
         this.changedArgs = { value: this.value };
         this.errorClass();
@@ -3186,13 +3247,13 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
     };
     DatePicker.prototype.bindEvents = function () {
         if (this.enabled) {
-            EventHandler.add(this.inputWrapper.buttons[0], 'mousedown touchstart', this.dateIconHandler, this);
+            EventHandler.add(this.inputWrapper.buttons[0], 'mousedown touchstart', (this.isBlazorServer ? this.preventEventBubbling : this.dateIconHandler), this);
             EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
             EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
             this.bindInputEvent();
             // To prevent the twice triggering.
             EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
-            if (this.showClearButton && this.inputWrapper.clearButton) {
+            if (this.showClearButton && (this.inputWrapper.clearButton || (this.isBlazorServer))) {
                 EventHandler.add(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler, this);
             }
             if (this.formElement) {
@@ -3200,11 +3261,11 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             }
         }
         else {
-            EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown touchstart', this.dateIconHandler);
+            EventHandler.remove(this.inputWrapper.buttons[0], 'mousedown touchstart', (this.isBlazorServer ? this.preventEventBubbling : this.dateIconHandler));
             EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
             EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
             EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
-            if (this.showClearButton && this.inputWrapper.clearButton) {
+            if (this.showClearButton && (this.inputWrapper.clearButton || (this.isBlazorServer))) {
                 EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
             }
             if (this.formElement) {
@@ -3226,11 +3287,13 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 this.inputValueCopy = null;
                 this.inputElement.setAttribute('value', '');
             }
-            this.setProperties({ value: this.inputValueCopy }, true);
-            this.restoreValue();
-            if (this.inputElement) {
-                Input.setValue(value, this.inputElement, this.floatLabelType, this.showClearButton);
-                this.errorClass();
+            if (!this.isBlazorServer) {
+                this.setProperties({ value: this.inputValueCopy }, true);
+                this.restoreValue();
+                if (this.inputElement) {
+                    this.updateInputValue(value);
+                    this.errorClass();
+                }
             }
         }
     };
@@ -3253,25 +3316,44 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         this.clear(e);
     };
     DatePicker.prototype.clear = function (event) {
-        this.setProperties({ value: null }, true);
-        Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
+        if (!this.isBlazorServer) {
+            this.setProperties({ value: null }, true);
+        }
+        this.updateInputValue('');
         var clearedArgs = {
             event: event
         };
         this.trigger('cleared', clearedArgs);
         this.invalidValueString = '';
-        this.updateInput();
-        this.popupUpdate();
-        this.changeEvent(event);
+        if (!this.isBlazorServer) {
+            this.updateInput();
+            this.popupUpdate();
+            this.changeEvent(event);
+        }
+        if (this.isBlazorServer) {
+            // tslint:disable
+            this.interopAdaptor.invokeMethodAsync('OnValueCleared');
+            // tslint:enable
+        }
+    };
+    DatePicker.prototype.preventEventBubbling = function (e) {
+        if (e.type !== 'touchstart') {
+            e.preventDefault();
+        }
+    };
+    DatePicker.prototype.updateInputValue = function (value) {
+        Input.setValue(value, this.inputElement, this.floatLabelType, this.showClearButton);
     };
     DatePicker.prototype.dateIconHandler = function (e) {
         if (Browser.isDevice) {
             this.inputElement.setAttribute('readonly', '');
             this.inputElement.blur();
         }
-        e.preventDefault();
+        if (!this.isBlazorServer) {
+            e.preventDefault();
+        }
         if (!this.readonly) {
-            if (this.isCalendar()) {
+            if (this.isCalendar() && !this.isBlazorServer) {
                 this.hide(e);
             }
             else {
@@ -3290,18 +3372,29 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(this.htmlAttributes)) {
             for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
                 var key = _a[_i];
-                if (containerAttr.indexOf(key) > -1) {
-                    if (key === 'class') {
-                        addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
-                    }
-                    else if (key === 'style') {
-                        var setStyle = this.inputWrapper.container.getAttribute(key);
-                        setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[key]) :
-                            this.htmlAttributes[key];
-                        this.inputWrapper.container.setAttribute(key, setStyle);
-                    }
-                    else {
-                        this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                if (!isNullOrUndefined(this.htmlAttributes[key])) {
+                    if (containerAttr.indexOf(key) > -1) {
+                        if (key === 'class') {
+                            addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
+                        }
+                        else if (key === 'style') {
+                            var setStyle = this.inputWrapper.container.getAttribute(key);
+                            if (!isNullOrUndefined(setStyle)) {
+                                if (setStyle.charAt(setStyle.length - 1) === ';') {
+                                    setStyle = setStyle + this.htmlAttributes[key];
+                                }
+                                else {
+                                    setStyle = setStyle + ';' + this.htmlAttributes[key];
+                                }
+                            }
+                            else {
+                                setStyle = this.htmlAttributes[key];
+                            }
+                            this.inputWrapper.container.setAttribute(key, setStyle);
+                        }
+                        else {
+                            this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                        }
                     }
                 }
             }
@@ -3346,7 +3439,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
     };
     DatePicker.prototype.inputFocusHandler = function () {
         var focusArguments = {
-            model: this
+            model: isBlazor() && this.isServerRendered ? null : this
         };
         this.isDateIconClicked = false;
         this.trigger('focus', focusArguments);
@@ -3356,21 +3449,28 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         this.isPopupClicked = false;
     };
     DatePicker.prototype.inputBlurHandler = function (e) {
-        this.strictModeUpdate();
-        if (this.inputElement.value === '' && isNullOrUndefined(this.value)) {
-            this.invalidValueString = null;
-            Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
+        if (!this.isBlazorServer) {
+            this.strictModeUpdate();
+            if (this.inputElement.value === '' && isNullOrUndefined(this.value)) {
+                this.invalidValueString = null;
+                this.updateInputValue('');
+            }
+            this.updateInput();
+            this.popupUpdate();
+            this.changeTrigger(e);
+            this.errorClass();
         }
-        this.updateInput();
-        this.popupUpdate();
-        this.changeTrigger(e);
-        this.errorClass();
+        else {
+            // tslint:disable
+            this.interopAdaptor.invokeMethodAsync('OnStrictModeUpdate');
+            // tslint:enable
+        }
         if (this.isCalendar() && document.activeElement === this.inputElement) {
             this.hide(e);
         }
         if (this.getModuleName() === 'datepicker') {
             var blurArguments = {
-                model: this
+                model: isBlazor() && this.isServerRendered ? null : this
             };
             this.trigger('blur', blurArguments);
         }
@@ -3422,22 +3522,43 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 break;
             case 'altDownArrow':
                 this.isAltKeyPressed = true;
-                this.strictModeUpdate();
-                this.updateInput();
-                this.changeTrigger(e);
+                if (!this.isBlazorServer) {
+                    this.strictModeUpdate();
+                    this.updateInput();
+                    this.changeTrigger(e);
+                }
+                else {
+                    // tslint:disable
+                    this.interopAdaptor.invokeMethodAsync('OnStrictModeUpdate');
+                    // tslint:enable
+                }
                 if (this.getModuleName() === 'datepicker') {
-                    this.show(null, e);
+                    if (!this.isBlazorServer) {
+                        this.show(null, e);
+                    }
+                    else {
+                        // tslint:disable
+                        this.interopAdaptor.invokeMethodAsync('OnPopupHide', true);
+                        // tslint:enable
+                    }
                 }
                 break;
             case 'escape':
                 this.hide(e);
                 break;
             case 'enter':
-                this.strictModeUpdate();
-                this.updateInput();
-                this.popupUpdate();
-                this.changeTrigger(e);
-                this.errorClass();
+                if (!this.isBlazorServer) {
+                    this.strictModeUpdate();
+                    this.updateInput();
+                    this.popupUpdate();
+                    this.changeTrigger(e);
+                    this.errorClass();
+                }
+                else {
+                    // tslint:disable
+                    this.interopAdaptor.invokeMethodAsync('OnStrictModeUpdate');
+                    // tslint:enable
+                }
                 if (!this.isCalendar() && document.activeElement === this.inputElement) {
                     this.hide(e);
                 }
@@ -3447,11 +3568,18 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 }
                 break;
             case 'tab':
-                this.strictModeUpdate();
-                this.updateInput();
-                this.popupUpdate();
-                this.changeTrigger(e);
-                this.errorClass();
+                if (!this.isBlazorServer) {
+                    this.strictModeUpdate();
+                    this.updateInput();
+                    this.popupUpdate();
+                    this.changeTrigger(e);
+                    this.errorClass();
+                }
+                else {
+                    // tslint:disable
+                    this.interopAdaptor.invokeMethodAsync('OnStrictModeUpdate');
+                    // tslint:enable
+                }
                 this.hide(e);
                 break;
             default:
@@ -3466,9 +3594,11 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         this.previousDate = ((!isNullOrUndefined(this.value) && new Date(+this.value)) || null);
         if (this.isCalendar()) {
             _super.prototype.keyActionHandle.call(this, e);
-            attributes(this.inputElement, {
-                'aria-activedescendant': '' + this.setActiveDescendant()
-            });
+            if (!this.isBlazorServer) {
+                attributes(this.inputElement, {
+                    'aria-activedescendant': '' + this.setActiveDescendant()
+                });
+            }
         }
     };
     DatePicker.prototype.popupUpdate = function () {
@@ -3479,7 +3609,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                     removeClass(this.popupObj.element.querySelectorAll('.' + SELECTED$2), [SELECTED$2]);
                 }
             }
-            if (!isNullOrUndefined(this.value)) {
+            if (!isNullOrUndefined(this.value) && !this.isBlazorServer) {
                 if ((+this.value >= +this.min) && (+this.value <= +this.max)) {
                     var targetdate = new Date(this.checkValue(this.value));
                     _super.prototype.navigateTo.call(this, 'Month', targetdate);
@@ -3554,7 +3684,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             }
         }
         if (this.strictMode && date) {
-            Input.setValue(this.globalize.formatDate(date, dateOptions), this.inputElement, this.floatLabelType, this.showClearButton);
+            this.updateInputValue(this.globalize.formatDate(date, dateOptions));
             if (this.inputElement.value !== this.previousElementValue) {
                 this.setProperties({ value: date }, true);
             }
@@ -3576,9 +3706,17 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
     };
     DatePicker.prototype.createCalendar = function () {
         var _this = this;
-        this.popupWrapper = this.createElement('div', { className: '' + ROOT$1 + ' ' + POPUPWRAPPER });
-        if (!isNullOrUndefined(this.cssClass)) {
-            this.popupWrapper.className += ' ' + this.cssClass;
+        if (!this.isBlazorServer) {
+            this.popupWrapper = this.createElement('div', { className: '' + ROOT$1 + ' ' + POPUPWRAPPER });
+            if (!isNullOrUndefined(this.cssClass)) {
+                this.popupWrapper.className += ' ' + this.cssClass;
+            }
+        }
+        else {
+            this.popupWrapper = this.inputWrapper.container.nextElementSibling;
+            this.calendarElement = this.popupWrapper.firstElementChild;
+            this.tableBodyElement = select('tbody', this.calendarElement);
+            this.contentElement = select('.e-content', this.calendarElement);
         }
         if (Browser.isDevice) {
             this.modelHeader();
@@ -3620,7 +3758,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 if (_this.isDateIconClicked) {
                     _this.inputWrapper.container.children[_this.index].focus();
                 }
-                if (_this.value) {
+                if (_this.value && !_this.isBlazorServer) {
                     _this.disabledDates();
                 }
                 if (_this.popupObj) {
@@ -3635,7 +3773,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 }
             }
         });
-        this.popupObj.element.className += ' ' + this.cssClass;
+        if (!this.isBlazorServer) {
+            this.popupObj.element.className += ' ' + this.cssClass;
+        }
         this.setAriaAttributes();
     };
     DatePicker.prototype.setAriaDisabled = function () {
@@ -3750,7 +3890,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             }
         }
         if (!isNullOrUndefined(date)) {
-            Input.setValue(date, this.inputElement, this.floatLabelType, this.showClearButton);
+            this.updateInputValue(date);
         }
     };
     DatePicker.prototype.isCalendar = function () {
@@ -3773,6 +3913,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
     /**
      * Shows the Calendar.
      * @returns void
+     * @deprecated
      */
     DatePicker.prototype.show = function (type, e) {
         var _this = this;
@@ -3784,14 +3925,18 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             var outOfRange = void 0;
             if (!isNullOrUndefined(this.value) && !(+this.value >= +this.min && +this.value <= +this.max)) {
                 outOfRange = new Date(this.checkValue(this.value));
-                this.setProperties({ 'value': null }, true);
+                if (!this.isBlazorServer) {
+                    this.setProperties({ 'value': null }, true);
+                }
             }
             else {
                 outOfRange = this.value || null;
             }
             if (!this.isCalendar()) {
-                _super.prototype.render.call(this);
-                this.setProperties({ 'value': outOfRange || null }, true);
+                if (!this.isBlazorServer) {
+                    _super.prototype.render.call(this);
+                    this.setProperties({ 'value': outOfRange || null }, true);
+                }
                 this.previousDate = outOfRange;
                 this.createCalendar();
             }
@@ -3803,7 +3948,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 preventDefault: function () {
                     prevent_1 = false;
                 },
-                popup: this.popupObj,
+                popup: isBlazor() && this.isServerRendered ? null : this.popupObj,
                 event: e || null,
                 cancel: false,
                 appendTo: Browser.isDevice ? this.mobilePopupWrapper : document.body
@@ -3812,6 +3957,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             this.trigger('open', eventArgs, function (eventArgs) {
                 _this.preventArgs = eventArgs;
                 if (prevent_1 && !_this.preventArgs.cancel) {
+                    if (_this.isBlazorServer) {
+                        _this.popupWrapper.style.visibility = '';
+                    }
                     addClass(_this.inputWrapper.buttons, ACTIVE);
                     _this.preventArgs.appendTo.appendChild(_this.popupWrapper);
                     _this.popupObj.refreshPosition(_this.inputElement);
@@ -3825,11 +3973,18 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                     else {
                         _this.popupObj.show(new Animation(openAnimation), null);
                     }
-                    _super.prototype.setOverlayIndex.call(_this, _this.mobilePopupWrapper, _this.popupObj.element, _this.modal, Browser.isDevice);
+                    if (!_this.isBlazorServer) {
+                        _super.prototype.setOverlayIndex.call(_this, _this.mobilePopupWrapper, _this.popupObj.element, _this.modal, Browser.isDevice);
+                    }
                     _this.setAriaAttributes();
                 }
                 else {
                     _this.popupObj.destroy();
+                    if (_this.isBlazorServer) {
+                        // tslint:disable
+                        _this.interopAdaptor.invokeMethodAsync('OnPopupHide', false);
+                        // tslint:enable
+                    }
                     _this.popupWrapper = _this.popupObj = null;
                 }
                 if (!isNullOrUndefined(_this.inputElement) && _this.inputElement.value === '') {
@@ -3845,6 +4000,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
     /**
      * Hide the Calendar.
      * @returns void
+     * @deprecated
      */
     DatePicker.prototype.hide = function (event) {
         var _this = this;
@@ -3854,7 +4010,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 preventDefault: function () {
                     prevent_2 = false;
                 },
-                popup: this.popupObj,
+                popup: isBlazor() && this.isServerRendered ? null : this.popupObj,
                 event: event || null,
                 cancel: false
             };
@@ -3880,9 +4036,18 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
     DatePicker.prototype.closeEventCallback = function (prevent, eventArgs) {
         this.preventArgs = eventArgs;
         if (this.isCalendar() && (prevent && !this.preventArgs.cancel)) {
-            this.popupObj.hide();
-            this.isAltKeyPressed = false;
-            this.keyboardModule.destroy();
+            if (!this.isBlazorServer) {
+                this.popupObj.hide();
+                this.isAltKeyPressed = false;
+                this.keyboardModule.destroy();
+            }
+            else {
+                // tslint:disable
+                this.interopAdaptor.invokeMethodAsync('OnPopupHide', false);
+                // tslint:enable
+                this.isAltKeyPressed = false;
+                this.popupWrapper = this.popupObj = null;
+            }
             removeClass(this.inputWrapper.buttons, ACTIVE);
         }
         this.setAriaAttributes();
@@ -3927,6 +4092,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
     /**
      * Gets the current view of the DatePicker.
      * @returns string
+     * @deprecated
      */
     DatePicker.prototype.currentView = function () {
         var currentView;
@@ -3941,6 +4107,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
      * @param  {string} view - Specifies the view of the calendar.
      * @param  {Date} date - Specifies the focused date in a view.
      * @returns void
+     * @deprecated
      */
     DatePicker.prototype.navigateTo = function (view, date) {
         if (this.calendarElement) {
@@ -3953,10 +4120,12 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     DatePicker.prototype.destroy = function () {
-        _super.prototype.destroy.call(this);
-        this.keyboardModules.destroy();
-        if (this.popupObj && this.popupObj.element.classList.contains(POPUP)) {
+        if (!this.isBlazorServer) {
             _super.prototype.destroy.call(this);
+            this.keyboardModules.destroy();
+            if (this.popupObj && this.popupObj.element.classList.contains(POPUP)) {
+                _super.prototype.destroy.call(this);
+            }
         }
         var ariaAttrs = {
             'aria-live': 'assertive', 'aria-atomic': 'true', 'aria-disabled': 'true',
@@ -3977,7 +4146,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 detach(this.popupWrapper);
             }
             this.popupObj = this.popupWrapper = null;
-            this.keyboardModule.destroy();
+            if (!this.isBlazorServer) {
+                this.keyboardModule.destroy();
+            }
         }
         if (this.ngTag === null) {
             if (this.inputElement) {
@@ -4021,41 +4192,72 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         this.inputElement = this.element;
         this.formElement = closest(this.inputElement, 'form');
         this.index = this.showClearButton ? 2 : 1;
-        this.ngTag = null;
-        if (this.element.tagName === 'EJS-DATEPICKER' || this.element.tagName === 'EJS-DATETIMEPICKER') {
-            this.ngTag = this.element.tagName;
-            this.inputElement = this.createElement('input');
-            this.element.appendChild(this.inputElement);
-        }
-        if (this.element.getAttribute('id')) {
-            if (this.ngTag !== null) {
-                this.inputElement.id = this.element.getAttribute('id') + '_input';
+        this.isBlazorServer = (isBlazor() && this.isServerRendered && this.getModuleName() === 'datepicker') ? true : false;
+        if (!this.isBlazorServer) {
+            this.ngTag = null;
+            if (this.element.tagName === 'EJS-DATEPICKER' || this.element.tagName === 'EJS-DATETIMEPICKER') {
+                this.ngTag = this.element.tagName;
+                this.inputElement = this.createElement('input');
+                this.element.appendChild(this.inputElement);
             }
-        }
-        else {
-            if (this.getModuleName() === 'datetimepicker') {
-                this.element.id = getUniqueID('ej2-datetimepicker');
+            if (this.element.getAttribute('id')) {
                 if (this.ngTag !== null) {
-                    attributes(this.inputElement, { 'id': this.element.id + '_input' });
+                    this.inputElement.id = this.element.getAttribute('id') + '_input';
                 }
             }
             else {
-                this.element.id = getUniqueID('ej2-datepicker');
-                if (this.ngTag !== null) {
-                    attributes(this.inputElement, { 'id': this.element.id + '_input' });
+                if (this.getModuleName() === 'datetimepicker') {
+                    this.element.id = getUniqueID('ej2-datetimepicker');
+                    if (this.ngTag !== null) {
+                        attributes(this.inputElement, { 'id': this.element.id + '_input' });
+                    }
+                }
+                else {
+                    this.element.id = getUniqueID('ej2-datepicker');
+                    if (this.ngTag !== null) {
+                        attributes(this.inputElement, { 'id': this.element.id + '_input' });
+                    }
                 }
             }
+            if (this.ngTag !== null) {
+                this.validationAttribute(this.element, this.inputElement);
+            }
+            this.updateHtmlAttributeToElement();
         }
-        if (this.ngTag !== null) {
-            this.validationAttribute(this.element, this.inputElement);
-        }
-        this.updateHtmlAttributeToElement();
+        this.defaultKeyConfigs = this.getDefaultKeyConfig();
         this.checkHtmlAttributes(false);
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
         this.element.removeAttribute('tabindex');
-        _super.prototype.preRender.call(this);
+        if (!this.isBlazorServer) {
+            _super.prototype.preRender.call(this);
+        }
     };
     
+    DatePicker.prototype.getDefaultKeyConfig = function () {
+        this.defaultKeyConfigs = {
+            altUpArrow: 'alt+uparrow',
+            altDownArrow: 'alt+downarrow',
+            escape: 'escape',
+            enter: 'enter',
+            controlUp: 'ctrl+38',
+            controlDown: 'ctrl+40',
+            moveDown: 'downarrow',
+            moveUp: 'uparrow',
+            moveLeft: 'leftarrow',
+            moveRight: 'rightarrow',
+            select: 'enter',
+            home: 'home',
+            end: 'end',
+            pageUp: 'pageup',
+            pageDown: 'pagedown',
+            shiftPageUp: 'shift+pageup',
+            shiftPageDown: 'shift+pagedown',
+            controlHome: 'ctrl+home',
+            controlEnd: 'ctrl+end',
+            tab: 'tab'
+        };
+        return this.defaultKeyConfigs;
+    };
     DatePicker.prototype.validationAttribute = function (target, inputElement) {
         var nameAttribute = target.getAttribute('name') ? target.getAttribute('name') : target.getAttribute('id');
         inputElement.setAttribute('name', nameAttribute);
@@ -4133,7 +4335,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 switch (prop) {
                     case 'disabled':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['enabled'] === undefined)) || dynamic) {
+                        if (((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['enabled'] === undefined)) || dynamic) && !this.isBlazorServer) {
                             var enabled = this.inputElement.getAttribute(prop) === 'disabled' || this.inputElement.getAttribute(prop) === '' ||
                                 this.inputElement.getAttribute(prop) === 'true' ? false : true;
                             this.setProperties({ enabled: enabled }, !dynamic);
@@ -4141,7 +4343,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                         break;
                     case 'readonly':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['readonly'] === undefined)) || dynamic) {
+                        if (((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['readonly'] === undefined)) || dynamic) && !this.isBlazorServer) {
                             var readonly = this.inputElement.getAttribute(prop) === 'readonly' || this.inputElement.getAttribute(prop) === '' ||
                                 this.inputElement.getAttribute(prop) === 'true' ? true : false;
                             this.setProperties({ readonly: readonly }, !dynamic);
@@ -4149,20 +4351,24 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                         break;
                     case 'placeholder':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['placeholder'] === undefined)) || dynamic) {
+                        if (((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['placeholder'] === undefined)) || dynamic) && !this.isBlazorServer) {
                             var placeholder = this.inputElement.getAttribute(prop);
                             this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, !dynamic);
                         }
                         break;
                     case 'style':
-                        this.inputElement.setAttribute('style', '' + this.inputElement.getAttribute(prop));
+                        if (!this.isBlazorServer) {
+                            this.inputElement.setAttribute('style', '' + this.inputElement.getAttribute(prop));
+                        }
                         break;
                     case 'name':
-                        this.inputElement.setAttribute('name', '' + this.inputElement.getAttribute(prop));
+                        if (!this.isBlazorServer) {
+                            this.inputElement.setAttribute('name', '' + this.inputElement.getAttribute(prop));
+                        }
                         break;
                     case 'value':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['value'] === undefined)) || dynamic) {
+                        if (((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['value'] === undefined)) || dynamic) && !this.isBlazorServer) {
                             var value = this.inputElement.getAttribute(prop);
                             this.setProperties(setValue(prop, this.globalize.parseDate(value, options), {}), !dynamic);
                         }
@@ -4180,7 +4386,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                         }
                         break;
                     case 'type':
-                        if (this.inputElement.getAttribute(prop) !== 'text') {
+                        if (this.inputElement.getAttribute(prop) !== 'text' && !this.isBlazorServer) {
                             this.inputElement.setAttribute('type', 'text');
                         }
                         break;
@@ -4203,7 +4409,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         var previousValCopy = this.previousDate;
         //calls the Calendar render method to check the disabled dates through renderDayCell event and update the input value accordingly.
         this.minMaxUpdates();
-        _super.prototype.render.call(this);
+        if (!this.isBlazorServer) {
+            _super.prototype.render.call(this);
+        }
         this.previousDate = previousValCopy;
         var date = valueCopy && +(valueCopy);
         var dateIdString = '*[id^="/id"]'.replace('/id', '' + date);
@@ -4245,21 +4453,30 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             inputVal = this.globalize.formatDate(valueCopy, formatOptions);
         }
         if (!this.popupObj) {
-            Input.setValue(inputVal, this.inputElement, this.floatLabelType, this.showClearButton);
+            this.updateInputValue(inputVal);
         }
     };
     DatePicker.prototype.setAriaAttributes = function () {
-        if (this.isCalendar()) {
-            Input.addAttributes({ 'aria-expanded': 'true' }, this.inputElement);
-            attributes(this.inputElement, {
-                'aria-activedescendant': '' + this.setActiveDescendant()
-            });
+        if (this.isBlazorServer) {
+            if (this.isCalendar()) {
+                var focusedEle = this.tableBodyElement.querySelector('tr td.e-focused-date');
+                var selectedEle = this.tableBodyElement.querySelector('tr td.e-selected');
+                var id = (focusedEle || selectedEle) ? (focusedEle || selectedEle).getAttribute('id') : 'null';
+                attributes(this.inputElement, { 'aria-activedescendant': '' + id });
+            }
+            else {
+                attributes(this.inputElement, { 'aria-activedescendant': 'null' });
+            }
         }
         else {
-            Input.addAttributes({ 'aria-expanded': 'false' }, this.inputElement);
-            attributes(this.inputElement, {
-                'aria-activedescendant': 'null'
-            });
+            if (this.isCalendar()) {
+                Input.addAttributes({ 'aria-expanded': 'true' }, this.inputElement);
+                attributes(this.inputElement, { 'aria-activedescendant': '' + this.setActiveDescendant() });
+            }
+            else {
+                Input.addAttributes({ 'aria-expanded': 'false' }, this.inputElement);
+                attributes(this.inputElement, { 'aria-activedescendant': 'null' });
+            }
         }
     };
     DatePicker.prototype.errorClass = function () {
@@ -4297,22 +4514,28 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 case 'value':
                     this.isInteracted = false;
                     this.invalidValueString = null;
-                    this.checkInvalidValue(newProp.value);
+                    if (!this.isBlazorServer) {
+                        this.checkInvalidValue(newProp.value);
+                    }
                     newProp.value = this.value;
                     this.previousElementValue = this.inputElement.value;
-                    if (isNullOrUndefined(this.value)) {
-                        Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
-                        this.currentDate = new Date(new Date().setHours(0, 0, 0, 0));
-                    }
-                    this.updateInput();
-                    if (+this.previousDate !== +this.value) {
-                        this.changeTrigger(null);
+                    if (!this.isBlazorServer) {
+                        if (isNullOrUndefined(this.value)) {
+                            this.updateInputValue('');
+                            this.currentDate = new Date(new Date().setHours(0, 0, 0, 0));
+                        }
+                        this.updateInput();
+                        if (+this.previousDate !== +this.value) {
+                            this.changeTrigger(null);
+                        }
                     }
                     break;
                 case 'format':
                     this.checkFormat();
                     this.bindInputEvent();
-                    this.updateInput();
+                    if (!this.isBlazorServer) {
+                        this.updateInput();
+                    }
                     break;
                 case 'allowEdit':
                     this.setAllowEdit();
@@ -4338,7 +4561,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                     this.l10n.setLocale(this.locale);
                     this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
                     Input.setPlaceholder(this.placeholder, this.inputElement);
-                    this.updateInput();
+                    if (!this.isBlazorServer) {
+                        this.updateInput();
+                    }
                     break;
                 case 'enableRtl':
                     Input.setEnableRtl(this.enableRtl, [this.inputWrapper.container]);
@@ -4346,7 +4571,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 case 'start':
                 case 'depth':
                     this.checkView();
-                    if (this.calendarElement) {
+                    if (this.calendarElement && !this.isBlazorServer) {
                         _super.prototype.onPropertyChanged.call(this, newProp, oldProp);
                     }
                     break;
@@ -4365,7 +4590,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'strictMode':
                     this.invalidValueString = null;
-                    this.updateInput();
+                    if (!this.isBlazorServer) {
+                        this.updateInput();
+                    }
                     break;
                 case 'width':
                     this.setWidth(newProp.width);
@@ -4376,7 +4603,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                     Input.addFloating(this.inputElement, this.floatLabelType, this.placeholder);
                     break;
                 default:
-                    if (this.calendarElement) {
+                    if (this.calendarElement && !this.isBlazorServer) {
                         _super.prototype.onPropertyChanged.call(this, newProp, oldProp);
                     }
                     break;
@@ -4385,8 +4612,14 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     __decorate$1([
+        Property('en-US')
+    ], DatePicker.prototype, "locale", void 0);
+    __decorate$1([
         Property(null)
     ], DatePicker.prototype, "width", void 0);
+    __decorate$1([
+        Property(null)
+    ], DatePicker.prototype, "value", void 0);
     __decorate$1([
         Property(null)
     ], DatePicker.prototype, "cssClass", void 0);
@@ -5423,7 +5656,10 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             if (!this.strictMode) {
-                this.clearRange();
+                if (isNullOrUndefined(this.popupObj)) {
+                    this.currentDate = null;
+                }
+                this.previousStartValue = this.previousEndValue = null;
                 this.startValue = null;
                 this.endValue = null;
                 this.setValue();
@@ -8373,6 +8609,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
         Input.setPlaceholder(this.placeholder, this.inputElement);
         this.updateInput();
+        this.updateHiddenInput();
         this.changeTrigger();
     };
     DateRangePicker.prototype.refreshChange = function () {
@@ -12189,6 +12426,11 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
                 break;
         }
     };
+    /**
+     * Called internally if any of the property value changed.
+     * returns void
+     * @deprecated
+     */
     DateTimePicker.prototype.onPropertyChanged = function (newProp, oldProp) {
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
@@ -12312,6 +12554,9 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
     ], DateTimePicker.prototype, "zIndex", void 0);
     __decorate$4([
         Property(null)
+    ], DateTimePicker.prototype, "value", void 0);
+    __decorate$4([
+        Property(null)
     ], DateTimePicker.prototype, "keyConfigs", void 0);
     __decorate$4([
         Property({})
@@ -12340,6 +12585,36 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
     __decorate$4([
         Property(null)
     ], DateTimePicker.prototype, "serverTimezoneOffset", void 0);
+    __decorate$4([
+        Property(new Date(1900, 0, 1))
+    ], DateTimePicker.prototype, "min", void 0);
+    __decorate$4([
+        Property(new Date(2099, 11, 31))
+    ], DateTimePicker.prototype, "max", void 0);
+    __decorate$4([
+        Property(null)
+    ], DateTimePicker.prototype, "firstDayOfWeek", void 0);
+    __decorate$4([
+        Property('en-US')
+    ], DateTimePicker.prototype, "locale", void 0);
+    __decorate$4([
+        Property('Gregorian')
+    ], DateTimePicker.prototype, "calendarMode", void 0);
+    __decorate$4([
+        Property('Month')
+    ], DateTimePicker.prototype, "start", void 0);
+    __decorate$4([
+        Property('Month')
+    ], DateTimePicker.prototype, "depth", void 0);
+    __decorate$4([
+        Property(false)
+    ], DateTimePicker.prototype, "weekNumber", void 0);
+    __decorate$4([
+        Property(true)
+    ], DateTimePicker.prototype, "showTodayButton", void 0);
+    __decorate$4([
+        Property('Short')
+    ], DateTimePicker.prototype, "dayHeaderFormat", void 0);
     __decorate$4([
         Event()
     ], DateTimePicker.prototype, "open", void 0);

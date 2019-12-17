@@ -194,7 +194,7 @@ describe('AutoComplete', () => {
             it('Searching the matched item ', (done) => {
                 atcObj.inputElement.value = 'Badminton';
                 e.keyCode = 72;
-                atcObj.onInput();
+                atcObj.onInput(e);
                 atcObj.onFilterUp(e);
                 setTimeout(() => {
                     activeElement = atcObj.list.querySelectorAll('li');
@@ -205,7 +205,7 @@ describe('AutoComplete', () => {
             it('Searching the unmatched item ', () => {
                 atcObj.inputElement.value = 'Badmintona';
                 e.keyCode = 72;
-                atcObj.onInput();
+                atcObj.onInput(e);
                 atcObj.onFilterUp(e);
                 expect(atcObj.list.classList.contains('e-nodata')).toBe(true);
             });
@@ -232,7 +232,7 @@ describe('AutoComplete', () => {
             it('Searching with ignoreCase ', (done) => {
                 atcObj.inputElement.value = 'java';
                 e.keyCode = 72;
-                atcObj.onInput();
+                atcObj.onInput(e);
                 atcObj.onFilterUp(e);
                 setTimeout(() => {
                     activeElement = atcObj.list.querySelectorAll('li');
@@ -245,7 +245,7 @@ describe('AutoComplete', () => {
                 atcObj.dataBind();
                 atcObj.inputElement.value = 'java'
                 e.keyCode = 72;
-                atcObj.onInput();
+                atcObj.onInput(e);
                 atcObj.onFilterUp(e);
                 expect(atcObj.list.querySelector('li') > 0).toBe(false);
                 atcObj.ignoreCase = true;
@@ -262,7 +262,7 @@ describe('AutoComplete', () => {
                 atcObj.minLength = 2;
                 atcObj.dataBind();
                 atcObj.inputElement.value = 'j';
-                atcObj.onInput();
+                atcObj.onInput(e);
                 atcObj.onFilterUp(e);
                 setTimeout(() => {
                     expect(atcObj.isPopupOpen).toBe(false);
@@ -272,7 +272,7 @@ describe('AutoComplete', () => {
 
             it('above and equal the minCharacter length for searching', (done) => {
                 atcObj.inputElement.value = 'ja';
-                atcObj.onInput();
+                atcObj.onInput(e);
                 atcObj.onFilterUp(e);
                 setTimeout(() => {
                     activeElement = atcObj.list.querySelectorAll('li');
@@ -286,7 +286,7 @@ describe('AutoComplete', () => {
 
             it('search with empty text', (done) => {
                 atcObj.inputElement.value = '';
-                atcObj.onInput();
+                atcObj.onInput(e);
                 atcObj.onFilterUp(e);
                 setTimeout(() => {
                     expect(atcObj.isPopupOpen).toBe(false);
@@ -298,7 +298,7 @@ describe('AutoComplete', () => {
                 atcObj.suggestionCount = 2;
                 atcObj.dataBind();
                 atcObj.inputElement.value = 'p';
-                atcObj.onInput();
+                atcObj.onInput(e);
                 atcObj.onFilterUp(e);
                 setTimeout(() => {
                     expect(atcObj.list.querySelectorAll('li').length === 2).toBe(true);
@@ -309,7 +309,7 @@ describe('AutoComplete', () => {
                 atcObj.suggestionCount = null;
                 atcObj.dataBind();
                 atcObj.inputElement.value = 'p';
-                atcObj.onInput();
+                atcObj.onInput(e);
                 atcObj.onFilterUp(e);
                 expect(atcObj.list.querySelectorAll('li').length === 3).toBe(true);
             });
@@ -317,7 +317,7 @@ describe('AutoComplete', () => {
             it('press tab key while open a popup', (done) => {
                 e.keyCode = 9;
                 atcObj.onFilterDown(e);
-                atcObj.onInput();
+                atcObj.onInput(e);
                 atcObj.onFilterUp(e);
                 e.action = 'close';
                 atcObj.keyActionHandler(e);
@@ -330,7 +330,7 @@ describe('AutoComplete', () => {
             it('press tab key while hide a popup', (done) => {
                 e.keyCode = 9;
                 atcObj.onFilterDown(e);
-                atcObj.onInput();
+                atcObj.onInput(e);
                 atcObj.onFilterUp(e);
                 e.action = 'close';
                 atcObj.keyActionHandler(e);
@@ -343,7 +343,7 @@ describe('AutoComplete', () => {
             it('select a value from popup list', (done) => {
                 e.keyCode = 76;
                 atcObj.inputElement.value = 'p';
-                atcObj.onInput();
+                atcObj.onInput(e);
                 atcObj.onFilterUp(e);
                 setTimeout(() => {
                     e.type = 'keydown';
@@ -398,7 +398,7 @@ describe('AutoComplete', () => {
             it('Searching a value ', (done) => {
                 atcObj.inputElement.value = 'java';
                 e.keyCode = 72;
-                atcObj.onInput();
+                atcObj.onInput(e);
                 atcObj.onFilterUp(e);
                 setTimeout(() => {
                     activeElement = atcObj.list.querySelectorAll('li');
@@ -409,14 +409,14 @@ describe('AutoComplete', () => {
 
             it('noRecordsTemplate text when searching with unmatched item', () => {
                 atcObj.inputElement.value = 'x';
-                atcObj.onInput();
+                atcObj.onInput(e);
                 atcObj.onFilterUp(e);
                 expect(atcObj.list.classList.contains('e-nodata')).toBe(true);
             });
 
             it('search with empty text', (done) => {
                 atcObj.inputElement.value = '';
-                atcObj.onInput();
+                atcObj.onInput(e);
                 atcObj.onFilterUp(e);
                 setTimeout(() => {
                     expect(atcObj.isPopupOpen).toBe(false);
@@ -451,7 +451,7 @@ describe('AutoComplete', () => {
             it('Searching a value ', (done) => {
                 atcObj.inputElement.value = 'java';
                 e.keyCode = 72;
-                atcObj.onInput();
+                atcObj.onInput(e);
                 atcObj.onFilterUp(e);
                 setTimeout(() => {
                     activeElement = atcObj.list.querySelectorAll('li');
@@ -484,7 +484,7 @@ describe('AutoComplete', () => {
             atcObj.dataBind()
             e.keyCode = 76;
             atcObj.inputElement.value = 'p';
-            atcObj.onInput();
+            atcObj.onInput(e);
             atcObj.onFilterUp(e);
             setTimeout(() => {
                 let highlight: HTMLElement[] = atcObj.liCollections[0].querySelectorAll('.e-highlight');
@@ -499,7 +499,7 @@ describe('AutoComplete', () => {
                 atcObj.dataBind();
                 e.keyCode = 76;
                 atcObj.inputElement.value = 'p';
-                atcObj.onInput();
+                atcObj.onInput(e);
                 atcObj.onFilterUp(e);
                 setTimeout(() => {
                     let highlight: HTMLElement[] = atcObj.liCollections[0].querySelectorAll('.e-highlight');
@@ -512,14 +512,14 @@ describe('AutoComplete', () => {
         });
         it('highlight with special character', () => {
             atcObj.inputElement.value = ')';
-            atcObj.onInput();
+            atcObj.onInput(e);
             atcObj.onFilterUp(e);
             expect(atcObj.liCollections.length === 0).toBe(true);
         });
         it('fill first item text in input', (done) => {
             e.keyCode = 76;
             atcObj.inputElement.value = 'p';
-            atcObj.onInput();
+            atcObj.onInput(e);
             atcObj.onFilterUp(e);
             setTimeout(() => {
                 e.action = 'down';
@@ -546,7 +546,7 @@ describe('AutoComplete', () => {
         it('not fill when delete or backspace key press', () => {
             atcObj.inputElement.value = 'PER';
             e.keyCode = 8;
-            atcObj.onInput();
+            atcObj.onInput(e);
             atcObj.onFilterUp(e);
             expect(atcObj.inputElement.value === 'PER').toBe(true);
         });
@@ -591,7 +591,7 @@ describe('AutoComplete', () => {
             e.key = 'H';
             e.keyCode = 72;
             atcObj.focusIn();
-            atcObj.onInput();
+            atcObj.onInput(e);
             atcObj.onFilterUp(e);
             setTimeout(() => {
                 expect(atcObj.inputElement.value).toBe('hTML');
@@ -611,12 +611,12 @@ describe('AutoComplete', () => {
 
         it('remove fill selection', (done) => {
             atcObj.inputElement.value = 'h';
-            atcObj.onInput();
+            atcObj.onInput(e);
             atcObj.onFilterUp(e);
             setTimeout(() => {
                 e.key = 'H';
                 e.keyCode = 72;
-                atcObj.onInput();
+                atcObj.onInput(e);
                 atcObj.onFilterUp(e);
                 expect(atcObj.inputElement.value).toBe('hTML');
                 e.keyCode = 13;
@@ -641,7 +641,7 @@ describe('AutoComplete', () => {
             e.keyCode = 229;
             atcObj.onFilterDown(e);
             atcObj.inputElement.value = 'ph';
-            atcObj.onInput();
+            atcObj.onInput(e);
             atcObj.onFilterUp(e);
             expect(atcObj.inputElement.value === 'phP').toBe(true);
         });
@@ -649,7 +649,7 @@ describe('AutoComplete', () => {
             atcObj.inputElement.value = 'ph';
             atcObj.onFilterDown(e);
             atcObj.inputElement.value = 'ph';
-            atcObj.onInput();
+            atcObj.onInput(e);
             atcObj.onFilterUp(e);
             expect(atcObj.inputElement.value === 'ph').toBe(true);
         });
@@ -658,7 +658,7 @@ describe('AutoComplete', () => {
             e.keyCode = 229;
             atcObj.onFilterDown(e);
             atcObj.inputElement.value = 'p';
-            atcObj.onInput();
+            atcObj.onInput(e);
             atcObj.onFilterUp(e);
             expect(atcObj.inputElement.value === 'p').toBe(true);
         });
@@ -667,7 +667,7 @@ describe('AutoComplete', () => {
             e.keyCode = 229;
             atcObj.onFilterDown(e);
             atcObj.inputElement.value = 'ph';
-            atcObj.onInput();
+            atcObj.onInput(e);
             atcObj.onFilterUp(e);
             expect(atcObj.inputElement.value === 'ph').toBe(true);
             Browser.userAgent = navigator.userAgent;
@@ -695,7 +695,7 @@ describe('AutoComplete', () => {
         it('filterType - contains', (done) => {
             e.keyCode = 76;
             atcObj.inputElement.value = 'a';
-            atcObj.onInput();
+            atcObj.onInput(e);
             atcObj.onFilterUp(e);
             setTimeout(() => {
                 let list: any = atcObj.list.querySelectorAll('li');
@@ -708,12 +708,12 @@ describe('AutoComplete', () => {
             atcObj.dataBind();
             e.keyCode = 76;
             atcObj.inputElement.value = 't';
-            atcObj.onInput();
+            atcObj.onInput(e);
             atcObj.onFilterUp(e);
             let list: any = atcObj.list.querySelectorAll('li');
             expect(list.length == 0).toBe(true);
             atcObj.inputElement.value = 'v';
-            atcObj.onInput();
+            atcObj.onInput(e);
             atcObj.onFilterUp(e);
             list = atcObj.list.querySelectorAll('li');
             expect(list.length == 3).toBe(true);
@@ -723,7 +723,7 @@ describe('AutoComplete', () => {
             atcObj.dataBind();
             e.keyCode = 76;
             atcObj.inputElement.value = 't';
-            atcObj.onInput();
+            atcObj.onInput(e);
             atcObj.onFilterUp(e);
             let list: any = atcObj.list.querySelectorAll('li');
             expect(list.length == 2).toBe(true);
@@ -735,7 +735,7 @@ describe('AutoComplete', () => {
             atcObj.dataBind();
             e.keyCode = 76;
             atcObj.inputElement.value = '10251';
-            atcObj.onInput();
+            atcObj.onInput(e);
             atcObj.onFilterUp(e);
             let list: any = atcObj.list.querySelectorAll('li');
             expect(list.length == 1).toBe(true);
@@ -747,7 +747,7 @@ describe('AutoComplete', () => {
             atcObj.dataBind();
             e.keyCode = 76;
             atcObj.inputElement.value = '10251';
-            atcObj.onInput();
+            atcObj.onInput(e);
             atcObj.onFilterUp(e);
             let list: any = atcObj.list.querySelectorAll('li');
             expect(list.length == 4).toBe(true);
@@ -759,7 +759,7 @@ describe('AutoComplete', () => {
             atcObj.dataBind();
             e.keyCode = 76;
             atcObj.inputElement.value = '10251';
-            atcObj.onInput();
+            atcObj.onInput(e);
             atcObj.onFilterUp(e);
             let list: any = atcObj.list.querySelectorAll('li');
             expect(list.length == 2).toBe(true);
@@ -770,7 +770,7 @@ describe('AutoComplete', () => {
             atcObj.dataBind();
             e.keyCode = 76;
             atcObj.inputElement.value = '10251';
-            atcObj.onInput();
+            atcObj.onInput(e);
             atcObj.onFilterUp(e);
             let list: any = atcObj.list.querySelectorAll('li');
             expect(list.length == 1).toBe(true);
@@ -781,7 +781,7 @@ describe('AutoComplete', () => {
             atcObj.dataBind();
             e.keyCode = 76;
             atcObj.inputElement.value = '10251';
-            atcObj.onInput();
+            atcObj.onInput(e);
             atcObj.onFilterUp(e);
             let list: any = atcObj.list.querySelectorAll('li');
             expect(list.length == 3).toBe(true);
@@ -793,7 +793,7 @@ describe('AutoComplete', () => {
             atcObj.dataBind();
             e.keyCode = 76;
             atcObj.inputElement.value = '10251';
-            atcObj.onInput();
+            atcObj.onInput(e);
             atcObj.onFilterUp(e);
             let list: any = atcObj.list.querySelectorAll('li');
             expect(list.length == 4).toBe(true);
@@ -825,7 +825,7 @@ describe('AutoComplete', () => {
         */
         it("popup open when press down key", (done) => {
             keyEventArgs.keyCode = 40;
-            list.onInput();
+            list.onInput(keyEventArgs);
             list.onFilterUp(keyEventArgs);
             setTimeout(() => {
                 expect(list.isPopupOpen).toBe(true);
@@ -839,7 +839,7 @@ describe('AutoComplete', () => {
         it("popup close when press alt+up key", (done) => {
             keyEventArgs.action = 'hide';
             list.keyActionHandler(keyEventArgs);
-            list.onInput();
+            list.onInput(keyEventArgs);
             list.onFilterUp(keyEventArgs);
             setTimeout(() => {
                 expect(list.isPopupOpen).toBe(false);
@@ -853,7 +853,7 @@ describe('AutoComplete', () => {
             list.inputElement.value = 'j';
             keyEventArgs.action = 'down';
             list.keyActionHandler(keyEventArgs);
-            list.onInput();
+            list.onInput(keyEventArgs);
             list.onFilterUp(keyEventArgs);
             setTimeout(() => {
                 expect(list.isPopupOpen).toBe(true);
@@ -935,7 +935,7 @@ describe('AutoComplete', () => {
             list.inputElement.value = 'm';
             keyEventArgs.action = 'down';
             keyEventArgs.type = 'keydown';
-            list.onInput();
+            list.onInput(keyEventArgs);
             list.onFilterUp(keyEventArgs);
             setTimeout(() => {
                 expect(list.isPopupOpen).toBe(true);
@@ -979,10 +979,10 @@ describe('AutoComplete', () => {
         it("popup hide while empty text - down key", (done) => {
             list.inputElement.value = '';
             keyEventArgs.keyCode = 72;
-            list.onInput();
+            list.onInput(keyEventArgs);
             list.onFilterUp(keyEventArgs);
             keyEventArgs.keyCode = 46;
-            list.onInput();
+            list.onInput(keyEventArgs);
             list.onFilterUp(keyEventArgs);
             setTimeout(() => {
                 expect(list.isPopupOpen).toBe(false)
@@ -1025,7 +1025,7 @@ describe('AutoComplete', () => {
                 listObj.dataBind();
                 listObj.filterInput.value = 'a';
                 keyEventArgs.keyCode = 40;
-                listObj.onInput();
+                listObj.onInput(keyEventArgs);
                 listObj.onFilterUp(keyEventArgs);
                 expect(isNullOrUndefined(listObj.inputWrapper.clearButton.querySelector('e-spinner-pane'))).toBe(true);
             })
@@ -1050,7 +1050,7 @@ describe('AutoComplete', () => {
             it(' - spinner show without enable the popup button', () => {
                 listObj.filterInput.value = 'a';
                 keyEventArgs.keyCode = 40;
-                listObj.onInput();
+                listObj.onInput(keyEventArgs);
                 listObj.onFilterUp(keyEventArgs);
                 expect(isNullOrUndefined(listObj.inputWrapper.container.querySelector('e-spinner-pane'))).toBe(true);
             })
@@ -1105,7 +1105,7 @@ describe('AutoComplete', () => {
             list.showPopup();
             list.filterInput.value = 't';
             keyEventArgs.keyCode = 40;
-            list.onInput();
+            list.onInput(keyEventArgs);
             list.onFilterUp(keyEventArgs);
             setTimeout(() => {
                 let item: HTMLElement[] = list.popupObj.element.querySelectorAll('li')[1];
@@ -1178,7 +1178,7 @@ describe('AutoComplete', () => {
             setTimeout(() => {
                 atcObj.inputElement.value = 'java';
                 e.keyCode = 72;
-                atcObj.onInput();
+                atcObj.onInput(e);
                 atcObj.onFilterUp(e);
                 done();
             }, 500);
@@ -1209,7 +1209,7 @@ describe('AutoComplete', () => {
             atcObj.showPopup();
             atcObj.filterInput.value = 'ä';
             keyEventArgs.keyCode = 40;
-            atcObj.onInput();
+            atcObj.onInput(keyEventArgs);
             atcObj.onFilterUp(keyEventArgs);
             setTimeout(() => {
                 let item: HTMLElement[] = atcObj.popupObj.element.querySelectorAll('li');
@@ -1329,7 +1329,7 @@ describe('AutoComplete', () => {
             dropDowns.appendTo(element);
             dropDowns.inputElement.value = 'java';
             e.keyCode = 72;
-            dropDowns.onInput();
+            dropDowns.onInput(e);
             dropDowns.onFilterUp(e);
             setTimeout(() => {
                 expect(dropDowns.isPopupOpen).toBe(false);
@@ -1363,7 +1363,7 @@ describe('AutoComplete', () => {
             dropDowns.appendTo(element);
             dropDowns.inputElement.value = 'java';
             e.keyCode = 72;
-            dropDowns.onInput();
+            dropDowns.onInput(e);
             dropDowns.onFilterUp(e);
             setTimeout(() => {
                 expect(dropDowns.isPopupOpen).toBe(false);
@@ -1397,7 +1397,7 @@ describe('AutoComplete', () => {
             dropDowns.appendTo(element);
             dropDowns.inputElement.value = 'java';
             e.keyCode = 72;
-            dropDowns.onInput();
+            dropDowns.onInput(e);
             dropDowns.onFilterUp(e);
             setTimeout(() => {
                 expect(dropDowns.isPopupOpen).toBe(false);
@@ -1435,7 +1435,7 @@ describe('AutoComplete', () => {
             dropDowns.appendTo(element);
             dropDowns.inputElement.value = 'a';
             e.keyCode = 72;
-            dropDowns.onInput();
+            dropDowns.onInput(e);
             dropDowns.onFilterUp(e);
             setTimeout(() => {
                 expect(dropDowns.list.querySelectorAll('li')[0].classList.contains('e-disabled')).toBe(true);
@@ -1535,7 +1535,7 @@ describe('AutoComplete', () => {
             atcObj.dataBind()
             e.keyCode = 76;
             atcObj.inputElement.value = 'p';
-            atcObj.onInput();
+            atcObj.onInput(e);
             atcObj.onFilterUp(e);
             setTimeout(() => {
                 let highlight: HTMLElement[] = atcObj.liCollections[0].querySelectorAll('.e-highlight');
@@ -1781,7 +1781,7 @@ describe('AutoComplete', () => {
         it('minlength issue with filtering ', () => {
             atcObj.inputElement.value = 'Aust';
             e.keyCode = 84;
-            atcObj.onInput();
+            atcObj.onInput(e);
             atcObj.onFilterUp(e);
             expect(openAction).not.toHaveBeenCalled();
         });

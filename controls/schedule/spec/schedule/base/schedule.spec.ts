@@ -5,7 +5,7 @@ import { createElement, remove, L10n, EmitType, Browser } from '@syncfusion/ej2-
 import { Query } from '@syncfusion/ej2-data';
 import { VerticalView } from '../../../src/schedule/renderer/vertical-view';
 import {
-    Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, ScheduleModel, TimelineViews, Timezone
+    Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, ScheduleModel, TimelineViews, TimelineMonth, Timezone
 } from '../../../src/schedule/index';
 import * as util from '../util.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
@@ -15,16 +15,16 @@ import { EJ2Instance } from '../../../src/schedule/base/interface';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
 
-Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews);
+Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth);
 
 describe('Schedule base module', () => {
     beforeAll(() => {
-        // tslint:disable-next-line:no-any
+        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             // tslint:disable-next-line:no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); //Skips test (in Chai)
+            (this as any).skip(); //Skips test (in Chai)
             return;
         }
     });
@@ -361,6 +361,23 @@ describe('Schedule base module', () => {
             expect(schObj.element.querySelectorAll('.e-schedule-toolbar').length).toEqual(0);
         });
 
+        it('selectedDate - with minDate and maxDate', () => {
+            schObj = new Schedule({
+                minDate: new Date(2017, 9, 3),
+                selectedDate: new Date(2017, 9, 4),
+                maxDate: new Date(2017, 9, 5),
+                currentView: 'Week',
+            });
+            schObj.appendTo('#Schedule');
+            expect(schObj.selectedDate).toEqual(new Date(2017, 9, 4));
+            schObj.selectedDate = new Date(2017, 8, 1);
+            schObj.dataBind();
+            expect(schObj.selectedDate).toEqual(new Date(2017, 9, 3));
+            schObj.selectedDate = new Date(2017, 10, 1);
+            schObj.dataBind();
+            expect(schObj.selectedDate).toEqual(new Date(2017, 9, 5));
+        });
+
         it('Test visibility of selected date from calendar', () => {
             schObj = new Schedule({
                 selectedDate: new Date(2017, 9, 4), currentView: 'TimelineWeek',
@@ -394,6 +411,33 @@ describe('Schedule base module', () => {
                 .toEqual('17');
             expect(schObj.selectedDate).toEqual(new Date(2017, 10, 17));
             expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollLeft).toEqual(12900);
+        });
+
+        it('currentView not in views list - direct rendering checking', () => {
+            schObj = new Schedule({
+                selectedDate: new Date(2019, 11, 5),
+                currentView: 'TimelineMonth',
+                showHeaderBar: false,
+                views: [
+                    { option: 'Day' },
+                    { option: 'Week' },
+                    { option: 'Month' }
+                ]
+            });
+            schObj.appendTo('#Schedule');
+            expect(schObj.selectedDate).toEqual(new Date(2019, 11, 5));
+            expect(schObj.currentView).toEqual('Day');
+        });
+
+        it('currentView not in views list - direct not rendering checking', () => {
+            schObj = new Schedule({
+                selectedDate: new Date(2019, 11, 5),
+                currentView: 'TimelineYear',
+                views: [{ option: 'TimelineMonth' }, { option: 'TimelineYear' }]
+            });
+            schObj.appendTo('#Schedule');
+            expect(schObj.selectedDate).toEqual(new Date(2019, 11, 5));
+            expect(schObj.element.querySelector('.e-active-view').classList.contains('e-timeline-year')).toEqual(true);
         });
     });
 
@@ -1221,257 +1265,482 @@ describe('Schedule base module', () => {
             expect(dayElement.value).toEqual('MO');
             (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
         });
-        it('Checking first day of week in week view.', () => {
+        it('Checking first day of week in week view.', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
+                let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
+                expect(popupEle.querySelector('.e-week-header th').textContent).toBe('Sa');
+                (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
+                let headerElement: HTMLElement = (schObj.element.querySelector('.e-header-row').children[0].children[0]) as HTMLElement;
+                expect(headerElement.innerText).toEqual('Sat');
+                util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+                util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+                let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                let startTimePicker: DateTimePicker =
+                    (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                expect(startTimePicker.firstDayOfWeek.toString()).toEqual('6');
+                let endTimePicker: DateTimePicker =
+                    (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                expect(endTimePicker.firstDayOfWeek.toString()).toEqual('6');
+                let untilDatePicker: DateTimePicker =
+                    (dialogElement.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                expect(untilDatePicker.firstDayOfWeek.toString()).toEqual('6');
+                let repeatElement: DropDownList =
+                    (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
+                repeatElement.index = 2; repeatElement.dataBind();
+                let btnElement: HTMLElement =
+                    ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
+                expect(btnElement.title).toEqual('Saturday');
+                repeatElement.index = 3; repeatElement.dataBind();
+                let dayElement: DropDownList =
+                    (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
+                dayElement.index = 0; dayElement.dataBind();
+                expect(dayElement.value).toEqual('SA');
+                (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
+                done();
+            };
             schObj.currentView = 'Week';
             schObj.dataBind();
-            (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-            let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
-            expect(popupEle.querySelector('.e-week-header th').textContent).toBe('Sa');
-            (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-            let headerElement: HTMLElement = (schObj.element.querySelector('.e-header-row').children[0].children[0]) as HTMLElement;
-            expect(headerElement.innerText).toEqual('Sat');
-            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
-            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
-            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-            let startTimePicker: DateTimePicker =
-                (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            expect(startTimePicker.firstDayOfWeek.toString()).toEqual('6');
-            let endTimePicker: DateTimePicker =
-                (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            expect(endTimePicker.firstDayOfWeek.toString()).toEqual('6');
-            let untilDatePicker: DateTimePicker =
-                (dialogElement.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            expect(untilDatePicker.firstDayOfWeek.toString()).toEqual('6');
-            let repeatElement: DropDownList =
-                (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
-            repeatElement.index = 2; repeatElement.dataBind();
-            let btnElement: HTMLElement = ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
-            expect(btnElement.title).toEqual('Saturday');
-            repeatElement.index = 3; repeatElement.dataBind();
-            let dayElement: DropDownList =
-                (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
-            dayElement.index = 0; dayElement.dataBind();
-            expect(dayElement.value).toEqual('SA');
-            (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
         });
-        it('Checking first day of week in work week view.', () => {
+        it('Checking first day of week in work week view.', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
+                let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
+                expect(popupEle.querySelector('.e-week-header th').textContent).toBe('We');
+                (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
+                let headerElement: HTMLElement = (schObj.element.querySelector('.e-header-row').children[0].children[0]) as HTMLElement;
+                expect(headerElement.innerText).toEqual('Wed');
+                util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+                util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+                let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                let startTimePicker: DateTimePicker =
+                    (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                expect(startTimePicker.firstDayOfWeek.toString()).toEqual('3');
+                let endTimePicker: DateTimePicker =
+                    (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                expect(endTimePicker.firstDayOfWeek.toString()).toEqual('3');
+                let untilDatePicker: DateTimePicker =
+                    (dialogElement.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                expect(untilDatePicker.firstDayOfWeek.toString()).toEqual('3');
+                let repeatElement: DropDownList =
+                    (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
+                repeatElement.index = 2; repeatElement.dataBind();
+                let btnElement: HTMLElement =
+                    ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
+                expect(btnElement.title).toEqual('Wednesday');
+                repeatElement.index = 3; repeatElement.dataBind();
+                let dayElement: DropDownList =
+                    (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
+                dayElement.index = 0; dayElement.dataBind();
+                expect(dayElement.value).toEqual('WE');
+                (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
+                done();
+            };
             schObj.currentView = 'WorkWeek';
             schObj.dataBind();
-            (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-            let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
-            expect(popupEle.querySelector('.e-week-header th').textContent).toBe('We');
-            (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-            let headerElement: HTMLElement = (schObj.element.querySelector('.e-header-row').children[0].children[0]) as HTMLElement;
-            expect(headerElement.innerText).toEqual('Wed');
-            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
-            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
-            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-            let startTimePicker: DateTimePicker =
-                (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            expect(startTimePicker.firstDayOfWeek.toString()).toEqual('3');
-            let endTimePicker: DateTimePicker =
-                (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            expect(endTimePicker.firstDayOfWeek.toString()).toEqual('3');
-            let untilDatePicker: DateTimePicker =
-                (dialogElement.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            expect(untilDatePicker.firstDayOfWeek.toString()).toEqual('3');
-            let repeatElement: DropDownList =
-                (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
-            repeatElement.index = 2; repeatElement.dataBind();
-            let btnElement: HTMLElement = ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
-            expect(btnElement.title).toEqual('Wednesday');
-            repeatElement.index = 3; repeatElement.dataBind();
-            let dayElement: DropDownList =
-                (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
-            dayElement.index = 0; dayElement.dataBind();
-            expect(dayElement.value).toEqual('WE');
-            (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
         });
-        it('Checking first day of week in Month view.', () => {
+        it('Checking first day of week in Month view.', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect((schObj.element.querySelector('.e-header-cells') as HTMLElement).innerText).toEqual('Thursday');
+                util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+                util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+                let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                let startTimePicker: DateTimePicker =
+                    (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                expect(startTimePicker.firstDayOfWeek.toString()).toEqual('4');
+                let endTimePicker: DateTimePicker =
+                    (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                expect(endTimePicker.firstDayOfWeek.toString()).toEqual('4');
+                let untilDatePicker: DateTimePicker =
+                    (dialogElement.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                expect(untilDatePicker.firstDayOfWeek.toString()).toEqual('4');
+                let repeatElement: DropDownList =
+                    (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
+                repeatElement.index = 2; repeatElement.dataBind();
+                let btnElement: HTMLElement =
+                    ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
+                expect(btnElement.title).toEqual('Thursday');
+                repeatElement.index = 3; repeatElement.dataBind();
+                let dayElement: DropDownList =
+                    (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
+                dayElement.index = 0; dayElement.dataBind();
+                expect(dayElement.value).toEqual('TH');
+                (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
+                done();
+            };
             schObj.currentView = 'Month';
             schObj.dataBind();
-            expect((schObj.element.querySelector('.e-header-cells') as HTMLElement).innerText).toEqual('Thursday');
-            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
-            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
-            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-            let startTimePicker: DateTimePicker =
-                (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            expect(startTimePicker.firstDayOfWeek.toString()).toEqual('4');
-            let endTimePicker: DateTimePicker =
-                (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            expect(endTimePicker.firstDayOfWeek.toString()).toEqual('4');
-            let untilDatePicker: DateTimePicker =
-                (dialogElement.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            expect(untilDatePicker.firstDayOfWeek.toString()).toEqual('4');
-            let repeatElement: DropDownList =
-                (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
-            repeatElement.index = 2; repeatElement.dataBind();
-            let btnElement: HTMLElement = ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
-            expect(btnElement.title).toEqual('Thursday');
-            repeatElement.index = 3; repeatElement.dataBind();
-            let dayElement: DropDownList =
-                (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
-            dayElement.index = 0; dayElement.dataBind();
-            expect(dayElement.value).toEqual('TH');
-            (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
         });
-        it('Checking first day of week in agenda view.', () => {
+        it('Checking first day of week in agenda view.', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
+                let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
+                expect(popupEle.querySelector('.e-week-header th').textContent).toBe('Fr');
+                (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
+                done();
+            };
             schObj.currentView = 'Agenda';
             schObj.dataBind();
-            (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-            let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
-            expect(popupEle.querySelector('.e-week-header th').textContent).toBe('Fr');
-            (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
         });
-        it('Checking first day of week in month agenda view.', () => {
+        it('Checking first day of week in month agenda view.', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect((schObj.element.querySelector('.e-header-cells') as HTMLElement).innerText).toEqual('Sat');
+                util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+                util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+                let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                let startTimePicker: DateTimePicker =
+                    (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                expect(startTimePicker.firstDayOfWeek.toString()).toEqual('6');
+                let endTimePicker: DateTimePicker =
+                    (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                expect(endTimePicker.firstDayOfWeek.toString()).toEqual('6');
+                let untilDatePicker: DateTimePicker =
+                    (dialogElement.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                expect(untilDatePicker.firstDayOfWeek.toString()).toEqual('6');
+                let repeatElement: DropDownList =
+                    (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
+                repeatElement.index = 2; repeatElement.dataBind();
+                let btnElement: HTMLElement =
+                    ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
+                expect(btnElement.title).toEqual('Saturday');
+                repeatElement.index = 3; repeatElement.dataBind();
+                let dayElement: DropDownList =
+                    (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
+                dayElement.index = 0; dayElement.dataBind();
+                expect(dayElement.value).toEqual('SA');
+                (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
+                done();
+            };
             schObj.currentView = 'MonthAgenda';
             schObj.dataBind();
-            expect((schObj.element.querySelector('.e-header-cells') as HTMLElement).innerText).toEqual('Sat');
-            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
-            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
-            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-            let startTimePicker: DateTimePicker =
-                (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            expect(startTimePicker.firstDayOfWeek.toString()).toEqual('6');
-            let endTimePicker: DateTimePicker =
-                (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            expect(endTimePicker.firstDayOfWeek.toString()).toEqual('6');
-            let untilDatePicker: DateTimePicker =
-                (dialogElement.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            expect(untilDatePicker.firstDayOfWeek.toString()).toEqual('6');
-            let repeatElement: DropDownList =
-                (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
-            repeatElement.index = 2; repeatElement.dataBind();
-            let btnElement: HTMLElement = ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
-            expect(btnElement.title).toEqual('Saturday');
-            repeatElement.index = 3; repeatElement.dataBind();
-            let dayElement: DropDownList =
-                (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
-            dayElement.index = 0; dayElement.dataBind();
-            expect(dayElement.value).toEqual('SA');
-            (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
         });
-        it('Checking first day of week in timeline day view.', () => {
+        it('Checking first day of week in timeline day view.', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
+                let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
+                expect(popupEle.querySelector('.e-week-header th').textContent).toBe('Th');
+                (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
+                util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+                util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+                let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                let startTimePicker: DateTimePicker =
+                    (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                expect(startTimePicker.firstDayOfWeek.toString()).toEqual('4');
+                let endTimePicker: DateTimePicker =
+                    (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                expect(endTimePicker.firstDayOfWeek.toString()).toEqual('4');
+                let untilDatePicker: DateTimePicker =
+                    (dialogElement.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                expect(untilDatePicker.firstDayOfWeek.toString()).toEqual('4');
+                let repeatElement: DropDownList =
+                    (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
+                repeatElement.index = 2; repeatElement.dataBind();
+                let btnElement: HTMLElement =
+                    ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
+                expect(btnElement.title).toEqual('Thursday');
+                repeatElement.index = 3; repeatElement.dataBind();
+                let dayElement: DropDownList =
+                    (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
+                dayElement.index = 0; dayElement.dataBind();
+                expect(dayElement.value).toEqual('TH');
+                (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
+                done();
+            };
             schObj.currentView = 'TimelineDay';
             schObj.dataBind();
-            (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-            let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
-            expect(popupEle.querySelector('.e-week-header th').textContent).toBe('Th');
-            (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
-            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
-            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-            let startTimePicker: DateTimePicker =
-                (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            expect(startTimePicker.firstDayOfWeek.toString()).toEqual('4');
-            let endTimePicker: DateTimePicker =
-                (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            expect(endTimePicker.firstDayOfWeek.toString()).toEqual('4');
-            let untilDatePicker: DateTimePicker =
-                (dialogElement.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            expect(untilDatePicker.firstDayOfWeek.toString()).toEqual('4');
-            let repeatElement: DropDownList =
-                (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
-            repeatElement.index = 2; repeatElement.dataBind();
-            let btnElement: HTMLElement = ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
-            expect(btnElement.title).toEqual('Thursday');
-            repeatElement.index = 3; repeatElement.dataBind();
-            let dayElement: DropDownList =
-                (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
-            dayElement.index = 0; dayElement.dataBind();
-            expect(dayElement.value).toEqual('TH');
-            (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
         });
-        it('Checking first day of week in timeline week view.', () => {
+        it('Checking first day of week in timeline week view.', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
+                let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
+                expect(popupEle.querySelector('.e-week-header th').textContent).toBe('Mo');
+                (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
+                expect((schObj.element.querySelector('.e-header-cells') as HTMLElement).innerText).toEqual('Nov 6, Monday');
+                util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+                util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+                let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                let startTimePicker: DateTimePicker =
+                    (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                expect(startTimePicker.firstDayOfWeek.toString()).toEqual('1');
+                let endTimePicker: DateTimePicker =
+                    (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                expect(endTimePicker.firstDayOfWeek.toString()).toEqual('1');
+                let untilDatePicker: DateTimePicker =
+                    (dialogElement.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                expect(untilDatePicker.firstDayOfWeek.toString()).toEqual('1');
+                let repeatElement: DropDownList =
+                    (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
+                repeatElement.index = 2; repeatElement.dataBind();
+                let btnElement: HTMLElement =
+                    ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
+                expect(btnElement.title).toEqual('Monday');
+                repeatElement.index = 3; repeatElement.dataBind();
+                let dayElement: DropDownList =
+                    (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
+                dayElement.index = 0; dayElement.dataBind();
+                expect(dayElement.value).toEqual('MO');
+                (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
+                done();
+            };
             schObj.currentView = 'TimelineWeek';
             schObj.dataBind();
-            (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-            let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
-            expect(popupEle.querySelector('.e-week-header th').textContent).toBe('Mo');
-            (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-            expect((schObj.element.querySelector('.e-header-cells') as HTMLElement).innerText).toEqual('Oct 23, Monday');
-            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
-            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
-            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-            let startTimePicker: DateTimePicker =
-                (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            expect(startTimePicker.firstDayOfWeek.toString()).toEqual('1');
-            let endTimePicker: DateTimePicker =
-                (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            expect(endTimePicker.firstDayOfWeek.toString()).toEqual('1');
-            let untilDatePicker: DateTimePicker =
-                (dialogElement.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            expect(untilDatePicker.firstDayOfWeek.toString()).toEqual('1');
-            let repeatElement: DropDownList =
-                (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
-            repeatElement.index = 2; repeatElement.dataBind();
-            let btnElement: HTMLElement = ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
-            expect(btnElement.title).toEqual('Monday');
-            repeatElement.index = 3; repeatElement.dataBind();
-            let dayElement: DropDownList =
-                (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
-            dayElement.index = 0; dayElement.dataBind();
-            expect(dayElement.value).toEqual('MO');
-            (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
         });
-        it('Checking first day of week in timeline work week view.', () => {
+        it('Checking first day of week in timeline work week view.', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
+                let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
+                expect(popupEle.querySelector('.e-week-header th').textContent).toBe('Tu');
+                (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
+                expect((schObj.element.querySelector('.e-header-cells') as HTMLElement).innerText).toEqual('Oct 31, Tuesday');
+                util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+                util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+                let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                let startTimePicker: DateTimePicker =
+                    (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                expect(startTimePicker.firstDayOfWeek.toString()).toEqual('2');
+                let endTimePicker: DateTimePicker =
+                    (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                expect(endTimePicker.firstDayOfWeek.toString()).toEqual('2');
+                let untilDatePicker: DateTimePicker =
+                    (dialogElement.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                expect(untilDatePicker.firstDayOfWeek.toString()).toEqual('2');
+                let repeatElement: DropDownList =
+                    (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
+                repeatElement.index = 2; repeatElement.dataBind();
+                let btnElement: HTMLElement =
+                    ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
+                expect(btnElement.title).toEqual('Tuesday');
+                repeatElement.index = 3; repeatElement.dataBind();
+                let dayElement: DropDownList =
+                    (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
+                dayElement.index = 0; dayElement.dataBind();
+                expect(dayElement.value).toEqual('TU');
+                (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
+                done();
+            };
             schObj.currentView = 'TimelineWorkWeek';
             schObj.dataBind();
-            (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-            let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
-            expect(popupEle.querySelector('.e-week-header th').textContent).toBe('Tu');
-            (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
-            expect((schObj.element.querySelector('.e-header-cells') as HTMLElement).innerText).toEqual('Oct 24, Tuesday');
-            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
-            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
-            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-            let startTimePicker: DateTimePicker =
-                (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            expect(startTimePicker.firstDayOfWeek.toString()).toEqual('2');
-            let endTimePicker: DateTimePicker =
-                (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            expect(endTimePicker.firstDayOfWeek.toString()).toEqual('2');
-            let untilDatePicker: DateTimePicker =
-                (dialogElement.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            expect(untilDatePicker.firstDayOfWeek.toString()).toEqual('2');
-            let repeatElement: DropDownList =
-                (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
-            repeatElement.index = 2; repeatElement.dataBind();
-            let btnElement: HTMLElement = ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
-            expect(btnElement.title).toEqual('Tuesday');
-            repeatElement.index = 3; repeatElement.dataBind();
-            let dayElement: DropDownList =
-                (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
-            dayElement.index = 0; dayElement.dataBind();
-            expect(dayElement.value).toEqual('TU');
-            (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
         });
-        it('Checking first day of week in timeline month view.', () => {
+        it('Checking first day of week in timeline month view.', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+                util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+                let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+                let startTimePicker: DateTimePicker =
+                    (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                expect(startTimePicker.firstDayOfWeek.toString()).toEqual('3');
+                let endTimePicker: DateTimePicker =
+                    (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                expect(endTimePicker.firstDayOfWeek.toString()).toEqual('3');
+                let untilDatePicker: DateTimePicker =
+                    (dialogElement.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DateTimePicker;
+                expect(untilDatePicker.firstDayOfWeek.toString()).toEqual('3');
+                let repeatElement: DropDownList =
+                    (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
+                repeatElement.index = 2; repeatElement.dataBind();
+                let btnElement: HTMLElement =
+                    ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
+                expect(btnElement.title).toEqual('Wednesday');
+                repeatElement.index = 3; repeatElement.dataBind();
+                let dayElement: DropDownList =
+                    (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
+                dayElement.index = 0; dayElement.dataBind();
+                expect(dayElement.value).toEqual('WE');
+                (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
+                done();
+            };
             schObj.currentView = 'TimelineMonth';
             schObj.dataBind();
-            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
-            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
-            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-            let startTimePicker: DateTimePicker =
-                (dialogElement.querySelector('.e-start') as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            expect(startTimePicker.firstDayOfWeek.toString()).toEqual('3');
-            let endTimePicker: DateTimePicker =
-                (dialogElement.querySelector('.e-end') as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            expect(endTimePicker.firstDayOfWeek.toString()).toEqual('3');
-            let untilDatePicker: DateTimePicker =
-                (dialogElement.querySelector('.e-until-date') as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            expect(untilDatePicker.firstDayOfWeek.toString()).toEqual('3');
-            let repeatElement: DropDownList =
-                (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
-            repeatElement.index = 2; repeatElement.dataBind();
-            let btnElement: HTMLElement = ([].slice.call(document.querySelectorAll('.e-round.e-lib.e-btn.e-control')))[1] as HTMLElement;
-            expect(btnElement.title).toEqual('Wednesday');
-            repeatElement.index = 3; repeatElement.dataBind();
-            let dayElement: DropDownList =
-                (dialogElement.querySelector('.e-month-week') as EJ2Instance).ej2_instances[0] as DropDownList;
-            dayElement.index = 0; dayElement.dataBind();
-            expect(dayElement.value).toEqual('WE');
-            (document.querySelector('.e-control.e-btn.e-lib.e-event-cancel.e-flat') as HTMLElement).click();
+        });
+    });
+
+    describe('view-based template checking', () => {
+        let schObj: Schedule;
+        let eventData: Object[] = [{
+            Id: 1,
+            Subject: 'Event',
+            StartTime: new Date(2019, 11, 1, 10),
+            EndTime: new Date(2019, 11, 1, 11, 30),
+            IsAllDay: false,
+            RecurrenceRule: 'FREQ=DAILY;INTERVAL=1;COUNT=10',
+            RecurrenceException: '20191205T043000Z,20191209T043000Z'
+        }];
+        let dateHeaderTemplate: string = '<div class="e-custom-date-header">${date.toLocaleString()}</div>';
+        let cellHeaderTemplate: string = '<div class="e-custom-cell-header">${date.toLocaleString()}</div>';
+        let cellTemplate: string = '<div class="e-custom-cell">${date.toLocaleString()}</div>';
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = {
+                selectedDate: new Date(2019, 11, 5),
+                views: [
+                    { option: 'Week', dateHeaderTemplate: dateHeaderTemplate },
+                    { option: 'Month', cellHeaderTemplate: cellHeaderTemplate, cellTemplate: cellTemplate }
+                ]
+            };
+            schObj = util.createSchedule(model, eventData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('templates testing in week view', () => {
+            expect(schObj.element.querySelectorAll('.e-custom-date-header').length).toEqual(7);
+            expect(schObj.element.querySelectorAll('.e-custom-cell').length).toEqual(0);
+            expect(schObj.element.querySelectorAll('.e-custom-cell-header').length).toEqual(0);
+            expect(schObj.getDeletedOccurrences(1).length).toEqual(2);
+        });
+        it('templates testing in month view', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-custom-date-header').length).toEqual(0);
+                expect(schObj.element.querySelectorAll('.e-custom-cell').length).toEqual(35);
+                expect(schObj.element.querySelectorAll('.e-custom-cell-header').length).toEqual(35);
+                expect(schObj.getDeletedOccurrences(schObj.eventsData[0] as { [key: string]: Object }).length).toEqual(2);
+                done();
+            };
+            schObj.currentView = 'Month';
+            schObj.dataBind();
+        });
+    });
+
+    describe('Capitalization checking on french culture', () => {
+        let schObj: Schedule;
+        let eventData: Object[] = [{
+            Id: 1,
+            Subject: 'Event',
+            StartTime: new Date(2019, 10, 7),
+            EndTime: new Date(2019, 10, 8),
+            RecurrenceRule: 'FREQ=WEEKLY;BYDAY=SU,MO,TU,WE,TH,FR,SA;INTERVAL=1;COUNT=12;',
+            IsAllDay: true
+        }];
+        beforeEach((): void => {
+            schObj = undefined;
+            document.body.appendChild(createElement('div', { id: 'Schedule' }));
+        });
+        afterEach((): void => {
+            util.destroy(schObj);
+        });
+
+        it('Checking french culture on week view', () => {
+            util.loadCultureFiles('fr-CH');
+            schObj = new Schedule({ selectedDate: new Date(2019, 10, 19), locale: 'fr-CH' }, '#Schedule');
+
+            let headerRows: NodeListOf<Element> = schObj.element.querySelectorAll('.e-header-day');
+            expect(headerRows[0].innerHTML).toEqual('Dim.');
+            expect(headerRows[1].innerHTML).toEqual('Lun.');
+            expect(headerRows[2].innerHTML).toEqual('Mar.');
+            expect(headerRows[3].innerHTML).toEqual('Mer.');
+            expect(headerRows[4].innerHTML).toEqual('Jeu.');
+            expect(headerRows[5].innerHTML).toEqual('Ven.');
+            expect(headerRows[6].innerHTML).toEqual('Sam.');
+
+            expect(schObj.element.querySelector('.e-schedule-toolbar .e-date-range .e-tbar-btn-text').innerHTML).
+                toEqual('17 - 23 Novembre 2019');
+
+            schObj.selectedDate = new Date(2019, 11, 1);
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-schedule-toolbar .e-date-range .e-tbar-btn-text').innerHTML).
+                toEqual('01 - 07 Décembre 2019');
+
+            schObj.selectedDate = new Date(2019, 0, 1);
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-schedule-toolbar .e-date-range .e-tbar-btn-text').innerHTML).
+                toEqual('30 Déc. 2018 - 05 Janv. 2019');
+        });
+
+        it('Checking french culture on month view', () => {
+            util.loadCultureFiles('fr-CH');
+            schObj = new Schedule({ selectedDate: new Date(2019, 10, 1), currentView: 'Month', locale: 'fr-CH' }, '#Schedule');
+
+            let headerRows: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-header-cells')) as HTMLElement[];
+            expect(headerRows[0].innerText).toEqual('Dimanche');
+            expect(headerRows[1].innerText).toEqual('Lundi');
+            expect(headerRows[2].innerText).toEqual('Mardi');
+            expect(headerRows[3].innerText).toEqual('Mercredi');
+            expect(headerRows[4].innerText).toEqual('Jeudi');
+            expect(headerRows[5].innerText).toEqual('Vendredi');
+            expect(headerRows[6].innerText).toEqual('Samedi');
+
+            expect(schObj.element.querySelector('.e-schedule-toolbar .e-date-range .e-tbar-btn-text').innerHTML).
+                toEqual('Novembre 2019');
+
+            schObj.selectedDate = new Date(2019, 11, 1);
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-schedule-toolbar .e-date-range .e-tbar-btn-text').innerHTML).
+                toEqual('Décembre 2019');
+
+            schObj.selectedDate = new Date(2019, 0, 1);
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-schedule-toolbar .e-date-range .e-tbar-btn-text').innerHTML).
+                toEqual('Janvier 2019');
+        });
+
+        it('Checking french culture event popup on month view', (done: Function) => {
+            util.loadCultureFiles('fr-CH');
+            schObj = new Schedule(
+                { selectedDate: new Date(2019, 10, 1), currentView: 'Month', locale: 'fr-CH', eventSettings: { dataSource: eventData } },
+                '#Schedule');
+            schObj.dataBound = () => {
+                (schObj.element.querySelector('.e-appointment') as HTMLElement).click();
+                let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+                expect(eventPopup).toBeTruthy();
+                expect((eventPopup.querySelector('.e-date-time-details') as HTMLElement).innerText).
+                    toEqual('7 Novembre 2019 (All day)');
+                expect((eventPopup.querySelector('.e-recurrence-summary') as HTMLElement).innerText).
+                    toEqual('Every week(s) on Dim., Lun., Mar., Mer., Jeu., Ven., Sam., 12 time(s)');
+                (eventPopup.querySelector('.e-close') as HTMLElement).click();
+                done();
+            };
+        });
+
+        it('Checking french culture on timeline week view', () => {
+            util.loadCultureFiles('fr-CH');
+            schObj = new Schedule(
+                { selectedDate: new Date(2019, 10, 1), views: ['TimelineWeek'], currentView: 'TimelineWeek', locale: 'fr-CH' },
+                '#Schedule');
+
+            let headerRows: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-header-cells')) as HTMLElement[];
+            expect(headerRows[0].innerText).toEqual('27 Oct., Dimanche');
+            expect(headerRows[1].innerText).toEqual('28 Oct., Lundi');
+            expect(headerRows[2].innerText).toEqual('29 Oct., Mardi');
+            expect(headerRows[3].innerText).toEqual('30 Oct., Mercredi');
+            expect(headerRows[4].innerText).toEqual('31 Oct., Jeudi');
+            expect(headerRows[5].innerText).toEqual('1 Nov., Vendredi');
+            expect(headerRows[6].innerText).toEqual('2 Nov., Samedi');
+
+            expect(schObj.element.querySelector('.e-schedule-toolbar .e-date-range .e-tbar-btn-text').innerHTML).
+                toEqual('27 Oct. - 02 Nov. 2019');
+
+            schObj.selectedDate = new Date(2019, 11, 1);
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-schedule-toolbar .e-date-range .e-tbar-btn-text').innerHTML).
+                toEqual('01 - 07 Décembre 2019');
+
+            schObj.selectedDate = new Date(2019, 0, 1);
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-schedule-toolbar .e-date-range .e-tbar-btn-text').innerHTML).
+                toEqual('30 Déc. 2018 - 05 Janv. 2019');
+        });
+
+        it('Checking french culture on timeline month view', () => {
+            util.loadCultureFiles('fr-CH');
+            schObj = new Schedule(
+                { selectedDate: new Date(2019, 10, 1), views: ['TimelineMonth'], currentView: 'TimelineMonth', locale: 'fr-CH' },
+                '#Schedule');
+
+            expect((schObj.element.querySelector('.e-header-cells') as HTMLElement).innerText).toEqual('Nov. 1');
+
+            expect(schObj.element.querySelector('.e-schedule-toolbar .e-date-range .e-tbar-btn-text').innerHTML).
+                toEqual('Novembre 2019');
+
+            schObj.selectedDate = new Date(2019, 11, 1);
+            schObj.dataBind();
+            expect((schObj.element.querySelector('.e-header-cells') as HTMLElement).innerText).toEqual('Déc. 1');
+            expect(schObj.element.querySelector('.e-schedule-toolbar .e-date-range .e-tbar-btn-text').innerHTML).
+                toEqual('Décembre 2019');
+
+            schObj.selectedDate = new Date(2019, 0, 1);
+            schObj.dataBind();
+            expect((schObj.element.querySelector('.e-header-cells') as HTMLElement).innerText).toEqual('Janv. 1');
+            expect(schObj.element.querySelector('.e-schedule-toolbar .e-date-range .e-tbar-btn-text').innerHTML).
+                toEqual('Janvier 2019');
         });
     });
 

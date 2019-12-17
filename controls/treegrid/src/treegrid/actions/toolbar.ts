@@ -66,7 +66,6 @@ export class Toolbar {
             this.enableItems([tObj.element.id + '_gridcontrol_outdent'], true);
         }
     }
-
     private toolbarClickHandler(args: ClickEventArgs): void {
         let tObj: TreeGrid = this.parent;
         if (this.parent.editSettings.mode === 'Cell' && this.parent.grid.editSettings.mode === 'Batch' &&

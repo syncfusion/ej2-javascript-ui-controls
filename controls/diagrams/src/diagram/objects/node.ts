@@ -1363,6 +1363,7 @@ export class MethodArguments extends ChildProperty<MethodArguments> {
      * Sets the shape style of the node
      * @default new ShapeStyle()
      * @aspType object
+     * @blazorType object
      */
     @Complex<ShapeStyleModel | TextStyleModel>({}, TextStyle)
     public style: ShapeStyleModel | TextStyleModel;
@@ -1518,6 +1519,7 @@ export class UmlEnumerationMember extends ChildProperty<UmlEnumerationMember> {
      * Sets the shape style of the node
      * @default new ShapeStyle()
      * @aspType object
+     * @blazorType object
      */
     @Complex<ShapeStyleModel | TextStyleModel>({}, TextStyle)
     public style: ShapeStyleModel | TextStyleModel;
@@ -1553,6 +1555,7 @@ export class UmlEnumeration extends ChildProperty<UmlEnumeration> {
      * Sets the shape style of the node
      * @default new ShapeStyle()
      * @aspType object
+     * @blazorType object
      */
     @Complex<ShapeStyleModel | TextStyleModel>({}, TextStyle)
     public style: ShapeStyleModel | TextStyleModel;
@@ -1727,6 +1730,7 @@ export class Node extends NodeBase implements IElement {
      * Sets the shape style of the node
      * @default new ShapeStyle()
      * @aspType object
+     * @blazorType object
      */
     @Complex<ShapeStyleModel | TextStyleModel>({ fill: 'white' }, TextStyle)
     public style: ShapeStyleModel | TextStyleModel;

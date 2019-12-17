@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Event, Browser, isBlazor } from '@syncfusion/ej2-base';import { EmitType, getDefaultDateObject, getValue, cldrData, L10n, isNullOrUndefined, removeClass, addClass } from '@syncfusion/ej2-base';import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';import { NumericTextBox } from '@syncfusion/ej2-inputs';import { DatePicker, ChangedEventArgs } from '@syncfusion/ej2-calendars';import { Button, RadioButton } from '@syncfusion/ej2-buttons';import { EventHandler, MouseEventArgs, classList } from '@syncfusion/ej2-base';import { EJ2Instance } from '../schedule/base/interface';import { RecRule, extractObjectFromRule, generate, generateSummary, getRecurrenceStringFromDate, getCalendarUtil } from './date-generator';import { CalendarUtil, CalendarType } from '../common/calendar-util';
+import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Event, Browser, isBlazor } from '@syncfusion/ej2-base';import { EmitType, getDefaultDateObject, getValue, cldrData, L10n, isNullOrUndefined, removeClass, addClass } from '@syncfusion/ej2-base';import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';import { NumericTextBox } from '@syncfusion/ej2-inputs';import { DatePicker, ChangedEventArgs } from '@syncfusion/ej2-calendars';import { Button, RadioButton } from '@syncfusion/ej2-buttons';import { EventHandler, MouseEventArgs, classList } from '@syncfusion/ej2-base';import { EJ2Instance } from '../schedule/base/interface';import { RecRule, extractObjectFromRule, generate, generateSummary, getRecurrenceStringFromDate, getCalendarUtil } from './date-generator';import { CalendarUtil, CalendarType } from '../common/calendar-util';import { capitalizeFirstWord } from '../schedule/base/util';
 import {RepeatType,RecurrenceEditorChangeEventArgs} from "./recurrence-editor";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -53,7 +53,7 @@ export interface RecurrenceEditorModel extends ComponentModel{
 
     /**
      * Sets the minimum date on recurrence editor.
-     * @default new Date(1900, 1, 1)
+     * @default new Date(1900, 0, 1)
      * @aspDefaultValue new DateTime(1900, 1, 1)
      * @blazorDefaultValue new DateTime(1900, 1, 1)
      */
@@ -61,7 +61,7 @@ export interface RecurrenceEditorModel extends ComponentModel{
 
     /**
      * Sets the maximum date on recurrence editor.
-     * @default new Date(2099, 12, 31)
+     * @default new Date(2099, 11, 31)
      * @aspDefaultValue new DateTime(2099, 12, 31)
      * @blazorDefaultValue new DateTime(2099, 12, 31)
      */

@@ -41,6 +41,61 @@
       font-family: 'e-icons';
       font-size: 10px;
     }
+
+    .e-de-new-cmt::before {
+      content: '\e823';
+      font-family: 'e-icons';
+    }
+
+    .e-de-menu-icon::before {
+      content: '\e984';
+      font-family: 'e-icons';
+      font-size: $de-op-icon-font-size;
+    }
+
+    .e-de-cmt-mark-icon::before {
+      content: '\e817';
+      font-family: 'e-icons';
+      font-size: 13px;
+    }
+
+    .e-de-cmt-post::before {
+      content: '\e816';
+      font-family: 'e-icons';
+    }
+
+    .e-de-cmt-rply-icon::before {
+      content: '\e815';
+      font-family: 'e-icons';
+    }
+
+    .e-de-cmt-cancel::before {
+      content: '\e7fc';
+      font-family: 'e-icons';
+    }
+
+    .e-de-cmt-delete::before {
+      content: '\e602';
+      font-family: 'e-icons';
+    }
+
+    .e-de-cmt-reopen::before {
+      content: '\e818';
+      font-family: 'e-icons';
+    }
+
+    .e-de-nav-up::before {
+      content: '\e651';
+      font-family: 'e-icons';
+    }
+
+    .e-de-nav-right-arrow::before {
+      content: '\e913';
+    }
+
+    .e-de-nav-left-arrow::before {
+      content: '\e904';
+    }
   }
 
   .e-de-table-properties-alignment:hover {
@@ -225,6 +280,11 @@
     left: 4px;
     position: absolute;
     top: $de-td-table-border-top;
+  }
+
+  .e-menu-item .e-de-cmt-add::before {
+    content: '\e814';
+    font-family: 'e-icons';
   }
 
   .e-menu-item .e-de-cut::before {

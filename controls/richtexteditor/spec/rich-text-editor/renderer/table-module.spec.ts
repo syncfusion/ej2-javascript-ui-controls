@@ -246,12 +246,12 @@ describe('Table creation', () => {
                 };
                 mouseEventArgs.target.click();
                 expect(closest(tar, 'table').classList.contains('e-alternate-border')).toBe(true);
-                
+
                 tar = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
                 (rteObj as any).inputElement.dispatchEvent(clickEvent);
                 eventsArg = { pageX: 50, pageY: 300, target: tar };
                 (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
-                
+
                 ((<HTMLElement>tableTBItems.item(9)).childNodes[0] as HTMLElement).click();
                 expect(document.body.querySelector('.e-rte-edit-table.e-dialog')).not.toBe(null);
                 expect(document.body.querySelector('.e-cell-padding')).not.toBe(null);

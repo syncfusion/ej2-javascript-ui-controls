@@ -120,7 +120,7 @@ export class WorkbookEdit {
                 updatedVal: ''
             };
             this.parent.notify(checkDateFormat, dateEventArgs);
-            if (!isNullOrUndefined(dateEventArgs.updatedVal)) {
+            if (!isNullOrUndefined(dateEventArgs.updatedVal) && (dateEventArgs.updatedVal as string).length > 0) {
                 cell.value = <string>dateEventArgs.updatedVal;
                 this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
             }
@@ -131,6 +131,6 @@ export class WorkbookEdit {
             cell.value = value;
             this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         }
-        this.parent.setUsedRange(range[0], range[1]);
+        this.parent.setUsedRange(range[0] + 1, range[1]);
     }
 }

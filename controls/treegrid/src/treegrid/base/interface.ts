@@ -64,6 +64,31 @@ export interface ITreeData {
 
 }
 
+export interface AggregateTemplateContext {
+    /** Gets sum aggregate value */
+    sum: string;
+    /** Gets average aggregate value */
+    average: string;
+    /** Gets maximum aggregate value */
+    max: string;
+    /** Gets minimum aggregate value */
+    min: string;
+    /** Gets count aggregate value */
+    count: string;
+    /** Gets true count aggregate value */
+    trueCount: string;
+    /** Specifies false count aggregate value */
+    falseCount: string;
+    /** Gets custom aggregate value */
+    custom: string;
+    /** Gets the current group field name */
+    field?: string;
+    /** Gets header text of the grouped column */
+    headerText?: string;
+    /** Gets grouped data key value */
+    key?: string;
+}
+
 /**
  * Specifies custom format data interfaces.
  */

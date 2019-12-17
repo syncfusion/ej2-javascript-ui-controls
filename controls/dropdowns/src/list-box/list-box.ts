@@ -1,12 +1,13 @@
 /// <reference path='../drop-down-base/drop-down-base-model.d.ts'/>
 import { Input, InputObject } from '@syncfusion/ej2-inputs';
 import { DropDownBase, dropDownBaseClasses, FilteringEventArgs, SelectEventArgs } from '../drop-down-base/drop-down-base';
+import { FilterType, FieldSettings } from '../drop-down-base/drop-down-base';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { EventHandler, closest, removeClass, addClass, Complex, Property, ChildProperty, BaseEventArgs, L10n } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, NotifyPropertyChanges, getComponent, EmitType, Event, extend, detach, attributes } from '@syncfusion/ej2-base';
 import { getUniqueID, Browser, formatUnit, isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
 import { prepend, append , isBlazor, BlazorDragEventArgs, resetBlazorTemplate} from '@syncfusion/ej2-base';
-import { cssClass, Sortable, moveTo } from '@syncfusion/ej2-lists';
+import { cssClass, Sortable, moveTo, SortOrder } from '@syncfusion/ej2-lists';
 import { SelectionSettingsModel, ListBoxModel, ToolbarSettingsModel } from './list-box-model';
 import { Button } from '@syncfusion/ej2-buttons';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
@@ -118,6 +119,114 @@ export class ListBox extends DropDownBase {
     protected inputString: string;
     protected filterInput: HTMLInputElement;
     protected isCustomFiltering: boolean;
+    /**
+     * The `fields` property maps the columns of the data table and binds the data to the component.
+     * * text - Maps the text column from data table for each list item.
+     * * value - Maps the value column from data table for each list item.
+     * * iconCss - Maps the icon class column from data table for each list item.
+     * * groupBy - Group the list items with it's related items by mapping groupBy field.
+     * ```html
+     * <input type="text" tabindex="1" id="list"> </input>
+     * ```
+     * ```typescript  
+     *   let customers: ListBox = new ListBox({
+     *      dataSource:new DataManager({ url:'http://js.syncfusion.com/demos/ejServices/Wcf/Northwind.svc/' }),
+     *      query: new Query().from('Customers').select(['ContactName', 'CustomerID']).take(5),
+     *      fields: { text: 'ContactName', value: 'CustomerID' },
+     *      placeholder: 'Select a customer'
+     *   });
+     *   customers.appendTo("#list");
+     * ```
+     * @default {text: null, value: null, iconCss: null, groupBy: null}
+     */
+    @Complex<FieldSettingsModel>({ text: null, value: null, iconCss: null, groupBy: null }, FieldSettings)
+    public fields: FieldSettingsModel;
+    /**
+     * Enable or disable persisting ListBox component's state between page reloads. 
+     * If enabled, following list of states will be persisted.
+     * 1. value
+     * @default false
+     */
+    @Property(false)
+    public enablePersistence: boolean;
+    /**
+     * Accepts the template design and assigns it to each list item present in the popup.
+     * We have built-in `template engine`
+     * 
+     * which provides options to compile template string into a executable function. 
+     * For EX: We have expression evolution as like ES6 expression string literals. 
+     * @default null
+     */
+    @Property(null)
+    public itemTemplate: string;
+    /**
+     * Specifies the `sortOrder` to sort the ListBox data source. The available type of sort orders are
+     * * `None` - The data source is not sorting.
+     * * `Ascending` - The data source is sorting with ascending order.
+     * * `Descending` - The data source is sorting with descending order.
+     * @default None
+     */
+    @Property<SortOrder>('None')
+    public sortOrder: SortOrder;
+    /**
+     * Specifies a value that indicates whether the ListBox component is enabled or not.
+     * @default true
+     */
+    @Property(true)
+    public enabled: boolean;
+    /**
+     * Accepts the list items either through local or remote service and binds it to the ListBox component.
+     * It can be an array of JSON Objects or an instance of
+     * `DataManager`.
+     * @default []
+     */
+    @Property([])
+    public dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
+    /**
+     * Accepts the external `Query`
+     * which will execute along with the data processing.
+     * @default null
+     */
+    @Property(null)
+    public query: Query;
+    /**   
+     * Determines on which filter type, the component needs to be considered on search action. 
+     * The `FilterType` and its supported data types are 
+     * 
+     * <table> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * FilterType<br/></td><td colSpan=1 rowSpan=1> 
+     * Description<br/></td><td colSpan=1 rowSpan=1> 
+     * Supported Types<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * StartsWith<br/></td><td colSpan=1 rowSpan=1> 
+     * Checks whether a value begins with the specified value.<br/></td><td colSpan=1 rowSpan=1> 
+     * String<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * EndsWith<br/></td><td colSpan=1 rowSpan=1> 
+     * Checks whether a value ends with specified value.<br/><br/></td><td colSpan=1 rowSpan=1> 
+     * <br/>String<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * Contains<br/></td><td colSpan=1 rowSpan=1> 
+     * Checks whether a value contains with specified value.<br/><br/></td><td colSpan=1 rowSpan=1> 
+     * <br/>String<br/></td></tr> 
+     * </table>
+     * 
+     * The default value set to `StartsWith`, all the suggestion items which contain typed characters to listed in the suggestion popup.
+     * @default 'StartsWith'
+     */
+    @Property('StartsWith')
+    public filterType: FilterType;
+    /**
+     * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
+     * @default 'en-US'
+     */
+    @Property()
+    public locale: string;
     /**
      * Sets the CSS classes to root element of this component, which helps to customize the
      * complete styles.
@@ -278,7 +387,7 @@ export class ListBox extends DropDownBase {
     @Property('No Records Found')
     public noRecordsTemplate: string;
     /**
-     * Accepts the template and assigns it to the list content of the component
+     * Accepts the template and assigns it to the list content of the ListBox component
      * when the data fetch request from the remote server fails.
      * @default 'The Request Failed'
      * @private
@@ -578,7 +687,7 @@ export class ListBox extends DropDownBase {
     }
 
     private dragEnd(args: DropEventArgs): void {
-        let listData: dataType[];
+        let listData: dataType[]; let liColl: HTMLElement[];
         let selectedOptions: (string | boolean | number)[];
         let dropValue: string | number | boolean = this.getFormattedValue(args.droppedElement.getAttribute('data-value'));
         let droppedData: dataType;
@@ -596,9 +705,11 @@ export class ListBox extends DropDownBase {
         }
         if (listObj === this) {
             let ul: Element = this.ulElement;
-            listData = [].slice.call(this.listData);
+            listData = [].slice.call(this.listData); liColl = [].slice.call(this.liCollections);
             let toIdx: number = args.currentIndex = this.getCurIdx(this, args.currentIndex);
-            listData.splice(toIdx, 0, listData.splice(listData.indexOf(this.getDataByValue(dropValue)), 1)[0] as obj);
+            let rIdx: number = listData.indexOf(this.getDataByValue(dropValue));
+            listData.splice(toIdx, 0, listData.splice(rIdx, 1)[0] as obj);
+            liColl.splice(toIdx, 0, liColl.splice(rIdx, 1)[0] as HTMLElement);
             if (this.allowDragAll) {
                 selectedOptions = this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 ? this.value : [dropValue];
                 selectedOptions.forEach((value: string) => {
@@ -608,23 +719,29 @@ export class ListBox extends DropDownBase {
                             toIdx++;
                         }
                         listData.splice(toIdx, 0, listData.splice(idx, 1)[0] as obj);
+                        liColl.splice(toIdx, 0, liColl.splice(idx, 1)[0] as HTMLElement);
                         ul.insertBefore(this.getItems()[this.getIndexByValue(value)], ul.getElementsByClassName('e-placeholder')[0]);
                     }
                 });
             }
             (this.listData as dataType[]) = listData;
+            this.liCollections = liColl;
             this.setProperties({ dataSource: listData }, true);
         } else {
-            let li: Element;
+            let li: Element; let fLiColl: HTMLElement[] = [].slice.call(this.liCollections);
             let currIdx: number = args.currentIndex = this.getCurIdx(listObj, args.currentIndex);
             let ul: Element = listObj.ulElement;
-            listData = [].slice.call(listObj.listData);
+            listData = [].slice.call(listObj.listData); liColl = [].slice.call(listObj.liCollections);
             selectedOptions = (this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 && this.allowDragAll)
             ? this.value : [dropValue];
             selectedOptions.forEach((value: string) => {
                 droppedData = this.getDataByValue(value);
-                this.listData.splice((this.listData as dataType[]).indexOf(droppedData), 1);
-                listData.splice(value === dropValue ? args.currentIndex : currIdx, 0, droppedData);
+                let srcIdx: number = (this.listData as dataType[]).indexOf(droppedData);
+                this.listData.splice(srcIdx, 1);
+                let rLi: HTMLElement = fLiColl.splice(srcIdx, 1)[0];
+                let destIdx: number = value === dropValue ? args.currentIndex : currIdx;
+                listData.splice(destIdx, 0, droppedData);
+                liColl.splice(destIdx, 0, rLi);
                 li = this.getItems()[this.getIndexByValue(value)];
                 this.removeSelected(this, value === dropValue ? [args.droppedElement] : [li]);
                 ul.insertBefore(li, ul.getElementsByClassName('e-placeholder')[0]);
@@ -643,6 +760,8 @@ export class ListBox extends DropDownBase {
                 ul.appendChild(args.helper);
                 listObj.setSelection();
             }
+            this.liCollections = fLiColl;
+            listObj.liCollections = liColl;
             let fromList: dataType[] = extend([], [], this.listData, false) as dataType[];
             this.setProperties({ dataSource: fromList }, true);
             (listObj.listData as dataType[]) = extend([], [], listData, false) as dataType[];
@@ -830,6 +949,51 @@ export class ListBox extends DropDownBase {
             data.push(this.getDataByValue(value[i]) as { [key: string]: Object });
         }
         return data;
+    }
+    /**
+     * Moves the given value(s) / selected value(s) upwards.  
+     * @param  { string[] | number[] | boolean[] } value - Specifies the value(s).
+     * @returns {void}
+     */
+    public moveUp(value?: string[] | number[] | boolean[]): void {
+        let elem: Element[] = (value) ? this.getElemByValue(value) : this.getSelectedItems();
+        this.moveUpDown(true, false, elem);
+    }
+    /**
+     * Moves the given value(s) / selected value(s) downwards.
+     * @param  { string[] | number[] | boolean[] } value - Specifies the value(s).
+     * @returns {void}
+     */
+    public moveDown(value?: string[] | number[] | boolean[]): void {
+        let elem: Element[] = (value) ? this.getElemByValue(value) : this.getSelectedItems();
+        this.moveUpDown(false, false, elem);
+    }
+    /**
+     * Moves the given value(s) / selected value(s) to the given / default scoped ListBox.  
+     * @param  { string[] | number[] | boolean[] } value - Specifies the value or array value of the list item.
+     * @returns {void}
+     */
+    public moveTo(value?: string[] | number[] | boolean[], index?: number, targetId?: string): void {
+        let elem: Element[] = (value) ? this.getElemByValue(value) : this.getSelectedItems();
+        let tlistbox: ListBox = (targetId) ? getComponent(targetId, ListBox) : this.getScopedListBox();
+        this.moveData(this, tlistbox, false, elem, index);
+    }
+    /**
+     * Moves all the values from one ListBox to the scoped ListBox.
+     * @param  { string } targetId - Specifies the scoped ListBox ID.
+     * @param  { string } index - Specifies the index to where the items moved.
+     * @returns {void}
+     */
+    public moveAllTo(targetId?: string, index?: number): void {
+        let tlistbox: ListBox = (targetId) ? getComponent(targetId, ListBox) : this.getScopedListBox();
+        this.moveAllData(this, tlistbox, false, index);
+    }
+    private getElemByValue(value: string[] | number[] | boolean[]): Element[] {
+        let elem: Element[] = [];
+        for (let i: number = 0; i < value.length; i++) {
+            elem.push(this.ulElement.querySelector('[data-value ="' + value[i] + '"]'));
+        }
+        return elem;
     }
     private updateLiCollection(index: number): void {
         let tempLi: HTMLElement[] = [].slice.call(this.liCollections);
@@ -1123,25 +1287,28 @@ export class ListBox extends DropDownBase {
                     this.moveUpDown();
                     break;
                 case 'moveTo':
-                    this.moveTo();
+                    this.moveItemTo();
                     break;
                 case 'moveFrom':
-                    this.moveFrom();
+                    this.moveItemFrom();
                     break;
                 case 'moveAllTo':
-                    this.moveAllTo();
+                    this.moveAllItemTo();
                     break;
                 case 'moveAllFrom':
-                    this.moveAllFrom();
+                    this.moveAllItemFrom();
                     break;
             }
         }
     }
 
-    private moveUpDown(isUp?: boolean, isKey?: boolean): void {
+    private moveUpDown(isUp?: boolean, isKey?: boolean, value?: Element[]): void {
         let elems: Element[] = this.getSelectedItems();
-        if ((isUp && this.isSelected(this.ulElement.firstElementChild))
-            || (!isUp && this.isSelected(this.ulElement.lastElementChild))) {
+        if (value) {
+            elems = value;
+        }
+        if (((isUp && this.isSelected(this.ulElement.firstElementChild))
+            || (!isUp && this.isSelected(this.ulElement.lastElementChild))) && !value ) {
             return;
         }
         (isUp ? elems : elems.reverse()).forEach((ele: Element) => {
@@ -1156,11 +1323,11 @@ export class ListBox extends DropDownBase {
         this.updateToolBarState();
     }
 
-    private moveTo(): void {
+    private moveItemTo(): void {
         this.moveData(this, this.getScopedListBox());
     }
 
-    private moveFrom(): void {
+    private moveItemFrom(): void {
         this.moveData(this.getScopedListBox(), this);
     }
 
@@ -1170,15 +1337,15 @@ export class ListBox extends DropDownBase {
      * @private
      */
     // tslint:disable-next-line:max-func-body-length
-    private moveData(fListBox: ListBox, tListBox: ListBox, isKey?: boolean): void {
-        let count: number = 0;
-        let idx: number[] = [];
-        let dupIdx: number[] = [];
-        let dataIdx: number[] = [];
-        let listData: dataType[] = [].slice.call(fListBox.listData);
-        let tListData: dataType[] = [].slice.call(tListBox.listData);
-        let data: dataType[] = [];
-        let elems: Element[] = fListBox.getSelectedItems();
+    private moveData(fListBox: ListBox, tListBox: ListBox, isKey?: boolean, value?: Element[], index?: number): void {
+        let count: number = 0; let idx: number[] = []; let dupIdx: number[] = []; let dataIdx: number[] = [];
+        let listData: dataType[] = [].slice.call(fListBox.listData); let tListData: dataType[] = [].slice.call(tListBox.listData);
+        let fliCollections: HTMLElement[] = [].slice.call(fListBox.liCollections);
+        let tliCollections: HTMLElement[] = [].slice.call(tListBox.liCollections);
+        let data: dataType[] = []; let elems: Element[] = fListBox.getSelectedItems();
+        if (value) {
+            elems = value;
+        }
         let isRefresh: boolean | string = tListBox.sortOrder !== 'None' ||
             (tListBox.selectionSettings.showCheckbox !== fListBox.selectionSettings.showCheckbox) || tListBox.fields.groupBy;
         if (fListBox.getSelectedItems().length !== fListBox.value.length) {
@@ -1200,10 +1367,21 @@ export class ListBox extends DropDownBase {
                 dupIdx.push(Array.prototype.indexOf.call(fListBox.ulElement.querySelectorAll('.e-list-item'), ele));
                 dataIdx.push(Array.prototype.indexOf.call(listData, fListBox.sortedData[idx[i]]));
             });
+            let rLiCollection: HTMLElement[] = [];
+            dupIdx.sort((n1: number, n2: number) => n1 - n2).reverse().forEach((i: number) => {
+                rLiCollection.push(fliCollections.splice(i, 1)[0]);
+            });
+            fListBox.liCollections = fliCollections;
+            if (index) {
+                let toColl: HTMLElement[] = tliCollections.splice(0, index);
+                tListBox.liCollections = toColl.concat(rLiCollection.reverse()).concat(tliCollections);
+            } else {
+                tListBox.liCollections = tliCollections.concat(rLiCollection.reverse());
+            }
             if (tListBox.listData.length === 0) {
                 tListBox.ulElement.innerHTML = '';
             }
-            dataIdx.sort().reverse().forEach((i: number) => {
+            dataIdx.sort((n1: number, n2: number) => n2 - n1).forEach((i: number) => {
                 listData.splice(i, 1)[0];
             });
             idx.slice().reverse().forEach((i: number) => {
@@ -1244,7 +1422,7 @@ export class ListBox extends DropDownBase {
                     elems.forEach((ele: Element) => { detach(ele); });
                 }
             } else {
-                moveTo(fListBox.ulElement, tListBox.ulElement, idx);
+                moveTo(fListBox.ulElement, tListBox.ulElement, idx, index);
             }
             if (tListBox.mainList.childElementCount !== (tListBox.dataSource as string[]).length) {
                 tListBox.mainList = tListBox.ulElement;
@@ -1264,7 +1442,10 @@ export class ListBox extends DropDownBase {
             }
             (fListBox.listData as dataType[]) = listData;
             fListBox.setProperties({ dataSource: listData }, true);
-            tListData = tListData.concat(data.reverse());
+            index = (index) ? index : tListData.length;
+            for (let i: number = data.length - 1; i >= 0; i--) {
+                tListData.splice(index, 0, data[i]);
+            }
             (tListBox.listData as dataType[]) = tListData;
             tListBox.setProperties({ dataSource: tListData }, true);
             if (isRefresh) {
@@ -1283,15 +1464,15 @@ export class ListBox extends DropDownBase {
         }
     }
 
-    private moveAllTo(): void {
+    private moveAllItemTo(): void {
         this.moveAllData(this, this.getScopedListBox());
     }
 
-    private moveAllFrom(): void {
+    private moveAllItemFrom(): void {
         this.moveAllData(this.getScopedListBox(), this);
     }
 
-    private moveAllData(fListBox: ListBox, tListBox: ListBox, isKey?: boolean): void {
+    private moveAllData(fListBox: ListBox, tListBox: ListBox, isKey?: boolean, index?: number): void {
         type sortedType = dataType | { isHeader: boolean };
         let listData: dataType[] = [].slice.call(tListBox.listData);
         let isRefresh: boolean | string = tListBox.sortOrder !== 'None' ||
@@ -1306,13 +1487,26 @@ export class ListBox extends DropDownBase {
             moveTo(
                 fListBox.ulElement,
                 tListBox.ulElement,
-                Array.apply(null, { length: fListBox.ulElement.childElementCount }).map(Number.call, Number));
+                Array.apply(null, { length: fListBox.ulElement.childElementCount }).map(Number.call, Number), index);
         }
         if (isKey) {
             this.list.focus();
         }
-        (listData as sortedType[]) = (listData as sortedType[]).concat((fListBox.sortedData as sortedType[])
-            .filter((data: sortedType) => (data as { isHeader: boolean }).isHeader !== true));
+        index = (index) ? index : listData.length;
+        for (let i: number = fListBox.sortedData.length - 1; i >= 0; i--) {
+            listData.splice(index, 0, fListBox.sortedData[i]);
+        }
+        let fliCollections: HTMLElement[] = [].slice.call(fListBox.liCollections);
+        let tliCollections: HTMLElement[] = [].slice.call(tListBox.liCollections);
+        fListBox.liCollections = [];
+        if (index) {
+            let toColl: HTMLElement[] = tliCollections.splice(0, index);
+            tListBox.liCollections = toColl.concat(fliCollections).concat(tliCollections);
+        } else {
+            tListBox.liCollections = tliCollections.concat(fliCollections);
+        }
+        (listData as sortedType[]) = (listData as sortedType[])
+        .filter((data: sortedType) => (data as { isHeader: boolean }).isHeader !== true);
         (tListBox.listData as dataType[]) = listData;
         fListBox.listData = fListBox.sortedData = [];
         tListBox.setProperties({ dataSource: listData }, true);
@@ -1330,8 +1524,11 @@ export class ListBox extends DropDownBase {
 
     private changeData(fromIdx: number, toIdx: number): void {
         let listData: obj[] = [].slice.call(this.listData);
+        let liColl: HTMLElement[] = [].slice.call(this.liCollections);
         listData.splice(toIdx, 0, listData.splice(fromIdx, 1)[0] as obj);
+        liColl.splice(toIdx, 0, liColl.splice(fromIdx, 1)[0] as HTMLElement);
         this.listData = listData;
+        this.liCollections = liColl;
         this.setProperties({ dataSource: listData }, true);
     }
 

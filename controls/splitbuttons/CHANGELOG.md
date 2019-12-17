@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 17.4.39 (2019-12-17)
+
+### DropDownButton
+
+#### New Features
+
+- #253123 - Provided `addItems` `removeItems` methods and update items dynamically.
+
+#### Bug Fixes
+
+- #254048 - UI misalignment while changing the font-size issue fixed.
+
 ## 17.2.40 (2019-08-06)
 
 ### ProgressButton

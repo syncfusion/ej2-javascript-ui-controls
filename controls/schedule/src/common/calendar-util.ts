@@ -5,6 +5,7 @@ import { HijriParser, isNullOrUndefined } from '@syncfusion/ej2-base';
  */
 export type CalendarType = 'Islamic' | 'Gregorian';
 
+/** @hidden */
 export interface CalendarUtil {
     firstDateOfMonth(date: Date): Date;
     lastDateOfMonth(date: Date): Date;
@@ -31,6 +32,7 @@ export interface CalendarUtil {
     isLeapYear(year: number, interval: number): boolean;
 }
 
+/** @hidden */
 export class Gregorian implements CalendarUtil {
     public firstDateOfMonth(date: Date): Date {
         return new Date(date.getFullYear(), date.getMonth());
@@ -110,6 +112,7 @@ export class Gregorian implements CalendarUtil {
     }
 }
 
+/** @hidden */
 export class Islamic implements CalendarUtil {
     public firstDateOfMonth(date: Date): Date {
         let hDate: { [key: string]: Object } = HijriParser.getHijriDate(date) as { [key: string]: Object };

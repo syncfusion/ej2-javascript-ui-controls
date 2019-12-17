@@ -53,15 +53,15 @@ export class PieSeries extends PieBase {
     public toggleInnerPoint(event: PointerEvent | TouchEvent, radius: number, innerRadius: number): void {
         let target: Element = event.target as Element;
         let id: Index = indexFinder(target.id, true);
-        let accumulationId: string = (event.target as Element).id.split('_')[0];
+        let accumulationId: string = (event.target as Element).id.substring(0, ((event.target as Element).id.indexOf('Series') - 1));
         let borderElement: Element = document.getElementById(accumulationId + 'PointHover_Border');
         let createBorderEle: Element;
-        if (!isNaN(id.series)) {
-            let seriesIndex: number = id.series;
-            let pointIndex: number = id.point;
+        let seriesIndex: number = id.series;
+        let pointIndex: number = id.point;
+        let srcElem: Element = getElement(accumulationId + '_Series_' + seriesIndex + '_Point_' + pointIndex);
+        if (!isNaN(id.series) && srcElem) {
             if (!isNullOrUndefined(seriesIndex) && !isNaN(seriesIndex) && !isNullOrUndefined(pointIndex) && !isNaN(pointIndex)) {
                 let point: AccPoints = this.accumulation.visibleSeries[0].points[pointIndex];
-                let srcElem: Element = getElement(accumulationId + '_Series_' + seriesIndex + '_Point_' + pointIndex);
                 const opacity: number = srcElem.getAttribute('class') === accumulationId + '_ej2_deselected' ?
                     this.accumulation.tooltip.enable ? 0.5 : 0.3 : this.accumulation.tooltip.enable ? 0.5 : 1;
                 let innerPie: string = this.getPathArc(

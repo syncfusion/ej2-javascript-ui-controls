@@ -1,4 +1,4 @@
-import { Ajax, Animation, Base, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getInstance, getNumericObject, getUniqueID, getValue, isBlazor, isNullOrUndefined, merge, onIntlChange, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Ajax, Animation, Base, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getInstance, getNumericObject, getUniqueID, getValue, isBlazor, isNullOrUndefined, merge, onIntlChange, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Popup, Tooltip, createSpinner, getZindexPartial, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { Deferred, SplitButton, getModel } from '@syncfusion/ej2-splitbuttons';
 
@@ -45,24 +45,7 @@ var Input;
         else {
             createFloatingInput(args, inputObject, makeElement);
         }
-        checkInputValue(args.floatLabelType, args.element);
-        args.element.addEventListener('focus', function () {
-            var parent = getParentNode(this);
-            if (parent.classList.contains('e-input-group') || parent.classList.contains('e-outline')
-                || parent.classList.contains('e-filled')) {
-                parent.classList.add('e-input-focus');
-            }
-        });
-        args.element.addEventListener('blur', function () {
-            var parent = getParentNode(this);
-            if (parent.classList.contains('e-input-group') || parent.classList.contains('e-outline')
-                || parent.classList.contains('e-filled')) {
-                parent.classList.remove('e-input-focus');
-            }
-        });
-        args.element.addEventListener('input', function () {
-            checkInputValue(floatType, args.element);
-        });
+        bindInitialEvent(args);
         if (!isNullOrUndefined(args.properties) && !isNullOrUndefined(args.properties.showClearButton) &&
             args.properties.showClearButton && args.element.tagName !== 'TEXTAREA') {
             setClearButton(args.properties.showClearButton, args.element, inputObject, true, makeElement);
@@ -83,6 +66,27 @@ var Input;
         return inputObject;
     }
     Input.createInput = createInput;
+    function bindInitialEvent(args) {
+        checkInputValue(args.floatLabelType, args.element);
+        args.element.addEventListener('focus', function () {
+            var parent = getParentNode(this);
+            if (parent.classList.contains('e-input-group') || parent.classList.contains('e-outline')
+                || parent.classList.contains('e-filled')) {
+                parent.classList.add('e-input-focus');
+            }
+        });
+        args.element.addEventListener('blur', function () {
+            var parent = getParentNode(this);
+            if (parent.classList.contains('e-input-group') || parent.classList.contains('e-outline')
+                || parent.classList.contains('e-filled')) {
+                parent.classList.remove('e-input-focus');
+            }
+        });
+        args.element.addEventListener('input', function () {
+            checkInputValue(floatType, args.element);
+        });
+    }
+    Input.bindInitialEvent = bindInitialEvent;
     function checkInputValue(floatLabelType, inputElement) {
         var inputValue = inputElement.value;
         if (inputValue !== '' && !isNullOrUndefined(inputValue)) {
@@ -118,6 +122,7 @@ var Input;
         element.addEventListener('focus', _focusFn);
         element.addEventListener('blur', _blurFn);
     }
+    Input.wireFloatingEvents = wireFloatingEvents;
     function unwireFloatingEvents(element) {
         element.removeEventListener('focus', _focusFn);
         element.removeEventListener('blur', _blurFn);
@@ -291,6 +296,7 @@ var Input;
             setTimeout(function () { addClass([button], CLASSNAMES.CLEARICONHIDE); }, 200);
         });
     }
+    Input.wireClearBtnEvents = wireClearBtnEvents;
     function validateLabel(element, floatLabelType) {
         var parent = getParentNode(element);
         if (parent.classList.contains(CLASSNAMES.FLOATINPUT) && floatLabelType === 'Auto') {
@@ -852,11 +858,15 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
             this.element = input;
             setValue('ej2_instances', ejInstance, this.element);
         }
-        attributes(this.element, { 'role': 'spinbutton', 'tabindex': '0', 'autocomplete': 'off', 'aria-live': 'assertive' });
-        var localeText = { incrementTitle: 'Increment value', decrementTitle: 'Decrement value', placeholder: this.placeholder };
-        this.l10n = new L10n('numerictextbox', localeText, this.locale);
-        if (this.l10n.getConstant('placeholder') !== '') {
-            this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
+        if (!(isBlazor() && this.isServerRendered)) {
+            attributes(this.element, { 'role': 'spinbutton', 'tabindex': '0', 'autocomplete': 'off', 'aria-live': 'assertive' });
+            var localeText = {
+                incrementTitle: 'Increment value', decrementTitle: 'Decrement value', placeholder: this.placeholder
+            };
+            this.l10n = new L10n('numerictextbox', localeText, this.locale);
+            if (this.l10n.getConstant('placeholder') !== '') {
+                this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
+            }
         }
         this.isValidState = true;
         this.inputStyle = null;
@@ -864,15 +874,17 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         this.cultureInfo = {};
         this.initCultureInfo();
         this.initCultureFunc();
-        this.updateHTMLAttrToElement();
-        this.checkAttributes(false);
         this.prevValue = this.value;
-        if (this.formEle) {
-            this.inputEleValue = this.value;
+        if (!(isBlazor() && this.isServerRendered)) {
+            this.updateHTMLAttrToElement();
+            this.checkAttributes(false);
+            if (this.formEle) {
+                this.inputEleValue = this.value;
+            }
         }
         this.validateMinMax();
         this.validateStep();
-        if (this.placeholder === null) {
+        if (this.placeholder === null && !(isBlazor() && this.isServerRendered)) {
             this.updatePlaceholder();
         }
     };
@@ -882,23 +894,45 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
      */
     NumericTextBox.prototype.render = function () {
         if (this.element.tagName.toLowerCase() === 'input') {
-            this.createWrapper();
-            if (this.showSpinButton) {
-                this.spinBtnCreation();
-            }
-            this.setElementWidth(this.width);
-            if (!this.container.classList.contains('e-input-group')) {
-                this.container.classList.add('e-input-group');
-            }
-            this.changeValue(this.value === null || isNaN(this.value) ? null : this.strictMode ? this.trimValue(this.value) : this.value);
-            this.wireEvents();
-            if (this.value !== null && !isNaN(this.value)) {
-                if (this.decimals) {
-                    this.setProperties({ value: this.roundNumber(this.value, this.decimals) }, true);
+            if (!(isBlazor() && this.isServerRendered)) {
+                this.createWrapper();
+                if (this.showSpinButton) {
+                    this.spinBtnCreation();
                 }
+                this.setElementWidth(this.width);
+                if (!this.container.classList.contains('e-input-group')) {
+                    this.container.classList.add('e-input-group');
+                }
+                this.changeValue(this.value === null || isNaN(this.value) ?
+                    null : this.strictMode ? this.trimValue(this.value) : this.value);
             }
-            if (this.element.getAttribute('value') || this.value) {
-                this.element.setAttribute('value', this.element.value);
+            else {
+                this.container = this.element.parentElement;
+                this.inputWrapper = { container: this.container };
+                this.hiddenInput = this.container.querySelector('input[type="hidden"]');
+                if (this.showClearButton) {
+                    this.inputWrapper.clearButton = this.container.querySelector('.e-clear-icon');
+                    Input.wireClearBtnEvents(this.element, this.inputWrapper.clearButton, this.inputWrapper.container);
+                }
+                if (this.showSpinButton) {
+                    this.spinDown = this.container.querySelector('.' + SPINDOWN);
+                    this.spinUp = this.container.querySelector('.' + SPINUP);
+                    this.wireSpinBtnEvents();
+                }
+                Input.bindInitialEvent({
+                    element: this.element, buttons: null, customTag: null, floatLabelType: this.floatLabelType, properties: this.properties
+                });
+            }
+            this.wireEvents();
+            if (!(isBlazor() && this.isServerRendered)) {
+                if (this.value !== null && !isNaN(this.value)) {
+                    if (this.decimals) {
+                        this.setProperties({ value: this.roundNumber(this.value, this.decimals) }, true);
+                    }
+                }
+                if (this.element.getAttribute('value') || this.value) {
+                    this.element.setAttribute('value', this.element.value);
+                }
             }
             this.renderComplete();
         }
@@ -4006,7 +4040,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
     Slider.prototype.createSecondHandle = function () {
         this.secondHandle = this.createElement('div', {
             attrs: {
-                class: classNames.sliderHandle, 'role': 'slider', 'aria-labelledby': this.element.id + '_title', tabIndex: '0'
+                class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0'
             }
         });
         this.secondHandle.classList.add(classNames.sliderSecondHandle);
@@ -4015,7 +4049,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
     Slider.prototype.createFirstHandle = function () {
         this.firstHandle = this.createElement('div', {
             attrs: {
-                class: classNames.sliderHandle, 'role': 'slider', 'aria-labelledby': this.element.id + '_title', tabIndex: '0'
+                class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0'
             }
         });
         this.firstHandle.classList.add(classNames.sliderFirstHandle);
@@ -4399,7 +4433,8 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             opensOn: 'Custom',
             beforeOpen: this.tooltipBeforeOpen.bind(this),
             beforeCollision: this.checkTooltipPosition.bind(this),
-            beforeClose: this.tooltipBeforeClose.bind(this)
+            beforeClose: this.tooltipBeforeClose.bind(this),
+            enableHtmlSanitizer: this.enableHtmlSanitizer
         });
         this.tooltipObj.appendTo(this.firstHandle);
         this.initializeTooltipProps();
@@ -4657,7 +4692,12 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             this.formatTicksValue(li, start, span, tickWidth);
         }
         else {
-            span.innerHTML = start.toString();
+            if (this.enableHtmlSanitizer) {
+                span.innerHTML = SanitizeHtmlHelper.sanitize(start.toString());
+            }
+            else {
+                span.innerHTML = start.toString();
+            }
         }
     };
     Slider.prototype.formatTicksValue = function (li, start, spanElement, tickWidth) {
@@ -4669,7 +4709,12 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         this.trigger('renderingTicks', eventArgs, function (observedArgs) {
             li.setAttribute('title', observedArgs.text.toString());
             if (spanElement) {
-                spanElement.innerHTML = observedArgs.text.toString();
+                if (_this.enableHtmlSanitizer) {
+                    spanElement.innerHTML = SanitizeHtmlHelper.sanitize(observedArgs.text.toString());
+                }
+                else {
+                    spanElement.innerHTML = observedArgs.text.toString();
+                }
             }
             if (!isNullOrUndefined(_this.renderingTicks) && isBlazor()) {
                 var orien = _this.orientation === 'Horizontal' ? 'h' : 'v';
@@ -6279,6 +6324,9 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
     __decorate$2([
         Property('')
     ], Slider.prototype, "cssClass", void 0);
+    __decorate$2([
+        Property(false)
+    ], Slider.prototype, "enableHtmlSanitizer", void 0);
     __decorate$2([
         Event()
     ], Slider.prototype, "created", void 0);
@@ -12336,65 +12384,67 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         return (!str || /^\s*$/.test(str));
     };
     TextBox.prototype.preRender = function () {
-        this.cloneElement = this.element.cloneNode(true);
-        this.formElement = closest(this.element, 'form');
-        if (!isNullOrUndefined(this.formElement)) {
-            this.isForm = true;
-        }
-        /* istanbul ignore next */
-        if (this.element.tagName === 'EJS-TEXTBOX') {
-            var ejInstance = getValue('ej2_instances', this.element);
-            var inputElement = this.multiline ?
-                this.createElement('textarea') :
-                this.createElement('input');
-            var index = 0;
-            for (index; index < this.element.attributes.length; index++) {
-                var attributeName = this.element.attributes[index].nodeName;
-                if (attributeName !== 'id') {
-                    inputElement.setAttribute(attributeName, this.element.attributes[index].nodeValue);
-                    inputElement.innerHTML = this.element.innerHTML;
-                    if (attributeName === 'name') {
-                        this.element.removeAttribute('name');
+        if (!(isBlazor() && this.isServerRendered)) {
+            this.cloneElement = this.element.cloneNode(true);
+            this.formElement = closest(this.element, 'form');
+            if (!isNullOrUndefined(this.formElement)) {
+                this.isForm = true;
+            }
+            /* istanbul ignore next */
+            if (this.element.tagName === 'EJS-TEXTBOX') {
+                var ejInstance = getValue('ej2_instances', this.element);
+                var inputElement = this.multiline ?
+                    this.createElement('textarea') :
+                    this.createElement('input');
+                var index = 0;
+                for (index; index < this.element.attributes.length; index++) {
+                    var attributeName = this.element.attributes[index].nodeName;
+                    if (attributeName !== 'id') {
+                        inputElement.setAttribute(attributeName, this.element.attributes[index].nodeValue);
+                        inputElement.innerHTML = this.element.innerHTML;
+                        if (attributeName === 'name') {
+                            this.element.removeAttribute('name');
+                        }
                     }
                 }
+                this.element.appendChild(inputElement);
+                this.element = inputElement;
+                setValue('ej2_instances', ejInstance, this.element);
             }
-            this.element.appendChild(inputElement);
-            this.element = inputElement;
-            setValue('ej2_instances', ejInstance, this.element);
-        }
-        this.updateHTMLAttrToElement();
-        this.checkAttributes(false);
-        if (this.element.tagName !== 'TEXTAREA') {
-            this.element.setAttribute('type', this.type);
-        }
-        this.element.setAttribute('role', 'textbox');
-        this.globalize = new Internationalization(this.locale);
-        var localeText = { placeholder: this.placeholder };
-        this.l10n = new L10n('textbox', localeText, this.locale);
-        if (this.l10n.getConstant('placeholder') !== '') {
-            this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
-        }
-        if (!this.element.hasAttribute('id')) {
-            this.element.setAttribute('id', getUniqueID('textbox'));
-        }
-        if (!this.element.hasAttribute('name')) {
-            this.element.setAttribute('name', this.element.getAttribute('id'));
-        }
-        if (this.element.tagName === 'INPUT' && this.multiline) {
-            this.isHiddenInput = true;
-            this.textarea = this.createElement('textarea');
-            this.element.parentNode.insertBefore(this.textarea, this.element);
-            this.element.setAttribute('type', 'hidden');
-            this.textarea.setAttribute('name', this.element.getAttribute('name'));
-            this.element.removeAttribute('name');
-            this.textarea.setAttribute('role', this.element.getAttribute('role'));
-            this.element.removeAttribute('role');
-            var attribute = ['required', 'minlength', 'maxlength'];
-            for (var i = 0; i < attribute.length; i++) {
-                if (this.element.hasAttribute(attribute[i])) {
-                    var attr = this.element.getAttribute(attribute[i]);
-                    this.textarea.setAttribute(attribute[i], attr);
-                    this.element.removeAttribute(attribute[i]);
+            this.updateHTMLAttrToElement();
+            this.checkAttributes(false);
+            if (this.element.tagName !== 'TEXTAREA') {
+                this.element.setAttribute('type', this.type);
+            }
+            this.element.setAttribute('role', 'textbox');
+            this.globalize = new Internationalization(this.locale);
+            var localeText = { placeholder: this.placeholder };
+            this.l10n = new L10n('textbox', localeText, this.locale);
+            if (this.l10n.getConstant('placeholder') !== '') {
+                this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
+            }
+            if (!this.element.hasAttribute('id')) {
+                this.element.setAttribute('id', getUniqueID('textbox'));
+            }
+            if (!this.element.hasAttribute('name')) {
+                this.element.setAttribute('name', this.element.getAttribute('id'));
+            }
+            if (this.element.tagName === 'INPUT' && this.multiline) {
+                this.isHiddenInput = true;
+                this.textarea = this.createElement('textarea');
+                this.element.parentNode.insertBefore(this.textarea, this.element);
+                this.element.setAttribute('type', 'hidden');
+                this.textarea.setAttribute('name', this.element.getAttribute('name'));
+                this.element.removeAttribute('name');
+                this.textarea.setAttribute('role', this.element.getAttribute('role'));
+                this.element.removeAttribute('role');
+                var attribute = ['required', 'minlength', 'maxlength'];
+                for (var i = 0; i < attribute.length; i++) {
+                    if (this.element.hasAttribute(attribute[i])) {
+                        var attr = this.element.getAttribute(attribute[i]);
+                        this.textarea.setAttribute(attribute[i], attr);
+                        this.element.removeAttribute(attribute[i]);
+                    }
                 }
             }
         }
@@ -12456,22 +12506,37 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     TextBox.prototype.render = function () {
-        this.respectiveElement = (this.isHiddenInput) ? this.textarea : this.element;
-        this.textboxWrapper = Input.createInput({
-            element: this.respectiveElement,
-            floatLabelType: this.floatLabelType,
-            properties: {
-                enabled: this.enabled,
-                enableRtl: this.enableRtl,
-                cssClass: this.cssClass,
-                readonly: this.readonly,
-                placeholder: this.placeholder,
-                showClearButton: this.showClearButton
+        if (!(isBlazor() && this.isServerRendered)) {
+            this.respectiveElement = (this.isHiddenInput) ? this.textarea : this.element;
+            this.textboxWrapper = Input.createInput({
+                element: this.respectiveElement,
+                floatLabelType: this.floatLabelType,
+                properties: {
+                    enabled: this.enabled,
+                    enableRtl: this.enableRtl,
+                    cssClass: this.cssClass,
+                    readonly: this.readonly,
+                    placeholder: this.placeholder,
+                    showClearButton: this.showClearButton
+                }
+            });
+            this.updateHTMLAttrToWrapper();
+            if (this.isHiddenInput) {
+                this.respectiveElement.parentNode.insertBefore(this.element, this.respectiveElement);
             }
-        });
-        this.updateHTMLAttrToWrapper();
-        if (this.isHiddenInput) {
-            this.respectiveElement.parentNode.insertBefore(this.element, this.respectiveElement);
+        }
+        else {
+            this.respectiveElement = this.element;
+            this.textboxWrapper = { container: this.element.parentElement };
+            if (this.showClearButton && !this.multiline) {
+                this.textboxWrapper.clearButton = this.textboxWrapper.container.querySelector('.e-clear-icon');
+                Input.wireClearBtnEvents(this.respectiveElement, this.textboxWrapper.clearButton, this.textboxWrapper.container);
+            }
+            if (this.floatLabelType === 'Auto') {
+                Input.wireFloatingEvents(this.respectiveElement);
+            }
+            // tslint:disable-next-line
+            Input.bindInitialEvent({ element: this.respectiveElement, buttons: null, customTag: null, floatLabelType: this.floatLabelType, properties: this.properties });
         }
         this.wireEvents();
         if (!isNullOrUndefined(this.value)) {

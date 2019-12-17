@@ -41,7 +41,67 @@
       font-family: 'e-icons';
       font-size: 10px;
     }
+
+    .e-de-new-cmt::before {
+      content: '\e759';
+      font-family: 'e-icons';
+    }
+
+    .e-de-menu-icon::before {
+      content: '\e781';
+      font-family: 'e-icons';
+      font-size: $de-op-icon-font-size;
+    }
+
+    .e-de-cmt-mark-icon::before {
+      content: '\e817';
+      font-family: 'e-icons';
+      font-size: 13px;
+    }
+
+    .e-de-cmt-post::before {
+      content: '\e816';
+      font-family: 'e-icons';
+    }
+
+    .e-de-cmt-rply-icon::before {
+      content: '\e815';
+      font-family: 'e-icons';
+    }
+
+    .e-de-cmt-cancel::before {
+      content: '\e745';
+      font-family: 'e-icons';
+    }
+
+    .e-de-cmt-delete::before {
+      content: '\e773';
+      font-family: 'e-icons';
+    }
+
+    .e-de-cmt-reopen::before {
+      content: '\e820';
+      font-family: 'e-icons';
+    }
+
+    .e-de-nav-up::before {
+      content: '\e651';
+      font-family: 'e-icons';
+    }
+
+    .e-de-nav-right-arrow::before {
+      content: '\e653';
+    }
+
+    .e-de-nav-left-arrow::before {
+      content: '\e654';
+    }
  }
+
+  .e-menu-item .e-de-cmt-add::before {
+    content: '\e814';
+    font-family: 'e-icons';
+  }
 
   .e-menu-item .e-de-cut::before {
     content: '\e73f';

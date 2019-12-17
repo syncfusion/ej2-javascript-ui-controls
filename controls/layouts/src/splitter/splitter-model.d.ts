@@ -1,5 +1,5 @@
-import { Component, Property, setStyleAttribute, ChildProperty, compile, isBlazor } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, addClass, Collection, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, selectAll, removeClass, select, Browser, detach, formatUnit } from '@syncfusion/ej2-base';
-import {Orientation,ResizeEventArgs,ResizingEventArgs,BeforeExpandEventArgs,ExpandedEventArgs} from "./splitter";
+import { Component, Property, setStyleAttribute, ChildProperty, compile, isBlazor } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, addClass, Collection, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, selectAll, removeClass, select, Browser, detach, formatUnit } from '@syncfusion/ej2-base';import { SanitizeHtmlHelper, extend } from '@syncfusion/ej2-base';
+import {Orientation,BeforeSanitizeHtmlArgs,ResizeEventArgs,ResizingEventArgs,BeforeExpandEventArgs,ExpandedEventArgs} from "./splitter";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -50,6 +50,15 @@ export interface PanePropertiesModel {
      * @blazorType string
      */
     content?: string | HTMLElement;
+
+    /**
+     * Specifies the CSS class names that defines specific user-defined
+     * styles and themes to be appended on corresponding pane of the Splitter.
+     * It is used to customize the Splitter control panes.
+     * One or more custom CSS classes can be specified to the Splitter panes.
+     * @default ''
+     */
+    cssClass?: string;
 
 }
 
@@ -102,11 +111,24 @@ export interface SplitterModel extends ComponentModel{
     enabled?: boolean;
 
     /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default true
+     */
+    enableHtmlSanitizer?: boolean;
+
+    /**
      * Specifies the size of the separator line for both horizontal or vertical orientation.
      * The separator is used to separate the panes by lines.
      * @default null
      */
     separatorSize?: number;
+
+    /**
+     * Event triggers before sanitize the value.
+     * @event 
+     * @blazorProperty 'OnSanitizeHtml'
+     */
+    beforeSanitizeHtml?: EmitType<BeforeSanitizeHtmlArgs>;
 
     /**
      * Triggers after creating the splitter component with its panes.

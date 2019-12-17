@@ -752,8 +752,8 @@ export class TextSelection {
                         range.setStart(focusNode, selectionRange.endOffset);
                         range.setEnd(anchorNode, selectionRange.startOffset);
                     }
-                } else {
-                    if (!selectionRange.isBackward) {
+                } else if (!isNaN(anchorPageIndex)) {
+                    if (!isNaN(anchorPageIndex) && !selectionRange.isBackward) {
                         // tslint:disable-next-line:max-line-length
                         if (anchorPageIndex < currentAnchorIndex && currentAnchorIndex < focusPageIndex && anchorPageIndex !== focusPageIndex) {
                             range.setStart(selection.anchorNode, selection.anchorOffset);
@@ -848,6 +848,14 @@ export class TextSelection {
                                 }
                             }
                         }
+                    }
+                } else if (isNaN(anchorPageIndex)) {
+                    if (!selectionRange.isBackward) {
+                        range.setStart(anchorNode, selectionRange.startOffset);
+                        range.setEnd(focusNode, selectionRange.endOffset);
+                    } else {
+                        range.setStart(focusNode, selectionRange.endOffset);
+                        range.setEnd(anchorNode, selectionRange.startOffset);
                     }
                 }
             }

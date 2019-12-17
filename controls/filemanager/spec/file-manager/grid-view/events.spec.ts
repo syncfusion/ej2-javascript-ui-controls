@@ -890,5 +890,70 @@ describe('FileManager control Grid view', () => {
                 done();
             }, 500);
         });
+
+        it('for continous multiple dialogs', (done) => {
+            name = 'Error';
+            let item: any = document.getElementById('file_tb_refresh');
+            item.click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data2)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                expect(i).toEqual(1);
+                item = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
+                item.click();
+                expect(i).toBe(2);
+                expect(j).toBe(1);
+                expect(k).toBe(1);
+                name = 'Create Folder';
+                item = document.getElementById('file_tb_newfolder');
+                item.click();
+                item = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
+                item.click();
+                expect(i).toBe(4);
+                expect(j).toBe(2);
+                expect(k).toBe(2);
+                feObj.selectedItems = ['Food']
+                name = 'Rename';
+                item = document.getElementById('file_tb_rename');
+                item.click();
+                item = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
+                item.click();
+                expect(i).toBe(6);
+                expect(j).toBe(3);
+                expect(k).toBe(3);
+                feObj.selectedItems = ['Food']
+                name = 'Delete';
+                item = document.getElementById('file_tb_delete');
+                item.click();
+                item = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
+                item.click();
+                expect(i).toBe(8);
+                expect(j).toBe(4);
+                expect(k).toBe(4);
+                name = 'Rename'
+                feObj.detailsviewModule.gridObj.selectRows([4]);
+                let items: any = document.getElementsByClassName('e-fe-rename');
+                items[0].click();
+                let ntr: any = document.getElementById('file_grid').querySelectorAll('.e-rowcell.e-rowcell.e-fe-grid-name');
+                expect(ntr.length).toEqual(5);
+                expect(ntr[4].textContent).toBe("1.png");
+                (<HTMLInputElement>document.getElementById('rename')).value = "1.pnga";
+                name = 'Extension Change';
+                (<HTMLElement>document.getElementById('file_dialog').querySelectorAll('.e-btn')[1]).click();
+                item = document.getElementById('file_extn_dialog').querySelector('.e-dlg-closeicon-btn');
+                item.click();
+                name = 'Rename'
+                item = document.getElementById('file_dialog').querySelector('.e-dlg-closeicon-btn');
+                item.click();
+                expect(i).toBe(12);
+                expect(j).toBe(6);
+                expect(k).toBe(6);
+                done();
+            }, 500);
+        });
     });
 });

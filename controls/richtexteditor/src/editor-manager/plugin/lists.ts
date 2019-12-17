@@ -13,6 +13,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * Lists internal component
  * @hidden
+ * @deprecated
  */
 export class Lists {
     private parent: EditorManager;
@@ -24,6 +25,7 @@ export class Lists {
     /**
      * Constructor for creating the Lists plugin
      * @hidden
+     * @deprecated
      */
     constructor(parent: EditorManager) {
         this.parent = parent;
@@ -93,7 +95,9 @@ export class Lists {
         }
         if (e.event.which === 9) {
             let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
-            this.saveSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
+            if (!(e.event.action && e.event.action === 'indent')) {
+                this.saveSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
+            }
             let blockNodes: Element[];
             let startOffset: number = range.startOffset;
             let endOffset: number = range.endOffset;
@@ -447,6 +451,10 @@ export class Lists {
         let viewNode: Element[] = [];
         for (let i: number = 0; i < elements.length; i++) {
             let element: Element = elements[i];
+            if (this.domNode.contents(element)[0].nodeType === 3 && this.domNode.contents(element)[0].textContent.trim().length === 0) {
+                detach(this.domNode.contents(element)[0]);
+            }
+
             let parentNode: Element = elements[i].parentNode as Element;
             let className: string = element.getAttribute('class');
             if (temp.length === 0) {

@@ -6,7 +6,7 @@ import { Draggable, DragEventArgs, Droppable, DropEventArgs } from '@syncfusion/
 import { updateBlazorTemplate, resetBlazorTemplate , isBlazor, getElement  } from '@syncfusion/ej2-base';
 import { addClass, removeClass, closest, matches, detach, select, selectAll, isVisible, createElement, append } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
-import { isNullOrUndefined as isNOU, Touch, TapEventArgs, getValue, setValue } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, Touch, TapEventArgs, getValue, setValue, extend, merge, attributes } from '@syncfusion/ej2-base';
 import { ListBase, ListBaseOptions, AriaAttributesMapping, FieldsMapping } from '@syncfusion/ej2-lists';
 import { createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';
 import { Input, InputObject } from '@syncfusion/ej2-inputs';
@@ -19,6 +19,9 @@ const COLLAPSIBLE: string = 'e-icon-collapsible';
 const EXPANDABLE: string = 'e-icon-expandable';
 const LISTITEM: string = 'e-list-item';
 const LISTTEXT: string = 'e-list-text';
+const LISTICON: string = 'e-list-icon';
+const LISTIMG: string = 'e-list-img';
+const LISTURL: string = 'e-list-url';
 const PARENTITEM: string = 'e-list-parent';
 const HOVER: string = 'e-hover';
 const ACTIVE: string = 'e-active';
@@ -321,6 +324,11 @@ export interface NodeData {
     hasChildren: boolean;
 }
 
+export interface FailureEventArgs {
+    /** Defines the error information. */
+    error?: Error;
+}
+
 /**
  * Configures the fields to bind to the properties of node in the TreeView component.
  */
@@ -530,6 +538,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private touchClass: string;
     private editData: { [key: string]: Object };
     private editFields: FieldsSettingsModel;
+    private refreshData: { [key: string]: Object };
+    private refreshFields: FieldsSettingsModel;
+    private isRefreshed: boolean = false;
     private keyConfigs: { [key: string]: string };
     private isInitalExpand: boolean;
     private index: number;
@@ -542,6 +553,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private onLoaded: boolean;
     private parentNodeCheck: string[] = [];
     private parentCheckData :  { [key: string]: Object }[];
+    private validArr :  { [key: string]: Object }[] = [];
     private expandChildren: string[] = [];
     private isBlazorPlatform: boolean;
     private isFieldChange: boolean = false;
@@ -604,6 +616,13 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property('')
     public cssClass: string;
+
+    /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default false
+     */
+    @Property(false)
+    public enableHtmlSanitizer: boolean;
 
     /**
      * Enables or disables persisting TreeView state between page reloads. If enabled, following APIs will persist.
@@ -712,6 +731,14 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(true)
     public autoCheck: boolean;
+
+    /** 
+     * Triggers when any TreeView action failed to fetch the desired results. 
+     * @event 
+     * @blazorProperty 'OnActionFailure'
+     */
+    @Event()
+    public actionFailure: EmitType<FailureEventArgs>;
 
     /**
      * Triggers when the TreeView control is created successfully.
@@ -937,6 +964,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             itemCreated: (e: ItemCreatedArgs) => {
                 this.beforeNodeCreate(e);
             },
+            enableHtmlSanitizer: this.enableHtmlSanitizer
         };
         this.updateListProp(this.fields);
         this.aniObj = new Animation({});
@@ -1057,6 +1085,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                             this.finalize();
                         }
                     }
+                }).catch((e: Object) => {
+                    this.trigger('actionFailure', { error: e });
                 });
             } else {
                 (this.fields.dataSource as DataManager).executeQuery(this.getQuery(this.fields)).then((e: Object) => {
@@ -1068,6 +1098,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     if (this.treeList.length === 0 && !this.isLoaded) {
                             this.finalize();
                     }
+                }).catch((e: Object) => {
+                    this.trigger('actionFailure', { error: e });
                 });
             }
         } else {
@@ -1389,7 +1421,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             nodeData: e.curData,
             text: e.text,
         };
-        this.trigger('drawNode', eventArgs);
+        if (!this.isRefreshed) {
+            this.trigger('drawNode', eventArgs);
+        }
     }
 
     private frameMouseHandler(e: MouseEvent): void {
@@ -2076,7 +2110,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 let liEle: HTMLElement = <HTMLElement>currLi;
                 this.setHeight(liEle, ul);
                 let activeElement: HTMLElement = <HTMLElement>select('.' + LISTITEM + '.' + ACTIVE, currLi);
-                if (this.isAnimate) {
+                if (this.isAnimate && !this.isRefreshed) {
                     this.aniObj.animate(ul, {
                         name: this.animation.expand.effect,
                         duration: this.animation.expand.duration,
@@ -2124,7 +2158,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         currLi.style.height = '';
         removeClass([icon], PROCESS);
         this.addExpand(currLi);
-        if (this.isLoaded && this.expandArgs) {
+        if (this.isLoaded && this.expandArgs && !this.isRefreshed) {
             this.expandArgs = this.getExpandEvent(currLi, null);
             this.trigger('nodeExpanded', this.expandArgs);
         }
@@ -2286,6 +2320,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     if (this.nodeTemplate && this.isBlazorPlatform && !this.isStringTemplate) {
                         this.updateBlazorTemplate();
                     }
+                }).catch((e: Object) => {
+                    this.trigger('actionFailure', { error: e });
                 });
             }
         } else {
@@ -2344,20 +2380,21 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private disableTreeNodes(childItems: { [key: string]: Object }[]): void {
                 let i : number = 0;
                 while (i < childItems.length) {
-                    let id: string = childItems[i][this.fields.id].toString();
+                    let id: string = childItems[i][this.fields.id] ? childItems[i][this.fields.id].toString() : null;
                     if (this.disableNode !== undefined && this.disableNode.indexOf(id) !== -1) {
                         this.doDisableAction([id]);
                     }
                     i++;
                 }
     }
+
     /**
      * Sets the child Item in selectedState while rendering the child node
      */
     private setSelectionForChildNodes(nodes: { [key: string]: Object }[]): void {
             let i: number;
             for (i = 0; i < nodes.length; i++) {
-                let id: string = nodes[i][this.fields.id].toString();
+                let id: string = nodes[i][this.fields.id]? nodes[i][this.fields.id].toString(): null;
                 if (this.selectedNodes !== undefined && this.selectedNodes.indexOf(id) !== -1) {
                     this.doSelectionAction();
                 }
@@ -2629,7 +2666,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         } else {
             addClass([icon], PROCESS);
         }
-        if (this.isLoaded) {
+        if (this.isLoaded && !this.isRefreshed) {
             this.expandArgs = this.getExpandEvent(currLi, e);
             this.trigger('nodeExpanding', this.expandArgs, (observedArgs: NodeExpandEventArgs) => {
                 if (observedArgs.cancel) {
@@ -2945,7 +2982,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     if (this.parentNodeCheck.indexOf(checkedChild) !== -1) {
                         this.parentNodeCheck.splice(this.parentNodeCheck.indexOf(checkedChild), 1);
                     }
-                } else if (this.checkedNodes.indexOf(parent) === -1 && childElement === null && !doCheck) {
+                } else if (this.checkedNodes.indexOf(parent) === -1 && !doCheck) {
                     this.checkedNodes.splice(this.checkedNodes.indexOf(checkedChild), 1);
                     if (isCheck === 'true') {
                         this.updateField(this.treeData, this.fields, checkedChild, 'isChecked', null);
@@ -3226,8 +3263,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     private reRenderNodes(): void {
         resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate');
-        if (this.isBlazorPlatform && this.element.firstElementChild) {
-            this.element.removeChild(this.element.firstElementChild);
+        if (this.isBlazorPlatform && this.ulElement && this.ulElement.parentElement) {
+            this.ulElement.parentElement.removeChild(this.ulElement);
         } else {
             this.element.innerHTML = '';
         }
@@ -4250,36 +4287,86 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private doDisableAction(nodes: string[] | Element[]): void {
-        for (let i: number = 0, len: number = nodes.length; i < len; i++) {
-            let liEle: Element = this.getElement(nodes[i]);
-            if (isNOU(liEle)) {
-                let id: string;
-                id = (nodes[i]) ? nodes[i].toString() : null;
-                if (id && this.disableNode.indexOf(nodes[i].toString()) === -1) {
-                    this.disableNode.push(nodes[i].toString());
-                }
-                continue;
+        let validNodes: string[] = this.nodeType(nodes);
+        let validID: { [key: string]: Object }[]  = this.checkValidId(validNodes);
+        this.validArr = [];
+        for (let i: number = 0, len: number = validID.length; i < len; i++) {
+            let id: string = validID[i][this.fields.id].toString();
+              if (id && this.disableNode.indexOf(id) === -1) {
+                this.disableNode.push(id);
+              }
+            let liEle: Element = this.getElement(id);
+            if (liEle) {
+                liEle.setAttribute('aria-disabled', 'true');
+                addClass([liEle], DISABLE);
             }
-            liEle.setAttribute('aria-disabled', 'true');
-            addClass([liEle], DISABLE);
         }
     }
 
     private doEnableAction(nodes: string[] | Element[]): void {
-        for (let i: number = 0, len: number = nodes.length; i < len; i++) {
-            let liEle: Element = this.getElement(nodes[i]);
-            if (isNOU(liEle)) {
-                let id: string = (nodes[i]) ? nodes[i].toString() : null;
-                if (id && this.disableNode.indexOf(id) !== -1) {
-                    this.disableNode.splice(this.disableNode.indexOf(id), 1);
-                }
-                continue;
+        let strNodes: string[] = this.nodeType(nodes);
+        for (let i: number = 0, len: number = strNodes.length; i < len; i++) {
+            let liEle: Element = this.getElement(strNodes[i]);
+            let id: string = strNodes[i];
+            if (id && this.disableNode.indexOf(id) !== -1) {
+                this.disableNode.splice(this.disableNode.indexOf(id), 1);
             }
-            liEle.removeAttribute('aria-disabled');
-            removeClass([liEle], DISABLE);
+            if (liEle) {
+                liEle.removeAttribute('aria-disabled');
+                removeClass([liEle], DISABLE);
+            }
         }
     }
 
+    private nodeType(nodes: string[] | Element[]): string[] {
+        let validID: string[] = [];
+        for (let i: number = 0, len: number = nodes.length; i < len; i++) {
+            let id: string;
+            if (typeof nodes[i] == "string") {
+                id = (nodes[i]) ? nodes[i].toString() : null;
+            } else if (typeof nodes[i] === "object") {
+                id =  nodes[i] ? (nodes[i] as Element).getAttribute("data-uid").toString() : null;
+            }
+            if (validID.indexOf(id) == -1) {
+                validID.push(id);
+            }
+        }
+        return validID;
+    }
+
+    private checkValidId( node: string[]) : { [key: string]: Object }[] {
+        if (this.dataType === 1) {
+            this.validArr = this.treeData.filter((data: { [key: string]: Object }) => {
+                return node.indexOf(data[this.fields.id] ? data[this.fields.id].toString(): null) !== -1 
+            });
+        } else if (this.dataType === 2) {
+           for (let k: number =0; k < this.treeData.length; k++) {
+               let id: string = this.treeData[k][this.fields.id] ?  this.treeData[k][this.fields.id].toString(): null;
+               if (node.indexOf(id) !== -1) {
+                   this.validArr.push(this.treeData[k]);
+               }
+               let childItems: { [key: string]: Object }[] = getValue(this.fields.child.toString(), this.treeData[k]);
+               if (childItems) {
+                  this.filterNestedChild(childItems, node);
+               }
+           }  
+        }
+        return this.validArr;
+    }
+    
+    private filterNestedChild(treeData: { [key: string]: Object }[], nodes: string[]): void {
+        for (let k: number = 0; k < treeData.length; k++) {
+            let id: string = treeData[k][this.fields.id] ?  treeData[k][this.fields.id].toString(): null;
+            if (nodes.indexOf(id) !== -1) {
+                this.validArr.push(treeData[k]);
+            }
+            let childItems: { [key: string]: Object }[] = getValue(this.fields.child.toString(), treeData[k]);
+            if (childItems) {
+                this.filterNestedChild(childItems, nodes)
+            }
+        }
+    }
+      
     private setTouchClass(): void {
         let ele: Element = closest(this.element, '.' + BIGGER);
         this.touchClass = isNOU(ele) ? '' : SMALL;
@@ -4425,7 +4512,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             let proxy: TreeView = this;
             this.touchClickObj = new Touch(this.element, {
                 tap: (e: TapEventArgs) => {
-                    e.originalEvent.preventDefault();
                     proxy.clickHandler(e);
                 }
             });
@@ -4641,6 +4727,49 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         for (let i: number = 0; i < nodes.length; i++) {
             this.setValidCheckedNode(nodes[i]);
         }
+    }
+
+    private updatePosition(id: string, newData: { [key: string]: Object }, isRefreshChild?: boolean, childValue ?:{ [key: string]: Object }[] ): void {
+        if (this.dataType === 1) {
+            let pos: number = this.getDataPos(this.treeData, this.fields, id);
+            this.treeData.splice(pos, 1, newData);
+            if (isRefreshChild){
+                this.removeChildNodes(id);
+                for (let j: number = 0; j < childValue.length; j++) {
+                    this.treeData.splice(pos, 0, childValue[j]);
+                    pos++;
+                }
+            }
+            this.groupedData = this.getGroupedData(this.treeData, this.fields.parentID);
+        } else {
+            this.updateChildPosition(this.treeData, this.fields, id, [newData], undefined)
+        }
+    }
+
+    private updateChildPosition(
+        treeData: { [key: string]: Object }[], mapper: FieldsSettingsModel, currID: string, newData: { [key: string]: Object }[],
+        index: number): boolean {
+        let found: boolean;
+        for (let i: number = 0, objlen: number = treeData.length; i < objlen; i++) {
+            let nodeId: Object = getValue(mapper.id, treeData[i]);
+            if (treeData[i] && nodeId && nodeId.toString() === currID) {
+                treeData[i] = newData[0];
+                    return true;
+            } else if (typeof mapper.child === 'string' && !isNOU(getValue(mapper.child, treeData[i]))) {
+                let childObj: { [key: string]: Object }[] = <{ [key: string]: Object }[]>getValue(mapper.child, treeData[i]);
+                found = this.updateChildPosition(childObj, this.getChildMapper(mapper), currID, newData, index);
+                if (found !== undefined) {
+                    break;
+                }
+            } else if (this.fields.dataSource instanceof DataManager && !isNOU(getValue('child', treeData[i]))) {
+                let childData: { [key: string]: Object }[] = <{ [key: string]: Object }[]>getValue('child', treeData[i]);
+                found = this.updateChildPosition(childData, this.getChildMapper(mapper), currID, newData, index);
+                if (found !== undefined) {
+                    break;
+                }
+            }
+        }
+        return found;
     }
 
     /**
@@ -4937,6 +5066,14 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         return checkNodes;
     }
 
+     /**
+     * Gets all the disabled nodes including child, whether it is loaded or not.
+     */
+    public getDisabledNodes(): string[] {
+        let disabledNodes: string[] = this.disableNode;
+        return disabledNodes;
+    }
+
     /**
      * Get the node's data such as id, text, parentID, selected, isChecked, and expanded by passing the node element or it's ID.
      * @param  {string | Element} node - Specifies ID of TreeView node/TreeView node.
@@ -4994,6 +5131,95 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
+     * Refreshes a particular node of the TreeView.
+     * @param  {string | Element} target - Specifies the ID of TreeView node or TreeView node as target element.
+     * @param  {{ [key: string]: Object }[]} newData - Specifies the new data of TreeView node.
+     */
+    public refreshNode(target: string | Element, newData: { [key: string]: Object }[]): void {
+        if (isNOU(target) || isNOU(newData)) {
+            return;
+        }
+        let id: string;
+        let isRefreshChild: boolean = false;
+        if (this.dataType == 1 && newData.length > 1) {
+            isRefreshChild = true;
+        } else if (this.dataType == 2 && newData.length === 1) {
+            let updatedChildValue: { [key: string]: Object }[] = getValue(this.fields.child.toString(), newData[0]);
+            if (!isNOU(updatedChildValue)) {
+                isRefreshChild = true;
+            }
+        }
+        let liEle: HTMLElement = this.getElement(target) as HTMLElement;
+        id = liEle ? liEle.getAttribute('data-uid') : ((target) ? target.toString() : null);
+        this.refreshData = this.getNodeObject(id);
+        newData = JSON.parse(JSON.stringify(newData));
+        // tslint:disable
+        let newNodeData: any;
+        let parentData: { [key: string]: Object };
+        if (this.dataType == 1 && isRefreshChild) {
+            for (let k: number = 0; k < newData.length; k++) {
+                if (isNOU(newData[k][this.fields.parentID])) {
+                    parentData = newData[k];
+                    newData.splice(k, 1);
+                    break;
+                }
+            }
+            newNodeData = extend({}, this.refreshData, parentData);
+        } else {
+            newNodeData = extend({}, this.refreshData, newData[0]);
+        }
+        if (isNOU(liEle)) {
+            this.updatePosition(id, newNodeData, isRefreshChild, newData);
+            return;
+        }
+        this.isRefreshed = true;
+        let level: number = parseFloat(liEle.getAttribute('aria-level'));
+        let newliEle: HTMLElement[] = ListBase.createListItemFromJson(this.createElement, [newNodeData], this.listBaseOption, level);
+        let ul: Element = select('.' + PARENTITEM, liEle);
+        let childItems: { [key: string]: Object }[] = getValue(this.fields.child.toString(), newNodeData);
+        if ((isRefreshChild && ul) || (isRefreshChild && !isNOU(childItems))) {
+            liEle.innerHTML = newliEle[0].innerHTML;
+            this.updatePosition(id, newNodeData, isRefreshChild, newData);
+            if (isRefreshChild && ul) {
+                this.expandAll([id]);
+            }
+        } else {
+            let txtEle: HTMLElement = select('.' + TEXTWRAP, liEle) as HTMLElement;
+            let newTextEle: HTMLElement = select('.' + TEXTWRAP, newliEle[0]) as HTMLElement;
+            let icon = select('div.' + ICON, txtEle);
+            let newIcon = select('div.' + ICON, newTextEle);
+            if (icon && newIcon) {
+                if (newIcon.classList.contains(EXPANDABLE) && icon.classList.contains(COLLAPSIBLE)) {
+                    removeClass([newIcon], EXPANDABLE);
+                    addClass([newIcon], COLLAPSIBLE);
+                } else if (newIcon.classList.contains(COLLAPSIBLE) && icon.classList.contains(EXPANDABLE)) {
+                    removeClass([newIcon], COLLAPSIBLE);
+                    addClass([newIcon], EXPANDABLE);
+                } else if (icon.classList.contains('interaction')) {
+                    addClass([newIcon], 'interaction');
+                }
+            }
+            txtEle.innerHTML = newTextEle.innerHTML;
+            this.updatePosition(id, newNodeData, isRefreshChild, newData);
+        }
+        if (newNodeData[this.fields.tooltip]) {
+            liEle.setAttribute("title", newNodeData[this.fields.tooltip]);
+        }
+        if (newNodeData.hasOwnProperty(this.fields.htmlAttributes) && newNodeData[this.fields.htmlAttributes]) {
+            let attr: { [key: string]: string } = {};
+            merge(attr, newNodeData[this.fields.htmlAttributes]);
+            if (attr.class) {
+                addClass([liEle], attr.class.split(' '));
+                delete attr.class;
+            } else {
+                attributes(liEle, attr);
+            }
+        }
+        this.isRefreshed = false;
+        this.triggerEvent();
+    }
+
+    /**
      * Removes the collection of TreeView nodes by passing the array of node details as argument to this method.
      * @param  {string[] | Element[]} nodes - Specifies the array of TreeView nodes ID/array of TreeView node.
      */
@@ -5046,5 +5272,4 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             this.doCheckBoxAction(nodes, false);
         }
     }
-
 }

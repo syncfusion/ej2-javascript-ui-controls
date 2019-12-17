@@ -11,24 +11,24 @@ import { iterateArrayOrObject, prepareColumns, parentsUntil, wrap, templateCompi
 import { getRowHeight, setColumnIndex, Global } from './util';
 import * as events from '../base/constant';
 import { ReturnType } from '../base/type';
-import { IDialogUI, ScrollPositionType, ExportGroupCaptionEventArgs } from './interface';
+import { IDialogUI, ScrollPositionType, ActionArgs, ExportGroupCaptionEventArgs } from './interface';
 import { IRenderer, IValueFormatter, IFilterOperator, IIndex, RowDataBoundEventArgs, QueryCellInfoEventArgs } from './interface';
 import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, ParentDetails, ContextMenuItemModel } from './interface';
 import { PdfQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, ExcelExportProperties, PdfExportProperties } from './interface';
 import { PdfHeaderQueryCellInfoEventArgs, ExcelHeaderQueryCellInfoEventArgs, ExportDetailDataBoundEventArgs } from './interface';
 import { ColumnMenuOpenEventArgs, BatchCancelArgs, RecordDoubleClickEventArgs, DataResult, PendingState } from './interface';
-import { HeaderCellInfoEventArgs, KeyboardEventArgs } from './interface';
+import { HeaderCellInfoEventArgs, KeyboardEventArgs} from './interface';
 import { FailureEventArgs, FilterEventArgs, ColumnDragEventArgs, GroupEventArgs, PrintEventArgs, ICustomOptr } from './interface';
 import { RowDeselectEventArgs, RowSelectEventArgs, RowSelectingEventArgs, PageEventArgs, RowDragEventArgs } from './interface';
 import { BeforeBatchAddArgs, BeforeBatchDeleteArgs, BeforeBatchSaveArgs, ResizeArgs, ColumnMenuItemModel, NotifyArgs } from './interface';
 import { BatchAddArgs, BatchDeleteArgs, BeginEditArgs, CellEditArgs, CellSaveArgs, BeforeDataBoundArgs, RowInfo } from './interface';
 import { DetailDataBoundEventArgs, ColumnChooserEventArgs, AddEventArgs, SaveEventArgs, EditEventArgs, DeleteEventArgs } from './interface';
 import { ExcelExportCompleteArgs, PdfExportCompleteArgs, DataStateChangeEventArgs, DataSourceChangedEventArgs } from './interface';
-import { SearchEventArgs, SortEventArgs, ISelectedCell, EJ2Intance, BeforeCopyEventArgs } from './interface';
-import { BeforePasteEventArgs, CheckBoxChangeEventArgs, CommandClickEventArgs } from './interface';
+import { SearchEventArgs, SortEventArgs, ISelectedCell, EJ2Intance, BeforeCopyEventArgs} from './interface';
+import {BeforePasteEventArgs, CheckBoxChangeEventArgs, CommandClickEventArgs, BeforeAutoFillEventArgs } from './interface';
 import { Render } from '../renderer/render';
 import { Column, ColumnModel, ActionEventArgs } from '../models/column';
-import { Action, SelectionType, GridLine, RenderType, SortDirection, SelectionMode, PrintMode, FilterType, FilterBarMode } from './enum';
+import { SelectionType, GridLine, RenderType, SortDirection, SelectionMode, PrintMode, FilterType, FilterBarMode } from './enum';
 import { CheckboxSelectionType, HierarchyGridPrintMode, NewRowPosition } from './enum';
 import { WrapMode, ToolbarItems, ContextMenuItem, ColumnMenuItem, ToolbarItem, CellSelectionMode, EditMode } from './enum';
 import { ColumnQueryModeType } from './enum';
@@ -75,6 +75,8 @@ import { ColumnMenu } from '../actions/column-menu';
 import { CheckState } from './enum';
 import { Aggregate } from '../actions/aggregate';
 import { ILogger } from '../actions/logger';
+import { gridObserver, BlazorAction } from '../actions/blazor-action';
+
 
 /** 
  * Represents the field name and direction of sort column. 
@@ -256,7 +258,6 @@ export class Predicate extends ChildProperty<Predicate> {
     public ejpredicate: Object;
 
     /**  
-     * @hidden 
      * Defines the UID of filter column.  
      */
     @Property()
@@ -717,6 +718,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public vGroupOffsets: { [x: number]: number } = {};
     /** @hidden */
     public isInitialLoad: boolean;
+    /** @hidden */
+    private rowUid: number = 0;
     /**
      * @hidden
      */
@@ -739,8 +742,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public currentViewData: Object[] = [];
     /** @hidden */
     public parentDetails: ParentDetails;
-    /** @hidden */
-    public currentAction: Action;
     /** @hidden */
     public isEdit: boolean;
     /** @hidden */
@@ -892,6 +893,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * `clipboardModule` is used to handle Grid copy action.
      */
     public clipboardModule: Clipboard;
+
+    /**
+     * The `blazorAction` is used to handle Blazor related action.
+     */
+    public blazorModule: BlazorAction;
+
 
     /**
      * `columnchooserModule` is used to dynamically show or hide the Grid columns.
@@ -1287,6 +1294,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Defines the external [`Query`](https://ej2.syncfusion.com/documentation/data/api-query.html) 
      * that will be executed along with data processing.    
      * @default null    
+     * @blazorType Syncfusion.EJ2.Blazor.Data.Query 
      */
     @Property()
     public query: Query;
@@ -1406,6 +1414,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     @Property('All')
     public columnQueryMode: ColumnQueryModeType;
+
+    /**
+     * Gets or sets the current action details.
+     * @default {}
+     */
+    @Property({})
+    public currentAction: ActionArgs;
 
     /** 
      * Triggers when the component is created.
@@ -1920,6 +1935,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public beforePaste: EmitType<BeforePasteEventArgs>;
 
     /** 
+     * Triggers before Grid autoFill action.
+     * @event
+     * @deprecated 
+     */
+    @Event()
+    public beforeAutoFill: EmitType<BeforeAutoFillEventArgs>;
+
+    /** 
      * Triggers when the grid actions such as Sorting, Paging, Grouping etc., are done.
      * In this event,the current view data and total record count should be assigned to the `dataSource` based on the action performed.
      * @event
@@ -2119,6 +2142,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.enableLogger) {
             modules.push({ member: 'logger', args: [this] });
         }
+        if (isBlazor()) {
+            modules.push({ member: 'blazor', args: [this] });
+    }
     }
 
     /**
@@ -2138,6 +2164,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.inViewIndexes = [];
         this.mediaCol = [];
         this.isInitialLoad = false;
+        this.allowServerDataBinding = false;
+        this.ignoreCollectionWatch = true;
+        if (this.enableVirtualization || this.enableColumnVirtualization) {            
+            this.isServerRendered = false; //NEW
+        }
         this.mergeCells = {};
         this.isEdit = false;
         this.checkAllRows = 'None';
@@ -2234,7 +2265,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             CustomFilterDatePlaceHolder: 'Choose a date',
             AND: 'AND',
             OR: 'OR',
-            ShowRowsWhere: 'Show rows where:'
+            ShowRowsWhere: 'Show rows where:',
+            FilterMenuDialogARIA: 'Filter menu dialog',
+            ExcelFilterDialogARIA: 'Excel filter dialog',
+            DialogEditARIA: 'Edit dialog',
+            ColumnChooserDialogARIA: 'Column chooser dialog',
+            ColumnMenuDialogARIA: 'Column menu dialog',
+            CustomFilterDialogARIA: 'Customer filter dialog'
         };
         this.keyConfigs = {
             downArrow: 'downarrow',
@@ -2303,7 +2340,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.enablePersistence) {
             this.notify(events.columnsPrepared, {});
         }
-        this.getMediaColumns();
+        if (!(isBlazor() && this.isServerRendered)) {
+            this.getMediaColumns();
+        }
         setColumnIndex(this.columns as Column[]);
         this.checkLockColumns(this.columns as Column[]);
         this.getColumns();
@@ -2315,6 +2354,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.updateStackedFilter();
         this.showSpinner();
         this.notify(events.initialEnd, {});
+        if (isBlazor() && this.isServerRendered) {
+            gridObserver.notify(events.componentRendered, {id: this.element.id, grid: this});
+    }
     }
 
     /**
@@ -2339,7 +2381,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
 
-    private getMediaColumns(): void {
+    public getMediaColumns(): void {
         if (!this.enableColumnVirtualization) {
             let gcol: Column[] = this.getColumns();
             this.getShowHideService = this.serviceLocator.getService<ShowHide>('showHideService');
@@ -4836,6 +4878,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         pdfExportProperties?: PdfExportProperties,
         /* tslint:disable-next-line:no-any */
         isMultipleExport?: boolean, pdfDoc?: Object, isBlob?: boolean): Promise<Object> {
+        if (isBlazor()) {
+            this.pdfExportModule.Map(this, pdfExportProperties, isMultipleExport, pdfDoc, isBlob);
+            return null;
+        }
         return this.pdfExportModule ? this.pdfExportModule.Map(this, pdfExportProperties, isMultipleExport, pdfDoc, isBlob) : null;
     }
 
@@ -5035,6 +5081,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.loggerModule ? this.loggerModule.log(type, args) : (() => 0)();
     }
 
+    /**
+     * @hidden
+     */
+    public applyBiggerTheme(element:Element) :void{
+        if(this.element.classList.contains('e-bigger')) {      
+          element.classList.add('e-bigger');
+        }
+    }
+
     /** 
      * @hidden
      */
@@ -5153,6 +5208,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             }
         }
     }
+
+     /**
+      * @hidden
+      */
+     public getRowUid(prefix: string): string {
+         return `${prefix}${this.rowUid++}`;
+     }
 
     /** 
      * @hidden

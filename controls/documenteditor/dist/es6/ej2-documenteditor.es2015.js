@@ -3265,9 +3265,6 @@ class WBorder {
         if (property === modifiedProperty) {
             uniqueBorderFormatTemp.add(propertyType, propValue);
         }
-        else {
-            uniqueBorderFormatTemp.add(propertyType, WBorder.getPropertyDefaultValue(property));
-        }
     }
     static getPropertyDefaultValue(property) {
         let value = undefined;
@@ -3658,6 +3655,9 @@ class WBorder {
         }
         return value;
     }
+    /**
+     * @private
+     */
     hasValue(property) {
         if (!isNullOrUndefined(this.uniqueBorderFormat)) {
             let propertyType = WUniqueFormat.getPropertyType(this.uniqueBorderFormat.uniqueFormatType, property);
@@ -3682,11 +3682,21 @@ class WBorder {
     }
     copyFormat(border) {
         if (!isNullOrUndefined(border) && !isNullOrUndefined(border.uniqueBorderFormat)) {
-            this.color = border.color;
-            this.lineStyle = border.lineStyle;
-            this.lineWidth = border.lineWidth;
-            this.shadow = border.shadow;
-            this.space = border.space;
+            if (border.hasValue('color')) {
+                this.color = border.color;
+            }
+            if (border.hasValue('lineStyle')) {
+                this.lineStyle = border.lineStyle;
+            }
+            if (border.hasValue('lineWidth')) {
+                this.lineWidth = border.lineWidth;
+            }
+            if (border.hasValue('shadow')) {
+                this.shadow = border.shadow;
+            }
+            if (border.hasValue('space')) {
+                this.space = border.space;
+            }
         }
     }
     static clear() {
@@ -3952,6 +3962,9 @@ class WShading {
             this.textureStyle = shading.textureStyle;
         }
     }
+    /**
+     * @private
+     */
     hasValue(property) {
         if (!isNullOrUndefined(this.uniqueShadingFormat)) {
             let propertyType = WUniqueFormat.getPropertyType(this.uniqueShadingFormat.uniqueFormatType, property);
@@ -10475,6 +10488,141 @@ class ChartDataTable {
 /**
  * @private
  */
+class CommentCharacterElementBox extends ElementBox {
+    constructor(type) {
+        super();
+        this.commentType = 0;
+        this.commentId = '';
+        this.commentType = type;
+    }
+    get comment() {
+        return this.commentInternal;
+    }
+    set comment(value) {
+        this.commentInternal = value;
+    }
+    getLength() {
+        return 1;
+    }
+    clone() {
+        let comment = new CommentCharacterElementBox(this.commentType);
+        comment.commentId = this.commentId;
+        comment.commentType = this.commentType;
+        return comment;
+    }
+    renderCommentMark() {
+        if (this.commentType === 0 && isNullOrUndefined(this.commentMark)) {
+            this.commentMark = document.createElement('div');
+            this.commentMark.style.display = 'none';
+            this.commentMark.classList.add('e-de-cmt-mark');
+            let span = document.createElement('span');
+            span.classList.add('e-icons');
+            span.classList.add('e-de-cmt-mark-icon');
+            this.commentMark.appendChild(span);
+        }
+        if (this.line && isNullOrUndefined(this.commentMark.parentElement)) {
+            let viewer = this.line.paragraph.bodyWidget.page.viewer;
+            viewer.pageContainer.appendChild(this.commentMark);
+            this.commentMark.addEventListener('click', this.selectComment.bind(this));
+        }
+    }
+    selectComment() {
+        let viewer = this.line.paragraph.bodyWidget.page.viewer;
+        if (viewer.owner) {
+            if (!viewer.owner.commentReviewPane.commentPane.isEditMode) {
+                viewer.selectComment(this.comment);
+            }
+            else {
+                viewer.owner.showComments = true;
+            }
+        }
+    }
+    removeCommentMark() {
+        if (this.commentMark && this.commentMark.parentElement) {
+            this.commentMark.removeEventListener('click', this.selectComment.bind(this));
+            this.commentMark.parentElement.removeChild(this.commentMark);
+        }
+    }
+    destroy() {
+        if (this.commentMark) {
+            this.removeCommentMark();
+        }
+    }
+}
+/**
+ * @private
+ */
+class CommentElementBox extends CommentCharacterElementBox {
+    constructor(date) {
+        super(0);
+        this.authorIn = '';
+        this.initialIn = '';
+        this.done = false;
+        this.textIn = '';
+        this.isReply = false;
+        this.ownerComment = undefined;
+        this.createdDate = date;
+        this.replyComments = [];
+    }
+    get commentStart() {
+        return this.commentStartIn;
+    }
+    set commentStart(value) {
+        this.commentStartIn = value;
+    }
+    get commentEnd() {
+        return this.commentEndIn;
+    }
+    set commentEnd(value) {
+        this.commentEndIn = value;
+    }
+    get author() {
+        return this.authorIn;
+    }
+    set author(value) {
+        this.authorIn = value;
+    }
+    get initial() {
+        return this.initialIn;
+    }
+    set initial(value) {
+        this.initialIn = value;
+    }
+    get isResolved() {
+        return this.done;
+    }
+    set isResolved(value) {
+        this.done = value;
+    }
+    get date() {
+        return this.createdDate;
+    }
+    get text() {
+        return this.textIn;
+    }
+    set text(value) {
+        this.textIn = value;
+    }
+    getLength() {
+        return 1;
+    }
+    clone() {
+        let comment = new CommentElementBox(this.date);
+        comment.author = this.author;
+        comment.initial = this.initial;
+        comment.commentId = this.commentId;
+        comment.replyComments = this.replyComments;
+        comment.isResolved = this.isResolved;
+        comment.text = this.text;
+        return comment;
+    }
+    destroy() {
+        this.ownerComment = undefined;
+    }
+}
+/**
+ * @private
+ */
 class Page {
     /**
      * Initialize the constructor of Page
@@ -12527,7 +12675,6 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
             'Orientation': 'Orientation',
             'Landscape': 'Landscape',
             'Portrait': 'Portrait',
-            'Table Of Contents': 'Table Of Contents',
             'Show page numbers': 'Show page numbers',
             'Right align page numbers': 'Right align page numbers',
             'Nothing': 'Nothing',
@@ -12756,7 +12903,23 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
             'Find Next Region I Can Edit': 'Find Next Region I Can Edit',
             'Keep source formatting': 'Keep source formatting',
             'Match destination formatting': 'Match destination formatting',
-            'Text only': 'Text only'
+            'Text only': 'Text only',
+            'Comments': 'Comments',
+            'Type your comment': 'Type your comment',
+            'Post': 'Post',
+            'Reply': 'Reply',
+            'New Comment': 'New Comment',
+            'Edit': 'Edit',
+            'Resolve': 'Resolve',
+            'Reopen': 'Reopen',
+            'No comments in this document': 'No comments in this document',
+            'more': 'more',
+            'Type your comment hear': 'Type your comment hear',
+            'Next Comment': 'Next Comment',
+            'Previous Comment': 'Previous Comment',
+            'Un-posted comments': 'Un-posted comments',
+            // tslint:disable-next-line:max-line-length
+            'Added comments not posted. If you continue, that comment will be discarded.': 'Added comments not posted. If you continue, that comment will be discarded.'
         };
         this.viewer = new PageLayoutViewer(this);
         this.parser = new SfdtReader(this.viewer);
@@ -12963,6 +13126,11 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
                         this.viewer.dialog2.zIndex = model.zIndex;
                     }
                     break;
+                case 'showComments':
+                    if (this.viewer) {
+                        this.viewer.showComments(model.showComments);
+                    }
+                    break;
             }
         }
     }
@@ -12986,6 +13154,7 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
                 this.hyperlinkDialogModule.initHyperlinkDialog(l10n);
             }
             if (this.contextMenuModule) {
+                this.contextMenuModule.contextMenuInstance.destroy();
                 this.contextMenuModule.initContextMenu(l10n);
             }
             if (this.listDialogModule) {
@@ -13011,6 +13180,14 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
             }
             if (this.tableOfContentsDialogModule) {
                 this.tableOfContentsDialogModule.initTableOfContentDialog(l10n);
+            }
+            if (this.commentReviewPane && this.commentReviewPane.reviewPane) {
+                if (this.enableRtl) {
+                    classList(this.commentReviewPane.reviewPane, ['e-rtl'], []);
+                }
+                else {
+                    classList(this.commentReviewPane.reviewPane, [], ['e-rtl']);
+                }
             }
         }
     }
@@ -13385,6 +13562,7 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
      */
     open(sfdtText) {
         if (!isNullOrUndefined(this.viewer)) {
+            this.showComments = false;
             this.clearPreservedCollectionsInViewer();
             this.viewer.userCollection.push('Everyone');
             this.viewer.lists = [];
@@ -13704,6 +13882,10 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
             this.optionsPaneModule.destroy();
             this.optionsPaneModule = undefined;
         }
+        if (this.commentReviewPane) {
+            this.commentReviewPane.destroy();
+            this.commentReviewPane = undefined;
+        }
         if (!isNullOrUndefined(this.hyperlinkDialogModule)) {
             this.hyperlinkDialogModule.destroy();
             this.hyperlinkDialogModule = undefined;
@@ -13918,6 +14100,9 @@ __decorate([
     Property([])
 ], DocumentEditor.prototype, "headers", void 0);
 __decorate([
+    Property(false)
+], DocumentEditor.prototype, "showComments", void 0);
+__decorate([
     Event()
 ], DocumentEditor.prototype, "documentChange", void 0);
 __decorate([
@@ -13953,6 +14138,15 @@ __decorate([
 __decorate([
     Event()
 ], DocumentEditor.prototype, "customContextMenuBeforeOpen", void 0);
+__decorate([
+    Event()
+], DocumentEditor.prototype, "beforePaneSwitch", void 0);
+__decorate([
+    Event()
+], DocumentEditor.prototype, "commentBegin", void 0);
+__decorate([
+    Event()
+], DocumentEditor.prototype, "commentEnd", void 0);
 DocumentEditor = DocumentEditor_1 = __decorate([
     NotifyPropertyChanges
 ], DocumentEditor);
@@ -14096,6 +14290,7 @@ class Print {
 const CONTEXTMENU_COPY = '_contextmenu_copy';
 const CONTEXTMENU_CUT = '_contextmenu_cut';
 const CONTEXTMENU_PASTE = '_contextmenu_paste';
+const CONTEXTMENU_ADD_COMMENT = '_add_comment';
 const CONTEXTMENU_UPDATE_FIELD = '_contextmenu_update_field';
 const CONTEXTMENU_EDIT_FIELD = '_contextmenu_edit_field';
 const CONTEXTMENU_HYPERLINK = '_contextmenu_hyperlink';
@@ -14255,6 +14450,14 @@ class ContextMenu$1 {
                 text: localValue.getConstant('Paste'),
                 iconCss: 'e-icons e-de-paste',
                 id: id + CONTEXTMENU_PASTE
+            },
+            {
+                separator: true
+            },
+            {
+                text: localValue.getConstant('New Comment'),
+                iconCss: 'e-icons e-de-cmt-add',
+                id: id + CONTEXTMENU_ADD_COMMENT
             },
             {
                 separator: true
@@ -14470,6 +14673,11 @@ class ContextMenu$1 {
             case id + CONTEXTMENU_PASTE:
                 if (!this.viewer.owner.isReadOnlyMode) {
                     this.viewer.owner.editorModule.pasteInternal(undefined);
+                }
+                break;
+            case id + CONTEXTMENU_ADD_COMMENT:
+                if (!this.viewer.owner.isReadOnlyMode) {
+                    this.viewer.owner.editorModule.insertComment();
                 }
                 break;
             case id + CONTEXTMENU_UPDATE_FIELD:
@@ -14732,6 +14940,7 @@ class ContextMenu$1 {
         let continueNumbering = document.getElementById(id + CONTEXTMENU_CONTINUE_NUMBERING);
         let restartAt = document.getElementById(id + CONTEXTMENU_RESTART_AT);
         let autoFitTable = document.getElementById(id + CONTEXTMENU_AUTO_FIT);
+        let addComment = document.getElementById(id + CONTEXTMENU_ADD_COMMENT);
         cut.style.display = 'none';
         paste.style.display = 'none';
         paste.nextSibling.style.display = 'none';
@@ -14757,8 +14966,18 @@ class ContextMenu$1 {
         let isSelectionEmpty = selection.isEmpty;
         classList(cut, isSelectionEmpty ? ['e-disabled'] : [], !isSelectionEmpty ? ['e-disabled'] : []);
         classList(copy, isSelectionEmpty ? ['e-disabled'] : [], !isSelectionEmpty ? ['e-disabled'] : []);
+        addComment.style.display = this.viewer.owner.isReadOnlyMode ? 'none' : 'block';
+        addComment.previousSibling.style.display = this.viewer.owner.isReadOnlyMode ? 'none' : 'block';
+        addComment.nextSibling.style.display = this.viewer.owner.isReadOnlyMode ? 'none' : 'block';
         if (owner.isReadOnlyMode) {
             return true;
+        }
+        if (this.viewer && this.viewer.owner && this.viewer.owner.commentReviewPane &&
+            this.viewer.owner.commentReviewPane.commentPane.isEditMode) {
+            classList(addComment, ['e-disabled'], []);
+        }
+        else {
+            classList(addComment, [], ['e-disabled']);
         }
         cut.style.display = 'block';
         paste.style.display = 'block';
@@ -15131,6 +15350,7 @@ class Layout {
             }
             this.layoutSection(section, 0, this.viewer);
         }
+        this.layoutComments(this.viewer.comments);
         this.updateFieldElements();
         /* tslint:disable:align */
         setTimeout(() => {
@@ -15144,6 +15364,16 @@ class Layout {
                 this.isInitialLoad = false;
             }
         }, 50);
+    }
+    /**
+     * Layouts the comments
+     * @param comments
+     * @private
+     */
+    layoutComments(comments) {
+        if (!isNullOrUndefined(comments)) {
+            this.viewer.owner.commentReviewPane.layoutComments();
+        }
     }
     /**
      * Layouts the items
@@ -16742,7 +16972,7 @@ class Layout {
      * @param document
      * @private
      */
-    getListNumber(listFormat) {
+    getListNumber(listFormat, isAutoList) {
         let list = this.viewer.getListById(listFormat.listId);
         let levelNumber = listFormat.listLevelNumber;
         let listLevel = this.getListLevel(list, listFormat.listLevelNumber);
@@ -16761,7 +16991,9 @@ class Layout {
         //         }
         //     }
         // }
-        this.updateListValues(list, levelNumber);
+        if (isNullOrUndefined(isAutoList)) {
+            this.updateListValues(list, levelNumber);
+        }
         return this.getListText(list, levelNumber, listLevel);
     }
     /**
@@ -19625,7 +19857,7 @@ class Layout {
             if (!isNullOrUndefined(this.viewer.selection)) {
                 let fieldCode = this.viewer.selection.getFieldCode(fieldBegin);
                 // tslint:disable-next-line:max-line-length
-                if (!isNullOrUndefined(fieldCode) && fieldCode.toLowerCase().match('numpages') && !isNullOrUndefined(fieldBegin.fieldSeparator)) {
+                if (!isNullOrUndefined(fieldCode) && (fieldCode.toLowerCase().match('numpages') || fieldCode.toLowerCase().match('sectionpages')) && !isNullOrUndefined(fieldBegin.fieldSeparator)) {
                     let textElement = fieldBegin.fieldSeparator.nextNode;
                     if (!isNullOrUndefined(textElement)) {
                         let prevPageNum = textElement.text;
@@ -20758,8 +20990,35 @@ class Renderer {
                 this.pageContext.fillRect(this.getScaledValue(widgetInfo[i].left, 1), this.getScaledValue(top, 2), this.getScaledValue(widgetInfo[i].width), this.getScaledValue(lineWidget.height));
             }
         }
+        let isCommentMark = false;
         for (let i = 0; i < lineWidget.children.length; i++) {
             let elementBox = lineWidget.children[i];
+            if (elementBox instanceof CommentCharacterElementBox &&
+                elementBox.commentType === 0 && this.viewer.owner.selectionModule) {
+                if (!isCommentMark) {
+                    isCommentMark = true;
+                    elementBox.renderCommentMark();
+                    let pageGap = 0;
+                    if (this.viewer instanceof PageLayoutViewer) {
+                        pageGap = this.viewer.pageGap;
+                    }
+                    let style = 'display:block;position:absolute;';
+                    elementBox.commentMark.style.display = 'block';
+                    elementBox.commentMark.style.position = 'absolute';
+                    let rightMargin = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.rightMargin);
+                    let pageWidth = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.pageWidth);
+                    // tslint:disable-next-line:max-line-length
+                    let leftPosition = page.boundingRectangle.x + this.getScaledValue((pageWidth - rightMargin) + (rightMargin / 4)) + 'px;';
+                    let topPosition = this.getScaledValue(top + (page.boundingRectangle.y - (pageGap * (page.index + 1)))) + (pageGap * (page.index + 1)) + 'px;';
+                    style = style + 'left:' + leftPosition + 'top:' + topPosition;
+                    elementBox.commentMark.setAttribute('style', style);
+                }
+                else {
+                    if (elementBox.commentMark) {
+                        elementBox.commentMark.setAttribute('style', 'display:none');
+                    }
+                }
+            }
             if (elementBox instanceof FieldElementBox || this.isFieldCode ||
                 (elementBox.width === 0 && elementBox.height === 0)) {
                 if (this.isFieldCode) {
@@ -22673,6 +22932,14 @@ class LayoutViewer {
         /**
          * @private
          */
+        this.comments = [];
+        /**
+         * @private
+         */
+        this.commentUserOptionId = 1;
+        /**
+         * @private
+         */
         this.abstractLists = [];
         /**
          * @private
@@ -22987,7 +23254,8 @@ class LayoutViewer {
          * @private
          */
         this.onMouseDownInternal = (event) => {
-            if (this.isTouchInput || event.offsetX > (this.visibleBounds.width - (this.visibleBounds.width - this.viewerContainer.clientWidth))
+            if ((event.target && event.target.classList.contains('e-de-cmt-mark-icon')) || this.isTouchInput ||
+                event.offsetX > (this.visibleBounds.width - (this.visibleBounds.width - this.viewerContainer.clientWidth))
                 || event.offsetY > (this.visibleBounds.height - (this.visibleBounds.height - this.viewerContainer.clientHeight))) {
                 return;
             }
@@ -23177,6 +23445,10 @@ class LayoutViewer {
                         }
                     }
                     this.selection.checkForCursorVisibility();
+                    if (!isNullOrUndefined(this.currentSelectedComment) && this.owner.commentReviewPane
+                        && !this.owner.commentReviewPane.commentPane.isEditMode) {
+                        this.currentSelectedComment = undefined;
+                    }
                 }
                 if (!isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selection.start)
                     && (this.owner.selection.isEmpty || this.owner.selection.isImageSelected) &&
@@ -23462,7 +23734,7 @@ class LayoutViewer {
          * @private
          */
         this.onKeyUpInternal = (event) => {
-            if (Browser.isDevice && event.target.id === this.editableDiv.id) {
+            if (Browser.isDevice && event.target === this.editableDiv) {
                 if (window.getSelection().anchorOffset !== this.prefix.length) {
                     this.selection.setEditableDivCaretPosition(this.editableDiv.innerText.length);
                 }
@@ -23657,6 +23929,21 @@ class LayoutViewer {
         this.pageFitTypeIn = value;
         this.onPageFitTypeChanged(this.pageFitTypeIn);
     }
+    /**
+     * @private
+     */
+    get currentSelectedComment() {
+        return this.currentSelectedCommentInternal;
+    }
+    /**
+     * @private
+     */
+    set currentSelectedComment(value) {
+        if (this.owner && this.owner.commentReviewPane) {
+            this.owner.commentReviewPane.previousSelectedComment = this.currentSelectedCommentInternal;
+        }
+        this.currentSelectedCommentInternal = value;
+    }
     initalizeStyles() {
         /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Normal', '{"type":"Paragraph","name":"Normal","next":"Normal"}');
@@ -23714,12 +24001,21 @@ class LayoutViewer {
         this.editRanges.clear();
         this.headersFooters = [];
         this.fields = [];
+        this.currentSelectedComment = undefined;
+        for (let i = 0; i < this.comments.length; i++) {
+            let commentStart = this.comments[i].commentStart;
+            commentStart.destroy();
+        }
+        this.comments = [];
         this.bookmarks.clear();
         this.styles.clear();
         this.characterFormat.clearFormat();
         this.paragraphFormat.clearFormat();
         this.setDefaultCharacterValue(this.characterFormat);
         this.setDefaultParagraphValue(this.paragraphFormat);
+        if (this.owner.commentReviewPane) {
+            this.owner.commentReviewPane.clear();
+        }
         this.defaultTabWidth = 36;
         this.isDocumentProtected = false;
         this.protectionType = 'NoProtection';
@@ -23817,6 +24113,29 @@ class LayoutViewer {
         return bookmarks;
     }
     /**
+     * @private
+     */
+    selectComment(comment) {
+        if (this.owner.selection && this.owner.commentReviewPane) {
+            this.owner.showComments = true;
+            setTimeout(() => {
+                if (this.owner && this.owner.selection) {
+                    this.owner.selection.selectComment(comment);
+                }
+            });
+        }
+    }
+    /**
+     * @private
+     */
+    showComments(show) {
+        if (this.owner && show) {
+            let eventArgs = { type: 'Comment' };
+            this.owner.trigger('beforePaneSwitch', eventArgs);
+        }
+        this.owner.commentReviewPane.showHidePane(show);
+    }
+    /**
      * Initializes components.
      * @private
      */
@@ -23861,6 +24180,7 @@ class LayoutViewer {
         this.initTouchEllipse();
         this.wireEvent();
         this.restrictEditingPane = new RestrictEditing(this);
+        this.owner.commentReviewPane = new CommentReviewPane(this.owner);
         createSpinner({ target: this.owner.element, cssClass: 'e-spin-overlay' });
     }
     /**
@@ -24029,6 +24349,13 @@ class LayoutViewer {
     clearContent() {
         this.containerContext.clearRect(0, 0, this.containerCanvas.width, this.containerCanvas.height);
         this.selectionContext.clearRect(0, 0, this.selectionCanvas.width, this.selectionCanvas.height);
+        // Hide comment mark
+        if (this.pageContainer) {
+            let commentMarkElement = this.pageContainer.getElementsByClassName('e-de-cmt-mark');
+            for (let i = 0; i < commentMarkElement.length; i++) {
+                commentMarkElement[i].style.display = 'none';
+            }
+        }
     }
     /**
      * Fired when the document gets changed.
@@ -24199,6 +24526,10 @@ class LayoutViewer {
                 this.selection.updateCaretPosition();
             }
             this.selection.checkForCursorVisibility();
+            if (!isNullOrUndefined(this.currentSelectedComment) && this.owner.commentReviewPane
+                && !this.owner.commentReviewPane.commentPane.isEditMode) {
+                this.currentSelectedComment = undefined;
+            }
         }
     }
     /**
@@ -24328,9 +24659,12 @@ class LayoutViewer {
                 this.restrictEditingPane.restrictPane.getBoundingClientRect() : undefined;
             let optionsRect = this.owner.optionsPaneModule && this.owner.optionsPaneModule.isOptionsPaneShow ?
                 this.owner.optionsPaneModule.optionsPane.getBoundingClientRect() : undefined;
-            if (restrictPaneRect || optionsRect) {
+            let commentPane = this.owner.commentReviewPane && this.owner.commentReviewPane.reviewPane ?
+                this.owner.commentReviewPane.reviewPane.getBoundingClientRect() : undefined;
+            if (restrictPaneRect || optionsRect || commentPane) {
                 let paneWidth = restrictPaneRect ? restrictPaneRect.width : 0;
                 paneWidth += optionsRect ? optionsRect.width : 0;
+                paneWidth += commentPane ? commentPane.width : 0;
                 width = (rect.width - paneWidth) > 0 ? (rect.width - paneWidth) : 200;
             }
             else {
@@ -24885,6 +25219,18 @@ class LayoutViewer {
                     return this.getFieldText(fieldPattern, page.currentPageNum);
                 case 'numpages':
                     return this.getFieldText(fieldPattern, page.viewer.pages.length);
+                case 'sectionpages':
+                    let currentSectionIndex = page.sectionIndex;
+                    let currentPageCount = 0;
+                    for (let i = 0; i < page.viewer.pages.length; i++) {
+                        if (page.viewer.pages[i].sectionIndex === currentSectionIndex) {
+                            currentPageCount++;
+                        }
+                        else if (currentPageCount !== 0) {
+                            break;
+                        }
+                    }
+                    return this.getFieldText(fieldPattern, currentPageCount);
                 default:
                     break;
             }
@@ -24990,8 +25336,6 @@ class LayoutViewer {
         this.viewerContainer.removeEventListener('scroll', this.scrollHandler);
         this.viewerContainer.removeEventListener('mousedown', this.onMouseDownInternal);
         this.viewerContainer.removeEventListener('mousemove', this.onMouseMoveInternal);
-        this.viewerContainer.removeEventListener('mouseleave', this.onMouseLeaveInternal);
-        this.viewerContainer.removeEventListener('mouseenter', this.onMouseEnterInternal);
         if (!Browser.isDevice) {
             this.editableDiv.removeEventListener('keypress', this.onKeyPressInternal);
             if (Browser.info.name === 'chrome') {
@@ -25611,6 +25955,9 @@ class SfdtReader {
     constructor(viewer) {
         /* tslint:disable:no-any */
         this.viewer = undefined;
+        this.commentStarts = undefined;
+        this.commentEnds = undefined;
+        this.commentsCollection = undefined;
         this.isPageBreakInsideTable = false;
         this.viewer = viewer;
         this.editableRanges = new Dictionary();
@@ -25623,6 +25970,9 @@ class SfdtReader {
      * @param json
      */
     convertJsonToDocument(json) {
+        this.commentStarts = new Dictionary();
+        this.commentEnds = new Dictionary();
+        this.commentsCollection = new Dictionary();
         let sections = [];
         let jsonObject = json;
         jsonObject = (jsonObject instanceof Object) ? jsonObject : JSON.parse(jsonObject);
@@ -25647,6 +25997,9 @@ class SfdtReader {
         }
         if (!isNullOrUndefined(jsonObject.styles)) {
             this.parseStyles(jsonObject, this.viewer.styles);
+        }
+        if (!isNullOrUndefined(jsonObject.comments)) {
+            this.parseComments(jsonObject, this.viewer.comments);
         }
         if (!isNullOrUndefined(jsonObject.sections)) {
             this.parseSections(jsonObject.sections, sections);
@@ -25676,6 +26029,47 @@ class SfdtReader {
                 this.parseStyle(data, data.styles[i], styles);
             }
         }
+    }
+    parseComments(data, comments) {
+        let count = 0;
+        for (let i = 0; i < data.comments.length; i++) {
+            let commentData = data.comments[i];
+            let commentElement = undefined;
+            commentElement = this.parseComment(commentData, commentElement);
+            while (count < commentData.replyComments.length) {
+                let replyComment = undefined;
+                replyComment = this.parseComment(commentData.replyComments[count], replyComment);
+                replyComment.ownerComment = commentElement;
+                replyComment.isReply = true;
+                commentElement.replyComments.push(replyComment);
+                this.commentsCollection.add(replyComment.commentId, replyComment);
+                count++;
+            }
+            this.commentsCollection.add(commentElement.commentId, commentElement);
+            comments.push(commentElement);
+            count = 0;
+        }
+    }
+    parseComment(commentData, commentElement) {
+        commentElement = new CommentElementBox(commentData.date);
+        commentElement.author = commentData.author;
+        commentElement.initial = commentData.initial;
+        commentElement.commentId = commentData.commentId;
+        commentElement.isResolved = commentData.done;
+        commentElement.text = this.parseCommentText(commentData.blocks);
+        return commentElement;
+    }
+    parseCommentText(blocks) {
+        let text = '';
+        for (let i = 0; i < blocks.length; i++) {
+            if (i !== 0) {
+                text += '\n';
+            }
+            for (let j = 0; j < blocks[i].inlines.length; j++) {
+                text = text + blocks[i].inlines[j].text;
+            }
+        }
+        return text;
     }
     parseStyle(data, style, styles) {
         let wStyle;
@@ -26194,6 +26588,47 @@ class SfdtReader {
                     }
                 }
                 hasValidElmts = true;
+            }
+            else if (inline.hasOwnProperty('commentId')) {
+                let commentID = inline.commentId;
+                let commentStart = undefined;
+                if (this.commentStarts.containsKey(commentID)) {
+                    commentStart = this.commentStarts.get(commentID);
+                }
+                let commentEnd = undefined;
+                if (this.commentEnds.containsKey(commentID)) {
+                    commentEnd = this.commentEnds.get(commentID);
+                }
+                if (inline.hasOwnProperty('commentCharacterType')) {
+                    if (inline.commentCharacterType === 0) {
+                        let commentStartElement = new CommentCharacterElementBox(0);
+                        commentStartElement.commentId = commentID;
+                        if (!this.commentStarts.containsKey(commentID)) {
+                            this.commentStarts.add(commentID, commentStartElement);
+                        }
+                        commentStartElement.line = lineWidget;
+                        lineWidget.children.push(commentStartElement);
+                        let comment = this.commentsCollection.get(commentID);
+                        if (!isNullOrUndefined(comment)) {
+                            comment.commentStart = commentStartElement;
+                            commentStartElement.comment = comment;
+                        }
+                    }
+                    else {
+                        let commentEndElement = new CommentCharacterElementBox(1);
+                        commentEndElement.commentId = commentID;
+                        if (!this.commentEnds.containsKey(commentID)) {
+                            this.commentEnds.add(commentID, commentEndElement);
+                        }
+                        commentEndElement.line = lineWidget;
+                        lineWidget.children.push(commentEndElement);
+                        let comment = this.commentsCollection.get(commentID);
+                        if (!isNullOrUndefined(comment)) {
+                            comment.commentEnd = commentEndElement;
+                            commentEndElement.comment = comment;
+                        }
+                    }
+                }
             }
         }
         paragraph.childWidgets.push(lineWidget);
@@ -29350,16 +29785,16 @@ class HtmlExport {
             //if (cell.cellFormat.shading.backgroundColor !== Color.FromArgb(0, 0, 0, 0)) {
             tagAttributes.push('bgcolor="' + cell.cellFormat.shading.backgroundColor + '"');
             // }
-            if (cell.cellFormat.columnSpan > 1) {
+            if (!isNullOrUndefined(cell.cellFormat.columnSpan) && cell.cellFormat.columnSpan > 1) {
                 tagAttributes.push('colspan="' + cell.cellFormat.columnSpan.toString() + '"');
             }
-            if (cell.cellFormat.rowSpan > 1) {
+            if (!isNullOrUndefined(cell.cellFormat.rowSpan) && cell.cellFormat.rowSpan > 1) {
                 tagAttributes.push('rowspan="' + cell.cellFormat.rowSpan.toString() + '"');
             }
-            if (cell.cellFormat.cellWidth !== 0) {
+            if (!isNullOrUndefined(cell.cellFormat.cellWidth) && cell.cellFormat.cellWidth !== 0) {
                 tagAttributes.push('width="' + cell.cellFormat.cellWidth.toString() + '"');
             }
-            if (cell.cellFormat.verticalAlignment !== 'Top') {
+            if (!isNullOrUndefined(cell.cellFormat.verticalAlignment) && cell.cellFormat.verticalAlignment !== 'Top') {
                 tagAttributes.push('valign="' + cell.cellFormat.verticalAlignment.toString().toLowerCase() + '"');
             }
             if (!isNullOrUndefined(cell.cellFormat.leftMargin) && cell.cellFormat.leftMargin !== 0) {
@@ -29440,30 +29875,54 @@ class HtmlExport {
      */
     serializeTableBorderStyle(borders) {
         let borderStyle = '';
-        borderStyle += ('border-left-style:' + this.convertBorderLineStyle(borders.left.lineStyle));
-        borderStyle += ';';
-        borderStyle += ('border-left-width:' + borders.left.lineWidth.toString() + 'pt');
-        borderStyle += ';';
-        borderStyle += ('border-left-color:' + borders.left.color);
-        borderStyle += ';';
-        borderStyle += ('border-right-style:' + this.convertBorderLineStyle(borders.right.lineStyle));
-        borderStyle += ';';
-        borderStyle += ('border-right-width:' + borders.right.lineWidth.toString() + 'pt');
-        borderStyle += ';';
-        borderStyle += ('border-right-color:' + borders.right.color);
-        borderStyle += ';';
-        borderStyle += ('border-top-style:' + this.convertBorderLineStyle(borders.top.lineStyle));
-        borderStyle += ';';
-        borderStyle += ('border-top-width:' + borders.top.lineWidth.toString() + 'pt');
-        borderStyle += ';';
-        borderStyle += ('border-top-color:' + borders.top.color);
-        borderStyle += ';';
-        borderStyle += ('border-Bottom-style:' + this.convertBorderLineStyle(borders.bottom.lineStyle));
-        borderStyle += ';';
-        borderStyle += ('border-Bottom-width:' + borders.bottom.lineWidth.toString() + 'pt');
-        borderStyle += ';';
-        borderStyle += ('border-Bottom-color:' + borders.bottom.color);
-        borderStyle += ';';
+        if (!isNullOrUndefined(borders.left.lineStyle)) {
+            borderStyle += ('border-left-style:' + this.convertBorderLineStyle(borders.left.lineStyle));
+            borderStyle += ';';
+        }
+        if (borders.left.lineWidth) {
+            borderStyle += ('border-left-width:' + borders.left.lineWidth.toString() + 'pt');
+            borderStyle += ';';
+        }
+        if (borders.left.color) {
+            borderStyle += ('border-left-color:' + borders.left.color);
+            borderStyle += ';';
+        }
+        if (!isNullOrUndefined(borders.right.lineStyle)) {
+            borderStyle += ('border-right-style:' + this.convertBorderLineStyle(borders.right.lineStyle));
+            borderStyle += ';';
+        }
+        if (!isNullOrUndefined(borders.right.lineWidth)) {
+            borderStyle += ('border-right-width:' + borders.right.lineWidth.toString() + 'pt');
+            borderStyle += ';';
+        }
+        if (!isNullOrUndefined(borders.right.color)) {
+            borderStyle += ('border-right-color:' + borders.right.color);
+            borderStyle += ';';
+        }
+        if (!isNullOrUndefined(borders.top.lineStyle)) {
+            borderStyle += ('border-top-style:' + this.convertBorderLineStyle(borders.top.lineStyle));
+            borderStyle += ';';
+        }
+        if (!isNullOrUndefined(borders.top.lineWidth)) {
+            borderStyle += ('border-top-width:' + borders.top.lineWidth.toString() + 'pt');
+            borderStyle += ';';
+        }
+        if (!isNullOrUndefined(borders.top.color)) {
+            borderStyle += ('border-top-color:' + borders.top.color);
+            borderStyle += ';';
+        }
+        if (!isNullOrUndefined(borders.bottom.lineStyle)) {
+            borderStyle += ('border-bottom-style:' + this.convertBorderLineStyle(borders.bottom.lineStyle));
+            borderStyle += ';';
+        }
+        if (!isNullOrUndefined(borders.bottom.lineWidth)) {
+            borderStyle += ('border-bottom-width:' + borders.bottom.lineWidth.toString() + 'pt');
+            borderStyle += ';';
+        }
+        if (!isNullOrUndefined(borders.bottom.color)) {
+            borderStyle += ('border-bottom-color:' + borders.bottom.color);
+            borderStyle += ';';
+        }
         return borderStyle;
     }
     /**
@@ -29750,12 +30209,14 @@ class HtmlExport {
         tagAttributes.push('border="' + '1"');
         if (!isNullOrUndefined(table.tableFormat)) {
             //if (table.tableFormat.shading.backgroundColor !== Color.FromArgb(0, 0, 0, 0)) {
-            tagAttributes.push('bgcolor="' + table.tableFormat.shading.backgroundColor + '"');
+            if (!isNullOrUndefined(table.tableFormat.shading) && !isNullOrUndefined(table.tableFormat.shading.backgroundColor)) {
+                tagAttributes.push('bgcolor="' + table.tableFormat.shading.backgroundColor + '"');
+            }
             //}
-            if (table.tableFormat.leftIndent !== 0) {
+            if (!isNullOrUndefined(table.tableFormat.leftIndent) && table.tableFormat.leftIndent !== 0) {
                 tagAttributes.push('left-indent="' + table.tableFormat.leftIndent.toString() + 'pt;');
             }
-            if (table.tableFormat.cellSpacing > 0) {
+            if (!isNullOrUndefined(table.tableFormat.cellSpacing) && table.tableFormat.cellSpacing > 0) {
                 tagAttributes.push('cellspacing="' + (((table.tableFormat.cellSpacing * 72) / 96) * 2).toString() + '"');
             }
             else {
@@ -29788,7 +30249,7 @@ class HtmlExport {
         if (row.rowFormat.isHeader) {
             blockStyle += (this.createTag('thead'));
         }
-        if (row.rowFormat.height > 0) {
+        if (!isNullOrUndefined(row.rowFormat.height) && row.rowFormat.height > 0) {
             tagAttributes.push('height="' + row.rowFormat.height + '"');
         }
         return blockStyle + this.createAttributesTag('tr', tagAttributes);
@@ -35217,8 +35678,9 @@ class Selection {
             if (inline.length === 0) {
                 continue;
             }
+            // tslint:disable-next-line:max-line-length
             if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof BookmarkElementBox
-                || inline instanceof EditRangeStartElementBox || inline instanceof EditRangeEndElementBox
+                || inline instanceof EditRangeStartElementBox || inline instanceof EditRangeEndElementBox || inline instanceof CommentCharacterElementBox
                 || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter(inline))) {
                 return startOffset;
             }
@@ -37538,7 +38000,7 @@ class Selection {
         let element = undefined;
         for (let i = 0; i < widget.children.length; i++) {
             element = widget.children[i];
-            if (element instanceof ListTextElementBox) {
+            if (element instanceof ListTextElementBox || element instanceof CommentCharacterElementBox) {
                 if (widget.paragraph.paragraphFormat.bidi) {
                     left += element.margin.left;
                     element = undefined;
@@ -40126,6 +40588,52 @@ class Selection {
         return elements;
     }
     /**
+     * Navigate to previous comment in the document.
+     */
+    navigatePreviousComment() {
+        this.commentNavigateInternal(false);
+    }
+    /**
+     * Navigate to next comment in the document.
+     */
+    navigateNextComment() {
+        this.commentNavigateInternal(true);
+    }
+    commentNavigateInternal(next) {
+        if (!this.viewer.currentSelectedComment) {
+            if (this.viewer.comments.length === 0) {
+                return;
+            }
+            this.viewer.currentSelectedComment = this.viewer.comments[0];
+        }
+        if (this.viewer.currentSelectedComment) {
+            let comments = this.viewer.comments;
+            let comment = this.viewer.currentSelectedComment;
+            let index = comments.indexOf(comment);
+            if (next) {
+                comment = (index === (comments.length - 1)) ? comments[0] : comments[index + 1];
+            }
+            else {
+                comment = index === 0 ? comments[comments.length - 1] : comments[index - 1];
+            }
+            this.viewer.currentSelectedComment = comment;
+            this.selectComment(comment);
+        }
+    }
+    /**
+     * @private
+     */
+    selectComment(comment) {
+        if (!isNullOrUndefined(comment)) {
+            let startPosition = this.getElementPosition(comment.commentStart).startPosition;
+            let endPosition = this.getElementPosition(comment.commentEnd).startPosition;
+            this.selectPosition(startPosition, endPosition);
+            if (this.owner.commentReviewPane) {
+                this.owner.commentReviewPane.selectComment(comment);
+            }
+        }
+    }
+    /**
      * @private
      */
     updateEditRangeCollection() {
@@ -40340,6 +40848,9 @@ class Selection {
         endPosition.setPositionParagraph(endElement.line, offset);
         return { 'startPosition': startPosition, 'endPosition': endPosition };
     }
+    /**
+     * @private
+     */
     getElementPosition(element) {
         let offset = element.line.getOffset(element, 1);
         let startPosition = new TextPosition(this.viewer.owner);
@@ -43954,6 +44465,322 @@ class Editor {
         this.selection.isHighlightEditRegion = true;
         this.addProtection(credential);
     }
+    getCommentHierarchicalIndex(comment) {
+        let index = '';
+        while (comment.ownerComment) {
+            index = comment.ownerComment.replyComments.indexOf(comment) + ';' + index;
+            comment = comment.ownerComment;
+        }
+        index = 'C;' + this.viewer.comments.indexOf(comment) + ';' + index;
+        return index;
+    }
+    /**
+     * Insert comment
+     * @param text - comment text.
+     */
+    // Comment implementation starts
+    insertComment(text) {
+        if (isNullOrUndefined(this.selection.start) || this.owner.isReadOnlyMode) {
+            return;
+        }
+        if (isNullOrUndefined(text)) {
+            text = '';
+        }
+        this.insertCommentInternal(text);
+    }
+    insertCommentInternal(text) {
+        if (this.selection.isEmpty) {
+            this.selection.selectCurrentWord();
+        }
+        let paragraphInfo = this.selection.getParagraphInfo(this.selection.start);
+        let startIndex = this.selection.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
+        let endParagraphInfo = this.selection.getParagraphInfo(this.selection.start);
+        let endIndex = this.selection.getHierarchicalIndex(endParagraphInfo.paragraph, endParagraphInfo.offset.toString());
+        this.initComplexHistory('InsertComment');
+        let startPosition = this.selection.start;
+        let endPosition = this.selection.end;
+        let position = new TextPosition(this.owner);
+        if (!this.selection.isForward) {
+            startPosition = this.selection.end;
+            endPosition = this.selection.start;
+        }
+        // Clones the end position.
+        position.setPositionInternal(endPosition);
+        let commentRangeStart = new CommentCharacterElementBox(0);
+        let commentRangeEnd = new CommentCharacterElementBox(1);
+        let isAtSameParagraph = startPosition.isInSameParagraph(endPosition);
+        // Adds comment start at selection start position.
+        endPosition.setPositionInternal(startPosition);
+        this.initInsertInline(commentRangeStart);
+        // Updates the cloned position, since comment start is added in the same paragraph.
+        if (isAtSameParagraph) {
+            position.setPositionParagraph(position.currentWidget, position.offset + commentRangeStart.length);
+        }
+        // Adds comment end and comment at selection end position.
+        startPosition.setPositionInternal(position);
+        endPosition.setPositionInternal(position);
+        this.initInsertInline(commentRangeEnd);
+        let commentAdv = new CommentElementBox(new Date().toISOString());
+        if (this.owner.editorHistory) {
+            this.initHistory('InsertCommentWidget');
+            this.owner.editorHistory.currentBaseHistoryInfo.removedNodes.push(commentAdv);
+        }
+        commentAdv.author = this.owner.currentUser ? this.owner.currentUser : 'Guest user';
+        commentAdv.text = text;
+        commentAdv.commentId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        commentRangeStart.comment = commentAdv;
+        commentRangeStart.commentId = commentAdv.commentId;
+        commentRangeEnd.comment = commentAdv;
+        commentRangeEnd.commentId = commentAdv.commentId;
+        commentAdv.commentStart = commentRangeStart;
+        commentAdv.commentEnd = commentRangeEnd;
+        this.addCommentWidget(commentAdv, true);
+        if (this.editorHistory) {
+            this.editorHistory.currentBaseHistoryInfo.insertPosition = this.getCommentHierarchicalIndex(commentAdv);
+            this.editorHistory.updateHistory();
+        }
+        //tslint:disable-next-line:max-line-length
+        // this.selection.selectPosition(this.selection.getTextPosBasedOnLogicalIndex(startIndex), this.selection.getTextPosBasedOnLogicalIndex(endIndex));
+        if (this.editorHistory) {
+            this.editorHistory.updateComplexHistory();
+        }
+        this.reLayout(this.selection, false);
+    }
+    /**
+     * Delete all the comments in current document
+     */
+    deleteAllComments() {
+        if (this.viewer.comments.length === 0) {
+            return;
+        }
+        // this.viewer.clearSearchHighlight();
+        this.initComplexHistory('DeleteAllComments');
+        this.owner.isLayoutEnabled = false;
+        let historyInfo;
+        if (this.editorHistory && this.editorHistory.currentHistoryInfo) {
+            historyInfo = this.editorHistory.currentHistoryInfo;
+        }
+        while (this.viewer.comments.length > 0) {
+            let comment = this.viewer.comments[0];
+            this.initComplexHistory('DeleteComment');
+            this.deleteCommentInternal(comment);
+            if (this.editorHistory && this.editorHistory.currentHistoryInfo) {
+                historyInfo.addModifiedAction(this.editorHistory.currentHistoryInfo);
+            }
+        }
+        this.selection.selectContent(this.owner.documentStart, true);
+        if (this.editorHistory) {
+            this.editorHistory.currentHistoryInfo = historyInfo;
+            this.editorHistory.updateComplexHistory();
+        }
+    }
+    /**
+     * Delete current selected comment.
+     */
+    deleteComment() {
+        if (this.owner.isReadOnlyMode || isNullOrUndefined(this.owner) || isNullOrUndefined(this.owner.viewer)
+            || isNullOrUndefined(this.owner.viewer.currentSelectedComment)) {
+            return;
+        }
+        this.deleteCommentInternal(this.owner.viewer.currentSelectedComment);
+    }
+    /**
+     * @private
+     */
+    deleteCommentInternal(comment) {
+        this.initComplexHistory('DeleteComment');
+        if (comment) {
+            let commentStart = comment.commentStart;
+            let commentEnd = comment.commentEnd;
+            this.removeInline(commentEnd);
+            this.removeInline(commentStart);
+            commentStart.removeCommentMark();
+            if (comment.replyComments.length > 0) {
+                for (let i = comment.replyComments.length - 1; i >= 0; i--) {
+                    this.deleteCommentInternal(comment.replyComments[i]);
+                }
+            }
+            if (this.owner.editorHistory) {
+                this.initHistory('DeleteCommentWidget');
+                this.owner.editorHistory.currentBaseHistoryInfo.insertPosition = this.getCommentHierarchicalIndex(comment);
+                this.owner.editorHistory.currentBaseHistoryInfo.removedNodes.push(comment);
+            }
+            this.deleteCommentWidget(comment);
+            if (this.editorHistory) {
+                this.editorHistory.updateHistory();
+            }
+        }
+        if (this.editorHistory) {
+            this.editorHistory.updateComplexHistory();
+        }
+    }
+    /**
+     * @private
+     */
+    deleteCommentWidget(comment) {
+        let commentIndex = this.viewer.comments.indexOf(comment);
+        if (commentIndex !== -1) {
+            this.viewer.comments.splice(commentIndex, 1);
+        }
+        else if (comment.isReply && comment.ownerComment) {
+            commentIndex = comment.ownerComment.replyComments.indexOf(comment);
+            comment.ownerComment.replyComments.splice(commentIndex, 1);
+        }
+        if (this.owner.commentReviewPane) {
+            this.owner.commentReviewPane.deleteComment(comment);
+            if (this.viewer.currentSelectedComment === comment) {
+                this.viewer.currentSelectedComment = undefined;
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    resolveComment(comment) {
+        this.resolveOrReopenComment(comment, true);
+        if (this.owner.commentReviewPane) {
+            this.owner.commentReviewPane.resolveComment(comment);
+        }
+    }
+    /**
+     * @private
+     */
+    reopenComment(comment) {
+        this.resolveOrReopenComment(comment, false);
+        if (this.owner.commentReviewPane) {
+            this.owner.commentReviewPane.reopenComment(comment);
+        }
+    }
+    resolveOrReopenComment(comment, resolve) {
+        comment.isResolved = resolve;
+        for (let i = 0; i < comment.replyComments.length; i++) {
+            comment.replyComments[i].isResolved = resolve;
+        }
+    }
+    /**
+     * @private
+     */
+    replyComment(parentComment, text) {
+        let commentWidget = parentComment;
+        if (parentComment) {
+            this.initComplexHistory('InsertComment');
+            let currentCmtStart = commentWidget.commentStart;
+            let currentCmtEnd = commentWidget.commentEnd;
+            let offset = currentCmtStart.line.getOffset(currentCmtStart, 1);
+            let startPosition = new TextPosition(this.viewer.owner);
+            startPosition.setPositionParagraph(currentCmtStart.line, offset);
+            let endOffset = currentCmtEnd.line.getOffset(currentCmtEnd, 1);
+            let endPosition = new TextPosition(this.viewer.owner);
+            endPosition.setPositionParagraph(currentCmtEnd.line, endOffset);
+            this.selection.start.setPositionInternal(startPosition);
+            this.selection.end.setPositionInternal(endPosition);
+            startPosition = this.selection.start;
+            endPosition = this.selection.end;
+            let position = new TextPosition(this.owner);
+            // Clones the end position.
+            position.setPositionInternal(endPosition);
+            let commentRangeStart = new CommentCharacterElementBox(0);
+            let commentRangeEnd = new CommentCharacterElementBox(1);
+            let isAtSameParagraph = startPosition.isInSameParagraph(endPosition);
+            // Adds comment start at selection start position.
+            endPosition.setPositionInternal(startPosition);
+            this.initInsertInline(commentRangeStart);
+            // Updates the cloned position, since comment start is added in the same paragraph.
+            if (isAtSameParagraph) {
+                position.setPositionParagraph(position.currentWidget, position.offset + commentRangeStart.length);
+            }
+            // Adds comment end and comment at selection end position.
+            startPosition.setPositionInternal(position);
+            endPosition.setPositionInternal(position);
+            this.initInsertInline(commentRangeEnd);
+            let replyComment = new CommentElementBox(new Date().toISOString());
+            replyComment.author = this.owner.currentUser ? this.owner.currentUser : 'Guest user';
+            replyComment.text = text ? text : '';
+            //tslint:disable-next-line:max-line-length
+            replyComment.commentId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+            replyComment.isReply = true;
+            commentWidget.replyComments.push(replyComment);
+            replyComment.ownerComment = commentWidget;
+            if (this.owner.editorHistory) {
+                this.initHistory('InsertCommentWidget');
+                this.owner.editorHistory.currentBaseHistoryInfo.removedNodes.push(replyComment);
+            }
+            commentRangeStart.comment = replyComment;
+            commentRangeStart.commentId = replyComment.commentId;
+            commentRangeEnd.comment = replyComment;
+            commentRangeEnd.commentId = replyComment.commentId;
+            replyComment.commentStart = commentRangeStart;
+            replyComment.commentEnd = commentRangeEnd;
+            if (this.owner.commentReviewPane) {
+                this.owner.commentReviewPane.addReply(replyComment, false);
+            }
+            if (this.editorHistory) {
+                this.editorHistory.currentBaseHistoryInfo.insertPosition = this.getCommentHierarchicalIndex(replyComment);
+                this.editorHistory.updateHistory();
+            }
+            if (this.editorHistory) {
+                this.editorHistory.updateComplexHistory();
+            }
+            this.reLayout(this.selection);
+        }
+    }
+    removeInline(element) {
+        this.selection.start.setPositionParagraph(element.line, element.line.getOffset(element, 0));
+        this.selection.end.setPositionParagraph(this.selection.start.currentWidget, this.selection.start.offset + element.length);
+        this.initHistory('RemoveInline');
+        if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
+            this.updateHistoryPosition(this.selection.start, true);
+        }
+        this.removeSelectedContents(this.viewer.selection);
+        if (this.editorHistory) {
+            this.editorHistory.updateHistory();
+        }
+        this.fireContentChange();
+    }
+    /**
+     * @private
+     */
+    addCommentWidget(commentWidget, isNewComment) {
+        if (this.viewer.comments.indexOf(commentWidget) === -1) {
+            let isInserted = false;
+            if (this.viewer.comments.length > 0) {
+                // tslint:disable-next-line:max-line-length
+                let currentStart = this.selection.getElementPosition(commentWidget.commentStart).startPosition;
+                for (let i = 0; i < this.viewer.comments.length; i++) {
+                    let paraIndex = this.selection.getElementPosition(this.viewer.comments[i].commentStart).startPosition;
+                    if (currentStart.isExistBefore(paraIndex)) {
+                        isInserted = true;
+                        this.viewer.comments.splice(i, 0, commentWidget);
+                        break;
+                    }
+                }
+            }
+            if (!isInserted) {
+                this.viewer.comments.push(commentWidget);
+            }
+            if (this.owner.commentReviewPane) {
+                this.owner.showComments = true;
+                this.owner.commentReviewPane.addComment(commentWidget, isNewComment);
+                this.owner.selection.selectComment(commentWidget);
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    addReplyComment(comment, hierarchicalIndex) {
+        let index = hierarchicalIndex.split(';');
+        let ownerComment = this.viewer.comments[parseInt(index[1], 10)];
+        if (index[2] !== '') {
+            ownerComment.replyComments.splice(parseInt(index[2], 10), 0, comment);
+            comment.ownerComment = ownerComment;
+        }
+        if (this.owner.commentReviewPane) {
+            this.owner.showComments = true;
+            this.owner.commentReviewPane.addReply(comment, false);
+            this.owner.selection.selectComment(comment);
+        }
+    }
     /**
      * @private
      */
@@ -44936,6 +45763,7 @@ class Editor {
         }
         text = HelperMethods.trimStart(text);
         let numberFormat = text.substring(1, 2);
+        let previousList = undefined;
         let listLevelPattern = this.getListLevelPattern(text.substring(0, 1));
         if (listLevelPattern !== 'None' && this.checkNumberFormat(numberFormat, listLevelPattern === 'Bullet', text)) {
             convertList = true;
@@ -44943,6 +45771,12 @@ class Editor {
         else if (this.checkLeadingZero(text)) {
             isLeadingZero = true;
             convertList = true;
+        }
+        else {
+            previousList = this.checkNextLevelAutoList(text);
+            if (!isNullOrUndefined(previousList)) {
+                convertList = true;
+            }
         }
         if (convertList) {
             this.initComplexHistory('AutoList');
@@ -44992,7 +45826,12 @@ class Editor {
             else {
                 listLevel.startAt = 1;
             }
-            this.autoConvertList(selection, listLevel);
+            if (!isNullOrUndefined(previousList)) {
+                selection.paragraphFormat.setList(previousList);
+            }
+            else {
+                this.autoConvertList(selection, listLevel);
+            }
             if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentHistoryInfo)) {
                 this.editorHistory.updateComplexHistory();
             }
@@ -45001,6 +45840,72 @@ class Editor {
             }
         }
         return convertList;
+    }
+    checkNextLevelAutoList(text) {
+        let selection = this.viewer.selection;
+        let previousList = undefined;
+        let convertList = false;
+        let currentParagraph = selection.start.paragraph;
+        let prevParagraph = selection.getPreviousParagraphBlock(currentParagraph);
+        let isList = false;
+        while (!isNullOrUndefined(prevParagraph) && prevParagraph instanceof ParagraphWidget) {
+            if (prevParagraph.paragraphFormat.listFormat && prevParagraph.paragraphFormat.listFormat.listId !== -1) {
+                isList = true;
+                break;
+            }
+            prevParagraph = selection.getPreviousParagraphBlock(prevParagraph);
+        }
+        if (isList) {
+            let listNumber = this.viewer.layout.getListNumber(prevParagraph.paragraphFormat.listFormat, true);
+            let prevListText = listNumber.substring(0, listNumber.length - 1);
+            let currentListText = text.substring(0, text.length - 1);
+            //check if numberFormat equal
+            let inputString;
+            if (listNumber.substring(listNumber.length - 1) !== text.substring(text.length - 1)) {
+                convertList = false;
+            }
+            else if (currentListText.match(/^[0-9]+$/) && prevListText.match(/^[0-9]+$/)) {
+                inputString = parseInt(currentListText, 10);
+                if (parseInt(prevListText, 10) === inputString || parseInt(prevListText, 10) + 1 === inputString
+                    || parseInt(prevListText, 10) + 2 === inputString) {
+                    convertList = true;
+                }
+            }
+            else if (currentListText.match(/^[a-zA-Z]+$/) && prevListText.match(/^[a-zA-Z]+$/)) {
+                if (prevListText.charCodeAt(0) === text.charCodeAt(0) || prevListText.charCodeAt(0) + 1 === text.charCodeAt(0)
+                    || prevListText.charCodeAt(0) + 2 === text.charCodeAt(0)) {
+                    convertList = true;
+                }
+                else if (currentListText.match(/^[MDCLXVImdclxvi]+$/) && prevListText.match(/^[MDCLXVImdclxvi]+$/)) {
+                    let prevListNumber = this.getNumber(prevListText.toUpperCase());
+                    let currentListNumber = this.getNumber(currentListText.toUpperCase());
+                    if (prevListNumber === currentListNumber || prevListNumber + 1 === currentListNumber
+                        || prevListNumber + 2 === currentListNumber) {
+                        convertList = true;
+                    }
+                }
+            }
+            if (convertList) {
+                previousList = this.viewer.getListById(prevParagraph.paragraphFormat.listFormat.listId);
+            }
+        }
+        return previousList;
+    }
+    getNumber(roman) {
+        let conversion = { 'M': 1000, 'D': 500, 'C': 100, 'L': 50, 'X': 10, 'V': 5, 'I': 1 };
+        let arr = roman.split('');
+        let num = 0;
+        for (let i = 0; i < arr.length; i++) {
+            let currentValue = conversion[arr[i]];
+            let nextValue = conversion[arr[i + 1]];
+            if (currentValue < nextValue) {
+                num -= (currentValue);
+            }
+            else {
+                num += (currentValue);
+            }
+        }
+        return num;
     }
     getListLevelPattern(value) {
         switch (value) {
@@ -50821,6 +51726,9 @@ class Editor {
         }
     }
     addRemovedNodes(node) {
+        if (node instanceof CommentCharacterElementBox && node.commentType === 0 && node.commentMark) {
+            node.removeCommentMark();
+        }
         if (node instanceof FieldElementBox && node.fieldType === 0) {
             if (this.viewer.fields.indexOf(node) !== -1) {
                 this.viewer.fields.splice(this.viewer.fields.indexOf(node), 1);
@@ -53125,6 +54033,17 @@ class Editor {
     /**
      * @private
      */
+    getCommentElementBox(index) {
+        let position = index.split(';');
+        let comment = this.viewer.comments[parseInt(position[1], 10)];
+        if (position.length > 2 && position[2] !== '') {
+            return comment.replyComments[parseInt(position[2], 10)];
+        }
+        return comment;
+    }
+    /**
+     * @private
+     */
     getBlock(position) {
         let bodyWidget = this.selection.getBodyWidget(position);
         return this.getBlockInternal(bodyWidget, position);
@@ -55155,6 +56074,31 @@ class BaseHistoryInfo {
             this.editorHistory.undoStack.push(this);
         }
     }
+    revertComment() {
+        let editPosition = this.insertPosition;
+        let comment = this.removedNodes[0];
+        let insert = false;
+        if (this.action === 'InsertCommentWidget') {
+            insert = (this.editorHistory.isRedoing);
+        }
+        else if (this.action === 'DeleteCommentWidget') {
+            insert = (this.editorHistory.isUndoing);
+        }
+        if (insert) {
+            if (comment) {
+                if (comment.isReply) {
+                    this.owner.editor.addReplyComment(comment, this.insertPosition);
+                }
+                else {
+                    this.owner.editor.addCommentWidget(comment, false);
+                }
+            }
+        }
+        else {
+            let commentElement = this.owner.editor.getCommentElementBox(editPosition);
+            this.owner.editor.deleteCommentWidget(commentElement);
+        }
+    }
     revertEditRangeRegion() {
         let editRangeInfo = this.removedNodes[0];
         let editStart = editRangeInfo.editStart;
@@ -55183,6 +56127,10 @@ class BaseHistoryInfo {
         }
         if (this.action === 'RemoveEditRange') {
             this.revertEditRangeRegion();
+            return;
+        }
+        if (this.action === 'InsertCommentWidget' || this.action === 'DeleteCommentWidget') {
+            this.revertComment();
             return;
         }
         this.owner.isShiftingEnabled = true;
@@ -58111,6 +59059,8 @@ class WordExport {
         this.contentTypesPath = '[Content_Types].xml';
         // private ChartsPath: string = 'word/charts/';
         this.defaultEmbeddingPath = 'word/embeddings/';
+        this.commentsPath = 'word/comments.xml';
+        this.commentsExtendedPath = 'word/commentsExtended.xml';
         // private EmbeddingPath:string = 'word\embeddings\';
         // private DrawingPath:string = 'word\drawings\';
         // private ThemePath: string = 'word/theme/theme1.xml';
@@ -58142,6 +59092,8 @@ class WordExport {
         // private TemplateContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml';
         // private CommentsContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml';
         this.settingsContentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml';
+        this.commentsContentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml';
+        this.commentsExContentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtended+xml';
         // private EndnoteContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.endnotes+xml';
         // private FontTableContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml';
         this.footerContentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml';
@@ -58175,7 +59127,8 @@ class WordExport {
         // private OleObjectContentType: string = 'application/vnd.openxmlformats-officedocument.oleObject';
         // Relationship types of document parts
         // private AltChunkRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/aFChunk';
-        // private CommentsRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments';
+        this.commentsRelType = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments';
+        this.commentsExRelType = 'http://schemas.microsoft.com/office/2011/relationships/commentsExtended';
         this.settingsRelType = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings';
         // private EndnoteRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/endnotes';
         // private FontTableRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable';
@@ -58251,6 +59204,7 @@ class WordExport {
         this.eNamespace = 'http://schemas.microsoft.com/office/2006/encryption';
         this.pNamespace = 'http://schemas.microsoft.com/office/2006/keyEncryptor/password';
         this.certNamespace = 'http://schemas.microsoft.com/office/2006/keyEncryptor/certificate';
+        this.cxNamespace = 'http://schemas.microsoft.com/office/drawing/2014/chartex';
         // chart
         this.c15Namespace = 'http://schemas.microsoft.com/office/drawing/2015/06/chart';
         this.c7Namespace = 'http://schemas.microsoft.com/office/drawing/2007/8/2/chart';
@@ -58334,6 +59288,13 @@ class WordExport {
         this.chartStringCount = 0;
         this.mDifferentFirstPage = false;
         this.mBookmarks = undefined;
+        this.mComments = [];
+        this.paraID = 0;
+        this.commentParaID = 0;
+        this.commentParaIDInfo = {};
+        this.isInsideComment = false;
+        this.commentId = {};
+        this.currentCommentId = 0;
         /* tslint:enable:no-any */
     }
     getModuleName() {
@@ -58448,8 +59409,13 @@ class WordExport {
         /* tslint:disable:no-any */
         let document = viewer.owner.sfdtExportModule.write();
         this.setDocument(document);
+        this.mComments = viewer.comments;
         this.mArchive = new ZipArchive();
         this.mArchive.compressionLevel = 'Normal';
+        this.commentParaIDInfo = {};
+        this.commentParaID = 0;
+        this.currentCommentId = 0;
+        this.commentId = {};
         this.mVerticalMerge = new Dictionary();
         this.mGridSpans = new Dictionary();
         let contenttype;
@@ -58459,6 +59425,10 @@ class WordExport {
         this.serializeStyles();
         //numbering.xml
         this.serializeNumberings();
+        //comments.xml
+        this.serializeComments();
+        //commentsExtended.xml
+        this.serializeCommentsExtended();
         //theme.xml
         // if (m_document.DocHasThemes && !isNullOrUndefined(m_document.Themes))
         //     SerializeThemes();
@@ -58526,6 +59496,10 @@ class WordExport {
         this.table = undefined;
         this.row = undefined;
         this.headerFooter = undefined;
+        this.commentParaIDInfo = {};
+        this.commentParaID = 0;
+        this.currentCommentId = 0;
+        this.commentId = {};
         this.document = undefined;
         this.mSections = undefined;
         this.mLists = undefined;
@@ -58623,6 +59597,113 @@ class WordExport {
             this.serializeSectionProperties(writer, section);
         }
         this.blockOwner = undefined;
+    }
+    // Serialize the comments (comments.xml)
+    serializeComments() {
+        if (this.mComments.length === 0) {
+            return;
+        }
+        let writer = new XmlWriter();
+        writer.writeStartElement('w', 'comments', this.wNamespace);
+        this.serializeCommentCommonAttribute(writer);
+        this.serializeCommentInternal(writer, this.mComments, false);
+        writer.writeEndElement();
+        let zipArchiveItem = new ZipArchiveItem(writer.buffer, this.commentsPath);
+        this.mArchive.addItem(zipArchiveItem);
+    }
+    serializeCommentCommonAttribute(writer) {
+        writer.writeAttributeString('xmlns', 'wpc', undefined, this.wpCanvasNamespace);
+        writer.writeAttributeString('xmlns', 'cx', undefined, this.cxNamespace);
+        writer.writeAttributeString('xmlns', 'mc', undefined, this.veNamespace);
+        writer.writeAttributeString('xmlns', 'o', undefined, this.oNamespace);
+        writer.writeAttributeString('xmlns', 'r', undefined, this.rNamespace);
+        writer.writeAttributeString('xmlns', 'm', undefined, this.mNamespace);
+        writer.writeAttributeString('xmlns', 'v', undefined, this.vNamespace);
+        writer.writeAttributeString('xmlns', 'wp14', undefined, this.wpDrawingNamespace);
+        writer.writeAttributeString('xmlns', 'wp', undefined, this.wpNamespace);
+        writer.writeAttributeString('xmlns', 'w10', undefined, this.w10Namespace);
+        writer.writeAttributeString('xmlns', 'w', undefined, this.wNamespace);
+        writer.writeAttributeString('xmlns', 'w14', undefined, this.w14Namespace);
+        writer.writeAttributeString('xmlns', 'w15', undefined, this.w15Namespace);
+        writer.writeAttributeString('mc', 'Ignorable', undefined, 'w14 w15');
+    }
+    serializeCommentInternal(writer, comments, isreplay) {
+        for (let i = 0; i < comments.length; i++) {
+            let comment = comments[i];
+            writer.writeStartElement('w', 'comment', this.wNamespace);
+            writer.writeAttributeString('w', 'id', this.wNamespace, this.commentId[comment.commentId].toString());
+            if (comment.author && comment.author !== ' ') {
+                writer.writeAttributeString('w', 'author', this.wNamespace, comment.author);
+            }
+            if (comment.date) {
+                writer.writeAttributeString('w', 'date', this.wNamespace, comment.date);
+            }
+            if (comment.initial && comment.initial !== '') {
+                writer.writeAttributeString('w', 'initials', this.wNamespace, comment.initial);
+            }
+            let blocks = this.retrieveCommentText(comment.text);
+            for (let k = 0; k < blocks.length; k++) {
+                this.isInsideComment = true;
+                this.commentParaID++;
+                this.serializeBodyItem(writer, blocks[k], true);
+                this.isInsideComment = false;
+            }
+            //if (blocks.length > 0) {
+            this.commentParaIDInfo[comment.commentId] = this.commentParaID;
+            //}
+            //}
+            this.isInsideComment = false;
+            //}
+            writer.writeEndElement();
+            if (comment.replyComments.length > 0) {
+                this.serializeCommentInternal(writer, comment.replyComments, true);
+            }
+        }
+    }
+    retrieveCommentText(text) {
+        let blocks = [];
+        let multiText = text.split('\n');
+        multiText = multiText.filter((x) => x !== '');
+        while (multiText.length > 0) {
+            let block = {};
+            block.inlines = [{ text: multiText[0] }];
+            blocks.push(block);
+            multiText.splice(0, 1);
+        }
+        return blocks;
+    }
+    // Serialize the comments (commentsExtended.xml)
+    serializeCommentsExtended() {
+        if (this.mComments.length === 0) {
+            return;
+        }
+        let writer = new XmlWriter();
+        writer.writeStartElement('w15', 'commentsEx', this.wNamespace);
+        this.serializeCommentCommonAttribute(writer);
+        this.serializeCommentsExInternal(writer, this.mComments, false);
+        writer.writeEndElement();
+        let zipArchiveItem = new ZipArchiveItem(writer.buffer, this.commentsExtendedPath);
+        this.mArchive.addItem(zipArchiveItem);
+    }
+    serializeCommentsExInternal(writer, comments, isReply) {
+        for (let i = 0; i < comments.length; i++) {
+            let comment = comments[i];
+            writer.writeStartElement('w15', 'commentEx', this.wNamespace);
+            //if (comment.blocks.length > 0) {
+            let syncParaID = this.commentParaIDInfo[comment.commentId];
+            if (isReply) {
+                let paraID = this.commentParaIDInfo[comment.ownerComment.commentId];
+                writer.writeAttributeString('w15', 'paraIdParent', this.wNamespace, paraID.toString());
+            }
+            writer.writeAttributeString('w15', 'paraId', this.wNamespace, syncParaID.toString());
+            //}
+            let val = comment.done ? 1 : 0;
+            writer.writeAttributeString('w15', 'done', this.wNamespace, val.toString());
+            writer.writeEndElement();
+            if (comment.replyComments.length > 0) {
+                this.serializeCommentsExInternal(writer, comment.replyComments, true);
+            }
+        }
     }
     // Serialize the section properties.
     serializeSectionProperties(writer, section) {
@@ -58884,8 +59965,13 @@ class WordExport {
         //Splits the paragraph based on the newline character
         // paragraph.SplitTextRange();
         writer.writeStartElement('w', 'p', this.wNamespace);
+        if (this.isInsideComment) {
+            writer.writeAttributeString('w14', 'paraId', undefined, this.commentParaID.toString());
+        }
         writer.writeStartElement(undefined, 'pPr', this.wNamespace);
-        this.serializeParagraphFormat(writer, paragraph.paragraphFormat, paragraph);
+        if (!isNullOrUndefined(paragraph.paragraphFormat)) {
+            this.serializeParagraphFormat(writer, paragraph.paragraphFormat, paragraph);
+        }
         if (!isNullOrUndefined(paragraph.characterFormat)) {
             this.serializeCharacterFormat(writer, paragraph.characterFormat);
         }
@@ -58940,6 +60026,9 @@ class WordExport {
                 // chart.xml
                 this.serializeChartStructure();
             }
+            else if (item.hasOwnProperty('commentCharacterType')) {
+                this.serializeComment(writer, item);
+            }
             else {
                 this.serializeTextRange(writer, item, previousNode);
             }
@@ -58948,6 +60037,31 @@ class WordExport {
         if (isContinueOverride) {
             writer.writeEndElement();
         }
+    }
+    // Serialize the comment
+    serializeComment(writer, comment) {
+        if (comment.commentCharacterType === 0) {
+            writer.writeStartElement('w', 'commentRangeStart', this.wNamespace);
+        }
+        else if (comment.commentCharacterType === 1) {
+            writer.writeStartElement('w', 'commentRangeEnd', this.wNamespace);
+        }
+        let commentId = this.commentId[comment.commentId];
+        if (isNullOrUndefined(commentId)) {
+            commentId = this.commentId[comment.commentId] = this.currentCommentId++;
+        }
+        writer.writeAttributeString('w', 'id', this.wNamespace, commentId.toString());
+        writer.writeEndElement();
+        if (comment.commentCharacterType === 1) {
+            this.serializeCommentItems(writer, commentId);
+        }
+    }
+    serializeCommentItems(writer, commentId) {
+        writer.writeStartElement('w', 'r', this.wNamespace);
+        writer.writeStartElement('w', 'commentReference', this.wNamespace);
+        writer.writeAttributeString('w', 'id', this.wNamespace, commentId.toString());
+        writer.writeEndElement();
+        writer.writeEndElement();
     }
     serializeBiDirectionalOverride(writer, characterFormat) {
         writer.writeStartElement(undefined, 'bdo', this.wNamespace);
@@ -60937,14 +62051,14 @@ class WordExport {
             // tslint:disable-next-line:max-line-length
             writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal(cf.preferredWidth * this.percentageFactor).toString());
         }
-        else if (cf.preferredWidthType === 'Point') {
+        else if (cf.preferredWidthType === 'Auto') {
+            writer.writeAttributeString(undefined, 'type', this.wNamespace, 'auto');
+            writer.writeAttributeString(undefined, 'w', this.wNamespace, '0');
+        }
+        else {
             // tslint:disable-next-line:max-line-length
             writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal(cf.preferredWidth * this.twipsInOnePoint).toString());
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
-        }
-        else {
-            writer.writeAttributeString(undefined, 'type', this.wNamespace, 'auto');
-            writer.writeAttributeString(undefined, 'w', this.wNamespace, '0');
         }
         writer.writeEndElement();
     }
@@ -61066,14 +62180,14 @@ class WordExport {
     serializeCellVerticalAlign(writer, alignment) {
         writer.writeStartElement(undefined, 'vAlign', this.wNamespace);
         switch (alignment) {
-            case 'Top':
-                writer.writeAttributeString('w', 'val', this.wNamespace, 'top');
-                break;
             case 'Center':
                 writer.writeAttributeString('w', 'val', this.wNamespace, 'center');
                 break;
-            default:
+            case 'Bottom':
                 writer.writeAttributeString('w', 'val', this.wNamespace, 'bottom');
+                break;
+            default:
+                writer.writeAttributeString('w', 'val', this.wNamespace, 'top');
                 break;
         }
         writer.writeEndElement();
@@ -61209,14 +62323,18 @@ class WordExport {
     serializeShading(writer, format) {
         // if (format.textureStyle !== 'TextureNone') {
         writer.writeStartElement(undefined, 'shd', this.wNamespace);
-        writer.writeAttributeString(undefined, 'fill', this.wNamespace, this.getColor(format.backgroundColor));
-        if (format.foregroundColor === 'empty') {
+        if (format.backgroundColor) {
+            writer.writeAttributeString(undefined, 'fill', this.wNamespace, this.getColor(format.backgroundColor));
+        }
+        if (format.foregroundColor === 'empty' || isNullOrUndefined(format.foregroundColor)) {
             writer.writeAttributeString(undefined, 'color', this.wNamespace, 'auto');
         }
         else {
             writer.writeAttributeString(undefined, 'color', this.wNamespace, this.getColor(format.foregroundColor));
         }
-        writer.writeAttributeString('w', 'val', this.wNamespace, this.getTextureStyle(format.textureStyle));
+        if (!isNullOrUndefined(format.textureStyle)) {
+            writer.writeAttributeString('w', 'val', this.wNamespace, this.getTextureStyle(format.textureStyle));
+        }
         writer.writeEndElement();
         // }
     }
@@ -61345,15 +62463,15 @@ class WordExport {
     // Serializes the Border
     serializeBorder(writer, border, tagName, multiplier) {
         let borderStyle = border.lineStyle;
-        let sz = (border.lineWidth * multiplier);
-        let space = border.space;
+        let sz = ((border.lineWidth ? border.lineWidth : 0) * multiplier);
+        let space = border.space ? border.space : 0;
         if (borderStyle === 'Cleared') {
             writer.writeStartElement(undefined, tagName, this.wNamespace);
             writer.writeAttributeString('w', 'val', this.wNamespace, 'nil');
             writer.writeEndElement();
             return;
         }
-        else if ((borderStyle === 'None' && !border.hasNoneStyle) || sz <= 0) {
+        else if (((borderStyle === 'None' || isNullOrUndefined(borderStyle)) && !border.hasNoneStyle) || sz <= 0) {
             return;
         }
         writer.writeStartElement(undefined, tagName, this.wNamespace);
@@ -61364,7 +62482,9 @@ class WordExport {
         // }
         // else
         // {
-        writer.writeAttributeString(undefined, 'color', this.wNamespace, this.getColor(border.color));
+        if (border.color) {
+            writer.writeAttributeString(undefined, 'color', this.wNamespace, this.getColor(border.color));
+        }
         // }
         writer.writeAttributeString(undefined, 'sz', this.wNamespace, this.roundToTwoDecimal(sz).toString());
         writer.writeAttributeString(undefined, 'space', this.wNamespace, space.toString());
@@ -61507,7 +62627,9 @@ class WordExport {
     // Serialize the text range.
     serializeTextRange(writer, span, previousNode) {
         writer.writeStartElement('w', 'r', this.wNamespace);
-        this.serializeCharacterFormat(writer, span.characterFormat);
+        if (!isNullOrUndefined(span.characterFormat)) {
+            this.serializeCharacterFormat(writer, span.characterFormat);
+        }
         if (span.text === '\t') {
             writer.writeElementString(undefined, 'tab', this.wNamespace, undefined);
         }
@@ -62526,6 +63648,10 @@ class WordExport {
         writer.writeStartElement(undefined, 'Relationships', this.rpNamespace);
         this.serializeRelationShip(writer, this.getNextRelationShipID(), this.stylesRelType, 'styles.xml');
         this.serializeRelationShip(writer, this.getNextRelationShipID(), this.settingsRelType, 'settings.xml');
+        if (this.mComments.length > 0) {
+            this.serializeRelationShip(writer, this.getNextRelationShipID(), this.commentsRelType, 'comments.xml');
+            this.serializeRelationShip(writer, this.getNextRelationShipID(), this.commentsExRelType, 'commentsExtended.xml');
+        }
         // this.serializeRelationShip(writer, this.getNextRelationShipID(), this.ThemeRelType, 'theme/theme1.xml');
         if (this.document.lists.length > 0) {
             this.serializeRelationShip(writer, this.getNextRelationShipID(), this.numberingRelType, 'numbering.xml');
@@ -62795,6 +63921,9 @@ class WordExport {
         this.serializeOverrideContentType(writer, this.stylePath, this.stylesContentType);
         //settings.xml
         this.serializeOverrideContentType(writer, this.settingsPath, this.settingsContentType);
+        this.serializeOverrideContentType(writer, this.commentsPath, this.commentsContentType);
+        //comments.xml
+        this.serializeOverrideContentType(writer, this.commentsExtendedPath, this.commentsExContentType);
         //charts.xml
         if (this.chartCount > 0) {
             let count = 1;
@@ -63219,6 +64348,7 @@ class SfdtExport {
         }
         this.writeStyles(this.viewer);
         this.writeLists(this.viewer);
+        this.writeComments(this.viewer);
         let doc = this.document;
         this.clear();
         return doc;
@@ -63416,6 +64546,10 @@ class SfdtExport {
                 'columnLast': element.editRangeStart.columnLast
             };
             inline.editRangeId = element.editRangeId.toString();
+        }
+        else if (element instanceof CommentCharacterElementBox) {
+            inline.commentCharacterType = element.commentType;
+            inline.commentId = element.commentId;
         }
         else {
             inline = undefined;
@@ -63818,6 +64952,7 @@ class SfdtExport {
         table.tableFormat = this.writeTableFormat(tableWidget.tableFormat);
         table.description = tableWidget.description;
         table.title = tableWidget.title;
+        table.columnCount = tableWidget.tableHolder.columns.length;
         return table;
     }
     createRow(rowWidget) {
@@ -63835,19 +64970,19 @@ class SfdtExport {
     }
     writeShading(wShading) {
         let shading = {};
-        shading.backgroundColor = wShading.backgroundColor;
-        shading.foregroundColor = wShading.foregroundColor;
-        shading.textureStyle = wShading.textureStyle;
+        shading.backgroundColor = wShading.hasValue('backgroundColor') ? wShading.backgroundColor : undefined;
+        shading.foregroundColor = wShading.hasValue('foregroundColor') ? wShading.foregroundColor : undefined;
+        shading.textureStyle = wShading.hasValue('textureStyle') ? wShading.textureStyle : undefined;
         return shading;
     }
     writeBorder(wBorder) {
         let border = {};
-        border.color = wBorder.color;
-        border.hasNoneStyle = wBorder.hasNoneStyle;
-        border.lineStyle = wBorder.lineStyle;
-        border.lineWidth = wBorder.lineWidth;
-        border.shadow = wBorder.shadow;
-        border.space = wBorder.space;
+        border.color = wBorder.hasValue('color') ? wBorder.color : undefined;
+        border.hasNoneStyle = wBorder.hasValue('hasNoneStyle') ? wBorder.hasNoneStyle : undefined;
+        border.lineStyle = wBorder.hasValue('lineStyle') ? wBorder.lineStyle : undefined;
+        border.lineWidth = wBorder.hasValue('lineWidth') ? wBorder.lineWidth : undefined;
+        border.shadow = wBorder.hasValue('shadow') ? wBorder.shadow : undefined;
+        border.space = wBorder.hasValue('space') ? wBorder.space : undefined;
         return border;
     }
     writeBorders(wBorders) {
@@ -63866,53 +65001,53 @@ class SfdtExport {
         let cellFormat = {};
         cellFormat.borders = this.writeBorders(wCellFormat.borders);
         cellFormat.shading = this.writeShading(wCellFormat.shading);
-        cellFormat.topMargin = wCellFormat.topMargin;
-        cellFormat.rightMargin = wCellFormat.rightMargin;
-        cellFormat.leftMargin = wCellFormat.leftMargin;
-        cellFormat.bottomMargin = wCellFormat.bottomMargin;
-        cellFormat.preferredWidth = wCellFormat.preferredWidth;
-        cellFormat.preferredWidthType = wCellFormat.preferredWidthType;
-        cellFormat.cellWidth = wCellFormat.cellWidth;
+        cellFormat.topMargin = wCellFormat.hasValue('topMargin') ? wCellFormat.topMargin : undefined;
+        cellFormat.rightMargin = wCellFormat.hasValue('rightMargin') ? wCellFormat.rightMargin : undefined;
+        cellFormat.leftMargin = wCellFormat.hasValue('leftMargin') ? wCellFormat.leftMargin : undefined;
+        cellFormat.bottomMargin = wCellFormat.hasValue('bottomMargin') ? wCellFormat.bottomMargin : undefined;
+        cellFormat.preferredWidth = wCellFormat.hasValue('preferredWidth') ? wCellFormat.preferredWidth : undefined;
+        cellFormat.preferredWidthType = wCellFormat.hasValue('preferredWidthType') ? wCellFormat.preferredWidthType : undefined;
+        cellFormat.cellWidth = wCellFormat.hasValue('cellWidth') ? wCellFormat.cellWidth : undefined;
         cellFormat.columnSpan = wCellFormat.columnSpan;
         cellFormat.rowSpan = wCellFormat.rowSpan;
-        cellFormat.verticalAlignment = wCellFormat.verticalAlignment;
+        cellFormat.verticalAlignment = wCellFormat.hasValue('verticalAlignment') ? wCellFormat.verticalAlignment : undefined;
         return cellFormat;
     }
     writeRowFormat(wRowFormat) {
         let rowFormat = {};
-        rowFormat.height = wRowFormat.height;
-        rowFormat.allowBreakAcrossPages = wRowFormat.allowBreakAcrossPages;
-        rowFormat.heightType = wRowFormat.heightType;
-        rowFormat.isHeader = wRowFormat.isHeader;
+        rowFormat.height = wRowFormat.hasValue('height') ? wRowFormat.height : undefined;
+        rowFormat.allowBreakAcrossPages = wRowFormat.hasValue('allowBreakAcrossPages') ? wRowFormat.allowBreakAcrossPages : undefined;
+        rowFormat.heightType = wRowFormat.hasValue('heightType') ? wRowFormat.heightType : undefined;
+        rowFormat.isHeader = wRowFormat.hasValue('isHeader') ? wRowFormat.isHeader : undefined;
         rowFormat.borders = this.writeBorders(wRowFormat.borders);
         rowFormat.gridBefore = wRowFormat.gridBefore;
-        rowFormat.gridBeforeWidth = wRowFormat.gridBeforeWidth;
-        rowFormat.gridBeforeWidthType = wRowFormat.gridBeforeWidthType;
+        rowFormat.gridBeforeWidth = wRowFormat.hasValue('gridBeforeWidth') ? wRowFormat.gridBeforeWidth : undefined;
+        rowFormat.gridBeforeWidthType = wRowFormat.hasValue('gridBeforeWidthType') ? wRowFormat.gridBeforeWidthType : undefined;
         rowFormat.gridAfter = wRowFormat.gridAfter;
-        rowFormat.gridAfterWidth = wRowFormat.gridAfterWidth;
-        rowFormat.gridAfterWidthType = wRowFormat.gridAfterWidthType;
-        rowFormat.leftMargin = wRowFormat.leftMargin;
-        rowFormat.topMargin = wRowFormat.topMargin;
-        rowFormat.rightMargin = wRowFormat.rightMargin;
-        rowFormat.bottomMargin = wRowFormat.bottomMargin;
-        rowFormat.leftIndent = wRowFormat.leftIndent;
+        rowFormat.gridAfterWidth = wRowFormat.hasValue('gridAfterWidth') ? wRowFormat.gridAfterWidth : undefined;
+        rowFormat.gridAfterWidthType = wRowFormat.hasValue('gridAfterWidthType') ? wRowFormat.gridAfterWidthType : undefined;
+        rowFormat.leftMargin = wRowFormat.hasValue('leftMargin') ? wRowFormat.leftMargin : undefined;
+        rowFormat.topMargin = wRowFormat.hasValue('topMargin') ? wRowFormat.topMargin : undefined;
+        rowFormat.rightMargin = wRowFormat.hasValue('rightMargin') ? wRowFormat.rightMargin : undefined;
+        rowFormat.bottomMargin = wRowFormat.hasValue('bottomMargin') ? wRowFormat.bottomMargin : undefined;
+        rowFormat.leftIndent = wRowFormat.hasValue('leftIndent') ? wRowFormat.leftIndent : undefined;
         return rowFormat;
     }
     writeTableFormat(wTableFormat) {
         let tableFormat = {};
         tableFormat.borders = this.writeBorders(wTableFormat.borders);
         tableFormat.shading = this.writeShading(wTableFormat.shading);
-        tableFormat.cellSpacing = wTableFormat.cellSpacing;
-        tableFormat.leftIndent = wTableFormat.leftIndent;
-        tableFormat.tableAlignment = wTableFormat.tableAlignment;
-        tableFormat.topMargin = wTableFormat.topMargin;
-        tableFormat.rightMargin = wTableFormat.rightMargin;
-        tableFormat.leftMargin = wTableFormat.leftMargin;
-        tableFormat.bottomMargin = wTableFormat.bottomMargin;
-        tableFormat.preferredWidth = wTableFormat.preferredWidth;
-        tableFormat.preferredWidthType = wTableFormat.preferredWidthType;
-        tableFormat.bidi = wTableFormat.bidi;
-        tableFormat.allowAutoFit = wTableFormat.allowAutoFit;
+        tableFormat.cellSpacing = wTableFormat.hasValue('cellSpacing') ? wTableFormat.cellSpacing : undefined;
+        tableFormat.leftIndent = wTableFormat.hasValue('leftIndent') ? wTableFormat.leftIndent : undefined;
+        tableFormat.tableAlignment = wTableFormat.hasValue('tableAlignment"') ? wTableFormat.tableAlignment : undefined;
+        tableFormat.topMargin = wTableFormat.hasValue('topMargin') ? wTableFormat.topMargin : undefined;
+        tableFormat.rightMargin = wTableFormat.hasValue('rightMargin') ? wTableFormat.rightMargin : undefined;
+        tableFormat.leftMargin = wTableFormat.hasValue('leftMargin') ? wTableFormat.leftMargin : undefined;
+        tableFormat.bottomMargin = wTableFormat.hasValue('bottomMargin') ? wTableFormat.bottomMargin : undefined;
+        tableFormat.preferredWidth = wTableFormat.hasValue('preferredWidth') ? wTableFormat.preferredWidth : undefined;
+        tableFormat.preferredWidthType = wTableFormat.hasValue('preferredWidthType') ? wTableFormat.preferredWidthType : undefined;
+        tableFormat.bidi = wTableFormat.hasValue('bidi') ? wTableFormat.bidi : undefined;
+        tableFormat.allowAutoFit = wTableFormat.hasValue('allowAutoFit') ? wTableFormat.allowAutoFit : undefined;
         return tableFormat;
     }
     writeStyles(viewer) {
@@ -63943,6 +65078,31 @@ class SfdtExport {
             wStyle.next = style.next.name;
         }
         return wStyle;
+    }
+    writeComments(viewer) {
+        this.document.comments = [];
+        for (let i = 0; i < viewer.comments.length; i++) {
+            this.document.comments.push(this.writeComment(viewer.comments[i]));
+        }
+    }
+    writeComment(comments) {
+        let comment = {};
+        comment.commentId = comments.commentId;
+        comment.author = comments.author;
+        comment.date = comments.date;
+        comment.blocks = [];
+        comment.blocks.push(this.commentInlines(comments.text));
+        comment.done = comments.isResolved;
+        comment.replyComments = [];
+        for (let i = 0; i < comments.replyComments.length; i++) {
+            comment.replyComments.push(this.writeComment(comments.replyComments[i]));
+        }
+        return comment;
+    }
+    commentInlines(ctext) {
+        let blocks = {};
+        blocks.inlines = [{ text: ctext }];
+        return blocks;
     }
     writeLists(viewer) {
         let abstractLists = [];
@@ -72314,6 +73474,976 @@ class StylesDialog {
  */
 
 /**
+ * @private
+ */
+class CommentReviewPane {
+    constructor(owner) {
+        this.isNewComment = false;
+        this.owner = owner;
+        let localObj = new L10n('documenteditor', this.owner.defaultLocale);
+        localObj.setLocale(this.owner.locale);
+        this.initReviewPane(localObj);
+        this.reviewPane.style.display = 'none';
+    }
+    get previousSelectedComment() {
+        return this.previousSelectedCommentInt;
+    }
+    set previousSelectedComment(value) {
+        if (!isNullOrUndefined(value) && value !== this.previousSelectedCommentInt) {
+            if (this.commentPane.comments.containsKey(value)) {
+                let commentStart = this.commentPane.getCommentStart(value);
+                let commentMark = commentStart.commentMark;
+                if (commentMark) {
+                    classList(commentMark, [], ['e-de-cmt-mark-selected']);
+                    this.commentPane.removeSelectionMark('e-de-cmt-selection');
+                    this.commentPane.removeSelectionMark('e-de-cmt-mark-selected');
+                }
+                let commentView = this.commentPane.comments.get(value);
+                commentView.hideDrawer();
+                for (let i = 0; i < value.replyComments.length; i++) {
+                    commentView = this.commentPane.comments.get(value.replyComments[i]);
+                    if (commentView) {
+                        commentView.hideDrawer();
+                        commentView.hideMenuItems();
+                    }
+                }
+            }
+        }
+        this.previousSelectedCommentInt = value;
+    }
+    /**
+     * @private
+     */
+    showHidePane(show) {
+        if (this.reviewPane) {
+            this.reviewPane.style.display = show ? 'block' : 'none';
+        }
+        if (show) {
+            this.commentPane.updateHeight();
+        }
+        if (this.owner) {
+            this.owner.resize();
+        }
+    }
+    initReviewPane(localValue) {
+        let reviewContainer = this.owner.viewer.optionsPaneContainer;
+        reviewContainer.style.display = 'inline-flex';
+        reviewContainer.appendChild(this.initPaneHeader(localValue));
+        this.initCommentPane();
+    }
+    initPaneHeader(localValue) {
+        this.headerContainer = createElement('div');
+        this.reviewPane = createElement('div', { className: 'e-de-cmt-pane', styles: 'display:none' });
+        if (this.owner.enableRtl) {
+            classList(this.reviewPane, ['e-rtl'], []);
+        }
+        let headerWholeDiv = createElement('div', { className: 'e-de-cp-whole-header' });
+        let headerDiv1 = createElement('div', {
+            innerHTML: localValue.getConstant('Comments'), className: 'e-de-cp-header'
+        });
+        this.closeButton = createElement('button', {
+            className: 'e-de-cp-close e-btn e-flat e-icon-btn', id: 'close',
+            attrs: { type: 'button' }
+        });
+        this.closeButton.title = localValue.getConstant('Close');
+        headerWholeDiv.appendChild(this.closeButton);
+        headerWholeDiv.appendChild(headerDiv1);
+        let closeSpan = createElement('span', { className: 'e-de-op-close-icon e-btn-icon e-icons' });
+        this.closeButton.appendChild(closeSpan);
+        this.headerContainer.appendChild(headerWholeDiv);
+        this.headerContainer.appendChild(this.initToolbar(localValue));
+        this.reviewPane.appendChild(this.headerContainer);
+        this.closeButton.addEventListener('click', this.closePane.bind(this));
+        return this.reviewPane;
+    }
+    closePane() {
+        if (this.commentPane && this.commentPane.isEditMode) {
+            if (!isNullOrUndefined(this.commentPane.currentEditingComment)
+                && this.commentPane.isInsertingReply && this.commentPane.currentEditingComment.replyViewTextBox.value === '') {
+                this.owner.viewer.currentSelectedComment = undefined;
+                this.commentPane.currentEditingComment.cancelReply();
+                this.owner.showComments = false;
+            }
+            else if (this.isNewComment || !isNullOrUndefined(this.commentPane.currentEditingComment)
+                && this.commentPane.isInsertingReply && this.commentPane.currentEditingComment.replyViewTextBox.value !== '' ||
+                !isNullOrUndefined(this.commentPane.currentEditingComment) && !this.commentPane.isInsertingReply &&
+                    this.commentPane.currentEditingComment.textArea.value !== this.commentPane.currentEditingComment.comment.text) {
+                let localObj = new L10n('documenteditor', this.owner.defaultLocale);
+                localObj.setLocale(this.owner.locale);
+                this.confirmDialog = DialogUtility.confirm({
+                    title: localObj.getConstant('Un-posted comments'),
+                    content: localObj.getConstant('Added comments not posted. If you continue, that comment will be discarded.'),
+                    okButton: {
+                        text: 'Discard', click: this.discardButtonClick.bind(this)
+                    },
+                    cancelButton: {
+                        text: 'Cancel', click: this.closeDialogUtils.bind(this)
+                    },
+                    showCloseIcon: true,
+                    closeOnEscape: true,
+                    animationSettings: { effect: 'Zoom' },
+                    position: { X: 'Center', Y: 'Center' }
+                });
+            }
+            else {
+                this.owner.viewer.currentSelectedComment = undefined;
+                this.commentPane.currentEditingComment.cancelEditing();
+                this.owner.showComments = false;
+            }
+        }
+        else {
+            this.owner.viewer.currentSelectedComment = undefined;
+            this.owner.showComments = false;
+        }
+    }
+    discardButtonClick() {
+        if (this.commentPane.currentEditingComment) {
+            let isNewComment = this.isNewComment;
+            if (this.commentPane.currentEditingComment && this.commentPane.isInsertingReply) {
+                this.commentPane.currentEditingComment.cancelReply();
+            }
+            else {
+                this.commentPane.currentEditingComment.cancelEditing();
+                if (isNewComment) {
+                    this.discardComment(this.commentPane.currentEditingComment.comment);
+                }
+            }
+            this.owner.viewer.currentSelectedComment = undefined;
+            this.closeDialogUtils();
+            this.owner.showComments = false;
+        }
+    }
+    closeDialogUtils() {
+        this.confirmDialog.close();
+        this.confirmDialog = undefined;
+    }
+    initToolbar(localValue) {
+        this.toolbarElement = createElement('div');
+        this.toolbar = new Toolbar({
+            items: [
+                {
+                    prefixIcon: 'e-de-new-cmt e-de-cmt-tbr', tooltipText: localValue.getConstant('New Comment'),
+                    text: localValue.getConstant('New Comment'), click: this.insertComment.bind(this)
+                },
+                {
+                    prefixIcon: 'e-de-nav-left-arrow e-de-cmt-tbr', align: 'Right',
+                    tooltipText: localValue.getConstant('Previous Comment'), click: this.navigatePreviousComment.bind(this)
+                },
+                {
+                    prefixIcon: 'e-de-nav-right-arrow e-de-cmt-tbr', align: 'Right',
+                    tooltipText: localValue.getConstant('Next Comment'), click: this.navigateNextComment.bind(this)
+                }
+            ],
+            enableRtl: this.owner.enableRtl
+        });
+        this.toolbar.appendTo(this.toolbarElement);
+        return this.toolbarElement;
+    }
+    insertComment() {
+        if (this.owner && this.owner.editorModule) {
+            this.owner.editorModule.insertComment('');
+        }
+    }
+    addComment(comment, isNewComment) {
+        this.isNewComment = isNewComment;
+        this.owner.viewer.currentSelectedComment = comment;
+        this.commentPane.insertComment(comment);
+        if (!isNewComment) {
+            let commentView = this.commentPane.comments.get(comment);
+            commentView.cancelEditing();
+            this.enableDisableToolbarItem();
+        }
+        this.selectComment(comment);
+    }
+    deleteComment(comment) {
+        if (this.commentPane) {
+            this.commentPane.deleteComment(comment);
+        }
+    }
+    selectComment(comment) {
+        if (this.commentPane.isEditMode) {
+            return;
+        }
+        if (comment.isReply) {
+            comment = comment.ownerComment;
+        }
+        if (this.owner && this.owner.viewer && this.owner.viewer.currentSelectedComment !== comment) {
+            this.owner.viewer.currentSelectedComment = comment;
+        }
+        this.commentPane.selectComment(comment);
+    }
+    resolveComment(comment) {
+        this.commentPane.resolveComment(comment);
+    }
+    reopenComment(comment) {
+        this.commentPane.reopenComment(comment);
+    }
+    addReply(comment, newComment) {
+        this.isNewComment = newComment;
+        this.commentPane.insertReply(comment);
+        if (!newComment) {
+            let commentView = this.commentPane.comments.get(comment);
+            commentView.cancelEditing();
+            this.enableDisableToolbarItem();
+        }
+        this.selectComment(comment.ownerComment);
+    }
+    navigatePreviousComment() {
+        if (this.owner && this.owner.editorModule) {
+            this.owner.selection.navigatePreviousComment();
+        }
+    }
+    navigateNextComment() {
+        if (this.owner && this.owner.editorModule) {
+            this.owner.selection.navigateNextComment();
+        }
+    }
+    enableDisableToolbarItem() {
+        if (this.toolbar) {
+            let enable = true;
+            if (this.commentPane.isEditMode) {
+                enable = !this.commentPane.isEditMode;
+            }
+            let elements = this.toolbar.element.querySelectorAll('.' + 'e-de-cmt-tbr');
+            this.toolbar.enableItems(elements[0].parentElement.parentElement, enable);
+            if (enable && this.owner && this.owner.viewer) {
+                enable = !(this.owner.viewer.comments.length === 0);
+            }
+            this.toolbar.enableItems(elements[1].parentElement.parentElement, enable);
+            this.toolbar.enableItems(elements[2].parentElement.parentElement, enable);
+        }
+    }
+    initCommentPane() {
+        this.commentPane = new CommentPane(this.owner, this);
+        this.commentPane.initCommentPane();
+    }
+    layoutComments() {
+        for (let i = 0; i < this.owner.viewer.comments.length; i++) {
+            this.commentPane.addComment(this.owner.viewer.comments[i]);
+        }
+    }
+    clear() {
+        this.previousSelectedCommentInt = undefined;
+        this.commentPane.clear();
+    }
+    discardComment(comment) {
+        if (comment) {
+            if (this.owner.editorHistory) {
+                this.owner.editorHistory.undo();
+                this.owner.editorHistory.redoStack.pop();
+            }
+            else if (this.owner.editor) {
+                this.owner.editor.deleteCommentInternal(comment);
+            }
+        }
+    }
+    destroy() {
+        if (this.commentPane) {
+            this.commentPane.destroy();
+        }
+        this.commentPane = undefined;
+        if (this.closeButton && this.closeButton.parentElement) {
+            this.closeButton.parentElement.removeChild(this.closeButton);
+        }
+        this.closeButton = undefined;
+        if (this.toolbar) {
+            this.toolbar.destroy();
+        }
+        this.toolbar = undefined;
+        if (this.toolbarElement && this.toolbarElement.parentElement) {
+            this.toolbarElement.parentElement.removeChild(this.toolbarElement);
+        }
+        this.toolbarElement = undefined;
+        if (this.headerContainer && this.headerContainer.parentElement) {
+            this.headerContainer.parentElement.removeChild(this.headerContainer);
+        }
+        this.headerContainer = undefined;
+        this.previousSelectedCommentInt = undefined;
+        if (this.reviewPane && this.reviewPane.parentElement) {
+            this.reviewPane.parentElement.removeChild(this.reviewPane);
+        }
+        this.reviewPane.innerHTML = '';
+        this.reviewPane = undefined;
+        this.owner = undefined;
+    }
+}
+/**
+ * @private
+ */
+class CommentPane {
+    constructor(owner, pane) {
+        this.isEditModeInternal = false;
+        this.isInsertingReply = false;
+        this.owner = owner;
+        this.parentPane = pane;
+        this.parent = pane.reviewPane;
+        this.comments = new Dictionary();
+    }
+    /**
+     * @private
+     */
+    get isEditMode() {
+        return this.isEditModeInternal;
+    }
+    /**
+     * @private
+     */
+    set isEditMode(value) {
+        this.isEditModeInternal = value;
+        let keys = this.comments.keys;
+        for (let i = 0; i < keys.length; i++) {
+            let commentView = this.comments.get(keys[i]);
+            if (value) {
+                commentView.menuBar.style.display = 'none';
+            }
+            else if (!commentView.comment.isReply) {
+                commentView.menuBar.style.display = 'block';
+            }
+        }
+        if (this.parentPane) {
+            this.parentPane.enableDisableToolbarItem();
+        }
+        if (this.owner) {
+            if (this.isEditModeInternal) {
+                this.owner.trigger('commentBegin');
+            }
+            else {
+                this.owner.trigger('commentEnd');
+            }
+        }
+    }
+    initCommentPane() {
+        this.commentPane = createElement('div', { className: 'e-de-cmt-container' });
+        let localObj = new L10n('documenteditor', this.owner.defaultLocale);
+        localObj.setLocale(this.owner.locale);
+        this.noCommentIndicator = createElement('div', {
+            className: 'e-de-cmt-no-cmt',
+            innerHTML: localObj.getConstant('No comments in this document')
+        });
+        this.commentPane.appendChild(this.noCommentIndicator);
+        this.parent.appendChild(this.commentPane);
+    }
+    addComment(comment) {
+        let commentView = new CommentView(this.owner, this, comment);
+        let commentParent = commentView.layoutComment(false);
+        this.comments.add(comment, commentView);
+        this.commentPane.appendChild(commentParent);
+        for (let i = 0; i < comment.replyComments.length; i++) {
+            let replyView = new CommentView(this.owner, this, comment.replyComments[i]);
+            this.comments.add(comment.replyComments[i], replyView);
+            commentParent.insertBefore(replyView.layoutComment(true), commentView.replyViewContainer);
+        }
+        this.updateCommentStatus();
+        commentView.hideDrawer();
+    }
+    updateHeight() {
+        this.commentPane.style.height = this.parent.clientHeight - this.parentPane.headerContainer.clientHeight + 'px';
+    }
+    insertReply(replyComment) {
+        let parentComment = replyComment.ownerComment;
+        let parentView = this.comments.get(parentComment);
+        let replyView = new CommentView(this.owner, this, replyComment);
+        this.comments.add(replyComment, replyView);
+        let replyElement = replyView.layoutComment(true);
+        let replyIndex = parentComment.replyComments.indexOf(replyComment);
+        if (replyIndex === parentComment.replyComments.length - 1) {
+            parentView.parentElement.insertBefore(replyElement, parentView.replyViewContainer);
+        }
+        else {
+            let nextReply = parentComment.replyComments[replyIndex + 1];
+            parentView.parentElement.insertBefore(replyElement, this.comments.get(nextReply).parentElement);
+        }
+        replyView.editComment();
+    }
+    insertComment(comment) {
+        let commentView = new CommentView(this.owner, this, comment);
+        let commentParent = commentView.layoutComment(false);
+        this.comments.add(comment, commentView);
+        if (this.owner.viewer.comments.indexOf(comment) === this.owner.viewer.comments.length - 1) {
+            this.commentPane.appendChild(commentParent);
+        }
+        else {
+            let index = this.owner.viewer.comments.indexOf(comment);
+            let element = this.comments.get(this.owner.viewer.comments[index + 1]).parentElement;
+            this.commentPane.insertBefore(commentParent, element);
+            commentParent.focus();
+        }
+        this.updateCommentStatus();
+        commentView.editComment();
+    }
+    removeSelectionMark(className) {
+        if (this.parent) {
+            let elements = this.parent.getElementsByClassName(className);
+            for (let i = 0; i < elements.length; i++) {
+                classList(elements[i], [], [className]);
+            }
+        }
+    }
+    selectComment(comment) {
+        this.removeSelectionMark('e-de-cmt-selection');
+        if (comment.isReply) {
+            comment = comment.ownerComment;
+        }
+        if (comment) {
+            let commentView = this.comments.get(comment);
+            let selectedElement = commentView.parentElement;
+            if (selectedElement) {
+                classList(selectedElement, ['e-de-cmt-selection'], []);
+                selectedElement.focus();
+            }
+            let commentStart = this.getCommentStart(comment);
+            if (!commentStart.commentMark) {
+                commentStart.renderCommentMark();
+            }
+            classList(commentStart.commentMark, ['e-de-cmt-mark-selected'], []);
+            commentView.showDrawer();
+        }
+    }
+    getCommentStart(comment) {
+        let commentStart = undefined;
+        if (comment && comment.commentStart) {
+            commentStart = comment.commentStart;
+        }
+        return this.getFirstCommentInLine(commentStart);
+    }
+    getFirstCommentInLine(commentStart) {
+        for (let i = 0; i < commentStart.line.children.length; i++) {
+            let startComment = commentStart.line.children[i];
+            if (startComment instanceof CommentCharacterElementBox && startComment.commentType === 0) {
+                return startComment;
+            }
+        }
+        return commentStart;
+    }
+    deleteComment(comment) {
+        let commentView = this.comments.get(comment);
+        if (commentView.parentElement && commentView.parentElement.parentElement) {
+            commentView.parentElement.parentElement.removeChild(commentView.parentElement);
+        }
+        //this.commentPane.removeChild();
+        this.comments.remove(comment);
+        commentView.destroy();
+        this.updateCommentStatus();
+    }
+    resolveComment(comment) {
+        let commentView = this.comments.get(comment);
+        if (commentView) {
+            commentView.resolveComment();
+        }
+    }
+    reopenComment(comment) {
+        let commentView = this.comments.get(comment);
+        if (commentView) {
+            commentView.reopenComment();
+        }
+    }
+    updateCommentStatus() {
+        if (this.owner.viewer.comments.length === 0) {
+            if (!this.noCommentIndicator.parentElement) {
+                this.commentPane.appendChild(this.noCommentIndicator);
+            }
+            this.noCommentIndicator.style.display = 'block';
+        }
+        else {
+            this.noCommentIndicator.style.display = 'none';
+        }
+        if (this.parentPane) {
+            this.parentPane.enableDisableToolbarItem();
+        }
+    }
+    clear() {
+        this.isEditMode = false;
+        this.currentEditingComment = undefined;
+        this.isInsertingReply = false;
+        this.removeChildElements();
+        this.commentPane.innerHTML = '';
+        this.updateCommentStatus();
+    }
+    removeChildElements() {
+        let comments = this.comments.keys;
+        for (let i = 0; i < comments.length; i++) {
+            this.comments.get(comments[i]).destroy();
+        }
+        this.comments.clear();
+    }
+    destroy() {
+        this.removeChildElements();
+        if (this.noCommentIndicator && this.noCommentIndicator) {
+            this.noCommentIndicator.parentElement.removeChild(this.noCommentIndicator);
+        }
+        this.noCommentIndicator = undefined;
+        if (this.commentPane && this.commentPane.parentElement) {
+            this.commentPane.parentElement.removeChild(this.commentPane);
+        }
+        this.commentPane.innerHTML = '';
+        this.parentPane = undefined;
+        this.owner = undefined;
+    }
+}
+/**
+ * @private
+ */
+class CommentView {
+    constructor(owner, commentPane, comment) {
+        this.isReply = false;
+        this.isDrawerExpand = false;
+        this.owner = owner;
+        this.comment = comment;
+        this.commentPane = commentPane;
+    }
+    layoutComment(isReply) {
+        this.isReply = isReply;
+        let classList$$1 = 'e-de-cmt-sub-container';
+        if (isReply) {
+            classList$$1 += ' e-de-cmt-reply';
+        }
+        let localObj = new L10n('documenteditor', this.owner.defaultLocale);
+        localObj.setLocale(this.owner.locale);
+        this.parentElement = createElement('div', { className: classList$$1 });
+        this.initCommentHeader(localObj);
+        this.initCommentView(localObj);
+        this.initDateView();
+        if (!this.comment.isReply) {
+            this.parentElement.tabIndex = 0;
+            this.initReplyView(localObj);
+            this.initResolveOption(localObj);
+            this.initDrawer();
+            if (this.comment.isResolved) {
+                this.resolveComment();
+            }
+        }
+        else {
+            this.menuBar.style.display = 'none';
+        }
+        this.commentView.addEventListener('mouseenter', this.showMenuItems.bind(this));
+        this.commentView.addEventListener('mouseleave', this.hideMenuItemOnMouseLeave.bind(this));
+        return this.parentElement;
+    }
+    initCommentHeader(localObj) {
+        let commentDiv = createElement('div', { className: 'e-de-cmt-view' });
+        let commentUserInfo = createElement('div', { className: 'e-de-cmt-author' });
+        let userName = createElement('div', { className: 'e-de-cmt-author-name' });
+        userName.textContent = this.comment.author;
+        //if (this.comment.author === this.owner.currentUser) {
+        this.menuBar = createElement('button', { className: 'e-de-cp-option' });
+        let userOption = [{ text: localObj.getConstant('Edit') },
+            { text: localObj.getConstant('Delete') },
+            { text: localObj.getConstant('Reply') },
+            { text: localObj.getConstant('Resolve') }];
+        let menuItem = new DropDownButton({
+            items: this.isReply ? userOption.splice(0, 2) : userOption,
+            select: this.userOptionSelectEvent.bind(this),
+            iconCss: 'e-de-menu-icon',
+            cssClass: 'e-caret-hide',
+            enableRtl: this.owner.enableRtl
+        });
+        menuItem.appendTo(this.menuBar);
+        commentUserInfo.appendChild(this.menuBar);
+        this.dropDownButton = menuItem;
+        //}
+        commentUserInfo.appendChild(userName);
+        commentDiv.appendChild(commentUserInfo);
+        this.commentView = commentDiv;
+        this.parentElement.appendChild(commentDiv);
+        commentDiv.addEventListener('click', this.selectComment.bind(this));
+    }
+    selectComment(event) {
+        if (this.commentPane) {
+            if (!this.commentPane.isEditMode) {
+                this.owner.selection.selectComment(this.comment);
+            }
+            else if (this.commentPane.isEditMode && this.commentPane.isInsertingReply
+                && this.commentPane.currentEditingComment && this.commentPane.currentEditingComment.replyViewTextBox.value === '') {
+                let comment = this.comment;
+                if (comment && comment.isReply) {
+                    comment = this.comment.ownerComment;
+                }
+                if (comment && this.owner.viewer.currentSelectedComment === comment) {
+                    return;
+                }
+                this.commentPane.currentEditingComment.cancelReply();
+                this.owner.selection.selectComment(this.comment);
+            }
+        }
+    }
+    initCommentView(localObj) {
+        this.commentText = createElement('div', { className: 'e-de-cmt-readonly' });
+        this.commentText.innerText = this.comment.text;
+        this.commentView.appendChild(this.commentText);
+        this.initEditView(localObj);
+    }
+    initEditView(localObj) {
+        this.textAreaContainer = createElement('div', { styles: 'display:none' });
+        this.textArea = createElement('textarea', { className: 'e-de-cmt-textarea e-input' });
+        this.textArea.placeholder = localObj.getConstant('Type your comment hear');
+        this.textArea.rows = 1;
+        this.textArea.value = this.comment.text.trim();
+        this.textArea.addEventListener('keydown', this.updateTextAreaHeight.bind(this));
+        this.textArea.addEventListener('keyup', this.enableDisablePostButton.bind(this));
+        let editRegionFooter = createElement('div', { className: 'e-de-cmt-action-button' });
+        let postButton = createElement('button', { className: 'e-de-cmt-post-btn e-btn e-flat' });
+        //tslint:disable-next-line:max-line-length
+        this.postButton = new Button({ cssClass: 'e-btn e-flat e-primary', iconCss: 'e-de-cmt-post', disabled: true }, postButton);
+        postButton.addEventListener('click', this.postComment.bind(this));
+        let cancelButton = createElement('button', {
+            className: 'e-de-cmt-cancel-btn e-btn e-flat'
+        });
+        this.cancelButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-cancel' }, cancelButton);
+        cancelButton.addEventListener('click', this.cancelEditing.bind(this));
+        editRegionFooter.appendChild(postButton);
+        editRegionFooter.appendChild(cancelButton);
+        this.textAreaContainer.appendChild(this.textArea);
+        this.textAreaContainer.appendChild(editRegionFooter);
+        this.commentView.appendChild(this.textAreaContainer);
+    }
+    initDateView() {
+        this.commentDate = createElement('div', { className: 'e-de-cmt-date' });
+        let modifiedDate = new Date(this.comment.date);
+        let date = modifiedDate.toString().split(' ').splice(1, 2).join(' ');
+        let time = modifiedDate.toLocaleTimeString().split(' ')[0].split(':').splice(0, 2).join(':')
+            + modifiedDate.toLocaleTimeString().split(' ')[1];
+        this.commentDate.innerText = date + ', ' + modifiedDate.getFullYear() + ', ' + time;
+        this.commentView.appendChild(this.commentDate);
+    }
+    initDrawer() {
+        this.drawerElement = createElement('div', { styles: 'display:none;', className: 'e-de-cmt-drawer-cnt' });
+        let leftPane = createElement('div', { className: 'e-de-cmt-drawer' });
+        let spanElement = createElement('span');
+        leftPane.appendChild(spanElement);
+        this.drawerElement.appendChild(leftPane);
+        this.drawerSpanElement = spanElement;
+        this.drawerAction = leftPane;
+        this.drawerAction.addEventListener('click', this.showOrHideDrawer.bind(this));
+        this.parentElement.appendChild(this.drawerElement);
+    }
+    initReplyView(localObj) {
+        this.replyViewContainer = createElement('div', { className: 'e-de-cmt-rply-view' });
+        if (this.commentPane.parentPane.isNewComment) {
+            this.replyViewContainer.style.display = 'none';
+        }
+        this.replyViewTextBox = createElement('textarea', { className: 'e-de-cmt-textarea e-input' });
+        this.replyViewTextBox.placeholder = localObj.getConstant('Reply');
+        this.replyViewTextBox.rows = 1;
+        this.replyViewTextBox.value = '';
+        this.replyViewTextBox.readOnly = true;
+        this.replyViewTextBox.addEventListener('click', this.enableReplyView.bind(this));
+        this.replyViewTextBox.addEventListener('keydown', this.updateReplyTextAreaHeight.bind(this));
+        this.replyViewTextBox.addEventListener('keyup', this.enableDisableReplyPostButton.bind(this));
+        let editRegionFooter = createElement('div', { styles: 'display:none', className: 'e-de-cmt-action-button' });
+        let postButton = createElement('button', { className: 'e-de-cmt-post-btn e-btn e-flat' });
+        //tslint:disable-next-line:max-line-length
+        this.replyPostButton = new Button({ cssClass: 'e-btn e-flat e-primary', iconCss: 'e-de-cmt-post', disabled: true }, postButton);
+        postButton.addEventListener('click', this.postReply.bind(this));
+        let cancelButton = createElement('button', {
+            className: 'e-de-cmt-cancel-btn e-btn e-flat'
+        });
+        this.replyCancelButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-cancel' }, cancelButton);
+        cancelButton.addEventListener('click', this.cancelReply.bind(this));
+        editRegionFooter.appendChild(postButton);
+        editRegionFooter.appendChild(cancelButton);
+        this.replyFooter = editRegionFooter;
+        this.replyViewContainer.appendChild(this.replyViewTextBox);
+        this.replyViewContainer.appendChild(editRegionFooter);
+        this.parentElement.appendChild(this.replyViewContainer);
+    }
+    initResolveOption(localObj) {
+        let editRegionFooter = createElement('div', { className: 'e-de-cmt-resolve-btn' });
+        let postButton = createElement('button', { className: 'e-de-cmt-post-btn e-btn e-flat' });
+        //tslint:disable-next-line:max-line-length
+        this.reopenButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-reopen' }, postButton);
+        postButton.title = localObj.getConstant('Reopen');
+        postButton.addEventListener('click', this.reopenButtonClick.bind(this));
+        let cancelButton = createElement('button', {
+            className: 'e-de-cmt-cancel-btn e-btn e-flat'
+        });
+        cancelButton.title = localObj.getConstant('Delete');
+        this.deleteButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-delete' }, cancelButton);
+        cancelButton.addEventListener('click', this.deleteButtonClick.bind(this));
+        editRegionFooter.appendChild(postButton);
+        editRegionFooter.appendChild(cancelButton);
+        this.parentElement.appendChild(editRegionFooter);
+    }
+    reopenButtonClick() {
+        this.owner.editor.reopenComment(this.comment);
+    }
+    deleteButtonClick() {
+        this.owner.editorModule.deleteCommentInternal(this.comment);
+    }
+    updateReplyTextAreaHeight() {
+        setTimeout(() => {
+            this.replyViewTextBox.style.height = 'auto';
+            let scrollHeight = this.replyViewTextBox.scrollHeight;
+            this.replyViewTextBox.style.height = scrollHeight + 'px';
+        });
+    }
+    enableDisableReplyPostButton() {
+        this.replyPostButton.disabled = this.replyViewTextBox.value === '';
+    }
+    enableReplyView() {
+        if (this.commentPane.isEditMode) {
+            return;
+        }
+        this.commentPane.currentEditingComment = this;
+        this.commentPane.isInsertingReply = true;
+        if (this.owner.viewer.currentSelectedComment !== this.comment) {
+            this.owner.selection.selectComment(this.comment);
+        }
+        this.commentPane.isEditMode = true;
+        this.replyViewTextBox.readOnly = false;
+        this.replyFooter.style.display = 'block';
+        setTimeout(() => {
+            this.replyViewTextBox.focus();
+        });
+    }
+    postReply() {
+        let replyText = this.replyViewTextBox.value;
+        this.cancelReply();
+        this.updateReplyTextAreaHeight();
+        this.owner.editorModule.replyComment(this.comment, replyText);
+    }
+    cancelReply() {
+        this.commentPane.currentEditingComment = undefined;
+        this.commentPane.isInsertingReply = true;
+        this.commentPane.isEditMode = false;
+        this.replyPostButton.disabled = true;
+        this.replyViewTextBox.value = '';
+        this.replyViewTextBox.readOnly = true;
+        this.replyFooter.style.display = 'none';
+    }
+    updateTextAreaHeight() {
+        setTimeout(() => {
+            this.textArea.style.height = 'auto';
+            let scrollHeight = this.textArea.scrollHeight;
+            this.textArea.style.height = scrollHeight + 'px';
+        });
+    }
+    showMenuItems() {
+        if (this.comment.isReply) {
+            if (!this.commentPane.isEditMode && (!isNullOrUndefined(this.comment) && !this.comment.isResolved)) {
+                this.menuBar.style.display = 'block';
+            }
+        }
+        let commentStart = this.commentPane.getCommentStart(this.comment);
+        if (!isNullOrUndefined(commentStart) && !isNullOrUndefined(commentStart.commentMark)) {
+            commentStart.commentMark.classList.add('e-de-cmt-mark-hover');
+        }
+    }
+    hideMenuItemOnMouseLeave() {
+        if (this.comment.isReply) {
+            if (this.owner.viewer.currentSelectedComment !== this.comment.ownerComment) {
+                this.hideMenuItems();
+            }
+        }
+        if (this.commentPane) {
+            let commentStart = this.commentPane.getCommentStart(this.comment);
+            if (!isNullOrUndefined(commentStart) && !isNullOrUndefined(commentStart.commentMark)) {
+                commentStart.commentMark.classList.remove('e-de-cmt-mark-hover');
+            }
+        }
+    }
+    hideMenuItems() {
+        this.menuBar.style.display = 'none';
+    }
+    enableDisablePostButton() {
+        this.postButton.disabled = this.textArea.value === '';
+    }
+    editComment() {
+        this.commentPane.currentEditingComment = this;
+        this.commentPane.isInsertingReply = false;
+        this.commentPane.isEditMode = true;
+        this.commentText.style.display = 'none';
+        this.textAreaContainer.style.display = 'block';
+        this.commentDate.style.display = 'none';
+        this.menuBar.style.display = 'none';
+        this.updateTextAreaHeight();
+        setTimeout(() => {
+            this.textArea.focus();
+        });
+    }
+    resolveComment() {
+        classList(this.parentElement, ['e-de-cmt-resolved'], []);
+        let localObj = new L10n('documenteditor', this.owner.defaultLocale);
+        localObj.setLocale(this.owner.locale);
+        this.dropDownButton.items = [{ text: localObj.getConstant('Reopen') }, { text: localObj.getConstant('Delete') }];
+    }
+    reopenComment() {
+        classList(this.parentElement, [], ['e-de-cmt-resolved']);
+        let localObj = new L10n('documenteditor', this.owner.defaultLocale);
+        localObj.setLocale(this.owner.locale);
+        this.dropDownButton.items = [{ text: localObj.getConstant('Edit') },
+            { text: localObj.getConstant('Delete') },
+            { text: localObj.getConstant('Reply') },
+            { text: localObj.getConstant('Resolve') }];
+        this.showDrawer();
+    }
+    postComment() {
+        let updatedText = this.textArea.value;
+        this.commentText.innerText = updatedText;
+        this.comment.text = updatedText;
+        this.showCommentView();
+        if (this.commentPane && this.commentPane.parentPane) {
+            this.commentPane.parentPane.isNewComment = false;
+        }
+        if (!isNullOrUndefined(this.replyViewContainer)) {
+            this.replyViewContainer.style.display = '';
+        }
+    }
+    showCommentView() {
+        this.commentPane.isEditMode = false;
+        this.textAreaContainer.style.display = 'none';
+        this.commentText.style.display = 'block';
+        this.commentDate.style.display = 'block';
+        this.menuBar.style.display = 'block';
+    }
+    cancelEditing() {
+        this.showCommentView();
+        this.textArea.value = this.comment.text.trim();
+        if (this.commentPane.parentPane.isNewComment) {
+            if (this.commentPane && this.commentPane.parentPane) {
+                this.commentPane.parentPane.isNewComment = false;
+            }
+            this.commentPane.parentPane.discardComment(this.comment);
+        }
+    }
+    showOrHideDrawer() {
+        if (this.isDrawerExpand) {
+            this.hideDrawer();
+        }
+        else {
+            this.showDrawer();
+        }
+    }
+    hideDrawer() {
+        if (this.parentElement) {
+            let localObj = new L10n('documenteditor', this.owner.defaultLocale);
+            localObj.setLocale(this.owner.locale);
+            let elements = this.parentElement.getElementsByClassName('e-de-cmt-sub-container');
+            if (elements.length > 1) {
+                for (let i = 1; i < elements.length; i++) {
+                    elements[i].style.display = 'none';
+                }
+                this.drawerElement.style.display = 'block';
+                classList(this.drawerSpanElement, [], ['e-de-nav-up']);
+                this.drawerSpanElement.innerText = '+' + (elements.length - 1) + ' ' + localObj.getConstant('more') + '...';
+            }
+            this.isDrawerExpand = false;
+        }
+    }
+    showDrawer() {
+        if (this.parentElement) {
+            let elements = this.parentElement.getElementsByClassName('e-de-cmt-sub-container');
+            if (elements.length > 1) {
+                for (let i = 0; i < elements.length; i++) {
+                    elements[i].style.display = 'block';
+                }
+                this.drawerElement.style.display = 'block';
+                this.drawerSpanElement.innerText = '';
+                classList(this.drawerSpanElement, ['e-de-nav-up'], []);
+            }
+            this.isDrawerExpand = true;
+        }
+    }
+    userOptionSelectEvent(event) {
+        let selectedItem = event.item.text;
+        let localObj = new L10n('documenteditor', this.owner.defaultLocale);
+        localObj.setLocale(this.owner.locale);
+        switch (selectedItem) {
+            case localObj.getConstant('Edit'):
+                this.editComment();
+                break;
+            case localObj.getConstant('Reply'):
+                this.enableReplyView();
+                break;
+            case localObj.getConstant('Delete'):
+                this.owner.editorModule.deleteCommentInternal(this.comment);
+                break;
+            case localObj.getConstant('Resolve'):
+                this.owner.editor.resolveComment(this.comment);
+                break;
+            case localObj.getConstant('Reopen'):
+                this.owner.editor.reopenComment(this.comment);
+        }
+    }
+    unwireEvent() {
+        if (this.drawerAction) {
+            this.drawerAction.removeEventListener('click', this.showOrHideDrawer.bind(this));
+        }
+        if (this.textArea) {
+            this.textArea.removeEventListener('keydown', this.updateTextAreaHeight.bind(this));
+            this.textArea.removeEventListener('keyup', this.enableDisablePostButton.bind(this));
+        }
+        if (this.postButton) {
+            this.postButton.removeEventListener('click', this.postComment.bind(this));
+        }
+        if (this.cancelButton) {
+            this.cancelButton.removeEventListener('click', this.cancelEditing.bind(this));
+        }
+        if (this.commentView) {
+            this.commentView.removeEventListener('click', this.selectComment.bind(this));
+            this.commentView.removeEventListener('mouseenter', this.showMenuItems.bind(this));
+            this.commentView.removeEventListener('mouseleave', this.hideMenuItemOnMouseLeave.bind(this));
+        }
+    }
+    destroy() {
+        this.unwireEvent();
+        if (this.comment) {
+            this.comment = undefined;
+        }
+        if (this.dropDownButton) {
+            this.dropDownButton.destroy();
+        }
+        this.dropDownButton = undefined;
+        if (this.postButton) {
+            this.postButton.destroy();
+        }
+        this.postButton = undefined;
+        if (this.cancelButton) {
+            this.cancelButton.destroy();
+        }
+        if (this.replyPostButton) {
+            this.replyPostButton.destroy();
+            this.replyPostButton = undefined;
+        }
+        if (this.replyCancelButton) {
+            this.replyCancelButton.destroy();
+            this.replyCancelButton = undefined;
+        }
+        if (this.reopenButton) {
+            this.reopenButton.destroy();
+            this.reopenButton = undefined;
+        }
+        if (this.deleteButton) {
+            this.deleteButton.destroy();
+            this.deleteButton = undefined;
+        }
+        this.replyViewContainer = undefined;
+        this.replyViewTextBox = undefined;
+        this.replyFooter = undefined;
+        if (this.parentElement && this.parentElement.parentElement) {
+            this.parentElement.parentElement.removeChild(this.parentElement);
+        }
+        this.commentPane = undefined;
+        this.parentElement.innerHTML = '';
+        this.cancelButton = undefined;
+        this.owner = undefined;
+        this.menuBar = undefined;
+        this.commentView = undefined;
+        this.drawerAction = undefined;
+        this.commentText = undefined;
+        this.commentDate = undefined;
+        this.textAreaContainer = undefined;
+        this.textArea = undefined;
+        this.drawerElement = undefined;
+        this.drawerSpanElement = undefined;
+        this.parentElement = null;
+    }
+}
+
+/**
+ * Comments
+ */
+
+/**
  * Document Editor implementation
  */
 
@@ -72332,6 +74462,7 @@ const INSERT_IMAGE_ONLINE_ID = '_image_url';
 const INSERT_TABLE_ID = '_table';
 const INSERT_LINK_ID = '_link';
 const BOOKMARK_ID = '_bookmark';
+const COMMENT_ID = '_comment';
 const TABLE_OF_CONTENT_ID = '_toc';
 const HEADER_ID = '_header';
 const FOOTER_ID = '_footer';
@@ -72352,15 +74483,19 @@ class Toolbar$1 {
     /**
      * @private
      */
-    get documentEditor() {
-        return this.container.documentEditor;
+    constructor(container) {
+        /**
+         * @private
+         */
+        this.isCommentEditing = false;
+        this.container = container;
+        this.importHandler = new XmlHttpRequestHandler();
     }
     /**
      * @private
      */
-    constructor(container) {
-        this.container = container;
-        this.importHandler = new XmlHttpRequestHandler();
+    get documentEditor() {
+        return this.container.documentEditor;
     }
     getModuleName() {
         return 'toolbar';
@@ -72450,6 +74585,7 @@ class Toolbar$1 {
     showHidePropertiesPane() {
         if (this.container.propertiesPaneContainer.style.display === 'none') {
             this.container.showPropertiesPane = true;
+            this.container.trigger('beforePaneSwitch', { type: 'PropertiesPane' });
         }
         else {
             this.container.showPropertiesPane = false;
@@ -72518,6 +74654,11 @@ class Toolbar$1 {
                     prefixIcon: 'e-de-ctnr-bookmark',
                     tooltipText: locale.getConstant('Insert a bookmark in a specific place in this document.'),
                     id: id + BOOKMARK_ID, text: locale.getConstant('Bookmark'), cssClass: 'e-de-toolbar-btn-middle'
+                },
+                {
+                    prefixIcon: 'e-de-cnt-cmt-add',
+                    tooltipText: locale.getConstant('New comment'),
+                    id: id + COMMENT_ID, text: locale.getConstant('Comments'), cssClass: 'e-de-toolbar-btn-middle'
                 },
                 {
                     prefixIcon: 'e-de-ctnr-tableofcontent',
@@ -72597,6 +74738,9 @@ class Toolbar$1 {
                 break;
             case id + BOOKMARK_ID:
                 this.container.documentEditor.showDialog('Bookmark');
+                break;
+            case id + COMMENT_ID:
+                this.documentEditor.editor.insertComment('');
                 break;
             case id + HEADER_ID:
                 this.container.documentEditor.selection.goToHeader();
@@ -72732,12 +74876,25 @@ class Toolbar$1 {
     /**
      * @private
      */
+    enableDisableInsertComment(enable) {
+        this.isCommentEditing = !enable;
+        let id = this.container.element.id + TOOLBAR_ID;
+        let commentId = id + COMMENT_ID;
+        let element = document.getElementById(commentId);
+        this.toolbar.enableItems(element.parentElement, enable);
+    }
+    /**
+     * @private
+     */
     enableDisableToolBarItem(enable, isProtectedContent) {
         let id = this.container.element.id + TOOLBAR_ID;
         for (let item of this.toolbar.items) {
             let itemId = item.id;
             if (itemId !== id + NEW_ID && itemId !== id + OPEN_ID && itemId !== id + FIND_ID &&
                 itemId !== id + CLIPBOARD_ID && itemId !== id + RESTRICT_EDITING_ID && item.type !== 'Separator') {
+                if (enable && this.isCommentEditing && itemId === id + COMMENT_ID) {
+                    continue;
+                }
                 let element = document.getElementById(item.id);
                 this.toolbar.enableItems(element.parentElement, enable);
             }
@@ -75865,10 +78022,10 @@ class StatusBar {
         this.wireEvents();
     }
     get documentEditor() {
-        return this.container.documentEditor;
+        return this.container ? this.container.documentEditor : undefined;
     }
     get editorPageCount() {
-        return this.documentEditor.pageCount;
+        return this.documentEditor ? this.documentEditor.pageCount : 1;
     }
     addSpellCheckElement() {
         let spellCheckBtn = createElement('button', {
@@ -76097,7 +78254,9 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
             'Protections': 'Protections',
             'Error in establishing connection with web server': 'Error in establishing connection with web server',
             'Single': 'Single',
-            'Double': 'Double'
+            'Double': 'Double',
+            'New comment': 'New comment',
+            'Comments': 'Comments'
         };
     }
     /**
@@ -76153,6 +78312,7 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
                     if (this.documentEditor) {
                         this.documentEditor.headers = newModel.headers;
                     }
+                    break;
             }
         }
     }
@@ -76274,6 +78434,9 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
             viewChange: this.onViewChange.bind(this),
             customContextMenuSelect: this.onCustomContextMenuSelect.bind(this),
             customContextMenuBeforeOpen: this.onCustomContextMenuBeforeOpen.bind(this),
+            beforePaneSwitch: this.onBeforePaneSwitch.bind(this),
+            commentBegin: this.onCommentBegin.bind(this),
+            commentEnd: this.onCommentEnd.bind(this),
             locale: this.locale,
             acceptTab: true,
             zIndex: this.zIndex,
@@ -76285,6 +78448,19 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
         this.setFormat();
         this.documentEditor.appendTo(documentEditorTarget);
         this.documentEditor.resize();
+    }
+    onCommentBegin() {
+        if (this.toolbarModule) {
+            this.toolbarModule.enableDisableInsertComment(false);
+        }
+    }
+    onCommentEnd() {
+        if (this.toolbarModule) {
+            this.toolbarModule.enableDisableInsertComment(true);
+        }
+    }
+    onBeforePaneSwitch(args) {
+        this.trigger('beforePaneSwitch', args);
     }
     /**
      * @private
@@ -76317,6 +78493,8 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
      */
     onDocumentChange() {
         if (this.toolbarModule) {
+            this.toolbarModule.isCommentEditing = false;
+            this.toolbarModule.enableDisableInsertComment(true);
             this.toolbarModule.enableDisableUndoRedo();
         }
         if (this.textProperties) {
@@ -76383,7 +78561,7 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
      * @private
      */
     showPropertiesPaneOnSelection() {
-        if (this.restrictEditing) {
+        if (this.restrictEditing || this.textProperties === undefined) {
             return;
         }
         let isProtectedDocument = this.documentEditor.viewer.protectionType === 'ReadOnly';
@@ -76482,7 +78660,9 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
             this.element.classList.remove('e-documenteditorcontainer');
             this.element.innerHTML = '';
         }
-        this.element = undefined;
+        if (!this.refreshing) {
+            this.element = undefined;
+        }
         if (this.toolbarContainer && this.toolbarContainer.parentElement) {
             this.toolbarContainer.innerHTML = '';
             this.toolbarContainer.parentElement.removeChild(this.toolbarContainer);
@@ -76583,6 +78763,9 @@ __decorate$1([
     Event()
 ], DocumentEditorContainer.prototype, "customContextMenuBeforeOpen", void 0);
 __decorate$1([
+    Event()
+], DocumentEditorContainer.prototype, "beforePaneSwitch", void 0);
+__decorate$1([
     Property({ import: 'Import', systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing' })
 ], DocumentEditorContainer.prototype, "serverActionSettings", void 0);
 __decorate$1([
@@ -76600,5 +78783,5 @@ DocumentEditorContainer = __decorate$1([
  * export document editor modules
  */
 
-export { Dictionary, WUniqueFormat, WUniqueFormats, XmlHttpRequestHandler, DocumentEditor, ServerActionSettings, ContainerServerActionSettings, Print, ContextMenu$1 as ContextMenu, WSectionFormat, WStyle, WParagraphStyle, WCharacterStyle, WStyles, WCharacterFormat, WListFormat, WTabStop, WParagraphFormat, WTableFormat, WRowFormat, WCellFormat, WBorder, WBorders, WShading, WList, WAbstractList, WListLevel, WLevelOverride, LayoutViewer, PageLayoutViewer, Layout, Rect, Margin, Widget, BlockContainer, BodyWidget, HeaderFooterWidget, BlockWidget, ParagraphWidget, TableWidget, TableRowWidget, TableCellWidget, LineWidget, ElementBox, FieldElementBox, TextElementBox, ErrorTextElementBox, FieldTextElementBox, TabElementBox, BookmarkElementBox, ImageElementBox, ListTextElementBox, EditRangeEndElementBox, EditRangeStartElementBox, ChartElementBox, ChartArea, ChartCategory, ChartData, ChartLegend, ChartSeries, ChartErrorBar, ChartSeriesFormat, ChartDataLabels, ChartTrendLines, ChartTitleArea, ChartDataFormat, ChartFill, ChartLayout, ChartCategoryAxis, ChartDataTable, Page, WTableHolder, WColumn, ColumnSizeInfo, Renderer, SfdtReader, TextHelper, Zoom, Selection, SelectionCharacterFormat, SelectionParagraphFormat, SelectionSectionFormat, SelectionTableFormat, SelectionCellFormat, SelectionRowFormat, SelectionImageFormat, TextPosition, SelectionWidgetInfo, Hyperlink, ImageFormat, Search, OptionsPane, TextSearch, SearchWidgetInfo, TextSearchResult, TextSearchResults, Editor, ImageResizer, ImageResizingPoints, SelectedImageInfo, TableResizer, HelperMethods, Point, Base64, EditorHistory, BaseHistoryInfo, HistoryInfo, ModifiedLevel, ModifiedParagraphFormat, RowHistoryFormat, TableHistoryInfo, TableFormatHistoryInfo, RowFormatHistoryInfo, CellFormatHistoryInfo, CellHistoryFormat, WordExport, TextExport, SfdtExport, HtmlExport, HyperlinkDialog, TableDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellCheckDialog, SpellChecker, AddUserDialog, EnforceProtectionDialog, UnProtectDocumentDialog, RestrictEditing, Toolbar$1 as Toolbar, DocumentEditorContainer };
+export { Dictionary, WUniqueFormat, WUniqueFormats, XmlHttpRequestHandler, DocumentEditor, ServerActionSettings, ContainerServerActionSettings, Print, ContextMenu$1 as ContextMenu, WSectionFormat, WStyle, WParagraphStyle, WCharacterStyle, WStyles, WCharacterFormat, WListFormat, WTabStop, WParagraphFormat, WTableFormat, WRowFormat, WCellFormat, WBorder, WBorders, WShading, WList, WAbstractList, WListLevel, WLevelOverride, LayoutViewer, PageLayoutViewer, Layout, Rect, Margin, Widget, BlockContainer, BodyWidget, HeaderFooterWidget, BlockWidget, ParagraphWidget, TableWidget, TableRowWidget, TableCellWidget, LineWidget, ElementBox, FieldElementBox, TextElementBox, ErrorTextElementBox, FieldTextElementBox, TabElementBox, BookmarkElementBox, ImageElementBox, ListTextElementBox, EditRangeEndElementBox, EditRangeStartElementBox, ChartElementBox, ChartArea, ChartCategory, ChartData, ChartLegend, ChartSeries, ChartErrorBar, ChartSeriesFormat, ChartDataLabels, ChartTrendLines, ChartTitleArea, ChartDataFormat, ChartFill, ChartLayout, ChartCategoryAxis, ChartDataTable, CommentCharacterElementBox, CommentElementBox, Page, WTableHolder, WColumn, ColumnSizeInfo, Renderer, SfdtReader, TextHelper, Zoom, Selection, SelectionCharacterFormat, SelectionParagraphFormat, SelectionSectionFormat, SelectionTableFormat, SelectionCellFormat, SelectionRowFormat, SelectionImageFormat, TextPosition, SelectionWidgetInfo, Hyperlink, ImageFormat, Search, OptionsPane, TextSearch, SearchWidgetInfo, TextSearchResult, TextSearchResults, Editor, ImageResizer, ImageResizingPoints, SelectedImageInfo, TableResizer, HelperMethods, Point, Base64, EditorHistory, BaseHistoryInfo, HistoryInfo, ModifiedLevel, ModifiedParagraphFormat, RowHistoryFormat, TableHistoryInfo, TableFormatHistoryInfo, RowFormatHistoryInfo, CellFormatHistoryInfo, CellHistoryFormat, WordExport, TextExport, SfdtExport, HtmlExport, HyperlinkDialog, TableDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellCheckDialog, SpellChecker, AddUserDialog, EnforceProtectionDialog, UnProtectDocumentDialog, RestrictEditing, CommentReviewPane, CommentPane, CommentView, Toolbar$1 as Toolbar, DocumentEditorContainer };
 //# sourceMappingURL=ej2-documenteditor.es2015.js.map

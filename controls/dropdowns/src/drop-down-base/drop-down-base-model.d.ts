@@ -64,6 +64,7 @@ export interface DropDownBaseModel extends ComponentModel{
      *   customers.appendTo("#list");
      * ```
      * @default {text: null, value: null, iconCss: null, groupBy: null}
+     * @deprecated
      */
     fields?: FieldSettingsModel;
 
@@ -72,6 +73,7 @@ export interface DropDownBaseModel extends ComponentModel{
      * If enabled, following list of states will be persisted.
      * 1. value
      * @default false
+     * @deprecated
      */
     enablePersistence?: boolean;
 
@@ -82,12 +84,14 @@ export interface DropDownBaseModel extends ComponentModel{
      * which provides options to compile template string into a executable function. 
      * For EX: We have expression evolution as like ES6 expression string literals. 
      * @default null
+     * @deprecated
      */
     itemTemplate?: string;
 
     /**
      * Accepts the template design and assigns it to the group headers present in the popup list.
      * @default null
+     * @deprecated
      */
     groupTemplate?: string;
 
@@ -95,6 +99,7 @@ export interface DropDownBaseModel extends ComponentModel{
      * Accepts the template design and assigns it to popup list of component
      * when no data is available on the component.
      * @default 'No Records Found'
+     * @deprecated
      */
     noRecordsTemplate?: string;
 
@@ -102,6 +107,7 @@ export interface DropDownBaseModel extends ComponentModel{
      * Accepts the template and assigns it to the popup list content of the component
      * when the data fetch request from the remote server fails.
      * @default 'The Request Failed'
+     * @deprecated
      */
     actionFailureTemplate?: string;
 
@@ -111,12 +117,14 @@ export interface DropDownBaseModel extends ComponentModel{
      * * `Ascending` - The data source is sorting with ascending order.
      * * `Descending` - The data source is sorting with descending order.
      * @default None
+     * @deprecated
      */
     sortOrder?: SortOrder;
 
     /**
      * Specifies a value that indicates whether the component is enabled or not.
      * @default true
+     * @deprecated
      */
     enabled?: boolean;
 
@@ -125,6 +133,7 @@ export interface DropDownBaseModel extends ComponentModel{
      * It can be an array of JSON Objects or an instance of
      * `DataManager`.
      * @default []
+     * @deprecated
      */
     dataSource?: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
 
@@ -132,6 +141,7 @@ export interface DropDownBaseModel extends ComponentModel{
      * Accepts the external `Query`
      * which will execute along with the data processing.
      * @default null
+     * @deprecated
      */
     query?: Query;
 
@@ -164,6 +174,7 @@ export interface DropDownBaseModel extends ComponentModel{
      * 
      * The default value set to `StartsWith`, all the suggestion items which contain typed characters to listed in the suggestion popup.
      * @default 'StartsWith'
+     * @deprecated
      */
     filterType?: FilterType;
 
@@ -171,23 +182,27 @@ export interface DropDownBaseModel extends ComponentModel{
      * When set to ‘false’, consider the `case-sensitive` on performing the search to find suggestions.
      * By default consider the casing.
      * @default true
+     * @deprecated
      */
     ignoreCase?: boolean;
 
     /**
      * specifies the z-index value of the component popup element.
      * @default 1000
+     * @deprecated
      */
     zIndex?: number;
 
     /**
      * ignoreAccent set to true, then ignores the diacritic characters or accents when filtering.
+     * @deprecated
      */
     ignoreAccent?: boolean;
 
     /**
      * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
      * @default 'en-US'
+     * @deprecated
      */
     locale?: string;
 

@@ -4,7 +4,9 @@
 import { Internationalization, setCulture, setCurrencyCode, getNumericObject, getDefaultDateObject, getNumberDependable, loadCldr } from '../src/internationalization';
 import { monthDayMatch } from './intl/date-parser.spec';
 import { getTimeZoneString } from './intl/date-formatter.spec';
-import { IntlBase as base } from '../src/intl/intl-base';
+import { IntlBase as base, blazorCultureFormats  } from '../src/intl/intl-base';
+import { disableBlazorMode, enableBlazorMode, extend } from '../src/util';
+import { Base } from '../src';
 describe('Internationalization', () => {
     beforeAll(() => {
         setCulture('en-US');
@@ -38,6 +40,85 @@ describe('Internationalization', () => {
             setCulture('en-US');
         });
     });
+  
+
+    describe('Blazor Date Fromatting', () => {
+        beforeAll(() => {
+            enableBlazorMode();
+            setCulture('en-US');
+        });
+        let intl: Internationalization = new Internationalization();
+        let date: Date = new Date('11/17/2016');        
+        it('short date', () => {
+            expect(intl.getDatePattern({ format: 'd', type: 'date', isServerRendered: true })).toBe('M/d/y');
+        });
+        it('long date', () => {
+            expect(intl.getDatePattern({ format: 'D', type: 'date', isServerRendered:true })).toBe('EEEE, MMMM d, y');
+        });      
+        it('short time', () => {
+            expect(intl.getDatePattern({ format: 't', type: 'time', isServerRendered: true })).toBe('h:mm a');
+        });       
+        it('long time', () => {
+            expect(intl.getDatePattern({ skeleton: 'T', type: 'time', isServerRendered:true }, true)).
+                toBe('h:m:s AM/PM');
+        });        
+        it('short dateTime', () => {
+            expect(intl.getDatePattern({ skeleton: 'g', type: 'dateTime', isServerRendered:true }, true)).toBe('m/d/yyyy h:mm AM/PM');
+        });
+        it('medium dateTime', () => {
+            expect(intl.getDatePattern({ skeleton: 'f', type: 'dateTime', isServerRendered:true }, true)).toBe('dddd, mmmm d, yyyy h:mm AM/PM');
+        });
+        it('long dateTime', () => {
+            expect(intl.getDatePattern({ format: 'F', type: 'dateTime', isServerRendered:true }, true)).
+                toBe('dddd, mmmm d, yyyy h:mm:s AM/PM');
+        });  
+        it('datefromatting using the getdateFormat: D', () => {
+            let dateformatter: Function = intl.getDateFormat({ format: 'D', type: 'date', isServerRendered:true });
+            expect(dateformatter(date)).toBe('Thursday, November 17, 2016');
+        }); 
+        it('datefromatting using the getdateFormat: d', () => {
+            let dateformatter: Function = intl.getDateFormat({ format: 'd', isServerRendered:true });
+            expect(dateformatter(date)).toBe('11/17/2016');
+        });
+        it('datefromatting using the getdateFormat: f', () => {
+            let dateformatter: Function = intl.getDateFormat({ format: 'f', isServerRendered:true });
+            expect(dateformatter(date)).toBe('Thursday, November 17, 2016 12:00 AM');
+        });
+        // it('datefromatting using the getdateFormat: F', () => {
+        //    let dateformatter: Function = intl.getDateFormat({ format: 'F', isServerRendered:true });
+        //    expect(dateformatter(date)).toBe('November 17, 2016 at 12:00:00 AM GMT+5');
+        // });
+        it('datefromatting using the getdateFormat: g', () => {
+            let dateformatter: Function = intl.getDateFormat({ format: 'g', isServerRendered:true });
+            expect(dateformatter(date)).toBe('11/17/2016 12:00 AM');
+        });
+        it('datefromatting using the getdateFormat: t', () => {
+            let dateformatter: Function = intl.getDateFormat({ format: 't', isServerRendered:true });
+            expect(dateformatter(date)).toBe('12:00 AM');
+        });
+        it('datefromatting using the getdateFormat: t', () => {
+            let dateformatter: Function = intl.getDateParser({ format: 'd', isServerRendered:true });
+            let output: Date = dateformatter('12/11/2019');
+            expect(output.getDate()).toBe(11);
+        });
+        it('check invalid culture returns default date format value', () => {
+             expect(base.compareBlazorDateFormats({skeleton:'d'},'test').format).toBe('M/d/y');
+        });
+        it('Added other culture mapper returns the proper value', () => {
+            extend(blazorCultureFormats,{'ja':{'d':'y'}});
+            let jInt: Internationalization = new Internationalization('ja');
+            expect(jInt.formatDate(date,{skeleton:'d',isServerRendered: true})).toBe('2016');
+        })
+        // it('datefromatting using the getdateFormat: T', () => {
+        //    let dateformatter: Function = intl.getDateFormat({ format: 'T' });
+        //    expect(dateformatter(date)).toBe('12:00:00 AM GMT+5');
+        // });     
+        afterAll(() => {
+            disableBlazorMode();
+            setCulture('en-US');
+        });
+    });
+
     describe('Number Fromatting with local culture set', () => {
         let numIntl: Internationalization = new Internationalization('ja');
         it('numberformatter using the getNumberFormatter and currency code set in option', () => {

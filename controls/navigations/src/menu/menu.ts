@@ -1,6 +1,6 @@
 /// <reference path='../common/menu-base-model.d.ts'/>
 import { attributes, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
-import { Browser, Complex, getUniqueID } from '@syncfusion/ej2-base';
+import { Browser, Complex, getUniqueID, SanitizeHtmlHelper  } from '@syncfusion/ej2-base';
 import { MenuBase, FieldSettings } from '../common/menu-base';
 import { MenuItemModel, FieldSettingsModel } from '../common/menu-base-model';
 import { MenuModel } from './menu-model';
@@ -76,6 +76,13 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
      */
     @Property('Menu')
     public title: string;
+
+    /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default false
+     */
+    @Property(false)
+    public enableHtmlSanitizer: boolean;
 
     /**
      * Specifies mapping fields from the dataSource.
@@ -207,6 +214,7 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
                     break;
                 case 'title':
                     if (this.hamburgerMode && this.element.previousElementSibling) {
+                        newProp.title = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(newProp.title) : newProp.title;
                         this.element.previousElementSibling.querySelector('.e-menu-title').innerHTML = newProp.title;
                     }
                 break;

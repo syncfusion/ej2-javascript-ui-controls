@@ -49,7 +49,7 @@ export interface IGrid extends Component<HTMLElement> {
 
     //public properties    
     currentViewData?: Object[];
-
+    currentAction?: ActionArgs;
     /**
      * Specifies the columns for Grid.
      * @default []
@@ -519,6 +519,7 @@ export interface IGrid extends Component<HTMLElement> {
     isContextMenuOpen(): Boolean;
     goToPage(pageNo: number): void;
     getFrozenColumns(): number;
+    applyBiggerTheme(args: Element): void;
     getVisibleFrozenColumns(): number;
     print(): void;
     /* tslint:disable-next-line:no-any */
@@ -557,12 +558,14 @@ export interface IGrid extends Component<HTMLElement> {
     hideScroll?(): void;
     grabColumnByFieldFromAllCols(field: string): Column;
     grabColumnByUidFromAllCols(uid: string): Column;
+    getRowUid(prefix: string): string;
     getMovableVirtualContent?(): Element;
     getFrozenVirtualContent?(): Element;
     getMovableVirtualHeader?(): Element;
     getFrozenVirtualHeader?(): Element;
     getFilteredRecords(): Object[] | Promise<Object>;
     getRowElementByUID?(uid: string): Element;
+    getMediaColumns?(): void;
     // public Events
     dataStateChange?: EmitType<DataStateChangeEventArgs>;
     exportGroupCaption?: EmitType<ExportGroupCaptionEventArgs>;
@@ -1042,7 +1045,9 @@ export interface RowDataBoundEventArgs {
      * @isGenericType true
      */
     data?: Object;
-    /** Defines the row element. */
+    /** Defines the row element. 
+     * @blazorType CellDOM
+     */
     row?: Element;
     /** Defines the row height */
     rowHeight?: number;
@@ -1065,9 +1070,13 @@ export interface QueryCellInfoEventArgs {
      * @isGenericType true
      */
     data?: Object;
-    /** Defines the cell element. */
+    /** Defines the cell element. 
+     * @blazorType CellDOM
+     */
     cell?: Element;
-    /** Defines the column object associated with this cell. */
+    /** Defines the column object associated with this cell.
+     * @blazorType GridColumn
+     */
     column?: Column;
     /** Defines the no. of columns to be spanned */
     colSpan?: number;
@@ -1704,6 +1713,14 @@ export interface BeforePasteEventArgs {
     /** Defines the grid pasted data. */
     column?: Column;
     data?: string | number | boolean | Date;
+    cancel?: boolean;
+}
+
+export interface BeforeAutoFillEventArgs {
+    /** Defines the grid autofill data. */
+    column?: Column;
+    value?: string;
+    cancel?: boolean;
 }
 
 /**
@@ -2228,4 +2245,17 @@ export interface CaptionTemplateContext {
     count?: number;
     /** Gets header text of the grouped column */
     headerText?: string;
+}
+
+export interface ActionArgs {
+    /**
+     * @blazorType string
+     */
+    requestType?: Action | string;
+    type?: string;
+    fromIndex?: number;
+    toIndex?: number;
+    toColumnUid?: string;
+    fromColumnUid?: string[];
+    isMultipleReorder?: boolean;
 }

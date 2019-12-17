@@ -46,7 +46,9 @@
  /** Define the Sparkline marker | datalabel Visbile End type */
  'End' |
  /** Define the Sparkline marker | datalabel Visbile Negative type */
- 'Negative';
+ 'Negative' |
+  /** Define the Sparkline marker | datalabel Visbile None type */
+  'None';
 /**
  * Defines Theme of the sparkline. They are
  * * Material - Render a sparkline with Material theme.

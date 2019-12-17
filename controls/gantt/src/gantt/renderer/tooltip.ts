@@ -37,6 +37,7 @@ export class Tooltip {
             '.e-taskbar-left-resizer, .e-taskbar-right-resizer';
         this.toolTipObj.position = 'BottomCenter';
         this.toolTipObj.openDelay = 700;
+        this.toolTipObj.enableHtmlSanitizer = false;
         this.toolTipObj.cssClass = cls.ganttTooltip;
         this.toolTipObj.animation = { open: { effect: 'None', delay: 0 }, close: { effect: 'None', delay: 0 } };
         this.toolTipObj.afterOpen = this.updateTooltipPosition.bind(this);
@@ -208,13 +209,16 @@ export class Tooltip {
     private getTooltipContent(elementType: string, ganttData: IGanttData, parent: Gantt, args: TooltipEventArgs): string {
         let content: string;
         let data: ITaskData;
+        let taskName: string;
         if (ganttData) {
             data = ganttData.ganttProperties;
+            taskName = !isNullOrUndefined(data.taskName) ? '<tr class = "e-gantt-tooltip-rowcell"><td colspan="3">' +
+            data.taskName + '</td></tr>' : '';
         }
         switch (elementType) {
             case 'milestone':
-                content = '<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">' +
-                    data.taskName + '</td></tr><tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td>' +
+                content = '<table class = "e-gantt-tooltiptable"><tbody>' +
+                    taskName + '<tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td>' +
                     '<td class = "e-gantt-tooltip-value">' +
                     this.parent.getFormatedDate(data.startDate, this.parent.dateFormat) + '</tr></tbody></table>';
                 break;
@@ -229,14 +233,15 @@ export class Tooltip {
                     this.parent.localeObj.getConstant('duration') + '</td><td>:</td>' +
                     '<td class = "e-gantt-tooltip-value"> ' + this.parent.getDurationString(data.duration, data.durationUnit) +
                     '</td></tr>' : '';
-                content = '<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">' +
-                    data.taskName + '</td></tr>' + startDate + endDate + duration
-                    + '<tr><td class = "e-gantt-tooltip-label">' + this.parent.localeObj.getConstant('progress') +
-                     '</td><td>:</td><td>' + data.progress + '</td></tr></tbody></table>';
+                let progress: string = !isNullOrUndefined(data.progress) ? '<tr><td class = "e-gantt-tooltip-label">' +
+                    this.parent.localeObj.getConstant('progress') + '</td><td>:</td><td>' + data.progress +
+                    '</td></tr>' : '';
+                content = '<table class = "e-gantt-tooltiptable"><tbody>' +
+                    taskName + startDate + endDate + duration + progress + '</tbody></table>';
                 break;
             case 'baseline':
-                content = '<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">' +
-                    data.taskName + '</td></tr><tr><td class = "e-gantt-tooltip-label">' +
+                content = '<table class = "e-gantt-tooltiptable"><tbody>' +
+                    taskName + '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('baselineStartDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value">' +
                     this.parent.getFormatedDate(data.baselineStartDate, this.parent.dateFormat) + '</td></tr><tr>' +
                     '<td class = "e-gantt-tooltip-label">' + this.parent.localeObj.getConstant('baselineEndDate') +
@@ -282,7 +287,7 @@ export class Tooltip {
      * To get the details of an event marker.
      * @private
      */
-    private getMarkerTooltipData(args: TooltipEventArgs): EventMarkerModel {
+    public getMarkerTooltipData(args: TooltipEventArgs): EventMarkerModel {
         let markerTooltipId: string[] = (args.target.id).match(/\d+/g);
         let markerTooltipElement: EventMarkerModel = this.parent.eventMarkers[Number(markerTooltipId)];
         return markerTooltipElement;
@@ -292,7 +297,7 @@ export class Tooltip {
      * To get the details of a connector line.
      * @private
      */
-    private getPredecessorTooltipData(args: TooltipEventArgs): PredecessorTooltip {
+    public getPredecessorTooltipData(args: TooltipEventArgs): PredecessorTooltip {
         let predeceesorParent: string = args.target.parentElement.id;
         let taskIds: string[] = predeceesorParent.match(/\d+/g);
         let fromTask: IGanttData = this.parent.flatData[this.parent.ids.indexOf(taskIds[0])];

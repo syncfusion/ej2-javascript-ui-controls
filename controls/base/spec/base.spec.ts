@@ -1,11 +1,11 @@
 /**
  * Library Spec
  */
-import { Base, getComponent } from '../src/base';
+import { Base, getComponent, removeChildInstance } from '../src/base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, Event, Property } from '../src/notify-property-change';
 import { createElement } from '../src/dom';
 import { Touch } from '../src/touch';
-import * as Util from '../src/util';
+import { enableBlazorMode, disableBlazorMode, isBlazor } from '../src/util';
 
 @NotifyPropertyChanges
 class DemoClass extends Base<HTMLElement> implements INotifyPropertyChanged {
@@ -30,6 +30,14 @@ class DemoClass extends Base<HTMLElement> implements INotifyPropertyChanged {
 
     protected getModuleName(): string {
         return 'demolib';
+    }
+
+    public callServerDataBind(): void {
+        this.serverDataBind();
+    }
+
+    public setServerDataBinding(isServerDataBind: boolean): void {
+        this.allowServerDataBinding = isServerDataBind;
     }
 
     protected bind(): void {
@@ -128,11 +136,11 @@ describe('Library', (): void => {
             expect(obj.element.className.indexOf('e-lib e-demolib')).toEqual(-1);
         });
     });
-   describe('check whether the notify trigger after component destroyed', () => {
+    describe('check whether the notify trigger after component destroyed', () => {
         let destInst: DemoClass;
         beforeEach(() => {
-            destInst  = new DemoClass(ele);      
-        });        
+            destInst = new DemoClass(ele);
+        });
         it('check destroyed before notify', () => {
             let spy: jasmine.Spy = jasmine.createSpy('test');
             destInst.test = spy;
@@ -142,75 +150,75 @@ describe('Library', (): void => {
         });
         it('notify with success', (done) => {
             let spy: jasmine.Spy = jasmine.createSpy('test');
-            destInst.test = spy;           
-            destInst.trigger('test', {}, ()=> {
-                expect(spy).toHaveBeenCalled();              
+            destInst.test = spy;
+            destInst.trigger('test', {}, () => {
+                expect(spy).toHaveBeenCalled();
                 done();
-            });           
+            });
         });
         it('notify with success for not registed event', (done) => {
             let spy: jasmine.Spy = jasmine.createSpy('test');
-            destInst.test = spy;           
-            destInst.trigger('test1', {}, ()=> {
-                expect(spy).not.toHaveBeenCalled();             
+            destInst.test = spy;
+            destInst.trigger('test1', {}, () => {
+                expect(spy).not.toHaveBeenCalled();
                 done();
-            });           
+            });
         });
         it('notify with success', (done) => {
-            Util.enableBlazorMode();
+            window["Blazor"] = true;
 
-            destInst.test =  ()=> {
-                let promise = new Promise(function(resolve, reject) {                    
+            destInst.test = () => {
+                let promise = new Promise(function (resolve, reject) {
                     setTimeout(() => resolve("done"), 0);
                 });
-                return promise;               
-            };           
-            destInst.trigger('test', {}, ()=> {                 
-                Util.disableBlazorMode();      
+                return promise;
+            };
+            destInst.trigger('test', {}, () => {
+                window["Blazor"] = false;
                 done();
-            });           
+            });
         });
         it('notify with success -non promise call', (done) => {
-            Util.enableBlazorMode();
-            destInst.test =  ()=> {
-                             
-            };           
-            destInst.trigger('test', {}, ()=> {                 
-                Util.disableBlazorMode();         
+            window["Blazor"] = true;
+            destInst.test = () => {
+
+            };
+            destInst.trigger('test', {}, () => {
+                window["Blazor"] = false;
                 done();
-            });           
+            });
         });
         it('notify with success json', (done) => {
-            Util.enableBlazorMode();
+            window["Blazor"] = true;
 
-            destInst.test =  ()=> {
-                let promise = new Promise(function(resolve, reject) {                    
+            destInst.test = () => {
+                let promise = new Promise(function (resolve, reject) {
                     setTimeout(() => resolve('{"data":"success"}'), 0);
                 });
-                return promise;               
-            };           
-            destInst.trigger('test', {}, ()=> {                 
-                Util.disableBlazorMode();         
+                return promise;
+            };
+            destInst.trigger('test', {}, () => {
+                window["Blazor"] = false;
                 done();
-            });           
-        });   
+            });
+        });
         it('notify with error for registed event', (done) => {
-            Util.enableBlazorMode();
-            destInst.test = ()=> {                       
-                return Promise.reject({data: {message: 'Error message'}});
-            };           
-            destInst.trigger('test', {}, ()=>{},  ()=> {
-                Util.disableBlazorMode();               
+            window["Blazor"] = true;
+            destInst.test = () => {
+                return Promise.reject({ data: { message: 'Error message' } });
+            };
+            destInst.trigger('test', {}, () => { }, () => {
+                window["Blazor"] = false;
                 done();
-            });           
+            });
         });
         it('notify with error for registed event -stringify', (done) => {
-            Util.enableBlazorMode();
-            destInst.test = ()=> {                       
+            window["Blazor"] = true;
+            destInst.test = () => {
                 return Promise.reject('{"data":"error"}');
-            };           
-            destInst.trigger('test', {}, ()=>{},  ()=> {
-                Util.disableBlazorMode();              
+            };
+            destInst.trigger('test', {}, () => { }, () => {
+                window["Blazor"] = false;
                 done();
             });
         });
@@ -218,58 +226,58 @@ describe('Library', (): void => {
 
     describe('check whether the notify trigger after component destroyed', () => {
         let destInst: DemoClass;
-        var originalTimeout= 0;
+        var originalTimeout = 0;
         beforeEach(() => {
-            destInst  = new DemoClass(ele);            
+            destInst = new DemoClass(ele);
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;   
-        });        
-    
-       it('notify with success json with array', (done) => {
-        Util.enableBlazorMode();
-           destInst.addEventListener("testCollection", () => {
-               let promise = new Promise(function (resolve, reject) {
-                   setTimeout(() => resolve('{"data":"success"}'), 0);
-               });
-               return promise;
-           });
-           destInst.addEventListener("testCollection", () => {
-               return { data2: "success" };
-           });
-           destInst.addEventListener("testCollection", () => {
-               let promise = new Promise(function (resolve, reject) {
-                   setTimeout(() => resolve({ data: "successs-done" }), 0);
-               });
-               return promise;
-           });
-           destInst.trigger('testCollection', { data: "preparing", add: "good" }, () => {
-            Util.disableBlazorMode();
-               done();
-           });
-       }); 
-       it('notify with success json with array', (done) => {
-        Util.enableBlazorMode();
-        destInst.addEventListener("testCollection", () => {
-            let promise = new Promise(function (resolve, reject) {
-                setTimeout(() => resolve('{"data":"success"}'), 0);
-            });
-            return promise;
-        });      
-        destInst.addEventListener("testCollection", () => {
-            return { data2: "success-final" };
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
         });
-        destInst.trigger('testCollection', { data: "preparing", add: "good" }, () => {
-            Util.disableBlazorMode();
-            done();
-        });        
-        }); 
+
+        it('notify with success json with array', (done) => {
+            window["Blazor"] = true;
+            destInst.addEventListener("testCollection", () => {
+                let promise = new Promise(function (resolve, reject) {
+                    setTimeout(() => resolve('{"data":"success"}'), 0);
+                });
+                return promise;
+            });
+            destInst.addEventListener("testCollection", () => {
+                return { data2: "success" };
+            });
+            destInst.addEventListener("testCollection", () => {
+                let promise = new Promise(function (resolve, reject) {
+                    setTimeout(() => resolve({ data: "successs-done" }), 0);
+                });
+                return promise;
+            });
+            destInst.trigger('testCollection', { data: "preparing", add: "good" }, () => {
+                window["Blazor"] = false;
+                done();
+            });
+        });
+        it('notify with success json with array', (done) => {
+            window["Blazor"] = true;
+            destInst.addEventListener("testCollection", () => {
+                let promise = new Promise(function (resolve, reject) {
+                    setTimeout(() => resolve('{"data":"success"}'), 0);
+                });
+                return promise;
+            });
+            destInst.addEventListener("testCollection", () => {
+                return { data2: "success-final" };
+            });
+            destInst.trigger('testCollection', { data: "preparing", add: "good" }, () => {
+                window["Blazor"] = false;
+                done();
+            });
+        });
         it('notify with out success json with array', () => {
-            Util.enableBlazorMode();         
-            let data: object =  destInst.trigger('testCollection', { data: "preparing", add: "good" }) as object;
+            window["Blazor"] = true;
+            let data: object = destInst.trigger('testCollection', { data: "preparing", add: "good" }) as object;
             expect(data).not.toBe(null);
-            Util.disableBlazorMode();   
-        });         
-        afterEach(function() {
+            window["Blazor"] = false;
+        });
+        afterEach(function () {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
             destInst.destroy();
         });
@@ -297,12 +305,61 @@ describe('Library', (): void => {
             expect(obj.testFunction).toHaveBeenCalledTimes(2);
         });
     });
+
+    describe("Blazor", function () {
+        let bulkChanges: any = null;
+        beforeAll(() => {
+            enableBlazorMode();
+            window['ejsInterop'] = {
+                updateModel: (comp: any) => {
+                    bulkChanges = comp.bulkChanges;
+                    return true;
+                }
+            };
+        });
+        it('single property change', (done) => {
+            let obj: DemoClass = new DemoClass(ele);
+            obj.text = "testing";
+            obj.dataBind();
+            expect(bulkChanges).not.toBeNull();
+            expect(bulkChanges).toEqual({ text: "testing" });
+            bulkChanges = null;
+            done();
+        });
+        it('bulk property changes', (done) => {
+            let obj: DemoClass = new DemoClass(ele);
+            obj.setServerDataBinding(false);
+            obj.text = "textValue";
+            obj.dataBind();
+            obj.value = "valueText";
+            obj.dataBind();
+            obj.setServerDataBinding(true);
+            obj.callServerDataBind();
+            expect(bulkChanges).not.toBeNull();
+            // the text value changed in the DemoClass OnPropertyChanged
+            expect(bulkChanges).toEqual({ text: "valueText", value: "valueText" });
+            bulkChanges = null;
+            done();
+        });
+        it('setProperties', (done) => {
+            let obj: DemoClass = new DemoClass(ele);
+            obj.setProperties({ text: "texting" }, true);
+            expect(bulkChanges).not.toBeNull();
+            expect(bulkChanges).toEqual({ text: "texting" });
+            bulkChanges = null;
+            done();
+        });
+        afterAll(() => {
+            disableBlazorMode();
+            delete window['ejsInterop'];
+        });
+    });
 });
 
 // spec for getComponent() funtion
 describe("getcomponent funtion", function () {
     it("if statement", function () {
-        let elem:any =createElement('div', { id: 'test' });
+        let elem: any = createElement('div', { id: 'test' });
         let comp: any = { ej2_instances: [new Touch(elem)] };
         expect(getComponent(comp, 'touch') instanceof Touch).toBe(true);
     });
@@ -314,18 +371,41 @@ describe("getcomponent funtion", function () {
         expect(getComponent(stringElement, 'touch') instanceof Touch).toBe(true);
     });
     it("else statement", function () {
-        let elem:any =createElement('div', { id: 'test' });
+        let elem: any = createElement('div', { id: 'test' });
         let comp: any = { ej2_instances: [new Touch(elem)] };
         expect(getComponent(comp, 'button') instanceof Touch).toBe(false);
     });
     it("compenent instance", function () {
-        let elem:any =createElement('div', { id: 'test' });
+        let elem: any = createElement('div', { id: 'test' });
         let comp: any = { ej2_instances: [new Touch(elem)] };
-        expect(getComponent(comp,Touch) instanceof Touch).toBe(true);
+        expect(getComponent(comp, Touch) instanceof Touch).toBe(true);
     });
     it("component not instance", function () {
+        let elem: any = createElement('div', { id: 'test' });
+        let comp: any = { ej2_instances: [new Touch(elem)] };
+        expect(getComponent(comp, DemoClass) instanceof Touch).toBe(false);
+    });
+
+});
+// spec for removeChildInstance() funtion
+describe('removeChildInstance', function () {
+    it('destroying the element Instance', function () {
+        let elem: any =createElement('div', { id: 'test' });
+        let comp: any = { ej2_instances: [new Touch(elem)] };
+        let compEle: any = comp.ej2_instances[0].element;
+        compEle.className = 'e-control e-touch ' + compEle.className;
+        let htmlEle: HTMLElement = createElement('div', { id: 'parent', className: 'parentclass' });
+        htmlEle.appendChild(compEle);
+        removeChildInstance(htmlEle);
+        expect(document.getElementsByClassName('e-control').length).toBe(0);
+    });
+    it('destroying the element Instance when component is not instance', function () {
         let elem:any =createElement('div', { id: 'test' });
         let comp: any = { ej2_instances: [new Touch(elem)] };
-        expect(getComponent(comp,DemoClass) instanceof Touch).toBe(false);
+        let compEle: any = comp.ej2_instances[0].element;
+        let htmlEle: HTMLElement = createElement('div', { id: 'parent', className: 'parentclass' });
+        htmlEle.appendChild(compEle);
+        removeChildInstance(htmlEle);
+        expect(htmlEle.getElementsByClassName('e-control').length).toBe(0);
     });
 });

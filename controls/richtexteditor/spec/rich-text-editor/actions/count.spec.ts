@@ -198,4 +198,34 @@ describe('Count module', () => {
             expect(rteObj.element.querySelector('.e-rte-character-count').innerHTML.split('/ ')[1] === '500').toBe(true);
         });
     });
+
+    describe('Character count restiction testing in Markdown ', () => {
+        let rteObj: RichTextEditor;
+
+        beforeAll(() => {
+            rteObj = renderRTE({
+                editorMode: 'Markdown',
+                showCharCount: true,
+                maxLength: 100,
+                value: 'The sample is added to showcase **markdown editing**. The sample is added to showcase markdown edit.'
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+
+        it('keyboard restriction testing in markdown', () => {
+            let flag: boolean = false;
+            (<any>rteObj).countModule.refresh();
+            expect(rteObj.contentModule.getText().length).toBe(100);
+            let keyboardEventArgs = {
+                preventDefault: function () { flag = true; },
+                currentTarget: rteObj.contentModule.getEditPanel(),
+                which: 22
+            };
+            (<any>rteObj).restrict(keyboardEventArgs);
+            expect(flag).toBe(true);
+        });
+    });
+
 });

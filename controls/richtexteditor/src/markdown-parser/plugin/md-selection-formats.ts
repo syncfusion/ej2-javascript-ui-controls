@@ -8,6 +8,7 @@ import * as EVENTS from './../../common/constant';
 /**
  * SelectionCommands internal component
  * @hidden
+ * @deprecated
  */
 export class MDSelectionFormats {
     private parent: MarkdownParser;
@@ -82,6 +83,11 @@ export class MDSelectionFormats {
     private singleCharRegx(cmd: string): RegExp {
         return new RegExp('(\\' + cmd + ')', 'g');
     }
+    /**
+     * markdown isAppliedCommand method
+     * @hidden
+     * @deprecated
+     */
     public isAppliedCommand(cmd?: string): | boolean {
         let selectCmd: string = '';
         let isFormat: boolean = false;

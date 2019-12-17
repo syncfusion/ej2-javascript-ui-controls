@@ -51,7 +51,9 @@ export class Highlight {
         let isTouch: boolean = e.pointerType === 'touch' || e.pointerType === '2' || (e.type.indexOf('touch') > -1);
         if ((targetEle.id.indexOf('LayerIndex') !== -1 || targetEle.id.indexOf('NavigationIndex') > -1) &&
             targetEle.getAttribute('class') !== 'ShapeselectionMapStyle' && !isTouch &&
-            targetEle.getAttribute('class') !== 'MarkerselectionMapStyle') {
+            targetEle.getAttribute('class') !== 'MarkerselectionMapStyle' &&
+            targetEle.getAttribute('class') !== 'BubbleselectionMapStyle' &&
+            targetEle.getAttribute('class') !== 'navigationlineselectionMapStyle') {
             layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
             let shapeData: object;
             let data: object;
@@ -89,7 +91,11 @@ export class Highlight {
                     this.maps.legendModule.shapeHighLightAndSelection(
                         targetEle, data, this.highlightSettings, 'highlight', layerIndex);
                 }
-                this.mapHighlight(targetEle, shapeData, data);
+                let selectHighLight: boolean = targetEle.id.indexOf('shapeIndex') > -1 && this.maps.legendSettings.visible ?
+                                               this.maps.legendModule.shapeToggled : true;
+                if (selectHighLight) {
+                    this.mapHighlight(targetEle, shapeData, data);
+                }
             } else {
                 let element: Element = document.getElementsByClassName('highlightMapStyle')[0];
                 if (!isNullOrUndefined(element)) {
@@ -132,15 +138,14 @@ export class Highlight {
             let marker: number = parseInt(targetEle.id.split('_MarkerIndex_')[1].split('_')[0], 10);
             isMarkerSelect = this.maps.layers[layerIndex].markerSettings[marker].highlightSettings.enable;
         }
-        if (this.maps.legendSettings.visible ? (this.maps.legendModule.legendElement !== this.maps.legendModule.oldShapeElement) : true) {
-        let border : BorderModel = {
+        let border: BorderModel = {
             color: this.highlightSettings.border.color,
             width: this.highlightSettings.border.width / (isMarkerSelect ? 1 : this.maps.scale)
         };
         let eventArgs: ISelectionEventArgs = {
             opacity: this.highlightSettings.opacity,
             fill: targetEle.id.indexOf('NavigationIndex') === -1 ? !isNullOrUndefined(this.highlightSettings.fill)
-            ? this.highlightSettings.fill : targetEle.getAttribute('fill') : 'none',
+                ? this.highlightSettings.fill : targetEle.getAttribute('fill') : 'none',
             border: border,
             name: itemHighlight,
             target: targetEle.id,
@@ -150,13 +155,12 @@ export class Highlight {
             maps: this.maps
         };
         if (this.maps.isBlazor) {
-            const {shapeData, maps, ...blazorEventArgs } : ISelectionEventArgs = eventArgs;
+            const { shapeData, maps, ...blazorEventArgs }: ISelectionEventArgs = eventArgs;
             eventArgs = blazorEventArgs;
         }
         this.maps.trigger(itemHighlight, eventArgs, () => {
             this.highlightMap(targetEle, eventArgs);
         });
-    }
     }
     private highlightMap(targetEle: Element, eventArgs: ISelectionEventArgs): void {
         let parentElement: Element;

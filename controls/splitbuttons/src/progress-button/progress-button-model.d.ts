@@ -1,4 +1,4 @@
-import { Button, IconPosition } from '@syncfusion/ej2-buttons';import { EventHandler, Property, INotifyPropertyChanged, NotifyPropertyChanges, Animation, Effect, attributes } from '@syncfusion/ej2-base';import { EmitType, Event, BaseEventArgs, remove, removeClass, Complex, ChildProperty, isBlazor } from '@syncfusion/ej2-base';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
+import { Button, IconPosition } from '@syncfusion/ej2-buttons';import { EventHandler, Property, INotifyPropertyChanged, NotifyPropertyChanges, Animation, Effect, attributes } from '@syncfusion/ej2-base';import { EmitType, Event, BaseEventArgs, remove, removeClass } from '@syncfusion/ej2-base';import { Complex, ChildProperty, isBlazor, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import {SpinPosition,AnimationEffect,ProgressEventArgs} from "./progress-button";
 
 /**
@@ -126,6 +126,12 @@ export interface ProgressButtonModel {
      * @default false
      */
     isToggle?: boolean;
+
+    /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default false
+     */
+    enableHtmlSanitizer?: boolean;
 
     /**
      * Specifies a spinner and its related properties.

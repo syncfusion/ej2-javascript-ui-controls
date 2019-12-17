@@ -7,6 +7,7 @@ import { markdownKeyConfig, markdownListsTags, markdownFormatTags, markdownSelec
 /**
  * Markdown adapter
  * @hidden
+ * @deprecated
  */
 export class MarkdownFormatter extends Formatter {
     public keyConfig: { [key: string]: string };
@@ -34,6 +35,8 @@ export class MarkdownFormatter extends Formatter {
      * Update the formatter of RichTextEditor
      * @param  {Element} editElement
      * @param  {Document} doc
+     * @hidden
+     * @deprecated
      */
     public updateFormatter(editElement: Element, doc?: Document, options?: { [key: string]: number }): void {
         if (editElement) {

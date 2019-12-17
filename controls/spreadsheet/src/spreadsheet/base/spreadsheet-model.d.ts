@@ -1,4 +1,4 @@
-import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclaration, EventHandler, Event } from '@syncfusion/ej2-base';import { addClass, removeClass, EmitType, Complex, formatUnit, detach, L10n, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';import { MenuItemModel, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';import { initialLoad, mouseDown, spreadsheetDestroyed, keyUp, keyDown } from '../common/index';import { getSiblingsHeight, ICellRenderer } from '../common/index';import { defaultLocale, locale, setAriaOptions } from '../common/index';import { CellEditEventArgs, CellSaveEventArgs, ribbon, formulaBar, sheetTabs, formulaOperation } from '../common/index';import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, selectRange } from '../common/index';import { cut, copy, paste, PasteSpecialType, dialog, editOperation, activeSheetChanged } from '../common/index';import { Render } from '../renderer/render';import { Scroll, VirtualScroll, Edit, CellFormat, Selection, KeyboardNavigation, KeyboardShortcut, Clipboard } from '../actions/index';import { CellRenderEventArgs, IRenderer, IViewport, OpenOptions, MenuSelectArgs, click } from '../common/index';import { ServiceLocator, Dialog } from '../services/index';import { SheetModel, getCellPosition, getColumnsWidth, getSheetIndex, activeCellChanged } from './../../workbook/index';import { getSheetNameFromAddress, DataBind, CellModel } from './../../workbook/index';import { BeforeSortEventArgs, SortOptions, beforeSort, sortComplete, SortEventArgs, sortRangeAlert } from './../../workbook/index';import { getSheetIndexFromId, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookSort } from './../../workbook/index';import { Workbook } from '../../workbook/base/workbook';import { Resize } from '../actions/index';import { getRequiredModules, setStyleAttribute, ScrollSettings, ScrollSettingsModel, SelectionSettingsModel } from '../common/index';import { SelectionSettings, BeforeSelectEventArgs, SelectEventArgs, getStartEvent } from '../common/index';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { setRowHeight, getRowsHeight } from './../../workbook/base/row';import { getRangeIndexes, getIndexesFromAddress, getCellIndexes, WorkbookNumberFormat, WorkbookFormula } from '../../workbook/index';import { RefreshValueArgs, Ribbon, FormulaBar, SheetTabs, Open, ContextMenu, Save, NumberFormat, Formula } from '../integrations/index';import { Sort } from '../integrations/index';import { isNumber } from '../../workbook/index';
+import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclaration, EventHandler, Event } from '@syncfusion/ej2-base';import { addClass, removeClass, EmitType, Complex, formatUnit, detach, L10n, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';import { MenuItemModel, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';import { initialLoad, mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, hideShowRow, performUndoRedo } from '../common/index';import { HideShowEventArgs, sheetNameUpdate, updateUndoRedoCollection, getUpdateUsingRaf } from '../common/index';import { actionEvents, collaborativeUpdate, CollaborativeEditArgs, keyDown } from '../common/index';import { getSiblingsHeight, ICellRenderer, colWidthChanged, rowHeightChanged } from '../common/index';import { defaultLocale, locale, setAriaOptions, setResize, updateToggleItem, initiateFilterUI, clearFilter } from '../common/index';import { CellEditEventArgs, CellSaveEventArgs, ribbon, formulaBar, sheetTabs, formulaOperation } from '../common/index';import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, selectRange } from '../common/index';import { cut, copy, paste, PasteSpecialType, dialog, editOperation, activeSheetChanged } from '../common/index';import { Render } from '../renderer/render';import { Scroll, VirtualScroll, Edit, CellFormat, Selection, KeyboardNavigation, KeyboardShortcut } from '../actions/index';import { Clipboard, ShowHide, UndoRedo, SpreadsheetHyperlink } from '../actions/index';import { CellRenderEventArgs, IRenderer, IViewport, OpenOptions, MenuSelectArgs, click } from '../common/index';import { Dialog, ActionEvents } from '../services/index';import { ServiceLocator } from '../../workbook/services/index';import { SheetModel, getColumnsWidth, getSheetIndex, WorkbookHyperlink, HyperlinkModel, DefineNameModel } from './../../workbook/index';import { BeforeHyperlinkArgs, AfterHyperlinkArgs } from './../../workbook/common/interface';import { activeCellChanged, BeforeCellFormatArgs, afterHyperlinkCreate } from './../../workbook/index';import { BeforeSaveEventArgs, SaveCompleteEventArgs } from './../../workbook/index';import { getSheetNameFromAddress, DataBind, CellModel, beforeHyperlinkCreate } from './../../workbook/index';import { BeforeSortEventArgs, SortOptions, sortComplete, SortEventArgs } from './../../workbook/index';import { getSheetIndexFromId, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookSort } from './../../workbook/index';import { FilterOptions, FilterEventArgs } from './../../workbook/index';import { Workbook } from '../../workbook/base/workbook';import { Resize } from '../actions/index';import { getRequiredModules, ScrollSettings, ScrollSettingsModel, SelectionSettingsModel } from '../common/index';import { SelectionSettings, BeforeSelectEventArgs, SelectEventArgs, getStartEvent } from '../common/index';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { setRowHeight, getRowsHeight, isHiddenRow, getColumnWidth, getRowHeight } from './../../workbook/base/index';import { getRangeIndexes, getIndexesFromAddress, getCellIndexes, WorkbookNumberFormat, WorkbookFormula } from '../../workbook/index';import { RefreshValueArgs, Ribbon, FormulaBar, SheetTabs, Open, ContextMenu, Save, NumberFormat, Formula } from '../integrations/index';import { Sort, Filter } from '../integrations/index';import { isNumber, getColumn, WorkbookFilter } from '../../workbook/index';import { PredicateModel } from '@syncfusion/ej2-grids';
 import {WorkbookModel} from "../../workbook/base/workbook-model";
 
 /**
@@ -60,6 +60,12 @@ export interface SpreadsheetModel extends WorkbookModel{
      * @default true
      */
     enableKeyboardShortcut?: boolean;
+
+    /**
+     * It allows to enable/disable undo and redo functionalities.
+     * @default true
+     */
+    allowUndoRedo?: boolean;
 
     /**
      * Configures the selection settings.
@@ -360,6 +366,119 @@ export interface SpreadsheetModel extends WorkbookModel{
      * @event
      */
     beforeSort?: EmitType<BeforeSortEventArgs>;
+
+    /**
+     * Triggers before insert a hyperlink.
+     * ```html
+     * <div id='Spreadsheet'></div>
+     * ```
+     * ```typescript
+     * new Spreadsheet({
+     *       beforeHyperlinkCreate: (args: BeforeHyperlinkArgs ) => {
+     *       }
+     *      ...
+     *  }, '#Spreadsheet');
+     * ```
+     * @event
+     */
+    beforeHyperlinkCreate?: EmitType<BeforeHyperlinkArgs>;
+
+    /**
+     * Triggers after the hyperlink inserted.
+     * ```html
+     * <div id='Spreadsheet'></div>
+     * ```
+     * ```typescript
+     * new Spreadsheet({
+     *       afterHyperlinkCreate: (args: afterHyperlinkArgs ) => {
+     *       }
+     *      ...
+     *  }, '#Spreadsheet');
+     * ```
+     * @event
+     */
+    afterHyperlinkCreate?: EmitType<AfterHyperlinkArgs>;
+
+    /**
+     * Triggers when the Hyperlink is clicked.
+     * ```html
+     * <div id='Spreadsheet'></div>
+     * ```
+     * ```typescript
+     * new Spreadsheet({
+     *       beforeHyperlinkClick: (args: BeforeHyperlinkArgs ) => {
+     *       }
+     *      ...
+     *  }, '#Spreadsheet');
+     * ```
+     * @event
+     */
+    beforeHyperlinkClick?: EmitType<BeforeHyperlinkArgs>;
+
+    /**
+     * Triggers when the Hyperlink function gets completed.
+     * ```html
+     * <div id='Spreadsheet'></div>
+     * ```
+     * ```typescript
+     * new Spreadsheet({
+     *       afterHyperlinkClick: (args: AfterHyperlinkArgs ) => {
+     *       }
+     *      ...
+     *  }, '#Spreadsheet');
+     * ```
+     * @event
+     */
+    afterHyperlinkClick?: EmitType<AfterHyperlinkArgs>;
+
+    /**
+     * Triggers when the Spreadsheet actions (such as editing, formatting, sorting etc..) are starts.
+     * ```html
+     * <div id='Spreadsheet'></div>
+     * ```
+     * ```typescript
+     * new Spreadsheet({
+     *       actionBegin: (args: BeforeCellFormatArgs|BeforeOpenEventArgs|BeforeSaveEventArgs|BeforeSelectEventArgs
+     *                    |BeforeSortEventArgs|CellEditEventArgs|MenuSelectArgs) => {
+     *       }
+     *      ...
+     *  }, '#Spreadsheet');
+     * ```
+     * @event
+     */
+    actionBegin?: EmitType<BeforeCellFormatArgs | BeforeOpenEventArgs | BeforeSaveEventArgs | BeforeSelectEventArgs | BeforeSortEventArgs | CellEditEventArgs | MenuSelectArgs>;
+
+    /**
+     * Triggers when the spreadsheet actions (such as editing, formatting, sorting etc..) gets completed.
+     * ```html
+     * <div id='Spreadsheet'></div>
+     * ```
+     * ```typescript
+     * new Spreadsheet({
+     *       actionComplete: (args: SortEventArgs|CellSaveEventArgs|SaveCompleteEventArgs|Object) => {
+     *       }
+     *      ...
+     *  }, '#Spreadsheet');
+     * ```
+     * @event
+     */
+    actionComplete?: EmitType<SortEventArgs | CellSaveEventArgs | SaveCompleteEventArgs | Object>;
+
+    /**
+     * Triggers when the spreadsheet importing gets completed.
+     * ```html
+     * <div id='Spreadsheet'></div>
+     * ```
+     * ```typescript
+     * new Spreadsheet({
+     *       openComplete: (args: Object) => {
+     *       }
+     *      ...
+     *  }, '#Spreadsheet');
+     * ```
+     * @event
+     */
+    openComplete?: EmitType<Object>;
 
     /**
      * Triggers after sorting action is completed.

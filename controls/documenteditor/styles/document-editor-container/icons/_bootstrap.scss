@@ -315,4 +315,10 @@
   .e-de-flip {
     transform: scaleX(-1);
   }
+
+  .e-de-cnt-cmt-add::before {
+    content: '\e814';
+    font-family: 'e-icons';
+  }
+
 }

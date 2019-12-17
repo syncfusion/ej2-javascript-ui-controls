@@ -2,7 +2,7 @@ import { DashboardLayout, ResizeArgs, ChangeEventArgs, DragStartArgs, DragStopAr
 import { PanelModel } from "../src/dashboard-layout/dashboard-layout-model";
 import { setStyleAttribute as setStyle, isNullOrUndefined, createElement, detach, EventHandler } from '@syncfusion/ej2-base';
 import { profile, inMB, getMemoryProfile } from './common.spec';
-
+import { enableBlazorMode, disableBlazorMode } from '@syncfusion/ej2-base';
 
 function copyObject(source: any, destiation: any): Object {
     for (let prop in source) {
@@ -3739,9 +3739,99 @@ describe('GridLayout', () => {
             gridLayOut.movePanel('two', 2, 20);
             gridLayOut.dataBind();
             expect((<HTMLElement>gridLayOut.element.querySelector('#two')).getAttribute('data-row')).toBe('2');
-            expect((<HTMLElement>gridLayOut.element.querySelector('#two')).getAttribute('data-col')).toBe('5');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#two')).getAttribute('data-col')).toBe('4');
             gridLayOut.movePanel('one', 1, -1);
             gridLayOut.dataBind();
+        });
+
+        it('movepanel public method test case with swapping case in beetween rows', () => {
+            gridLayOut = new DashboardLayout({
+                cellAspectRatio: 1,
+                columns: 20,
+                cellSpacing: [5, 5],
+                panels: [
+                    { "sizeX": 1, "sizeY": 1, "row": 0, "col": 0, content: generateTemplate('0') },
+                    { "sizeX": 2, "sizeY": 2, "row": 0, "col": 1, content: generateTemplate('1') },
+                    { "sizeX": 1, "sizeY": 1, "row": 0, "col": 3, content: generateTemplate('5') },
+                    { "sizeX": 1, "sizeY": 3, "row": 0, "col": 4, content: generateTemplate('7') },
+                    { "sizeX": 3, "minSizeX": 3, "maxSizeX": 3, "maxSizeY": 1, "minSizeY": 1, "sizeY": 1, "row": 0, "col": 5, content: generateTemplate('8') },
+                    { "sizeX": 1, "sizeY": 1, "row": 1, "col": 3, content: generateTemplate('6') },
+                    { "sizeX": 1, "sizeY": 2, "row": 1, "col": 0, content: generateTemplate('1') },
+                    { "sizeX": 2, "sizeY": 1, "row": 2, "col": 5, content: generateTemplate('9') },
+                    { "sizeX": 1, "sizeY": 1, "row": 2, "col": 7, content: generateTemplate('12') },
+                    { "sizeX": 1, "sizeY": 1, "row": 1, "col": 5, content: generateTemplate('10') },
+                    { "sizeX": 2, "sizeY": 1, "row": 1, "col": 6, content: generateTemplate('11') },
+                    { "sizeX": 1, "sizeY": 1, "row": 3, "col": 0, content: generateTemplate('3') },
+                    { "sizeX": 2, "sizeY": 1, "row": 2, "col": 2, content: generateTemplate('4') },
+                    { "sizeX": 4, "sizeY": 1, "row": 3, "col": 1, content: generateTemplate('12') },
+                    { "sizeX": 1, "sizeY": 1, "row": 2, "col": 1, content: generateTemplate('13') },
+                    { "sizeX": 3, "sizeY": 2, "row": 5, "col": 5, content: generateTemplate('14') },
+                    { "sizeX": 5, "sizeY": 1, "row": 5, "col": 0, content: generateTemplate('15') },
+                    { "sizeX": 1, "sizeY": 4, "row": 0, "col": 8, content: generateTemplate('16') },
+                    { "sizeX": 3, "sizeY": 3, "row": 0, "col": 9, content: generateTemplate('17') },
+                    { "sizeX": 2, "sizeY": 1, "row": 3, "col": 9, content: generateTemplate('18') },
+                    { "sizeX": 1, "sizeY": 2, "row": 3, "col": 11, content: generateTemplate('19') },
+                    { "sizeX": 3, "sizeY": 1, "row": 4, "col": 8, content: generateTemplate('20') },
+                ]
+            });
+            gridLayOut.appendTo('#gridlayout');
+            let CellElements: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>gridLayOut.element.querySelectorAll('.e-panel');
+            setCss(CellElements);
+            expect(gridLayOut.element.classList.contains('e-dashboardlayout')).toBe(true);
+            expect((<HTMLElement>gridLayOut.element.querySelector('#layout_4')).getAttribute('data-row')).toBe('0');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#layout_4')).getAttribute('data-col')).toBe('5');
+            gridLayOut.movePanel('layout_4', 2, 5);
+            gridLayOut.dataBind();
+            expect((<HTMLElement>gridLayOut.element.querySelector('#layout_4')).getAttribute('data-row')).toBe('2');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#layout_4')).getAttribute('data-col')).toBe('5');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#layout_7')).getAttribute('data-row')).toBe('0');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#layout_7')).getAttribute('data-col')).toBe('5');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#layout_8')).getAttribute('data-row')).toBe('0');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#layout_8')).getAttribute('data-col')).toBe('7');
+        });
+
+        it('movepanel public method test case with swapping case to restore same position', () => {
+            gridLayOut = new DashboardLayout({
+                cellAspectRatio: 1,
+                columns: 20,
+                cellSpacing: [5, 5],
+                panels: [
+                    { "sizeX": 1, "sizeY": 1, "row": 0, "col": 0, content: generateTemplate('0') },
+                    { "sizeX": 2, "sizeY": 2, "row": 0, "col": 1, content: generateTemplate('1') },
+                    { "sizeX": 1, "sizeY": 1, "row": 0, "col": 3, content: generateTemplate('5') },
+                    { "sizeX": 1, "sizeY": 3, "row": 0, "col": 4, content: generateTemplate('7') },
+                    { "sizeX": 3, "minSizeX": 3, "maxSizeX": 3, "maxSizeY": 1, "minSizeY": 1, "sizeY": 1, "row": 0, "col": 5, content: generateTemplate('8') },
+                    { "sizeX": 1, "sizeY": 1, "row": 1, "col": 3, content: generateTemplate('6') },
+                    { "sizeX": 1, "sizeY": 2, "row": 1, "col": 0, content: generateTemplate('1') },
+                    { "sizeX": 2, "sizeY": 1, "row": 2, "col": 5, content: generateTemplate('9') },
+                    { "sizeX": 1, "sizeY": 1, "row": 2, "col": 7, content: generateTemplate('12') },
+                    { "sizeX": 1, "sizeY": 1, "row": 1, "col": 5, content: generateTemplate('10') },
+                    { "sizeX": 2, "sizeY": 1, "row": 1, "col": 6, content: generateTemplate('11') },
+                    { "sizeX": 1, "sizeY": 1, "row": 3, "col": 0, content: generateTemplate('3') },
+                    { "sizeX": 2, "sizeY": 1, "row": 2, "col": 2, content: generateTemplate('4') },
+                    { "sizeX": 4, "sizeY": 1, "row": 3, "col": 1, content: generateTemplate('12') },
+                    { "sizeX": 1, "sizeY": 1, "row": 2, "col": 1, content: generateTemplate('13') },
+                    { "sizeX": 3, "sizeY": 2, "row": 5, "col": 5, content: generateTemplate('14') },
+                    { "sizeX": 5, "sizeY": 1, "row": 5, "col": 0, content: generateTemplate('15') },
+                    { "sizeX": 1, "sizeY": 4, "row": 0, "col": 8, content: generateTemplate('16') },
+                    { "sizeX": 3, "sizeY": 3, "row": 0, "col": 9, content: generateTemplate('17') },
+                    { "sizeX": 2, "sizeY": 1, "row": 3, "col": 9, content: generateTemplate('18') },
+                    { "sizeX": 1, "sizeY": 2, "row": 3, "col": 11, content: generateTemplate('19') },
+                    { "sizeX": 3, "sizeY": 1, "row": 4, "col": 8, content: generateTemplate('20') },
+                ]
+            });
+            gridLayOut.appendTo('#gridlayout');
+            let CellElements: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>gridLayOut.element.querySelectorAll('.e-panel');
+            setCss(CellElements);
+            expect(gridLayOut.element.classList.contains('e-dashboardlayout')).toBe(true);
+            expect((<HTMLElement>gridLayOut.element.querySelector('#layout_0')).getAttribute('data-row')).toBe('0');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#layout_0')).getAttribute('data-col')).toBe('0');
+            gridLayOut.movePanel('layout_0', 1, 0);
+            gridLayOut.dataBind();
+            expect((<HTMLElement>gridLayOut.element.querySelector('#layout_0')).getAttribute('data-row')).toBe('0');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#layout_0')).getAttribute('data-col')).toBe('0');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#layout_6')).getAttribute('data-row')).toBe('1');
+            expect((<HTMLElement>gridLayOut.element.querySelector('#layout_6')).getAttribute('data-col')).toBe('0');
         });
 
         it('resizePanel public method test case less than min', () => {
@@ -7142,7 +7232,7 @@ describe('GridLayout', () => {
         gridLayOut.destroy();
         detach(ele);
     });
-    
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
@@ -7152,4 +7242,53 @@ describe('GridLayout', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
+});
+describe('Blazor dashboard layout testing', () => {
+    let gridLayOut: any;
+    let ele: HTMLElement;
+    beforeEach(() => {
+        enableBlazorMode();
+        (window as any)["ejsInterop"] = function () { };
+        (window as any).ejsInterop["updateModel"] = function () { };
+        (window as any).ejsInterop["renderComplete"] = function () { };
+        ele = createElement('div', { id: 'gridlayout', className: 'e-control e-lib e-dashboardlayout' });
+        let parentEle: HTMLElement = createElement('div', { id: 'container' });
+        parentEle.style.width = '1264px';
+        parentEle.appendChild(ele);
+        document.body.appendChild(parentEle);
+        setStyle(ele, { 'position': 'relative' });
+    });
+    afterEach(() => {
+        disableBlazorMode();
+        if (gridLayOut) {
+            gridLayOut.destroy();
+            detach(ele);
+        }
+    });
+    it('for panel property', () => {
+        ele.innerHTML = "<div id='layout_0' class='e-panel e-panel-transition custom e-rtl' style='z-index: 1000;' data-col='0' data-row='0' data-sizex='1' data-sizey='2' data-minsizex='1' data-minsizey='1'><div id='layout_0_content' class='e-panel-container'><div id='layout_0template' class='e-panel-header'></div><div id='layout_0_body' class='e-panel-content'></div></div></div>";
+        gridLayOut = new DashboardLayout({
+            allowResizing: true,
+            panels: [
+                { "sizeX": 2, "sizeY": 2, "row": 0, "col": 0 },
+            ]
+        });
+        gridLayOut.isServerRendered = true;
+        gridLayOut.appendTo('#gridlayout');
+        gridLayOut.isServerRendered = false;
+        expect(gridLayOut.element.childElementCount === 1).toBe(true);
+    });
+    it('for panel property with Id', () => {
+        ele.innerHTML = "<div id='1' class='e-panel e-panel-transition custom e-rtl' style='z-index: 1000;' data-col='0' data-row='0' data-sizex='1' data-sizey='2' data-minsizex='1' data-minsizey='1'><div id='layout_0_content' class='e-panel-container'><div id='layout_0template' class='e-panel-header'></div><div id='layout_0_body' class='e-panel-content'></div></div></div>";
+        gridLayOut = new DashboardLayout({
+            allowResizing: true,
+            panels: [
+                { "id": "1", "sizeX": 2, "sizeY": 2, "row": 0, "col": 0 },
+            ]
+        });
+        gridLayOut.isServerRendered = true;
+        gridLayOut.appendTo('#gridlayout');
+        gridLayOut.isServerRendered = false;
+        expect(document.getElementById("1")).not.toBe(null);
+    });
 });

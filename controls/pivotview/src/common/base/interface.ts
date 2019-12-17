@@ -452,6 +452,9 @@ export interface AggregateEventArgs {
     fieldName?: string;
     row?: IAxisSet;
     column?: IAxisSet;
+    /** 
+     * @blazorType Nullable<double>
+     */
     value?: number;
     cellSets?: IDataSet[];
     rowCellType?: string;

@@ -693,6 +693,36 @@ client side. Customer easy to edit the contents and get the HTML content for
             (<any>rteObj).formatter.editorManager.imgObj.openImageLink(args);
         });
     });
+
+    describe('Link with image', function() {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(function() {
+            rteObj = renderRTE({
+                height: 400,
+                toolbarSettings: {
+                    items: ['Image', 'Bold']
+                },
+                value: '<a class="e-rte-anchor" href="http://adadas">syncfu<img class="e-rte-image e-imginline e-resize" alt="image" style="">sion</a>',
+                insertImageSettings: { resize: false }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(function() {
+            destroy(rteObj);
+        });
+        it('check link text while delete image', function() {
+            let  args : any = {
+                item: { selectNode: [rteObj.element.querySelector('.e-rte-image')] },
+                preventDefault: function() {}
+            };
+            expect(rteEle.getElementsByTagName('IMG').length).toBe(1);
+            (rteObj.formatter.editorManager as any).imgObj.removeImage(args);
+            expect(rteEle.getElementsByTagName('IMG').length).toBe(0);
+            expect(rteObj.inputElement.innerText).toBe('syncfusion');
+        });
+    });
+
     describe('div content-rte testing', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -1693,7 +1723,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 100);
         });
     });
-
+    
     describe(' quickToolbarSettings property - image quick toolbar - ', () => {
         let rteObj: RichTextEditor;
         let controlId: string;
@@ -2513,7 +2543,6 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
-
     describe(' Caption image with link insert testing', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -2546,8 +2575,9 @@ client side. Customer easy to edit the contents and get the HTML content for
                     expect(imgEle.parentElement.parentElement.classList.contains('e-img-wrap')).toBe(true);
                     expect(imgEle.parentElement.parentElement.parentElement.classList.contains('e-img-caption')).toBe(true);
                     expect(document.querySelector('.e-content').childNodes.item(0).nodeName).toBe('P');
-                    expect(document.querySelector('.e-content').childNodes.item(1).nodeName).toBe('SPAN');
-                    expect((document.querySelector('.e-content').childNodes.item(1) as Element).classList.contains('e-img-caption')).toBe(true);
+                    expect(document.querySelector('.e-content').childNodes.item(1).nodeName).toBe('P');
+                    expect(document.querySelector('.e-content').childNodes[1].childNodes[0].nodeName).toBe('SPAN');
+                    expect((document.querySelector('.e-content').childNodes[1].childNodes[0] as Element).classList.contains('e-img-caption')).toBe(true);
                     dispatchEvent((rteObj.element.querySelector('#rteImg') as HTMLElement), 'mouseup');
                     setTimeout(() => {
                         (document.querySelectorAll('.e-rte-image-popup .e-toolbar-item button')[7] as HTMLElement).click();
@@ -2556,8 +2586,9 @@ client side. Customer easy to edit the contents and get the HTML content for
                         expect(imgEle.parentElement.classList.contains('e-img-wrap')).toBe(true);
                         expect(imgEle.parentElement.parentElement.classList.contains('e-img-caption')).toBe(true);
                         expect(document.querySelector('.e-content').childNodes.item(0).nodeName).toBe('P');
-                        expect(document.querySelector('.e-content').childNodes.item(1).nodeName).toBe('SPAN');
-                        expect((document.querySelector('.e-content').childNodes.item(1) as Element).classList.contains('e-img-caption')).toBe(true);
+                        expect(document.querySelector('.e-content').childNodes.item(1).nodeName).toBe('P');
+                        expect(document.querySelector('.e-content').childNodes[1].childNodes[0].nodeName).toBe('SPAN');
+                        expect((document.querySelector('.e-content').childNodes[1].childNodes[0] as Element).classList.contains('e-img-caption')).toBe(true);
                         done();
                     }, 400);
                 }, 400);
@@ -2620,7 +2651,6 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 100);
         });
     });
-   
     describe('RTE Drag and Drop Image', () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
@@ -2758,4 +2788,30 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 200);
         });
     });
+    describe('check resize icons - When readonly property enabled', () => {
+        let rteObj: RichTextEditor;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+               value: '<p>rich text <img alt="image.jpg" class="e-resize" style="">editor</p>',
+               readonly : true
+            });
+            done();
+        })
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        })
+        it('Check icons and quicktoolbar', (done) => {
+            let img : HTMLElement = rteObj.element.querySelector('img');
+            img.click();
+            setTimeout(() => {
+                expect(rteObj.element.querySelectorAll('.e-img-resize').length).toBe(0);
+                expect(rteObj.element.querySelectorAll('.e-rte-quick-toolbar').length).toBe(0);
+                done(); 
+            }, 100);
+            
+        });
+    });
+
+
 });

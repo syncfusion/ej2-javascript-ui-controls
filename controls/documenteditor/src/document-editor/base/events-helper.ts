@@ -135,6 +135,16 @@ export interface BeforeOpenCloseCustomContentMenuEventArgs {
     ids: string[];
 }
 
+/**
+ * This event arguments provides the necessary information about onBeforePane switch.
+ */
+export interface BeforePaneSwitchEventArgs {
+    /**
+     * Specifies current pane type.
+     */
+    type: string;
+}
+
 /** 
  * This event arguments provides the necessary information about DocumentEditorContainer's contentChange event.
  */

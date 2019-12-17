@@ -362,6 +362,10 @@ describe('ContextMenu module', () => {
       gridObj.actionComplete = actionComplete;
       document.getElementById(gridObj.element.id + '_gridcontrol_cmenu_Save').click();
     });
+    it('DataSource check after record save using contextmenu', (done: Function) => {
+       expect(gridObj.dataSource[0].subtasks[1].taskName == 'test').toBe(true);
+       done();
+    });
     afterAll(() => {
         destroy(gridObj);
       });

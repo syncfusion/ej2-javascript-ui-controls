@@ -1,6 +1,6 @@
 import { Component, INotifyPropertyChanged, rippleEffect, NotifyPropertyChanges, Property, closest } from '@syncfusion/ej2-base';
 import { addClass, getInstance, getUniqueID, isRippleEnabled, removeClass, attributes, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { BaseEventArgs, detach, EmitType, Event, EventHandler } from '@syncfusion/ej2-base';
+import { BaseEventArgs, detach, EmitType, Event, EventHandler, isBlazor, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { wrapperInitialize, rippleMouseHandler } from './../common/common';
 import { RadioButtonModel } from './radio-button-model';
 
@@ -104,6 +104,12 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     public value: string;
 
     /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default false
+     */
+    @Property(false)
+    public enableHtmlSanitizer: boolean;
+    /**
      * Constructor for creating the widget
      * @private
      */
@@ -138,23 +144,29 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
      * @returns void
      */
     public destroy(): void {
-        let radioWrap: Element = this.element.parentElement;
-        super.destroy();
-        if (!this.disabled) {
-            this.unWireEvents();
-        }
-        if (this.tagName === 'INPUT') {
-            radioWrap.parentNode.insertBefore(this.element, radioWrap);
-            detach(radioWrap);
-            this.element.checked = false;
-            ['name', 'value', 'disabled'].forEach((key: string) => {
-                this.element.removeAttribute(key);
-            });
+        if (isBlazor() && this.isServerRendered) {
+            if (!this.disabled) {
+                this.unWireEvents();
+            }
         } else {
-            ['role', 'aria-checked', 'class'].forEach((key: string) => {
-                radioWrap.removeAttribute(key);
-            });
-            radioWrap.innerHTML = '';
+            let radioWrap: Element = this.element.parentElement;
+            super.destroy();
+            if (!this.disabled) {
+                this.unWireEvents();
+            }
+            if (this.tagName === 'INPUT') {
+                radioWrap.parentNode.insertBefore(this.element, radioWrap);
+                detach(radioWrap);
+                this.element.checked = false;
+                ['name', 'value', 'disabled'].forEach((key: string) => {
+                    this.element.removeAttribute(key);
+                });
+            } else {
+                ['role', 'aria-checked', 'class'].forEach((key: string) => {
+                    radioWrap.removeAttribute(key);
+                });
+                radioWrap.innerHTML = '';
+            }
         }
     }
 
@@ -330,6 +342,9 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
      * @private
      */
     protected preRender(): void {
+        if (isBlazor() && this.isServerRendered) {
+            return;
+        }
         let element: HTMLInputElement = this.element;
         this.formElement = <HTMLFormElement>closest(this.element, 'form');
         this.tagName = this.element.tagName;
@@ -354,7 +369,14 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
      * @private
      */
     protected render(): void {
-        this.initialize();
+        if (isBlazor() && this.isServerRendered) {
+            if (isRippleEnabled) {
+                let rippleSpan: HTMLElement = this.element.parentElement.getElementsByClassName(RIPPLE)[0] as HTMLElement;
+                rippleEffect(rippleSpan, { duration: 400, isCenterRipple: true });
+            }
+        } else {
+            this.initialize();
+        }
         if (!this.disabled) {
             this.wireEvents();
         }
@@ -371,6 +393,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
         if (textLabel) {
             textLabel.textContent = text;
         } else {
+            text = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(text) : text;
             textLabel = this.createElement('span', { className: LABEL, innerHTML: text });
             label.appendChild(textLabel);
         }

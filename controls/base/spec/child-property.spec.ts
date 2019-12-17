@@ -2,8 +2,7 @@ import { Property, Complex, Collection, Event, INotifyPropertyChanged, NotifyPro
 import { Base } from '../src/base';
 import { createElement } from '../src/dom';
 import { ChildProperty } from '../src/child-property';
-import * as Util from '../src/util';
-
+import { enableBlazorMode, disableBlazorMode } from '../src/util';
 /**
  * BookChild Class
  */
@@ -93,6 +92,10 @@ class Demo extends Base<HTMLElement> implements INotifyPropertyChanged {
         let vde: number = 1;
         vde;
         /** No Code */
+    }
+
+    public getBulkChanges(): any {
+        return this.bulkChanges;
     }
 
 }
@@ -284,11 +287,11 @@ describe('ChildProperty', () => {
                 colAr.push(obj);
                 beforeEach(() => {
                     demoClass3 = new Demo(ele);
-                    Util.enableBlazorMode();
+                    window["Blazor"] = true;
                 });
                 it("success", (done: Function) => {
-                    demoClass3.subjectArray[0].subClick =  ()=> {
-                        let promise = new Promise(function(resolve, reject) {                    
+                    demoClass3.subjectArray[0].subClick = () => {
+                        let promise = new Promise(function (resolve, reject) {
                             setTimeout(() => resolve("done"), 0);
                         });
                         return promise;
@@ -309,73 +312,105 @@ describe('ChildProperty', () => {
                 });
 
                 it("success with json", (done: Function) => {
-                    demoClass3.subjectArray[0].subClick =  ()=> {
-                        let promise = new Promise(function(resolve, reject) {                    
-                            setTimeout(() => resolve({data: "resolved"}), 0);
+                    demoClass3.subjectArray[0].subClick = () => {
+                        let promise = new Promise(function (resolve, reject) {
+                            setTimeout(() => resolve({ data: "resolved" }), 0);
                         });
                         return promise;
                     }
                     demoClass3.trigger('subjectArray[0].subClick', {}, () => {
                         done();
-                    });                   
+                    });
                 });
 
                 it("error", (done: Function) => {
-                    Util.enableBlazorMode();
-                    demoClass3.subjectArray[0].subClick =  ()=> {                       
-                        return Promise.reject({data: {message: 'Error message'}});
+                    window["Blazor"] = true;
+                    demoClass3.subjectArray[0].subClick = () => {
+                        return Promise.reject({ data: { message: 'Error message' } });
                     }
-                    demoClass3.trigger('subjectArray[0].subClick', {}, ()=> {}, () => {
-                        Util.disableBlazorMode();
+                    demoClass3.trigger('subjectArray[0].subClick', {}, () => { }, () => {
+                        window["Blazor"] = false;
                         done();
-                    });                   
+                    });
                 });
 
                 it("success with json string", (done: Function) => {
-                    demoClass3.subjectArray[0].subClick =  ()=> {
-                        let promise = new Promise(function(resolve, reject) {                    
+                    demoClass3.subjectArray[0].subClick = () => {
+                        let promise = new Promise(function (resolve, reject) {
                             setTimeout(() => resolve('{"data":"success"}'), 0);
                         });
                         return promise;
                     }
                     demoClass3.trigger('subjectArray[0].subClick', {}, () => {
                         done();
-                    });                   
+                    });
                 });
 
                 it("error with json string ", (done: Function) => {
-                    Util.enableBlazorMode();
-                    demoClass3.subjectArray[0].subClick =  ()=> {                       
+                    window["Blazor"] = true;
+                    demoClass3.subjectArray[0].subClick = () => {
                         return Promise.reject('{"data":"success"}');
                     }
-                    demoClass3.trigger('subjectArray[0].subClick', {}, ()=> {}, () => {
-                        Util.disableBlazorMode();
+                    demoClass3.trigger('subjectArray[0].subClick', {}, () => { }, () => {
+                        window["Blazor"] = false;
                         done();
-                    });                   
+                    });
                 });
 
                 it("success - non promise ", (done: Function) => {
-                    demoClass3.subjectArray[0].subClick =  ()=> {};
-                    demoClass3.trigger('subjectArray[0].subClick', {}, ()=> {
+                    demoClass3.subjectArray[0].subClick = () => { };
+                    demoClass3.trigger('subjectArray[0].subClick', {}, () => {
                         done();
-                    });                   
+                    });
                 });
                 it("success - non promise - non blazor ", (done: Function) => {
-                    Util.disableBlazorMode();
-                    demoClass3.subjectArray[0].subClick =  ()=> {};
-                    demoClass3.trigger('subjectArray[0].subClick', {}, ()=> {
+                    window['Blazor'] = false;
+                    demoClass3.subjectArray[0].subClick = () => { };
+                    demoClass3.trigger('subjectArray[0].subClick', {}, () => {
                         done();
-                    });                   
+                    });
                 });
-                it("success - trigger when event not registered ", (done: Function) => {  
-                    demoClass3.trigger('subjectArray[0].subClick', {}, ()=> {
+                it("success - trigger when event not registered ", (done: Function) => {
+                    demoClass3.trigger('subjectArray[0].subClick', {}, () => {
                         done();
-                    });                   
+                    });
                 });
                 afterEach(() => {
-                    Util.disableBlazorMode(); 
+                    window["Blazor"] = false;
                 });
             });
+        });
+    });
+
+    describe('serverDataBind method in blazor', () => {
+        let bulkChanges: Object = null;
+        beforeAll(() => {
+            enableBlazorMode();
+            window['ejsInterop'] = {
+                updateModel: (comp: any) => {                   
+                    bulkChanges = comp.bulkChanges;
+                }
+            };
+        });
+        let demoClass1: Demo = new Demo(ele);
+        it("push => ", (done: Function) => {
+            demoClass1.subjectArray.push({ subID: "test" });
+            expect(bulkChanges).toEqual({"subjectArray-2": { subID: "test", ejsAction: "push"}});
+            done();
+        });
+        it("change exisiting colletion 0th index => ", (done: Function) => {
+            demoClass1.subjectArray[0].subID = "testing0";
+            expect(bulkChanges).toEqual({"subjectArray-0": { subID: "testing0", ejsAction: "none"}});
+            done();
+        });
+        it("change exisiting colletion 1st index => ", (done: Function) => {
+            demoClass1.subjectArray[1].subID = "testing1";
+            expect(bulkChanges).toEqual({"subjectArray-1": { subID: "testing1", ejsAction: "none"}});
+            done();
+        });
+        afterAll(() => {
+            disableBlazorMode();
+            delete window['ejsInterop'];
         });
     });
 });

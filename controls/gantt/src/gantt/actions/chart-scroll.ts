@@ -53,6 +53,7 @@ export class ChartScroll {
             this.previousScroll.top = this.element.scrollTop;
             scrollArgs.scrollTop = this.element.scrollTop;
             scrollArgs.scrollDirection = 'Vertical';
+            scrollArgs.action = 'VerticalScroll';
         }
         if (this.element.scrollLeft !== this.previousScroll.left) {
             this.parent.ganttChartModule.chartTimelineContainer.scrollLeft = this.element.scrollLeft;
@@ -60,6 +61,7 @@ export class ChartScroll {
             this.previousScroll.left = this.element.scrollLeft;
             scrollArgs.scrollLeft = this.element.scrollLeft;
             scrollArgs.scrollDirection = 'Horizontal';
+            scrollArgs.action = 'HorizontalScroll';
         }
         scrollArgs.requestType = 'scroll';
         this.parent.trigger('actionComplete', scrollArgs);

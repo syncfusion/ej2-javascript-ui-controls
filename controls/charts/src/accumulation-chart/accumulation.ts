@@ -610,6 +610,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     protected preRender(): void {
         let blazor: string = 'Blazor';
         this.isBlazor = window[blazor];
+        this.allowServerDataBinding = false;
 
         this.unWireEvents();
         this.setCulture();
@@ -646,6 +647,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         this.processData();
 
         this.renderComplete();
+
+        this.allowServerDataBinding = true;
     }
     /**
      * Method to unbind events for accumulation chart
@@ -1435,6 +1438,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * Called internally if any of the property value changed.
      * @private
      */
+    // tslint:disable-next-line:max-func-body-length
     public onPropertyChanged(newProp: AccumulationChartModel, oldProp: AccumulationChartModel): void {
         let update: { refreshElements: boolean, refreshBounds: boolean } = {
             refreshElements: false, refreshBounds: false  };
@@ -1477,9 +1481,15 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                         let len: number = this.series.length;
                         let seriesRefresh: boolean = false;
                         let series: AccumulationSeriesModel;
+                        let blazorProp: boolean;
                         for (let i: number = 0; i < len; i++) {
                             series = newProp.series[i];
-                            if (newProp.series[i] && (newProp.series[i].dataSource || newProp.series[i].yName || newProp.series[i].xName)) {
+                            if (this.isBlazor && (series.startAngle || series.endAngle || series.explodeOffset || series.neckHeight ||
+                                series.neckWidth || series.radius || series.innerRadius || series.groupMode || series.emptyPointSettings)) {
+                                  blazorProp = true;
+                            }
+                            if (newProp.series[i] && (newProp.series[i].dataSource || newProp.series[i].yName || newProp.series[i].xName ||
+                                blazorProp)) {
                                 extend(this.changeVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }

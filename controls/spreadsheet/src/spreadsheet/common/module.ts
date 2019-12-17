@@ -117,4 +117,23 @@ function pushBasicModules(context: Spreadsheet, modules: ModuleDeclaration[]): v
             args: [context]
         });
     }
+    modules.push({
+        member: 'collaborativeEditing',
+        args: [context]
+    });
+    if (context.allowHyperlink) {
+        modules.push({
+            member: 'spreadsheetHyperlink',
+            args: [context]
+        });
+    }
+    if (context.allowUndoRedo) {
+        modules.push({
+            member: 'undoredo',
+            args: [context]
+        });
+    }
+    if (context.allowFiltering) {
+        modules.push({ member: 'filter', args: [context] });
+    }
 }

@@ -141,7 +141,9 @@ export type EditMode =
 /**  Defines EditMode as Row */
 'Row' |
 /**  Defines EditMode as Dialog */
-'Dialog' ;
+'Dialog' |
+/**  Defines EditMode as Batch */
+'Batch' ;
 /** 
  * Defines the position where the new row has to be added.
  */

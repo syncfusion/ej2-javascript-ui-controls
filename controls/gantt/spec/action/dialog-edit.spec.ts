@@ -1,7 +1,8 @@
 /**
  * Gantt taskbaredit spec
  */
-import { Gantt, Edit, Toolbar } from '../../src/index';
+import { getValue } from '@syncfusion/ej2-base';
+import { Gantt, Edit, Toolbar, IGanttData } from '../../src/index';
 import { dialogEditData, resourcesData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { EJ2Instance } from '@syncfusion/ej2-navigations';
@@ -145,10 +146,12 @@ describe('Gantt dialog module', () => {
             let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
             SD.value = null;
             SD.dataBind();
+            let rowData : IGanttData = getValue('rowData', ganttObj.editModule.dialogModule);
+            let validEndDate = rowData.ganttProperties.endDate;
             let ED: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];
-            expect(ED.value).toBe(null);
+            expect(ED.value).toEqual(validEndDate);
             let textObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
-            expect(textObj.value).toBe('0 days');
+            expect(textObj.value).toBe('');
             let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
             triggerMouseEvent(cancelRecord, 'click');
         });

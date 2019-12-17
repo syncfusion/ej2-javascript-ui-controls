@@ -113,7 +113,10 @@ export class WShading {
             this.textureStyle = shading.textureStyle;
         }
     }
-    private hasValue(property: string): boolean {
+    /**
+     * @private
+     */
+    public hasValue(property: string): boolean {
         if (!isNullOrUndefined(this.uniqueShadingFormat)) {
             let propertyType: number = WUniqueFormat.getPropertyType(this.uniqueShadingFormat.uniqueFormatType, property);
             return this.uniqueShadingFormat.propertiesHash.containsKey(propertyType);

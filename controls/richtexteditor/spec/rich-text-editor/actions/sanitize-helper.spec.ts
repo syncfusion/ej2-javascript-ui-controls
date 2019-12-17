@@ -515,5 +515,90 @@ describe('Sanitize Html Helper', () => {
             destroy(rteObj);
         });
     })
+    describe('prevent xss attack when enableHtmlSanitizer is true', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<script>alert("1")</script>',
+                beforeSanitizeHtml: (args: BeforeSanitizeHtmlArgs) => {
+                    args.cancel = true;
+                    args.helper = (value: string) => {
+                       return value;
+                    }
+                }
+            });
 
+        });
+
+        it('check the script element', () => {
+            expect((rteObj.inputElement.querySelectorAll('script')).length).toBeGreaterThan(0);
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('prevent xss attack when enableHtmlSanitizer is fasle', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<script>alert("1")</script>',
+                enableHtmlSanitizer: false
+             });
+
+        });
+
+        it('check the script element', () => {
+            expect((rteObj.inputElement.querySelectorAll('script')).length).toBeGreaterThan(0);
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
+    describe('prevent xss when args.cancel is false', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<script>alert("1")</script>',
+                enableHtmlSanitizer: true,
+                beforeSanitizeHtml: (args: BeforeSanitizeHtmlArgs) => {
+                    args.cancel = false;
+                    args.helper = null;
+                }
+            });
+
+        });
+
+        it('check the script element', () => {
+            expect((rteObj.inputElement.querySelectorAll('script')).length).toBe(0);
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('prevent xss when args.cancel is true', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<script>alert("1")</script>',
+                enableHtmlSanitizer: true,
+                beforeSanitizeHtml: (args: BeforeSanitizeHtmlArgs) => {
+                    args.cancel = true;
+                    args.helper = null;
+                }
+            });
+
+        });
+
+        it('check the script with args.helper null', () => {
+            expect((rteObj.inputElement.querySelectorAll('script')).length).toBeGreaterThan(0);
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

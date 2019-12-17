@@ -2,6 +2,7 @@
  * Multiple Axis sample
  */
 import { CircularGauge, isCompleteAngle, GaugeDirection } from '../../src/index';
+
 let axisIndex: number = 0;
 let circulargauge: CircularGauge = new CircularGauge({
     title: 'Gauge with Multiple Axes',

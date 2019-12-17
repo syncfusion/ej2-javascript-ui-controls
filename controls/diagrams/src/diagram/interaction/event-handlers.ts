@@ -37,7 +37,6 @@ import { TextElement } from '../core/elements/text-element';
 import { Size } from '../primitives/size';
 import { cloneObject as clone, cloneObject } from './../utility/base-util';
 import { TransformFactor } from '../interaction/scroller';
-import { InputArgs } from '@syncfusion/ej2-inputs';
 import { Rect } from '../primitives/rect';
 import { identityMatrix, rotateMatrix, transformPointByMatrix, Matrix } from './../primitives/matrix';
 import { LayerModel } from '../diagram/layer-model';
@@ -1229,7 +1228,7 @@ export class DiagramEventHandler {
                         if (!(this.diagram.diagramActions & DiagramAction.TextEdit)) {
                             let id: string = '';
                             if (((obj as Node).shape as BpmnShapeModel).shape === 'TextAnnotation') {
-                                id = obj.wrapper.children[1].id.split('_')[1];
+                                id =  obj.wrapper.children[1].id.split('_')[1];
                             }
                             this.diagram.startTextEdit
                                 (obj, id || (annotation instanceof TextElement ?
@@ -1266,7 +1265,7 @@ export class DiagramEventHandler {
     /**
      * @private
      */
-    public inputChange(evt: InputArgs): void {
+    public inputChange(): void {
         let minWidth: number = 90; let maxWidth: number;
         let minHeight: number = 12; let fontsize: number;
         let textWrapper: DiagramElement;

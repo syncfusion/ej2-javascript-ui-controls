@@ -2793,7 +2793,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     // tslint:disable-next-line
-    public fireAnnotationSelect(id: string, pageNumber: number, annotation: any, annotationCollection?: any ): void {
+    public fireAnnotationSelect(id: string, pageNumber: number, annotation: any, annotationCollection?: any): void {
         // tslint:disable-next-line:max-line-length
         let eventArgs: AnnotationSelectEventArgs = { name: 'annotationSelect', annotationId: id, pageIndex: pageNumber, annotation: annotation };
         if (annotationCollection) {

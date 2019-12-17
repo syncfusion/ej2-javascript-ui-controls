@@ -1,5 +1,7 @@
 /**
  * Types type for Markdown parser
+ * @hidden
+ * @deprecated
  */
 export type MarkdownExecCommand =
     'Indents' |

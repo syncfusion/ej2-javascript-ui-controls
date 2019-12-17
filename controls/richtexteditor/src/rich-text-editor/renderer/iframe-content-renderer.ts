@@ -84,10 +84,13 @@ const IFRAMEHEADER: string = `
 /**
  * Content module is used to render RichTextEditor content
  * @hidden
+ * @deprecated
  */
 export class IframeContentRender extends ContentRender {
     /**
-     * The function is used to render RichTextEditor iframe    
+     * The function is used to render RichTextEditor iframe
+     * @hidden
+     * @deprecated    
      */
 
     public renderPanel(): void {
@@ -120,7 +123,9 @@ export class IframeContentRender extends ContentRender {
     }
     /**
      * Get the editable element of RichTextEditor
-     * @return {Element} 
+     * @return {Element}
+     * @hidden
+     * @deprecated 
      */
     public getEditPanel(): Element {
         let editNode: HTMLElement;
@@ -134,6 +139,8 @@ export class IframeContentRender extends ContentRender {
     /**
      * Get the document of RichTextEditor
      * @param  {Document}   
+     * @hidden
+     * @deprecated
      */
     public getDocument(): Document {
         return this.getEditPanel().ownerDocument;

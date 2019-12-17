@@ -186,7 +186,8 @@ export class Toolbar {
                 iconCss: this.parent.view === 'Details' ? CLS.ICON_GRID : CLS.ICON_LARGE,
                 cssClass: getCssClass(this.parent, 'e-caret-hide ' + CLS.ROOT_POPUP),
                 items: layoutItems, select: this.layoutChange.bind(this),
-                enableRtl: this.parent.enableRtl
+                enableRtl: this.parent.enableRtl,
+                content: '<span class="e-tbar-btn-text">' + getLocaleText(this.parent, 'View') + '</span>'
             });
             this.layoutBtnObj.isStringTemplate = true;
             this.layoutBtnObj.appendTo('#' + this.getId('View'));
@@ -283,12 +284,16 @@ export class Toolbar {
                 case 'View':
                     item = {
                         id: itemId, tooltipText: itemTooltip, prefixIcon: this.parent.view === 'Details' ? CLS.ICON_GRID : CLS.ICON_LARGE,
-                        overflow: 'Show', align: 'Right',
-                        template: '<button id="' + itemId + '" class="e-tbar-btn e-tbtn-txt" tabindex="-1"></button>'
+                        overflow: 'Show', align: 'Right', text: itemText, showTextOn: 'Overflow',
+                        template: '<button id="' + itemId + '" class="e-tbar-btn e-tbtn-txt" tabindex="-1" aria-label=' +
+                            getLocaleText(this.parent, 'View') + '></button>'
                     };
                     break;
                 case 'Details':
-                    item = { id: itemId, tooltipText: itemTooltip, prefixIcon: CLS.ICON_DETAILS, overflow: 'Show', align: 'Right' };
+                    item = {
+                        id: itemId, tooltipText: itemTooltip, prefixIcon: CLS.ICON_DETAILS, overflow: 'Show', align: 'Right',
+                        text: itemText, showTextOn: 'Overflow'
+                    };
                     break;
                 case 'NewFolder':
                     item = { id: itemId, text: itemText, tooltipText: itemTooltip, prefixIcon: CLS.ICON_NEWFOLDER, showTextOn: mode };

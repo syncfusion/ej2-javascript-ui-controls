@@ -11,6 +11,10 @@
       color: $grid-icon-color;
     }
 
+    .e-unboundcelldiv .e-icons {
+      color: $grid-command-icon-color;
+    }
+
     .e-table {
       background-color: $grid-table-background-color;
     }
@@ -19,7 +23,7 @@
       box-shadow: $grid-cell-focus-shadow;
     }
 
-    .e-gridheader .e-icons:not(.e-icon-hide):not(.e-check) {
+    .e-gridheader .e-icons:not(.e-icon-hide):not(.e-check):not(.e-stop) {
       color: $grid-icon-default-color;
     }
 

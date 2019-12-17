@@ -36,6 +36,7 @@ export class TaskbarEdit {
     public fromPredecessorText: string;
     public toPredecessorText: string;
     public finalPredecessor: string;
+    public dependencyCancel: boolean = false;
     public drawPredecessor: boolean;
     private highlightedSecondElement: Element;
     private editTooltip: EditTooltip;
@@ -355,7 +356,7 @@ export class TaskbarEdit {
                 this.parent.ganttChartModule.scrollObject.previousScroll.top;
         }
         if (this.taskBarEditAction === 'ConnectorPointLeftDrag' || this.taskBarEditAction === 'ConnectorPointRightDrag') {
-            this.fromPredecessorText = this.taskBarEditAction === 'ConnectorPointLeftDrag' ? 'Start' : 'Finish';
+            this.fromPredecessorText = this.taskBarEditAction === 'ConnectorPointLeftDrag' ? 'start' : 'finish';
             this.parent.connectorLineModule.tooltipTable.innerHTML = this.parent.connectorLineModule.getConnectorLineTooltipInnerTd(
                 this.taskBarEditRecord.ganttProperties.taskName,
                 this.fromPredecessorText, '', ''
@@ -1018,6 +1019,10 @@ export class TaskbarEdit {
         x2 = this.mouseMoveX;
         y2 = this.mouseMoveY;
         resMouseY = e.pageY - this.parent.ganttChartModule.chartBodyContainer.offsetTop;
+        if ((this.taskBarEditAction === 'ConnectorPointLeftDrag' ||
+            this.taskBarEditAction === 'ConnectorPointRightDrag') && !this.drawPredecessor) {
+            this.dependencyCancel = true;
+        }
         if ((this.taskBarEditAction === 'ConnectorPointLeftDrag' ||
             this.taskBarEditAction === 'ConnectorPointRightDrag') && this.drawPredecessor) {
             this.parent.connectorLineEditModule.updatePredecessor(this.connectorSecondRecord, this.finalPredecessor);

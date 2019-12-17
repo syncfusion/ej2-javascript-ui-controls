@@ -53,6 +53,7 @@ export class DialogEditRender {
     }): void {
         let gObj: IGrid = this.parent;
         this.dialog = this.parent.createElement('div', { id: gObj.element.id + '_dialogEdit_wrapper', styles: 'width: auto' });
+        this.dialog.setAttribute('aria-label', 'Dialog edit');
         gObj.element.appendChild(this.dialog);
         this.setLocaleObj();
         // let position: PositionDataModel = this.parent.element.getBoundingClientRect().height < 400 ?
@@ -78,6 +79,8 @@ export class DialogEditRender {
         ));
         if (!isBlazor()) {
             args.dialog = this.dialogObj;
+        } else {
+            this.dialogObj.locale = this.parent.locale;
         }
         let isStringTemplate: string = 'isStringTemplate';
         this.dialogObj[isStringTemplate] = true;
@@ -119,7 +122,15 @@ export class DialogEditRender {
             let editTemplateID: string = this.parent.element.id + 'editSettingsTemplate';
             let dummyData: Object = extend({}, args.rowData, { isAdd: !this.isEdit }, true);
             appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
-            updateBlazorTemplate(editTemplateID, 'Template', this.parent.editSettings);
+            let setRules: Function = () => {
+                let columns: Column[] = this.parent.getColumns();
+                columns.forEach((column: Column) => {
+                    if (column.validationRules) {
+                        this.parent.editModule.formObj.rules[column.field] = column.validationRules as {[rule: string]: Object};
+                    }
+                });
+            };
+            updateBlazorTemplate(editTemplateID, 'Template', this.parent.editSettings, true, setRules);
             div.appendChild(form);
             return div;
         }

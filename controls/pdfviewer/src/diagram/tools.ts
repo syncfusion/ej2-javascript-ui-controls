@@ -623,7 +623,15 @@ export class StampTool extends MoveTool {
             args.source = this.commandHandler.annotations[this.commandHandler.annotations.length - 1] as IElement;
             args.sourceWrapper = args.source.wrapper; this.inAction = true;
             // tslint:disable-next-line
-            this['offset'] = { x: args.source.wrapper.offsetX, y: args.source.wrapper.offsetY };
+            let currentSource: any = args.source;
+            if (currentSource && currentSource.shapeAnnotationType === 'HandWrittenSignature') {
+                // tslint:disable-next-line:max-line-length
+                // tslint:disable-next-line
+                this['offset'] = { x: args.source.wrapper.offsetX - (args.source.wrapper.bounds.width / 2), y: args.source.wrapper.offsetY - (args.source.wrapper.bounds.height / 2) };
+            } else {
+                // tslint:disable-next-line
+                this['offset'] = { x: args.source.wrapper.offsetX, y: args.source.wrapper.offsetY };
+            }
             this.startPosition = args.position;
             this.commandHandler.select([newObject.id]);
         }
@@ -1062,7 +1070,8 @@ export class ResizeTool extends ToolBase {
             } else {
                 deltaHeight = deltaWidth = 0;
             }
-        } else if ((source as PdfAnnotationBaseModel).shapeAnnotationType === 'Image') {
+            // tslint:disable-next-line:max-line-length
+        } else if ((source as PdfAnnotationBaseModel).shapeAnnotationType === 'Image' || (source as PdfAnnotationBaseModel).shapeAnnotationType === 'HandWrittenSignature') {
             if (!(deltaHeight === 1 && deltaWidth === 1)) {
                 deltaHeight = deltaWidth = Math.max(deltaHeight, deltaWidth);
             }

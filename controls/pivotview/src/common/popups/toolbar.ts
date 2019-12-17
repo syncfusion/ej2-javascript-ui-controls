@@ -865,9 +865,9 @@ export class Toolbar {
 
     private updateReportList(): void {
         let reports: FetchReportArgs;
-        if(isBlazor()) {
+        if (isBlazor()) {
             reports = this.fetchReports();
-            if(reports.reportName === undefined) {
+            if (reports.reportName === undefined) {
                 reports.reportName = this.reportList.dataSource as string[];
             }
         } else {
@@ -912,6 +912,9 @@ export class Toolbar {
                     }
                     this.parent.layoutRefresh();
                 }
+                if (isBlazor() && this.parent.element.querySelector('.e-toggle-field-list') && this.parent.toolbar.indexOf('FieldList') !== -1) {
+                    (this.parent.element.querySelector('.e-toggle-field-list') as HTMLElement).style.display = 'none';
+                }
                 break;
             case (this.parent.element.id + '_' + 'Column'):
             case (this.parent.element.id + '_' + 'Bar'):
@@ -933,6 +936,9 @@ export class Toolbar {
                             (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = "";
                         }
                     }
+                }
+                if (isBlazor() && this.parent.element.querySelector('.e-toggle-field-list') && this.parent.toolbar.indexOf('FieldList') !== -1) {
+                    (this.parent.element.querySelector('.e-toggle-field-list') as HTMLElement).style.display = 'none';
                 }
                 break;
             case (this.parent.element.id + 'pdf'):

@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, Property, Event, Animation, Collection, isBlazor } from '@syncfusion/ej2-base';
+import { Component, ModuleDeclaration, Property, Event, Animation, Collection, isBlazor, blazorTemplates } from '@syncfusion/ej2-base';
 import { EventHandler, EmitType, Browser, Internationalization, getDefaultDateObject, cldrData, L10n } from '@syncfusion/ej2-base';
 import { getValue, compile, extend, isNullOrUndefined, NotifyPropertyChanges, INotifyPropertyChanged, Complex } from '@syncfusion/ej2-base';
 import { getElement, removeClass, addClass, classList, remove, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
@@ -197,6 +197,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Example for array of view objects:
      * {% codeBlock src="schedule/view-api/array.ts" %}{% endcodeBlock %}
      * @default '['Day', 'Week', 'WorkWeek', 'Month', 'Agenda']'
+     * @blazorType List<ScheduleView>
      */
     @Property(['Day', 'Week', 'WorkWeek', 'Month', 'Agenda'])
     public views: View[] | ViewsModel[];
@@ -209,6 +210,24 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(new Date())
     public selectedDate: Date;
+    /**
+     * To define the minimum date on the Schedule, `minDate` property can be defined.
+     *  Usually, it defaults to the new Date(1900, 0, 1).
+     * @default new Date(1900, 0, 1)
+     * @aspDefaultValue new DateTime(1900, 1, 1)
+     * @blazorDefaultValue new DateTime(1900, 1, 1)
+     */
+    @Property(new Date(1900, 0, 1))
+    public minDate: Date;
+    /**
+     * To define the maximum date on the Schedule, `maxDate` property can be defined.
+     *  Usually, it defaults to the new Date(2099, 11, 31).
+     * @default new Date(2099, 11, 31)
+     * @aspDefaultValue new DateTime(2099, 12, 31)
+     * @blazorDefaultValue new DateTime(2099, 12, 31)
+     */
+    @Property(new Date(2099, 11, 31))
+    public maxDate: Date;
     /**
      * By default, Schedule follows the date-format as per the default culture assigned to it.
      *  It is also possible to manually set specific date format by using the `dateFormat` property. 
@@ -343,6 +362,20 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(true)
     public showQuickInfo: boolean;
+    /**
+     * This property helps user to allow/prevent the selection of multiple days(rows).
+     *  By default, it is set to `true`.
+     * @default true
+     */
+    @Property(true)
+    public allowMultiRowSelection: boolean;
+    /**
+     * This property helps to show quick popup after multiple cell selection.
+     *  By default, it is set to `false`.
+     * @default false
+     */
+    @Property(false)
+    public quickInfoOnSelectionEnd: boolean;
     /**
      * When set to `true`, displays the week number of the current view date range.
      *  By default, it is set to `false`.
@@ -552,7 +585,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers before each element of the schedule rendering on the page.
      * @event
      * @blazorproperty 'OnRenderCell'
-     * @deprecated
      */
     @Event()
     public renderCell: EmitType<RenderCellEventArgs>;
@@ -662,6 +694,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @private
      */
     public render(): void {
+        if (isBlazor()) {
+            // tslint:disable-next-line:no-any
+            (this as any).interopAdaptor.invokeMethodAsync('SetAdaptive', this.isAdaptive);
+        }
         let addClasses: string[] = [];
         let removeClasses: string[] = [];
         addClasses.push(cls.ROOT);
@@ -695,17 +731,56 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.initializeDataModule();
         this.on(events.dataReady, this.resetEventTemplates, this);
         this.on(events.eventsLoaded, this.updateEventTemplates, this);
-        this.element.appendChild(this.createElement('div', { className: cls.TABLE_CONTAINER_CLASS }));
+        this.renderTableContainer();
         this.activeViewOptions = this.getActiveViewOptions();
         this.initializeResources();
     }
 
+    private renderTableContainer(): void {
+        if (!this.element.querySelector('.' + cls.TABLE_CONTAINER_CLASS)) {
+            this.element.appendChild(this.createElement('div', { className: cls.TABLE_CONTAINER_CLASS }));
+        }
+    }
+
+    /** @hidden */
+    public isServerRenderer(view: View = this.currentView): boolean {
+        // tslint:disable-next-line:max-line-length
+        let views: View[] = ['Day', 'Week', 'WorkWeek', 'Month', 'MonthAgenda', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'];
+        if (isBlazor() && (views.indexOf(view) !== -1) && !this.virtualScrollModule) {
+            return true;
+        }
+        return false;
+    }
+
+    /** @hidden */
     public renderCompleted(): void {
         this.renderComplete();
     }
 
+    /** @hidden */
+    public layoutReady(): void {
+        if (this.isServerRenderer() && this.activeView) {
+            this.activeView.serverRenderLayout();
+            if (this.renderModule) {
+                this.renderModule.refreshDataManager();
+            }
+        }
+    }
+
+    /** @hidden */
+    public refreshLayout(args: Object[]): void {
+        this.uiStateValues.groupIndex = 0;
+        this.resourceCollection = args;
+        this.renderElements(true);
+        this.layoutReady();
+    }
+
+    /** @hidden */
     public updateLayoutTemplates(): void {
         let view: ViewsModel = this.views[this.viewIndex] as ViewsModel;
+        if (this.isServerRenderer(view.option)) {
+            return;
+        }
         if (this.cellHeaderTemplate) {
             updateBlazorTemplate(this.element.id + '_cellHeaderTemplate', 'CellHeaderTemplate', this);
         }
@@ -744,8 +819,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
+    /** @hidden */
     public resetLayoutTemplates(): void {
-        let view: ViewsData = this.viewCollections[this.uiStateValues.viewIndex];
+        let view: ViewsData = this.viewCollections[this.activeView.viewIndex];
+        if (this.isServerRenderer(view.option)) {
+            return;
+        }
         if (this.cellHeaderTemplate) {
             resetBlazorTemplate(this.element.id + '_cellHeaderTemplate', 'CellHeaderTemplate');
         }
@@ -779,27 +858,34 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
-    private updateEventTemplates(): void {
+    /** @hidden */
+    public updateEventTemplates(): void {
         let view: ViewsModel = this.views[this.viewIndex] as ViewsModel;
         if (this.eventSettings.template) {
-            updateBlazorTemplate(this.element.id + '_eventTemplate', 'Template', this.eventSettings);
+            updateBlazorTemplate(this.element.id + '_eventTemplate', 'Template', this.eventSettings, false);
         }
         if (this.activeViewOptions.eventTemplateName !== '') {
             let tempID: string = this.element.id + '_' + this.activeViewOptions.eventTemplateName + 'eventTemplate';
-            updateBlazorTemplate(tempID, 'EventTemplate', view);
+            updateBlazorTemplate(tempID, 'EventTemplate', view, false);
         }
         if (this.viewCollections[this.viewIndex].option === 'Agenda' || this.viewCollections[this.viewIndex].option === 'MonthAgenda') {
             this.updateLayoutTemplates();
         }
     }
 
+    /** @hidden */
     public resetEventTemplates(): void {
-        let view: ViewsData = this.viewCollections[this.uiStateValues.viewIndex];
+        let view: ViewsData = this.viewCollections[this.activeView.viewIndex];
         if (this.eventSettings.template) {
-            resetBlazorTemplate(this.element.id + '_eventTemplate', 'Template');
+            // tslint:disable-next-line:no-any
+            (blazorTemplates as any)[this.element.id + '_eventTemplate'] = [];
+            updateBlazorTemplate(this.element.id + '_eventTemplate', 'Template', this.eventSettings);
         }
         if (view.eventTemplateName !== '') {
-            resetBlazorTemplate(this.element.id + '_' + view.eventTemplateName + 'eventTemplate', 'EventTemplate');
+            let tempID: string = this.element.id + '_' + view.eventTemplateName + 'eventTemplate';
+            // tslint:disable-next-line:no-any
+            (blazorTemplates as any)[tempID] = [];
+            updateBlazorTemplate(tempID, 'EventTemplate', this.views[this.activeView.viewIndex] as ViewsModel);
         }
         if (view.option === 'Agenda' || view.option === 'MonthAgenda') {
             this.resetLayoutTemplates();
@@ -812,24 +898,23 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.resourceBase.bindResourcesData(isSetModel);
         } else {
             this.resourceBase = null;
+            this.resourceCollection = [];
             this.renderElements(isSetModel);
-            if (isSetModel) {
-                this.eventWindow.refresh();
-            }
         }
     }
+
+    /** @hidden */
     public renderElements(isLayoutOnly: boolean): void {
         if (isLayoutOnly) {
             this.initializeView(this.currentView);
+            this.eventWindow.refresh();
             return;
         }
         this.destroyHeaderModule();
         if (this.showHeaderBar) {
             this.headerModule = new HeaderRenderer(this);
         }
-        if (!this.element.querySelector('.' + cls.TABLE_CONTAINER_CLASS)) {
-            this.element.appendChild(this.createElement('div', { className: cls.TABLE_CONTAINER_CLASS }));
-        }
+        this.renderTableContainer();
         if (Browser.isDevice || Browser.isTouch) {
             this.scheduleTouchModule = new ScheduleTouch(this);
         }
@@ -839,9 +924,20 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.unwireEvents();
         this.wireEvents();
     }
-    private validateDate(): void {
+    private validateDate(selectedDate: Date = this.selectedDate): void {
         // persist the selected date value
-        this.setProperties({ selectedDate: new Date('' + this.selectedDate) }, true);
+        let date: Date = selectedDate instanceof Date ? new Date(selectedDate.getTime()) : new Date(selectedDate);
+        if (this.minDate <= this.maxDate) {
+            if (date < this.minDate) {
+                date = this.minDate;
+            }
+            if (date > this.maxDate) {
+                date = this.maxDate;
+            }
+            this.setScheduleProperties({ selectedDate: new Date('' + date) });
+        } else {
+            throw Error('minDate should be equal or less than maxDate');
+        }
     }
     private getViewIndex(viewName: View): number {
         for (let item: number = 0; item < this.viewCollections.length; item++) {
@@ -890,13 +986,13 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             count++;
         }
         if (!isModuleLoad && selectedView) {
-            this.setProperties({ currentView: selectedView }, true);
+            this.setScheduleProperties({ currentView: selectedView });
+            this.serverDataBind();
         }
         if (this.viewIndex === -1) {
             let currentIndex: number = this.getViewIndex(this.currentView);
             this.viewIndex = (currentIndex === -1) ? 0 : currentIndex;
         }
-        this.uiStateValues.viewIndex = this.viewIndex;
     }
     private getActiveViewOptions(): ViewsData {
         let timeScale: TimeScaleModel = {
@@ -996,6 +1092,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.eventWindow = new EventWindow(this);
         this.quickPopup = new QuickPopups(this);
     }
+
+    /** @hidden */
     public getDayNames(type: string): string[] {
         let culShortNames: string[] = [];
         let cldrObj: string[];
@@ -1018,12 +1116,19 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 (getValue('main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.timeFormats.short', cldrData));
         }
     }
+
+    /** @hidden */
     public getCalendarMode(): string {
         return this.calendarMode.toLowerCase();
     }
+
+    /** @hidden */
     public getTimeString(date: Date): string {
-        return this.globalize.formatDate(date, { format: this.timeFormat, type: 'time', calendar: this.getCalendarMode() });
+        let time: string = this.globalize.formatDate(date, { format: this.timeFormat, type: 'time', calendar: this.getCalendarMode() });
+        return time.toLocaleUpperCase();
     }
+
+    /** @hidden */
     public getDateTime(date: Date): Date {
         return date instanceof Date ? new Date(date.getTime()) : new Date(date);
     }
@@ -1034,8 +1139,16 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.calendarUtil = new Gregorian();
         }
     }
+
+    /** @hidden */
+    public setScheduleProperties(properties: object): void {
+        this.allowServerDataBinding = false;
+        this.setProperties(properties, true);
+        this.allowServerDataBinding = true;
+    }
+
+    /** @hidden */
     public changeView(view: View, event?: Event, muteOnChange?: boolean, index?: number): void {
-        this.uiStateValues.viewIndex = this.viewIndex;
         if (isNullOrUndefined(index)) {
             index = this.getViewIndex(view);
         }
@@ -1043,19 +1156,24 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             return;
         }
         this.viewIndex = index;
+        if (isBlazor()) {
+            // tslint:disable-next-line:no-any
+            (this as any).interopAdaptor.invokeMethodAsync('SetViewIndex', this.viewIndex);
+        }
         let args: ActionEventArgs = { requestType: 'viewNavigate', cancel: false, event: event };
         this.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {
             if (!actionArgs.cancel) {
                 let navArgs: NavigatingEventArgs = { action: 'view', cancel: false, previousView: this.currentView, currentView: view };
                 this.trigger(events.navigating, navArgs, (navigationArgs: NavigatingEventArgs) => {
                     if (!navigationArgs.cancel) {
-                        this.setProperties({ currentView: view }, true);
+                        this.setScheduleProperties({ currentView: view });
                         if (this.headerModule) {
                             this.headerModule.updateActiveView();
                             this.headerModule.setCalendarDate(this.selectedDate);
                             this.headerModule.setCalendarView();
                         }
                         this.initializeView(this.currentView);
+                        this.serverDataBind();
                         this.animateLayout();
                         args = { requestType: 'viewNavigate', cancel: false, event: event };
                         this.trigger(events.actionComplete, args);
@@ -1064,6 +1182,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             }
         });
     }
+
+    /** @hidden */
     public changeDate(selectedDate: Date, event?: Event): void {
         let args: ActionEventArgs = { requestType: 'dateNavigate', cancel: false, event: event };
         this.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {
@@ -1075,11 +1195,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 this.trigger(events.navigating, navArgs, (navigationArgs: NavigatingEventArgs) => {
                     if (!navigationArgs.cancel) {
                         this.uiStateValues.isInitial = this.activeView.isTimelineView() ? true : this.uiStateValues.isInitial;
-                        this.setProperties({ selectedDate: selectedDate }, true);
+                        this.validateDate(selectedDate);
                         if (this.headerModule) {
                             this.headerModule.setCalendarDate(selectedDate);
                         }
                         this.initializeView(this.currentView);
+                        this.serverDataBind();
                         this.animateLayout();
                         args = { requestType: 'dateNavigate', cancel: false, event: event };
                         this.trigger(events.actionComplete, args);
@@ -1088,9 +1209,18 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             }
         });
     }
+
+    /** @hidden */
+    public isMinMaxDate(date: Date = this.selectedDate): boolean {
+        return ((date.getTime() >= this.minDate.getTime()) && (date.getTime() <= this.maxDate.getTime()));
+    }
+
+    /** @hidden */
     public isSelectedDate(date: Date): boolean {
         return date.setHours(0, 0, 0, 0) === new Date('' + this.selectedDate).setHours(0, 0, 0, 0);
     }
+
+    /** @hidden */
     public getCurrentTime(): Date {
         if (this.timezone) {
             let localOffset: number & string = new Date().getTimezoneOffset() as number & string;
@@ -1098,6 +1228,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
         return new Date();
     }
+
+    /** @hidden */
     public getNavigateView(): View {
         if (this.activeView.isTimelineView()) {
             return this.currentView === 'TimelineMonth' || this.currentView === 'TimelineYear' ? 'TimelineDay' : 'Agenda';
@@ -1105,6 +1237,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         return 'Day';
     }
     private animateLayout(): void {
+        if (isBlazor() || !this.activeView.element) {
+            return;
+        }
         new Animation({ duration: 600, name: 'FadeIn', timingFunction: 'easeIn' }).animate(this.activeView.element);
     }
     /**
@@ -1117,39 +1252,18 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.setViewOptions(true);
         for (let view of Object.keys(this.viewOptions)) {
             view = (view === 'timelineDay' || view === 'timelineWeek' || view === 'timelineWorkWeek') ? 'timelineViews' : view;
-            modules.push({
-                member: view,
-                args: [this]
-            });
+            modules.push({ member: view, args: [this] });
         }
         if (this.allowDragAndDrop) {
-            modules.push({
-                member: 'dragAndDrop',
-                args: [this]
-            });
+            modules.push({ member: 'dragAndDrop', args: [this] });
         }
         if (this.allowResizing) {
-            modules.push({
-                member: 'resize',
-                args: [this]
-            });
+            modules.push({ member: 'resize', args: [this] });
         }
-        modules.push({
-            member: 'excelExport',
-            args: [this]
-        });
-        modules.push({
-            member: 'iCalendarExport',
-            args: [this]
-        });
-        modules.push({
-            member: 'iCalendarImport',
-            args: [this]
-        });
-        modules.push({
-            member: 'print',
-            args: [this]
-        });
+        modules.push({ member: 'excelExport', args: [this] });
+        modules.push({ member: 'iCalendarExport', args: [this] });
+        modules.push({ member: 'iCalendarImport', args: [this] });
+        modules.push({ member: 'print', args: [this] });
         return modules;
     }
     /**
@@ -1161,7 +1275,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.globalize = new Internationalization(this.locale);
         this.tzModule = new Timezone();
         this.uiStateValues = {
-            expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false, viewIndex: 0,
+            expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false,
             isIgnoreOccurrence: false, groupIndex: 0, action: false, isBlock: false
         };
         this.activeCellsData = { startTime: this.getCurrentTime(), endTime: this.getCurrentTime(), isAllDay: false };
@@ -1272,6 +1386,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.keyboardInteractionModule = new KeyboardInteraction(this);
         }
     }
+
+    /** @hidden */
     public removeSelectedClass(): void {
         let selectedCells: Element[] = this.getSelectedElements();
         for (let cell of selectedCells) {
@@ -1280,6 +1396,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
         removeClass(selectedCells, cls.SELECTED_CELL_CLASS);
     }
+
+    /** @hidden */
     public addSelectedClass(cells: HTMLTableCellElement[], focusCell: HTMLTableCellElement): void {
         for (let cell of cells) {
             cell.setAttribute('aria-selected', 'true');
@@ -1290,28 +1408,44 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             focusCell.focus();
         }
     }
+
+    /** @hidden */
     public selectCell(element: HTMLElement & HTMLTableCellElement): void {
         this.removeSelectedClass();
         this.addSelectedClass([element], element);
     }
+
+    /** @hidden */
     public getSelectedElements(): Element[] {
         return [].slice.call(this.element.querySelectorAll('.' + cls.SELECTED_CELL_CLASS));
     }
+
+    /** @hidden */
     public getAllDayRow(): Element {
         return this.element.querySelector('.' + cls.ALLDAY_ROW_CLASS);
     }
+
+    /** @hidden */
     public getContentTable(): HTMLElement {
         return this.element.querySelector('.' + cls.CONTENT_TABLE_CLASS + ' tbody') as HTMLElement;
     }
+
+    /** @hidden */
     public getTableRows(): HTMLElement[] {
         return [].slice.call(this.element.querySelectorAll('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr:not(.' + cls.HIDDEN_CLASS + ')'));
     }
+
+    /** @hidden */
     public getWorkCellElements(): Element[] {
         return [].slice.call(this.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS));
     }
+
+    /** @hidden */
     public getIndexOfDate(collection: Date[], date: Date): number {
         return collection.map(Number).indexOf(+date);
     }
+
+    /** @hidden */
     public isAllDayCell(td: Element): boolean {
         if (['Month', 'TimelineMonth', 'TimelineYear'].indexOf(this.currentView) > -1 || td.classList.contains(cls.ALLDAY_CELLS_CLASS) ||
             td.classList.contains(cls.HEADER_CELLS_CLASS) || !this.activeViewOptions.timeScale.enable) {
@@ -1323,52 +1457,95 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
         return false;
     }
+
+    /** @hidden */
     public getDateFromElement(td: Element): Date {
-        if (!isNullOrUndefined(td.getAttribute('data-date'))) {
-            let dateInMS: number = parseInt(td.getAttribute('data-date'), 10);
-            return new Date(dateInMS);
+        let dateString: string = td.getAttribute('data-date');
+        if (!isNullOrUndefined(dateString)) {
+            let dateInMS: number = parseInt(dateString, 10);
+            let date: Date = new Date(dateInMS);
+            if (this.isServerRenderer()) {
+                return new Date(+date + (date.getTimezoneOffset() * 60000));
+            }
+            return date;
         }
         return undefined;
     }
+
+    /** @hidden */
+    public getMsFromDate(date: Date): number {
+        if (this.isServerRenderer()) {
+            return new Date(+date - (date.getTimezoneOffset() * 60000)).getTime();
+        }
+        return date.getTime();
+    }
+
+    /** @hidden */
     public getCellHeaderTemplate(): Function {
         return this.cellHeaderTemplateFn;
     }
+
+    /** @hidden */
     public getCellTemplate(): Function {
         return this.cellTemplateFn;
     }
+
+    /** @hidden */
     public getDateHeaderTemplate(): Function {
         return this.dateHeaderTemplateFn;
     }
+
+    /** @hidden */
     public getMajorSlotTemplate(): Function {
         return this.majorSlotTemplateFn;
     }
+
+    /** @hidden */
     public getMinorSlotTemplate(): Function {
         return this.minorSlotTemplateFn;
     }
+
+    /** @hidden */
     public getAppointmentTemplate(): Function {
         return this.appointmentTemplateFn;
     }
+
+    /** @hidden */
     public getEventTooltipTemplate(): Function {
         return this.eventTooltipTemplateFn;
     }
+
+    /** @hidden */
     public getHeaderTooltipTemplate(): Function {
         return this.headerTooltipTemplateFn;
     }
+
+    /** @hidden */
     public getEditorTemplate(): Function {
         return this.editorTemplateFn;
     }
+
+    /** @hidden */
     public getQuickInfoTemplatesHeader(): Function {
         return this.quickInfoTemplatesHeaderFn;
     }
+
+    /** @hidden */
     public getQuickInfoTemplatesContent(): Function {
         return this.quickInfoTemplatesContentFn;
     }
+
+    /** @hidden */
     public getQuickInfoTemplatesFooter(): Function {
         return this.quickInfoTemplatesFooterFn;
     }
+
+    /** @hidden */
     public getResourceHeaderTemplate(): Function {
         return this.resourceHeaderTemplateFn;
     }
+
+    /** @hidden */
     public getCssProperties(): ScrollCss {
         let cssProps: ScrollCss = {
             border: this.enableRtl ? 'borderLeftWidth' : 'borderRightWidth',
@@ -1376,12 +1553,16 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         };
         return cssProps;
     }
+
+    /** @hidden */
     public removeNewEventElement(): void {
         let eventClone: HTMLElement = this.element.querySelector('.' + cls.NEW_EVENT_CLASS);
         if (!isNullOrUndefined(eventClone)) {
             remove(eventClone);
         }
     }
+
+    /** @hidden */
     public getStartEndTime(startEndTime: string): Date {
         if (!isNullOrUndefined(startEndTime) && startEndTime !== '') {
             let startEndDate: Date = util.resetTime(this.getCurrentTime());
@@ -1406,6 +1587,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.notify(events.dataReady, {});
         }
     }
+
+    /** @hidden */
     public templateParser(template: string): Function {
         if (template) {
             try {
@@ -1419,6 +1602,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         return undefined;
     }
 
+    /** @hidden */
     public boundaryValidation(pageY: number, pageX: number): ResizeEdges {
         let autoScrollDistance: number = 30;
         let scrollEdges: ResizeEdges = { left: false, right: false, top: false, bottom: false };
@@ -1488,6 +1672,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 case 'currentView':
                     state.isView = true;
                     break;
+                case 'minDate':
+                case 'maxDate':
                 case 'selectedDate':
                     state.isDate = true;
                     break;
@@ -1703,12 +1889,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                     state.isDataManager = true;
                     break;
                 case 'editFollowingEvents':
-                    state.isRefresh = true;
+                    if (this.quickPopup) { this.quickPopup.refreshQuickDialog(); }
                     break;
                 case 'allowAdding':
                 case 'allowEditing':
                 case 'allowDeleting':
-                    state.isLayout = true;
+                    if (this.eventWindow) { this.eventWindow.refresh(); }
                     break;
             }
         }
@@ -1783,8 +1969,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private getWorkHourCells(dates: Date[], start: string, end: string, groupIndex?: number): HTMLTableCellElement[] {
-        let crntView: string = this.currentView;
-        if (crntView === 'Agenda' || crntView === 'Month' || crntView === 'MonthAgenda' || crntView === 'TimelineMonth') {
+        if (['Agenda', 'MonthAgenda', 'Month', 'TimelineMonth'].indexOf(this.currentView) > -1) {
             return [];
         }
         let startHour: Date = this.getStartEndTime(start);
@@ -1882,6 +2067,16 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
+     * To get the resource collection
+     * @method getResourceCollections
+     * @return {ResourcesModel[]}
+     * @deprecated
+     */
+    public getResourceCollections(): ResourcesModel[] {
+        return this.resourceCollection;
+    }
+
+    /**
      * Retrieves the resource details based on the provided resource index.
      * @param {number} index index of the resources at the last level.
      * @returns {ResourceDetails} Object An object holding the details of resource and resourceData.
@@ -1919,9 +2114,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @param {string} fileName Accepts the string value.
      * @returns {void}
      */
-    public exportToICalendar(fileName?: string): void {
+    public exportToICalendar(fileName?: string, customData?: Object[]): void {
         if (this.iCalendarExportModule) {
-            this.iCalendarExportModule.initializeCalendarExport(fileName);
+            this.iCalendarExportModule.initializeCalendarExport(fileName, customData);
         } else {
             throw Error('Inject ICalendarExport module');
         }
@@ -2096,6 +2291,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @method setRecurrenceEditor
      * @param {RecurrenceEditor} recurrenceEditor instance has passed to fetch the instance in event window.
      * @returns {void}
+     * @deprecated
      */
     public setRecurrenceEditor(recurrenceEditor: RecurrenceEditor): void {
         this.eventWindow.setRecurrenceEditor(recurrenceEditor);
@@ -2263,6 +2459,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @param resources
      * @param {string} name Name of the resource defined in resources collection.
      * @param {number} index Index or position where the resource should be added.
+     * @deprecated
      */
     public addResource(resources: Object | Object[], name: string, index: number): void {
         this.resourceBase.addResource(resources, name, index);
@@ -2272,6 +2469,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Removes the specified resource.
      * @param resourceId Specifies the resource id to be removed.
      * @param name Specifies the resource name from which the id should be referred.
+     * @deprecated
      */
     public removeResource(resourceId: string | string[] | number | number[], name: string): void {
         this.resourceBase.removeResource(resourceId, name);

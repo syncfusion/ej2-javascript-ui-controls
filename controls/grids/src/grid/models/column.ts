@@ -425,7 +425,9 @@ export class Column {
         if (this.editType) {
             this.editType = this.editType.toLowerCase();
         }
-        this.uid = getUid('grid-column');
+        if (isNullOrUndefined(this.uid)) {
+            this.uid = getUid('grid-column');
+        }
         let valueFormatter: ValueFormatter = new ValueFormatter();
         if (options.format && ((<DateFormatOptions>options.format).skeleton || (<DateFormatOptions>options.format).format)) {
             this.setFormatter(valueFormatter.getFormatFunction(options.format as DateFormatOptions));

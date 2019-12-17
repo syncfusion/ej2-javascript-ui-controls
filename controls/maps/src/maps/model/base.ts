@@ -8,10 +8,11 @@ import { SmartLabelMode, IntersectAction } from '../../index';
 import { BorderModel, ColorMappingSettingsModel, FontModel, CommonTitleSettingsModel, NavigationLineSettingsModel } from './base-model';
 import { MarkerSettingsModel, MarkerClusterSettingsModel, ShapeSettingsModel, BubbleSettingsModel, ArrowModel } from './base-model';
 import { DataLabelSettingsModel, TooltipSettingsModel, SubTitleSettingsModel, SelectionSettingsModel } from './base-model';
-import { HighlightSettingsModel, ToggleLegendSettingsModel, ConnectorLineSettingsModel } from './base-model';
+import { HighlightSettingsModel, ToggleLegendSettingsModel, ConnectorLineSettingsModel} from './base-model';
+import { InitialShapeSelectionSettingsModel } from './base-model';
 import { Theme } from './theme';
 import { Point, GeoLocation } from '../utils/helper';
-import { BingMapType, LegendArrangement, LegendShape, BubbleType } from '../utils/enum';
+import { BingMapType, LegendArrangement, LegendShape, BubbleType, StaticMapType } from '../utils/enum';
 import { AnnotationAlignment, GeometryType, LabelPosition, LabelIntersectAction } from '../index';
 
 
@@ -373,6 +374,10 @@ export class MarkerClusterData extends ChildProperty<MarkerClusterData> {
      * @private
      */
     public targetClusterIndex: number;
+    /**
+     * @private
+     */
+    public isClusterSame: boolean;
 }
 /**
  * To configure ColorMapping in Maps
@@ -432,6 +437,24 @@ export class ColorMappingSettings extends ChildProperty<ColorMappingSettings> {
     public showLegend: boolean;
 }
 /**
+ * To configure the initial shape selection settings
+ */
+export class InitialShapeSelectionSettings extends ChildProperty<InitialShapeSelectionSettings> {
+
+    /**
+     * To customize the fill color of the highlight.
+     * @default null
+     */
+    @Property(null)
+    public shapePath: string;
+    /**
+     * Toggle the highlight settings.
+     * @default null
+     */
+    @Property(null)
+    public shapeValue: string;
+}
+/**
  * To configure the selection settings
  */
 export class SelectionSettings extends ChildProperty<SelectionSettings> {
@@ -460,6 +483,7 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
      */
     @Property(false)
     public enableMultiSelect: boolean;
+
     /**
      * Options for customizing the color and width of the selection.
      */
@@ -812,6 +836,11 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
      */
     @Property(1)
     public minZoom: number;
+    /**
+     * Zoom map based on marker positions.
+     */
+    @Property(false)
+    public shouldZoomInitially: boolean;
 }
 /**
  * To configure the toggle legend settings in the maps
@@ -1229,6 +1258,27 @@ export class MarkerBase extends ChildProperty<MarkerBase> {
     public opacity: number;
 
     /**
+     * To customize the color of marker from marker dataSource.
+     * @default null
+     */
+    @Property(null)
+    public colorValuePath: string;
+
+    /**
+     * To customize the shape of marker from marker dataSource.
+     * @default null
+     */
+    @Property(null)
+    public shapeValuePath: string;
+
+    /**
+     * To customize the shape image of marker from marker dataSource.
+     * @default null
+     */
+    @Property(null)
+    public imageUrlValuePath: string;
+
+    /**
      * To customize the shape of the marker.
      * @default Balloon
      */
@@ -1359,6 +1409,12 @@ export class LayerSettings extends ChildProperty<LayerSettings> {
     @Property('Aerial')
     public bingMapType: BingMapType;
     /**
+     * Specifies the type for the static map.
+     * @default RoadMap
+     */
+    @Property('RoadMap')
+    public staticMapType: StaticMapType;
+    /**
      * Specifies the key for the layer.
      * @default ''
      */
@@ -1446,6 +1502,11 @@ export class LayerSettings extends ChildProperty<LayerSettings> {
      */
     @Complex<ToggleLegendSettingsModel>({}, ToggleLegendSettings)
     public toggleLegendSettings: ToggleLegendSettingsModel;
+    /**
+     * To select the shape at the rendering time.
+     */
+    @Collection<InitialShapeSelectionSettingsModel>([], InitialShapeSelectionSettings)
+    public initialShapeSelection: InitialShapeSelectionSettingsModel[];
 
 
     /** @private */

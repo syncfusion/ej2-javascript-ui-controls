@@ -54,6 +54,12 @@
           content: '\e717';
         }
       }
+
+      & .e-hyperlink-icon {
+        &::before {
+          content: '\e290';
+        }
+      }
     }
 
     & .e-insert-function .e-btn-icon {
@@ -205,7 +211,19 @@
     }
 }
 
-  .e-sort-ddb,
+  & .e-undo-icon {
+    &::before {
+      content: '\ebed';
+    }
+  }
+
+  & .e-redo-icon {
+    &::before {
+      content: '\ebfa';
+    }
+}
+
+  .e-sort-filter-ddb,
   .e-spreadsheet-contextmenu {
     & .e-sort-icon {
       &::before {
@@ -232,10 +250,100 @@
     }
   }
 
+  .e-spreadsheet-contextmenu {
+    & .e-hyperlink-icon {
+      &::before {
+        content: '\e290';
+        }
+      }
+
+    & .e-edithyperlink-icon {
+      &::before {
+        content: '\e289';
+        }
+      }
+
+    & .e-openhyperlink-icon {
+      &::before {
+        content: '\e278';
+        }
+      }
+
+    & .e-removehyperlink-icon {
+      &::before {
+        content: '\e286';
+        }
+      }
+    }
+
   .e-spreadsheet {
     & .e-sort-delete {
       &::before {
         content: '\e602';
+      }
+    }
+  }
+
+  .e-spreadsheet,
+  .e-sort-filter-ddb,
+  .e-spreadsheet-contextmenu {
+    & .e-filter-icon {
+      &::before {
+        content: '\e73a';
+      }
+    }
+
+    & .e-filter-icon.e-filtered {
+      &::before {
+        content: '\e73f';
+      }
+    }
+
+    & .e-filter-icon.e-sortasc-filter {
+      &::before {
+        content: '\e73d';
+      }
+    }
+
+    & .e-filter-icon.e-sortdesc-filter {
+      &::before {
+        content: '\e73c';
+      }
+    }
+
+    & .e-filter-icon.e-filtered.e-sortasc-filter {
+      &::before {
+        content: '\e73e';
+      }
+    }
+
+    & .e-filter-icon.e-filtered.e-sortdesc-filter {
+      &::before {
+        content: '\e73b';
+      }
+    }
+
+    & .e-filter-apply {
+      &::before {
+        content: '\e250';
+      }
+    }
+
+    & .e-filter-clear {
+      &::before {
+        content: '\e247';
+      }
+    }
+
+    & .e-filter-reapply {
+      &::before {
+        content: '\e737';
+      }
+    }
+
+    & .e-sort-filter-icon {
+      &::before {
+        content: '\e736';
       }
     }
   }

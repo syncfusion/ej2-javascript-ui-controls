@@ -1,4 +1,4 @@
-import { Collection, Event, NotifyPropertyChanges, detach, Property, EventHandler, EmitType } from '@syncfusion/ej2-base';import { addClass, INotifyPropertyChanged, getUniqueID, rippleEffect } from '@syncfusion/ej2-base';import { attributes, Component, closest, select, KeyboardEventArgs } from '@syncfusion/ej2-base';import { classList, remove, removeClass } from '@syncfusion/ej2-base';import { Button } from '@syncfusion/ej2-buttons';import { Popup } from '@syncfusion/ej2-popups';import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from './../common/common';import { getModel, SplitButtonIconPosition, Item } from './../common/common';import { ItemModel } from './../common/common-model';
+import { Collection, Event, NotifyPropertyChanges, detach, Property, EventHandler, EmitType } from '@syncfusion/ej2-base';import { addClass, INotifyPropertyChanged, getUniqueID, rippleEffect } from '@syncfusion/ej2-base';import { attributes, Component, closest, select, KeyboardEventArgs, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { classList, remove, removeClass, isBlazor, Observer } from '@syncfusion/ej2-base';import { Button, buttonObserver } from '@syncfusion/ej2-buttons';import { Popup } from '@syncfusion/ej2-popups';import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from './../common/common';import { getModel, SplitButtonIconPosition, Item } from './../common/common';import { ItemModel } from './../common/common-model';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -39,6 +39,12 @@ export interface DropDownButtonModel extends ComponentModel{
      * @default "Left"
      */
     iconPosition?: SplitButtonIconPosition;
+
+    /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default false
+     */
+    enableHtmlSanitizer?: boolean;
 
     /**
      * Specifies action items with its properties which will be rendered as DropDownButton popup.

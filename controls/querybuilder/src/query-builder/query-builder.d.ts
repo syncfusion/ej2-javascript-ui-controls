@@ -434,6 +434,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private getColumn;
     private datePredicate;
     private arrayPredicate;
+    private getDate;
     private importRules;
     private renderGroup;
     private renderRule;

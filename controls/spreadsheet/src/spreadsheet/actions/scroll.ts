@@ -28,14 +28,6 @@ export class Scroll {
         this.initProps();
     }
 
-    /**
-     * For internal use only - Get the module name.
-     * @private
-     */
-    protected getModuleName(): string {
-        return 'scroll';
-    }
-
     private onContentScroll(e: { scrollTop?: number, scrollLeft?: number, preventScroll?: boolean }): void {
         let target: HTMLElement = this.parent.getMainContent() as HTMLElement;
         let scrollLeft: number = e.scrollLeft || target.scrollLeft; let top: number = e.scrollTop || target.scrollTop;
@@ -44,7 +36,7 @@ export class Scroll {
         if (this.prevScroll.scrollLeft !== left) {
             let scrollRight: boolean = left > this.prevScroll.scrollLeft;
             prevSize = this.offset.left.size;
-            this.offset.left = this.getColOffset(left, prevSize, scrollRight);
+            this.offset.left = this.getColOffset(left, scrollRight);
             if (this.parent.getActiveSheet().showHeaders) { this.parent.getColumnHeaderContent().scrollLeft = scrollLeft; }
             scrollArgs = {
                 cur: this.offset.left, prev: { idx: this.leftIndex, size: prevSize }, increase: scrollRight, preventScroll: e.preventScroll
@@ -144,8 +136,8 @@ export class Scroll {
         return { idx: this.offset.top.idx, size: this.offset.top.size };
     }
 
-    private getColOffset(scrollLeft: number, width: number, increase: boolean): IOffset {
-        let temp: number = width;
+    private getColOffset(scrollLeft: number, increase: boolean): IOffset {
+        let temp: number = this.offset.left.size;
         let sheet: SheetModel = this.parent.getActiveSheet();
         let i: number = increase ? this.offset.left.idx + 1 : this.offset.left.idx - 1;
         let count: number;
@@ -233,18 +225,16 @@ export class Scroll {
         this.parent.on(spreadsheetDestroyed, this.destroy, this);
     }
 
-    public destroy(): void {
+    private destroy(): void {
         EventHandler.remove(this.parent.getMainContent(), 'scroll', this.onScroll);
         this.removeEventListener();
         this.parent = null;
     }
 
     private removeEventListener(): void {
-        if (!this.parent.isDestroyed) {
-            this.parent.off(contentLoaded, this.wireEvents);
-            this.parent.off(onContentScroll, this.onContentScroll);
-            this.parent.off(deInitProperties, this.initProps);
-            this.parent.off(spreadsheetDestroyed, this.destroy);
-        }
+        this.parent.off(contentLoaded, this.wireEvents);
+        this.parent.off(onContentScroll, this.onContentScroll);
+        this.parent.off(deInitProperties, this.initProps);
+        this.parent.off(spreadsheetDestroyed, this.destroy);
     }
 }

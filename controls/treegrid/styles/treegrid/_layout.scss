@@ -57,6 +57,14 @@
       transform: rotate(90deg);
     }
 
+    .e-treerowexpanded {
+      display: table-row;
+    }
+
+    .e-treerowcollapsed {
+      display: none;
+    }
+
     .e-treecolumn-container {
       span {
         display: inline-block;

@@ -5,6 +5,7 @@ import { CircularGauge, Annotations } from '../../src/index';
 import { gauge1, gauge2, gauge3, gauge4, gauge5 } from './pointer-gauge';
 
 CircularGauge.Inject(Annotations);
+
 let firstgauge: CircularGauge = new CircularGauge(gauge1());
 let gauge5Interval1: number;
 let gauge6Interval1: number;

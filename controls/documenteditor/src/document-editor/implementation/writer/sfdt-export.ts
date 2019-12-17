@@ -9,7 +9,8 @@ import {
     IWidget, LineWidget, ParagraphWidget, BlockContainer, BodyWidget, TextElementBox, Page, ElementBox, FieldElementBox, TableWidget,
     TableRowWidget, TableCellWidget, ImageElementBox, HeaderFooterWidget, HeaderFooters,
     ListTextElementBox, BookmarkElementBox, EditRangeStartElementBox, EditRangeEndElementBox,
-    ChartElementBox, ChartDataTable, ChartTitleArea, ChartDataFormat, ChartLayout, ChartArea, ChartLegend, ChartCategoryAxis
+    ChartElementBox, ChartDataTable, ChartTitleArea, ChartDataFormat, ChartLayout, ChartArea, ChartLegend, ChartCategoryAxis,
+    CommentElementBox, CommentCharacterElementBox
 } from '../viewer/page';
 import { BlockWidget } from '../viewer/page';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -165,6 +166,7 @@ export class SfdtExport {
         }
         this.writeStyles(this.viewer);
         this.writeLists(this.viewer);
+        this.writeComments(this.viewer);
         let doc: Document = this.document;
         this.clear();
         return doc;
@@ -354,6 +356,9 @@ export class SfdtExport {
                 'columnLast': element.editRangeStart.columnLast
             };
             inline.editRangeId = element.editRangeId.toString();
+        } else if (element instanceof CommentCharacterElementBox) {
+            inline.commentCharacterType = element.commentType;
+            inline.commentId = element.commentId;
         } else {
             inline = undefined;
         }
@@ -754,6 +759,7 @@ export class SfdtExport {
         table.tableFormat = this.writeTableFormat(tableWidget.tableFormat);
         table.description = tableWidget.description;
         table.title = tableWidget.title;
+        table.columnCount = tableWidget.tableHolder.columns.length;
         return table;
     }
     private createRow(rowWidget: TableRowWidget): any {
@@ -771,19 +777,19 @@ export class SfdtExport {
     }
     private writeShading(wShading: WShading): any {
         let shading: any = {};
-        shading.backgroundColor = wShading.backgroundColor;
-        shading.foregroundColor = wShading.foregroundColor;
-        shading.textureStyle = wShading.textureStyle;
+        shading.backgroundColor = wShading.hasValue('backgroundColor') ? wShading.backgroundColor : undefined;
+        shading.foregroundColor = wShading.hasValue('foregroundColor') ? wShading.foregroundColor : undefined;
+        shading.textureStyle = wShading.hasValue('textureStyle') ? wShading.textureStyle : undefined;
         return shading;
     }
     private writeBorder(wBorder: WBorder): any {
         let border: any = {};
-        border.color = wBorder.color;
-        border.hasNoneStyle = wBorder.hasNoneStyle;
-        border.lineStyle = wBorder.lineStyle;
-        border.lineWidth = wBorder.lineWidth;
-        border.shadow = wBorder.shadow;
-        border.space = wBorder.space;
+        border.color = wBorder.hasValue('color') ? wBorder.color : undefined;
+        border.hasNoneStyle = wBorder.hasValue('hasNoneStyle') ? wBorder.hasNoneStyle : undefined;
+        border.lineStyle = wBorder.hasValue('lineStyle') ? wBorder.lineStyle : undefined;
+        border.lineWidth = wBorder.hasValue('lineWidth') ? wBorder.lineWidth : undefined;
+        border.shadow = wBorder.hasValue('shadow') ? wBorder.shadow : undefined;
+        border.space = wBorder.hasValue('space') ? wBorder.space : undefined;
         return border;
     }
     private writeBorders(wBorders: WBorders): any {
@@ -802,53 +808,53 @@ export class SfdtExport {
         let cellFormat: any = {};
         cellFormat.borders = this.writeBorders(wCellFormat.borders);
         cellFormat.shading = this.writeShading(wCellFormat.shading);
-        cellFormat.topMargin = wCellFormat.topMargin;
-        cellFormat.rightMargin = wCellFormat.rightMargin;
-        cellFormat.leftMargin = wCellFormat.leftMargin;
-        cellFormat.bottomMargin = wCellFormat.bottomMargin;
-        cellFormat.preferredWidth = wCellFormat.preferredWidth;
-        cellFormat.preferredWidthType = wCellFormat.preferredWidthType;
-        cellFormat.cellWidth = wCellFormat.cellWidth;
+        cellFormat.topMargin = wCellFormat.hasValue('topMargin') ? wCellFormat.topMargin : undefined;
+        cellFormat.rightMargin = wCellFormat.hasValue('rightMargin') ? wCellFormat.rightMargin : undefined;
+        cellFormat.leftMargin = wCellFormat.hasValue('leftMargin') ? wCellFormat.leftMargin : undefined;
+        cellFormat.bottomMargin = wCellFormat.hasValue('bottomMargin') ? wCellFormat.bottomMargin : undefined;
+        cellFormat.preferredWidth = wCellFormat.hasValue('preferredWidth') ? wCellFormat.preferredWidth : undefined;
+        cellFormat.preferredWidthType = wCellFormat.hasValue('preferredWidthType') ? wCellFormat.preferredWidthType : undefined;
+        cellFormat.cellWidth = wCellFormat.hasValue('cellWidth') ? wCellFormat.cellWidth : undefined;
         cellFormat.columnSpan = wCellFormat.columnSpan;
         cellFormat.rowSpan = wCellFormat.rowSpan;
-        cellFormat.verticalAlignment = wCellFormat.verticalAlignment;
+        cellFormat.verticalAlignment = wCellFormat.hasValue('verticalAlignment') ? wCellFormat.verticalAlignment : undefined;
         return cellFormat;
     }
     private writeRowFormat(wRowFormat: WRowFormat): any {
         let rowFormat: any = {};
-        rowFormat.height = wRowFormat.height;
-        rowFormat.allowBreakAcrossPages = wRowFormat.allowBreakAcrossPages;
-        rowFormat.heightType = wRowFormat.heightType;
-        rowFormat.isHeader = wRowFormat.isHeader;
+        rowFormat.height = wRowFormat.hasValue('height') ? wRowFormat.height : undefined;
+        rowFormat.allowBreakAcrossPages = wRowFormat.hasValue('allowBreakAcrossPages') ? wRowFormat.allowBreakAcrossPages : undefined;
+        rowFormat.heightType = wRowFormat.hasValue('heightType') ? wRowFormat.heightType : undefined;
+        rowFormat.isHeader = wRowFormat.hasValue('isHeader') ? wRowFormat.isHeader : undefined;
         rowFormat.borders = this.writeBorders(wRowFormat.borders);
         rowFormat.gridBefore = wRowFormat.gridBefore;
-        rowFormat.gridBeforeWidth = wRowFormat.gridBeforeWidth;
-        rowFormat.gridBeforeWidthType = wRowFormat.gridBeforeWidthType;
+        rowFormat.gridBeforeWidth = wRowFormat.hasValue('gridBeforeWidth') ? wRowFormat.gridBeforeWidth : undefined;
+        rowFormat.gridBeforeWidthType = wRowFormat.hasValue('gridBeforeWidthType') ? wRowFormat.gridBeforeWidthType : undefined;
         rowFormat.gridAfter = wRowFormat.gridAfter;
-        rowFormat.gridAfterWidth = wRowFormat.gridAfterWidth;
-        rowFormat.gridAfterWidthType = wRowFormat.gridAfterWidthType;
-        rowFormat.leftMargin = wRowFormat.leftMargin;
-        rowFormat.topMargin = wRowFormat.topMargin;
-        rowFormat.rightMargin = wRowFormat.rightMargin;
-        rowFormat.bottomMargin = wRowFormat.bottomMargin;
-        rowFormat.leftIndent = wRowFormat.leftIndent;
+        rowFormat.gridAfterWidth = wRowFormat.hasValue('gridAfterWidth') ? wRowFormat.gridAfterWidth : undefined;
+        rowFormat.gridAfterWidthType = wRowFormat.hasValue('gridAfterWidthType') ? wRowFormat.gridAfterWidthType : undefined;
+        rowFormat.leftMargin = wRowFormat.hasValue('leftMargin') ? wRowFormat.leftMargin : undefined;
+        rowFormat.topMargin = wRowFormat.hasValue('topMargin') ? wRowFormat.topMargin : undefined;
+        rowFormat.rightMargin = wRowFormat.hasValue('rightMargin') ? wRowFormat.rightMargin : undefined;
+        rowFormat.bottomMargin = wRowFormat.hasValue('bottomMargin') ? wRowFormat.bottomMargin : undefined;
+        rowFormat.leftIndent = wRowFormat.hasValue('leftIndent') ? wRowFormat.leftIndent : undefined;
         return rowFormat;
     }
     private writeTableFormat(wTableFormat: WTableFormat): any {
         let tableFormat: any = {};
         tableFormat.borders = this.writeBorders(wTableFormat.borders);
         tableFormat.shading = this.writeShading(wTableFormat.shading);
-        tableFormat.cellSpacing = wTableFormat.cellSpacing;
-        tableFormat.leftIndent = wTableFormat.leftIndent;
-        tableFormat.tableAlignment = wTableFormat.tableAlignment;
-        tableFormat.topMargin = wTableFormat.topMargin;
-        tableFormat.rightMargin = wTableFormat.rightMargin;
-        tableFormat.leftMargin = wTableFormat.leftMargin;
-        tableFormat.bottomMargin = wTableFormat.bottomMargin;
-        tableFormat.preferredWidth = wTableFormat.preferredWidth;
-        tableFormat.preferredWidthType = wTableFormat.preferredWidthType;
-        tableFormat.bidi = wTableFormat.bidi;
-        tableFormat.allowAutoFit = wTableFormat.allowAutoFit;
+        tableFormat.cellSpacing = wTableFormat.hasValue('cellSpacing') ? wTableFormat.cellSpacing : undefined;
+        tableFormat.leftIndent = wTableFormat.hasValue('leftIndent') ? wTableFormat.leftIndent : undefined;
+        tableFormat.tableAlignment = wTableFormat.hasValue('tableAlignment"') ? wTableFormat.tableAlignment : undefined;
+        tableFormat.topMargin = wTableFormat.hasValue('topMargin') ? wTableFormat.topMargin : undefined;
+        tableFormat.rightMargin = wTableFormat.hasValue('rightMargin') ? wTableFormat.rightMargin : undefined;
+        tableFormat.leftMargin = wTableFormat.hasValue('leftMargin') ? wTableFormat.leftMargin : undefined;
+        tableFormat.bottomMargin = wTableFormat.hasValue('bottomMargin') ? wTableFormat.bottomMargin : undefined;
+        tableFormat.preferredWidth = wTableFormat.hasValue('preferredWidth') ? wTableFormat.preferredWidth : undefined;
+        tableFormat.preferredWidthType = wTableFormat.hasValue('preferredWidthType') ? wTableFormat.preferredWidthType : undefined;
+        tableFormat.bidi = wTableFormat.hasValue('bidi') ? wTableFormat.bidi : undefined;
+        tableFormat.allowAutoFit = wTableFormat.hasValue('allowAutoFit') ? wTableFormat.allowAutoFit : undefined;
         return tableFormat;
     }
     private writeStyles(viewer: LayoutViewer): void {
@@ -881,6 +887,33 @@ export class SfdtExport {
         }
         return wStyle;
     }
+    public writeComments(viewer: LayoutViewer): void {
+        this.document.comments = [];
+        for (let i: number = 0; i < viewer.comments.length; i++) {
+            this.document.comments.push(this.writeComment(viewer.comments[i]));
+        }
+
+    }
+    private writeComment(comments: CommentElementBox): any {
+        let comment: any = {};
+        comment.commentId = comments.commentId;
+        comment.author = comments.author;
+        comment.date = comments.date;
+        comment.blocks = [];
+        comment.blocks.push(this.commentInlines(comments.text));
+        comment.done = comments.isResolved;
+        comment.replyComments = [];
+        for (let i: number = 0; i < comments.replyComments.length; i++) {
+            comment.replyComments.push(this.writeComment(comments.replyComments[i]));
+        }
+        return comment;
+    }
+    private commentInlines(ctext: string): any {
+        let blocks: any = {};
+        blocks.inlines = [{ text: ctext }];
+        return blocks;
+    }
+
     private writeLists(viewer: LayoutViewer): void {
         let abstractLists: number[] = [];
         this.document.lists = [];

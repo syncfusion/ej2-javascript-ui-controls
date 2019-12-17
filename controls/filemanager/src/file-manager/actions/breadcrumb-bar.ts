@@ -126,7 +126,8 @@ export class BreadCrumbBar {
         let searchContainer: HTMLElement = this.parent.createElement('div');
         searchContainer.setAttribute('class', 'e-search-wrap');
         let id: string = this.parent.element.id + CLS.SEARCH_ID;
-        let searchInput: HTMLElement = createElement('input', { id: id, attrs: { autocomplete: 'off' } });
+        let searchInput: HTMLElement = createElement('input', { id: id,
+            attrs: { autocomplete: 'off', 'aria-label': getLocaleText(this.parent, 'Search') } });
         searchContainer.appendChild(searchInput);
         let searchEle: Element = this.parent.breadCrumbBarNavigation.querySelector('.e-search-wrap .e-input');
         if (isNullOrUndefined(searchEle)) {

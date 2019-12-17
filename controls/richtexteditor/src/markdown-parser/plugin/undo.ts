@@ -54,11 +54,18 @@ export class UndoRedoCommands {
      * Destroys the ToolBar.
      * @method destroy
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     public destroy(): void {
         this.removeEventListener();
     }
 
+    /**
+     * onAction method
+     * @hidden
+     * @deprecated
+     */
     public onAction(e: IMarkdownSubCommands): void {
         if (e.subCommand === 'Undo') {
             this.undo(e);
@@ -89,6 +96,8 @@ export class UndoRedoCommands {
      * MD collection stored string format.
      * @method saveData
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     public saveData(e?: KeyboardEvent | MouseEvent | IUndoCallBack): void {
         let textArea: HTMLTextAreaElement = this.parent.element as HTMLTextAreaElement;
@@ -118,6 +127,8 @@ export class UndoRedoCommands {
      * Undo the editable text.
      * @method undo
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     public undo(e?: IMarkdownSubCommands | IMDKeyboardEvent): void {
         if (this.steps > 0) {
@@ -135,6 +146,8 @@ export class UndoRedoCommands {
      * Redo the editable text.
      * @method redo
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     public redo(e?: IMarkdownSubCommands | IMDKeyboardEvent): void {
         if (this.undoRedoStack[this.steps + 1] != null) {
@@ -159,6 +172,11 @@ export class UndoRedoCommands {
             });
         }
     }
+    /**
+     * getUndoStatus method
+     * @hidden
+     * @deprecated
+     */
     public getUndoStatus(): { [key: string]: boolean } {
         let status: { [key: string]: boolean } = { undo: false, redo: false };
         if (this.steps > 0) {

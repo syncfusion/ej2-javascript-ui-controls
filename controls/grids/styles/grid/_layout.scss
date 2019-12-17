@@ -687,7 +687,7 @@
       z-index: $grid-dragborder-z-index;
     }
 
-    .e-gridheader thead .e-icons {
+    .e-gridheader thead .e-icons:not(.e-check):not(.e-stop) {
       font-size: $grid-icon-font-size;
     }
 

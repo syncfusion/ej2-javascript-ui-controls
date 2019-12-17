@@ -2,7 +2,7 @@ import { Component, EventHandler, Property, Event, EmitType, Complex, Collection
 import { L10n, Internationalization, NumberFormatOptions } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';
 import { attributes, addClass, removeClass, setStyleAttribute, detach, closest } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, formatUnit, Browser } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, formatUnit, Browser, SanitizeHtmlHelper   } from '@syncfusion/ej2-base';
 import { Tooltip, Position, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { SliderModel, TicksDataModel, TooltipDataModel, LimitDataModel, ColorRangeDataModel } from './slider-model';
 
@@ -563,7 +563,12 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
      */
     @Property('')
     public cssClass: string;
-
+   /**
+    * Defines whether to allow the cross-scripting site or not.
+    * @default false
+    */
+    @Property(false)
+    public enableHtmlSanitizer: boolean;
     /**
      * We can trigger created event when the Slider is created.
      * @event
@@ -899,8 +904,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private createSecondHandle(): void {
         this.secondHandle = this.createElement('div', {
             attrs: {
-                class: classNames.sliderHandle, 'role': 'slider', 'aria-labelledby':
-                    this.element.id + '_title', tabIndex: '0'
+                class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0'
             }
         });
         this.secondHandle.classList.add(classNames.sliderSecondHandle);
@@ -910,8 +914,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private createFirstHandle(): void {
         this.firstHandle = this.createElement('div', {
             attrs: {
-                class: classNames.sliderHandle, 'role': 'slider', 'aria-labelledby':
-                    this.element.id + '_title', tabIndex: '0'
+                class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0'
             }
         });
         this.firstHandle.classList.add(classNames.sliderFirstHandle);
@@ -1306,7 +1309,8 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             opensOn: 'Custom',
             beforeOpen: this.tooltipBeforeOpen.bind(this),
             beforeCollision: this.checkTooltipPosition.bind(this),
-            beforeClose: this.tooltipBeforeClose.bind(this)
+            beforeClose: this.tooltipBeforeClose.bind(this),
+            enableHtmlSanitizer:  this.enableHtmlSanitizer
         });
         this.tooltipObj.appendTo(this.firstHandle);
         this.initializeTooltipProps();
@@ -1560,7 +1564,11 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         if (isNullOrUndefined(this.customValues)) {
             this.formatTicksValue(li, <number>start, span, tickWidth);
         } else {
-            span.innerHTML = start.toString();
+            if (this.enableHtmlSanitizer) {
+                span.innerHTML = SanitizeHtmlHelper.sanitize(start.toString());
+            } else {
+                span.innerHTML = start.toString();
+            }
         }
     }
 
@@ -1572,7 +1580,11 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         this.trigger('renderingTicks', eventArgs, (observedArgs: SliderTickEventArgs) => {
             li.setAttribute('title', observedArgs.text.toString());
             if (spanElement) {
-                spanElement.innerHTML = observedArgs.text.toString();
+                if (this.enableHtmlSanitizer) {
+                    spanElement.innerHTML = SanitizeHtmlHelper.sanitize(observedArgs.text.toString());
+                } else {
+                    spanElement.innerHTML = observedArgs.text.toString();
+                }
             }
             if (!isNullOrUndefined(this.renderingTicks) && isBlazor()) {
                 const orien: string = this.orientation === 'Horizontal' ? 'h' : 'v';

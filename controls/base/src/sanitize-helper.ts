@@ -2,11 +2,39 @@
 /**
  * SanitizeHtmlHelper for sanitize the value.
  */
-import { detach } from '@syncfusion/ej2-base';
-import { BeforeSanitizeHtmlArgs, SanitizeRemoveAttrs, IRichTextEditor } from '../base/interface';
+import { detach } from './dom';
+
+interface BeforeSanitizeHtml {
+    /** Illustrates whether the current action needs to be prevented or not. */
+    cancel?: boolean;
+    /** It is a callback function and executed it before our inbuilt action. It should return HTML as a string.
+     * @function
+     * @param {string} value - Returns the value.
+     * @returns {string}
+     */
+    /** Returns the selectors object which carrying both tags and attributes selectors to block list of cross-site scripting attack.
+     *  Also possible to modify the block list in this event.
+     */
+    selectors?: SanitizeSelectors;
+}
+
+interface SanitizeSelectors {
+    /** Returns the tags. */
+    tags?: string[];
+    /** Returns the attributes. */
+    attributes?: SanitizeRemoveAttrs[];
+}
+
+interface SanitizeRemoveAttrs {
+    /** Defines the attribute name to sanitize */
+    attribute?: string;
+    /** Defines the selector that sanitize the specified attributes within the selector */
+    selector?: string;
+}
 
 const removeTags: string[] = [
     'script',
+    'style',
     'iframe[src]',
     'link[href*="javascript:"]',
     'object[type="text/x-scriptlet"]',
@@ -114,28 +142,24 @@ const jsEvents: string[] = ['onchange',
     'onpropertychange'
 ];
 export class SanitizeHtmlHelper {
-    public removeAttrs: SanitizeRemoveAttrs[];
-    public removeTags: string[];
-    public wrapElement: HTMLElement;
-    public initialize(value: string, parent?: IRichTextEditor): string {
-        let item: BeforeSanitizeHtmlArgs = {
+    public static removeAttrs: SanitizeRemoveAttrs[];
+    public static removeTags: string[];
+    public static wrapElement: HTMLElement;
+    public static beforeSanitize(): BeforeSanitizeHtml {
+        return {
             selectors: {
                 tags: removeTags,
                 attributes: removeAttrs
-            },
-            helper: null
+            }
         };
-        parent.trigger('beforeSanitizeHtml', item);
-        if (item.helper) {
-            value = item.helper(value);
-        }
-        if (!item.cancel) {
-            value = this.serializeValue(item, value);
-        }
-        return value;
+    };
+    public static sanitize(value: string): string {
+        let item: BeforeSanitizeHtml = this.beforeSanitize();
+        let output: string = this.serializeValue(item, value);
+        return output;
     }
 
-    public serializeValue(item: BeforeSanitizeHtmlArgs, value: string): string {
+    public static serializeValue(item: BeforeSanitizeHtml, value: string): string {
         this.removeAttrs = item.selectors.attributes;
         this.removeTags = item.selectors.tags;
         this.wrapElement = document.createElement('div');
@@ -146,16 +170,18 @@ export class SanitizeHtmlHelper {
         return this.wrapElement.innerHTML;
     }
 
-    private removeXssTags(): void {
+    private static removeXssTags(): void {
         let elements: NodeListOf<HTMLElement> = this.wrapElement.querySelectorAll(this.removeTags.join(','));
         if (elements.length > 0) {
             elements.forEach((element: Element) => {
                 detach(element);
             });
+        } else {
+            return;
         }
     }
 
-    private removeJsEvents(): void {
+    private static removeJsEvents(): void {
         let elements: NodeListOf<HTMLElement> = this.wrapElement.querySelectorAll('[' + jsEvents.join('],[') + ']');
         if (elements.length > 0) {
             elements.forEach((element: Element) => {
@@ -165,10 +191,12 @@ export class SanitizeHtmlHelper {
                     }
                 });
             });
+        } else {
+            return;
         }
     }
 
-    private removeXssAttrs(): void {
+    private static removeXssAttrs(): void {
         this.removeAttrs.forEach((item: { [key: string]: string }, index: number) => {
             let elements: NodeListOf<HTMLElement> = this.wrapElement.querySelectorAll(item.selector);
             if (elements.length > 0) {

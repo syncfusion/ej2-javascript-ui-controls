@@ -1,4 +1,4 @@
-import { isNullOrUndefined, Internationalization, append, createElement, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, Internationalization, append, createElement, isBlazor, addClass } from '@syncfusion/ej2-base';
 import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { Schedule } from '../base/schedule';
@@ -104,7 +104,8 @@ export class EventTooltip {
             append(tooltipTemplate, contentContainer);
             this.setContent(contentContainer);
         } else {
-            let globalize: Internationalization = this.parent.globalize; let fields: EventFieldsMapping = this.parent.eventFields;
+            let globalize: Internationalization = this.parent.globalize;
+            let fields: EventFieldsMapping = this.parent.eventFields;
             let eventStart: Date = new Date('' + record[fields.startTime]) as Date;
             let eventEnd: Date = new Date('' + record[fields.endTime]) as Date;
             eventEnd = (eventEnd.getHours() === 0 && eventEnd.getMinutes() === 0) ? new Date(eventEnd.setMilliseconds(-1000)) : eventEnd;
@@ -121,6 +122,9 @@ export class EventTooltip {
             let endMonthYearDate: string = globalize.formatDate(eventEnd, {
                 type: 'date', skeleton: 'medium', calendar: this.parent.getCalendarMode()
             });
+            startMonthDate = util.capitalizeFirstWord(startMonthDate, 'single');
+            startMonthYearDate = util.capitalizeFirstWord(startMonthYearDate, 'single');
+            endMonthYearDate = util.capitalizeFirstWord(endMonthYearDate, 'single');
             let startTime: string = globalize.formatDate(eventStart, {
                 type: 'time', skeleton: 'short', calendar: this.parent.getCalendarMode()
             });
@@ -132,6 +136,7 @@ export class EventTooltip {
                 tooltipDetails = globalize.formatDate(eventStart, {
                     type: 'date', skeleton: 'long', calendar: this.parent.getCalendarMode()
                 });
+                tooltipDetails = util.capitalizeFirstWord(tooltipDetails, 'single');
             } else {
                 tooltipDetails = (startDate.getFullYear() === endDate.getFullYear()) ? (startMonthDate + ' - ' + endMonthYearDate) :
                     (startMonthYearDate + ' - ' + endMonthYearDate);
@@ -160,6 +165,7 @@ export class EventTooltip {
      */
     public destroy(): void {
         this.tooltipObj.destroy();
+        addClass([this.parent.element], 'e-control');
         this.tooltipObj = null;
     }
 }

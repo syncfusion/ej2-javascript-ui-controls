@@ -1,417 +1,420 @@
-import { Base, Browser, ChildProperty, Complex, Component, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Observer, Property, Touch, addClass, append, attributes, closest, compile, createElement, debounce, detach, extend, formatUnit, getEnumValue, getInstance, getUniqueID, isBlazor, isNullOrUndefined, prepend, print, removeClass, select, selectAll, setStyleAttribute } from '@syncfusion/ej2-base';
+import { Base, Browser, ChildProperty, Complex, Component, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Observer, Property, SanitizeHtmlHelper, Touch, addClass, append, attributes, closest, compile, createElement, debounce, detach, extend, formatUnit, getEnumValue, getInstance, getUniqueID, isBlazor, isNullOrUndefined, prepend, print, removeClass, select, selectAll, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Toolbar } from '@syncfusion/ej2-navigations';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
 import { Dialog, Popup, getScrollableParent, isCollide } from '@syncfusion/ej2-popups';
 import { ColorPicker, NumericTextBox, Uploader } from '@syncfusion/ej2-inputs';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 
-/** @hidden */
+/** @hidden @deprecated */
 const created = 'create';
-/** @hidden */
+/** @hidden @deprecated */
 const destroyed = 'destroy';
-/** @hidden */
+/** @hidden @deprecated */
 const load = 'load';
 /**
  * Specifies RichTextEditor internal events
  */
-/** @hidden */
+/** @hidden @deprecated */
 const initialLoad = 'initial-load';
-/** @hidden */
+/** @hidden @deprecated */
 const initialEnd = 'initial-end';
-/** @hidden */
+/** @hidden @deprecated */
 const iframeMouseDown = 'iframe-click';
-/** @hidden */
+/** @hidden @deprecated */
 const destroy = 'destroy';
-/** @hidden */
+/** @hidden @deprecated */
 const toolbarClick = 'toolbarClick';
-/** @hidden */
+/** @hidden @deprecated */
 const toolbarRefresh = 'toolbar-refresh';
-/** @hidden */
+/** @hidden @deprecated */
 const refreshBegin = 'refresh-begin';
-/** @hidden */
+/** @hidden @deprecated */
 const toolbarUpdated = 'toolbar-updated';
-/** @hidden */
+/** @hidden @deprecated */
 const bindOnEnd = 'bind-on-end';
-/** @hidden */
+/** @hidden @deprecated */
 const renderColorPicker = 'render-color-picker';
-/** @hidden */
+/** @hidden @deprecated */
 const htmlToolbarClick = 'html-toolbar-click';
-/** @hidden */
+/** @hidden @deprecated */
 const markdownToolbarClick = 'markdown-toolbar-click';
-/** @hidden */
+/** @hidden @deprecated */
 const destroyColorPicker = 'destroy-color-picker';
-/** @hidden */
+/** @hidden @deprecated */
 const modelChanged = 'model-changed';
-/** @hidden */
+/** @hidden @deprecated */
 const keyUp = 'keyUp';
-/** @hidden */
+/** @hidden @deprecated */
 const keyDown = 'keyDown';
-/** @hidden */
+/** @hidden @deprecated */
 const mouseUp = 'mouseUp';
-/** @hidden */
+/** @hidden @deprecated */
 const toolbarCreated = 'toolbarCreated';
-/** @hidden */
+/** @hidden @deprecated */
 const toolbarRenderComplete = 'toolbarRenderComplete';
-/** @hidden */
+/** @hidden @deprecated */
 const enableFullScreen = 'enableFullScreen';
-/** @hidden */
+/** @hidden @deprecated */
 const disableFullScreen = 'disableFullScreen';
-/** @hidden */
+/** @hidden @deprecated */
 const dropDownSelect = 'dropDownSelect';
-/** @hidden */
+/** @hidden @deprecated */
 const beforeDropDownItemRender = 'beforeDropDownItemRender';
-/** @hidden */
+/** @hidden @deprecated */
 const execCommandCallBack = 'execCommandCallBack';
-/** @hidden */
+/** @hidden @deprecated */
 const imageToolbarAction = 'image-toolbar-action';
-/** @hidden */
+/** @hidden @deprecated */
 const linkToolbarAction = 'link-toolbar-action';
-/** @hidden */
+/** @hidden @deprecated */
 const resizeStart = 'resizeStart';
-/** @hidden */
+/** @hidden @deprecated */
 const onResize = 'resizing';
-/** @hidden */
+/** @hidden @deprecated */
 const resizeStop = 'resizeStop';
-/** @hidden */
+/** @hidden @deprecated */
 const undo = 'undo';
-/** @hidden */
+/** @hidden @deprecated */
 const redo = 'redo';
-/** @hidden */
+/** @hidden @deprecated */
 const insertLink = 'insertLink';
-/** @hidden */
+/** @hidden @deprecated */
 const unLink = 'unLink';
-/** @hidden */
+/** @hidden @deprecated */
 const editLink = 'editLink';
-/** @hidden */
+/** @hidden @deprecated */
 const openLink = 'openLink';
-/** @hidden */
+/** @hidden @deprecated */
 const actionBegin = 'actionBegin';
-/** @hidden */
+/** @hidden @deprecated */
 const actionComplete = 'actionComplete';
-/** @hidden */
+/** @hidden @deprecated */
 const toolbarStatusUpdate = 'toolbarStatusUpdate';
-/** @hidden */
+/** @hidden @deprecated */
 const actionSuccess = 'actionSuccess';
-/** @hidden */
+/** @hidden @deprecated */
 const updateToolbarItem = 'updateToolbarItem';
-/** @hidden */
+/** @hidden @deprecated */
 const insertImage = 'insertImage';
-/** @hidden */
+/** @hidden @deprecated */
 const insertCompleted = 'insertCompleted';
-/** @hidden */
+/** @hidden @deprecated */
 const imageLeft = 'justifyLeft';
-/** @hidden */
+/** @hidden @deprecated */
 const imageRight = 'justifyRight';
-/** @hidden */
+/** @hidden @deprecated */
 const imageCenter = 'justifyCenter';
-/** @hidden */
+/** @hidden @deprecated */
 const imageBreak = 'break';
-/** @hidden */
+/** @hidden @deprecated */
 const imageInline = 'inline';
-/** @hidden */
+/** @hidden @deprecated */
 const imageLink = 'insertImgLink';
-/** @hidden */
+/** @hidden @deprecated */
 const imageAlt = 'imgAltText';
-/** @hidden */
+/** @hidden @deprecated */
 const imageDelete = 'delete';
-/** @hidden */
+/** @hidden @deprecated */
 const imageCaption = 'caption';
-/** @hidden */
+/** @hidden @deprecated */
 const imageSize = 'imageSize';
-/** @hidden */
+/** @hidden @deprecated */
 const sourceCode = 'sourceCode';
-/** @hidden */
+/** @hidden @deprecated */
 const updateSource = 'updateSource';
-/** @hidden */
+/** @hidden @deprecated */
 const toolbarOpen = 'toolbarOpen';
-/** @hidden */
+/** @hidden @deprecated */
 const beforeDropDownOpen = 'beforeDropDownOpen';
-/** @hidden */
+/** @hidden @deprecated */
 const selectionSave = 'selection-save';
-/** @hidden */
+/** @hidden @deprecated */
 const selectionRestore = 'selection-restore';
-/** @hidden */
+/** @hidden @deprecated */
 const expandPopupClick = 'expandPopupClick';
-/** @hidden */
+/** @hidden @deprecated */
 const count = 'count';
-/** @hidden */
+/** @hidden @deprecated */
 const contentFocus = 'contentFocus';
-/** @hidden */
+/** @hidden @deprecated */
 const contentBlur = 'contentBlur';
-/** @hidden */
+/** @hidden @deprecated */
 const mouseDown = 'mouseDown';
-/** @hidden */
+/** @hidden @deprecated */
 const sourceCodeMouseDown = 'sourceCodeMouseDown';
-/** @hidden */
+/** @hidden @deprecated */
 const editAreaClick = 'editAreaClick';
-/** @hidden */
+/** @hidden @deprecated */
 const scroll = 'scroll';
-/** @hidden */
+/** @hidden @deprecated */
 const contentscroll = 'contentscroll';
-/** @hidden */
+/** @hidden @deprecated */
 const colorPickerChanged = 'colorPickerChanged';
-/** @hidden */
+/** @hidden @deprecated */
 const tableColorPickerChanged = 'tableColorPickerChanged';
-/** @hidden */
+/** @hidden @deprecated */
 const focusChange = 'focusChange';
-/** @hidden */
+/** @hidden @deprecated */
 const selectAll$1 = 'selectAll';
-/** @hidden */
+/** @hidden @deprecated */
 const selectRange = 'selectRange';
-/** @hidden */
+/** @hidden @deprecated */
 const getSelectedHtml = 'getSelectedHtml';
-/** @hidden */
+/** @hidden @deprecated */
 const renderInlineToolbar = 'renderInlineToolbar';
-/** @hidden */
+/** @hidden @deprecated */
 const paste = 'paste-content';
-/** @hidden */
+/** @hidden @deprecated */
 const imgModule = 'imageModule';
-/** @hidden */
+/** @hidden @deprecated */
 const rtlMode = 'rtl-mode';
-/** @hidden */
+/** @hidden @deprecated */
 const createTable = 'createTable';
-/** @hidden */
+/** @hidden @deprecated */
 const docClick = 'docClick';
-/** @hidden */
+/** @hidden @deprecated */
 const tableToolbarAction = 'table-toolbar-action';
-/** @hidden */
+/** @hidden @deprecated */
 const checkUndo = 'checkUndoStack';
-/** @hidden */
+/** @hidden @deprecated */
 const readOnlyMode = 'readOnlyMode';
-/** @hidden */
+/** @hidden @deprecated */
 const pasteClean = 'pasteClean';
-/** @hidden */
+/** @hidden @deprecated */
 const beforeDialogOpen = 'beforeDialogOpen';
-/** @hidden */
+/** @hidden @deprecated */
 const dialogOpen = 'dialogOpen';
-/** @hidden */
+/** @hidden @deprecated */
 const dialogClose = 'dialogClose';
-/** @hidden */
+/** @hidden @deprecated */
 const beforeQuickToolbarOpen = 'beforeQuickToolbarOpen';
-/** @hidden */
+/** @hidden @deprecated */
 const quickToolbarOpen = 'quickToolbarOpen';
-/** @hidden */
+/** @hidden @deprecated */
 const quickToolbarClose = 'quickToolbarClose';
-/** @hidden */
+/** @hidden @deprecated */
 const popupHide = 'popupHide';
-/** @hidden */
+/** @hidden @deprecated */
 const imageSelected = 'imageSelected';
-/** @hidden */
+/** @hidden @deprecated */
 const imageUploading = 'imageUploading';
-/** @hidden */
+/** @hidden @deprecated */
 const imageUploadSuccess = 'imageUploadSuccess';
-/** @hidden */
+/** @hidden @deprecated */
 const imageUploadFailed = 'imageUploadFailed';
-/** @hidden */
+/** @hidden @deprecated */
 const imageRemoving = 'imageRemoving';
-/** @hidden */
+/** @hidden @deprecated */
 const drop = 'drop';
+/** @hidden @deprecated */
+const xhtmlValidation = 'xhtmlValidation';
 
 /**
  * RichTextEditor classes defined here.
  */
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_RTE = 'e-richtexteditor';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_RTL = 'e-rtl';
-/** @hidden */
-
-/** @hidden */
+/** @hidden @deprecated */
+const CLS_CONTENT = 'e-content';
+/** @hidden @deprecated */
 const CLS_DISABLED = 'e-disabled';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_SCRIPT_SHEET = 'rte-iframe-script-sheet';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_STYLE_SHEET = 'rte-iframe-style-sheet';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_TOOLBAR = 'e-rte-toolbar';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_TB_FIXED = 'e-rte-tb-fixed';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_TB_FLOAT = 'e-rte-tb-float';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_TB_ABS_FLOAT = 'e-rte-tb-abs-float';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_INLINE = 'e-rte-inline';
-/** @hidden */
-
-/** @hidden */
+/** @hidden @deprecated */
+const CLS_TB_INLINE = 'e-rte-tb-inline';
+/** @hidden @deprecated */
 const CLS_RTE_EXPAND_TB = 'e-rte-tb-expand';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_FULL_SCREEN = 'e-rte-full-screen';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_QUICK_TB = 'e-rte-quick-toolbar';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_POP = 'e-rte-pop';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_QUICK_POP = 'e-rte-quick-popup';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_QUICK_DROPDOWN = 'e-quick-dropdown';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_IMAGE_POP = 'e-rte-image-popup';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_INLINE_POP = 'e-rte-inline-popup';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_INLINE_DROPDOWN = 'e-rte-inline-dropdown';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_DROPDOWN_POPUP = 'e-rte-dropdown-popup';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_DROPDOWN_ICONS = 'e-rte-dropdown-icons';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_DROPDOWN_ITEMS = 'e-rte-dropdown-items';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_DROPDOWN_BTN = 'e-rte-dropdown-btn';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_RTE_CONTENT = 'e-rte-content';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_TB_ITEM = 'e-toolbar-item';
-/** @hidden */
-
-/** @hidden */
+/** @hidden @deprecated */
+const CLS_TB_EXTENDED = 'e-toolbar-extended';
+/** @hidden @deprecated */
 const CLS_TB_WRAP = 'e-toolbar-wrapper';
-/** @hidden */
-
-/** @hidden */
-
-/** @hidden */
-
-/** @hidden */
-
-/** @hidden */
-
-/** @hidden */
+/** @hidden @deprecated */
+const CLS_POPUP = 'e-popup';
+/** @hidden @deprecated */
+const CLS_SEPARATOR = 'e-separator';
+/** @hidden @deprecated */
+const CLS_MINIMIZE = 'e-minimize';
+/** @hidden @deprecated */
+const CLS_MAXIMIZE = 'e-maximize';
+/** @hidden @deprecated */
+const CLS_BACK = 'e-back';
+/** @hidden @deprecated */
 const CLS_SHOW = 'e-show';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_HIDE = 'e-hide';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_VISIBLE = 'e-visible';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_FOCUS = 'e-focused';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_RM_WHITE_SPACE = 'e-remove-white-space';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_IMGRIGHT = 'e-imgright';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_IMGLEFT = 'e-imgleft';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_IMGCENTER = 'e-imgcenter';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_IMGBREAK = 'e-imgbreak';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_CAPTION = 'e-img-caption';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_CAPINLINE = 'e-caption-inline';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_IMGINLINE = 'e-imginline';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_COUNT = 'e-rte-character-count';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_WARNING = 'e-warning';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_ERROR = 'e-error';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_ICONS = 'e-icons';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_ACTIVE = 'e-active';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_EXPAND_OPEN = 'e-expand-open';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_RTE_ELEMENTS = 'e-rte-elements';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_TB_BTN = 'e-tbar-btn';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_HR_SEPARATOR = 'e-rte-horizontal-separator';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_TB_IOS_FIX = 'e-tbar-ios-fixed';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_TB_STATIC = 'e-tb-static';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_FORMATS_TB_BTN = 'e-formats-tbar-btn';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_FONT_NAME_TB_BTN = 'e-font-name-tbar-btn';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_FONT_SIZE_TB_BTN = 'e-font-size-tbar-btn';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_FONT_COLOR_TARGET = 'e-rte-fontcolor-element';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_BACKGROUND_COLOR_TARGET = 'e-rte-backgroundcolor-element';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_COLOR_CONTENT = 'e-rte-color-content';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_FONT_COLOR_DROPDOWN = 'e-rte-fontcolor-dropdown';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_BACKGROUND_COLOR_DROPDOWN = 'e-rte-backgroundcolor-dropdown';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_COLOR_PALETTE = 'e-rte-square-palette';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_FONT_COLOR_PICKER = 'e-rte-fontcolor-colorpicker';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_BACKGROUND_COLOR_PICKER = 'e-rte-backgroundcolor-colorpicker';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_RTE_READONLY = 'e-rte-readonly';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_TABLE_SEL = 'e-cell-select';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_TB_DASH_BOR = 'e-dashed-border';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_TB_ALT_BOR = 'e-alternate-border';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_TB_COL_RES = 'e-column-resize';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_TB_ROW_RES = 'e-row-resize';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_TB_BOX_RES = 'e-table-box';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_RTE_HIDDEN = 'e-rte-hidden';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_RTE_PASTE_KEEP_FORMAT = 'e-rte-keepformat';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_RTE_PASTE_REMOVE_FORMAT = 'e-rte-removeformat';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_RTE_PASTE_PLAIN_FORMAT = 'e-rte-plainformat';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_RTE_PASTE_OK = 'e-rte-pasteok';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_RTE_PASTE_CANCEL = 'e-rte-pastecancel';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_RTE_DIALOG_MIN_HEIGHT = 'e-rte-dialog-minheight';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_RTE_RES_HANDLE = 'e-resize-handle';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_RTE_RES_EAST = 'e-south-east';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_RTE_IMAGE = 'e-rte-image';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_RESIZE = 'e-resize';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_IMG_FOCUS = 'e-img-focus';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_RTE_DRAG_IMAGE = 'e-rte-drag-image';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_RTE_UPLOAD_POPUP = 'e-rte-upload-popup';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_POPUP_OPEN = 'e-popup-open';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_IMG_RESIZE = 'e-img-resize';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_DROPAREA = 'e-droparea';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_IMG_INNER = 'e-img-inner';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_UPLOAD_FILES = 'e-upload-files';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_RTE_DIALOG_UPLOAD = 'e-rte-dialog-upload';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_RTE_RES_CNT = 'e-rte-resize';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_CUSTOM_TILE = 'e-custom-tile';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_NOCOLOR_ITEM = 'e-nocolor-item';
-/** @hidden */
+/** @hidden @deprecated */
 const CLS_TABLE_BORDER = 'e-rte-table-border';
 
 /**
  * Defines types of Render
  * @hidden
+ * @deprecated
  */
 var RenderType;
 (function (RenderType) {
@@ -830,8 +833,8 @@ let tools = {
         'id': 'InsertCode',
         'icon': 'e-insert-code',
         'tooltip': 'Insert Code',
-        'command': 'InsertCode',
-        'subCommand': 'InsertCode'
+        'command': 'Formats',
+        'subCommand': 'Pre'
     },
     'tableheader': {
         'id': 'TableHeader',
@@ -1289,7 +1292,8 @@ function setToolbarStatus(e, isPopToolbar) {
         for (let j = 0; j < e.tbItems.length; j++) {
             let item = e.tbItems[j].subCommand;
             let itemStr = item && item.toLocaleLowerCase();
-            if (item && (itemStr === key) || (item === 'UL' && key === 'unorderedlist') || (item === 'OL' && key === 'orderedlist')) {
+            if (item && (itemStr === key) || (item === 'UL' && key === 'unorderedlist') || (item === 'OL' && key === 'orderedlist') ||
+                (itemStr === 'pre' && key === 'insertcode')) {
                 if (typeof data[key] === 'boolean') {
                     if (data[key] === true) {
                         addClass([e.tbElements[j]], [CLS_ACTIVE]);
@@ -1391,6 +1395,10 @@ function getTBarItemsIndex(items, toolbarItems) {
                     itemsIndex.push(j);
                     break;
                 }
+                else if (items[i] === 'InsertCode' && toolbarItems[j].subCommand === 'Pre') {
+                    itemsIndex.push(j);
+                    break;
+                }
                 else if (items[i] === toolbarItems[j].subCommand) {
                     itemsIndex.push(j);
                     break;
@@ -1416,6 +1424,7 @@ function updateUndoRedoStatus(baseToolbar, undoRedoStatus) {
 /**
  * To dispatch the event manually
  * @hidden
+ * @deprecated
  */
 function dispatchEvent(element, type) {
     let evt = document.createEvent('HTMLEvents');
@@ -1469,8 +1478,9 @@ function updateTextNode(value) {
     let childNodes = tempNode.childNodes;
     if (childNodes.length > 0) {
         [].slice.call(childNodes).forEach((childNode) => {
-            if (childNode.nodeType === Node.TEXT_NODE && childNode.parentNode === tempNode
-                && childNode.textContent.trim() !== '') {
+            if ((childNode.nodeType === Node.TEXT_NODE && childNode.parentNode === tempNode
+                && childNode.textContent.trim() !== '') || (childNode.nodeName === 'IMG' &&
+                childNode.parentNode === tempNode)) {
                 let defaultTag = document.createElement('p');
                 let parentNode = childNode.parentNode;
                 parentNode.insertBefore(defaultTag, childNode);
@@ -1489,10 +1499,29 @@ function decode(value) {
         .replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ')
         .replace(/&amp;nbsp;/g, ' ').replace(/&quot;/g, '');
 }
+function sanitizeHelper(value, parent) {
+    if (parent.enableHtmlSanitizer) {
+        let item = SanitizeHtmlHelper.beforeSanitize();
+        let beforeEvent = {
+            cancel: false,
+            helper: null
+        };
+        extend(item, item, beforeEvent);
+        parent.trigger('beforeSanitizeHtml', item);
+        if (item.cancel && !isNullOrUndefined(item.helper)) {
+            value = item.helper(value);
+        }
+        else if (!item.cancel) {
+            value = SanitizeHtmlHelper.serializeValue(item, value);
+        }
+    }
+    return value;
+}
 
 /**
  * `Toolbar renderer` module is used to render toolbar in RichTextEditor.
  * @hidden
+ * @deprecated
  */
 class ToolbarRenderer {
     /**
@@ -1545,6 +1574,11 @@ class ToolbarRenderer {
     dropDownClose(args) {
         this.parent.notify(selectionRestore, args);
     }
+    /**
+     * renderToolbar method
+     * @hidden
+     * @deprecated
+     */
     renderToolbar(args) {
         this.setPanel(args.target);
         this.renderPanel();
@@ -1563,6 +1597,11 @@ class ToolbarRenderer {
         args.rteToolbarObj.toolbarObj.createElement = this.parent.createElement;
         args.rteToolbarObj.toolbarObj.appendTo(args.target);
     }
+    /**
+     * renderDropDownButton method
+     * @hidden
+     * @deprecated
+     */
     renderDropDownButton(args) {
         let css;
         args.element.classList.add(CLS_DROPDOWN_BTN);
@@ -1653,6 +1692,11 @@ class ToolbarRenderer {
             }
         }));
     }
+    /**
+     * renderColorPickerDropDown method
+     * @hidden
+     * @deprecated
+     */
     renderColorPickerDropDown(args, item, colorPicker) {
         let proxy = this;
         let css = CLS_RTE_ELEMENTS + ' ' + CLS_TB_BTN + ((this.parent.inlineMode) ? (' ' + CLS_INLINE_DROPDOWN) : '');
@@ -1798,6 +1842,11 @@ class ToolbarRenderer {
                 + borderWidth + borderWidth);
         }
     }
+    /**
+     * renderColorPicker method
+     * @hidden
+     * @deprecated
+     */
     renderColorPicker(args, item) {
         let proxy = this;
         this.colorPicker = new ColorPicker({
@@ -1851,6 +1900,8 @@ class ToolbarRenderer {
     }
     /**
      * The function is used to render RichTextEditor toolbar
+     * @hidden
+     * @deprecated
      */
     renderPanel() {
         this.getPanel().classList.add(CLS_TOOLBAR);
@@ -1858,6 +1909,8 @@ class ToolbarRenderer {
     /**
      * Get the toolbar element of RichTextEditor
      * @return {Element}
+     * @hidden
+     * @deprecated
      */
     getPanel() {
         return this.toolbarPanel;
@@ -1865,6 +1918,8 @@ class ToolbarRenderer {
     /**
      * Set the toolbar element of RichTextEditor
      * @param  {Element} panel
+     * @hidden
+     * @deprecated
      */
     setPanel(panel) {
         this.toolbarPanel = panel;
@@ -1922,6 +1977,11 @@ class BaseToolbar {
             tooltipText: getTooltipText(itemStr, this.locator)
         };
     }
+    /**
+     * getObject method
+     * @hidden
+     * @deprecated
+     */
     getObject(item, container) {
         let itemStr = item.toLowerCase();
         if (templateItems.indexOf(itemStr) !== -1) {
@@ -1946,6 +2006,7 @@ class BaseToolbar {
     }
     /**
      * @hidden
+     * @deprecated
      */
     getItems(tbItems, container) {
         if (this.parent.toolbarSettings.items.length < 1) {
@@ -1958,6 +2019,19 @@ class BaseToolbar {
                     items.push(this.getObject(item, container));
                     break;
                 default:
+                    if (!isNullOrUndefined(item.click)) {
+                        let proxy = item;
+                        let callback = proxy.click;
+                        proxy.click = () => {
+                            if (proxy.undo && this.parent.formatter.getUndoRedoStack().length === 0) {
+                                this.parent.formatter.saveData();
+                            }
+                            callback.call(this);
+                            if (proxy.undo) {
+                                this.parent.formatter.saveData();
+                            }
+                        };
+                    }
                     items.push(item);
             }
         }
@@ -1973,6 +2047,11 @@ class BaseToolbar {
             enableRtl: this.parent.enableRtl
         };
     }
+    /**
+     * render method
+     * @hidden
+     * @deprecated
+     */
     render(args) {
         this.toolbarRenderer = this.renderFactory.getRenderer(RenderType.Toolbar);
         this.toolbarRenderer.renderToolbar(this.getToolbarOptions(args));
@@ -2006,6 +2085,11 @@ class DropDownButtons {
         return ('<span style="display: inline-flex;' + 'width:' + ((type === 'quick') ? 'auto' : width) + '" >' +
             '<span class="e-rte-dropdown-btn-text">' + content + '</span></span>');
     }
+    /**
+     * renderDropDowns method
+     * @hidden
+     * @deprecated
+     */
     renderDropDowns(args) {
         this.initializeInstance();
         let type = args.containerType;
@@ -2299,6 +2383,11 @@ class DropDownButtons {
             CLS_DROPDOWN_ITEMS
         ]);
     }
+    /**
+     * destroyDropDowns method
+     * @hidden
+     * @deprecated
+     */
     destroyDropDowns() {
         if (this.formatDropDown) {
             this.removeDropDownClasses(this.formatDropDown.element);
@@ -2385,16 +2474,27 @@ class DropDownButtons {
 /**
  * ServiceLocator
  * @hidden
+ * @deprecated
  */
 class ServiceLocator {
     constructor() {
         this.services = {};
     }
+    /**
+     * register method
+     * @hidden
+     * @deprecated
+     */
     register(name, type) {
         if (isNullOrUndefined(this.services[name])) {
             this.services[name] = type;
         }
     }
+    /**
+     * getService method
+     * @hidden
+     * @deprecated
+     */
     getService(name) {
         if (isNullOrUndefined(this.services[name])) {
             throw `The service ${name} is not registered`;
@@ -2406,17 +2506,28 @@ class ServiceLocator {
 /**
  * RendererFactory
  * @hidden
+ * @deprecated
  */
 class RendererFactory {
     constructor() {
         this.rendererMap = {};
     }
+    /**
+     * addRenderer method
+     * @hidden
+     * @deprecated
+     */
     addRenderer(name, type) {
         let rName = getEnumValue(RenderType, name);
         if (isNullOrUndefined(this.rendererMap[rName])) {
             this.rendererMap[rName] = type;
         }
     }
+    /**
+     * getRenderer method
+     * @hidden
+     * @deprecated
+     */
     getRenderer(name) {
         let rName = getEnumValue(RenderType, name);
         if (isNullOrUndefined(this.rendererMap[rName])) {
@@ -2715,9 +2826,19 @@ class Toolbar$1 {
             this.parent.disableToolbarItem(this.parent.toolbarSettings.items);
         }
     }
+    /**
+     * addFixedTBarClass method
+     * @hidden
+     * @deprecated
+     */
     addFixedTBarClass() {
         addClass([this.tbElement], [CLS_TB_FIXED]);
     }
+    /**
+     * removeFixedTBarClass method
+     * @hidden
+     * @deprecated
+     */
     removeFixedTBarClass() {
         removeClass([this.tbElement], [CLS_TB_FIXED]);
     }
@@ -2730,6 +2851,11 @@ class Toolbar$1 {
     hideFixedTBar() {
         (!this.isToolbar) ? removeClass([this.tbElement], [CLS_SHOW, CLS_TB_IOS_FIX]) : this.isToolbar = false;
     }
+    /**
+     * updateItem method
+     * @hidden
+     * @deprecated
+     */
     updateItem(args) {
         let item = this.tools[args.updateItem.toLocaleLowerCase()];
         let trgItem = this.tools[args.targetItem.toLocaleLowerCase()];
@@ -2765,12 +2891,27 @@ class Toolbar$1 {
     hideScreen(e) {
         this.parent.fullScreenModule.hideFullScreen(e);
     }
+    /**
+     * getBaseToolbar method
+     * @hidden
+     * @deprecated
+     */
     getBaseToolbar() {
         return this.baseToolbar;
     }
+    /**
+     * addTBarItem method
+     * @hidden
+     * @deprecated
+     */
     addTBarItem(args, index) {
         args.baseToolbar.toolbarObj.addItems([args.baseToolbar.getObject(args.updateItem, 'toolbar')], index);
     }
+    /**
+     * enableTBarItems method
+     * @hidden
+     * @deprecated
+     */
     enableTBarItems(baseToolbar, items, isEnable, muteToolbarUpdate) {
         let trgItems = getTBarItemsIndex(getCollection(items), baseToolbar.toolbarObj.items);
         this.tbItems = selectAll('.' + CLS_TB_ITEM, baseToolbar.toolbarObj.element);
@@ -2784,6 +2925,11 @@ class Toolbar$1 {
             updateUndoRedoStatus(baseToolbar, this.parent.formatter.editorManager.undoRedoManager.getUndoStatus());
         }
     }
+    /**
+     * removeTBarItems method
+     * @hidden
+     * @deprecated
+     */
     removeTBarItems(items) {
         if (isNullOrUndefined(this.baseToolbar.toolbarObj)) {
             this.baseToolbar = this.parent.getBaseToolbarObject();
@@ -2795,6 +2941,11 @@ class Toolbar$1 {
             this.baseToolbar.toolbarObj.removeItems(this.tbItems[trgItems[i]]);
         }
     }
+    /**
+     * getExpandTBarPopHeight method
+     * @hidden
+     * @deprecated
+     */
     getExpandTBarPopHeight() {
         let popHeight = 0;
         if (this.parent.toolbarSettings.type === ToolbarType.Expand && this.tbElement.classList.contains('e-extended-toolbar')) {
@@ -2811,12 +2962,27 @@ class Toolbar$1 {
         }
         return popHeight;
     }
+    /**
+     * getToolbarHeight method
+     * @hidden
+     * @deprecated
+     */
     getToolbarHeight() {
         return this.tbElement.offsetHeight;
     }
+    /**
+     * getToolbarElement method
+     * @hidden
+     * @deprecated
+     */
     getToolbarElement() {
         return select('.' + CLS_TOOLBAR, this.parent.element);
     }
+    /**
+     * refreshToolbarOverflow method
+     * @hidden
+     * @deprecated
+     */
     refreshToolbarOverflow() {
         this.baseToolbar.toolbarObj.refreshOverflow();
     }
@@ -2847,6 +3013,7 @@ class Toolbar$1 {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     destroy() {
         if (this.isToolbarDestroyed()) {
@@ -2959,6 +3126,7 @@ class Toolbar$1 {
     /**
      * Called internally if any of the property value changed.
      * @hidden
+     * @deprecated
      */
     onPropertyChanged(e) {
         if (!isNullOrUndefined(e.newProp.inlineMode)) {
@@ -3072,6 +3240,7 @@ let keyCode = {
  * </script>
  * ```
  * @hidden
+ * @deprecated
  */
 let KeyboardEvents$1 = KeyboardEvents_1 = class KeyboardEvents$$1 extends Base {
     /**
@@ -3211,6 +3380,11 @@ class ColorPickerInput {
     initializeInstance() {
         this.toolbarRenderer = this.renderFactory.getRenderer(RenderType.Toolbar);
     }
+    /**
+     * renderColorPickerInput method
+     * @hidden
+     * @deprecated
+     */
     renderColorPickerInput(args) {
         this.initializeInstance();
         let suffixID = args.containerType;
@@ -3264,6 +3438,11 @@ class ColorPickerInput {
         this.removeEventListener();
         this.destroyColorPicker();
     }
+    /**
+     * destroyColorPicker method
+     * @hidden
+     * @deprecated
+     */
     destroyColorPicker() {
         if (this.fontColorPicker && !this.fontColorPicker.isDestroyed) {
             this.fontColorPicker.destroy();
@@ -3390,6 +3569,11 @@ class BaseQuickToolbar {
         this.toolbarElement = this.parent.createElement('div', { className: CLS_QUICK_TB });
         this.element.appendChild(this.toolbarElement);
     }
+    /**
+     * render method
+     * @hidden
+     * @deprecated
+     */
     render(args) {
         let className;
         if (args.popupType === 'Image') {
@@ -3444,7 +3628,7 @@ class BaseQuickToolbar {
             x = e.parentData.left + target.offsetLeft;
         }
         this.popupObj.position.X = ((x + e.popWidth) > e.parentData.right) ? e.parentData.right - e.popWidth : x;
-        this.popupObj.position.Y = y;
+        this.popupObj.position.Y = (y >= 0) ? y : e.y + 5;
         this.popupObj.dataBind();
         removeClass([this.toolbarElement], [CLS_RM_WHITE_SPACE]);
     }
@@ -3522,6 +3706,11 @@ class BaseQuickToolbar {
         this.popupObj.position.Y = (y) ? y : this.popupObj.position.Y;
         this.popupObj.dataBind();
     }
+    /**
+     * showPopup method
+     * @hidden
+     * @deprecated
+     */
     showPopup(x, y, target) {
         let eventArgs = isBlazor() ? { cancel: false, targetElement: target } :
             { popup: this.popupObj, cancel: false, targetElement: target };
@@ -3605,6 +3794,11 @@ class BaseQuickToolbar {
             }
         });
     }
+    /**
+     * hidePopup method
+     * @hidden
+     * @deprecated
+     */
     hidePopup() {
         let viewSourcePanel = this.parent.sourceCodeModule.getViewPanel();
         if (Browser.isDevice && !isIDevice()) {
@@ -3620,12 +3814,14 @@ class BaseQuickToolbar {
     }
     /**
      * @hidden
+     * @deprecated
      */
     addQTBarItem(item, index) {
         this.quickTBarObj.toolbarObj.addItems(this.quickTBarObj.getItems(item, 'toolbar'), index);
     }
     /**
      * @hidden
+     * @deprecated
      */
     removeQTBarItem(index) {
         this.quickTBarObj.toolbarObj.removeItems(index);
@@ -3659,6 +3855,7 @@ class BaseQuickToolbar {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     destroy() {
         if (this.popupObj && !this.popupObj.isDestroyed) {
@@ -3667,6 +3864,11 @@ class BaseQuickToolbar {
         }
         this.removeEventListener();
     }
+    /**
+     * addEventListener method
+     * @hidden
+     * @deprecated
+     */
     addEventListener() {
         if (this.parent.isDestroyed) {
             return;
@@ -3680,6 +3882,7 @@ class BaseQuickToolbar {
     /**
      * Called internally if any of the property value changed.
      * @hidden
+     * @deprecated
      */
     onPropertyChanged(e) {
         if (!isNullOrUndefined(e.newProp.inlineMode)) {
@@ -3697,6 +3900,11 @@ class BaseQuickToolbar {
             }
         }
     }
+    /**
+     * removeEventListener method
+     * @hidden
+     * @deprecated
+     */
     removeEventListener() {
         if (this.parent.isDestroyed) {
             return;
@@ -3712,6 +3920,7 @@ class BaseQuickToolbar {
 /**
  * `Popup renderer` module is used to render popup in RichTextEditor.
  * @hidden
+ * @deprecated
  */
 class PopupRenderer {
     /**
@@ -3724,6 +3933,11 @@ class PopupRenderer {
         let args = isBlazor() ? { element: this.popupObj.element } : this.popupObj;
         this.parent.trigger(quickToolbarOpen, args);
     }
+    /**
+     * renderPopup method
+     * @hidden
+     * @deprecated
+     */
     renderPopup(args) {
         this.setPanel(args.element);
         this.renderPanel();
@@ -3737,6 +3951,8 @@ class PopupRenderer {
     }
     /**
      * The function is used to add popup class in Quick Toolbar
+     * @hidden
+     * @deprecated
      */
     renderPanel() {
         this.getPanel().classList.add(CLS_QUICK_POP);
@@ -3744,6 +3960,8 @@ class PopupRenderer {
     /**
      * Get the popup element of RichTextEditor
      * @return {Element}
+     * @hidden
+     * @deprecated
      */
     getPanel() {
         return this.popupPanel;
@@ -3751,6 +3969,8 @@ class PopupRenderer {
     /**
      * Set the popup element of RichTextEditor
      * @param  {Element} panel
+     * @hidden
+     * @deprecated
      */
     setPanel(panel) {
         this.popupPanel = panel;
@@ -3801,6 +4021,11 @@ class QuickToolbar {
             renderType: type
         };
     }
+    /**
+     * createQTBar method
+     * @hidden
+     * @deprecated
+     */
     createQTBar(popupType, mode, items, type) {
         if (items.length < 1) {
             return null;
@@ -3854,6 +4079,9 @@ class QuickToolbar {
         }
     }
     showInlineQTBar(x, y, target) {
+        if (this.parent.readonly) {
+            return;
+        }
         this.inlineQTBar.showPopup(x, y, target);
     }
     hideInlineQTBar() {
@@ -3864,6 +4092,7 @@ class QuickToolbar {
     /**
      * Method for hidding the quick toolbar
      * @hidden
+     * @deprecated
      */
     hideQuickToolbars() {
         if (this.linkQTBar && !hasClass(this.linkQTBar.element, 'e-popup-close') && document.body.contains(this.linkQTBar.element)) {
@@ -3951,6 +4180,11 @@ class QuickToolbar {
             this.mouseUpHandler({ args: e });
         }
     }
+    /**
+     * getInlineBaseToolbar method
+     * @hidden
+     * @deprecated
+     */
     getInlineBaseToolbar() {
         return this.inlineQTBar && this.inlineQTBar.quickTBarObj;
     }
@@ -3959,6 +4193,7 @@ class QuickToolbar {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     destroy() {
         if (this.linkQTBar) {
@@ -4013,6 +4248,11 @@ class QuickToolbar {
             this.tableQTBar.hidePopup();
         }
     }
+    /**
+     * addEventListener
+     * @hidden
+     * @deprecated
+     */
     addEventListener() {
         if (this.parent.isDestroyed) {
             return;
@@ -4056,6 +4296,11 @@ class QuickToolbar {
             this.imageQTBar.quickTBarObj.toolbarObj.setProperties({ enableRtl: args.enableRtl });
         }
     }
+    /**
+     * removeEventListener
+     * @hidden
+     * @deprecated
+     */
     removeEventListener() {
         if (this.parent.isDestroyed) {
             return;
@@ -4078,6 +4323,7 @@ class QuickToolbar {
     /**
      * Called internally if any of the property value changed.
      * @hidden
+     * @deprecated
      */
     onPropertyChanged(e) {
         if (!isNullOrUndefined(e.newProp.quickToolbarSettings)) {
@@ -4131,6 +4377,11 @@ class Count {
         this.contentRenderer = this.renderFactory.getRenderer(RenderType.Content);
         this.editPanel = this.contentRenderer.getEditPanel();
     }
+    /**
+     * renderCount method
+     * @hidden
+     * @deprecated
+     */
     renderCount() {
         this.initializeInstance();
         this.element = this.parent.createElement('span', { className: CLS_COUNT });
@@ -4164,6 +4415,7 @@ class Count {
     }
     /**
      * @hidden
+     * @deprecated
      */
     refresh() {
         if (!isNullOrUndefined(this.editPanel)) {
@@ -4178,6 +4430,7 @@ class Count {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     destroy() {
         this.removeEventListener();
@@ -4227,28 +4480,59 @@ class Count {
 /**
  * MarkdownSelection internal module
  * @hidden
+ * @deprecated
  */
 class MarkdownSelection {
+    /**
+     * markdown getLineNumber method
+     * @hidden
+     * @deprecated
+     */
     getLineNumber(textarea, point) {
         return textarea.value.substr(0, point).split('\n').length;
     }
+    /**
+     * markdown getSelectedText method
+     * @hidden
+     * @deprecated
+     */
     getSelectedText(textarea) {
         let start = textarea.selectionStart;
         let end = textarea.selectionEnd;
         return textarea.value.substring(start, end);
     }
+    /**
+     * markdown getAllParents method
+     * @hidden
+     * @deprecated
+     */
     getAllParents(value) {
         return value.split('\n');
     }
+    /**
+     * markdown getSelectedLine method
+     * @hidden
+     * @deprecated
+     */
     getSelectedLine(textarea) {
         let lines = this.getAllParents(textarea.value);
         let index = this.getLineNumber(textarea, textarea.selectionStart);
         return lines[index - 1];
     }
+    /**
+     * markdown getLine method
+     * @hidden
+     * @deprecated
+     */
     getLine(textarea, index) {
         let lines = this.getAllParents(textarea.value);
         return lines[index];
     }
+    /**
+     * markdown getSelectedParentPoints method
+     * @hidden
+     * @deprecated
+     */
     getSelectedParentPoints(textarea) {
         let lines = this.getAllParents(textarea.value);
         let start = this.getLineNumber(textarea, textarea.selectionStart);
@@ -4282,17 +4566,37 @@ class MarkdownSelection {
         }
         return selectedPoints;
     }
+    /**
+     * markdown setSelection method
+     * @hidden
+     * @deprecated
+     */
     setSelection(textarea, start, end) {
         textarea.setSelectionRange(start, end);
         textarea.focus();
     }
+    /**
+     * markdown save method
+     * @hidden
+     * @deprecated
+     */
     save(start, end) {
         this.selectionStart = start;
         this.selectionEnd = end;
     }
+    /**
+     * markdown restore method
+     * @hidden
+     * @deprecated
+     */
     restore(textArea) {
         this.setSelection(textArea, this.selectionStart, this.selectionEnd);
     }
+    /**
+     * markdown isStartWith method
+     * @hidden
+     * @deprecated
+     */
     isStartWith(line, command) {
         let isStart = false;
         if (line) {
@@ -4303,9 +4607,19 @@ class MarkdownSelection {
         }
         return isStart;
     }
+    /**
+     * markdown replaceSpecialChar method
+     * @hidden
+     * @deprecated
+     */
     replaceSpecialChar(value) {
         return value.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/g, '\\$&');
     }
+    /**
+     * markdown isClear method
+     * @hidden
+     * @deprecated
+     */
     isClear(parents, regex) {
         let isClear = false;
         for (let i = 0; i < parents.length; i++) {
@@ -4315,6 +4629,11 @@ class MarkdownSelection {
         }
         return isClear;
     }
+    /**
+     * markdown getSelectedInlinePoints method
+     * @hidden
+     * @deprecated
+     */
     getSelectedInlinePoints(textarea) {
         let start = textarea.selectionStart;
         let end = textarea.selectionEnd;
@@ -4532,6 +4851,7 @@ const MS_WORD_CLEANUP = 'ms_word_cleanup';
 /**
  * Formatter
  * @hidden
+ * @deprecated
  */
 class Formatter {
     /**
@@ -4540,6 +4860,8 @@ class Formatter {
      * @param  {ActionBeginEventArgs} args
      * @param  {MouseEvent|KeyboardEvent} event
      * @param  {IItemCollectionArgs} value
+     * @hidden
+     * @deprecated
      */
     process(self, args, event, value) {
         let selection = self.contentModule.getDocument().getSelection();
@@ -4588,7 +4910,9 @@ class Formatter {
                     }
                 });
             }
-            if ((event.which === 9 && self.tableModule ? self.tableModule.ensureInsideTableList : false) || event.which !== 9) {
+            let isTableModule = isNullOrUndefined(self.tableModule) ? true : self.tableModule ?
+                self.tableModule.ensureInsideTableList : false;
+            if ((event.which === 9 && isTableModule) || event.which !== 9) {
                 this.editorManager.observer.notify((event.type === 'keydown' ? KEY_DOWN : KEY_UP), {
                     event: event,
                     callBack: this.onSuccess.bind(this, self),
@@ -4619,7 +4943,8 @@ class Formatter {
                     }
                     else {
                         this.editorManager.observer.notify(checkUndo, { subCommand: actionBeginArgs.item.subCommand });
-                        this.editorManager.execCommand(actionBeginArgs.item.command, actionBeginArgs.item.subCommand, event, this.onSuccess.bind(this, self), actionBeginArgs.item.value, value, ('#' + self.getID() + ' iframe'));
+                        this.editorManager.execCommand(actionBeginArgs.item.command, actionBeginArgs.item.subCommand, event, this.onSuccess.bind(this, self), actionBeginArgs.item.value, actionBeginArgs.item.subCommand === 'Pre' && args.name === 'dropDownSelect' ?
+                            { name: args.name } : value, ('#' + self.getID() + ' iframe'));
                     }
                 }
             });
@@ -4632,6 +4957,11 @@ class Formatter {
         node = node.nodeType === 3 ? node.parentNode : node;
         return node;
     }
+    /**
+     * onKeyHandler method
+     * @hidden
+     * @deprecated
+     */
     onKeyHandler(self, e) {
         this.editorManager.observer.notify(KEY_UP, {
             event: e, callBack: () => {
@@ -4639,6 +4969,11 @@ class Formatter {
             }
         });
     }
+    /**
+     * onSuccess method
+     * @hidden
+     * @deprecated
+     */
     onSuccess(self, events) {
         if (isNullOrUndefined(events.event) || (events && events.event.action !== 'copy')) {
             this.enableUndo(self);
@@ -4666,16 +5001,33 @@ class Formatter {
     }
     /**
      * Save the data for undo and redo action.
+     * @hidden
+     * @deprecated
      */
     saveData(e) {
         this.editorManager.undoRedoManager.saveData(e);
     }
+    /**
+     * getUndoStatus method
+     * @hidden
+     * @deprecated
+     */
     getUndoStatus() {
         return this.editorManager.undoRedoManager.getUndoStatus();
     }
+    /**
+     * getUndoRedoStack method
+     * @hidden
+     * @deprecated
+     */
     getUndoRedoStack() {
         return this.editorManager.undoRedoManager.undoRedoStack;
     }
+    /**
+     * enableUndo method
+     * @hidden
+     * @deprecated
+     */
     enableUndo(self) {
         let status = this.getUndoStatus();
         if (self.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
@@ -4969,8 +5321,11 @@ class MDLists {
         let prevLine = this.selection.getLine(textArea, parents[0].line - 1);
         let listFormat = this.olListType();
         let regex = this.getListRegex();
-        let prevLineSplit = prevLine.split('. ');
-        this.currentAction = this.getAction(prevLine);
+        let prevLineSplit = [];
+        if (!isNullOrUndefined(prevLine)) {
+            prevLineSplit = prevLine.split('. ');
+            this.currentAction = this.getAction(prevLine);
+        }
         let addedLength = 0;
         if (this.currentAction === 'OL' && prevLineSplit.length > 1 && /^\d+$/.test(prevLineSplit[0].trim()) && listFormat
             && prevLineSplit[1] !== '') {
@@ -5169,11 +5524,13 @@ class MDLists {
 /**
  * MDFormats internal plugin
  * @hidden
+ * @deprecated
  */
 class MDFormats {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     constructor(options) {
         extend(this, this, options, true);
@@ -5381,6 +5738,7 @@ class MDFormats {
 /**
  * SelectionCommands internal component
  * @hidden
+ * @deprecated
  */
 class MDSelectionFormats {
     constructor(parent) {
@@ -5451,6 +5809,11 @@ class MDSelectionFormats {
     singleCharRegx(cmd) {
         return new RegExp('(\\' + cmd + ')', 'g');
     }
+    /**
+     * markdown isAppliedCommand method
+     * @hidden
+     * @deprecated
+     */
     isAppliedCommand(cmd) {
         let isFormat = false;
         let textArea = this.parent.element;
@@ -5865,10 +6228,17 @@ class UndoRedoCommands {
      * Destroys the ToolBar.
      * @method destroy
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     destroy() {
         this.removeEventListener();
     }
+    /**
+     * onAction method
+     * @hidden
+     * @deprecated
+     */
     onAction(e) {
         if (e.subCommand === 'Undo') {
             this.undo(e);
@@ -5900,6 +6270,8 @@ class UndoRedoCommands {
      * MD collection stored string format.
      * @method saveData
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     saveData(e) {
         let textArea = this.parent.element;
@@ -5929,6 +6301,8 @@ class UndoRedoCommands {
      * Undo the editable text.
      * @method undo
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     undo(e) {
         if (this.steps > 0) {
@@ -5946,6 +6320,8 @@ class UndoRedoCommands {
      * Redo the editable text.
      * @method redo
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     redo(e) {
         if (this.undoRedoStack[this.steps + 1] != null) {
@@ -5970,6 +6346,11 @@ class UndoRedoCommands {
             });
         }
     }
+    /**
+     * getUndoStatus method
+     * @hidden
+     * @deprecated
+     */
     getUndoStatus() {
         let status = { undo: false, redo: false };
         if (this.steps > 0) {
@@ -5985,11 +6366,13 @@ class UndoRedoCommands {
 /**
  * Link internal component
  * @hidden
+ * @deprecated
  */
 class MDLink {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     constructor(parent) {
         this.parent = parent;
@@ -6030,11 +6413,13 @@ class MDLink {
 /**
  * Link internal component
  * @hidden
+ * @deprecated
  */
 class MDTable {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     constructor(options) {
         extend(this, this, options, true);
@@ -6049,6 +6434,11 @@ class MDTable {
         this.parent.observer.off(MD_TABLE, this.createTable);
         this.parent.observer.off(KEY_DOWN_HANDLER, this.onKeyDown);
     }
+    /**
+     * markdown destroy method
+     * @hidden
+     * @deprecated
+     */
     destroy() {
         this.removeEventListener();
     }
@@ -6244,11 +6634,13 @@ class MDTable {
 /**
  * Link internal component
  * @hidden
+ * @deprecated
  */
 class ClearFormat {
     /**
      * Constructor for creating the clear format plugin
      * @hidden
+     * @deprecated
      */
     constructor(parent) {
         this.parent = parent;
@@ -6350,11 +6742,13 @@ class ClearFormat {
 /**
  * MarkdownParser internal component
  * @hidden
+ * @deprecated
  */
 class MarkdownParser {
     /**
      * Constructor for creating the component
      * @hidden
+     * @deprecated
      */
     constructor(options) {
         this.initialize();
@@ -6389,6 +6783,11 @@ class MarkdownParser {
     editorKeyUp(e) {
         this.observer.notify(KEY_UP_HANDLER, e);
     }
+    /**
+     * markdown execCommand method
+     * @hidden
+     * @deprecated
+     */
     execCommand(command, value, event, callBack, text, exeValue) {
         switch (command.toLocaleLowerCase()) {
             case 'lists':
@@ -6426,6 +6825,7 @@ class MarkdownParser {
 /**
  * Markdown adapter
  * @hidden
+ * @deprecated
  */
 class MarkdownFormatter extends Formatter {
     constructor(options) {
@@ -6446,6 +6846,8 @@ class MarkdownFormatter extends Formatter {
      * Update the formatter of RichTextEditor
      * @param  {Element} editElement
      * @param  {Document} doc
+     * @hidden
+     * @deprecated
      */
     updateFormatter(editElement, doc, options) {
         if (editElement) {
@@ -6463,6 +6865,7 @@ class MarkdownFormatter extends Formatter {
 /**
  * Markdown module is used to render RichTextEditor as Markdown editor content
  * @hidden
+ * @deprecated
  */
 class MarkdownRender {
     /**
@@ -6473,6 +6876,8 @@ class MarkdownRender {
     }
     /**
      * The function is used to render RichTextEditor content div
+     * @hidden
+     * @deprecated
      */
     renderPanel() {
         let rteObj = this.parent;
@@ -6488,6 +6893,8 @@ class MarkdownRender {
     /**
      * Get the content div element of RichTextEditor
      * @return {Element}
+     * @hidden
+     * @deprecated
      */
     getPanel() {
         return this.contentPanel;
@@ -6495,6 +6902,8 @@ class MarkdownRender {
     /**
      * Get the editable element of RichTextEditor
      * @return {Element}
+     * @hidden
+     * @deprecated
      */
     getEditPanel() {
         return this.editableElement;
@@ -6509,6 +6918,8 @@ class MarkdownRender {
     /**
      * Set the content div element of RichTextEditor
      * @param  {Element} panel
+     * @hidden
+     * @deprecated
      */
     setPanel(panel) {
         this.contentPanel = panel;
@@ -6516,6 +6927,8 @@ class MarkdownRender {
     /**
      * Get the document of RichTextEditor
      * @param  {Document}
+     * @hidden
+     * @deprecated
      */
     getDocument() {
         return this.getEditPanel().ownerDocument;
@@ -6537,6 +6950,7 @@ class MarkdownEditor {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     destroy() {
         this.removeEventListener();
@@ -6652,6 +7066,7 @@ class MarkdownEditor {
     /**
      * Called internally if any of the property value changed.
      * @hidden
+     * @deprecated
      */
     onPropertyChanged(e) {
         // On property code change here
@@ -6767,13 +7182,28 @@ class NodeSelection {
         return (range.startContainer !== docElement || range.endContainer !== docElement
             || range.startOffset || range.endOffset || (range.setStart(docElement.body, 0), range.collapse(!0)), range);
     }
+    /**
+     * get method
+     * @hidden
+     * @deprecated
+     */
     get(docElement) {
         return docElement.defaultView.getSelection();
     }
+    /**
+     * save method
+     * @hidden
+     * @deprecated
+     */
     save(range, docElement) {
         range = (range) ? range.cloneRange() : this.getRange(docElement);
         return this.saveInstance(range, docElement.body);
     }
+    /**
+     * getIndex method
+     * @hidden
+     * @deprecated
+     */
     getIndex(node) {
         let index;
         let num = 0;
@@ -6815,6 +7245,11 @@ class NodeSelection {
             return startNode.parentNode;
         }
     }
+    /**
+     * getNodeCollection method
+     * @hidden
+     * @deprecated
+     */
     getNodeCollection(range) {
         let startNode = range.startContainer.childNodes[range.startOffset]
             || range.startContainer;
@@ -6822,6 +7257,9 @@ class NodeSelection {
             || range.endContainer;
         if (startNode === endNode && startNode.childNodes.length === 0) {
             return [startNode];
+        }
+        if (range.startOffset === range.endOffset && range.startOffset !== 0 && range.startContainer.nodeName === 'PRE') {
+            return [startNode.nodeName === 'BR' || startNode.nodeName === '#text' ? startNode : startNode.childNodes[0]];
         }
         let nodeCollection = [];
         do {
@@ -6832,9 +7270,19 @@ class NodeSelection {
         } while (startNode);
         return nodeCollection;
     }
+    /**
+     * getParentNodeCollection method
+     * @hidden
+     * @deprecated
+     */
     getParentNodeCollection(range) {
         return this.getParentNodes(this.getNodeCollection(range), range);
     }
+    /**
+     * getParentNodes method
+     * @hidden
+     * @deprecated
+     */
     getParentNodes(nodeCollection, range) {
         nodeCollection = nodeCollection.reverse();
         for (let index = 0; index < nodeCollection.length; index++) {
@@ -6851,9 +7299,19 @@ class NodeSelection {
         }
         return nodeCollection;
     }
+    /**
+     * getSelectionNodeCollection method
+     * @hidden
+     * @deprecated
+     */
     getSelectionNodeCollection(range) {
         return this.getSelectionNodes(this.getNodeCollection(range));
     }
+    /**
+     * getParentNodes method
+     * @hidden
+     * @deprecated
+     */
     getSelectionNodes(nodeCollection) {
         nodeCollection = nodeCollection.reverse();
         for (let index = 0; index < nodeCollection.length; index++) {
@@ -6864,9 +7322,19 @@ class NodeSelection {
         }
         return nodeCollection.reverse();
     }
+    /**
+     * getInsertNodeCollection method
+     * @hidden
+     * @deprecated
+     */
     getInsertNodeCollection(range) {
         return this.getInsertNodes(this.getNodeCollection(range));
     }
+    /**
+     * getInsertNodes method
+     * @hidden
+     * @deprecated
+     */
     getInsertNodes(nodeCollection) {
         nodeCollection = nodeCollection.reverse();
         for (let index = 0; index < nodeCollection.length; index++) {
@@ -6880,6 +7348,11 @@ class NodeSelection {
         }
         return nodeCollection.reverse();
     }
+    /**
+     * getNodeArray method
+     * @hidden
+     * @deprecated
+     */
     getNodeArray(node, isStart, root) {
         let array = [];
         ((isStart) ? (this.startNodeName = []) : (this.endNodeName = []));
@@ -6902,6 +7375,11 @@ class NodeSelection {
         }
         return range;
     }
+    /**
+     * restore method
+     * @hidden
+     * @deprecated
+     */
     restore() {
         let range = this.range.cloneRange();
         range = this.setRangePoint(range, true, this.startContainer, this.startOffset);
@@ -6913,37 +7391,77 @@ class NodeSelection {
         this.setRange(docElement, range);
         this.save(range, docElement);
     }
+    /**
+     * setRange method
+     * @hidden
+     * @deprecated
+     */
     setRange(docElement, range) {
         let selection = this.get(docElement);
         selection.removeAllRanges();
         selection.addRange(range);
     }
+    /**
+     * setSelectionText method
+     * @hidden
+     * @deprecated
+     */
     setSelectionText(docElement, startNode, endNode, startIndex, endIndex) {
         let range = docElement.createRange();
         range.setStart(startNode, startIndex);
         range.setEnd(endNode, endIndex);
         this.setRange(docElement, range);
     }
+    /**
+     * setSelectionContents method
+     * @hidden
+     * @deprecated
+     */
     setSelectionContents(docElement, element) {
         let range = docElement.createRange();
         range.selectNode(element);
         this.setRange(docElement, range);
     }
+    /**
+     * setSelectionNode method
+     * @hidden
+     * @deprecated
+     */
     setSelectionNode(docElement, element) {
         let range = docElement.createRange();
         range.selectNodeContents(element);
         this.setRange(docElement, range);
     }
+    /**
+     * getSelectedNodes method
+     * @hidden
+     * @deprecated
+     */
     getSelectedNodes(docElement) {
         return this.getNodeCollection(this.getRange(docElement));
     }
+    /**
+     * Clear method
+     * @hidden
+     * @deprecated
+     */
     Clear(docElement) {
         this.get(docElement).removeAllRanges();
     }
+    /**
+     * insertParentNode method
+     * @hidden
+     * @deprecated
+     */
     insertParentNode(docElement, newNode, range) {
         range.surroundContents(newNode);
         this.selectRange(docElement, range);
     }
+    /**
+     * setCursorPoint method
+     * @hidden
+     * @deprecated
+     */
     setCursorPoint(docElement, element, point) {
         let range = docElement.createRange();
         let selection = docElement.defaultView.getSelection();
@@ -6965,26 +7483,48 @@ const markerClassName = {
 /**
  * DOMNode internal plugin
  * @hidden
+ * @deprecated
  */
 class DOMNode {
     /**
      * Constructor for creating the DOMNode plugin
      * @hidden
+     * @deprecated
      */
     constructor(parent, currentDocument) {
         this.parent = parent;
         this.nodeSelection = new NodeSelection();
         this.currentDocument = currentDocument;
     }
+    /**
+     * contents method
+     * @hidden
+     * @deprecated
+     */
     contents(element) {
         return (element && 'IFRAME' !== element.tagName ? Array.prototype.slice.call(element.childNodes || []) : []);
     }
+    /**
+     * isBlockNode method
+     * @hidden
+     * @deprecated
+     */
     isBlockNode(element) {
         return (!!element && (element.nodeType === Node.ELEMENT_NODE && BLOCK_TAGS.indexOf(element.tagName.toLowerCase()) >= 0));
     }
+    /**
+     * isLink method
+     * @hidden
+     * @deprecated
+     */
     isLink(element) {
         return (!!element && (element.nodeType === Node.ELEMENT_NODE && 'a' === element.tagName.toLowerCase()));
     }
+    /**
+     * blockParentNode method
+     * @hidden
+     * @deprecated
+     */
     blockParentNode(element) {
         for (; element && element.parentNode !== this.parent && ((!element.parentNode ||
             !this.hasClass(element.parentNode, 'e-node-inner'))); null) {
@@ -6995,6 +7535,11 @@ class DOMNode {
         }
         return element;
     }
+    /**
+     * rawAttributes method
+     * @hidden
+     * @deprecated
+     */
     rawAttributes(element) {
         let rawAttr = {};
         let attributes$$1 = element.attributes;
@@ -7006,6 +7551,11 @@ class DOMNode {
         }
         return rawAttr;
     }
+    /**
+     * attributes method
+     * @hidden
+     * @deprecated
+     */
     attributes(element) {
         if (!element) {
             return '';
@@ -7031,39 +7581,89 @@ class DOMNode {
         }
         return attr;
     }
+    /**
+     * clearAttributes method
+     * @hidden
+     * @deprecated
+     */
     clearAttributes(element) {
         for (let attr = element.attributes, c = attr.length - 1; c >= 0; c--) {
             let key = attr[c];
             element.removeAttribute(key.nodeName);
         }
     }
+    /**
+     * openTagString method
+     * @hidden
+     * @deprecated
+     */
     openTagString(element) {
         return '<' + element.tagName.toLowerCase() + this.attributes(element) + '>';
     }
+    /**
+     * closeTagString method
+     * @hidden
+     * @deprecated
+     */
     closeTagString(element) {
         return '</' + element.tagName.toLowerCase() + '>';
     }
+    /**
+     * createTagString method
+     * @hidden
+     * @deprecated
+     */
     createTagString(tagName, relativeElement, innerHTML) {
         return '<' + tagName.toLowerCase() + this.attributes(relativeElement) + '>' + innerHTML + '</' + tagName.toLowerCase() + '>';
     }
+    /**
+     * isList method
+     * @hidden
+     * @deprecated
+     */
     isList(element) {
         return !!element && ['UL', 'OL'].indexOf(element.tagName) >= 0;
     }
+    /**
+     * isElement method
+     * @hidden
+     * @deprecated
+     */
     isElement(element) {
         return element === this.parent;
     }
+    /**
+     * isEditable method
+     * @hidden
+     * @deprecated
+     */
     isEditable(element) {
         return ((!element.getAttribute || element.getAttribute('contenteditable') === 'true')
             && ['STYLE', 'SCRIPT'].indexOf(element.tagName) < 0);
     }
+    /**
+     * hasClass method
+     * @hidden
+     * @deprecated
+     */
     hasClass(element, className) {
         return element && element.classList && element.classList.contains(className);
     }
+    /**
+     * replaceWith method
+     * @hidden
+     * @deprecated
+     */
     replaceWith(element, value) {
         let parentNode = element.parentNode;
         parentNode.insertBefore(this.parseHTMLFragment(value), element);
         detach(element);
     }
+    /**
+     * parseHTMLFragment method
+     * @hidden
+     * @deprecated
+     */
     parseHTMLFragment(value) {
         /* tslint:disable */
         let temp = createElement('template');
@@ -7076,15 +7676,30 @@ class DOMNode {
         }
         /* tslint:enable */
     }
+    /**
+     * wrap method
+     * @hidden
+     * @deprecated
+     */
     wrap(element, wrapper) {
         element.parentNode.insertBefore(wrapper, element);
         wrapper = element.previousSibling;
         wrapper.appendChild(element);
         return wrapper;
     }
+    /**
+     * insertAfter method
+     * @hidden
+     * @deprecated
+     */
     insertAfter(newNode, referenceNode) {
         referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
     }
+    /**
+     * wrapInner method
+     * @hidden
+     * @deprecated
+     */
     wrapInner(parent, wrapper) {
         parent.appendChild(wrapper);
         wrapper = parent.querySelector('.e-rte-wrap-inner');
@@ -7097,6 +7712,11 @@ class DOMNode {
         }
         return wrapper;
     }
+    /**
+     * unWrap method
+     * @hidden
+     * @deprecated
+     */
     unWrap(element) {
         let parent = element.parentNode;
         let unWrapNode = [];
@@ -7108,6 +7728,11 @@ class DOMNode {
         parent.removeChild(element);
         return unWrapNode;
     }
+    /**
+     * getSelectedNode method
+     * @hidden
+     * @deprecated
+     */
     getSelectedNode(element, index) {
         if (element.nodeType === Node.ELEMENT_NODE && element.childNodes.length > 0 &&
             element.childNodes[index - 1] && element.childNodes[index - 1].nodeType === Node.ELEMENT_NODE &&
@@ -7123,6 +7748,11 @@ class DOMNode {
         }
         return element;
     }
+    /**
+     * nodeFinds method
+     * @hidden
+     * @deprecated
+     */
     nodeFinds(element, elements) {
         let existNodes = [];
         for (let i = 0; i < elements.length; i++) {
@@ -7132,6 +7762,11 @@ class DOMNode {
         }
         return existNodes;
     }
+    /**
+     * isEditorArea method
+     * @hidden
+     * @deprecated
+     */
     isEditorArea() {
         let range = this.getRangePoint(0);
         let element;
@@ -7140,6 +7775,11 @@ class DOMNode {
         }
         return !!this.isElement(element);
     }
+    /**
+     * getRangePoint method
+     * @hidden
+     * @deprecated
+     */
     getRangePoint(point) {
         let selection = this.getSelection();
         let ranges = [];
@@ -7157,6 +7797,11 @@ class DOMNode {
     getSelection() {
         return this.nodeSelection.get(this.currentDocument);
     }
+    /**
+     * getPreviousNode method
+     * @hidden
+     * @deprecated
+     */
     getPreviousNode(element) {
         element = element.previousElementSibling;
         for (; element && element.textContent === '\n'; null) {
@@ -7164,11 +7809,21 @@ class DOMNode {
         }
         return element;
     }
+    /**
+     * encode method
+     * @hidden
+     * @deprecated
+     */
     encode(value) {
         let divNode = document.createElement('div');
         divNode.innerText = value;
         return divNode.innerHTML.replace(/<br\s*[\/]?>/gi, '\n');
     }
+    /**
+     * saveMarker method
+     * @hidden
+     * @deprecated
+     */
     saveMarker(save, action) {
         let start = this.parent.querySelector('.' + markerClassName.startSelection);
         let end = this.parent.querySelector('.' + markerClassName.endSelection);
@@ -7209,6 +7864,11 @@ class DOMNode {
     marker(className, textContent) {
         return '<span class="' + className + '">' + textContent + '</span>';
     }
+    /**
+     * setMarker method
+     * @hidden
+     * @deprecated
+     */
     setMarker(save) {
         let range = save.range;
         let start = (range.startContainer.childNodes[range.startOffset]
@@ -7269,6 +7929,11 @@ class DOMNode {
             this.ensureSelfClosingTag(start, markerClassName.startSelection, range);
         }
     }
+    /**
+     * ensureSelfClosingTag method
+     * @hidden
+     * @deprecated
+     */
     ensureSelfClosingTag(start, className, range) {
         let isTable = false;
         if (start.nodeType === 3) {
@@ -7289,7 +7954,8 @@ class DOMNode {
             if (start.tagName === 'TABLE') {
                 isTable = true;
                 if (start.textContent === '') {
-                    start = start.querySelectorAll('td')[start.querySelectorAll('td').length - 1];
+                    let tdNode = start.querySelectorAll('td');
+                    start = tdNode[tdNode.length - 1];
                     start = !isNullOrUndefined(start.childNodes[0]) ? start.childNodes[0] : start;
                 }
                 else {
@@ -7317,6 +7983,11 @@ class DOMNode {
             }
         }
     }
+    /**
+     * createTempNode method
+     * @hidden
+     * @deprecated
+     */
     createTempNode(element) {
         let textContent = element.textContent;
         if (element.tagName === 'BR') {
@@ -7343,6 +8014,11 @@ class DOMNode {
         }
         return element;
     }
+    /**
+     * getImageTagInSelection method
+     * @hidden
+     * @deprecated
+     */
     getImageTagInSelection() {
         let selection = this.getSelection();
         if (this.isEditorArea() && selection.rangeCount) {
@@ -7350,6 +8026,11 @@ class DOMNode {
         }
         return null;
     }
+    /**
+     * blockNodes method
+     * @hidden
+     * @deprecated
+     */
     blockNodes() {
         let collectionNodes = [];
         let selection = this.getSelection();
@@ -7389,17 +8070,18 @@ class DOMNode {
                         nodes.push(node);
                         node = node.childNodes[0];
                     }
-                    else if (node && (node.tagName === 'BR' || (node.nodeType === Node.TEXT_NODE &&
+                    else if (node && node.nodeType !== 8 && (node.tagName === 'BR' || (node.nodeType === Node.TEXT_NODE &&
                         node.textContent.trim() !== '') || (node.nodeType !== Node.TEXT_NODE &&
                         (node.classList.contains(markerClassName.startSelection) ||
                             node.classList.contains(markerClassName.endSelection)))) &&
                         IGNORE_BLOCK_TAGS.indexOf(node.parentNode.tagName.toLocaleLowerCase()) >= 0) {
                         node = this.createTempNode(node);
                     }
-                    else if (node.nextSibling && (node.nextSibling.tagName === 'BR' ||
-                        node.nextSibling.nodeType === Node.TEXT_NODE ||
-                        node.nextSibling.classList.contains(markerClassName.startSelection) ||
-                        node.nextSibling.classList.contains(markerClassName.endSelection)) &&
+                    else if (node.nextSibling && node.nextSibling.nodeType !== 8 &&
+                        (node.nextSibling.tagName === 'BR' ||
+                            node.nextSibling.nodeType === Node.TEXT_NODE ||
+                            node.nextSibling.classList.contains(markerClassName.startSelection) ||
+                            node.nextSibling.classList.contains(markerClassName.endSelection)) &&
                         IGNORE_BLOCK_TAGS.indexOf(node.nextSibling.parentNode.tagName.toLocaleLowerCase()) >= 0) {
                         node = this.createTempNode(node.nextSibling);
                     }
@@ -7472,11 +8154,13 @@ function setEditFrameFocus(editableElement, selector) {
 /**
  * Lists internal component
  * @hidden
+ * @deprecated
  */
 class Lists {
     /**
      * Constructor for creating the Lists plugin
      * @hidden
+     * @deprecated
      */
     constructor(parent) {
         this.parent = parent;
@@ -7545,7 +8229,9 @@ class Lists {
         }
         if (e.event.which === 9) {
             let range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
-            this.saveSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
+            if (!(e.event.action && e.event.action === 'indent')) {
+                this.saveSelection = this.parent.nodeSelection.save(range, this.parent.currentDocument);
+            }
             let blockNodes;
             let startOffset = range.startOffset;
             let endOffset = range.endOffset;
@@ -7904,6 +8590,9 @@ class Lists {
         let viewNode = [];
         for (let i = 0; i < elements.length; i++) {
             let element = elements[i];
+            if (this.domNode.contents(element)[0].nodeType === 3 && this.domNode.contents(element)[0].textContent.trim().length === 0) {
+                detach(this.domNode.contents(element)[0]);
+            }
             let parentNode = elements[i].parentNode;
             let className = element.getAttribute('class');
             if (temp.length === 0) {
@@ -7987,100 +8676,15 @@ class Lists {
 }
 
 /**
- * Formats internal component
- * @hidden
- */
-class Formats {
-    /**
-     * Constructor for creating the Formats plugin
-     * @hidden
-     */
-    constructor(parent) {
-        this.parent = parent;
-        this.addEventListener();
-    }
-    addEventListener() {
-        this.parent.observer.on(FORMAT_TYPE, this.applyFormats, this);
-    }
-    getParentNode(node) {
-        for (; node.parentNode && node.parentNode !== this.parent.editableElement; null) {
-            node = node.parentNode;
-        }
-        return node;
-    }
-    applyFormats(e) {
-        let range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
-        let isSelectAll = false;
-        if (this.parent.editableElement === range.endContainer &&
-            !isNullOrUndefined(this.parent.editableElement.children[range.endOffset - 1]) &&
-            this.parent.editableElement.children[range.endOffset - 1].tagName === 'TABLE') {
-            isSelectAll = true;
-        }
-        let save = this.parent.nodeSelection.save(range, this.parent.currentDocument);
-        this.parent.domNode.setMarker(save);
-        let formatsNodes = this.parent.domNode.blockNodes();
-        for (let i = 0; i < formatsNodes.length; i++) {
-            let parentNode;
-            let replaceHTML;
-            if (e.subCommand.toLowerCase() === 'blockquote') {
-                parentNode = this.getParentNode(formatsNodes[i]);
-                replaceHTML = this.parent.domNode.isList(parentNode) ||
-                    parentNode.tagName === 'TABLE' ? parentNode.outerHTML : parentNode.innerHTML;
-            }
-            else {
-                parentNode = formatsNodes[i];
-                replaceHTML = parentNode.innerHTML;
-            }
-            if (e.subCommand.toLowerCase() === parentNode.tagName.toLowerCase() ||
-                isNullOrUndefined(parentNode.parentNode) || parentNode.tagName === 'LI') {
-                continue;
-            }
-            this.cleanFormats(parentNode, e.subCommand);
-            let replaceTag = this.parent.domNode.createTagString(e.subCommand, parentNode, replaceHTML.replace(/>\s+</g, '><'));
-            this.parent.domNode.replaceWith(parentNode, replaceTag);
-        }
-        this.parent.editableElement.focus();
-        let startNode;
-        let endNode;
-        if (!isNullOrUndefined(this.parent.editableElement.querySelector('.' + markerClassName.startSelection)) &&
-            !isNullOrUndefined(this.parent.editableElement.querySelector('.' + markerClassName.endSelection))) {
-            startNode = this.parent.editableElement.querySelector('.' + markerClassName.startSelection).lastChild;
-            endNode = this.parent.editableElement.querySelector('.' + markerClassName.endSelection).lastChild;
-        }
-        save = this.parent.domNode.saveMarker(save);
-        if (isIDevice$1()) {
-            setEditFrameFocus(this.parent.editableElement, e.selector);
-        }
-        if (isSelectAll) {
-            this.parent.nodeSelection.setSelectionText(this.parent.currentDocument, startNode, endNode, 0, endNode.textContent.length);
-        }
-        else {
-            save.restore();
-        }
-        if (e.callBack) {
-            e.callBack({
-                requestType: e.subCommand,
-                editorMode: 'HTML',
-                event: e.event,
-                range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
-                elements: this.parent.domNode.blockNodes()
-            });
-        }
-    }
-    cleanFormats(element, tagName) {
-        let ignoreAttr = ['display', 'font-size', 'margin-top', 'margin-bottom', 'margin-left', 'margin-right', 'font-weight'];
-        tagName = tagName.toLowerCase();
-        for (let i = 0; i < ignoreAttr.length && (tagName !== 'p' && tagName !== 'blockquote' && tagName !== 'pre'); i++) {
-            element.style.removeProperty(ignoreAttr[i]);
-        }
-    }
-}
-
-/**
  * Node appending methods.
  * @hidden
  */
 class InsertMethods {
+    /**
+     * WrapBefore method
+     * @hidden
+     * @deprecated
+     */
     static WrapBefore(textNode, parentNode, isAfter) {
         parentNode.innerText = textNode.textContent;
         (!isAfter) ? this.AppendBefore(parentNode, textNode) : this.AppendBefore(parentNode, textNode, true);
@@ -8089,11 +8693,21 @@ class InsertMethods {
         }
         return parentNode.childNodes[0];
     }
+    /**
+     * Wrap method
+     * @hidden
+     * @deprecated
+     */
     static Wrap(childNode, parentNode) {
         this.AppendBefore(parentNode, childNode);
         parentNode.appendChild(childNode);
         return childNode;
     }
+    /**
+     * unwrap method
+     * @hidden
+     * @deprecated
+     */
     static unwrap(node) {
         let parent = node.parentNode;
         let child = [];
@@ -8103,6 +8717,11 @@ class InsertMethods {
         parent.removeChild(node);
         return child;
     }
+    /**
+     * AppendBefore method
+     * @hidden
+     * @deprecated
+     */
     static AppendBefore(textNode, parentNode, isAfter) {
         return (parentNode.parentNode) ? ((!isAfter) ? parentNode.parentNode.insertBefore(textNode, parentNode)
             : parentNode.parentNode.insertBefore(textNode, parentNode.nextSibling)) :
@@ -8113,6 +8732,7 @@ class InsertMethods {
 /**
  * Split the Node based on selection
  * @hidden
+ * @deprecated
  */
 class NodeCutter {
     constructor() {
@@ -8120,6 +8740,11 @@ class NodeCutter {
         this.nodeSelection = new NodeSelection();
     }
     // Split Selection Node
+    /**
+     * GetSpliceNode method
+     * @hidden
+     * @deprecated
+     */
     GetSpliceNode(range, node) {
         node = this.SplitNode(range, node, true);
         node = this.SplitNode(range, node, false);
@@ -8127,6 +8752,7 @@ class NodeCutter {
     }
     /**
      * @hidden
+     * @deprecated
      */
     SplitNode(range, node, isCollapsed) {
         if (node) {
@@ -8212,6 +8838,11 @@ class NodeCutter {
         }
         return position;
     }
+    /**
+     * GetCursorRange method
+     * @hidden
+     * @deprecated
+     */
     GetCursorRange(docElement, range, node) {
         let cursorRange = docElement.createRange();
         let indexes = [];
@@ -8246,19 +8877,294 @@ class NodeCutter {
         }
         return cursorRange;
     }
+    /**
+     * GetCursorNode method
+     * @hidden
+     * @deprecated
+     */
     GetCursorNode(docElement, range, node) {
         return this.GetSpliceNode(this.GetCursorRange(docElement, range, node), node);
     }
+    /**
+     * TrimLineBreak method
+     * @hidden
+     * @deprecated
+     */
     TrimLineBreak(line) {
         return line.replace(/(\r\n\t|\n|\r\t)/gm, ' ');
     }
 }
 
 /**
+ * Formats internal component
+ * @hidden
+ * @deprecated
+ */
+class Formats {
+    /**
+     * Constructor for creating the Formats plugin
+     * @hidden
+     * @deprecated
+     */
+    constructor(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    addEventListener() {
+        this.parent.observer.on(FORMAT_TYPE, this.applyFormats, this);
+        this.parent.observer.on(KEY_DOWN_HANDLER, this.onKeyDown, this);
+    }
+    getParentNode(node) {
+        for (; node.parentNode && node.parentNode !== this.parent.editableElement; null) {
+            node = node.parentNode;
+        }
+        return node;
+    }
+    onKeyDown(e) {
+        let range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        let startCon = (range.startContainer.textContent.length === 0 || range.startContainer.nodeName === 'PRE')
+            ? range.startContainer : range.startContainer.parentElement;
+        let endCon = (range.endContainer.textContent.length === 0 || range.endContainer.nodeName === 'PRE')
+            ? range.endContainer : range.endContainer.parentElement;
+        let preElem = closest(startCon, 'pre');
+        let endPreElem = closest(endCon, 'pre');
+        let liParent = !isNullOrUndefined(preElem) && !isNullOrUndefined(preElem.parentElement) && preElem.parentElement.tagName === 'LI';
+        if (liParent) {
+            return;
+        }
+        if (((isNullOrUndefined(preElem) && !isNullOrUndefined(endPreElem)) || (!isNullOrUndefined(preElem) && isNullOrUndefined(endPreElem)))) {
+            e.event.preventDefault();
+            this.deleteContent(range);
+            this.removeCodeContent(range);
+            range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+            this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, endCon, 0);
+        }
+        if (e.event.which === 13 && !isNullOrUndefined(preElem) && !isNullOrUndefined(endPreElem)) {
+            e.event.preventDefault();
+            this.deleteContent(range);
+            this.removeCodeContent(range);
+            range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+            let lastEmpty = range.startContainer.childNodes[range.endOffset];
+            let lastBeforeBr = range.startContainer.childNodes[range.endOffset - 1];
+            let startParent = range.startContainer;
+            if (!isNullOrUndefined(lastEmpty) && !isNullOrUndefined(lastBeforeBr) && isNullOrUndefined(lastEmpty.nextSibling) &&
+                lastEmpty.nodeName === 'BR' && lastBeforeBr.nodeName === 'BR') {
+                this.paraFocus(range.startContainer);
+            }
+            else if ((startParent.textContent.charCodeAt(0) === 8203 &&
+                startParent.textContent.length === 1) || startParent.textContent.length === 0) {
+                //Double enter with any parent tag for the node
+                while (startParent.parentElement.nodeName !== 'PRE' &&
+                    (startParent.textContent.length === 1 || startParent.textContent.length === 0)) {
+                    startParent = startParent.parentElement;
+                }
+                if (!isNullOrUndefined(startParent.previousSibling) && startParent.previousSibling.nodeName === 'BR' &&
+                    isNullOrUndefined(startParent.nextSibling)) {
+                    this.paraFocus(startParent.parentElement);
+                }
+                else {
+                    this.isNotEndCursor(preElem, range);
+                }
+            }
+            else {
+                //Cursor at start and middle
+                this.isNotEndCursor(preElem, range);
+            }
+        }
+    }
+    removeCodeContent(range) {
+        let regEx = new RegExp(String.fromCharCode(65279), 'g');
+        if (!isNullOrUndefined(range.endContainer.textContent.match(regEx))) {
+            let pointer = range.endContainer.textContent.charCodeAt(range.endOffset - 1) === 65279 ?
+                range.endOffset - 2 : range.endOffset;
+            range.endContainer.textContent = range.endContainer.textContent.replace(regEx, '');
+            if (range.endContainer.textContent === '') {
+                this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, range.endContainer.parentElement, 0);
+            }
+            else {
+                this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, range.endContainer, pointer);
+            }
+        }
+    }
+    deleteContent(range) {
+        if (range.startContainer !== range.endContainer || range.startOffset !== range.endOffset) {
+            range.deleteContents();
+        }
+    }
+    paraFocus(referNode) {
+        let pTag = createElement('p');
+        pTag.innerHTML = '<br>';
+        this.parent.domNode.insertAfter(pTag, referNode);
+        this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, pTag, 0);
+    }
+    isNotEndCursor(preElem, range) {
+        let nodeCutter = new NodeCutter();
+        let isEnd = range.startOffset === preElem.lastChild.textContent.length &&
+            preElem.lastChild.textContent === range.startContainer.textContent;
+        //Cursor at start point
+        if (preElem.textContent.indexOf(range.startContainer.textContent) === 0 &&
+            ((range.startOffset === 0 && range.endOffset === 0) || range.startContainer.nodeName === 'PRE')) {
+            this.insertMarker(preElem, range);
+            let brTag = createElement('br');
+            preElem.childNodes[range.endOffset].parentElement.insertBefore(brTag, preElem.childNodes[range.endOffset]);
+        }
+        else {
+            //Cursor at middle
+            let cloneNode = nodeCutter.SplitNode(range, preElem, true);
+            this.insertMarker(preElem, range);
+            let previousSib = preElem.previousElementSibling;
+            if (previousSib.tagName === 'PRE') {
+                previousSib.insertAdjacentHTML('beforeend', '<br>' + cloneNode.innerHTML);
+                detach(preElem);
+            }
+        }
+        //To place the cursor position          
+        this.setCursorPosition(isEnd, preElem);
+    }
+    setCursorPosition(isEnd, preElem) {
+        let isEmpty = false;
+        let markerElem = this.parent.editableElement.querySelector('.tempSpan');
+        let mrkParentElem = markerElem.parentElement;
+        markerElem.parentNode.textContent === '' ? isEmpty = true :
+            this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, markerElem, 0);
+        if (isEnd) {
+            if (isEmpty) {
+                //Enter press when pre element is empty
+                if (mrkParentElem === preElem) {
+                    this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, markerElem, 0);
+                    detach(markerElem);
+                }
+                else {
+                    this.focusSelectionParent(markerElem, mrkParentElem);
+                }
+            }
+            else {
+                let brElm = createElement('br');
+                this.parent.domNode.insertAfter(brElm, markerElem);
+                this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, markerElem, 0);
+                detach(markerElem);
+            }
+        }
+        else {
+            isEmpty ? this.focusSelectionParent(markerElem, mrkParentElem) : detach(markerElem);
+        }
+    }
+    focusSelectionParent(markerElem, tempSpanPElem) {
+        detach(markerElem);
+        tempSpanPElem.innerHTML = '\u200B';
+        this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, tempSpanPElem, 0);
+    }
+    insertMarker(preElem, range) {
+        let tempSpan = createElement('span', { className: 'tempSpan' });
+        if (range.startContainer.nodeName === 'PRE') {
+            preElem.childNodes[range.endOffset].parentElement.insertBefore(tempSpan, preElem.childNodes[range.endOffset]);
+        }
+        else {
+            range.startContainer.parentElement.insertBefore(tempSpan, range.startContainer);
+        }
+    }
+    applyFormats(e) {
+        let range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        let isSelectAll = false;
+        if (this.parent.editableElement === range.endContainer &&
+            !isNullOrUndefined(this.parent.editableElement.children[range.endOffset - 1]) &&
+            this.parent.editableElement.children[range.endOffset - 1].tagName === 'TABLE') {
+            isSelectAll = true;
+        }
+        let save = this.parent.nodeSelection.save(range, this.parent.currentDocument);
+        this.parent.domNode.setMarker(save);
+        let formatsNodes = this.parent.domNode.blockNodes();
+        for (let i = 0; i < formatsNodes.length; i++) {
+            let parentNode;
+            let replaceHTML;
+            if (e.subCommand.toLowerCase() === 'blockquote') {
+                parentNode = this.getParentNode(formatsNodes[i]);
+                replaceHTML = this.parent.domNode.isList(parentNode) ||
+                    parentNode.tagName === 'TABLE' ? parentNode.outerHTML : parentNode.innerHTML;
+            }
+            else {
+                parentNode = formatsNodes[i];
+                replaceHTML = parentNode.innerHTML;
+            }
+            if ((e.subCommand.toLowerCase() === parentNode.tagName.toLowerCase() &&
+                (e.subCommand.toLowerCase() !== 'pre' ||
+                    (!isNullOrUndefined(e.exeValue) && e.exeValue.name === 'dropDownSelect'))) ||
+                isNullOrUndefined(parentNode.parentNode) ||
+                (parentNode.tagName === 'LI' && e.subCommand.toLowerCase() !== 'pre') ||
+                (parentNode.tagName === 'TABLE' && e.subCommand.toLowerCase() === 'pre')) {
+                continue;
+            }
+            this.cleanFormats(parentNode, e.subCommand);
+            let replaceNode = (e.subCommand.toLowerCase() === 'pre' && parentNode.tagName.toLowerCase() === 'pre') ?
+                'p' : e.subCommand;
+            let replaceTag = this.parent.domNode.createTagString(replaceNode, parentNode, replaceHTML.replace(/>\s+</g, '><'));
+            if (parentNode.tagName === 'LI') {
+                parentNode.innerHTML = '';
+                parentNode.insertAdjacentHTML('beforeend', replaceTag);
+            }
+            else {
+                this.parent.domNode.replaceWith(parentNode, replaceTag);
+            }
+        }
+        this.preFormatMerge();
+        let startNode = this.parent.editableElement.querySelector('.' + markerClassName.startSelection);
+        let endNode = this.parent.editableElement.querySelector('.' + markerClassName.endSelection);
+        if (!isNullOrUndefined(startNode) && !isNullOrUndefined(endNode)) {
+            startNode = startNode.lastChild;
+            endNode = endNode.lastChild;
+        }
+        save = this.parent.domNode.saveMarker(save, null);
+        if (isIDevice$1()) {
+            setEditFrameFocus(this.parent.editableElement, e.selector);
+        }
+        if (isSelectAll) {
+            this.parent.nodeSelection.setSelectionText(this.parent.currentDocument, startNode, endNode, 0, endNode.textContent.length);
+        }
+        else {
+            save.restore();
+        }
+        if (e.callBack) {
+            e.callBack({
+                requestType: e.subCommand,
+                editorMode: 'HTML',
+                event: e.event,
+                range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
+                elements: this.parent.domNode.blockNodes()
+            });
+        }
+    }
+    preFormatMerge() {
+        let preNodes = this.parent.editableElement.querySelectorAll('PRE');
+        if (!isNullOrUndefined(preNodes)) {
+            for (let i = 0; i < preNodes.length; i++) {
+                let previousSib = preNodes[i].previousElementSibling;
+                if (!isNullOrUndefined(previousSib) && previousSib.tagName === 'PRE') {
+                    previousSib.insertAdjacentHTML('beforeend', '<br>' + preNodes[i].innerHTML);
+                    detach(preNodes[i]);
+                }
+            }
+        }
+    }
+    cleanFormats(element, tagName) {
+        let ignoreAttr = ['display', 'font-size', 'margin-top', 'margin-bottom', 'margin-left', 'margin-right', 'font-weight'];
+        tagName = tagName.toLowerCase();
+        for (let i = 0; i < ignoreAttr.length && (tagName !== 'p' && tagName !== 'blockquote' && tagName !== 'pre'); i++) {
+            element.style.removeProperty(ignoreAttr[i]);
+        }
+    }
+}
+
+/**
  * Insert a HTML Node or Text
  * @hidden
+ * @deprecated
  */
 class InsertHtml {
+    /**
+     * Insert method
+     * @hidden
+     * @deprecated
+     */
     static Insert(docElement, insertNode, editNode) {
         let node;
         if (typeof insertNode === 'string') {
@@ -8272,6 +9178,8 @@ class InsertHtml {
         let nodeSelection = new NodeSelection();
         let nodeCutter = new NodeCutter();
         let range = nodeSelection.getRange(docElement);
+        let isCursor = range.startOffset === range.endOffset && range.startOffset === 0 &&
+            range.startContainer === range.endContainer;
         let isCollapsed = range.collapsed;
         let nodes = nodeSelection.getInsertNodeCollection(range);
         let closestParentNode = (node.nodeName.toLowerCase() === 'table') ? this.closestEle(nodes[0].parentNode, editNode) : nodes[0];
@@ -8319,8 +9227,10 @@ class InsertHtml {
                 if (previousNode !== null) {
                     parentNode = previousNode;
                 }
-                if (parentNode.firstChild && parentNode.contentEditable !== 'true') {
-                    if (parentNode.textContent.trim() === '') {
+                if (parentNode.firstChild && (parentNode !== editNode ||
+                    (node.nodeName === 'TABLE' && isCursor && parentNode === range.startContainer &&
+                        parentNode === range.endContainer))) {
+                    if (parentNode.textContent.trim() === '' && parentNode !== editNode) {
                         InsertMethods.AppendBefore(node, parentNode, false);
                         detach(parentNode);
                     }
@@ -8413,11 +9323,13 @@ class InsertHtml {
 /**
  * Link internal component
  * @hidden
+ * @deprecated
  */
 class LinkCommand {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     constructor(parent) {
         this.parent = parent;
@@ -8449,6 +9361,7 @@ class LinkCommand {
             let anchorEle = closestAnchor;
             anchorEle.setAttribute('href', e.item.url);
             anchorEle.setAttribute('title', e.item.title);
+            let linkText = anchorEle.innerText;
             anchorEle.innerText = e.item.text;
             if (!isNullOrUndefined(e.item.target)) {
                 anchorEle.setAttribute('target', e.item.target);
@@ -8456,30 +9369,38 @@ class LinkCommand {
             else {
                 anchorEle.removeAttribute('target');
             }
-            e.item.selection.setSelectionText(this.parent.currentDocument, anchorEle, anchorEle, 1, 1);
-            e.item.selection.restore();
-        }
-        else {
-            let anchor = createElement('a', {
-                className: 'e-rte-anchor', attrs: {
-                    href: e.item.url,
-                    title: isNullOrUndefined(e.item.title) || e.item.title === '' ? e.item.url : e.item.title
-                }
-            });
-            if (!isNullOrUndefined(e.item.target)) {
-                anchor.setAttribute('target', e.item.target);
-            }
-            anchor.innerText = e.item.text === '' ? e.item.url : e.item.text;
-            e.item.selection.restore();
-            InsertHtml.Insert(this.parent.currentDocument, anchor, this.parent.editableElement);
-            if (e.event && e.event.type === 'keydown' && (e.event.keyCode === 32
-                || e.event.keyCode === 13)) {
-                let startContainer = e.item.selection.range.startContainer;
-                startContainer.textContent = this.removeText(startContainer.textContent, e.item.text);
+            if (linkText === e.item.text) {
+                e.item.selection.setSelectionText(this.parent.currentDocument, anchorEle, anchorEle, 1, 1);
+                e.item.selection.restore();
             }
             else {
-                let startIndex = e.item.action === 'Paste' ? anchor.childNodes[0].textContent.length : 0;
-                e.item.selection.setSelectionText(this.parent.currentDocument, anchor.childNodes[0], anchor.childNodes[0], startIndex, anchor.childNodes[0].textContent.length);
+                let startIndex = e.item.action === 'Paste' ? anchorEle.childNodes[0].textContent.length : 0;
+                e.item.selection.setSelectionText(this.parent.currentDocument, anchorEle.childNodes[0], anchorEle.childNodes[0], startIndex, anchorEle.childNodes[0].textContent.length);
+            }
+        }
+        else {
+            let domSelection = new NodeSelection();
+            let range = domSelection.getRange(this.parent.currentDocument);
+            let text = isNullOrUndefined(e.item.text) ? true : e.item.text.replace(/ /g, '').localeCompare(range.toString()
+                .replace(/\n/g, ' ').replace(/ /g, '')) < 0;
+            if (e.event && e.event.type === 'keydown' && (e.event.keyCode === 32
+                || e.event.keyCode === 13) || e.item.action === 'Paste' || range.collapsed || text) {
+                let anchor = this.createAchorNode(e);
+                anchor.innerText = e.item.text === '' ? e.item.url : e.item.text;
+                e.item.selection.restore();
+                InsertHtml.Insert(this.parent.currentDocument, anchor, this.parent.editableElement);
+                if (e.event && e.event.type === 'keydown' && (e.event.keyCode === 32
+                    || e.event.keyCode === 13)) {
+                    let startContainer = e.item.selection.range.startContainer;
+                    startContainer.textContent = this.removeText(startContainer.textContent, e.item.text);
+                }
+                else {
+                    let startIndex = e.item.action === 'Paste' ? anchor.childNodes[0].textContent.length : 0;
+                    e.item.selection.setSelectionText(this.parent.currentDocument, anchor.childNodes[0], anchor.childNodes[0], startIndex, anchor.childNodes[0].textContent.length);
+                }
+            }
+            else {
+                this.createLinkNode(e);
             }
         }
         if (e.callBack) {
@@ -8491,6 +9412,133 @@ class LinkCommand {
                 elements: this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument)
             });
         }
+    }
+    ;
+    createLinkNode(e) {
+        let domSelection = new NodeSelection();
+        let nodeCutter = new NodeCutter();
+        let range = domSelection.getRange(this.parent.currentDocument);
+        let nodes = this.getSelectionNodes(domSelection.getNodeCollection(range));
+        let save = domSelection.save(range, this.parent.currentDocument);
+        let txtArray = [];
+        let inlineNodes = [];
+        let currentNode;
+        let removeNodes = [];
+        let anchorNodes = [];
+        let finalinlineNodes = [];
+        let cloneNode;
+        for (let index = 0; index < nodes.length; index++) {
+            nodes[index] = nodeCutter.GetSpliceNode(range, nodes[index]);
+            txtArray[index] = nodes[index];
+        }
+        for (let i = 0; i < txtArray.length; i++) {
+            let check = true;
+            currentNode = txtArray[i];
+            while (check === true) {
+                if (currentNode.parentElement.nodeName === 'A') {
+                    let anchorEle = currentNode.parentElement;
+                    currentNode.parentElement.parentElement.insertBefore(anchorEle.firstChild, anchorEle);
+                    currentNode.parentElement.removeChild(anchorEle);
+                }
+                if (this.isBlockNode(currentNode.parentElement) || txtArray.length === 0 || i === 0 || i === txtArray.length - 1) {
+                    inlineNodes[i] = currentNode;
+                    check = false;
+                }
+                else {
+                    currentNode = currentNode.parentElement;
+                }
+            }
+        }
+        for (let i = 0, j = 0; i < inlineNodes.length; i++) {
+            if (i === 0) {
+                finalinlineNodes[j] = inlineNodes[i];
+            }
+            if (inlineNodes.length > 1 && i < inlineNodes.length - 1) {
+                if ((inlineNodes[i].parentElement === inlineNodes[i + 1].parentElement) && (inlineNodes[i] === inlineNodes[i + 1])) {
+                    continue;
+                }
+                else {
+                    finalinlineNodes[j + 1] = inlineNodes[i + 1];
+                    j++;
+                }
+            }
+        }
+        let j = 0;
+        anchorNodes[j] = this.createAchorNode(e);
+        for (let i = 0; i < finalinlineNodes.length; i++) {
+            if (i === 0) {
+                cloneNode = finalinlineNodes[i].cloneNode(true);
+                anchorNodes[i].appendChild(cloneNode);
+            }
+            if (i < finalinlineNodes.length - 1) {
+                if (finalinlineNodes[i].parentNode === finalinlineNodes[i + 1].parentNode) {
+                    let cln = finalinlineNodes[i + 1].cloneNode(true);
+                    anchorNodes[j].appendChild(cln);
+                }
+                else {
+                    j = j + 1;
+                    anchorNodes[j] = this.createAchorNode(e);
+                    cloneNode = finalinlineNodes[i + 1].cloneNode(true);
+                    anchorNodes[j].appendChild(cloneNode);
+                }
+            }
+        }
+        this.parent.nodeSelection.setRange(document, save.range);
+        for (let i = 0, j = 0, k = 0; i <= finalinlineNodes.length; i++) {
+            if (i === 0) {
+                finalinlineNodes[i].parentNode.insertBefore(anchorNodes[j], finalinlineNodes[i].nextSibling);
+                if (this.parent.domNode.blockNodes().length === 1) {
+                    this.parent.nodeSelection.setSelectionNode(this.parent.currentDocument, anchorNodes[j]);
+                }
+                removeNodes[k] = finalinlineNodes[i];
+                k++;
+            }
+            if (i < finalinlineNodes.length - 1) {
+                if (finalinlineNodes[i].parentNode === finalinlineNodes[i + 1].parentNode) {
+                    removeNodes[k] = finalinlineNodes[i + 1];
+                    k++;
+                }
+                else {
+                    j = j + 1;
+                    finalinlineNodes[i + 1].parentNode.insertBefore(anchorNodes[j], finalinlineNodes[i + 1]);
+                    removeNodes[k] = finalinlineNodes[i + 1];
+                    k++;
+                }
+            }
+        }
+        for (let i = 0; i < removeNodes.length; i++) {
+            if (removeNodes[i].parentNode) {
+                removeNodes[i].parentNode.removeChild(removeNodes[i]);
+            }
+        }
+    }
+    createAchorNode(e) {
+        let anchorEle = createElement('a', {
+            className: 'e-rte-anchor',
+            attrs: {
+                href: e.item.url,
+                title: isNullOrUndefined(e.item.title) || e.item.title === '' ? e.item.url : e.item.title
+            }
+        });
+        if (!isNullOrUndefined(e.item.target)) {
+            anchorEle.setAttribute('target', e.item.target);
+        }
+        return anchorEle;
+    }
+    getSelectionNodes(nodeCollection) {
+        nodeCollection = nodeCollection.reverse();
+        for (let index = 0; index < nodeCollection.length; index++) {
+            if (nodeCollection[index].nodeType !== 3 || nodeCollection[index].textContent.trim() === '') {
+                if (nodeCollection[index].nodeName !== 'IMG') {
+                    nodeCollection.splice(index, 1);
+                    index--;
+                }
+            }
+        }
+        return nodeCollection.reverse();
+    }
+    isBlockNode(element) {
+        return (!!element && (element.nodeType === Node.ELEMENT_NODE && BLOCK_TAGS.indexOf(element.tagName.toLowerCase()) >= 0));
     }
     removeText(text, val) {
         let arr = text.split(' ');
@@ -8507,20 +9555,33 @@ class LinkCommand {
         this.callBack(e);
     }
     removeLink(e) {
-        this.parent.domNode.setMarker(e.item.selection);
-        let closestAnchor = closest(e.item.selectParent[0], 'a');
-        let selectParent = closestAnchor ? closestAnchor : e.item.selectParent[0];
-        let parent = selectParent.parentNode;
-        let child = [];
-        for (; selectParent.firstChild; null) {
-            child.push(parent.insertBefore(selectParent.firstChild, selectParent));
+        let blockNodes = this.parent.domNode.blockNodes();
+        if (blockNodes.length < 2) {
+            this.parent.domNode.setMarker(e.item.selection);
+            let closestAnchor = closest(e.item.selectParent[0], 'a');
+            let selectParent = closestAnchor ? closestAnchor : e.item.selectParent[0];
+            let parent = selectParent.parentNode;
+            let child = [];
+            for (; selectParent.firstChild; null) {
+                child.push(parent.insertBefore(selectParent.firstChild, selectParent));
+            }
+            parent.removeChild(selectParent);
+            if (child && child.length === 1) {
+                e.item.selection.startContainer = e.item.selection.getNodeArray(child[child.length - 1], true);
+                e.item.selection.endContainer = e.item.selection.startContainer;
+            }
+            e.item.selection = this.parent.domNode.saveMarker(e.item.selection);
         }
-        parent.removeChild(selectParent);
-        if (child && child.length === 1) {
-            e.item.selection.startContainer = e.item.selection.getNodeArray(child[child.length - 1], true);
-            e.item.selection.endContainer = e.item.selection.startContainer;
+        else {
+            for (let i = 0; i < blockNodes.length; i++) {
+                let linkNode = blockNodes[i].querySelectorAll('a');
+                for (let j = 0; j < linkNode.length; j++) {
+                    if (document.getSelection().containsNode(linkNode[j], true)) {
+                        linkNode[j].outerHTML = linkNode[j].innerHTML;
+                    }
+                }
+            }
         }
-        e.item.selection = this.parent.domNode.saveMarker(e.item.selection);
         e.item.selection.restore();
         this.callBack(e);
     }
@@ -8540,11 +9601,13 @@ class LinkCommand {
 /**
  * Formats internal component
  * @hidden
+ * @deprecated
  */
 class Alignments {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     constructor(parent) {
         this.alignments = {
@@ -8635,11 +9698,13 @@ class Alignments {
 /**
  * Indents internal component
  * @hidden
+ * @deprecated
  */
 class Indents {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     constructor(parent) {
         this.indentValue = 20;
@@ -8725,7 +9790,7 @@ class Indents {
 /**
  * RichTextEditor classes defined here.
  */
-/** @hidden */
+/** @hidden @deprecated */
 const CLASS_IMAGE_RIGHT = 'e-imgright';
 const CLASS_IMAGE_LEFT = 'e-imgleft';
 const CLASS_IMAGE_CENTER = 'e-imgcenter';
@@ -8737,11 +9802,13 @@ const CLASS_IMAGE_INLINE = 'e-imginline';
 /**
  * Link internal component
  * @hidden
+ * @deprecated
  */
 class ImageCommand {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     constructor(parent) {
         this.parent = parent;
@@ -8750,6 +9817,11 @@ class ImageCommand {
     addEventListener() {
         this.parent.observer.on(IMAGE, this.imageCommand, this);
     }
+    /**
+     * imageCommand method
+     * @hidden
+     * @deprecated
+     */
     imageCommand(e) {
         switch (e.value.toString().toLocaleLowerCase()) {
             case 'image':
@@ -8900,7 +9972,12 @@ class ImageCommand {
     }
     removeImage(e) {
         if (closest(e.item.selectNode[0], 'a')) {
-            detach(closest(e.item.selectNode[0], 'a'));
+            if (e.item.selectNode[0].parentElement.nodeName === 'A' && !isNullOrUndefined(e.item.selectNode[0].parentElement.innerText)) {
+                detach(e.item.selectNode[0]);
+            }
+            else {
+                detach(closest(e.item.selectNode[0], 'a'));
+            }
         }
         else if (!isNullOrUndefined(closest(e.item.selectNode[0], '.' + CLASS_CAPTION))) {
             detach(closest(e.item.selectNode[0], '.' + CLASS_CAPTION));
@@ -9024,11 +10101,13 @@ class ImageCommand {
 /**
  * Link internal component
  * @hidden
+ * @deprecated
  */
 class TableCommand {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     constructor(parent) {
         this.parent = parent;
@@ -9309,8 +10388,14 @@ class TableCommand {
 /**
  * Is formatted or not.
  * @hidden
+ * @deprecated
  */
 class IsFormatted {
+    /**
+     * getFormattedNode method
+     * @hidden
+     * @deprecated
+     */
     getFormattedNode(node, format, endNode) {
         let parentNode = this.getFormatParent(node, format, endNode);
         if (parentNode !== null && parentNode !== endNode) {
@@ -9350,6 +10435,11 @@ class IsFormatted {
                 return false;
         }
     }
+    /**
+     * isBold method
+     * @hidden
+     * @deprecated
+     */
     static isBold(node) {
         let validTags = ['strong', 'b'];
         if (validTags.indexOf(node.nodeName.toLowerCase()) !== -1) {
@@ -9363,6 +10453,11 @@ class IsFormatted {
             return false;
         }
     }
+    /**
+     * isItalic method
+     * @hidden
+     * @deprecated
+     */
     static isItalic(node) {
         let validTags = ['em', 'i'];
         if (validTags.indexOf(node.nodeName.toLowerCase()) !== -1) {
@@ -9376,6 +10471,11 @@ class IsFormatted {
             return false;
         }
     }
+    /**
+     * isUnderline method
+     * @hidden
+     * @deprecated
+     */
     static isUnderline(node) {
         let validTags = ['u'];
         if (validTags.indexOf(node.nodeName.toLowerCase()) !== -1) {
@@ -9389,6 +10489,11 @@ class IsFormatted {
             return false;
         }
     }
+    /**
+     * isStrikethrough method
+     * @hidden
+     * @deprecated
+     */
     static isStrikethrough(node) {
         let validTags = ['del', 'strike'];
         if (validTags.indexOf(node.nodeName.toLowerCase()) !== -1) {
@@ -9402,6 +10507,11 @@ class IsFormatted {
             return false;
         }
     }
+    /**
+     * isSuperscript method
+     * @hidden
+     * @deprecated
+     */
     static isSuperscript(node) {
         let validTags = ['sup'];
         if (validTags.indexOf(node.nodeName.toLowerCase()) !== -1) {
@@ -9411,6 +10521,11 @@ class IsFormatted {
             return false;
         }
     }
+    /**
+     * isSubscript method
+     * @hidden
+     * @deprecated
+     */
     static isSubscript(node) {
         let validTags = ['sub'];
         if (validTags.indexOf(node.nodeName.toLowerCase()) !== -1) {
@@ -9492,6 +10607,11 @@ IsFormatted.inlineTags = [
  * `Selection` module is used to handle RTE Selections.
  */
 class SelectionCommands {
+    /**
+     * applyFormat method
+     * @hidden
+     * @deprecated
+     */
     static applyFormat(docElement, format, endNode, value, selector) {
         let validFormats = ['bold', 'italic', 'underline', 'strikethrough', 'superscript',
             'subscript', 'uppercase', 'lowercase', 'fontcolor', 'fontname', 'fontsize', 'backgroundcolor'];
@@ -9753,11 +10873,13 @@ class SelectionCommands {
 /**
  * Selection EXEC internal component
  * @hidden
+ * @deprecated
  */
 class SelectionBasedExec {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     constructor(parent) {
         this.parent = parent;
@@ -9796,11 +10918,13 @@ class SelectionBasedExec {
 /**
  * Selection EXEC internal component
  * @hidden
+ * @deprecated
  */
 class InsertHtmlExec {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     constructor(parent) {
         this.parent = parent;
@@ -9836,6 +10960,11 @@ class InsertHtmlExec {
  * `Clear Format` module is used to handle Clear Format.
  */
 class ClearFormat$1 {
+    /**
+     * clear method
+     * @hidden
+     * @deprecated
+     */
     static clear(docElement, endNode, selector) {
         let nodeSelection = new NodeSelection();
         let nodeCutter = new NodeCutter();
@@ -10038,11 +11167,13 @@ ClearFormat$1.NONVALID_TAGS = ['thead', 'tbody', 'figcaption', 'td', 'tr',
 /**
  * Clear Format EXEC internal component
  * @hidden
+ * @deprecated
  */
 class ClearFormatExec {
     /**
      * Constructor for creating the Formats plugin
      * @hidden
+     * @deprecated
      */
     constructor(parent) {
         this.parent = parent;
@@ -10111,6 +11242,11 @@ class UndoRedoManager {
         this.parent.observer.off(KEY_DOWN_HANDLER, this.keyDown);
         this.parent.observer.off(ACTION, this.onAction);
     }
+    /**
+     * onAction method
+     * @hidden
+     * @deprecated
+     */
     onAction(e) {
         if (e.subCommand === 'Undo') {
             this.undo(e);
@@ -10123,6 +11259,8 @@ class UndoRedoManager {
      * Destroys the ToolBar.
      * @method destroy
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     destroy() {
         this.removeEventListener();
@@ -10150,6 +11288,8 @@ class UndoRedoManager {
      * RTE collection stored html format.
      * @method saveData
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     saveData(e) {
         let range = new NodeSelection().getRange(this.parent.currentDocument);
@@ -10180,6 +11320,8 @@ class UndoRedoManager {
      * Undo the editable text.
      * @method undo
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     undo(e) {
         if (this.steps > 0) {
@@ -10207,6 +11349,8 @@ class UndoRedoManager {
      * Redo the editable text.
      * @method redo
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     redo(e) {
         if (this.undoRedoStack[this.steps + 1] != null) {
@@ -10229,6 +11373,11 @@ class UndoRedoManager {
             }
         }
     }
+    /**
+     * getUndoStatus method
+     * @hidden
+     * @deprecated
+     */
     getUndoStatus() {
         let status = { undo: false, redo: false };
         if (this.steps > 0) {
@@ -10244,6 +11393,7 @@ class UndoRedoManager {
 /**
  * PasteCleanup for MsWord content
  * @hidden
+ * @deprecated
  */
 class MsWordPaste {
     constructor(parent) {
@@ -10298,7 +11448,10 @@ class MsWordPaste {
             this.imageConversion(elm, rtfData);
             tempHTMLContent = tempHTMLContent.replace(/<img[^>]+>/i, '');
             listNodes = this.cleanUp(elm, listNodes);
-            this.listConverter(listNodes);
+            if (!isNullOrUndefined(listNodes[0]) && listNodes[0].parentElement.tagName !== 'UL' &&
+                listNodes[0].parentElement.tagName !== 'OL') {
+                this.listConverter(listNodes);
+            }
             this.styleCorrection(elm, wordPasteStyleConfig);
             this.removingComments(elm);
             this.removeUnwantedElements(elm);
@@ -10749,11 +11902,13 @@ class MsWordPaste {
 /**
  * Insert a Text Node or Text
  * @hidden
+ * @deprecated
  */
 class InsertTextExec {
     /**
      * Constructor for creating the InsertText plugin
      * @hidden
+     * @deprecated
      */
     constructor(parent) {
         this.parent = parent;
@@ -10780,11 +11935,13 @@ class InsertTextExec {
 /**
  * EditorManager internal component
  * @hidden
+ * @deprecated
  */
 class EditorManager {
     /**
      * Constructor for creating the component
      * @hidden
+     * @deprecated
      */
     constructor(options) {
         this.currentDocument = options.document;
@@ -10826,13 +11983,20 @@ class EditorManager {
     editorKeyUp(e) {
         this.observer.notify(KEY_UP_HANDLER, e);
     }
+    /**
+     * execCommand
+     * @hidden
+     * @deprecated
+     */
     execCommand(command, value, event, callBack, text, exeValue, selector) {
         switch (command.toLocaleLowerCase()) {
             case 'lists':
                 this.observer.notify(LIST_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
                 break;
             case 'formats':
-                this.observer.notify(FORMAT_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
+                this.observer.notify(FORMAT_TYPE, { subCommand: value, event: event, callBack: callBack,
+                    selector: selector, exeValue: exeValue
+                });
                 break;
             case 'alignments':
                 this.observer.notify(ALIGNMENT_TYPE, {
@@ -10909,6 +12073,7 @@ class EditorManager {
 /**
  * HTML adapter
  * @hidden
+ * @deprecated
  */
 class HTMLFormatter extends Formatter {
     constructor(options) {
@@ -10926,6 +12091,8 @@ class HTMLFormatter extends Formatter {
      * Update the formatter of RichTextEditor
      * @param  {Element} editElement
      * @param  {Document} doc
+     * @hidden
+     * @deprecated
      */
     updateFormatter(editElement, doc, options) {
         if (editElement && doc) {
@@ -10941,6 +12108,7 @@ class HTMLFormatter extends Formatter {
 /**
  * Update Toolbar Status
  * @hidden
+ * @deprecated
  */
 const statusCollection = {
     bold: false,
@@ -10957,9 +12125,15 @@ const statusCollection = {
     fontname: null,
     fontsize: null,
     formats: null,
-    createlink: false
+    createlink: false,
+    insertcode: false
 };
 class ToolbarStatus {
+    /**
+     * get method
+     * @hidden
+     * @deprecated
+     */
     static get(docElement, targetNode, formatNode, fontSize, fontName, documentNode) {
         let formatCollection = JSON.parse(JSON.stringify(statusCollection));
         let nodeCollection = JSON.parse(JSON.stringify(statusCollection));
@@ -10967,7 +12141,8 @@ class ToolbarStatus {
         let nodes = documentNode ? [documentNode] : nodeSelection.getNodeCollection(nodeSelection.getRange(docElement));
         let nodesLength = nodes.length;
         for (let index = 0; index < nodes.length; index++) {
-            if (nodes[index].nodeType !== 3 || (nodesLength > 1 && nodes[index].nodeType === 3 && nodes[index].textContent.trim() === '')) {
+            if ((nodes[index].nodeName !== 'BR' && nodes[index].nodeType !== 3) ||
+                (nodesLength > 1 && nodes[index].nodeType === 3 && nodes[index].textContent.trim() === '')) {
                 nodes.splice(index, 1);
                 index--;
             }
@@ -10976,6 +12151,9 @@ class ToolbarStatus {
             formatCollection = this.getFormatParent(docElement, formatCollection, nodes[index], targetNode, formatNode, fontSize, fontName);
             if ((index === 0 && formatCollection.bold) || !formatCollection.bold) {
                 nodeCollection.bold = formatCollection.bold;
+            }
+            if ((index === 0 && formatCollection.insertcode) || !formatCollection.insertcode) {
+                nodeCollection.insertcode = formatCollection.insertcode;
             }
             if ((index === 0 && formatCollection.italic) || !formatCollection.italic) {
                 nodeCollection.italic = formatCollection.italic;
@@ -11075,6 +12253,9 @@ class ToolbarStatus {
         }
         if (!formatCollection.formats) {
             formatCollection.formats = this.isFormats(node, formatNode);
+            if (formatCollection.formats === 'pre') {
+                formatCollection.insertcode = true;
+            }
         }
         if (!formatCollection.createlink) {
             formatCollection.createlink = this.isLink(node);
@@ -11206,6 +12387,9 @@ class HtmlToolbarStatus {
         this.parent.off(toolbarRefresh, this.onRefreshHandler);
     }
     onRefreshHandler(args) {
+        if (this.parent.readonly) {
+            return;
+        }
         let fontsize = [];
         let fontName = [];
         let formats = [];
@@ -11222,6 +12406,7 @@ class HtmlToolbarStatus {
 /**
  * Content module is used to render RichTextEditor content
  * @hidden
+ * @deprecated
  */
 class ContentRender {
     /**
@@ -11233,6 +12418,8 @@ class ContentRender {
     }
     /**
      * The function is used to render RichTextEditor content div
+     * @hidden
+     * @deprecated
      */
     renderPanel() {
         let rteObj = this.parent;
@@ -11253,6 +12440,8 @@ class ContentRender {
     /**
      * Get the content div element of RichTextEditor
      * @return {Element}
+     * @hidden
+     * @deprecated
      */
     getPanel() {
         return this.contentPanel;
@@ -11260,6 +12449,8 @@ class ContentRender {
     /**
      * Get the editable element of RichTextEditor
      * @return {Element}
+     * @hidden
+     * @deprecated
      */
     getEditPanel() {
         return this.editableElement;
@@ -11274,6 +12465,8 @@ class ContentRender {
     /**
      * Set the content div element of RichTextEditor
      * @param {Element} panel
+     * @hidden
+     * @deprecated
      */
     setPanel(panel) {
         this.contentPanel = panel;
@@ -11281,6 +12474,8 @@ class ContentRender {
     /**
      * Get the document of RichTextEditor
      * @return {Document}
+     * @hidden
+     * @deprecated
      */
     getDocument() {
         return this.getEditPanel().ownerDocument;
@@ -11367,10 +12562,13 @@ const IFRAMEHEADER = `
 /**
  * Content module is used to render RichTextEditor content
  * @hidden
+ * @deprecated
  */
 class IframeContentRender extends ContentRender {
     /**
      * The function is used to render RichTextEditor iframe
+     * @hidden
+     * @deprecated
      */
     renderPanel() {
         let rteObj = this.parent;
@@ -11400,6 +12598,8 @@ class IframeContentRender extends ContentRender {
     /**
      * Get the editable element of RichTextEditor
      * @return {Element}
+     * @hidden
+     * @deprecated
      */
     getEditPanel() {
         let editNode;
@@ -11414,6 +12614,8 @@ class IframeContentRender extends ContentRender {
     /**
      * Get the document of RichTextEditor
      * @param  {Document}
+     * @hidden
+     * @deprecated
      */
     getDocument() {
         return this.getEditPanel().ownerDocument;
@@ -11421,173 +12623,137 @@ class IframeContentRender extends ContentRender {
 }
 
 /**
- * SanitizeHtmlHelper for sanitize the value.
+ * XhtmlValidation module called when set enableXhtml as true
  */
-const removeTags = [
-    'script',
-    'iframe[src]',
-    'link[href*="javascript:"]',
-    'object[type="text/x-scriptlet"]',
-    'object[data^="data:text/html;base64"]',
-    'img[src^="data:text/html;base64"]',
-    '[src^="javascript:"]',
-    '[dynsrc^="javascript:"]',
-    '[lowsrc^="javascript:"]',
-    '[type^="application/x-shockwave-flash"]'
-];
-const removeAttrs = [
-    { attribute: 'href', selector: '[href*="javascript:"]' },
-    { attribute: 'background', selector: '[background^="javascript:"]' },
-    { attribute: 'style', selector: '[style*="javascript:"]' },
-    { attribute: 'style', selector: '[style*="expression("]' },
-    { attribute: 'href', selector: 'a[href^="data:text/html;base64"]' }
-];
-const jsEvents = ['onchange',
-    'onclick',
-    'onmouseover',
-    'onmouseout',
-    'onkeydown',
-    'onload',
-    'onerror',
-    'onblur',
-    'onfocus',
-    'onbeforeload',
-    'onbeforeunload',
-    'onkeyup',
-    'onsubmit',
-    'onafterprint',
-    'onbeforeonload',
-    'onbeforeprint',
-    'onblur',
-    'oncanplay',
-    'oncanplaythrough',
-    'onchange',
-    'onclick',
-    'oncontextmenu',
-    'ondblclick',
-    'ondrag',
-    'ondragend',
-    'ondragenter',
-    'ondragleave',
-    'ondragover',
-    'ondragstart',
-    'ondrop',
-    'ondurationchange',
-    'onemptied',
-    'onended',
-    'onerror',
-    'onerror',
-    'onfocus',
-    'onformchange',
-    'onforminput',
-    'onhaschange',
-    'oninput',
-    'oninvalid',
-    'onkeydown',
-    'onkeypress',
-    'onkeyup',
-    'onload',
-    'onloadeddata',
-    'onloadedmetadata',
-    'onloadstart',
-    'onmessage',
-    'onmousedown',
-    'onmousemove',
-    'onmouseout',
-    'onmouseover',
-    'onmouseup',
-    'onmousewheel',
-    'onoffline',
-    'onoine',
-    'ononline',
-    'onpagehide',
-    'onpageshow',
-    'onpause',
-    'onplay',
-    'onplaying',
-    'onpopstate',
-    'onprogress',
-    'onratechange',
-    'onreadystatechange',
-    'onredo',
-    'onresize',
-    'onscroll',
-    'onseeked',
-    'onseeking',
-    'onselect',
-    'onstalled',
-    'onstorage',
-    'onsubmit',
-    'onsuspend',
-    'ontimeupdate',
-    'onundo',
-    'onunload',
-    'onvolumechange',
-    'onwaiting',
-    'onmouseenter',
-    'onmouseleave',
-    'onmousewheel',
-    'onstart',
-    'onpropertychange'
-];
-class SanitizeHtmlHelper {
-    initialize(value, parent) {
-        let item = {
-            selectors: {
-                tags: removeTags,
-                attributes: removeAttrs
-            },
-            helper: null
-        };
-        parent.trigger('beforeSanitizeHtml', item);
-        if (item.helper) {
-            value = item.helper(value);
-        }
-        if (!item.cancel) {
-            value = this.serializeValue(item, value);
-        }
-        return value;
+class XhtmlValidation {
+    constructor(parent) {
+        this.parent = parent;
+        this.addEventListener();
     }
-    serializeValue(item, value) {
-        this.removeAttrs = item.selectors.attributes;
-        this.removeTags = item.selectors.tags;
-        this.wrapElement = document.createElement('div');
-        this.wrapElement.innerHTML = value;
-        this.removeXssTags();
-        this.removeJsEvents();
-        this.removeXssAttrs();
-        return this.wrapElement.innerHTML;
+    addEventListener() {
+        this.parent.on(xhtmlValidation, this.enableXhtmlValidation, this);
     }
-    removeXssTags() {
-        let elements = this.wrapElement.querySelectorAll(this.removeTags.join(','));
-        if (elements.length > 0) {
-            elements.forEach((element) => {
-                detach(element);
-            });
+    enableXhtmlValidation() {
+        if (this.parent.enableXhtml) {
+            this.clean(this.parent.inputElement);
+            this.AddRootElement();
+            this.ImageTags();
+            this.removeTags();
+            this.RemoveUnsupported();
+            this.parent.setProperties({ value: this.parent.inputElement.innerHTML }, true);
         }
     }
-    removeJsEvents() {
-        let elements = this.wrapElement.querySelectorAll('[' + jsEvents.join('],[') + ']');
-        if (elements.length > 0) {
-            elements.forEach((element) => {
-                jsEvents.forEach((attr) => {
-                    if (element.hasAttribute(attr)) {
-                        element.removeAttribute(attr);
-                    }
-                });
-            });
-        }
-    }
-    removeXssAttrs() {
-        this.removeAttrs.forEach((item, index) => {
-            let elements = this.wrapElement.querySelectorAll(item.selector);
-            if (elements.length > 0) {
-                elements.forEach((element) => {
-                    element.removeAttribute(item.attribute);
-                });
+    AddRootElement() {
+        if ((this.parent.inputElement.childNodes.length === 1 && this.parent.inputElement.firstChild.nodeName !== 'DIV') ||
+            this.parent.inputElement.childNodes.length > 1) {
+            let parentEle = this.parent.createElement('div');
+            while (this.parent.inputElement.childNodes.length > 0) {
+                parentEle.appendChild(this.parent.inputElement.childNodes[0]);
             }
-        });
+            this.parent.inputElement.appendChild(parentEle);
+        }
     }
+    ;
+    clean(node) {
+        for (let n = 0; n < node.childNodes.length; n++) {
+            let child = node.childNodes[n];
+            if (child.nodeType === 8 || child.nodeName === 'V:IMAGE') {
+                node.removeChild(child);
+                n--;
+            }
+            else if (child.nodeType === 1) {
+                this.clean(child);
+            }
+        }
+        return this.parent.inputElement.innerHTML;
+    }
+    ImageTags() {
+        let imgNodes = this.parent.inputElement.querySelectorAll('IMG');
+        for (let i = imgNodes.length - 1; i >= 0; i--) {
+            if (!imgNodes[i].hasAttribute('alt')) {
+                let img = imgNodes[i];
+                img.setAttribute('alt', '');
+            }
+        }
+    }
+    ;
+    removeTags() {
+        let removeAttribute = [['br', 'ul'], ['br', 'ol'], ['table', 'span'], ['div', 'span'], ['p', 'span']];
+        for (let i = 0; i < removeAttribute.length; i++) {
+            this.RemoveElementNode(removeAttribute[i][0], removeAttribute[i][1]);
+        }
+    }
+    ;
+    RemoveElementNode(rmvNode, parentNode) {
+        let parentArray = this.parent.inputElement.querySelectorAll(parentNode);
+        for (let i = 0; i < parentArray.length; i++) {
+            let rmvArray = parentArray[i].querySelectorAll(rmvNode);
+            for (let j = rmvArray.length; j > 0; j--) {
+                detach(rmvArray[j - 1]);
+            }
+        }
+    }
+    ;
+    RemoveUnsupported() {
+        let underlineEle = this.parent.inputElement.querySelectorAll('u');
+        for (let i = underlineEle.length - 1; i >= 0; i--) {
+            let spanEle = this.parent.createElement('span');
+            spanEle.style.textDecoration = 'underline';
+            spanEle.innerHTML = underlineEle[i].innerHTML;
+            underlineEle[i].parentNode.insertBefore(spanEle, underlineEle[i]);
+            detach(underlineEle[i]);
+        }
+        let strongEle = this.parent.inputElement.querySelectorAll('strong');
+        for (let i = strongEle.length - 1; i >= 0; i--) {
+            let boldEle = this.parent.createElement('b');
+            boldEle.innerHTML = strongEle[i].innerHTML;
+            strongEle[i].parentNode.insertBefore(boldEle, strongEle[i]);
+            detach(strongEle[i]);
+        }
+        let attrArray = ['language', 'role', 'target', 'contenteditable', 'cellspacing',
+            'cellpadding', 'border', 'valign', 'colspan'];
+        for (let i = 0; i <= attrArray.length; i++) {
+            this.RemoveAttributeByName(attrArray[i]);
+        }
+    }
+    ;
+    RemoveAttributeByName(attrName) {
+        if (this.parent.inputElement.firstChild !== null) {
+            if (this.parent.inputElement.firstChild.nodeType !== 3) {
+                for (let i = 0; i < this.parent.inputElement.childNodes.length; i++) {
+                    let ele = this.parent.inputElement.childNodes[i];
+                    if (ele.nodeType !== 3 && ele.nodeName !== 'TABLE' && ele.nodeName !== 'TBODY' && ele.nodeName !== 'THEAD' &&
+                        ele.nodeName !== 'TH' && ele.nodeName !== 'TR' && ele.nodeName !== 'TD') {
+                        if (ele.hasAttribute(attrName)) {
+                            ele.removeAttribute(attrName);
+                        }
+                        if (ele.hasChildNodes()) {
+                            for (let j = 0; j < ele.childNodes.length; j++) {
+                                let childEle = ele.childNodes[j];
+                                if (childEle.nodeType !== 3 && childEle.nodeName !== 'TABLE' && childEle.nodeName !== 'TBODY' &&
+                                    childEle.nodeName !== 'THEAD' && childEle.nodeName !== 'TH' && childEle.nodeName !== 'TR' &&
+                                    childEle.nodeName !== 'TD' && childEle.hasAttribute(attrName)) {
+                                    childEle.removeAttribute(attrName);
+                                }
+                                if (childEle.hasChildNodes()) {
+                                    for (let k = 0; k < childEle.childNodes.length; k++) {
+                                        if (childEle.childNodes[k].nodeType !== 3 && childEle.childNodes[k].nodeName !== 'TABLE' &&
+                                            childEle.childNodes[k].nodeName !== 'TBODY' && childEle.childNodes[k].nodeName !== 'THEAD' &&
+                                            childEle.childNodes[k].nodeName !== 'TH' && childEle.childNodes[k].nodeName !== 'TR'
+                                            && childEle.childNodes[k].nodeName !== 'TD'
+                                            && childEle.childNodes[k].hasAttribute(attrName)) {
+                                            childEle.childNodes[k].removeAttribute(attrName);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ;
 }
 
 /**
@@ -11599,7 +12765,7 @@ class HtmlEditor {
         this.parent = parent;
         this.locator = serviceLocator;
         this.renderFactory = this.locator.getService('rendererFactory');
-        this.sanitize = new SanitizeHtmlHelper();
+        this.xhtmlValidation = new XhtmlValidation(parent);
         this.addEventListener();
     }
     /**
@@ -11607,15 +12773,17 @@ class HtmlEditor {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     destroy() {
         this.removeEventListener();
     }
     /**
      * @hidden
+     * @deprecated
      */
     sanitizeHelper(value) {
-        value = this.sanitize.initialize(value, this.parent);
+        value = sanitizeHelper(value, this.parent);
         return value;
     }
     addEventListener() {
@@ -11899,6 +13067,9 @@ class HtmlEditor {
         else {
             this.parent.formatter.updateFormatter(editElement, this.contentRenderer.getDocument(), option);
         }
+        if (this.parent.enableXhtml) {
+            this.parent.notify(xhtmlValidation, {});
+        }
         if (this.parent.toolbarSettings.enable) {
             this.toolbarUpdate = new HtmlToolbarStatus(this.parent);
         }
@@ -11907,6 +13078,7 @@ class HtmlEditor {
     /**
      * Called internally if any of the property value changed.
      * @hidden
+     * @deprecated
      */
     onPropertyChanged(e) {
         // On property code change here
@@ -11970,7 +13142,6 @@ class PasteCleanup {
         this.renderFactory = this.locator.getService('rendererFactory');
         this.i10n = serviceLocator.getService('rteLocale');
         this.dialogRenderObj = serviceLocator.getService('dialogRenderObject');
-        this.sanitize = new SanitizeHtmlHelper();
         this.addEventListener();
     }
     addEventListener() {
@@ -12049,7 +13220,12 @@ class PasteCleanup {
             this.saveSelection = this.nodeSelectionObj.save(range, currentDocument);
             if (this.parent.pasteCleanupSettings.prompt) {
                 e.args.preventDefault();
-                this.pasteDialog(value, args);
+                let tempDivElem = this.parent.createElement('div');
+                tempDivElem.innerHTML = value;
+                if (tempDivElem.textContent !== '' || !isNullOrUndefined(tempDivElem.querySelector('img')) ||
+                    !isNullOrUndefined(tempDivElem.querySelector('table'))) {
+                    this.pasteDialog(value, args);
+                }
             }
             else if (this.parent.pasteCleanupSettings.plainText) {
                 e.args.preventDefault();
@@ -12229,6 +13405,7 @@ class PasteCleanup {
     /**
      * Method for image formatting when pasting
      * @hidden
+     * @deprecated
      */
     imageFormatting(pasteArgs, imgElement) {
         let imageElement = this.parent.createElement('span');
@@ -12367,17 +13544,20 @@ class PasteCleanup {
         }
         this.saveSelection.restore();
         clipBoardElem.innerHTML = this.sanitizeHelper(clipBoardElem.innerHTML);
-        this.parent.formatter.editorManager.execCommand('inserthtml', 'pasteCleanup', args, (returnArgs) => {
-            extend(args, { elements: [returnArgs.elements] }, true);
-            this.parent.formatter.onSuccess(this.parent, args);
-        }, clipBoardElem);
-        this.parent.notify(toolbarRefresh, {});
-        if (!isNullOrUndefined(this.parent.insertImageSettings.saveUrl)) {
-            this.imgUploading(this.parent.inputElement);
+        if (clipBoardElem.textContent !== '' || !isNullOrUndefined(clipBoardElem.querySelector('img')) ||
+            !isNullOrUndefined(clipBoardElem.querySelector('table'))) {
+            this.parent.formatter.editorManager.execCommand('inserthtml', 'pasteCleanup', args, (returnArgs) => {
+                extend(args, { elements: [returnArgs.elements] }, true);
+                this.parent.formatter.onSuccess(this.parent, args);
+            }, clipBoardElem);
+            this.parent.notify(toolbarRefresh, {});
+            if (!isNullOrUndefined(this.parent.insertImageSettings.saveUrl)) {
+                this.imgUploading(this.parent.inputElement);
+            }
         }
     }
     sanitizeHelper(value) {
-        value = this.sanitize.initialize(value, this.parent);
+        value = sanitizeHelper(value, this.parent);
         return value;
     }
     //Plain Formatting
@@ -12740,6 +13920,177 @@ class Resize {
 }
 
 /**
+ * `FullScreen` module is used to maximize and minimize screen
+ */
+class FullScreen {
+    constructor(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    /**
+     * showFullScreen method
+     * @hidden
+     * @deprecated
+     */
+    showFullScreen(event) {
+        if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown') {
+            this.parent.quickToolbarModule.hideQuickToolbars();
+        }
+        this.scrollableParent = getScrollableParent(this.parent.element);
+        if (!this.parent.element.classList.contains(CLS_FULL_SCREEN)) {
+            this.parent.trigger(actionBegin, { requestType: 'Maximize', targetItem: 'Maximize', args: event });
+            if (this.parent.toolbarSettings.enableFloating &&
+                !this.parent.inlineMode.enable && this.parent.toolbarSettings.enable) {
+                this.parent.getToolbarElement().style.width = '100%';
+                this.parent.getToolbarElement().style.top = '0px';
+            }
+            this.parent.element.classList.add(CLS_FULL_SCREEN);
+            this.toggleParentOverflow(true);
+            this.parent.setContentHeight();
+            if (this.parent.toolbarModule) {
+                if (!this.parent.getBaseToolbarObject().toolbarObj.items[0].properties) {
+                    this.parent.getBaseToolbarObject().toolbarObj.removeItems(0);
+                }
+                if (Browser.isDevice) {
+                    this.parent.toolbarModule.removeFixedTBarClass();
+                }
+                this.parent.toolbarModule.updateItem({
+                    targetItem: 'Maximize',
+                    updateItem: 'Minimize',
+                    baseToolbar: this.parent.getBaseToolbarObject()
+                });
+            }
+            this.parent.trigger(actionComplete, { requestType: 'Maximize', targetItem: 'Maximize', args: event });
+        }
+    }
+    /**
+     * hideFullScreen method
+     * @hidden
+     * @deprecated
+     */
+    hideFullScreen(event) {
+        if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown') {
+            this.parent.quickToolbarModule.hideQuickToolbars();
+        }
+        if (this.parent.element.classList.contains(CLS_FULL_SCREEN)) {
+            this.parent.element.classList.remove(CLS_FULL_SCREEN);
+            let elem = document.querySelectorAll('.e-rte-overflow');
+            for (let i = 0; i < elem.length; i++) {
+                removeClass([elem[i]], ['e-rte-overflow']);
+            }
+            this.parent.trigger(actionBegin, { requestType: 'Minimize', targetItem: 'Minimize', args: event });
+            this.parent.setContentHeight();
+            if (this.parent.toolbarModule) {
+                if (!this.parent.getBaseToolbarObject().toolbarObj.items[0].properties) {
+                    this.parent.getBaseToolbarObject().toolbarObj.removeItems(0);
+                }
+                this.parent.toolbarModule.updateItem({
+                    targetItem: 'Minimize',
+                    updateItem: 'Maximize',
+                    baseToolbar: this.parent.getBaseToolbarObject()
+                });
+                if (Browser.isDevice && this.parent.inlineMode.enable) {
+                    this.parent.toolbarModule.addFixedTBarClass();
+                }
+            }
+            this.parent.trigger(actionComplete, { requestType: 'Minimize', targetItem: 'Minimize', args: event });
+        }
+    }
+    toggleParentOverflow(isAdd) {
+        if (isNullOrUndefined(this.scrollableParent)) {
+            return;
+        }
+        for (let i = 0; i < this.scrollableParent.length; i++) {
+            if (this.scrollableParent[i].nodeName === '#document') {
+                let elem = document.querySelector('body');
+                addClass([elem], ['e-rte-overflow']);
+            }
+            else {
+                let elem = this.scrollableParent[i];
+                addClass([elem], ['e-rte-overflow']);
+            }
+        }
+    }
+    onKeyDown(event) {
+        let originalEvent = event.args;
+        switch (originalEvent.action) {
+            case 'full-screen':
+                this.showFullScreen(event.args);
+                originalEvent.preventDefault();
+                break;
+            case 'escape':
+                this.hideFullScreen(event.args);
+                originalEvent.preventDefault();
+                break;
+        }
+    }
+    addEventListener() {
+        this.parent.on(keyDown, this.onKeyDown, this);
+        this.parent.on(destroy, this.destroy, this);
+    }
+    removeEventListener() {
+        this.parent.on(keyDown, this.onKeyDown, this);
+        this.parent.off(destroy, this.removeEventListener);
+    }
+    /**
+     * destroy method
+     * @hidden
+     * @deprecated
+     */
+    destroy() {
+        if (this.parent.element.classList.contains(CLS_FULL_SCREEN)) {
+            this.toggleParentOverflow(false);
+        }
+        this.removeEventListener();
+    }
+}
+
+function setAttributes(htmlAttributes, rte, isFrame, initial) {
+    let target;
+    if (isFrame) {
+        let iFrame = rte.contentModule.getDocument();
+        target = iFrame.querySelector('body');
+    }
+    else {
+        target = rte.element;
+    }
+    if (Object.keys(htmlAttributes).length) {
+        for (let htmlAttr of Object.keys(htmlAttributes)) {
+            if (htmlAttr === 'class') {
+                target.classList.add(htmlAttributes[htmlAttr]);
+            }
+            else if (htmlAttr === 'disabled' && htmlAttributes[htmlAttr] === 'disabled') {
+                rte.enabled = false;
+                rte.setEnable();
+            }
+            else if (htmlAttr === 'readonly' && htmlAttributes[htmlAttr] === 'readonly') {
+                rte.readonly = true;
+                rte.setReadOnly(initial);
+            }
+            else if (htmlAttr === 'style') {
+                target.setAttribute('style', htmlAttributes[htmlAttr]);
+            }
+            else if (htmlAttr === 'tabindex') {
+                rte.inputElement.setAttribute('tabindex', htmlAttributes[htmlAttr]);
+            }
+            else if (htmlAttr === 'placeholder') {
+                rte.placeholder = htmlAttributes[htmlAttr];
+                rte.setPlaceHolder();
+            }
+            else {
+                let validateAttr = ['name', 'required'];
+                if (validateAttr.indexOf(htmlAttr) > -1) {
+                    rte.valueContainer.setAttribute(htmlAttr, htmlAttributes[htmlAttr]);
+                }
+                else {
+                    target.setAttribute(htmlAttr, htmlAttributes[htmlAttr]);
+                }
+            }
+        }
+    }
+}
+
+/**
  * Action export
  */
 
@@ -12750,6 +14101,7 @@ class Resize {
 /**
  * Content module is used to render RichTextEditor content
  * @hidden
+ * @deprecated
  */
 class Render {
     /**
@@ -12763,6 +14115,8 @@ class Render {
     }
     /**
      * To initialize RichTextEditor header, content and footer rendering
+     * @hidden
+     * @deprecated
      */
     render() {
         let rteObj = this.parent;
@@ -12922,6 +14276,10 @@ class Link {
         }
     }
     editAreaClickHandler(e) {
+        if (this.parent.readonly) {
+            this.hideLinkQuickToolbar();
+            return;
+        }
         let args = e.args;
         let showOnRightClick = this.parent.quickToolbarSettings.showOnRightClick;
         if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) {
@@ -13087,7 +14445,7 @@ class Link {
             e.selection.range.endOffset)) || e.module === 'Markdown') {
             linkText.value = selectText;
         }
-        EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
+        EventHandler.add(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick, this);
         if (this.quickToolObj) {
             this.hideLinkQuickToolbar();
             if (this.quickToolObj.inlineQTBar && document.body.contains(this.quickToolObj.inlineQTBar.element)) {
@@ -13196,7 +14554,9 @@ class Link {
         return (selectParent ? selectParent : element);
     }
     editLink(e) {
+        let selectedNode = this.getAnchorNode(e.selectNode[0]);
         let selectParentEle = this.getAnchorNode(e.selectParent[0]);
+        selectParentEle = selectedNode.nodeName === 'A' ? selectedNode : selectParentEle;
         if (selectParentEle.classList.contains('e-rte-anchor') || selectParentEle.tagName === 'A') {
             let linkUpdate = this.i10n.getConstant('dialogUpdate');
             let inputDetails = {
@@ -13235,6 +14595,7 @@ class Link {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     destroy() {
         this.removeEventListener();
@@ -13300,16 +14661,16 @@ class Image {
         this.parent.off(initialEnd, this.afterRender);
         this.parent.off(paste, this.imagePaste);
         this.parent.off(destroy, this.removeEventListener);
-        this.parent.element.removeEventListener('drop', this.dragDrop.bind(this), true);
-        this.parent.element.removeEventListener('dragstart', this.dragStart.bind(this), true);
-        this.parent.element.removeEventListener('dragenter', this.dragEnter.bind(this), true);
-        this.parent.element.removeEventListener('dragover', this.dragOver.bind(this), true);
+        this.parent.inputElement.ownerDocument.removeEventListener('drop', this.dragDrop.bind(this), true);
+        this.parent.inputElement.ownerDocument.removeEventListener('dragstart', this.dragStart.bind(this), true);
+        this.parent.inputElement.ownerDocument.removeEventListener('dragenter', this.dragEnter.bind(this), true);
+        this.parent.inputElement.ownerDocument.removeEventListener('dragover', this.dragOver.bind(this), true);
         if (!isNullOrUndefined(this.contentModule)) {
             EventHandler.remove(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.imageClick);
             this.parent.formatter.editorManager.observer.off(checkUndo, this.undoStack);
             if (this.parent.insertImageSettings.resize) {
                 EventHandler.remove(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart);
-                EventHandler.remove(this.contentModule.getDocument(), 'mousedown', this.onDocumentClick);
+                EventHandler.remove(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick);
             }
         }
     }
@@ -13323,7 +14684,7 @@ class Image {
         EventHandler.add(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.imageClick, this);
         if (this.parent.insertImageSettings.resize) {
             EventHandler.add(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart, this);
-            EventHandler.add(this.contentModule.getDocument(), 'mousedown', this.onDocumentClick, this);
+            EventHandler.add(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick, this);
         }
         this.parent.inputElement.ownerDocument.addEventListener('drop', this.dragDrop.bind(this), true);
         this.parent.inputElement.ownerDocument.addEventListener('dragstart', this.dragStart.bind(this), true);
@@ -13362,6 +14723,9 @@ class Image {
         this.parent.formatter.saveData();
     }
     resizeStart(e, ele) {
+        if (this.parent.readonly) {
+            return;
+        }
         let target = ele ? ele : e.target;
         if (target.tagName === 'IMG') {
             this.parent.preventDefaultResize(e);
@@ -13874,6 +15238,10 @@ class Image {
         }
     }
     editAreaClickHandler(e) {
+        if (this.parent.readonly) {
+            this.hideImageQuickToolbar();
+            return;
+        }
         let args = e.args;
         let showOnRightClick = this.parent.quickToolbarSettings.showOnRightClick;
         if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) {
@@ -14520,7 +15888,8 @@ class Image {
                             let url = this.parent.insertImageSettings.saveFormat === 'Base64' ? reader.result :
                                 URL.createObjectURL(proxy.url(reader.result));
                             proxy.uploadUrl = {
-                                url: url, selection: save, altText: altText, selectParent: selectParent,
+                                url: url, selection: save, altText: altText,
+                                selectParent: selectParent,
                                 width: {
                                     width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
                                     maxWidth: proxy.parent.insertImageSettings.maxWidth
@@ -14543,8 +15912,7 @@ class Image {
                     if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
                         let url = this.parent.insertImageSettings.path + e.file.name;
                         proxy.uploadUrl = {
-                            url: url, selection: save, altText: e.file.name,
-                            selectParent: selectParent,
+                            url: url, selection: save, altText: altText, selectParent: selectParent,
                             width: {
                                 width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
                                 maxWidth: proxy.parent.insertImageSettings.maxWidth
@@ -14609,10 +15977,12 @@ class Image {
     }
     ;
     dragOver(e) {
-        e.dataTransfer.dropEffect = 'copy';
         if ((Browser.info.name === 'edge' && e.dataTransfer.items[0].type.split('/')[0].indexOf('image') > -1) ||
             (Browser.isIE && e.dataTransfer.types[0] === 'Files')) {
             e.preventDefault();
+        }
+        else {
+            return true;
         }
     }
     ;
@@ -14886,7 +16256,7 @@ class Image {
         this.uploadObj.destroy();
     }
     imagePaste(args) {
-        if (args.text.length === 0) {
+        if (args.text.length === 0 && !isNullOrUndefined(args.file)) {
             let proxy = this;
             let reader = new FileReader();
             args.args.preventDefault();
@@ -14946,6 +16316,7 @@ class Image {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     destroy() {
         this.removeEventListener();
@@ -14961,6 +16332,7 @@ class Image {
 /**
  * Content module is used to render RichTextEditor content
  * @hidden
+ * @deprecated
  */
 class ViewSource {
     /**
@@ -15036,6 +16408,12 @@ class ViewSource {
                 break;
         }
     }
+    /**
+     * sourceCode method
+     * @param  {Element} panel
+     * @hidden
+     * @deprecated
+     */
     sourceCode(args) {
         this.parent.isBlur = false;
         this.parent.trigger(actionBegin, { requestType: 'SourceCode', targetItem: 'SourceCode', args: args });
@@ -15092,6 +16470,12 @@ class ViewSource {
         this.parent.trigger(actionComplete, { requestType: 'SourceCode', targetItem: 'SourceCode', args: args });
         this.parent.invokeChangeEvent();
     }
+    /**
+     * updateSourceCode method
+     * @param  {Element} panel
+     * @hidden
+     * @deprecated
+     */
     updateSourceCode(args) {
         this.parent.isBlur = false;
         this.parent.trigger(actionBegin, { requestType: 'Preview', targetItem: 'Preview', args: args });
@@ -15137,15 +16521,29 @@ class ViewSource {
                 this.contentModule.getEditPanel().childNodes[0].tagName === 'P' &&
                 this.contentModule.getEditPanel().innerHTML.length === 7) ? '' : this.parent.value;
     }
+    /**
+     * getPanel method
+     * @param  {Element} panel
+     * @hidden
+     * @deprecated
+     */
     getPanel() {
         return this.parent.element.querySelector('.e-rte-srctextarea');
     }
+    /**
+     * getViewPanel method
+     * @param  {Element} panel
+     * @hidden
+     * @deprecated
+     */
     getViewPanel() {
         return (this.parent.iframeSettings.enable && this.getPanel()) ? this.getPanel().parentElement : this.getPanel();
     }
     /**
      * Destroy the entire RichTextEditor.
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     destroy() {
         this.removeEventListener();
@@ -15314,13 +16712,10 @@ class Table {
         }
     }
     verticalAlign(args, e) {
-        let tdEle = (args.selection.range.startContainer.nodeName === 'TD' ||
-            args.selection.range.startContainer.nodeName === 'TH') ? args.selection.range.startContainer :
-            args.selection.range.startContainer.parentNode;
-        if (tdEle.nodeName !== 'TD' && tdEle.nodeName !== 'TH') {
-            return;
+        let tdEle = closest(args.selectParent[0], 'td') || closest(args.selectParent[0], 'th');
+        if (tdEle) {
+            this.parent.formatter.process(this.parent, e, e, { tableCell: tdEle, subCommand: e.item.subCommand });
         }
-        this.parent.formatter.process(this.parent, e, e, { tableCell: tdEle, subCommand: e.item.subCommand });
     }
     tableStyles(args, command) {
         let table = closest(args.selectParent[0], 'table');
@@ -15468,6 +16863,9 @@ class Table {
         this.parent.formatter.process(this.parent, e, e.originalEvent, { selection: selection, subCommand: e.item.subCommand });
     }
     editAreaClickHandler(e) {
+        if (this.parent.readonly) {
+            return;
+        }
         let args = e.args;
         let showOnRightClick = this.parent.quickToolbarSettings.showOnRightClick;
         if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) {
@@ -15574,6 +16972,9 @@ class Table {
         }
     }
     resizeHelper(e) {
+        if (this.parent.readonly) {
+            return;
+        }
         let target = e.target || e.targetTouches[0].target;
         let closestTable = closest(target, 'table');
         if (target.nodeName === 'TABLE' || target.nodeName === 'TD' || target.nodeName === 'TH') {
@@ -15678,6 +17079,9 @@ class Table {
         }
     }
     resizeStart(e) {
+        if (this.parent.readonly) {
+            return;
+        }
         if (Browser.isDevice) {
             this.resizeHelper(e);
         }
@@ -16218,6 +17622,7 @@ class Table {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     destroy() {
         this.removeEventListener();
@@ -16231,10 +17636,53 @@ class Table {
 }
 
 /**
- * Models
+ * Dialog Renderer
+ */
+class DialogRenderer {
+    constructor(parent) {
+        this.parent = parent;
+    }
+    /**
+     * dialog render method
+     * @hidden
+     * @deprecated
+     */
+    render(e) {
+        let dlgObj;
+        if (isNullOrUndefined(e.beforeOpen)) {
+            e.beforeOpen = this.beforeOpen.bind(this);
+        }
+        if (isNullOrUndefined(e.open)) {
+            e.open = this.open.bind(this);
+        }
+        if (isNullOrUndefined(e.close)) {
+            e.close = this.close.bind(this);
+        }
+        dlgObj = new Dialog(e);
+        dlgObj.isStringTemplate = true;
+        return dlgObj;
+    }
+    beforeOpen(args) {
+        this.parent.trigger(beforeDialogOpen, args);
+    }
+    open(args) {
+        this.parent.trigger(dialogOpen, args);
+    }
+    /**
+     * dialog close method
+     * @hidden
+     * @deprecated
+     */
+    close(args) {
+        this.parent.trigger(dialogClose, args);
+    }
+}
+
+/**
+ * Renderer
  */
 
-/** @hidden  */
+/** @hidden @deprecated  */
 const executeGroup = {
     'bold': {
         command: 'Style',
@@ -16255,6 +17703,11 @@ const executeGroup = {
         command: 'Style',
         subCommand: 'StrikeThrough',
         value: 'span'
+    },
+    'insertCode': {
+        command: 'Formats',
+        subCommand: 'Pre',
+        value: 'pre'
     },
     'superscript': {
         command: 'Effects',
@@ -16702,195 +18155,6 @@ __decorate$4([
     Property(true)
 ], InlineMode.prototype, "onSelection", void 0);
 
-function setAttributes(htmlAttributes, rte, isFrame, initial) {
-    let target;
-    if (isFrame) {
-        let iFrame = rte.contentModule.getDocument();
-        target = iFrame.querySelector('body');
-    }
-    else {
-        target = rte.element;
-    }
-    if (Object.keys(htmlAttributes).length) {
-        for (let htmlAttr of Object.keys(htmlAttributes)) {
-            if (htmlAttr === 'class') {
-                target.classList.add(htmlAttributes[htmlAttr]);
-            }
-            else if (htmlAttr === 'disabled' && htmlAttributes[htmlAttr] === 'disabled') {
-                rte.enabled = false;
-                rte.setEnable();
-            }
-            else if (htmlAttr === 'readonly' && htmlAttributes[htmlAttr] === 'readonly') {
-                rte.readonly = true;
-                rte.setReadOnly(initial);
-            }
-            else if (htmlAttr === 'style') {
-                target.setAttribute('style', htmlAttributes[htmlAttr]);
-            }
-            else if (htmlAttr === 'tabindex') {
-                rte.inputElement.setAttribute('tabindex', htmlAttributes[htmlAttr]);
-            }
-            else if (htmlAttr === 'placeholder') {
-                rte.placeholder = htmlAttributes[htmlAttr];
-                rte.setPlaceHolder();
-            }
-            else {
-                let validateAttr = ['name', 'required'];
-                if (validateAttr.indexOf(htmlAttr) > -1) {
-                    rte.valueContainer.setAttribute(htmlAttr, htmlAttributes[htmlAttr]);
-                }
-                else {
-                    target.setAttribute(htmlAttr, htmlAttributes[htmlAttr]);
-                }
-            }
-        }
-    }
-}
-
-/**
- * `FullScreen` module is used to maximize and minimize screen
- */
-class FullScreen {
-    constructor(parent) {
-        this.parent = parent;
-        this.addEventListener();
-    }
-    showFullScreen(event) {
-        if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown') {
-            this.parent.quickToolbarModule.hideQuickToolbars();
-        }
-        this.scrollableParent = getScrollableParent(this.parent.element);
-        if (!this.parent.element.classList.contains(CLS_FULL_SCREEN)) {
-            this.parent.trigger(actionBegin, { requestType: 'Maximize', targetItem: 'Maximize', args: event });
-            if (this.parent.toolbarSettings.enableFloating &&
-                !this.parent.inlineMode.enable && this.parent.toolbarSettings.enable) {
-                this.parent.getToolbarElement().style.width = '100%';
-                this.parent.getToolbarElement().style.top = '0px';
-            }
-            this.parent.element.classList.add(CLS_FULL_SCREEN);
-            this.toggleParentOverflow(true);
-            this.parent.setContentHeight();
-            if (this.parent.toolbarModule) {
-                if (!this.parent.getBaseToolbarObject().toolbarObj.items[0].properties) {
-                    this.parent.getBaseToolbarObject().toolbarObj.removeItems(0);
-                }
-                if (Browser.isDevice) {
-                    this.parent.toolbarModule.removeFixedTBarClass();
-                }
-                this.parent.toolbarModule.updateItem({
-                    targetItem: 'Maximize',
-                    updateItem: 'Minimize',
-                    baseToolbar: this.parent.getBaseToolbarObject()
-                });
-            }
-            this.parent.trigger(actionComplete, { requestType: 'Maximize', targetItem: 'Maximize', args: event });
-        }
-    }
-    hideFullScreen(event) {
-        if (this.parent.toolbarSettings.enable === true && this.parent.editorMode !== 'Markdown') {
-            this.parent.quickToolbarModule.hideQuickToolbars();
-        }
-        if (this.parent.element.classList.contains(CLS_FULL_SCREEN)) {
-            this.parent.element.classList.remove(CLS_FULL_SCREEN);
-            let elem = document.querySelectorAll('.e-rte-overflow');
-            for (let i = 0; i < elem.length; i++) {
-                removeClass([elem[i]], ['e-rte-overflow']);
-            }
-            this.parent.trigger(actionBegin, { requestType: 'Minimize', targetItem: 'Minimize', args: event });
-            this.parent.setContentHeight();
-            if (this.parent.toolbarModule) {
-                if (!this.parent.getBaseToolbarObject().toolbarObj.items[0].properties) {
-                    this.parent.getBaseToolbarObject().toolbarObj.removeItems(0);
-                }
-                this.parent.toolbarModule.updateItem({
-                    targetItem: 'Minimize',
-                    updateItem: 'Maximize',
-                    baseToolbar: this.parent.getBaseToolbarObject()
-                });
-                if (Browser.isDevice && this.parent.inlineMode.enable) {
-                    this.parent.toolbarModule.addFixedTBarClass();
-                }
-            }
-            this.parent.trigger(actionComplete, { requestType: 'Minimize', targetItem: 'Minimize', args: event });
-        }
-    }
-    toggleParentOverflow(isAdd) {
-        if (isNullOrUndefined(this.scrollableParent)) {
-            return;
-        }
-        for (let i = 0; i < this.scrollableParent.length; i++) {
-            if (this.scrollableParent[i].nodeName === '#document') {
-                let elem = document.querySelector('body');
-                addClass([elem], ['e-rte-overflow']);
-            }
-            else {
-                let elem = this.scrollableParent[i];
-                addClass([elem], ['e-rte-overflow']);
-            }
-        }
-    }
-    onKeyDown(event) {
-        let originalEvent = event.args;
-        switch (originalEvent.action) {
-            case 'full-screen':
-                this.showFullScreen(event.args);
-                originalEvent.preventDefault();
-                break;
-            case 'escape':
-                this.hideFullScreen(event.args);
-                originalEvent.preventDefault();
-                break;
-        }
-    }
-    addEventListener() {
-        this.parent.on(keyDown, this.onKeyDown, this);
-        this.parent.on(destroy, this.destroy, this);
-    }
-    removeEventListener() {
-        this.parent.on(keyDown, this.onKeyDown, this);
-        this.parent.off(destroy, this.removeEventListener);
-    }
-    destroy() {
-        if (this.parent.element.classList.contains(CLS_FULL_SCREEN)) {
-            this.toggleParentOverflow(false);
-        }
-        this.removeEventListener();
-    }
-}
-
-/**
- * Dialog Renderer
- */
-class DialogRenderer {
-    constructor(parent) {
-        this.parent = parent;
-    }
-    render(e) {
-        let dlgObj;
-        if (isNullOrUndefined(e.beforeOpen)) {
-            e.beforeOpen = this.beforeOpen.bind(this);
-        }
-        if (isNullOrUndefined(e.open)) {
-            e.open = this.open.bind(this);
-        }
-        if (isNullOrUndefined(e.close)) {
-            e.close = this.close.bind(this);
-        }
-        dlgObj = new Dialog(e);
-        dlgObj.isStringTemplate = true;
-        return dlgObj;
-    }
-    beforeOpen(args) {
-        this.parent.trigger(beforeDialogOpen, args);
-    }
-    open(args) {
-        this.parent.trigger(dialogOpen, args);
-    }
-    close(args) {
-        this.parent.trigger(dialogClose, args);
-    }
-}
-
 var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -16913,14 +18177,17 @@ let RichTextEditor = class RichTextEditor extends Component {
         this.defaultResetValue = null;
         /**
          * @hidden
+         * @deprecated
          */
         this.isFocusOut = false;
         /**
          * @hidden
+         * @deprecated
          */
         this.isRTE = false;
         /**
          * @hidden
+         * @deprecated
          */
         this.isBlur = true;
         this.needsID = true;
@@ -16929,6 +18196,7 @@ let RichTextEditor = class RichTextEditor extends Component {
      * To provide the array of modules needed for component rendering
      * @return {ModuleDeclaration[]}
      * @hidden
+     * @deprecated
      */
     requiredModules() {
         let modules = [];
@@ -16987,6 +18255,11 @@ let RichTextEditor = class RichTextEditor extends Component {
             this.inputElement.setAttribute('tabindex', '-1');
         }
     }
+    /**
+     * setEnable method
+     * @hidden
+     * @deprecated
+     */
     setEnable() {
         this.updateEnable();
         (this.enabled) ? this.eventInitializer() : this.unWireEvents();
@@ -17075,6 +18348,11 @@ let RichTextEditor = class RichTextEditor extends Component {
         addClass([this.valueContainer], CLS_RTE_HIDDEN);
         this.element.appendChild(this.valueContainer);
     }
+    /**
+     * getPersistData method
+     * @hidden
+     * @deprecated
+     */
     getPersistData() {
         return this.addOnPersist(['value']);
     }
@@ -17199,6 +18477,7 @@ let RichTextEditor = class RichTextEditor extends Component {
     /**
      * For internal use only - To Initialize the component rendering.
      * @private
+     * @deprecated
      */
     render() {
         if (this.value && !this.valueTemplate) {
@@ -17230,6 +18509,7 @@ let RichTextEditor = class RichTextEditor extends Component {
     /**
      * For internal use only - Initialize the event handler
      * @private
+     * @deprecated
      */
     eventInitializer() {
         this.wireEvents();
@@ -17237,10 +18517,24 @@ let RichTextEditor = class RichTextEditor extends Component {
     /**
      * For internal use only - keydown the event handler;
      * @private
+     * @deprecated
      */
     keyDown(e) {
         this.notify(keyDown, { member: 'keydown', args: e });
         this.restrict(e);
+        if (this.editorMode === 'HTML' && ((e.which === 8 && e.code === 'Backspace') || (e.which === 46 && e.code === 'Delete'))) {
+            let range = this.getRange();
+            let startNode = range.startContainer.nodeName === '#text' ? range.startContainer.parentElement :
+                range.startContainer;
+            if (closest(startNode, 'pre') &&
+                (e.which === 8 && range.startContainer.textContent.charCodeAt(range.startOffset - 1) === 8203) ||
+                (e.which === 46 && range.startContainer.textContent.charCodeAt(range.startOffset) === 8203)) {
+                let regEx = new RegExp(String.fromCharCode(8203), 'g');
+                let pointer = e.which === 8 ? range.startOffset - 1 : range.startOffset;
+                range.startContainer.textContent = range.startContainer.textContent.replace(regEx, '');
+                this.formatter.editorManager.nodeSelection.setCursorPoint(this.contentModule.getDocument(), range.startContainer, pointer);
+            }
+        }
         if (this.formatter.getUndoRedoStack().length === 0) {
             this.formatter.saveData();
         }
@@ -17279,6 +18573,7 @@ let RichTextEditor = class RichTextEditor extends Component {
     }
     /**
      * @hidden
+     * @deprecated
      */
     serializeValue(value) {
         if (this.editorMode === 'HTML' && !isNullOrUndefined(value)) {
@@ -17301,6 +18596,11 @@ let RichTextEditor = class RichTextEditor extends Component {
     sanitizeHtml(value) {
         return this.serializeValue(value);
     }
+    /**
+     * updateValue method
+     * @hidden
+     * @deprecated
+     */
     updateValue(value) {
         if (isNullOrUndefined(value)) {
             let inputVal = this.inputElement.innerHTML;
@@ -17346,24 +18646,28 @@ let RichTextEditor = class RichTextEditor extends Component {
     }
     /**
      * @hidden
+     * @deprecated
      */
     ensureModuleInjected(module) {
         return this.getInjectedModules().indexOf(module) >= 0;
     }
     /**
      * @hidden
+     * @deprecated
      */
     onCopy() {
         this.contentModule.getDocument().execCommand('copy', false, null);
     }
     /**
      * @hidden
+     * @deprecated
      */
     onCut() {
         this.contentModule.getDocument().execCommand('cut', false, null);
     }
     /**
      * @hidden
+     * @deprecated
      */
     onPaste(e) {
         let evenArgs = {
@@ -17406,6 +18710,7 @@ let RichTextEditor = class RichTextEditor extends Component {
     }
     /**
      * @hidden
+     * @deprecated
      */
     clipboardAction(action, event) {
         switch (action.toLowerCase()) {
@@ -17543,6 +18848,7 @@ let RichTextEditor = class RichTextEditor extends Component {
     /**
      * For internal use only - Get the module name.
      * @private
+     * @deprecated
      */
     getModuleName() {
         return 'richtexteditor';
@@ -17550,6 +18856,7 @@ let RichTextEditor = class RichTextEditor extends Component {
     /**
      * Called internally if any of the property value changed.
      * @hidden
+     * @deprecated
      */
     onPropertyChanged(newProp, oldProp) {
         for (let prop of Object.keys(newProp)) {
@@ -17563,6 +18870,7 @@ let RichTextEditor = class RichTextEditor extends Component {
                     }
                     this.updatePanelValue();
                     this.setPlaceHolder();
+                    this.notify(xhtmlValidation, { module: 'XhtmlValidation', newProp: newProp, oldProp: oldProp });
                     if (this.showCharCount) {
                         this.countModule.refresh();
                     }
@@ -17658,6 +18966,9 @@ let RichTextEditor = class RichTextEditor extends Component {
                 case 'undoRedoTimer':
                     this.formatter.editorManager.observer.notify(MODEL_CHANGED, { newProp: newProp, oldProp: oldProp });
                     break;
+                case 'enableXhtml':
+                    this.notify(xhtmlValidation, { module: 'XhtmlValidation', newProp: newProp, oldProp: oldProp });
+                    break;
                 case 'quickToolbarSettings':
                     newProp.quickToolbarSettings.showOnRightClick ? this.wireContextEvent() : this.unWireContextEvent();
                     this.notify(modelChanged, { newProp: newProp, oldProp: oldProp });
@@ -17670,6 +18981,7 @@ let RichTextEditor = class RichTextEditor extends Component {
     }
     /**
      * @hidden
+     * @deprecated
      */
     updateValueData() {
         if (this.enableHtmlEncode) {
@@ -17726,6 +19038,11 @@ let RichTextEditor = class RichTextEditor extends Component {
             this.element.style.height = 'auto';
         }
     }
+    /**
+     * setPlaceHolder method
+     * @hidden
+     * @deprecated
+     */
     setPlaceHolder() {
         if (this.inputElement && this.placeholder && this.iframeSettings.enable !== true) {
             if (this.editorMode !== 'Markdown') {
@@ -17778,6 +19095,11 @@ let RichTextEditor = class RichTextEditor extends Component {
     updateReadOnly() {
         this.notify(readOnlyMode, { editPanel: this.inputElement, mode: this.readonly });
     }
+    /**
+     * setReadOnly method
+     * @hidden
+     * @deprecated
+     */
     setReadOnly(initial) {
         this.updateReadOnly();
         if (!initial) {
@@ -17976,6 +19298,11 @@ let RichTextEditor = class RichTextEditor extends Component {
             }
         }
     }
+    /**
+     * setContentHeight method
+     * @hidden
+     * @deprecated
+     */
     setContentHeight(target, isExpand) {
         let heightValue;
         let topValue = 0;
@@ -18044,6 +19371,7 @@ let RichTextEditor = class RichTextEditor extends Component {
     }
     /**
      * @hidden
+     * @deprecated
      */
     getBaseToolbarObject() {
         let tbObj;
@@ -18057,16 +19385,23 @@ let RichTextEditor = class RichTextEditor extends Component {
     }
     /**
      * @hidden
+     * @deprecated
      */
     getToolbar() {
         return this.toolbarModule ? this.toolbarModule.getToolbarElement() : null;
     }
     /**
      * @hidden
+     * @deprecated
      */
     getToolbarElement() {
         return this.toolbarModule && this.toolbarModule.getToolbarElement();
     }
+    /**
+     * getID method
+     * @hidden
+     * @deprecated
+     */
     getID() {
         return (this.originalElement.tagName === 'TEXTAREA' ? this.valueContainer.id : this.element.id);
     }
@@ -18082,6 +19417,11 @@ let RichTextEditor = class RichTextEditor extends Component {
             e.preventDefault();
         }
     }
+    /**
+     * preventDefaultResize method
+     * @hidden
+     * @deprecated
+     */
     preventDefaultResize(e) {
         if (Browser.info.name === 'msie') {
             this.contentModule.getEditPanel().addEventListener('mscontrolselect', this.preventImgResize);
@@ -18227,6 +19567,11 @@ let RichTextEditor = class RichTextEditor extends Component {
             this.isRTE = true;
         }
     }
+    /**
+     * invokeChangeEvent method
+     * @hidden
+     * @deprecated
+     */
     invokeChangeEvent() {
         let eventArgs = {
             value: this.value
@@ -18238,6 +19583,7 @@ let RichTextEditor = class RichTextEditor extends Component {
     }
     /**
      * @hidden
+     * @deprecated
      */
     wireScrollElementsEvents() {
         this.scrollParentElements = getScrollableParent(this.element);
@@ -18264,6 +19610,7 @@ let RichTextEditor = class RichTextEditor extends Component {
     }
     /**
      * @hidden
+     * @deprecated
      */
     unWireScrollElementsEvents() {
         this.scrollParentElements = getScrollableParent(this.element);
@@ -18291,6 +19638,7 @@ let RichTextEditor = class RichTextEditor extends Component {
     }
     /**
      * @hidden
+     * @deprecated
      */
     autoResize() {
         if (this.height === 'auto') {
@@ -18299,7 +19647,8 @@ let RichTextEditor = class RichTextEditor extends Component {
             }
             else if (this.iframeSettings.enable) {
                 let iframeElement = this.element.querySelector('#' + this.getID() + '_rte-view');
-                setTimeout(() => { this.setAutoHeight(iframeElement); }, 0);
+                setTimeout(() => { this.setAutoHeight(iframeElement); }, 100);
+                this.inputElement.style.overflow = 'hidden';
             }
         }
         else {
@@ -18321,7 +19670,8 @@ let RichTextEditor = class RichTextEditor extends Component {
     }
     restrict(e) {
         if (this.maxLength >= 0) {
-            let element = e.currentTarget.textContent.trim();
+            let element = this.editorMode === 'Markdown' ? this.contentModule.getText() :
+                e.currentTarget.textContent.trim();
             let array = [8, 16, 17, 37, 38, 39, 40, 46, 65];
             let arrayKey;
             for (let i = 0; i <= array.length - 1; i++) {
@@ -18464,8 +19814,14 @@ __decorate$1([
     Property(true)
 ], RichTextEditor.prototype, "enabled", void 0);
 __decorate$1([
+    Property(true)
+], RichTextEditor.prototype, "enableHtmlSanitizer", void 0);
+__decorate$1([
     Property(false)
 ], RichTextEditor.prototype, "enableHtmlEncode", void 0);
+__decorate$1([
+    Property(false)
+], RichTextEditor.prototype, "enableXhtml", void 0);
 __decorate$1([
     Property('auto')
 ], RichTextEditor.prototype, "height", void 0);
@@ -18643,5 +19999,5 @@ RichTextEditor = __decorate$1([
  * RichTextEditor component exported items
  */
 
-export { Toolbar$1 as Toolbar, KeyboardEvents$1 as KeyboardEvents, BaseToolbar, BaseQuickToolbar, QuickToolbar, Count, ColorPickerInput, MarkdownToolbarStatus, ExecCommandCallBack, ToolbarAction, MarkdownEditor, HtmlEditor, PasteCleanup, Resize, HTMLFormatter, Formatter, MarkdownFormatter, ContentRender, Render, ToolbarRenderer, Link, Image, ViewSource, Table, RichTextEditor, RenderType, ToolbarType, executeGroup, created, destroyed, load, initialLoad, initialEnd, iframeMouseDown, destroy, toolbarClick, toolbarRefresh, refreshBegin, toolbarUpdated, bindOnEnd, renderColorPicker, htmlToolbarClick, markdownToolbarClick, destroyColorPicker, modelChanged, keyUp, keyDown, mouseUp, toolbarCreated, toolbarRenderComplete, enableFullScreen, disableFullScreen, dropDownSelect, beforeDropDownItemRender, execCommandCallBack, imageToolbarAction, linkToolbarAction, resizeStart, onResize, resizeStop, undo, redo, insertLink, unLink, editLink, openLink, actionBegin, actionComplete, toolbarStatusUpdate, actionSuccess, updateToolbarItem, insertImage, insertCompleted, imageLeft, imageRight, imageCenter, imageBreak, imageInline, imageLink, imageAlt, imageDelete, imageCaption, imageSize, sourceCode, updateSource, toolbarOpen, beforeDropDownOpen, selectionSave, selectionRestore, expandPopupClick, count, contentFocus, contentBlur, mouseDown, sourceCodeMouseDown, editAreaClick, scroll, contentscroll, colorPickerChanged, tableColorPickerChanged, focusChange, selectAll$1 as selectAll, selectRange, getSelectedHtml, renderInlineToolbar, paste, imgModule, rtlMode, createTable, docClick, tableToolbarAction, checkUndo, readOnlyMode, pasteClean, beforeDialogOpen, dialogOpen, dialogClose, beforeQuickToolbarOpen, quickToolbarOpen, quickToolbarClose, popupHide, imageSelected, imageUploading, imageUploadSuccess, imageUploadFailed, imageRemoving, drop, ServiceLocator, RendererFactory, EditorManager, IMAGE, TABLE, LINK, INSERT_ROW, INSERT_COLUMN, DELETEROW, DELETECOLUMN, REMOVETABLE, TABLEHEADER, TABLE_VERTICAL_ALIGN, ALIGNMENT_TYPE, INDENT_TYPE, DEFAULT_TAG, BLOCK_TAGS, IGNORE_BLOCK_TAGS, TABLE_BLOCK_TAGS, SELECTION_TYPE, INSERTHTML_TYPE, INSERT_TEXT_TYPE, CLEAR_TYPE, Lists, markerClassName, DOMNode, Alignments, Indents, Formats, LinkCommand, InsertMethods, InsertHtml, IsFormatted, NodeCutter, ImageCommand, SelectionCommands, SelectionBasedExec, ClearFormat$1 as ClearFormat, ClearFormatExec, UndoRedoManager, TableCommand, statusCollection, ToolbarStatus, NodeSelection, MarkdownParser, LISTS_COMMAND, selectionCommand, LINK_COMMAND, CLEAR_COMMAND, MD_TABLE, MDLists, MDFormats, MarkdownSelection, UndoRedoCommands, MDSelectionFormats, MDLink, markdownFormatTags, markdownSelectionTags, markdownListsTags, htmlKeyConfig, markdownKeyConfig, pasteCleanupGroupingTags, listConversionFilters, selfClosingTags, KEY_DOWN, ACTION, FORMAT_TYPE, KEY_DOWN_HANDLER, LIST_TYPE, KEY_UP_HANDLER, KEY_UP, MODEL_CHANGED_PLUGIN, MODEL_CHANGED, MS_WORD_CLEANUP_PLUGIN, MS_WORD_CLEANUP };
+export { Toolbar$1 as Toolbar, KeyboardEvents$1 as KeyboardEvents, BaseToolbar, BaseQuickToolbar, QuickToolbar, Count, ColorPickerInput, MarkdownToolbarStatus, ExecCommandCallBack, ToolbarAction, MarkdownEditor, HtmlEditor, PasteCleanup, Resize, DropDownButtons, FullScreen, setAttributes, HtmlToolbarStatus, XhtmlValidation, HTMLFormatter, Formatter, MarkdownFormatter, ContentRender, Render, ToolbarRenderer, Link, Image, ViewSource, Table, DialogRenderer, IframeContentRender, MarkdownRender, PopupRenderer, RichTextEditor, RenderType, ToolbarType, executeGroup, created, destroyed, load, initialLoad, initialEnd, iframeMouseDown, destroy, toolbarClick, toolbarRefresh, refreshBegin, toolbarUpdated, bindOnEnd, renderColorPicker, htmlToolbarClick, markdownToolbarClick, destroyColorPicker, modelChanged, keyUp, keyDown, mouseUp, toolbarCreated, toolbarRenderComplete, enableFullScreen, disableFullScreen, dropDownSelect, beforeDropDownItemRender, execCommandCallBack, imageToolbarAction, linkToolbarAction, resizeStart, onResize, resizeStop, undo, redo, insertLink, unLink, editLink, openLink, actionBegin, actionComplete, toolbarStatusUpdate, actionSuccess, updateToolbarItem, insertImage, insertCompleted, imageLeft, imageRight, imageCenter, imageBreak, imageInline, imageLink, imageAlt, imageDelete, imageCaption, imageSize, sourceCode, updateSource, toolbarOpen, beforeDropDownOpen, selectionSave, selectionRestore, expandPopupClick, count, contentFocus, contentBlur, mouseDown, sourceCodeMouseDown, editAreaClick, scroll, contentscroll, colorPickerChanged, tableColorPickerChanged, focusChange, selectAll$1 as selectAll, selectRange, getSelectedHtml, renderInlineToolbar, paste, imgModule, rtlMode, createTable, docClick, tableToolbarAction, checkUndo, readOnlyMode, pasteClean, beforeDialogOpen, dialogOpen, dialogClose, beforeQuickToolbarOpen, quickToolbarOpen, quickToolbarClose, popupHide, imageSelected, imageUploading, imageUploadSuccess, imageUploadFailed, imageRemoving, drop, xhtmlValidation, CLS_RTE, CLS_RTL, CLS_CONTENT, CLS_DISABLED, CLS_SCRIPT_SHEET, CLS_STYLE_SHEET, CLS_TOOLBAR, CLS_TB_FIXED, CLS_TB_FLOAT, CLS_TB_ABS_FLOAT, CLS_INLINE, CLS_TB_INLINE, CLS_RTE_EXPAND_TB, CLS_FULL_SCREEN, CLS_QUICK_TB, CLS_POP, CLS_QUICK_POP, CLS_QUICK_DROPDOWN, CLS_IMAGE_POP, CLS_INLINE_POP, CLS_INLINE_DROPDOWN, CLS_DROPDOWN_POPUP, CLS_DROPDOWN_ICONS, CLS_DROPDOWN_ITEMS, CLS_DROPDOWN_BTN, CLS_RTE_CONTENT, CLS_TB_ITEM, CLS_TB_EXTENDED, CLS_TB_WRAP, CLS_POPUP, CLS_SEPARATOR, CLS_MINIMIZE, CLS_MAXIMIZE, CLS_BACK, CLS_SHOW, CLS_HIDE, CLS_VISIBLE, CLS_FOCUS, CLS_RM_WHITE_SPACE, CLS_IMGRIGHT, CLS_IMGLEFT, CLS_IMGCENTER, CLS_IMGBREAK, CLS_CAPTION, CLS_CAPINLINE, CLS_IMGINLINE, CLS_COUNT, CLS_WARNING, CLS_ERROR, CLS_ICONS, CLS_ACTIVE, CLS_EXPAND_OPEN, CLS_RTE_ELEMENTS, CLS_TB_BTN, CLS_HR_SEPARATOR, CLS_TB_IOS_FIX, CLS_TB_STATIC, CLS_FORMATS_TB_BTN, CLS_FONT_NAME_TB_BTN, CLS_FONT_SIZE_TB_BTN, CLS_FONT_COLOR_TARGET, CLS_BACKGROUND_COLOR_TARGET, CLS_COLOR_CONTENT, CLS_FONT_COLOR_DROPDOWN, CLS_BACKGROUND_COLOR_DROPDOWN, CLS_COLOR_PALETTE, CLS_FONT_COLOR_PICKER, CLS_BACKGROUND_COLOR_PICKER, CLS_RTE_READONLY, CLS_TABLE_SEL, CLS_TB_DASH_BOR, CLS_TB_ALT_BOR, CLS_TB_COL_RES, CLS_TB_ROW_RES, CLS_TB_BOX_RES, CLS_RTE_HIDDEN, CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_REMOVE_FORMAT, CLS_RTE_PASTE_PLAIN_FORMAT, CLS_RTE_PASTE_OK, CLS_RTE_PASTE_CANCEL, CLS_RTE_DIALOG_MIN_HEIGHT, CLS_RTE_RES_HANDLE, CLS_RTE_RES_EAST, CLS_RTE_IMAGE, CLS_RESIZE, CLS_IMG_FOCUS, CLS_RTE_DRAG_IMAGE, CLS_RTE_UPLOAD_POPUP, CLS_POPUP_OPEN, CLS_IMG_RESIZE, CLS_DROPAREA, CLS_IMG_INNER, CLS_UPLOAD_FILES, CLS_RTE_DIALOG_UPLOAD, CLS_RTE_RES_CNT, CLS_CUSTOM_TILE, CLS_NOCOLOR_ITEM, CLS_TABLE_BORDER, getIndex, hasClass, getDropDownValue, isIDevice, getFormattedFontSize, pageYOffset, getTooltipText, setToolbarStatus, getCollection, getTBarItemsIndex, updateUndoRedoStatus, dispatchEvent, parseHtml, getTextNodesUnder, toObjectLowerCase, getEditValue, updateTextNode, isEditableValueEmpty, decode, sanitizeHelper, ServiceLocator, RendererFactory, EditorManager, IMAGE, TABLE, LINK, INSERT_ROW, INSERT_COLUMN, DELETEROW, DELETECOLUMN, REMOVETABLE, TABLEHEADER, TABLE_VERTICAL_ALIGN, ALIGNMENT_TYPE, INDENT_TYPE, DEFAULT_TAG, BLOCK_TAGS, IGNORE_BLOCK_TAGS, TABLE_BLOCK_TAGS, SELECTION_TYPE, INSERTHTML_TYPE, INSERT_TEXT_TYPE, CLEAR_TYPE, CLASS_IMAGE_RIGHT, CLASS_IMAGE_LEFT, CLASS_IMAGE_CENTER, CLASS_IMAGE_BREAK, CLASS_CAPTION, CLASS_CAPTION_INLINE, CLASS_IMAGE_INLINE, Lists, markerClassName, DOMNode, Alignments, Indents, Formats, LinkCommand, InsertMethods, InsertTextExec, InsertHtmlExec, InsertHtml, IsFormatted, MsWordPaste, NodeCutter, ImageCommand, SelectionCommands, SelectionBasedExec, ClearFormatExec, UndoRedoManager, TableCommand, statusCollection, ToolbarStatus, NodeSelection, MarkdownParser, LISTS_COMMAND, selectionCommand, LINK_COMMAND, CLEAR_COMMAND, MD_TABLE, ClearFormat, MDLists, MDFormats, MarkdownSelection, UndoRedoCommands, MDSelectionFormats, MDLink, MDTable, markdownFormatTags, markdownSelectionTags, markdownListsTags, htmlKeyConfig, markdownKeyConfig, pasteCleanupGroupingTags, listConversionFilters, selfClosingTags, KEY_DOWN, ACTION, FORMAT_TYPE, KEY_DOWN_HANDLER, LIST_TYPE, KEY_UP_HANDLER, KEY_UP, MODEL_CHANGED_PLUGIN, MODEL_CHANGED, MS_WORD_CLEANUP_PLUGIN, MS_WORD_CLEANUP };
 //# sourceMappingURL=ej2-richtexteditor.es2015.js.map

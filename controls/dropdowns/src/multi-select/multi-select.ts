@@ -1,13 +1,13 @@
 /// <reference path='../drop-down-base/drop-down-base-model.d.ts'/>
 import { DropDownBase, SelectEventArgs, dropDownBaseClasses, PopupEventArgs, FilteringEventArgs } from '../drop-down-base/drop-down-base';
-import { ResultData, FocusEventArgs, BeforeOpenEventArgs } from '../drop-down-base/drop-down-base';
+import { ResultData, FocusEventArgs, BeforeOpenEventArgs, FilterType, FieldSettings } from '../drop-down-base/drop-down-base';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { Popup, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { IInput, FloatLabelType } from '@syncfusion/ej2-inputs';
 import { attributes, setValue } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, extend } from '@syncfusion/ej2-base';
 import { EventHandler, Property, Event, compile, L10n, EmitType, KeyboardEventArgs } from '@syncfusion/ej2-base';
-import { Animation, AnimationModel, Browser, prepend, isBlazor } from '@syncfusion/ej2-base';
+import { Animation, AnimationModel, Browser, prepend, isBlazor, Complex } from '@syncfusion/ej2-base';
 import { MultiSelectModel } from '../multi-select';
 import { Search } from '../common/incremental-search';
 import { append, addClass, removeClass, closest, detach, remove, select } from '@syncfusion/ej2-base';
@@ -93,6 +93,135 @@ export class MultiSelect extends DropDownBase implements IInput {
     private keyAction: boolean;
     private isSelectAll: boolean;
 
+    /**
+     * The `fields` property maps the columns of the data table and binds the data to the component.
+     * * text - Maps the text column from data table for each list item.
+     * * value - Maps the value column from data table for each list item.
+     * * iconCss - Maps the icon class column from data table for each list item.
+     * * groupBy - Group the list items with it's related items by mapping groupBy field.
+     * ```html
+     * <input type="text" tabindex="1" id="list"> </input>
+     * ```
+     * ```typescript  
+     *   let customers: MultiSelect = new MultiSelect({
+     *      dataSource:new DataManager({ url:'http://js.syncfusion.com/demos/ejServices/Wcf/Northwind.svc/' }),
+     *      query: new Query().from('Customers').select(['ContactName', 'CustomerID']).take(5),
+     *      fields: { text: 'ContactName', value: 'CustomerID' },
+     *      placeholder: 'Select a customer'
+     *   });
+     *   customers.appendTo("#list");
+     * ```
+     * @default {text: null, value: null, iconCss: null, groupBy: null}
+     */
+    @Complex<FieldSettingsModel>({ text: null, value: null, iconCss: null, groupBy: null }, FieldSettings)
+    public fields: FieldSettingsModel;
+    /**
+     * Enable or disable persisting MultiSelect component's state between page reloads. 
+     * If enabled, following list of states will be persisted.
+     * 1. value
+     * @default false
+     */
+    @Property(false)
+    public enablePersistence: boolean;
+    /**
+     * Accepts the template design and assigns it to the group headers present in the MultiSelect popup list.
+     * @default null
+     */
+    @Property(null)
+    public groupTemplate: string;
+    /**
+     * Accepts the template design and assigns it to popup list of MultiSelect component
+     * when no data is available on the component.
+     * @default 'No Records Found'
+     */
+    @Property('No Records Found')
+    public noRecordsTemplate: string;
+    /**
+     * Accepts the template and assigns it to the popup list content of the MultiSelect component
+     * when the data fetch request from the remote server fails.
+     * @default 'The Request Failed'
+     */
+    @Property('The Request Failed')
+    public actionFailureTemplate: string;
+    /**
+     * Specifies the `sortOrder` to sort the data source. The available type of sort orders are
+     * * `None` - The data source is not sorting.
+     * * `Ascending` - The data source is sorting with ascending order.
+     * * `Descending` - The data source is sorting with descending order.
+     * @default None
+     */
+    @Property<SortOrder>('None')
+    public sortOrder: SortOrder;
+    /**
+     * Specifies a value that indicates whether the MultiSelect component is enabled or not.
+     * @default true
+     */
+    @Property(true)
+    public enabled: boolean;
+    /**
+     * Accepts the list items either through local or remote service and binds it to the MultiSelect component.
+     * It can be an array of JSON Objects or an instance of
+     * `DataManager`.
+     * @default []
+     */
+    @Property([])
+    public dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
+    /**
+     * Accepts the external `Query`
+     * which will execute along with the data processing in MultiSelect.
+     * @default null
+     */
+    @Property(null)
+    public query: Query;
+    /**   
+     * Determines on which filter type, the MultiSelect component needs to be considered on search action. 
+     * The `FilterType` and its supported data types are 
+     * 
+     * <table> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * FilterType<br/></td><td colSpan=1 rowSpan=1> 
+     * Description<br/></td><td colSpan=1 rowSpan=1> 
+     * Supported Types<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * StartsWith<br/></td><td colSpan=1 rowSpan=1> 
+     * Checks whether a value begins with the specified value.<br/></td><td colSpan=1 rowSpan=1> 
+     * String<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * EndsWith<br/></td><td colSpan=1 rowSpan=1> 
+     * Checks whether a value ends with specified value.<br/><br/></td><td colSpan=1 rowSpan=1> 
+     * <br/>String<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * Contains<br/></td><td colSpan=1 rowSpan=1> 
+     * Checks whether a value contains with specified value.<br/><br/></td><td colSpan=1 rowSpan=1> 
+     * <br/>String<br/></td></tr> 
+     * </table>
+     * 
+     * The default value set to `StartsWith`, all the suggestion items which contain typed characters to listed in the suggestion popup.
+     * @default 'StartsWith'
+     */
+    @Property('StartsWith')
+    public filterType: FilterType;
+    /**
+     * specifies the z-index value of the component popup element.
+     * @default 1000
+     */
+    @Property(1000)
+    public zIndex: number;
+    /**
+     * ignoreAccent set to true, then ignores the diacritic characters or accents when filtering.
+     */
+    @Property(false)
+    public ignoreAccent: boolean;
+    /**
+     * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
+     * @default 'en-US'
+     */
+    @Property()
+    public locale: string;
     /**
      * Specifies a Boolean value that indicates the whether the grouped list items are 
      * allowed to check by checking the group header in checkbox mode.
@@ -975,63 +1104,8 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.showOverAllClear();
             switch (e.keyCode) {
                 default:
-                    if (!this.isPopupOpen() && this.openOnClick) {
-                        this.showPopup();
-                    }
-                    this.openClick(e);
-                    if (this.checkTextLength() && !this.allowFiltering && (e.keyCode !== 8)) {
-                        this.focusAtFirstListItem();
-                    } else {
-                        let text: string = this.targetElement();
-                        this.keyCode = e.keyCode;
-                        if (this.allowFiltering) {
-                            let eventArgs: { [key: string]: Object } = {
-                                preventDefaultAction: false,
-                                text: this.targetElement(),
-                                updateData: (
-                                    dataSource: {
-                                        [key: string]: Object
-                                    }[] | DataManager | string[] | number[], query?: Query, fields?: FieldSettingsModel) => {
-                                    if (eventArgs.cancel) { return; }
-                                    this.isFiltered = true;
-                                    this.remoteFilterAction = true;
-                                    this.dataUpdater(dataSource, query, fields);
-                                },
-                                event: e,
-                                cancel: false
-                            };
-                            this.trigger('filtering', eventArgs, (eventArgs: FilteringEventArgs) => {
-                                if (!eventArgs.cancel) {
-                                    if (!this.isFiltered && !eventArgs.preventDefaultAction) {
-                                        this.filterAction = true;
-                                        this.dataUpdater(this.dataSource, null, this.fields);
-                                    }
-                                }
-                            });
-                        } else if (this.allowCustomValue) {
-                            let query: Query = new Query();
-                            query = (text !== '') ? query.where(
-                                this.fields.text, 'startswith', text, this.ignoreCase, this.ignoreAccent) : query;
-                            this.dataUpdater(this.mainData, query, this.fields);
-                            break;
-                        } else {
-                            let liCollections: HTMLElement[];
-                            liCollections = <HTMLElement[] & NodeListOf<Element>>
-                                this.list.querySelectorAll('li.' + dropDownBaseClasses.li + ':not(.e-hide-listitem)');
-                            let activeElement: { [key: string]: Element | number } =
-                                Search(this.targetElement(), liCollections, 'StartsWith', this.ignoreCase);
-
-                            if (activeElement && activeElement.item !== null) {
-                                this.addListFocus((<HTMLElement>activeElement.item));
-                                this.list.scrollTop =
-                                    (<HTMLElement>activeElement.item).offsetHeight * (<number>activeElement.index);
-                            } else if (this.targetElement() !== '') {
-                                this.removeFocus();
-                            } else {
-                                this.focusAtFirstListItem();
-                            }
-                        }
-                    }
+                    // For filtering works in mobile firefox
+                    this.search(e);
             }
         }
     }
@@ -2445,14 +2519,77 @@ export class MultiSelect extends DropDownBase implements IInput {
         EventHandler.add(this.componentWrapper, 'mouseout', this.mouseOut, this);
         EventHandler.add(this.overAllClear, 'mouseup', this.ClearAll, this);
     }
-    private onInput(): void {
+    private onInput(e: KeyboardEventArgs): void {
         if (this.keyDownStatus) {
             this.isValidKey = true;
         } else {
             this.isValidKey = false;
         }
         this.keyDownStatus = false;
+        // For Filtering works in mobile firefox
+        if (Browser.isDevice && Browser.info.name === 'mozilla') {
+            this.search(e);
+        }
     }
+    private search(e: KeyboardEventArgs): void {
+        if (!this.isPopupOpen() && this.openOnClick) {
+            this.showPopup();
+        }
+        this.openClick(e);
+        if (this.checkTextLength() && !this.allowFiltering && (e.keyCode !== 8)) {
+            this.focusAtFirstListItem();
+        } else {
+            let text: string = this.targetElement();
+            this.keyCode = e.keyCode;
+            if (this.allowFiltering) {
+                let eventArgs: { [key: string]: Object } = {
+                    preventDefaultAction: false,
+                    text: this.targetElement(),
+                    updateData: (
+                        dataSource: {
+                            [key: string]: Object
+                        }[] | DataManager | string[] | number[], query?: Query, fields?: FieldSettingsModel) => {
+                        if (eventArgs.cancel) { return; }
+                        this.isFiltered = true;
+                        this.remoteFilterAction = true;
+                        this.dataUpdater(dataSource, query, fields);
+                    },
+                    event: e,
+                    cancel: false
+                };
+                this.trigger('filtering', eventArgs, (eventArgs: FilteringEventArgs) => {
+                    if (!eventArgs.cancel) {
+                        if (!this.isFiltered && !eventArgs.preventDefaultAction) {
+                            this.filterAction = true;
+                            this.dataUpdater(this.dataSource, null, this.fields);
+                        }
+                    }
+                });
+            } else if (this.allowCustomValue) {
+                let query: Query = new Query();
+                query = (text !== '') ? query.where(
+                    this.fields.text, 'startswith', text, this.ignoreCase, this.ignoreAccent) : query;
+                this.dataUpdater(this.mainData, query, this.fields);
+            } else {
+                let liCollections: HTMLElement[];
+                liCollections = <HTMLElement[] & NodeListOf<Element>>
+                    this.list.querySelectorAll('li.' + dropDownBaseClasses.li + ':not(.e-hide-listitem)');
+                let activeElement: { [key: string]: Element | number } =
+                    Search(this.targetElement(), liCollections, 'StartsWith', this.ignoreCase);
+
+                if (activeElement && activeElement.item !== null) {
+                    this.addListFocus((<HTMLElement>activeElement.item));
+                    this.list.scrollTop =
+                        (<HTMLElement>activeElement.item).offsetHeight * (<number>activeElement.index);
+                } else if (this.targetElement() !== '') {
+                    this.removeFocus();
+                } else {
+                    this.focusAtFirstListItem();
+                }
+            }
+        }
+    }
+
     protected preRender(): void {
         if (this.allowFiltering === null) {
             this.allowFiltering = (this.mode === 'CheckBox') ? true : false;
@@ -2583,12 +2720,10 @@ export class MultiSelect extends DropDownBase implements IInput {
             if (this.mode === 'CheckBox' && this.showSelectAll && (isNullOrUndefined(this.value) || !this.value.length)) {
                 this.notify('checkSelectAll', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', value: 'uncheck' });
             }
-            if (!this.inputFocus) {
-                if (this.mode === 'Box') {
-                    this.chipCollectionWrapper.style.display = '';
-                } else if (this.mode === 'Delimiter' || this.mode === 'CheckBox') {
-                    this.showDelimWrapper();
-                }
+            if (this.mode === 'Box') {
+                this.chipCollectionWrapper.style.display = '';
+            } else if (this.mode === 'Delimiter' || this.mode === 'CheckBox') {
+                this.showDelimWrapper();
             }
         }
     }

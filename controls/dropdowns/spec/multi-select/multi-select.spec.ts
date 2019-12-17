@@ -6576,4 +6576,43 @@ describe('MultiSelect', () => {
             expect(listObj.value === null).toBe(true);
         });
     });
+    describe('Update value in focus state', () => {
+        let listObj: MultiSelect;
+        let divElement: HTMLElement = createElement('div', { id: 'divElement' });
+        divElement.style.height = '900px';
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { 'type': 'text' } });
+        let empList: { [key: string]: Object }[] = [
+            { id: 'list1', text: 'JAVA', icon: 'icon' },
+            { id: 'list2', text: 'C#' },
+            { id: 'list3', text: 'C++' },
+            { id: 'list4', text: '.NET', icon: 'icon' },
+            { id: 'list5', text: 'Oracle' },
+            { id: 'list6', text: 'GO' },
+            { id: 'list7', text: 'Haskell' }
+        ];
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+        it('Update value', () => {
+            let listObj: MultiSelect = new MultiSelect({
+                dataSource: empList,
+                fields: { text: 'text', value: 'text' },
+                mode : 'Box',
+                created: function(e) {
+                    listObj.focusIn();
+                    listObj.value = ['GO'];
+                }
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            expect((<HTMLElement>(<any>listObj).ulElement.querySelector('li[data-value="GO"]')).style.display === '').toBe(true);
+        });
+    });
 });

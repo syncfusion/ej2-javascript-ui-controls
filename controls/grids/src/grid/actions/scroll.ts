@@ -56,10 +56,10 @@ export class Scroll implements IAction {
      */
     public setHeight(): void {
         let mHdrHeight: number = 0;
-        let content: HTMLElement = (<HTMLElement>this.parent.getContent().firstChild);
+        let content: HTMLElement = (<HTMLElement>this.parent.getContent().querySelector('.e-content'));
         if (this.parent.frozenRows && this.parent.height !== 'auto') {
-            mHdrHeight =
-                (this.parent.getHeaderContent().querySelector('tbody') as HTMLElement).offsetHeight;
+            let tbody: HTMLElement = (this.parent.getHeaderContent().querySelector('tbody') as HTMLElement);
+            mHdrHeight = tbody ? tbody.offsetHeight : 0;
             content.style.height = formatUnit((this.parent.height as number) - mHdrHeight);
         } else {
             content.style.height = formatUnit(this.parent.height);
@@ -72,10 +72,8 @@ export class Scroll implements IAction {
     public setPadding(): void {
         let content: HTMLElement = <HTMLElement>this.parent.getHeaderContent();
         let scrollWidth: number = Scroll.getScrollBarWidth() - this.getThreshold();
-
         let cssProps: ScrollCss = this.getCssProperties();
-        (<HTMLElement>content.firstChild).style[cssProps.border] = scrollWidth > 0 ? '1px' : '0px';
-
+        (<HTMLElement>content.querySelector('.e-headercontent')).style[cssProps.border] = scrollWidth > 0 ? '1px' : '0px';
         content.style[cssProps.padding] = scrollWidth > 0 ? scrollWidth + 'px' : '0px';
     }
     /**
@@ -83,8 +81,9 @@ export class Scroll implements IAction {
      */
     public removePadding(rtl?: boolean): void {
         let cssProps: ScrollCss = this.getCssProperties(rtl);
-        (<HTMLDivElement>this.parent.getHeaderContent().firstChild).style[cssProps.border] = '';
-        (<HTMLDivElement>this.parent.getHeaderContent().firstChild).parentElement.style[cssProps.padding] = '';
+        let hDiv: HTMLDivElement = (<HTMLDivElement>this.parent.getHeaderContent().querySelector('.e-headercontent'));
+        hDiv.style[cssProps.border] = '';
+        hDiv.parentElement.style[cssProps.padding] = '';
     }
     /**
      * Refresh makes the Grid adoptable with the height of parent container.
@@ -214,7 +213,8 @@ export class Scroll implements IAction {
             let left: number = element.scrollLeft + (this.pageXY.x - pageXY.x);
             if (this.parent.getHeaderContent().contains(e.target as Element)) {
                 mHdr = this.parent.getFrozenColumns() ?
-                    this.parent.getHeaderContent().querySelector('.e-movableheader') : this.parent.getHeaderContent().firstChild as Element;
+                    this.parent.getHeaderContent().querySelector('.e-movableheader') :
+                    this.parent.getHeaderContent().querySelector('.e-headercontent') as Element;
                 if (this.previousValues.left === left || (left < 0 || (mHdr.scrollWidth - mHdr.clientWidth) < left)) {
                     return;
                 }
@@ -262,8 +262,8 @@ export class Scroll implements IAction {
     private wireEvents(): void {
         if (this.oneTimeReady) {
             let frzCols: number = this.parent.getFrozenColumns();
-            this.content = <HTMLDivElement>this.parent.getContent().firstChild;
-            this.header = <HTMLDivElement>this.parent.getHeaderContent().firstChild;
+            this.content = <HTMLDivElement>this.parent.getContent().querySelector('.e-content');
+            this.header = <HTMLDivElement>this.parent.getHeaderContent().querySelector('.e-headercontent');
             let mCont: HTMLElement = this.content.querySelector('.e-movablecontent') as HTMLElement;
             let fCont: HTMLElement = this.content.querySelector('.e-frozencontent') as HTMLElement;
             let mHdr: HTMLElement = this.header.querySelector('.e-movableheader') as HTMLElement;
@@ -379,17 +379,18 @@ export class Scroll implements IAction {
 
         //Remove padding
         this.removePadding();
-        removeClass([<HTMLDivElement>this.parent.getHeaderContent().firstChild], 'e-headercontent');
-        removeClass([<HTMLDivElement>this.parent.getContent().firstChild], 'e-content');
+        let cont: Element = this.parent.getContent().querySelector('.e-content');
+        removeClass([<HTMLDivElement>this.parent.getHeaderContent().querySelector('.e-headercontent')], 'e-headercontent');
+        removeClass([cont], 'e-content');
 
         //Remove height
-        (<HTMLDivElement>this.parent.getContent().firstChild).style.height = '';
+        (<HTMLDivElement>cont).style.height = '';
 
         //Remove width
         this.parent.element.style.width = '';
 
         //Remove Dom event
-        EventHandler.remove(<HTMLDivElement>this.parent.getContent().firstChild, 'scroll', this.onContentScroll);
+        EventHandler.remove(<HTMLDivElement>cont, 'scroll', this.onContentScroll);
     }
 
     /**

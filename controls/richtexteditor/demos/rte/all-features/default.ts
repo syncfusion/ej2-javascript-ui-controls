@@ -59,7 +59,7 @@ let defaultRTE: RichTextEditor = new RichTextEditor({
             'LowerCase', 'UpperCase', '|', 
             'Formats', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|',
             'Indent', 'Outdent', '|', 'CreateTable', '|', 'CreateLink', '|', 'Image', '|', 'SourceCode',
-            '|', 'ClearFormat', 'Print']
+            '|', 'ClearFormat', 'Print', 'InsertCode']
     },
     value: innerHTML
 });

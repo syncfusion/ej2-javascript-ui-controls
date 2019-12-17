@@ -109,3 +109,57 @@ export const renameSheet: string = 'renameSheet';
 export const enableToolbar: string = 'enableToolbar';
 /** @hidden */
 export const initiateCustomSort: string = 'initiateCustomSort';
+/** @hidden */
+export const applySort: string = 'applySort';
+/** @hidden */
+export const collaborativeUpdate: string = 'collaborativeUpdate';
+/** @hidden */
+export const hideShowRow: string = 'hideShowRow';
+/** @hidden */
+export const hideShowCol: string = 'hideShowCol';
+/** @hidden */
+export const autoFit: string = 'autoFitRowsColumns';
+/** @hidden */
+export const updateToggleItem: string = 'updateToggleItem';
+/** @hidden */
+export const initiateHyperlink: string = 'initiateHyperlink';
+/** @hidden */
+export const editHyperlink: string = 'editHyperlink';
+/** @hidden */
+export const openHyperlink: string = 'openHyperlink';
+/** @hidden */
+export const removeHyperlink: string = 'removeHyperlink';
+/** @hidden */
+export const createHyperlinkElement: string = 'createHyperlinkElement';
+/** @hidden */
+export const sheetNameUpdate: string = 'sheetNameUpdate';
+/** @hidden */
+export const performUndoRedo: string = 'performUndoRedo';
+/** @hidden */
+export const updateUndoRedoCollection: string = 'updateUndoRedoCollection';
+/** @hidden */
+export const setActionData: string = 'setActionData';
+/** @hidden */
+export const getBeforeActionData: string = 'getBeforeActionData';
+/** @hidden */
+export const clearUndoRedoCollection: string = 'clearUndoRedoCollection';
+/** @hidden */
+export const initiateFilterUI: string = 'initiateFilterUI';
+/** @hidden */
+export const renderFilterCell: string = 'renderFilterCell';
+/** @hidden */
+export const reapplyFilter: string = 'reapplyFilter';
+/** @hidden */
+export const filterByCellValue: string = 'filterByCellValue';
+/** @hidden */
+export const clearFilter: string = 'clearFilter';
+/** @hidden */
+export const getFilteredColumn: string = 'getFilteredColumn';
+/** @hidden */
+export const completeAction: string = 'actionComplete';
+/** @hidden */
+export const beginAction: string = 'actionBegin';
+/** @hidden */
+export const getFilterRange: string = 'getFilterRange';
+/** @hidden */
+export const filterCellKeyDown: string = 'filterCellKeyDown';

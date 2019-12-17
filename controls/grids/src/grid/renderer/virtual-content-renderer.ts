@@ -60,7 +60,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         this.header = <VirtualHeaderRenderer>this.locator.getService<RendererFactory>('rendererFactory').getRenderer(RenderType.Header);
         super.renderTable();
         this.virtualEle.table = <HTMLElement>this.getTable();
-        this.virtualEle.content = this.content = <HTMLElement>this.getPanel().firstChild;
+        this.virtualEle.content = this.content = <HTMLElement>this.getPanel().querySelector('.e-content');
         this.virtualEle.renderWrapper(<number>this.parent.height);
         this.virtualEle.renderPlaceHolder();
         if (!this.parent.getFrozenColumns()) {
@@ -640,10 +640,10 @@ export class VirtualHeaderRenderer extends HeaderRender implements IRenderer {
 
     public renderTable(): void {
         this.gen.refreshColOffsets();
-        this.parent.setColumnIndexesInView(this.gen.getColumnIndexes(<HTMLElement>this.getPanel().firstChild));
+        this.parent.setColumnIndexesInView(this.gen.getColumnIndexes(<HTMLElement>this.getPanel().querySelector('.e-headercontent')));
         super.renderTable();
         this.virtualEle.table = <HTMLElement>this.getTable();
-        this.virtualEle.content = <HTMLElement>this.getPanel().firstChild;
+        this.virtualEle.content = <HTMLElement>this.getPanel().querySelector('.e-headercontent');
         this.virtualEle.content.style.position = 'relative';
         this.virtualEle.renderWrapper();
         this.virtualEle.renderPlaceHolder('absolute');
@@ -659,7 +659,7 @@ export class VirtualHeaderRenderer extends HeaderRender implements IRenderer {
                 .setTable(this.parent.getMovableVirtualContent().querySelector('.e-table'));
         }
         this.gen.refreshColOffsets();
-        this.parent.setColumnIndexesInView(this.gen.getColumnIndexes(<HTMLElement>this.getPanel().firstChild));
+        this.parent.setColumnIndexesInView(this.gen.getColumnIndexes(<HTMLElement>this.getPanel().querySelector('.e-headercontent')));
         super.refreshUI();
         if (this.parent.getFrozenColumns() && this.parent.enableColumnVirtualization) {
             (<{ setTable?: Function }>(<Grid>this.parent).contentModule).setTable(this.parent.getFrozenVirtualContent()

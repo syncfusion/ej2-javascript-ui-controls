@@ -1,5 +1,5 @@
 import { Dialog, OffsetPosition, BeforeOpenEventArgs, Tooltip, ButtonPropsModel } from '@syncfusion/ej2-popups';
-import { Droppable, createElement, extend, remove, addClass, closest, getInstance } from '@syncfusion/ej2-base';
+import { Droppable, createElement, extend, remove, addClass, closest, getInstance, isBlazor } from '@syncfusion/ej2-base';
 import { prepend, append, KeyboardEvents, KeyboardEventArgs, removeClass } from '@syncfusion/ej2-base';
 import { IDataOptions, IFieldOptions, ICalculatedFields } from '../../base/engine';
 import { PivotView } from '../../pivotview/base/pivotview';
@@ -42,6 +42,8 @@ export class CalculatedField implements IAction {
     public parent: PivotView | PivotFieldList;
     /** @hidden */
     public isFormula: boolean = false;
+    /** @hidden */
+    public isRequireUpdate: boolean = false;
 
     /**
      * Internal variables.
@@ -470,23 +472,31 @@ export class CalculatedField implements IAction {
         }
         try {
             this.parent.updateDataSource(false);
-            let thisObj: CalculatedField = this;
-            //setTimeout(() => {
-            thisObj.isEdit = false;
-            if (thisObj.dialog) {
-                thisObj.dialog.close();
+            let pivot: PivotView = this.parent.getModuleName() === 'pivotfieldlist' ?
+                (this.parent as PivotFieldList).pivotGridModule : (this.parent as PivotView);
+            if (!(isBlazor() && pivot && pivot.enableVirtualization)) {
+                this.endDialog();
             } else {
-                thisObj.inputObj.value = '';
-                thisObj.formulaText = null;
-                thisObj.fieldText = null;
-                ((thisObj.parent as PivotFieldList).
-                    dialogRenderer.parentElement.querySelector('.' + cls.CALCINPUT) as HTMLInputElement).value = '';
-                ((thisObj.parent as PivotFieldList).
-                    dialogRenderer.parentElement.querySelector('#' + thisObj.parentID + 'droppable') as HTMLTextAreaElement).value = '';
+                this.isRequireUpdate = true;
             }
-            //});
         } catch (exception) {
             this.showError();
+        }
+    }
+
+    /** @hidden */
+    public endDialog(): void {
+        this.isEdit = false;
+        if (this.dialog) {
+            this.dialog.close();
+        } else {
+            this.inputObj.value = '';
+            this.formulaText = null;
+            this.fieldText = null;
+            ((this.parent as PivotFieldList).
+                dialogRenderer.parentElement.querySelector('.' + cls.CALCINPUT) as HTMLInputElement).value = '';
+            ((this.parent as PivotFieldList).
+                dialogRenderer.parentElement.querySelector('#' + this.parentID + 'droppable') as HTMLTextAreaElement).value = '';
         }
     }
 

@@ -1170,6 +1170,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
 
     private dataManagerSuccess(e: { result: Object, count: number }, isRemoteData: boolean = true): void {
         this.currentViewData = e.count ? e.result : [];
+        this.chart.allowServerDataBinding = false;
         if (this instanceof Series) {
             if (this.chart.stockChart) {
                 (this.chart.stockChart.series[this.index] as StockSeries).localData = this.currentViewData;

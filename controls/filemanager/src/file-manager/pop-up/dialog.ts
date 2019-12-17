@@ -77,6 +77,10 @@ export function createExtDialog(parent: IFileManager, text: string, replaceItems
         parent.extDialogObj.buttons = extOptions.buttons;
         parent.extDialogObj.enableRtl = parent.enableRtl;
         parent.extDialogObj.locale = parent.locale;
+        parent.extDialogObj.beforeOpen = beforeExtOpen.bind(this, parent, extOptions.dialogName);
+        parent.extDialogObj.beforeClose = (args: BeforeCloseEventArgs) => {
+            triggerPopupBeforeClose(parent, parent.extDialogObj, args, extOptions.dialogName);
+        };
         parent.extDialogObj.dataBind();
         parent.extDialogObj.show();
     }
@@ -516,8 +520,8 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
             options.dialogName = 'Error';
             let event: ReadArgs = (<ReadArgs>e);
             if (event.error.code === '401') {
-                options.header = '<span class="e-fe-icon e-fe-access-error"></span><div class="e-fe-access-header">' + 
-                getLocaleText(parent, 'Access-Denied')+'</div>';
+                options.header = '<span class="e-fe-icon e-fe-access-error"></span><div class="e-fe-access-header">' +
+                    getLocaleText(parent, 'Access-Denied') + '</div>';
             } else {
                 options.header = getLocaleText(parent, 'Error');
             }
@@ -585,6 +589,10 @@ function changeOptions(parent: IFileManager, options: DialogOptions): void {
     parent.dialogObj.enableRtl = parent.enableRtl;
     parent.dialogObj.open = options.open;
     parent.dialogObj.close = options.close;
+    parent.dialogObj.beforeOpen = keydownAction.bind(this, parent, options.dialogName);
+    parent.dialogObj.beforeClose = (args: BeforeCloseEventArgs) => {
+        triggerPopupBeforeClose(parent, parent.dialogObj, args, options.dialogName);
+    };
     parent.dialogObj.dataBind();
     parent.dialogObj.show();
 }

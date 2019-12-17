@@ -53,7 +53,7 @@ export class ContentRender implements IRenderer {
                     this.isLoaded = mHdr.length === fHdr.length;
                 }
             }
-            this.ariaService.setBusy(<HTMLElement>this.getPanel().firstChild, false);
+            this.ariaService.setBusy(<HTMLElement>this.getPanel().querySelector('.e-content'), false);
             if (this.parent.isDestroyed) { return; }
             let rows: Row<Column>[] = this.rows.slice(0);
             if (this.parent.getFrozenColumns() !== 0) {
@@ -109,7 +109,13 @@ export class ContentRender implements IRenderer {
      */
     public renderPanel(): void {
         let gObj: IGrid = this.parent;
-        let div: Element = this.parent.createElement('div', { className: 'e-gridcontent' });
+        let div: Element =  this.parent.element.querySelector('.e-gridcontent');
+        if (div) {
+            this.ariaService.setOptions(<HTMLElement>this.parent.element.querySelector('.e-content'), { busy: false });
+            this.setPanel(div);
+            return;
+        }
+        div = this.parent.createElement('div', { className: 'e-gridcontent' });
         let innerDiv: Element = this.parent.createElement('div', {
             className: 'e-content'
         });
@@ -147,12 +153,14 @@ export class ContentRender implements IRenderer {
      * @hidden
      */
     public createContentTable(id: String): Element {
-        let innerDiv: Element = <Element>this.getPanel().firstChild;
-        if (this.getTable()) {
-            remove(this.getTable());
+        let innerDiv: Element = <Element>this.getPanel().firstElementChild;
+        if (!isBlazor()) {
+            if (this.getTable()) {
+                remove(this.getTable());
+            }
         }
-        let table: Element = this.parent.createElement('table', {
-            className: 'e-table', attrs: {
+        let table: Element = innerDiv.querySelector('.e-table') ? innerDiv.querySelector('.e-table') :
+                             this.parent.createElement('table', {className: 'e-table', attrs: {
                 cellspacing: '0.25px', role: 'grid',
                 id: this.parent.element.id + id
             }
@@ -200,6 +208,45 @@ export class ContentRender implements IRenderer {
             }
         }
         let modelData: Row<Column>[];
+        let isServerRendered: string = 'isServerRendered';
+        if (isBlazor() && this.parent[isServerRendered]) {
+            modelData = this.generator.generateRows(dataSource, args);
+            this.rows = modelData;
+            this.freezeRows = modelData;
+            this.rowElements = <Element[]>[].slice.call(this.getTable().querySelectorAll('tr.e-row[data-uid]'));
+            if (frzCols) {
+                this.movableRows = <Row<Column>[]>modelData.map((mRow: Row<Column>) => {
+                    let sRow: Row<Column> = new Row<Column>(<{}>mRow);
+                    sRow.cells = mRow.cells.slice(frzCols, mRow.cells.length);
+                    mRow.cells = mRow.cells.slice(0, frzCols);
+                    return sRow;
+                });
+                this.freezeRowElements = this.rowElements;
+            }
+            this.isLoaded = true;
+            this.parent.hideSpinner();
+            args.isFrozen = this.parent.getFrozenColumns() !== 0 && !args.isFrozen;
+            let arg: object = extend({ rows: this.rows }, args);
+            if (this.getTable().querySelector('.e-emptyrow')) {
+                remove(this.getTable().querySelector('.e-emptyrow'));
+            }
+            if (frzCols) {
+                cont.style.overflowY = 'hidden';
+                (fCont as HTMLElement).style.height = ((mCont.offsetHeight) - getScrollBarWidth()) + 'px';
+                mCont.style.overflowY = this.parent.height !== 'auto' ? 'scroll' : 'auto';
+                (fCont as HTMLElement).style.borderRightWidth = '1px';
+                this.parent.notify(events.contentReady, { rows: this.movableRows, args: extend({}, arg, { isFrozen: false }) });
+            }
+            if (!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
+            || (!this.parent.isPersistSelection)) {
+                if (this.parent.editSettings.mode === 'Normal') {
+                    let rowIndex: string = 'editRowIndex';
+                    this.parent.selectRow(args[rowIndex]);
+                }
+            }
+            this.rafCallback(arg)();
+            return;
+        }
         if (this.parent.enableVirtualization && this.parent.getFrozenColumns()) {
             if (this.parent.enableColumnVirtualization) {
                 if (args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo.axis === 'X') {
@@ -517,6 +564,9 @@ export class ContentRender implements IRenderer {
      */
     public setVisible(columns?: Column[]): void {
         let gObj: IGrid = this.parent;
+        if (isBlazor() && gObj.isServerRendered) {
+            this.parent.notify('setvisibility', columns);
+        }
         let frzCols: number = gObj.getFrozenColumns();
         let rows: Row<Column>[] = [];
         if (frzCols) {

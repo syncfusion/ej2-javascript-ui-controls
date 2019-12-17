@@ -261,10 +261,20 @@ export class Toolbar {
         }
     }
 
+    /**
+     * addFixedTBarClass method
+     * @hidden
+     * @deprecated
+     */
     public addFixedTBarClass(): void {
         addClass([this.tbElement], [classes.CLS_TB_FIXED]);
     }
 
+    /**
+     * removeFixedTBarClass method
+     * @hidden
+     * @deprecated
+     */
     public removeFixedTBarClass(): void {
         removeClass([this.tbElement], [classes.CLS_TB_FIXED]);
     }
@@ -280,6 +290,11 @@ export class Toolbar {
         (!this.isToolbar) ? removeClass([this.tbElement], [classes.CLS_SHOW, classes.CLS_TB_IOS_FIX]) : this.isToolbar = false;
     }
 
+    /**
+     * updateItem method
+     * @hidden
+     * @deprecated
+     */
     public updateItem(args: IUpdateItemsModel): void {
         let item: IToolsItems = this.tools[args.updateItem.toLocaleLowerCase() as ToolbarItems];
         let trgItem: IToolsItems = this.tools[args.targetItem.toLocaleLowerCase() as ToolbarItems];
@@ -316,14 +331,29 @@ export class Toolbar {
         this.parent.fullScreenModule.hideFullScreen(e);
     }
 
+    /**
+     * getBaseToolbar method
+     * @hidden
+     * @deprecated
+     */
     public getBaseToolbar(): BaseToolbar {
         return this.baseToolbar;
     }
 
+    /**
+     * addTBarItem method
+     * @hidden
+     * @deprecated
+     */
     public addTBarItem(args: IUpdateItemsModel, index: number): void {
         args.baseToolbar.toolbarObj.addItems([args.baseToolbar.getObject(args.updateItem, 'toolbar')], index);
     }
 
+    /**
+     * enableTBarItems method
+     * @hidden
+     * @deprecated
+     */
     public enableTBarItems(baseToolbar: BaseToolbar, items: string | string[], isEnable: boolean , muteToolbarUpdate?: boolean): void {
         let trgItems: number[] = getTBarItemsIndex(getCollection(items), baseToolbar.toolbarObj.items);
         this.tbItems = selectAll('.' + classes.CLS_TB_ITEM, baseToolbar.toolbarObj.element);
@@ -336,6 +366,11 @@ export class Toolbar {
         }
     }
 
+    /**
+     * removeTBarItems method
+     * @hidden
+     * @deprecated
+     */
     public removeTBarItems(items: string | string[]): void {
         if (isNullOrUndefined(this.baseToolbar.toolbarObj)) {
             this.baseToolbar = this.parent.getBaseToolbarObject();
@@ -348,6 +383,11 @@ export class Toolbar {
         }
     }
 
+    /**
+     * getExpandTBarPopHeight method
+     * @hidden
+     * @deprecated
+     */
     public getExpandTBarPopHeight(): number {
         let popHeight: number = 0;
         if (this.parent.toolbarSettings.type === ToolbarType.Expand && this.tbElement.classList.contains('e-extended-toolbar')) {
@@ -364,14 +404,29 @@ export class Toolbar {
         return popHeight;
     }
 
+    /**
+     * getToolbarHeight method
+     * @hidden
+     * @deprecated
+     */
     public getToolbarHeight(): number {
         return this.tbElement.offsetHeight;
     }
 
+    /**
+     * getToolbarElement method
+     * @hidden
+     * @deprecated
+     */
     public getToolbarElement(): Element {
         return select('.' + classes.CLS_TOOLBAR, this.parent.element);
     }
 
+    /**
+     * refreshToolbarOverflow method
+     * @hidden
+     * @deprecated
+     */
     public refreshToolbarOverflow(): void {
         this.baseToolbar.toolbarObj.refreshOverflow();
     }
@@ -404,6 +459,7 @@ export class Toolbar {
      * @method destroy
      * @return {void}
      * @hidden
+     * @deprecated
      */
     public destroy(): void {
         if (this.isToolbarDestroyed()) {
@@ -519,6 +575,7 @@ export class Toolbar {
     /**
      * Called internally if any of the property value changed.
      * @hidden
+     * @deprecated
      */
     protected onPropertyChanged(e: { [key: string]: RichTextEditorModel }): void {
         if (!isNullOrUndefined(e.newProp.inlineMode)) {

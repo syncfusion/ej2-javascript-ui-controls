@@ -265,11 +265,17 @@ export class Magnification {
     private pinchOut(): void {
         this.fitType = null;
         let temporaryZoomFactor: number = this.zoomFactor + this.pinchStep;
-        if (temporaryZoomFactor > 2) {
-            temporaryZoomFactor = temporaryZoomFactor + this.pinchStep;
-        }
-        if (temporaryZoomFactor > 4) {
-            temporaryZoomFactor = 4;
+        if (Browser.isDevice) {
+            if (temporaryZoomFactor > 2) {
+                temporaryZoomFactor = 2;
+            }
+        } else {
+            if (temporaryZoomFactor > 2) {
+                temporaryZoomFactor = temporaryZoomFactor + this.pinchStep;
+            }
+            if (temporaryZoomFactor > 4) {
+                temporaryZoomFactor = 4;
+            }
         }
         this.isTapToFitZoom = true;
         this.isPinchZoomed = true;

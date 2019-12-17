@@ -1,4 +1,4 @@
-import { Property, NotifyPropertyChanges, INotifyPropertyChanged, Component, isBlazor } from '@syncfusion/ej2-base';import { addClass, Event, EmitType, detach, removeClass, rippleEffect, EventHandler, isRippleEnabled } from '@syncfusion/ej2-base';import { getTextNode } from '../common/common';
+import { Property, NotifyPropertyChanges, INotifyPropertyChanged, Component, isBlazor, isRippleEnabled } from '@syncfusion/ej2-base';import { addClass, Event, EmitType, detach, removeClass } from '@syncfusion/ej2-base';import { rippleEffect, EventHandler, Observer, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { getTextNode } from '../common/common';
 import {IconPosition} from "./button";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -39,12 +39,14 @@ export interface ButtonModel extends ComponentModel{
      * Defines class/multiple classes separated by a space in the Button element. The Button types, styles, and
      * size can be defined by using
      * [`this`](http://ej2.syncfusion.com/documentation/button/howto.html?lang=typescript#create-a-block-button).
+     * {% codeBlock src='button/cssClass/index.md' %}{% endcodeBlock %}
      * @default ""
      */
     cssClass?: string;
 
     /**
      * Defines the text `content` of the Button element.
+     * {% codeBlock src='button/content/index.md' %}{% endcodeBlock %}
      * @default ""
      */
     content?: string;
@@ -60,6 +62,12 @@ export interface ButtonModel extends ComponentModel{
      * @private
      */
     locale?: string;
+
+    /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default false
+     */
+    enableHtmlSanitizer?: boolean;
 
     /**
      * Triggers once the component rendering is completed.

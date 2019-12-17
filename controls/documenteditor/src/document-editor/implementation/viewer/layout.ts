@@ -11,7 +11,7 @@ import {
     BlockContainer, BlockWidget, BodyWidget, BookmarkElementBox, EditRangeEndElementBox, EditRangeStartElementBox,
     ElementBox, ErrorTextElementBox, FieldElementBox, FieldTextElementBox, HeaderFooterWidget, ImageElementBox, IWidget,
     LineWidget, ListTextElementBox, Margin, Page, ParagraphWidget, Rect, TabElementBox, TableCellWidget,
-    TableRowWidget, TableWidget, TextElementBox, Widget
+    TableRowWidget, TableWidget, TextElementBox, Widget, CommentElementBox
 } from './page';
 import { TextSizeInfo } from './text-helper';
 import { LayoutViewer, PageLayoutViewer } from './viewer';
@@ -121,6 +121,7 @@ export class Layout {
             }
             this.layoutSection(section, 0, this.viewer);
         }
+        this.layoutComments(this.viewer.comments);
         this.updateFieldElements();
         /* tslint:disable:align */
         setTimeout((): void => {
@@ -134,6 +135,16 @@ export class Layout {
                 this.isInitialLoad = false;
             }
         }, 50);
+    }
+    /**
+     * Layouts the comments
+     * @param comments
+     * @private
+     */
+    public layoutComments(comments: CommentElementBox[]): void {
+        if (!isNullOrUndefined(comments)) {
+            this.viewer.owner.commentReviewPane.layoutComments();
+        }
     }
     /**
      * Layouts the items
@@ -1682,7 +1693,7 @@ export class Layout {
      * @param document 
      * @private
      */
-    public getListNumber(listFormat: WListFormat): string {
+    public getListNumber(listFormat: WListFormat, isAutoList?: boolean): string {
         let list: WList = this.viewer.getListById(listFormat.listId);
         let levelNumber: number = listFormat.listLevelNumber;
         let listLevel: WListLevel = this.getListLevel(list, listFormat.listLevelNumber);
@@ -1701,7 +1712,9 @@ export class Layout {
         //         }
         //     }
         // }
-        this.updateListValues(list, levelNumber);
+        if (isNullOrUndefined(isAutoList)) {
+            this.updateListValues(list, levelNumber);
+        }
         return this.getListText(list, levelNumber, listLevel);
     }
     /**
@@ -4495,7 +4508,7 @@ export class Layout {
             if (!isNullOrUndefined(this.viewer.selection)) {
                 let fieldCode: string = this.viewer.selection.getFieldCode(fieldBegin);
                 // tslint:disable-next-line:max-line-length
-                if (!isNullOrUndefined(fieldCode) && fieldCode.toLowerCase().match('numpages') && !isNullOrUndefined(fieldBegin.fieldSeparator)) {
+                if (!isNullOrUndefined(fieldCode) && (fieldCode.toLowerCase().match('numpages') || fieldCode.toLowerCase().match('sectionpages')) && !isNullOrUndefined(fieldBegin.fieldSeparator)) {
                     let textElement: FieldTextElementBox = fieldBegin.fieldSeparator.nextNode as FieldTextElementBox;
                     if (!isNullOrUndefined(textElement)) {
                         let prevPageNum: string = textElement.text;

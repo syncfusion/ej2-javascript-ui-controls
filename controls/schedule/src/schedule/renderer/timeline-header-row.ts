@@ -1,6 +1,6 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
-import { MS_PER_DAY, getWeekNumber, getWeekLastDate } from '../base/util';
+import { MS_PER_DAY, getWeekNumber, getWeekLastDate, capitalizeFirstWord } from '../base/util';
 import { TdData, CellTemplateArgs } from '../base/interface';
 import { HeaderRowsModel } from '../models/header-rows-model';
 
@@ -40,7 +40,8 @@ export class TimelineHeaderRow {
         let result: { [key: number]: Date[] } = {};
         for (let d of dates) {
             let jsDate: number = +new Date(1970, 0, 1);
-            let key: number = Math.ceil(((((+d - jsDate)) / MS_PER_DAY) + new Date(jsDate).getDay() + 1) / 7);
+            let tzOffsetDiff: number = d.getTimezoneOffset() - new Date(1970, 0, 1).getTimezoneOffset();
+            let key: number = Math.ceil(((((+d - jsDate) - (tzOffsetDiff * 60 * 1000)) / MS_PER_DAY) + new Date(jsDate).getDay() + 1) / 7);
             result[key] = result[key] || [];
             result[key].push(d);
         }
@@ -66,7 +67,7 @@ export class TimelineHeaderRow {
                         viewTemplate = `<span class="e-header-year">${dateParser(dates[0], 'y')}</span>`;
                         break;
                     case 'Month':
-                        viewTemplate = `<span class="e-header-month">${dateParser(dates[0], 'MMMM')}</span>`;
+                        viewTemplate = `<span class="e-header-month">${capitalizeFirstWord(dateParser(dates[0], 'MMMM'), 'single')}</span>`;
                         break;
                     case 'Week':
                         let weekNumberDate: Date = getWeekLastDate(dates.slice(-1)[0], this.parent.firstDayOfWeek);

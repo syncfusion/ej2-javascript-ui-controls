@@ -1,9 +1,9 @@
 import { Component, EventHandler, Property, Event, EmitType, AnimationModel, KeyboardEvents, rippleEffect } from '@syncfusion/ej2-base';
 import { KeyboardEventArgs, BaseEventArgs, Effect, getUniqueID, compile as templateCompiler } from '@syncfusion/ej2-base';
-import { isVisible, closest, attributes, detach, select, isBlazor, addClass, append } from '@syncfusion/ej2-base';
+import { isVisible, closest, attributes, detach, select, blazorTemplates, isBlazor, addClass, append } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Collection, Animation } from '@syncfusion/ej2-base';
-import { setStyleAttribute as setStyle, Complex, updateBlazorTemplate } from '@syncfusion/ej2-base';
-import { isNullOrUndefined as isNOU, formatUnit, selectAll } from '@syncfusion/ej2-base';
+import { setStyleAttribute as setStyle, Complex, updateBlazorTemplate, resetBlazorTemplate} from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, formatUnit, selectAll, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { AccordionModel, AccordionItemModel, AccordionAnimationSettingsModel, AccordionActionSettingsModel } from './accordion-model';
 
 /**
@@ -349,12 +349,16 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      */
     public destroy(): void {
       let ele: HTEle = this.element;
+      this.resetBlazorTemplates();
       super.destroy();
       this.unwireEvents();
       this.isDestroy = true;
       this.restoreContent(null);
-      while (ele.firstElementChild) {
-        ele.removeChild(ele.firstElementChild); }
+      [].slice.call(ele.children).forEach((el: HTEle) => {
+        if (!el.classList.contains('blazor-template')) {
+          ele.removeChild(el);
+        }
+      });
       if (this.trgtEle) {
         while (this.ctrlTem.firstElementChild) {
           ele.appendChild(this.ctrlTem.firstElementChild); } }
@@ -381,6 +385,34 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         }
         if (!this.enablePersistence || isNOU(this.expandedItems)) {
           this.expandedItems = []; }
+    }
+    private resetBlazorTemplates(): void {
+      if (isBlazor() && !this.isStringTemplate) {
+        if (this.itemTemplate) {
+          // tslint:disable-next-line:no-any
+          (blazorTemplates as any)[this.element.id + '_itemTemplate'] = [];
+          resetBlazorTemplate(this.element.id + '_itemTemplate', 'ItemTemplate');
+        }
+        if (this.headerTemplate) {
+          // tslint:disable-next-line:no-any
+          (blazorTemplates as any)[this.element.id + '_headerTemplate'] = [];
+          resetBlazorTemplate(this.element.id + '_headerTemplate', 'HeaderTemplate');
+        }
+        if (!isNOU(this.items)) {
+          this.items.forEach((item: AccordionItemModel, index: number) => {
+            if (item && item.header && item.header.indexOf('<div>Blazor') === 0) {
+              // tslint:disable-next-line:no-any
+              (blazorTemplates as any)[this.element.id + index + '_header'] = [];
+              resetBlazorTemplate(this.element.id + index + '_header', 'HeaderTemplate');
+            }
+            if (item && item.content && item.content.indexOf('<div>Blazor') === 0) {
+              // tslint:disable-next-line:no-any
+              (blazorTemplates as any)[this.element.id + index + '_content'] = [];
+              resetBlazorTemplate(this.element.id + index + '_content', 'ContentTemplate');
+            }
+          });
+        }
+      }
     }
     private add(ele: HTEle, val: Str): void {
       ele.classList.add(val);
@@ -416,7 +448,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         }
     }
     private renderControl(): void {
-      this.trgtEle = (this.element.children.length > 0) ? <HTEle>select('div', this.element) : null;
+      this.trgtEle = (this.element.children.length > 0 &&
+        !(isBlazor() && !this.isStringTemplate)) ? <HTEle>select('div', this.element) : null;
       this.renderItems();
       this.initItemExpand();
     }
@@ -785,7 +818,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         }
       } catch (e) {
         if (typeof (value) === 'string' && isBlazor() && value.indexOf('<div>Blazor') !== 0) {
-          ele.innerHTML = value;
+          ele.innerHTML = SanitizeHtmlHelper.sanitize(value);
           /* tslint:disable */
         } else if (!isNOU(this.trgtEle) && ((value as any) instanceof (HTMLElement))) {
           ele.appendChild(value as any);
@@ -813,7 +846,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
           ele.appendChild(el);
         });
       } else if (ele.childElementCount === 0) {
-          ele.innerHTML = value;
+          ele.innerHTML = SanitizeHtmlHelper.sanitize(value);
       }
       if (!isNOU(temString)) {
         if (this.templateEle.indexOf(value) === -1) {
@@ -1304,6 +1337,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         }
       }
       if (isRefresh) {
+        this.resetBlazorTemplates();
         this.destroyItems();
         this.renderItems();
         this.initItemExpand();

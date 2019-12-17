@@ -117,6 +117,7 @@ export interface BeforeOpenEventArgs {
 export interface ActionBeginEventArgs {
     /**
      * Specify the query to begin the data
+     * @blazorType Syncfusion.EJ2.Blazor.Data.Query
      */
     query: Query;
     /**
@@ -154,6 +155,7 @@ export interface ActionCompleteEventArgs {
     count?: number;
     /**
      * Specify the query to complete the data
+     * @blazorType Syncfusion.EJ2.Blazor.Data.Query
      */
     query?: Query;
     /**
@@ -233,6 +235,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      *   customers.appendTo("#list");
      * ```
      * @default {text: null, value: null, iconCss: null, groupBy: null}
+     * @deprecated
      */
     @Complex<FieldSettingsModel>({ text: null, value: null, iconCss: null, groupBy: null }, FieldSettings)
     public fields: FieldSettingsModel;
@@ -241,6 +244,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * If enabled, following list of states will be persisted.
      * 1. value
      * @default false
+     * @deprecated
      */
     @Property(false)
     public enablePersistence: boolean;
@@ -251,12 +255,14 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * which provides options to compile template string into a executable function. 
      * For EX: We have expression evolution as like ES6 expression string literals. 
      * @default null
+     * @deprecated
      */
     @Property(null)
     public itemTemplate: string;
     /**
      * Accepts the template design and assigns it to the group headers present in the popup list.
      * @default null
+     * @deprecated
      */
     @Property(null)
     public groupTemplate: string;
@@ -264,6 +270,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * Accepts the template design and assigns it to popup list of component
      * when no data is available on the component.
      * @default 'No Records Found'
+     * @deprecated
      */
     @Property('No Records Found')
     public noRecordsTemplate: string;
@@ -271,6 +278,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * Accepts the template and assigns it to the popup list content of the component
      * when the data fetch request from the remote server fails.
      * @default 'The Request Failed'
+     * @deprecated
      */
     @Property('The Request Failed')
     public actionFailureTemplate: string;
@@ -280,12 +288,14 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * * `Ascending` - The data source is sorting with ascending order.
      * * `Descending` - The data source is sorting with descending order.
      * @default None
+     * @deprecated
      */
     @Property<SortOrder>('None')
     public sortOrder: SortOrder;
     /**
      * Specifies a value that indicates whether the component is enabled or not.
      * @default true
+     * @deprecated
      */
     @Property(true)
     public enabled: boolean;
@@ -294,6 +304,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * It can be an array of JSON Objects or an instance of
      * `DataManager`.
      * @default []
+     * @deprecated
      */
     @Property([])
     public dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];
@@ -301,6 +312,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * Accepts the external `Query`
      * which will execute along with the data processing.
      * @default null
+     * @deprecated
      */
     @Property(null)
     public query: Query;
@@ -333,6 +345,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * 
      * The default value set to `StartsWith`, all the suggestion items which contain typed characters to listed in the suggestion popup.
      * @default 'StartsWith'
+     * @deprecated
      */
     @Property('StartsWith')
     public filterType: FilterType;
@@ -340,23 +353,27 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * When set to ‘false’, consider the `case-sensitive` on performing the search to find suggestions.
      * By default consider the casing.
      * @default true
+     * @deprecated
      */
     @Property(true)
     public ignoreCase: boolean;
     /**
      * specifies the z-index value of the component popup element.
      * @default 1000
+     * @deprecated
      */
     @Property(1000)
     public zIndex: number;
     /**
      * ignoreAccent set to true, then ignores the diacritic characters or accents when filtering.
+     * @deprecated
      */
     @Property(false)
     public ignoreAccent: boolean;
     /**
      * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
      * @default 'en-US'
+     * @deprecated
      */
     @Property()
     public locale: string;
@@ -1058,7 +1075,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
 
     protected setFixedHeader(): void {
         this.list.parentElement.style.display = 'block';
-        let liWidth: number = this.liCollections[0].offsetWidth;
+        let borderWidth: number = 0;
+        if (this.list && this.list.parentElement) {
+            borderWidth = parseInt(
+                document.defaultView.getComputedStyle(this.list.parentElement, null).getPropertyValue('border-width'), 10
+            );
+        }
+        let liWidth: number = this.liCollections[0].offsetWidth - borderWidth;
         this.fixedHeaderElement.style.width = liWidth.toString() + 'px';
         setStyleAttribute(this.fixedHeaderElement, { zIndex: 10 });
         let firstLi: HTMLElement = this.ulElement.querySelector('.' + dropDownBaseClasses.group) as HTMLElement;
@@ -1254,7 +1277,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     public addItem(
         items: { [key: string]: Object }[] | { [key: string]: Object } | string | boolean | number | string[] | boolean[] | number[],
         itemIndex?: number): void {
-        if (!this.list || this.list.textContent === this.noRecordsTemplate) {
+        if (!this.list || (this.list.textContent === this.noRecordsTemplate && this.getModuleName() !== 'listbox')) {
             this.renderList();
         }
         this.DropDownBaseresetBlazorTemplates(true, false, false, false);
@@ -1299,6 +1322,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             this.list.appendChild(this.ulElement);
             append(liCollections, this.ulElement);
         } else {
+            if (this.getModuleName() === 'listbox' && itemsCount === 0) {
+                this.ulElement.innerHTML = '';
+            }
             let attr: string[] = [];
             for (let i: number = 0; i < items.length; i++) {
                 let listGroupItem: NodeList = this.ulElement.querySelectorAll('.e-list-group-item');

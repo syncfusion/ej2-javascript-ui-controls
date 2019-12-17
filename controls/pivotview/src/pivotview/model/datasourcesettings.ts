@@ -2,7 +2,7 @@ import { Property, Complex, Collection, ChildProperty, NumberFormatOptions, Date
 import { IDataSet, IDataOptions, IFieldOptions, IFilter, ISort, ICalculatedFieldSettings } from '../../base/engine';
 import { IDrillOptions, IValueSortSettings, IFormatSettings, IConditionalFormatSettings, IGroupSettings } from '../../base/engine';
 import { SummaryTypes, Sorting, FilterType, Operators, Condition, DateGroup, GroupType, ProviderType } from '../../base/types';
-import { IStyle } from '../../base/engine';
+import { IStyle, ICustomGroups } from '../../base/engine';
 import { FieldOptionsModel, FilterModel, SortModel, FormatSettingsModel, GroupSettingsModel } from './datasourcesettings-model';
 import { DrillOptionsModel, ValueSortSettingsModel, CalculatedFieldSettingsModel } from './datasourcesettings-model';
 import { DataManager } from '@syncfusion/ej2-data';
@@ -368,7 +368,40 @@ export class GroupSettings extends ChildProperty<GroupSettings> implements IGrou
      */
     @Property()
     public rangeInterval: number;
+
+    /**
+     * It allows to set the caption to custom field that will be created from group settings.
+     */
+    @Property()
+    public caption: string;
+
+    /**
+     * It allows to set the custom group settings of group field.
+     * @default []
+     */
+    @Property()
+    public customGroups: ICustomGroups[];
 }
+
+/** 
+ * Configures the custom group settings of fields. 
+ */
+export class CustomGroups extends ChildProperty<CustomGroups> implements ICustomGroups {
+
+    /**
+     * It allows to set the group name to apply custom group settings.
+     */
+    @Property()
+    public groupName: string;
+
+    /**
+     * It allows to set the members to be grouped.
+     * @default []
+     */
+    @Property([])
+    public items: string[];
+}
+
 /** 
  * Configures the calculatedfields settings. 
  */
@@ -702,7 +735,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
     public emptyCellsTextContent: string;
 
     /**
-     * It allows to set the settings for grouping the date.
+     * It allows to set the settings for grouping the field.
      * @default []
      */
     @Collection<GroupSettingsModel[]>([], GroupSettings)

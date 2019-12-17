@@ -259,7 +259,11 @@ export class RowDD {
             rowPositionHeight = (rowEle as HTMLElement).offsetTop - scrollTop;
         }
         // let scrollTop = (tObj.grid.scrollModule as any).content.scrollTop;
-        rowTop = rowPositionHeight + contentHeight + roundOff;
+        if (tObj.allowTextWrap) {
+            rowTop = (row[0] as HTMLElement).offsetHeight;
+        } else {
+            rowTop = rowPositionHeight + contentHeight + roundOff;
+        }
         let rowBottom: number = rowTop + (row[0] as HTMLElement).offsetHeight;
         let difference: number = rowBottom - rowTop;
         let divide: number = difference / 3;
@@ -484,9 +488,12 @@ export class RowDD {
     private rowDropped(args: RowDropEventArgs): void {
         let tObj: TreeGrid = this.parent;
         if (!tObj.rowDropSettings.targetID) {
-            tObj.trigger(events.rowDrop, args);
             if (parentsUntil(args.target, 'e-content')) {
+            if (this.parent.element.querySelector('.e-errorelem')) {
+                this.dropPosition = 'Invalid';
+            }
             setValue('dropPosition', this.dropPosition, args);
+            tObj.trigger(events.rowDrop, args);
             if (!args.cancel) {
                 this.dropRows(args);
                 tObj.refresh();
@@ -605,7 +612,7 @@ export class RowDD {
                     if (this.dropPosition === 'bottomSegment') {
                         if (!droppedRecord.hasChildRecords) {
                             if (this.parent.parentIdMapping) {
-                               this.treeData.splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
+                                this.treeData.splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
                             }
                             this.treeGridData.splice(recordIndex1 + 1, 0, this.draggedRecord);
                         } else {

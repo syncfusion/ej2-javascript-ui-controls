@@ -55,7 +55,7 @@ describe('Linear gauge spec', () => {
     });
 
     it('Title Style spec', () => {
-
+        browser.get(browser.basePath + '/demos/linear-gauge/testing/gauge.html');
         element(By.id("gauge")).all(By.tagName("option")).then((Options: any[]) => {
             Options[6].click();
             browser.compareScreen(element(By.id('container')), 'Gauge-Title-Style');

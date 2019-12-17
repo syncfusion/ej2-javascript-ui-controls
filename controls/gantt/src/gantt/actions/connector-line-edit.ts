@@ -372,11 +372,11 @@ export class ConnectorLineEdit {
      * @param predecessorString 
      * @private
      */
-    public updatePredecessor(ganttRecord: IGanttData, predecessorString: string): boolean {
-        return this.updatePredecessorHelper(ganttRecord, predecessorString);
+    public updatePredecessor(ganttRecord: IGanttData, predecessorString: string, editedArgs?: ITaskbarEditedEventArgs): boolean {
+        return this.updatePredecessorHelper(ganttRecord, predecessorString, editedArgs);
     }
 
-    private updatePredecessorHelper(ganttRecord: IGanttData, predecessorString: string): boolean {
+    private updatePredecessorHelper(ganttRecord: IGanttData, predecessorString: string, editedArgs?: ITaskbarEditedEventArgs): boolean {
         if (isUndefined(predecessorString) || this.validatePredecessorRelation(ganttRecord, predecessorString)) {
             this.parent.isOnEdit = true;
             let predecessorCollection: IPredecessor[] = [];
@@ -397,6 +397,7 @@ export class ConnectorLineEdit {
             this.parent.setRecordValue('taskData.' + this.parent.taskFields.dependency, stringValue, ganttRecord);
             this.parent.setRecordValue(this.parent.taskFields.dependency, stringValue, ganttRecord);
             let args: ITaskbarEditedEventArgs = {} as ITaskbarEditedEventArgs;
+            args.action = editedArgs && editedArgs.action && editedArgs.action === 'CellEditing' ? editedArgs.action : 'DrawConnectorLine';
             args.data = ganttRecord;
             this.parent.editModule.initiateUpdateAction(args);
             return true;
@@ -553,7 +554,7 @@ export class ConnectorLineEdit {
                     isNegativeOffset = true;
                 }
                 if (tempStartDate.getTime() < tempEndDate.getTime()) {
-                    tempDuration = this.dateValidateModule.getDuration(tempStartDate, tempEndDate, predecessor.offsetUnit, true, true);
+                    tempDuration = this.dateValidateModule.getDuration(tempStartDate, tempEndDate, predecessor.offsetUnit, true, false);
                     offset = isNegativeOffset ? (tempDuration * -1) : tempDuration;
                 } else {
                     offset = 0;
@@ -679,7 +680,8 @@ export class ConnectorLineEdit {
         let violateType: string;
         let startDate: Date = this.parent.predecessorModule.getPredecessorDate(ganttRecord, predecessor);
         let ganttTaskData: ITaskData = ganttRecord.ganttProperties;
-        let endDate: Date =
+        let endDate: Date = this.parent.allowUnscheduledTasks && isNullOrUndefined(startDate) ?
+            ganttTaskData.endDate :
             this.dateValidateModule.getEndDate(startDate, ganttTaskData.duration, ganttTaskData.durationUnit, ganttTaskData, false);
         for (let i: number = 0; i < predecessor.length; i++) {
             parentGanttRecord = this.parent.getRecordByID(predecessor[i].from);

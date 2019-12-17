@@ -34,6 +34,8 @@ export class WordExport {
     private contentTypesPath: string = '[Content_Types].xml';
     // private ChartsPath: string = 'word/charts/';
     private defaultEmbeddingPath: string = 'word/embeddings/';
+    private commentsPath: string = 'word/comments.xml';
+    private commentsExtendedPath: string = 'word/commentsExtended.xml';
     // private EmbeddingPath:string = 'word\embeddings\';
     // private DrawingPath:string = 'word\drawings\';
     // private ThemePath: string = 'word/theme/theme1.xml';
@@ -67,6 +69,8 @@ export class WordExport {
     // private TemplateContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml';
     // private CommentsContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml';
     private settingsContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml';
+    private commentsContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml';
+    private commentsExContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.commentsExtended+xml';
     // private EndnoteContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.endnotes+xml';
     // private FontTableContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml';
     private footerContentType: string = 'application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml';
@@ -101,7 +105,8 @@ export class WordExport {
 
     // Relationship types of document parts
     // private AltChunkRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/aFChunk';
-    // private CommentsRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments';
+    private commentsRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments';
+    private commentsExRelType: string = 'http://schemas.microsoft.com/office/2011/relationships/commentsExtended';
     private settingsRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings';
     // private EndnoteRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/endnotes';
     // private FontTableRelType: string = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable';
@@ -177,6 +182,7 @@ export class WordExport {
     private eNamespace: string = 'http://schemas.microsoft.com/office/2006/encryption';
     private pNamespace: string = 'http://schemas.microsoft.com/office/2006/keyEncryptor/password';
     private certNamespace: string = 'http://schemas.microsoft.com/office/2006/keyEncryptor/certificate';
+    private cxNamespace: string = 'http://schemas.microsoft.com/office/drawing/2014/chartex';
     // chart
     private c15Namespace: string = 'http://schemas.microsoft.com/office/drawing/2015/06/chart';
     private c7Namespace: string = 'http://schemas.microsoft.com/office/drawing/2007/8/2/chart';
@@ -299,6 +305,14 @@ export class WordExport {
     private protectionType: ProtectionType;
     private fileName: string;
     private spanCellFormat: any;
+    private mComments: any[] = [];
+    private paraID: number = 0;
+    private commentParaID: number = 0;
+    private commentParaIDInfo: any = {};
+    private replyCommentIdCollection: Dictionary<number, string>;
+    private isInsideComment: boolean = false;
+    private commentId: any = {};
+    private currentCommentId: number = 0;
     // Gets the bookmark name
     private get bookmarks(): string[] {
         if (isNullOrUndefined(this.mBookmarks)) {
@@ -408,10 +422,13 @@ export class WordExport {
         /* tslint:disable:no-any */
         let document: any = viewer.owner.sfdtExportModule.write();
         this.setDocument(document);
-
+        this.mComments = viewer.comments;
         this.mArchive = new ZipArchive();
         this.mArchive.compressionLevel = 'Normal';
-
+        this.commentParaIDInfo = {};
+        this.commentParaID = 0;
+        this.currentCommentId = 0;
+        this.commentId = {};
         this.mVerticalMerge = new Dictionary<number, number>();
         this.mGridSpans = new Dictionary<number, number>();
 
@@ -422,6 +439,10 @@ export class WordExport {
         this.serializeStyles();
         //numbering.xml
         this.serializeNumberings();
+        //comments.xml
+        this.serializeComments();
+        //commentsExtended.xml
+        this.serializeCommentsExtended();
         //theme.xml
         // if (m_document.DocHasThemes && !isNullOrUndefined(m_document.Themes))
         //     SerializeThemes();
@@ -450,8 +471,6 @@ export class WordExport {
 
         //document relations
         this.serializeDocumentRelations();
-
-
         // // Add controls to archieve.
         // if (ControlsPathNames.length > 0) {
         //     AddControlsToZip(m_document.DocxPackage);
@@ -496,6 +515,10 @@ export class WordExport {
         this.row = undefined;
         this.headerFooter = undefined;
 
+        this.commentParaIDInfo = {};
+        this.commentParaID = 0;
+        this.currentCommentId = 0;
+        this.commentId = {};
         this.document = undefined;
         this.mSections = undefined;
         this.mLists = undefined;
@@ -595,6 +618,116 @@ export class WordExport {
             this.serializeSectionProperties(writer, section);
         }
         this.blockOwner = undefined;
+    }
+    // Serialize the comments (comments.xml)
+    private serializeComments(): void {
+        if (this.mComments.length === 0) {
+            return;
+        }
+
+        let writer: XmlWriter = new XmlWriter();
+        writer.writeStartElement('w', 'comments', this.wNamespace);
+        this.serializeCommentCommonAttribute(writer);
+        this.serializeCommentInternal(writer, this.mComments, false);
+        writer.writeEndElement();
+        let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.commentsPath);
+        this.mArchive.addItem(zipArchiveItem);
+    }
+    private serializeCommentCommonAttribute(writer: XmlWriter): void {
+        writer.writeAttributeString('xmlns', 'wpc', undefined, this.wpCanvasNamespace);
+        writer.writeAttributeString('xmlns', 'cx', undefined, this.cxNamespace);
+        writer.writeAttributeString('xmlns', 'mc', undefined, this.veNamespace);
+        writer.writeAttributeString('xmlns', 'o', undefined, this.oNamespace);
+        writer.writeAttributeString('xmlns', 'r', undefined, this.rNamespace);
+        writer.writeAttributeString('xmlns', 'm', undefined, this.mNamespace);
+        writer.writeAttributeString('xmlns', 'v', undefined, this.vNamespace);
+        writer.writeAttributeString('xmlns', 'wp14', undefined, this.wpDrawingNamespace);
+        writer.writeAttributeString('xmlns', 'wp', undefined, this.wpNamespace);
+        writer.writeAttributeString('xmlns', 'w10', undefined, this.w10Namespace);
+        writer.writeAttributeString('xmlns', 'w', undefined, this.wNamespace);
+        writer.writeAttributeString('xmlns', 'w14', undefined, this.w14Namespace);
+        writer.writeAttributeString('xmlns', 'w15', undefined, this.w15Namespace);
+        writer.writeAttributeString('mc', 'Ignorable', undefined, 'w14 w15');
+    }
+    private serializeCommentInternal(writer: XmlWriter, comments: any[], isreplay: boolean): void {
+        for (let i: number = 0; i < comments.length; i++) {
+            let comment: any = comments[i];
+            writer.writeStartElement('w', 'comment', this.wNamespace);
+            writer.writeAttributeString('w', 'id', this.wNamespace, this.commentId[comment.commentId].toString());
+            if (comment.author && comment.author !== ' ') {
+                writer.writeAttributeString('w', 'author', this.wNamespace, comment.author);
+            }
+            if (comment.date) {
+                writer.writeAttributeString('w', 'date', this.wNamespace, comment.date);
+            }
+            if (comment.initial && comment.initial !== '') {
+                writer.writeAttributeString('w', 'initials', this.wNamespace, comment.initial);
+            }
+            let blocks: any[] = this.retrieveCommentText(comment.text);
+            for (let k: number = 0; k < blocks.length; k++) {
+                this.isInsideComment = true;
+                this.commentParaID++;
+                this.serializeBodyItem(writer, blocks[k], true);
+                this.isInsideComment = false;
+            }
+            //if (blocks.length > 0) {
+            this.commentParaIDInfo[comment.commentId] = this.commentParaID;
+            //}
+            //}
+            this.isInsideComment = false;
+            //}
+            writer.writeEndElement();
+            if (comment.replyComments.length > 0) {
+                this.serializeCommentInternal(writer, comment.replyComments, true);
+            }
+        }
+
+    }
+    private retrieveCommentText(text: string): any[] {
+        let blocks: any = [];
+        let multiText: string[] = text.split('\n');
+        multiText = multiText.filter((x: string) => x !== '');
+        while (multiText.length > 0) {
+            let block: any = {};
+            block.inlines = [{ text: multiText[0] }];
+            blocks.push(block);
+            multiText.splice(0, 1);
+        }
+        return blocks;
+    }
+    // Serialize the comments (commentsExtended.xml)
+    private serializeCommentsExtended(): void {
+        if (this.mComments.length === 0) {
+            return;
+        }
+
+        let writer: XmlWriter = new XmlWriter();
+        writer.writeStartElement('w15', 'commentsEx', this.wNamespace);
+        this.serializeCommentCommonAttribute(writer);
+        this.serializeCommentsExInternal(writer, this.mComments, false);
+        writer.writeEndElement();
+        let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.commentsExtendedPath);
+        this.mArchive.addItem(zipArchiveItem);
+    }
+    private serializeCommentsExInternal(writer: XmlWriter, comments: any[], isReply: boolean): void {
+        for (let i: number = 0; i < comments.length; i++) {
+            let comment: any = comments[i];
+            writer.writeStartElement('w15', 'commentEx', this.wNamespace);
+            //if (comment.blocks.length > 0) {
+            let syncParaID: number = this.commentParaIDInfo[comment.commentId];
+            if (isReply) {
+                let paraID: number = this.commentParaIDInfo[comment.ownerComment.commentId];
+                writer.writeAttributeString('w15', 'paraIdParent', this.wNamespace, paraID.toString());
+            }
+            writer.writeAttributeString('w15', 'paraId', this.wNamespace, syncParaID.toString());
+            //}
+            let val: number = comment.done ? 1 : 0;
+            writer.writeAttributeString('w15', 'done', this.wNamespace, val.toString());
+            writer.writeEndElement();
+            if (comment.replyComments.length > 0) {
+                this.serializeCommentsExInternal(writer, comment.replyComments, true);
+            }
+        }
     }
     // Serialize the section properties.
     private serializeSectionProperties(writer: XmlWriter, section: any): void {
@@ -877,8 +1010,13 @@ export class WordExport {
         // paragraph.SplitTextRange();
 
         writer.writeStartElement('w', 'p', this.wNamespace);
+        if (this.isInsideComment) {
+            writer.writeAttributeString('w14', 'paraId', undefined, this.commentParaID.toString());
+        }
         writer.writeStartElement(undefined, 'pPr', this.wNamespace);
-        this.serializeParagraphFormat(writer, paragraph.paragraphFormat, paragraph);
+        if (!isNullOrUndefined(paragraph.paragraphFormat)) {
+            this.serializeParagraphFormat(writer, paragraph.paragraphFormat, paragraph);
+        }
         if (!isNullOrUndefined(paragraph.characterFormat)) {
             this.serializeCharacterFormat(writer, paragraph.characterFormat);
         }
@@ -932,6 +1070,8 @@ export class WordExport {
                 this.serializeChart(writer, item);
                 // chart.xml
                 this.serializeChartStructure();
+            } else if (item.hasOwnProperty('commentCharacterType')) {
+                this.serializeComment(writer, item);
             } else {
                 this.serializeTextRange(writer, item, previousNode);
             }
@@ -940,6 +1080,31 @@ export class WordExport {
         if (isContinueOverride) {
             writer.writeEndElement();
         }
+    }
+
+    // Serialize the comment
+    private serializeComment(writer: XmlWriter, comment: any): void {
+        if (comment.commentCharacterType === 0) {
+            writer.writeStartElement('w', 'commentRangeStart', this.wNamespace);
+        } else if (comment.commentCharacterType === 1) {
+            writer.writeStartElement('w', 'commentRangeEnd', this.wNamespace);
+        }
+        let commentId: number = this.commentId[comment.commentId];
+        if (isNullOrUndefined(commentId)) {
+            commentId = this.commentId[comment.commentId] = this.currentCommentId++;
+        }
+        writer.writeAttributeString('w', 'id', this.wNamespace, commentId.toString());
+        writer.writeEndElement();
+        if (comment.commentCharacterType === 1) {
+            this.serializeCommentItems(writer, commentId);
+        }
+    }
+    private serializeCommentItems(writer: XmlWriter, commentId: any): void {
+        writer.writeStartElement('w', 'r', this.wNamespace);
+        writer.writeStartElement('w', 'commentReference', this.wNamespace);
+        writer.writeAttributeString('w', 'id', this.wNamespace, commentId.toString());
+        writer.writeEndElement();
+        writer.writeEndElement();
     }
 
     private serializeBiDirectionalOverride(writer: any, characterFormat: any): void {
@@ -2936,14 +3101,13 @@ export class WordExport {
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'pct');
             // tslint:disable-next-line:max-line-length
             writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal(cf.preferredWidth * this.percentageFactor).toString());
-        } else if (cf.preferredWidthType === 'Point') {
-
+        } else if (cf.preferredWidthType === 'Auto') {
+            writer.writeAttributeString(undefined, 'type', this.wNamespace, 'auto');
+            writer.writeAttributeString(undefined, 'w', this.wNamespace, '0');
+        } else {
             // tslint:disable-next-line:max-line-length
             writer.writeAttributeString(undefined, 'w', this.wNamespace, this.roundToTwoDecimal(cf.preferredWidth * this.twipsInOnePoint).toString());
             writer.writeAttributeString(undefined, 'type', this.wNamespace, 'dxa');
-        } else {
-            writer.writeAttributeString(undefined, 'type', this.wNamespace, 'auto');
-            writer.writeAttributeString(undefined, 'w', this.wNamespace, '0');
         }
 
         writer.writeEndElement();
@@ -3065,14 +3229,14 @@ export class WordExport {
     private serializeCellVerticalAlign(writer: XmlWriter, alignment: any): void {
         writer.writeStartElement(undefined, 'vAlign', this.wNamespace);
         switch (alignment) {
-            case 'Top':
-                writer.writeAttributeString('w', 'val', this.wNamespace, 'top');
-                break;
             case 'Center':
                 writer.writeAttributeString('w', 'val', this.wNamespace, 'center');
                 break;
-            default:
+            case 'Bottom':
                 writer.writeAttributeString('w', 'val', this.wNamespace, 'bottom');
+                break;
+            default:
+                writer.writeAttributeString('w', 'val', this.wNamespace, 'top');
                 break;
         }
         writer.writeEndElement();
@@ -3211,13 +3375,17 @@ export class WordExport {
     private serializeShading(writer: XmlWriter, format: any): void {
         // if (format.textureStyle !== 'TextureNone') {
         writer.writeStartElement(undefined, 'shd', this.wNamespace);
-        writer.writeAttributeString(undefined, 'fill', this.wNamespace, this.getColor(format.backgroundColor));
-        if (format.foregroundColor === 'empty') {
+        if (format.backgroundColor) {
+            writer.writeAttributeString(undefined, 'fill', this.wNamespace, this.getColor(format.backgroundColor));
+        }
+        if (format.foregroundColor === 'empty' || isNullOrUndefined(format.foregroundColor)) {
             writer.writeAttributeString(undefined, 'color', this.wNamespace, 'auto');
         } else {
             writer.writeAttributeString(undefined, 'color', this.wNamespace, this.getColor(format.foregroundColor));
         }
-        writer.writeAttributeString('w', 'val', this.wNamespace, this.getTextureStyle(format.textureStyle));
+        if (!isNullOrUndefined(format.textureStyle)) {
+            writer.writeAttributeString('w', 'val', this.wNamespace, this.getTextureStyle(format.textureStyle));
+        }
         writer.writeEndElement();
         // }
     }
@@ -3347,15 +3515,15 @@ export class WordExport {
     // Serializes the Border
     private serializeBorder(writer: XmlWriter, border: any, tagName: string, multiplier: number): void {
         let borderStyle: any = border.lineStyle;
-        let sz: number = (border.lineWidth * multiplier);
-        let space: number = border.space;
+        let sz: number = ((border.lineWidth ? border.lineWidth : 0) * multiplier);
+        let space: number = border.space ? border.space : 0;
 
         if (borderStyle === 'Cleared') {
             writer.writeStartElement(undefined, tagName, this.wNamespace);
             writer.writeAttributeString('w', 'val', this.wNamespace, 'nil');
             writer.writeEndElement();
             return;
-        } else if ((borderStyle === 'None' && !border.hasNoneStyle) || sz <= 0) {
+        } else if (((borderStyle === 'None' || isNullOrUndefined(borderStyle)) && !border.hasNoneStyle) || sz <= 0) {
             return;
         }
         writer.writeStartElement(undefined, tagName, this.wNamespace);
@@ -3367,7 +3535,9 @@ export class WordExport {
         // }
         // else
         // {
-        writer.writeAttributeString(undefined, 'color', this.wNamespace, this.getColor(border.color));
+        if (border.color) {
+            writer.writeAttributeString(undefined, 'color', this.wNamespace, this.getColor(border.color));
+        }
         // }
         writer.writeAttributeString(undefined, 'sz', this.wNamespace, this.roundToTwoDecimal(sz).toString());
         writer.writeAttributeString(undefined, 'space', this.wNamespace, space.toString());
@@ -3513,7 +3683,9 @@ export class WordExport {
     // Serialize the text range.
     private serializeTextRange(writer: XmlWriter, span: any, previousNode: any): void {
         writer.writeStartElement('w', 'r', this.wNamespace);
-        this.serializeCharacterFormat(writer, span.characterFormat);
+        if (!isNullOrUndefined(span.characterFormat)) {
+            this.serializeCharacterFormat(writer, span.characterFormat);
+        }
         if (span.text === '\t') {
             writer.writeElementString(undefined, 'tab', this.wNamespace, undefined);
         } else if (span.text === '\v') {
@@ -3834,7 +4006,6 @@ export class WordExport {
         this.serializeDocumentStyles(writer);
 
         writer.writeEndElement(); //end of styles tag
-
         let zipArchiveItem: ZipArchiveItem = new ZipArchiveItem(writer.buffer, this.stylePath);
         this.mArchive.addItem(zipArchiveItem); //this.stylePath, styleStream, false, FileAttributes.Archive);
     }
@@ -4600,6 +4771,10 @@ export class WordExport {
         writer.writeStartElement(undefined, 'Relationships', this.rpNamespace);
         this.serializeRelationShip(writer, this.getNextRelationShipID(), this.stylesRelType, 'styles.xml');
         this.serializeRelationShip(writer, this.getNextRelationShipID(), this.settingsRelType, 'settings.xml');
+        if (this.mComments.length > 0) {
+            this.serializeRelationShip(writer, this.getNextRelationShipID(), this.commentsRelType, 'comments.xml');
+            this.serializeRelationShip(writer, this.getNextRelationShipID(), this.commentsExRelType, 'commentsExtended.xml');
+        }
         // this.serializeRelationShip(writer, this.getNextRelationShipID(), this.ThemeRelType, 'theme/theme1.xml');
 
         if (this.document.lists.length > 0) {
@@ -4911,6 +5086,9 @@ export class WordExport {
         this.serializeOverrideContentType(writer, this.stylePath, this.stylesContentType);
         //settings.xml
         this.serializeOverrideContentType(writer, this.settingsPath, this.settingsContentType);
+        this.serializeOverrideContentType(writer, this.commentsPath, this.commentsContentType);
+        //comments.xml
+        this.serializeOverrideContentType(writer, this.commentsExtendedPath, this.commentsExContentType);
         //charts.xml
         if (this.chartCount > 0) {
             let count: number = 1;

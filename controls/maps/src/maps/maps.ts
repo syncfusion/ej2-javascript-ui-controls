@@ -1,17 +1,18 @@
 /**
  * Maps Component file
  */
-import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, Ajax, resetBlazorTemplate } from '@syncfusion/ej2-base';
-import { EventHandler, Browser, EmitType, isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
+import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, Ajax } from '@syncfusion/ej2-base';
+import { EventHandler, Browser, EmitType, isNullOrUndefined, createElement, setValue, extend } from '@syncfusion/ej2-base';
 import { Event, remove, L10n, Collection, Internationalization, Complex, isBlazor } from '@syncfusion/ej2-base';
-import { ModuleDeclaration, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { ModuleDeclaration, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
-import { Size, createSvg, Point, removeElement, triggerShapeEvent, showTooltip, mergeSeparateCluster } from './utils/helper';
-import { getElement, removeClass, getTranslate } from './utils/helper';
+import { Size, createSvg, Point, removeElement, triggerShapeEvent, showTooltip, checkShapeDataFields } from './utils/helper';
+import { getElement, removeClass, getTranslate, triggerItemSelectionEvent, mergeSeparateCluster } from './utils/helper';
 import { ZoomSettings, LegendSettings, Tile } from './model/base';
 import { LayerSettings, TitleSettings, Border, Margin, MapsAreaSettings, Annotation, CenterPosition } from './model/base';
-import { ZoomSettingsModel, LegendSettingsModel, LayerSettingsModel, BubbleSettingsModel, MarkerSettingsModel } from './model/base-model';
-import { TitleSettingsModel, BorderModel, MarginModel, CenterPositionModel } from './model/base-model';
+import { ZoomSettingsModel, LegendSettingsModel, LayerSettingsModel, BubbleSettingsModel } from './model/base-model';
+import { MarkerSettingsModel, SelectionSettingsModel } from './model/base-model';
+import { TitleSettingsModel, BorderModel, MarginModel, CenterPositionModel, InitialShapeSelectionSettingsModel } from './model/base-model';
 import { MapsAreaSettingsModel, AnnotationModel } from './model/base-model';
 import { Bubble } from './layers/bubble';
 import { Legend } from './layers/legend';
@@ -26,10 +27,10 @@ import { MapsModel } from './maps-model';
 import { getThemeStyle } from './model/theme';
 import { BingMap } from './layers/bing-map';
 import { ILoadEventArgs, ILoadedEventArgs, IMouseEventArgs, IResizeEventArgs, ITooltipRenderEventArgs } from './model/interface';
-import { GeoPosition, ITooltipRenderCompleteEventArgs } from './model/interface';
+import { GeoPosition, ITooltipRenderCompleteEventArgs, ILegendRenderingEventArgs } from './model/interface';
 import { ILayerRenderingEventArgs, IShapeRenderingEventArgs, IMarkerRenderingEventArgs, IMarkerClickEventArgs } from './model/interface';
 import { IMarkerMoveEventArgs, ILabelRenderingEventArgs, IBubbleMoveEventArgs, IBubbleClickEventArgs } from './model/interface';
-import { IMarkerClusterClickEventArgs, IMarkerClusterMoveEventArgs, IMarkerClusterRenderingEventArgs} from './model/interface';
+import { IMarkerClusterClickEventArgs, IMarkerClusterMoveEventArgs, IMarkerClusterRenderingEventArgs } from './model/interface';
 import { ISelectionEventArgs, IShapeSelectedEventArgs, IMapPanEventArgs, IMapZoomEventArgs } from './model/interface';
 import { IBubbleRenderingEventArgs, IAnimationCompleteEventArgs, IPrintEventArgs, IThemeStyle } from './model/interface';
 import { LayerPanel } from './layers/layer-panel';
@@ -274,6 +275,14 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      */
     @Event()
     public tooltipRender: EmitType<ITooltipRenderEventArgs>;
+    /**
+     * Triggers the legend rendering event.
+     * @event
+     * @deprecated
+     * @blazorProperty 'LegendRendering'
+     */
+    @Event()
+    public legendRendering: EmitType<ILegendRenderingEventArgs>;
     /**
      * Triggers after the maps tooltip rendered.
      * @deprecated
@@ -538,7 +547,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /** @public */
     public zoomTranslatePoint: Point = new Point(0, 0);
     /** @public */
+    public markerZoomFactor: number;
+    /** @public */
     public previousProjection: String;
+    /** @private */
+    public currentShapeDataLength: number;
     /** @private */
     public tileTranslatePoint: Point = new Point(0, 0);
     /** @private */
@@ -548,25 +561,67 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /** @private */
     public tileZoomLevel: number;
     /** @private */
+    public staticMapZoom: number = this.zoomSettings.enable ? this.zoomSettings.zoomFactor : 0;
+    /** @private */
     public serverProcess: Object;
     /** @private */
     public previousScale: number;
     /** @private */
     public previousPoint: Point;
-     /** @public */
-     public dataLabelShape: number[] = [];
-     public zoomShapeCollection: object[] = [];
-     public zoomLabelPositions: object[] = [];
-     public mouseDownEvent: Object = { x: null, y: null };
-     public mouseClickEvent: Object = { x: null, y: null };
+    /** @public */
+    public dataLabelShape: number[] = [];
+    public zoomShapeCollection: object[] = [];
+    public zoomLabelPositions: object[] = [];
+    public mouseDownEvent: Object = { x: null, y: null };
+    public mouseClickEvent: Object = { x: null, y: null };
     /** @private */
     public isBlazor: boolean;
+    public shapeSelectionClass: Element;
+    public selectedElementId: string[] = [];
+    public markerSelectionClass: Element;
+    public selectedMarkerElementId: string[] = [];
+    public bubbleSelectionClass: Element;
+    public selectedBubbleElementId: string[] = [];
+    public navigationSelectionClass: Element;
+    public selectedNavigationElementId: string[] = [];
+    public legendSelectionClass: SelectionSettingsModel;
+    public selectedLegendElementId: number[] = [];
+    public legendSelectionCollection: object[] = [];
+    public shapeSelections: boolean = true;
+    public legendSelection: boolean = true;
+    public toggledLegendId: number[] = [];
+    public toggledShapeElementId: string[] = [];
+    public checkInitialRender: boolean = true;
 
     /**
      * Constructor for creating the widget
      */
     constructor(options?: MapsModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
+        setValue('mergePersistData', this.mergePersistMapsData, this);
+    }
+    /**
+     * To manage persist maps data
+     */
+    private mergePersistMapsData(): void {
+        let data: string;
+        if (!isNullOrUndefined(window.localStorage)) {
+            data = window.localStorage.getItem(this.getModuleName() + this.element.id);
+        }
+        if (!(isNullOrUndefined(data) || (data === ''))) {
+            let dataObj: Maps = JSON.parse(data);
+            let keys: string[] = Object.keys(dataObj);
+            this.isProtectedOnChange = true;
+            for (let key of keys) {
+                if ((typeof this[key] === 'object') && !isNullOrUndefined(this[key])) {
+                    extend(this[key], dataObj[key]);
+                } else {
+                    this[key] = dataObj[key];
+                }
+            }
+            this.isProtectedOnChange = false;
+        }
+
     }
     /**
      * Gets the localized label by locale keyword.
@@ -585,7 +640,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         this.isBlazor = isBlazor();
 
         this.initPrivateVariable();
-
+        this.allowServerDataBinding = false;
         this.trigger(load, this.isBlazor ? {} : { maps: this }, () => {
             this.unWireEVents();
             this.createSVG();
@@ -680,7 +735,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     private renderMap(): void {
 
-        if (this.legendModule && this.legendSettings.visible) {
+        if (!this.isTileMap && this.legendModule && this.legendSettings.visible) {
 
             this.legendModule.renderLegend();
 
@@ -701,6 +756,21 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         this.mapLayerPanel.measureLayerPanel();
 
         this.element.appendChild(this.svgObject);
+
+
+        for (let i: number = 0 ; i < this.layers.length ; i++) {
+            if (this.layers[i].selectionSettings && this.layers[i].selectionSettings.enable &&
+               this.layers[i].initialShapeSelection.length > 0 && this.checkInitialRender) {
+                    let checkSelection: boolean = this.layers[i].selectionSettings.enableMultiSelect;
+                    this.layers[i].selectionSettings.enableMultiSelect = checkSelection ? checkSelection : true;
+                    let shapeSelection : InitialShapeSelectionSettingsModel[] = this.layers[i].initialShapeSelection;
+                    for (let j : number = 0 ; j < this.layers[i].initialShapeSelection.length ; j++) {
+                        this.shapeSelection(i, shapeSelection[j].shapePath, shapeSelection[j].shapeValue, true);
+                    }
+                    this.layers[i].selectionSettings.enableMultiSelect = checkSelection;
+                    if (i === this.layers.length - 1) { this.checkInitialRender = false; }
+            }
+        }
 
         if (!isNullOrUndefined(document.getElementById(this.element.id + '_tile_parent'))) {
             let svg: ClientRect = this.svgObject.getBoundingClientRect();
@@ -736,11 +806,15 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * To append blazor templates
      */
     private blazorTemplates(): void {
-        if (this.layers[this.layers.length - 1].dataLabelSettings || this.layers[this.layers.length - 1].markerSettings) {
-            updateBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate', this.layers[0].dataLabelSettings);
-            for (let i: number = 0; i < this.layers.length; i++) {
-                for (let j: number = 0; j < this.layers[i].markerSettings.length; j++) {
-                    updateBlazorTemplate(this.element.id + '_MarkerTemplate', 'MarkerTemplate', this.layers[i].markerSettings[j]);
+        let layerLength: number = this.layers.length - 1;
+        let markerLength: number = this.layers[layerLength].markerSettings.length - 1;
+        if (markerLength >= 0) {
+            if (this.layers[layerLength].dataLabelSettings.visible || this.layers[layerLength].markerSettings[markerLength].template) {
+                updateBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate', this.layers[layerLength].dataLabelSettings);
+                for (let i: number = 0; i < this.layers.length; i++) {
+                    for (let j: number = 0; j < this.layers[i].markerSettings.length; j++) {
+                        updateBlazorTemplate(this.element.id + '_MarkerTemplate' + j, 'MarkerTemplate', this.layers[i].markerSettings[j]);
+                    }
                 }
             }
         }
@@ -788,7 +862,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             let tileSvgRect: ClientRect = getElementByID(this.element.id + '_Tile_SVG').getBoundingClientRect();
             left = (tileRect.left - tileSvgRect.left);
             top = (tileRect.top - tileSvgRect.top);
-            getElementByID(this.element.id + '_Tile_SVG').setAttribute('transform', 'translate(' + left + ' ' + top + ')');
+            (getElementByID(this.element.id + '_Tile_SVG_Parent') as HTMLElement).style.left = left + 'px';
+            (getElementByID(this.element.id + '_Tile_SVG_Parent') as HTMLElement).style.top = top + 'px';
             let markerTemplateElements: HTMLCollectionOf<Element> = document.getElementsByClassName('template');
             if (!isNullOrUndefined(markerTemplateElements) && markerTemplateElements.length > 0) {
                 for (let i: number = 0; i < markerTemplateElements.length; i++) {
@@ -867,7 +942,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     private createTile(): void {
         let mainLayer: LayerSettings = this.layersCollection[0];
         let padding: number = 0;
-        if (mainLayer.isBaseLayer && (mainLayer.layerType === 'OSM' || mainLayer.layerType === 'Bing')) {
+        if (mainLayer.isBaseLayer && (mainLayer.layerType === 'OSM' || mainLayer.layerType === 'Bing' ||
+            mainLayer.layerType === 'GoogleStaticMap')) {
             removeElement(this.element.id + '_tile_parent');
             // let elementRect: ClientRect = this.element.getBoundingClientRect();
             // let parentRect: ClientRect = this.element.parentElement.getBoundingClientRect();
@@ -988,11 +1064,14 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      */
     private createSVG(): void {
         resetBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate');
-        resetBlazorTemplate(this.element.id + '_MarkerTemplate', 'MarkerTemplate');
+        for (let i: number = 0; i < this.layers.length; i++) {
+            for (let j: number = 0; j < this.layers[i].markerSettings.length; j++) {
+                resetBlazorTemplate(this.element.id + '_MarkerTemplate' + j, 'MarkerTemplate');
+            }
+        }
         this.removeSvg();
         createSvg(this);
     }
-
     /**
      * To Remove the SVG
      */
@@ -1080,9 +1159,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 latitude = latLongValue['latitude']; longitude = latLongValue['longitude'];
             } else if (this.isTileMap && (this.mouseDownEvent['x'] === this.mouseClickEvent['x'])
                 && (this.mouseDownEvent['y'] === this.mouseClickEvent['y'])) {
-                    latLongValue = this.getTileGeoLocation(e);
-                    latitude = latLongValue['latitude']; longitude = latLongValue['longitude'];
-                }
+                latLongValue = this.getTileGeoLocation(e);
+                latitude = latLongValue['latitude']; longitude = latLongValue['longitude'];
+            }
             let eventArgs: IMouseEventArgs = {
                 cancel: false, name: click, target: targetId, x: e.clientX, y: e.clientY,
                 latitude: latitude, longitude: longitude
@@ -1097,6 +1176,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                         (this.zoomModule ? this.zoomModule.isSingleClick : true)) {
                         mergeSeparateCluster(this.markerModule.sameMarkerData, this, getElement(this.element.id + '_Markers_Group'));
                         this.markerModule.sameMarkerData = [];
+                    }
+                    if (getElement(this.element.id + '_mapsTooltip') &&
+                        this.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_') > -1) {
+                        removeElement(this.element.id + '_mapsTooltip');
                     }
                 }
                 if (this.markerModule) {
@@ -1155,6 +1238,23 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         this.mouseDownEvent = { x: e.x, y: e.y };
         let rect: ClientRect = this.element.getBoundingClientRect();
         let element: Element = <Element>e.target;
+        if (element.id.indexOf('_ToolBar') === -1) {
+            let markerModule: Marker = this.markerModule;
+            if (element.id.indexOf('shapeIndex') > -1 || element.id.indexOf('Tile') > -1) {
+                if (markerModule && (markerModule.sameMarkerData.length > 0) &&
+                    (this.zoomModule ? this.zoomModule.isSingleClick : true)) {
+                    mergeSeparateCluster(markerModule.sameMarkerData, this, getElement(this.element.id + '_Markers_Group'));
+                    markerModule.sameMarkerData = [];
+                }
+            }
+            if (markerModule) {
+                markerModule.markerClick(e);
+                markerModule.markerClusterClick(e);
+            }
+            if (this.bubbleModule) {
+                this.bubbleModule.bubbleClick(e);
+            }
+        }
         this.notify(Browser.touchStartEvent, e);
     }
 
@@ -1339,6 +1439,96 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
     /**
+     * Public method for selection
+     * @param layerIndex
+     * @param propertyName
+     * @param name
+     * @param enable
+     */
+    public shapeSelection(layerIndex: number, propertyName: string, name: string, enable?: boolean): void {
+        let targetEle: Element;
+        if (isNullOrUndefined(enable)) {
+            enable = true;
+        }
+        let selectionsettings: SelectionSettingsModel = this.layers[layerIndex].selectionSettings;
+        if (!selectionsettings.enableMultiSelect && this.legendSelection && enable) {
+            this.removeShapeSelection();
+        }
+        if (selectionsettings.enable) {
+            let targetId: string;
+            let dataIndex: number;
+            let shapeIndex: number;
+            let shapeDataValue: object;
+            let data: object;
+            let shapeData: Object[] = <Object[]>this.layers[layerIndex].shapeData['features'];
+            for (let i: number = 0; i < shapeData.length; i++) {
+                if (shapeData[i]['properties'][propertyName] === name) {
+                    let k: number = checkShapeDataFields(<Object[]>this.layers[layerIndex].dataSource, shapeData[i]['properties'],
+                                                         this.layers[layerIndex].shapeDataPath, this.layers[layerIndex].shapePropertyPath);
+                    targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' +
+                        (k ? k.toString() : 'undefined');
+                    targetEle = getElement(targetId);
+                    if (isNullOrUndefined(k) && isNullOrUndefined(targetEle)) {
+                        targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_null';
+                        targetEle = getElement(targetId);
+                    }
+                    shapeIndex = parseInt(targetEle.id.split('_shapeIndex_')[1].split('_')[0], 10);
+                    shapeDataValue = this.layers[layerIndex].shapeData['features']['length'] > shapeIndex ?
+                        this.layers[layerIndex].shapeData['features'][shapeIndex]['properties'] : null;
+                    dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
+                    data = isNullOrUndefined(dataIndex) ? null : this.layers[layerIndex].dataSource[dataIndex];
+                    if (enable) {
+                        triggerItemSelectionEvent(selectionsettings, this, targetEle, shapeDataValue, data);
+                        this.shapeSelectionClass = getElement('ShapeselectionMap');
+                        if (this.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1) {
+                            this.legendModule.shapeHighLightAndSelection(
+                                targetEle, data, selectionsettings, 'selection', layerIndex);
+                        }
+                        let shapeToggled: boolean = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
+                        if (shapeToggled) {
+                            targetEle.setAttribute('class', 'ShapeselectionMapStyle');
+                            if (this.selectedElementId.indexOf(targetEle.getAttribute('id')) === -1) {
+                                this.selectedElementId.push(targetEle.getAttribute('id'));
+                            }
+                            if (!selectionsettings.enableMultiSelect) { return; }
+                        }
+                    } else {
+                        this.legendSelection = (!selectionsettings.enableMultiSelect && !this.legendSelection) ?
+                                               true : this.legendSelection;
+                        if (this.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1 &&
+                            targetEle.getAttribute('class') === 'ShapeselectionMapStyle') {
+                            this.legendModule.shapeHighLightAndSelection(
+                                targetEle, data, selectionsettings, 'selection', layerIndex);
+                        }
+                        let shapeToggled: boolean = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
+                        if (shapeToggled) {
+                            removeClass(targetEle);
+                            let selectedElementIdIndex: number = this.selectedElementId.indexOf(targetEle.getAttribute('id'));
+                            if (selectedElementIdIndex !== -1) {
+                                this.selectedElementId.splice(selectedElementIdIndex, 1);
+                                if (!selectionsettings.enableMultiSelect && this.legendSelection && this.selectedElementId.length > 0) {
+                                    this.removeShapeSelection();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Method to romove multiple selected shapes maps
+     */
+    private removeShapeSelection(): void {
+        let selectedElements: number = this.selectedElementId.length;
+        for (let i: number = 0; i < selectedElements; i++) {
+            removeClass(getElementByID(this.selectedElementId[0]));
+            this.selectedElementId.splice(0, 1);
+        }
+    }
+
+    /**
      * Method to set culture for maps
      */
     private setCulture(): void {
@@ -1381,7 +1571,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @private
      */
     public getPersistData(): string {
-        return '';
+        let keyEntity: string[] = ['translatePoint', 'zoomSettings', 'mapScaleValue', 'tileTranslatePoint', 'baseTranslatePoint', 'scale'];
+        return this.addOnPersist(keyEntity);
     }
 
     /**
@@ -1389,7 +1580,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @private
      */
     public onPropertyChanged(newProp: MapsModel, oldProp: MapsModel): void {
-        let render: boolean = false;
+        let render: boolean = false; let isMarker : boolean = false;
+        let isStaticMapType : boolean = false;
         let newLayerLength: number = Object.keys(newProp).length;
         let layerEle: Element = document.getElementById(this.element.id + '_LayerIndex_' + (newLayerLength - 1));
         for (let prop of Object.keys(newProp)) {
@@ -1403,18 +1595,39 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 case 'projectionType':
                 case 'legendSettings':
                 case 'zoomSettings':
+                case 'baseLayerIndex':
+                    if (prop === 'layers') {
+                        let layerPropLength: number = Object.keys(newProp.layers).length;
+                        for (let x: number = 0; x < layerPropLength; x++) {
+                            if (!isNullOrUndefined(newProp.layers[x])) {
+                                let collection: string[] = Object.keys(newProp.layers[x]);
+                                for (let collectionProp of collection) {
+                                    if (collectionProp === 'markerSettings') {
+                                        isMarker = true;
+                                    } else if (collectionProp === 'staticMapType') {
+                                        isStaticMapType = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
                     render = true;
                     break;
+                case 'locale':
+                case 'currencyCode':
+                    super.refresh(); break;
             }
         }
         if (render) {
-            if (newProp.layers && newProp.layers[newLayerLength - 1].markerSettings) {
+            if (newProp.layers && isMarker) {
                 removeElement(this.element.id + '_Markers_Group');
                 if (this.isTileMap) {
                     this.mapLayerPanel.renderTileLayer(this.mapLayerPanel, this.layers['currentFactor'], (newLayerLength - 1));
                 } else {
                     this.markerModule.markerRender(layerEle, (newLayerLength - 1), this.mapLayerPanel['currentFactor'], 'AddMarker');
                 }
+            } else if (newProp.layers && isStaticMapType) {
+                this.mapLayerPanel.renderGoogleMap(this.layers[this.layers.length - 1].key, this.staticMapZoom);
             } else {
                 this.createSVG();
                 this.render();
@@ -1687,12 +1900,14 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let lastTile: Tile = this.mapLayerPanel.tiles[this.mapLayerPanel.tiles.length - 1];
         let tile0: Tile = this.mapLayerPanel.tiles[0];
         latLong = this.pointToLatLong(
-            location.layerX - (ele.offsetLeft - container.offsetLeft), location.layerY - (ele.offsetTop - container.offsetTop));
+            location.layerX + this.mapAreaRect.x - (ele.offsetLeft - container.offsetLeft),
+            location.layerY + this.mapAreaRect.y - (ele.offsetTop - container.offsetTop));
         return { latitude: latLong['latitude'], longitude: latLong['longitude'] };
     }
 
     public pointToLatLong(pageX: number, pageY: number): Object {
-        pageY = (this.zoomSettings.enable) ? pageY + 10 : pageY;
+        let padding: number = this.layers[this.layers.length - 1].layerType === 'GoogleStaticMap' ? 0 : 10;
+        pageY = (this.zoomSettings.enable) ? pageY + padding : pageY;
         let mapSize: number = 256 * Math.pow(2, this.tileZoomLevel);
         let x1: number = (this.clip(pageX - (this.translatePoint.x * this.scale), 0, mapSize - 1) / mapSize) - 0.5;
         let y1: number = 0.5 - (this.clip(pageY - (this.translatePoint.y * this.scale), 0, mapSize - 1) / mapSize);

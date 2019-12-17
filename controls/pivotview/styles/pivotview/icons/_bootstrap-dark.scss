@@ -156,6 +156,14 @@
     content: '\e711';
   }
 
+  .e-pivotview-group::before {
+    content: '\e740';
+  }
+
+  .e-pivotview-ungroup::before {
+    content: '\e741';
+  }
+
   #{&}.e-level-options {
     .e-selected-level-icon::before {
       content: '\e614';

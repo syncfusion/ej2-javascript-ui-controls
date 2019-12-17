@@ -1,7 +1,8 @@
 import { Spreadsheet } from '../base/index';
-import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, CellStyleExtendedModel } from '../common/index';
+import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, CellStyleExtendedModel, renderFilterCell } from '../common/index';
+import { createHyperlinkElement } from '../common/index';
 import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getCellAddress } from '../../workbook/common/index';
-import { CellModel, SheetModel, getCell, skipDefaultValue } from '../../workbook/base/index';
+import { CellModel, SheetModel, getCell, skipDefaultValue, isHiddenRow } from '../../workbook/base/index';
 import { addClass, attributes, getNumberDependable, extend } from '@syncfusion/ej2-base';
 import { getFormattedCellObject, applyCellFormat, workbookFormulaOperation, setCellFormat } from '../../workbook/common/event';
 import { getTypeFromFormat } from '../../workbook/index';
@@ -37,6 +38,7 @@ export class CellRenderer implements ICellRenderer {
         td.className = 'e-cell';
         attributes(td, { 'role': 'gridcell', 'aria-colindex': (args.colIdx + 1).toString(), 'tabindex': '-1' });
         this.updateCell(args.rowIdx, args.colIdx, td, args.cell, args.lastCell, args.row, args.hRow, args.isHeightCheckNeeded);
+        this.parent.notify(renderFilterCell, { td: td, rowIndex: args.rowIdx, colIndex: args.colIdx });
         this.parent.trigger('beforeCellRender', <CellRenderEventArgs>{ cell: args.cell, element: td, address: args.address });
         return td;
     }
@@ -62,14 +64,16 @@ export class CellRenderer implements ICellRenderer {
         if (cell) {
             this.parent.notify(getFormattedCellObject, formatArgs);
         }
-        td.textContent = td ? <string>formatArgs.formattedText : '';
-        this.parent.refreshNode(td, {
-            type: formatArgs.type as string,
-            result: formatArgs.formattedText as string,
-            curSymbol: getNumberDependable(this.parent.locale, 'USD'),
-            isRightAlign: formatArgs.isRightAlign as boolean,
-            value: <string>formatArgs.value || ''
-        });
+        if (td) {
+            td.textContent = td ? <string>formatArgs.formattedText : '';
+            this.parent.refreshNode(td, {
+                type: formatArgs.type as string,
+                result: formatArgs.formattedText as string,
+                curSymbol: getNumberDependable(this.parent.locale, 'USD'),
+                isRightAlign: formatArgs.isRightAlign as boolean,
+                value: <string>formatArgs.value || ''
+            });
+        }
         let style: CellStyleModel = {};
         if (cell && cell.style) {
             if ((cell.style as CellStyleExtendedModel).properties) {
@@ -91,6 +95,10 @@ export class CellRenderer implements ICellRenderer {
         } else {
             if (isRefresh) { this.removeStyle(td); }
         }
+        if (cell && cell.hyperlink) {
+            let args: object = { cell: cell, td: td, rowIdx: rowIdx, colIdx: colIdx };
+            this.parent.notify(createHyperlinkElement, args);
+        }
     }
     private removeStyle(element: HTMLElement): void {
         if (element.style.length) { element.removeAttribute('style'); }
@@ -101,10 +109,15 @@ export class CellRenderer implements ICellRenderer {
         let cRange: number[] = range.slice();
         if (inView(this.parent, cRange, true)) {
             for (let i: number = cRange[0]; i <= cRange[2]; i++) {
+                if (isHiddenRow(sheet, i)) { continue; }
                 for (let j: number = cRange[1]; j <= cRange[3]; j++) {
-                    this.updateCell(
-                        i, j, this.parent.getCell(i, j), getCell(i, j, sheet), false, null,
-                        null, true, true);
+                    let cell: HTMLElement = this.parent.getCell(i, j);
+                    if (cell) {
+                        this.updateCell(
+                            i, j, cell, getCell(i, j, sheet), false, null,
+                            null, true, cell ? true : false);
+                        this.parent.notify(renderFilterCell, { td: cell, rowIndex: i, colIndex: j });
+                    }
                 }
             }
         }

@@ -27,6 +27,10 @@ export class NormalEdit {
     private addedRowIndex: number;
     private uid: string;
     private args: EditEventArgs = {};
+    private cloneRow: Element;
+    private originalRow: Element;
+    private frozen: Element;
+    private cloneFrozen: Element;
 
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator, renderer?: EditRender) {
         this.parent = parent;
@@ -61,11 +65,15 @@ export class NormalEdit {
      */
     public editComplete(e: NotifyArgs): void {
         this.parent.isEdit = false;
+        let action: string = 'action';
+        if (isBlazor() && !this.parent.isJsComponent) { e.rows = null; }
         switch (e.requestType as string) {
             case 'save':
                 if (!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
                     || (!this.parent.isPersistSelection)) {
-                    this.parent.selectRow(0);
+                    if (e[action] !== 'edit') {
+                        this.parent.selectRow(0);
+                    }
                 }
                 this.parent.trigger(events.actionComplete, extend(e, {
                     requestType: 'save',
@@ -123,8 +131,16 @@ export class NormalEdit {
             begineditargs.type = 'actionBegin';
             gObj.trigger(events.actionBegin, begineditargs, (editargs: EditEventArgs) => {
                 if (!editargs.cancel) {
+                let cloneRow: string = 'cloneRow';
+                let frozen: string = 'frozen';
+                let cloneFrozen: string = 'cloneFrozen';
                 gObj.isEdit = true;
                 editargs.row = editargs.row ? editargs.row :  tr;
+                if (isBlazor() && gObj.isServerRendered) {
+                   this.originalRow = editargs.row;
+                   this.cloneRow = editargs.row.cloneNode(true) as Element;
+                   editargs[cloneRow] = this.cloneRow;
+                }
                 if (gObj.editSettings.mode !== 'Dialog') {
                     gObj.clearSelection();
                 }
@@ -135,6 +151,10 @@ export class NormalEdit {
                 this.renderer.update(editargs);
                 if (isBlazor()) {
                     editargs.form = null;
+                    this.cloneFrozen = editargs[cloneFrozen];
+                    this.frozen = editargs[frozen];
+                    this.cloneRow = editargs[cloneRow];
+                    this.originalRow = editargs.row;
                 }
                 this.uid = tr.getAttribute('data-uid');
                 gObj.editModule.applyFormValidation();
@@ -202,7 +222,10 @@ export class NormalEdit {
         }
         if (isBlazor()) {
             let form: string = 'form';
+            let movableForm: string = 'movableForm';
             args[form] = null;
+            args[movableForm] = null;
+            args.row = {};
         }
         if (isDlg ? dlgWrapper.querySelectorAll('.e-editedrow').length : gObj.element.querySelectorAll('.e-editedrow').length) {
             args.action = 'edit';
@@ -267,16 +290,28 @@ export class NormalEdit {
             let rowData: string = 'rowData';
             args.data = extend({}, extend({}, args[rowData], args.data), e);
         }
+        let editArgs: Object;
         this.requestSuccess(args);
         this.parent.trigger(events.beforeDataBound, args);
         args.type = events.actionComplete;
         this.parent.isEdit = false;
-        this.refreshRow(args.data);
+        if (isBlazor() && this.parent.isServerRendered) {
+            this.closeForm();
+            let rowIndex: string = 'rowIndex';
+            let action: string = 'action';
+            editArgs = {requestType: args.requestType,
+                   rowIndex: args[rowIndex], action: args[action]};
+            this.parent.notify('editsuccess', editArgs);
+        } else {
+            this.refreshRow(args.data);
+        }
         this.parent.editModule.checkLastRow(args.row);
         this.parent.editModule.isLastRow = false;
         this.updateCurrentViewData(args.data);
         this.blazorTemplate();
-        this.parent.trigger(events.actionComplete, args);
+        if (!(isBlazor() && this.parent.isServerRendered)) {
+            this.parent.trigger(events.actionComplete, args);
+        }
         if (isBlazor()) {
             this.parent.notify(events.toolbarRefresh, {});
         }
@@ -284,9 +319,27 @@ export class NormalEdit {
             || (!this.parent.isPersistSelection)) {
             if (this.parent.editSettings.mode !== 'Dialog') {
                 this.parent.selectRow(this.rowIndex > -1 ? this.rowIndex : this.editRowIndex);
+                if (isBlazor() && this.parent.isServerRendered) {
+                    let rowIndex: string = 'editRowIndex';
+                    editArgs[rowIndex] = this.rowIndex > -1 ? this.rowIndex : this.editRowIndex;
+                }
             }
         }
         this.parent.hideSpinner();
+    }
+
+    private closeForm(): void {
+        if (!this.cloneRow && this.parent.isEdit) {
+            this.stopEditStatus();
+        }
+        if (this.cloneRow) {
+            this.cloneRow.remove();
+            this.originalRow.classList.remove('e-hiddenrow');
+        }
+        if (this.parent.getFrozenColumns() && this.cloneFrozen) {
+            this.cloneFrozen.remove();
+            this.frozen.classList.remove('e-hiddenrow');
+        }
     }
 
     private blazorTemplate(): void {
@@ -356,7 +409,11 @@ export class NormalEdit {
                 this.stopEditStatus();
                 closeEditArgs.type = events.actionComplete;
                 if (gObj.editSettings.mode !== 'Dialog') {
-                    this.refreshRow(closeEditArgs.data);
+                    if (isBlazor() && gObj.isServerRendered) {
+                        this.closeForm();
+                    } else {
+                        this.refreshRow(closeEditArgs.data);
+                    }
                 }
                 if (!gObj.getContentTable().querySelector('tr.e-emptyrow') &&
                     !gObj.getContentTable().querySelector('tr.e-row')) {
@@ -487,6 +544,7 @@ export class NormalEdit {
         this.parent.on(events.dblclick, this.dblClickHandler, this);
         this.parent.on(events.deleteComplete, this.editComplete, this);
         this.parent.on(events.saveComplete, this.editComplete, this);
+        this.parent.on('closeinline', this.closeForm, this);
     }
 
     /**
@@ -501,6 +559,7 @@ export class NormalEdit {
         this.parent.off(events.dblclick, this.dblClickHandler);
         this.parent.off(events.deleteComplete, this.editComplete);
         this.parent.off(events.saveComplete, this.editComplete);
+        this.parent.off('closeinline', this.closeForm);
     }
 
     /**

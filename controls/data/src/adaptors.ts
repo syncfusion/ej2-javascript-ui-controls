@@ -1897,22 +1897,23 @@ export class RemoteSaveAdaptor extends JsonAdaptor {
      * @param  {CrudOptions} changes
      * @param  {RemoteArgs} e
      */
-    public batchRequest(dm: DataManager, changes: CrudOptions, e: RemoteArgs): Object {
+    public batchRequest(dm: DataManager, changes: CrudOptions, e: RemoteArgs, query?: Query, original?: Object): Object {
         return {
             type: 'POST',
             url: dm.dataSource.batchUrl || dm.dataSource.crudUrl || dm.dataSource.url,
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',
-            data: JSON.stringify({
+            data: JSON.stringify(extend({}, {
                 changed: changes.changedRecords,
                 added: changes.addedRecords,
                 deleted: changes.deletedRecords,
                 action: 'batch',
                 table: e.url,
                 key: e.key
-            })
+            },                          DataUtil.getAddParams(this, dm, query)))
         };
     }
+
     public addParams(options: { dm: DataManager, query: Query, params: ParamOption[], reqParams: { [key: string]: Object } }): void {
         let urlParams: UrlAdaptor = new UrlAdaptor();
         urlParams.addParams(options);

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Circular Gauge Range testing</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Typescript UI Controls" />
+    <meta name="author" content="Syncfusion" />
+    <script src="../../node_modules/requirejs/require.js" data-main="ranges"></script>
+    <script src="../require-packages.js"></script>
+    <link href="../../styles/material.css" rel="stylesheet" />
+    <link href="../css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<script src="../gaugeRequireJS.js" type="text/javascript"></script>
+<body>
+<div>
+    <div class="control-section">
+        <div id="range-container"></div>
+        <div id="template">
+            <div class="sliderwrap">
+                <div id="default"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script id="ointerValue" type="text/x-template">
+    <div id="sliderwrap">
+        <div class="des">
+            <div id="default"></div>
+        </div>
+    </div>
+</script>
+</body>
+
+<style>    
+    .sliderwrap {
+        margin-top: 50px;
+        width: 300px;
+        
+        align-self: center;
+
+    }  
+    #slider.e-control.e-slider .e-range {
+    height: 6px;
+    top: calc(50% - 3px);
+    border-radius: 5px;
+    margin-top: 50px;
+    background: -webkit-linear-gradient(left, #ea501a 0, #ea501a 20%, #f79c02 40%, #e5ce20 60%, #a1cb43 80%, #82b944 100%);
+    background: linear-gradient(left, #ea501a 0, #ea501a 20%, #f79c02 40%, #e5ce20 60%, #a1cb43 80%, #82b944 100%);
+    background: -moz-linear-gradient(left, #ea501a 0, #ea501a 20%, #f79c02 40%, #e5ce20 60%, #a1cb43 80%, #82b944 100%);
+}
+
+#slider.e-control.e-slider .e-slider-track {
+    height: 8px;
+    top: calc(50% - 4px);
+    border-radius: 5px;
+}
+</style>
+
+</html>

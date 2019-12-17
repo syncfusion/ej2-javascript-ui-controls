@@ -48,6 +48,10 @@ Spreadsheet component is also offered in the following list of frameworks.
 - **Open:** Provides the option to open excel file in spreadsheet.
 - **Save:** Provides option to save spreadsheet data as excel file.
 - **Sorting:** Helps you to arrange the data to particular order in a selected range of cells.
+- **Filtering:** Helps you to view specific rows in the spreadsheet by hiding the other rows.
+- **Undo Redo:** Provides the option to perform undo redo operations in spreadsheet.
+- **Collaborative Editing:** Provides the option for real time changes across multiple users in the Spreadsheet.
+- **Hyperlink:** Provides the option to navigate the web links or cell reference within the sheet or to other sheets in spreadsheet.
 - **Resize:** Allows you to change the row height and column width. Auto fit the rows and columns based on its content.
 - **RTL:** Provides right-to-left mode which aligns content in the spreadsheet component from right to left.
 - **Localization:** Provides inherent support to localize the UI.

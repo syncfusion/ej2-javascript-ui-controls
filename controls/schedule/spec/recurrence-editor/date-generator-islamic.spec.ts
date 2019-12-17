@@ -1,5 +1,6 @@
-import { generate } from '../../src/recurrence-editor/date-generator';
-import { HijriParser } from '@syncfusion/ej2-base';
+import { Ajax, HijriParser, loadCldr, createElement, remove } from '@syncfusion/ej2-base';
+import { RecurrenceEditor } from '../../src/recurrence-editor/recurrence-editor';
+import { generate, generateSummary } from '../../src/recurrence-editor/date-generator';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 /**
  * test case for islamic reccurence.
@@ -14,12 +15,12 @@ export function getHijriDates(dates: number[]): { [key: string]: Object }[] {
 }
 describe('Islamic mode', () => {
     beforeAll(() => {
-        // tslint:disable-next-line:no-any
+        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             // tslint:disable-next-line:no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); //Skips test (in Chai)
+            (this as any).skip(); //Skips test (in Chai)
             return;
         }
     });
@@ -1125,6 +1126,47 @@ describe('Islamic mode', () => {
             expect(JSON.stringify(hDates)).toBe('[{"year":1437,"month":1,"date":5},' +
                 '{"year":1439,"month":1,"date":4},{"year":1441,"month":1,"date":2},' +
                 '{"year":1443,"month":1,"date":7},{"year":1445,"month":1,"date":5}]');
+        });
+    });
+
+    describe('recurrence summary in islamic mode', () => {
+        let loadCultureFiles: Function = (name: string, base?: boolean): void => {
+            let files: string[] = base ? ['numberingSystems.json'] :
+                ['ca-gregorian.json', 'ca-islamic.json', 'numbers.json', 'timeZoneNames.json', 'currencies.json'];
+            for (let prop of files) {
+                let ajax: Ajax;
+                if (base) {
+                    ajax = new Ajax('base/spec/cldr-data/supplemental/' + prop, 'GET', false);
+                } else {
+                    ajax = new Ajax('base/spec/cldr-data/main/' + name + '/' + prop, 'GET', false);
+                }
+                ajax.onSuccess = (value: Object) => loadCldr(JSON.parse(<string>value));
+                ajax.send();
+            }
+        };
+        let recObj: RecurrenceEditor;
+        let elem: HTMLElement = createElement('div', { id: 'RecurrenceEditor' });
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            loadCultureFiles('fr-CH');
+            recObj = new RecurrenceEditor({ startDate: new Date('Fri, 25 Oct 2019'), calendarMode: 'Islamic', locale: 'fr-CH' });
+            recObj.appendTo('#RecurrenceEditor');
+        });
+        afterAll(() => {
+            if (recObj) {
+                recObj.destroy();
+            }
+            remove(elem);
+        });
+        it('getRuleSummary public method testing', () => {
+            let rule: string = 'FREQ=DAILY;INTERVAL=2;UNTIL=20140606T000000Z';
+            let ruleSummary: string = recObj.getRuleSummary(rule);
+            expect(ruleSummary).toEqual('every 2 day(s), until 6 Joum. th. 2014');
+        });
+        it('generate recurrence summary public method testing', () => {
+            let rule: string = 'FREQ=DAILY;INTERVAL=2;UNTIL=20140606T000000Z';
+            let ruleSummary: string = generateSummary(rule, recObj.localeObj, 'en');
+            expect(ruleSummary).toEqual('every 2 day(s), until 6 Jun 2014');
         });
     });
 

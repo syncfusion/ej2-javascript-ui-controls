@@ -468,6 +468,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     public preRender(): void {
         this.unWireEvents();
         this.setCulture();
+        this.allowServerDataBinding = false;
         if (this.element.id === '') {
            let collection : number = document.getElementsByClassName('e-rangenavigator').length;
            this.element.id = 'rangenavigator_' + this.chartid + '_' + collection;
@@ -518,6 +519,7 @@ export class RangeNavigator extends Component<HTMLElement> {
         this.chartSeries.renderChart(this);
         removeElement('chartmeasuretext');
         this.renderComplete();
+        this.allowServerDataBinding = true;
     }
 
     /**
@@ -896,7 +898,6 @@ export class RangeNavigator extends Component<HTMLElement> {
                 case 'labelStyle':
                     refreshBounds = true;
                     break;
-                case 'series':
                 case 'enableRtl':
                 case 'xName':
                 case 'yName':
@@ -917,6 +918,7 @@ export class RangeNavigator extends Component<HTMLElement> {
                     renderer = true;
                     break;
                 case 'dataSource':
+                case 'series':
                     renderer = true;
                     refreshBounds = true;
                     break;
@@ -940,12 +942,12 @@ export class RangeNavigator extends Component<HTMLElement> {
         // issue fix for Range Navigator size gets reduced when the data source is refreshed
         if (refreshBounds && renderer) {
             this.removeSvg();
-            this.chartSeries.xMin = Infinity;
-            this.chartSeries.xMax = -Infinity;
+            this.chartSeries.xMin = this.chartSeries.yMin = Infinity;
+            this.chartSeries.xMax = this.chartSeries.yMax = -Infinity;
             this.calculateBounds();
             this.chartSeries.renderChart(this);
         }
-        if (refreshBounds) {
+        if (refreshBounds && !renderer) {
             this.removeSvg();
             this.calculateBounds();
             this.chartSeries.renderChart(this);

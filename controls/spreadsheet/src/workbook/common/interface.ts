@@ -1,6 +1,7 @@
-import { CellStyleModel } from './class-model';
-import { SaveType, SortOrder } from './enum';
-import { Sheet } from '../base/sheet';
+import { CellStyleModel, HyperlinkModel } from './class-model';
+import { SaveType, SortOrder, FormatType } from './index';
+import { Sheet, RangeSettingModel, CellModel } from '../base/index';
+import { DataManager, Predicate } from '@syncfusion/ej2-data';
 
 export interface SaveOptions {
     url?: string;
@@ -35,6 +36,40 @@ export interface CellFormatArgs {
     onActionUpdate?: boolean;
 }
 
+/** @hidden */
+export interface SetCellFormatArgs {
+    style: CellStyleModel;
+    range?: string | number[];
+    refreshRibbon?: boolean;
+    onActionUpdate?: boolean;
+    cancel?: boolean;
+}
+
+/** @hidden */
+export interface ExtendedRange extends RangeSettingModel {
+    info?: RangeInfo;
+}
+
+interface RangeInfo {
+    loadedRange?: number[][];
+    count?: number;
+    fldLen?: number;
+}
+
+/** @hidden */
+export interface AutoDetectInfo {
+    value: string;
+    args: { sheet: Sheet, indexes: number[] };
+    cell: CellModel;
+    rowIndex: number;
+    colIndex: number;
+    i: number;
+    j: number;
+    k: number;
+    sRanges: number[];
+    range: ExtendedRange;
+}
+
 /**
  * @hidden
  */
@@ -46,10 +81,11 @@ export interface ExtendedSheet extends Sheet {
  * Specifies before cell formatting arguments.
  */
 export interface BeforeCellFormatArgs {
-    range: number[];
-    value: string;
-    format: string;
-    requestType: string;
+    range: string;
+    requestType: FormatType;
+    format?: string;
+    style?: CellStyleModel;
+    sheetIndex?: number;
     cancel?: boolean;
 }
 
@@ -84,11 +120,64 @@ export interface SortEventArgs {
 export interface SortOptions {
     sortDescriptors?: SortDescriptor | SortDescriptor[];
     containsHeader?: boolean;
+    caseSensitive?: boolean;
 }
 
 /**
  * Specifies before sorting arguments.
  */
 export interface BeforeSortEventArgs extends SortEventArgs {
+    cancel?: boolean;
+}
+
+/**
+ * Specifies before hyperlink create and click arguments.
+ */
+export interface BeforeHyperlinkArgs {
+    hyperlink?: string | HyperlinkModel;
+
+    cell?: string;
+
+    cancel?: boolean;
+}
+
+/**
+ * Specifies after hyperlink create and click arguments.
+ */
+export interface AfterHyperlinkArgs {
+    hyperlink?: string | HyperlinkModel;
+
+    cell?: string;
+}
+
+/**
+ * Specifies after cell formatting arguments.
+ * @hidden
+ */
+export interface CellFormatCompleteEvents {
+    completeAction(eventArgs: BeforeCellFormatArgs, action: string): void;
+
+}
+
+/**
+ * Specifies the arguments for filtering.
+ */
+export interface FilterEventArgs {
+    range?: string;
+    filterOptions?: FilterOptions;
+}
+
+/**
+ * Specifies the options for filtering.
+ */
+export interface FilterOptions {
+    datasource?: DataManager;
+    predicates?: Predicate[];
+}
+
+/**
+ * Specifies before filtering arguments.
+ */
+export interface BeforeFilterEventArgs extends FilterEventArgs {
     cancel?: boolean;
 }

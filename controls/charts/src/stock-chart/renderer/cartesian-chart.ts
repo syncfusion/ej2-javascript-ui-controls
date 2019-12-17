@@ -24,6 +24,8 @@ export class CartesianChart {
     }
     public initializeChart(chartArgsData ?: object[]): void {
         let stockChart: StockChart = this.stockChart;
+        let isProtect: string = 'isProtectedOnChange';
+        stockChart[isProtect]  = true;
         if (!stockChart.chartObject) {
             stockChart.chartObject = stockChart.renderer.createGroup({
                 id: stockChart.element.id + '_stockChart_chart'
@@ -118,6 +120,7 @@ export class CartesianChart {
         }
         stockChart.chart.stockChart = stockChart;
         stockChart.chart.appendTo(stockChart.chartObject as HTMLElement);
+        stockChart[isProtect] = false;
     }
 
     private findMargin(stockChart: StockChart) : MarginModel {

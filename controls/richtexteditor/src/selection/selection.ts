@@ -40,15 +40,30 @@ export class NodeSelection {
             range);
     }
 
+    /**
+     * get method
+     * @hidden
+     * @deprecated
+     */
     public get(docElement: Document): Selection {
         return docElement.defaultView.getSelection();
     }
 
+    /**
+     * save method
+     * @hidden
+     * @deprecated
+     */
     public save(range: Range, docElement: Document): NodeSelection {
         range = (range) ? range.cloneRange() : this.getRange(docElement);
         return this.saveInstance(range, docElement.body as HTMLBodyElement);
     }
 
+    /**
+     * getIndex method
+     * @hidden
+     * @deprecated
+     */
     public getIndex(node: Node): number {
         let index: number;
         let num: number = 0;
@@ -93,6 +108,11 @@ export class NodeSelection {
         }
     }
 
+    /**
+     * getNodeCollection method
+     * @hidden
+     * @deprecated
+     */
     public getNodeCollection(range: Range): Node[] {
 
         let startNode: Node = range.startContainer.childNodes[range.startOffset]
@@ -102,6 +122,9 @@ export class NodeSelection {
             || range.endContainer;
         if (startNode === endNode && startNode.childNodes.length === 0) {
             return [startNode];
+        }
+        if (range.startOffset === range.endOffset && range.startOffset !== 0 && range.startContainer.nodeName === 'PRE') {
+            return [startNode.nodeName === 'BR' || startNode.nodeName === '#text' ? startNode : startNode.childNodes[0]];
         }
         let nodeCollection: Node[] = [];
         do {
@@ -114,10 +137,20 @@ export class NodeSelection {
         return nodeCollection;
     }
 
+    /**
+     * getParentNodeCollection method
+     * @hidden
+     * @deprecated
+     */
     public getParentNodeCollection(range: Range): Node[] {
         return this.getParentNodes(this.getNodeCollection(range), range);
     }
 
+    /**
+     * getParentNodes method
+     * @hidden
+     * @deprecated
+     */
     public getParentNodes(nodeCollection: Node[], range: Range): Node[] {
         nodeCollection = nodeCollection.reverse();
         for (let index: number = 0; index < nodeCollection.length; index++) {
@@ -134,10 +167,20 @@ export class NodeSelection {
         return nodeCollection;
     }
 
+    /**
+     * getSelectionNodeCollection method
+     * @hidden
+     * @deprecated
+     */
     public getSelectionNodeCollection(range: Range): Node[] {
         return this.getSelectionNodes(this.getNodeCollection(range));
     }
 
+    /**
+     * getParentNodes method
+     * @hidden
+     * @deprecated
+     */
     public getSelectionNodes(nodeCollection: Node[]): Node[] {
         nodeCollection = nodeCollection.reverse();
         for (let index: number = 0; index < nodeCollection.length; index++) {
@@ -149,10 +192,20 @@ export class NodeSelection {
         return nodeCollection.reverse();
     }
 
+    /**
+     * getInsertNodeCollection method
+     * @hidden
+     * @deprecated
+     */
     public getInsertNodeCollection(range: Range): Node[] {
         return this.getInsertNodes(this.getNodeCollection(range));
     }
 
+    /**
+     * getInsertNodes method
+     * @hidden
+     * @deprecated
+     */
     public getInsertNodes(nodeCollection: Node[]): Node[] {
         nodeCollection = nodeCollection.reverse();
         for (let index: number = 0; index < nodeCollection.length; index++) {
@@ -167,6 +220,11 @@ export class NodeSelection {
         return nodeCollection.reverse();
     }
 
+    /**
+     * getNodeArray method
+     * @hidden
+     * @deprecated
+     */
     public getNodeArray(node: Node, isStart: boolean, root?: Document): number[] {
         let array: number[] = [];
         ((isStart) ? (this.startNodeName = []) : (this.endNodeName = []));
@@ -191,6 +249,11 @@ export class NodeSelection {
         return range;
     }
 
+    /**
+     * restore method
+     * @hidden
+     * @deprecated
+     */
     public restore(): Range {
         let range: Range = this.range.cloneRange();
         range = this.setRangePoint(range, true, this.startContainer, this.startOffset);
@@ -204,12 +267,22 @@ export class NodeSelection {
         this.save(range, docElement);
     }
 
+    /**
+     * setRange method
+     * @hidden
+     * @deprecated
+     */
     public setRange(docElement: Document, range: Range): void {
         let selection: Selection = this.get(docElement);
         selection.removeAllRanges();
         selection.addRange(range);
     }
 
+    /**
+     * setSelectionText method
+     * @hidden
+     * @deprecated
+     */
     public setSelectionText(docElement: Document, startNode: Node, endNode: Node, startIndex: number, endIndex: number
     ): void {
         let range: Range = docElement.createRange();
@@ -218,31 +291,61 @@ export class NodeSelection {
         this.setRange(docElement, range);
     }
 
+    /**
+     * setSelectionContents method
+     * @hidden
+     * @deprecated
+     */
     public setSelectionContents(docElement: Document, element: Node): void {
         let range: Range = docElement.createRange();
         range.selectNode(element);
         this.setRange(docElement, range);
     }
 
+    /**
+     * setSelectionNode method
+     * @hidden
+     * @deprecated
+     */
     public setSelectionNode(docElement: Document, element: Node): void {
         let range: Range = docElement.createRange();
         range.selectNodeContents(element);
         this.setRange(docElement, range);
     }
 
+    /**
+     * getSelectedNodes method
+     * @hidden
+     * @deprecated
+     */
     public getSelectedNodes(docElement: Document): Node[] {
         return this.getNodeCollection(this.getRange(docElement));
     }
 
+    /**
+     * Clear method
+     * @hidden
+     * @deprecated
+     */
     public Clear(docElement: Document): void {
         this.get(docElement).removeAllRanges();
     }
 
+    /**
+     * insertParentNode method
+     * @hidden
+     * @deprecated
+     */
     public insertParentNode(docElement: Document, newNode: Node, range: Range): void {
         range.surroundContents(newNode);
         this.selectRange(docElement, range);
     }
 
+    /**
+     * setCursorPoint method
+     * @hidden
+     * @deprecated
+     */
     public setCursorPoint(docElement: Document, element: Element, point: number): void {
         let range: Range = docElement.createRange();
         let selection: Selection = docElement.defaultView.getSelection();

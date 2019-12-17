@@ -1,13 +1,15 @@
+
 import { Collection, Event, NotifyPropertyChanges, detach, Property, EventHandler, EmitType } from '@syncfusion/ej2-base';
 import { addClass, INotifyPropertyChanged, getUniqueID, rippleEffect } from '@syncfusion/ej2-base';
-import { attributes, Component, closest, select, KeyboardEventArgs } from '@syncfusion/ej2-base';
-import { classList, remove, removeClass } from '@syncfusion/ej2-base';
-import { Button } from '@syncfusion/ej2-buttons';
+import { attributes, Component, closest, select, KeyboardEventArgs, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { classList, remove, removeClass, isBlazor, Observer } from '@syncfusion/ej2-base';
+import { Button, buttonObserver } from '@syncfusion/ej2-buttons';
 import { Popup } from '@syncfusion/ej2-popups';
 import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from './../common/common';
 import { getModel, SplitButtonIconPosition, Item } from './../common/common';
 import { ItemModel } from './../common/common-model';
 import { DropDownButtonModel } from './drop-down-button-model';
+export const dropDownButtonObserver: Observer = new Observer();
 
 const classNames: ClassNames = {
     DISABLED: 'e-disabled',
@@ -35,9 +37,11 @@ const classNames: ClassNames = {
  */
 @NotifyPropertyChanges
 export class DropDownButton extends Component<HTMLButtonElement> implements INotifyPropertyChanged {
-    protected dropDown: Popup;
+    /** @hidden */
+    public dropDown: Popup;
     protected button: Button;
-    protected activeElem: HTMLElement[];
+    /** @hidden */
+    public activeElem: HTMLElement[];
     private rippleFn: Function;
     private delegateMousedownHandler: Function;
 
@@ -79,6 +83,13 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
      */
     @Property('Left')
     public iconPosition: SplitButtonIconPosition;
+
+    /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default false
+     */
+    @Property(false)
+    public enableHtmlSanitizer: boolean;
 
     /**
      * Specifies action items with its properties which will be rendered as DropDownButton popup.
@@ -185,11 +196,55 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
      * @private
      */
     public render(): void {
-        this.initialize();
+        if (isBlazor() && this.isServerRendered) {
+            buttonObserver.on('component-rendered', this.buttonRendered, this, this.element.id);
+            this.createPopup();
+            this.setActiveElem([this.element]);
+        } else {
+            this.initialize();
+        }
         if (!this.disabled) {
             this.wireEvents();
         }
         this.renderComplete();
+        if (isBlazor() && this.isServerRendered) {
+            dropDownButtonObserver.notify('component-rendered', {id: this.element.id, instance: this});
+        }
+    }
+    private buttonRendered(args: { instance: Button, id: string }): void {
+        if (this.element.id === args.instance.element.id) {
+            this.button = args.instance;
+            buttonObserver.off('component-rendered', this.buttonRendered, this.element.id);
+        }
+    }
+
+    public addItems(items: ItemModel[], text?: string): void {
+        let newItem: ItemModel;
+        let idx: number = this.items.length;
+        for (let j: number = 0, len: number = this.items.length; j < len; j++) {
+            if (text === this.items[j].text) {
+                idx = j;
+                break;
+            }
+        }
+        for (let i: number = items.length - 1 ; i >= 0; i--) {
+            // tslint:disable-next-line
+            newItem = new Item(this as any, 'items', items[i], true);
+            this.items.splice(idx, 0, newItem);
+        }
+        if (!this.canOpen()) { this.createItems(); }
+    }
+
+    public removeItems(items: string[]): void {
+            for (let i: number = 0, len: number = items.length; i < len; i++) {
+                for (let j: number = 0, len: number = this.items.length; j < len; j++) {
+                    if (items[i] === this.items[j].text) {
+                        this.items.splice(j, 1);
+                        break;
+                    }
+                }
+            }
+            if (!this.canOpen()) { this.createItems(); }
     }
 
     private createPopup(): void {
@@ -221,16 +276,23 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         return typeof (this.target) === 'string' ? select(this.target as string) : this.target;
     }
 
-    private createItems(items: ItemModel[]): HTMLElement {
-        let showIcon: boolean = this.hasIcon(items, 'iconCss');
+    private createItems(appendItems?: boolean): void {
+        let items: ItemModel[] = this.items;
+        let showIcon: boolean = this.hasIcon(this.items, 'iconCss');
         let span: Element; let item: ItemModel; let li: Element; let eventArgs: MenuEventArgs;
-        let ul: HTMLElement = this.createElement('ul', {
-            attrs: { 'role': 'menu', 'tabindex': '0' }
-        });
+        let ul: HTMLElement = this.getULElement();
+        if (ul) {
+            ul.innerHTML = '';
+        } else {
+            ul = this.createElement('ul', {
+                attrs: { 'role': 'menu', 'tabindex': '0' }
+            });
+        }
         for (let i: number = 0; i < items.length; i++) {
             item = items[i];
+            let tempItem: string = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(item.text) : item.text;
             li = this.createElement('li', {
-                innerHTML: item.url ? '' : item.text,
+                innerHTML: item.url ? '' : tempItem,
                 className: item.separator ? classNames.ITEM + ' ' + classNames.SEPARATOR : classNames.ITEM,
                 attrs: { 'role': 'menuItem', 'tabindex': '-1' },
                 id: item.id ? item.id : getUniqueID('e-' + this.getModuleName() + '-item')
@@ -248,7 +310,28 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             this.trigger('beforeItemRender', eventArgs);
             ul.appendChild(li);
         }
-        return ul;
+        if (appendItems) {
+            this.getPopUpElement().appendChild(ul);
+        }
+        if (showIcon) {
+            let blankIconLi: HTMLElement[] = [].slice.call(this.getPopUpElement().getElementsByClassName('e-blank-icon'));
+            let iconLi: HTMLElement = this.getPopUpElement().querySelector('.e-item:not(.e-blank-icon)') as HTMLElement;
+            let icon: HTMLElement = iconLi.querySelector('.e-menu-icon') as HTMLElement;
+            let cssProp: { padding: string, margin: string };
+            if (this.enableRtl) {
+                cssProp = { padding: 'paddingRight', margin: 'marginLeft' };
+            } else {
+                cssProp = { padding: 'paddingLeft', margin: 'marginRight' };
+            }
+            // tslint:disable
+            let size: string = `${parseInt(getComputedStyle(icon).fontSize, 10) + parseInt(
+                (this.enableRtl ? (getComputedStyle(icon) as any)[cssProp.margin] : (getComputedStyle(icon) as any)[cssProp.margin]), 10)
+                + parseInt(getComputedStyle(iconLi).paddingLeft, 10)}px`;
+            blankIconLi.forEach((li: HTMLElement): void => {
+                (li.style as any)[cssProp.padding] = size;
+            });
+            // tslint:enable
+        }
     }
 
     private hasIcon(items: ItemModel[], field: string): boolean {
@@ -261,7 +344,8 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
     }
 
     private createAnchor(item: ItemModel): HTMLElement {
-        return this.createElement('a', { className: 'e-menu-text e-menu-url', innerHTML: item.text, attrs: { 'href': item.url } });
+        let tempItem: string = (this.enableHtmlSanitizer) ? SanitizeHtmlHelper.sanitize(item.text) : item.text;
+        return this.createElement('a', { className: 'e-menu-text e-menu-url', innerHTML: tempItem, attrs: { 'href': item.url } });
     }
 
     private initialize(): void {
@@ -324,7 +408,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             }
             removeClass(this.activeElem, ['e-active']);
             attrList = this.element.getAttribute('class') ? ['aria-haspopup', 'aria-expanded', 'aria-owns', 'type']
-            : ['aria-haspopup', 'aria-expanded', 'aria-owns', 'type', 'class'];
+                : ['aria-haspopup', 'aria-expanded', 'aria-owns', 'type', 'class'];
             attrList.forEach((key: string) => {
                 this.element.removeAttribute(key);
             });
@@ -359,7 +443,8 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         this.rippleFn = rippleEffect(popupElement, { selector: '.' + classNames.ITEM });
     }
 
-    protected keyBoardHandler(e: KeyboardEventArgs): void {
+    /** @hidden */
+    public keyBoardHandler(e: KeyboardEventArgs): void {
         if (e.target === this.element && (e.keyCode === 9 || (!e.altKey && e.keyCode === 40) || e.keyCode === 38)) {
             return;
         }
@@ -493,7 +578,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
 
     private openPopUp(e: MouseEvent | KeyboardEventArgs = null): void {
         if (!this.target) {
-            this.getPopUpElement().appendChild(this.createItems(this.items));
+            this.createItems(true);
         }
         let ul: HTMLElement = this.getULElement();
         let beforeOpenArgs: BeforeOpenCloseMenuEventArgs = { element: ul, items: this.items, event: e, cancel: false };
@@ -585,9 +670,8 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
                     this.dropDown.dataBind();
                     break;
                 case 'items':
-                    this.dropDown.refresh();
-                    if (popupElement.classList.contains('e-popup-open')) {
-                        classList(popupElement, ['e-popup-close'], ['e-popup-open']);
+                    if (!this.canOpen()) {
+                        this.createItems();
                     }
                     break;
             }

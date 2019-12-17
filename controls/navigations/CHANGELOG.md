@@ -2,25 +2,37 @@
 
 ## [Unreleased]
 
-## 17.3.34 (2019-12-10)
+## 17.4.39 (2019-12-17)
+
+### TreeView
+
+#### New Features
+
+- `#249238` - Provided the support for refreshing a specific node in tree view.
+- `#253508` - Now, the `actionFailure` event triggers while fetching data from the invalid path.
+- `#247333` - Support has been provided to get the disabled nodes in the tree view.
 
 ### Tab
 
-#### Bug Fixes
+#### Breaking Changes
 
-- Accessibility issues has been fixed.
-
-### Toolbar
+- An issue with duplicate Tab item id while rendering more than one Tab in same page has been fixed.
 
 #### Bug Fixes
 
-- Accessibility issues has been fixed.
+- An issue with bootstrap CSS file generation has been fixed.
 
 ### Accordion
 
 #### Bug Fixes
 
-- Accessibility issues has been fixed.
+- An issue with bootstrap CSS file generation has been fixed.
+
+### Toolbar
+
+#### Bug Fixes
+
+- `#248406` - An issue with destroying sub control rendered inside toolbar is fixed.
 
 ## 17.3.27 (2019-11-12)
 
@@ -35,22 +47,6 @@
 #### Bug Fixes
 
 - #242926 - Now the drop indicator has been shown correctly while hovering the expand and collapse icon.
-
-## 17.3.26 (2019-11-05)
-
-### Menu
-
-#### Bug Fixes
-
-- `#253129` - Menu child item disable issue resolved.
-
-## 17.3.21 (2019-10-30)
-
-### ContextMenu
-
-#### Bug Fixes
-
-- `#F147793` - ContextMenu not closed while scrolling the target element has been resolved.
 
 ## 17.3.17 (2019-10-15)
 
@@ -68,19 +64,7 @@
 
 - `#246126` - An issue with toolbar is not working properly in overflow as popup mode when we used input elements in it has been fixed.
 
-### Menu
-
-#### Bug Fixes
-
-- `#249638` - Multiple Menu in the Page causes an issue in Hamburger mode is fixed.
-
 ## 17.3.14 (2019-10-03)
-
-### TreeView
-
-#### Bug Fixes
-
-- #246937 - The unchecking checkbox performance issue has been resolved.
 
 ### Accordion
 
@@ -97,6 +81,12 @@
 #### New Features
 
 - Provided scroll step customization support for tab header.
+
+### TreeView
+
+#### Bug Fixes
+
+- #246937 - The unchecking checkbox performance issue has been resolved.
 
 ## 17.3.9-beta (2019-09-20)
 

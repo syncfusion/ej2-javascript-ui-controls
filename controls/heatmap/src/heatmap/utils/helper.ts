@@ -1013,9 +1013,13 @@ export class LegendRange {
 export class ToggleVisibility {
     public visible: boolean;
     public value: number;
-    constructor(visible: boolean, value: number) {
+    public startValue: number;
+    public endValue: number;
+    constructor(visible: boolean, value: number, startValue: number, endValue: number) {
         this.visible = visible;
         this.value = value;
+        this.startValue = startValue;
+        this.endValue = endValue;
     }
 }
 

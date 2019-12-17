@@ -1,4 +1,4 @@
-import { Component, Property, ChildProperty, Event, BaseEventArgs, append, compile, isBlazor } from '@syncfusion/ej2-base';import { EventHandler, EmitType, Touch, TapEventArgs, Browser, Animation as PopupAnimation } from '@syncfusion/ej2-base';import { isNullOrUndefined, getUniqueID, formatUnit } from '@syncfusion/ej2-base';import { attributes, closest, removeClass, addClass, remove, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, Complex } from '@syncfusion/ej2-base';import { Popup } from '../popup/popup';import { OffsetPosition, calculatePosition } from '../common/position';import { isCollide, fit } from '../common/collision';
+import { Component, Property, ChildProperty, Event, BaseEventArgs, append, compile, isBlazor } from '@syncfusion/ej2-base';import { EventHandler, EmitType, Touch, TapEventArgs, Browser, Animation as PopupAnimation } from '@syncfusion/ej2-base';import { isNullOrUndefined, getUniqueID, formatUnit } from '@syncfusion/ej2-base';import { attributes, closest, removeClass, addClass, remove, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, Complex, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Popup } from '../popup/popup';import { OffsetPosition, calculatePosition } from '../common/position';import { isCollide, fit } from '../common/collision';
 import {TooltipAnimationSettings,Position,TipPointerPosition,TooltipEventArgs} from "./tooltip";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -46,6 +46,7 @@ export interface TooltipModel extends ComponentModel{
      *  to know more about this property with demo.
      *
      * {% codeBlock src="tooltip/content-api/index.ts" %}{% endcodeBlock %}
+     * @blazorType object
      */
     content?: string | HTMLElement;
 
@@ -156,6 +157,12 @@ export interface TooltipModel extends ComponentModel{
      * @default null
      */
     cssClass?: string;
+
+    /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default false
+     */
+    enableHtmlSanitizer?: boolean;
 
     /**
      * We can trigger `beforeRender` event before the Tooltip and its contents are added to the DOM.

@@ -272,7 +272,7 @@ describe('Gantt taskbar rendering', () => {
             ganttObj.labelSettings.rightLabel = 'TaskName';
             ganttObj.dataBound = () => {
                 expect(ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr > td > div:nth-child(1)').getAttribute('aria-label').indexOf('Left task label 1')> -1).toBeTruthy();
-                expect(ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr > td > div:nth-child(2)').getAttribute('aria-label').indexOf('Name Task 1 Start Date 10/23/2017 End Date 11/06/2017 Duration 11 days')> -1).toBeTruthy();
+                expect(ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr > td > div:nth-child(2)').getAttribute('aria-label').indexOf('Name Task 1 Start Date 10/23/2017 End Date 11/6/2017 Duration 11 days')> -1).toBeTruthy();
                 expect(ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr > td > div:nth-child(3)').getAttribute('aria-label').indexOf('Right task label Task 1')> -1).toBeTruthy();
                 done();
             }

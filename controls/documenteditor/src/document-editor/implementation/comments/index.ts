@@ -1,0 +1,4 @@
+/**
+ * Comments
+ */
+export * from './comment';

@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, closest, compile, detach, formatUnit, isBlazor, isNullOrUndefined, isUndefined, removeClass, select, selectAll, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, SanitizeHtmlHelper, addClass, append, closest, compile, detach, extend, formatUnit, isBlazor, isNullOrUndefined, isUndefined, removeClass, select, selectAll, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -64,6 +64,9 @@ __decorate([
 __decorate([
     Property()
 ], PaneProperties.prototype, "content", void 0);
+__decorate([
+    Property('')
+], PaneProperties.prototype, "cssClass", void 0);
 /**
  * Splitter is a layout user interface (UI) control that has resizable and collapsible split panes.
  * The container can be split into multiple panes, which are oriented horizontally or vertically.
@@ -127,7 +130,7 @@ let Splitter = class Splitter extends Component {
                     this.setSplitterSize(this.element, newProp.width, 'width');
                     break;
                 case 'cssClass':
-                    this.setCssClass(newProp.cssClass);
+                    this.setCssClass(this.element, newProp.cssClass);
                     break;
                 case 'enabled':
                     this.isEnabled(this.enabled);
@@ -163,6 +166,9 @@ let Splitter = class Splitter extends Component {
                                         break;
                                     case 'collapsed':
                                         newProp.paneSettings[index].collapsed ? this.isCollapsed() : this.collapsedOnchange(index);
+                                        break;
+                                    case 'cssClass':
+                                        this.setCssClass(this.allPanes[index], newProp.paneSettings[index].cssClass);
                                         break;
                                     case 'size':
                                         let newValSize = Object(newProp.paneSettings[index])[property];
@@ -200,7 +206,7 @@ let Splitter = class Splitter extends Component {
         addClass([this.element], orientation);
         let name = Browser.info.name;
         let css = (name === 'msie') ? 'e-ie' : '';
-        this.setCssClass(css);
+        this.setCssClass(this.element, css);
         if (Browser.isDevice) {
             addClass([this.element], SPLIT_TOUCH);
         }
@@ -222,7 +228,7 @@ let Splitter = class Splitter extends Component {
      */
     render() {
         this.checkDataAttributes();
-        this.setCssClass(this.cssClass);
+        this.setCssClass(this.element, this.cssClass);
         this.isEnabled(this.enabled);
         this.setDimension(this.getHeight(this.element), this.getWidth(this.element));
         this.createSplitPane(this.element);
@@ -239,6 +245,27 @@ let Splitter = class Splitter extends Component {
             this.currentSeparator.classList.remove(SPLIT_BAR_HOVER);
             this.currentSeparator.classList.remove(SPLIT_BAR_ACTIVE);
         }
+    }
+    /**
+     * @hidden
+     */
+    sanitizeHelper(value) {
+        if (this.enableHtmlSanitizer) {
+            let item = SanitizeHtmlHelper.beforeSanitize();
+            let beforeEvent = {
+                cancel: false,
+                helper: null
+            };
+            extend(item, item, beforeEvent);
+            this.trigger('beforeSanitizeHtml', item);
+            if (item.cancel && !isNullOrUndefined(item.helper)) {
+                value = item.helper(value);
+            }
+            else if (!item.cancel) {
+                value = SanitizeHtmlHelper.serializeValue(item, value);
+            }
+        }
+        return value;
     }
     checkDataAttributes() {
         let api;
@@ -329,9 +356,9 @@ let Splitter = class Splitter extends Component {
                 this.panesDimensions.push(this.allPanes[index].getBoundingClientRect().height);
         }
     }
-    setCssClass(className) {
+    setCssClass(element, className) {
         if (className) {
-            addClass([this.element], className.split(className.indexOf(',') > -1 ? ',' : ' '));
+            addClass([element], className.split(className.indexOf(',') > -1 ? ',' : ' '));
         }
     }
     hideResizer(target) {
@@ -396,7 +423,25 @@ let Splitter = class Splitter extends Component {
     }
     isCollapsed(index) {
         if (!isNullOrUndefined(index)) {
-            this.updateIsCollapsed(index, this.targetArrows().collapseArrow, this.targetArrows().lastBarArrow);
+            if (this.allPanes.length <= 2) {
+                this.updateIsCollapsed(index, this.targetArrows().collapseArrow, this.targetArrows().lastBarArrow);
+            }
+            else {
+                let targetEle;
+                let lastBarIndex = (index === this.allBars.length);
+                let barIndex = lastBarIndex ? index - 1 : index;
+                if (!lastBarIndex && this.allPanes[index + 1].classList.contains(COLLAPSE_PANE) && index !== 0) {
+                    targetEle = this.collapseArrow(barIndex - 1, this.targetArrows().lastBarArrow);
+                }
+                else {
+                    targetEle = (lastBarIndex) ? this.collapseArrow(barIndex, this.targetArrows().lastBarArrow) :
+                        this.collapseArrow(barIndex, this.targetArrows().collapseArrow);
+                }
+                this.allPanes[index].classList.add(PANE_HIDDEN);
+                this.allPanes[index].classList.add(COLLAPSE_PANE);
+                this.allPanes[index].setAttribute('aria-expanded', 'false');
+                this.allPanes[index].style.flexGrow = '0';
+            }
         }
         else {
             for (let m = 0; m < this.allPanes.length; m++) {
@@ -1478,6 +1523,7 @@ let Splitter = class Splitter extends Component {
     }
     setTemplate(template, toElement) {
         toElement.innerHTML = '';
+        template = typeof (template) === 'string' ? this.sanitizeHelper(template) : template;
         this.templateCompile(toElement, template);
     }
     // tslint:disable-next-line
@@ -1570,6 +1616,9 @@ let Splitter = class Splitter extends Component {
                     }
                     if (!isNullOrUndefined(this.paneSettings[i]) && !isNullOrUndefined(this.paneSettings[i].content)) {
                         this.setTemplate(this.paneSettings[i].content, child[i]);
+                    }
+                    if (!isNullOrUndefined(this.paneSettings[i]) && this.paneSettings[i].cssClass) {
+                        this.setCssClass(child[i], this.paneSettings[i].cssClass);
                     }
                     if (!isNullOrUndefined(this.paneSettings[i])) {
                         this.paneCollapsible(child[i], i);
@@ -1725,8 +1774,14 @@ __decorate([
     Property(true)
 ], Splitter.prototype, "enabled", void 0);
 __decorate([
+    Property(true)
+], Splitter.prototype, "enableHtmlSanitizer", void 0);
+__decorate([
     Property(null)
 ], Splitter.prototype, "separatorSize", void 0);
+__decorate([
+    Event()
+], Splitter.prototype, "beforeSanitizeHtml", void 0);
 __decorate([
     Event()
 ], Splitter.prototype, "created", void 0);
@@ -1863,12 +1918,14 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.mouseY = 0;
         this.minTop = 0;
         this.minLeft = 0;
+        this.isBlazor = false;
     }
     /**
      * Initialize the event handler
      * @private
      */
     preRender() {
+        this.isBlazor = (isBlazor() && this.isServerRendered);
         this.panelCollection = [];
         this.sortedArray = [];
         this.gridPanelCollection = [];
@@ -1884,6 +1941,7 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.availableClasses = [];
         this.setOldRowCol();
         this.calculateCellSize();
+        this.contentTemplateChild = [].slice.call(this.element.children);
     }
     setOldRowCol() {
         for (let i = 0; i < this.panels.length; i++) {
@@ -1940,7 +1998,8 @@ let DashboardLayout = class DashboardLayout extends Component {
     }
     initialize() {
         this.updateRowHeight();
-        if (this.element.childElementCount > 0) {
+        if (this.element.childElementCount > 0 && this.element.querySelectorAll('.e-panel').length > 0
+            && !(this.isBlazor && this.panels.length > 0)) {
             let panelElements = [];
             this.setProperties({ panels: [] }, true);
             for (let i = 0; i < this.element.querySelectorAll('.e-panel').length; i++) {
@@ -1963,7 +2022,9 @@ let DashboardLayout = class DashboardLayout extends Component {
                     this.panelPropertyChange(this.panels[i], { col: colValue < 0 ? 0 : colValue });
                 }
                 this.setXYAttributes(panelElement, this.panels[i]);
+                this.isBlazor = false;
                 let panel = this.renderPanels(panelElement, this.panels[i], this.panels[i].id, false);
+                this.isBlazor = (isBlazor() && this.isServerRendered);
                 this.panelCollection.push(panel);
                 this.setHeightAndWidth(panelElement, this.panels[i]);
                 this.tempObject = this;
@@ -1993,7 +2054,9 @@ let DashboardLayout = class DashboardLayout extends Component {
         if (!(this.checkMediaQuery())) {
             this.panelResponsiveUpdate();
         }
-        this.setEnableRtl();
+        if (!this.isBlazor) {
+            this.setEnableRtl();
+        }
     }
     checkMediaQuery() {
         return (this.mediaQuery && window.matchMedia('(' + this.mediaQuery + ')').matches);
@@ -2083,19 +2146,25 @@ let DashboardLayout = class DashboardLayout extends Component {
         append([].slice.call(templateElements), appendElement);
     }
     renderPanels(cellElement, panelModel, panelId, isStringTemplate) {
-        addClass([cellElement], [panel, panelTransition]);
+        if (!this.isBlazor) {
+            addClass([cellElement], [panel, panelTransition]);
+        }
         this.panelContent = cellElement.querySelector('.e-panel-container') ?
             cellElement.querySelector('.e-panel-container') :
             this.createSubElement(panelModel.cssClass, cellElement.id + '_content', panelContainer);
-        cellElement.appendChild(this.panelContent);
-        if (!panelModel.enabled) {
-            this.disablePanel(cellElement);
+        if (!this.isBlazor) {
+            cellElement.appendChild(this.panelContent);
+            if (!panelModel.enabled) {
+                this.disablePanel(cellElement);
+            }
         }
         if (panelModel.header) {
             let headerTemplateElement = cellElement.querySelector('.e-panel-header') ?
                 cellElement.querySelector('.e-panel-header') : this.createSubElement('', cellElement.id + 'template', '');
-            addClass([headerTemplateElement], [header]);
-            if (!cellElement.querySelector('.e-panel-header')) {
+            if (!this.isBlazor) {
+                addClass([headerTemplateElement], [header]);
+            }
+            if (!cellElement.querySelector('.e-panel-header') && !this.isBlazor) {
                 let id = this.element.id + 'HeaderTemplate' + panelId;
                 this.renderTemplate(panelModel.header, headerTemplateElement, id, isStringTemplate);
                 this.panelContent.appendChild(headerTemplateElement);
@@ -2109,7 +2178,7 @@ let DashboardLayout = class DashboardLayout extends Component {
                 window.getComputedStyle(this.panelContent.querySelector('.e-panel-header')).height : '0px';
             let contentHeightValue = 'calc( 100% - ' + headerHeight + ')';
             setStyleAttribute(this.panelBody, { height: contentHeightValue });
-            if (!cellElement.querySelector('.e-panel-content')) {
+            if (!cellElement.querySelector('.e-panel-content') && !this.isBlazor) {
                 let id = this.element.id + 'ContentTemplate' + panelId;
                 this.renderTemplate(panelModel.content, this.panelBody, id, isStringTemplate);
                 this.panelContent.appendChild(this.panelBody);
@@ -2146,7 +2215,7 @@ let DashboardLayout = class DashboardLayout extends Component {
         }
         panelElement.style.zIndex = '' + model.zIndex;
         // tslint:disable-next-line
-        let panelProp = new Panel(this, 'panels', model);
+        let panelProp = new Panel(this, 'panels', model, true);
         this.panels.push(panelProp);
     }
     resizeEvents() {
@@ -2674,17 +2743,36 @@ let DashboardLayout = class DashboardLayout extends Component {
         setStyleAttribute(panelElement, { 'height': formatUnit(this.setXYDimensions(panelModel)[0]) });
         setStyleAttribute(panelElement, { 'width': formatUnit(this.setXYDimensions(panelModel)[1]) });
     }
-    renderCell(panel, isStringTemplate) {
+    renderCell(panel, isStringTemplate, index) {
+        let cellElement;
         this.dimensions = this.setXYDimensions(panel);
         if (isUndefined(panel.enabled)) {
             panel.enabled = true;
         }
-        let cellElement = this.createPanelElement(panel.cssClass, panel.id);
-        cellElement.style.zIndex = '' + panel.zIndex;
-        this.element.appendChild(cellElement);
+        if (this.isBlazor) {
+            cellElement = document.getElementById(panel.id);
+        }
+        else {
+            if (this.contentTemplateChild.length > 0 && !isNullOrUndefined(index)) {
+                cellElement = this.contentTemplateChild[index];
+                if (panel.cssClass) {
+                    addClass([cellElement], [panel.cssClass]);
+                }
+                if (panel.id) {
+                    cellElement.setAttribute('id', panel.id);
+                }
+            }
+            else {
+                cellElement = this.createPanelElement(panel.cssClass, panel.id);
+            }
+            cellElement.style.zIndex = '' + panel.zIndex;
+            this.element.appendChild(cellElement);
+        }
         let dashBoardCell = this.renderPanels(cellElement, panel, panel.id, isStringTemplate);
         this.panelCollection.push(dashBoardCell);
-        this.setXYAttributes(cellElement, panel);
+        if (!this.isBlazor) {
+            this.setXYAttributes(cellElement, panel);
+        }
         this.setHeightAndWidth(cellElement, panel);
         return cellElement;
     }
@@ -2748,6 +2836,7 @@ let DashboardLayout = class DashboardLayout extends Component {
         }
     }
     panelPropertyChange(panel, value) {
+        this.allowServerDataBinding = false;
         // tslint:disable-next-line
         panel.setProperties(value, true);
     }
@@ -2755,15 +2844,19 @@ let DashboardLayout = class DashboardLayout extends Component {
         if (this.element.querySelectorAll('.e-panel').length > 0 || this.panels.length > 0) {
             for (let j = 0; j < cells.length; j++) {
                 this.gridPanelCollection.push(cells[j]);
-                this.setMinMaxValues(cells[j]);
+                if (!(this.isBlazor && this.panels.length > 0)) {
+                    this.setMinMaxValues(cells[j]);
+                }
                 if (this.maxColumnValue < cells[j].col || this.maxColumnValue < (cells[j].col + cells[j].sizeX)) {
                     this.panelPropertyChange(cells[j], { col: this.maxColumnValue - cells[j].sizeX });
                 }
-                let cell = this.renderCell(cells[j], false);
-                if (this.enableRtl) {
-                    addClass([cell], 'e-rtl');
+                let cell = this.renderCell(cells[j], false, j);
+                if (!this.isBlazor) {
+                    if (this.enableRtl) {
+                        addClass([cell], 'e-rtl');
+                    }
+                    this.element.appendChild(cell);
                 }
-                this.element.appendChild(cell);
                 if (this.checkMediaQuery() && j === cells.length - 1) {
                     this.checkMediaQuerySizing();
                 }
@@ -3117,6 +3210,7 @@ let DashboardLayout = class DashboardLayout extends Component {
         return updatedCollision;
     }
     updatedModels(collisionItems, panelModel, ele) {
+        let removeableElement = [];
         if (!this.mainElement) {
             this.sortedPanel();
         }
@@ -3128,11 +3222,16 @@ let DashboardLayout = class DashboardLayout extends Component {
                 for (let rowValue = model.row; rowValue < panelModel.row + panelModel.sizeY; rowValue++) {
                     let collisions = this.collisions(rowValue, model.col, model.sizeX, model.sizeY, element);
                     collisions.forEach((item) => {
-                        if (collisionItems.indexOf(item) >= 0) {
-                            collisionItems.splice(collisionItems.indexOf(item), 1);
+                        if (collisionItems.indexOf(item) >= 0 && removeableElement.indexOf(item) === -1) {
+                            removeableElement.push(item);
                         }
                     });
                 }
+            }
+        });
+        removeableElement.forEach((item) => {
+            if (removeableElement.indexOf(item) >= 0) {
+                collisionItems.splice(collisionItems.indexOf(item), 1);
             }
         });
         return collisionItems;
@@ -3216,10 +3315,10 @@ let DashboardLayout = class DashboardLayout extends Component {
             let collideInstance = this.getCellInstance(collisions[count].id);
             let elementinstance = this.getCellInstance(element.id);
             let ignore = [];
-            if (collideInstance.sizeY === 1) {
+            if (collideInstance.sizeY === 1 && ignore.indexOf(collisions[count]) === -1) {
                 ignore.push(collisions[count]);
             }
-            else if (collideInstance.sizeY > 1) {
+            else if (collideInstance.sizeY > 1 && ignore.indexOf(collisions[count]) === -1) {
                 if (direction === 1 && elementinstance.row === (this.cloneObject[collideInstance.id].row + collideInstance.sizeY - 1)) {
                     ignore.push(collisions[count]);
                 }
@@ -3230,10 +3329,11 @@ let DashboardLayout = class DashboardLayout extends Component {
                     return false;
                 }
             }
-            if (collideInstance.sizeY <= elementinstance.sizeY) {
+            if (collideInstance.sizeY <= elementinstance.sizeY && ignore.indexOf(collisions[count]) === -1) {
                 ignore.push(collisions[count]);
             }
             let swapCollision;
+            ignore.push(this.mainElement);
             swapCollision = this.collisions(updatedRow, collideInstance.col, collideInstance.sizeX, collideInstance.sizeY, ignore);
             if (swapCollision.length > 0) {
                 isSwappable = false;
@@ -3260,7 +3360,10 @@ let DashboardLayout = class DashboardLayout extends Component {
             direction = 0;
         }
         let collisionItemsRow = direction === 0 ? eleSwapRow + panelModel.sizeY : this.startRow;
-        this.panelPropertyChange(panelModel, { row: direction === 0 ? eleSwapRow : collisionItemsRow + 1 });
+        if (!this.movePanelCalled) {
+            let collisionInstance = this.getCellInstance(collisions[0].id);
+            this.panelPropertyChange(panelModel, { row: direction === 0 ? eleSwapRow : collisionItemsRow + collisionInstance.sizeY });
+        }
         for (let count = 0; count < collisions.length; count++) {
             swappedElements.push(collisions[count]);
             this.setPanelPosition(collisions[count], collisionItemsRow, (this.getCellInstance(collisions[count].id)).col);
@@ -3656,6 +3759,8 @@ let DashboardLayout = class DashboardLayout extends Component {
                         this.rows = this.maxRow(true);
                         this.setHeightWidth();
                         this.updateDragArea();
+                        this.allowServerDataBinding = true;
+                        this.serverDataBind();
                     },
                     drag: (args) => {
                         this.draggedEventArgs = {
@@ -3881,13 +3986,15 @@ let DashboardLayout = class DashboardLayout extends Component {
             this.panelID = this.panelID + 1;
         }
         // tslint:disable-next-line
-        let panelProp = new Panel(this, 'panels', panel);
+        let panelProp = new Panel(this, 'panels', panel, true);
         this.panels.push(panelProp);
         this.setMinMaxValues(panelProp);
         if (this.maxColumnValue < panelProp.col || this.maxColumnValue < (panelProp.col + panelProp.sizeX)) {
             this.panelPropertyChange(panelProp, { col: this.maxColumnValue - panelProp.sizeX });
         }
-        let cell = this.renderCell(panelProp, true);
+        this.isBlazor = false;
+        let cell = this.renderCell(panelProp, true, null);
+        this.isBlazor = (isBlazor() && this.isServerRendered);
         this.oldRowCol[panelProp.id] = { row: panelProp.row, col: panelProp.col };
         this.cloneObject[panelProp.id] = { row: panelProp.row, col: panelProp.col };
         this.updateOldRowColumn();
@@ -4074,21 +4181,28 @@ let DashboardLayout = class DashboardLayout extends Component {
     movePanel(id, row, col) {
         this.movePanelCalled = true;
         let panelInstance = this.getCellInstance(id);
-        if (col < 1) {
+        if (col < 0) {
             col = 0;
         }
         else if (col > this.columns) {
-            col = this.columns - 1;
+            col = this.columns - panelInstance.sizeX;
         }
         this.panelPropertyChange(panelInstance, { row: row, col: col });
         let ele = document.getElementById(id);
         this.mainElement = ele;
+        this.startRow = parseInt(ele.getAttribute('data-row'), 10);
+        this.startCol = parseInt(ele.getAttribute('data-col'), 10);
         this.setAttributes({ value: { col: col.toString(), row: row.toString() } }, ele);
+        this.updateOldRowColumn();
         this.setPanelPosition(ele, row, col);
         this.updatePanelLayout(ele, panelInstance);
         this.updateRowHeight();
         this.updatePanels();
         this.updateCloneArrayObject();
+        this.mainElement = null;
+        if (this.allowFloating) {
+            this.moveItemsUpwards();
+        }
         this.movePanelCalled = false;
     }
     setAttributes(value, ele) {
@@ -4200,7 +4314,9 @@ let DashboardLayout = class DashboardLayout extends Component {
         if (this.table) {
             this.table.remove();
         }
+        this.isBlazor = false;
         this.initialize();
+        this.isBlazor = (isBlazor() && this.isServerRendered);
         if (this.showGridLines) {
             this.initGridLines();
         }

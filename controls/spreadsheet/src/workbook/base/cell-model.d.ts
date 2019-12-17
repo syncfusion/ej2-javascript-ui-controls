@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, extend } from '@syncfusion/ej2-base';import { SheetModel, getRowsHeight, getColumnsWidth, CellModel } from './index';import { CellStyleModel, CellStyle } from '../common/index';import { getRow } from './row';import { RowModel } from './row-model';
+import { Property, ChildProperty, Complex, extend } from '@syncfusion/ej2-base';import { SheetModel, getRowsHeight, getColumnsWidth, CellModel } from './index';import { CellStyleModel, CellStyle, HyperlinkModel } from '../common/index';import { getRow } from './row';import { RowModel } from './row-model';
 
 /**
  * Interface for a class Cell
@@ -6,7 +6,7 @@ import { Property, ChildProperty, Complex, extend } from '@syncfusion/ej2-base';
 export interface CellModel {
 
     /**
-     * Defines the value of the cell which can be text or number with formatting.
+     * Defines the value of the cell which can be text or number.
      * @default ''
      */
     value?: string;
@@ -50,5 +50,12 @@ export interface CellModel {
      * @default {}
      */
     style?: CellStyleModel;
+
+    /**
+     * Specifies the hyperlink of the cell.
+     * @default ''
+     * @aspType SpreadsheetHyperlink
+     */
+    hyperlink?: string | HyperlinkModel;
 
 }

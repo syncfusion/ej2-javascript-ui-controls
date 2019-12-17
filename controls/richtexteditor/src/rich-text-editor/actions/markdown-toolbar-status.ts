@@ -137,6 +137,7 @@ export class MarkdownToolbarStatus {
 }
 /** 
  * @hidden
+ * @deprecated
  */
 export interface ITextAreaElement extends HTMLTextAreaElement {
     selectionDirection: string;

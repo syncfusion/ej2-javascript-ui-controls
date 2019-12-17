@@ -16,12 +16,12 @@ describe('Recurrence Editor Base Module', () => {
     const RTLCLASS: string = 'e-rtl';
 
     beforeAll(() => {
-        // tslint:disable-next-line:no-any
+        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             // tslint:disable-next-line:no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); //Skips test (in Chai)
+            (this as any).skip(); //Skips test (in Chai)
             return;
         }
     });
@@ -360,8 +360,8 @@ describe('Recurrence Editor Base Module', () => {
             expect(schObj.element.querySelector('.e-editor').childElementCount - hiddenEle).toBe(3);
             let repeatField: HTMLElement = schObj.element.querySelector('.e-editor option') as HTMLElement;
             expect(repeatField.innerText).toBe('Daily');
-            let intervalField: HTMLElement = schObj.element.querySelector('.e-interval input[type="hidden"]') as HTMLElement;
-            // expect(intervalField.getAttribute('value')).toBe('1');
+            let intervalField: HTMLInputElement = schObj.element.querySelector('.e-interval .e-numeric-hidden') as HTMLInputElement;
+            expect(intervalField.value).toBe('1');
             let endCountField: HTMLElement = schObj.element.querySelector('.e-end-on-left option') as HTMLElement;
             expect(endCountField.innerText).toBe('Never');
             expect(schObj.value).toBe('FREQ=DAILY;INTERVAL=1;');
@@ -374,12 +374,34 @@ describe('Recurrence Editor Base Module', () => {
             expect(schObj.element.querySelector('.e-editor').childElementCount - hiddenEle).toBe(3);
             let repeatField: HTMLElement = schObj.element.querySelector('.e-editor option') as HTMLElement;
             expect(repeatField.innerText).toBe('Daily');
-            let intervalField: HTMLElement = schObj.element.querySelector('.e-interval input[type="hidden"]') as HTMLElement;
-            // expect(intervalField.getAttribute('value')).toBe('2');
+            let intervalField: HTMLInputElement = schObj.element.querySelector('.e-interval .e-numeric-hidden') as HTMLInputElement;
+            expect(intervalField.value).toBe('2');
             let endField: HTMLElement = schObj.element.querySelector('.e-end-on-left option') as HTMLElement;
             expect(endField.innerText).toBe('Count');
-            let endCountField: HTMLElement = schObj.element.querySelector('.e-end-on-count input[type="hidden"]') as HTMLElement;
-            // expect(endCountField.getAttribute('value')).toBe('8');
+            let endCountField: HTMLInputElement = schObj.element.querySelector('.e-end-on-count .e-numeric-hidden') as HTMLInputElement;
+            expect(endCountField.value).toBe('8');
+        });
+    });
+
+    describe('recurrence editor destroy testing in wrost case', () => {
+        let recObj: RecurrenceEditor;
+        beforeAll(() => {
+            document.body.appendChild(createElement('div', { id: 'RecurrenceEditor' }));
+            recObj = new RecurrenceEditor({ selectedType: 1 });
+            recObj.appendTo('#RecurrenceEditor');
+        });
+        afterAll(() => {
+            if (recObj) {
+                recObj.destroy();
+            }
+            remove(document.querySelector('#RecurrenceEditor'));
+        });
+        it('destroy recurrence editor', () => {
+            expect(recObj.element.classList.contains('e-control')).toEqual(true);
+            expect(recObj.element.classList.contains('e-recurrenceeditor')).toEqual(true);
+            recObj.destroy();
+            expect(recObj.element.classList.contains('e-control')).toEqual(false);
+            expect(recObj.element.classList.contains('e-recurrenceeditor')).toEqual(false);
         });
     });
 

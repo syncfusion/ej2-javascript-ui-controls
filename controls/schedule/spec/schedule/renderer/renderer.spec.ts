@@ -12,12 +12,12 @@ Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
 
 describe('Data module', () => {
     beforeAll(() => {
-        // tslint:disable-next-line:no-any
+        // tslint:disable:no-any
         const isDef: (o: any) => boolean = (o: any) => o !== undefined && o !== null;
         if (!isDef(window.performance)) {
             // tslint:disable-next-line:no-console
             console.log('Unsupported environment, window.performance.memory is unavailable');
-            this.skip(); //Skips test (in Chai)
+            (this as any).skip(); //Skips test (in Chai)
             return;
         }
     });
@@ -42,7 +42,7 @@ describe('Data module', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
             jasmine.Ajax.install();
-            let dataManager: DataManager = new DataManager({ url: 'service/Orders/' });
+            let dataManager: DataManager = new DataManager({ url: 'api/Schedule/Events/' });
             let model: ScheduleModel = { eventSettings: { query: new Query().take(5) } };
             schObj = util.createSchedule(model, dataManager, done);
             let request: JasmineAjaxRequest = jasmine.Ajax.requests.at(1);
@@ -64,19 +64,18 @@ describe('Data module', () => {
         let schObj: Schedule;
         beforeAll(() => {
             jasmine.Ajax.install();
-            let dataManager: DataManager = new DataManager({ url: 'service/Orders/' });
+            let dataManager: DataManager = new DataManager({ url: 'api/Schedule/Events/' });
             let model: ScheduleModel = { actionFailure: actionFailedFunction };
             schObj = util.createSchedule(model, dataManager);
         });
         beforeEach((done: Function) => {
             let request: JasmineAjaxRequest = jasmine.Ajax.requests.at(1);
             request.respondWith({ 'status': 404, 'contentType': 'application/json', 'responseText': 'Page not found' });
-            setTimeout(() => { done(); }, 100);
+            done();
         });
         it('actionFailure testing', () => {
             expect(actionFailedFunction).toHaveBeenCalled();
         });
-
         afterAll(() => {
             util.destroy(schObj);
             jasmine.Ajax.uninstall();
@@ -129,6 +128,10 @@ describe('Data module', () => {
         });
 
         it('edit schedule timezone event testing', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(4);
+                done();
+            };
             let appElement: HTMLElement = schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement;
             util.triggerMouseEvent(appElement, 'click');
             util.triggerMouseEvent(appElement, 'dblclick');
@@ -136,13 +139,13 @@ describe('Data module', () => {
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             let saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
             saveButton.click();
+        });
+
+        it('edit starttimezone alone event testing', (done: Function) => {
             schObj.dataBound = () => {
                 expect(schObj.eventsData.length).toEqual(4);
                 done();
             };
-        });
-
-        it('edit starttimezone alone event testing', (done: Function) => {
             let appElement: HTMLElement = schObj.element.querySelectorAll('.e-appointment')[1] as HTMLElement;
             util.triggerMouseEvent(appElement, 'click');
             util.triggerMouseEvent(appElement, 'dblclick');
@@ -150,13 +153,13 @@ describe('Data module', () => {
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             let saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
             saveButton.click();
+        });
+
+        it('edit endtimezone alone event testing', (done: Function) => {
             schObj.dataBound = () => {
                 expect(schObj.eventsData.length).toEqual(4);
                 done();
             };
-        });
-
-        it('edit endtimezone alone event testing', (done: Function) => {
             let appElement: HTMLElement = schObj.element.querySelectorAll('.e-appointment')[2] as HTMLElement;
             util.triggerMouseEvent(appElement, 'click');
             util.triggerMouseEvent(appElement, 'dblclick');
@@ -164,10 +167,6 @@ describe('Data module', () => {
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             let saveButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
             saveButton.click();
-            schObj.dataBound = () => {
-                expect(schObj.eventsData.length).toEqual(4);
-                done();
-            };
         });
     });
 

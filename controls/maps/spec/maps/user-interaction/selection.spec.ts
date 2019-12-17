@@ -122,7 +122,6 @@ describe('Selection Settings', () => {
                 },
                 layers: [
                     {
-                        
                 selectionSettings: {
                     enable: true,
                     enableMultiSelect: false,
@@ -152,32 +151,57 @@ describe('Selection Settings', () => {
             remove(ele);
             worldmap.destroy();
         });
-        // it('Legend selection checking', (done: Function) => {
-        //     worldmap.loaded = (args: ILoadedEventArgs) => {
-        //         spec = getElement('container_Legend_Shape_Index_0');
-        //         trigger.clickEvent(spec);
-        //         expect(spec.getAttribute('class')).toBe('ShapeselectionMapStyle');
-        //         done();
-        //     };
-        //     worldmap.appendTo('#' + id);
-        // });
-        // it('Removing legend selection', (done: Function) => {
-        //     spec = getElement('container_LayerIndex_0_shapeIndex_26_dataIndex_null');
-        //     trigger.clickEvent(spec);
-        //     expect(getElement('container_Legend_Shape_Index_0').getAttribute('class')).toBe(null);
-        //     done();
-        // });
-        // it('Checking with multiselection', (done: Function) => {
-        //     worldmap.layers[0].selectionSettings.enableMultiSelect = true;
-        //     worldmap.refresh();
-        //     spec = getElement('container_Legend_Shape_Index_0');
-        //     trigger.clickEvent(spec);
-        //     expect(spec.getAttribute('class')).toBe(null);
-        //     spec = getElement('container_LayerIndex_0_shapeIndex_26_dataIndex_null');
-        //     trigger.clickEvent(spec);
-        //     expect(spec.getAttribute('class')).toBe('ShapeselectionMapStyle');
-        //     done();
-        // });
+        it('Legend selection checking', (done: Function) => {
+            worldmap.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement('container_Legend_Shape_Index_0');
+                trigger.clickEvent(spec);
+                expect(spec.getAttribute('class')).toBe('ShapeselectionMapStyle');
+                done();
+            };
+            worldmap.appendTo('#' + id);
+        });
+        it('Removing legend selection', (done: Function) => {
+            spec = getElement('container_LayerIndex_0_shapeIndex_82_dataIndex_9');
+            trigger.clickEvent(spec);
+            expect(getElement('container_Legend_Shape_Index_0').getAttribute('class')).toBe(null);
+            done();
+        });
+        it('Checking with multiselection between shape and legend', () => {
+            worldmap.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement('container_Legend_Shape_Index_0');
+                trigger.clickEvent(spec);
+                expect(spec.getAttribute('class')).toBe('ShapeselectionMapStyle');
+                spec = getElement('container_LayerIndex_0_shapeIndex_82_dataIndex_9');
+                expect(spec.getAttribute('class')).toBe('ShapeselectionMapStyle');
+                trigger.clickEvent(spec);
+            };
+            worldmap.layers[0].selectionSettings.enableMultiSelect = true;
+            worldmap.refresh();
+        });
+        it('Checking with multiselection of legend', () => {
+            worldmap.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement('container_Legend_Shape_Index_1');
+                trigger.clickEvent(spec);
+                expect(spec.getAttribute('class')).toBe('ShapeselectionMapStyle');
+                spec = getElement('container_Legend_Shape_Index_0');
+                expect(spec.getAttribute('class')).toBe('ShapeselectionMapStyle');
+                trigger.clickEvent(spec);
+                trigger.clickEvent(getElement('container_Legend_Shape_Index_1'));
+                trigger.clickEvent(getElement('container_LayerIndex_0_shapeIndex_134_dataIndex_2'));
+                trigger.clickEvent(getElement('container_LayerIndex_0_shapeIndex_29_dataIndex_0'));
+            };
+            worldmap.refresh();
+        });
+        it('Testing selection by changing enbalemultiselect value dynamically', () => {
+            worldmap.loaded = (args: ILoadedEventArgs) => {
+                spec = getElement('container_LayerIndex_0_shapeIndex_167_dataIndex_4');
+                trigger.clickEvent(spec);
+                spec = getElement('container_LayerIndex_0_shapeIndex_29_dataIndex_0');
+                expect(spec.getAttribute('class')).toBe(null);
+            };
+            worldmap.layers[0].selectionSettings.enableMultiSelect = false;
+            worldmap.refresh();
+        });
     });
     describe('Testing selection is applied or not', () => {
         let id: string = 'maps';
@@ -409,12 +433,14 @@ describe('Selection Settings', () => {
                         enable: true,
                         fill: 'red'
                     },
+                    initialShapeSelection: [{ shapePath: 'name', shapeValue: 'India'}],
                     selectionSettings: {
                         enable: true,
-                        fill: 'green'
+                        fill: 'green',
                     },
                     shapeData: World_Map,
                     shapeDataPath: 'name',
+                    shapePropertyPath: 'name',
                     dataSource: Population_Density,
                     shapeSettings: {
                         colorValuePath: 'density',
@@ -512,6 +538,78 @@ describe('Selection Settings', () => {
         };
             selection.legendSettings.mode = 'Interactive';
             selection.refresh();
+        });
+    });
+
+    describe('Testing api based selection', () => {
+        let id: string = 'container';
+        let selections: Maps;
+        let trigger: MouseEvents = new MouseEvents();
+        let ele: HTMLDivElement;
+        let spec: Element;
+        let spec1: Element;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            selections = new Maps({
+                titleSettings: {
+                    text: 'WorldMap',
+                },
+                legendSettings: {
+                    visible: true,
+                    position: 'Top',
+                    mode: "Interactive"
+                },
+                layers: [{
+                    highlightSettings: {
+                        enable: true,
+                        fill: 'red'
+                    },
+                    initialShapeSelection: [{ shapePath: 'name', shapeValue: 'India'}],
+                    selectionSettings: {
+                        enable: true,
+                        fill: 'green'
+                    },
+                    shapeData: World_Map,
+                    shapeDataPath: 'name',
+                    dataSource: Population_Density,
+                    shapeSettings: {
+                        colorValuePath: 'density',
+                        fill: '#E5E5E5',
+                        colorMapping: [
+                            {
+                                from: 0.00001, to: 100, color: 'yellow', label: '<100'
+                            },
+                            {
+                                from: 100, to: 200, color: 'blue', label: '100 - 200'
+                            },
+                            {
+                                from: 200, to: 300, color: 'pink', label: '200 - 300'
+                            },
+                            {
+                                from: 300, to: 500, color: 'violet', label: '300 - 500'
+                            },
+                            {
+                                from: 500, to: 19000, color: 'orange', label: '>500'
+                            }
+                        ]
+                    }
+                }],
+            });
+        });
+        afterAll(() => {
+            remove(ele);
+            selections.destroy();
+        });
+        it('Check shape is selected or not', (done: Function) => {
+            selections.loaded = (args: ILoadedEventArgs) => {
+            spec = getElement('container_LayerIndex_0_shapeIndex_72_dataIndex_65');
+            expect(spec.getAttribute('class')).toBe('ShapeselectionMapStyle');
+            spec = getElement('container_Legend_Index_3');
+            expect(spec.getAttribute('class')).toBe('ShapeselectionMapStyle');
+            done();
+        };
+            selections.appendTo('#' + id);
         });
     });
     it('memory leak', () => {

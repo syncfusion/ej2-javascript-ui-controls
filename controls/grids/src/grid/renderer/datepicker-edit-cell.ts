@@ -1,4 +1,4 @@
-import { extend } from '@syncfusion/ej2-base';
+import { extend, isBlazor } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { IEditCell, IGrid, EJ2Intance } from '../base/interface';
 import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
@@ -37,6 +37,9 @@ export class DatePickerEditCell implements IEditCell {
             this.obj = new DateTimePicker(
                 extend(dateanddatetimerender(args, this.parent.editSettings.mode, this.parent.enableRtl),
                        args.column.edit.params));
+        }
+        if (isBlazor()) {
+            this.obj.locale = this.parent.locale;
         }
         this.obj.appendTo(args.element as HTMLElement);
     }

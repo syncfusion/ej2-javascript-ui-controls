@@ -10,7 +10,7 @@ export interface Data {
 }
     let maps: Maps = new Maps({
         bubbleRendering: (args: IBubbleRenderingEventArgs) => {
-            args.data['color'] = 'yellow';
+            args.fill = 'yellow';
         },
         format: 'n',
         useGroupingSeparator: true,

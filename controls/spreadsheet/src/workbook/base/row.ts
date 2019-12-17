@@ -50,6 +50,14 @@ export class Row extends ChildProperty<SheetModel> {
      */
     @Property(false)
     public customHeight: boolean;
+
+    /**
+     * To hide/show the row in spreadsheet.
+     * @default false
+     * @hidden
+     */
+    @Property(false)
+    public hidden: boolean;
 }
 
 /**
@@ -68,13 +76,17 @@ export function setRow(sheet: SheetModel, rowIndex: number, row: RowModel): void
         sheet.rows[rowIndex][key] = row[key];
     });
 }
-
+/** @hidden */
+export function isHiddenRow(sheet: SheetModel, index: number): boolean {
+    return sheet.rows[index] && sheet.rows[index].hidden;
+}
 /**
  * @hidden
  */
 export function getRowHeight(sheet: SheetModel, rowIndex: number): number {
-    if (sheet && sheet.rows && sheet.rows[rowIndex] && (sheet.rows[rowIndex].height || sheet.rows[rowIndex].customHeight)) {
-        return sheet.rows[rowIndex].height;
+    if (sheet && sheet.rows && sheet.rows[rowIndex]) {
+        if (sheet.rows[rowIndex].hidden) { return 0; }
+        return sheet.rows[rowIndex].height === undefined ? 20 : sheet.rows[rowIndex].height;
     } else {
         return 20;
     }

@@ -7,7 +7,7 @@ import { EventHandler, EmitType } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { TreeView, DragAndDropEventArgs, NodeEditEventArgs, NodeCheckEventArgs, NodeExpandEventArgs,  NodeSelectEventArgs } from "../../src/treeview/treeview";
 import { DataManager, Query } from '@syncfusion/ej2-data';
-import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, localData, localData1, localData2, localData3, remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6, hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6, localData7, localData8, localData9, checkData } from '../../spec/treeview/datasource.spec';
+import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, localData, localData1, localData2, localData3, remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6, hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6, localData7, localData8, localData9, checkData, XSSData, XSSnestedData, checkboxData} from '../../spec/treeview/datasource.spec';
 import '../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
 
@@ -439,6 +439,7 @@ describe('TreeView control', () => {
                     done();
                 }, 100);
             });
+            
 			it('enableRtl with customcss class testing', (done: Function) => {
                 treeObj = new TreeView({ 
                     fields: { dataSource: hierarchicalData1, id: "nodeId", text: "nodeText", child: "nodeChild",
@@ -450,6 +451,30 @@ describe('TreeView control', () => {
                 setTimeout(function() {
                     expect(treeObj.element.classList.contains('e-rtl')).toBe(true);
 					expect(treeObj.element.classList.contains('e-style')).toBe(true);
+                    done();
+                }, 100);
+            });
+            it('enableHtmlSanitizer property testing', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: XSSnestedData, id: "id", text: "text", child: "child"},
+                  enableHtmlSanitizer: false
+                },'#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function() {
+                    var htmlEle = document.body;
+                    expect(window.getComputedStyle(htmlEle).backgroundColor).toBe("rgb(0, 0, 255)");
+                    done();
+                }, 100);
+            });
+            it('enableHtmlSanitizer property testing', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: XSSData, id: "id", text: "text",},
+                  enableHtmlSanitizer: true
+                },'#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function() {
+                    var htmlEle = document.body;
+                    expect(window.getComputedStyle(htmlEle).backgroundColor).not.toBe("rgb(0, 0, 255)");
                     done();
                 }, 100);
             });
@@ -474,7 +499,35 @@ describe('TreeView control', () => {
                     done();
                 }, 100);
             });
-            it('showCheckBox property testing with autoCheck true', function (done) {
+            it('showCheckBox property testing and checkedNodes property testing', (done: Function) => {
+                treeObj = new TreeView({ 
+                   fields: { dataSource: checkboxData, id: 'id', text: 'name', child: 'subChild' },
+                   showCheckBox: true,
+                },'#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function() {
+                    let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                    expect(checkEle.length).toBeGreaterThan(0);
+                    expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
+                    var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                    checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                    var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                    var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                    checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                    expect(checkEle[0].getAttribute('aria-checked')).toBe('true');
+                    expect(treeObj.checkedNodes.length).toBe(13);
+                    var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                    checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                    var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                    checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                    var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                    checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                    expect(treeObj.checkedNodes.length).toBe(0);
+                    done();
+                }, 100);
+            });
+            it('showCheckBox property testing with autoCheck true', function (done) { 
                     treeObj = new TreeView({
                         fields: { dataSource: hierarchicalData1, id: "nodeId", text: "nodeText", child: "nodeChild",
                             iconCss: 'nodeIcon', imageUrl: 'nodeImage', tooltip: 'nodeTooltip', htmlAttributes: 'nodeHtmlAttr', selected: 'nodeSelected', isChecked: 'nodeChecked' },
@@ -3222,6 +3275,7 @@ describe('TreeView control', () => {
                 expect(li[0].classList.contains('e-disable')).toBe(false);
                 expect(li[0].getAttribute('aria-disabled')).toBe(null);
                 treeObj.disableNodes(['01', li[2], '03', '099', '07']);
+                expect(treeObj.getDisabledNodes().length).toEqual(3);
                 expect(li[0].classList.contains('e-disable')).toBe(true);
                 expect(li[0].getAttribute('aria-disabled')).toBe('true');
                 expect(li[2].classList.contains('e-disable')).toBe(true);
@@ -3229,6 +3283,7 @@ describe('TreeView control', () => {
                 expect(li[8].classList.contains('e-disable')).toBe(true);
                 expect(li[8].getAttribute('aria-disabled')).toBe('true');
                 treeObj.disableNodes(null);
+                expect(treeObj.getDisabledNodes().length).toEqual(3);
                 expect(li[3].classList.contains('e-disable')).toBe(false);
                 expect(li[3].getAttribute('aria-disabled')).toBe(null);
             });
@@ -3243,6 +3298,7 @@ describe('TreeView control', () => {
                 expect(li[i].classList.contains('e-disable')).toBe(false);
                 expect(li[i].getAttribute('aria-disabled')).toBe(null);
                 }
+                expect(treeObj.getDisabledNodes().length).toEqual(0);
             });
             it('enableNodes', () => {
                 let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
@@ -3250,6 +3306,7 @@ describe('TreeView control', () => {
                 expect(li[0].classList.contains('e-disable')).toBe(true);
                 expect(li[2].classList.contains('e-disable')).toBe(true);
                 expect(li[8].classList.contains('e-disable')).toBe(true);
+                expect(treeObj.getDisabledNodes().length).toEqual(3);
                 treeObj.enableNodes(['01', li[2], '099']);
                 expect(li[0].classList.contains('e-disable')).toBe(false);
                 expect(li[0].getAttribute('aria-disabled')).toBe(null);
@@ -3257,19 +3314,23 @@ describe('TreeView control', () => {
                 expect(li[2].getAttribute('aria-disabled')).toBe(null);
                 expect(li[8].classList.contains('e-disable')).toBe(true);
                 expect(li[8].getAttribute('aria-disabled')).toBe('true');
+                expect(treeObj.getDisabledNodes().length).toEqual(1);
             });
             it('enableNodes', () => {
                 let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
                 treeObj.disableNodes(['01', li[2]]);
+                expect(treeObj.getDisabledNodes().length).toEqual(2);
                 expect(li[0].classList.contains('e-disable')).toBe(true);
                 expect(li[2].classList.contains('e-disable')).toBe(true);
                 treeObj.enableNodes([]);
                 expect(li[0].classList.contains('e-disable')).toBe(true);
                 expect(li[2].classList.contains('e-disable')).toBe(true);
+                expect(treeObj.getDisabledNodes().length).toEqual(2);
                 treeObj.enableNodes(['001'])
                 expect(li[0].classList.contains('e-disable')).toBe(true);
                 expect(li[2].classList.contains('e-disable')).toBe(true);
                 expect(li[0].getAttribute('aria-disabled')).toBe('true');
+                expect(treeObj.getDisabledNodes().length).toEqual(2);
             });
             it('getNode', () => {
                 expect(treeObj.getNode(null).text).toBe('');
@@ -3366,6 +3427,157 @@ describe('TreeView control', () => {
                 expect(j).toEqual(3);
                 expect(treeObj.liList.length).toBe(treeObj.element.querySelectorAll('li').length);
                 expect(treeObj.selectedNodes.length).toBe(0);
+            });
+            it('refreshNode with target as li with collapsed state', () => {
+                expect(j).toEqual(0);
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                var data = [{nodeText: 'RefreshedNode', iconCss: 'file', navigateUrl: 'https://ej2.syncfusion.com/home/', tooltip: 'This is refreshed node'}]
+                treeObj.refreshNode(li[0], data);
+                treeObj.dataBind();
+                var refreshedLi = treeObj.element.querySelectorAll('li')[0];
+                expect(j).toEqual(1);
+                expect(refreshedLi.querySelector('.e-list-icon').classList.contains('file')).toBe(true);
+                expect(refreshedLi.getAttribute('title')).toBe("This is refreshed node");
+                expect((refreshedLi.querySelector('.e-list-url') as any).href.indexOf('https://ej2.syncfusion.com/home/')).not.toBe(-1);
+                treeObj.expandedNodes = ['01'];
+                treeObj.dataBind();
+                expect(refreshedLi.querySelector('ul li').querySelector('.e-list-text').textContent).toBe("Gouttes.mp3");
+                expect(treeObj.getTreeData('01')[0].nodeText).toBe("RefreshedNode");
+                expect(treeObj.getTreeData('01')[0].nodeChild[0].nodeId).toBe("01-01");
+            });
+            it('refreshNode with target as id with expanded state', () => {
+                expect(j).toEqual(0);
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                treeObj.expandedNodes = ['01'];
+                treeObj.dataBind();
+                var data = [{nodeText: 'RefreshedNode', iconCss: 'file', navigateUrl: 'https://ej2.syncfusion.com/home/', tooltip: 'This is refreshed node'}]
+                treeObj.refreshNode('01', data);
+                treeObj.dataBind();
+                var refreshedLi = treeObj.element.querySelectorAll('li')[0];
+                expect(j).toEqual(1);
+                expect(refreshedLi.querySelector('.e-list-icon').classList.contains('file')).toBe(true);
+                expect(refreshedLi.getAttribute('title')).toBe("This is refreshed node");
+                expect((refreshedLi.querySelector('.e-list-url') as any).href.indexOf('https://ej2.syncfusion.com/home/')).not.toBe(-1);
+                expect(refreshedLi.querySelector('ul li').querySelector('.e-list-text').textContent).toBe("Gouttes.mp3");
+                expect(treeObj.getTreeData('01')[0].nodeText).toBe("RefreshedNode");
+                expect(treeObj.getTreeData('01')[0].nodeChild[0].nodeId).toBe("01-01");
+                expect(refreshedLi.querySelector('.e-icons').classList.contains('e-icon-collapsible'));
+            });
+            it('refreshNode with target as id without child', () => {
+                expect(j).toEqual(0);
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                treeObj.expandedNodes = ['01'];
+                treeObj.dataBind();
+                var data = [{nodeText: 'RefreshedNode', iconCss: 'file', navigateUrl: 'https://ej2.syncfusion.com/home/', tooltip: 'This is refreshed node'}]
+                treeObj.refreshNode('01-01', data);
+                treeObj.dataBind();
+                var refreshedLi = treeObj.element.querySelectorAll('li')[1];
+                expect(j).toEqual(1);
+                expect(refreshedLi.querySelector('.e-list-icon').classList.contains('file')).toBe(true);
+                expect(refreshedLi.getAttribute('title')).toBe("This is refreshed node");
+                expect((refreshedLi.querySelector('.e-list-url') as any).href.indexOf('https://ej2.syncfusion.com/home/')).not.toBe(-1);
+                expect(treeObj.getTreeData('01-01')[0].nodeText).toBe("RefreshedNode");
+            });
+            it('refreshNode with target as id without child and is not rendered in DOM', () => {
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                var data = [{nodeText: 'RefreshedNode', iconCss: 'file', navigateUrl: 'https://ej2.syncfusion.com/home/', tooltip: 'This is refreshed node'}]
+                treeObj.refreshNode('01-01', data);
+                treeObj.expandedNodes = ['01'];
+                treeObj.dataBind();
+                var refreshedLi = treeObj.element.querySelectorAll('li')[1];
+                expect(refreshedLi.querySelector('.e-list-icon').classList.contains('file')).toBe(true);
+                expect(refreshedLi.getAttribute('title')).toBe("This is refreshed node");
+                expect((refreshedLi.querySelector('.e-list-url') as any).href.indexOf('https://ej2.syncfusion.com/home/')).not.toBe(-1);
+                expect(treeObj.getTreeData('01-01')[0].nodeText).toBe("RefreshedNode");
+            });
+            it('refreshNode with target as id and is not rendered in DOM', () => {
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                var data = [{nodeText: 'RefreshedNode', iconCss: 'file', navigateUrl: 'https://ej2.syncfusion.com/home/', tooltip: 'This is refreshed node'}]
+                treeObj.refreshNode('04-01', data);
+                treeObj.expandedNodes = ['04'];
+                treeObj.dataBind();
+                var refreshedLi = li[3].querySelector('ul li');
+                expect(refreshedLi.querySelector('.e-list-icon').classList.contains('file')).toBe(true);
+                expect(refreshedLi.getAttribute('title')).toBe("This is refreshed node");
+                expect((refreshedLi.querySelector('.e-list-url') as any).href.indexOf('https://ej2.syncfusion.com/home/')).not.toBe(-1);
+                expect(treeObj.getTreeData('04-01')[0].nodeText).toBe("RefreshedNode");
+                expect(treeObj.getTreeData('04-01')[0].nodeChild[0].nodeId).toBe("04-01-01");
+                treeObj.expandedNodes = ['04','04-01'];
+                expect(refreshedLi.querySelector('.e-icons').classList.contains('e-icon-expandable'));
+                expect(treeObj.getTreeData('04-01')[0].nodeChild[0].nodeText).toBe("WIN_20160726_094117.JPG");
+            });
+            it('refreshNode parent and child nodes together rendered in DOM with parent in expanded state', () => {
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                var data = [{nodeText: 'RefreshedNode', iconCss: 'folder', navigateUrl: 'https://ej2.syncfusion.com/home/', tooltip: 'This is refreshed node',  nodeChild: [
+                    { nodeId: '10-10', nodeText: 'Refreshed child Node', icons: 'file' }] }]
+                treeObj.expandedNodes = ['01'];
+                treeObj.dataBind();
+                treeObj.refreshNode('01', data);
+               
+                var refreshedLi = treeObj.element.querySelectorAll('li')[0];
+                expect(refreshedLi.querySelector('.e-list-icon').classList.contains('folder')).toBe(true);
+                expect(refreshedLi.getAttribute('title')).toBe("This is refreshed node");
+                expect((refreshedLi.querySelector('.e-list-url') as any).href.indexOf('https://ej2.syncfusion.com/home/')).not.toBe(-1);
+                expect(treeObj.getTreeData('01')[0].nodeText).toBe("RefreshedNode");
+                expect(treeObj.getTreeData('01')[0].nodeChild.length).toBe(1);
+                expect(treeObj.getTreeData('01')[0].nodeChild[0].nodeId).toBe("10-10");
+                expect(refreshedLi.querySelector('.e-icons').classList.contains('e-icon-collapsible'));
+                expect(treeObj.getTreeData('01')[0].nodeChild[0].nodeText).toBe("Refreshed child Node");
+            });
+            it('refreshNode parent and child nodes together rendered in DOM with parent in collapsed state', function () {
+                var li = treeObj.element.querySelectorAll('li');
+                var data = [{ nodeText: 'RefreshedNode', iconCss: 'folder', navigateUrl: 'https://ej2.syncfusion.com/home/', tooltip: 'This is refreshed node', nodeChild: [
+                            { nodeId: '10-10', nodeText: 'Refreshed child Node', icons: 'file', nodeChild: [
+                                    { nodeId: '10-11', nodeText: 'Refreshed  nested child Node', }
+                                ] }
+                        ] }];
+                treeObj.refreshNode('04', data);
+                treeObj.expandedNodes = ['04'];
+                treeObj.dataBind();
+                expect(li[3].querySelector('.e-list-icon').classList.contains('folder')).toBe(true);
+                expect(li[3].getAttribute('title')).toBe("This is refreshed node");
+                expect(li[3].querySelector('.e-list-url').href.indexOf('https://ej2.syncfusion.com/home/')).not.toBe(-1);
+                expect(treeObj.getTreeData('04')[0].nodeText).toBe("RefreshedNode");
+                expect(treeObj.getTreeData('04')[0].nodeChild.length).toBe(1);
+                expect(treeObj.getTreeData('04')[0].nodeChild[0].nodeId).toBe("10-10");
+                expect(treeObj.getTreeData('04')[0].nodeChild[0].nodeText).toBe("Refreshed child Node");
+                treeObj.expandedNodes = ['04','10-10'];
+                treeObj.dataBind();
+                var refreshedChild = li[3].querySelector('ul li');
+                expect(refreshedChild.querySelector('ul li').getAttribute("data-uid")).toBe("10-11");
+                expect(refreshedChild.querySelector(".e-list-text").textContent).toBe("Refreshed child Node");
+            });
+            it('refreshNode parent and child nodes together which is not rendered in DOM', function () {
+                var li = treeObj.element.querySelectorAll('li');
+                var data = [{ nodeText: 'RefreshedNode', iconCss: 'folder', navigateUrl: 'https://ej2.syncfusion.com/home/', tooltip: 'This is refreshed node', nodeChild: [
+                            { nodeId: '10-10', nodeText: 'Refreshed child Node', icons: 'file', nodeChild: [
+                                    { nodeId: '10-11', nodeText: 'Refreshed  nested child Node', }
+                                ] }
+                        ] }];
+                treeObj.refreshNode('04-01', data);
+                treeObj.expandedNodes = ['04'];
+                treeObj.dataBind();
+                var refreshedLi = li[3].querySelector('ul li');
+                expect(refreshedLi.querySelector('.e-list-icon').classList.contains('folder')).toBe(true);
+                expect(refreshedLi.getAttribute('title')).toBe("This is refreshed node");
+                expect(refreshedLi.querySelector('.e-list-url').href.indexOf('https://ej2.syncfusion.com/home/')).not.toBe(-1);
+                expect(treeObj.getTreeData('04-01')[0].nodeText).toBe("RefreshedNode");
+                expect(treeObj.getTreeData('04-01')[0].nodeChild.length).toBe(1);
+                expect(treeObj.getTreeData('04-01')[0].nodeChild[0].nodeId).toBe("10-10");
+                expect(refreshedLi.querySelector('.e-icons').classList.contains('e-icon-expandable'));
+                expect(treeObj.getTreeData('04-01')[0].nodeChild[0].nodeText).toBe("Refreshed child Node");
+                treeObj.expandedNodes = ['04', '04-01'];
+                treeObj.dataBind();
+                var refreshedChild = refreshedLi.querySelector('ul li');
+                expect(refreshedChild.getAttribute("data-uid")).toBe("10-10");
+                expect(refreshedChild.querySelector(".e-list-text").textContent).toBe("Refreshed child Node");
+                expect(treeObj.getTreeData("10-10")[0].nodeChild.length).toBe(1);
+                expect(refreshedChild.querySelector(".e-icons").classList.contains('e-icon-expandable')).toBe(true);
+                treeObj.expandedNodes = ['04', '04-01', '10-10'];
+                treeObj.dataBind();
+                var refreshNestedChild = refreshedChild.querySelector('ul li');
+                expect(refreshNestedChild.getAttribute("data-uid")).toBe("10-11");
+                expect(refreshNestedChild.querySelector(".e-list-text").textContent).toBe("Refreshed  nested child Node");
             });
             it('addNodes', (done: Function) => {
                 expect(j).toEqual(0);
@@ -4399,6 +4611,30 @@ describe('TreeView control', () => {
                     done();
                 }, 100);
             });
+            it('enableHtmlSanitizer property testing', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: XSSData, id: "id", text: "text",},
+                  enableHtmlSanitizer: false
+                },'#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function() {
+                    var htmlEle = document.body;
+                    expect(window.getComputedStyle(htmlEle).backgroundColor).toBe("rgb(0, 0, 255)");
+                    done();
+                }, 100);
+            });
+            it('enableHtmlSanitizer property testing', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: XSSData, id: "id", text: "text",},
+                  enableHtmlSanitizer: true
+                },'#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function() {
+                    var htmlEle = document.body;
+                    expect(window.getComputedStyle(htmlEle).backgroundColor).not.toBe("rgb(0, 0, 255)");
+                    done();
+                }, 100);
+            });
             it(' checkedNodes with events ', (done: Function) => {
                 treeObj = new TreeView({ 
                     fields: { dataSource: hierarchicalData1 , id: "nodeId", text: "nodeText", child: "nodeChild", isChecked:"nodeChecked" },
@@ -4714,6 +4950,71 @@ describe('TreeView control', () => {
                     expect(treeObj.checkedNodes.length).toBe(0);
                     let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-check');
                     expect(checkEle.length).toBe(0);
+                    done();
+                }, 100);
+            });
+            it('getDisabledNodes method testing with hierarachical datasource with id as string type', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: hierarchicalData1 , id: "nodeId", text: "nodeText", child: "nodeChild", expanded:"nodeExpanded" },
+                });
+                treeObj.appendTo('#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function() {
+                    treeObj.disableNodes(['02-01', '04-04']);
+                    treeObj.dataBind();
+                    expect(treeObj.getDisabledNodes().length).toBe(2);
+                    done();
+                }, 100);
+            });
+            
+                it('getDisabledNodes method testing with hierarchical datasource with id as number type', (done: Function) => {
+                    treeObj = new TreeView({ 
+                        fields: { dataSource: hierarchicalData , id: "id", text: "text", child: "child" },
+                    });
+                    treeObj.appendTo('#tree1');
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(function() {
+                        treeObj.disableNodes(['2', '22', '29', '2222', '02-02'])
+                        expect(treeObj.getDisabledNodes().length).toBe(3);
+                        treeObj.disableNodes([null]);
+                        expect(treeObj.getDisabledNodes().length).toBe(3);
+                        treeObj.enableNodes(['2222', '02-02', '22', '29']);
+                        treeObj.dataBind();
+                        expect(treeObj.getDisabledNodes().length).toBe(1);
+                        done();
+                    }, 100);
+            });
+            it('getDisabledNodes method testing with local datasource with id as number type', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: localData , id: "id", text: "text",parentID: "parentID", hasChildren: "hasChildren" },
+                });
+                treeObj.appendTo('#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function() {
+                    treeObj.disableNodes(['2', '22', '29', '2222', '02-02'])
+                    expect(treeObj.getDisabledNodes().length).toBe(3);
+                    treeObj.disableNodes([null]);
+                    expect(treeObj.getDisabledNodes().length).toBe(3);
+                    treeObj.enableNodes(['2222', '02-02', '22', '29']);
+                    treeObj.dataBind();
+                    expect(treeObj.getDisabledNodes().length).toBe(1);
+                    done();
+                }, 100);
+            });
+            it('getDisabledNodes method testing with local datasource with id as string type', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: localData9 , id: "id", text: "name",parentID: "pid", hasChildren: "hasChildren" },
+                });
+                treeObj.appendTo('#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function() {
+                    treeObj.disableNodes(['2', '22', '29', '2222', '02-02'])
+                    expect(treeObj.getDisabledNodes().length).toBe(2);
+                    treeObj.disableNodes([null]);
+                    expect(treeObj.getDisabledNodes().length).toBe(2);
+                    treeObj.enableNodes(['2222', '02-02', '22', '29']);
+                    treeObj.dataBind();
+                    expect(treeObj.getDisabledNodes().length).toBe(0);
                     done();
                 }, 100);
             });
@@ -7077,6 +7378,148 @@ describe('TreeView control', () => {
                 expect(j).toEqual(3);
                 expect(treeObj.liList.length).toBe(treeObj.element.querySelectorAll('li').length);
                 expect(treeObj.selectedNodes.length).toBe(0);
+            });
+            it('refreshNode with target as li with collapsed state', () => {
+                expect(j).toEqual(0);
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                var data = [{nodeText: 'RefreshedNode', iconCss: 'file', navigateUrl: 'https://ej2.syncfusion.com/home/', tooltip: 'This is refreshed node'}]
+                treeObj.refreshNode(li[0], data);
+                treeObj.dataBind();
+                var refreshedLi = treeObj.element.querySelectorAll('li')[0];
+                expect(j).toEqual(1);
+                expect(refreshedLi.querySelector('.e-list-icon').classList.contains('file')).toBe(true);
+                expect(refreshedLi.getAttribute('title')).toBe("This is refreshed node");
+                expect((refreshedLi.querySelector('.e-list-url') as any).href.indexOf('https://ej2.syncfusion.com/home/')).not.toBe(-1);
+                treeObj.expandedNodes = ['01'];
+                treeObj.dataBind();
+                expect(refreshedLi.querySelector('ul li').querySelector('.e-list-text').textContent).toBe("Gouttes.mp3");
+                expect(treeObj.getTreeData('01')[0].nodeText).toBe("RefreshedNode");
+                expect(treeObj.getTreeData('01-01')[0]['nodePid']).toBe("01");
+            });
+            it('refreshNode with target as id with expanded state', () => {
+                expect(j).toEqual(0);
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                treeObj.expandedNodes = ['01'];
+                treeObj.dataBind();
+                var data = [{nodeText: 'RefreshedNode', iconCss: 'file', navigateUrl: 'https://ej2.syncfusion.com/home/', tooltip: 'This is refreshed node'}]
+                treeObj.refreshNode('01', data);
+                treeObj.dataBind();
+                var refreshedLi = treeObj.element.querySelectorAll('li')[0];
+                expect(j).toEqual(1);
+                expect(refreshedLi.querySelector('.e-list-icon').classList.contains('file')).toBe(true);
+                expect(refreshedLi.getAttribute('title')).toBe("This is refreshed node");
+                expect((refreshedLi.querySelector('.e-list-url') as any).href.indexOf('https://ej2.syncfusion.com/home/')).not.toBe(-1);
+                expect(refreshedLi.querySelector('ul li').querySelector('.e-list-text').textContent).toBe("Gouttes.mp3");
+                expect(treeObj.getTreeData('01')[0].nodeText).toBe("RefreshedNode");
+                expect(treeObj.getTreeData('01-01')[0].nodePid).toBe("01");
+                expect(refreshedLi.querySelector('.e-icons').classList.contains('e-icon-collapsible'));
+            });
+            it('refreshNode with target as id without child', () => {
+                expect(j).toEqual(0);
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                treeObj.expandedNodes = ['01'];
+                treeObj.dataBind();
+                var data = [{nodeText: 'RefreshedNode', iconCss: 'file', htmlAttributes:{"data-type": "refreshedData"}, navigateUrl: 'https://ej2.syncfusion.com/home/', tooltip: 'This is refreshed node'}]
+                treeObj.refreshNode('01-01', data);
+                treeObj.dataBind();
+                var refreshedLi = treeObj.element.querySelectorAll('li')[1];
+                expect(j).toEqual(1);
+                expect(refreshedLi.querySelector('.e-list-icon').classList.contains('file')).toBe(true);
+                expect(refreshedLi.getAttribute('title')).toBe("This is refreshed node");
+                expect((refreshedLi.querySelector('.e-list-url') as any).href.indexOf('https://ej2.syncfusion.com/home/')).not.toBe(-1);
+                expect(treeObj.getTreeData('01-01')[0].nodeText).toBe("RefreshedNode");
+            });
+            it('refreshNode with target as id without child and is not rendered in DOM', () => {
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                var data = [{nodeText: 'RefreshedNode', iconCss: 'file', navigateUrl: 'https://ej2.syncfusion.com/home/', tooltip: 'This is refreshed node'}]
+                treeObj.refreshNode('01-01', data);
+                treeObj.expandedNodes = ['01'];
+                treeObj.dataBind();
+                var refreshedLi = treeObj.element.querySelectorAll('li')[1];
+                expect(refreshedLi.querySelector('.e-list-icon').classList.contains('file')).toBe(true);
+                expect(refreshedLi.getAttribute('title')).toBe("This is refreshed node");
+                expect((refreshedLi.querySelector('.e-list-url') as any).href.indexOf('https://ej2.syncfusion.com/home/')).not.toBe(-1);
+                expect(treeObj.getTreeData('01-01')[0].nodeText).toBe("RefreshedNode");
+            });
+            it('refreshNode with target as id and is not rendered in DOM', () => {
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                var data = [{nodeText: 'RefreshedNode', iconCss: 'file', navigateUrl: 'https://ej2.syncfusion.com/home/', tooltip: 'This is refreshed node'}]
+                treeObj.refreshNode('04-01', data);
+                treeObj.expandedNodes = ['04'];
+                treeObj.dataBind();
+                var refreshedLi = li[3].querySelector('ul li');
+                expect(refreshedLi.querySelector('.e-list-icon').classList.contains('file')).toBe(true);
+                expect(refreshedLi.getAttribute('title')).toBe("This is refreshed node");
+                expect((refreshedLi.querySelector('.e-list-url') as any).href.indexOf('https://ej2.syncfusion.com/home/')).not.toBe(-1);
+                expect(treeObj.getTreeData('04-01')[0].nodeText).toBe("RefreshedNode");
+                expect(treeObj.getTreeData('04-01-01')[0].nodePid).toBe("04-01");
+                treeObj.expandedNodes = ['04','04-01'];
+                treeObj.dataBind();
+                expect(refreshedLi.querySelector('.e-icons').classList.contains('e-icon-expandable'));
+                expect(refreshedLi.querySelector('ul li').querySelector('.e-list-text').textContent).toBe("WIN_20160726_094117.JPG");
+            });
+            it('refreshNode parent and child nodes together rendered in DOM with parent in expanded state', () => { 
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                var data = [{ nodeText: 'RefreshedNode', iconCss: 'folder', navigateUrl: 'https://ej2.syncfusion.com/home/', tooltip: 'This is refreshed node',hasChild: true },
+                { nodeId: '10-10', nodePid: '01', nodeText: 'Refreshed child Node', icons: 'file' }]
+                treeObj.expandedNodes = ['01'];
+                treeObj.dataBind();
+                treeObj.refreshNode('01', data);
+                var refreshedLi = treeObj.element.querySelectorAll('li')[0];
+                expect(refreshedLi.querySelector('.e-list-icon').classList.contains('folder')).toBe(true);
+                expect(refreshedLi.getAttribute('title')).toBe("This is refreshed node");
+                expect((refreshedLi.querySelector('.e-list-url') as any).href.indexOf('https://ej2.syncfusion.com/home/')).not.toBe(-1);
+                expect(treeObj.getTreeData('01')[0].nodeText).toBe("RefreshedNode");
+                expect(refreshedLi.querySelectorAll('ul li').length).toBe(1);
+                expect(refreshedLi.querySelector('ul li').querySelector('.e-list-text').textContent).toBe('Refreshed child Node');
+                expect(refreshedLi.querySelector('.e-icons').classList.contains('e-icon-collapsible'));
+            });
+            it('refreshNode parent and child nodes together rendered in DOM with parent in collapsed state', function () {
+                var li = treeObj.element.querySelectorAll('li');
+                var data = [{ nodeText: 'RefreshedNode', iconCss: 'folder', navigateUrl: 'https://ej2.syncfusion.com/home/', tooltip: 'This is refreshed node', hasChild: true },
+                { nodeId: '10-10', nodePid: '04', nodeText: 'Refreshed child Node', icons: 'file', hasChild: true, },
+                { nodeId: '10-11', nodePid: '10-10', nodeText: 'Refreshed  nested child Node', }
+                ];
+                treeObj.refreshNode('04', data);
+                treeObj.expandedNodes = ['04'];
+                treeObj.dataBind();
+                expect(li[3].querySelector('.e-list-icon').classList.contains('folder')).toBe(true);
+                expect(li[3].getAttribute('title')).toBe("This is refreshed node");
+                expect(li[3].querySelector('.e-list-url').href.indexOf('https://ej2.syncfusion.com/home/')).not.toBe(-1);
+                expect(treeObj.getTreeData('04')[0].nodeText).toBe("RefreshedNode");
+                treeObj.expandedNodes = ['04','10-10'];
+                treeObj.dataBind();
+                var refreshedChild = li[3].querySelector('ul li');
+                expect(refreshedChild.querySelector('ul li').getAttribute("data-uid")).toBe("10-11");
+                expect(refreshedChild.querySelector(".e-list-text").textContent).toBe("Refreshed child Node");
+            });
+            it('refreshNode parent and child nodes together which is not rendered in DOM', function () {
+                var li = treeObj.element.querySelectorAll('li');
+                var data = [{ nodeText: 'RefreshedNode', iconCss: 'folder', navigateUrl: 'https://ej2.syncfusion.com/home/', tooltip: 'This is refreshed node', hasChild: true},
+                            { nodeId: '10-10', nodePid: '04-01', nodeText: 'Refreshed child Node', icons: 'file', hasChild:true} ,
+                                    { nodeId: '10-11', nodePid: '10-10', nodeText: 'Refreshed  nested child Node', }
+                            
+                       ];
+                treeObj.expandedNodes = ['04'];
+                treeObj.dataBind();
+                treeObj.refreshNode('04-01', data);
+                var refreshedLi = li[3].querySelector('ul li');
+                expect(refreshedLi.querySelector('.e-list-icon').classList.contains('folder')).toBe(true);
+                expect(refreshedLi.getAttribute('title')).toBe("This is refreshed node");
+                expect(refreshedLi.querySelector('.e-list-url').href.indexOf('https://ej2.syncfusion.com/home/')).not.toBe(-1);
+                expect(treeObj.getTreeData('04-01')[0].nodeText).toBe("RefreshedNode");
+                expect(refreshedLi.querySelector('.e-icons').classList.contains('e-icon-expandable'));
+                treeObj.expandedNodes = ['04', '04-01'];
+                treeObj.dataBind();
+                var refreshedChild = refreshedLi.querySelector('ul li');
+                expect(refreshedChild.getAttribute("data-uid")).toBe("10-10");
+                expect(refreshedChild.querySelector(".e-list-text").textContent).toBe("Refreshed child Node");
+                expect(refreshedChild.querySelector(".e-icons").classList.contains('e-icon-expandable')).toBe(true);
+                treeObj.expandedNodes = ['04', '04-01', '10-10'];
+                treeObj.dataBind();
+                var refreshNestedChild = refreshedChild.querySelector('ul li');
+                expect(refreshNestedChild.getAttribute("data-uid")).toBe("10-11");
+                expect(refreshNestedChild.querySelector(".e-list-text").textContent).toBe("Refreshed  nested child Node");
             });
             it('addNodes', (done: Function) => {
                 expect(j).toEqual(0);
@@ -9624,6 +10067,16 @@ describe('TreeView control', () => {
                 expect(li[1].classList.contains('e-disable')).toBe(true);
                 expect(li[1].getAttribute('aria-disabled')).toBe('true');
             });
+            it('refreshNode', () => {
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                var data = [{ nodeText: 'RefreshedNode', nodeIcon: 'folder'}];
+                treeObj.expandedNodes = ['01'];
+                treeObj.dataBind();
+                treeObj.refreshNode('01', data);
+                var refreshedLi = treeObj.element.querySelectorAll('li')[0];
+                expect(refreshedLi.querySelector('.e-list-icon').classList.contains('folder')).toBe(true);
+                expect(treeObj.getTreeData('01')[0].nodeText).toBe("RefreshedNode");
+            });
             it('getTreeData', (done: Function) => {
                 treeObj.fields = { dataSource: dataManager1, id: "nodeId", parentID: 'nodePid', text: "nodeText", hasChildren: "hasChild", 
                         iconCss: 'nodeIcon', imageUrl: 'nodeImage', tooltip: 'nodeTooltip', htmlAttributes: 'nodeHtmlAttr',
@@ -12033,6 +12486,179 @@ describe('Drag and drop with different TreeView functionality testing with empty
             treeObj.touchExpandObj.tap(tapEvent);
             expect(li[1].querySelector('[data-uid="02-01"]').classList.contains('e-disable')).toBe(true);
             done();
+        });
+    });
+    describe('actionFailure Event Testing for remote data', () => {
+        let count = 0;
+        function actionFailedFunction() {
+            count++;
+        }
+        let ele: HTMLElement = createElement('div', { id: 'tree1' });
+        let treeObj: any;
+        beforeAll(() => {
+            jasmine.Ajax.install();
+            document.body.appendChild(ele);
+            let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData11111' });
+            this.request= jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                'status': 404,
+                'contentType': 'application/json',
+                'responseText': 'Page not found'
+            });
+            treeObj = new TreeView({
+                fields: {
+                    dataSource: dataManager1, id: "nodeId", parentID: 'nodePid', text: "nodeText", hasChildren: "hasChild",
+                    tooltip: 'nodeTooltip', selected: 'nodeSelected'
+                },
+                actionFailure: actionFailedFunction
+            });
+            treeObj.appendTo(ele);
+        });
+        afterAll(() => {
+            ele.remove();
+            jasmine.Ajax.uninstall();
+        });
+        it('actionFailure testing', () => {
+            setTimeout(function () {
+                expect(count).toBe(1);
+            }, 400);
+        });
+
+      
+    });
+    describe('actionFailure Event Testing for remote data offline', () => {
+        let i = 0;
+        function actionFailedFunction() { i++; }
+        let ele: HTMLElement = createElement('div', { id: 'tree1' });
+        let treeObj: any;
+        beforeAll(() => {
+            document.body.appendChild(ele);
+            jasmine.Ajax.install();
+            let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData12111', offline: true });
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                'status': 404,
+                'contentType': 'application/json',
+                'responseText': 'Page not found'
+            });
+            treeObj = new TreeView({
+                fields: {
+                    dataSource: dataManager1, id: "nodeId", parentID: 'nodePid', text: "nodeText", hasChildren: "hasChild",
+                    tooltip: 'nodeTooltip', selected: 'nodeSelected'
+                },
+                actionFailure: actionFailedFunction
+            });
+            treeObj.appendTo(ele);
+        });
+        afterAll(() => {
+            ele.remove();
+            jasmine.Ajax.uninstall();
+        });
+        it('actionFailure testing', () => {
+            setTimeout(function () {
+                expect(i).toBe(1);
+            }, 100);
+        });
+    });
+    describe('actionFailure event triggered for invalid URL while fetching child data', () => {
+        let mouseEventArgs: any = {
+            preventDefault: (): void => { },
+            stopImmediatePropagation: (): void => { },
+            target: null,
+            type: null,
+            shiftKey: false,
+            ctrlKey: false
+        };
+        let tapEvent: any = {
+            originalEvent: mouseEventArgs,
+            tapCount: 1
+        };
+        let treeObj: any;
+        let i =0;
+        function actionFailed(){
+            i++;
+        }
+        let ele: HTMLElement = createElement('div', { id: 'tree1' });
+        let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData' });
+        let originalTimeout: any;
+        beforeEach((done: Function) => {
+            jasmine.Ajax.install();
+            document.body.appendChild(ele);
+            treeObj = new TreeView({
+                fields: {
+                    dataSource: dataManager1, id: 'CustomerID', text: 'OrderID', iconCss: 'ShipCity', tooltip: 'ShipName', hasChildren: 'Freight', tableName: 'Employees', htmlAttributes: 'HtmlAttr', imageUrl: 'Image', selected: 'nodeSelected', navigateUrl: 'nodeUrl',
+                    child: { dataSource: dataManager1, id: 'CustomerID', text: 'ShipCountry', parentID: 'OrderID', hasChildren: 'ShipCountry' }
+                },
+                dataBound: () => {
+                    done();
+                },
+                actionFailure: actionFailed
+            });
+            treeObj.appendTo(ele);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify({ d: remoteData, __count: 15 })
+            });
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+        });
+        afterEach(() => {
+            if (ele)
+                ele.remove();
+            document.body.innerHTML = '';
+            jasmine.Ajax.uninstall();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('functionality testing', (done: Function) => {
+            expect(treeObj.element.querySelectorAll('li').length).toBe(15);
+            expect(i).toBe(0);
+            let newli: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            mouseEventArgs.target = newli[1].querySelector('.e-icons');
+            treeObj.touchClickObj.tap(tapEvent);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                'status': 404,
+                'contentType': 'application/json',
+                'responseText': 'Page not found'
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                expect(i).toBe(1);
+                done();
+            }, 100);
+        });
+    });
+    describe('actionFailure event testing', () => {
+        let actionFailedFunction: () => void = jasmine.createSpy('actionFailure');
+        let elem: HTMLElement = createElement('div', { id: 'tree' });
+        let treeObj: any;
+        beforeAll(() => {
+            jasmine.Ajax.install();
+            document.body.appendChild(elem);
+            let dataSource = new DataManager({
+                url: '/test/db',
+            }),
+            treeObj = new TreeView({
+                fields: {dataSource: dataSource},
+                actionFailure: actionFailedFunction
+            });
+            treeObj.appendTo('#tree');
+        });
+        beforeEach((done: Function) => {
+            let request: JasmineAjaxRequest = jasmine.Ajax.requests.mostRecent();
+            request.respondWith({
+                'status': 404,
+                'contentType': 'application/json',
+                'responseText': 'Page not found'
+            });
+            setTimeout(() => { done(); }, 100);
+        });
+        it('actionFailure testing', () => {
+            expect(actionFailedFunction).toHaveBeenCalled();
+        });
+        afterAll(() => {
+            elem.remove();
+            jasmine.Ajax.uninstall();
         });
     });
     it('memory leak testing', () => {

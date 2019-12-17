@@ -13,6 +13,7 @@ import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 /**
  * Content module is used to render RichTextEditor content
  * @hidden
+ * @deprecated
  */
 export class ViewSource {
     private parent: IRichTextEditor;
@@ -102,6 +103,12 @@ export class ViewSource {
         }
     }
 
+    /**
+     * sourceCode method
+     * @param  {Element} panel
+     * @hidden
+     * @deprecated
+     */
     public sourceCode(args?: ClickEventArgs | IHtmlKeyboardEvent): void {
         this.parent.isBlur = false;
         this.parent.trigger(events.actionBegin, { requestType: 'SourceCode', targetItem: 'SourceCode', args: args });
@@ -155,6 +162,12 @@ export class ViewSource {
         this.parent.invokeChangeEvent();
     }
 
+    /**
+     * updateSourceCode method
+     * @param  {Element} panel
+     * @hidden
+     * @deprecated
+     */
     public updateSourceCode(args?: ClickEventArgs | KeyboardEventArgs): void {
         this.parent.isBlur = false;
         this.parent.trigger(events.actionBegin, { requestType: 'Preview', targetItem: 'Preview', args: args });
@@ -199,10 +212,22 @@ export class ViewSource {
             this.contentModule.getEditPanel().innerHTML.length === 7) ? '' : this.parent.value;
     }
 
+    /**
+     * getPanel method
+     * @param  {Element} panel
+     * @hidden
+     * @deprecated
+     */
     public getPanel(): HTMLTextAreaElement | Element {
         return this.parent.element.querySelector('.e-rte-srctextarea');
     }
 
+    /**
+     * getViewPanel method
+     * @param  {Element} panel
+     * @hidden
+     * @deprecated
+     */
     public getViewPanel(): HTMLTextAreaElement | Element {
         return (this.parent.iframeSettings.enable && this.getPanel()) ? this.getPanel().parentElement : this.getPanel();
     }
@@ -210,6 +235,8 @@ export class ViewSource {
     /**
      * Destroy the entire RichTextEditor.
      * @return {void}
+     * @hidden
+     * @deprecated
      */
     public destroy(): void {
         this.removeEventListener();

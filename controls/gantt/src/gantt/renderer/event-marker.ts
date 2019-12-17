@@ -54,8 +54,10 @@ export class EventMarker {
             });
             if (this.parent.eventMarkers[i].label) {
                 spanElement = createElement('div', {
-                    className: cls.eventMarkersSpan, innerHTML: `${this.parent.eventMarkers[i].label}`
+                    className: cls.eventMarkersSpan,
                 });
+                let property: string = this.parent.disableHtmlEncode ? 'textContent' : 'innerHTML';
+                spanElement[property] = this.parent.eventMarkers[i].label;
                 eventMarkerElement.appendChild(spanElement);
                 rightArrow = createElement('div', {
                     className: 'e-gantt-right-arrow'

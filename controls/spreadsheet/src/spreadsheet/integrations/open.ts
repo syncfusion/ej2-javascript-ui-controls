@@ -3,7 +3,7 @@
  */
 import { Spreadsheet } from '../index';
 import { OpenOptions, OpenFailureArgs } from '../common/interface';
-import { refreshSheetTabs } from '../common/event';
+import { refreshSheetTabs, completeAction } from '../common/event';
 import { dialog } from '../common/index';
 import { Dialog } from '../services/index';
 import { openSuccess, openFailure } from '../../workbook/index';
@@ -77,7 +77,7 @@ export class Open {
         if (openError.indexOf(response.data) > -1) {
             (this.parent.serviceLocator.getService(dialog) as Dialog).show({
                 content: (this.parent.serviceLocator.getService('spreadsheetLocale') as L10n)
-                .getConstant(response.data as string),
+                    .getConstant(response.data as string),
                 width: '300'
             });
             this.parent.hideSpinner();
@@ -86,6 +86,8 @@ export class Open {
         if (!this.parent.element) {
             return;
         }
+        this.parent.trigger('openComplete', { response: response });
+        this.parent.notify(completeAction, {response: response, action: 'import'});
         this.parent.renderModule.refreshSheet();
         this.parent.notify(refreshSheetTabs, this);
         this.parent.hideSpinner();

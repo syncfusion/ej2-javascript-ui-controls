@@ -37,6 +37,7 @@ export interface ActionEventArgs extends BaseEventArgs {
     deletedRecords?: Object[];
 }
 
+/** @deprecated */
 export interface ToolbarActionArgs extends BaseEventArgs {
     /** Returns the request type of the current action. */
     requestType: string;
@@ -90,6 +91,7 @@ export interface MoreEventsClickArgs extends BaseEventArgs {
     viewName: View;
 }
 
+/** @deprecated */
 export interface SelectEventArgs extends BaseEventArgs {
     /** Returns the request type of the current action. */
     requestType: string;
@@ -130,6 +132,7 @@ export interface EventClickArgs extends BaseEventArgs {
     cancel?: boolean;
 }
 
+/** @deprecated */
 export interface HoverEventArgs extends BaseEventArgs {
     /** Returns the mouse event. */
     event: MouseEvent;
@@ -204,13 +207,20 @@ export interface NavigatingEventArgs extends BaseEventArgs {
 }
 
 export interface RenderCellEventArgs extends BaseEventArgs {
-    /** Returns the type of the elements which is currently being rendered on the UI. */
+    /** Returns the type of the elements which is currently being rendered on the UI. 
+     * @blazorDefaultValue new ElementType()
+     * @blazorType ElementType
+     */
     elementType: string;
-    /** Returns the actual HTML element on which the required custom styling can be applied. */
+    /** Returns the actual HTML element on which the required custom styling can be applied. 
+     * @blazorType CellDOM
+     */
     element: Element;
     /** Returns the date value of the cell that is currently rendering on UI. */
     date?: Date;
-    /** Returns the group index of the cell. */
+    /** Returns the group index of the cell.
+     * @blazorType double?
+     */
     groupIndex?: number;
 }
 
@@ -385,6 +395,8 @@ export interface IRenderer {
     isTimelineView(): boolean;
     setColWidth(content: HTMLElement): void;
     resetColWidth(): void;
+    serverRenderLayout(): void;
+    viewIndex: number;
 }
 
 /** @hidden */
@@ -470,7 +482,6 @@ export interface UIStateArgs {
     groupIndex?: number;
     action?: boolean;
     isBlock?: boolean;
-    viewIndex?: number;
 }
 
 /** @hidden */
@@ -546,12 +557,14 @@ export interface ExportOptions {
     includeOccurrences?: boolean;
 }
 
+/** @hidden */
 export interface PredicateData {
     field: string;
     operator: Function;
     value: string;
 }
 
+/** @hidden */
 export interface ViewsData extends ViewsModel {
     cellHeaderTemplateName?: string;
     dateHeaderTemplateName?: string;

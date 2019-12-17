@@ -702,6 +702,19 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         if (cellRange.indexOf(':') < 0 && !this.isCellReference(cellRange)) {
             return cellRange.split(this.getParseArgumentSeparator());
         }
+        let token: string = this.emptyString;
+        let sheetTokenIndex: number = cellRange.indexOf(this.sheetToken);
+        if (sheetTokenIndex > -1) {
+            let index: number = sheetTokenIndex;
+            let s: number = index + 1;
+            while (s < cellRange.length) {
+                if (cellRange[s] === this.sheetToken) {
+                    token = cellRange.substr(0, s + 1);
+                    break;
+                }
+                s++;
+            }
+        }
         let i: number = cellRange.indexOf(':');
         let row1: number;
         let row2: number;
@@ -733,7 +746,7 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         let c: number = 0;
         for (i = row1; i <= row2; i++) {
             for (j = col1; j <= col2; j++) {
-                cells[c] = this.emptyString + this.convertAlpha(j) + i.toString();
+                cells[c] = token + this.emptyString + this.convertAlpha(j) + i.toString();
                 c++;
             }
         }
@@ -1396,14 +1409,14 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
     private getValArithmetic(stack: string[], operator: string): void {
         let num1: string = stack.pop();
         num1 = num1 === this.emptyString ? '0' : num1;
-        let num: number = parseInt(num1, 10);
-        if (this.isNaN(num)) {
+        let num: number = Number(num1);
+        if (isNaN(num)) {
             throw this.getErrorStrings()[CommonErrors.value];
         }
         let num2: string = stack.pop();
         num2 = num2 === this.emptyString ? '0' : num2;
-        num = parseInt(num2, 10);
-        if (this.isNaN(num)) {
+        num = Number(num2);
+        if (isNaN(num)) {
             throw this.getErrorStrings()[CommonErrors.value];
         }
         if (operator === 'add') {
@@ -2432,7 +2445,8 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
                         if (formulaInfo) {
                             this.cell = dCell;
                             if (!this.getComputedValue().has(dCell)) {
-                                result = this.computeFormula(formulaInfo.getFormulaText());
+                                this.parser.isFormulaParsed = true;
+                                result = this.computeFormula(formulaInfo.getParsedFormula());
                                 this.computedValues.set(dCell, result);
                             } else {
                                 result = this.getComputedValue().get(dCell);

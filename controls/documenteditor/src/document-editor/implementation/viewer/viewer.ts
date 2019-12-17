@@ -8,7 +8,8 @@ import { Layout } from './layout';
 import { Renderer } from './render';
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import {
-    Page, Rect, Widget, ListTextElementBox, FieldElementBox, ParagraphWidget, HeaderFooterWidget, EditRangeStartElementBox
+    Page, Rect, Widget, ListTextElementBox, FieldElementBox, ParagraphWidget, HeaderFooterWidget, EditRangeStartElementBox,
+    CommentElementBox, CommentCharacterElementBox
 } from './page';
 import { DocumentEditor } from '../../document-editor';
 import {
@@ -18,7 +19,7 @@ import {
 import { HelperMethods, Point, TextPositionInfo, ImagePointInfo } from '../editor/editor-helper';
 import { TextHelper, TextHeightInfo } from './text-helper';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { Selection, } from '../index';
+import { Selection, CommentReviewPane, } from '../index';
 import { TextPosition } from '../selection/selection-helper';
 import { Zoom } from './zooming';
 import { Dialog, createSpinner } from '@syncfusion/ej2-popups';
@@ -26,7 +27,7 @@ import { ImageResizer } from '../editor/image-resizer';
 import { HeaderFooterType, PageFitType, TableAlignment, ProtectionType } from '../../base/types';
 import { Editor } from '../index';
 import { CaretHeightInfo } from '../editor/editor-helper';
-import { DocumentEditorKeyDownEventArgs } from '../../base/events-helper';
+import { DocumentEditorKeyDownEventArgs, BeforePaneSwitchEventArgs } from '../../base/events-helper';
 import { RestrictEditing } from '../restrict-editing/restrict-editing-pane';
 
 /** 
@@ -50,6 +51,10 @@ export abstract class LayoutViewer {
      * @private
      */
     public optionsPaneContainer: HTMLElement;
+    /**
+     * @private
+     */
+    public reviewPaneContainer: HTMLElement;
     /**
      * @private
      */
@@ -80,6 +85,10 @@ export abstract class LayoutViewer {
      * @private
      */
     public editableDiv: HTMLElement;
+    /**
+     * @private
+     */
+    public isShowReviewPane: boolean;
     /**
      * @private
      */
@@ -272,6 +281,14 @@ export abstract class LayoutViewer {
     /**
      * @private
      */
+    public comments: CommentElementBox[] = [];
+    /**
+     * @private
+     */
+    public commentUserOptionId: number = 1;
+    /**
+     * @private
+     */
     public abstractLists: WAbstractList[] = [];
     /**
      * @private
@@ -398,6 +415,12 @@ export abstract class LayoutViewer {
      * @private
      */
     public skipScrollToPosition: boolean = false;
+
+    /**
+     * @private
+     */
+    public currentSelectedCommentInternal: CommentElementBox;
+
     //Document Protection Properties Ends
 
     //#region Properties
@@ -537,6 +560,22 @@ export abstract class LayoutViewer {
         this.pageFitTypeIn = value;
         this.onPageFitTypeChanged(this.pageFitTypeIn);
     }
+
+    /**
+     * @private
+     */
+    get currentSelectedComment(): CommentElementBox {
+        return this.currentSelectedCommentInternal;
+    }
+    /**
+     * @private
+     */
+    set currentSelectedComment(value: CommentElementBox) {
+        if (this.owner && this.owner.commentReviewPane) {
+            this.owner.commentReviewPane.previousSelectedComment = this.currentSelectedCommentInternal;
+        }
+        this.currentSelectedCommentInternal = value;
+    }
     //#endregion
 
     constructor(owner: DocumentEditor) {
@@ -612,12 +651,21 @@ export abstract class LayoutViewer {
         this.editRanges.clear();
         this.headersFooters = [];
         this.fields = [];
+        this.currentSelectedComment = undefined;
+        for (let i: number = 0; i < this.comments.length; i++) {
+            let commentStart: CommentCharacterElementBox = this.comments[i].commentStart;
+            commentStart.destroy();
+        }
+        this.comments = [];
         this.bookmarks.clear();
         this.styles.clear();
         this.characterFormat.clearFormat();
         this.paragraphFormat.clearFormat();
         this.setDefaultCharacterValue(this.characterFormat);
         this.setDefaultParagraphValue(this.paragraphFormat);
+        if (this.owner.commentReviewPane) {
+            this.owner.commentReviewPane.clear();
+        }
         this.defaultTabWidth = 36;
         this.isDocumentProtected = false;
         this.protectionType = 'NoProtection';
@@ -714,6 +762,29 @@ export abstract class LayoutViewer {
         return bookmarks;
     }
     /**
+     * @private
+     */
+    public selectComment(comment: CommentElementBox): void {
+        if (this.owner.selection && this.owner.commentReviewPane) {
+            this.owner.showComments = true;
+            setTimeout(() => {
+                if (this.owner && this.owner.selection) {
+                    this.owner.selection.selectComment(comment);
+                }
+            });
+        }
+    }
+    /**
+     * @private
+     */
+    public showComments(show: boolean): void {
+        if (this.owner && show) {
+            let eventArgs: BeforePaneSwitchEventArgs = { type: 'Comment' };
+            this.owner.trigger('beforePaneSwitch', eventArgs);
+        }
+        this.owner.commentReviewPane.showHidePane(show);
+    }
+    /**
      * Initializes components.
      * @private
      */
@@ -759,6 +830,7 @@ export abstract class LayoutViewer {
         this.initTouchEllipse();
         this.wireEvent();
         this.restrictEditingPane = new RestrictEditing(this);
+        this.owner.commentReviewPane = new CommentReviewPane(this.owner);
         createSpinner({ target: this.owner.element, cssClass: 'e-spin-overlay' });
     }
 
@@ -1087,6 +1159,13 @@ export abstract class LayoutViewer {
     public clearContent(): void {
         this.containerContext.clearRect(0, 0, this.containerCanvas.width, this.containerCanvas.height);
         this.selectionContext.clearRect(0, 0, this.selectionCanvas.width, this.selectionCanvas.height);
+        // Hide comment mark
+        if (this.pageContainer) {
+            let commentMarkElement: NodeListOf<Element> = this.pageContainer.getElementsByClassName('e-de-cmt-mark');
+            for (let i: number = 0; i < commentMarkElement.length; i++) {
+                (commentMarkElement[i] as HTMLElement).style.display = 'none';
+            }
+        }
     }
     /**
      * Fired when the document gets changed.
@@ -1243,7 +1322,8 @@ export abstract class LayoutViewer {
      * @private
      */
     public onMouseDownInternal = (event: MouseEvent): void => {
-        if (this.isTouchInput || event.offsetX > (this.visibleBounds.width - (this.visibleBounds.width - this.viewerContainer.clientWidth))
+        if ((event.target && (event.target as HTMLElement).classList.contains('e-de-cmt-mark-icon')) || this.isTouchInput ||
+            event.offsetX > (this.visibleBounds.width - (this.visibleBounds.width - this.viewerContainer.clientWidth))
             || event.offsetY > (this.visibleBounds.height - (this.visibleBounds.height - this.viewerContainer.clientHeight))) {
             return;
         }
@@ -1442,6 +1522,10 @@ export abstract class LayoutViewer {
                     }
                 }
                 this.selection.checkForCursorVisibility();
+                if (!isNullOrUndefined(this.currentSelectedComment) && this.owner.commentReviewPane
+                    && !this.owner.commentReviewPane.commentPane.isEditMode) {
+                    this.currentSelectedComment = undefined;
+                }
             }
             if (!isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selection.start)
                 && (this.owner.selection.isEmpty || this.owner.selection.isImageSelected) &&
@@ -1792,6 +1876,10 @@ export abstract class LayoutViewer {
                 this.selection.updateCaretPosition();
             }
             this.selection.checkForCursorVisibility();
+            if (!isNullOrUndefined(this.currentSelectedComment) && this.owner.commentReviewPane
+                && !this.owner.commentReviewPane.commentPane.isEditMode) {
+                this.currentSelectedComment = undefined;
+            }
         }
     }
     /**
@@ -1924,9 +2012,12 @@ export abstract class LayoutViewer {
                 this.restrictEditingPane.restrictPane.getBoundingClientRect() : undefined;
             let optionsRect: ClientRect = this.owner.optionsPaneModule && this.owner.optionsPaneModule.isOptionsPaneShow ?
                 this.owner.optionsPaneModule.optionsPane.getBoundingClientRect() : undefined;
-            if (restrictPaneRect || optionsRect) {
+            let commentPane: ClientRect = this.owner.commentReviewPane && this.owner.commentReviewPane.reviewPane ?
+                this.owner.commentReviewPane.reviewPane.getBoundingClientRect() : undefined;
+            if (restrictPaneRect || optionsRect || commentPane) {
                 let paneWidth: number = restrictPaneRect ? restrictPaneRect.width : 0;
                 paneWidth += optionsRect ? optionsRect.width : 0;
+                paneWidth += commentPane ? commentPane.width : 0;
                 width = (rect.width - paneWidth) > 0 ? (rect.width - paneWidth) : 200;
             } else {
                 width = rect.width > 0 ? rect.width : 200;
@@ -2414,7 +2505,7 @@ export abstract class LayoutViewer {
      * @private
      */
     public onKeyUpInternal = (event: KeyboardEvent): void => {
-        if (Browser.isDevice && (event.target as HTMLElement).id === this.editableDiv.id) {
+        if (Browser.isDevice && (event.target as HTMLElement) === this.editableDiv) {
             if (window.getSelection().anchorOffset !== this.prefix.length) {
                 this.selection.setEditableDivCaretPosition(this.editableDiv.innerText.length);
             }
@@ -2522,6 +2613,17 @@ export abstract class LayoutViewer {
                     return this.getFieldText(fieldPattern, page.currentPageNum);
                 case 'numpages':
                     return this.getFieldText(fieldPattern, page.viewer.pages.length);
+                case 'sectionpages':
+                    let currentSectionIndex: number = page.sectionIndex;
+                    let currentPageCount: number = 0;
+                    for (let i: number = 0; i < page.viewer.pages.length; i++) {
+                        if (page.viewer.pages[i].sectionIndex === currentSectionIndex) {
+                            currentPageCount++;
+                        } else if (currentPageCount !== 0) {
+                            break;
+                        }
+                    }
+                    return this.getFieldText(fieldPattern, currentPageCount);
                 default:
                     break;
             }
@@ -2628,8 +2730,6 @@ export abstract class LayoutViewer {
         this.viewerContainer.removeEventListener('scroll', this.scrollHandler);
         this.viewerContainer.removeEventListener('mousedown', this.onMouseDownInternal);
         this.viewerContainer.removeEventListener('mousemove', this.onMouseMoveInternal);
-        this.viewerContainer.removeEventListener('mouseleave', this.onMouseLeaveInternal);
-        this.viewerContainer.removeEventListener('mouseenter', this.onMouseEnterInternal);
         if (!Browser.isDevice) {
             this.editableDiv.removeEventListener('keypress', this.onKeyPressInternal);
             if (Browser.info.name === 'chrome') {

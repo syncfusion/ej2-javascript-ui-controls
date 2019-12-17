@@ -2,8 +2,8 @@ import { KeyboardEvents, KeyboardEventArgs, closest, EventHandler, extend } from
 import { isNullOrUndefined, addClass } from '@syncfusion/ej2-base';
 import { View } from '../base/type';
 import { Schedule } from '../base/schedule';
-import * as event from '../base/constant';
 import { CellClickEventArgs, KeyEventArgs, ResizeEdges, SelectEventArgs } from '../base/interface';
+import * as event from '../base/constant';
 import * as util from '../base/util';
 import * as cls from '../base/css-constant';
 
@@ -177,20 +177,18 @@ export class KeyboardInteraction {
         if (this.isPreventAction(e)) {
             return;
         }
-        let selectedCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-selected-cell'));
         let queryStr: string = '.' + cls.WORK_CELLS_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS + ',.' + cls.HEADER_CELLS_CLASS;
         let target: HTMLTableCellElement = closest((e.target as Element), queryStr) as HTMLTableCellElement;
-        this.parent.activeCellsData = this.parent.getCellDetails((selectedCells.length > 1) ? this.parent.getSelectedElements() : target);
+        this.parent.activeCellsData = this.getSelectedElements(target);
         let cellData: { [key: string]: Object } = {};
         this.parent.eventWindow.convertToEventData(<Object>this.parent.activeCellsData as { [key: string]: Object }, cellData);
         let args: SelectEventArgs = {
-            data: cellData,
-            element: this.parent.activeCellsData.element,
-            showQuickPopup: false, event: e,
-            requestType: 'cellSelect'
+            data: cellData, element: this.parent.activeCellsData.element, event: e,
+            requestType: 'cellSelect', showQuickPopup: false
         };
         this.parent.trigger(event.select, args, (selectArgs: SelectEventArgs) => {
-            if (selectArgs.showQuickPopup) {
+            let isPopupShow: boolean = selectArgs.showQuickPopup || this.parent.quickInfoOnSelectionEnd;
+            if (isPopupShow) {
                 let cellArgs: CellClickEventArgs =
                     <CellClickEventArgs>extend(this.parent.activeCellsData, { cancel: false, event: e, name: 'cellClick' });
                 this.parent.notify(event.cellClick, cellArgs);
@@ -217,15 +215,7 @@ export class KeyboardInteraction {
             return;
         }
         if (target.classList.contains(cls.WORK_CELLS_CLASS) || target.classList.contains(cls.ALLDAY_CELLS_CLASS)) {
-            if (this.selectedCells.length > 1) {
-                let start: CellClickEventArgs = this.parent.getCellDetails(this.selectedCells[0]);
-                let end: CellClickEventArgs = this.parent.getCellDetails(this.selectedCells[this.selectedCells.length - 1]);
-                start.endTime = end.endTime;
-                start.element = target;
-                this.parent.activeCellsData = start;
-            } else {
-                this.parent.activeCellsData = this.parent.getCellDetails(target);
-            }
+            this.parent.activeCellsData = this.getSelectedElements(target);
             let args: CellClickEventArgs = <CellClickEventArgs>extend(this.parent.activeCellsData, { cancel: false, event: e });
             this.parent.notify(event.cellClick, args);
             return;
@@ -236,11 +226,24 @@ export class KeyboardInteraction {
             return;
         }
         if (target.classList.contains(cls.MORE_EVENT_HEADER_DATE_CLASS)) {
-            this.parent.setProperties({ selectedDate: new Date(parseInt(target.getAttribute('data-date'), 10)) }, true);
+            this.parent.setScheduleProperties({ selectedDate: this.parent.getDateFromElement(target) });
             this.parent.changeView(this.parent.getNavigateView(), e);
             this.processEscape();
             return;
         }
+    }
+    private getSelectedElements(target: HTMLTableCellElement): CellClickEventArgs {
+        let cellDetails: CellClickEventArgs;
+        if (this.selectedCells.length > 1) {
+            let start: CellClickEventArgs = this.parent.getCellDetails(this.selectedCells[0]);
+            let end: CellClickEventArgs = this.parent.getCellDetails(this.selectedCells.slice(-1)[0]);
+            start.endTime = end.endTime;
+            start.element = target;
+            cellDetails = start;
+        } else {
+            cellDetails = this.parent.getCellDetails(target);
+        }
+        return cellDetails;
     }
     private getCells(isInverseTable: boolean, start: HTMLTableCellElement, end: HTMLTableCellElement): HTMLTableCellElement[] {
         let tableEle: HTMLTableElement = this.parent.getContentTable() as HTMLTableElement;
@@ -298,17 +301,11 @@ export class KeyboardInteraction {
         let target: HTMLTableCellElement = (targetCell instanceof Array) ? targetCell.slice(-1)[0] : targetCell;
         if (isMultiple) {
             let initialId: string;
-            let args: SelectEventArgs = {
-                element: targetCell,
-                allowMultipleRow: true,
-                requestType: 'mousemove'
-            };
+            let args: SelectEventArgs = { element: targetCell, requestType: 'mousemove', allowMultipleRow: true };
             this.parent.trigger(event.select, args, (selectArgs: SelectEventArgs) => {
-                if (!selectArgs.allowMultipleRow) {
-                    let currentView: View = this.parent.currentView;
-                    if (currentView === 'Day' || currentView === 'Week' || currentView === 'WorkWeek') {
-                        target = target.parentElement.children[this.initialTarget.cellIndex] as HTMLTableCellElement;
-                    }
+                let allowMultipleRow: boolean = (!selectArgs.allowMultipleRow) || (!this.parent.allowMultiRowSelection);
+                if (allowMultipleRow && (['Day', 'Week', 'WorkWeek'].indexOf(this.parent.currentView) > -1)) {
+                    target = target.parentElement.children[this.initialTarget.cellIndex] as HTMLTableCellElement;
                 }
                 let selectedCells: HTMLTableCellElement[] = this.getCells(this.isInverseTableSelect(), this.initialTarget, target);
                 if (this.parent.activeViewOptions.group.resources.length > 0) {
@@ -371,7 +368,7 @@ export class KeyboardInteraction {
         if (target.classList.contains(cls.WORK_CELLS_CLASS) || target.classList.contains(cls.ALLDAY_CELLS_CLASS)) {
             let appointmentElements: HTMLElement[] = this.getUniqueAppointmentElements();
             let filteredElements: HTMLElement[] = [];
-            let selectedDate: number = parseInt(target.getAttribute('data-date'), 10);
+            let selectedDate: number = this.parent.getDateFromElement(target).getTime();
             let selectedSeriesEvents: Object[] = this.parent.eventsProcessed.filter((eventObject: { [key: string]: object }) => {
                 return (!isReverse ? ((<Date>eventObject[this.parent.eventFields.startTime]).getTime() >= selectedDate) :
                     ((<Date>eventObject[this.parent.eventFields.startTime]).getTime() <= selectedDate));
@@ -630,11 +627,11 @@ export class KeyboardInteraction {
         let initialId: string = this.initialTarget.getAttribute('data-group-index');
         if (this.parent.activeViewOptions.group.resources.length > 0 && this.parent.currentView === 'Month') {
             if (currentCell && target && target.getAttribute('data-group-index') !== initialId) {
-                let currentDate: Date = new Date(parseInt(currentCell.getAttribute('data-date'), 10));
+                let currentDate: Date = this.parent.getDateFromElement(currentCell);
                 let nextPrevDate: Date = (type === 'right') ? new Date(currentDate.setDate(currentDate.getDate() + 1))
                     : new Date(currentDate.setDate(currentDate.getDate() - 1));
                 target = [].slice.call(this.parent.element.querySelectorAll('td[data-date="'
-                    + nextPrevDate.getTime().toString() + '"]' + '[data-group-index="' + initialId + '"]'))[0];
+                    + this.parent.getMsFromDate(nextPrevDate).toString() + '"]' + '[data-group-index="' + initialId + '"]'))[0];
             }
         }
         return target;

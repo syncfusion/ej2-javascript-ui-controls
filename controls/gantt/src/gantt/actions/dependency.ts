@@ -2,6 +2,7 @@
  * Predecessor calculation goes here
  */
 import { IGanttData, ITaskData, IPredecessor, IConnectorLineObject } from '../base/interface';
+import { TaskFieldsModel } from '../models/models';
 import { DateProcessor } from '../base/date-processor';
 import { Gantt } from '../base/gantt';
 import { isScheduledTask } from '../base/utils';
@@ -25,8 +26,9 @@ export class Dependency {
         for (let count: number = length; count >= 0; count--) {
             let ganttData: IGanttData = predecessorTasks[count];
             let ganttProp: ITaskData = ganttData.ganttProperties;
-            this.ensurePredecessorCollectionHelper(ganttData, ganttProp);
-
+            if (!ganttData.hasChildRecords) {
+                this.ensurePredecessorCollectionHelper(ganttData, ganttProp);
+            }
         }
     }
     /**
@@ -76,6 +78,30 @@ export class Dependency {
             this.parent.taskFields.dependency,
             ganttProp.predecessorsName,
             ganttData);
+    }
+
+    /**
+     * To render unscheduled empty task with 1 day duration during predecessor map
+     * @private
+     */
+    public updateUnscheduledDependency(data: IGanttData): void {
+        let task: TaskFieldsModel = this.parent.taskFields;
+        let prdList: string[] = !isNullOrUndefined(data[task.dependency]) ?
+            data[task.dependency].toString().split(',') : [];
+        for (let i: number = 0; i < prdList.length; i++) {
+            let predId: number = parseInt(prdList[i], 10);
+            if (!isNaN(predId)) {
+                let predData: IGanttData = this.parent.getRecordByID(predId.toString());
+                let record: ITaskData = !isNullOrUndefined(predData) ?
+                    extend({}, {}, predData.taskData, true) : null;
+                if (!isNullOrUndefined(record) && isNullOrUndefined(record[task.startDate])
+                    && isNullOrUndefined(record[task.duration]) && isNullOrUndefined(record[task.endDate])) {
+                    record[task.duration] = 1;
+                    record[task.startDate] = this.parent.projectStartDate;
+                    this.parent.updateRecordByID(record);
+                }
+            }
+        }
     }
 
     /**
@@ -242,7 +268,9 @@ export class Dependency {
         let length: number = predecessorsCollection.length;
         for (let count: number = 0; count < length; count++) {
             ganttRecord = predecessorsCollection[count];
-            this.updatePredecessorHelper(ganttRecord, predecessorsCollection);
+            if (!ganttRecord.hasChildRecords) {
+                this.updatePredecessorHelper(ganttRecord, predecessorsCollection);
+            }
         }
     }
     /**

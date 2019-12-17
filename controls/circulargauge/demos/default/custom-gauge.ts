@@ -4,6 +4,7 @@
 import { CircularGauge } from '../../src/index';
 import { gauge1, gauge2 } from './customization-gauge';
 
+
 let random: CircularGauge = new CircularGauge(gauge1());
 random.appendTo('#cutomization-container');
 let usage: CircularGauge = new CircularGauge(gauge2());

@@ -15,7 +15,7 @@ import { DialogRenderer } from '../renderer/dialog-renderer';
 import { Uploader, MetaData } from '@syncfusion/ej2-inputs';
 import * as classes from '../base/classes';
 import { IHtmlFormatterCallBack } from '../../common';
-import { SanitizeHtmlHelper } from './sanitize-helper';
+import { sanitizeHelper } from '../base/util';
 /**
  * PasteCleanup module called when pasting content in RichTextEditor
  */
@@ -30,7 +30,6 @@ export class PasteCleanup {
   private dialogRenderObj: DialogRenderer;
   private popupObj: Popup;
   private uploadObj: Uploader;
-  private sanitize: SanitizeHtmlHelper;
   private inlineNode: string[] = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
     'canvas', 'cite', 'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'font', 'i', 'iframe', 'img', 'input',
     'ins', 'kbd', 'label', 'map', 'mark', 'meter', 'noscript', 'object', 'output', 'picture', 'progress',
@@ -49,7 +48,6 @@ export class PasteCleanup {
     this.renderFactory = this.locator.getService<RendererFactory>('rendererFactory');
     this.i10n = serviceLocator.getService<L10n>('rteLocale');
     this.dialogRenderObj = serviceLocator.getService<DialogRenderer>('dialogRenderObject');
-    this.sanitize = new SanitizeHtmlHelper();
     this.addEventListener();
   }
 
@@ -132,7 +130,12 @@ export class PasteCleanup {
       this.saveSelection = this.nodeSelectionObj.save(range, currentDocument);
       if (this.parent.pasteCleanupSettings.prompt) {
         (e.args as ClipboardEvent).preventDefault();
-        this.pasteDialog(value, args);
+        let tempDivElem: HTMLElement = this.parent.createElement('div') as HTMLElement;
+        tempDivElem.innerHTML = value;
+        if (tempDivElem.textContent !== '' || !isNOU(tempDivElem.querySelector('img')) ||
+        !isNOU(tempDivElem.querySelector('table'))) {
+          this.pasteDialog(value, args);
+        }
       } else if (this.parent.pasteCleanupSettings.plainText) {
         (e.args as ClipboardEvent).preventDefault();
         this.plainFormatting(value, args);
@@ -276,7 +279,7 @@ export class PasteCleanup {
           (imgElem as HTMLImageElement).src = url;
           imgElem.setAttribute('alt', (e as MetaData).file.name);
       }
-  });
+    });
     popupObj.close();
     (imgElem as HTMLElement).style.opacity = '1';
     uploadObj.destroy();
@@ -310,6 +313,7 @@ export class PasteCleanup {
   /**
    * Method for image formatting when pasting
    * @hidden
+   * @deprecated
    */
   private imageFormatting(pasteArgs: Object, imgElement: { [key: string]: Element[] }): void {
     let imageElement: HTMLElement = this.parent.createElement('span');
@@ -447,24 +451,27 @@ export class PasteCleanup {
     }
     this.saveSelection.restore();
     clipBoardElem.innerHTML = this.sanitizeHelper(clipBoardElem.innerHTML);
-    this.parent.formatter.editorManager.execCommand(
-      'inserthtml',
-      'pasteCleanup',
-      args,
-      (returnArgs: IHtmlFormatterCallBack) => {
-        extend(args, {elements: [returnArgs.elements]}, true);
-        this.parent.formatter.onSuccess(this.parent, args);
-      },
-      clipBoardElem
-    );
-    this.parent.notify(events.toolbarRefresh, {});
-    if (!isNOU(this.parent.insertImageSettings.saveUrl)) {
-      this.imgUploading(this.parent.inputElement);
+    if (clipBoardElem.textContent !== '' || !isNOU(clipBoardElem.querySelector('img')) ||
+    !isNOU(clipBoardElem.querySelector('table'))) {
+      this.parent.formatter.editorManager.execCommand(
+        'inserthtml',
+        'pasteCleanup',
+        args,
+        (returnArgs: IHtmlFormatterCallBack) => {
+          extend(args, {elements: [returnArgs.elements]}, true);
+          this.parent.formatter.onSuccess(this.parent, args);
+        },
+        clipBoardElem
+      );
+      this.parent.notify(events.toolbarRefresh, {});
+      if (!isNOU(this.parent.insertImageSettings.saveUrl)) {
+        this.imgUploading(this.parent.inputElement);
+      }
     }
   }
 
   private sanitizeHelper(value: string): string {
-    value = this.sanitize.initialize(value, this.parent);
+    value = sanitizeHelper(value, this.parent);
     return value;
   }
 

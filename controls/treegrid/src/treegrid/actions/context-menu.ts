@@ -40,7 +40,8 @@ export class ContextMenu {
           addRow.style.display = 'block';
         }
       }
-      if (this.parent.editSettings.mode === 'Cell' && !(isNullOrUndefined(editRecord)) && !(editRecord.classList.contains('e-menu-hide'))) {
+      if ((this.parent.editSettings.mode === 'Cell' || this.parent.editSettings.mode === 'Batch')
+        && !(isNullOrUndefined(editRecord)) && !(editRecord.classList.contains('e-menu-hide'))) {
         editRecord.style.display = 'none';
       }
     }

@@ -76,7 +76,7 @@ export interface DraggableModel {
     /**
      * Defines the child element selector which will prevent dragging of element.
      */
-    abort?: string;
+    abort?: string | string[];
 
     /**
      * Defines the callback function for customizing the cloned  element.

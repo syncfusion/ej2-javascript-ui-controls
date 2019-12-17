@@ -55,6 +55,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     private sidebarEleCopy: HTMLElement;
     protected tabIndex: string;
     private windowWidth: number;
+    private isBlazor: boolean = false;
 
     /**
      * Specifies the size of the Sidebar in dock state.
@@ -236,7 +237,10 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         super(options, element);
     }
     protected preRender(): void {
-        this.setWidth();
+        this.isBlazor = (isBlazor() && this.isServerRendered);
+        if (!this.isBlazor) {
+            this.setWidth();
+        }
     }
     protected render(): void {
         this.initialize();
@@ -247,7 +251,9 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     protected initialize(): void {
         this.setTarget();
         this.addClass();
-        this.setZindex();
+        if (!this.isBlazor) {
+            this.setZindex();
+        }
         if (this.enableDock) {
             this.setDock();
         }
@@ -259,7 +265,9 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         this.checkType(true);
         this.setType(this.type);
         this.setCloseOnDocumentClick();
-        this.setEnableRTL();
+        if (!this.isBlazor) {
+            this.setEnableRTL();
+        }
         if (Browser.isDevice) {
             this.windowWidth = window.innerWidth;
         }
@@ -321,22 +329,24 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
             (<HTMLElement>this.element.nextElementSibling)))) {
             addClass([classELement || this.element.nextElementSibling], [MAINCONTENTANIMATION]);
         }
-        if (!this.enableDock && this.type !== 'Auto') {
-            addClass([this.element], [VISIBILITY]);
+        this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
+        if (!this.isBlazor) {
+            if (!this.enableDock && this.type !== 'Auto') {
+                addClass([this.element], [VISIBILITY]);
+            }
+            removeClass([this.element], [OPEN, CLOSE, RIGHT, LEFT, SLIDE, PUSH, OVER]);
+            this.element.classList.add(ROOT);
+            addClass([this.element], (this.position === 'Right') ? RIGHT : LEFT);
+            if (this.enableDock) {
+                addClass([this.element], DOCKER);
+            }
+            this.element.setAttribute('tabindex', this.tabIndex);
         }
-        removeClass([this.element], [OPEN, CLOSE, RIGHT, LEFT, SLIDE, PUSH, OVER]);
-        this.element.classList.add(ROOT);
-        addClass([this.element], (this.position === 'Right') ? RIGHT : LEFT);
         if (this.type === 'Auto' && !Browser.isDevice) {
             this.show();
         } else if (!this.isOpen) {
             addClass([this.element], CLOSE);
         }
-        if (this.enableDock) {
-            addClass([this.element], DOCKER);
-        }
-        this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
-        this.element.setAttribute('tabindex', this.tabIndex);
     }
     private checkType(val: boolean): void {
         if (!(this.type === 'Push' || this.type === 'Over' || this.type === 'Slide')) {
@@ -662,7 +672,10 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
                         setStyle(sibling, { 'margin-left': 0, 'margin-right': 0 });
                         document.body.insertAdjacentElement('afterbegin', this.element);
                     } else {
+                        let isRendered: boolean = this.isServerRendered;
+                        this.isServerRendered = false;
                         super.refresh();
+                        this.isServerRendered = isRendered;
                     }
                     break;
                 case 'closeOnDocumentClick':

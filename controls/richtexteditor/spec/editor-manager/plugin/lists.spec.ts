@@ -136,8 +136,8 @@ describe ('left indent testing', () => {
         editNode.focus();
         editorObj.execCommand("Indents", 'Outdent', null);
 
-        expect((editorObj.listObj as any).saveSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
-        expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === startNode.textContent).toBe(true);
+        expect((editorObj as any).nodeSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
+        expect((editorObj as any).nodeSelection.range.endContainer.textContent === startNode.textContent).toBe(true);
         startNode = editNode.querySelector('.ol-first-node').querySelector('ol');
         expect(startNode).toBeNull();
         editorObj.nodeSelection.Clear(document);
@@ -153,8 +153,8 @@ describe ('left indent testing', () => {
         editNode.focus();
         editorObj.execCommand("Indents", 'Outdent', null);
 
-        expect((editorObj.listObj as any).saveSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
-        expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === startNode.textContent).toBe(true);
+        expect((editorObj as any).nodeSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
+        expect((editorObj as any).nodeSelection.range.endContainer.textContent === startNode.textContent).toBe(true);
         startNode = editNode.querySelector('.ol-second-node').querySelector('li');
         startNode = startNode.childNodes[1] as HTMLElement;
         expect(startNode.tagName === 'OL').toBe(true);
@@ -170,8 +170,8 @@ describe ('left indent testing', () => {
         editorObj.nodeSelection.setSelectionText(document, startNode, endNode, 0, 4);
         editorObj.execCommand("Indents", 'Outdent', null);
 
-        expect((editorObj.listObj as any).saveSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
-        expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
+        expect((editorObj as any).nodeSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
+        expect((editorObj as any).nodeSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
         startNode = editNode.querySelector('.ol-second-node');
         expect ((startNode.childNodes[1] as HTMLElement).tagName === 'LI').toBe(true);
         expect ((startNode.childNodes[2] as HTMLElement).tagName === 'LI').toBe(true);
@@ -186,8 +186,8 @@ describe ('left indent testing', () => {
         editorObj.nodeSelection.setSelectionText(document, startNode, endNode, 0, 4);
         editorObj.execCommand("Indents", 'Outdent', null);
 
-        expect((editorObj.listObj as any).saveSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
-        expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
+        expect((editorObj as any).nodeSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
+        expect((editorObj as any).nodeSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
         startNode = editNode.querySelector('.ol-third-node').querySelector('li');
         startNode = startNode.childNodes[1] as HTMLElement;
         expect(startNode.tagName === 'OL').toBe(true);
@@ -203,8 +203,8 @@ describe ('left indent testing', () => {
         editorObj.nodeSelection.setSelectionText(document, startNode, endNode, 0, 4);
         editorObj.execCommand("Indents", 'Outdent', null);
 
-        expect((editorObj.listObj as any).saveSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
-        expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
+        expect((editorObj as any).nodeSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
+        expect((editorObj as any).nodeSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
         startNode = editNode.querySelector('.ol-third-node');
         expect (startNode.childNodes[0].childNodes[1].childNodes.length === 1).toBe(true);
         startNode = startNode.childNodes[0].childNodes[1] as HTMLElement;
@@ -222,8 +222,8 @@ describe ('left indent testing', () => {
         editorObj.nodeSelection.setSelectionText(document, startNode, endNode, 0, 4);
         editorObj.execCommand("Indents", 'Outdent', null);
 
-        expect((editorObj.listObj as any).saveSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
-        expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
+        expect((editorObj as any).nodeSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
+        expect((editorObj as any).nodeSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
         startNode = editNode.querySelector('.ol-third-node');
         expect (startNode.childNodes.length === 1).toBe(true);
         startNode = startNode.childNodes[0].childNodes[1].childNodes[0] as HTMLElement;
@@ -239,8 +239,8 @@ describe ('left indent testing', () => {
         editorObj.nodeSelection.setSelectionText(document, startNode, endNode, 0, 4);
         editorObj.execCommand("Indents", 'Outdent', null);
 
-        expect((editorObj.listObj as any).saveSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
-        expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
+        expect((editorObj as any).nodeSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
+        expect((editorObj as any).nodeSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
         startNode = editNode.querySelector('.ol-third-node');
         startNode = startNode.childNodes[0].childNodes[0] as HTMLElement;
         expect (startNode.childNodes.length === 2).toBe(true);
@@ -257,8 +257,8 @@ describe ('left indent testing', () => {
         editorObj.nodeSelection.setSelectionText(document, startNode, endNode, 0, 4);
         editorObj.execCommand("Indents", 'Outdent', null);
 
-        expect((editorObj.listObj as any).saveSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
-        expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
+        expect((editorObj as any).nodeSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
+        expect((editorObj as any).nodeSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
         startNode = editNode.querySelector('.ol-third-node');
         startNode = startNode.childNodes[0].childNodes[0] as HTMLElement;
         expect (startNode.childNodes.length === 2).toBe(true);
@@ -277,8 +277,8 @@ describe ('left indent testing', () => {
         editorObj.nodeSelection.setSelectionText(document, startNode, endNode, 0, 4);
         editorObj.execCommand("Indents", 'Outdent', null);
 
-        expect((editorObj.listObj as any).saveSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
-        expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
+        expect((editorObj as any).nodeSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
+        expect((editorObj as any).nodeSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
         startNode = editNode.querySelector('.ol-four-node');
         startNode = startNode.childNodes[0].childNodes[0] as HTMLElement;
         expect (startNode.childNodes.length === 2).toBe(true);
@@ -327,8 +327,8 @@ describe ('left indent testing', () => {
             editorObj.nodeSelection.setSelectionText(document, startNode, endNode, 0, 4);
             editorObj.execCommand("Indents", 'Indent', null);
 
-            expect((editorObj.listObj as any).saveSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
-            expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
+            expect((editorObj as any).nodeSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
+            expect((editorObj as any).nodeSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
             startNode = editNode.querySelector('.ol-second-node');
             startNode = startNode.childNodes[0].childNodes[0] as HTMLElement;
             expect(startNode.tagName === 'OL').toBe(true);
@@ -346,8 +346,8 @@ describe ('left indent testing', () => {
             editorObj.nodeSelection.setSelectionText(document, startNode, endNode, 0, 4);
             editorObj.execCommand("Indents", 'Indent', null);
 
-            expect((editorObj.listObj as any).saveSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
-            expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
+            expect((editorObj as any).nodeSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
+            expect((editorObj as any).nodeSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
             startNode = editNode.querySelector('.ol-third-node');
             startNode = startNode.childNodes[0].childNodes[1] as HTMLElement;
             let siblingListLI: NodeListOf<HTMLLIElement> = (startNode as Element).querySelectorAll('li') as NodeListOf<HTMLLIElement>;
@@ -365,8 +365,8 @@ describe ('left indent testing', () => {
             editorObj.nodeSelection.setSelectionText(document, startNode, endNode, 0, 4);
             editorObj.execCommand("Indents", 'Indent', null);
 
-            expect((editorObj.listObj as any).saveSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
-            expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
+            expect((editorObj as any).nodeSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
+            expect((editorObj as any).nodeSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
             startNode = editNode.querySelector('.ol-four-node');
             expect(startNode.childNodes.length === 1).toBe(true);
             expect((startNode.childNodes[0] as HTMLElement).tagName === 'LI').toBe(true);
@@ -382,8 +382,8 @@ describe ('left indent testing', () => {
             editNode.focus();
             editorObj.execCommand("Indents", 'Indent', null);
 
-            expect((editorObj.listObj as any).saveSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
-            expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === startNode.textContent).toBe(true);
+            expect((editorObj as any).nodeSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
+            expect((editorObj as any).nodeSelection.range.endContainer.textContent === startNode.textContent).toBe(true);
             startNode = editNode.querySelector('.ol-first-node');
             startNode = startNode.childNodes[0] as HTMLElement;
             expect(startNode.tagName === 'LI').toBe(true);
@@ -401,8 +401,8 @@ describe ('left indent testing', () => {
             editorObj.nodeSelection.setSelectionText(document, startNode, endNode, 0, 4);
             editorObj.execCommand("Indents", 'Indent', null);
 
-            expect((editorObj.listObj as any).saveSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
-            expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
+            expect((editorObj as any).nodeSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
+            expect((editorObj as any).nodeSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
             startNode = editNode.querySelector('.ol-first-node');
             startNode = startNode.childNodes[0] as HTMLElement;
             expect(startNode.tagName === 'LI').toBe(true);
@@ -424,8 +424,8 @@ describe ('left indent testing', () => {
             editorObj.nodeSelection.setSelectionText(document, startNode, endNode, 0, 4);
             editorObj.execCommand("Indents", 'Indent', null);
 
-            expect((editorObj.listObj as any).saveSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
-            expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
+            expect((editorObj as any).nodeSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
+            expect((editorObj as any).nodeSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
             startNode = editNode.querySelector('.ol-first-node');
             startNode = startNode.childNodes[0] as HTMLElement;
             expect(startNode.tagName === 'LI').toBe(true);
@@ -455,8 +455,8 @@ describe ('left indent testing', () => {
             editorObj.nodeSelection.setSelectionText(document, startNode, endNode, 0, 4);
             editorObj.execCommand("Indents", 'Indent', null);
 
-            expect((editorObj.listObj as any).saveSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
-            expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
+            expect((editorObj as any).nodeSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
+            expect((editorObj as any).nodeSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
             startNode = editNode.querySelector('.ol-first-node');
             startNode = startNode.childNodes[0] as HTMLElement;
             expect(startNode.tagName === 'LI').toBe(true);
@@ -489,8 +489,8 @@ describe ('left indent testing', () => {
             editorObj.nodeSelection.setSelectionText(document, startNode, endNode, 0, 4);
             editorObj.execCommand("Indents", 'Indent', null);
 
-            expect((editorObj.listObj as any).saveSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
-            expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
+            expect((editorObj as any).nodeSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
+            expect((editorObj as any).nodeSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
             startNode = editNode.querySelector('.ol-first-node');
             startNode = startNode.childNodes[0] as HTMLElement;
             expect(startNode.tagName === 'LI').toBe(true);
@@ -525,8 +525,8 @@ describe ('left indent testing', () => {
             editorObj.nodeSelection.setSelectionText(document, startNode, endNode, 0, 4);
             editorObj.execCommand("Indents", 'Indent', null);
 
-            expect((editorObj.listObj as any).saveSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
-            expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
+            expect((editorObj as any).nodeSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
+            expect((editorObj as any).nodeSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
             startNode = editNode.querySelector('.ol-first-node');
             startNode = startNode.childNodes[0] as HTMLElement;
             expect(startNode.tagName === 'LI').toBe(true);
@@ -566,8 +566,8 @@ describe ('left indent testing', () => {
             editorObj.nodeSelection.setSelectionText(document, startNode, endNode, 0, 4);
             editorObj.execCommand("Indents", 'Indent', null);
 
-            expect((editorObj.listObj as any).saveSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
-            expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
+            expect((editorObj as any).nodeSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
+            expect((editorObj as any).nodeSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
             startNode = editNode.querySelector('.ol-first-node');
             startNode = startNode.childNodes[1] as HTMLElement;
             expect(startNode.tagName === 'LI').toBe(true);

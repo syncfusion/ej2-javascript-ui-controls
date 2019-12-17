@@ -92,6 +92,7 @@ export class FilterMenuRenderer {
 
         let mainDiv: HTMLElement = this.parent.createElement('div', { className: 'e-flmenu-maindiv', id: column.uid + '-flmenu' });
         this.dlgDiv = this.parent.createElement('div', { className: 'e-flmenu', id: column.uid + '-flmdlg' });
+        this.dlgDiv.setAttribute('aria-label', this.l10n.getConstant('FilterMenuDialogARIA'));
         this.parent.element.appendChild(this.dlgDiv);
         this.dlgObj = new Dialog({
             showCloseIcon: false,
@@ -148,7 +149,7 @@ export class FilterMenuRenderer {
     private renderFilterUI(target: Element, col: Column): void {
 
         let dlgConetntEle: Element = this.dlgObj.element.querySelector('.e-flmenu-maindiv');
-        this.parent.log('column_type_missing', { column: col });
+        this.parent.log('column_type_missing', {column: col});
         this.renderOperatorUI(dlgConetntEle, target, col);
         this.renderFlValueUI(dlgConetntEle, target, col);
     }
@@ -263,6 +264,9 @@ export class FilterMenuRenderer {
 
     private clearBtnClick(column: Column): void {
         this.filterObj.removeFilteredColsByField(column.field);
+        if (isBlazor() && !this.parent.isJsComponent) {
+            this.parent.filterSettings.columns = this.parent.filterSettings.columns;
+        }
         this.closeDialog();
         let iconClass: string = this.parent.showColumnMenu ? '.e-columnmenu' : '.e-icon-filter';
         let col: Element = this.parent.element.querySelector('[e-mappinguid="' + column.uid + '"]').parentElement;

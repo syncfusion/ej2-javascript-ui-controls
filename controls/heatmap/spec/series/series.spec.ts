@@ -102,6 +102,17 @@ describe('Heatmap Control', () => {
             tempElement = document.getElementById('container_HeatMapRectLabels_0');
             expect(tempElement).toBe(null);
         });
+        it('Check cell color for a particular cell',() => {
+            heatmap.cellSettings.showLabel = true;
+            heatmap.cellRender = function (args: ICellEventArgs) {
+                if (args.xLabel == '0' && args.yLabel == '9') {
+                    args.cellColor = '#898b2b';
+                }
+            }
+            heatmap.refresh();
+            tempElement = document.getElementById('container_HeatMapRect_0');
+            expect(tempElement.getAttribute('fill') == '#898b2b').toBe(true);
+        });
         it('Check enableCanvasRendering property', () => {
             heatmap.renderingMode = "Canvas";
             heatmap.emptyPointColor = "blue";

@@ -1,9 +1,13 @@
 /**
  * Specifies  common models interfaces.
  * @hidden
+ * @deprecated
  */
 import { EditorMode } from './types';
 
+/**
+ * @deprecated
+ */
 export interface IMarkdownFormatterCallBack {
     selectedText?: string;
     editorMode?: EditorMode;
@@ -12,6 +16,9 @@ export interface IMarkdownFormatterCallBack {
     requestType?: string;
 }
 
+/**
+ * @deprecated
+ */
 export interface IHtmlFormatterCallBack {
     selectedNode?: Element;
     requestType?: string;
@@ -22,16 +29,25 @@ export interface IHtmlFormatterCallBack {
     event?: KeyboardEvent | MouseEvent;
 }
 
+/**
+ * @deprecated
+ */
 export interface IMarkdownToolbarStatus {
     OrderedList: boolean;
     UnorderedList: boolean;
     Formats: string;
 }
+/**
+ * @deprecated
+ */
 export interface IUndoCallBack {
     callBack?: Function;
     event?: Object;
 }
 
+/**
+ * @deprecated
+ */
 export interface IToolbarStatus {
     bold?: boolean;
     italic?: boolean;
@@ -50,4 +66,5 @@ export interface IToolbarStatus {
     inlinecode?: boolean;
     uppercase?: boolean;
     createlink?: boolean;
+    insertcode?: boolean;
 }

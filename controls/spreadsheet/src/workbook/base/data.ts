@@ -1,9 +1,9 @@
 import { Workbook, Cell, getSheetNameFromAddress, getSheetIndex, getSheet } from '../base/index';
-import { getCellAddress, getIndexesFromAddress } from '../common/address';
+import { getCellAddress, getIndexesFromAddress, getColumnHeaderText, updateSheetFromDataSource, checkDateFormat } from '../common/index';
 import { SheetModel } from './sheet-model';
 import { RowModel } from './row-model';
 import { CellModel } from './cell-model';
-import { getRow } from './row';
+import { getRow, isHiddenRow } from './row';
 import { getCell } from './cell';
 import { isUndefined, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { getMaxSheetId, getSheetNameCount } from './sheet';
@@ -12,34 +12,69 @@ import { getMaxSheetId, getSheetNameCount } from './sheet';
  * Update data source to Sheet and returns Sheet
  * @hidden
  */
-export function getData(context: Workbook, address: string): Promise<Map<string, CellModel>> {
+export function getData(
+    context: Workbook, address: string,
+    columnWiseData?: boolean, valueOnly?: boolean): Promise<Map<string, CellModel> | { [key: string]: CellModel }[]> {
     return new Promise((resolve: Function, reject: Function) => {
         resolve((() => {
             let i: number;
             let row: RowModel;
-            let data: Map<string, CellModel> = new Map();
-            let sheet: SheetModel = getSheet(context, getSheetIndex(context, getSheetNameFromAddress(address)));
+            let data: Map<string, CellModel> | { [key: string]: CellModel }[] = new Map();
+            let sheetIdx: number = getSheetIndex(context, getSheetNameFromAddress(address));
+            let sheet: SheetModel = getSheet(context, sheetIdx);
             let indexes: number[] = getIndexesFromAddress(address);
             let sRow: number = indexes[0];
+            let index: number = 0;
             let args: { sheet: SheetModel, indexes: number[], promise?: Promise<Cell> } = {
                 sheet: sheet, indexes: indexes, promise:
                     new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); })
             };
-            context.notify('updateSheetFromDataSource', args);
+            context.notify(updateSheetFromDataSource, args);
             return args.promise.then(() => {
                 while (sRow <= indexes[2]) {
+                    if (!valueOnly && isHiddenRow(sheet, sRow)) { sRow++; continue; }
+                    let cells: { [key: string]: CellModel | string | Date } = {};
                     row = getRow(sheet, sRow);
                     i = indexes[1];
                     while (i <= indexes[3]) {
-                        data.set(getCellAddress(sRow, i), row ? getCell(sRow, i, sheet) : null);
+                        if (columnWiseData) {
+                            if (data instanceof Map) { data = []; }
+                            let key: string = getColumnHeaderText(i + 1);
+                            let rowKey: string = '__rowIndex';
+                            if (valueOnly) {
+                                cells[key] = row ? getValueFromFormat(context, sRow, i, sheetIdx, sheet) : '';
+                            } else {
+                                cells[key] = row ? getCell(sRow, i, sheet) : null;
+                            }
+                            if (indexes[3] < i + 1) { cells[rowKey] = (sRow + 1).toString(); }
+                            data[index.toString()] = cells;
+                        } else {
+                            (data as Map<string, CellModel>).set(getCellAddress(sRow, i), row ? getCell(sRow, i, sheet) : null);
+                        }
                         i++;
                     }
-                    sRow++;
+                    sRow++; index++;
                 }
                 return data;
             });
         })());
     });
+}
+
+function getValueFromFormat(context: Workbook, rowIndex: number, colIndex: number, sheetIdx: number, sheet: SheetModel): string | Date {
+    let cell: CellModel = getCell(rowIndex, colIndex, sheet);
+    if (cell) {
+        if (cell.format) {
+            let args: { [key: string]: string | number | boolean | Date } = {
+                value: context.getDisplayText(cell), rowIndex: rowIndex, colIndex: colIndex,
+                sheetIndex: sheetIdx, dateObj: '', isDate: false, isTime: false
+            };
+            context.notify(checkDateFormat, args);
+            if (args.isDate) {
+                return args.dateObj as Date;
+            } else { return cell.value; }
+        } else { return cell.value; }
+    } else { return ''; }
 }
 
 /**

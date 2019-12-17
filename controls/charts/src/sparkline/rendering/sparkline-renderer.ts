@@ -540,6 +540,9 @@ export class SparklineRenderer {
             this.lowPointIndex = i;
             render = render || (visible.indexOf('low') > -1);
         }
+        if (visible.indexOf('none') > -1) {
+            render = false;
+        }
         return render;
     }
     /**
@@ -657,6 +660,9 @@ export class SparklineRenderer {
             render = render || (labelVisible.indexOf('high') > -1);
         } else if (temp.markerPosition === lowPos) {
             render = render || (labelVisible.indexOf('low') > -1);
+        }
+        if (label.visible.join().toLowerCase().indexOf('none') > -1) {
+            render = false;
         }
         return render;
     }

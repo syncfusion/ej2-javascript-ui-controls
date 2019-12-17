@@ -40,6 +40,11 @@ export class ColorPickerInput {
         this.toolbarRenderer = this.renderFactory.getRenderer(RenderType.Toolbar);
     }
 
+    /**
+     * renderColorPickerInput method
+     * @hidden
+     * @deprecated
+     */
     public renderColorPickerInput(args: IColorPickerRenderArgs): void {
         this.initializeInstance();
         let suffixID: string = args.containerType;
@@ -98,6 +103,11 @@ export class ColorPickerInput {
         this.destroyColorPicker();
     }
 
+    /**
+     * destroyColorPicker method
+     * @hidden
+     * @deprecated
+     */
     public destroyColorPicker(): void {
         if (this.fontColorPicker && !this.fontColorPicker.isDestroyed) { this.fontColorPicker.destroy(); }
         if (this.backgroundColorPicker && !this.backgroundColorPicker.isDestroyed) { this.backgroundColorPicker.destroy(); }

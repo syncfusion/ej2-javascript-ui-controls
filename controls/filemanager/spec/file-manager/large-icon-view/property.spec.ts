@@ -287,6 +287,25 @@ describe('FileManager control LargeIcons view', () => {
             });
             expect(feObj.element.style.width).toEqual('');
         });
+        it('for rootAliasName', () => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                rootAliasName:"My Drive"
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            expect((<HTMLElement>document.querySelector("#file_tree  .e-text-content .e-list-text")).innerText).toEqual('My Drive');          
+            feObj.destroy();
+         
+        });
         it('for showThumbnail', (done: Function) => {
             feObj = new FileManager({
                 view: 'LargeIcons',

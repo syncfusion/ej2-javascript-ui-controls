@@ -133,3 +133,5 @@ export const click: string = 'click';
 export const initToolbar: string = 'init-toolbar';
 /** @hidden */
 export const initFormatting: string = 'init-formatting';
+/** @hidden */
+export const initGrouping: string = 'init-grouping';

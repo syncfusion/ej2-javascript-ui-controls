@@ -1,5 +1,5 @@
 import {  NotifyPropertyChanges, Property, Event, Complex, INotifyPropertyChanged, updateBlazorTemplate } from '@syncfusion/ej2-base';
-import {  extend,  compile as templateComplier, Component, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import {  extend,  compile as templateComplier, Component, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '../svg-render/index';
 import {  ChildProperty, createElement, EmitType, remove, Browser, AnimationOptions, Animation} from '@syncfusion/ej2-base';
 import { TextStyleModel, TooltipBorderModel, TooltipModel, ToolLocationModel, AreaBoundsModel } from './tooltip-model';
@@ -449,6 +449,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
      */
 
     protected preRender(): void {
+        this.allowServerDataBinding = false;
         this.initPrivateVariable();
         if (!this.isCanvas) {
             this.removeSVG();
@@ -502,6 +503,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         if (element) {
            remove(element);
         }
+        this.allowServerDataBinding = true;
     }
 
     private createTooltipElement(): void {
@@ -759,8 +761,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         let argsData: ITooltipRenderingEventArgs = { cancel: false, name: 'tooltipRender', tooltip : this};
         this.trigger('tooltipRender', argsData);
         let parent : HTMLElement = document.getElementById(this.element.id);
-        let blazor: string = 'Blazor';
-        let isBlazor: boolean = window[blazor];
         if (this.isCanvas) {
             this.removeSVG();
         }
@@ -772,7 +772,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             let elem: Element = createElement('div', { id: this.element.id + 'parent_template' });
             let templateElement: HTMLCollection = this.templateFn(this.data, null, null, elem.id + '_blazorTemplate', '');
             while (templateElement && templateElement.length > 0) {
-                if (isBlazor) {
+                if (isBlazor()) {
                     elem.appendChild(templateElement[0]);
                     templateElement = null;
                 } else {

@@ -321,7 +321,8 @@ export class AccumulationBase {
         let chart: AccumulationChart = this.accumulation;
         let seriesIndex: number;
         let point: AccPoints;
-        seriesIndex = parseInt(sliceId.split('_')[2], 10);
+        let values : string[] = sliceId.split('_');
+        seriesIndex = parseInt(sliceId.split('_')[values.length - 3], 10);
         point = chart.visibleSeries[seriesIndex].points[index];
         if (duration <= 0) {
             this.setTranslate(
