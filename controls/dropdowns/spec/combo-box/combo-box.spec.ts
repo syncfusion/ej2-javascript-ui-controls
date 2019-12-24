@@ -1998,6 +1998,57 @@ describe('ComboBox', () => {
             ddl.showPopup();
         });
     });
+    describe('filtering', () => {
+        let keyEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            keyCode: 74,
+            metaKey: false
+        };
+        let datasource: { [key: string]: Object }[] = [{ id: 'list1', text: 'JAVA', icon: 'icon' }, { id: 'list2', text: 'C#' },
+            { id: 'list3', text: 'C++' }, { id: 'list4', text: '.NET', icon: 'icon' }, { id: 'list5', text: 'Oracle' }];
+
+        let datasource2: { [key: string]: Object }[] = [{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }, { id: 'id3', text: 'PERL' },
+            { id: 'list1', text: 'JAVA' }, { id: 'list2', text: 'Phython' }, { id: 'list5', text: 'Oracle' }];
+        let keyEvent: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down' };
+        let listObj: any;
+        let element: HTMLInputElement;
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+            document.body.appendChild(element);
+            listObj = new ComboBox({
+                dataSource: datasource,
+                fields: { text: "text", value: "id" },
+                popupHeight: "200px",
+                allowFiltering: true,
+                filtering: function (e: FilteringEventArgs) {
+                    let query = new Query();
+                    query = (e.text != "") ? query.where("text", "startswith", e.text, true) : query;
+                    listObj.filter(datasource2, query);
+                }
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+        });
+        it('addItem ', () => {
+            listObj.addItem({ id: 'list54', text: 'newitemss' }, 0);
+            expect(listObj.list.querySelector('li').textContent).toBe('newitemss');
+        })
+
+        it('using filter method', (done) => {
+            setTimeout(() => {
+                listObj.filterInput.value = "p";
+                listObj.onInput()
+                listObj.onFilterUp(keyEventArgs);
+                listObj.keyActionHandler(keyEvent);
+                listObj.keyActionHandler(keyEvent);
+                listObj.hidePopup();
+                setTimeout(() => {
+                    expect(listObj.text === 'PERL').toBe(true);
+                    done();
+                }, 250)
+            }, 500)
+        });
+    });
     describe('Disabled with showpopup public methpd', () => {
         let element: HTMLInputElement;
         let ddl: any;

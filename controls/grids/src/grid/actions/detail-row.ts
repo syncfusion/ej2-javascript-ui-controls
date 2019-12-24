@@ -48,6 +48,7 @@ export class DetailRow {
         let parent: string = 'parentDetails';
         let isServerRendered: string = 'isServerRendered';
         let childGrid: Grid;
+        let isExpanded: boolean = target &&  target.classList.contains('e-detailrowcollapse') ;
         if (!(target && (target.classList.contains('e-detailrowcollapse') || target.classList.contains('e-detailrowexpand')))) {
             return;
         }
@@ -64,6 +65,8 @@ export class DetailRow {
             let data: Object = rowObj.data;
             if (this.isDetailRow(nextRow)) {
                 nextRow.style.display = '';
+                gObj.notify(events.detailStateChange, {data: data,
+                    childGrid: gObj.childGrid, detailElement: target, isExpanded: isExpanded });
             } else if (gObj.getDetailTemplate() || gObj.childGrid) {
                 let rowId: string = getUid('grid-row');
                 let detailRow: Element = this.parent.createElement('tr', { className: 'e-detailrow', attrs: {'data-uid': rowId} });
@@ -141,6 +144,8 @@ export class DetailRow {
         } else {
             if (this.isDetailRow(nextRow)) {
                 nextRow.style.display = 'none';
+                gObj.notify(events.detailStateChange, { data: rowObj.data,
+                    childGrid: gObj.childGrid, detailElement: target, isExpanded: isExpanded });
             }
             classList(target, ['e-detailrowcollapse'], ['e-detailrowexpand']);
             classList(target.firstElementChild, ['e-dtdiagonalright', 'e-icon-grightarrow'], ['e-dtdiagonaldown', 'e-icon-gdownarrow']);

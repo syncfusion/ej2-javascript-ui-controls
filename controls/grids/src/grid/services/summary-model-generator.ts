@@ -57,7 +57,7 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
     }
 
     public generateRows(input: Object[] | Group, args?: Object, start?: number, end?: number): Row<AggregateColumnModel>[] {
-        if (this.parent.currentViewData.length === 0) { return []; }
+        if ((input as Object[]).length === 0) { return []; }
         let data: Object[] = this.buildSummaryData(input, <SummaryData>args);
         let rows: Row<AggregateColumnModel>[] = [];
         (<AggregateRowModel[]>this.getData()).forEach((row: AggregateRowModel, index: number) => {

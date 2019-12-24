@@ -29,6 +29,7 @@ export class SfdtReader {
     private commentsCollection: Dictionary<string, CommentElementBox> = undefined;
     private isPageBreakInsideTable: boolean = false;
     private editableRanges: Dictionary<string, EditRangeStartElementBox>;
+    private isParseHeader: boolean = false;
 
     private get isPasting(): boolean {
         return this.viewer && this.viewer.owner.isPastingContent;
@@ -334,6 +335,7 @@ export class SfdtReader {
                 item.headersFooters = {};
             }
             this.viewer.headersFooters.push(this.parseHeaderFooter(item.headersFooters, this.viewer.headersFooters));
+            this.isParseHeader = false;
             this.parseTextBody(item.blocks, section, i + 1 < data.length);
             for (let i: number = 0; i < section.childWidgets.length; i++) {
                 (section.childWidgets[i] as BlockWidget).containerWidget = section;
@@ -345,6 +347,7 @@ export class SfdtReader {
      * @private
      */
     public parseHeaderFooter(data: any, headersFooters: any): HeaderFooters {
+        this.isParseHeader = true;
         let hfs: HeaderFooters = {};
         if (!isNullOrUndefined(data.header)) {
             let oddHeader: HeaderFooterWidget = new HeaderFooterWidget('OddHeader');
@@ -607,13 +610,15 @@ export class SfdtReader {
                 bookmark.name = inline.name;
                 lineWidget.children.push(bookmark);
                 bookmark.line = lineWidget;
-                if (inline.bookmarkType === 0) {
-                    this.viewer.bookmarks.add(bookmark.name, bookmark);
-                } else if (inline.bookmarkType === 1) {
-                    if (this.viewer.bookmarks.containsKey(bookmark.name)) {
-                        let bookmarkStart: BookmarkElementBox = this.viewer.bookmarks.get(bookmark.name);
-                        bookmarkStart.reference = bookmark;
-                        bookmark.reference = bookmarkStart;
+                if (!this.isParseHeader) {
+                    if (inline.bookmarkType === 0) {
+                        this.viewer.bookmarks.add(bookmark.name, bookmark);
+                    } else if (inline.bookmarkType === 1) {
+                        if (this.viewer.bookmarks.containsKey(bookmark.name)) {
+                            let bookmarkStart: BookmarkElementBox = this.viewer.bookmarks.get(bookmark.name);
+                            bookmarkStart.reference = bookmark;
+                            bookmark.reference = bookmarkStart;
+                        }
                     }
                 }
                 if (bookmark.name.indexOf('_') !== 0) {

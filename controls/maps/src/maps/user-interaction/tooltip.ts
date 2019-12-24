@@ -2,7 +2,7 @@ import { Maps, ITooltipRenderEventArgs, tooltipRender, MapsTooltipOption, IToolt
 import { Tooltip } from '@syncfusion/ej2-svg-base';
 import { createElement, Browser, isNullOrUndefined, extend, remove } from '@syncfusion/ej2-base';
 import { TooltipSettingsModel, LayerSettings, MarkerSettingsModel, BubbleSettingsModel } from '../index';
-import { MapLocation, checkShapeDataFields, getMousePosition, Internalize, checkPropertyPath } from '../utils/helper';
+import { MapLocation, getMousePosition, Internalize, checkPropertyPath } from '../utils/helper';
 /**
  * Map Tooltip
  */
@@ -64,9 +64,23 @@ export class MapsTooltip {
                 if (isNullOrUndefined(layer.layerData) || isNullOrUndefined(layer.layerData[shape])) {
                     return;
                 }
-                let value: object = layer.layerData[shape]['property'];
-                index = checkShapeDataFields(<Object[]>layer.dataSource, value, layer.shapeDataPath, layer.shapePropertyPath);
-                templateData = layer.dataSource[index];
+                let value: object = layer.layerData[shape]['property']; let isShape: boolean = false;
+                let properties: string[] = (Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]' ?
+                    layer.shapePropertyPath : [layer.shapePropertyPath]) as string[];
+                if (!isNullOrUndefined(properties)) {
+                    for (let k: number = 0; k < properties.length; k++) {
+                        for (let i: number = 0; i < layer['dataSource']['length']; i++) {
+                            let data: Object[] = layer.dataSource[i];
+                            if ((data[layer.shapeDataPath]) === value[properties[k]]) {
+                                isShape = true; index = i;
+                                k = properties.length;
+                                break;
+                            }
+                        }
+                    }
+                    index = isShape ? index : null;
+                    templateData = layer.dataSource[index];
+                }
                 if (option.visible && ((!isNullOrUndefined(index) && !isNaN(index)) || (!isNullOrUndefined(value)))) {
                     if (layer.tooltipSettings.format) {
                         currentData = this.formatter(layer.tooltipSettings.format, layer.dataSource[index]);

@@ -109,7 +109,7 @@ describe('Circular-Gauge Control', () => {
             gauge.refresh();
         });
 
-        it('Checking Axis minimum and maximum value', (done: Function) => {
+        it('Checking Axis Minimum and Maximum value', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_Axis_0_Label_0');
                 expect(svg.textContent == '-10').toBe(true);

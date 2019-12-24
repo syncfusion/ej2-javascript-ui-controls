@@ -1,5 +1,5 @@
 /**
- * import section
+ * import section 
  */
 import {CanvasRenderer} from '../../src/svg-render/canvas-renderer';
 import '../../node_modules/canteen/build/canteen';

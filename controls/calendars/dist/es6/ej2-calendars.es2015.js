@@ -411,6 +411,7 @@ let CalendarBase = class CalendarBase extends Component {
     // tslint:disable-next-line:max-func-body-length
     keyActionHandle(e, value, multiSelection) {
         if (isBlazor() && this.blazorRef) {
+            e.preventDefault();
             if (!this.tableBodyElement) {
                 this.element = closest(e.target, '.' + 'e-calendar');
                 this.tableBodyElement = this.element.querySelector('tbody');
@@ -3298,9 +3299,10 @@ let DatePicker = class DatePicker extends Calendar {
         }
     }
     preventEventBubbling(e) {
-        if (e.type !== 'touchstart') {
-            e.preventDefault();
-        }
+        e.preventDefault();
+        // tslint:disable
+        this.interopAdaptor.invokeMethodAsync('OnDateIconClick');
+        // tslint:enable
     }
     updateInputValue(value) {
         Input.setValue(value, this.inputElement, this.floatLabelType, this.showClearButton);
@@ -3318,14 +3320,16 @@ let DatePicker = class DatePicker extends Calendar {
                 this.hide(e);
             }
             else {
-                this.isDateIconClicked = true;
-                this.show(null, e);
-                if (this.getModuleName() === 'datetimepicker') {
+                if (!this.isBlazorServer || (this.isBlazorServer && this.inputWrapper.container.nextElementSibling)) {
+                    this.isDateIconClicked = true;
+                    this.show(null, e);
+                    if (this.getModuleName() === 'datetimepicker') {
+                        this.inputElement.focus();
+                    }
                     this.inputElement.focus();
+                    addClass([this.inputWrapper.container], [INPUTFOCUS]);
+                    addClass(this.inputWrapper.buttons, ACTIVE);
                 }
-                this.inputElement.focus();
-                addClass([this.inputWrapper.container], [INPUTFOCUS]);
-                addClass(this.inputWrapper.buttons, ACTIVE);
             }
         }
     }
@@ -3421,7 +3425,7 @@ let DatePicker = class DatePicker extends Calendar {
         }
         else {
             // tslint:disable
-            this.interopAdaptor.invokeMethodAsync('OnStrictModeUpdate');
+            this.interopAdaptor.invokeMethodAsync('OnStrictModeUpdate', this.inputElement.value);
             // tslint:enable
         }
         if (this.isCalendar() && document.activeElement === this.inputElement) {
@@ -3466,7 +3470,7 @@ let DatePicker = class DatePicker extends Calendar {
             else if (closest(target, '.e-footer-container')
                 && target.classList.contains('e-today')
                 && target.classList.contains('e-btn')
-                && +new Date(+this.value) === +super.generateTodayVal(this.value)) {
+                && (+new Date(+this.value) === +super.generateTodayVal(this.value) && !this.isBlazorServer)) {
                 this.hide(e);
             }
         }
@@ -3488,7 +3492,7 @@ let DatePicker = class DatePicker extends Calendar {
                 }
                 else {
                     // tslint:disable
-                    this.interopAdaptor.invokeMethodAsync('OnStrictModeUpdate');
+                    this.interopAdaptor.invokeMethodAsync('OnStrictModeUpdate', this.inputElement.value);
                     // tslint:enable
                 }
                 if (this.getModuleName() === 'datepicker') {
@@ -3515,7 +3519,7 @@ let DatePicker = class DatePicker extends Calendar {
                 }
                 else {
                     // tslint:disable
-                    this.interopAdaptor.invokeMethodAsync('OnStrictModeUpdate');
+                    this.interopAdaptor.invokeMethodAsync('OnStrictModeUpdate', this.inputElement.value);
                     // tslint:enable
                 }
                 if (!this.isCalendar() && document.activeElement === this.inputElement) {
@@ -3536,7 +3540,7 @@ let DatePicker = class DatePicker extends Calendar {
                 }
                 else {
                     // tslint:disable
-                    this.interopAdaptor.invokeMethodAsync('OnStrictModeUpdate');
+                    this.interopAdaptor.invokeMethodAsync('OnStrictModeUpdate', this.inputElement.value);
                     // tslint:enable
                 }
                 this.hide(e);
@@ -3916,6 +3920,8 @@ let DatePicker = class DatePicker extends Calendar {
                 if (prevent && !this.preventArgs.cancel) {
                     if (this.isBlazorServer) {
                         this.popupWrapper.style.visibility = '';
+                        this.popupWrapper.style.width = 'auto';
+                        this.popupWrapper.style.height = 'auto';
                     }
                     addClass(this.inputWrapper.buttons, ACTIVE);
                     this.preventArgs.appendTo.appendChild(this.popupWrapper);
@@ -7848,7 +7854,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         attributes(this.inputElement, {
             'aria-readonly': this.readonly ? 'true' : 'false', 'tabindex': '0', 'aria-haspopup': 'true',
             'aria-activedescendant': 'null', 'aria-owns': this.element.id + '_popup', 'aria-expanded': 'false',
-            'role': 'daterangepicker', 'autocomplete': 'off', 'aria-disabled': !this.enabled ? 'true' : 'false',
+            'role': 'combobox', 'autocomplete': 'off', 'aria-disabled': !this.enabled ? 'true' : 'false',
             'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false'
         });
         Input.addAttributes({ 'aria-label': 'select' }, this.inputWrapper.buttons[0]);
@@ -8266,7 +8272,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         let ariaAttrs = {
             'aria-readonly': this.readonly ? 'true' : 'false', 'tabindex': '0', 'aria-haspopup': 'true',
             'aria-activedescendant': 'null', 'aria-owns': this.element.id + '_popup', 'aria-expanded': 'false',
-            'role': 'daterangepicker', 'autocomplete': 'off', 'aria-disabled': !this.enabled ? 'true' : 'false',
+            'role': 'combobox', 'autocomplete': 'off', 'aria-disabled': !this.enabled ? 'true' : 'false',
             'autocorrect': 'off', 'autocapitalize': 'off', 'aria-invalid': 'false', 'spellcheck': 'false'
         };
         if (this.inputElement) {
@@ -11156,6 +11162,8 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
      */
     destroy() {
         if (this.popupObject && this.popupObject.element.classList.contains(POPUP$3)) {
+            this.popupObject.destroy();
+            detach(this.dateTimeWrapper);
             this.dateTimeWrapper = undefined;
             this.liCollections = this.timeCollections = [];
             if (!isNullOrUndefined(this.rippleFn)) {

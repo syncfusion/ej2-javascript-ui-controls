@@ -252,7 +252,7 @@ export class ParagraphDialog {
         this.atIn.appendTo(lineSpacingAt);
         this.contextSpacing = new CheckBox({
             change: this.changeContextualSpacing,
-            label: locale.getConstant("Don't add space between the paragraphs of the same styles"),
+            label: locale.getConstant("Contextual Spacing"),
             enableRtl: isRtl,
             cssClass: 'e-de-para-dlg-cs-check-box'
         });

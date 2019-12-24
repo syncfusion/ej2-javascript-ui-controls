@@ -111,6 +111,7 @@ export class EventWindow {
             EventHandler.add(this.element.querySelector('.' + cls.EVENT_WINDOW_BACK_ICON_CLASS), 'click', this.dialogClose, this);
             EventHandler.add(this.element.querySelector('.' + cls.EVENT_WINDOW_SAVE_ICON_CLASS), 'click', this.eventSave, this);
         }
+        this.applyFormValidation();
     }
 
     private updateEditorTemplate(): void {
@@ -1148,7 +1149,6 @@ export class EventWindow {
     }
 
     public eventSave(alert?: string): void {
-        this.applyFormValidation();
         let formElement: Element = this.element.querySelector('.' + cls.FORM_CLASS);
         if (formElement && formElement.classList.contains('e-formvalidator') &&
             !((formElement as EJ2Instance).ej2_instances[0] as FormValidator).validate()) {

@@ -1253,23 +1253,25 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      */
     public destroy(): void {
         this.unwireEvents();
-        detach(this.hiddenInput);
-        if (this.showSpinButton) {
-            this.unwireSpinBtnEvents();
-            detach(this.spinUp);
-            detach(this.spinDown);
+        if (!(isBlazor() && this.isServerRendered)) {
+            detach(this.hiddenInput);
+            if (this.showSpinButton) {
+                this.unwireSpinBtnEvents();
+                detach(this.spinUp);
+                detach(this.spinDown);
+            }
+            let attrArray: string[] = ['aria-labelledby', 'role', 'autocomplete', 'aria-readonly',
+                'autocorrect', 'aria-disabled', 'aria-placeholder', 'autocapitalize',
+                'spellcheck', 'aria-autocomplete', 'tabindex', 'aria-valuemin',
+                'aria-valuemax', 'aria-live', 'aria-valuenow', 'aria-invalid'];
+            attrArray.forEach((value: string): void => {
+                this.element.removeAttribute(value);
+            });
+            this.element.classList.remove('e-input');
+            this.container.insertAdjacentElement('afterend', this.element);
+            detach(this.container);
+            super.destroy();
         }
-        let attrArray: string[] = ['aria-labelledby', 'role', 'autocomplete', 'aria-readonly',
-            'autocorrect', 'aria-disabled', 'aria-placeholder', 'autocapitalize',
-            'spellcheck', 'aria-autocomplete', 'tabindex', 'aria-valuemin',
-            'aria-valuemax', 'aria-live', 'aria-valuenow', 'aria-invalid'];
-        attrArray.forEach((value: string): void => {
-            this.element.removeAttribute(value);
-        });
-        this.element.classList.remove('e-input');
-        this.container.insertAdjacentElement('afterend', this.element);
-        detach(this.container);
-        super.destroy();
     }
 
     /**

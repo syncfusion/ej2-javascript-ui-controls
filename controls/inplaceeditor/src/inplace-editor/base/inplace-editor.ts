@@ -1075,6 +1075,16 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                 this.cancelHandler();
             }
         }
+        if (e.keyCode === 9 && e.shiftKey === false &&
+        (isNOU((e.target as HTMLElement).nextElementSibling) ||
+        (e.target as HTMLElement).nextElementSibling.tagName !== 'BUTTON')) {
+            if (this.actionOnBlur === 'Submit') {
+                this.save();
+                this.cancelHandler();
+            } else if (this.actionOnBlur === 'Cancel') {
+                this.cancelHandler();
+            }
+        }
     }
     private afterOpenHandler(e: TooltipEventArgs): void {
         if (this.mode === 'Popup' && this.type === 'MultiSelect') {
@@ -1157,6 +1167,14 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
     }
     private valueKeyDownHandler(e: KeyboardEvent): void {
+        if (e.keyCode === 9 && e.shiftKey === true && (e.target as HTMLElement).tagName !== 'BUTTON') {
+            if (this.actionOnBlur === 'Submit') {
+                this.save();
+                this.cancelHandler();
+            } else if (this.actionOnBlur === 'Cancel') {
+                this.cancelHandler();
+            }
+        }
         if ((e.keyCode === 13 && e.which === 13) && (e.target as Element).classList.contains(classes.ROOT) &&
             !this.valueWrap.classList.contains(classes.OPEN) && !this.element.classList.contains(classes.DISABLE)) {
             e.preventDefault();

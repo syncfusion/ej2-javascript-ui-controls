@@ -184,7 +184,7 @@ describe('DateRangePicker', () => {
                 expect(daterangepicker.inputWrapper.container.style.width).toBe('200em');
             });
             it('Element role testing ', () => {
-                expect(daterangepicker.element.getAttribute('role') == "daterangepicker").toBe(true);
+                expect(daterangepicker.element.getAttribute('role') == "combobox").toBe(true);
             });
             it('Element name attribute testing', () => {
                 expect(daterangepicker.firstHiddenChild.hasAttribute('name') && daterangepicker.firstHiddenChild.getAttribute('name') === daterangepicker.element.id).toBe(true);

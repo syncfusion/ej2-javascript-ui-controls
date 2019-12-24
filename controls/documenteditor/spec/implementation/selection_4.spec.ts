@@ -117,6 +117,17 @@ describe('Selection bookmark property validation', () => {
         editor.selection.selectAll();
         expect(editor.selection.bookmarks.length).toBe(2);
     });
+    it('insert text after bookmark insert validation', () => {
+        editor.openBlank();
+        editor.editor.insertText('Sample');
+        editor.selection.selectAll();
+        editor.editor.insertBookmark('b1');
+        editor.selection.handleRightKey();
+        editor.selection.handleLeftKey();
+        editor.selection.handleRightKey();
+        editor.editor.insertText('s');
+        expect(editor.selection.start.currentWidget.children.length).toBe(4);
+    });
 });
 
 describe('enable repeat row header test', () => {

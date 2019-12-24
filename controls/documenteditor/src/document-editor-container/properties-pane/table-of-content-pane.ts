@@ -207,7 +207,7 @@ export class TocProperties {
         }
         let contentStyleElement: HTMLElement = createElement('div', { id: 'contentstyle_div' });
         // tslint:disable-next-line:max-line-length
-        contentStyleElement.setAttribute('title', this.localObj.getConstant('Number of heading or outline levels to be shown in table of contents.'));
+        contentStyleElement.setAttribute('title', this.localObj.getConstant('Number of heading or outline levels to be shown in table of contents'));
         container.appendChild(contentStyleElement);
         // let items: ItemModel[] = [{ text: '___________', id: 'solid' }];
 
@@ -247,7 +247,7 @@ export class TocProperties {
         let checkboxElement: HTMLElement = createElement('div', { id: 'toc_checkboxDiv', styles: 'margin-bottom:36px;' });
         container.appendChild(checkboxElement);
         let showPageNumberDiv: HTMLElement = createElement('div', { className: 'e-de-toc-checkbox1' });
-        showPageNumberDiv.setAttribute('title', this.localObj.getConstant('Show page numbers in table of contents.'));
+        showPageNumberDiv.setAttribute('title', this.localObj.getConstant('Show page numbers in table of contents'));
         checkboxElement.appendChild(showPageNumberDiv);
         // tslint:disable-next-line:max-line-length
         let showpagenumberCheckboxElement: HTMLElement = createElement('input', { id: 'showpagenumber', styles: 'width:12px;height:12px;margin-bottom:8px', className: 'e-de-prop-sub-label' });
@@ -258,7 +258,7 @@ export class TocProperties {
         });
         this.showPageNumber.appendTo(showpagenumberCheckboxElement);
         let rightAlignDiv: HTMLElement = createElement('div', { className: 'e-de-toc-checkbox2' });
-        rightAlignDiv.setAttribute('title', this.localObj.getConstant('Right align page numbers in table of contents.'));
+        rightAlignDiv.setAttribute('title', this.localObj.getConstant('Right align page numbers in table of contents'));
         checkboxElement.appendChild(rightAlignDiv);
         // tslint:disable-next-line:max-line-length
         let rightalignpagenumberCheckboxElement: HTMLElement = createElement('input', { id: 'rightalignpagenumber', styles: 'width:12px;height:12px', className: 'e-de-prop-sub-label' });
@@ -269,7 +269,7 @@ export class TocProperties {
         });
         this.rightalignPageNumber.appendTo(rightalignpagenumberCheckboxElement);
         let hyperlinkDiv: HTMLElement = createElement('div', { className: 'e-de-toc-checkbox3' });
-        hyperlinkDiv.setAttribute('title', this.localObj.getConstant('Use hyperlinks instead of page numbers.'));
+        hyperlinkDiv.setAttribute('title', this.localObj.getConstant('Use hyperlinks instead of page numbers'));
         checkboxElement.appendChild(hyperlinkDiv);
         // tslint:disable-next-line:max-line-length
         let hyperlinkCheckboxElement: HTMLElement = createElement('input', { id: 'hyperlinkdiv', styles: 'width:12px;height:12px', className: 'e-de-prop-sub-label' });

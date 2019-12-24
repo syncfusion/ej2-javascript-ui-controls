@@ -638,21 +638,19 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
         this.isDevice = Browser.isDevice;
         this.isBlazor = isBlazor();
-
         this.initPrivateVariable();
         this.allowServerDataBinding = false;
-        this.trigger(load, this.isBlazor ? {} : { maps: this }, () => {
-            this.unWireEVents();
-            this.createSVG();
-            this.wireEVents();
-            this.setCulture();
-        });
+        this.unWireEVents();
+        this.wireEVents();
+        this.setCulture();
     }
 
     /**
      * To Initialize the control rendering.
      */
     protected render(): void {
+        this.trigger(load, this.isBlazor ? {} : { maps: this });
+        this.createSVG();
         this.findBaseAndSubLayers();
         this.createSecondaryElement();
         this.addTabIndex();

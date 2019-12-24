@@ -467,6 +467,7 @@ export class QuickPopups {
         }
         this.quickPopup.content = quickCellPopup;
         this.quickPopup.dataBind();
+        this.applyFormValidation();
         if (this.morePopup) { this.morePopup.hide(); }
         this.quickPopup.relateTo = target as HTMLElement;
         this.beforeQuickPopupOpen(target);
@@ -805,7 +806,6 @@ export class QuickPopups {
     }
 
     private saveClick(): void {
-        this.applyFormValidation();
         this.isCrudAction = true;
         this.quickPopupHide();
     }
@@ -851,7 +851,7 @@ export class QuickPopups {
             remove(moreEventContentEle);
         }
         let dateElement: Element = this.morePopup.element.querySelector('.' + cls.MORE_EVENT_HEADER_DATE_CLASS);
-        let startDate: Date = this.parent.getDateFromElement(dateElement);
+        let startDate: Date = new Date(parseInt(dateElement.getAttribute('data-date'), 10));
         let endDate: Date = new Date(parseInt(dateElement.getAttribute('data-end-date'), 10));
         let groupIndex: string = dateElement.getAttribute('data-group-index');
         let data: TdData;

@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 17.4.40 (2019-12-24)
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- Issue with "popup not opened by using alt + down key while enabling JAWS" has been resolved.
+
+### DateTimePicker
+
+#### Bug Fixes
+
+- `#257448` - Issue with "timepicker popup not destroyed while destroy the datetimepicker on close event" has been resolved.
+
 ## 17.4.39 (2019-12-17)
 
 ### DateRangePicker

@@ -502,6 +502,28 @@ export class Toolbar {
         this.isToolbar = true;
     }
 
+    private tbFocusHandler(e: Event): void {
+        let activeElm: Element = document.activeElement;
+        let isToolbaractive: Element = closest(activeElm as Element, '.e-rte-toolbar');
+        if (activeElm === this.parent.getToolbarElement() || isToolbaractive === this.parent.getToolbarElement()) {
+            let toolbarItem: NodeList = this.parent.getToolbarElement().querySelectorAll('.e-expended-nav');
+            for (let i: number = 0; i < toolbarItem.length; i++) {
+                if (isNOU(this.parent.getToolbarElement().querySelector('.e-insert-table-btn'))) {
+                    (toolbarItem[i] as HTMLElement).setAttribute('tabindex', '0');
+                } else {
+                    (toolbarItem[i] as HTMLElement).setAttribute('tabindex', '1');
+                }
+            }
+        }
+    }
+
+    private tbKeydownHandler(e: Event): void {
+        if ((e.target as HTMLElement).classList.contains('e-dropdown-btn') ||
+        (e.target as HTMLElement).getAttribute('id') === this.parent.getID() + '_toolbar_CreateTable') {
+            (e.target as HTMLElement).setAttribute('tabindex', '0');
+        }
+    }
+
     private toolbarMouseDownHandler(e: Event): void {
         let trg: Element = closest(e.target as Element, '.e-hor-nav');
         if (trg && this.parent.toolbarSettings.type === ToolbarType.Expand && !isNOU(trg)) {
@@ -523,10 +545,14 @@ export class Toolbar {
     protected wireEvents(): void {
         if (this.parent.inlineMode.enable && isIDevice()) { return; }
         EventHandler.add(this.tbElement, 'click mousedown', this.toolbarMouseDownHandler, this);
+        EventHandler.add(this.tbElement, 'focusin', this.tbFocusHandler, this);
+        EventHandler.add(this.tbElement, 'keydown', this.tbKeydownHandler, this);
     }
 
     protected unWireEvents(): void {
         EventHandler.remove(this.tbElement, 'click mousedown', this.toolbarMouseDownHandler);
+        EventHandler.remove(this.tbElement, 'focusin', this.tbFocusHandler);
+        EventHandler.remove(this.tbElement, 'keydown', this.tbKeydownHandler);
     }
 
     protected addEventListener(): void {

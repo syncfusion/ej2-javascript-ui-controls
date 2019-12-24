@@ -3763,23 +3763,45 @@ var Sortable = /** @__PURE__ @class */ (function (_super) {
         _this.onDragStop = function (e) {
             var dropInst = _this.getSortableInstance(_this.curTarget);
             var prevIdx;
+            var curIdx;
+            var handled;
+            prevIdx = _this.getIndex(_this.target);
             if (_this.isPlaceHolderPresent(dropInst)) {
-                prevIdx = _this.getIndex(_this.target);
-                _this.updateItemClass(dropInst);
-                dropInst.element.insertBefore(_this.target, dropInst.placeHolderElement);
-                var curIdx = _this.getIndex(_this.target, dropInst);
-                prevIdx = _this === dropInst && (prevIdx - curIdx) > 1 ? prevIdx - 1 : prevIdx;
-                _this.trigger('drop', { event: e.event, element: dropInst.element, previousIndex: prevIdx, currentIndex: curIdx,
-                    target: e.target, helper: e.helper, droppedElement: _this.target, scopeName: _this.scope });
-                remove(dropInst.placeHolderElement);
+                var curIdx_1 = _this.getIndex(dropInst.placeHolderElement, dropInst);
+                var args = { previousIndex: prevIdx, currentIndex: curIdx_1, target: e.target, droppedElement: _this.target,
+                    helper: e.helper, cancel: false, handled: false };
+                _this.trigger('beforeDrop', args, function (observedArgs) {
+                    if (!observedArgs.cancel) {
+                        handled = observedArgs.handled;
+                        _this.updateItemClass(dropInst);
+                        if (observedArgs.handled) {
+                            var ele = _this.target.cloneNode(true);
+                            _this.target.classList.remove('e-grabbed');
+                            _this.target = ele;
+                        }
+                        dropInst.element.insertBefore(_this.target, dropInst.placeHolderElement);
+                        var curIdx_2 = _this.getIndex(_this.target, dropInst);
+                        prevIdx = _this === dropInst && (prevIdx - curIdx_2) > 1 ? prevIdx - 1 : prevIdx;
+                        _this.trigger('drop', { event: e.event, element: dropInst.element, previousIndex: prevIdx, currentIndex: curIdx_2,
+                            target: e.target, helper: e.helper, droppedElement: _this.target, scopeName: _this.scope, handled: handled });
+                    }
+                    remove(dropInst.placeHolderElement);
+                });
             }
             dropInst = _this.getSortableInstance(e.target);
+            curIdx = dropInst.element.childElementCount;
+            prevIdx = _this.getIndex(_this.target);
             if (dropInst.element === e.target) {
-                prevIdx = _this.getIndex(_this.target);
-                _this.updateItemClass(dropInst);
-                dropInst.element.appendChild(_this.target);
-                _this.trigger('drop', { event: e.event, element: dropInst.element, previousIndex: prevIdx, currentIndex: 0,
-                    target: e.target, helper: e.helper, droppedElement: _this.target, scopeName: _this.scope });
+                var beforeDropArgs = { previousIndex: prevIdx, currentIndex: curIdx, target: e.target,
+                    droppedElement: _this.target, helper: e.helper, cancel: false };
+                _this.trigger('beforeDrop', beforeDropArgs, function (observedArgs) {
+                    if (!observedArgs.cancel) {
+                        _this.updateItemClass(dropInst);
+                        dropInst.element.appendChild(_this.target);
+                        _this.trigger('drop', { event: e.event, element: dropInst.element, previousIndex: prevIdx, currentIndex: curIdx,
+                            target: e.target, helper: e.helper, droppedElement: _this.target, scopeName: _this.scope });
+                    }
+                });
             }
             _this.target.classList.remove('e-grabbed');
             _this.target = null;
@@ -3956,6 +3978,9 @@ var Sortable = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Event()
     ], Sortable.prototype, "dragStart", void 0);
+    __decorate$1([
+        Event()
+    ], Sortable.prototype, "beforeDrop", void 0);
     __decorate$1([
         Event()
     ], Sortable.prototype, "drop", void 0);

@@ -11,7 +11,7 @@ import { PageSettingsModel, AggregateRowModel } from '../models/models';
 import { RowDropSettingsModel, GroupSettingsModel, GridModel, EditSettingsModel } from './grid-model';
 import { Cell } from '../models/cell';
 import { Row } from '../models/row';
-import { GridLine, Action, CellType, SortDirection, PrintMode, ToolbarItems, CommandButtonType, ContextMenuItem } from './enum';
+import { GridLine, Action, CellType, SortDirection, PrintMode, ToolbarItems, CommandButtonType, ContextMenuItem, ClipMode } from './enum';
 import { MultipleExportType, ExportType, ExcelHAlign, ExcelVAlign, BorderLineStyle, ToolbarItem } from './enum';
 import { PredicateModel } from './grid-model';
 import { SentinelType, Offsets } from './type';
@@ -40,6 +40,7 @@ import { PdfPaddings } from '@syncfusion/ej2-pdf-export';
 import { AutoCompleteModel } from '@syncfusion/ej2-dropdowns';
 import { Page } from '../actions/page';
 import { Scroll } from '../actions/scroll';
+import { Aggregate } from '../actions/aggregate';
 
 /**
  * Specifies grid interfaces.
@@ -113,6 +114,16 @@ export interface IGrid extends Component<HTMLElement> {
      * @default null
      */
     allowSorting?: boolean;
+
+    /**
+     *  Defines the mode of clip. The available modes are, 
+     * `Clip`: Truncates the cell content when it overflows its area. 
+     * `Ellipsis`: Displays ellipsis when the cell content overflows its area.
+     * `EllipsisWithTooltip`:  Displays ellipsis when the cell content overflows its area,
+     *  also it will display the tooltip while hover on ellipsis is applied.
+     * @default Ellipsis
+     */
+    clipMode?: ClipMode;
 
     /**
      * Specifies whether the multi-sorting is enable or not.
@@ -404,6 +415,8 @@ export interface IGrid extends Component<HTMLElement> {
     editModule?: Edit;
 
     selectionModule?: Selection;
+
+    aggregateModule?: Aggregate;
 
     scrollModule?: Scroll;
 

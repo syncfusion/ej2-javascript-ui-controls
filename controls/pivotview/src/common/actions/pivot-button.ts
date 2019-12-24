@@ -15,6 +15,7 @@ import { AggregateMenu } from '../popups/aggregate-menu';
 import { AxisFieldRenderer } from '../../pivotfieldlist/renderer/axis-field-renderer';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { OlapEngine, IOlapFieldListOptions, IOlapField } from '../../base/olap/engine';
+import { PivotUtil } from '../../base/util';
 /**
  * Module to render Pivot button
  */
@@ -784,7 +785,7 @@ export class PivotButton implements IAction {
                 }
             }
         } else {
-            filterObject = this.parent.pivotCommon.eventBase.getFilterItemByName(fieldName);
+            filterObject = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
         }
         if ((isNOU(operand1) || operand1 === '') ||
             (['Between', 'NotBetween'].indexOf(operator) > -1 && (isNOU(operand2) || operand2 === ''))) {
@@ -821,7 +822,7 @@ export class PivotButton implements IAction {
             }
         }
         if (type !== 'Value') {
-            this.parent.lastFilterInfo = this.parent.pivotCommon.eventBase.getFilterItemByName(fieldName);
+            this.parent.lastFilterInfo = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
         }
         this.dialogPopUp.close();
         if (!filter.cancel) {
@@ -840,7 +841,7 @@ export class PivotButton implements IAction {
         } else {
             this.removeDataSourceSettings(fieldName);
         }
-        let filterObject: IFilter = this.parent.pivotCommon.eventBase.getFilterItemByName(fieldName);
+        let filterObject: IFilter = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
         this.refreshPivotButtonState(fieldName, filterObject ? true : false);
         this.updateDataSource(true);
     }
@@ -1013,7 +1014,7 @@ export class PivotButton implements IAction {
             (this.parent as PivotFieldList).pivotGridModule.trigger(events.memberFiltering, filter) :
             this.parent.trigger(events.memberFiltering, filter);
         if (!filter.cancel) {
-            let filterObject: IFilter = this.parent.pivotCommon.eventBase.getFilterItemByName(fieldName);
+            let filterObject: IFilter = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
             if (filterObject) {
                 for (let i: number = 0; i < this.parent.dataSourceSettings.filterSettings.length; i++) {
                     if (this.parent.dataSourceSettings.filterSettings[i].name === fieldName) {

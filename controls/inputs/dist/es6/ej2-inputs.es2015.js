@@ -1762,23 +1762,25 @@ let NumericTextBox = class NumericTextBox extends Component {
      */
     destroy() {
         this.unwireEvents();
-        detach(this.hiddenInput);
-        if (this.showSpinButton) {
-            this.unwireSpinBtnEvents();
-            detach(this.spinUp);
-            detach(this.spinDown);
+        if (!(isBlazor() && this.isServerRendered)) {
+            detach(this.hiddenInput);
+            if (this.showSpinButton) {
+                this.unwireSpinBtnEvents();
+                detach(this.spinUp);
+                detach(this.spinDown);
+            }
+            let attrArray = ['aria-labelledby', 'role', 'autocomplete', 'aria-readonly',
+                'autocorrect', 'aria-disabled', 'aria-placeholder', 'autocapitalize',
+                'spellcheck', 'aria-autocomplete', 'tabindex', 'aria-valuemin',
+                'aria-valuemax', 'aria-live', 'aria-valuenow', 'aria-invalid'];
+            attrArray.forEach((value) => {
+                this.element.removeAttribute(value);
+            });
+            this.element.classList.remove('e-input');
+            this.container.insertAdjacentElement('afterend', this.element);
+            detach(this.container);
+            super.destroy();
         }
-        let attrArray = ['aria-labelledby', 'role', 'autocomplete', 'aria-readonly',
-            'autocorrect', 'aria-disabled', 'aria-placeholder', 'autocapitalize',
-            'spellcheck', 'aria-autocomplete', 'tabindex', 'aria-valuemin',
-            'aria-valuemax', 'aria-live', 'aria-valuenow', 'aria-invalid'];
-        attrArray.forEach((value) => {
-            this.element.removeAttribute(value);
-        });
-        this.element.classList.remove('e-input');
-        this.container.insertAdjacentElement('afterend', this.element);
-        detach(this.container);
-        super.destroy();
     }
     /**
      * Returns the value of NumericTextBox with the format applied to the NumericTextBox.
@@ -12459,17 +12461,22 @@ let TextBox = class TextBox extends Component {
      */
     destroy() {
         this.unWireEvents();
-        if (this.element.tagName === 'INPUT' && this.multiline) {
-            detach(this.textboxWrapper.container.getElementsByTagName('textarea')[0]);
-            this.respectiveElement = this.element;
-            this.element.removeAttribute('type');
+        if (!(isBlazor() && this.isServerRendered)) {
+            if (this.element.tagName === 'INPUT' && this.multiline) {
+                detach(this.textboxWrapper.container.getElementsByTagName('textarea')[0]);
+                this.respectiveElement = this.element;
+                this.element.removeAttribute('type');
+            }
+            this.respectiveElement.classList.remove('e-input');
+            this.removeAttributes(['aria-placeholder', 'aria-disabled', 'aria-readonly', 'aria-labelledby']);
+            this.textboxWrapper.container.insertAdjacentElement('afterend', this.respectiveElement);
+            detach(this.textboxWrapper.container);
+            this.textboxWrapper = null;
+            super.destroy();
         }
-        this.respectiveElement.classList.remove('e-input');
-        this.removeAttributes(['aria-placeholder', 'aria-disabled', 'aria-readonly', 'aria-labelledby']);
-        this.textboxWrapper.container.insertAdjacentElement('afterend', this.respectiveElement);
-        detach(this.textboxWrapper.container);
-        this.textboxWrapper = null;
-        super.destroy();
+        else {
+            this.textboxWrapper = null;
+        }
     }
     /**
      * Adding the icons to the TextBox component.

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.40 (2019-12-24)
+
+### In-place Editor
+
+#### Bug Fixes
+
+- `#254606` - Web accessibility related issues have been resolved.
+
 ## 17.3.29 (2019-11-26)
 
 ### In-place Editor

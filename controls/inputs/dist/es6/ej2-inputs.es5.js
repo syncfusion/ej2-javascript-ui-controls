@@ -1794,23 +1794,25 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
     NumericTextBox.prototype.destroy = function () {
         var _this = this;
         this.unwireEvents();
-        detach(this.hiddenInput);
-        if (this.showSpinButton) {
-            this.unwireSpinBtnEvents();
-            detach(this.spinUp);
-            detach(this.spinDown);
+        if (!(isBlazor() && this.isServerRendered)) {
+            detach(this.hiddenInput);
+            if (this.showSpinButton) {
+                this.unwireSpinBtnEvents();
+                detach(this.spinUp);
+                detach(this.spinDown);
+            }
+            var attrArray = ['aria-labelledby', 'role', 'autocomplete', 'aria-readonly',
+                'autocorrect', 'aria-disabled', 'aria-placeholder', 'autocapitalize',
+                'spellcheck', 'aria-autocomplete', 'tabindex', 'aria-valuemin',
+                'aria-valuemax', 'aria-live', 'aria-valuenow', 'aria-invalid'];
+            attrArray.forEach(function (value) {
+                _this.element.removeAttribute(value);
+            });
+            this.element.classList.remove('e-input');
+            this.container.insertAdjacentElement('afterend', this.element);
+            detach(this.container);
+            _super.prototype.destroy.call(this);
         }
-        var attrArray = ['aria-labelledby', 'role', 'autocomplete', 'aria-readonly',
-            'autocorrect', 'aria-disabled', 'aria-placeholder', 'autocapitalize',
-            'spellcheck', 'aria-autocomplete', 'tabindex', 'aria-valuemin',
-            'aria-valuemax', 'aria-live', 'aria-valuenow', 'aria-invalid'];
-        attrArray.forEach(function (value) {
-            _this.element.removeAttribute(value);
-        });
-        this.element.classList.remove('e-input');
-        this.container.insertAdjacentElement('afterend', this.element);
-        detach(this.container);
-        _super.prototype.destroy.call(this);
     };
     /**
      * Returns the value of NumericTextBox with the format applied to the NumericTextBox.
@@ -12740,17 +12742,22 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
      */
     TextBox.prototype.destroy = function () {
         this.unWireEvents();
-        if (this.element.tagName === 'INPUT' && this.multiline) {
-            detach(this.textboxWrapper.container.getElementsByTagName('textarea')[0]);
-            this.respectiveElement = this.element;
-            this.element.removeAttribute('type');
+        if (!(isBlazor() && this.isServerRendered)) {
+            if (this.element.tagName === 'INPUT' && this.multiline) {
+                detach(this.textboxWrapper.container.getElementsByTagName('textarea')[0]);
+                this.respectiveElement = this.element;
+                this.element.removeAttribute('type');
+            }
+            this.respectiveElement.classList.remove('e-input');
+            this.removeAttributes(['aria-placeholder', 'aria-disabled', 'aria-readonly', 'aria-labelledby']);
+            this.textboxWrapper.container.insertAdjacentElement('afterend', this.respectiveElement);
+            detach(this.textboxWrapper.container);
+            this.textboxWrapper = null;
+            _super.prototype.destroy.call(this);
         }
-        this.respectiveElement.classList.remove('e-input');
-        this.removeAttributes(['aria-placeholder', 'aria-disabled', 'aria-readonly', 'aria-labelledby']);
-        this.textboxWrapper.container.insertAdjacentElement('afterend', this.respectiveElement);
-        detach(this.textboxWrapper.container);
-        this.textboxWrapper = null;
-        _super.prototype.destroy.call(this);
+        else {
+            this.textboxWrapper = null;
+        }
     };
     /**
      * Adding the icons to the TextBox component.

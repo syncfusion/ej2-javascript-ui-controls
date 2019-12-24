@@ -1,7 +1,7 @@
 import { Browser } from "@syncfusion/ej2-base";
 import { Toolbar } from '../../../src/rich-text-editor/index';
 import { RichTextEditor } from '../../../src/rich-text-editor/base/rich-text-editor';
-import { renderRTE, destroy } from './../render.spec';
+import { renderRTE, destroy, dispatchKeyEvent } from './../render.spec';
 import { QuickToolbar, MarkdownEditor, HtmlEditor } from "../../../src/rich-text-editor/index";
 
 RichTextEditor.Inject(MarkdownEditor);
@@ -73,6 +73,45 @@ describe('Toolbar - view html', () => {
             Browser.userAgent = defaultUA;
         });
 
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    describe('Toolbar focus testing', () => {
+        let rteObj: any;
+        let rteEle: HTMLElement;
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+            char: '',
+            key: '',
+            charCode: 22,
+            keyCode: 22,
+            which: 22,
+            code: 22,
+            action: '',
+            type: 'keydown'
+        };
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['SourceCode', 'Bold']
+                }
+            });
+            rteEle = rteObj.element;
+        });
+        it('open source code and toolbar focus using keyboard event', () => {
+            expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Code View");
+            rteObj.contentModule.getEditPanel().innerHTML = '<p>data</p>';
+            let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+            trgEle.click();
+            keyboardEventArgs.action = 'toolbar-focus';
+            (<any>rteObj).sourceCodeModule.previewKeyDown(keyboardEventArgs);
+            let focusEle: HTMLElement = rteObj.toolbarModule.baseToolbar.toolbarObj.element.querySelector('button');
+            expect(document.activeElement === focusEle).toBe(true);
+        });
         afterAll(() => {
             destroy(rteObj);
         });

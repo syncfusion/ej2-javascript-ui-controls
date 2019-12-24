@@ -1,5 +1,5 @@
 import { PivotView } from '../../pivotview/base/pivotview';
-import { Dialog, hideSpinner } from '@syncfusion/ej2-popups';
+import { Dialog } from '@syncfusion/ej2-popups';
 import { createElement, remove, extend } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
 import { IAction } from '../base/interface';
@@ -321,7 +321,7 @@ export class NumberFormatting implements IAction {
             this.parent.setProperties({ dataSourceSettings: { formatSettings: format } }, true);
             this.parent.pivotCommon.errorDialog.createErrorDialog(
                 this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('invalidFormat'), this.dialog.element);
-            hideSpinner(this.parent.element);
+            this.parent.hideWaitingPopup();
         }
     }
 

@@ -28,7 +28,7 @@ import { SearchEventArgs, SortEventArgs, ISelectedCell, EJ2Intance, BeforeCopyEv
 import {BeforePasteEventArgs, CheckBoxChangeEventArgs, CommandClickEventArgs, BeforeAutoFillEventArgs } from './interface';
 import { Render } from '../renderer/render';
 import { Column, ColumnModel, ActionEventArgs } from '../models/column';
-import { SelectionType, GridLine, RenderType, SortDirection, SelectionMode, PrintMode, FilterType, FilterBarMode } from './enum';
+import { SelectionType, GridLine, RenderType, SortDirection, SelectionMode, PrintMode, FilterType, FilterBarMode, ClipMode } from './enum';
 import { CheckboxSelectionType, HierarchyGridPrintMode, NewRowPosition } from './enum';
 import { WrapMode, ToolbarItems, ContextMenuItem, ColumnMenuItem, ToolbarItem, CellSelectionMode, EditMode } from './enum';
 import { ColumnQueryModeType } from './enum';
@@ -1025,6 +1025,17 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     @Property(false)
     public allowSorting: boolean;
+
+    /**
+     *  Defines the mode of clip. The available modes are, 
+     * `Clip`: Truncates the cell content when it overflows its area. 
+     * `Ellipsis`: Displays ellipsis when the cell content overflows its area.
+     * `EllipsisWithTooltip`:  Displays ellipsis when the cell content overflows its area,
+     *  also it will display the tooltip while hover on ellipsis is applied.. 
+     * @default Ellipsis
+     */
+    @Property('Ellipsis')
+    public clipMode: ClipMode;
 
     /**
      * If `allowMultiSorting` set to true, then it will allow the user to sort multiple column in the grid.
@@ -4415,15 +4426,31 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 }
             }
         }
+        this.hoverFrozenRows(e);
     }
 
+    private hoverFrozenRows(e: MouseEvent): void {
+        if (this.getFrozenColumns()) {
+            let row: Element = (parentsUntil(e.target as Element, 'e-row'));
+            if (this.element.querySelectorAll('.e-frozenhover').length && e.type === 'mouseout') {
+                this.element.querySelectorAll('.e-frozenhover').forEach((row: Element) => row.classList.remove('e-frozenhover'));
+            } else if (row) {
+                this.element.querySelectorAll('tr[aria-rowindex="' +
+                    row.getAttribute('aria-rowindex') + '"]').forEach((row: Element) => row.classList.add('e-frozenhover'));
+            }
+        }
+    }
+    
     private isEllipsisTooltip(): boolean {
         let cols: Column[] = this.getColumns();
+        if(this.clipMode === 'EllipsisWithTooltip') {
+            return true;
+        }
         for (let i: number = 0; i < cols.length; i++) {
             if (cols[i].clipMode === 'EllipsisWithTooltip') {
                 return true;
-            }
-        }
+            }           
+        }        
         return false;
     }
 
@@ -4830,6 +4857,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     .querySelector('.e-movableheader').querySelector('colgroup')).cloneNode(true)) as Element;
                 mTbl.insertBefore(colGroup, mTbl.querySelector('tbody'));
             }
+        }
+        if (this.getFrozenColumns()) {
+            this.headerModule.getMovableHeader().scrollLeft = this.contentModule.getMovableContent().scrollLeft;
         }
     }
     /**

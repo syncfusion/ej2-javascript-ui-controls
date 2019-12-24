@@ -77,7 +77,7 @@ export class DataLabel {
         shape = shapes['property'];
         let properties: string[] = (Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]' ?
             layer.shapePropertyPath : [layer.shapePropertyPath]) as string[];
-        let propertyPath: string;
+        let propertyPath: string; let isPoint : boolean = false;
         let animate: boolean = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
         let translate: Object = (this.maps.isTileMap) ? new Object() : getTranslate(this.maps, layer, animate);
         let scale: number = (this.maps.isTileMap) ? this.maps.scale : translate['scale'];
@@ -100,7 +100,7 @@ export class DataLabel {
             layer.dataSource as object[], labelpath, shapeData['properties'][propertyPath], layer.shapeDataPath);
         if (!isNullOrUndefined(shapes['property']) && ((shapeProperties[labelpath]) || datasrcObj)) {
             shapePoint = [[]];
-            if (!layerData[index]['_isMultiPolygon']) {
+            if (!layerData[index]['_isMultiPolygon'] && layerData[index]['type'] !== 'Point') {
                 shapePoint.push(this.getPoint(layerData[index] as object[], []));
                 currentLength = shapePoint[shapePoint.length - 1].length;
                 if (pointsLength < currentLength) {
@@ -109,6 +109,17 @@ export class DataLabel {
                 }
             } else {
                 let layer: Object[] = <Object[]>layerData[index];
+                if (layer['type'] === 'Point') {
+                    isPoint = true;
+                    let layerPoints: Object[] = [];
+                    layerPoints.push(this.getPoint(layerData, []));
+                    shapePoint = <[MapLocation[]]>layerPoints;
+                    currentLength = shapePoint[shapePoint.length - 1].length;
+                    if (pointsLength < currentLength) {
+                        pointsLength = currentLength;
+                        midIndex = shapePoint.length - 1;
+                    }
+                }
                 for (let j: number = 0; j < layer.length; j++) {
                     shapePoint.push(this.getPoint(layer[j] as Object[], []));
                     currentLength = shapePoint[shapePoint.length - 1].length;
@@ -122,7 +133,16 @@ export class DataLabel {
         text = (!isNullOrUndefined(datasrcObj)) ? datasrcObj[labelpath].toString() : shapeData['properties'][labelpath]
         let dataLabelText : string = text;
         let projectionType : string = this.maps.projectionType;
-        location = findMidPointOfPolygon(shapePoint[midIndex], projectionType);
+        if (isPoint) {
+            location = {
+                x: shapePoint[midIndex][index]['x'], y: shapePoint[midIndex][index]['y'],
+                rightMin: 0, rightMax: 0, leftMin: 0, leftMax: 0,
+                points: shapePoint[midIndex][index], topMax: 0, topMin: 0,
+                bottomMax: 0, bottomMin: 0, height: 0
+            };
+        } else {
+            location = findMidPointOfPolygon(shapePoint[midIndex], projectionType);
+        }   
         let firstLevelMapLocation : object = location;
         if (!isNullOrUndefined(text) && !isNullOrUndefined(location)) {
             if(zoomLabelsPosition && scaleZoomValue > 1) {

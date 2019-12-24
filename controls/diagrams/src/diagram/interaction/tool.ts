@@ -30,7 +30,7 @@ import { contains, Actions } from './actions';
 import { ShapeAnnotation, PathAnnotation } from '../objects/annotation';
 import { Selector } from '../objects/node';
 import { DiagramElement } from '../core/elements/diagram-element';
-import { getInOutConnectPorts, cloneBlazorObject, getDropEventArguements, getObjectType } from '../utility/diagram-util';
+import { getInOutConnectPorts, cloneBlazorObject, getDropEventArguements, getObjectType, checkPort } from '../utility/diagram-util';
 import { isBlazor } from '@syncfusion/ej2-base';
 /**
  * Defines the interactive tools
@@ -1277,7 +1277,8 @@ export class ConnectorDrawingTool extends ConnectTool {
                 this.drawingObject = this.commandHandler.drawObject(connector as Connector);
             }
             args.source = this.drawingObject;
-            if (args.target && (this.endPoint !== 'ConnectorTargetEnd' || (canInConnect(args.target as NodeModel)))) {
+            if ((args.target || (args.actualObject && checkPort(args.actualObject, args.sourceWrapper)))
+                && (this.endPoint !== 'ConnectorTargetEnd' || (canInConnect(args.target as NodeModel)))) {
                 this.commandHandler.connect(this.endPoint, args);
             }
             this.endPoint = 'ConnectorTargetEnd';

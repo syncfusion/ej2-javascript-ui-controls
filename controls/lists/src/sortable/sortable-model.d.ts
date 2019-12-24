@@ -46,6 +46,12 @@ export interface SortableModel {
     dragStart?: Function;
 
     /**
+     * Specifies the callback function for beforeDrop event.
+     * @event
+     */
+    beforeDrop?: Function;
+
+    /**
      * Specifies the callback function for drop event.
      * @event
      */

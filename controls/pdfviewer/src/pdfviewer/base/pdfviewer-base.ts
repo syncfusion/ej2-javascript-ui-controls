@@ -2972,6 +2972,9 @@ export class PdfViewerBase {
                                 (pagecanvas as HTMLCanvasElement).width = pageWidth;
                             }
                             let zoomFactor: number = this.retrieveCurrentZoomFactor();
+                            if (data.zoomFactor) {
+                                zoomFactor = data.zoomFactor;
+                            }
                             let matrix0: number = (matrix.Elements[0] * this.getZoomFactor()) / zoomFactor;
                             let matrix1: number = (matrix.Elements[1] * this.getZoomFactor()) / zoomFactor;
                             let matrix2: number = (matrix.Elements[2] * this.getZoomFactor()) / zoomFactor;
@@ -3039,7 +3042,11 @@ export class PdfViewerBase {
                         let imageWidth: number = image.width;
                         let scaleFactor: number = (!isNullOrUndefined(data.scaleFactor)) ? data.scaleFactor : 1.5;
                         let zoomFactor: number = this.retrieveCurrentZoomFactor();
-                        imageWidth = ((imageWidth * this.getZoomFactor()) / zoomFactor);
+                        if (data.zoomFactor) {
+                            imageWidth = ((imageWidth * this.getZoomFactor()) / data.zoomFactor);
+                        } else {
+                            imageWidth = ((imageWidth * this.getZoomFactor()) / zoomFactor);
+                        }
                         // tslint:disable-next-line
                         if (parseInt((pageWidth * scaleFactor).toString()) === parseInt(imageWidth.toString())) {
                             if (!isNaN(parseFloat(canvas.style.width))) {
@@ -3167,9 +3174,11 @@ export class PdfViewerBase {
         if (this.isShapeBasedAnnotationsEnabled()) {
             let canvas1: HTMLElement = this.getElement('_annotationCanvas_' + pageIndex);
             let commonStyle: string = 'position:absolute;top:0px;left:0px;overflow:hidden;pointer-events:none;';
-            let bounds: ClientRect = canvas1.getBoundingClientRect();
-            renderAdornerLayer(bounds, commonStyle, canvas1, pageIndex, this.pdfViewer);
-            this.pdfViewer.renderSelector(pageIndex);
+            if (canvas1) {
+                let bounds: ClientRect = canvas1.getBoundingClientRect();
+                renderAdornerLayer(bounds, commonStyle, canvas1, pageIndex, this.pdfViewer);
+                this.pdfViewer.renderSelector(pageIndex);
+            }
         }
         if (this.pdfViewer.annotationModule) {
             this.pdfViewer.annotationModule.stickyNotesAnnotationModule.selectCommentsAnnotation(pageIndex);
@@ -3254,9 +3263,11 @@ export class PdfViewerBase {
         if (this.isShapeBasedAnnotationsEnabled()) {
             let canvas1: HTMLElement = this.getElement('_annotationCanvas_' + pageIndex);
             let commonStyle: string = 'position:absolute;top:0px;left:0px;overflow:hidden;pointer-events:none;';
-            let bounds: ClientRect = canvas1.getBoundingClientRect();
-            renderAdornerLayer(bounds, commonStyle, canvas1, pageIndex, this.pdfViewer);
-            this.pdfViewer.renderSelector(pageIndex);
+            if (canvas1) {
+                let bounds: ClientRect = canvas1.getBoundingClientRect();
+                renderAdornerLayer(bounds, commonStyle, canvas1, pageIndex, this.pdfViewer);
+                this.pdfViewer.renderSelector(pageIndex);
+            }
         }
         if (this.pdfViewer.annotationModule) {
             this.pdfViewer.annotationModule.stickyNotesAnnotationModule.selectCommentsAnnotation(pageIndex);
@@ -3888,7 +3899,12 @@ export class PdfViewerBase {
     public getTileCount(pageWidth: any): number {
         if (pageWidth && typeof pageWidth === 'number') {
             let defaultWidth: number = 816;
-            let tileCount: number = pageWidth / defaultWidth;
+            let tileCount: number = 1;
+            if (this.getZoomFactor() > 2 && pageWidth <= 1632) {
+                tileCount = 2;
+            } else {
+                tileCount = pageWidth / defaultWidth;
+            }
             // tslint:disable-next-line:radix
             return parseInt(tileCount.toFixed());
         } else {
@@ -3904,7 +3920,7 @@ export class PdfViewerBase {
         let pageHeight: number = this.pageSize[pageIndex].height;
         let tilecanvas: HTMLCanvasElement = this.getElement('_pageCanvas_' + pageIndex) as HTMLCanvasElement;
         // tslint:disable-next-line
-        let viewportWidth: any = 816;
+        let viewportWidth: any = 1630; // On diving the value greater than 1630 we will get the tile count as 2.
         // tslint:disable-next-line
         let viewportHeight: any = proxy.pdfViewer.element.clientHeight > 0 ? proxy.pdfViewer.element.clientHeight : proxy.pdfViewer.element.style.height;
         // tslint:disable-next-line:radix
@@ -3922,7 +3938,7 @@ export class PdfViewerBase {
             }
             // tslint:disable-next-line
             let data: any = proxy.getStoredData(pageIndex);
-            if (data && viewportWidth < pageWidth) {
+            if (data && (viewportWidth < pageWidth || this.getZoomFactor() > 2)) {
                 for (let k: number = 0; k < tileCount; k++) {
                     for (let l: number = 0; l < tileCount; l++) {
                         if (k === 0 && l === 0) {
@@ -3941,6 +3957,12 @@ export class PdfViewerBase {
                 canvas.style.backgroundColor = '#fff';
                 if (proxy.pdfViewer.magnification && proxy.pdfViewer.magnification.isPinchZoomed) {
                     return;
+                }
+                let zoomFactor: number = this.retrieveCurrentZoomFactor();
+                if (zoomFactor > 2 && pageWidth <= 1632) {
+                    viewportWidth = 700;
+                } else {
+                    viewportWidth = 1630;
                 }
                 if (viewportWidth >= pageWidth) {
                     proxy.renderPage(data, pageIndex);
@@ -3974,12 +3996,17 @@ export class PdfViewerBase {
                 if (proxy.pdfViewer.magnification && proxy.pdfViewer.magnification.isPinchZoomed) {
                     return;
                 }
-                noTileX = viewportWidth >= pageWidth ? 1 : this.getTileCount(pageWidth);
-                noTileY = viewportWidth >= pageWidth ? 1 : this.getTileCount(pageWidth);
+                noTileX = this.getTileCount(pageWidth);
+                noTileY = this.getTileCount(pageWidth);
                 for (let x: number = 0; x < noTileX; x++) {
                     for (let y: number = 0; y < noTileY; y++) {
                         let jsonObject: object;
                         let zoomFactor: number = this.retrieveCurrentZoomFactor();
+                        if (zoomFactor > 2 && pageWidth <= 1632) {
+                            viewportWidth = 700;
+                        } else {
+                            viewportWidth = 1630;
+                        }
                         // tslint:disable-next-line:max-line-length
                         jsonObject = {
                             xCoordinate: x, yCoordinate: y, viwePortWidth: viewportWidth, viewportHeight: viewportHeight,
@@ -4090,7 +4117,7 @@ export class PdfViewerBase {
                 // tslint:disable-next-line
                 image: blobUrl, transformationMatrix: data['transformationMatrix'], hyperlinks: data['hyperlinks'], hyperlinkBounds: data['hyperlinkBounds'], linkAnnotation: data['linkAnnotation'], linkPage: data['linkPage'], annotationLocation: data['annotationLocation'],
                 // tslint:disable-next-line
-                textContent: data['textContent'], textBounds: data['textBounds'], pageText: data['pageText'], rotation: data['rotation'], scaleFactor: data['scaleFactor'], uniqueId: data['uniqueId'],
+                textContent: data['textContent'], textBounds: data['textBounds'], pageText: data['pageText'], rotation: data['rotation'], scaleFactor: data['scaleFactor'], uniqueId: data['uniqueId'], zoomFactor : data['zoomFactor']
             };
             if (this.pageSize[pageIndex]) {
                 // tslint:disable-next-line
@@ -4101,7 +4128,7 @@ export class PdfViewerBase {
         } else {
             storeObject = {
                 // tslint:disable-next-line
-                image: blobUrl, transformationMatrix: data['transformationMatrix'], tileX: tileX, tileY: tileY
+                image: blobUrl, transformationMatrix: data['transformationMatrix'], tileX: tileX, tileY: tileY, zoomFactor : data['zoomFactor']
             };
         }
         // tslint:disable-next-line
@@ -5192,7 +5219,7 @@ export class PdfViewerBase {
                                     proxy.pdfViewer.fireExportSuccess(exportObject, proxy.pdfViewer.fileName);
                                 }
                                 proxy.updateDocumentAnnotationCollections();
-                                resolve(exportObject);
+                                resolve(annotationJson);
                             } else {
                                 // tslint:disable-next-line:max-line-length
                                 proxy.pdfViewer.fireExportFailed(jsonObject.pdfAnnotation, proxy.pdfViewer.localeObj.getConstant('Export Failed'));
@@ -5478,6 +5505,15 @@ export class PdfViewerBase {
                     this.updateImportedAnnotationsInDocumentCollections(importPageCollections, i);
                 }
             }
+            // tslint:disable-next-line:max-line-length
+            if (this.pdfViewer.annotationModule.stickyNotesAnnotationModule && !this.pdfViewer.annotationModule.stickyNotesAnnotationModule.isAnnotationRendered) {
+                // tslint:disable-next-line
+                let annotationCollection: any = this.createAnnotationsCollection();
+                if (annotationCollection) {
+                    // tslint:disable-next-line:max-line-length
+                    this.documentAnnotationCollections = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateAnnotationsInDocumentCollections(this.importedAnnotation, annotationCollection);
+                }
+            }
         }
     }
 
@@ -5635,7 +5671,8 @@ export class PdfViewerBase {
             for (let i: number = 0; i < pageCollections.length; i++) {
                 for (let j: number = 0; j < importAnnotations.length; j++) {
                     if (pageCollections[i].annotName === importAnnotations[j].AnnotName) {
-                        importAnnotations.splice(j);
+                        importAnnotations.splice(j, 1);
+                        j = j - 1;
                     }
                 }
             }
@@ -5767,7 +5804,8 @@ export class PdfViewerBase {
             for (let i: number = 0; i < pageCollections.length; i++) {
                 for (let j: number = 0; j < annotation.length; j++) {
                     if (pageCollections[i].annotName === annotation[j].AnnotName) {
-                        annotation.splice(j);
+                        annotation.splice(j, 1);
+                        j = j - 1;
                     }
                 }
             }
@@ -5786,7 +5824,8 @@ export class PdfViewerBase {
                 for (let i: number = 0; i < annotationCollections.length; i++) {
                     for (let j: number = 0; j < annotation.length; j++) {
                         if (annotationCollections[i].AnnotName === annotation[j].AnnotName) {
-                            annotation.splice(j);
+                            annotation.splice(j, 1);
+                            j = j - 1;
                         }
                     }
                 }
@@ -6100,7 +6139,8 @@ export class PdfViewerBase {
         for (let i: number = 0; i < existingCollection.length; i++) {
             for (let j: number = 0; j < newCollection.length; j++) {
                 if (existingCollection[i].AnnotName === newCollection[j].AnnotName) {
-                    newCollection.splice(j);
+                    newCollection.splice(j, 1);
+                    j = j - 1;
                 }
             }
         }
@@ -6112,7 +6152,8 @@ export class PdfViewerBase {
                 for (let i: number = 0; i < annotationCollections.length; i++) {
                     for (let j: number = 0; j < newCollection.length; j++) {
                         if (annotationCollections[i].AnnotName === newCollection[j].AnnotName) {
-                            newCollection.splice(j);
+                            newCollection.splice(j, 1);
+                            j = j - 1;
                         }
                     }
                 }
@@ -6164,8 +6205,10 @@ export class PdfViewerBase {
             this.pdfViewer.annotations = [];
             this.pdfViewer.zIndexTable = [];
             this.pdfViewer.annotationCollection = [];
-            this.annotationComments = null;
-            this.documentAnnotationCollections = null;
+            // tslint:disable-next-line
+            let annotationCollection: any = this.createAnnotationsCollection();
+            this.annotationComments = annotationCollection;
+            this.documentAnnotationCollections = annotationCollection;
             this.annotationRenderredList = [];
             window.sessionStorage.removeItem(this.documentId + '_annotations_shape');
             window.sessionStorage.removeItem(this.documentId + '_annotations_shape_measure');
@@ -6203,4 +6246,21 @@ export class PdfViewerBase {
             this.isAnnotationCollectionRemoved = true;
         }
     }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public createAnnotationsCollection(): any {
+        let annotationCollectionList: IAnnotationCollection[] = [];
+        for (let i: number = 0; i < this.pageCount; i++) {
+            let annotation: IAnnotationCollection = {
+                // tslint:disable-next-line:max-line-length
+                textMarkupAnnotation: [], shapeAnnotation: [], measureShapeAnnotation: [], stampAnnotations: [], stickyNotesAnnotation: [], freeTextAnnotation: []
+            };
+            annotationCollectionList.push(annotation);
+        }
+        return annotationCollectionList;
+    }
+
 }

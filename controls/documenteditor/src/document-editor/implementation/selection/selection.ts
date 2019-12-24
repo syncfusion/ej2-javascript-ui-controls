@@ -4249,6 +4249,9 @@ export class Selection {
      */
     public getNextValidElement(inline: ElementBox): ElementBox {
         let nextValidInline: ElementBox = undefined;
+        if (inline instanceof BookmarkElementBox && inline.bookmarkType === 1) {
+            return inline;
+        }
         while (inline instanceof FieldElementBox) {
             if (inline.fieldType === 0 && !isNullOrUndefined((inline as FieldElementBox).fieldEnd)) {
                 return isNullOrUndefined(nextValidInline) ? inline : nextValidInline;
@@ -4264,10 +4267,11 @@ export class Selection {
      * @private
      */
     public validateTextPosition(inline: ElementBox, index: number): ElementInfo {
-        if (inline.length === index && inline.nextNode instanceof FieldElementBox) {
+        if (inline.length === index && (inline.nextNode instanceof FieldElementBox || inline.nextNode instanceof BookmarkElementBox)) {
             //If inline is last item within field, then set field end as text position.
             let nextInline: ElementBox = this.getNextValidElement((inline.nextNode as FieldElementBox)) as ElementBox;
-            if (nextInline instanceof FieldElementBox && nextInline.fieldType === 1) {
+            if (nextInline instanceof FieldElementBox && nextInline.fieldType === 1
+                || nextInline instanceof BookmarkElementBox && nextInline.bookmarkType === 1) {
                 inline = nextInline;
                 index = 1;
             }
@@ -7160,10 +7164,12 @@ export class Selection {
     public copyToClipboard(htmlContent: string): boolean {
         window.getSelection().removeAllRanges();
         let div: HTMLDivElement = document.createElement('div');
+        div.tabIndex = 0;
         div.style.left = '-10000px';
         div.style.top = '-10000px';
         div.innerHTML = htmlContent;
         document.body.appendChild(div);
+        div.focus();
         let range: Range = document.createRange();
         range.selectNodeContents(div);
         window.getSelection().addRange(range);

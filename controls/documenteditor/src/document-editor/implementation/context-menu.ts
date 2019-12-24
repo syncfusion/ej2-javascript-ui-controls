@@ -510,11 +510,11 @@ export class ContextMenu {
     }
     /**
      * Handles on context menu key pressed.
-     * @param  {PointerEvent} event
+     * @param  {MouseEvent} event
      * @private
      */
-    public onContextMenuInternal = (event: PointerEvent | TouchEvent): void => {
-        let isTouch: boolean = event instanceof TouchEvent;
+    public onContextMenuInternal = (event: MouseEvent | TouchEvent): void => {
+        let isTouch: boolean = !(event instanceof MouseEvent);
         if (this.viewer.owner.enableSpellCheck && this.spellChecker.allowSpellCheckAndSuggestion) {
             event.preventDefault();
             this.currentContextInfo = this.spellChecker.findCurretText();
@@ -527,7 +527,7 @@ export class ContextMenu {
                 if (this.spellChecker.errorSuggestions.containsKey(exactData)) {
                     allSuggestions = this.spellChecker.errorSuggestions.get(exactData).slice();
                     splittedSuggestion = this.spellChecker.handleSuggestions(allSuggestions);
-                    this.processSuggestions(allSuggestions, splittedSuggestion, isTouch ? event as TouchEvent : event as PointerEvent);
+                    this.processSuggestions(allSuggestions, splittedSuggestion, isTouch ? event as TouchEvent : event as MouseEvent);
                 } else {
                     if (this.spellChecker.enableOptimizedSpellCheck) {
                         // tslint:disable-next-line:max-line-length
@@ -540,28 +540,28 @@ export class ContextMenu {
                                 splittedSuggestion = this.spellChecker.handleSuggestions(allSuggestions);
                             }
                             // tslint:disable-next-line:max-line-length
-                            this.processSuggestions(allSuggestions, splittedSuggestion, isTouch ? event as TouchEvent : event as PointerEvent);
+                            this.processSuggestions(allSuggestions, splittedSuggestion, isTouch ? event as TouchEvent : event as MouseEvent);
                         });
                     } else {
                         // tslint:disable-next-line:max-line-length
-                        this.processSuggestions(allSuggestions, splittedSuggestion, isTouch ? event as TouchEvent : event as PointerEvent);
+                        this.processSuggestions(allSuggestions, splittedSuggestion, isTouch ? event as TouchEvent : event as MouseEvent);
                     }
                 }
             } else {
                 this.hideSpellContextItems();
-                this.showContextMenuOnSel(isTouch ? event as TouchEvent : event as PointerEvent);
+                this.showContextMenuOnSel(isTouch ? event as TouchEvent : event as MouseEvent);
             }
         } else {
             this.hideSpellContextItems();
-            this.showContextMenuOnSel(isTouch ? event as TouchEvent : event as PointerEvent);
+            this.showContextMenuOnSel(isTouch ? event as TouchEvent : event as MouseEvent);
         }
     }
     /**
      * Opens context menu.
-     * @param {PointerEvent | TouchEvent} event 
+     * @param {MouseEvent | TouchEvent} event 
      */
-    private showContextMenuOnSel(event: PointerEvent | TouchEvent): void {
-        let isTouch: boolean = event instanceof TouchEvent;
+    private showContextMenuOnSel(event: MouseEvent | TouchEvent): void {
+        let isTouch: boolean = !(event instanceof MouseEvent);
         let xPos: number = 0;
         let yPos: number = 0;
         if (isTouch) {
@@ -569,8 +569,8 @@ export class ContextMenu {
             xPos = point.x;
             yPos = point.y;
         } else {
-            yPos = (event as PointerEvent).y;
-            xPos = (event as PointerEvent).x;
+            yPos = (event as MouseEvent).y;
+            xPos = (event as MouseEvent).x;
         }
         if (this.showHideElements(this.viewer.selection)) {
             if (isTouch) {
@@ -597,11 +597,11 @@ export class ContextMenu {
      * Method to process suggestions to add in context menu
      * @param {any} allSuggestions 
      * @param {string[]} splittedSuggestion 
-     * @param {PointerEvent} event 
+     * @param {MouseEvent} event 
      * @private
      */
     /* tslint:disable:no-any */
-    public processSuggestions(allSuggestions: any, splittedSuggestion: string[], event: PointerEvent | TouchEvent): void {
+    public processSuggestions(allSuggestions: any, splittedSuggestion: string[], event: MouseEvent | TouchEvent): void {
         this.spellContextItems = this.constructContextmenu(allSuggestions, splittedSuggestion);
         this.addCustomMenu(this.spellContextItems);
         this.noSuggestion = document.getElementById(this.viewer.owner.element.id + CONTEXTMENU_NO_SUGGESTION);

@@ -49,7 +49,10 @@ export interface SelectionSettingsModel {
      * * `Default`: This is the default value of the checkboxMode. In this mode, user can select multiple rows by clicking rows one by one.
      * * `ResetOnRowClick`: In ResetOnRowClick mode, on clicking a row it will reset previously selected row and also multiple
      *  rows can be selected by using CTRL or SHIFT key.
-     * @default Default 
+     * @default Syncfusion.EJ2.Grids.CheckboxSelectionType.Default
+     * @isEnumeration true
+     * @aspType Syncfusion.EJ2.Grids.CheckboxSelectionType
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.CheckboxSelectionType
      */
     checkboxMode?: CheckboxSelectionType;
 

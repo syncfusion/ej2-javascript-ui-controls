@@ -35,51 +35,53 @@ export class Formats {
     }
 
     private onKeyDown(e: IHtmlSubCommands): void {
-        let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
-        let startCon: Node = (range.startContainer.textContent.length === 0 || range.startContainer.nodeName === 'PRE')
-        ? range.startContainer : range.startContainer.parentElement;
-        let endCon: Node = (range.endContainer.textContent.length === 0 || range.endContainer.nodeName === 'PRE')
-        ? range.endContainer : range.endContainer.parentElement;
-        let preElem: Element = closest(startCon, 'pre');
-        let endPreElem: Element = closest(endCon, 'pre');
-        let liParent: boolean = !isNOU(preElem) && !isNOU(preElem.parentElement) && preElem.parentElement.tagName === 'LI';
-        if (liParent) {
-            return;
-        }
-        if (((isNOU(preElem) && !isNOU(endPreElem)) || (!isNOU(preElem) && isNOU(endPreElem)))) {
-            e.event.preventDefault();
-            this.deleteContent(range);
-            this.removeCodeContent(range);
-            range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
-            this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, endCon as Element, 0);
-        }
-        if (e.event.which === 13 && !isNOU(preElem) && !isNOU(endPreElem)) {
-            e.event.preventDefault();
-            this.deleteContent(range);
-            this.removeCodeContent(range);
-            range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
-            let lastEmpty: Node = range.startContainer.childNodes[range.endOffset];
-            let lastBeforeBr: Node = range.startContainer.childNodes[range.endOffset - 1];
-            let startParent: Node = range.startContainer;
-            if (!isNOU(lastEmpty) && !isNOU(lastBeforeBr) && isNOU(lastEmpty.nextSibling) &&
-            lastEmpty.nodeName === 'BR' && lastBeforeBr.nodeName === 'BR') {
-                this.paraFocus(range.startContainer as Element);
-            } else if ((startParent.textContent.charCodeAt(0) === 8203 &&
-            startParent.textContent.length === 1) || startParent.textContent.length === 0 ) {
-                //Double enter with any parent tag for the node
-                while (startParent.parentElement.nodeName !== 'PRE' &&
-                (startParent.textContent.length === 1 || startParent.textContent.length === 0)) {
-                    startParent = startParent.parentElement;
-                }
-                if (!isNOU(startParent.previousSibling) && startParent.previousSibling.nodeName === 'BR' &&
-                isNOU(startParent.nextSibling)) {
-                    this.paraFocus(startParent.parentElement);
+        if (e.event.which === 13) {
+            let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+            let startCon: Node = (range.startContainer.textContent.length === 0 || range.startContainer.nodeName === 'PRE')
+            ? range.startContainer : range.startContainer.parentElement;
+            let endCon: Node = (range.endContainer.textContent.length === 0 || range.endContainer.nodeName === 'PRE')
+            ? range.endContainer : range.endContainer.parentElement;
+            let preElem: Element = closest(startCon, 'pre');
+            let endPreElem: Element = closest(endCon, 'pre');
+            let liParent: boolean = !isNOU(preElem) && !isNOU(preElem.parentElement) && preElem.parentElement.tagName === 'LI';
+            if (liParent) {
+                return;
+            }
+            if (((isNOU(preElem) && !isNOU(endPreElem)) || (!isNOU(preElem) && isNOU(endPreElem)))) {
+                e.event.preventDefault();
+                this.deleteContent(range);
+                this.removeCodeContent(range);
+                range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+                this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, endCon as Element, 0);
+            }
+            if (e.event.which === 13 && !isNOU(preElem) && !isNOU(endPreElem)) {
+                e.event.preventDefault();
+                this.deleteContent(range);
+                this.removeCodeContent(range);
+                range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+                let lastEmpty: Node = range.startContainer.childNodes[range.endOffset];
+                let lastBeforeBr: Node = range.startContainer.childNodes[range.endOffset - 1];
+                let startParent: Node = range.startContainer;
+                if (!isNOU(lastEmpty) && !isNOU(lastBeforeBr) && isNOU(lastEmpty.nextSibling) &&
+                lastEmpty.nodeName === 'BR' && lastBeforeBr.nodeName === 'BR') {
+                    this.paraFocus(range.startContainer as Element);
+                } else if ((startParent.textContent.charCodeAt(0) === 8203 &&
+                startParent.textContent.length === 1) || startParent.textContent.length === 0 ) {
+                    //Double enter with any parent tag for the node
+                    while (startParent.parentElement.nodeName !== 'PRE' &&
+                    (startParent.textContent.length === 1 || startParent.textContent.length === 0)) {
+                        startParent = startParent.parentElement;
+                    }
+                    if (!isNOU(startParent.previousSibling) && startParent.previousSibling.nodeName === 'BR' &&
+                    isNOU(startParent.nextSibling)) {
+                        this.paraFocus(startParent.parentElement);
+                    } else {
+                        this.isNotEndCursor(preElem, range);
+                    }
                 } else {
-                    this.isNotEndCursor(preElem, range);
+                //Cursor at start and middle
+                this.isNotEndCursor(preElem, range);
                 }
-            } else {
-            //Cursor at start and middle
-            this.isNotEndCursor(preElem, range);
             }
         }
     }

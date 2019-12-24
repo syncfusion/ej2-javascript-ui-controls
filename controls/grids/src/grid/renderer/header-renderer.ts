@@ -30,6 +30,7 @@ export class HeaderRender implements IRenderer {
     private frzIdx: number = 0;
     private notfrzIdx: number = 0;
     private lockColsRendered: boolean;
+    public freezeReorder: boolean;
     private helper: Function = (e: { sender: MouseEvent }) => {
         let gObj: IGrid = this.parent;
         let target: Element = (e.sender.target as Element);
@@ -567,9 +568,10 @@ export class HeaderRender implements IRenderer {
                     }
                 } else {
                     let mTblColGrp: Element = gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('colgroup');
+                    let mTbl: Element = gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('table');
                     setStyleAttribute(<HTMLElement>mTblColGrp.children[idx - frzCols], { 'display': displayVal });
                     if (isBlazor() && gObj.isServerRendered) {
-                        setStyleAttribute(mTblColGrp.querySelectorAll('th')[idx - frzCols], { 'display': displayVal });
+                        setStyleAttribute(mTbl.querySelectorAll('th')[idx - frzCols], { 'display': displayVal });
                     }
                 }
             } else {
@@ -583,6 +585,9 @@ export class HeaderRender implements IRenderer {
 
 
     private colPosRefresh(): void {
+        if (isBlazor() && this.parent.isServerRendered) {
+            this.freezeReorder = true;
+        }
         this.refreshUI();
     }
 
@@ -595,14 +600,14 @@ export class HeaderRender implements IRenderer {
         let isVFTable: boolean = this.parent.enableColumnVirtualization && frzCols !== 0;
         let headerDiv: Element = this.getPanel();
         this.toggleStackClass(headerDiv);
-        let table: Element = this.parent.enableColumnVirtualization && frzCols
+        let table: Element = (this.parent.enableColumnVirtualization && frzCols) || this.freezeReorder
             ? this.headerPanel.querySelector('.e-movableheader').querySelector('.e-table') : this.getTable();
         if (table) {
-            remove(table);
             if (isBlazor() && this.parent.isServerRendered) {
                 table.removeChild(table.querySelector('colgroup'));
                 table.removeChild(table.querySelector('thead'));
             } else {
+                remove(table);
                 table.removeChild(table.firstChild);
                 table.removeChild(table.childNodes[0]);
             }
@@ -612,10 +617,12 @@ export class HeaderRender implements IRenderer {
             table.insertBefore(findHeaderRow.thead, table.firstChild);
             this.updateColGroup(colGroup);
             table.insertBefore(this.setColGroup(colGroup), table.firstChild);
-            if (!isVFTable) {
+            if (!(isVFTable && this.freezeReorder)) {
                 this.setTable(table);
             }
-            this.appendContent(table);
+            if (!(isBlazor() && this.parent.isServerRendered)) {
+                this.appendContent(table);
+            }
             this.parent.notify(events.colGroupRefresh, {});
             this.widthService.setWidthToColumns();
             this.parent.updateDefaultCursor();

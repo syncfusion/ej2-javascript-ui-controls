@@ -135,6 +135,8 @@ export class TextSelection {
             }
             // tslint:disable-next-line:max-line-length
             if (this.pdfViewer.enableTextMarkupResizer && this.pdfViewer.annotationModule && this.pdfViewer.annotation.textMarkupAnnotationModule) {
+                // tslint:disable-next-line
+                let leftDivElement: any = document.getElementById(this.pdfViewer.element.id + '_droplet_left');
                 if (this.pdfViewerBase.isSelection) {
                     // tslint:disable-next-line
                     let currentrange: any = selection.getRangeAt(0);
@@ -144,6 +146,8 @@ export class TextSelection {
                     let top: number = rect.top;
                     this.pdfViewer.annotation.textMarkupAnnotationModule.updateLeftposition(left, top);
                     this.pdfViewerBase.isSelection = false;
+                } else if ((leftDivElement && leftDivElement.style.display === 'none')) {
+                    this.pdfViewer.annotation.textMarkupAnnotationModule.updateLeftposition(x, y);
                 }
                 this.pdfViewer.annotation.textMarkupAnnotationModule.updatePosition(x, y);
             }

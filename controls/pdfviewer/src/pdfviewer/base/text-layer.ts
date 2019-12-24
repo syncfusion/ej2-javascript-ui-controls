@@ -301,31 +301,33 @@ export class TextLayer {
                     let initId: number;
                     let lastId: number;
                     let length: number;
-                    length = textDiv.textContent.length;
-                    let textContent: string = textDiv.textContent;
-                    textDiv.textContent = '';
-                    if (j === startId) {
-                        if (i === startPage) {
-                            initId = anchorOffset;
+                    if (textDiv.textContent) {
+                        length = textDiv.textContent.length;
+                        let textContent: string = textDiv.textContent;
+                        textDiv.textContent = '';
+                        if (j === startId) {
+                            if (i === startPage) {
+                                initId = anchorOffset;
+                            } else {
+                                initId = 0;
+                            }
+                            lastId = length;
+                            this.convertToSpan(i, j, 0, initId, textContent, null);
+                        } else if (j === endId && i === endPage) {
+                            initId = 0;
+                            lastId = focusOffset;
                         } else {
                             initId = 0;
+                            lastId = length;
                         }
-                        lastId = length;
-                        this.convertToSpan(i, j, 0, initId, textContent, null);
-                    } else if (j === endId && i === endPage) {
-                        initId = 0;
-                        lastId = focusOffset;
-                    } else {
-                        initId = 0;
-                        lastId = length;
-                    }
-                    if (startId === endId) {
-                        initId = anchorOffset;
-                        lastId = focusOffset;
-                    }
-                    this.convertToSpan(i, j, initId, lastId, textContent, 'e-pv-maintaincontent');
-                    if (j === endId && i === endPage) {
-                        this.convertToSpan(i, j, lastId, textContent.length, textContent, null);
+                        if (startId === endId) {
+                            initId = anchorOffset;
+                            lastId = focusOffset;
+                        }
+                        this.convertToSpan(i, j, initId, lastId, textContent, 'e-pv-maintaincontent');
+                        if (j === endId && i === endPage) {
+                            this.convertToSpan(i, j, lastId, textContent.length, textContent, null);
+                        }
                     }
                 }
             }

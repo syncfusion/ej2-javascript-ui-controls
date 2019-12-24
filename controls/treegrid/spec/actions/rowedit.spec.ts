@@ -2113,7 +2113,6 @@ describe('Edit module', () => {
     it('While add after expand through script error in platform', (done: Function) => {
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
       actionComplete = (args?: any): void => {
-        debugger;
         let cells: NodeListOf<Element> = gridObj.grid.getRows()[0].querySelectorAll('.e-rowcell');
         expect(cells[0].textContent === '121' ).toBeTruthy();
         expect(cells[1].textContent === 'first').toBeTruthy();
@@ -2121,12 +2120,104 @@ describe('Edit module', () => {
       };
       gridObj.actionComplete = actionComplete;
       var formEle = gridObj.grid.editModule.formObj.element;
-      debugger;
       (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '121';
       (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName')as any).value = 'first';
       (formEle.querySelector('#' + gridObj.grid.element.id + 'progress') as any).value = '23';
       rows = gridObj.getRows();      
       (rows[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();      
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+
+  describe('EJ2-32035- Adding a new row after collapsing a row does not maintain collapsed state with paging', () => {
+    let gridObj: TreeGrid;
+    let rows: HTMLTableRowElement[];
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+            dataSource: sampleData,
+            childMapping: 'subtasks',
+            allowPaging: true,
+            editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true },
+            treeColumnIndex: 1,
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+              columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+              { field: 'taskName', headerText: 'Task Name' },
+              { field: 'progress', headerText: 'Progress' },
+              { field: 'startDate', headerText: 'Start Date' }
+            ]
+        },
+        done
+      );
+    });
+    it('Add a new row after collapsing a row', (done: Function) => {
+      rows = gridObj.getRows();
+      (rows[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+      actionComplete = (args?: any): void => {
+        let cells: NodeListOf<Element> = gridObj.grid.getRows()[0].querySelectorAll('.e-rowcell');
+        expect(cells[0].textContent === '121' ).toBeTruthy();
+        expect(cells[1].textContent === 'first').toBeTruthy();
+        expect(gridObj.grid.getRows()[1].getElementsByClassName('e-treegridcollapse').length).toBe(1);
+        expect(gridObj.grid.getRows()[2].getElementsByClassName('e-treegridexpand').length).toBe(1);
+        done()
+      };
+      gridObj.actionComplete = actionComplete;
+      var formEle = gridObj.grid.editModule.formObj.element;
+      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '121';
+      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName')as any).value = 'first';
+      (formEle.querySelector('#' + gridObj.grid.element.id + 'progress') as any).value = '23';
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('EJ2-34712- Edit form does not generated when we add new record with collapsed state', () => {
+    let gridObj: TreeGrid;
+    let rows: HTMLTableRowElement[];
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+            dataSource: sampleData,
+            childMapping: 'subtasks',
+            allowPaging: true,
+            editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: "Child" },
+            treeColumnIndex: 1,
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+              columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+              { field: 'taskName', headerText: 'Task Name' },
+              { field: 'progress', headerText: 'Progress' },
+              { field: 'startDate', headerText: 'Start Date' }
+            ]
+        },
+        done
+      );
+    });
+    it('Add a new row after collapsing a row', (done: Function) => {
+      rows = gridObj.getRows();
+      (rows[5].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
+      gridObj.selectRow(5);
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+      actionComplete = (args?: any): void => {
+        let cells: NodeListOf<Element> = gridObj.grid.getRows()[11].querySelectorAll('.e-rowcell');
+        expect(cells[0].textContent === '121' ).toBeTruthy();
+        expect(cells[1].textContent === 'first').toBeTruthy();
+        expect(gridObj.grid.getRows()[5].getElementsByClassName('e-treegridexpand').length).toBe(1);
+        done()
+      };
+      gridObj.actionComplete = actionComplete;
+      var formEle = gridObj.grid.editModule.formObj.element;
+      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '121';
+      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName')as any).value = 'first';
+      (formEle.querySelector('#' + gridObj.grid.element.id + 'progress') as any).value = '23';
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
     });
     afterAll(() => {
       destroy(gridObj);

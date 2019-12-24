@@ -2639,6 +2639,54 @@ describe('InPlace-Editor Control', () => {
             expect(editorObj.enableEditMode).toEqual(true);
             expect(valueEle.innerHTML).toEqual('welcome');
         });
+        it('shift tab key press', () => {
+            editorObj = renderEditor({
+                mode: "Inline",
+                value: 'welcome'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            let keyboardEventArgs : any = {
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: true,
+                key: '9',
+                charCode: 75,
+                keyCode: 9
+            };
+            keyboardEventArgs.target = ele.querySelector('.e-textbox');
+            editorObj.valueKeyDownHandler(keyboardEventArgs)
+            expect(ele.querySelector('.e-textbox')).toEqual(null);
+        });
+
+        it('Tab key with cancel button on focus to remove editor', () => {
+            editorObj = renderEditor({
+                mode: "Inline",
+                value: 'welcome'
+            });
+            let keyboardEventArgs1 : any = {
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                key: '9',
+                keyCode: 9
+            };
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(valueEle.innerHTML).toEqual('welcome');
+            valueEle.click();
+            let cancelEe =  <HTMLElement>select('.' + classes.BTN_CANCEL, ele);
+            cancelEe.focus();
+            keyboardEventArgs1.target = cancelEe;
+            expect(ele.querySelector('.e-textbox')).not.toEqual(null);
+            editorObj.btnKeyDownHandler(keyboardEventArgs1)
+            expect(ele.querySelector('.e-textbox')).toEqual(null);
+        });
     });
     describe('Spinner load/remove testing', () => {
         let ele: HTMLElement;

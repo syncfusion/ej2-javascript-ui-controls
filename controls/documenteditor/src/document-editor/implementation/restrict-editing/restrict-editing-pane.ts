@@ -135,12 +135,12 @@ export class RestrictEditing {
         // User Permissions
         let userWholeDiv: HTMLElement = createElement('div', { className: 'e-de-rp-sub-div' });
         let userDiv: HTMLElement = createElement('div', {
-            innerHTML: localObj.getConstant('Exceptions (optional)'),
+            innerHTML: localObj.getConstant('Exceptions Optional'),
             className: 'e-de-rp-format'
         });
         userWholeDiv.appendChild(userDiv);
         let subContentDiv: HTMLElement = createElement('div', {
-            innerHTML: localObj.getConstant('Select parts of the document and choose users who are allowed to freely edit them.'),
+            innerHTML: localObj.getConstant('Select Part Of Document And User'),
             styles: 'margin-bottom:8px;'
         });
         userWholeDiv.appendChild(subContentDiv);
@@ -166,7 +166,7 @@ export class RestrictEditing {
         this.restrictPaneWholeDiv.appendChild(lastDiv);
         this.enforceProtection = createElement('button', {
             id: this.viewer.owner.containerId + '_addUser',
-            innerHTML: localObj.getConstant('Yes, Start Enforcing Protection'),
+            innerHTML: localObj.getConstant('Enforcing Protection'),
             className: 'e-btn e-de-rp-btn-enforce'
         }) as HTMLButtonElement;
         lastDiv.appendChild(this.enforceProtection);
@@ -176,11 +176,11 @@ export class RestrictEditing {
         let headerDiv: HTMLElement = createElement('div', { innerHTML: localObj.getConstant('Your permissions'), className: 'e-de-rp-stop-div1' });
         this.stopProtectionDiv.appendChild(headerDiv);
         // tslint:disable-next-line:max-line-length
-        let content: string = localObj.getConstant('This document is protected from unintentional editing.You may edit in this region.');
+        let content: string = localObj.getConstant('Protected Document');
         let contentDiv1: HTMLElement = createElement('div', { innerHTML: content, className: 'e-de-rp-stop-div2' });
         this.stopProtectionDiv.appendChild(contentDiv1);
         // tslint:disable-next-line:max-line-length
-        let contentDiv2: HTMLElement = createElement('div', { innerHTML: localObj.getConstant('You may format text only with certain styles.'), className: 'e-de-rp-stop-div3' });
+        let contentDiv2: HTMLElement = createElement('div', { innerHTML: localObj.getConstant('You may format text only with certain styles'), className: 'e-de-rp-stop-div3' });
         this.stopProtectionDiv.appendChild(contentDiv2);
         this.stopReadOnlyOptions = createElement('div');
         this.stopProtectionDiv.appendChild(this.stopReadOnlyOptions);

@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 17.4.40 (2019-12-24)
+
+### DropDownList
+
+#### Bug Fixes
+
+- `#255255` - Issue with "JAWS screen reader does not read the pre-selected value" has been resolved.
+
+### ListBox
+
+#### Bug Fixes
+
+- Issue with Drag and Drop is fixed.
+
 ## 17.4.39 (2019-12-17)
 
 ### ComboBox

@@ -1032,7 +1032,28 @@ export function getLabelText(currentPoint: Points, series: Series, chart: Chart)
     let customLabelFormat: boolean = labelFormat.match('{value}') !== null;
     switch (series.seriesType) {
         case 'XY':
-            text.push(currentPoint.text || currentPoint.yValue.toString());
+            /**
+             * I255790
+             * For Polar radar series, the dataLabel appears out of range when axis range is given for yaxis
+             * Cause: Since symbol location for the points which did not lies in within range, lies outside of seriesRect.
+             * Fix: DataLabel rendered after checking WithIn for the points
+             */
+            if (series.chart.chartAreaType === 'PolarRadar') {
+                if (series.drawType.indexOf('Stacking') !== -1) {
+                    if ((series.yAxis.valueType === 'Logarithmic' &&
+                        logWithIn(series.stackedValues.endValues[currentPoint.index], series.yAxis)) ||
+                        withIn(series.stackedValues.endValues[currentPoint.index], series.yAxis.visibleRange)) {
+                        text.push(currentPoint.text || currentPoint.yValue.toString());
+                    }
+                } else {
+                    if ((series.yAxis.valueType === 'Logarithmic' && logWithIn(currentPoint.yValue, series.yAxis)) ||
+                        withIn(currentPoint.yValue, series.yAxis.visibleRange)) {
+                        text.push(currentPoint.text || currentPoint.yValue.toString());
+                    }
+                }
+            } else {
+                text.push(currentPoint.text || currentPoint.yValue.toString());
+            }
             break;
         case 'HighLow':
             text.push(currentPoint.text || Math.max(<number>currentPoint.high, <number>currentPoint.low).toString());

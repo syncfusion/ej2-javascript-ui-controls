@@ -44,9 +44,9 @@ export class StackedHeaderCellRenderer extends CellRenderer implements ICellRend
             node.setAttribute('title', cell.column.toolTip);
         }
 
-        if (column.clipMode === 'Clip') {
+        if (column.clipMode === 'Clip' || (!column.clipMode && this.parent.clipMode === 'Clip')) {
             node.classList.add('e-gridclip');
-        } else if (column.clipMode === 'EllipsisWithTooltip') {
+        } else if (column.clipMode === 'EllipsisWithTooltip' || (!column.clipMode && this.parent.clipMode === 'EllipsisWithTooltip')) {
             node.classList.add('e-ellipsistooltip');
         }
 

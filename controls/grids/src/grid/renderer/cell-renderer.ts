@@ -225,9 +225,9 @@ export class CellRenderer implements ICellRenderer<Column> {
             node.style.textAlign = column.textAlign;
         }
 
-        if (column.clipMode === 'Clip') {
+        if (column.clipMode === 'Clip' || (!column.clipMode && this.parent.clipMode === 'Clip')) {
             node.classList.add('e-gridclip');
-        } else if (column.clipMode === 'EllipsisWithTooltip') {
+        } else if (column.clipMode === 'EllipsisWithTooltip' || (!column.clipMode && this.parent.clipMode === 'EllipsisWithTooltip')) {
             node.classList.add('e-ellipsistooltip');
         }
     }

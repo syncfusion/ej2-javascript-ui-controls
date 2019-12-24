@@ -159,7 +159,13 @@ export class FocusStrategy {
 
     public setFocusedElement(element: HTMLElement): void {
         this.currentInfo.elementToFocus = element;
-        setTimeout(() => this.currentInfo.elementToFocus.focus(), 0);
+        setTimeout(
+            () => {
+                if (!isNullOrUndefined(this.currentInfo.elementToFocus)) {
+                    this.currentInfo.elementToFocus.focus();
+                }
+            },
+            0);
     }
 
     public focus(e?: KeyboardEventArgs): void {

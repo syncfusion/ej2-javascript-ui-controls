@@ -18,7 +18,7 @@ describe('Sparkline Component Base Spec', () => {
             return;
         }
     });
-    describe('Sparkline testing spec', () => {
+    describe('Sparkline Testing spec', () => {
         let element: Element;
         let sparkline: Sparkline;
         let id: string = 'spark-container';

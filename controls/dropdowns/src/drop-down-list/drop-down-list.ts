@@ -1288,6 +1288,11 @@ export class DropDownList extends DropDownBase implements IInput {
         if (this.isPopupOpen && !isNullOrUndefined(this.selectedLI) && this.itemData !== null && (!e || e.type !== 'click')) {
             this.setScrollPosition(e as KeyboardEventArgs);
         }
+        if (Browser.info.name !== 'mozilla') {
+            attributes(this.inputElement, { 'aria-label': this.inputElement.value });
+            attributes(this.targetElement(), { 'aria-describedby': this.inputElement.id });
+            this.targetElement().removeAttribute('aria-live');
+        }
     }
 
     private setValueTemplate(): void {
@@ -1551,6 +1556,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * @param  {Query} query - Specify the query to filter the data.
      * @param  {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
      * @return {void}.
+     * @deprecated 
      */
     public filter(
         dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[],
@@ -2163,6 +2169,12 @@ export class DropDownList extends DropDownBase implements IInput {
         let popupInstance: Popup = (isBlazor() && this.isServerRendered) ? null : this.popupObj;
         let eventArgs: PopupEventArgs = { popup: popupInstance, cancel: false, animation: animModel };
         this.trigger('close', eventArgs, (eventArgs: PopupEventArgs) => {
+            if (!this.isServerBlazor && !isNullOrUndefined(this.popupObj) &&
+                !isNullOrUndefined(this.popupObj.element.querySelector('.e-fixed-head'))) {
+                let fixedHeader: HTMLElement = this.popupObj.element.querySelector('.e-fixed-head');
+                fixedHeader.parentNode.removeChild(fixedHeader);
+                this.fixedHeaderElement = null;
+            }
             if (!eventArgs.cancel) {
                 if (this.getModuleName() === 'autocomplete') {
                     this.rippleFun();
@@ -2217,6 +2229,13 @@ export class DropDownList extends DropDownBase implements IInput {
             });
             this.setFields();
             this.wireEvent();
+            this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
+            if (!this.enabled) {
+                this.targetElement().tabIndex = -1;
+            }
+            if (this.element.hasAttribute('autofocus')) {
+                this.focusIn();
+            }
         } else {
             if (this.element.tagName === 'INPUT') {
                 this.inputElement = this.element as HTMLInputElement;
@@ -2382,8 +2401,10 @@ export class DropDownList extends DropDownBase implements IInput {
      */
     public onPropertyChanged(newProp: DropDownListModel, oldProp: DropDownListModel): void {
         if (this.getModuleName() === 'dropdownlist') {
-            this.checkDatasource(newProp);
-            this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp as { [key: string]: string; });
+            if (!this.isServerBlazor) {
+                this.checkDatasource(newProp);
+                this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp as { [key: string]: string; });
+            }
         }
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
@@ -2587,14 +2608,16 @@ export class DropDownList extends DropDownBase implements IInput {
             this.list = popupEle.querySelector('.e-dropdownbase.e-content') ?
                 popupEle.querySelector('.e-dropdownbase.e-content') : this.list;
             this.ulElement = this.list.querySelector('ul');
-            // tslint:disable-next-line
-            this.liCollections = this.ulElement ? this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li) : [] as any;
+            this.liCollections = this.ulElement ?
+                <NodeListOf<Element> & HTMLElement[]>this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li) : [];
             this.listData = data;
             this.serverBlazorUpdateSelection();
             this.wireListEvents();
             if (this.beforePopupOpen) {
                 this.invokeRenderPopup();
             }
+        } else if (data != null && this.listData !== data) {
+            this.listData = data;
         }
     }
     private updateclientItemData(data: { [key: string]: Object }[] | string[] | boolean[] | number[]): void {
@@ -2602,6 +2625,9 @@ export class DropDownList extends DropDownBase implements IInput {
     }
     private serverUpdateListElement(data: { [key: string]: Object }[] | string[] | boolean[] | number[], popupEle: HTMLElement): void {
         this.listData = data;
+        if (this.ulElement) {
+            this.liCollections = <NodeListOf<Element> & HTMLElement[]>this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li);
+        }
     }
     /**
      * Hides the popup if it is in an open state.
@@ -2694,7 +2720,7 @@ export class DropDownList extends DropDownBase implements IInput {
             let attrArray: string[] = ['readonly', 'aria-disabled', 'aria-placeholder',
                 'placeholder', 'aria-owns', 'aria-labelledby', 'aria-haspopup', 'aria-expanded',
                 'aria-activedescendant', 'autocomplete', 'aria-readonly', 'autocorrect',
-                'autocapitalize', 'spellcheck', 'aria-autocomplete', 'aria-live'];
+                'autocapitalize', 'spellcheck', 'aria-autocomplete', 'aria-live', 'aria-describedby', 'aria-label'];
             attrArray.forEach((value: string): void => {
                 this.inputElement.removeAttribute(value);
             });

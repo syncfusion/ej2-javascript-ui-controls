@@ -3986,3 +3986,55 @@ describe('EJ2-33599 selection does not maintain while calling setrowdata method'
         gridObj = null;
     });
 });
+
+describe('Checkbox state when Selecting in batch edit while adding record => ', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                editSettings: {
+                    allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch',
+                    showConfirmDialog: true, showDeleteConfirmDialog: false
+                },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                allowPaging: true,
+                columns: [
+                    { type: 'checkbox', width: 50},
+                    { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: true },
+                    { field: 'CustomerID', type: 'string' },
+                    { field: 'EmployeeID', type: 'number', allowEditing: false },
+                    { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                ],
+            }, done);
+    });
+    
+    it('Initial header checkbox state', () => {
+        let cBox: HTMLElement = gridObj.element.querySelector('.e-checkselectall').nextElementSibling as HTMLElement;
+        expect(cBox.classList.contains('e-check')).toBeFalsy();
+        expect(cBox.classList.contains('e-uncheck')).toBeFalsy();
+        expect(cBox.classList.contains('e-stop')).toBeFalsy();
+    })
+
+    it('Add new records, cancel and check state', (done: Function) => {
+        let batchCancel = (args: any): void => {
+            if (args.name === 'batchCancel') {
+                expect(gridObj.element.querySelector('.e-checkselectall').nextElementSibling.classList.contains('e-stop')).toBeFalsy();
+                gridObj.batchCancel = null;
+                done();
+            }
+        }
+        gridObj.batchCancel = batchCancel;
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+        expect(gridObj.element.querySelector('.e-checkselectall').nextElementSibling.classList.contains('e-check')).toBeTruthy();
+        (gridObj.element.querySelector('.e-checkselectall') as HTMLElement).click();
+        expect(gridObj.element.querySelector('.e-checkselectall').nextElementSibling.classList.contains('e-uncheck')).toBeTruthy();
+        (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+        expect(gridObj.element.querySelector('.e-checkselectall').nextElementSibling.classList.contains('e-stop')).toBeTruthy();
+        gridObj.editModule.batchCancel();
+        gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();        
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+    });
+});

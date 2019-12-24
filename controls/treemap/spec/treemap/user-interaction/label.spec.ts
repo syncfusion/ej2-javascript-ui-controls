@@ -1,4 +1,3 @@
-
 import { TreeMap } from '../../../src/treemap/treemap';
 import { MouseEvents } from '../base/events.spec';
 import { ILoadedEventArgs } from '../../../src/treemap/model/interface';
@@ -120,7 +119,7 @@ describe('TreeMap component Spec', () => {
             return;
         }
     });
-    describe('TreeMap colorMapping  spec', () => {
+    describe('TreeMap ColorMapping  spec', () => {
         let element: Element;
         let treemap: TreeMap;
         let prevent: Function = (): void => { };

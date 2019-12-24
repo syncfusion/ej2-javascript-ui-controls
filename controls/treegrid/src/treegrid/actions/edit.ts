@@ -151,7 +151,7 @@ export class Edit {
           (treeObj.editSettings.newRowPosition === 'Child' || treeObj.editSettings.newRowPosition === 'Below'
           || treeObj.editSettings.newRowPosition === 'Above')) {
         if (eventName === 'actionBegin') {
-          let rowIndex: number = isNullOrUndefined(eventArgs.row) ? treeObj.getSelectedRowIndexes()[0] :
+          let rowIndex: number = isNullOrUndefined(eventArgs.row) || !Object.keys(eventArgs.row).length ? this.selectedIndex :
                 (<HTMLTableRowElement>eventArgs.row).rowIndex - 1;
           let keyData: string = (!isNullOrUndefined(rowIndex) && rowIndex !== -1) ?
                 treeObj.getCurrentViewRecords()[rowIndex][treeObj.getPrimaryKeyFieldNames()[0]] : -1;
@@ -249,9 +249,15 @@ export class Edit {
     if (this.parent.editSettings.mode === 'Cell') {
       let cellDetails: RowInfo = getValue('editModule.cellDetails', this.parent.grid.editModule);
       let selectRowIndex: number = cellDetails.rowIndex;
+      let treeColumnIndexValue: number;
+      if (this.parent.allowRowDragAndDrop) {
+        treeColumnIndexValue = this.parent.treeColumnIndex + 1;
+      } else {
+        treeColumnIndexValue = this.parent.treeColumnIndex;
+      }
       this.parent.renderModule.cellRender({
         data: cellDetails.rowData,
-        cell: this.parent.getRows()[selectRowIndex].cells[this.parent.treeColumnIndex],
+        cell: this.parent.getRows()[selectRowIndex].cells[treeColumnIndexValue],
         column: this.parent.grid.getColumns()[this.parent.treeColumnIndex]
       });
       this.updateGridEditMode('Normal');
@@ -351,7 +357,12 @@ export class Edit {
         if (details.value[key] === data[i][key]) {
           if (details.action === 'add') {
             data[i].level = this.internalProperties.level;
-            data[i].parentItem = this.internalProperties.parentItem;
+            data[i].taskData = this.internalProperties.taskData;
+            data[i].uniqueID = this.internalProperties.uniqueID;
+            if (!isNullOrUndefined(this.internalProperties.parentItem)) {
+              data[i].parentItem = this.internalProperties.parentItem;
+              data[i].parentUniqueID = this.internalProperties.parentUniqueID;
+            }
           }
         }
         setValue('uniqueIDCollection.' + data[i].uniqueID + '.index', i, this.parent);
@@ -417,17 +428,15 @@ export class Edit {
         movableRows = this.parent.getMovableDataRows();
       }
       if (this.parent.editSettings.mode !== 'Dialog') {
-        if (this.parent.editSettings.newRowPosition === 'Child' && !((<ITreeData>records[index]).expanded) &&
-        (<ITreeData>records[index][this.parent.childMapping]) && (<ITreeData>records[index][this.parent.childMapping].length)) {
-          this.parent.expandRow(<HTMLTableRowElement>rows[index + 1], records[index]);
-        }
         if (this.parent.editSettings.newRowPosition === 'Above') {
           position = 'before';
         } else if ((this.parent.editSettings.newRowPosition === 'Below' || this.parent.editSettings.newRowPosition === 'Child')
           && this.selectedIndex > -1) {
           position = 'after';
           // let records: Object[] = this.batchRecords.length ? this.batchRecords : this.parent.grid.getCurrentViewRecords();
-          index += findChildrenRecords(records[index]).length;
+          if ((records[index] as ITreeData).expanded) {
+            index += findChildrenRecords(records[index]).length;
+          }
         }
         if (this.selectedIndex > -1 && (index || (this.parent.editSettings.newRowPosition === 'Child'
           || this.parent.editSettings.newRowPosition === 'Below'))) {
@@ -591,7 +600,8 @@ export class Edit {
           value.hasChildRecords = false; value.childRecords = []; value.index = 0;
       }
       if (args.action === 'add') {
-        this.internalProperties = {level: value.level, parentItem: value.parentItem};
+        this.internalProperties = { level: value.level, parentItem: value.parentItem, uniqueID: value.uniqueID,
+          taskData: value.taskData, parentUniqueID: isNullOrUndefined(value.parentItem) ? undefined : value.parentItem.uniqueID };
       }
       if (args.requestType === 'delete') {
         let deletedValues: ITreeData[] = args.data as Object[];

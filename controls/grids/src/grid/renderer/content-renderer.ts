@@ -695,6 +695,7 @@ export class ContentRender implements IRenderer {
     }
 
     public renderEmpty(tbody: HTMLElement): void {
+        if (isBlazor() && !this.parent.isJsComponent && this.parent.frozenRows) { return; }
         this.getTable().appendChild(tbody);
         if (this.parent.frozenRows) {
             this.parent.getHeaderContent().querySelector('tbody').innerHTML = '';

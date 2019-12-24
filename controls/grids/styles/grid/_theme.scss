@@ -214,6 +214,11 @@
       color: $grid-sortnumber-color;
     }
 
+    &.e-gridhover .e-frozenhover {
+      background-color: $grid-hover-bg-color;
+      color: $grid-hover-content-font-color;
+    }
+
     .e-col-menu.e-filter-popup {
       box-shadow: $grid-column-menu-sub-menu-box-shadow;
     }

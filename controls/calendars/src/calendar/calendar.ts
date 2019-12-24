@@ -719,6 +719,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     // tslint:disable-next-line:max-func-body-length
     protected keyActionHandle(e: KeyboardEventArgs, value?: Date, multiSelection?: boolean): void {
         if (isBlazor() && this.blazorRef) {
+            e.preventDefault();
             if (!this.tableBodyElement) {
                 this.element = closest((e.target as Element), '.' + 'e-calendar') as HTMLElement;
                 this.tableBodyElement = this.element.querySelector('tbody');

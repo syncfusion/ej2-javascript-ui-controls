@@ -824,7 +824,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         let ariaAttributes: { [key: string]: string } = {
             'aria-disabled': 'false',
             'aria-owns': this.element.id + '_options',
-            'role': 'textbox',
+            'role': 'listbox',
             'aria-multiselectable': 'true',
             'aria-activedescendant': 'null',
             'aria-haspopup': 'true',
@@ -1110,7 +1110,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
     /**
-     * To filter the data from given data source by using query
+     * To filter the multiselect data from given data source by using query
      * @param  {Object[] | DataManager } dataSource - Set the data source to filter.
      * @param  {Query} query - Specify the query to filter the data.
      * @param  {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
@@ -2637,6 +2637,8 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.setProperties({ text: text.toString() }, true);
         if (delim) {
             this.delimiterWrapper.innerHTML = data;
+            this.delimiterWrapper.setAttribute('id', getUniqueID('delim_val'));
+            this.inputElement.setAttribute('aria-describedby', this.delimiterWrapper.id);
         }
         let targetEle: HTMLElement = e && e.target as HTMLElement;
         let isClearAll: boolean = (targetEle && targetEle.classList.contains('e-close-hooker')) ? true : null;
@@ -3617,6 +3619,18 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
     /**
+     * Adds a new item to the multiselect popup list. By default, new item appends to the list as the last item,
+     * but you can insert based on the index parameter.
+     * @param  { Object[] } items - Specifies an array of JSON data or a JSON data.
+     * @param { number } itemIndex - Specifies the index to place the newly added item in the popup list.
+     * @return {void}.
+     */
+    public addItem(
+        items: { [key: string]: Object }[] | { [key: string]: Object } | string | boolean | number | string[] | boolean[] | number[],
+        itemIndex?: number): void {
+            super.addItem(items, itemIndex);
+        }
+    /**
      * Hides the popup, if the popup in a open state.
      * @returns void
      */
@@ -3726,6 +3740,11 @@ export class MultiSelect extends DropDownBase implements IInput {
                 className: CHIP_WRAPPER,
                 styles: 'display:none'
             });
+            if (this.mode === 'Default') {
+                this.chipCollectionWrapper.setAttribute('id', getUniqueID('chip_default'));
+            } else if (this.mode === 'Box') {
+                this.chipCollectionWrapper.setAttribute('id', getUniqueID('chip_box'));
+            }
             this.componentWrapper.appendChild(this.chipCollectionWrapper);
         }
         if (this.mode !== 'Box') {
@@ -3747,6 +3766,9 @@ export class MultiSelect extends DropDownBase implements IInput {
                 tabindex: '0'
             }
         }) as HTMLInputElement;
+        if (this.mode === 'Default' || this.mode === 'Box') {
+            this.inputElement.setAttribute('aria-describedby', this.chipCollectionWrapper.id);
+        }
         if (this.element.tagName !== this.getNgDirective()) {
             this.element.style.display = 'none';
         }

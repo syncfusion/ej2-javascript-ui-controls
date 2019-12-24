@@ -451,7 +451,9 @@ export class TextSearch {
     private addDivForSearch(index: number, pageIndex: number, characterBounds: any, queryLength: number, className: string): void {
         let textLayer: HTMLElement = this.pdfViewerBase.getElement('_textLayer_' + pageIndex);
         if (isNullOrUndefined(textLayer) && className === 'e-pv-search-text-highlight') {
-            this.pdfViewer.navigation.goToPage(pageIndex + 1);
+            if (this.pdfViewer.navigation) {
+                this.pdfViewer.navigation.goToPage(pageIndex + 1);
+            }
         }
         let count: number = this.searchMatches[pageIndex][index];
         let initial: number = count;
@@ -585,14 +587,18 @@ export class TextSearch {
         let searchDivs: NodeList = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_searchtext_' + pageIndex + '"]');
         for (let i: number = 0; i < searchDivs.length; i++) {
             let textDiv: HTMLElement = searchDivs[i] as HTMLElement;
+            let previousZoomFactor: number = 1;
+            if (this.pdfViewer.magnificationModule) {
+                previousZoomFactor = this.pdfViewer.magnificationModule.previousZoomFactor;
+            }
             // tslint:disable-next-line
-            textDiv.style.width = (parseFloat(textDiv.style.width) / this.pdfViewer.magnificationModule.previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
+            textDiv.style.width = (parseFloat(textDiv.style.width) / previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
             // tslint:disable-next-line
-            textDiv.style.height = (parseFloat(textDiv.style.height) / this.pdfViewer.magnificationModule.previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
+            textDiv.style.height = (parseFloat(textDiv.style.height) / previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
             // tslint:disable-next-line
-            textDiv.style.top = (parseFloat(textDiv.style.top) / this.pdfViewer.magnificationModule.previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
+            textDiv.style.top = (parseFloat(textDiv.style.top) / previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
             // tslint:disable-next-line
-            textDiv.style.left = (parseFloat(textDiv.style.left) / this.pdfViewer.magnificationModule.previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
+            textDiv.style.left = (parseFloat(textDiv.style.left) / previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
         }
     }
 

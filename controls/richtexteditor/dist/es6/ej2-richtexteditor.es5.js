@@ -1817,6 +1817,7 @@ var ToolbarRenderer = /** @__PURE__ @class */ (function () {
         args.element.tabIndex = -1;
         dropDown.element.removeAttribute('type');
         dropDown.element.onmousedown = function () { proxy.parent.notify(selectionSave, {}); };
+        dropDown.element.onkeydown = function () { proxy.parent.notify(selectionSave, {}); };
         return dropDown;
     };
     ToolbarRenderer.prototype.pickerRefresh = function (dropDownArgs) {
@@ -3072,6 +3073,27 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
     Toolbar$$1.prototype.dropDownBeforeOpenHandler = function () {
         this.isToolbar = true;
     };
+    Toolbar$$1.prototype.tbFocusHandler = function (e) {
+        var activeElm = document.activeElement;
+        var isToolbaractive = closest(activeElm, '.e-rte-toolbar');
+        if (activeElm === this.parent.getToolbarElement() || isToolbaractive === this.parent.getToolbarElement()) {
+            var toolbarItem = this.parent.getToolbarElement().querySelectorAll('.e-expended-nav');
+            for (var i = 0; i < toolbarItem.length; i++) {
+                if (isNullOrUndefined(this.parent.getToolbarElement().querySelector('.e-insert-table-btn'))) {
+                    toolbarItem[i].setAttribute('tabindex', '0');
+                }
+                else {
+                    toolbarItem[i].setAttribute('tabindex', '1');
+                }
+            }
+        }
+    };
+    Toolbar$$1.prototype.tbKeydownHandler = function (e) {
+        if (e.target.classList.contains('e-dropdown-btn') ||
+            e.target.getAttribute('id') === this.parent.getID() + '_toolbar_CreateTable') {
+            e.target.setAttribute('tabindex', '0');
+        }
+    };
     Toolbar$$1.prototype.toolbarMouseDownHandler = function (e) {
         var trg = closest(e.target, '.e-hor-nav');
         if (trg && this.parent.toolbarSettings.type === ToolbarType.Expand && !isNullOrUndefined(trg)) {
@@ -3096,9 +3118,13 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             return;
         }
         EventHandler.add(this.tbElement, 'click mousedown', this.toolbarMouseDownHandler, this);
+        EventHandler.add(this.tbElement, 'focusin', this.tbFocusHandler, this);
+        EventHandler.add(this.tbElement, 'keydown', this.tbKeydownHandler, this);
     };
     Toolbar$$1.prototype.unWireEvents = function () {
         EventHandler.remove(this.tbElement, 'click mousedown', this.toolbarMouseDownHandler);
+        EventHandler.remove(this.tbElement, 'focusin', this.tbFocusHandler);
+        EventHandler.remove(this.tbElement, 'keydown', this.tbKeydownHandler);
     };
     Toolbar$$1.prototype.addEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -9022,54 +9048,56 @@ var Formats = /** @__PURE__ @class */ (function () {
         return node;
     };
     Formats.prototype.onKeyDown = function (e) {
-        var range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
-        var startCon = (range.startContainer.textContent.length === 0 || range.startContainer.nodeName === 'PRE')
-            ? range.startContainer : range.startContainer.parentElement;
-        var endCon = (range.endContainer.textContent.length === 0 || range.endContainer.nodeName === 'PRE')
-            ? range.endContainer : range.endContainer.parentElement;
-        var preElem = closest(startCon, 'pre');
-        var endPreElem = closest(endCon, 'pre');
-        var liParent = !isNullOrUndefined(preElem) && !isNullOrUndefined(preElem.parentElement) && preElem.parentElement.tagName === 'LI';
-        if (liParent) {
-            return;
-        }
-        if (((isNullOrUndefined(preElem) && !isNullOrUndefined(endPreElem)) || (!isNullOrUndefined(preElem) && isNullOrUndefined(endPreElem)))) {
-            e.event.preventDefault();
-            this.deleteContent(range);
-            this.removeCodeContent(range);
-            range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
-            this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, endCon, 0);
-        }
-        if (e.event.which === 13 && !isNullOrUndefined(preElem) && !isNullOrUndefined(endPreElem)) {
-            e.event.preventDefault();
-            this.deleteContent(range);
-            this.removeCodeContent(range);
-            range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
-            var lastEmpty = range.startContainer.childNodes[range.endOffset];
-            var lastBeforeBr = range.startContainer.childNodes[range.endOffset - 1];
-            var startParent = range.startContainer;
-            if (!isNullOrUndefined(lastEmpty) && !isNullOrUndefined(lastBeforeBr) && isNullOrUndefined(lastEmpty.nextSibling) &&
-                lastEmpty.nodeName === 'BR' && lastBeforeBr.nodeName === 'BR') {
-                this.paraFocus(range.startContainer);
+        if (e.event.which === 13) {
+            var range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+            var startCon = (range.startContainer.textContent.length === 0 || range.startContainer.nodeName === 'PRE')
+                ? range.startContainer : range.startContainer.parentElement;
+            var endCon = (range.endContainer.textContent.length === 0 || range.endContainer.nodeName === 'PRE')
+                ? range.endContainer : range.endContainer.parentElement;
+            var preElem = closest(startCon, 'pre');
+            var endPreElem = closest(endCon, 'pre');
+            var liParent = !isNullOrUndefined(preElem) && !isNullOrUndefined(preElem.parentElement) && preElem.parentElement.tagName === 'LI';
+            if (liParent) {
+                return;
             }
-            else if ((startParent.textContent.charCodeAt(0) === 8203 &&
-                startParent.textContent.length === 1) || startParent.textContent.length === 0) {
-                //Double enter with any parent tag for the node
-                while (startParent.parentElement.nodeName !== 'PRE' &&
-                    (startParent.textContent.length === 1 || startParent.textContent.length === 0)) {
-                    startParent = startParent.parentElement;
+            if (((isNullOrUndefined(preElem) && !isNullOrUndefined(endPreElem)) || (!isNullOrUndefined(preElem) && isNullOrUndefined(endPreElem)))) {
+                e.event.preventDefault();
+                this.deleteContent(range);
+                this.removeCodeContent(range);
+                range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+                this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, endCon, 0);
+            }
+            if (e.event.which === 13 && !isNullOrUndefined(preElem) && !isNullOrUndefined(endPreElem)) {
+                e.event.preventDefault();
+                this.deleteContent(range);
+                this.removeCodeContent(range);
+                range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+                var lastEmpty = range.startContainer.childNodes[range.endOffset];
+                var lastBeforeBr = range.startContainer.childNodes[range.endOffset - 1];
+                var startParent = range.startContainer;
+                if (!isNullOrUndefined(lastEmpty) && !isNullOrUndefined(lastBeforeBr) && isNullOrUndefined(lastEmpty.nextSibling) &&
+                    lastEmpty.nodeName === 'BR' && lastBeforeBr.nodeName === 'BR') {
+                    this.paraFocus(range.startContainer);
                 }
-                if (!isNullOrUndefined(startParent.previousSibling) && startParent.previousSibling.nodeName === 'BR' &&
-                    isNullOrUndefined(startParent.nextSibling)) {
-                    this.paraFocus(startParent.parentElement);
+                else if ((startParent.textContent.charCodeAt(0) === 8203 &&
+                    startParent.textContent.length === 1) || startParent.textContent.length === 0) {
+                    //Double enter with any parent tag for the node
+                    while (startParent.parentElement.nodeName !== 'PRE' &&
+                        (startParent.textContent.length === 1 || startParent.textContent.length === 0)) {
+                        startParent = startParent.parentElement;
+                    }
+                    if (!isNullOrUndefined(startParent.previousSibling) && startParent.previousSibling.nodeName === 'BR' &&
+                        isNullOrUndefined(startParent.nextSibling)) {
+                        this.paraFocus(startParent.parentElement);
+                    }
+                    else {
+                        this.isNotEndCursor(preElem, range);
+                    }
                 }
                 else {
+                    //Cursor at start and middle
                     this.isNotEndCursor(preElem, range);
                 }
-            }
-            else {
-                //Cursor at start and middle
-                this.isNotEndCursor(preElem, range);
             }
         }
     };
@@ -16514,6 +16542,12 @@ var ViewSource = /** @__PURE__ @class */ (function () {
                 this.updateSourceCode(event);
                 event.preventDefault();
                 break;
+            case 'toolbar-focus':
+                if (this.parent.toolbarSettings.enable) {
+                    var selector = '.e-toolbar-item[aria-disabled="false"][title] [tabindex]';
+                    this.parent.toolbarModule.baseToolbar.toolbarObj.element.querySelector(selector).focus();
+                }
+                break;
         }
     };
     ViewSource.prototype.onKeyDown = function (e) {
@@ -17452,8 +17486,11 @@ var Table = /** @__PURE__ @class */ (function () {
         this.dlgDiv.appendChild(this.parent.createElement('span', { className: 'e-span-border' }));
         var btnEle = this.parent.createElement('button', {
             className: 'e-insert-table-btn', id: this.rteID + '_insertTable',
-            attrs: { type: 'button' }
+            attrs: { type: 'button', tabindex: '0' }
         });
+        if (!isNullOrUndefined(this.parent.getToolbarElement().querySelector('.e-expended-nav'))) {
+            this.parent.getToolbarElement().querySelector('.e-expended-nav').setAttribute('tabindex', '1');
+        }
         this.dlgDiv.appendChild(btnEle);
         var button = new Button({
             iconCss: 'e-icons e-create-table', content: insertbtn, cssClass: 'e-flat',
@@ -19755,8 +19792,10 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(this.getToolbarElement())) {
             var toolbarItem = this.getToolbarElement().querySelectorAll('input,select,button,a,[tabindex]');
             for (var i = 0; i < toolbarItem.length; i++) {
-                if (!toolbarItem[i].hasAttribute('tabindex') ||
-                    toolbarItem[i].getAttribute('tabindex') !== '-1') {
+                if ((!toolbarItem[i].classList.contains('e-rte-dropdown-btn') &&
+                    !toolbarItem[i].classList.contains('e-insert-table-btn')) &&
+                    (!toolbarItem[i].hasAttribute('tabindex') ||
+                        toolbarItem[i].getAttribute('tabindex') !== '-1')) {
                     toolbarItem[i].setAttribute('tabindex', '-1');
                 }
             }

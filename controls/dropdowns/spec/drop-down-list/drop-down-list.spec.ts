@@ -5182,4 +5182,35 @@ describe('DDList', () => {
             expect(listObj.value === null).toBe(true);
         });
     });
+
+    describe('Fixed header maintained after reopening the popup', () => {
+        let listObj: any;
+        let popupObj: any;
+        let groupData = [
+            { vegetable: 'Cabbage', category: 'Leafy and Salad' }, { vegetable: 'Chickpea', category: 'Beans' },
+            { vegetable: 'Green bean', category: 'Beans' }, { vegetable: 'Horse gram', category: 'Beans' },
+            { vegetable: 'Garlic', category: 'Bulb and Stem' }, { vegetable: 'Nopal', category: 'Bulb and Stem' },
+            { vegetable: 'Onion', category: 'Bulb and Stem' }
+        ];
+        let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, charCode: 76 };
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        beforeEach(() => {
+            document.body.appendChild(element);
+        });
+        afterEach(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Pressing Down key in to scroll the popup down', () => {
+            listObj = new DropDownList({ dataSource: groupData, fields: { groupBy: 'category', text: 'vegetable' }, popupHeight: '100px'})
+            listObj.appendTo(element);
+            keyEventArgs.action = 'down';
+            keyEventArgs.action = 'down';
+            listObj.onSearch(keyEventArgs);
+            listObj.showPopup();
+            expect(listObj.popupObj.element.querySelector('.e-fixed-header')).toBe(null);
+        });
+    });
 });

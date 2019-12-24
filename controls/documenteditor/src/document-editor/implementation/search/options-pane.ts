@@ -66,8 +66,6 @@ export class OptionsPane {
     public tabInstance: Tab = undefined;
     private findTabContentDiv: HTMLElement;
     private replaceTabContentDiv: HTMLElement;
-    private findTabButtonHeader: HTMLElement;
-    private replaceTabButtonHeader: HTMLElement;
     /**
      * @private
      */
@@ -117,10 +115,8 @@ export class OptionsPane {
         let tabHeader: HTMLElement = createElement('div', { className: 'e-tab-header' });
         this.findTab.appendChild(tabHeader);
         this.findTabButton = createElement('div', { innerHTML: localeValue.getConstant(this.findPaneText) });
-        this.focusedElement.push(this.findTabButtonHeader);
         tabHeader.appendChild(this.findTabButton);
         this.replaceTabButton = createElement('div', { innerHTML: localeValue.getConstant(this.replacePaneText) });
-        this.focusedElement.push(this.replaceTabButtonHeader);
         tabHeader.appendChild(this.replaceTabButton);
         let tabContent: HTMLElement = createElement('div', { className: 'e-content' });
         let findTabContent: HTMLElement = createElement('div', { id: 'findTabContent' });
@@ -196,20 +192,11 @@ export class OptionsPane {
         this.findTab.appendChild(tabContent);
         this.tabInstance = new Tab({ enableRtl: isRtl, selected: this.selectedTabItem });
         this.tabInstance.appendTo(this.findTab);
-        let findHeader: HTMLElement = this.tabInstance.element.getElementsByClassName('e-item e-toolbar-item')[0] as HTMLElement;
-        this.findTabButtonHeader = findHeader.getElementsByClassName('e-tab-wrap')[0] as HTMLElement;
-        this.findTabButtonHeader.classList.add('e-de-op-find-tab-header');
-        this.findTabButtonHeader.tabIndex = 0;
-        let replaceHeader: HTMLElement = this.tabInstance.element.getElementsByClassName('e-item e-toolbar-item')[1] as HTMLElement;
-        this.replaceTabButtonHeader = replaceHeader.getElementsByClassName('e-tab-wrap')[0] as HTMLElement;
-        this.replaceTabButtonHeader.classList.add('e-de-op-replace-tab-header');
-        this.replaceTabButtonHeader.tabIndex = 0;
         this.onWireEvents();
         if (isRtl) {
             this.optionsPane.classList.add('e-de-rtl');
             this.closeButton.classList.add('e-de-rtl');
             this.searchDiv.classList.add('e-de-rtl');
-            this.findTabButtonHeader.classList.add('e-de-rtl');
         }
     }
     /**
@@ -462,7 +449,7 @@ export class OptionsPane {
                 listElement.children[0].classList.add('e-de-op-search-word-text');
             }
             this.navigateToNextResult.focus();
-            this.focusedIndex = 6;
+            this.focusedIndex = this.focusedElement.indexOf(this.navigateToNextResult);
             this.getMessageDivHeight();
             // } else {
             //this.focusedIndex = 4;
@@ -495,8 +482,8 @@ export class OptionsPane {
         this.messageDiv.style.display = 'block';
         this.focusedElement = [];
         // tslint:disable-next-line:max-line-length
-        this.focusedElement.push(this.closeButton, this.findTabButtonHeader, this.replaceTabButtonHeader, this.searchInput, this.searchIcon, this.navigateToPreviousResult, this.navigateToNextResult, this.matchInput, this.wholeInput);
-        this.focusedIndex = 3;
+        this.focusedElement.push(this.closeButton, this.searchInput, this.searchIcon, this.navigateToPreviousResult, this.navigateToNextResult, this.matchInput, this.wholeInput);
+        this.focusedIndex = 1;
         this.searchInput.select();
         this.getMessageDivHeight();
     }
@@ -539,8 +526,8 @@ export class OptionsPane {
         }
         this.focusedElement = [];
         // tslint:disable-next-line:max-line-length
-        this.focusedElement.push(this.closeButton, this.findTabButtonHeader, this.replaceTabButtonHeader, this.searchInput, this.searchIcon, this.navigateToPreviousResult, this.navigateToNextResult, this.matchInput, this.wholeInput, this.replaceWith, this.replaceButton, this.replaceAllButton);
-        this.focusedIndex = 9;
+        this.focusedElement.push(this.closeButton, this.searchInput, this.searchIcon, this.navigateToPreviousResult, this.navigateToNextResult, this.matchInput, this.wholeInput, this.replaceWith, this.replaceButton, this.replaceAllButton);
+        this.focusedIndex = 1;
         if (this.searchInput.value === '') {
             this.searchInput.select();
         } else {
@@ -609,7 +596,7 @@ export class OptionsPane {
                         }
                     }
                 } else {
-                    if (this.focusedIndex > 8) {
+                    if (this.focusedIndex > 6) {
                         index = this.focusedIndex - 1;
                         element = this.focusedElement[index];
                         element.focus();
@@ -898,7 +885,7 @@ export class OptionsPane {
                 this.focusedElement.splice(index, 1);
             }
         }
-        this.focusedIndex = 0;
+        this.focusedIndex = 1;
     }
     /**
      * Close the optios pane.
@@ -947,7 +934,9 @@ export class OptionsPane {
         this.messageDiv.innerHTML = this.localeValue.getConstant('Result') + ' ' + (index + 1) + ' ' + this.localeValue.getConstant('of') + ' ' + this.resultsListBlock.children.length;
         this.viewer.owner.searchModule.navigate(currentelement);
         this.viewer.owner.searchModule.highlight(this.results);
-        list.focus();
+        if (list) {
+            list.focus();
+        }
     }
     /**
      * Show or hide option pane based on boolean value.
@@ -1004,14 +993,14 @@ export class OptionsPane {
                     this.searchIcon.classList.remove('e-de-op-search-close-icon');
                 }
                 this.viewer.selection.caret.style.display = 'none';
-                this.focusedIndex = 3;
+                this.focusedIndex = 1;
                 this.focusedElement = [];
                 if (this.isOptionsPane) {
                     // tslint:disable-next-line:max-line-length
-                    this.focusedElement.push(this.closeButton, this.findTabButtonHeader, this.replaceTabButtonHeader, this.searchInput, this.searchIcon, this.navigateToPreviousResult, this.navigateToNextResult, this.matchInput, this.wholeInput);
+                    this.focusedElement.push(this.closeButton, this.searchInput, this.searchIcon, this.navigateToPreviousResult, this.navigateToNextResult, this.matchInput, this.wholeInput);
                 } else {
                     // tslint:disable-next-line:max-line-length
-                    this.focusedElement.push(this.closeButton, this.findTabButtonHeader, this.replaceTabButtonHeader, this.searchInput, this.searchIcon, this.navigateToPreviousResult, this.navigateToNextResult, this.matchInput, this.wholeInput, this.replaceWith, this.replaceButton, this.replaceAllButton);
+                    this.focusedElement.push(this.closeButton, this.searchInput, this.searchIcon, this.navigateToPreviousResult, this.navigateToNextResult, this.matchInput, this.wholeInput, this.replaceWith, this.replaceButton, this.replaceAllButton);
                 }
                 this.viewer.updateViewerSize();
             } else {

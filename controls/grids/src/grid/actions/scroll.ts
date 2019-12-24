@@ -84,6 +84,10 @@ export class Scroll implements IAction {
         let hDiv: HTMLDivElement = (<HTMLDivElement>this.parent.getHeaderContent().querySelector('.e-headercontent'));
         hDiv.style[cssProps.border] = '';
         hDiv.parentElement.style[cssProps.padding] = '';
+        let footerDiv: HTMLDivElement = (<HTMLDivElement>this.parent.getFooterContent());
+        if (footerDiv && footerDiv.classList.contains('e-footerpadding')) {
+            footerDiv.classList.remove('e-footerpadding');
+        }
     }
     /**
      * Refresh makes the Grid adoptable with the height of parent container.

@@ -198,7 +198,7 @@ export class DrillThroughDialog {
             allowReordering: true,
             showColumnChooser: true,
             toolbar: toolbarItems,
-            columns: this.frameGridColumns(),
+            columns: eventArgs.gridColumns,
             locale: this.parent.locale,
             enableRtl: this.parent.enableRtl,
             enableVirtualization: this.parent.editSettings.allowEditing,
@@ -260,8 +260,8 @@ export class DrillThroughDialog {
         drillThroughBody.appendChild(drillThroughGrid);
         return drillThroughBody;
     }
-
-    private frameGridColumns(): ColumnModel[] {
+    /** @hidden */
+    public frameGridColumns(): ColumnModel[] {
         let keys: string[] = this.parent.dataType === 'olap' ? this.gridData[0] ? Object.keys(this.gridData[0]) : [] :
             Object.keys(this.engine.fieldList);
         let columns: ColumnModel[] = [];
@@ -286,7 +286,7 @@ export class DrillThroughDialog {
                     } else if (this.engine.fieldList[key].type === 'date') {
                         editType = 'datepickeredit';
                     } else {
-                        editType = '';
+                        editType = 'defaultedit';
                     }
                     columns.push({
                         field: key,

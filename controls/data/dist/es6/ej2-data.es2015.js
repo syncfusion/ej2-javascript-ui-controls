@@ -609,7 +609,7 @@ class DataUtil {
      * @param  {string} substr
      */
     static endsWith(input, substr) {
-        return input.slice(-substr.length) === substr;
+        return input.slice && input.slice(-substr.length) === substr;
     }
     /**
      * Returns true if the input string starts with given string.

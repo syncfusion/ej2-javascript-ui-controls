@@ -354,7 +354,7 @@ export class PivotUtil {
         }
     }
 
-    private static cloneGroupSettings(collection: IGroupSettings[]): IGroupSettings[] {
+    public static cloneGroupSettings(collection: IGroupSettings[]): IGroupSettings[] {
         if (collection) {
             let clonedCollection: IGroupSettings[] = [];
             for (let set of collection) {
@@ -390,31 +390,16 @@ export class PivotUtil {
         }
     }
 
-    public static getSortItemByName(fieldName: string, sortObjects: ISort[]): ISort {
-        return new DataManager({ json: sortObjects }).executeLocal(new Query().where('name', 'equal', fieldName))[0] as ISort;
-    }
-
-    public static getFilterItemByName(fieldName: string, filterObjects: IFilter[]): IFilter {
-        let filterItems: IFilter[] = new DataManager({ json: filterObjects }).executeLocal(new Query().where('name', 'equal', fieldName));
+    public static getFilterItemByName(fieldName: string, fields: IFilter[]): IFilter {
+        let filterItems: IFilter[] = new DataManager({ json: fields }).executeLocal(new Query().where('name', 'equal', fieldName));
         if (filterItems && filterItems.length > 0) {
             return filterItems[filterItems.length - 1];
         }
         return undefined;
     }
 
-    public static getFieldByName(fieldName: string, fields: IFieldOptions[]): IFieldOptions {
-        return new DataManager({ json: fields }).executeLocal(new Query().where('name', 'equal', fieldName))[0] as IFieldOptions;
-    }
-
-    public static getFormatItemByName(fieldName: string, formatObjects: IFormatSettings[]): IFormatSettings {
-        return new DataManager({ json: formatObjects }).executeLocal(new Query().where('name', 'equal', fieldName))[0] as IFormatSettings;
-    }
-
-    public static getDrillItemByName(fieldName: string, drillObjects: IDrillOptions[]): IDrillOptions {
-        return new DataManager({ json: drillObjects }).executeLocal(new Query().where('name', 'equal', fieldName))[0] as IDrillOptions;
-    }
-
-    public static getGroupItemByName(fieldName: string, drillObjects: IGroupSettings[]): IGroupSettings {
-        return new DataManager({ json: drillObjects }).executeLocal(new Query().where('name', 'equal', fieldName))[0] as IGroupSettings;
+    /* tslint:disable-next-line:max-line-length */
+    public static getFieldByName(fieldName: string, fields: IFieldOptions[] | ISort[] | IFormatSettings[] | IDrillOptions[] | IGroupSettings[] | ICalculatedFieldSettings[]): IFieldOptions | ISort | IFormatSettings | IDrillOptions | IGroupSettings | ICalculatedFieldSettings {
+        return new DataManager({ json: fields }).executeLocal(new Query().where('name', 'equal', fieldName))[0];
     }
 }

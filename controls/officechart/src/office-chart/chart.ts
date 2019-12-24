@@ -326,9 +326,7 @@ export class ChartComponent {
             primaryXAxis.edgeLabelPlacement = 'Shift';
         }
         if (type === 'Scatter_Markers' || type === 'Bubble') {
-            primaryXAxis.minimum = data.minimumValue;
-            primaryXAxis.maximum = data.maximumValue;
-            primaryXAxis.interval = data.majorUnit;
+            this.checkAndSetAxisValue(primaryXAxis, data);
         }
         if (data.hasMajorGridLines) {
             primaryXAxis.majorGridLines = { width: 1 };
@@ -358,9 +356,7 @@ export class ChartComponent {
         if (data.chartTitle) {
             primaryYAxis.title = data.chartTitle;
         }
-        primaryYAxis.minimum = data.minimumValue;
-        primaryYAxis.maximum = data.maximumValue;
-        primaryYAxis.interval = data.majorUnit;
+        this.checkAndSetAxisValue(primaryYAxis, data);
         if (data.hasMajorGridLines) {
             primaryYAxis.majorGridLines = { width: 1 };
         }
@@ -369,7 +365,17 @@ export class ChartComponent {
         }
         return primaryYAxis;
     }
-
+    private checkAndSetAxisValue(primaryYAxis: any, data: any): any {
+        if (data.minimumValue !== 0) {
+            primaryYAxis.minimum = data.minimumValue;
+        }
+        if (data.maximumValue !== 0) {
+            primaryYAxis.maximum = data.maximumValue;
+        }
+        if (data.majorUnit !== 0) {
+            primaryYAxis.interval = data.majorUnit;
+        }
+    }
     private chartData(chart: any, type: string): any[] {
         // json data
         let data: any[] = chart.chartCategory;

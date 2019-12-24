@@ -13,7 +13,7 @@ import { data, filterData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { createGrid, destroy, getClickObj, getKeyActionObj } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from './common.spec';
-import { keyPressed, KeyboardEventArgs } from '../../../src';
+import { keyPressed, KeyboardEventArgs, columnChooserOpened } from '../../../src';
 import { Selection } from '../../../src/grid/actions/selection';
 Grid.Inject(Page);
 
@@ -1357,5 +1357,40 @@ describe('Grid base module', () => {
         afterAll(() => {
             destroy(gridObj);
             gridObj = null;
+        });
+    });
+
+    describe('clipMode testing in grid level', () => {
+        let gridObj: Grid;
+        let row: any;
+        let td: any;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: false,
+                    allowGrouping: true,
+                    clipMode:'EllipsisWithTooltip',
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', clipMode: 'Clip' },
+                        { headerText: 'CustomerID', field: 'CustomerID', clipMode: 'Ellipsis' },
+                        { headerText: 'OrderDate', field: 'OrderDate', clipMode:'EllipsisWithTooltip' },
+                        { headerText: 'EmployeeID', field: 'EmployeeID' },
+                        { headerText: 'ShipAddress', field: 'Shipping Address of the order'},
+                        { headerText: 'ShipCity', field: 'ShipCity' },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    ],
+                }, done);
+        });
+        it( 'class testing' , ()=>{
+            row = [gridObj.contentModule.getTable().children['1'].children];           
+            expect(row[0][0].cells[0].classList.contains('e-gridclip')).toBeTruthy();
+            expect(row[0][0].cells[2].classList.contains('e-ellipsistooltip')).toBeTruthy();
+            expect(row[0][0].cells[3].classList.contains('e-ellipsistooltip')).toBeTruthy();
+            expect(row[0][0].cells[1].classList.contains('e-ellipsistooltip')).toBeFalsy();             
+        });    
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = row = td = null;
         });
     });

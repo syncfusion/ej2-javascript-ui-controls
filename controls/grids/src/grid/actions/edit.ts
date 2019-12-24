@@ -22,6 +22,7 @@ import { calculateRelativeBasedPosition, OffsetPosition } from '@syncfusion/ej2-
 import { EJ2Intance } from '../base/interface';
 import { TemplateEditCell } from '../renderer/template-edit-cell';
 import { DataUtil } from '@syncfusion/ej2-data';
+import { Row } from '../models/row';
 
 /**
  * The `Edit` module is used to handle editing actions.
@@ -247,7 +248,10 @@ export class Edit implements IAction {
      */
     public deleteRow(tr: HTMLTableRowElement): void {
         this.deleteRowUid = tr.getAttribute('data-uid');
-        this.deleteRecord(null, this.parent.getRowObjectFromUID(this.deleteRowUid).data);
+        let rowObj: Row<Column> = this.parent.getRowObjectFromUID(this.deleteRowUid);
+        if (!isNullOrUndefined(rowObj)) {
+            this.deleteRecord(null, rowObj.data);
+        }
     }
 
     /**
@@ -526,6 +530,10 @@ export class Edit implements IAction {
                             !isNullOrUndefined((<EJ2Intance>(element as Element)).ej2_instances[0].value)) {
                             element.blur();
                             value = ((<EJ2Intance>(element as Element)).ej2_instances[0] as { value?: string | boolean | Date }).value;
+                            if ((column.type === 'date' || column.type === 'dateTime') &&
+                            ((<EJ2Intance>(element as Element)).ej2_instances[0].isServerRendered)) {
+                                value = element.value;
+                            }
                         }
                     }
                     if (column.edit && typeof column.edit.read === 'string') {
@@ -810,16 +818,42 @@ export class Edit implements IAction {
         }
     }
 
+    // tslint:disable-next-line:max-func-body-length
     private createTooltip(element: Element, error: HTMLElement, name: string, display: string): void {
         let gcontent: HTMLElement = this.parent.getContent().firstElementChild as HTMLElement;
+        if (this.parent.getFrozenColumns()) {
+            gcontent = this.parent.getMovableVirtualContent() as HTMLElement;
+        }
         let isScroll: boolean = gcontent.scrollHeight > gcontent.clientHeight || gcontent.scrollWidth > gcontent.clientWidth;
         let isInline: boolean = this.parent.editSettings.mode !== 'Dialog';
-        let isFHdr: boolean;
-        if (isInline) {
-            isFHdr = (this.parent.frozenRows && this.parent.frozenRows
-                > (parseInt(closest(element, '.e-row').getAttribute('aria-rowindex'), 10) || 0));
-        }
+        let td: Element = closest(element, '.e-rowcell');
+        let row: Element = closest(element, '.e-row');
         let fCont: Element = this.parent.getContent().querySelector('.e-frozencontent');
+        let isFHdr: boolean;
+        let isFHdrLastRow: boolean = false;
+        let validationForBottomRowPos: boolean;
+        let isBatchModeLastRow: boolean = false;
+        if (this.parent.editSettings.mode === 'Batch') {
+            let rows: Element[] = !fCont ? [].slice.call(this.parent.getContent().querySelectorAll('.e-row'))
+                : [].slice.call(this.parent.getFrozenVirtualContent().querySelectorAll('.e-row'));
+            if (rows[rows.length - 1].getAttribute('aria-rowindex') === row.getAttribute('aria-rowindex')) {
+                isBatchModeLastRow = true;
+            }
+        }
+        if (isInline) {
+            if (this.parent.frozenRows) {
+                let fHeraderRows: HTMLCollection = this.parent.getFrozenColumns() ?
+                    this.parent.getFrozenVirtualHeader().querySelector('tbody').children
+                    : this.parent.getHeaderTable().querySelector('tbody').children;
+                isFHdr = fHeraderRows.length > (parseInt(row.getAttribute('aria-rowindex'), 10) || 0);
+                isFHdrLastRow = isFHdr && parseInt(row.getAttribute('aria-rowindex'), 10) === fHeraderRows.length - 1;
+            }
+            if (isFHdrLastRow || (this.parent.editSettings.newRowPosition === 'Bottom' && (this.editModule.args
+                && this.editModule.args.requestType === 'add')) || (td.classList.contains('e-lastrowcell')
+                    && !row.classList.contains('e-addedrow')) || isBatchModeLastRow) {
+                validationForBottomRowPos = true;
+            }
+        }
         let table: Element = isInline ?
             (isFHdr ? this.parent.getHeaderTable() : this.parent.getContentTable()) :
             document.querySelector('#' + this.parent.element.id + '_dialogEdit_wrapper').querySelector('.e-dlg-content');
@@ -843,11 +877,6 @@ export class Edit implements IAction {
         }
         let content: Element = this.parent.createElement('div', { className: 'e-tip-content' });
         content.appendChild(error);
-        let validationForBottomRowPos: boolean;
-        if (this.parent.editSettings.newRowPosition === 'Bottom' && this.parent.editSettings.mode !== 'Dialog' &&
-        ((this.editModule.args && this.editModule.args.requestType === 'add') || this.editModule.isAdded)) {
-            validationForBottomRowPos = true;
-        }
         let arrow: Element;
         if (validationForBottomRowPos) {
             arrow = this.parent.createElement('div', { className: 'e-arrow-tip e-tip-bottom' });
@@ -860,13 +889,14 @@ export class Edit implements IAction {
         }
         div.appendChild(content);
         div.appendChild(arrow);
-        if (this.parent.getFrozenColumns() && this.parent.editSettings.mode !== 'Dialog') {
+        if ((this.parent.getFrozenColumns() || this.parent.frozenRows) && this.parent.editSettings.mode !== 'Dialog') {
             let getEditCell: HTMLElement = this.parent.editSettings.mode === 'Normal' ?
-            closest(element, '.e-editcell') as HTMLElement : closest(element, '.e-table') as HTMLElement;
+                closest(element, '.e-editcell') as HTMLElement : closest(element, '.e-table') as HTMLElement;
             getEditCell.style.position = 'relative';
             div.style.position = 'absolute';
             if (this.parent.editSettings.mode === 'Batch' ||
-                (closest(element, '.e-frozencontent') || closest(element, '.e-frozenheader'))) {
+                (closest(element, '.e-frozencontent') || closest(element, '.e-frozenheader'))
+                || (this.parent.frozenRows && !this.parent.getFrozenColumns())) {
                 this.formObj.element.appendChild(div);
             } else {
                 this.mFormObj.element.appendChild(div);
@@ -874,7 +904,7 @@ export class Edit implements IAction {
         } else {
             this.formObj.element.appendChild(div);
         }
-        if (isInline && gcontent.getBoundingClientRect().bottom < inputClient.bottom + inputClient.height) {
+        if (!validationForBottomRowPos && isInline && gcontent.getBoundingClientRect().bottom < inputClient.bottom + inputClient.height) {
             gcontent.scrollTop = gcontent.scrollTop + div.offsetHeight + arrow.scrollHeight;
         }
         let lineHeight: number = parseInt(
@@ -884,22 +914,21 @@ export class Edit implements IAction {
             div.querySelector('label').getBoundingClientRect().height / (lineHeight * 1.2) >= 2) {
             div.style.width = div.style.maxWidth;
         }
-        if (this.parent.getFrozenColumns() && (this.parent.editSettings.mode === 'Normal' || this.parent.editSettings.mode === 'Batch')) {
+        if ((this.parent.getFrozenColumns() || this.parent.frozenRows)
+            && (this.parent.editSettings.mode === 'Normal' || this.parent.editSettings.mode === 'Batch')) {
             div.style.left = input.offsetLeft + (input.offsetWidth / 2 - div.offsetWidth / 2) + 'px';
         } else {
             div.style.left = (parseInt(div.style.left, 10) - div.offsetWidth / 2) + 'px';
         }
-        if (isInline && !isScroll && (!this.parent.allowPaging || (this.parent.getFrozenColumns() && this.parent.frozenRows
-            && !isNullOrUndefined(parentsUntil(div, 'e-headercontent')) && this.parent.allowPaging))) {
+        if (isInline && !isScroll && !this.parent.allowPaging || this.parent.getFrozenColumns() || this.parent.frozenRows) {
             gcontent.style.position = 'static';
             let pos: OffsetPosition = calculateRelativeBasedPosition(input, div);
             div.style.top = pos.top + inputClient.height + 9 + 'px';
         }
         if (validationForBottomRowPos) {
-            if (isScroll) {
-                let scrollElem: HTMLElement = this.parent.getContent().firstElementChild as HTMLElement;
-                let scrollWidth: number = scrollElem.scrollWidth > scrollElem.offsetWidth ? getScrollBarWidth() : 0;
-                div.style.bottom = ((this.parent.height as number) - (this.parent.getContentTable() as HTMLElement).offsetHeight
+            if (isScroll && !this.parent.getFrozenColumns() && this.parent.height !== 'auto' && !this.parent.frozenRows) {
+                let scrollWidth: number = gcontent.scrollWidth > gcontent.offsetWidth ? getScrollBarWidth() : 0;
+                div.style.bottom = ((this.parent.height as number) - gcontent.querySelector('table').offsetHeight
                     - scrollWidth) + inputClient.height + 9 + 'px';
             } else {
                 div.style.bottom = inputClient.height + 9 + 'px';

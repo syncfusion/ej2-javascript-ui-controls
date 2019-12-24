@@ -317,7 +317,7 @@ export function throwError(message: string): void {
  */
 export function print(element: Element, printWindow?: Window): Window {
     let div: Element = document.createElement('div');
-    let links: HTMLElement[] = [].slice.call(document.getElementsByTagName('head')[0].querySelectorAll('link, style'));
+    let links: HTMLElement[] = [].slice.call(document.getElementsByTagName('head')[0].querySelectorAll('base, link, style'));
     let reference: string = '';
     if (isNullOrUndefined(printWindow)) {
         printWindow = window.open('', 'print', 'height=452,width=1024,tabbar=no');

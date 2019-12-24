@@ -83,7 +83,7 @@ export class EnforceProtectionDialog {
     public okButtonClick = (): void => {
         if (this.passwordTextBox.value !== this.confirmPasswordTextBox.value) {
             /* tslint:disable */
-            DialogUtility.alert("The password don't match");
+            DialogUtility.alert(this.localeValue.getConstant('Password Mismatch'));
             /* tslint:enable */
         } else {
             this.password = this.passwordTextBox.value;

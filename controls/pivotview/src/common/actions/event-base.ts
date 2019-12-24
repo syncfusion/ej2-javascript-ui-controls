@@ -1,8 +1,7 @@
 import { isNullOrUndefined, removeClass, addClass } from '@syncfusion/ej2-base';
-import { DataManager, Query } from '@syncfusion/ej2-data';
 import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
-import { ISort, IFilter, IAxisSet, IFormatSettings, IFieldOptions, IMembers, PivotEngine, IField } from '../../base/engine';
+import { ISort, IFilter, IAxisSet, IMembers, PivotEngine, IField } from '../../base/engine';
 import { MaskChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { TreeView } from '@syncfusion/ej2-navigations';
 import { OlapEngine, IOlapField } from '../../base/olap/engine';
@@ -54,7 +53,7 @@ export class EventBase {
                 isDescending = true;
             }
             //isDescending = (target.querySelectorAll(cls.SORT_DESCEND_CLASS));
-            let sortObj: ISort = this.getSortItemByName(fieldName);
+            let sortObj: ISort = PivotUtil.getFieldByName(fieldName, this.parent.dataSourceSettings.sortSettings) as ISort;
             if (!isNullOrUndefined(sortObj)) {
                 for (let i: number = 0; i < this.parent.dataSourceSettings.sortSettings.length; i++) {
                     if (this.parent.dataSourceSettings.sortSettings[i].name === fieldName) {
@@ -116,7 +115,7 @@ export class EventBase {
                                 ((b.actualText < a.actualText) ? -1 : 0))) :
                             this.parent.engineModule.fieldList[fieldName].dateMember;
                 /* tslint:enable:typedef */
-                let filterObj: IFilter = this.getFilterItemByName(fieldName);
+                let filterObj: IFilter = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
                 if (!isNullOrUndefined(filterObj)) {
                     isInclude = this.isValidFilterItemsAvail(fieldName, filterObj) && filterObj.type === 'Include' ? true : false;
                     filterItems = filterObj.items ? filterObj.items : [];
@@ -164,7 +163,7 @@ export class EventBase {
         this.parent.filterDialog.isSearchEnabled = false;
         let updatedTreeData: { [key: string]: Object }[] = [];
         let engineModule: OlapEngine = this.parent.engineModule as OlapEngine;
-        let filterObj: IFilter = this.getFilterItemByName(fieldName);
+        let filterObj: IFilter = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
         if (engineModule.fieldList[fieldName].filterMembers.length === 0) {
             if (!this.parent.control.loadOnDemandInMemberEditor) {
                 engineModule.getMembers(this.parent.dataSourceSettings, fieldName, true);
@@ -218,57 +217,6 @@ export class EventBase {
             /* tslint:enable:typedef */
         }
         return treeData;
-    }
-
-    /**
-     * Gets sort object for the given field name from the dataSource.
-     * @method getSortItemByName
-     * @param  {string} fieldName - Gets sort settings for the given field name.
-     * @return {ISort}
-     * @hidden
-     */
-    public getSortItemByName(fieldName: string): ISort {
-        let sortObjects: ISort[] = this.parent.dataSourceSettings.sortSettings;
-        return new DataManager({ json: sortObjects }).executeLocal(new Query().where('name', 'equal', fieldName))[0] as ISort;
-    }
-
-    /**
-     * Gets filter object for the given field name from the dataSource.
-     * @method getFilterItemByName
-     * @param  {string} fieldName - Gets filter settings for the given field name.
-     * @return {IFilter}
-     * @hidden
-     */
-    public getFilterItemByName(fieldName: string): IFilter {
-        let filterObjects: IFilter[] = this.parent.dataSourceSettings.filterSettings;
-        let filterItems: IFilter[] = new DataManager({ json: filterObjects }).executeLocal(new Query().where('name', 'equal', fieldName));
-        if (filterItems && filterItems.length > 0) {
-            return filterItems[filterItems.length - 1];
-        }
-        return undefined;
-    }
-
-    /**
-     * Gets filter object for the given field name from the dataSource.
-     * @method getFieldByName
-     * @param  {string} fieldName - Gets filter settings for the given field name.
-     * @return {Sort}
-     * @hidden
-     */
-    public getFieldByName(fieldName: string, fields: IFieldOptions[]): IFieldOptions {
-        return new DataManager({ json: fields }).executeLocal(new Query().where('name', 'equal', fieldName))[0] as IFieldOptions;
-    }
-
-    /**
-     * Gets format object for the given field name from the dataSource.
-     * @method getFilterItemByName
-     * @param  {string} fieldName - Gets format settings for the given field name.
-     * @return {IFormatSettings}
-     * @hidden
-     */
-    public getFormatItemByName(fieldName: string): IFormatSettings {
-        let formatObjects: IFormatSettings[] = this.parent.dataSourceSettings.formatSettings;
-        return new DataManager({ json: formatObjects }).executeLocal(new Query().where('name', 'equal', fieldName))[0] as IFormatSettings;
     }
 
     private getParentIDs(treeObj: TreeView, id: string, parent: string[]): string[] {

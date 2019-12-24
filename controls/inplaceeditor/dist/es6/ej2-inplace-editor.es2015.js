@@ -979,6 +979,17 @@ let InPlaceEditor = class InPlaceEditor extends Component {
                 this.cancelHandler();
             }
         }
+        if (e.keyCode === 9 && e.shiftKey === false &&
+            (isNullOrUndefined(e.target.nextElementSibling) ||
+                e.target.nextElementSibling.tagName !== 'BUTTON')) {
+            if (this.actionOnBlur === 'Submit') {
+                this.save();
+                this.cancelHandler();
+            }
+            else if (this.actionOnBlur === 'Cancel') {
+                this.cancelHandler();
+            }
+        }
     }
     afterOpenHandler(e) {
         if (this.mode === 'Popup' && this.type === 'MultiSelect') {
@@ -1065,6 +1076,15 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         }
     }
     valueKeyDownHandler(e) {
+        if (e.keyCode === 9 && e.shiftKey === true && e.target.tagName !== 'BUTTON') {
+            if (this.actionOnBlur === 'Submit') {
+                this.save();
+                this.cancelHandler();
+            }
+            else if (this.actionOnBlur === 'Cancel') {
+                this.cancelHandler();
+            }
+        }
         if ((e.keyCode === 13 && e.which === 13) && e.target.classList.contains(ROOT) &&
             !this.valueWrap.classList.contains(OPEN) && !this.element.classList.contains(DISABLE)) {
             e.preventDefault();

@@ -304,7 +304,8 @@
   @if $skin-name == 'bootstrap4' {
 
     .e-de-font-clr-picker .e-colorpicker-wrapper .e-btn.e-icon-btn,
-    .e-de-font-clr-picker .e-colorpicker-wrapper .e-split-btn-wrapper .e-split-colorpicker.e-split-btn {
+    .e-de-font-clr-picker .e-colorpicker-wrapper .e-split-btn-wrapper .e-split-colorpicker.e-split-btn,
+    .e-de-font-clr-picker .e-colorpicker-wrapper .e-btn.e-icon-btn.e-rtl {
       padding: 0;
     }
 
@@ -343,7 +344,9 @@
 
         &:focus {
           background-color: $de-toggle-border-hover-color;
-          border: 1px;
+          @if $skin-name != 'bootstrap4' {
+            border: 1px;
+          }
           border-color: $de-toggle-border-color;
           box-shadow: 0 0 0 0 $de-toggle-bg-color;
           outline-color: $de-toggle-bg-color;
@@ -352,14 +355,24 @@
         &:active,
         .e-btn-toggle {
           background-color: $de-toggle-border-hover-color;
-          border: 1px;
+          @if $skin-name != 'bootstrap4' {
+            border: 1px;
+          }
           border-color: $de-toggle-border-color;
         }
 
         &:hover {
           background-color: $de-toggle-hover-color;
-          border: 1px;
+          @if $skin-name != 'bootstrap4' {
+            border: 1px;
+          }
           border-color: $de-toggle-border-hover-color;
+        }
+      }
+
+      @if $skin-name == 'bootstrap4' {
+        .e-split-btn-wrapper.e-rtl .e-split-btn {
+          border-color: $de-prop-btn-border-color;
         }
       }
     }
@@ -779,7 +792,9 @@
 
   .e-de-ctnr-list {
     font-size: $de-bullet-icon-font-size;
-    vertical-align: top;
+    @if $skin-name != 'bootstrap4' {
+      vertical-align: top;
+    }
   }
 
   .e-de-image-property {

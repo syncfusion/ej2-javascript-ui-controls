@@ -11374,7 +11374,7 @@ var CellEdit = /** @__PURE__ @class */ (function () {
         editedArgs.data = this.parent.getTaskByUniqueID(data.uniqueID);
         var previousValue = getValue('previousData', args);
         var tempEditedValue = column.editType === 'stringedit' &&
-            column.field === 'Duration' ? data[column.field] !== '' : !isNullOrUndefined(data[column.field]);
+            column.field === 'Duration' ? data[column.field] !== '' : !isUndefined(data[column.field]);
         var editedValue = this.parent.allowUnscheduledTasks ? data[column.field] : tempEditedValue ? data[column.field] :
             previousValue;
         if (!isNullOrUndefined(data)) {
@@ -18852,7 +18852,7 @@ var DayMarkers = /** @__PURE__ @class */ (function () {
 }());
 
 /**
- * To handle the context menu items & sub-menu items
+ * The ContextMenu module is used to handle the context menu items & sub-menu items.
  */
 var ContextMenu$2 = /** @__PURE__ @class */ (function () {
     function ContextMenu$$1(parent) {
@@ -19254,6 +19254,9 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
             'DeleteDependency', 'Convert'
         ];
     };
+    /**
+     * To get ContextMenu module name.
+     */
     ContextMenu$$1.prototype.getModuleName = function () {
         return 'contextMenu';
     };
@@ -19912,17 +19915,16 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
 }());
 
 /**
- * Gantt ColumnMenu module
- *
+ * Configures columnMenu collection in Gantt.
  */
 var ColumnMenu$1 = /** @__PURE__ @class */ (function () {
-    /**
-     * Constructor for render module
-     */
     function ColumnMenu$$1(parent) {
         TreeGrid.Inject(ColumnMenu);
         this.parent = parent;
     }
+    /**
+     * To get column menu collection.
+     */
     ColumnMenu$$1.prototype.getColumnMenu = function () {
         return this.parent.treeGrid.columnMenuModule.getColumnMenu();
     };

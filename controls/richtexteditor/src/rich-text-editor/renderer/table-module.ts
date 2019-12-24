@@ -808,8 +808,11 @@ export class Table {
         this.dlgDiv.appendChild(this.parent.createElement('span', { className: 'e-span-border' }));
         let btnEle: HTMLElement = this.parent.createElement('button', {
             className: 'e-insert-table-btn', id: this.rteID + '_insertTable',
-            attrs: { type: 'button' }
+            attrs: { type: 'button', tabindex: '0' }
         });
+        if (!isNOU(this.parent.getToolbarElement().querySelector('.e-expended-nav') as HTMLElement)) {
+            (this.parent.getToolbarElement().querySelector('.e-expended-nav') as HTMLElement).setAttribute('tabindex', '1');
+        }
         this.dlgDiv.appendChild(btnEle);
         let button: Button = new Button({
             iconCss: 'e-icons e-create-table', content: insertbtn, cssClass: 'e-flat',

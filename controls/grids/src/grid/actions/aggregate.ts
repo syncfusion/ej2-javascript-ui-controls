@@ -48,7 +48,10 @@ export class Aggregate implements IAction {
         this.parent.on(dataReady, this.footerRenderer.refresh, this.footerRenderer);
     }
 
-    private prepareSummaryInfo(): void {
+    /**
+     * @hidden
+     */
+    public prepareSummaryInfo(): void {
         summaryIterator(this.parent.aggregates, (column: AggregateColumn) => {
             let dataColumn: ColumnModel = this.parent.getColumnByField(column.field) || {};
             let type: string = dataColumn.type;

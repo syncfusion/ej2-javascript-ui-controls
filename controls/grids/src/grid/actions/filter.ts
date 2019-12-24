@@ -332,6 +332,9 @@ export class Filter implements IAction {
         let gObj: IGrid = this.parent;
         let filterCell: HTMLInputElement;
         this.column = gObj.grabColumnByFieldFromAllCols(fieldName);
+        if (!this.column) {
+            return;
+        }
         if (this.filterSettings.type === 'FilterBar') {
             filterCell = gObj.getHeaderContent().querySelector('[id=\'' + this.column.field + '_filterBarcell\']') as HTMLInputElement;
         }
@@ -406,7 +409,7 @@ export class Filter implements IAction {
                         this.parent.notify(events.modelChanged, {
                             currentFilterObject: this.currentFilterObject, currentFilteringColumn: this.column ?
                                 this.column.field : undefined,
-                            columns: this.filterSettings.columns, requestType: 'filtering', type: events.actionBegin
+                            columns: this.filterSettings.columns, requestType: 'filtering', type: events.actionBegin, cancel: false
                         });
                         this.refreshFilterSettings();
                         this.updateFilterMsg();

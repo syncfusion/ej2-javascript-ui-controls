@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.40 (2019-12-24)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- Panels overlapping issue "while dragging the panels in bootstrap theme" has been resolved.
+
 ## 17.4.39 (2019-12-17)
 
 ### Splitter

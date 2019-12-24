@@ -1359,7 +1359,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Copy Hyperlink': 'Copy Hyperlink',
         'Remove Hyperlink': 'Remove Hyperlink',
         'Paragraph': 'Paragraph',
-        'Linked(Paragraph and Character)': 'Linked(Paragraph and Character)',
+        'Linked Style': 'Linked(Paragraph and Character)',
         'Character': 'Character',
         'Merge Cells': 'Merge Cells',
         'Insert Above': 'Insert Above',
@@ -1441,21 +1441,21 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Table direction': 'Table direction',
         'Indent from right': 'Indent from right',
         /* tslint:disable */
-        "Don't add space between the paragraphs of the same styles": "Don't add space between the paragraphs of the same styles",
-        "The password don't match": "The password don't match",
+        "Contextual Spacing": "Don't add space between the paragraphs of the same styles",
+        "Password Mismatch": "The password don't match",
         /* tslint:enable */
         'Restrict Editing': 'Restrict Editing',
         'Formatting restrictions': 'Formatting restrictions',
         'Allow formatting': 'Allow formatting',
         'Editing restrictions': 'Editing restrictions',
         'Read only': 'Read only',
-        'Exceptions (optional)': 'Exceptions (optional)',
+        'Exceptions Optional': 'Exceptions (optional)',
         // tslint:disable-next-line:max-line-length
-        'Select parts of the document and choose users who are allowed to freely edit them.': 'Select parts of the document and choose users who are allowed to freely edit them.',
+        'Select Part Of Document And User': 'Select parts of the document and choose users who are allowed to freely edit them.',
         'Everyone': 'Everyone',
         'More users': 'More users',
         'Add Users': 'Add Users',
-        'Yes, Start Enforcing Protection': 'Yes, Start Enforcing Protection',
+        'Enforcing Protection': 'Yes, Start Enforcing Protection',
         'Start Enforcing Protection': 'Start Enforcing Protection',
         'Enter User': 'Enter User',
         'Users': 'Users',
@@ -1463,8 +1463,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Reenter new password to confirm': 'Reenter new password to confirm',
         'Your permissions': 'Your permissions',
         // tslint:disable-next-line:max-line-length
-        'This document is protected from unintentional editing.You may edit in this region.': 'This document is protected from unintentional editing.You may edit in this region.',
-        'You may format text only with certain styles.': 'You may format text only with certain styles.',
+        'Protected Document': 'This document is protected from unintentional editing.You may edit in this region.',
+        'You may format text only with certain styles': 'You may format text only with certain styles.',
         'Stop Protection': 'Stop Protection',
         'Password': 'Password',
         'Spelling Editor': 'Spelling Editor',
@@ -1500,7 +1500,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Previous Comment': 'Previous Comment',
         'Un-posted comments': 'Un-posted comments',
         // tslint:disable-next-line:max-line-length
-        'Added comments not posted. If you continue, that comment will be discarded.': 'Added comments not posted. If you continue, that comment will be discarded.'
+        'Discard Comment': 'Added comments not posted. If you continue, that comment will be discarded.'
     };
     // Public Implementation Starts
     /**

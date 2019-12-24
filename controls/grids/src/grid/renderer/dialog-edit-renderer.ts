@@ -75,7 +75,7 @@ export class DialogEditRender {
                 },
                 { click: this.btnClick.bind(this), buttonModel: { cssClass: 'e-flat', content: this.l10n.getConstant('CancelButton') } }]
             },
-            gObj.editSettings.dialog.params
+            gObj.editSettings.dialog ? (gObj.editSettings.dialog.params || {}) : {}
         ));
         if (!isBlazor()) {
             args.dialog = this.dialogObj;

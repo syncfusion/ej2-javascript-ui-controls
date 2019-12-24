@@ -374,3 +374,5 @@ export const filterCboxValue: string = 'filter-cbox-value';
 export const componentRendered: string = 'component-rendered';
 /** @hidden */
 export const restoreFocus: string = 'restore-Focus';
+/** @hidden */
+export const detailStateChange: string = 'detail-state-change';

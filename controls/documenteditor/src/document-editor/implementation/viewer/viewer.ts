@@ -415,6 +415,10 @@ export abstract class LayoutViewer {
      * @private
      */
     public skipScrollToPosition: boolean = false;
+    /**
+     * @private
+     */
+    public isIosDevice: boolean = false;
 
     /**
      * @private
@@ -593,6 +597,7 @@ export abstract class LayoutViewer {
         this.initalizeStyles();
         this.bookmarks = new Dictionary<string, BookmarkElementBox>();
         this.editRanges = new Dictionary<string, EditRangeStartElementBox[]>();
+        this.isIosDevice = /Mac|iPad|iPod/i.test(navigator.userAgent);
     }
     private initalizeStyles(): void {
         /* tslint:disable-next-line:max-line-length */
@@ -1266,7 +1271,7 @@ export abstract class LayoutViewer {
     /**
      * @private
      */
-    public onContextMenu = (event: PointerEvent): void => {
+    public onContextMenu = (event: MouseEvent): void => {
         if (this.owner.contextMenuModule) {
             this.owner.contextMenuModule.onContextMenuInternal(event);
         }

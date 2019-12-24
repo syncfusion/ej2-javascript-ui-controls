@@ -184,7 +184,7 @@ export class Sort implements IAction {
         if (this.contentRefresh) {
             let args: Object = this.sortSettings.columns.length ? {
                 columnName: this.columnName, direction: this.direction, requestType: 'sorting',
-                type: events.actionBegin, target: this.currentTarget
+                type: events.actionBegin, target: this.currentTarget, cancel: false
             } : {
                 requestType: 'sorting', type: events.actionBegin, cancel: false,
                     target: this.currentTarget

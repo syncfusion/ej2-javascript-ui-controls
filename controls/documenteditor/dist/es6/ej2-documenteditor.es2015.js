@@ -10922,16 +10922,27 @@ class WTableHolder {
                     }
                 }
                 else {
-                    let availableWidth = totalMinWidth < containerWidth ? (containerWidth - totalMinWidth) : 0;
-                    for (let i = 0; i < this.columns.length; i++) {
-                        let column = this.columns[i];
-                        // The factor depends of current column's minimum word width and total minimum word width.
-                        let factor = availableWidth * column.minimumWordWidth / totalMinimumWordWidth;
-                        factor = isNaN(factor) ? 0 : factor;
-                        if (column.preferredWidth <= column.minimumWidth) {
-                            continue;
+                    let availableWidth = 0;
+                    if (totalMinWidth < containerWidth) {
+                        availableWidth = containerWidth - totalMinWidth;
+                        for (let i = 0; i < this.columns.length; i++) {
+                            let column = this.columns[i];
+                            // The factor depends of current column's minimum word width and total minimum word width.
+                            let factor = availableWidth * column.minimumWordWidth / totalMinimumWordWidth;
+                            factor = isNaN(factor) ? 0 : factor;
+                            if (column.preferredWidth <= column.minimumWidth) {
+                                continue;
+                            }
+                            column.preferredWidth = column.minimumWidth + factor;
                         }
-                        column.preferredWidth = column.minimumWidth + factor;
+                        // table width exceeds container width
+                    }
+                    else if (totalMinWidth > containerWidth) {
+                        let factor = containerWidth / totalMinWidth;
+                        for (let i = 0; i < this.columns.length; i++) {
+                            let column = this.columns[i];
+                            column.preferredWidth = column.preferredWidth * factor;
+                        }
                     }
                 }
             }
@@ -12778,7 +12789,7 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
             'Copy Hyperlink': 'Copy Hyperlink',
             'Remove Hyperlink': 'Remove Hyperlink',
             'Paragraph': 'Paragraph',
-            'Linked(Paragraph and Character)': 'Linked(Paragraph and Character)',
+            'Linked Style': 'Linked(Paragraph and Character)',
             'Character': 'Character',
             'Merge Cells': 'Merge Cells',
             'Insert Above': 'Insert Above',
@@ -12860,21 +12871,21 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
             'Table direction': 'Table direction',
             'Indent from right': 'Indent from right',
             /* tslint:disable */
-            "Don't add space between the paragraphs of the same styles": "Don't add space between the paragraphs of the same styles",
-            "The password don't match": "The password don't match",
+            "Contextual Spacing": "Don't add space between the paragraphs of the same styles",
+            "Password Mismatch": "The password don't match",
             /* tslint:enable */
             'Restrict Editing': 'Restrict Editing',
             'Formatting restrictions': 'Formatting restrictions',
             'Allow formatting': 'Allow formatting',
             'Editing restrictions': 'Editing restrictions',
             'Read only': 'Read only',
-            'Exceptions (optional)': 'Exceptions (optional)',
+            'Exceptions Optional': 'Exceptions (optional)',
             // tslint:disable-next-line:max-line-length
-            'Select parts of the document and choose users who are allowed to freely edit them.': 'Select parts of the document and choose users who are allowed to freely edit them.',
+            'Select Part Of Document And User': 'Select parts of the document and choose users who are allowed to freely edit them.',
             'Everyone': 'Everyone',
             'More users': 'More users',
             'Add Users': 'Add Users',
-            'Yes, Start Enforcing Protection': 'Yes, Start Enforcing Protection',
+            'Enforcing Protection': 'Yes, Start Enforcing Protection',
             'Start Enforcing Protection': 'Start Enforcing Protection',
             'Enter User': 'Enter User',
             'Users': 'Users',
@@ -12882,8 +12893,8 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
             'Reenter new password to confirm': 'Reenter new password to confirm',
             'Your permissions': 'Your permissions',
             // tslint:disable-next-line:max-line-length
-            'This document is protected from unintentional editing.You may edit in this region.': 'This document is protected from unintentional editing.You may edit in this region.',
-            'You may format text only with certain styles.': 'You may format text only with certain styles.',
+            'Protected Document': 'This document is protected from unintentional editing.You may edit in this region.',
+            'You may format text only with certain styles': 'You may format text only with certain styles.',
             'Stop Protection': 'Stop Protection',
             'Password': 'Password',
             'Spelling Editor': 'Spelling Editor',
@@ -12919,7 +12930,7 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
             'Previous Comment': 'Previous Comment',
             'Un-posted comments': 'Un-posted comments',
             // tslint:disable-next-line:max-line-length
-            'Added comments not posted. If you continue, that comment will be discarded.': 'Added comments not posted. If you continue, that comment will be discarded.'
+            'Discard Comment': 'Added comments not posted. If you continue, that comment will be discarded.'
         };
         this.viewer = new PageLayoutViewer(this);
         this.parser = new SfdtReader(this.viewer);
@@ -14348,11 +14359,11 @@ class ContextMenu$1 {
         this.customItems = [];
         /**
          * Handles on context menu key pressed.
-         * @param  {PointerEvent} event
+         * @param  {MouseEvent} event
          * @private
          */
         this.onContextMenuInternal = (event) => {
-            let isTouch = event instanceof TouchEvent;
+            let isTouch = !(event instanceof MouseEvent);
             if (this.viewer.owner.enableSpellCheck && this.spellChecker.allowSpellCheckAndSuggestion) {
                 event.preventDefault();
                 this.currentContextInfo = this.spellChecker.findCurretText();
@@ -14826,10 +14837,10 @@ class ContextMenu$1 {
     }
     /**
      * Opens context menu.
-     * @param {PointerEvent | TouchEvent} event
+     * @param {MouseEvent | TouchEvent} event
      */
     showContextMenuOnSel(event) {
-        let isTouch = event instanceof TouchEvent;
+        let isTouch = !(event instanceof MouseEvent);
         let xPos = 0;
         let yPos = 0;
         if (isTouch) {
@@ -14866,7 +14877,7 @@ class ContextMenu$1 {
      * Method to process suggestions to add in context menu
      * @param {any} allSuggestions
      * @param {string[]} splittedSuggestion
-     * @param {PointerEvent} event
+     * @param {MouseEvent} event
      * @private
      */
     /* tslint:disable:no-any */
@@ -16196,6 +16207,14 @@ class Layout {
         else {
             element.text = this.getListNumber(paragraph.paragraphFormat.listFormat);
         }
+        if (this.viewer.isIosDevice) {
+            let text = element.text;
+            text = text === '\uf0b7' ? '\u25CF' : text === '\uf06f' + '\u0020' ? '\u25CB' : text;
+            if (text !== element.text) {
+                element.text = text;
+                element.listLevel.characterFormat.fontFamily = '';
+            }
+        }
         viewer.textHelper.updateTextSize(element, paragraph);
         let moveToNextPage;
         if (this.viewer instanceof PageLayoutViewer
@@ -16743,6 +16762,10 @@ class Layout {
             }
             paragraphWidget.containerWidget = nextBody;
             this.viewer.updateClientAreaLocation(paragraphWidget, this.viewer.clientActiveArea);
+            if (index === 0) {
+                let firstLineIndent = -HelperMethods.convertPointToPixel(paragraphWidget.paragraphFormat.firstLineIndent);
+                this.viewer.updateClientWidth(firstLineIndent);
+            }
         }
     }
     /**
@@ -17248,14 +17271,6 @@ class Layout {
         let isCustomTab = false;
         let tabs = paragraph.paragraphFormat.getUpdatedTabs();
         let isList = false;
-        let isSingleTab = false;
-        // tslint:disable-next-line:max-line-length
-        if (element.previousElement instanceof TextElementBox && element.previousElement.previousElement instanceof FieldElementBox && tabs.length === 1) {
-            isSingleTab = element.nextElement instanceof TextElementBox;
-            if (isSingleTab) {
-                tabs.length = 0;
-            }
-        }
         // tslint:disable-next-line:max-line-length
         if (!isNullOrUndefined(paragraph.paragraphFormat.listFormat.listLevel) && !isNullOrUndefined(paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat)) {
             let listFormat = paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat;
@@ -17263,26 +17278,28 @@ class Layout {
                 isList = true;
             }
         }
-        //  Calculate hanging width
-        if (element instanceof ListTextElementBox && viewer.clientActiveArea.x < this.viewer.clientArea.x) {
+        let clientWidth = 0;
+        let clientActiveX = viewer.clientActiveArea.x;
+        let firstLineIndent = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent);
+        if (!isNullOrUndefined(element) && lineWidget.isFirstLine()) {
+            clientWidth = this.viewer.clientArea.x + firstLineIndent;
+            clientActiveX = clientActiveX + firstLineIndent;
+        }
+        else {
+            clientWidth = this.viewer.clientArea.x;
+        }
+        if (clientActiveX < clientWidth) {
             return viewer.clientArea.x - viewer.clientActiveArea.x;
         }
         // Calculates tabwidth based on pageleftmargin and defaulttabwidth property
         let leftIndent = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent);
-        let firstLineIndent = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent);
         let position = viewer.clientActiveArea.x -
-            (viewer.clientArea.x - leftIndent);
+            (viewer.clientArea.x - HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent));
         let defaultTabWidth = HelperMethods.convertPointToPixel(viewer.defaultTabWidth);
         if (tabs.length === 0) {
             if (position > 0 && defaultTabWidth > position && isList ||
                 defaultTabWidth === this.defaultTabWidthPixel && defaultTabWidth > position) {
                 return defaultTabWidth - position;
-            }
-            else if (isSingleTab) {
-                return defaultTabWidth - leftIndent;
-            }
-            else if (defaultTabWidth === this.defaultTabWidthPixel && defaultTabWidth < position) {
-                return defaultTabWidth + firstLineIndent;
             }
             return defaultTabWidth;
         }
@@ -17332,15 +17349,6 @@ class Layout {
                             }
                             break;
                         }
-                    }
-                    else if (element.previousElement instanceof TextElementBox && element.nextElement instanceof TextElementBox) {
-                        if (leftIndent > defaultTabWidth) {
-                            defaultTabWidth = leftIndent - defaultTabWidth;
-                            break;
-                        }
-                    }
-                    else if (element instanceof ListTextElementBox && viewer.clientActiveArea.x > this.viewer.clientArea.x) {
-                        return viewer.clientActiveArea.x - viewer.clientArea.x;
                     }
                 }
             }
@@ -22394,7 +22402,7 @@ class EnforceProtectionDialog {
         this.okButtonClick = () => {
             if (this.passwordTextBox.value !== this.confirmPasswordTextBox.value) {
                 /* tslint:disable */
-                DialogUtility.alert("The password don't match");
+                DialogUtility.alert(this.localeValue.getConstant('Password Mismatch'));
                 /* tslint:enable */
             }
             else {
@@ -22641,12 +22649,12 @@ class RestrictEditing {
         // User Permissions
         let userWholeDiv = createElement('div', { className: 'e-de-rp-sub-div' });
         let userDiv = createElement('div', {
-            innerHTML: localObj.getConstant('Exceptions (optional)'),
+            innerHTML: localObj.getConstant('Exceptions Optional'),
             className: 'e-de-rp-format'
         });
         userWholeDiv.appendChild(userDiv);
         let subContentDiv = createElement('div', {
-            innerHTML: localObj.getConstant('Select parts of the document and choose users who are allowed to freely edit them.'),
+            innerHTML: localObj.getConstant('Select Part Of Document And User'),
             styles: 'margin-bottom:8px;'
         });
         userWholeDiv.appendChild(subContentDiv);
@@ -22670,7 +22678,7 @@ class RestrictEditing {
         this.restrictPaneWholeDiv.appendChild(lastDiv);
         this.enforceProtection = createElement('button', {
             id: this.viewer.owner.containerId + '_addUser',
-            innerHTML: localObj.getConstant('Yes, Start Enforcing Protection'),
+            innerHTML: localObj.getConstant('Enforcing Protection'),
             className: 'e-btn e-de-rp-btn-enforce'
         });
         lastDiv.appendChild(this.enforceProtection);
@@ -22680,11 +22688,11 @@ class RestrictEditing {
         let headerDiv = createElement('div', { innerHTML: localObj.getConstant('Your permissions'), className: 'e-de-rp-stop-div1' });
         this.stopProtectionDiv.appendChild(headerDiv);
         // tslint:disable-next-line:max-line-length
-        let content = localObj.getConstant('This document is protected from unintentional editing.You may edit in this region.');
+        let content = localObj.getConstant('Protected Document');
         let contentDiv1 = createElement('div', { innerHTML: content, className: 'e-de-rp-stop-div2' });
         this.stopProtectionDiv.appendChild(contentDiv1);
         // tslint:disable-next-line:max-line-length
-        let contentDiv2 = createElement('div', { innerHTML: localObj.getConstant('You may format text only with certain styles.'), className: 'e-de-rp-stop-div3' });
+        let contentDiv2 = createElement('div', { innerHTML: localObj.getConstant('You may format text only with certain styles'), className: 'e-de-rp-stop-div3' });
         this.stopProtectionDiv.appendChild(contentDiv2);
         this.stopReadOnlyOptions = createElement('div');
         this.stopProtectionDiv.appendChild(this.stopReadOnlyOptions);
@@ -23027,6 +23035,10 @@ class LayoutViewer {
          * @private
          */
         this.skipScrollToPosition = false;
+        /**
+         * @private
+         */
+        this.isIosDevice = false;
         this.onIframeLoad = () => {
             if (!isNullOrUndefined(this.iframe) && this.iframe.contentDocument.body.children.length === 0) {
                 this.initIframeContent();
@@ -23793,6 +23805,7 @@ class LayoutViewer {
         this.initalizeStyles();
         this.bookmarks = new Dictionary();
         this.editRanges = new Dictionary();
+        this.isIosDevice = /Mac|iPad|iPod/i.test(navigator.userAgent);
     }
     //Document Protection Properties Ends
     //#region Properties
@@ -25959,6 +25972,7 @@ class SfdtReader {
         this.commentEnds = undefined;
         this.commentsCollection = undefined;
         this.isPageBreakInsideTable = false;
+        this.isParseHeader = false;
         this.viewer = viewer;
         this.editableRanges = new Dictionary();
     }
@@ -26271,6 +26285,7 @@ class SfdtReader {
                 item.headersFooters = {};
             }
             this.viewer.headersFooters.push(this.parseHeaderFooter(item.headersFooters, this.viewer.headersFooters));
+            this.isParseHeader = false;
             this.parseTextBody(item.blocks, section, i + 1 < data.length);
             for (let i = 0; i < section.childWidgets.length; i++) {
                 section.childWidgets[i].containerWidget = section;
@@ -26282,6 +26297,7 @@ class SfdtReader {
      * @private
      */
     parseHeaderFooter(data, headersFooters) {
+        this.isParseHeader = true;
         let hfs = {};
         if (!isNullOrUndefined(data.header)) {
             let oddHeader = new HeaderFooterWidget('OddHeader');
@@ -26553,14 +26569,16 @@ class SfdtReader {
                 bookmark.name = inline.name;
                 lineWidget.children.push(bookmark);
                 bookmark.line = lineWidget;
-                if (inline.bookmarkType === 0) {
-                    this.viewer.bookmarks.add(bookmark.name, bookmark);
-                }
-                else if (inline.bookmarkType === 1) {
-                    if (this.viewer.bookmarks.containsKey(bookmark.name)) {
-                        let bookmarkStart = this.viewer.bookmarks.get(bookmark.name);
-                        bookmarkStart.reference = bookmark;
-                        bookmark.reference = bookmarkStart;
+                if (!this.isParseHeader) {
+                    if (inline.bookmarkType === 0) {
+                        this.viewer.bookmarks.add(bookmark.name, bookmark);
+                    }
+                    else if (inline.bookmarkType === 1) {
+                        if (this.viewer.bookmarks.containsKey(bookmark.name)) {
+                            let bookmarkStart = this.viewer.bookmarks.get(bookmark.name);
+                            bookmarkStart.reference = bookmark;
+                            bookmark.reference = bookmarkStart;
+                        }
                     }
                 }
                 if (bookmark.name.indexOf('_') !== 0) {
@@ -30710,10 +30728,12 @@ class TextPosition {
             let info = this.currentWidget.getInline(this.offset, index);
             inline = info.element;
             index = info.index;
-            if (!isNullOrUndefined(inline) && index === inline.length && inline.nextNode instanceof FieldElementBox) {
+            if (!isNullOrUndefined(inline) && index === inline.length && (inline.nextNode instanceof FieldElementBox
+                || inline.nextNode instanceof BookmarkElementBox)) {
                 let nextValidInline = this.selection.getNextValidElement(inline.nextNode);
-                //Moves to field end mark.
-                if (nextValidInline instanceof FieldElementBox && nextValidInline.fieldType === 1) {
+                //Moves to field end mark or Bookmark end.
+                if (nextValidInline instanceof FieldElementBox && nextValidInline.fieldType === 1
+                    || nextValidInline instanceof BookmarkElementBox && nextValidInline.bookmarkType === 1) {
                     inline = nextValidInline;
                     this.offset = this.currentWidget.getOffset(inline, 1);
                 }
@@ -36847,6 +36867,9 @@ class Selection {
      */
     getNextValidElement(inline) {
         let nextValidInline = undefined;
+        if (inline instanceof BookmarkElementBox && inline.bookmarkType === 1) {
+            return inline;
+        }
         while (inline instanceof FieldElementBox) {
             if (inline.fieldType === 0 && !isNullOrUndefined(inline.fieldEnd)) {
                 return isNullOrUndefined(nextValidInline) ? inline : nextValidInline;
@@ -36863,10 +36886,11 @@ class Selection {
      * @private
      */
     validateTextPosition(inline, index) {
-        if (inline.length === index && inline.nextNode instanceof FieldElementBox) {
+        if (inline.length === index && (inline.nextNode instanceof FieldElementBox || inline.nextNode instanceof BookmarkElementBox)) {
             //If inline is last item within field, then set field end as text position.
             let nextInline = this.getNextValidElement(inline.nextNode);
-            if (nextInline instanceof FieldElementBox && nextInline.fieldType === 1) {
+            if (nextInline instanceof FieldElementBox && nextInline.fieldType === 1
+                || nextInline instanceof BookmarkElementBox && nextInline.bookmarkType === 1) {
                 inline = nextInline;
                 index = 1;
             }
@@ -39853,10 +39877,12 @@ class Selection {
     copyToClipboard(htmlContent) {
         window.getSelection().removeAllRanges();
         let div = document.createElement('div');
+        div.tabIndex = 0;
         div.style.left = '-10000px';
         div.style.top = '-10000px';
         div.innerHTML = htmlContent;
         document.body.appendChild(div);
+        div.focus();
         let range = document.createRange();
         range.selectNodeContents(div);
         window.getSelection().addRange(range);
@@ -42203,8 +42229,8 @@ class OptionsPane {
             this.messageDiv.style.display = 'block';
             this.focusedElement = [];
             // tslint:disable-next-line:max-line-length
-            this.focusedElement.push(this.closeButton, this.findTabButtonHeader, this.replaceTabButtonHeader, this.searchInput, this.searchIcon, this.navigateToPreviousResult, this.navigateToNextResult, this.matchInput, this.wholeInput);
-            this.focusedIndex = 3;
+            this.focusedElement.push(this.closeButton, this.searchInput, this.searchIcon, this.navigateToPreviousResult, this.navigateToNextResult, this.matchInput, this.wholeInput);
+            this.focusedIndex = 1;
             this.searchInput.select();
             this.getMessageDivHeight();
         };
@@ -42240,8 +42266,8 @@ class OptionsPane {
             }
             this.focusedElement = [];
             // tslint:disable-next-line:max-line-length
-            this.focusedElement.push(this.closeButton, this.findTabButtonHeader, this.replaceTabButtonHeader, this.searchInput, this.searchIcon, this.navigateToPreviousResult, this.navigateToNextResult, this.matchInput, this.wholeInput, this.replaceWith, this.replaceButton, this.replaceAllButton);
-            this.focusedIndex = 9;
+            this.focusedElement.push(this.closeButton, this.searchInput, this.searchIcon, this.navigateToPreviousResult, this.navigateToNextResult, this.matchInput, this.wholeInput, this.replaceWith, this.replaceButton, this.replaceAllButton);
+            this.focusedIndex = 1;
             if (this.searchInput.value === '') {
                 this.searchInput.select();
             }
@@ -42316,7 +42342,7 @@ class OptionsPane {
                         }
                     }
                     else {
-                        if (this.focusedIndex > 8) {
+                        if (this.focusedIndex > 6) {
                             index = this.focusedIndex - 1;
                             element = this.focusedElement[index];
                             element.focus();
@@ -42590,7 +42616,9 @@ class OptionsPane {
             this.messageDiv.innerHTML = this.localeValue.getConstant('Result') + ' ' + (index + 1) + ' ' + this.localeValue.getConstant('of') + ' ' + this.resultsListBlock.children.length;
             this.viewer.owner.searchModule.navigate(currentelement);
             this.viewer.owner.searchModule.highlight(this.results);
-            list.focus();
+            if (list) {
+                list.focus();
+            }
         };
         this.viewer = layoutViewer;
     }
@@ -42630,10 +42658,8 @@ class OptionsPane {
         let tabHeader = createElement('div', { className: 'e-tab-header' });
         this.findTab.appendChild(tabHeader);
         this.findTabButton = createElement('div', { innerHTML: localeValue.getConstant(this.findPaneText) });
-        this.focusedElement.push(this.findTabButtonHeader);
         tabHeader.appendChild(this.findTabButton);
         this.replaceTabButton = createElement('div', { innerHTML: localeValue.getConstant(this.replacePaneText) });
-        this.focusedElement.push(this.replaceTabButtonHeader);
         tabHeader.appendChild(this.replaceTabButton);
         let tabContent = createElement('div', { className: 'e-content' });
         let findTabContent = createElement('div', { id: 'findTabContent' });
@@ -42710,20 +42736,11 @@ class OptionsPane {
         this.findTab.appendChild(tabContent);
         this.tabInstance = new Tab({ enableRtl: isRtl, selected: this.selectedTabItem });
         this.tabInstance.appendTo(this.findTab);
-        let findHeader = this.tabInstance.element.getElementsByClassName('e-item e-toolbar-item')[0];
-        this.findTabButtonHeader = findHeader.getElementsByClassName('e-tab-wrap')[0];
-        this.findTabButtonHeader.classList.add('e-de-op-find-tab-header');
-        this.findTabButtonHeader.tabIndex = 0;
-        let replaceHeader = this.tabInstance.element.getElementsByClassName('e-item e-toolbar-item')[1];
-        this.replaceTabButtonHeader = replaceHeader.getElementsByClassName('e-tab-wrap')[0];
-        this.replaceTabButtonHeader.classList.add('e-de-op-replace-tab-header');
-        this.replaceTabButtonHeader.tabIndex = 0;
         this.onWireEvents();
         if (isRtl) {
             this.optionsPane.classList.add('e-de-rtl');
             this.closeButton.classList.add('e-de-rtl');
             this.searchDiv.classList.add('e-de-rtl');
-            this.findTabButtonHeader.classList.add('e-de-rtl');
         }
     }
     /**
@@ -42862,7 +42879,7 @@ class OptionsPane {
                 listElement.children[0].classList.add('e-de-op-search-word-text');
             }
             this.navigateToNextResult.focus();
-            this.focusedIndex = 6;
+            this.focusedIndex = this.focusedElement.indexOf(this.navigateToNextResult);
             this.getMessageDivHeight();
             // } else {
             //this.focusedIndex = 4;
@@ -42958,7 +42975,7 @@ class OptionsPane {
                 this.focusedElement.splice(index, 1);
             }
         }
-        this.focusedIndex = 0;
+        this.focusedIndex = 1;
     }
     /**
      * Show or hide option pane based on boolean value.
@@ -43018,15 +43035,15 @@ class OptionsPane {
                     this.searchIcon.classList.remove('e-de-op-search-close-icon');
                 }
                 this.viewer.selection.caret.style.display = 'none';
-                this.focusedIndex = 3;
+                this.focusedIndex = 1;
                 this.focusedElement = [];
                 if (this.isOptionsPane) {
                     // tslint:disable-next-line:max-line-length
-                    this.focusedElement.push(this.closeButton, this.findTabButtonHeader, this.replaceTabButtonHeader, this.searchInput, this.searchIcon, this.navigateToPreviousResult, this.navigateToNextResult, this.matchInput, this.wholeInput);
+                    this.focusedElement.push(this.closeButton, this.searchInput, this.searchIcon, this.navigateToPreviousResult, this.navigateToNextResult, this.matchInput, this.wholeInput);
                 }
                 else {
                     // tslint:disable-next-line:max-line-length
-                    this.focusedElement.push(this.closeButton, this.findTabButtonHeader, this.replaceTabButtonHeader, this.searchInput, this.searchIcon, this.navigateToPreviousResult, this.navigateToNextResult, this.matchInput, this.wholeInput, this.replaceWith, this.replaceButton, this.replaceAllButton);
+                    this.focusedElement.push(this.closeButton, this.searchInput, this.searchIcon, this.navigateToPreviousResult, this.navigateToNextResult, this.matchInput, this.wholeInput, this.replaceWith, this.replaceButton, this.replaceAllButton);
                 }
                 this.viewer.updateViewerSize();
             }
@@ -46475,7 +46492,7 @@ class Editor {
     /**
      * @private
      */
-    insertElementInCurrentLine(selection, inline, isReLayout) {
+    insertElementInCurrentLine(selection, inline) {
         if (this.checkIsNotRedoing()) {
             selection.owner.isShiftingEnabled = true;
         }
@@ -46989,7 +47006,7 @@ class Editor {
                 for (let k = 0; k < lineWidget.children.length; k++) {
                     let inlineCharacterFormat = lineWidget.children[k].characterFormat;
                     let characterFormat = inlineCharacterFormat.cloneFormat();
-                    lineWidget.children[k].characterFormat = insertFormat;
+                    lineWidget.children[k].characterFormat.copyFormat(insertFormat);
                     if (characterFormat.bold) {
                         lineWidget.children[k].characterFormat.bold = characterFormat.bold;
                     }
@@ -48574,9 +48591,11 @@ class Editor {
     /**
      * @private
      */
-    updateHeaderFooterWidget() {
-        this.updateHeaderFooterWidgetToPage(this.selection.start.paragraph.bodyWidget);
-        let headerFooterWidget = this.selection.start.paragraph.bodyWidget;
+    updateHeaderFooterWidget(headerFooterWidget) {
+        if (isNullOrUndefined(headerFooterWidget)) {
+            headerFooterWidget = this.selection.start.paragraph.bodyWidget;
+        }
+        this.updateHeaderFooterWidgetToPage(headerFooterWidget);
         this.shiftPageContent(headerFooterWidget.headerFooterType, headerFooterWidget.sectionFormat);
     }
     /**
@@ -52371,10 +52390,16 @@ class Editor {
         }
         let startListLevel = undefined;
         let levelNumber = -1;
+        let initialListLevel = undefined;
+        let isSameList = false;
         if (!isNullOrUndefined(list)) {
             levelNumber = currentParagraph.paragraphFormat.listFormat.listLevelNumber;
             let tempList = this.viewer.getListById(currentParagraph.paragraphFormat.listFormat.listId);
             startListLevel = this.viewer.layout.getListLevel(tempList, levelNumber);
+            if (levelNumber > 0) {
+                initialListLevel = this.viewer.layout.getListLevel(tempList, 0);
+                isSameList = !isNullOrUndefined(initialListLevel) && levelNumber > 0 && selection.start.isInSameParagraph(selection.end);
+            }
             let abstractList = tempList.abstractList;
             if (!abstractList) {
                 abstractList = this.viewer.getAbstractListById(list.abstractListId);
@@ -52395,9 +52420,9 @@ class Editor {
                 }
             }
         }
-        if (isNullOrUndefined(list) || (!isNullOrUndefined(list) && ((startListLevel.listLevelPattern !== listLevelPattern) ||
-            startListLevel.numberFormat !== format || (startListLevel.characterFormat.fontFamily !== fontFamily
-            && startListLevel.listLevelPattern === 'Bullet')))) {
+        if (isNullOrUndefined(list) || (!isNullOrUndefined(list) && levelNumber === 0
+            && ((startListLevel.listLevelPattern !== listLevelPattern) || startListLevel.numberFormat !== format
+                || (startListLevel.characterFormat.fontFamily !== fontFamily && startListLevel.listLevelPattern === 'Bullet')))) {
             isUpdate = false;
             list = new WList();
             if (this.viewer.lists.length > 0) {
@@ -52435,6 +52460,22 @@ class Editor {
                 selection.paragraphFormat.listLevelNumber = 0;
             }
             selection.paragraphFormat.setList(list);
+        }
+        else if (isSameList && !isNullOrUndefined(list)) {
+            let tempList = this.viewer.getListById(currentParagraph.paragraphFormat.listFormat.listId);
+            let listLevel = this.viewer.layout.getListLevel(tempList, levelNumber);
+            if (listLevelPattern === 'Bullet') {
+                listLevel.numberFormat = format;
+                listLevel.characterFormat.fontFamily = fontFamily;
+            }
+            else {
+                listLevel.listLevelPattern = listLevelPattern;
+                let currentFormat = listLevel.numberFormat.substring(listLevel.numberFormat.length - 1);
+                if (format.substring(format.length - 1) !== listLevel.numberFormat.substring(listLevel.numberFormat.length - 1)) {
+                    listLevel.numberFormat = listLevel.numberFormat.replace(currentFormat, format.substring(format.length - 1));
+                }
+            }
+            selection.paragraphFormat.setList(tempList);
         }
         else if (!isNullOrUndefined(list) && isUpdate) {
             selection.paragraphFormat.setList(list);
@@ -52881,12 +52922,30 @@ class Editor {
                 return;
             }
         }
-        if (inline && (inline instanceof BookmarkElementBox && inline.bookmarkType === 1
-            || inline.previousNode instanceof BookmarkElementBox)) {
-            if (inline instanceof BookmarkElementBox) {
-                inline = inline.previousNode;
-                paragraph = inline.line.paragraph;
-                offset = inline.line.getOffset(inline, inline.length);
+        if (inline && (inline instanceof BookmarkElementBox || inline.previousNode instanceof BookmarkElementBox)) {
+            if (inline instanceof BookmarkElementBox && inline.bookmarkType === 1) {
+                if (inline.previousNode) {
+                    inline = inline.previousNode;
+                    paragraph = inline.line.paragraph;
+                    offset = inline.line.getOffset(inline, inline.length);
+                }
+                else {
+                    // remove paragraph mark and move bookmark to previous paragraph
+                    if (paragraph.previousRenderedWidget instanceof ParagraphWidget) {
+                        let prevParagraph = paragraph.previousRenderedWidget;
+                        let line = prevParagraph.lastChild;
+                        selection.start.setPositionParagraph(inline.line, inline.line.getOffset(inline, 0));
+                        selection.end.setPositionParagraph(line, line.getEndOffset());
+                        this.removeWholeElement(selection);
+                        return;
+                    }
+                }
+                // Remove bookmark if selection is in between bookmark start and end element.
+            }
+            else if (inline.nextNode instanceof BookmarkElementBox && inline instanceof BookmarkElementBox &&
+                inline.bookmarkType === 0 && inline.reference === inline.nextNode) {
+                this.deleteBookmark(inline.name);
+                return;
             }
             if (inline.length === 1 && inline.nextNode instanceof BookmarkElementBox && inline.previousNode instanceof BookmarkElementBox) {
                 let begin = inline.previousNode;
@@ -53921,12 +53980,15 @@ class Editor {
         bookmarkEnd.name = name;
         bookmark.reference = bookmarkEnd;
         bookmarkEnd.reference = bookmark;
-        this.viewer.bookmarks.add(name, bookmark);
         this.initComplexHistory('InsertBookmark');
         this.insertElements([bookmarkEnd], [bookmark]);
         if (this.editorHistory) {
             this.editorHistory.updateComplexHistoryInternal();
         }
+        if (this.viewer.owner.enableHeaderAndFooter) {
+            this.updateHeaderFooterWidget();
+        }
+        this.viewer.bookmarks.add(name, bookmark);
         this.selection.start.setPositionForSelection(bookmark.line, bookmark, 1, this.selection.start.location);
         this.selection.end.setPositionForSelection(bookmarkEnd.line, bookmarkEnd, 0, this.selection.end.location);
         this.selection.fireSelectionChanged(true);
@@ -53956,6 +54018,19 @@ class Editor {
         this.viewer.bookmarks.remove(bookmark.name);
         bookmark.line.children.splice(bookmark.indexInOwner, 1);
         bookmark.reference.line.children.splice(bookmark.reference.indexInOwner, 1);
+        // Remove bookmark from header footer collections
+        let paragraph = bookmark.line.paragraph;
+        if (bookmark.line.paragraph.isInHeaderFooter) {
+            let headerFooterWidget = undefined;
+            if (paragraph.containerWidget instanceof TableCellWidget) {
+                // tslint:disable-next-line:max-line-length
+                headerFooterWidget = paragraph.containerWidget.getContainerTable().containerWidget;
+            }
+            else if (paragraph.containerWidget instanceof HeaderFooterWidget) {
+                headerFooterWidget = paragraph.containerWidget;
+            }
+            this.updateHeaderFooterWidget(headerFooterWidget);
+        }
     }
     /**
      * @private
@@ -53963,19 +54038,19 @@ class Editor {
     getSelectionInfo() {
         let start = this.selection.start;
         let end = this.selection.end;
-        let isEmpty = this.selection.isEmpty;
         if (!this.selection.isForward) {
             start = this.selection.end;
             end = this.selection.start;
         }
-        let startElementInfo = start.currentWidget.getInline(start.offset, 0);
-        let endElementInfo = end.currentWidget.getInline(end.offset, 0);
         if (!(end.offset === this.selection.getLineLength(end.currentWidget) + 1
             && this.selection.isParagraphLastLine(end.currentWidget))) {
             end.offset += 1;
         }
-        // tslint:disable-next-line:max-line-length
-        return { 'start': start.clone(), 'end': end.clone(), 'startElementInfo': startElementInfo, 'endElementInfo': endElementInfo, 'isEmpty': isEmpty };
+        let blockInfo = this.selection.getParagraphInfo(start);
+        let startIndex = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        blockInfo = this.selection.getParagraphInfo(end);
+        let endIndex = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        return { 'start': startIndex, 'end': endIndex };
     }
     /**
      * @private
@@ -53983,16 +54058,16 @@ class Editor {
     insertElements(endElements, startElements) {
         let info = this.getSelectionInfo();
         if (!isNullOrUndefined(startElements)) {
-            this.insertElementsInternal(info.start, startElements);
+            this.insertElementsInternal(this.selection.getTextPosBasedOnLogicalIndex(info.start), startElements);
         }
         if (!isNullOrUndefined(endElements)) {
-            this.insertElementsInternal(info.end, endElements);
+            this.insertElementsInternal(this.selection.getTextPosBasedOnLogicalIndex(info.end), endElements);
         }
     }
     /**
      * @private
      */
-    insertElementsInternal(position, elements) {
+    insertElementsInternal(position, elements, isRelayout) {
         this.selection.selectPosition(position, position);
         this.initHistory('InsertElements');
         this.updateInsertPosition();
@@ -62675,12 +62750,26 @@ class WordExport {
             }
             writer.writeEndElement();
         }
+        if (!isNullOrUndefined(paragraphFormat.outlineLevel)) {
+            writer.writeStartElement(undefined, 'outlineLvl', this.wNamespace);
+            writer.writeAttributeString('w', 'val', this.wNamespace, this.getOutlineLevelValue(paragraphFormat.outlineLevel).toString());
+            writer.writeEndElement();
+        }
         this.serializeParagraphSpacing(writer, paragraphFormat);
         this.serializeIndentation(writer, paragraphFormat);
         this.serializeParagraphAlignment(writer, paragraphFormat.textAlignment, paragraphFormat.bidi);
         if (!isNullOrUndefined(paragraphFormat.tabs) && paragraphFormat.tabs.length > 0) {
             this.serializeTabs(writer, paragraphFormat.tabs);
         }
+    }
+    getOutlineLevelValue(outlineLvl) {
+        if (outlineLvl.indexOf('Level') !== -1) {
+            let lvlNumber = parseInt(outlineLvl.substring(5), 10);
+            if (lvlNumber > 0) {
+                return lvlNumber - 1;
+            }
+        }
+        return 9;
     }
     // Serialize Tabs
     serializeTabs(writer, tabStops) {
@@ -64217,6 +64306,7 @@ class SfdtExport {
         this.document = undefined;
         this.writeInlineStyles = undefined;
         this.editRangeId = -1;
+        this.isExport = true;
         this.viewer = owner;
     }
     getModuleName() {
@@ -64273,6 +64363,7 @@ class SfdtExport {
         this.Initialize();
         this.updateEditRangeId();
         if (line instanceof LineWidget && endLine instanceof LineWidget) {
+            this.isExport = false;
             // For selection
             let startPara = line.paragraph;
             let endPara = endLine.paragraph;
@@ -64341,6 +64432,7 @@ class SfdtExport {
             }
         }
         else {
+            this.isExport = true;
             if (this.viewer.pages.length > 0) {
                 let page = this.viewer.pages[0];
                 this.writePage(page);
@@ -64806,7 +64898,7 @@ class SfdtExport {
     createParagraph(paragraphWidget) {
         let paragraph = {};
         let isParaSelected = false;
-        if (this.viewer.selection && !this.viewer.selection.isEmpty) {
+        if (this.viewer.selection && !this.viewer.selection.isEmpty && !this.isExport) {
             let endPos = this.viewer.selection.end;
             if (!this.viewer.selection.isForward) {
                 endPos = this.viewer.selection.start;
@@ -66869,12 +66961,12 @@ class PageSetupDialog {
         this.initLayoutProperties(this.layoutTab, locale, isRtl);
         let tabObj = new Tab({ enableRtl: isRtl }, ejtab);
         this.target.addEventListener('keyup', this.keyUpInsertPageSettings);
-        let marginTabHeader = tabObj.element.getElementsByClassName('e-item e-toolbar-item')[0];
-        let marginTabHeaderItem = marginTabHeader.getElementsByClassName('e-tab-wrap')[0];
-        marginTabHeaderItem.classList.add('e-de-page-setup-dlg-margin-tab-header');
-        if (isRtl) {
-            marginTabHeaderItem.classList.add('e-de-rtl');
-        }
+        // let marginTabHeader: HTMLElement = tabObj.element.getElementsByClassName('e-item e-toolbar-item')[0] as HTMLElement;
+        // let marginTabHeaderItem: HTMLElement = marginTabHeader.getElementsByClassName('e-tab-wrap')[0] as HTMLElement;
+        // marginTabHeaderItem.classList.add('e-de-page-setup-dlg-margin-tab-header');
+        // if (isRtl) {
+        //     marginTabHeaderItem.classList.add('e-de-rtl');
+        // }
     }
     /**
      * @private
@@ -67677,7 +67769,7 @@ class ParagraphDialog {
         this.atIn.appendTo(lineSpacingAt);
         this.contextSpacing = new CheckBox({
             change: this.changeContextualSpacing,
-            label: locale.getConstant("Don't add space between the paragraphs of the same styles"),
+            label: locale.getConstant("Contextual Spacing"),
             enableRtl: isRtl,
             cssClass: 'e-de-para-dlg-cs-check-box'
         });
@@ -68621,7 +68713,7 @@ class StyleDialog {
                     type = 'Character';
                 }
                 // tslint:disable-next-line:max-line-length
-                if (args.value === this.localObj.getConstant('Paragraph') || args.value === this.localObj.getConstant('Linked(Paragraph and Character)')) {
+                if (args.value === this.localObj.getConstant('Paragraph') || args.value === this.localObj.getConstant('Linked Style')) {
                     this.style = new WParagraphStyle();
                     type = 'Paragraph';
                 }
@@ -68682,13 +68774,13 @@ class StyleDialog {
                     this.style.type = this.getTypeValue();
                     this.style.basedOn = this.owner.owner.viewer.styles.findByName(this.styleBasedOn.value);
                     // tslint:disable-next-line:max-line-length
-                    if (this.styleType.value === this.localObj.getConstant('Paragraph') || this.styleType.value === this.localObj.getConstant('Linked(Paragraph and Character)')) {
+                    if (this.styleType.value === this.localObj.getConstant('Paragraph') || this.styleType.value === this.localObj.getConstant('Linked Style')) {
                         this.style.next = this.owner.owner.viewer.styles.findByName(this.styleParagraph.value);
                         this.style.characterFormat.mergeFormat(style.characterFormat);
                         this.style.paragraphFormat.mergeFormat(style.paragraphFormat, true);
                         this.updateList();
                         // tslint:disable-next-line:max-line-length
-                        this.style.link = (this.styleType.value === this.localObj.getConstant('Linked(Paragraph and Character)')) ? this.createLinkStyle(styleName, this.isEdit) : undefined;
+                        this.style.link = (this.styleType.value === this.localObj.getConstant('Linked Style')) ? this.createLinkStyle(styleName, this.isEdit) : undefined;
                     }
                     //Updating existing style implementation
                     this.style.name = style.name;
@@ -68705,7 +68797,7 @@ class StyleDialog {
                     /* tslint:disable-next-line:no-any */
                     let basedOn = this.owner.owner.viewer.styles.findByName(this.styleBasedOn.value);
                     // tslint:disable-next-line:max-line-length
-                    if (this.styleType.value === this.localObj.getConstant('Paragraph') || this.styleType.value === this.localObj.getConstant('Linked(Paragraph and Character)')) {
+                    if (this.styleType.value === this.localObj.getConstant('Paragraph') || this.styleType.value === this.localObj.getConstant('Linked Style')) {
                         if (styleName === this.styleParagraph.value) {
                             tmpStyle.next = tmpStyle;
                         }
@@ -68715,7 +68807,7 @@ class StyleDialog {
                         this.updateList();
                     }
                     // tslint:disable-next-line:max-line-length
-                    tmpStyle.link = (this.styleType.value === this.localObj.getConstant('Linked(Paragraph and Character)')) ? this.createLinkStyle(styleName) : undefined;
+                    tmpStyle.link = (this.styleType.value === this.localObj.getConstant('Linked Style')) ? this.createLinkStyle(styleName) : undefined;
                     tmpStyle.type = this.getTypeValue();
                     tmpStyle.name = styleName;
                     tmpStyle.basedOn = basedOn;
@@ -68810,7 +68902,7 @@ class StyleDialog {
         let styleTypeDivElement = createElement('div', { className: 'e-de-style-style-type-div' });
         let styleTypeValue = createElement('select', { id: 'e-de-style-style-type' });
         // tslint:disable-next-line:max-line-length
-        styleTypeValue.innerHTML = '<option>' + localValue.getConstant('Paragraph') + '</option><option>' + localValue.getConstant('Character') + '</option><option>' + localValue.getConstant('Linked(Paragraph and Character)') + '</option>'; //<option>Linked(Paragraph and Character)</option><option>Table</option><option>List</option>';
+        styleTypeValue.innerHTML = '<option>' + localValue.getConstant('Paragraph') + '</option><option>' + localValue.getConstant('Character') + '</option><option>' + localValue.getConstant('Linked Style') + '</option>'; //<option>Linked(Paragraph and Character)</option><option>Table</option><option>List</option>';
         styleTypeDivElement.appendChild(styleTypeValue);
         this.styleType = new DropDownList({ change: this.styleTypeChange, popupHeight: '253px', width: '210px', enableRtl: isRtl });
         this.styleType.appendTo(styleTypeValue);
@@ -69204,7 +69296,7 @@ class StyleDialog {
         }
     }
     getTypeValue() {
-        if (this.styleType.value === this.localObj.getConstant('Linked(Paragraph and Character)') || this.styleType.value === this.localObj.getConstant('Paragraph')) {
+        if (this.styleType.value === this.localObj.getConstant('Linked Style') || this.styleType.value === this.localObj.getConstant('Paragraph')) {
             return 'Paragraph';
         }
         else {
@@ -70651,21 +70743,20 @@ class TablePropertiesDialog {
         for (let i = 0; i < cellAlignment.length; i++) {
             cellAlignment[i].addEventListener('click', this.changeCellAlignment);
         }
-        let tableTabHeader = this.tabObj.element.getElementsByClassName('e-item e-toolbar-item')[0];
-        let tableTabHeaderItem = tableTabHeader.getElementsByClassName('e-tab-wrap')[0];
-        let rowTabHeader = this.tabObj.element.getElementsByClassName('e-item e-toolbar-item')[1];
-        let rowTabHeaderItem = rowTabHeader.getElementsByClassName('e-tab-wrap')[0];
-        rowTabHeaderItem.classList.add('e-de-table-ppty-dlg-row-header');
-        let cellTabHeader = this.tabObj.element.getElementsByClassName('e-item e-toolbar-item')[2];
-        let cellTabHeaderItem = cellTabHeader.getElementsByClassName('e-tab-wrap')[0];
-        cellTabHeaderItem.classList.add('e-de-table-ppty-dlg-cell-header');
-        if (isRtl) {
-            tableTabHeaderItem.classList.add('e-de-rtl');
-            this.tabObj.element.getElementsByClassName('e-indicator')[0].style.left = '155px';
-        }
-        else {
-            this.tabObj.element.getElementsByClassName('e-indicator')[0].style.right = '155px';
-        }
+        // let tableTabHeader: HTMLElement = this.tabObj.element.getElementsByClassName('e-item e-toolbar-item')[0] as HTMLElement;
+        // let tableTabHeaderItem: HTMLElement = tableTabHeader.getElementsByClassName('e-tab-wrap')[0] as HTMLElement;
+        // let rowTabHeader: HTMLElement = this.tabObj.element.getElementsByClassName('e-item e-toolbar-item')[1] as HTMLElement;
+        // let rowTabHeaderItem: HTMLElement = rowTabHeader.getElementsByClassName('e-tab-wrap')[0] as HTMLElement;
+        // rowTabHeaderItem.classList.add('e-de-table-ppty-dlg-row-header');
+        // let cellTabHeader: HTMLElement = this.tabObj.element.getElementsByClassName('e-item e-toolbar-item')[2] as HTMLElement;
+        // let cellTabHeaderItem: HTMLElement = cellTabHeader.getElementsByClassName('e-tab-wrap')[0] as HTMLElement;
+        // cellTabHeaderItem.classList.add('e-de-table-ppty-dlg-cell-header');
+        // if (isRtl) {
+        //     tableTabHeaderItem.classList.add('e-de-rtl');
+        //     (this.tabObj.element.getElementsByClassName('e-indicator')[0] as HTMLElement).style.left = '155px';
+        // } else {
+        //     (this.tabObj.element.getElementsByClassName('e-indicator')[0] as HTMLElement).style.right = '155px';
+        // }
     }
     /**
      * @private
@@ -73572,7 +73663,7 @@ class CommentReviewPane {
                 localObj.setLocale(this.owner.locale);
                 this.confirmDialog = DialogUtility.confirm({
                     title: localObj.getConstant('Un-posted comments'),
-                    content: localObj.getConstant('Added comments not posted. If you continue, that comment will be discarded.'),
+                    content: localObj.getConstant('Discard Comment'),
                     okButton: {
                         text: 'Discard', click: this.discardButtonClick.bind(this)
                     },
@@ -74616,29 +74707,29 @@ class Toolbar$1 {
             clicked: this.clickHandler.bind(this),
             items: [
                 {
-                    prefixIcon: 'e-de-ctnr-new', tooltipText: locale.getConstant('Create a new document.'),
+                    prefixIcon: 'e-de-ctnr-new', tooltipText: locale.getConstant('Create a new document'),
                     id: id + NEW_ID, text: locale.getConstant('New'), cssClass: 'e-de-toolbar-btn-start'
                 },
                 {
-                    prefixIcon: 'e-de-ctnr-open', tooltipText: locale.getConstant('Open a document.'), id: id + OPEN_ID,
+                    prefixIcon: 'e-de-ctnr-open', tooltipText: locale.getConstant('Open a document'), id: id + OPEN_ID,
                     text: locale.getConstant('Open'), cssClass: 'e-de-toolbar-btn-last'
                 },
                 {
                     type: 'Separator', cssClass: 'e-de-separator'
                 },
                 {
-                    prefixIcon: 'e-de-ctnr-undo', tooltipText: locale.getConstant('Undo the last operation (Ctrl+Z).'),
+                    prefixIcon: 'e-de-ctnr-undo', tooltipText: locale.getConstant('Undo Tooltip'),
                     id: id + UNDO_ID, text: locale.getConstant('Undo'), cssClass: 'e-de-toolbar-btn-first'
                 },
                 {
-                    prefixIcon: 'e-de-ctnr-redo', tooltipText: locale.getConstant('Redo the last operation (Ctrl+Y).'),
+                    prefixIcon: 'e-de-ctnr-redo', tooltipText: locale.getConstant('Redo Tooltip'),
                     id: id + REDO_ID, text: locale.getConstant('Redo'), cssClass: 'e-de-toolbar-btn-last'
                 },
                 {
                     type: 'Separator', cssClass: 'e-de-separator'
                 },
                 {
-                    tooltipText: locale.getConstant('Insert inline picture from a file.'), id: id + INSERT_IMAGE_ID,
+                    tooltipText: locale.getConstant('Insert inline picture from a file'), id: id + INSERT_IMAGE_ID,
                     text: locale.getConstant('Image'), cssClass: 'e-de-toolbar-btn-first e-de-image-splitbutton e-de-image-focus'
                 },
                 {
@@ -74647,12 +74738,12 @@ class Toolbar$1 {
                 },
                 {
                     prefixIcon: 'e-de-ctnr-link',
-                    tooltipText: locale.getConstant('Create a link in your document for quick access to webpages and files (Ctrl+K).'),
+                    tooltipText: locale.getConstant('Create Hyperlink'),
                     id: id + INSERT_LINK_ID, text: locale.getConstant('Link'), cssClass: 'e-de-toolbar-btn-middle'
                 },
                 {
                     prefixIcon: 'e-de-ctnr-bookmark',
-                    tooltipText: locale.getConstant('Insert a bookmark in a specific place in this document.'),
+                    tooltipText: locale.getConstant('Insert a bookmark in a specific place in this document'),
                     id: id + BOOKMARK_ID, text: locale.getConstant('Bookmark'), cssClass: 'e-de-toolbar-btn-middle'
                 },
                 {
@@ -74662,7 +74753,7 @@ class Toolbar$1 {
                 },
                 {
                     prefixIcon: 'e-de-ctnr-tableofcontent',
-                    tooltipText: locale.getConstant('Provide an overview of your document by adding a table of contents.'),
+                    tooltipText: locale.getConstant('Provide an overview of your document by adding a table of contents'),
                     id: id + TABLE_OF_CONTENT_ID, text: this.onWrapText(locale.getConstant('Table of Contents')),
                     cssClass: 'e-de-toolbar-btn-last'
                 },
@@ -74670,20 +74761,20 @@ class Toolbar$1 {
                     type: 'Separator', cssClass: 'e-de-separator'
                 },
                 {
-                    prefixIcon: 'e-de-ctnr-header', tooltipText: locale.getConstant('Add or edit the header.'),
+                    prefixIcon: 'e-de-ctnr-header', tooltipText: locale.getConstant('Add or edit the header'),
                     id: id + HEADER_ID, text: locale.getConstant('Header'), cssClass: 'e-de-toolbar-btn-first'
                 },
                 {
-                    prefixIcon: 'e-de-ctnr-footer', tooltipText: locale.getConstant('Add or edit the footer.'),
+                    prefixIcon: 'e-de-ctnr-footer', tooltipText: locale.getConstant('Add or edit the footer'),
                     id: id + FOOTER_ID, text: locale.getConstant('Footer'), cssClass: 'e-de-toolbar-btn-middle'
                 },
                 {
-                    prefixIcon: 'e-de-ctnr-pagesetup', tooltipText: locale.getConstant('Open the page setup dialog.'),
+                    prefixIcon: 'e-de-ctnr-pagesetup', tooltipText: locale.getConstant('Open the page setup dialog'),
                     id: id + PAGE_SET_UP_ID, text: this.onWrapText(locale.getConstant('Page Setup')),
                     cssClass: 'e-de-toolbar-btn-middle'
                 },
                 {
-                    prefixIcon: 'e-de-ctnr-pagenumber', tooltipText: locale.getConstant('Add page numbers.'),
+                    prefixIcon: 'e-de-ctnr-pagenumber', tooltipText: locale.getConstant('Add page numbers'),
                     id: id + PAGE_NUMBER_ID, text: this.onWrapText(locale.getConstant('Page Number')),
                     cssClass: 'e-de-toolbar-btn-middle'
                 },
@@ -74695,7 +74786,7 @@ class Toolbar$1 {
                     type: 'Separator', cssClass: 'e-de-separator'
                 },
                 {
-                    prefixIcon: 'e-de-ctnr-find', tooltipText: locale.getConstant('Find text in the document (Ctrl+F).'),
+                    prefixIcon: 'e-de-ctnr-find', tooltipText: locale.getConstant('Find Text'),
                     id: id + FIND_ID, text: locale.getConstant('Find'), cssClass: 'e-de-toolbar-btn'
                 },
                 {
@@ -74708,7 +74799,7 @@ class Toolbar$1 {
                     cssClass: 'e-de-toolbar-btn-first'
                 },
                 {
-                    prefixIcon: 'e-de-ctnr-lock', tooltipText: locale.getConstant('Restrict editing.'), id: id + RESTRICT_EDITING_ID,
+                    prefixIcon: 'e-de-ctnr-lock', tooltipText: locale.getConstant('Restrict Editing'), id: id + RESTRICT_EDITING_ID,
                     text: this.onWrapText(locale.getConstant('Restrict Editing')), cssClass: 'e-de-toolbar-btn-end e-de-lock-dropdownbutton'
                 }
             ]
@@ -75263,11 +75354,11 @@ class Text {
         });
         propertiesDiv.appendChild(leftDiv);
         // tslint:disable-next-line:max-line-length
-        this.bold = this.createButtonTemplate(element + '_bold', 'e-de-ctnr-bold e-icons', leftDiv, 'e-de-prop-font-button', '40.5', this.localObj.getConstant('Bold (Ctrl+B)'));
+        this.bold = this.createButtonTemplate(element + '_bold', 'e-de-ctnr-bold e-icons', leftDiv, 'e-de-prop-font-button', '40.5', this.localObj.getConstant('Bold Tooltip'));
         // tslint:disable-next-line:max-line-length
-        this.italic = this.createButtonTemplate(element + '_italic', 'e-de-ctnr-italic e-icons', leftDiv, 'e-de-prop-font-button', '40.5', this.localObj.getConstant('Italic (Ctrl+I)'));
+        this.italic = this.createButtonTemplate(element + '_italic', 'e-de-ctnr-italic e-icons', leftDiv, 'e-de-prop-font-button', '40.5', this.localObj.getConstant('Italic Tooltip'));
         // tslint:disable-next-line:max-line-length
-        this.underline = this.createButtonTemplate(element + '_underline', 'e-de-ctnr-underline e-icons', leftDiv, 'e-de-prop-font-button', '40.5', this.localObj.getConstant('Underline (Ctrl+U)'));
+        this.underline = this.createButtonTemplate(element + '_underline', 'e-de-ctnr-underline e-icons', leftDiv, 'e-de-prop-font-button', '40.5', this.localObj.getConstant('Underline Tooltip'));
         // tslint:disable-next-line:max-line-length
         this.strikethrough = this.createButtonTemplate(element + '_strikethrough', 'e-de-ctnr-strikethrough e-icons', leftDiv, 'e-de-prop-font-last-button', '40.5', this.localObj.getConstant('Strikethrough'));
         divClassName = 'e-de-ctnr-group-btn e-de-char-fmt-btn-right e-btn-group';
@@ -75278,9 +75369,9 @@ class Text {
         let rightDiv = createElement('div', { id: element + '_rightDiv', className: divClassName, styles: 'display:inline-flex;' });
         propertiesDiv.appendChild(rightDiv);
         // tslint:disable-next-line:max-line-length
-        this.superscript = this.createButtonTemplate(element + '_superscript', 'e-de-ctnr-superscript e-icons', rightDiv, 'e-de-prop-font-button', '38.5', this.localObj.getConstant('Superscript (Ctrl+Shift++)'));
+        this.superscript = this.createButtonTemplate(element + '_superscript', 'e-de-ctnr-superscript e-icons', rightDiv, 'e-de-prop-font-button', '38.5', this.localObj.getConstant('Superscript Tooltip'));
         // tslint:disable-next-line:max-line-length
-        this.subscript = this.createButtonTemplate(element + '_subscript', 'e-de-ctnr-subscript e-icons', rightDiv, 'e-de-prop-font-last-button', '38.5', this.localObj.getConstant('Subscript (Ctrl+=)'));
+        this.subscript = this.createButtonTemplate(element + '_subscript', 'e-de-ctnr-subscript e-icons', rightDiv, 'e-de-prop-font-last-button', '38.5', this.localObj.getConstant('Subscript Tooltip'));
         // tslint:disable-next-line:max-line-length
         let leftDiv2 = createElement('div', { id: element + '_color', className: 'e-de-font-clr-picker e-de-ctnr-group-btn', styles: 'display:inline-flex;' });
         if (isRtl) {
@@ -75922,13 +76013,13 @@ class Paragraph {
         }
         indentDiv.className = indentClassName;
         // tslint:disable-next-line:max-line-length
-        this.leftAlignment = this.createButtonTemplate(element + '_leftIndent', 'e-de-ctnr-alignleft e-icons', indentDiv, 'e-de-prop-indent-button', '40.5', this.localObj.getConstant('Align left (Ctrl+L)'));
+        this.leftAlignment = this.createButtonTemplate(element + '_leftIndent', 'e-de-ctnr-alignleft e-icons', indentDiv, 'e-de-prop-indent-button', '40.5', this.localObj.getConstant('Align left Tooltip'));
         // tslint:disable-next-line:max-line-length
-        this.centerAlignment = this.createButtonTemplate(element + '_centerIndent', 'e-de-ctnr-aligncenter e-icons', indentDiv, 'e-de-prop-indent-button', '40.5', this.localObj.getConstant('Center (Ctrl+E)'));
+        this.centerAlignment = this.createButtonTemplate(element + '_centerIndent', 'e-de-ctnr-aligncenter e-icons', indentDiv, 'e-de-prop-indent-button', '40.5', this.localObj.getConstant('Center Tooltip'));
         // tslint:disable-next-line:max-line-length
-        this.rightAlignment = this.createButtonTemplate(element + '_rightIndent', 'e-de-ctnr-alignright e-icons', indentDiv, 'e-de-prop-indent-button', '40.5', this.localObj.getConstant('Align right (Ctrl+R)'));
+        this.rightAlignment = this.createButtonTemplate(element + '_rightIndent', 'e-de-ctnr-alignright e-icons', indentDiv, 'e-de-prop-indent-button', '40.5', this.localObj.getConstant('Align right Tooltip'));
         // tslint:disable-next-line:max-line-length
-        this.justify = this.createButtonTemplate(element + '_justify', 'e-de-ctnr-justify e-icons', indentDiv, 'e-de-prop-indent-last-button', '40.5', this.localObj.getConstant('Justify (Ctrl+J)'));
+        this.justify = this.createButtonTemplate(element + '_justify', 'e-de-ctnr-justify e-icons', indentDiv, 'e-de-prop-indent-last-button', '40.5', this.localObj.getConstant('Justify Tooltip'));
         let increaseIndentIconCss = 'e-de-ctnr-increaseindent e-icons';
         let decreaseIndentIconCss = 'e-de-ctnr-decreaseindent e-icons';
         let incDecIndentDiv = this.createDivElement(element + '_indentDiv', indentWholeDiv, 'display:flex;');
@@ -76537,7 +76628,7 @@ class HeaderFooterProperties {
         let headerDiv = this.createDivTemplate('_header_footer', this.element, 'padding-bottom:0');
         classList(headerDiv, ['e-de-cntr-pane-padding'], []);
         let headerLabel = createElement('label', { className: 'e-de-prop-header-label' });
-        headerLabel.innerHTML = localObj.getConstant('Header & Footer');
+        headerLabel.innerHTML = localObj.getConstant('Header And Footer');
         let closeButtonFloat;
         if (!this.isRtl) {
             closeButtonFloat = 'float:right;';
@@ -76568,15 +76659,15 @@ class HeaderFooterProperties {
         this.firstPage = new CheckBox({ label: localObj.getConstant('Different First Page'), change: this.changeFirstPageOptions, cssClass: 'e-de-prop-sub-label', enableRtl: this.isRtl });
         this.firstPage.appendTo(firstPage);
         // tslint:disable-next-line:max-line-length
-        firstPageDiv.children[0].setAttribute('title', localObj.getConstant('Different header and footer for first page.'));
+        firstPageDiv.children[0].setAttribute('title', localObj.getConstant('Different header and footer for first page'));
         let oddOrEvenDiv = this.createDivTemplate(elementId + '_oddOrEvenDiv', optionsDiv);
         let oddOrEven = createElement('input', { id: 'oddOrEven', className: 'e-de-sub-prop-label' });
         oddOrEvenDiv.appendChild(oddOrEven);
         // tslint:disable-next-line:max-line-length
-        this.oddOrEven = new CheckBox({ label: localObj.getConstant('Different Odd & Even Pages'), change: this.changeoddOrEvenOptions, cssClass: 'e-de-prop-sub-label', enableRtl: this.isRtl });
+        this.oddOrEven = new CheckBox({ label: localObj.getConstant('Different Odd And Even Pages'), change: this.changeoddOrEvenOptions, cssClass: 'e-de-prop-sub-label', enableRtl: this.isRtl });
         this.oddOrEven.appendTo(oddOrEven);
         // tslint:disable-next-line:max-line-length
-        oddOrEvenDiv.children[0].setAttribute('title', localObj.getConstant('Different header and footer for odd and even pages.'));
+        oddOrEvenDiv.children[0].setAttribute('title', localObj.getConstant('Different header and footer for odd and even pages'));
         // tslint:disable-next-line:max-line-length
         // let autoFieldLabelDiv: HTMLElement = this.createDivTemplate(element + '_autoFieldLabelDiv', div, 'padding-top:10px;padding-left: 10px;');
         // let autoFieldLabel: HTMLElement = createElement('label', { className: 'e-de-header-prop-label', styles: 'height:20px;' });
@@ -76624,7 +76715,7 @@ class HeaderFooterProperties {
         });
         this.headerFromTop.appendTo(headerFromTop);
         // tslint:disable-next-line:max-line-length
-        this.headerFromTop.element.parentElement.setAttribute('title', localObj.getConstant('Distance from top of the page to top of the header.'));
+        this.headerFromTop.element.parentElement.setAttribute('title', localObj.getConstant('Distance from top of the page to top of the header'));
         // tslint:disable-next-line:max-line-length
         let footerBottomDiv = this.createDivTemplate(elementId + '_footerBottomDiv', positionDiv);
         // tslint:disable-next-line:max-line-length
@@ -76641,7 +76732,7 @@ class HeaderFooterProperties {
         });
         this.footerFromTop.appendTo(footerFromTop);
         // tslint:disable-next-line:max-line-length
-        this.footerFromTop.element.parentElement.setAttribute('title', localObj.getConstant('Distance from bottom of the page to bottom of the footer.'));
+        this.footerFromTop.element.parentElement.setAttribute('title', localObj.getConstant('Distance from bottom of the page to bottom of the footer'));
     }
     createDivTemplate(id, parentDiv, style) {
         let divElement;
@@ -76987,7 +77078,7 @@ class TocProperties {
             }
             let contentStyleElement = createElement('div', { id: 'contentstyle_div' });
             // tslint:disable-next-line:max-line-length
-            contentStyleElement.setAttribute('title', this.localObj.getConstant('Number of heading or outline levels to be shown in table of contents.'));
+            contentStyleElement.setAttribute('title', this.localObj.getConstant('Number of heading or outline levels to be shown in table of contents'));
             container.appendChild(contentStyleElement);
             // let items: ItemModel[] = [{ text: '___________', id: 'solid' }];
             // this.borderStyle = this.createDropDownButton(
@@ -77022,7 +77113,7 @@ class TocProperties {
             let checkboxElement = createElement('div', { id: 'toc_checkboxDiv', styles: 'margin-bottom:36px;' });
             container.appendChild(checkboxElement);
             let showPageNumberDiv = createElement('div', { className: 'e-de-toc-checkbox1' });
-            showPageNumberDiv.setAttribute('title', this.localObj.getConstant('Show page numbers in table of contents.'));
+            showPageNumberDiv.setAttribute('title', this.localObj.getConstant('Show page numbers in table of contents'));
             checkboxElement.appendChild(showPageNumberDiv);
             // tslint:disable-next-line:max-line-length
             let showpagenumberCheckboxElement = createElement('input', { id: 'showpagenumber', styles: 'width:12px;height:12px;margin-bottom:8px', className: 'e-de-prop-sub-label' });
@@ -77033,7 +77124,7 @@ class TocProperties {
             });
             this.showPageNumber.appendTo(showpagenumberCheckboxElement);
             let rightAlignDiv = createElement('div', { className: 'e-de-toc-checkbox2' });
-            rightAlignDiv.setAttribute('title', this.localObj.getConstant('Right align page numbers in table of contents.'));
+            rightAlignDiv.setAttribute('title', this.localObj.getConstant('Right align page numbers in table of contents'));
             checkboxElement.appendChild(rightAlignDiv);
             // tslint:disable-next-line:max-line-length
             let rightalignpagenumberCheckboxElement = createElement('input', { id: 'rightalignpagenumber', styles: 'width:12px;height:12px', className: 'e-de-prop-sub-label' });
@@ -77044,7 +77135,7 @@ class TocProperties {
             });
             this.rightalignPageNumber.appendTo(rightalignpagenumberCheckboxElement);
             let hyperlinkDiv = createElement('div', { className: 'e-de-toc-checkbox3' });
-            hyperlinkDiv.setAttribute('title', this.localObj.getConstant('Use hyperlinks instead of page numbers.'));
+            hyperlinkDiv.setAttribute('title', this.localObj.getConstant('Use hyperlinks instead of page numbers'));
             checkboxElement.appendChild(hyperlinkDiv);
             // tslint:disable-next-line:max-line-length
             let hyperlinkCheckboxElement = createElement('input', { id: 'hyperlinkdiv', styles: 'width:12px;height:12px', className: 'e-de-prop-sub-label' });
@@ -77514,7 +77605,7 @@ class TableProperties {
             this.tableProperties.appendChild(tableOperationDiv);
             let label = createElement('label', { className: 'e-de-ctnr-prop-label' });
             label.classList.add('e-de-table-prop-label');
-            label.textContent = this.localObj.getConstant('Insert / Delete');
+            label.textContent = this.localObj.getConstant('Insert Or Delete');
             tableOperationDiv.appendChild(label);
             let parentDiv = createElement('div', { className: 'e-de-insert-del-cell', styles: 'display:inline-flex' });
             let div1 = createElement('div', { className: this.groupButtonClass });
@@ -77845,7 +77936,7 @@ class StatusBar {
             this.updatePageNumber();
             div.appendChild(this.editablePageNumber);
             // tslint:disable-next-line:max-line-length
-            this.editablePageNumber.setAttribute('title', this.localObj.getConstant('The current page number in the document. Click or tap to navigate specific page.'));
+            this.editablePageNumber.setAttribute('title', this.localObj.getConstant('Current Page Number'));
             let label1 = createElement('label', { styles: 'width:16px' });
             label1.textContent = ' ' + this.localObj.getConstant('of') + ' ';
             div.appendChild(label1);
@@ -78136,18 +78227,18 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
             'By URL': 'By URL',
             'Page Break': 'Page Break',
             'Section Break': 'Section Break',
-            'Header & Footer': 'Header & Footer',
+            'Header And Footer': 'Header & Footer',
             'Options': 'Options',
             'Levels': 'Levels',
             'Different First Page': 'Different First Page',
-            'Different header and footer for odd and even pages.': 'Different header and footer for odd and even pages.',
-            'Different Odd & Even Pages': 'Different Odd & Even Pages',
-            'Different header and footer for first page.': 'Different header and footer for first page.',
+            'Different header and footer for odd and even pages': 'Different header and footer for odd and even pages.',
+            'Different Odd And Even Pages': 'Different Odd & Even Pages',
+            'Different header and footer for first page': 'Different header and footer for first page.',
             'Position': 'Position',
             'Header from Top': 'Header from Top',
             'Footer from Bottom': 'Footer from Bottom',
-            'Distance from top of the page to top of the header.': 'Distance from top of the page to top of the header.',
-            'Distance from bottom of the page to bottom of the footer.': 'Distance from bottom of the page to bottom of the footer.',
+            'Distance from top of the page to top of the header': 'Distance from top of the page to top of the header.',
+            'Distance from bottom of the page to bottom of the footer': 'Distance from bottom of the page to bottom of the footer.',
             'Aspect ratio': 'Aspect ratio',
             'W': 'W',
             'H': 'H',
@@ -78171,7 +78262,7 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
             'Border width': 'Border width',
             'Cell': 'Cell',
             'Merge cells': 'Merge cells',
-            'Insert / Delete': 'Insert / Delete',
+            'Insert Or Delete': 'Insert / Delete',
             'Insert columns to the left': 'Insert columns to the left',
             'Insert columns to the right': 'Insert columns to the right',
             'Insert rows above': 'Insert rows above',
@@ -78188,28 +78279,28 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
             'Align bottom': 'Align bottom',
             'Align center': 'Align center',
             // tslint:disable-next-line:max-line-length
-            'Number of heading or outline levels to be shown in table of contents.': 'Number of heading or outline levels to be shown in table of contents.',
+            'Number of heading or outline levels to be shown in table of contents': 'Number of heading or outline levels to be shown in table of contents.',
             'Show page numbers': 'Show page numbers',
-            'Show page numbers in table of contents.': 'Show page numbers in table of contents.',
+            'Show page numbers in table of contents': 'Show page numbers in table of contents.',
             'Right align page numbers': 'Right align page numbers',
-            'Right align page numbers in table of contents.': 'Right align page numbers in table of contents.',
+            'Right align page numbers in table of contents': 'Right align page numbers in table of contents.',
             'Use hyperlinks': 'Use hyperlinks',
-            'Use hyperlinks instead of page numbers.': 'Use hyperlinks instead of page numbers.',
+            'Use hyperlinks instead of page numbers': 'Use hyperlinks instead of page numbers.',
             'Font': 'Font',
             'Font Size': 'Font Size',
             'Font color': 'Font color',
             'Text highlight color': 'Text highlight color',
             'Clear all formatting': 'Clear all formatting',
-            'Bold (Ctrl+B)': 'Bold (Ctrl+B)',
-            'Italic (Ctrl+I)': 'Italic (Ctrl+I)',
-            'Underline (Ctrl+U)': 'Underline (Ctrl+U)',
+            'Bold Tooltip': 'Bold (Ctrl+B)',
+            'Italic Tooltip': 'Italic (Ctrl+I)',
+            'Underline Tooltip': 'Underline (Ctrl+U)',
             'Strikethrough': 'Strikethrough',
-            'Superscript (Ctrl+Shift++)': 'Superscript (Ctrl+Shift++)',
-            'Subscript (Ctrl+=)': 'Subscript (Ctrl+=)',
-            'Align left (Ctrl+L)': 'Align left (Ctrl+L)',
-            'Center (Ctrl+E)': 'Center (Ctrl+E)',
-            'Align right (Ctrl+R)': 'Align right (Ctrl+R)',
-            'Justify (Ctrl+J)': 'Justify (Ctrl+J)',
+            'Superscript Tooltip': 'Superscript (Ctrl+Shift++)',
+            'Subscript Tooltip': 'Subscript (Ctrl+=)',
+            'Align left Tooltip': 'Align left (Ctrl+L)',
+            'Center Tooltip': 'Center (Ctrl+E)',
+            'Align right Tooltip': 'Align right (Ctrl+R)',
+            'Justify Tooltip': 'Justify (Ctrl+J)',
             'Decrease indent': 'Decrease indent',
             'Increase indent': 'Increase indent',
             'Line spacing': 'Line spacing',
@@ -78227,29 +78318,28 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
             'Cancel': 'Cancel',
             'Insert': 'Insert',
             'No Border': 'No Border',
-            'Create a new document.': 'Create a new document.',
-            'Open a document.': 'Open a document.',
-            'Undo the last operation (Ctrl+Z).': 'Undo the last operation (Ctrl+Z).',
-            'Redo the last operation (Ctrl+Y).': 'Redo the last operation (Ctrl+Y).',
-            'Insert inline picture from a file.': 'Insert inline picture from a file.',
+            'Create a new document': 'Create a new document.',
+            'Open a document': 'Open a document.',
+            'Undo Tooltip': 'Undo the last operation (Ctrl+Z).',
+            'Redo Tooltip': 'Redo the last operation (Ctrl+Y).',
+            'Insert inline picture from a file': 'Insert inline picture from a file.',
             'Insert a table into the document': 'Insert a table into the document',
             // tslint:disable-next-line:max-line-length
-            'Create a link in your document for quick access to web pages and files (Ctrl+K).': 'Create a link in your document for quick access to web pages and files (Ctrl+K).',
-            'Insert a bookmark in a specific place in this document.': 'Insert a bookmark in a specific place in this document.',
+            'Create Hyperlink': 'Create a link in your document for quick access to web pages and files (Ctrl+K).',
+            'Insert a bookmark in a specific place in this document': 'Insert a bookmark in a specific place in this document.',
             // tslint:disable-next-line:max-line-length
-            'Provide an overview of your document by adding a table of contents.': 'Provide an overview of your document by adding a table of contents.',
-            'Add or edit the header.': 'Add or edit the header.',
-            'Add or edit the footer.': 'Add or edit the footer.',
-            'Open the page setup dialog.': 'Open the page setup dialog.',
-            'Add page numbers.': 'Add page numbers.',
-            'Find text in the document (Ctrl+F).': 'Find text in the document (Ctrl+F).',
+            'Provide an overview of your document by adding a table of contents': 'Provide an overview of your document by adding a table of contents.',
+            'Add or edit the header': 'Add or edit the header.',
+            'Add or edit the footer': 'Add or edit the footer.',
+            'Open the page setup dialog': 'Open the page setup dialog.',
+            'Add page numbers': 'Add page numbers.',
+            'Find Text': 'Find text in the document (Ctrl+F).',
             'Toggle between the internal clipboard and system clipboard': 'Toggle between the internal clipboard and system clipboard.</br>' +
                 'Access to system clipboard through script is denied due to browsers security policy. Instead, </br>' +
                 ' 1. You can enable internal clipboard to cut, copy and paste within the component.</br>' +
                 ' 2. You can use the keyboard shortcuts (Ctrl+X, Ctrl+C and Ctrl+V) to cut, copy and paste with system clipboard.',
-            'Restrict editing.': 'Restrict editing.',
             // tslint:disable-next-line:max-line-length
-            'The current page number in the document. Click or tap to navigate specific page.': 'The current page number in the document. Click or tap to navigate specific page.',
+            'Current Page Number': 'The current page number in the document. Click or tap to navigate specific page.',
             'Read only': 'Read only',
             'Protections': 'Protections',
             'Error in establishing connection with web server': 'Error in establishing connection with web server',

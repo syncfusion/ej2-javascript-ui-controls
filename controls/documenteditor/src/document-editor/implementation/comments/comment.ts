@@ -121,7 +121,7 @@ export class CommentReviewPane {
                 localObj.setLocale(this.owner.locale);
                 this.confirmDialog = DialogUtility.confirm({
                     title: localObj.getConstant('Un-posted comments'),
-                    content: localObj.getConstant('Added comments not posted. If you continue, that comment will be discarded.'),
+                    content: localObj.getConstant('Discard Comment'),
                     okButton: {
                         text: 'Discard', click: this.discardButtonClick.bind(this)
                     },

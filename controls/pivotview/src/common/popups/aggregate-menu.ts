@@ -12,6 +12,7 @@ import { Dialog } from '@syncfusion/ej2-popups';
 import { MaskedTextBox } from '@syncfusion/ej2-inputs';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import * as events from '../../common/base/constant';
+import { PivotUtil } from '../../base/util';
 
 /**
  * `AggregateMenu` module to create aggregate type popup.
@@ -351,7 +352,7 @@ export class AggregateMenu {
             buttonElement.setAttribute('data-baseitem', baseItemInstance.value as string);
         }
         let selectedField: IFieldOptions =
-            this.parent.pivotCommon.eventBase.getFieldByName(fieldName, this.parent.dataSourceSettings.values);
+            PivotUtil.getFieldByName(fieldName, this.parent.dataSourceSettings.values) as IFieldOptions;
         selectedField = (<{ [key: string]: Object }>selectedField).properties ?
             (<{ [key: string]: Object }>selectedField).properties : selectedField;
         selectedField.caption = captionInstance.value;

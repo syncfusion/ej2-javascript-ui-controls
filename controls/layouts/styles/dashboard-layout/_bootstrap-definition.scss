@@ -94,7 +94,8 @@ $panel-drop-border-radius: 4px !default;
 // dragging element style
 
 $panel-dragging-cursor: move !default;
-$panel-dragging-zindex: 1111 !default;
+// sass-lint:disable-all
+$panel-dragging-zindex: 1111 !important !default;
 $panel-drag-prevent: none !default;
 // sass-lint:disable-all
 $element-width-complete: 100% !important !default;

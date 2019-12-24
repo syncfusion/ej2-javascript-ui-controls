@@ -40,7 +40,7 @@ export class DataUtil {
      * @param  {string} substr
      */
     public static endsWith(input: string, substr: string): boolean {
-        return input.slice(-substr.length) === substr;
+        return input.slice && input.slice(-substr.length) === substr;
     }
 
     /**

@@ -53,6 +53,8 @@ export type Action =
     'filterChoiceRequest' |
     /** Defines current Action as filterAfterOpen */
     'filterAfterOpen' |
+    /** Defines current Action as filterSearchBegin */
+    'filterSearchBegin' |
     /** represents the column state */
     'columnstate';
 

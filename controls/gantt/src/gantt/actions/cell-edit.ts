@@ -1,4 +1,4 @@
-import { isNullOrUndefined as isNOU, getValue, isBlazor, getElement } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, isUndefined as isU, getValue, isBlazor, getElement } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { ITaskData, ITaskbarEditedEventArgs, IGanttData, CellEditArgs } from '../base/interface';
 import { ColumnModel } from '../models/column';
@@ -118,7 +118,7 @@ export class CellEdit {
         editedArgs.data = this.parent.getTaskByUniqueID(data.uniqueID);
         let previousValue: object = getValue('previousData', args);
         let tempEditedValue: boolean = column.editType === 'stringedit' &&
-         column.field === 'Duration' ? data[column.field] !== '' : !isNOU(data[column.field]);
+         column.field === 'Duration' ? data[column.field] !== '' : !isU(data[column.field]);
         let editedValue: object = this.parent.allowUnscheduledTasks ? data[column.field] : tempEditedValue ? data[column.field] :
             previousValue;
         if (!isNOU(data)) {

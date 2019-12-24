@@ -618,6 +618,7 @@ function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerC
                 }
                 tempX = bounds[o].left + bounds[o].width / 2;
                 tempY = bounds[o].top + bounds[o].height;
+                indexCollection = [];
                 for (let q = 0; q < colloideBounds.length; q++) {
                     for (let k = 0; k < bounds.length; k++) {
                         if (!isNullOrUndefined(bounds[k])) {
@@ -3572,7 +3573,7 @@ class Marker {
             clusterSeparate(this.sameMarkerData, this.maps, this.markerSVGObject, true);
         }
         let eventArgs = {
-            cancel: false, name: markerClusterClick, data: options.data, maps: this.maps,
+            cancel: false, name: markerClusterClick, data: options, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY,
             latitude: options.data["latitude"] || options.data["Latitude"], longitude: options.data["longitude"] || options.data["Longitude"]
         };
@@ -4339,189 +4340,200 @@ class LayerPanel {
                 'height:' + this.mapObject.mapAreaRect.height + 'px;' +
                 'width:' + this.mapObject.mapAreaRect.width + 'px;'
         });
-        for (let i = 0; i < this.currentLayer.layerData.length; i++) {
-            let k;
-            let currentShapeData = this.currentLayer.layerData[i];
-            let pathOptions;
-            let polyLineOptions;
-            let circleOptions;
-            let groupElement;
-            let path = '';
-            let points = '';
-            let getShapeColor$$1;
-            let fill = (shapeSettings.autofill) ? colors[i % colors.length] : shapeSettings.fill;
-            let opacity;
-            if (shapeSettings.colorValuePath !== null && !isNullOrUndefined(currentShapeData['property'])) {
-                k = checkShapeDataFields(this.currentLayer.dataSource, currentShapeData['property'], this.currentLayer.shapeDataPath, this.currentLayer.shapePropertyPath);
-                if (k !== null && shapeSettings.colorMapping.length === 0) {
-                    fill = this.currentLayer.dataSource[k][shapeSettings.colorValuePath];
-                }
-                else if (currentShapeData['property'][shapeSettings.colorValuePath] &&
-                    this.currentLayer.dataSource.length === 0 && shapeSettings.colorMapping.length === 0) {
-                    fill = currentShapeData['property'][shapeSettings.colorValuePath];
-                }
-            }
-            let shapeID = this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' + k;
-            getShapeColor$$1 = this.getShapeColorMapping(this.currentLayer, currentShapeData['property'], fill);
-            fill = Object.prototype.toString.call(getShapeColor$$1) === '[object Object]' && !isNullOrUndefined(getShapeColor$$1['fill'])
-                ? getShapeColor$$1['fill'] : fill;
-            opacity = (Object.prototype.toString.call(getShapeColor$$1) === '[object Object]'
-                && !isNullOrUndefined(getShapeColor$$1['opacity'])) ? getShapeColor$$1['opacity'] : shapeSettings.opacity;
-            let eventArgs = {
-                cancel: false, name: shapeRendering, index: i,
-                data: this.currentLayer.dataSource ? this.currentLayer.dataSource[k] : null,
-                maps: this.mapObject,
-                shape: shapeSettings, fill: fill,
-                border: { width: shapeSettings.border.width, color: shapeSettings.border.color }
-            };
-            if (this.mapObject.isBlazor) {
-                const { maps } = eventArgs, blazorEventArgs = __rest$2(eventArgs, ["maps"]);
-                eventArgs = blazorEventArgs;
-            }
-            // tslint:disable-next-line:max-func-body-length
-            let shapeRenderingSuccess = (eventArgs) => {
-                let drawingType = !isNullOrUndefined(currentShapeData['_isMultiPolygon'])
-                    ? 'MultiPolygon' : isNullOrUndefined(currentShapeData['type']) ? currentShapeData[0]['type'] : currentShapeData['type'];
-                drawingType = (drawingType === 'Polygon' || drawingType === 'MultiPolygon') ? 'Polygon' : drawingType;
-                eventArgs.fill = eventArgs.fill === '#A6A6A6' ? eventArgs.shape.fill : eventArgs.fill;
-                eventArgs.border.color = eventArgs.border.color === '#000000' ? eventArgs.shape.border.color : eventArgs.border.color;
-                eventArgs.border.width = eventArgs.border.width === 0 ? eventArgs.shape.border.width : eventArgs.border.width;
-                this.mapObject.layers[layerIndex].shapeSettings.border = eventArgs.border;
-                if (this.groupElements.length < 1) {
-                    groupElement = this.mapObject.renderer.createGroup({
-                        id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_' + drawingType + '_Group', transform: ''
-                    });
-                    this.groupElements.push(groupElement);
-                }
-                else {
-                    for (let i = 0; i < this.groupElements.length; i++) {
-                        let ele = this.groupElements[i];
-                        if (ele.id.indexOf(drawingType) > -1) {
-                            groupElement = ele;
-                            break;
-                        }
-                        else if (i >= this.groupElements.length - 1) {
-                            groupElement = this.mapObject.renderer.createGroup({
-                                id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_' + drawingType + '_Group'
-                            });
-                            this.groupElements.push(groupElement);
-                            break;
-                        }
+        if (this.currentLayer.layerData.length !== 0) {
+            for (let i = 0; i < this.currentLayer.layerData.length; i++) {
+                let k;
+                let currentShapeData = this.currentLayer.layerData[i];
+                let pathOptions;
+                let polyLineOptions;
+                let circleOptions;
+                let groupElement;
+                let path = '';
+                let points = '';
+                let getShapeColor$$1;
+                let fill = (shapeSettings.autofill) ? colors[i % colors.length] : shapeSettings.fill;
+                let opacity;
+                if (shapeSettings.colorValuePath !== null && !isNullOrUndefined(currentShapeData['property'])) {
+                    k = checkShapeDataFields(this.currentLayer.dataSource, currentShapeData['property'], this.currentLayer.shapeDataPath, this.currentLayer.shapePropertyPath);
+                    if (k !== null && shapeSettings.colorMapping.length === 0) {
+                        fill = this.currentLayer.dataSource[k][shapeSettings.colorValuePath];
+                    }
+                    else if (currentShapeData['property'][shapeSettings.colorValuePath] &&
+                        this.currentLayer.dataSource.length === 0 && shapeSettings.colorMapping.length === 0) {
+                        fill = currentShapeData['property'][shapeSettings.colorValuePath];
                     }
                 }
-                let pathEle;
-                switch (drawingType) {
-                    case 'Polygon':
-                        if (!currentShapeData['_isMultiPolygon']) {
-                            path += 'M' + (currentShapeData[0]['point']['x']) + ' ' + (currentShapeData[0]['point']['y']);
-                            currentShapeData.map((shapeData) => {
-                                path += ' L ' + (shapeData['point']['x']) + ' ' + (shapeData['point']['y']);
-                            });
-                        }
-                        else {
-                            path = this.generateMultiPolygonPath(currentShapeData);
-                        }
-                        path += ' z ';
-                        if (path.length > 3) {
-                            pathOptions = new PathOption(shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, opacity, shapeSettings.dashArray, path);
-                            pathEle = this.mapObject.renderer.drawPath(pathOptions);
-                        }
-                        break;
-                    case 'LineString':
-                        currentShapeData.map((lineData) => {
-                            points += lineData['point']['x'] + ' , ' + lineData['point']['y'] + ' ';
+                let shapeID = this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' + k;
+                getShapeColor$$1 = this.getShapeColorMapping(this.currentLayer, currentShapeData['property'], fill);
+                fill = Object.prototype.toString.call(getShapeColor$$1) === '[object Object]' && !isNullOrUndefined(getShapeColor$$1['fill'])
+                    ? getShapeColor$$1['fill'] : fill;
+                opacity = (Object.prototype.toString.call(getShapeColor$$1) === '[object Object]'
+                    && !isNullOrUndefined(getShapeColor$$1['opacity'])) ? getShapeColor$$1['opacity'] : shapeSettings.opacity;
+                let eventArgs = {
+                    cancel: false, name: shapeRendering, index: i,
+                    data: this.currentLayer.dataSource ? this.currentLayer.dataSource[k] : null,
+                    maps: this.mapObject,
+                    shape: shapeSettings, fill: fill,
+                    border: { width: shapeSettings.border.width, color: shapeSettings.border.color }
+                };
+                if (this.mapObject.isBlazor) {
+                    const { maps } = eventArgs, blazorEventArgs = __rest$2(eventArgs, ["maps"]);
+                    eventArgs = blazorEventArgs;
+                }
+                // tslint:disable-next-line:max-func-body-length
+                let shapeRenderingSuccess = (eventArgs) => {
+                    let drawingType = !isNullOrUndefined(currentShapeData['_isMultiPolygon'])
+                        ? 'MultiPolygon' : isNullOrUndefined(currentShapeData['type']) ? currentShapeData[0]['type'] : currentShapeData['type'];
+                    drawingType = (drawingType === 'Polygon' || drawingType === 'MultiPolygon') ? 'Polygon' : drawingType;
+                    eventArgs.fill = eventArgs.fill === '#A6A6A6' ? eventArgs.shape.fill : eventArgs.fill;
+                    eventArgs.border.color = eventArgs.border.color === '#000000' ? eventArgs.shape.border.color : eventArgs.border.color;
+                    eventArgs.border.width = eventArgs.border.width === 0 ? eventArgs.shape.border.width : eventArgs.border.width;
+                    this.mapObject.layers[layerIndex].shapeSettings.border = eventArgs.border;
+                    if (this.groupElements.length < 1) {
+                        groupElement = this.mapObject.renderer.createGroup({
+                            id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_' + drawingType + '_Group', transform: ''
                         });
-                        polyLineOptions = new PolylineOption(shapeID, points, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, opacity, shapeSettings.dashArray);
-                        pathEle = this.mapObject.renderer.drawPolyline(polyLineOptions);
-                        break;
-                    case 'Point':
-                        let pointData = currentShapeData['point'];
-                        circleOptions = new CircleOption(shapeID, eventArgs.fill, eventArgs.border, opacity, pointData['x'], pointData['y'], shapeSettings.circleRadius, null);
-                        pathEle = this.mapObject.renderer.drawCircle(circleOptions);
-                        break;
-                    case 'Path':
-                        path = currentShapeData['point'];
-                        pathOptions = new PathOption(shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, opacity, shapeSettings.dashArray, path);
-                        pathEle = this.mapObject.renderer.drawPath(pathOptions);
-                        break;
-                }
-                if (!isNullOrUndefined(pathEle)) {
-                    let property = (Object.prototype.toString.call(this.currentLayer.shapePropertyPath) === '[object Array]' ?
-                        this.currentLayer.shapePropertyPath : [this.currentLayer.shapePropertyPath]);
-                    // tslint:disable-next-line:align
-                    let properties;
-                    for (let j = 0; j < property.length; j++) {
-                        if (!isNullOrUndefined(currentShapeData['property'])) {
-                            properties = property[j];
-                            break;
-                        }
+                        this.groupElements.push(groupElement);
                     }
-                    pathEle.setAttribute('aria-label', ((!isNullOrUndefined(currentShapeData['property'])) ?
-                        (currentShapeData['property'][properties]) : ''));
-                    pathEle.setAttribute('tabindex', (this.mapObject.tabIndex + i + 2).toString());
-                    maintainSelection(this.mapObject.selectedElementId, this.mapObject.shapeSelectionClass, pathEle, 'ShapeselectionMapStyle');
-                    if (this.mapObject.toggledShapeElementId) {
-                        for (let j = 0; j < this.mapObject.toggledShapeElementId.length; j++) {
-                            let styleProperty = this.mapObject.legendSettings.toggleLegendSettings.applyShapeSettings ?
-                                this.currentLayer.shapeSettings : this.mapObject.legendSettings.toggleLegendSettings;
-                            if (this.mapObject.toggledShapeElementId[j] === pathEle.id) {
-                                pathEle.setAttribute('fill', styleProperty.fill);
-                                pathEle.setAttribute('stroke', styleProperty.border.color);
-                                pathEle.setAttribute('opacity', (styleProperty.opacity).toString());
-                                pathEle.setAttribute('stroke-width', (styleProperty.border.width).toString());
+                    else {
+                        for (let i = 0; i < this.groupElements.length; i++) {
+                            let ele = this.groupElements[i];
+                            if (ele.id.indexOf(drawingType) > -1) {
+                                groupElement = ele;
+                                break;
+                            }
+                            else if (i >= this.groupElements.length - 1) {
+                                groupElement = this.mapObject.renderer.createGroup({
+                                    id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_' + drawingType + '_Group'
+                                });
+                                this.groupElements.push(groupElement);
+                                break;
                             }
                         }
                     }
-                    groupElement.appendChild(pathEle);
-                }
-                if (i === this.currentLayer.layerData.length - 1) {
-                    let bubbleG;
-                    if (this.currentLayer.bubbleSettings.length && this.mapObject.bubbleModule) {
-                        let length = this.currentLayer.bubbleSettings.length;
-                        let bubble;
-                        for (let j = 0; j < length; j++) {
-                            bubble = this.currentLayer.bubbleSettings[j];
-                            bubbleG = this.mapObject.renderer.createGroup({
-                                id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_bubble_Group_' + j
+                    let pathEle;
+                    switch (drawingType) {
+                        case 'Polygon':
+                            if (!currentShapeData['_isMultiPolygon']) {
+                                path += 'M' + (currentShapeData[0]['point']['x']) + ' ' + (currentShapeData[0]['point']['y']);
+                                currentShapeData.map((shapeData) => {
+                                    path += ' L ' + (shapeData['point']['x']) + ' ' + (shapeData['point']['y']);
+                                });
+                            }
+                            else {
+                                path = this.generateMultiPolygonPath(currentShapeData);
+                            }
+                            path += ' z ';
+                            if (path.length > 3) {
+                                pathOptions = new PathOption(shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, opacity, shapeSettings.dashArray, path);
+                                pathEle = this.mapObject.renderer.drawPath(pathOptions);
+                            }
+                            break;
+                        case 'LineString':
+                            currentShapeData.map((lineData) => {
+                                points += lineData['point']['x'] + ' , ' + lineData['point']['y'] + ' ';
                             });
-                            let range = { min: 0, max: 0 };
-                            this.bubbleCalculation(bubble, range);
-                            bubble.dataSource.map((bubbleData, i) => {
-                                this.renderBubble(this.currentLayer, bubbleData, colors[i % colors.length], range, j, i, bubbleG, layerIndex, bubble);
-                            });
-                            this.groupElements.push(bubbleG);
+                            polyLineOptions = new PolylineOption(shapeID, points, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, opacity, shapeSettings.dashArray);
+                            pathEle = this.mapObject.renderer.drawPolyline(polyLineOptions);
+                            break;
+                        case 'Point':
+                            let pointData = currentShapeData['point'];
+                            circleOptions = new CircleOption(shapeID, eventArgs.fill, eventArgs.border, opacity, pointData['x'], pointData['y'], shapeSettings.circleRadius, null);
+                            pathEle = this.mapObject.renderer.drawCircle(circleOptions);
+                            break;
+                        case 'Path':
+                            path = currentShapeData['point'];
+                            pathOptions = new PathOption(shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, opacity, shapeSettings.dashArray, path);
+                            pathEle = this.mapObject.renderer.drawPath(pathOptions);
+                            break;
+                    }
+                    if (!isNullOrUndefined(pathEle)) {
+                        let property = (Object.prototype.toString.call(this.currentLayer.shapePropertyPath) === '[object Array]' ?
+                            this.currentLayer.shapePropertyPath : [this.currentLayer.shapePropertyPath]);
+                        // tslint:disable-next-line:align
+                        let properties;
+                        for (let j = 0; j < property.length; j++) {
+                            if (!isNullOrUndefined(currentShapeData['property'])) {
+                                properties = property[j];
+                                break;
+                            }
                         }
+                        pathEle.setAttribute('aria-label', ((!isNullOrUndefined(currentShapeData['property'])) ?
+                            (currentShapeData['property'][properties]) : ''));
+                        pathEle.setAttribute('tabindex', (this.mapObject.tabIndex + i + 2).toString());
+                        maintainSelection(this.mapObject.selectedElementId, this.mapObject.shapeSelectionClass, pathEle, 'ShapeselectionMapStyle');
+                        if (this.mapObject.toggledShapeElementId) {
+                            for (let j = 0; j < this.mapObject.toggledShapeElementId.length; j++) {
+                                let styleProperty = this.mapObject.legendSettings.toggleLegendSettings.applyShapeSettings ?
+                                    this.currentLayer.shapeSettings : this.mapObject.legendSettings.toggleLegendSettings;
+                                if (this.mapObject.toggledShapeElementId[j] === pathEle.id) {
+                                    pathEle.setAttribute('fill', styleProperty.fill);
+                                    pathEle.setAttribute('stroke', styleProperty.border.color);
+                                    pathEle.setAttribute('opacity', (styleProperty.opacity).toString());
+                                    pathEle.setAttribute('stroke-width', (styleProperty.border.width).toString());
+                                }
+                            }
+                        }
+                        groupElement.appendChild(pathEle);
                     }
-                    if ((this.mapObject.markerModule && !this.mapObject.isTileMap) && this.mapObject.zoomSettings.enable) {
-                        this.mapObject.markerModule.calculateZoomCenterPositionAndFactor(this.mapObject.layersCollection);
+                    if (i === this.currentLayer.layerData.length - 1) {
+                        this.layerFeatures(layerIndex, colors, renderData, labelTemplateEle);
                     }
-                    let group = (this.mapObject.renderer.createGroup({
-                        id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_dataLableIndex_Group',
-                        style: 'pointer-events: none;'
-                    }));
-                    if (this.mapObject.dataLabelModule && this.currentLayer.dataLabelSettings.visible) {
-                        let intersect = [];
-                        renderData.map((currentShapeData, i) => {
-                            this.renderLabel(this.currentLayer, layerIndex, currentShapeData, group, i, labelTemplateEle, intersect);
-                        });
-                        this.groupElements.push(group);
-                    }
-                    if (this.mapObject.navigationLineModule) {
-                        this.groupElements.push(this.mapObject.navigationLineModule.renderNavigation(this.currentLayer, this.currentFactor, layerIndex));
-                    }
-                    this.groupElements.map((element) => {
-                        this.layerObject.appendChild(element);
-                    });
-                    if (this.mapObject.markerModule) {
-                        this.mapObject.markerModule.markerRender(this.layerObject, layerIndex, this.currentFactor, null);
-                    }
-                    this.translateLayerElements(this.layerObject, layerIndex);
-                    this.layerGroup.appendChild(this.layerObject);
-                }
-            };
-            shapeRenderingSuccess.bind(this);
-            this.mapObject.trigger('shapeRendering', eventArgs, shapeRenderingSuccess);
+                };
+                shapeRenderingSuccess.bind(this);
+                this.mapObject.trigger('shapeRendering', eventArgs, shapeRenderingSuccess);
+            }
         }
+        else {
+            this.layerFeatures(layerIndex, colors, renderData, labelTemplateEle);
+        }
+    }
+    /**
+     *  layer features as bubble, marker, datalabel, navigation line.
+     */
+    layerFeatures(layerIndex, colors, renderData, labelTemplateEle) {
+        let bubbleG;
+        if (this.currentLayer.bubbleSettings.length && this.mapObject.bubbleModule) {
+            let length = this.currentLayer.bubbleSettings.length;
+            let bubble;
+            for (let j = 0; j < length; j++) {
+                bubble = this.currentLayer.bubbleSettings[j];
+                bubbleG = this.mapObject.renderer.createGroup({
+                    id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_bubble_Group_' + j
+                });
+                let range = { min: 0, max: 0 };
+                this.bubbleCalculation(bubble, range);
+                bubble.dataSource.map((bubbleData, i) => {
+                    this.renderBubble(this.currentLayer, bubbleData, colors[i % colors.length], range, j, i, bubbleG, layerIndex, bubble);
+                });
+                this.groupElements.push(bubbleG);
+            }
+        }
+        if ((this.mapObject.markerModule && !this.mapObject.isTileMap) && this.mapObject.zoomSettings.enable) {
+            this.mapObject.markerModule.calculateZoomCenterPositionAndFactor(this.mapObject.layersCollection);
+        }
+        let group = (this.mapObject.renderer.createGroup({
+            id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_dataLableIndex_Group',
+            style: 'pointer-events: none;'
+        }));
+        if (this.mapObject.dataLabelModule && this.currentLayer.dataLabelSettings.visible) {
+            let intersect = [];
+            renderData.map((currentShapeData, i) => {
+                this.renderLabel(this.currentLayer, layerIndex, currentShapeData, group, i, labelTemplateEle, intersect);
+            });
+            this.groupElements.push(group);
+        }
+        if (this.mapObject.navigationLineModule) {
+            this.groupElements.push(this.mapObject.navigationLineModule.renderNavigation(this.currentLayer, this.currentFactor, layerIndex));
+        }
+        this.groupElements.map((element) => {
+            this.layerObject.appendChild(element);
+        });
+        if (this.mapObject.markerModule) {
+            this.mapObject.markerModule.markerRender(this.layerObject, layerIndex, this.currentFactor, null);
+        }
+        this.translateLayerElements(this.layerObject, layerIndex);
+        this.layerGroup.appendChild(this.layerObject);
     }
     /**
      *  render datalabel
@@ -5286,17 +5298,16 @@ let Maps = class Maps extends Component {
         this.isBlazor = isBlazor();
         this.initPrivateVariable();
         this.allowServerDataBinding = false;
-        this.trigger(load, this.isBlazor ? {} : { maps: this }, () => {
-            this.unWireEVents();
-            this.createSVG();
-            this.wireEVents();
-            this.setCulture();
-        });
+        this.unWireEVents();
+        this.wireEVents();
+        this.setCulture();
     }
     /**
      * To Initialize the control rendering.
      */
     render() {
+        this.trigger(load, this.isBlazor ? {} : { maps: this });
+        this.createSVG();
         this.findBaseAndSubLayers();
         this.createSecondaryElement();
         this.addTabIndex();
@@ -6950,6 +6961,7 @@ class DataLabel {
         let properties = (Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]' ?
             layer.shapePropertyPath : [layer.shapePropertyPath]);
         let propertyPath;
+        let isPoint = false;
         let animate$$1 = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
         let translate = (this.maps.isTileMap) ? new Object() : getTranslate(this.maps, layer, animate$$1);
         let scale = (this.maps.isTileMap) ? this.maps.scale : translate['scale'];
@@ -6971,7 +6983,7 @@ class DataLabel {
         datasrcObj = this.getDataLabel(layer.dataSource, labelpath, shapeData['properties'][propertyPath], layer.shapeDataPath);
         if (!isNullOrUndefined(shapes['property']) && ((shapeProperties[labelpath]) || datasrcObj)) {
             shapePoint = [[]];
-            if (!layerData[index]['_isMultiPolygon']) {
+            if (!layerData[index]['_isMultiPolygon'] && layerData[index]['type'] !== 'Point') {
                 shapePoint.push(this.getPoint(layerData[index], []));
                 currentLength = shapePoint[shapePoint.length - 1].length;
                 if (pointsLength < currentLength) {
@@ -6981,6 +6993,17 @@ class DataLabel {
             }
             else {
                 let layer = layerData[index];
+                if (layer['type'] === 'Point') {
+                    isPoint = true;
+                    let layerPoints = [];
+                    layerPoints.push(this.getPoint(layerData, []));
+                    shapePoint = layerPoints;
+                    currentLength = shapePoint[shapePoint.length - 1].length;
+                    if (pointsLength < currentLength) {
+                        pointsLength = currentLength;
+                        midIndex = shapePoint.length - 1;
+                    }
+                }
                 for (let j = 0; j < layer.length; j++) {
                     shapePoint.push(this.getPoint(layer[j], []));
                     currentLength = shapePoint[shapePoint.length - 1].length;
@@ -6994,7 +7017,17 @@ class DataLabel {
         text = (!isNullOrUndefined(datasrcObj)) ? datasrcObj[labelpath].toString() : shapeData['properties'][labelpath];
         let dataLabelText = text;
         let projectionType = this.maps.projectionType;
-        location = findMidPointOfPolygon(shapePoint[midIndex], projectionType);
+        if (isPoint) {
+            location = {
+                x: shapePoint[midIndex][index]['x'], y: shapePoint[midIndex][index]['y'],
+                rightMin: 0, rightMax: 0, leftMin: 0, leftMax: 0,
+                points: shapePoint[midIndex][index], topMax: 0, topMin: 0,
+                bottomMax: 0, bottomMin: 0, height: 0
+            };
+        }
+        else {
+            location = findMidPointOfPolygon(shapePoint[midIndex], projectionType);
+        }
         let firstLevelMapLocation = location;
         if (!isNullOrUndefined(text) && !isNullOrUndefined(location)) {
             if (zoomLabelsPosition && scaleZoomValue > 1) {
@@ -9633,8 +9666,24 @@ class MapsTooltip {
                     return;
                 }
                 let value = layer.layerData[shape]['property'];
-                index = checkShapeDataFields(layer.dataSource, value, layer.shapeDataPath, layer.shapePropertyPath);
-                templateData = layer.dataSource[index];
+                let isShape = false;
+                let properties = (Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]' ?
+                    layer.shapePropertyPath : [layer.shapePropertyPath]);
+                if (!isNullOrUndefined(properties)) {
+                    for (let k = 0; k < properties.length; k++) {
+                        for (let i = 0; i < layer['dataSource']['length']; i++) {
+                            let data = layer.dataSource[i];
+                            if ((data[layer.shapeDataPath]) === value[properties[k]]) {
+                                isShape = true;
+                                index = i;
+                                k = properties.length;
+                                break;
+                            }
+                        }
+                    }
+                    index = isShape ? index : null;
+                    templateData = layer.dataSource[index];
+                }
                 if (option.visible && ((!isNullOrUndefined(index) && !isNaN(index)) || (!isNullOrUndefined(value)))) {
                     if (layer.tooltipSettings.format) {
                         currentData = this.formatter(layer.tooltipSettings.format, layer.dataSource[index]);

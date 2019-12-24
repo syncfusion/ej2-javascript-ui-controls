@@ -622,7 +622,7 @@ var DataUtil = /** @__PURE__ @class */ (function () {
      * @param  {string} substr
      */
     DataUtil.endsWith = function (input, substr) {
-        return input.slice(-substr.length) === substr;
+        return input.slice && input.slice(-substr.length) === substr;
     };
     /**
      * Returns true if the input string starts with given string.

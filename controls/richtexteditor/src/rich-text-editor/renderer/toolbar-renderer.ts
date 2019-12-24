@@ -260,9 +260,7 @@ export class ToolbarRenderer implements IRenderer {
                     focusEle = (ele.parentElement.querySelector('.e-palette') as HTMLElement);
                 } else { focusEle = (ele.parentElement.querySelector('e-handler') as HTMLElement); }
                 if (focusEle) { focusEle.focus(); }
-                if (Browser.isDevice) {
-                    this.popupModal(dropDownArgs.element.parentElement);
-                }
+                if (Browser.isDevice) { this.popupModal(dropDownArgs.element.parentElement); }
                 this.pickerRefresh(dropDownArgs);
             },
             beforeClose: (dropDownArgs: BeforeOpenCloseMenuEventArgs): void => {
@@ -303,6 +301,7 @@ export class ToolbarRenderer implements IRenderer {
         args.element.tabIndex = -1;
         dropDown.element.removeAttribute('type');
         dropDown.element.onmousedown = (): void => { proxy.parent.notify(events.selectionSave, {}); };
+        dropDown.element.onkeydown = (): void => { proxy.parent.notify(events.selectionSave, {}); };
         return dropDown;
     }
     private pickerRefresh(dropDownArgs: OpenCloseMenuEventArgs): void {

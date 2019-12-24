@@ -421,29 +421,29 @@ describe('ListBox', () => {
             toolChild[0].click();
             expect(listObj1.getItems()[1].innerText).toEqual('C++');
             expect(listObj1.getItems()[2].innerText).toEqual('C#');
-            expect(listObj1.dataSource[1].text).toEqual('C++');
-            expect(listObj1.dataSource[2].text).toEqual('C#');
+            expect(listObj1.jsonData[1].text).toEqual('C++');
+            expect(listObj1.jsonData[2].text).toEqual('C#');
             toolChild[0].click();
             expect(listObj1.getItems()[0].innerText).toEqual('C++');
             expect(listObj1.getItems()[1].innerText).toEqual('JAVA');
-            expect(listObj1.dataSource[0].text).toEqual('C++');
-            expect(listObj1.dataSource[1].text).toEqual('JAVA');
+            expect(listObj1.jsonData[0].text).toEqual('C++');
+            expect(listObj1.jsonData[1].text).toEqual('JAVA');
             expect(toolChild[0].disabled).toBeTruthy();
 
             // Move Down
             toolChild[1].click();
             expect(listObj1.getItems()[0].innerText).toEqual('JAVA');
             expect(listObj1.getItems()[1].innerText).toEqual('C++');
-            expect(listObj1.dataSource[0].text).toEqual('JAVA');
-            expect(listObj1.dataSource[1].text).toEqual('C++');
+            expect(listObj1.jsonData[0].text).toEqual('JAVA');
+            expect(listObj1.jsonData[1].text).toEqual('C++');
             listObj1.height = '150'; // scroll while reordering
             listObj1.dataBind();
             listObj1.getItems()[3].click();
             toolChild[1].click();
             expect(listObj1.getItems()[3].innerText).toEqual('Oracle');
             expect(listObj1.getItems()[4].innerText).toEqual('NET');
-            expect(listObj1.dataSource[3].text).toEqual('Oracle');
-            expect(listObj1.dataSource[4].text).toEqual('NET');
+            expect(listObj1.jsonData[3].text).toEqual('Oracle');
+            expect(listObj1.jsonData[4].text).toEqual('NET');
             expect(toolChild[1].disabled).toBeTruthy();
             expect(listObj1.list.scrollTop).toBeGreaterThan(0);
         });
@@ -528,29 +528,29 @@ describe('ListBox', () => {
             listObj1.keyDownHandler({ keyCode: 38, shiftKey: true, ctrlKey: true, preventDefault: () => { } });
             expect(listObj1.getItems()[1].innerText).toEqual('C++');
             expect(listObj1.getItems()[2].innerText).toEqual('C#');
-            expect(listObj1.dataSource[1].text).toEqual('C++');
-            expect(listObj1.dataSource[2].text).toEqual('C#');
+            expect(listObj1.jsonData[1].text).toEqual('C++');
+            expect(listObj1.jsonData[2].text).toEqual('C#');
             listObj1.keyDownHandler({ keyCode: 38, shiftKey: true, ctrlKey: true, preventDefault: () => { } });
             expect(listObj1.getItems()[0].innerText).toEqual('C++');
             expect(listObj1.getItems()[1].innerText).toEqual('JAVA');
-            expect(listObj1.dataSource[0].text).toEqual('C++');
-            expect(listObj1.dataSource[1].text).toEqual('JAVA');
+            expect(listObj1.jsonData[0].text).toEqual('C++');
+            expect(listObj1.jsonData[1].text).toEqual('JAVA');
             expect(toolChild[0].disabled).toBeTruthy();
 
             // Move Down
             listObj1.keyDownHandler({ keyCode: 40, shiftKey: true, ctrlKey: true, preventDefault: () => { } });
             expect(listObj1.getItems()[0].innerText).toEqual('JAVA');
             expect(listObj1.getItems()[1].innerText).toEqual('C++');
-            expect(listObj1.dataSource[0].text).toEqual('JAVA');
-            expect(listObj1.dataSource[1].text).toEqual('C++');
+            expect(listObj1.jsonData[0].text).toEqual('JAVA');
+            expect(listObj1.jsonData[1].text).toEqual('C++');
             listObj1.height = '150'; // scroll while reordering
             listObj1.dataBind();
             listObj1.getItems()[3].click();
             listObj1.keyDownHandler({ keyCode: 40, shiftKey: true, ctrlKey: true, preventDefault: () => { } });
             expect(listObj1.getItems()[3].innerText).toEqual('Oracle');
             expect(listObj1.getItems()[4].innerText).toEqual('NET');
-            expect(listObj1.dataSource[3].text).toEqual('Oracle');
-            expect(listObj1.dataSource[4].text).toEqual('NET');
+            expect(listObj1.jsonData[3].text).toEqual('Oracle');
+            expect(listObj1.jsonData[4].text).toEqual('NET');
             expect(toolChild[1].disabled).toBeTruthy();
             expect(listObj1.list.scrollTop).toBeGreaterThan(0);
         });
@@ -586,14 +586,14 @@ describe('ListBox', () => {
             toolChild[2].click();
             expect(listObj2.getItems()[1].innerText).toEqual('C++');
             expect(listObj1.getDataByValue('C++')).toBeNull();
-            expect(listObj2.dataSource[11].text).toEqual('C++');
+            expect(listObj2.jsonData[11].text).toEqual('C++');
             expect(listObj2.sortedData[1].text).toEqual('C++');
 
             listObj2.getItems()[0].click();
             toolChild[3].click();
             expect(listObj1.getItems()[0].innerText).toEqual('Bean');
             expect(listObj2.getDataByValue('Bean')).toBeNull();
-            expect(listObj1.dataSource[4].text).toEqual('Bean');
+            expect(listObj1.jsonData[4].text).toEqual('Bean');
             expect(listObj1.sortedData[0].text).toEqual('Bean');
         });
 
@@ -603,15 +603,15 @@ describe('ListBox', () => {
             toolChild[4].click();
             expect(listObj2.getItems()[0].innerText).toEqual('Bean');
             expect(listObj2.getItems()[1].innerText).toEqual('C#');
-            expect(listObj1.dataSource.length).toEqual(0);
-            expect(listObj2.dataSource[11].text).toEqual('C#');
+            expect(listObj1.jsonData.length).toEqual(0);
+            expect(listObj2.jsonData[11].text).toEqual('JAVA');
             expect(listObj2.sortedData[0].text).toEqual('Bean');
             expect(listObj2.sortedData[1].text).toEqual('C#');
 
             toolChild[5].click();
             expect(listObj1.getItems()[2].innerText).toEqual('C++');
             expect(listObj1.getItems()[3].innerText).toEqual('Cabbage');
-            expect(listObj2.dataSource.length).toEqual(0);
+            expect(listObj2.jsonData.length).toEqual(0);
         });
     });
 
@@ -640,29 +640,29 @@ describe('ListBox', () => {
             listObj1.keyDownHandler({ keyCode: 38, shiftKey: true, ctrlKey: true, preventDefault: () => { } });
             expect(listObj1.getItems()[1].innerText).toEqual('C++');
             expect(listObj1.getItems()[2].innerText).toEqual('C#');
-            expect(listObj1.dataSource[1].text).toEqual('C++');
-            expect(listObj1.dataSource[2].text).toEqual('C#');
+            expect(listObj1.jsonData[1].text).toEqual('C++');
+            expect(listObj1.jsonData[2].text).toEqual('C#');
             listObj1.keyDownHandler({ keyCode: 38, shiftKey: true, ctrlKey: true, preventDefault: () => { } });
             expect(listObj1.getItems()[0].innerText).toEqual('C++');
             expect(listObj1.getItems()[1].innerText).toEqual('JAVA');
-            expect(listObj1.dataSource[0].text).toEqual('C++');
-            expect(listObj1.dataSource[1].text).toEqual('JAVA');
+            expect(listObj1.jsonData[0].text).toEqual('C++');
+            expect(listObj1.jsonData[1].text).toEqual('JAVA');
             expect(toolChild[0].disabled).toBeTruthy();
 
             // Move Down
             listObj1.keyDownHandler({ keyCode: 40, shiftKey: true, ctrlKey: true, preventDefault: () => { } });
             expect(listObj1.getItems()[0].innerText).toEqual('JAVA');
             expect(listObj1.getItems()[1].innerText).toEqual('C++');
-            expect(listObj1.dataSource[0].text).toEqual('JAVA');
-            expect(listObj1.dataSource[1].text).toEqual('C++');
+            expect(listObj1.jsonData[0].text).toEqual('JAVA');
+            expect(listObj1.jsonData[1].text).toEqual('C++');
             listObj1.height = '150'; // scroll while reordering
             listObj1.dataBind();
             listObj1.getItems()[3].click();
             listObj1.keyDownHandler({ keyCode: 40, shiftKey: true, ctrlKey: true, preventDefault: () => { } });
             expect(listObj1.getItems()[3].innerText).toEqual('Oracle');
             expect(listObj1.getItems()[4].innerText).toEqual('NET');
-            expect(listObj1.dataSource[3].text).toEqual('Oracle');
-            expect(listObj1.dataSource[4].text).toEqual('NET');
+            expect(listObj1.jsonData[3].text).toEqual('Oracle');
+            expect(listObj1.jsonData[4].text).toEqual('NET');
             expect(toolChild[1].disabled).toBeTruthy();
             expect(listObj1.list.scrollTop).toBeGreaterThan(0);
         });

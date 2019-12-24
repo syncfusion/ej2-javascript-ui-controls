@@ -2606,6 +2606,15 @@ describe('Form element', () => {
         expect((<any>document.getElementById('datetimepicker')).value !== '2/2/2017 12:00 AM').toBe(true);
         datetime = null;
     });
+    it('TimePopup dom element in destroy case', () => {
+        datetime = new DateTimePicker({ value: new Date('02/02/2017') });
+        datetime.appendTo('#datetimepicker');
+        datetime.show('time');
+        expect(isNullOrUndefined(datetime.dateTimeWrapper)).toBe(false);
+        datetime.destroy();
+        expect(isNullOrUndefined(datetime.dateTimeWrapper)).toBe(true);
+        datetime = null;
+    });
     // Test cases for reset the component when value not initialized
     it('Input element value changing dynamically', () => {
         datetime = new DateTimePicker({  });

@@ -5071,8 +5071,23 @@ var FieldValidator = /** @__PURE__ @class */ (function () {
             rules: rules,
             validationComplete: function (args) {
                 _this.validationComplete(args);
+            },
+            focusout: function (args) {
+                _this.focusOut(args);
             }
         });
+    };
+    FieldValidator.prototype.focusOut = function (args) {
+        var target = args.relatedTarget;
+        if (target && (target.classList.contains('e-dlg-closeicon-btn') || target.classList.contains('e-close')
+            || target.classList.contains(ALLDAY_CELLS_CLASS) || target.classList.contains(HEADER_CELLS_CLASS)
+            || target.classList.contains(QUICK_POPUP_EVENT_DETAILS_CLASS) || target.classList.contains(WORK_CELLS_CLASS)
+            || target.classList.contains(EVENT_WINDOW_CANCEL_BUTTON_CLASS))) {
+            this.ignoreError = true;
+        }
+        else {
+            this.ignoreError = false;
+        }
     };
     FieldValidator.prototype.validationComplete = function (args) {
         var elem = this.element.querySelector('#' + args.inputName + '_Error');
@@ -5083,7 +5098,7 @@ var FieldValidator = /** @__PURE__ @class */ (function () {
     FieldValidator.prototype.errorPlacement = function (inputElement, error) {
         var id = error.getAttribute('for');
         var elem = this.element.querySelector('#' + id + '_Error');
-        if (!elem) {
+        if (!elem && !this.ignoreError) {
             this.createTooltip(inputElement, error, id, '');
         }
     };
@@ -5578,6 +5593,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         }
         this.quickPopup.content = quickCellPopup;
         this.quickPopup.dataBind();
+        this.applyFormValidation();
         if (this.morePopup) {
             this.morePopup.hide();
         }
@@ -5922,7 +5938,6 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         });
     };
     QuickPopups.prototype.saveClick = function () {
-        this.applyFormValidation();
         this.isCrudAction = true;
         this.quickPopupHide();
     };
@@ -5967,7 +5982,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
             remove(moreEventContentEle);
         }
         var dateElement = this.morePopup.element.querySelector('.' + MORE_EVENT_HEADER_DATE_CLASS);
-        var startDate = this.parent.getDateFromElement(dateElement);
+        var startDate = new Date(parseInt(dateElement.getAttribute('data-date'), 10));
         var endDate = new Date(parseInt(dateElement.getAttribute('data-end-date'), 10));
         var groupIndex = dateElement.getAttribute('data-group-index');
         var data;
@@ -7705,6 +7720,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             EventHandler.add(this.element.querySelector('.' + EVENT_WINDOW_BACK_ICON_CLASS), 'click', this.dialogClose, this);
             EventHandler.add(this.element.querySelector('.' + EVENT_WINDOW_SAVE_ICON_CLASS), 'click', this.eventSave, this);
         }
+        this.applyFormValidation();
     };
     EventWindow.prototype.updateEditorTemplate = function () {
         if (this.parent.editorTemplate) {
@@ -8720,7 +8736,6 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         }
     };
     EventWindow.prototype.eventSave = function (alert) {
-        this.applyFormValidation();
         var formElement = this.element.querySelector('.' + FORM_CLASS);
         if (formElement && formElement.classList.contains('e-formvalidator') &&
             !formElement.ej2_instances[0].validate()) {

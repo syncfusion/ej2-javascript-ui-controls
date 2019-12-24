@@ -1072,6 +1072,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
      * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>} 
+     * @blazorType void
      */
     public excelExport(
       excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean,
@@ -1086,7 +1087,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
    * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
    * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
    * @return {Promise<any>} 
-   * 
+   * @blazorType void
    */
   public csvExport(
       excelExportProperties?: ExcelExportProperties,
@@ -1101,7 +1102,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
    * @param  {pdfDoc} pdfDoc - Defined the Pdf Document if multiple export is enabled.
    * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
    * @return {Promise<any>} 
-   * 
+   * @blazorType void
    */
   public pdfExport(
       pdfExportProperties?: PdfExportProperties,
@@ -1528,10 +1529,16 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       (this.columns[i] as Column).uid = (this.grid.columns[i] as ColumnModel).uid;
     }
     this.wireEvents();
+    let processModel: string = 'processModel';
+    this.grid[processModel]();
     gridObserver.off('component-rendered', this.gridRendered);
   }
   private setBlazorGUID(): void {
     let guid: string = 'guid';
+    if (this.editSettings) {
+      this.grid.editSettings[guid] = this.editSettings[guid];
+      this.grid.editSettings.template = this.editSettings.template;
+    }
     for (let i: number = 0; i < this.aggregates.length; i++) {
       for (let j: number = 0; j < this.aggregates[i].columns.length; j++) {
         this.grid.aggregates[i].columns[j][guid] = this.aggregates[i].columns[j][guid];
@@ -2443,13 +2450,17 @@ private getGridEditSettings(): GridEditModel {
    * @param {RowPosition} position - Defines the new row position to be added.
    */
     public addRecord(data?: Object, index?: number,  position?: RowPosition): void {
-      this.editModule.addRecord(data, index, position);
+      if (this.editModule) {
+        this.editModule.addRecord(data, index, position);
+      }
   }
   /**
    * Cancels edited state.
    */
     public closeEdit(): void {
-      this.grid.editModule.closeEdit();
+      if (this.grid.editModule) {
+        this.grid.editModule.closeEdit();
+      }
   }
 
     /**
@@ -2459,7 +2470,9 @@ private getGridEditSettings(): GridEditModel {
      * @param {Object} data - Defines the JSON data of the record to be deleted.
      */
     public deleteRecord(fieldName?: string, data?: Object): void {
-      this.grid.editModule.deleteRecord(fieldName, data);
+      if (this.grid.editModule) {
+        this.grid.editModule.deleteRecord(fieldName, data);
+      }
   }
 
   /**
@@ -2467,7 +2480,9 @@ private getGridEditSettings(): GridEditModel {
    * @param {HTMLTableRowElement} tr - Defines the table row to be edited.
    */
   public startEdit(row?: HTMLTableRowElement): void {
-    this.grid.editModule.startEdit(row);
+    if (this.grid.editModule) {
+      this.grid.editModule.startEdit(row);
+    }
 }
 
   /**
@@ -2476,7 +2491,9 @@ private getGridEditSettings(): GridEditModel {
    * @param {string} field - Defines the field name of the column to perform cell edit.
    */
   public editCell(rowIndex?: number, field?: string): void {
-    this.editModule.editCell(rowIndex, field);
+    if (this.editModule) {
+      this.editModule.editCell(rowIndex, field);
+    }
   }
 
   /**
@@ -2485,7 +2502,9 @@ private getGridEditSettings(): GridEditModel {
    * @param {boolean} isEnable - Defines the items to be enabled or disabled.
    */
   public enableToolbarItems(items: string[], isEnable: boolean): void {
-    this.grid.toolbarModule.enableItems(items, isEnable);
+    if (this.grid.toolbarModule) {
+      this.grid.toolbarModule.enableItems(items, isEnable);
+    }
   }
 
 
@@ -2493,7 +2512,9 @@ private getGridEditSettings(): GridEditModel {
    * If TreeGrid is in editable state, you can save a record by invoking endEdit.
    */
   public endEdit(): void {
+    if (this.grid.editModule) {
       this.grid.editModule.endEdit();
+    }
   }
 
   /**
@@ -2501,7 +2522,9 @@ private getGridEditSettings(): GridEditModel {
    * @param {HTMLTableRowElement} tr - Defines the table row element.
    */
     public deleteRow(tr: HTMLTableRowElement): void {
-      this.grid.editModule.deleteRow(tr);
+      if (this.grid.editModule) {
+        this.grid.editModule.deleteRow(tr);
+      }
   }
 
   /**
@@ -2539,7 +2562,9 @@ private getGridEditSettings(): GridEditModel {
      * @return {void} 
      */
     public goToPage(pageNo: number): void {
-      this.grid.pagerModule.goToPage(pageNo);
+      if (this.grid.pagerModule) {
+        this.grid.pagerModule.goToPage(pageNo);
+      }
   }
 
     /** 
@@ -2714,6 +2739,7 @@ private getGridEditSettings(): GridEditModel {
 
   private updateColumnModel(column?: GridColumn[]): ColumnModel[] {
     this.columnModel = [];
+    let stackedHeader: boolean = false;
     if (!isBlazor() || !this.isServerRendered) {
       let gridColumns: GridColumn[] = isNullOrUndefined(column) ? this.grid.getColumns() : column;
       let gridColumn: ColumnModel;
@@ -2728,7 +2754,12 @@ private getGridEditSettings(): GridEditModel {
       }
       let merge: string = 'deepMerge';
       this[merge] = ['columns']; // Workaround for blazor updateModel
-      this.setProperties({ columns: this.columnModel }, true);
+      if (this.grid.columns.length !== this.columnModel.length) {
+        stackedHeader = true;
+      }
+      if (!stackedHeader) {
+        this.setProperties({ columns: this.columnModel }, true);
+      }
       this[merge] = undefined;  // Workaround for blazor updateModel
     }
     return this.columnModel;

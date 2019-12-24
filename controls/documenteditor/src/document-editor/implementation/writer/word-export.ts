@@ -3728,12 +3728,27 @@ export class WordExport {
             }
             writer.writeEndElement();
         }
+        if (!isNullOrUndefined(paragraphFormat.outlineLevel)) {
+            writer.writeStartElement(undefined, 'outlineLvl', this.wNamespace);
+            writer.writeAttributeString('w', 'val', this.wNamespace, this.getOutlineLevelValue(paragraphFormat.outlineLevel).toString());
+            writer.writeEndElement();
+        }
         this.serializeParagraphSpacing(writer, paragraphFormat);
         this.serializeIndentation(writer, paragraphFormat);
         this.serializeParagraphAlignment(writer, paragraphFormat.textAlignment, paragraphFormat.bidi);
         if (!isNullOrUndefined(paragraphFormat.tabs) && paragraphFormat.tabs.length > 0) {
             this.serializeTabs(writer, paragraphFormat.tabs);
         }
+    }
+
+    private getOutlineLevelValue(outlineLvl: string): number {
+        if (outlineLvl.indexOf('Level') !== -1) {
+            let lvlNumber: number = parseInt(outlineLvl.substring(5), 10);
+            if (lvlNumber > 0) {
+                return lvlNumber - 1;
+            }
+        }
+        return 9;
     }
 
     // Serialize Tabs

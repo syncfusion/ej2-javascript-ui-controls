@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 17.4.40 (2019-12-24)
+
+### Maps
+
+#### Bug Fixes
+
+- `#I256861` - Now, the data labels are displaying properly for the point type sublayers.
+
 ## 17.4.39 (2019-12-17)
 
 ### Maps

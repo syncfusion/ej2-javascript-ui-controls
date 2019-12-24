@@ -129,17 +129,21 @@ export function addAction(details: { value: ITreeData, action: string }, treeDat
             break;
         case 'Above':
             if (!isNullOrUndefined(addRowRecord)) {
-                value = addRowRecord;
+                value = extend({}, addRowRecord);
+                value = getPlainData(value);
             } else {
-                value = currentViewRecords[addRowIndex + 1];
+                value = extend({}, currentViewRecords[addRowIndex + 1]);
+                value = getPlainData(value);
             }
             break;
         case 'Below':
         case 'Child':
             if (!isNullOrUndefined(addRowRecord)) {
-                value = addRowRecord;
+                value = extend({}, addRowRecord);
+                value = getPlainData(value);
             } else {
-                value = currentViewRecords[addRowIndex];
+                value = extend({}, currentViewRecords[addRowIndex]);
+                value = getPlainData(value);
             }
             if (selectedIndex === -1) {
                 treeData.unshift(value);

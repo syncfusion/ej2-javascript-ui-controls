@@ -1362,6 +1362,43 @@ describe("Toolbar - Actions Module", () => {
         });
     });
 
+    describe('To open the dropdown button in the toolbar', () => {
+        let rteObj: RichTextEditor;
+        let elem: HTMLElement;
+        let selectNode: Element;
+        let editNode: HTMLElement;
+        let curDocument: Document;
+        let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: false, shiftKey: false, action: '', which: 8 };
+        let innerHTML: string = `<div><p class='first-p'>First p node-0</p><p class='second-p'>First p node-1</p></div>`;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['FontName']
+                }
+            });
+            elem = rteObj.element;
+            editNode = rteObj.contentModule.getEditPanel() as HTMLElement;
+            curDocument = rteObj.contentModule.getDocument();
+            editNode.innerHTML = innerHTML;
+        });
+
+        it('open drop down button using keyboard', () => {
+            let targetElm: HTMLElement = elem.querySelectorAll(".e-toolbar-item")[0].querySelector('button');
+            keyBoardEvent.ctrlKey = false;
+            keyBoardEvent.shiftKey = false;
+            keyBoardEvent.key = 'Enter';
+            keyBoardEvent.code = 'Enter';
+            keyBoardEvent.keyCode = 13;
+            keyBoardEvent.target = targetElm;
+            (rteObj as any).toolbarModule.tbKeydownHandler(keyBoardEvent);
+            expect(targetElm.getAttribute('tabindex') === '0').toBe(true);
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+
     describe("EJ2-14546- toolbarSettings - 'itemConfigs' property ", () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;

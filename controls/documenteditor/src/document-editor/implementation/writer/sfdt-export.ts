@@ -32,6 +32,7 @@ export class SfdtExport {
     private document: any = undefined;
     private writeInlineStyles: boolean = undefined;
     private editRangeId: number = -1;
+    private isExport: boolean = true;
     /** 
      * @private
      */
@@ -93,6 +94,7 @@ export class SfdtExport {
         this.Initialize();
         this.updateEditRangeId();
         if (line instanceof LineWidget && endLine instanceof LineWidget) {
+            this.isExport = false;
             // For selection
             let startPara: ParagraphWidget = line.paragraph;
             let endPara: ParagraphWidget = endLine.paragraph;
@@ -159,6 +161,7 @@ export class SfdtExport {
                 }
             }
         } else {
+            this.isExport = true;
             if (this.viewer.pages.length > 0) {
                 let page: Page = this.viewer.pages[0];
                 this.writePage(page);
@@ -613,7 +616,7 @@ export class SfdtExport {
     private createParagraph(paragraphWidget: ParagraphWidget): any {
         let paragraph: any = {};
         let isParaSelected: boolean = false;
-        if (this.viewer.selection && !this.viewer.selection.isEmpty) {
+        if (this.viewer.selection && !this.viewer.selection.isEmpty && !this.isExport) {
             let endPos: TextPosition = this.viewer.selection.end;
             if (!this.viewer.selection.isForward) {
                 endPos = this.viewer.selection.start;

@@ -1,4 +1,4 @@
-import { IAxisSet, IGridValues, IPivotValues, IValueSortSettings, } from '../../base/engine';
+import { IAxisSet, IGridValues, IPivotValues, IValueSortSettings, IGroupSettings, } from '../../base/engine';
 import { PivotEngine, IFieldOptions, IFormatSettings } from '../../base/engine';
 import { PivotView } from '../base/pivotview';
 import { Reorder, headerRefreshed, CellSelectEventArgs, RowSelectEventArgs } from '@syncfusion/ej2-grids';
@@ -17,6 +17,7 @@ import { AggregateMenu } from '../../common/popups/aggregate-menu';
 import { SummaryTypes } from '../../base/types';
 import { OlapEngine, ITupInfo } from '../../base/olap/engine';
 import { PivotUtil } from '../../base/util';
+import { SelectedCellsInfo } from '../../common/popups/grouping';
 
 /**
  * Module to render PivotGrid control
@@ -388,23 +389,45 @@ export class Render {
                     }
                     break;
                 case this.parent.element.id + '_custom_group':
-                case this.parent.element.id + '_custom_ungroup':
                     if (!isGroupElement && args.items.length == 2) {
                         args.cancel = true;
                     }
                     if (args.element.querySelectorAll('#' + this.parent.element.id + '_custom_group')) {
                         addClass([args.element.querySelector('#' + this.parent.element.id + '_custom_group')], cls.MENU_HIDE);
                     }
-                    if (args.element.querySelectorAll('#' + this.parent.element.id + '_custom_ungroup')) {
-                        addClass([args.element.querySelector('#' + this.parent.element.id + '_custom_ungroup')], cls.MENU_HIDE);
-                    }
                     if (isGroupElement) {
                         if (args.element.querySelectorAll('#' + this.parent.element.id + '_custom_group')) {
                             removeClass([args.element.querySelector('#' + this.parent.element.id + '_custom_group')], cls.MENU_HIDE);
                         }
-                        if (args.element.querySelectorAll('#' + this.parent.element.id + '_custom_ungroup') &&
-                            (PivotUtil.getGroupItemByName(elem.getAttribute('fieldname'), this.parent.dataSourceSettings.groupSettings) ||
-                                this.engine.fieldList[elem.getAttribute('fieldname')].isCustomField)) {
+                    }
+                    break;
+                case this.parent.element.id + '_custom_ungroup':
+                    if (args.element.querySelectorAll('#' + this.parent.element.id + '_custom_ungroup')) {
+                        addClass([args.element.querySelector('#' + this.parent.element.id + '_custom_ungroup')], cls.MENU_HIDE);
+                    }
+                    if (isGroupElement) {
+                        let isUngroupOption: boolean = false;
+                        let fieldName: string = elem.getAttribute('fieldname');
+                        let groupField: IGroupSettings = PivotUtil.getFieldByName(fieldName, this.parent.dataSourceSettings.groupSettings) as IGroupSettings;
+                        if (groupField && groupField.type === 'Custom' || (this.parent.engineModule.fieldList[fieldName].isCustomField && fieldName.indexOf('_custom_group') > -1)) {
+                            groupField = PivotUtil.getFieldByName(fieldName.replace('_custom_group', ''), this.parent.dataSourceSettings.groupSettings) as IGroupSettings;
+                            if (groupField) {
+                                let cell: IAxisSet = (this.parent.engineModule.pivotValues[Number(elem.getAttribute('index'))][Number(elem.getAttribute('aria-colindex'))] as IAxisSet);
+                                let selectedCellsInfo: SelectedCellsInfo[] = this.parent.groupingModule.getSelectedCells(cell.axis, fieldName, cell.actualText.toString());
+                                selectedCellsInfo.push({ axis: cell.axis, fieldName: fieldName, name: cell.actualText.toString(), cellInfo: cell });
+                                let selectedOptions: string[] = this.parent.groupingModule.getSelectedOptions(selectedCellsInfo);
+                                for (let customGroup of groupField.customGroups) {
+                                    if (selectedOptions.indexOf(customGroup.groupName) > -1) {
+                                        isUngroupOption = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        } else if (groupField && (groupField.type === 'Date' || groupField.type === 'Number') ||
+                            (this.parent.engineModule.fieldList[fieldName].isCustomField && fieldName.indexOf('_date_group') > -1)) {
+                            isUngroupOption = true;
+                        }
+                        if (args.element.querySelectorAll('#' + this.parent.element.id + '_custom_ungroup') && isUngroupOption) {
                             removeClass([args.element.querySelector('#' + this.parent.element.id + '_custom_ungroup')], cls.MENU_HIDE);
                         }
                     }

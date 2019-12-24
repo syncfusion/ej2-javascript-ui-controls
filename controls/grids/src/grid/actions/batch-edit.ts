@@ -710,10 +710,10 @@ export class BatchEdit {
 
     private renderMovable(ele: Element): Element {
         let mEle: Element = ele.cloneNode(true) as Element;
-        for (let i: number = 0; i < this.parent.frozenColumns; i++) {
+        for (let i: number = 0; i < this.parent.getFrozenColumns(); i++) {
             mEle.removeChild(mEle.children[0]);
         }
-        for (let i: number = this.parent.frozenColumns, len: number = ele.childElementCount; i < len; i++) {
+        for (let i: number = this.parent.getFrozenColumns(), len: number = ele.childElementCount; i < len; i++) {
             ele.removeChild(ele.children[ele.childElementCount - 1]);
         }
         return mEle;
@@ -814,9 +814,7 @@ export class BatchEdit {
                 if (!args.cell) { return; }
             }
             gObj.trigger(events.cellEdit, args, (cellEditArgs: CellEditArgs) => {
-                if (cellEditArgs.cancel) {
-                    return;
-                }
+                if (cellEditArgs.cancel) { return; }
                 cellEditArgs.cell = cellEditArgs.cell ? cellEditArgs.cell : cells[this.getColIndex(cells, this.getCellIdx(col.uid))];
                 cellEditArgs.row = cellEditArgs.row ? cellEditArgs.row : row;
                 this.cellDetails = {
@@ -831,16 +829,18 @@ export class BatchEdit {
                 if (isBlazor() && gObj.isServerRendered) {
                     let cell: string = 'cells';
                     let cloneCell: string = 'cloneCell';
+                    let indent: number = cellEditArgs.row.querySelectorAll
+                                         ('.e-indentcell, .e-detailrowcollapse, .e-detailrowexpand, .e-rowdragdrop').length;
                     this.cloneCell[`${this.cellDetails.rowIndex}${cellEditArgs.columnObject.index}`] =
                                     cellEditArgs[cloneCell] = cellEditArgs.cell.cloneNode(true);
-                    if ((parentsUntil(cellEditArgs.cell, 'e-movableheader') ||
-                            parentsUntil(cellEditArgs.cell, 'e-movablecontent'))) {
+                    if ((parentsUntil(cellEditArgs.cell, 'e-movableheader') || parentsUntil(cellEditArgs.cell, 'e-movablecontent'))) {
                     (<HTMLTableRowElement>cellEditArgs.row).insertCell(cellEditArgs.columnObject.index - gObj.getFrozenColumns());
                     cellEditArgs.row.replaceChild(cellEditArgs[cloneCell],
                                                   cellEditArgs.row[cell][cellEditArgs.columnObject.index - gObj.getFrozenColumns()]);
                     } else {
-                        (<HTMLTableRowElement>cellEditArgs.row).insertCell(cellEditArgs.columnObject.index);
-                        cellEditArgs.row.replaceChild(cellEditArgs[cloneCell], cellEditArgs.row[cell][cellEditArgs.columnObject.index]);
+                        (<HTMLTableRowElement>cellEditArgs.row).insertCell(cellEditArgs.columnObject.index + indent);
+                        cellEditArgs.row.replaceChild(cellEditArgs[cloneCell],
+                                                      cellEditArgs.row[cell][cellEditArgs.columnObject.index + indent]);
                     }
                     this.originalCell[`${this.cellDetails.rowIndex}${cellEditArgs.columnObject.index}`] =
                     cellEditArgs.cell.parentElement.removeChild(cellEditArgs.cell);

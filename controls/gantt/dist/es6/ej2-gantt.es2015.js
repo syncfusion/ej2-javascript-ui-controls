@@ -11009,7 +11009,7 @@ class CellEdit {
         editedArgs.data = this.parent.getTaskByUniqueID(data.uniqueID);
         let previousValue = getValue('previousData', args);
         let tempEditedValue = column.editType === 'stringedit' &&
-            column.field === 'Duration' ? data[column.field] !== '' : !isNullOrUndefined(data[column.field]);
+            column.field === 'Duration' ? data[column.field] !== '' : !isUndefined(data[column.field]);
         let editedValue = this.parent.allowUnscheduledTasks ? data[column.field] : tempEditedValue ? data[column.field] :
             previousValue;
         if (!isNullOrUndefined(data)) {
@@ -18409,7 +18409,7 @@ class DayMarkers {
 }
 
 /**
- * To handle the context menu items & sub-menu items
+ * The ContextMenu module is used to handle the context menu items & sub-menu items.
  */
 class ContextMenu$2 {
     constructor(parent) {
@@ -18806,6 +18806,9 @@ class ContextMenu$2 {
             'DeleteDependency', 'Convert'
         ];
     }
+    /**
+     * To get ContextMenu module name.
+     */
     getModuleName() {
         return 'contextMenu';
     }
@@ -19460,17 +19463,16 @@ class RowDD$1 {
 }
 
 /**
- * Gantt ColumnMenu module
- *
+ * Configures columnMenu collection in Gantt.
  */
 class ColumnMenu$1 {
-    /**
-     * Constructor for render module
-     */
     constructor(parent) {
         TreeGrid.Inject(ColumnMenu);
         this.parent = parent;
     }
+    /**
+     * To get column menu collection.
+     */
     getColumnMenu() {
         return this.parent.treeGrid.columnMenuModule.getColumnMenu();
     }

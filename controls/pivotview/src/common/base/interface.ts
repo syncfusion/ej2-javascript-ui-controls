@@ -4,7 +4,7 @@ import { Mode, SelectionMode, PdfBorderStyle } from '../base/enum';
 import { L10n } from '@syncfusion/ej2-base';
 import { Grid, ExcelStyle, CellSelectionMode, SelectionType, CheckboxSelectionType, PdfExportProperties } from '@syncfusion/ej2-grids';
 import { Column, ExcelExportProperties } from '@syncfusion/ej2-grids';
-import { CellSelectingEventArgs } from '@syncfusion/ej2-grids';
+import { CellSelectingEventArgs, ColumnModel } from '@syncfusion/ej2-grids';
 import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell, PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { SeriesModel, ExportType } from '@syncfusion/ej2-charts';
 import { ItemModel } from '@syncfusion/ej2-navigations';
@@ -165,6 +165,7 @@ export interface DrillThroughEventArgs {
     rowHeaders: string;
     columnHeaders: string;
     value: string;
+    gridColumns?: ColumnModel[];
 }
 
 export interface MemberFilteringEventArgs {

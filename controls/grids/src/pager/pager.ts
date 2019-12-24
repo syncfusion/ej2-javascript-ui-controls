@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
+import { Component, ModuleDeclaration, L10n, EmitType, Browser, isBlazor } from '@syncfusion/ej2-base';
 import { createElement, remove, classList, compile as templateCompiler } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Property, Event, NotifyPropertyChanges, INotifyPropertyChanged } from '@syncfusion/ej2-base';
@@ -412,7 +412,8 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
             totalRecordsCount: this.totalRecordsCount, totalPages: this.totalPages
         };
         let tempId: string = this.element.parentElement.id + '_template';
-        result = this.getPagerTemplate()(data, this, 'template', tempId, this.isStringTemplate) as Element[];
+        result = isBlazor() ? this.getPagerTemplate()(data, this, 'template', tempId, this.isStringTemplate) as Element[] :
+                    this.getPagerTemplate()(data);
         appendChildren(this.element, result);
     }
 

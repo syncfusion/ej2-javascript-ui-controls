@@ -249,6 +249,9 @@ export class PdfExport {
             if (!isNullOrUndefined(returnType.aggregates)) {
                 let summaryModel: SummaryModelGenerator = new SummaryModelGenerator(gObj);
                 let sRows: Row<AggregateColumnModel>[];
+                if (gObj.aggregates.length && this.parent !== gObj) {
+                    gObj.aggregateModule.prepareSummaryInfo();
+                }
                 if (this.customDataSource) {
                     sRows = summaryModel.generateRows(dataSource, <SummaryData>returnType.aggregates);
                 } else if (this.currentViewData) {

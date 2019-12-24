@@ -838,6 +838,30 @@ export class ComboBox extends DropDownList {
         return 'combobox';
     }
     /**
+     * Adds a new item to the combobox popup list. By default, new item appends to the list as the last item,
+     * but you can insert based on the index parameter.
+     * @param  { Object[] } items - Specifies an array of JSON data or a JSON data.
+     * @param { number } itemIndex - Specifies the index to place the newly added item in the popup list.
+     * @return {void}.
+     */
+    public addItem(
+        items: { [key: string]: Object }[] | { [key: string]: Object } | string | boolean | number | string[] | boolean[] | number[],
+        itemIndex?: number): void {
+            super.addItem(items, itemIndex);
+        }
+    /**
+     * To filter the data from given data source by using query
+     * @param  {Object[] | DataManager } dataSource - Set the data source to filter.
+     * @param  {Query} query - Specify the query to filter the data.
+     * @param  {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
+     * @return {void}.
+     */
+    public filter(
+        dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[],
+        query?: Query, fields?: FieldSettingsModel): void {
+        super.filter(dataSource, query, fields);
+    }
+    /**
      * Hides the popup if it is in open state.
      * @returns void.
      */

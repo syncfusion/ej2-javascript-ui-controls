@@ -4993,8 +4993,23 @@ class FieldValidator {
             rules: rules,
             validationComplete: (args) => {
                 this.validationComplete(args);
+            },
+            focusout: (args) => {
+                this.focusOut(args);
             }
         });
+    }
+    focusOut(args) {
+        let target = args.relatedTarget;
+        if (target && (target.classList.contains('e-dlg-closeicon-btn') || target.classList.contains('e-close')
+            || target.classList.contains(ALLDAY_CELLS_CLASS) || target.classList.contains(HEADER_CELLS_CLASS)
+            || target.classList.contains(QUICK_POPUP_EVENT_DETAILS_CLASS) || target.classList.contains(WORK_CELLS_CLASS)
+            || target.classList.contains(EVENT_WINDOW_CANCEL_BUTTON_CLASS))) {
+            this.ignoreError = true;
+        }
+        else {
+            this.ignoreError = false;
+        }
     }
     validationComplete(args) {
         let elem = this.element.querySelector('#' + args.inputName + '_Error');
@@ -5005,7 +5020,7 @@ class FieldValidator {
     errorPlacement(inputElement, error) {
         let id = error.getAttribute('for');
         let elem = this.element.querySelector('#' + id + '_Error');
-        if (!elem) {
+        if (!elem && !this.ignoreError) {
             this.createTooltip(inputElement, error, id, '');
         }
     }
@@ -5491,6 +5506,7 @@ class QuickPopups {
         }
         this.quickPopup.content = quickCellPopup;
         this.quickPopup.dataBind();
+        this.applyFormValidation();
         if (this.morePopup) {
             this.morePopup.hide();
         }
@@ -5834,7 +5850,6 @@ class QuickPopups {
         });
     }
     saveClick() {
-        this.applyFormValidation();
         this.isCrudAction = true;
         this.quickPopupHide();
     }
@@ -5879,7 +5894,7 @@ class QuickPopups {
             remove(moreEventContentEle);
         }
         let dateElement = this.morePopup.element.querySelector('.' + MORE_EVENT_HEADER_DATE_CLASS);
-        let startDate = this.parent.getDateFromElement(dateElement);
+        let startDate = new Date(parseInt(dateElement.getAttribute('data-date'), 10));
         let endDate = new Date(parseInt(dateElement.getAttribute('data-end-date'), 10));
         let groupIndex = dateElement.getAttribute('data-group-index');
         let data;
@@ -7579,6 +7594,7 @@ class EventWindow {
             EventHandler.add(this.element.querySelector('.' + EVENT_WINDOW_BACK_ICON_CLASS), 'click', this.dialogClose, this);
             EventHandler.add(this.element.querySelector('.' + EVENT_WINDOW_SAVE_ICON_CLASS), 'click', this.eventSave, this);
         }
+        this.applyFormValidation();
     }
     updateEditorTemplate() {
         if (this.parent.editorTemplate) {
@@ -8588,7 +8604,6 @@ class EventWindow {
         }
     }
     eventSave(alert) {
-        this.applyFormValidation();
         let formElement = this.element.querySelector('.' + FORM_CLASS);
         if (formElement && formElement.classList.contains('e-formvalidator') &&
             !formElement.ej2_instances[0].validate()) {

@@ -1266,6 +1266,7 @@ describe('Aggregates Functionality testing', () => {
                     pageSettings: { pageSize: 8 },
                     frozenRows: 2,
                     frozenColumns: 2,
+                    height: 500,
                     columns: [
                         {
                             field: 'OrderID', headerText: 'Order ID', headerTextAlign: 'Right', isPrimaryKey: true,
@@ -1295,6 +1296,12 @@ describe('Aggregates Functionality testing', () => {
         it('checking index and mapping uid of the column', () => {
             expect(grid.getFooterContent().querySelector('.e-summarycell').getAttribute('index')).toBe('0');
             expect(grid.getFooterContent().querySelector('.e-summarycell').hasAttribute('e-mappinguid')).toBeTruthy();
+        });
+
+        it('Remove padding when using hideScroll in Footer content', () => {
+            expect(grid.getFooterContent().classList.contains('e-footerpadding')).toBeTruthy();
+            grid.hideScroll();
+            expect(grid.getFooterContent().classList.contains('e-footerpadding')).toBeFalsy();
         });
         afterAll(() => {
             destroy(grid);

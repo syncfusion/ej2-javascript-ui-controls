@@ -1021,6 +1021,7 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
      * @param  { Object[] } items - Specifies an array of JSON data or a JSON data.
      * @param { number } itemIndex - Specifies the index to place the newly added item in the popup list.
      * @return {void}.
+     * @deprecated
      */
     DropDownBase.prototype.addItem = function (items, itemIndex) {
         if (!this.list || (this.list.textContent === this.noRecordsTemplate && this.getModuleName() !== 'listbox')) {
@@ -2243,6 +2244,11 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         if (this.isPopupOpen && !isNullOrUndefined(this.selectedLI) && this.itemData !== null && (!e || e.type !== 'click')) {
             this.setScrollPosition(e);
         }
+        if (Browser.info.name !== 'mozilla') {
+            attributes(this.inputElement, { 'aria-label': this.inputElement.value });
+            attributes(this.targetElement(), { 'aria-describedby': this.inputElement.id });
+            this.targetElement().removeAttribute('aria-live');
+        }
     };
     DropDownList.prototype.setValueTemplate = function () {
         var compiledString;
@@ -2508,6 +2514,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
      * @param  {Query} query - Specify the query to filter the data.
      * @param  {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
      * @return {void}.
+     * @deprecated
      */
     DropDownList.prototype.filter = function (dataSource, query, fields) {
         this.isCustomFilter = true;
@@ -3133,6 +3140,12 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         var popupInstance = (isBlazor() && this.isServerRendered) ? null : this.popupObj;
         var eventArgs = { popup: popupInstance, cancel: false, animation: animModel };
         this.trigger('close', eventArgs, function (eventArgs) {
+            if (!_this.isServerBlazor && !isNullOrUndefined(_this.popupObj) &&
+                !isNullOrUndefined(_this.popupObj.element.querySelector('.e-fixed-head'))) {
+                var fixedHeader = _this.popupObj.element.querySelector('.e-fixed-head');
+                fixedHeader.parentNode.removeChild(fixedHeader);
+                _this.fixedHeaderElement = null;
+            }
             if (!eventArgs.cancel) {
                 if (_this.getModuleName() === 'autocomplete') {
                     _this.rippleFun();
@@ -3186,6 +3199,13 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             });
             this.setFields();
             this.wireEvent();
+            this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
+            if (!this.enabled) {
+                this.targetElement().tabIndex = -1;
+            }
+            if (this.element.hasAttribute('autofocus')) {
+                this.focusIn();
+            }
         }
         else {
             if (this.element.tagName === 'INPUT') {
@@ -3352,8 +3372,10 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
      */
     DropDownList.prototype.onPropertyChanged = function (newProp, oldProp) {
         if (this.getModuleName() === 'dropdownlist') {
-            this.checkDatasource(newProp);
-            this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp);
+            if (!this.isServerBlazor) {
+                this.checkDatasource(newProp);
+                this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp);
+            }
         }
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
@@ -3607,8 +3629,8 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             this.list = popupEle.querySelector('.e-dropdownbase.e-content') ?
                 popupEle.querySelector('.e-dropdownbase.e-content') : this.list;
             this.ulElement = this.list.querySelector('ul');
-            // tslint:disable-next-line
-            this.liCollections = this.ulElement ? this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li) : [];
+            this.liCollections = this.ulElement ?
+                this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li) : [];
             this.listData = data;
             this.serverBlazorUpdateSelection();
             this.wireListEvents();
@@ -3616,12 +3638,18 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                 this.invokeRenderPopup();
             }
         }
+        else if (data != null && this.listData !== data) {
+            this.listData = data;
+        }
     };
     DropDownList.prototype.updateclientItemData = function (data) {
         this.listData = data;
     };
     DropDownList.prototype.serverUpdateListElement = function (data, popupEle) {
         this.listData = data;
+        if (this.ulElement) {
+            this.liCollections = this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li);
+        }
     };
     /**
      * Hides the popup if it is in an open state.
@@ -3718,7 +3746,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             var attrArray = ['readonly', 'aria-disabled', 'aria-placeholder',
                 'placeholder', 'aria-owns', 'aria-labelledby', 'aria-haspopup', 'aria-expanded',
                 'aria-activedescendant', 'autocomplete', 'aria-readonly', 'autocorrect',
-                'autocapitalize', 'spellcheck', 'aria-autocomplete', 'aria-live'];
+                'autocapitalize', 'spellcheck', 'aria-autocomplete', 'aria-live', 'aria-describedby', 'aria-label'];
             attrArray.forEach(function (value) {
                 _this.inputElement.removeAttribute(value);
             });
@@ -4432,6 +4460,26 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
      */
     ComboBox.prototype.getModuleName = function () {
         return 'combobox';
+    };
+    /**
+     * Adds a new item to the combobox popup list. By default, new item appends to the list as the last item,
+     * but you can insert based on the index parameter.
+     * @param  { Object[] } items - Specifies an array of JSON data or a JSON data.
+     * @param { number } itemIndex - Specifies the index to place the newly added item in the popup list.
+     * @return {void}.
+     */
+    ComboBox.prototype.addItem = function (items, itemIndex) {
+        _super.prototype.addItem.call(this, items, itemIndex);
+    };
+    /**
+     * To filter the data from given data source by using query
+     * @param  {Object[] | DataManager } dataSource - Set the data source to filter.
+     * @param  {Query} query - Specify the query to filter the data.
+     * @param  {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
+     * @return {void}.
+     */
+    ComboBox.prototype.filter = function (dataSource, query, fields) {
+        _super.prototype.filter.call(this, dataSource, query, fields);
     };
     /**
      * Hides the popup if it is in open state.
@@ -5355,7 +5403,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         var ariaAttributes = {
             'aria-disabled': 'false',
             'aria-owns': this.element.id + '_options',
-            'role': 'textbox',
+            'role': 'listbox',
             'aria-multiselectable': 'true',
             'aria-activedescendant': 'null',
             'aria-haspopup': 'true',
@@ -5642,7 +5690,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * To filter the data from given data source by using query
+     * To filter the multiselect data from given data source by using query
      * @param  {Object[] | DataManager } dataSource - Set the data source to filter.
      * @param  {Query} query - Specify the query to filter the data.
      * @param  {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
@@ -7210,6 +7258,8 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         this.setProperties({ text: text.toString() }, true);
         if (delim) {
             this.delimiterWrapper.innerHTML = data;
+            this.delimiterWrapper.setAttribute('id', getUniqueID('delim_val'));
+            this.inputElement.setAttribute('aria-describedby', this.delimiterWrapper.id);
         }
         var targetEle = e && e.target;
         var isClearAll = (targetEle && targetEle.classList.contains('e-close-hooker')) ? true : null;
@@ -8232,6 +8282,16 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
+     * Adds a new item to the multiselect popup list. By default, new item appends to the list as the last item,
+     * but you can insert based on the index parameter.
+     * @param  { Object[] } items - Specifies an array of JSON data or a JSON data.
+     * @param { number } itemIndex - Specifies the index to place the newly added item in the popup list.
+     * @return {void}.
+     */
+    MultiSelect.prototype.addItem = function (items, itemIndex) {
+        _super.prototype.addItem.call(this, items, itemIndex);
+    };
+    /**
      * Hides the popup, if the popup in a open state.
      * @returns void
      */
@@ -8344,6 +8404,12 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                 className: CHIP_WRAPPER,
                 styles: 'display:none'
             });
+            if (this.mode === 'Default') {
+                this.chipCollectionWrapper.setAttribute('id', getUniqueID('chip_default'));
+            }
+            else if (this.mode === 'Box') {
+                this.chipCollectionWrapper.setAttribute('id', getUniqueID('chip_box'));
+            }
             this.componentWrapper.appendChild(this.chipCollectionWrapper);
         }
         if (this.mode !== 'Box') {
@@ -8366,6 +8432,9 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                 tabindex: '0'
             }
         });
+        if (this.mode === 'Default' || this.mode === 'Box') {
+            this.inputElement.setAttribute('aria-describedby', this.chipCollectionWrapper.id);
+        }
         if (this.element.tagName !== this.getNgDirective()) {
             this.element.style.display = 'none';
         }
@@ -9347,6 +9416,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                 itemClass: cssClass.li,
                 dragStart: this.triggerDragStart.bind(this),
                 drag: this.triggerDrag.bind(this),
+                beforeDrop: this.beforeDragEnd.bind(this),
                 drop: this.dragEnd.bind(this),
                 placeHolder: function () { return _this.createElement('span', { className: 'e-placeholder' }); },
                 helper: function (e) {
@@ -9362,9 +9432,13 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             });
         }
     };
+    ListBox.prototype.updateActionCompleteData = function (li, item) {
+        this.jsonData.push(item);
+    };
     ListBox.prototype.initToolbar = function () {
         var scope;
         var pos = this.toolbarSettings.position;
+        var prevScope = this.element.getAttribute('data-value');
         if (this.toolbarSettings.items.length) {
             var toolElem = this.createElement('div', { className: 'e-listbox-tool', attrs: { 'role': 'toolbar' } });
             var wrapper = this.createElement('div', {
@@ -9385,7 +9459,11 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             }
         }
         scope = this.element.getAttribute('data-value');
-        if (scope) {
+        if (prevScope && scope && (prevScope !== scope)) {
+            this.tBListBox = getComponent(document.getElementById(prevScope), this.getModuleName());
+            this.tBListBox.updateToolBarState();
+        }
+        else if (scope) {
             this.tBListBox = getComponent(document.getElementById(scope), this.getModuleName());
             this.tBListBox.updateToolBarState();
         }
@@ -9480,6 +9558,8 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         this.initDraggable();
         this.mainList = this.ulElement;
         if (this.initLoad) {
+            this.jsonData = [];
+            extend(this.jsonData, list, []);
             this.initToolbarAndStyles();
             this.wireEvents();
             if (this.showCheckbox) {
@@ -9529,13 +9609,19 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             listObj.ulElement.innerHTML = '';
         }
     };
+    ListBox.prototype.beforeDragEnd = function (args) {
+        this.trigger('beforeDrop', args);
+    };
+    // tslint:disable-next-line:max-func-body-length
     ListBox.prototype.dragEnd = function (args) {
         var _this = this;
         var listData;
         var liColl;
-        var selectedOptions;
-        var dropValue = this.getFormattedValue(args.droppedElement.getAttribute('data-value'));
+        var jsonData;
         var droppedData;
+        var selectedOptions;
+        var sortedData;
+        var dropValue = this.getFormattedValue(args.droppedElement.getAttribute('data-value'));
         var listObj = this.getComponent(args.droppedElement);
         var getArgs = this.getDragArgs({ target: args.droppedElement }, true);
         var sourceArgs = { previousData: this.dataSource };
@@ -9552,27 +9638,59 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             var ul_1 = this.ulElement;
             listData = [].slice.call(this.listData);
             liColl = [].slice.call(this.liCollections);
+            jsonData = [].slice.call(this.jsonData);
+            sortedData = [].slice.call(this.sortedData);
+            var fLiColl = [].slice.call(this.liCollections);
             var toIdx_1 = args.currentIndex = this.getCurIdx(this, args.currentIndex);
             var rIdx = listData.indexOf(this.getDataByValue(dropValue));
-            listData.splice(toIdx_1, 0, listData.splice(rIdx, 1)[0]);
-            liColl.splice(toIdx_1, 0, liColl.splice(rIdx, 1)[0]);
+            var jsonIdx = jsonData.indexOf(this.getDataByValue(dropValue));
+            var sIdx = sortedData.indexOf(this.getDataByValue(dropValue));
+            selectedOptions = (this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 && this.allowDragAll)
+                ? this.value : [dropValue];
+            droppedData = this.getDataByValue(dropValue);
+            if (args.handled) {
+                jsonData.splice(toIdx_1, 0, droppedData);
+                listData.splice(toIdx_1, 0, droppedData);
+                var rLi = fLiColl.splice(rIdx, 1)[0];
+                liColl.splice(toIdx_1, 0, rLi);
+                sortedData.splice(toIdx_1, 0, droppedData);
+            }
+            else {
+                listData.splice(toIdx_1, 0, listData.splice(rIdx, 1)[0]);
+                jsonData.splice(toIdx_1, 0, jsonData.splice(jsonIdx, 1)[0]);
+                sortedData.splice(toIdx_1, 0, sortedData.splice(sIdx, 1)[0]);
+                liColl.splice(toIdx_1, 0, liColl.splice(rIdx, 1)[0]);
+            }
             if (this.allowDragAll) {
                 selectedOptions = this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 ? this.value : [dropValue];
                 selectedOptions.forEach(function (value) {
                     if (value !== dropValue) {
+                        toIdx_1++;
                         var idx = listData.indexOf(_this.getDataByValue(value));
-                        if (idx > toIdx_1) {
-                            toIdx_1++;
+                        var jsonIdx_1 = jsonData.indexOf(_this.getDataByValue(value));
+                        var sIdx_1 = sortedData.indexOf(_this.getDataByValue(value));
+                        var li = _this.getItems()[_this.getIndexByValue(value)];
+                        if (args.handled) {
+                            listData.splice(toIdx_1, 0, listData[idx]);
+                            jsonData.splice(toIdx_1, 0, jsonData[jsonIdx_1]);
+                            sortedData.splice(toIdx_1, 0, sortedData[sIdx_1]);
+                            liColl.splice(toIdx_1, 0, liColl[idx].cloneNode(true));
+                            ul_1.insertBefore(li.cloneNode(true), ul_1.getElementsByClassName('e-placeholder')[0]);
                         }
-                        listData.splice(toIdx_1, 0, listData.splice(idx, 1)[0]);
-                        liColl.splice(toIdx_1, 0, liColl.splice(idx, 1)[0]);
-                        ul_1.insertBefore(_this.getItems()[_this.getIndexByValue(value)], ul_1.getElementsByClassName('e-placeholder')[0]);
+                        else {
+                            listData.splice(toIdx_1, 0, listData.splice(idx, 1)[0]);
+                            jsonData.splice(toIdx_1, 0, jsonData.splice(jsonIdx_1, 1)[0]);
+                            sortedData.splice(toIdx_1, 0, sortedData.splice(sIdx_1, 1)[0]);
+                            liColl.splice(toIdx_1, 0, liColl.splice(idx, 1)[0]);
+                            ul_1.insertBefore(li, ul_1.getElementsByClassName('e-placeholder')[0]);
+                        }
                     }
                 });
             }
             this.listData = listData;
+            this.jsonData = jsonData;
+            this.sortedData = sortedData;
             this.liCollections = liColl;
-            this.setProperties({ dataSource: listData }, true);
         }
         else {
             var li_1;
@@ -9581,19 +9699,49 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             var ul_2 = listObj.ulElement;
             listData = [].slice.call(listObj.listData);
             liColl = [].slice.call(listObj.liCollections);
+            jsonData = [].slice.call(listObj.jsonData);
+            sortedData = [].slice.call(listObj.sortedData);
             selectedOptions = (this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 && this.allowDragAll)
                 ? this.value : [dropValue];
             selectedOptions.forEach(function (value) {
                 droppedData = _this.getDataByValue(value);
+                var rLi;
                 var srcIdx = _this.listData.indexOf(droppedData);
-                _this.listData.splice(srcIdx, 1);
-                var rLi = fLiColl_1.splice(srcIdx, 1)[0];
+                var jsonSrcIdx = _this.jsonData.indexOf(droppedData);
+                var sortIdx = _this.sortedData.indexOf(droppedData);
+                if (!args.handled) {
+                    _this.listData.splice(srcIdx, 1);
+                    _this.jsonData.splice(jsonSrcIdx, 1);
+                    _this.sortedData.splice(sortIdx, 1);
+                    rLi = fLiColl_1.splice(srcIdx, 1)[0];
+                }
+                else {
+                    rLi = fLiColl_1[srcIdx].cloneNode(true);
+                }
                 var destIdx = value === dropValue ? args.currentIndex : currIdx_1;
                 listData.splice(destIdx, 0, droppedData);
+                jsonData.splice(destIdx, 0, droppedData);
                 liColl.splice(destIdx, 0, rLi);
-                li_1 = _this.getItems()[_this.getIndexByValue(value)];
+                sortedData.splice(destIdx, 0, droppedData);
+                if (!value) {
+                    var liCollElem = _this.getItems();
+                    for (var i = 0; i < liCollElem.length; i++) {
+                        if (liCollElem[i].getAttribute('data-value') === null && liCollElem[i].classList.contains('e-list-item')) {
+                            li_1 = liCollElem[i];
+                            break;
+                        }
+                    }
+                }
+                else {
+                    li_1 = _this.getItems()[_this.getIndexByValue(value)];
+                }
                 _this.removeSelected(_this, value === dropValue ? [args.droppedElement] : [li_1]);
-                ul_2.insertBefore(li_1, ul_2.getElementsByClassName('e-placeholder')[0]);
+                if (!args.handled) {
+                    ul_2.insertBefore(li_1, ul_2.getElementsByClassName('e-placeholder')[0]);
+                }
+                else if (value !== dropValue) {
+                    ul_2.insertBefore(li_1.cloneNode(true), ul_2.getElementsByClassName('e-placeholder')[0]);
+                }
                 currIdx_1++;
             });
             this.updateSelectedOptions();
@@ -9605,16 +9753,17 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                 !== listObj.selectionSettings.showCheckbox || listObj.fields.groupBy) {
                 var sortabale = getComponent(ul_2, 'sortable');
                 ul_2.innerHTML = listObj.renderItems(listData, listObj.fields).innerHTML;
-                ul_2.appendChild(sortabale.placeHolderElement);
+                if (sortabale.placeHolderElement) {
+                    ul_2.appendChild(sortabale.placeHolderElement);
+                }
                 ul_2.appendChild(args.helper);
                 listObj.setSelection();
             }
             this.liCollections = fLiColl_1;
             listObj.liCollections = liColl;
-            var fromList = extend([], [], this.listData, false);
-            this.setProperties({ dataSource: fromList }, true);
+            listObj.jsonData = extend([], [], jsonData, false);
             listObj.listData = extend([], [], listData, false);
-            listObj.setProperties({ dataSource: listData }, true);
+            listObj.sortedData = extend([], [], sortedData, false);
             if (this.listData.length === 0) {
                 this.l10nUpdate();
             }
@@ -9835,6 +9984,13 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     ListBox.prototype.moveAllTo = function (targetId, index) {
         var tlistbox = (targetId) ? getComponent(targetId, ListBox_1) : this.getScopedListBox();
         this.moveAllData(this, tlistbox, false, index);
+    };
+    /**
+     * Returns the updated dataSource in ListBox
+     * @returns {{ [key: string]: Object }[] | string[] | boolean[] | number[]}
+     */
+    ListBox.prototype.getDataList = function () {
+        return this.jsonData;
     };
     ListBox.prototype.getElemByValue = function (value) {
         var elem = [];
@@ -10088,7 +10244,10 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                     });
                 }
                 else {
-                    this.value.push(liDataValue_1);
+                    var values = [];
+                    extend(values, this.value);
+                    values.push(liDataValue_1);
+                    this.value = values;
                 }
                 if (document.querySelectorAll('ul').length < 2) {
                     this.updateMainList();
@@ -10166,7 +10325,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         (isUp ? elems : elems.reverse()).forEach(function (ele) {
             var idx = Array.prototype.indexOf.call(_this.ulElement.children, ele);
             moveTo(_this.ulElement, _this.ulElement, [idx], isUp ? idx - 1 : idx + 2);
-            _this.changeData(idx, isUp ? idx - 1 : idx + 1);
+            _this.changeData(idx, isUp ? idx - 1 : idx + 1, ele);
         });
         elems[0].focus();
         if (!isKey && this.toolbarSettings.items.length) {
@@ -10187,13 +10346,16 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
      */
     // tslint:disable-next-line:max-func-body-length
     ListBox.prototype.moveData = function (fListBox, tListBox, isKey, value, index) {
-        var count = 0;
         var idx = [];
-        var dupIdx = [];
         var dataIdx = [];
+        var jsonIdx = [];
+        var sortIdx = [];
         var listData = [].slice.call(fListBox.listData);
         var tListData = [].slice.call(tListBox.listData);
+        var sortData = [].slice.call(fListBox.sortedData);
+        var tSortData = [].slice.call(tListBox.sortedData);
         var fliCollections = [].slice.call(fListBox.liCollections);
+        var dataLiIdx = [];
         var tliCollections = [].slice.call(tListBox.liCollections);
         var data = [];
         var elems = fListBox.getSelectedItems();
@@ -10202,25 +10364,22 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         }
         var isRefresh = tListBox.sortOrder !== 'None' ||
             (tListBox.selectionSettings.showCheckbox !== fListBox.selectionSettings.showCheckbox) || tListBox.fields.groupBy;
-        if (fListBox.getSelectedItems().length !== fListBox.value.length) {
-            var index_1 = 0;
-            fListBox.value = [];
-            for (index_1; index_1 < fListBox.getSelectedItems().length; index_1++) {
-                fListBox.value[index_1] = fListBox.getSelectedItems()[index_1].getAttribute('data-value');
-            }
-        }
+        fListBox.value = [];
         if (elems.length) {
             this.removeSelected(fListBox, elems);
-            if (fListBox.allowFiltering) {
-                fListBox.sortedData = fListBox.dataSource;
-            }
             elems.forEach(function (ele, i) {
-                idx.push(Array.prototype.indexOf.call(fListBox.ulElement.children, ele));
-                dupIdx.push(Array.prototype.indexOf.call(fListBox.ulElement.querySelectorAll('.e-list-item'), ele));
-                dataIdx.push(Array.prototype.indexOf.call(listData, fListBox.sortedData[idx[i]]));
+                idx.push(Array.prototype.indexOf.call(fListBox.ulElement.children, ele)); // update sortable elem
+                // To update lb view data
+                dataLiIdx.push(Array.prototype.indexOf.call(fListBox.ulElement.querySelectorAll('.e-list-item'), ele));
+                // To update lb listdata data
+                dataIdx.push(Array.prototype.indexOf.call(fListBox.listData, fListBox.getDataByElems([ele])[0]));
+                // To update lb sorted data
+                sortIdx.push(Array.prototype.indexOf.call(fListBox.sortedData, fListBox.getDataByElems([ele])[0]));
+                // To update lb original data
+                jsonIdx.push(Array.prototype.indexOf.call(fListBox.jsonData, fListBox.getDataByElems([ele])[0]));
             });
             var rLiCollection_1 = [];
-            dupIdx.sort(function (n1, n2) { return n1 - n2; }).reverse().forEach(function (i) {
+            dataLiIdx.sort(function (n1, n2) { return n1 - n2; }).reverse().forEach(function (i) {
                 rLiCollection_1.push(fliCollections.splice(i, 1)[0]);
             });
             fListBox.liCollections = fliCollections;
@@ -10237,37 +10396,12 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             dataIdx.sort(function (n1, n2) { return n2 - n1; }).forEach(function (i) {
                 listData.splice(i, 1)[0];
             });
-            idx.slice().reverse().forEach(function (i) {
-                if (fListBox.mainList.childElementCount === fListBox.ulElement.childElementCount) {
-                    data.push(fListBox.sortedData.splice(i, 1)[0]);
-                }
-                else {
-                    fListBox.sortedData = fListBox.sortedData.filter(function (value1) {
-                        return !(value1.Country === fListBox.ulElement.getElementsByTagName('li')[i].getAttribute('data-value'));
-                    });
-                    if (count === 0) {
-                        var i_1;
-                        var j_1;
-                        for (i_1 = 0; i_1 < fListBox.sortedData.length; i_1++) {
-                            for (j_1 = 0; j_1 < fListBox.value.length; j_1++) {
-                                if (fListBox.sortedData[i_1].text === fListBox.value[j_1]) {
-                                    tListBox.dataSource.push(fListBox.sortedData[i_1]);
-                                    fListBox.sortedData = fListBox.sortedData.filter(function (value1) {
-                                        return !(value1.text === fListBox.value[j_1]);
-                                    });
-                                }
-                            }
-                        }
-                        count++;
-                    }
-                }
-                fListBox.setProperties({ dataSource: fListBox.sortedData }, true);
-                tListBox.setProperties({ dataSource: tListBox.sortedData }, true);
+            sortIdx.sort(function (n1, n2) { return n2 - n1; }).forEach(function (i) {
+                sortData.splice(i, 1)[0];
             });
-            if (tListBox.sortedData.length !== tListBox.dataSource.length) {
-                tListBox.setProperties({ sortedData: tListBox.dataSource }, true);
-                tListData = tListBox.dataSource;
-            }
+            jsonIdx.slice().reverse().forEach(function (i) {
+                data.push(fListBox.jsonData.splice(i, 1)[0]);
+            });
             if (isRefresh) {
                 if (fListBox.fields.groupBy) {
                     fListBox.ulElement.innerHTML = fListBox.renderItems(listData, fListBox.fields).innerHTML;
@@ -10279,36 +10413,38 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             else {
                 moveTo(fListBox.ulElement, tListBox.ulElement, idx, index);
             }
-            if (tListBox.mainList.childElementCount !== tListBox.dataSource.length) {
+            if (tListBox.mainList.childElementCount !== tListBox.jsonData.length) {
                 tListBox.mainList = tListBox.ulElement;
             }
             fListBox.updateMainList();
             var childCnt = fListBox.ulElement.querySelectorAll('.e-list-item').length;
             var ele = void 0;
             var liIdx = void 0;
+            var tJsonData = [].slice.call(tListBox.jsonData);
+            tSortData = [].slice.call(tListBox.sortedData);
             if (elems.length === 1 && childCnt && !fListBox.selectionSettings.showCheckbox) {
-                liIdx = childCnt <= dupIdx[0] ? childCnt - 1 : dupIdx[0];
+                liIdx = childCnt <= dataLiIdx[0] ? childCnt - 1 : dataLiIdx[0];
                 ele = fListBox.ulElement.querySelectorAll('.e-list-item')[liIdx];
-                fListBox.ulElement.querySelectorAll('.e-list-item')[fListBox.getValidIndex(ele, liIdx, childCnt === dupIdx[0]
+                fListBox.ulElement.querySelectorAll('.e-list-item')[fListBox.getValidIndex(ele, liIdx, childCnt === dataIdx[0]
                     ? 38 : 40)].classList.add(cssClass.selected);
             }
             if (isKey) {
                 this.list.focus();
             }
             fListBox.listData = listData;
-            fListBox.setProperties({ dataSource: listData }, true);
+            fListBox.sortedData = sortData;
             index = (index) ? index : tListData.length;
-            for (var i = data.length - 1; i >= 0; i--) {
+            for (var i = 0; i < data.length; i++) {
                 tListData.splice(index, 0, data[i]);
+                tJsonData.splice(index, 0, data[i]);
+                tSortData.splice(index, 0, data[i]);
             }
             tListBox.listData = tListData;
-            tListBox.setProperties({ dataSource: tListData }, true);
+            tListBox.jsonData = tJsonData;
+            tListBox.sortedData = tSortData;
             if (isRefresh) {
                 tListBox.ulElement.innerHTML = tListBox.renderItems(tListData, tListBox.fields).innerHTML;
                 tListBox.setSelection();
-            }
-            else {
-                tListBox.sortedData = tListData;
             }
             fListBox.updateSelectedOptions();
             if (fListBox.listData.length === 0) {
@@ -10327,6 +10463,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     };
     ListBox.prototype.moveAllData = function (fListBox, tListBox, isKey, index) {
         var listData = [].slice.call(tListBox.listData);
+        var jsonData = [].slice.call(tListBox.jsonData);
         var isRefresh = tListBox.sortOrder !== 'None' ||
             (tListBox.selectionSettings.showCheckbox !== fListBox.selectionSettings.showCheckbox) || tListBox.fields.groupBy;
         this.removeSelected(fListBox, fListBox.getSelectedItems());
@@ -10343,12 +10480,16 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             this.list.focus();
         }
         index = (index) ? index : listData.length;
-        for (var i = fListBox.sortedData.length - 1; i >= 0; i--) {
-            listData.splice(index, 0, fListBox.sortedData[i]);
+        for (var i = 0; i < fListBox.listData.length; i++) {
+            listData.splice(index + i, 0, fListBox.listData[i]);
+        }
+        for (var i = 0; i < fListBox.jsonData.length; i++) {
+            jsonData.splice(index + i, 0, fListBox.jsonData[i]);
         }
         var fliCollections = [].slice.call(fListBox.liCollections);
         var tliCollections = [].slice.call(tListBox.liCollections);
         fListBox.liCollections = [];
+        fListBox.value = [];
         if (index) {
             var toColl = tliCollections.splice(0, index);
             tListBox.liCollections = toColl.concat(fliCollections).concat(tliCollections);
@@ -10359,9 +10500,8 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         listData = listData
             .filter(function (data) { return data.isHeader !== true; });
         tListBox.listData = listData;
-        fListBox.listData = fListBox.sortedData = [];
-        tListBox.setProperties({ dataSource: listData }, true);
-        fListBox.setProperties({ dataSource: [] }, true);
+        tListBox.jsonData = jsonData;
+        fListBox.listData = fListBox.sortedData = fListBox.jsonData = [];
         if (isRefresh) {
             tListBox.ulElement.innerHTML = tListBox.renderItems(listData, tListBox.fields).innerHTML;
         }
@@ -10373,14 +10513,17 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             fListBox.l10nUpdate();
         }
     };
-    ListBox.prototype.changeData = function (fromIdx, toIdx) {
+    ListBox.prototype.changeData = function (fromIdx, toIdx, ele) {
         var listData = [].slice.call(this.listData);
+        var jsonData = [].slice.call(this.jsonData);
+        var jsonIdx = Array.prototype.indexOf.call(this.jsonData, this.getDataByElems([ele])[0]);
         var liColl = [].slice.call(this.liCollections);
         listData.splice(toIdx, 0, listData.splice(fromIdx, 1)[0]);
+        jsonData.splice(toIdx, 0, jsonData.splice(jsonIdx, 1)[0]);
         liColl.splice(toIdx, 0, liColl.splice(fromIdx, 1)[0]);
         this.listData = listData;
+        this.jsonData = jsonData;
         this.liCollections = liColl;
-        this.setProperties({ dataSource: listData }, true);
     };
     ListBox.prototype.getSelectedItems = function () {
         var ele = [];
@@ -10526,10 +10669,10 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                             }
                             if (!eventArgsData_1.cancel && !_this.isCustomFiltering && !eventArgsData_1.preventDefaultAction) {
                                 _this.inputString = _this.filterInput.value;
-                                _this.filteringAction(_this.dataSource, null, _this.fields);
+                                _this.filteringAction(_this.jsonData, new Query(), _this.fields);
                             }
                             if (!_this.isFiltered && !_this.isCustomFiltering && !eventArgsData_1.preventDefaultAction) {
-                                _this.dataUpdater(_this.dataSource, null, _this.fields);
+                                _this.dataUpdater(_this.jsonData, new Query(), _this.fields);
                             }
                         });
                     }
@@ -10561,7 +10704,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             var list = this.mainList.cloneNode ? this.mainList.cloneNode(true) : this.mainList;
             if (backCommand) {
                 this.remoteCustomValue = false;
-                this.onActionComplete(list, this.dataSource);
+                this.onActionComplete(list, this.jsonData);
                 this.notify('reOrder', { module: 'CheckBoxSelection', enable: this.selectionSettings.showCheckbox, e: this });
             }
         }
@@ -10592,27 +10735,15 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     ListBox.prototype.updateSelectedOptions = function () {
         var _this = this;
         var selectedOptions = [];
-        var values = this.value;
+        var values = [];
+        extend(values, this.value);
         this.getSelectedItems().forEach(function (ele) {
             if (!ele.classList.contains('e-grabbed')) {
                 selectedOptions.push(_this.getFormattedValue(ele.getAttribute('data-value')));
             }
         });
         if (this.mainList.childElementCount === this.ulElement.childElementCount) {
-            if (this.allowFiltering) {
-                for (var i = 0; i < selectedOptions.length; i++) {
-                    if (values.indexOf(selectedOptions[i]) > -1) {
-                        continue;
-                    }
-                    else {
-                        values.push(selectedOptions[i]);
-                    }
-                }
-                this.setProperties({ value: values }, true);
-            }
-            else {
-                this.setProperties({ value: selectedOptions }, true);
-            }
+            this.setProperties({ value: selectedOptions }, true);
         }
         this.updateSelectTag();
         this.updateToolBarState();
@@ -10999,6 +11130,9 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     __decorate$5([
         Event()
     ], ListBox.prototype, "change", void 0);
+    __decorate$5([
+        Event()
+    ], ListBox.prototype, "beforeDrop", void 0);
     __decorate$5([
         Event()
     ], ListBox.prototype, "dragStart", void 0);

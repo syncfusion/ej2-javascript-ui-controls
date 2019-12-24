@@ -398,10 +398,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public numberFormattingModule: NumberFormatting;
     /** @hidden */
     public groupingModule: Grouping;
-    /** @hidden */
-    public updateGroupType: GroupType = 'Number';
-    /** @hidden */
-    public isGroupUIupdate: boolean = false;
 
     private defaultLocale: Object;
     /* tslint:disable-next-line:no-any */
@@ -1394,11 +1390,12 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             groupName: 'Enter the caption to display in header',
             captionName: 'Enter the caption for group field',
             selectedItems: 'Selected items',
-            groupTitle: 'Group name :',
-            startAt: 'Starting at :',
-            endAt: 'Ending at :',
-            groupBy: 'By :',
-            selectGroup: 'Select groups',
+            groupFieldCaption: 'Field caption',
+            groupTitle: 'Group name',
+            startAt: 'Starting at',
+            endAt: 'Ending at',
+            groupBy: 'Interval by',
+            selectGroup: 'Select groups'
         };
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.renderContextMenu();
@@ -1866,23 +1863,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 case 'allowDataCompression':
                     if (newProp.dataSourceSettings && Object.keys(newProp.dataSourceSettings).length === 1
                         && newProp.dataSourceSettings.groupSettings && this.dataType === 'pivot') {
-                        if (this.isGroupUIupdate) {
-                            this.isGroupUIupdate = false;
-                            this.updateGroupingReport(newProp.dataSourceSettings.groupSettings);
-                        } else {
-                            let groupSettings: IGroupSettings[] =
-                                extend([], this.dataSourceSettings.groupSettings, null, true) as IGroupSettings[];
-                            let data: IDataSet[] = PivotUtil.getClonedData(this.clonedDataSet) as IDataSet[];
-                            let dataSource: IDataOptions = extend({}, this.clonedReport, null, true);
-                            dataSource.dataSource = data;
-                            if (newProp.dataSourceSettings.groupSettings.length === 0 ||
-                                newProp.dataSourceSettings.groupSettings.length > 0) {
-                                this.engineModule.groupingFields = {};
-                                dataSource.groupSettings =
-                                    newProp.dataSourceSettings.groupSettings.length > 0 ? groupSettings : [];
-                                this.setProperties({ dataSourceSettings: dataSource }, true);
-                            }
-                        }
+                        this.updateGroupingReport(newProp.dataSourceSettings.groupSettings, 'Date');
                     }
                     if (newProp.dataSourceSettings && Object.keys(newProp.dataSourceSettings).length === 1
                         && Object.keys(newProp.dataSourceSettings)[0] === 'dataSource') {
@@ -2088,6 +2069,29 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             }
         }
     }
+
+    /**
+     * @hidden
+     */
+    public showWaitingPopup(): void {
+        if (this.grid && this.grid.element) {
+            showSpinner(this.grid.element);
+        } else {
+            showSpinner(this.element);
+        }
+    }
+
+    /**
+     * @hidden
+     */
+    public hideWaitingPopup(): void {
+        if (this.grid && this.grid.element) {
+            hideSpinner(this.grid.element);
+        } else {
+            hideSpinner(this.element);
+        }
+    }
+
     /* tslint:disable:max-func-body-length */
     /**
      * Updates the PivotEngine using dataSource from Pivot View component.
@@ -2096,7 +2100,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      * @hidden
      */
     public updateDataSource(isRefreshGrid?: boolean): void {
-        showSpinner(this.element);
+        this.showWaitingPopup();
         let pivot: PivotView = this;
         //setTimeout(() => {
         /* tslint:disable:align */
@@ -2384,7 +2388,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     this.dataSourceSettings.drilledMembers.push({ name: fieldName, items: [memberName], delimiter: delimiter });
                 }
             }
-            showSpinner(this.element);
+            this.showWaitingPopup();
             let pivot: PivotView = this;
             //setTimeout(() => {
             let drilledItem: IDrilledItem = {
@@ -2528,7 +2532,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             hideSpinner(this.fieldListSpinnerElement);
         }
         if (!this.isEmptyGrid) {
-            hideSpinner(this.element);
+            this.hideWaitingPopup();
             this.trigger(events.dataBound);
         } else {
             this.isEmptyGrid = false;
@@ -2838,7 +2842,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     }
                 }, true);
                 /* tslint:enable */
-                showSpinner(this.element);
+                this.showWaitingPopup();
                 let pivot: PivotView = this;
                 //setTimeout(() => {
                 pivot.engineModule.enableValueSorting = true;
@@ -3546,7 +3550,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     }
 
     private refreshData(): void {
-        showSpinner(this.element);
+        this.showWaitingPopup();
         let pivot: PivotView = this;
         if (isBlazor()) {
             if (pivot.dataType === 'olap') {
@@ -3559,7 +3563,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             if (pivot.dataSourceSettings.dataSource instanceof DataManager) {
                 if (isBlazor() && pivot.enableVirtualization) {
                     if (!pivot.element.querySelector('.e-spinner-pane')) {
-                        showSpinner(this.element);
+                        this.showWaitingPopup();
                     }
                     pivot.initEngine();
                 } else {
@@ -3568,15 +3572,15 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             } else if ((this.dataSourceSettings.url !== '' && this.dataType === 'olap') ||
                 (pivot.dataSourceSettings.dataSource as IDataSet[]).length > 0) {
                 if (pivot.dataType === 'pivot') {
-                    hideSpinner(pivot.element);
+                    this.hideWaitingPopup();
                     pivot.engineModule.data = pivot.dataSourceSettings.dataSource;
                 }
                 pivot.initEngine();
             } else {
-                hideSpinner(pivot.element);
+                this.hideWaitingPopup();
             }
         } else {
-            hideSpinner(pivot.element);
+            this.hideWaitingPopup();
         }
     }
 
@@ -3606,7 +3610,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
 
     private executeQuery(e: ReturnOption): void {
         if (!this.element.querySelector('.e-spinner-pane')) {
-            showSpinner(this.element);
+            this.showWaitingPopup();
         }
         let pivot: PivotView = this;
         //setTimeout(() => {
@@ -3787,12 +3791,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         }
     }
 
-    private updateGroupingReport(newGroupSettings: IGroupSettings[]): void {
+    /** @hidden */
+    public updateGroupingReport(newGroupSettings: IGroupSettings[], updateGroupType: GroupType): void {
         if (!this.clonedDataSet && !this.clonedReport) {
             let dataSet: IDataSet[] = this.engineModule.data as IDataSet[];
             this.clonedDataSet = PivotUtil.getClonedData(dataSet) as IDataSet[];
             this.setProperties({ dataSourceSettings: { dataSource: [] } }, true);
-            this.clonedReport = extend({}, this.dataSourceSettings, null, true) as DataSourceSettings;
+            this.clonedReport = PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings);
             this.setProperties({ dataSourceSettings: { dataSource: dataSet } }, true);
         }
         /* tslint:disable-next-line:max-line-length */
@@ -3810,7 +3815,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             this.engineModule.groupingFields = {};
             /* tslint:disable-next-line:max-line-length */
             this.setProperties({ dataSourceSettings: { dataSource: data, groupSettings: newGroupSettings.length > 0 ? dataSource.groupSettings : [] } }, true);
-            let isDateGroupUpdated: boolean = this.updateGroupType === 'Date';
+            let isDateGroupUpdated: boolean = updateGroupType === 'Date';
             let fields: string[] = [];
             for (let i: number = 0, cnt: number = axisFields.length; i < cnt; i++) {
                 for (let j: number = 0, len: number = axisFields[i].length; j < len; j++) {
@@ -3819,16 +3824,17 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         fields.push(fieldName);
                     }
                     let index: number = fields.indexOf(fieldName);
-                    let group: IGroupSettings = PivotUtil.getGroupItemByName(fieldName, dataSource.groupSettings);
+                    let group: IGroupSettings = PivotUtil.getFieldByName(fieldName, dataSource.groupSettings) as IGroupSettings;
                     if ((!isNullOrUndefined(fieldName.match(dateGroup)) &&
                         isDateGroupUpdated) || (fieldName.indexOf('_custom_group') !== -1 &&
-                            !PivotUtil.getGroupItemByName(fieldName.replace('_custom_group', ''), dataSource.groupSettings))) {
+                            /* tslint:disable-next-line:max-line-length */
+                            !PivotUtil.getFieldByName(fieldName.replace('_custom_group', ''), dataSource.groupSettings) as IGroupSettings)) {
                         axisFields[i].splice(j, 1);
                         fields.splice(index, 1);
                         j--;
                         len--;
                     } else {
-                        let fieldObj: IFieldOptions = PivotUtil.getFieldByName(fieldName, clonedAxisFields);
+                        let fieldObj: IFieldOptions = PivotUtil.getFieldByName(fieldName, clonedAxisFields) as IFieldOptions;
                         if (fieldObj) {
                             axisFields[i].splice(j, 1, fieldObj);
                         }
@@ -3837,9 +3843,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             }
             for (let fieldName of fields) {
                 let filterObj: IFilter = PivotUtil.getFilterItemByName(fieldName, clonedReport.filterSettings);
-                let sortObj: ISort = PivotUtil.getSortItemByName(fieldName, clonedReport.sortSettings);
-                let formatObj: IFormatSettings = PivotUtil.getFormatItemByName(fieldName, clonedReport.formatSettings);
-                let drillObj: IDrillOptions = PivotUtil.getDrillItemByName(fieldName, clonedReport.drilledMembers);
+                let sortObj: ISort = PivotUtil.getFieldByName(fieldName, clonedReport.sortSettings) as ISort;
+                let formatObj: IFormatSettings = PivotUtil.getFieldByName(fieldName, clonedReport.formatSettings) as IFormatSettings;
+                let drillObj: IDrillOptions = PivotUtil.getFieldByName(fieldName, clonedReport.drilledMembers) as IDrillOptions;
                 let settingsObj: IFilter[] | ISort[] | IFormatSettings[] | IDrillOptions[] = [filterObj, sortObj, formatObj, drillObj];
                 for (let i: number = 0, cnt: number = fieldSettings.length; i < cnt; i++) {
                     let isExists: boolean = false;
@@ -3847,7 +3853,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         let name: string = fieldSettings[i][j].name;
                         /* tslint:disable-next-line:max-line-length */
                         if ((!isNullOrUndefined(name.match(dateGroup)) && isDateGroupUpdated) || (name.indexOf('_custom_group') !== -1 &&
-                            !PivotUtil.getGroupItemByName(name.replace('_custom_group', ''), dataSource.groupSettings))) {
+                            !PivotUtil.getFieldByName(name.replace('_custom_group', ''), dataSource.groupSettings) as IGroupSettings)) {
                             (fieldSettings[i] as IFilter[]).splice(j, 1);
                             j--;
                             len--;

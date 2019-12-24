@@ -601,7 +601,7 @@ export class PivotEngine {
                     }
                     let axisFields: IFieldOptions[][] = [this.rows, this.columns, this.values, this.filters];
                     for (let fields of axisFields) {
-                        let field: IFieldOptions = new DataManager({ json: fields }).executeLocal(new Query().where('name', 'equal', fieldName))[0] as IFieldOptions;
+                        let field: IFieldOptions = PivotUtil.getFieldByName(fieldName, fields) as IFieldOptions;
                         if (field) {
                             field = (<{ [key: string]: Object }>field).properties ? (<{ [key: string]: Object }>field).properties : field;
                             field.type = 'Count';
@@ -625,8 +625,8 @@ export class PivotEngine {
                         pattern = customFieldName.match(/_custom_group/g);
                     }
                     // let actualFieldName: string = fieldName.replace(/_custom_group/g, '');
-                    let parentField: IFieldOptions = PivotUtil.getFieldByName(fieldName.replace(/_custom_group/g, ''), dataFields);
-                    let customGroupField: IFieldOptions = PivotUtil.getFieldByName(customFieldName, dataFields);
+                    let parentField: IFieldOptions = PivotUtil.getFieldByName(fieldName.replace(/_custom_group/g, ''), dataFields) as IFieldOptions;
+                    let customGroupField: IFieldOptions = PivotUtil.getFieldByName(customFieldName, dataFields) as IFieldOptions;
                     for (let axis of axisFields) {
                         if (!isDataSource && axis) {
                             let cnt: number = axis.length;
@@ -664,7 +664,7 @@ export class PivotEngine {
                             }
                         }
                     }
-                    let formatfield: IFormatSettings = PivotUtil.getFormatItemByName(fieldName, PivotUtil.cloneFormatSettings(this.formats)) as IFormatSettings;
+                    let formatfield: IFormatSettings = PivotUtil.getFieldByName(fieldName, PivotUtil.cloneFormatSettings(this.formats)) as IFormatSettings;
                     if (formatfield) {
                         formatfield.name = customFieldName;
                         this.formats.push(formatfield);
@@ -3832,9 +3832,9 @@ export class PivotEngine {
             } finally {
                 if (this.fieldList[fieldName].isCustomField) {
                     formattedValue.formattedText =
-                    (isNullOrUndefined(formattedValue.formattedText) || formattedValue.formattedText === 'NaN') ?
-                        commonValue.toString() : formattedValue.formattedText;
-                    formattedValue.dateText = (isNullOrUndefined(formattedValue.formattedText) || formattedValue.formattedText === 'NaN') ?
+                        (isNullOrUndefined(formattedValue.formattedText) || formattedValue.formattedText === 'NaN') ?
+                            commonValue.toString() : formattedValue.formattedText;
+                    formattedValue.dateText = (isNullOrUndefined(formattedValue.dateText) || formattedValue.dateText === 'NaN') ?
                         commonValue.toString() : formattedValue.dateText;
                 }
             }

@@ -45,7 +45,6 @@
 
       .e-dlg-content {
         overflow: hidden;
-        padding: 0;
 
         .e-editor-label-wrapper {
           background-color: $pivotgrid-editor-label-fill;
@@ -64,8 +63,6 @@
         // sass-lint:disable-all
         .e-value-field-div-content,
         .e-group-field-div-content {
-          padding: 0 $pivotgrid-editor-search-padding-size 10px;
-
           .e-field-option-wrapper,
           .e-group-option-wrapper {
             .e-field-name-text-wrapper {
@@ -99,6 +96,11 @@
             .e-group-caption-wrapper,
             .e-group-start-option-wrapper {
               .e-caption-option-text,
+              .e-checkbox-wrapper {
+                margin-bottom: 10px; 
+              }
+
+              .e-caption-option-text,
               .e-checkbox-wrapper .e-label {
                 font-size: 13px;
                 font-weight: 500;
@@ -119,17 +121,31 @@
               .e-base-item-option-text,
               .e-type-option-text,
               .e-input-option-text,
-              .e-checkbox-wrapper .e-label,
               .e-group-inerval-option-text {
                 font-size: 13px;
                 font-weight: 500;
+                margin-bottom: 10px;
                 width: 100%;
+              }
+
+              .e-checkbox-wrapper {
+                margin-bottom: 10px;
+
+                .e-label {
+                  font-size: 13px;
+                  font-weight: 500;
+                  width: 100%;
+                }
               }
 
               .e-caption-input-text {
                 font-size: 13px;
               }
             }
+          }
+
+          &.e-group-field-div-content {
+            margin-bottom: 10px;
           }
         }
         // sass-lint:enable-all
@@ -334,6 +350,13 @@
             }
           }
         }
+      }
+    }
+
+    .e-member-editor-dialog,
+    .e-pivot-format-dialog {
+      .e-dlg-content {
+        padding: 0;
       }
     }
 

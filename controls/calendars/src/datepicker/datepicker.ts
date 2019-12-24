@@ -783,9 +783,10 @@ export class DatePicker extends Calendar implements IInput {
     }
 
     private preventEventBubbling(e?: MouseEvent): void {
-        if (e.type !== 'touchstart') {
-            e.preventDefault();
-        }
+        e.preventDefault();
+        // tslint:disable
+        (this as any).interopAdaptor.invokeMethodAsync('OnDateIconClick');
+        // tslint:enable
     }
 
     private updateInputValue(value?: string): void {
@@ -802,14 +803,16 @@ export class DatePicker extends Calendar implements IInput {
             if (this.isCalendar() && !this.isBlazorServer) {
                 this.hide(e);
             } else {
-                this.isDateIconClicked = true;
-                this.show(null, e);
-                if (this.getModuleName() === 'datetimepicker') {
-                    (this.inputElement as HTMLElement).focus();
+                if (!this.isBlazorServer || (this.isBlazorServer && this.inputWrapper.container.nextElementSibling)) {
+                    this.isDateIconClicked = true;
+                    this.show(null, e);
+                    if (this.getModuleName() === 'datetimepicker') {
+                        (this.inputElement as HTMLElement).focus();
+                    }
+                    (<HTMLElement>this.inputElement).focus();
+                    addClass([this.inputWrapper.container], [INPUTFOCUS]);
+                    addClass(this.inputWrapper.buttons, ACTIVE);
                 }
-                (<HTMLElement>this.inputElement).focus();
-                addClass([this.inputWrapper.container], [INPUTFOCUS]);
-                addClass(this.inputWrapper.buttons, ACTIVE);
             }
         }
     }
@@ -899,7 +902,7 @@ export class DatePicker extends Calendar implements IInput {
             this.errorClass();
         } else {
             // tslint:disable
-            (this as any).interopAdaptor.invokeMethodAsync('OnStrictModeUpdate');
+            (this as any).interopAdaptor.invokeMethodAsync('OnStrictModeUpdate', this.inputElement.value);
             // tslint:enable
         }
         if (this.isCalendar() && document.activeElement === this.inputElement) {
@@ -942,7 +945,7 @@ export class DatePicker extends Calendar implements IInput {
             } else if (closest(target, '.e-footer-container')
                        && target.classList.contains('e-today')
                        && target.classList.contains('e-btn')
-                       && +new Date(+this.value) === +super.generateTodayVal(this.value)) {
+                       && (+new Date(+this.value) === +super.generateTodayVal(this.value) && !this.isBlazorServer)) {
                 this.hide(e);
             }
         }
@@ -964,7 +967,7 @@ export class DatePicker extends Calendar implements IInput {
                     this.changeTrigger(e);
                 } else {
                     // tslint:disable
-                    (this as any).interopAdaptor.invokeMethodAsync('OnStrictModeUpdate');
+                    (this as any).interopAdaptor.invokeMethodAsync('OnStrictModeUpdate', this.inputElement.value);
                     // tslint:enable
                 }
                 if (this.getModuleName() === 'datepicker') {
@@ -989,7 +992,7 @@ export class DatePicker extends Calendar implements IInput {
                     this.errorClass();
                 } else {
                     // tslint:disable
-                    (this as any).interopAdaptor.invokeMethodAsync('OnStrictModeUpdate');
+                    (this as any).interopAdaptor.invokeMethodAsync('OnStrictModeUpdate', this.inputElement.value);
                     // tslint:enable
                 }
                 if (!this.isCalendar() && document.activeElement === this.inputElement) {
@@ -1009,7 +1012,7 @@ export class DatePicker extends Calendar implements IInput {
                     this.errorClass();
                 } else {
                     // tslint:disable
-                    (this as any).interopAdaptor.invokeMethodAsync('OnStrictModeUpdate');
+                    (this as any).interopAdaptor.invokeMethodAsync('OnStrictModeUpdate', this.inputElement.value);
                     // tslint:enable
                 }
                 this.hide(e);
@@ -1371,6 +1374,8 @@ export class DatePicker extends Calendar implements IInput {
                 if (prevent && !this.preventArgs.cancel) {
                     if (this.isBlazorServer) {
                         this.popupWrapper.style.visibility = '';
+                        this.popupWrapper.style.width = 'auto';
+                        this.popupWrapper.style.height = 'auto';
                     }
                     addClass(this.inputWrapper.buttons, ACTIVE);
                     this.preventArgs.appendTo.appendChild(this.popupWrapper);

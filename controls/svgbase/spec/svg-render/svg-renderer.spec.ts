@@ -1,5 +1,5 @@
 /**
- * Import section
+ * Import section for svg renderer
  */
 import { SvgRenderer } from '../../src/svg-render/svg-renderer';
 import {

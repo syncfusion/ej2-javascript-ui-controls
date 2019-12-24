@@ -404,7 +404,8 @@ export class FilterDialog {
         let regx: string = '((-|\\+)?[0-9]+(\\.[0-9]+)?)+';
         let member: string = Object.keys(this.parent.engineModule.fieldList[fieldName].members)[0];
         let fieldType: string = this.parent.engineModule.fieldList[fieldName].type;
-        let formatObj: IFormatSettings = this.parent.eventBase.getFormatItemByName(fieldName);
+        let formatObj: IFormatSettings =
+            PivotUtil.getFieldByName(fieldName, this.parent.dataSourceSettings.formatSettings) as IFormatSettings;
         let items: TabItemModel[] = [
             {
                 header: {
@@ -926,7 +927,7 @@ export class FilterDialog {
         }
     }
     private getFilterObject(fieldName: string): IFilter {
-        let filterObj: IFilter = this.parent.eventBase.getFilterItemByName(fieldName);
+        let filterObj: IFilter = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
         if (filterObj && ((((['Label', 'Date', 'Number'] as FilterType[]).indexOf(filterObj.type) >= 0) &&
             this.parent.dataSourceSettings.allowLabelFilter) ||
             (filterObj.type === 'Value' && this.parent.dataSourceSettings.allowValueFilter) ||

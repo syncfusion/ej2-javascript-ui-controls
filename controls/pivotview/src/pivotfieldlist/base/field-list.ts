@@ -724,7 +724,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      */
     public updateDataSource(isTreeViewRefresh?: boolean, isEngineRefresh?: boolean): void {
         if (this.pivotGridModule) {
-            showSpinner(this.pivotGridModule.element);
+            this.pivotGridModule.showWaitingPopup();
         }
         showSpinner(this.fieldListSpinnerElement as HTMLElement);
         let pivot: PivotFieldList = this;
@@ -891,7 +891,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             if (pivot.renderMode === 'Popup' && pivot.pivotGridModule &&
                 pivot.pivotGridModule.allowDeferLayoutUpdate && !pivot.isRequiredUpdate) {
                 hideSpinner(pivot.fieldListSpinnerElement as HTMLElement);
-                hideSpinner(pivot.pivotGridModule.element);
+                pivot.pivotGridModule.hideWaitingPopup();
             }
             pivot.isRequiredUpdate = true;
             if (!pivot.pivotGridModule || isOlapDataRefreshed) {
@@ -915,7 +915,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 pivot.lastCalcFieldInfo = {};
                 isOlapDataRefreshed = pivot.olapEngineModule.dataFields[pivot.lastCalcFieldInfo.name] ? false : true;
                 if (pivot.pivotGridModule) {
-                    hideSpinner(pivot.pivotGridModule.element);
+                    pivot.pivotGridModule.hideWaitingPopup();
                 }
             } else {
                 pivot.olapEngineModule.onSort(pivot.dataSourceSettings as IDataOptions);

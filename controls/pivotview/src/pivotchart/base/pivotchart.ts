@@ -804,7 +804,7 @@ export class PivotChart {
                 this.dataSourceSettings.drilledMembers.push({ name: fieldName, items: [memberUqName], delimiter: delimiter });
             }
         }
-        showSpinner(this.parent.element);
+        this.parent.showWaitingPopup();
         let pivot: PivotChart = this;
         //setTimeout(() => {
         let drilledItem: IDrilledItem = {

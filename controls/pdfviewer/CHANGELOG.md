@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 17.4.40 (2019-12-24)
+
+### PDF Viewer
+
+#### New Features
+
+- `#256131` – Improved the rendering quality and performance for the large size PDF document.
+
+#### Bug Fixes
+
+- `#258250` – The imported annotations are rendered properly if we import the annotation details in the documentLoad event.
+
 ## 17.4.39 (2019-12-17)
 
 ### PDF Viewer

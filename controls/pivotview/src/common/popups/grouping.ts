@@ -1,4 +1,4 @@
-import { createElement, remove, extend, getInstance, addClass, removeClass } from '@syncfusion/ej2-base';
+import { createElement, remove, extend, getInstance, addClass, removeClass, isBlazor } from '@syncfusion/ej2-base';
 import { PivotView } from '../../pivotview/base/pivotview';
 import * as cls from '../base/css-constant';
 import { GroupType, DateGroup } from '../../base/types';
@@ -57,7 +57,6 @@ export class Grouping implements IAction {
         this.parentElement = parentElement;
         this.selectedCellsInfo = [];
         this.isUpdate = false;
-        this.parent.updateGroupType = 'Number';
         let colIndex: number = Number(target.getAttribute('aria-colindex'));
         let rowIndex: number = Number(target.getAttribute('index'));
         let cell: IAxisSet = (this.parent.engineModule.pivotValues[rowIndex][colIndex] as IAxisSet);
@@ -71,9 +70,16 @@ export class Grouping implements IAction {
         }
     }
 
-    private getSelectedOptions(): string[] {
+    /**
+     * Returns the selected members/headers by checing the valid members from the pivot table.
+     * @method getSelectedOptions
+     * @param  {SelectedCellsInfo[]} axis - Get the members name from the given selected cells information
+     * @return {boolean}
+     * @hidden
+     */
+    public getSelectedOptions(selectedCellsInfo: SelectedCellsInfo[]): string[] {
         let selectedOptions: string[] = [];
-        for (let option of this.selectedCellsInfo) {
+        for (let option of selectedCellsInfo) {
             if (PivotUtil.inArray(option.name, selectedOptions) === -1) {
                 selectedOptions.push(option.name);
             }
@@ -141,7 +147,7 @@ export class Grouping implements IAction {
     }
     private updateUnGroupSettings(fieldName: string): void {
         let fieldList: IField = this.parent.engineModule.fieldList[fieldName];
-        let groupFields: IGroupSettings[] = extend([], this.parent.dataSourceSettings.groupSettings, null, true) as IGroupSettings[];
+        let groupFields: IGroupSettings[] = PivotUtil.cloneGroupSettings(this.parent.dataSourceSettings.groupSettings);
         let group: IGroupSettings = this.getGroupSettings(fieldName);
         if (this.selectedCellsInfo.length > 0) {
             let type: string;
@@ -168,14 +174,22 @@ export class Grouping implements IAction {
             if (type === 'date' || type === 'number') {
                 groupFields = this.validateSettings(fieldName, groupFields, type, []);
             } else if (type === 'custom') {
-                let selectedOptions: string[] = this.getSelectedOptions();
+                let selectedOptions: string[] = this.getSelectedOptions(this.selectedCellsInfo);
                 groupFields = this.validateSettings(fieldName, groupFields, type, selectedOptions);
             }
-            if (this.isUpdate) {
-                this.parent.updateGroupType = type === 'date' ? 'Date' : type === 'custom' ? 'Custom' : 'Number';
-                this.parent.dataSourceSettings.groupSettings = groupFields;
-                this.parent.isGroupUIupdate = true;
+            this.updateDateSource(groupFields, type);
+        }
+    }
+
+    private updateDateSource(groupFields: IGroupSettings[], type: string): void {
+        if (this.isUpdate) {
+            if (isBlazor()) {
+                PivotUtil.setPivotProperties(this.parent, { dataSourceSettings: { groupSettings: groupFields } });
+            } else {
+                this.parent.setProperties({ dataSourceSettings: { groupSettings: groupFields } }, true);
             }
+            this.parent.updateGroupingReport(groupFields, (type === 'date' ? 'Date' : type === 'custom' ? 'Custom' : 'Number'));
+            this.parent.notify(events.initialLoad, {});
         }
     }
 
@@ -218,10 +232,19 @@ export class Grouping implements IAction {
         return false;
     }
 
-    private getSelectedCells(axis: string, fieldName: string, name: string): SelectedCellsInfo[] {
+    /**
+     * Returns the selected members/headers by checing the valid members from the pivot table.
+     * @method getSelectedCells
+     * @param  {string} axis - Spicifies the axis name for the given field.
+     * @param  {string} fieldName - Gets selected members for the given field name.
+     * @param  {string} name - specifies the selected member name for the given field.
+     * @return {boolean}
+     * @hidden
+     */
+    public getSelectedCells(axis: string, fieldName: string, name: string): SelectedCellsInfo[] {
         let selectedCellsInfo: SelectedCellsInfo[] = [];
         /* tslint:disable */
-        let selectedElements: any = this.parentElement.querySelectorAll('.' + cls.CELL_SELECTED_BGCOLOR + ',.' + cls.SELECTED_BGCOLOR);
+        let selectedElements: any = this.parent.element.querySelectorAll('.' + cls.CELL_SELECTED_BGCOLOR + ',.' + cls.SELECTED_BGCOLOR);
         /* tslint:enable */
         for (let element of selectedElements) {
             let colIndex: number = Number(element.getAttribute('aria-colindex'));
@@ -239,7 +262,7 @@ export class Grouping implements IAction {
         }
         return selectedCellsInfo;
     }
-    /** @hidden */
+
     private createGroupDialog(fieldName: string, type: string): void {
         let groupDialog: HTMLElement = createElement('div', {
             id: this.parentElement.id + '_GroupDialog',
@@ -288,23 +311,23 @@ export class Grouping implements IAction {
         mainDiv.appendChild(groupWrapperDiv1);
         // this.parentElement.appendChild(mainDiv);
         let dataSource: IDataOptions = this.parent.dataSourceSettings;
-        let groupField: IGroupSettings = PivotUtil.getGroupItemByName(fieldName, dataSource.groupSettings);
+        let groupField: IGroupSettings = PivotUtil.getFieldByName(fieldName, dataSource.groupSettings) as IGroupSettings;
         switch (type) {
             case 'custom':
                 {
                     let caption: string;
                     let dataFields: IFieldOptions[] = dataSource.rows;
                     dataFields = dataFields.concat(dataSource.columns, dataSource.values, dataSource.filters);
-                    let actualField: IFieldOptions = PivotUtil.getFieldByName(fieldName.replace(/_custom_group/g, ''), dataFields);
-                    let currentField: IFieldOptions = PivotUtil.getFieldByName(fieldName, dataFields);
-                    let nextField: IFieldOptions = PivotUtil.getFieldByName(fieldName + '_custom_group', dataFields);
+                    let actualField: IFieldOptions = PivotUtil.getFieldByName(fieldName.replace(/_custom_group/g, ''), dataFields) as IFieldOptions;
+                    let currentField: IFieldOptions = PivotUtil.getFieldByName(fieldName, dataFields) as IFieldOptions;
+                    let nextField: IFieldOptions = PivotUtil.getFieldByName(fieldName + '_custom_group', dataFields) as IFieldOptions;
                     if (currentField) {
                         let newFieldName: string = fieldName + '_custom_group';
                         caption = nextField ? nextField.caption :
                             this.parent.engineModule.fieldList[actualField.name].caption + (newFieldName.match(/_custom_group/g).length + 1);
                     }
                     let captionInputTextDiv1: HTMLElement = createElement('div', {
-                        className: 'e-caption-option-text', innerHTML: this.parent.localeObj.getConstant('sourceCaption')
+                        className: 'e-caption-option-text', innerHTML: this.parent.localeObj.getConstant('groupFieldCaption')
                     });
                     let captionInputDiv1: HTMLElement = createElement('div', { className: 'e-group-caption-wrapper' });
                     let captionInputField1: HTMLInputElement = createElement('input', {
@@ -541,7 +564,7 @@ export class Grouping implements IAction {
         let groupType: string = dialogElement.getAttribute('data-type');
         let fieldName: string = dialogElement.getAttribute('data-field');
         let groupFields: IGroupSettings[] =
-            extend([], this.parent.dataSourceSettings.groupSettings, null, true) as IGroupSettings[];
+            PivotUtil.cloneGroupSettings(this.parent.dataSourceSettings.groupSettings);
         if (groupFields.length === 0 && !this.parent.clonedDataSet && !this.parent.clonedReport) {
             let dataSet: IDataSet[] = this.parent.engineModule.data as IDataSet[];
             this.parent.clonedDataSet = PivotUtil.getClonedData(dataSet) as IDataSet[];
@@ -560,7 +583,7 @@ export class Grouping implements IAction {
                 inputInstance.element.focus();
                 return;
             }
-            let selectedOptions: string[] = this.getSelectedOptions();
+            let selectedOptions: string[] = this.getSelectedOptions(this.selectedCellsInfo);
             let customGroup: ICustomGroups = { groupName: inputInstance.value, items: selectedOptions };
             let splicedItems: string[] = [];
             let newItems: string[] = [];
@@ -643,11 +666,7 @@ export class Grouping implements IAction {
             groupFields = this.validateSettings(fieldName, groupFields, groupType, [], []);
         }
         this.groupDialog.close();
-        if (this.isUpdate) {
-            this.parent.updateGroupType = groupType === 'date' ? 'Date' : groupType === 'custom' ? 'Custom' : 'Number';
-            this.parent.dataSourceSettings.groupSettings = groupFields;
-            this.parent.isGroupUIupdate = true;
-        }
+        this.updateDateSource(groupFields, groupType);
     }
     /* tslint:enable */
     private getGroupBasedSettings(groupFields: IGroupSettings[]): { [key: string]: IGroupSettings[] } {

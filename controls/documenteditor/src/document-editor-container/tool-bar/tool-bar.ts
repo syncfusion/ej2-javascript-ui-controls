@@ -201,29 +201,29 @@ export class Toolbar {
             clicked: this.clickHandler.bind(this),
             items: [
                 {
-                    prefixIcon: 'e-de-ctnr-new', tooltipText: locale.getConstant('Create a new document.'),
+                    prefixIcon: 'e-de-ctnr-new', tooltipText: locale.getConstant('Create a new document'),
                     id: id + NEW_ID, text: locale.getConstant('New'), cssClass: 'e-de-toolbar-btn-start'
                 },
                 {
-                    prefixIcon: 'e-de-ctnr-open', tooltipText: locale.getConstant('Open a document.'), id: id + OPEN_ID,
+                    prefixIcon: 'e-de-ctnr-open', tooltipText: locale.getConstant('Open a document'), id: id + OPEN_ID,
                     text: locale.getConstant('Open'), cssClass: 'e-de-toolbar-btn-last'
                 },
                 {
                     type: 'Separator', cssClass: 'e-de-separator'
                 },
                 {
-                    prefixIcon: 'e-de-ctnr-undo', tooltipText: locale.getConstant('Undo the last operation (Ctrl+Z).'),
+                    prefixIcon: 'e-de-ctnr-undo', tooltipText: locale.getConstant('Undo Tooltip'),
                     id: id + UNDO_ID, text: locale.getConstant('Undo'), cssClass: 'e-de-toolbar-btn-first'
                 },
                 {
-                    prefixIcon: 'e-de-ctnr-redo', tooltipText: locale.getConstant('Redo the last operation (Ctrl+Y).'),
+                    prefixIcon: 'e-de-ctnr-redo', tooltipText: locale.getConstant('Redo Tooltip'),
                     id: id + REDO_ID, text: locale.getConstant('Redo'), cssClass: 'e-de-toolbar-btn-last'
                 },
                 {
                     type: 'Separator', cssClass: 'e-de-separator'
                 },
                 {
-                    tooltipText: locale.getConstant('Insert inline picture from a file.'), id: id + INSERT_IMAGE_ID,
+                    tooltipText: locale.getConstant('Insert inline picture from a file'), id: id + INSERT_IMAGE_ID,
                     text: locale.getConstant('Image'), cssClass: 'e-de-toolbar-btn-first e-de-image-splitbutton e-de-image-focus'
                 },
                 {
@@ -232,12 +232,12 @@ export class Toolbar {
                 },
                 {
                     prefixIcon: 'e-de-ctnr-link',
-                    tooltipText: locale.getConstant('Create a link in your document for quick access to webpages and files (Ctrl+K).'),
+                    tooltipText: locale.getConstant('Create Hyperlink'),
                     id: id + INSERT_LINK_ID, text: locale.getConstant('Link'), cssClass: 'e-de-toolbar-btn-middle'
                 },
                 {
                     prefixIcon: 'e-de-ctnr-bookmark',
-                    tooltipText: locale.getConstant('Insert a bookmark in a specific place in this document.'),
+                    tooltipText: locale.getConstant('Insert a bookmark in a specific place in this document'),
                     id: id + BOOKMARK_ID, text: locale.getConstant('Bookmark'), cssClass: 'e-de-toolbar-btn-middle'
                 },
                 {
@@ -247,7 +247,7 @@ export class Toolbar {
                 },
                 {
                     prefixIcon: 'e-de-ctnr-tableofcontent',
-                    tooltipText: locale.getConstant('Provide an overview of your document by adding a table of contents.'),
+                    tooltipText: locale.getConstant('Provide an overview of your document by adding a table of contents'),
                     id: id + TABLE_OF_CONTENT_ID, text: this.onWrapText(locale.getConstant('Table of Contents')),
                     cssClass: 'e-de-toolbar-btn-last'
                 },
@@ -255,21 +255,21 @@ export class Toolbar {
                     type: 'Separator', cssClass: 'e-de-separator'
                 },
                 {
-                    prefixIcon: 'e-de-ctnr-header', tooltipText: locale.getConstant('Add or edit the header.'),
+                    prefixIcon: 'e-de-ctnr-header', tooltipText: locale.getConstant('Add or edit the header'),
                     id: id + HEADER_ID, text: locale.getConstant('Header'), cssClass: 'e-de-toolbar-btn-first'
                 },
                 {
-                    prefixIcon: 'e-de-ctnr-footer', tooltipText: locale.getConstant('Add or edit the footer.'),
+                    prefixIcon: 'e-de-ctnr-footer', tooltipText: locale.getConstant('Add or edit the footer'),
                     id: id + FOOTER_ID, text: locale.getConstant('Footer'), cssClass: 'e-de-toolbar-btn-middle'
                 },
                 {
-                    prefixIcon: 'e-de-ctnr-pagesetup', tooltipText: locale.getConstant('Open the page setup dialog.'),
+                    prefixIcon: 'e-de-ctnr-pagesetup', tooltipText: locale.getConstant('Open the page setup dialog'),
                     id: id + PAGE_SET_UP_ID, text: this.onWrapText(locale.getConstant('Page Setup')),
                     cssClass: 'e-de-toolbar-btn-middle'
                 },
                 {
 
-                    prefixIcon: 'e-de-ctnr-pagenumber', tooltipText: locale.getConstant('Add page numbers.'),
+                    prefixIcon: 'e-de-ctnr-pagenumber', tooltipText: locale.getConstant('Add page numbers'),
                     id: id + PAGE_NUMBER_ID, text: this.onWrapText(locale.getConstant('Page Number')),
                     cssClass: 'e-de-toolbar-btn-middle'
                 },
@@ -281,7 +281,7 @@ export class Toolbar {
                     type: 'Separator', cssClass: 'e-de-separator'
                 },
                 {
-                    prefixIcon: 'e-de-ctnr-find', tooltipText: locale.getConstant('Find text in the document (Ctrl+F).'),
+                    prefixIcon: 'e-de-ctnr-find', tooltipText: locale.getConstant('Find Text'),
                     id: id + FIND_ID, text: locale.getConstant('Find'), cssClass: 'e-de-toolbar-btn'
                 },
                 {
@@ -294,7 +294,7 @@ export class Toolbar {
                     cssClass: 'e-de-toolbar-btn-first'
                 },
                 {
-                    prefixIcon: 'e-de-ctnr-lock', tooltipText: locale.getConstant('Restrict editing.'), id: id + RESTRICT_EDITING_ID,
+                    prefixIcon: 'e-de-ctnr-lock', tooltipText: locale.getConstant('Restrict Editing'), id: id + RESTRICT_EDITING_ID,
                     text: this.onWrapText(locale.getConstant('Restrict Editing')), cssClass: 'e-de-toolbar-btn-end e-de-lock-dropdownbutton'
                 }
             ]

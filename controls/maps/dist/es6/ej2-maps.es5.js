@@ -668,6 +668,7 @@ function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerC
                 }
                 tempX = bounds[o].left + bounds[o].width / 2;
                 tempY = bounds[o].top + bounds[o].height;
+                indexCollection = [];
                 for (var q = 0; q < colloideBounds.length; q++) {
                     for (var k = 0; k < bounds.length; k++) {
                         if (!isNullOrUndefined(bounds[k])) {
@@ -3783,7 +3784,7 @@ var Marker = /** @__PURE__ @class */ (function () {
             clusterSeparate(this.sameMarkerData, this.maps, this.markerSVGObject, true);
         }
         var eventArgs = {
-            cancel: false, name: markerClusterClick, data: options.data, maps: this.maps,
+            cancel: false, name: markerClusterClick, data: options, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY,
             latitude: options.data["latitude"] || options.data["Latitude"], longitude: options.data["longitude"] || options.data["Longitude"]
         };
@@ -4558,196 +4559,209 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
                 'height:' + this.mapObject.mapAreaRect.height + 'px;' +
                 'width:' + this.mapObject.mapAreaRect.width + 'px;'
         });
-        var _loop_1 = function (i) {
-            var k = void 0;
-            var currentShapeData = this_1.currentLayer.layerData[i];
-            var pathOptions;
-            var polyLineOptions;
-            var circleOptions;
-            var groupElement;
-            var path = '';
-            var points = '';
-            var getShapeColor_1 = void 0;
-            var fill = (shapeSettings.autofill) ? colors[i % colors.length] : shapeSettings.fill;
-            var opacity;
-            if (shapeSettings.colorValuePath !== null && !isNullOrUndefined(currentShapeData['property'])) {
-                k = checkShapeDataFields(this_1.currentLayer.dataSource, currentShapeData['property'], this_1.currentLayer.shapeDataPath, this_1.currentLayer.shapePropertyPath);
-                if (k !== null && shapeSettings.colorMapping.length === 0) {
-                    fill = this_1.currentLayer.dataSource[k][shapeSettings.colorValuePath];
-                }
-                else if (currentShapeData['property'][shapeSettings.colorValuePath] &&
-                    this_1.currentLayer.dataSource.length === 0 && shapeSettings.colorMapping.length === 0) {
-                    fill = currentShapeData['property'][shapeSettings.colorValuePath];
-                }
-            }
-            var shapeID = this_1.mapObject.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' + k;
-            getShapeColor_1 = this_1.getShapeColorMapping(this_1.currentLayer, currentShapeData['property'], fill);
-            fill = Object.prototype.toString.call(getShapeColor_1) === '[object Object]' && !isNullOrUndefined(getShapeColor_1['fill'])
-                ? getShapeColor_1['fill'] : fill;
-            opacity = (Object.prototype.toString.call(getShapeColor_1) === '[object Object]'
-                && !isNullOrUndefined(getShapeColor_1['opacity'])) ? getShapeColor_1['opacity'] : shapeSettings.opacity;
-            var eventArgs = {
-                cancel: false, name: shapeRendering, index: i,
-                data: this_1.currentLayer.dataSource ? this_1.currentLayer.dataSource[k] : null,
-                maps: this_1.mapObject,
-                shape: shapeSettings, fill: fill,
-                border: { width: shapeSettings.border.width, color: shapeSettings.border.color }
-            };
-            if (this_1.mapObject.isBlazor) {
-                var maps = eventArgs.maps, blazorEventArgs = __rest$2(eventArgs, ["maps"]);
-                eventArgs = blazorEventArgs;
-            }
-            // tslint:disable-next-line:max-func-body-length
-            var shapeRenderingSuccess = function (eventArgs) {
-                var drawingType = !isNullOrUndefined(currentShapeData['_isMultiPolygon'])
-                    ? 'MultiPolygon' : isNullOrUndefined(currentShapeData['type']) ? currentShapeData[0]['type'] : currentShapeData['type'];
-                drawingType = (drawingType === 'Polygon' || drawingType === 'MultiPolygon') ? 'Polygon' : drawingType;
-                eventArgs.fill = eventArgs.fill === '#A6A6A6' ? eventArgs.shape.fill : eventArgs.fill;
-                eventArgs.border.color = eventArgs.border.color === '#000000' ? eventArgs.shape.border.color : eventArgs.border.color;
-                eventArgs.border.width = eventArgs.border.width === 0 ? eventArgs.shape.border.width : eventArgs.border.width;
-                _this.mapObject.layers[layerIndex].shapeSettings.border = eventArgs.border;
-                if (_this.groupElements.length < 1) {
-                    groupElement = _this.mapObject.renderer.createGroup({
-                        id: _this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_' + drawingType + '_Group', transform: ''
-                    });
-                    _this.groupElements.push(groupElement);
-                }
-                else {
-                    for (var i_1 = 0; i_1 < _this.groupElements.length; i_1++) {
-                        var ele = _this.groupElements[i_1];
-                        if (ele.id.indexOf(drawingType) > -1) {
-                            groupElement = ele;
-                            break;
-                        }
-                        else if (i_1 >= _this.groupElements.length - 1) {
-                            groupElement = _this.mapObject.renderer.createGroup({
-                                id: _this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_' + drawingType + '_Group'
-                            });
-                            _this.groupElements.push(groupElement);
-                            break;
-                        }
+        if (this.currentLayer.layerData.length !== 0) {
+            var _loop_1 = function (i) {
+                var k = void 0;
+                var currentShapeData = this_1.currentLayer.layerData[i];
+                var pathOptions;
+                var polyLineOptions;
+                var circleOptions;
+                var groupElement;
+                var path = '';
+                var points = '';
+                var getShapeColor_1 = void 0;
+                var fill = (shapeSettings.autofill) ? colors[i % colors.length] : shapeSettings.fill;
+                var opacity;
+                if (shapeSettings.colorValuePath !== null && !isNullOrUndefined(currentShapeData['property'])) {
+                    k = checkShapeDataFields(this_1.currentLayer.dataSource, currentShapeData['property'], this_1.currentLayer.shapeDataPath, this_1.currentLayer.shapePropertyPath);
+                    if (k !== null && shapeSettings.colorMapping.length === 0) {
+                        fill = this_1.currentLayer.dataSource[k][shapeSettings.colorValuePath];
+                    }
+                    else if (currentShapeData['property'][shapeSettings.colorValuePath] &&
+                        this_1.currentLayer.dataSource.length === 0 && shapeSettings.colorMapping.length === 0) {
+                        fill = currentShapeData['property'][shapeSettings.colorValuePath];
                     }
                 }
-                var pathEle;
-                switch (drawingType) {
-                    case 'Polygon':
-                        if (!currentShapeData['_isMultiPolygon']) {
-                            path += 'M' + (currentShapeData[0]['point']['x']) + ' ' + (currentShapeData[0]['point']['y']);
-                            currentShapeData.map(function (shapeData) {
-                                path += ' L ' + (shapeData['point']['x']) + ' ' + (shapeData['point']['y']);
-                            });
-                        }
-                        else {
-                            path = _this.generateMultiPolygonPath(currentShapeData);
-                        }
-                        path += ' z ';
-                        if (path.length > 3) {
-                            pathOptions = new PathOption(shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, opacity, shapeSettings.dashArray, path);
-                            pathEle = _this.mapObject.renderer.drawPath(pathOptions);
-                        }
-                        break;
-                    case 'LineString':
-                        currentShapeData.map(function (lineData) {
-                            points += lineData['point']['x'] + ' , ' + lineData['point']['y'] + ' ';
+                var shapeID = this_1.mapObject.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' + k;
+                getShapeColor_1 = this_1.getShapeColorMapping(this_1.currentLayer, currentShapeData['property'], fill);
+                fill = Object.prototype.toString.call(getShapeColor_1) === '[object Object]' && !isNullOrUndefined(getShapeColor_1['fill'])
+                    ? getShapeColor_1['fill'] : fill;
+                opacity = (Object.prototype.toString.call(getShapeColor_1) === '[object Object]'
+                    && !isNullOrUndefined(getShapeColor_1['opacity'])) ? getShapeColor_1['opacity'] : shapeSettings.opacity;
+                var eventArgs = {
+                    cancel: false, name: shapeRendering, index: i,
+                    data: this_1.currentLayer.dataSource ? this_1.currentLayer.dataSource[k] : null,
+                    maps: this_1.mapObject,
+                    shape: shapeSettings, fill: fill,
+                    border: { width: shapeSettings.border.width, color: shapeSettings.border.color }
+                };
+                if (this_1.mapObject.isBlazor) {
+                    var maps = eventArgs.maps, blazorEventArgs = __rest$2(eventArgs, ["maps"]);
+                    eventArgs = blazorEventArgs;
+                }
+                // tslint:disable-next-line:max-func-body-length
+                var shapeRenderingSuccess = function (eventArgs) {
+                    var drawingType = !isNullOrUndefined(currentShapeData['_isMultiPolygon'])
+                        ? 'MultiPolygon' : isNullOrUndefined(currentShapeData['type']) ? currentShapeData[0]['type'] : currentShapeData['type'];
+                    drawingType = (drawingType === 'Polygon' || drawingType === 'MultiPolygon') ? 'Polygon' : drawingType;
+                    eventArgs.fill = eventArgs.fill === '#A6A6A6' ? eventArgs.shape.fill : eventArgs.fill;
+                    eventArgs.border.color = eventArgs.border.color === '#000000' ? eventArgs.shape.border.color : eventArgs.border.color;
+                    eventArgs.border.width = eventArgs.border.width === 0 ? eventArgs.shape.border.width : eventArgs.border.width;
+                    _this.mapObject.layers[layerIndex].shapeSettings.border = eventArgs.border;
+                    if (_this.groupElements.length < 1) {
+                        groupElement = _this.mapObject.renderer.createGroup({
+                            id: _this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_' + drawingType + '_Group', transform: ''
                         });
-                        polyLineOptions = new PolylineOption(shapeID, points, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, opacity, shapeSettings.dashArray);
-                        pathEle = _this.mapObject.renderer.drawPolyline(polyLineOptions);
-                        break;
-                    case 'Point':
-                        var pointData = currentShapeData['point'];
-                        circleOptions = new CircleOption(shapeID, eventArgs.fill, eventArgs.border, opacity, pointData['x'], pointData['y'], shapeSettings.circleRadius, null);
-                        pathEle = _this.mapObject.renderer.drawCircle(circleOptions);
-                        break;
-                    case 'Path':
-                        path = currentShapeData['point'];
-                        pathOptions = new PathOption(shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, opacity, shapeSettings.dashArray, path);
-                        pathEle = _this.mapObject.renderer.drawPath(pathOptions);
-                        break;
-                }
-                if (!isNullOrUndefined(pathEle)) {
-                    var property = (Object.prototype.toString.call(_this.currentLayer.shapePropertyPath) === '[object Array]' ?
-                        _this.currentLayer.shapePropertyPath : [_this.currentLayer.shapePropertyPath]);
-                    // tslint:disable-next-line:align
-                    var properties = void 0;
-                    for (var j = 0; j < property.length; j++) {
-                        if (!isNullOrUndefined(currentShapeData['property'])) {
-                            properties = property[j];
-                            break;
-                        }
+                        _this.groupElements.push(groupElement);
                     }
-                    pathEle.setAttribute('aria-label', ((!isNullOrUndefined(currentShapeData['property'])) ?
-                        (currentShapeData['property'][properties]) : ''));
-                    pathEle.setAttribute('tabindex', (_this.mapObject.tabIndex + i + 2).toString());
-                    maintainSelection(_this.mapObject.selectedElementId, _this.mapObject.shapeSelectionClass, pathEle, 'ShapeselectionMapStyle');
-                    if (_this.mapObject.toggledShapeElementId) {
-                        for (var j = 0; j < _this.mapObject.toggledShapeElementId.length; j++) {
-                            var styleProperty = _this.mapObject.legendSettings.toggleLegendSettings.applyShapeSettings ?
-                                _this.currentLayer.shapeSettings : _this.mapObject.legendSettings.toggleLegendSettings;
-                            if (_this.mapObject.toggledShapeElementId[j] === pathEle.id) {
-                                pathEle.setAttribute('fill', styleProperty.fill);
-                                pathEle.setAttribute('stroke', styleProperty.border.color);
-                                pathEle.setAttribute('opacity', (styleProperty.opacity).toString());
-                                pathEle.setAttribute('stroke-width', (styleProperty.border.width).toString());
+                    else {
+                        for (var i_1 = 0; i_1 < _this.groupElements.length; i_1++) {
+                            var ele = _this.groupElements[i_1];
+                            if (ele.id.indexOf(drawingType) > -1) {
+                                groupElement = ele;
+                                break;
+                            }
+                            else if (i_1 >= _this.groupElements.length - 1) {
+                                groupElement = _this.mapObject.renderer.createGroup({
+                                    id: _this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_' + drawingType + '_Group'
+                                });
+                                _this.groupElements.push(groupElement);
+                                break;
                             }
                         }
                     }
-                    groupElement.appendChild(pathEle);
-                }
-                if (i === _this.currentLayer.layerData.length - 1) {
-                    var bubbleG_1;
-                    if (_this.currentLayer.bubbleSettings.length && _this.mapObject.bubbleModule) {
-                        var length_1 = _this.currentLayer.bubbleSettings.length;
-                        var bubble_1;
-                        var _loop_2 = function (j) {
-                            bubble_1 = _this.currentLayer.bubbleSettings[j];
-                            bubbleG_1 = _this.mapObject.renderer.createGroup({
-                                id: _this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_bubble_Group_' + j
+                    var pathEle;
+                    switch (drawingType) {
+                        case 'Polygon':
+                            if (!currentShapeData['_isMultiPolygon']) {
+                                path += 'M' + (currentShapeData[0]['point']['x']) + ' ' + (currentShapeData[0]['point']['y']);
+                                currentShapeData.map(function (shapeData) {
+                                    path += ' L ' + (shapeData['point']['x']) + ' ' + (shapeData['point']['y']);
+                                });
+                            }
+                            else {
+                                path = _this.generateMultiPolygonPath(currentShapeData);
+                            }
+                            path += ' z ';
+                            if (path.length > 3) {
+                                pathOptions = new PathOption(shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, opacity, shapeSettings.dashArray, path);
+                                pathEle = _this.mapObject.renderer.drawPath(pathOptions);
+                            }
+                            break;
+                        case 'LineString':
+                            currentShapeData.map(function (lineData) {
+                                points += lineData['point']['x'] + ' , ' + lineData['point']['y'] + ' ';
                             });
-                            var range = { min: 0, max: 0 };
-                            _this.bubbleCalculation(bubble_1, range);
-                            bubble_1.dataSource.map(function (bubbleData, i) {
-                                _this.renderBubble(_this.currentLayer, bubbleData, colors[i % colors.length], range, j, i, bubbleG_1, layerIndex, bubble_1);
-                            });
-                            _this.groupElements.push(bubbleG_1);
-                        };
-                        for (var j = 0; j < length_1; j++) {
-                            _loop_2(j);
+                            polyLineOptions = new PolylineOption(shapeID, points, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, opacity, shapeSettings.dashArray);
+                            pathEle = _this.mapObject.renderer.drawPolyline(polyLineOptions);
+                            break;
+                        case 'Point':
+                            var pointData = currentShapeData['point'];
+                            circleOptions = new CircleOption(shapeID, eventArgs.fill, eventArgs.border, opacity, pointData['x'], pointData['y'], shapeSettings.circleRadius, null);
+                            pathEle = _this.mapObject.renderer.drawCircle(circleOptions);
+                            break;
+                        case 'Path':
+                            path = currentShapeData['point'];
+                            pathOptions = new PathOption(shapeID, eventArgs.fill, eventArgs.border.width, eventArgs.border.color, opacity, shapeSettings.dashArray, path);
+                            pathEle = _this.mapObject.renderer.drawPath(pathOptions);
+                            break;
+                    }
+                    if (!isNullOrUndefined(pathEle)) {
+                        var property = (Object.prototype.toString.call(_this.currentLayer.shapePropertyPath) === '[object Array]' ?
+                            _this.currentLayer.shapePropertyPath : [_this.currentLayer.shapePropertyPath]);
+                        // tslint:disable-next-line:align
+                        var properties = void 0;
+                        for (var j = 0; j < property.length; j++) {
+                            if (!isNullOrUndefined(currentShapeData['property'])) {
+                                properties = property[j];
+                                break;
+                            }
                         }
+                        pathEle.setAttribute('aria-label', ((!isNullOrUndefined(currentShapeData['property'])) ?
+                            (currentShapeData['property'][properties]) : ''));
+                        pathEle.setAttribute('tabindex', (_this.mapObject.tabIndex + i + 2).toString());
+                        maintainSelection(_this.mapObject.selectedElementId, _this.mapObject.shapeSelectionClass, pathEle, 'ShapeselectionMapStyle');
+                        if (_this.mapObject.toggledShapeElementId) {
+                            for (var j = 0; j < _this.mapObject.toggledShapeElementId.length; j++) {
+                                var styleProperty = _this.mapObject.legendSettings.toggleLegendSettings.applyShapeSettings ?
+                                    _this.currentLayer.shapeSettings : _this.mapObject.legendSettings.toggleLegendSettings;
+                                if (_this.mapObject.toggledShapeElementId[j] === pathEle.id) {
+                                    pathEle.setAttribute('fill', styleProperty.fill);
+                                    pathEle.setAttribute('stroke', styleProperty.border.color);
+                                    pathEle.setAttribute('opacity', (styleProperty.opacity).toString());
+                                    pathEle.setAttribute('stroke-width', (styleProperty.border.width).toString());
+                                }
+                            }
+                        }
+                        groupElement.appendChild(pathEle);
                     }
-                    if ((_this.mapObject.markerModule && !_this.mapObject.isTileMap) && _this.mapObject.zoomSettings.enable) {
-                        _this.mapObject.markerModule.calculateZoomCenterPositionAndFactor(_this.mapObject.layersCollection);
+                    if (i === _this.currentLayer.layerData.length - 1) {
+                        _this.layerFeatures(layerIndex, colors, renderData, labelTemplateEle);
                     }
-                    var group_1 = (_this.mapObject.renderer.createGroup({
-                        id: _this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_dataLableIndex_Group',
-                        style: 'pointer-events: none;'
-                    }));
-                    if (_this.mapObject.dataLabelModule && _this.currentLayer.dataLabelSettings.visible) {
-                        var intersect_1 = [];
-                        renderData.map(function (currentShapeData, i) {
-                            _this.renderLabel(_this.currentLayer, layerIndex, currentShapeData, group_1, i, labelTemplateEle, intersect_1);
-                        });
-                        _this.groupElements.push(group_1);
-                    }
-                    if (_this.mapObject.navigationLineModule) {
-                        _this.groupElements.push(_this.mapObject.navigationLineModule.renderNavigation(_this.currentLayer, _this.currentFactor, layerIndex));
-                    }
-                    _this.groupElements.map(function (element) {
-                        _this.layerObject.appendChild(element);
-                    });
-                    if (_this.mapObject.markerModule) {
-                        _this.mapObject.markerModule.markerRender(_this.layerObject, layerIndex, _this.currentFactor, null);
-                    }
-                    _this.translateLayerElements(_this.layerObject, layerIndex);
-                    _this.layerGroup.appendChild(_this.layerObject);
-                }
+                };
+                shapeRenderingSuccess.bind(this_1);
+                this_1.mapObject.trigger('shapeRendering', eventArgs, shapeRenderingSuccess);
             };
-            shapeRenderingSuccess.bind(this_1);
-            this_1.mapObject.trigger('shapeRendering', eventArgs, shapeRenderingSuccess);
-        };
-        var this_1 = this;
-        for (var i = 0; i < this.currentLayer.layerData.length; i++) {
-            _loop_1(i);
+            var this_1 = this;
+            for (var i = 0; i < this.currentLayer.layerData.length; i++) {
+                _loop_1(i);
+            }
         }
+        else {
+            this.layerFeatures(layerIndex, colors, renderData, labelTemplateEle);
+        }
+    };
+    /**
+     *  layer features as bubble, marker, datalabel, navigation line.
+     */
+    LayerPanel.prototype.layerFeatures = function (layerIndex, colors, renderData, labelTemplateEle) {
+        var _this = this;
+        var bubbleG;
+        if (this.currentLayer.bubbleSettings.length && this.mapObject.bubbleModule) {
+            var length_1 = this.currentLayer.bubbleSettings.length;
+            var bubble_1;
+            var _loop_2 = function (j) {
+                bubble_1 = this_2.currentLayer.bubbleSettings[j];
+                bubbleG = this_2.mapObject.renderer.createGroup({
+                    id: this_2.mapObject.element.id + '_LayerIndex_' + layerIndex + '_bubble_Group_' + j
+                });
+                var range = { min: 0, max: 0 };
+                this_2.bubbleCalculation(bubble_1, range);
+                bubble_1.dataSource.map(function (bubbleData, i) {
+                    _this.renderBubble(_this.currentLayer, bubbleData, colors[i % colors.length], range, j, i, bubbleG, layerIndex, bubble_1);
+                });
+                this_2.groupElements.push(bubbleG);
+            };
+            var this_2 = this;
+            for (var j = 0; j < length_1; j++) {
+                _loop_2(j);
+            }
+        }
+        if ((this.mapObject.markerModule && !this.mapObject.isTileMap) && this.mapObject.zoomSettings.enable) {
+            this.mapObject.markerModule.calculateZoomCenterPositionAndFactor(this.mapObject.layersCollection);
+        }
+        var group = (this.mapObject.renderer.createGroup({
+            id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_dataLableIndex_Group',
+            style: 'pointer-events: none;'
+        }));
+        if (this.mapObject.dataLabelModule && this.currentLayer.dataLabelSettings.visible) {
+            var intersect_1 = [];
+            renderData.map(function (currentShapeData, i) {
+                _this.renderLabel(_this.currentLayer, layerIndex, currentShapeData, group, i, labelTemplateEle, intersect_1);
+            });
+            this.groupElements.push(group);
+        }
+        if (this.mapObject.navigationLineModule) {
+            this.groupElements.push(this.mapObject.navigationLineModule.renderNavigation(this.currentLayer, this.currentFactor, layerIndex));
+        }
+        this.groupElements.map(function (element) {
+            _this.layerObject.appendChild(element);
+        });
+        if (this.mapObject.markerModule) {
+            this.mapObject.markerModule.markerRender(this.layerObject, layerIndex, this.currentFactor, null);
+        }
+        this.translateLayerElements(this.layerObject, layerIndex);
+        this.layerGroup.appendChild(this.layerObject);
     };
     /**
      *  render datalabel
@@ -5538,22 +5552,20 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
      * Initializing pre-required values.
      */
     Maps.prototype.preRender = function () {
-        var _this = this;
         this.isDevice = Browser.isDevice;
         this.isBlazor = isBlazor();
         this.initPrivateVariable();
         this.allowServerDataBinding = false;
-        this.trigger(load, this.isBlazor ? {} : { maps: this }, function () {
-            _this.unWireEVents();
-            _this.createSVG();
-            _this.wireEVents();
-            _this.setCulture();
-        });
+        this.unWireEVents();
+        this.wireEVents();
+        this.setCulture();
     };
     /**
      * To Initialize the control rendering.
      */
     Maps.prototype.render = function () {
+        this.trigger(load, this.isBlazor ? {} : { maps: this });
+        this.createSVG();
         this.findBaseAndSubLayers();
         this.createSecondaryElement();
         this.addTabIndex();
@@ -7230,6 +7242,7 @@ var DataLabel = /** @__PURE__ @class */ (function () {
         var properties = (Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]' ?
             layer.shapePropertyPath : [layer.shapePropertyPath]);
         var propertyPath;
+        var isPoint = false;
         var animate$$1 = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
         var translate = (this.maps.isTileMap) ? new Object() : getTranslate(this.maps, layer, animate$$1);
         var scale = (this.maps.isTileMap) ? this.maps.scale : translate['scale'];
@@ -7251,7 +7264,7 @@ var DataLabel = /** @__PURE__ @class */ (function () {
         datasrcObj = this.getDataLabel(layer.dataSource, labelpath, shapeData['properties'][propertyPath], layer.shapeDataPath);
         if (!isNullOrUndefined(shapes['property']) && ((shapeProperties[labelpath]) || datasrcObj)) {
             shapePoint = [[]];
-            if (!layerData[index]['_isMultiPolygon']) {
+            if (!layerData[index]['_isMultiPolygon'] && layerData[index]['type'] !== 'Point') {
                 shapePoint.push(this.getPoint(layerData[index], []));
                 currentLength = shapePoint[shapePoint.length - 1].length;
                 if (pointsLength < currentLength) {
@@ -7261,6 +7274,17 @@ var DataLabel = /** @__PURE__ @class */ (function () {
             }
             else {
                 var layer_1 = layerData[index];
+                if (layer_1['type'] === 'Point') {
+                    isPoint = true;
+                    var layerPoints = [];
+                    layerPoints.push(this.getPoint(layerData, []));
+                    shapePoint = layerPoints;
+                    currentLength = shapePoint[shapePoint.length - 1].length;
+                    if (pointsLength < currentLength) {
+                        pointsLength = currentLength;
+                        midIndex = shapePoint.length - 1;
+                    }
+                }
                 for (var j = 0; j < layer_1.length; j++) {
                     shapePoint.push(this.getPoint(layer_1[j], []));
                     currentLength = shapePoint[shapePoint.length - 1].length;
@@ -7274,7 +7298,17 @@ var DataLabel = /** @__PURE__ @class */ (function () {
         text = (!isNullOrUndefined(datasrcObj)) ? datasrcObj[labelpath].toString() : shapeData['properties'][labelpath];
         var dataLabelText = text;
         var projectionType = this.maps.projectionType;
-        location = findMidPointOfPolygon(shapePoint[midIndex], projectionType);
+        if (isPoint) {
+            location = {
+                x: shapePoint[midIndex][index]['x'], y: shapePoint[midIndex][index]['y'],
+                rightMin: 0, rightMax: 0, leftMin: 0, leftMax: 0,
+                points: shapePoint[midIndex][index], topMax: 0, topMin: 0,
+                bottomMax: 0, bottomMin: 0, height: 0
+            };
+        }
+        else {
+            location = findMidPointOfPolygon(shapePoint[midIndex], projectionType);
+        }
         var firstLevelMapLocation = location;
         if (!isNullOrUndefined(text) && !isNullOrUndefined(location)) {
             if (zoomLabelsPosition && scaleZoomValue > 1) {
@@ -9937,8 +9971,24 @@ var MapsTooltip = /** @__PURE__ @class */ (function () {
                     return;
                 }
                 var value_1 = layer.layerData[shape]['property'];
-                index = checkShapeDataFields(layer.dataSource, value_1, layer.shapeDataPath, layer.shapePropertyPath);
-                templateData = layer.dataSource[index];
+                var isShape = false;
+                var properties = (Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]' ?
+                    layer.shapePropertyPath : [layer.shapePropertyPath]);
+                if (!isNullOrUndefined(properties)) {
+                    for (var k = 0; k < properties.length; k++) {
+                        for (var i = 0; i < layer['dataSource']['length']; i++) {
+                            var data = layer.dataSource[i];
+                            if ((data[layer.shapeDataPath]) === value_1[properties[k]]) {
+                                isShape = true;
+                                index = i;
+                                k = properties.length;
+                                break;
+                            }
+                        }
+                    }
+                    index = isShape ? index : null;
+                    templateData = layer.dataSource[index];
+                }
                 if (option.visible && ((!isNullOrUndefined(index) && !isNaN(index)) || (!isNullOrUndefined(value_1)))) {
                     if (layer.tooltipSettings.format) {
                         currentData = this.formatter(layer.tooltipSettings.format, layer.dataSource[index]);

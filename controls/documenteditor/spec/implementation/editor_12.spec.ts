@@ -1554,3 +1554,55 @@ describe('Paste Heading content and TOC validation', () => {
     });
 });
 
+// undo and redo validation for list
+
+describe('apply list to rtl paragraph with history validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, enableEditorHistory: true, isReadOnly: false, enableLocalPaste: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('apply RTL', () => {
+       editor.selection.paragraphFormat.bidi=true;
+       editor.editor.insertText('יקךךם');
+       editor.editor.onEnter();
+       editor.editor.insertText('יקךךם');
+       editor.editor.onEnter();
+       editor.editor.insertText('יקךךם');
+       editor.selection.selectAll();
+       editor.editor.applyNumbering('%1.','Arabic');
+       editor.selection.handleDownKey();
+       editor.selection.handleHomeKey();
+       editor.selection.handleUpKey();
+       editor.selection.handleTabKey(true,false);
+       expect(editor.selection.paragraphFormat.listLevelNumber).toBe(1);
+       expect(((editor.selection.start.paragraph.nextWidget as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(3);
+    });
+    it('undo after list apply to RTL',()=>{
+        editor.editorHistory.undo();
+        expect(editor.selection.paragraphFormat.listLevelNumber).toBe(0);
+    
+    });
+    it('redo after list apply to RTL',()=>{
+        editor.editorHistory.redo();
+        expect(editor.selection.paragraphFormat.listLevelNumber).toBe(1);
+    
+    });
+});

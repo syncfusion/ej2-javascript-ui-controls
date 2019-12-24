@@ -737,6 +737,7 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
             }
         tempX = bounds[o].left + bounds[o].width / 2;
         tempY = bounds[o].top + bounds[o].height;
+        indexCollection = [];
             for (let q: number = 0; q < colloideBounds.length; q++) {
                 for (let k: number = 0; k < bounds.length; k++) {
                     if (!isNullOrUndefined(bounds[k])) {

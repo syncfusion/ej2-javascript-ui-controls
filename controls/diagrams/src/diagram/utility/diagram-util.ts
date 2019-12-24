@@ -2008,7 +2008,15 @@ export let updatePathElement: Function = (anglePoints: PointModel[], connector: 
     }
     return pathElement;
 };
-
+/** @private */
+export let checkPort: Function = (node: Node, element: DiagramElement): boolean => {
+    for (let i: number = 0; i < node.ports.length; i++) {
+        if (node.ports[i].id === element.id.split('_')[1]) {
+            return true;
+        }
+    }
+    return false;
+};
 /** @private */
 export let findPath: Function = (sourcePoint: PointModel, targetPoint: PointModel): Object => {
     let beginningpoint: PointModel = { x: sourcePoint.x, y: sourcePoint.y };
@@ -2037,7 +2045,8 @@ export function cloneBlazorObject(args: object): Object {
 
 /** @private */
 export function checkBrowserInfo(): boolean {
-    if (navigator.platform.indexOf('Mac') >= 0 && Browser.info.name === 'safari') {
+    if ((navigator.platform.indexOf('Mac') >= 0 || navigator.platform.indexOf('iPad') >= 0
+        || navigator.platform.indexOf('iPhone') >= 0) && Browser.info.name === 'safari') {
         return true;
     }
     return false;

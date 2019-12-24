@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { TableOfContentsSettings, ParagraphWidget } from '../../src/document-editor/index';
+import { TableOfContentsSettings, ParagraphWidget, SfdtExport } from '../../src/document-editor/index';
 import { createElement } from '@syncfusion/ej2-base';
 import { Editor, EditorHistory, TableCellWidget, TextElementBox, TextHelper, RtlInfo, ListTextElementBox, LineWidget, TabElementBox, TextPosition } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
@@ -116,5 +116,144 @@ describe('Non-selection check whether selection is in field', () => {
     it('redo after select and delete field', () => {
         editor.editorHistory.undo();
         expect(editor.selection.start.paragraph.isEmpty()).toBe(true);
+    });
+});
+
+describe('Insert bookmark inside header', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true, enableEditorHistory: true, enableSfdtExport: true });
+
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('insert bookmark inside header', () => {
+        editor.enableHeaderAndFooter = true;
+        editor.selection.enableHeadersFootersRegion(editor.viewer.pages[0].headerWidget);
+        editor.editor.insertText('Hello');
+        editor.selection.selectAll();
+        editor.editor.insertBookmark('sample');
+        expect(editor.viewer.bookmarks.keys.length).toBe(1);
+    });
+    it('navigate bookmark in header', () => {
+        editor.selection.closeHeaderFooter();
+        editor.selection.navigateBookmark('sample');
+        expect(editor.selection.isEmpty).toBe(false);
+    });
+    it('export the document and open same in documenteditor', () => {
+        let sfdtString = editor.sfdtExportModule.serialize();
+        editor.open(sfdtString);
+        editor.selection.navigateBookmark('sample');
+        expect(editor.selection.isEmpty).toBe(false);
+    });
+});
+
+
+describe('Insert bookmark validaiton for splitted paragraph', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true, enableEditorHistory: true, enableSfdtExport: true });
+
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('insert bookmark', () => {
+        editor.selection.sectionFormat.pageWidth = 300;
+        editor.selection.sectionFormat.pageHeight = 100;
+        editor.editor.insertText('ert reteterterteterterterte te treteterter t ');
+        editor.selection.selectAll();
+        editor.editor.insertBookmark('sample');
+        expect(editor.viewer.bookmarks.keys.length).toBe(1);
+    });
+    it('undo after insert bookmark splitted paragraph', () => {
+        editor.editorHistory.undo();
+        expect(editor.viewer.bookmarks.keys.length).toBe(0);
+    });
+    it('redo after insert bookmark splitted paragraph', () => {
+        editor.editorHistory.redo();
+        expect(editor.viewer.bookmarks.keys.length).toBe(1);
+    });
+    it('navigation for bookmark splitted paragraph', () => {
+        editor.selection.navigateBookmark('sample');
+        expect(editor.selection.isEmpty).toBe(false);
+    });
+});
+
+
+describe('Bookmark remove validation for two paragraph', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ isReadOnly: false, enableSelection: true, enableEditor: true, enableEditorHistory: true, enableSfdtExport: true });
+
+        DocumentEditor.Inject(Editor, Selection, EditorHistory, SfdtExport);
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('insert bookmark', () => {
+        editor.editor.onEnter()
+        editor.selection.selectAll();
+        editor.editor.insertBookmark('sample');
+        expect(editor.viewer.bookmarks.keys.length).toBe(1);
+    });
+    it('on backspace before splitted paragraph', () => {
+        editor.selection.handleDownKey();
+        editor.editor.onBackSpace();
+        editor.editor.onBackSpace();
+        expect(editor.viewer.bookmarks.keys.length).toBe(0);
+    });
+    it('undo after on backspace before splitted paragraph', () => {
+        editor.editorHistory.undo();
+        expect(editor.viewer.bookmarks.keys.length).toBe(1);
+    });
+    it('redo after on backspace before splitted paragraph', () => {
+        editor.editorHistory.redo();
+        expect(editor.viewer.bookmarks.keys.length).toBe(0);
     });
 });

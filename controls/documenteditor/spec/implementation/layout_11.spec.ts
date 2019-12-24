@@ -97,7 +97,7 @@ describe('Single Tab Stop Validation 2', () => {
     it('Tab Stop Width', () => {
         editor.open(JSON.stringify(TabWidth));
         let childWidgets: ParagraphWidget = editor.selection.start.paragraph.containerWidget.childWidgets[3] as ParagraphWidget;
-        expect(((childWidgets.childWidgets[0]) as LineWidget).children[3].width).toBe(497.9296875);
+        expect(((childWidgets.childWidgets[0]) as LineWidget).children[3].width).toBeLessThanOrEqual(497.9296875);
     });
 });
 

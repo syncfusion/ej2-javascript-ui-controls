@@ -1273,6 +1273,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * @param  { Object[] } items - Specifies an array of JSON data or a JSON data.
      * @param { number } itemIndex - Specifies the index to place the newly added item in the popup list.
      * @return {void}.
+     * @deprecated
      */
     public addItem(
         items: { [key: string]: Object }[] | { [key: string]: Object } | string | boolean | number | string[] | boolean[] | number[],

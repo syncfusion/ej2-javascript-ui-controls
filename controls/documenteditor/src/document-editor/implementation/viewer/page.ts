@@ -6585,21 +6585,32 @@ export class WTableHolder {
                         this.columns[i].preferredWidth = cellWidth;
                     }
                 } else {
-                    let availableWidth: number = totalMinWidth < containerWidth ? (containerWidth - totalMinWidth) : 0;
-                    for (let i: number = 0; i < this.columns.length; i++) {
-                        let column: WColumn = this.columns[i];
-                        // The factor depends of current column's minimum word width and total minimum word width.
-                        let factor: number = availableWidth * column.minimumWordWidth / totalMinimumWordWidth;
-                        factor = isNaN(factor) ? 0 : factor;
-                        if (column.preferredWidth <= column.minimumWidth) {
-                            continue;
+                    let availableWidth: number = 0;
+                    if (totalMinWidth < containerWidth) {
+                        availableWidth = containerWidth - totalMinWidth;
+                        for (let i: number = 0; i < this.columns.length; i++) {
+                            let column: WColumn = this.columns[i];
+                            // The factor depends of current column's minimum word width and total minimum word width.
+                            let factor: number = availableWidth * column.minimumWordWidth / totalMinimumWordWidth;
+                            factor = isNaN(factor) ? 0 : factor;
+                            if (column.preferredWidth <= column.minimumWidth) {
+                                continue;
+                            }
+                            column.preferredWidth = column.minimumWidth + factor;
                         }
-                        column.preferredWidth = column.minimumWidth + factor;
+                        // table width exceeds container width
+                    } else if (totalMinWidth > containerWidth) {
+                        let factor: number = containerWidth / totalMinWidth;
+                        for (let i: number = 0; i < this.columns.length; i++) {
+                            let column: WColumn = this.columns[i];
+                            column.preferredWidth = column.preferredWidth * factor;
+                        }
                     }
                 }
             }
         }
         this.tableWidth = this.getTotalWidth(0);
+
     }
     /**
      * @private

@@ -427,6 +427,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
     // tslint:disable-next-line:max-func-body-length
     CalendarBase.prototype.keyActionHandle = function (e, value, multiSelection) {
         if (isBlazor() && this.blazorRef) {
+            e.preventDefault();
             if (!this.tableBodyElement) {
                 this.element = closest(e.target, '.' + 'e-calendar');
                 this.tableBodyElement = this.element.querySelector('tbody');
@@ -3337,9 +3338,10 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DatePicker.prototype.preventEventBubbling = function (e) {
-        if (e.type !== 'touchstart') {
-            e.preventDefault();
-        }
+        e.preventDefault();
+        // tslint:disable
+        this.interopAdaptor.invokeMethodAsync('OnDateIconClick');
+        // tslint:enable
     };
     DatePicker.prototype.updateInputValue = function (value) {
         Input.setValue(value, this.inputElement, this.floatLabelType, this.showClearButton);
@@ -3357,14 +3359,16 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 this.hide(e);
             }
             else {
-                this.isDateIconClicked = true;
-                this.show(null, e);
-                if (this.getModuleName() === 'datetimepicker') {
+                if (!this.isBlazorServer || (this.isBlazorServer && this.inputWrapper.container.nextElementSibling)) {
+                    this.isDateIconClicked = true;
+                    this.show(null, e);
+                    if (this.getModuleName() === 'datetimepicker') {
+                        this.inputElement.focus();
+                    }
                     this.inputElement.focus();
+                    addClass([this.inputWrapper.container], [INPUTFOCUS]);
+                    addClass(this.inputWrapper.buttons, ACTIVE);
                 }
-                this.inputElement.focus();
-                addClass([this.inputWrapper.container], [INPUTFOCUS]);
-                addClass(this.inputWrapper.buttons, ACTIVE);
             }
         }
     };
@@ -3462,7 +3466,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             // tslint:disable
-            this.interopAdaptor.invokeMethodAsync('OnStrictModeUpdate');
+            this.interopAdaptor.invokeMethodAsync('OnStrictModeUpdate', this.inputElement.value);
             // tslint:enable
         }
         if (this.isCalendar() && document.activeElement === this.inputElement) {
@@ -3507,7 +3511,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             else if (closest(target, '.e-footer-container')
                 && target.classList.contains('e-today')
                 && target.classList.contains('e-btn')
-                && +new Date(+this.value) === +_super.prototype.generateTodayVal.call(this, this.value)) {
+                && (+new Date(+this.value) === +_super.prototype.generateTodayVal.call(this, this.value) && !this.isBlazorServer)) {
                 this.hide(e);
             }
         }
@@ -3529,7 +3533,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 }
                 else {
                     // tslint:disable
-                    this.interopAdaptor.invokeMethodAsync('OnStrictModeUpdate');
+                    this.interopAdaptor.invokeMethodAsync('OnStrictModeUpdate', this.inputElement.value);
                     // tslint:enable
                 }
                 if (this.getModuleName() === 'datepicker') {
@@ -3556,7 +3560,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 }
                 else {
                     // tslint:disable
-                    this.interopAdaptor.invokeMethodAsync('OnStrictModeUpdate');
+                    this.interopAdaptor.invokeMethodAsync('OnStrictModeUpdate', this.inputElement.value);
                     // tslint:enable
                 }
                 if (!this.isCalendar() && document.activeElement === this.inputElement) {
@@ -3577,7 +3581,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 }
                 else {
                     // tslint:disable
-                    this.interopAdaptor.invokeMethodAsync('OnStrictModeUpdate');
+                    this.interopAdaptor.invokeMethodAsync('OnStrictModeUpdate', this.inputElement.value);
                     // tslint:enable
                 }
                 this.hide(e);
@@ -3959,6 +3963,8 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 if (prevent_1 && !_this.preventArgs.cancel) {
                     if (_this.isBlazorServer) {
                         _this.popupWrapper.style.visibility = '';
+                        _this.popupWrapper.style.width = 'auto';
+                        _this.popupWrapper.style.height = 'auto';
                     }
                     addClass(_this.inputWrapper.buttons, ACTIVE);
                     _this.preventArgs.appendTo.appendChild(_this.popupWrapper);
@@ -7935,7 +7941,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         attributes(this.inputElement, {
             'aria-readonly': this.readonly ? 'true' : 'false', 'tabindex': '0', 'aria-haspopup': 'true',
             'aria-activedescendant': 'null', 'aria-owns': this.element.id + '_popup', 'aria-expanded': 'false',
-            'role': 'daterangepicker', 'autocomplete': 'off', 'aria-disabled': !this.enabled ? 'true' : 'false',
+            'role': 'combobox', 'autocomplete': 'off', 'aria-disabled': !this.enabled ? 'true' : 'false',
             'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false'
         });
         Input.addAttributes({ 'aria-label': 'select' }, this.inputWrapper.buttons[0]);
@@ -8353,7 +8359,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         var ariaAttrs = {
             'aria-readonly': this.readonly ? 'true' : 'false', 'tabindex': '0', 'aria-haspopup': 'true',
             'aria-activedescendant': 'null', 'aria-owns': this.element.id + '_popup', 'aria-expanded': 'false',
-            'role': 'daterangepicker', 'autocomplete': 'off', 'aria-disabled': !this.enabled ? 'true' : 'false',
+            'role': 'combobox', 'autocomplete': 'off', 'aria-disabled': !this.enabled ? 'true' : 'false',
             'autocorrect': 'off', 'autocapitalize': 'off', 'aria-invalid': 'false', 'spellcheck': 'false'
         };
         if (this.inputElement) {
@@ -11286,6 +11292,8 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
      */
     DateTimePicker.prototype.destroy = function () {
         if (this.popupObject && this.popupObject.element.classList.contains(POPUP$3)) {
+            this.popupObject.destroy();
+            detach(this.dateTimeWrapper);
             this.dateTimeWrapper = undefined;
             this.liCollections = this.timeCollections = [];
             if (!isNullOrUndefined(this.rippleFn)) {

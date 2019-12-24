@@ -268,34 +268,38 @@ export class TextMarkupAnnotation {
             let width: number = (bound.width ? bound.width : bound.Width) * this.pdfViewerBase.getZoomFactor();
             let height: number = bound.height ? bound.height : bound.Height;
             // tslint:disable-next-line
-            let textDivs: any = this.pdfViewerBase.getElement('_textLayer_' + this.selectTextMarkupCurrentPage).childNodes;
-            for (let n: number = 0; n < textDivs.length; n++) {
-                if (textDivs[n]) {
-                    // tslint:disable-next-line
-                    let rangebounds: any = textDivs[n].getBoundingClientRect();
-                    let top: number = this.getClientValueTop(rangebounds.top, annotation.pageNumber);
-                    // tslint:disable-next-line:max-line-length
-                    let currentLeft: number = rangebounds.left - this.pdfViewerBase.getElement('_pageDiv_' + annotation.pageNumber).getBoundingClientRect().left;
-                    let totalLeft: number = currentLeft + rangebounds.width;
-                    // tslint:disable-next-line
-                    let textDiVLeft: number = parseInt(textDivs[n].style.left);
-                    // tslint:disable-next-line
-                    let currentTop: number = parseInt(textDivs[n].style.top);
-                    let isLeftBounds: boolean = this.checkLeftBounds(currentLeft, textDiVLeft, totalLeft, x);
-                    let isTopBounds: boolean = this.checkTopBounds(top, currentTop, y);
-                    if (isLeftBounds && isTopBounds) {
-                        element = textDivs[n];
-                        break;
+            let textLayer: any = this.pdfViewerBase.getElement('_textLayer_' + this.selectTextMarkupCurrentPage);
+            if (textLayer) {
+                // tslint:disable-next-line
+                let textDivs: any = textLayer.childNodes;
+                for (let n: number = 0; n < textDivs.length; n++) {
+                    if (textDivs[n]) {
+                        // tslint:disable-next-line
+                        let rangebounds: any = textDivs[n].getBoundingClientRect();
+                        let top: number = this.getClientValueTop(rangebounds.top, annotation.pageNumber);
+                        // tslint:disable-next-line:max-line-length
+                        let currentLeft: number = rangebounds.left - this.pdfViewerBase.getElement('_pageDiv_' + annotation.pageNumber).getBoundingClientRect().left;
+                        let totalLeft: number = currentLeft + rangebounds.width;
+                        // tslint:disable-next-line
+                        let textDiVLeft: number = parseInt(textDivs[n].style.left);
+                        // tslint:disable-next-line
+                        let currentTop: number = parseInt(textDivs[n].style.top);
+                        let isLeftBounds: boolean = this.checkLeftBounds(currentLeft, textDiVLeft, totalLeft, x);
+                        let isTopBounds: boolean = this.checkTopBounds(top, currentTop, y);
+                        if (isLeftBounds && isTopBounds) {
+                            element = textDivs[n];
+                            break;
+                        }
                     }
                 }
-            }
-            if (element != null) {
-                // tslint:disable-next-line
-                let boundingRect: any = this.pdfViewerBase.getElement('_textLayer_' + this.selectTextMarkupCurrentPage).getBoundingClientRect();
-                this.pdfViewer.textSelectionModule.textSelectionOnMouseMove(element, x + boundingRect.left, y + boundingRect.top, false);
-                if ((annotation.bounds.length - 1) === k) {
-                    // tslint:disable-next-line:max-line-length
-                    this.pdfViewer.textSelectionModule.textSelectionOnMouseMove(element, x + boundingRect.left + width, y + boundingRect.top, false);
+                if (element != null) {
+                    // tslint:disable-next-line
+                    let boundingRect: any = this.pdfViewerBase.getElement('_textLayer_' + this.selectTextMarkupCurrentPage).getBoundingClientRect();
+                    this.pdfViewer.textSelectionModule.textSelectionOnMouseMove(element, x + boundingRect.left, y + boundingRect.top, false);
+                    if ((annotation.bounds.length - 1) === k) {
+                        // tslint:disable-next-line:max-line-length
+                        this.pdfViewer.textSelectionModule.textSelectionOnMouseMove(element, x + boundingRect.left + width, y + boundingRect.top, false);
+                    }
                 }
             }
         }
@@ -447,6 +451,7 @@ export class TextMarkupAnnotation {
     public drawTextMarkupAnnotations(type: string): void {
         this.isTextMarkupAnnotationMode = true;
         this.currentTextMarkupAddMode = type;
+        let isCleared: boolean = true;
         let selectionObject: ISelection[] = this.pdfViewer.textSelectionModule.selectionRangeArray;
         if (selectionObject.length > 0 && !this.isSelectionMaintained) {
             this.convertSelectionToTextMarkup(type, selectionObject, this.pdfViewerBase.getZoomFactor());
@@ -461,6 +466,9 @@ export class TextMarkupAnnotation {
             let pageBounds: IPageAnnotationBounds[] = this.getDrawnBounds();
             if (pageBounds.length > 0) {
                 for (let i: number = 0; i < pageBounds.length; i++) {
+                    if (type === '') {
+                        isCleared = false;
+                    }
                     // tslint:disable-next-line:max-line-length
                     this.drawTextMarkups(type, pageBounds[i].bounds, pageBounds[i].pageIndex, pageBounds[i].rect, this.pdfViewerBase.getZoomFactor(), pageBounds[i].textContent, pageBounds[i].startIndex, pageBounds[i].endIndex);
                 }
@@ -469,7 +477,9 @@ export class TextMarkupAnnotation {
         this.isExtended = false;
         this.isSelectionMaintained = false;
         // this.pdfViewerBase.annotationHelper.redoCollection = [];
-        this.pdfViewer.textSelectionModule.clearTextSelection();
+        if (isCleared) {
+            this.pdfViewer.textSelectionModule.clearTextSelection();
+        }
         if (this.pdfViewer.enableTextMarkupResizer) {
             this.updateAnnotationBounds();
         }
@@ -1239,7 +1249,7 @@ export class TextMarkupAnnotation {
             }
             this.clearCurrentSelectedAnnotation();
             let currentAnnot: ITextMarkupAnnotation = this.getCurrentMarkupAnnotation(event.clientX, event.clientY, pageNumber, canvas);
-            if (currentAnnot) {
+            if (currentAnnot && !window.getSelection().toString()) {
                 this.selectAnnotation(currentAnnot, canvas, pageNumber, event);
                 this.currentTextMarkupAnnotation = currentAnnot;
                 this.selectTextMarkupCurrentPage = pageNumber;
@@ -1516,25 +1526,27 @@ export class TextMarkupAnnotation {
     }
 
     private drawAnnotationSelectRect(canvas: HTMLElement, x: number, y: number, width: number, height: number): void {
-        let context: CanvasRenderingContext2D = (canvas as HTMLCanvasElement).getContext('2d');
-        context.setTransform(1, 0, 0, 1, 0, 0);
-        context.beginPath();
-        // tslint:disable-next-line:max-line-length
-        let lineDash: number[] = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectorLineDashArray) || this.pdfViewer.annotationSelectorSettings.selectorLineDashArray.length === 0 ? [4] : this.pdfViewer.annotationSelectorSettings.selectorLineDashArray;
-        if (lineDash.length > 2) {
-            lineDash = [lineDash[0], lineDash[1]];
+        if (canvas) {
+            let context: CanvasRenderingContext2D = (canvas as HTMLCanvasElement).getContext('2d');
+            context.setTransform(1, 0, 0, 1, 0, 0);
+            context.beginPath();
+            // tslint:disable-next-line:max-line-length
+            let lineDash: number[] = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectorLineDashArray) || this.pdfViewer.annotationSelectorSettings.selectorLineDashArray.length === 0 ? [4] : this.pdfViewer.annotationSelectorSettings.selectorLineDashArray;
+            if (lineDash.length > 2) {
+                lineDash = [lineDash[0], lineDash[1]];
+            }
+            context.setLineDash(lineDash);
+            context.globalAlpha = 1;
+            context.rect(x, y, width, height);
+            context.closePath();
+            // tslint:disable-next-line:max-line-length
+            let borderColor: string = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.annotationSelectorSettings.selectionBorderColor === '' ? '#0000ff' : this.pdfViewer.annotationSelectorSettings.selectionBorderColor;
+            context.strokeStyle = borderColor;
+            // tslint:disable-next-line:max-line-length
+            context.lineWidth = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.annotationSelectorSettings.selectionBorderThickness;
+            context.stroke();
+            context.save();
         }
-        context.setLineDash(lineDash);
-        context.globalAlpha = 1;
-        context.rect(x, y, width, height);
-        context.closePath();
-        // tslint:disable-next-line:max-line-length
-        let borderColor: string = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderColor) || this.pdfViewer.annotationSelectorSettings.selectionBorderColor === '' ? '#0000ff' : this.pdfViewer.annotationSelectorSettings.selectionBorderColor;
-        context.strokeStyle = borderColor;
-        // tslint:disable-next-line:max-line-length
-        context.lineWidth = isNullOrUndefined(this.pdfViewer.annotationSelectorSettings.selectionBorderThickness) ? 1 : this.pdfViewer.annotationSelectorSettings.selectionBorderThickness;
-        context.stroke();
-        context.save();
     }
 
     // tslint:disable-next-line

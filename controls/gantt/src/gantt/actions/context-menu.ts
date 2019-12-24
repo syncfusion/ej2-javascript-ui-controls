@@ -9,7 +9,7 @@ import { NotifyArgs, ContextMenuItemModel } from '@syncfusion/ej2-grids';
 import { ITaskData, IGanttData, IPredecessor, RowPosition } from '../base/common';
 import { TaskFieldsModel } from '../models/models';
 /**
- * To handle the context menu items & sub-menu items
+ * The ContextMenu module is used to handle the context menu items & sub-menu items.
  */
 export class ContextMenu {
     /**
@@ -441,8 +441,10 @@ export class ContextMenu {
             'DeleteDependency', 'Convert'
         ];
     }
-
-    private getModuleName(): string {
+    /**
+     * To get ContextMenu module name.
+     */
+    public getModuleName(): string {
         return 'contextMenu';
     }
 

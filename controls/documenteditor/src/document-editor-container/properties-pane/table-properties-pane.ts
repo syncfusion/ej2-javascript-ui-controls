@@ -401,7 +401,7 @@ export class TableProperties {
         this.tableProperties.appendChild(tableOperationDiv);
         let label: HTMLElement = createElement('label', { className: 'e-de-ctnr-prop-label' });
         label.classList.add('e-de-table-prop-label');
-        label.textContent = this.localObj.getConstant('Insert / Delete');
+        label.textContent = this.localObj.getConstant('Insert Or Delete');
         tableOperationDiv.appendChild(label);
         let parentDiv: HTMLElement = createElement('div', { className: 'e-de-insert-del-cell', styles: 'display:inline-flex' });
         let div1: HTMLElement = createElement('div', { className: this.groupButtonClass });

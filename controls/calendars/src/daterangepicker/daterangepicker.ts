@@ -3643,7 +3643,7 @@ export class DateRangePicker extends CalendarBase {
         attributes(this.inputElement, {
             'aria-readonly': this.readonly ? 'true' : 'false', 'tabindex': '0', 'aria-haspopup': 'true',
             'aria-activedescendant': 'null', 'aria-owns': this.element.id + '_popup', 'aria-expanded': 'false',
-            'role': 'daterangepicker', 'autocomplete': 'off', 'aria-disabled': !this.enabled ? 'true' : 'false',
+            'role': 'combobox', 'autocomplete': 'off', 'aria-disabled': !this.enabled ? 'true' : 'false',
             'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false'
         });
         Input.addAttributes({ 'aria-label': 'select' }, this.inputWrapper.buttons[0]);
@@ -4037,7 +4037,7 @@ export class DateRangePicker extends CalendarBase {
         let ariaAttrs: object = {
             'aria-readonly': this.readonly ? 'true' : 'false', 'tabindex': '0', 'aria-haspopup': 'true',
             'aria-activedescendant': 'null', 'aria-owns': this.element.id + '_popup', 'aria-expanded': 'false',
-            'role': 'daterangepicker', 'autocomplete': 'off', 'aria-disabled': !this.enabled ? 'true' : 'false',
+            'role': 'combobox', 'autocomplete': 'off', 'aria-disabled': !this.enabled ? 'true' : 'false',
             'autocorrect': 'off', 'autocapitalize': 'off', 'aria-invalid': 'false', 'spellcheck': 'false'
         };
         if (this.inputElement) {

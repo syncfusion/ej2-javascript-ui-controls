@@ -451,8 +451,11 @@ export interface ContextMenuClickEventArgs extends ContextMenuClickEventArgs {
 export type ITimelineFormatter = (date?: Date, format?: string, tier?: string, mode?: string) => string;
 
 export interface ZoomEventArgs {
+    /** Defines the request type. */
     requestType?: string;
+    /** Defines the zoom action. */
     action?: string;
+    /** Defines Zoom timeline settings.  */
     timeline?: ZoomTimelineSettings;
 }
 

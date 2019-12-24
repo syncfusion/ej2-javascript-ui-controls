@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.40 (2019-12-24)
+
+### ListBox
+
+#### Bug Fixes
+
+- Provided 'beforeDrop' event.
+
 ## 17.3.27 (2019-11-12)
 
 ### ListBox

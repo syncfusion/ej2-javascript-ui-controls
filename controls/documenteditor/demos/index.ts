@@ -226,7 +226,7 @@ L10n.load({
             'Copy Hyperlink': 'نسخ ارتباط تشعبي',
             'Remove Hyperlink': 'أزاله ارتباط تشعبي',
             'Paragraph': 'الفقره',
-            'Linked(Paragraph and Character)': 'مرتبط (فقره وحرف)',
+            'Linked Style': 'مرتبط (فقره وحرف)',
             'Character': 'حرف',
             'Merge Cells': 'دمج الخلايا',
             'Insert Above': 'ادراج أعلاه',

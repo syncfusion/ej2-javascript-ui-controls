@@ -1450,7 +1450,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
                     rowDetails.rows[i].style.display = 'table-row';
                 }
                 if ((isBlazor() && (this.parent.dataSource[adaptorName] === 'BlazorAdaptor' && !this.parent[clientRender]))
-                    || !this.parent.loadChildOnDemand) {
+                    || this.parent.loadChildOnDemand) {
                     var targetEle = rowDetails.rows[i].getElementsByClassName('e-treegridcollapse')[0];
                     if (!isNullOrUndefined(targetEle)) {
                         addClass([targetEle], 'e-treegridexpand');
@@ -1508,6 +1508,17 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
                 setValue('action', 'beforecontentrender', e);
                 _this.parent.trigger(actionComplete, e);
                 hideSpinner(_this.parent.element);
+                if (_this.parent.grid.aggregates.length > 0) {
+                    var gridQuery = getObject('query', e);
+                    var result_1 = 'result';
+                    if (isNullOrUndefined(gridQuery)) {
+                        gridQuery = getValue('grid.renderModule.data', _this.parent).aggregateQuery(new Query());
+                    }
+                    if (!isNullOrUndefined(gridQuery)) {
+                        var summaryQuery = gridQuery.queries.filter(function (q) { return q.fn === 'onAggregates'; });
+                        e[result_1] = _this.parent.summaryModule.calculateSummaryValue(summaryQuery, e[result_1], true);
+                    }
+                }
                 e.count = _this.parent.grid.pageSettings.totalRecordsCount;
                 getValue('grid.renderModule', _this.parent).dataManagerSuccess(e);
                 _this.parent.trigger(expanded, args);
@@ -2092,6 +2103,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>}
+     * @blazorType void
      */
     TreeGrid.prototype.excelExport = function (excelExportProperties, isMultipleExport, 
     /* tslint:disable-next-line:no-any */
@@ -2105,7 +2117,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>}
-     *
+     * @blazorType void
      */
     TreeGrid.prototype.csvExport = function (excelExportProperties, 
     /* tslint:disable-next-line:no-any */
@@ -2119,7 +2131,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * @param  {pdfDoc} pdfDoc - Defined the Pdf Document if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>}
-     *
+     * @blazorType void
      */
     TreeGrid.prototype.pdfExport = function (pdfExportProperties, 
     /* tslint:disable-next-line:no-any */
@@ -2530,10 +2542,16 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             this.columns[i].uid = this.grid.columns[i].uid;
         }
         this.wireEvents();
+        var processModel = 'processModel';
+        this.grid[processModel]();
         gridObserver.off('component-rendered', this.gridRendered);
     };
     TreeGrid.prototype.setBlazorGUID = function () {
         var guid = 'guid';
+        if (this.editSettings) {
+            this.grid.editSettings[guid] = this.editSettings[guid];
+            this.grid.editSettings.template = this.editSettings.template;
+        }
         for (var i = 0; i < this.aggregates.length; i++) {
             for (var j = 0; j < this.aggregates[i].columns.length; j++) {
                 this.grid.aggregates[i].columns[j][guid] = this.aggregates[i].columns[j][guid];
@@ -3498,13 +3516,17 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * @param {RowPosition} position - Defines the new row position to be added.
      */
     TreeGrid.prototype.addRecord = function (data, index, position) {
-        this.editModule.addRecord(data, index, position);
+        if (this.editModule) {
+            this.editModule.addRecord(data, index, position);
+        }
     };
     /**
      * Cancels edited state.
      */
     TreeGrid.prototype.closeEdit = function () {
-        this.grid.editModule.closeEdit();
+        if (this.grid.editModule) {
+            this.grid.editModule.closeEdit();
+        }
     };
     /**
      * Delete a record with Given options. If fieldName and data is not given then TreeGrid will delete the selected record.
@@ -3513,14 +3535,18 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * @param {Object} data - Defines the JSON data of the record to be deleted.
      */
     TreeGrid.prototype.deleteRecord = function (fieldName, data) {
-        this.grid.editModule.deleteRecord(fieldName, data);
+        if (this.grid.editModule) {
+            this.grid.editModule.deleteRecord(fieldName, data);
+        }
     };
     /**
      * To edit any particular row by TR element.
      * @param {HTMLTableRowElement} tr - Defines the table row to be edited.
      */
     TreeGrid.prototype.startEdit = function (row) {
-        this.grid.editModule.startEdit(row);
+        if (this.grid.editModule) {
+            this.grid.editModule.startEdit(row);
+        }
     };
     /**
      * To edit any particular cell using row index and cell index.
@@ -3528,7 +3554,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * @param {string} field - Defines the field name of the column to perform cell edit.
      */
     TreeGrid.prototype.editCell = function (rowIndex, field) {
-        this.editModule.editCell(rowIndex, field);
+        if (this.editModule) {
+            this.editModule.editCell(rowIndex, field);
+        }
     };
     /**
      * Enables or disables ToolBar items.
@@ -3536,20 +3564,26 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * @param {boolean} isEnable - Defines the items to be enabled or disabled.
      */
     TreeGrid.prototype.enableToolbarItems = function (items, isEnable) {
-        this.grid.toolbarModule.enableItems(items, isEnable);
+        if (this.grid.toolbarModule) {
+            this.grid.toolbarModule.enableItems(items, isEnable);
+        }
     };
     /**
      * If TreeGrid is in editable state, you can save a record by invoking endEdit.
      */
     TreeGrid.prototype.endEdit = function () {
-        this.grid.editModule.endEdit();
+        if (this.grid.editModule) {
+            this.grid.editModule.endEdit();
+        }
     };
     /**
      * Delete any visible row by TR element.
      * @param {HTMLTableRowElement} tr - Defines the table row element.
      */
     TreeGrid.prototype.deleteRow = function (tr) {
-        this.grid.editModule.deleteRow(tr);
+        if (this.grid.editModule) {
+            this.grid.editModule.deleteRow(tr);
+        }
     };
     /**
      * Get the names of the primary key columns of the TreeGrid.
@@ -3583,7 +3617,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     TreeGrid.prototype.goToPage = function (pageNo) {
-        this.grid.pagerModule.goToPage(pageNo);
+        if (this.grid.pagerModule) {
+            this.grid.pagerModule.goToPage(pageNo);
+        }
     };
     /**
      * Defines the text of external message.
@@ -3744,6 +3780,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     };
     TreeGrid.prototype.updateColumnModel = function (column) {
         this.columnModel = [];
+        var stackedHeader = false;
         if (!isBlazor() || !this.isServerRendered) {
             var gridColumns = isNullOrUndefined(column) ? this.grid.getColumns() : column;
             var gridColumn = void 0;
@@ -3759,7 +3796,12 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             }
             var merge$$1 = 'deepMerge';
             this[merge$$1] = ['columns']; // Workaround for blazor updateModel
-            this.setProperties({ columns: this.columnModel }, true);
+            if (this.grid.columns.length !== this.columnModel.length) {
+                stackedHeader = true;
+            }
+            if (!stackedHeader) {
+                this.setProperties({ columns: this.columnModel }, true);
+            }
             this[merge$$1] = undefined; // Workaround for blazor updateModel
         }
         return this.columnModel;
@@ -5116,19 +5158,23 @@ function addAction(details, treeData, control, isSelfReference, addRowIndex, sel
             break;
         case 'Above':
             if (!isNullOrUndefined(addRowRecord)) {
-                value = addRowRecord;
+                value = extend({}, addRowRecord);
+                value = getPlainData(value);
             }
             else {
-                value = currentViewRecords[addRowIndex + 1];
+                value = extend({}, currentViewRecords[addRowIndex + 1]);
+                value = getPlainData(value);
             }
             break;
         case 'Below':
         case 'Child':
             if (!isNullOrUndefined(addRowRecord)) {
-                value = addRowRecord;
+                value = extend({}, addRowRecord);
+                value = getPlainData(value);
             }
             else {
-                value = currentViewRecords[addRowIndex];
+                value = extend({}, currentViewRecords[addRowIndex]);
+                value = getPlainData(value);
             }
             if (selectedIndex === -1) {
                 treeData.unshift(value);
@@ -5621,6 +5667,12 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
             spanContent.className = 'errorValue';
             spanContent.style.paddingLeft = '16px';
             spanContent.innerHTML = content;
+            if (!isNullOrUndefined(spanContent.children) && spanContent.children.length >= 1
+                && spanContent.children[0].classList.contains('e-treecolumn-container')) {
+                spanContent.children[0].style.display = 'inline-block';
+                spanContent.children[0].style.verticalAlign = 'middle';
+                ele.style.display = 'inline-block';
+            }
             dragelem.querySelector('.e-rowcell').appendChild(ele);
             dragelem.querySelector('.e-rowcell').appendChild(spanContent);
         }
@@ -6056,15 +6108,22 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
                     this.removeChildItem(deletedRow);
                 }
                 var idx = void 0;
+                var idz = void 0;
                 var treeGridData = dataSource;
                 for (var i = 0; i < treeGridData.length; i++) {
                     if (treeGridData[i][this.parent.idMapping] === deletedRow.taskData[this.parent.idMapping]) {
                         idx = i;
                     }
                 }
-                if (idx !== -1) {
+                for (var i = 0; i < this.treeGridData.length; i++) {
+                    if (this.treeGridData[i][this.parent.idMapping] === deletedRow.taskData[this.parent.idMapping]) {
+                        idz = i;
+                        break;
+                    }
+                }
+                if (idx !== -1 || idz !== -1) {
                     dataSource.splice(idx, 1);
-                    this.treeGridData.splice(idx, 1);
+                    this.treeGridData.splice(idz, 1);
                 }
             }
             var recordIndex_1 = this.treeGridData.indexOf(deletedRow);
@@ -7130,46 +7189,50 @@ var Aggregate$1 = /** @__PURE__ @class */ (function () {
         for (var i = 0, len = dataLength; i < len; i++) {
             parentRecord = parentRecords[i];
             childRecordsLength = this.getChildRecordsLength(parentRecord, flatRecords);
-            var _loop_1 = function (summaryRowIndex, len_1) {
-                var item = void 0;
-                item = {};
-                for (var columnIndex = 0, len_2 = columnLength; columnIndex < len_2; columnIndex++) {
-                    var field = isNullOrUndefined(getObject('field', this_1.parent.columns[columnIndex])) ?
-                        this_1.parent.columns[columnIndex] : getObject('field', this_1.parent.columns[columnIndex]);
-                    item[field] = null;
-                }
-                if (this_1.parent.aggregates[summaryRowIndex - 1].showChildSummary) {
-                    item = this_1.createSummaryItem(item, this_1.parent.aggregates[summaryRowIndex - 1]);
-                    var idx_1;
-                    flatRecords.map(function (e, i) { if (e.uniqueID === parentRecord.uniqueID) {
-                        idx_1 = i;
-                        return;
-                    } });
-                    var currentIndex = idx_1 + childRecordsLength + summaryRowIndex;
-                    var summaryParent = extend({}, parentRecord);
-                    delete summaryParent.childRecords;
-                    delete summaryParent[this_1.parent.childMapping];
-                    setValue('parentItem', summaryParent, item);
-                    var level = getObject('level', summaryParent);
-                    setValue('level', level + 1, item);
-                    var index = getObject('index', summaryParent);
-                    setValue('isSummaryRow', true, item);
-                    setValue('parentUniqueID', summaryParent.uniqueID, item);
-                    if (isSort) {
-                        var childRecords = getObject('childRecords', parentRecord);
-                        childRecords.push(item);
+            if (childRecordsLength) {
+                var _loop_1 = function (summaryRowIndex, len_1) {
+                    var item = void 0;
+                    item = {};
+                    for (var columnIndex = 0, len_2 = columnLength; columnIndex < len_2; columnIndex++) {
+                        var field = isNullOrUndefined(getObject('field', this_1.parent.columns[columnIndex])) ?
+                            this_1.parent.columns[columnIndex] : getObject('field', this_1.parent.columns[columnIndex]);
+                        item[field] = null;
                     }
-                    flatRecords.splice(currentIndex, 0, item);
+                    if (this_1.parent.aggregates[summaryRowIndex - 1].showChildSummary) {
+                        item = this_1.createSummaryItem(item, this_1.parent.aggregates[summaryRowIndex - 1]);
+                        var idx_1;
+                        flatRecords.map(function (e, i) { if (e.uniqueID === parentRecord.uniqueID) {
+                            idx_1 = i;
+                            return;
+                        } });
+                        var currentIndex = idx_1 + childRecordsLength + summaryRowIndex;
+                        var summaryParent = extend({}, parentRecord);
+                        delete summaryParent.childRecords;
+                        delete summaryParent[this_1.parent.childMapping];
+                        setValue('parentItem', summaryParent, item);
+                        var level = getObject('level', summaryParent);
+                        setValue('level', level + 1, item);
+                        var index = getObject('index', summaryParent);
+                        setValue('isSummaryRow', true, item);
+                        setValue('parentUniqueID', summaryParent.uniqueID, item);
+                        if (isSort) {
+                            var childRecords = getObject('childRecords', parentRecord);
+                            if (childRecords.length) {
+                                childRecords.push(item);
+                            }
+                        }
+                        flatRecords.splice(currentIndex, 0, item);
+                    }
+                    else {
+                        return "continue";
+                    }
+                };
+                var this_1 = this;
+                for (var summaryRowIndex = 1, len_1 = summaryLength; summaryRowIndex <= len_1; summaryRowIndex++) {
+                    _loop_1(summaryRowIndex, len_1);
                 }
-                else {
-                    return "continue";
-                }
-            };
-            var this_1 = this;
-            for (var summaryRowIndex = 1, len_1 = summaryLength; summaryRowIndex <= len_1; summaryRowIndex++) {
-                _loop_1(summaryRowIndex, len_1);
+                this.flatChildRecords = [];
             }
-            this.flatChildRecords = [];
         }
         return flatRecords;
     };
@@ -7635,7 +7698,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             (treeObj.editSettings.newRowPosition === 'Child' || treeObj.editSettings.newRowPosition === 'Below'
                 || treeObj.editSettings.newRowPosition === 'Above')) {
             if (eventName === 'actionBegin') {
-                var rowIndex = isNullOrUndefined(eventArgs.row) ? treeObj.getSelectedRowIndexes()[0] :
+                var rowIndex = isNullOrUndefined(eventArgs.row) || !Object.keys(eventArgs.row).length ? this.selectedIndex :
                     eventArgs.row.rowIndex - 1;
                 var keyData = (!isNullOrUndefined(rowIndex) && rowIndex !== -1) ?
                     treeObj.getCurrentViewRecords()[rowIndex][treeObj.getPrimaryKeyFieldNames()[0]] : -1;
@@ -7734,9 +7797,16 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         if (this.parent.editSettings.mode === 'Cell') {
             var cellDetails = getValue('editModule.cellDetails', this.parent.grid.editModule);
             var selectRowIndex = cellDetails.rowIndex;
+            var treeColumnIndexValue = void 0;
+            if (this.parent.allowRowDragAndDrop) {
+                treeColumnIndexValue = this.parent.treeColumnIndex + 1;
+            }
+            else {
+                treeColumnIndexValue = this.parent.treeColumnIndex;
+            }
             this.parent.renderModule.cellRender({
                 data: cellDetails.rowData,
-                cell: this.parent.getRows()[selectRowIndex].cells[this.parent.treeColumnIndex],
+                cell: this.parent.getRows()[selectRowIndex].cells[treeColumnIndexValue],
                 column: this.parent.grid.getColumns()[this.parent.treeColumnIndex]
             });
             this.updateGridEditMode('Normal');
@@ -7841,7 +7911,12 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             if (details.value[key] === data[i][key]) {
                 if (details.action === 'add') {
                     data[i].level = this.internalProperties.level;
-                    data[i].parentItem = this.internalProperties.parentItem;
+                    data[i].taskData = this.internalProperties.taskData;
+                    data[i].uniqueID = this.internalProperties.uniqueID;
+                    if (!isNullOrUndefined(this.internalProperties.parentItem)) {
+                        data[i].parentItem = this.internalProperties.parentItem;
+                        data[i].parentUniqueID = this.internalProperties.parentUniqueID;
+                    }
                 }
             }
             setValue('uniqueIDCollection.' + data[i].uniqueID + '.index', i, this.parent);
@@ -7908,10 +7983,6 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             movableRows = this.parent.getMovableDataRows();
         }
         if (this.parent.editSettings.mode !== 'Dialog') {
-            if (this.parent.editSettings.newRowPosition === 'Child' && !(records[index].expanded) &&
-                records[index][this.parent.childMapping] && records[index][this.parent.childMapping].length) {
-                this.parent.expandRow(rows[index + 1], records[index]);
-            }
             if (this.parent.editSettings.newRowPosition === 'Above') {
                 position = 'before';
             }
@@ -7919,7 +7990,9 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                 && this.selectedIndex > -1) {
                 position = 'after';
                 // let records: Object[] = this.batchRecords.length ? this.batchRecords : this.parent.grid.getCurrentViewRecords();
-                index += findChildrenRecords(records[index]).length;
+                if (records[index].expanded) {
+                    index += findChildrenRecords(records[index]).length;
+                }
             }
             if (this.selectedIndex > -1 && (index || (this.parent.editSettings.newRowPosition === 'Child'
                 || this.parent.editSettings.newRowPosition === 'Below'))) {
@@ -8097,7 +8170,8 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             value.index = 0;
         }
         if (args.action === 'add') {
-            this.internalProperties = { level: value.level, parentItem: value.parentItem };
+            this.internalProperties = { level: value.level, parentItem: value.parentItem, uniqueID: value.uniqueID,
+                taskData: value.taskData, parentUniqueID: isNullOrUndefined(value.parentItem) ? undefined : value.parentItem.uniqueID };
         }
         if (args.requestType === 'delete') {
             var deletedValues = args.data;

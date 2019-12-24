@@ -2290,8 +2290,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (!isNOU(this.getToolbarElement())) {
             let toolbarItem: NodeList = this.getToolbarElement().querySelectorAll('input,select,button,a,[tabindex]');
             for (let i: number = 0; i < toolbarItem.length; i++) {
-                if (!(toolbarItem[i] as HTMLElement).hasAttribute('tabindex') ||
-                (toolbarItem[i] as HTMLElement).getAttribute('tabindex') !== '-1') {
+                if ((!(toolbarItem[i] as HTMLElement).classList.contains('e-rte-dropdown-btn') &&
+                !(toolbarItem[i] as HTMLElement).classList.contains('e-insert-table-btn')) &&
+                (!(toolbarItem[i] as HTMLElement).hasAttribute('tabindex') ||
+                (toolbarItem[i] as HTMLElement).getAttribute('tabindex') !== '-1')) {
                     (toolbarItem[i] as HTMLElement).setAttribute('tabindex', '-1');
                 }
             }

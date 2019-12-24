@@ -1813,6 +1813,7 @@ class ToolbarRenderer {
         args.element.tabIndex = -1;
         dropDown.element.removeAttribute('type');
         dropDown.element.onmousedown = () => { proxy.parent.notify(selectionSave, {}); };
+        dropDown.element.onkeydown = () => { proxy.parent.notify(selectionSave, {}); };
         return dropDown;
     }
     pickerRefresh(dropDownArgs) {
@@ -3050,6 +3051,27 @@ class Toolbar$1 {
     dropDownBeforeOpenHandler() {
         this.isToolbar = true;
     }
+    tbFocusHandler(e) {
+        let activeElm = document.activeElement;
+        let isToolbaractive = closest(activeElm, '.e-rte-toolbar');
+        if (activeElm === this.parent.getToolbarElement() || isToolbaractive === this.parent.getToolbarElement()) {
+            let toolbarItem = this.parent.getToolbarElement().querySelectorAll('.e-expended-nav');
+            for (let i = 0; i < toolbarItem.length; i++) {
+                if (isNullOrUndefined(this.parent.getToolbarElement().querySelector('.e-insert-table-btn'))) {
+                    toolbarItem[i].setAttribute('tabindex', '0');
+                }
+                else {
+                    toolbarItem[i].setAttribute('tabindex', '1');
+                }
+            }
+        }
+    }
+    tbKeydownHandler(e) {
+        if (e.target.classList.contains('e-dropdown-btn') ||
+            e.target.getAttribute('id') === this.parent.getID() + '_toolbar_CreateTable') {
+            e.target.setAttribute('tabindex', '0');
+        }
+    }
     toolbarMouseDownHandler(e) {
         let trg = closest(e.target, '.e-hor-nav');
         if (trg && this.parent.toolbarSettings.type === ToolbarType.Expand && !isNullOrUndefined(trg)) {
@@ -3074,9 +3096,13 @@ class Toolbar$1 {
             return;
         }
         EventHandler.add(this.tbElement, 'click mousedown', this.toolbarMouseDownHandler, this);
+        EventHandler.add(this.tbElement, 'focusin', this.tbFocusHandler, this);
+        EventHandler.add(this.tbElement, 'keydown', this.tbKeydownHandler, this);
     }
     unWireEvents() {
         EventHandler.remove(this.tbElement, 'click mousedown', this.toolbarMouseDownHandler);
+        EventHandler.remove(this.tbElement, 'focusin', this.tbFocusHandler);
+        EventHandler.remove(this.tbElement, 'keydown', this.tbKeydownHandler);
     }
     addEventListener() {
         if (this.parent.isDestroyed) {
@@ -8921,54 +8947,56 @@ class Formats {
         return node;
     }
     onKeyDown(e) {
-        let range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
-        let startCon = (range.startContainer.textContent.length === 0 || range.startContainer.nodeName === 'PRE')
-            ? range.startContainer : range.startContainer.parentElement;
-        let endCon = (range.endContainer.textContent.length === 0 || range.endContainer.nodeName === 'PRE')
-            ? range.endContainer : range.endContainer.parentElement;
-        let preElem = closest(startCon, 'pre');
-        let endPreElem = closest(endCon, 'pre');
-        let liParent = !isNullOrUndefined(preElem) && !isNullOrUndefined(preElem.parentElement) && preElem.parentElement.tagName === 'LI';
-        if (liParent) {
-            return;
-        }
-        if (((isNullOrUndefined(preElem) && !isNullOrUndefined(endPreElem)) || (!isNullOrUndefined(preElem) && isNullOrUndefined(endPreElem)))) {
-            e.event.preventDefault();
-            this.deleteContent(range);
-            this.removeCodeContent(range);
-            range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
-            this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, endCon, 0);
-        }
-        if (e.event.which === 13 && !isNullOrUndefined(preElem) && !isNullOrUndefined(endPreElem)) {
-            e.event.preventDefault();
-            this.deleteContent(range);
-            this.removeCodeContent(range);
-            range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
-            let lastEmpty = range.startContainer.childNodes[range.endOffset];
-            let lastBeforeBr = range.startContainer.childNodes[range.endOffset - 1];
-            let startParent = range.startContainer;
-            if (!isNullOrUndefined(lastEmpty) && !isNullOrUndefined(lastBeforeBr) && isNullOrUndefined(lastEmpty.nextSibling) &&
-                lastEmpty.nodeName === 'BR' && lastBeforeBr.nodeName === 'BR') {
-                this.paraFocus(range.startContainer);
+        if (e.event.which === 13) {
+            let range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+            let startCon = (range.startContainer.textContent.length === 0 || range.startContainer.nodeName === 'PRE')
+                ? range.startContainer : range.startContainer.parentElement;
+            let endCon = (range.endContainer.textContent.length === 0 || range.endContainer.nodeName === 'PRE')
+                ? range.endContainer : range.endContainer.parentElement;
+            let preElem = closest(startCon, 'pre');
+            let endPreElem = closest(endCon, 'pre');
+            let liParent = !isNullOrUndefined(preElem) && !isNullOrUndefined(preElem.parentElement) && preElem.parentElement.tagName === 'LI';
+            if (liParent) {
+                return;
             }
-            else if ((startParent.textContent.charCodeAt(0) === 8203 &&
-                startParent.textContent.length === 1) || startParent.textContent.length === 0) {
-                //Double enter with any parent tag for the node
-                while (startParent.parentElement.nodeName !== 'PRE' &&
-                    (startParent.textContent.length === 1 || startParent.textContent.length === 0)) {
-                    startParent = startParent.parentElement;
+            if (((isNullOrUndefined(preElem) && !isNullOrUndefined(endPreElem)) || (!isNullOrUndefined(preElem) && isNullOrUndefined(endPreElem)))) {
+                e.event.preventDefault();
+                this.deleteContent(range);
+                this.removeCodeContent(range);
+                range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+                this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, endCon, 0);
+            }
+            if (e.event.which === 13 && !isNullOrUndefined(preElem) && !isNullOrUndefined(endPreElem)) {
+                e.event.preventDefault();
+                this.deleteContent(range);
+                this.removeCodeContent(range);
+                range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+                let lastEmpty = range.startContainer.childNodes[range.endOffset];
+                let lastBeforeBr = range.startContainer.childNodes[range.endOffset - 1];
+                let startParent = range.startContainer;
+                if (!isNullOrUndefined(lastEmpty) && !isNullOrUndefined(lastBeforeBr) && isNullOrUndefined(lastEmpty.nextSibling) &&
+                    lastEmpty.nodeName === 'BR' && lastBeforeBr.nodeName === 'BR') {
+                    this.paraFocus(range.startContainer);
                 }
-                if (!isNullOrUndefined(startParent.previousSibling) && startParent.previousSibling.nodeName === 'BR' &&
-                    isNullOrUndefined(startParent.nextSibling)) {
-                    this.paraFocus(startParent.parentElement);
+                else if ((startParent.textContent.charCodeAt(0) === 8203 &&
+                    startParent.textContent.length === 1) || startParent.textContent.length === 0) {
+                    //Double enter with any parent tag for the node
+                    while (startParent.parentElement.nodeName !== 'PRE' &&
+                        (startParent.textContent.length === 1 || startParent.textContent.length === 0)) {
+                        startParent = startParent.parentElement;
+                    }
+                    if (!isNullOrUndefined(startParent.previousSibling) && startParent.previousSibling.nodeName === 'BR' &&
+                        isNullOrUndefined(startParent.nextSibling)) {
+                        this.paraFocus(startParent.parentElement);
+                    }
+                    else {
+                        this.isNotEndCursor(preElem, range);
+                    }
                 }
                 else {
+                    //Cursor at start and middle
                     this.isNotEndCursor(preElem, range);
                 }
-            }
-            else {
-                //Cursor at start and middle
-                this.isNotEndCursor(preElem, range);
             }
         }
     }
@@ -16393,6 +16421,12 @@ class ViewSource {
                 this.updateSourceCode(event);
                 event.preventDefault();
                 break;
+            case 'toolbar-focus':
+                if (this.parent.toolbarSettings.enable) {
+                    let selector = '.e-toolbar-item[aria-disabled="false"][title] [tabindex]';
+                    this.parent.toolbarModule.baseToolbar.toolbarObj.element.querySelector(selector).focus();
+                }
+                break;
         }
     }
     onKeyDown(e) {
@@ -17327,8 +17361,11 @@ class Table {
         this.dlgDiv.appendChild(this.parent.createElement('span', { className: 'e-span-border' }));
         let btnEle = this.parent.createElement('button', {
             className: 'e-insert-table-btn', id: this.rteID + '_insertTable',
-            attrs: { type: 'button' }
+            attrs: { type: 'button', tabindex: '0' }
         });
+        if (!isNullOrUndefined(this.parent.getToolbarElement().querySelector('.e-expended-nav'))) {
+            this.parent.getToolbarElement().querySelector('.e-expended-nav').setAttribute('tabindex', '1');
+        }
         this.dlgDiv.appendChild(btnEle);
         let button = new Button({
             iconCss: 'e-icons e-create-table', content: insertbtn, cssClass: 'e-flat',
@@ -19493,8 +19530,10 @@ let RichTextEditor = class RichTextEditor extends Component {
         if (!isNullOrUndefined(this.getToolbarElement())) {
             let toolbarItem = this.getToolbarElement().querySelectorAll('input,select,button,a,[tabindex]');
             for (let i = 0; i < toolbarItem.length; i++) {
-                if (!toolbarItem[i].hasAttribute('tabindex') ||
-                    toolbarItem[i].getAttribute('tabindex') !== '-1') {
+                if ((!toolbarItem[i].classList.contains('e-rte-dropdown-btn') &&
+                    !toolbarItem[i].classList.contains('e-insert-table-btn')) &&
+                    (!toolbarItem[i].hasAttribute('tabindex') ||
+                        toolbarItem[i].getAttribute('tabindex') !== '-1')) {
                     toolbarItem[i].setAttribute('tabindex', '-1');
                 }
             }

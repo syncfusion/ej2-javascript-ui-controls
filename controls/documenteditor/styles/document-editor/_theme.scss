@@ -681,6 +681,13 @@
     }
     // sass-lint:enable-all
 
+    .e-de-rp-close-icon.e-btn {
+      background: $de-rp-btn-bg-color;
+      border: 0;
+      color: $de-cmt-pant-content-font;
+      opacity: 1;
+    }
+
     .e-de-style-font-group-button,
     .e-de-style-paragraph-group-button,
     .e-de-style-paragraph-indent-group-button {
@@ -2124,6 +2131,12 @@
     font-size: 13px;
     height: 36px;
     opacity: .87;
+    @if $skin-name == 'bootstrap4' {
+        border-color: $de-cmt-separator;
+        box-shadow: none;
+        color: $de-cmt-pant-content-font;
+        opacity: 1;
+    }
   }
 
   .e-de-rp-nav-btn {
@@ -2138,6 +2151,12 @@
     height: 36px;
     margin: 0 46px;
     opacity: .87;
+    @if $skin-name == 'bootstrap4' {
+      border-color: $de-cmt-separator;
+      box-shadow: none;
+      color: $de-cmt-pant-content-font;
+      opacity: 1;
+    }
   }
 
   .e-de-rp-nav-lbl {
@@ -2171,6 +2190,9 @@
 
   .e-de-rp-enforce {
     padding-top: 12px;
+    @if $skin-name == "bootstrap4" {
+      text-align: center;
+    }
   }
 
   .e-de-rp-enforce-nav {

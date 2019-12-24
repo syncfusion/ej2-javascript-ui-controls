@@ -187,22 +187,23 @@ export class TablePropertiesDialog {
         for (let i: number = 0; i < cellAlignment.length; i++) {
             cellAlignment[i].addEventListener('click', this.changeCellAlignment);
         }
-        let tableTabHeader: HTMLElement = this.tabObj.element.getElementsByClassName('e-item e-toolbar-item')[0] as HTMLElement;
-        let tableTabHeaderItem: HTMLElement = tableTabHeader.getElementsByClassName('e-tab-wrap')[0] as HTMLElement;
 
-        let rowTabHeader: HTMLElement = this.tabObj.element.getElementsByClassName('e-item e-toolbar-item')[1] as HTMLElement;
-        let rowTabHeaderItem: HTMLElement = rowTabHeader.getElementsByClassName('e-tab-wrap')[0] as HTMLElement;
-        rowTabHeaderItem.classList.add('e-de-table-ppty-dlg-row-header');
+        // let tableTabHeader: HTMLElement = this.tabObj.element.getElementsByClassName('e-item e-toolbar-item')[0] as HTMLElement;
+        // let tableTabHeaderItem: HTMLElement = tableTabHeader.getElementsByClassName('e-tab-wrap')[0] as HTMLElement;
 
-        let cellTabHeader: HTMLElement = this.tabObj.element.getElementsByClassName('e-item e-toolbar-item')[2] as HTMLElement;
-        let cellTabHeaderItem: HTMLElement = cellTabHeader.getElementsByClassName('e-tab-wrap')[0] as HTMLElement;
-        cellTabHeaderItem.classList.add('e-de-table-ppty-dlg-cell-header');
-        if (isRtl) {
-            tableTabHeaderItem.classList.add('e-de-rtl');
-            (this.tabObj.element.getElementsByClassName('e-indicator')[0] as HTMLElement).style.left = '155px';
-        } else {
-            (this.tabObj.element.getElementsByClassName('e-indicator')[0] as HTMLElement).style.right = '155px';
-        }
+        // let rowTabHeader: HTMLElement = this.tabObj.element.getElementsByClassName('e-item e-toolbar-item')[1] as HTMLElement;
+        // let rowTabHeaderItem: HTMLElement = rowTabHeader.getElementsByClassName('e-tab-wrap')[0] as HTMLElement;
+        // rowTabHeaderItem.classList.add('e-de-table-ppty-dlg-row-header');
+
+        // let cellTabHeader: HTMLElement = this.tabObj.element.getElementsByClassName('e-item e-toolbar-item')[2] as HTMLElement;
+        // let cellTabHeaderItem: HTMLElement = cellTabHeader.getElementsByClassName('e-tab-wrap')[0] as HTMLElement;
+        // cellTabHeaderItem.classList.add('e-de-table-ppty-dlg-cell-header');
+        // if (isRtl) {
+        //     tableTabHeaderItem.classList.add('e-de-rtl');
+        //     (this.tabObj.element.getElementsByClassName('e-indicator')[0] as HTMLElement).style.left = '155px';
+        // } else {
+        //     (this.tabObj.element.getElementsByClassName('e-indicator')[0] as HTMLElement).style.right = '155px';
+        // }
     }
     /**
      * @private

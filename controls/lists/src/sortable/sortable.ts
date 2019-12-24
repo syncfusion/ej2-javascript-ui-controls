@@ -65,6 +65,12 @@ export class Sortable extends Base<HTMLElement>  implements INotifyPropertyChang
     @Event()
     public dragStart: Function;
     /**
+     * Specifies the callback function for beforeDrop event.
+     * @event
+     */
+    @Event()
+    public beforeDrop: Function;
+    /**
      * Specifies the callback function for drop event.
      * @event
      */
@@ -232,22 +238,44 @@ export class Sortable extends Base<HTMLElement>  implements INotifyPropertyChang
         return instance.placeHolderElement && !!closest(instance.placeHolderElement, `#${instance.element.id}`);
     }
     private onDragStop: Function = (e: { target: HTMLElement, event: MouseEvent & TouchEvent, helper: Element }) => {
-        let dropInst: Sortable = this.getSortableInstance(this.curTarget); let prevIdx: number;
+        let dropInst: Sortable = this.getSortableInstance(this.curTarget); let prevIdx: number; let curIdx: number; let handled: boolean;
+        prevIdx = this.getIndex(this.target);
         if (this.isPlaceHolderPresent(dropInst)) {
-            prevIdx = this.getIndex(this.target); this.updateItemClass(dropInst);
-            dropInst.element.insertBefore(this.target, dropInst.placeHolderElement);
-            let curIdx: number = this.getIndex(this.target, dropInst);
-            prevIdx = this === dropInst && (prevIdx - curIdx) > 1 ? prevIdx - 1 : prevIdx;
-            this.trigger('drop', { event: e.event, element: dropInst.element, previousIndex: prevIdx, currentIndex: curIdx,
-                target: e.target, helper: e.helper, droppedElement: this.target, scopeName: this.scope });
-            remove(dropInst.placeHolderElement);
+            let curIdx: number = this.getIndex(dropInst.placeHolderElement, dropInst);
+            let args: DropEventArgs = { previousIndex: prevIdx, currentIndex: curIdx, target: e.target, droppedElement: this.target,
+                helper: e.helper, cancel: false, handled: false };
+            this.trigger('beforeDrop', args, (observedArgs: DropEventArgs) => {
+                if (!observedArgs.cancel) {
+                    handled = observedArgs.handled;
+                    this.updateItemClass(dropInst);
+                    if (observedArgs.handled) {
+                        let ele: Node = this.target.cloneNode(true);
+                        this.target.classList.remove('e-grabbed');
+                        this.target = ele as HTMLElement;
+                    }
+                    dropInst.element.insertBefore(this.target, dropInst.placeHolderElement);
+                    let curIdx: number = this.getIndex(this.target, dropInst);
+                    prevIdx = this === dropInst && (prevIdx - curIdx) > 1 ? prevIdx - 1 : prevIdx;
+                    this.trigger('drop', { event: e.event, element: dropInst.element, previousIndex: prevIdx, currentIndex: curIdx,
+                    target: e.target, helper: e.helper, droppedElement: this.target, scopeName: this.scope, handled: handled });
+                }
+                remove(dropInst.placeHolderElement);
+            });
         }
         dropInst = this.getSortableInstance(e.target);
+        curIdx = dropInst.element.childElementCount;
+        prevIdx = this.getIndex(this.target);
         if (dropInst.element === e.target) {
-            prevIdx = this.getIndex(this.target); this.updateItemClass(dropInst);
-            dropInst.element.appendChild(this.target);
-            this.trigger('drop', { event: e.event, element: dropInst.element, previousIndex: prevIdx, currentIndex: 0,
-                target: e.target, helper: e.helper, droppedElement: this.target, scopeName: this.scope });
+            let beforeDropArgs: DropEventArgs = { previousIndex: prevIdx, currentIndex: curIdx, target: e.target,
+                droppedElement: this.target, helper: e.helper, cancel: false };
+            this.trigger('beforeDrop', beforeDropArgs, (observedArgs: DropEventArgs) => {
+                if (!observedArgs.cancel) {
+                    this.updateItemClass(dropInst);
+                    dropInst.element.appendChild(this.target);
+                    this.trigger('drop', { event: e.event, element: dropInst.element, previousIndex: prevIdx, currentIndex: curIdx,
+                                target: e.target, helper: e.helper, droppedElement: this.target, scopeName: this.scope });
+                }
+            });
         }
         this.target.classList.remove('e-grabbed');
         this.target = null;
@@ -321,4 +349,14 @@ export function moveTo(from: HTMLElement, to?: HTMLElement, targetIndexes?: numb
             to.insertBefore(target, insertElement);
         });
     }
+}
+
+export interface DropEventArgs {
+    previousIndex: number;
+    currentIndex: number;
+    droppedElement: Element;
+    target: Element;
+    helper: Element;
+    cancel?: boolean;
+    handled?: boolean;
 }

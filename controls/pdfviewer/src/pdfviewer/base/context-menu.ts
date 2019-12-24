@@ -302,23 +302,29 @@ export class ContextMenu {
                 break;
             case this.pdfViewer.localeObj.getConstant('Highlight context'):
                 if (this.pdfViewer.annotation && this.pdfViewer.annotation.textMarkupAnnotationModule) {
+                    this.pdfViewer.annotation.textMarkupAnnotationModule.isSelectionMaintained = false;
                     this.pdfViewer.annotation.textMarkupAnnotationModule.drawTextMarkupAnnotations('Highlight');
                     this.pdfViewer.annotation.textMarkupAnnotationModule.isTextMarkupAnnotationMode = false;
                     this.pdfViewer.annotation.textMarkupAnnotationModule.currentTextMarkupAddMode = '';
+                    this.pdfViewer.annotation.textMarkupAnnotationModule.isSelectionMaintained = true;
                 }
                 break;
             case this.pdfViewer.localeObj.getConstant('Underline context'):
                 if (this.pdfViewer.annotation && this.pdfViewer.annotation.textMarkupAnnotationModule) {
+                    this.pdfViewer.annotation.textMarkupAnnotationModule.isSelectionMaintained = false;
                     this.pdfViewer.annotation.textMarkupAnnotationModule.drawTextMarkupAnnotations('Underline');
                     this.pdfViewer.annotation.textMarkupAnnotationModule.isTextMarkupAnnotationMode = false;
                     this.pdfViewer.annotation.textMarkupAnnotationModule.currentTextMarkupAddMode = '';
+                    this.pdfViewer.annotation.textMarkupAnnotationModule.isSelectionMaintained = true;
                 }
                 break;
             case this.pdfViewer.localeObj.getConstant('Strikethrough context'):
                 if (this.pdfViewer.annotation && this.pdfViewer.annotation.textMarkupAnnotationModule) {
+                    this.pdfViewer.annotation.textMarkupAnnotationModule.isSelectionMaintained = false;
                     this.pdfViewer.annotation.textMarkupAnnotationModule.drawTextMarkupAnnotations('Strikethrough');
                     this.pdfViewer.annotation.textMarkupAnnotationModule.isTextMarkupAnnotationMode = false;
                     this.pdfViewer.annotation.textMarkupAnnotationModule.currentTextMarkupAddMode = '';
+                    this.pdfViewer.annotation.textMarkupAnnotationModule.isSelectionMaintained = true;
                 }
                 break;
             case this.pdfViewer.localeObj.getConstant('Properties'):

@@ -75,7 +75,7 @@ export class HeaderFooterProperties {
         let headerDiv: HTMLElement = this.createDivTemplate('_header_footer', this.element, 'padding-bottom:0');
         classList(headerDiv, ['e-de-cntr-pane-padding'], []);
         let headerLabel: HTMLElement = createElement('label', { className: 'e-de-prop-header-label' });
-        headerLabel.innerHTML = localObj.getConstant('Header & Footer');
+        headerLabel.innerHTML = localObj.getConstant('Header And Footer');
         let closeButtonFloat: string;
         let optionsLabelDivPadding: string;
         let positionLabelDivPadding: string;
@@ -109,15 +109,15 @@ export class HeaderFooterProperties {
         this.firstPage = new CheckBox({ label: localObj.getConstant('Different First Page'), change: this.changeFirstPageOptions, cssClass: 'e-de-prop-sub-label', enableRtl: this.isRtl });
         this.firstPage.appendTo(firstPage);
         // tslint:disable-next-line:max-line-length
-        firstPageDiv.children[0].setAttribute('title', localObj.getConstant('Different header and footer for first page.'));
+        firstPageDiv.children[0].setAttribute('title', localObj.getConstant('Different header and footer for first page'));
         let oddOrEvenDiv: HTMLElement = this.createDivTemplate(elementId + '_oddOrEvenDiv', optionsDiv);
         let oddOrEven: HTMLInputElement = createElement('input', { id: 'oddOrEven', className: 'e-de-sub-prop-label' }) as HTMLInputElement;
         oddOrEvenDiv.appendChild(oddOrEven);
         // tslint:disable-next-line:max-line-length
-        this.oddOrEven = new CheckBox({ label: localObj.getConstant('Different Odd & Even Pages'), change: this.changeoddOrEvenOptions, cssClass: 'e-de-prop-sub-label', enableRtl: this.isRtl });
+        this.oddOrEven = new CheckBox({ label: localObj.getConstant('Different Odd And Even Pages'), change: this.changeoddOrEvenOptions, cssClass: 'e-de-prop-sub-label', enableRtl: this.isRtl });
         this.oddOrEven.appendTo(oddOrEven);
         // tslint:disable-next-line:max-line-length
-        oddOrEvenDiv.children[0].setAttribute('title', localObj.getConstant('Different header and footer for odd and even pages.'));
+        oddOrEvenDiv.children[0].setAttribute('title', localObj.getConstant('Different header and footer for odd and even pages'));
         // tslint:disable-next-line:max-line-length
         // let autoFieldLabelDiv: HTMLElement = this.createDivTemplate(element + '_autoFieldLabelDiv', div, 'padding-top:10px;padding-left: 10px;');
         // let autoFieldLabel: HTMLElement = createElement('label', { className: 'e-de-header-prop-label', styles: 'height:20px;' });
@@ -170,7 +170,7 @@ export class HeaderFooterProperties {
         });
         this.headerFromTop.appendTo(headerFromTop);
         // tslint:disable-next-line:max-line-length
-        this.headerFromTop.element.parentElement.setAttribute('title', localObj.getConstant('Distance from top of the page to top of the header.'));
+        this.headerFromTop.element.parentElement.setAttribute('title', localObj.getConstant('Distance from top of the page to top of the header'));
         // tslint:disable-next-line:max-line-length
         let footerBottomDiv: HTMLElement = this.createDivTemplate(elementId + '_footerBottomDiv', positionDiv);
         // tslint:disable-next-line:max-line-length
@@ -187,7 +187,7 @@ export class HeaderFooterProperties {
         });
         this.footerFromTop.appendTo(footerFromTop);
         // tslint:disable-next-line:max-line-length
-        this.footerFromTop.element.parentElement.setAttribute('title', localObj.getConstant('Distance from bottom of the page to bottom of the footer.'));
+        this.footerFromTop.element.parentElement.setAttribute('title', localObj.getConstant('Distance from bottom of the page to bottom of the footer'));
     }
     private createDivTemplate(id: string, parentDiv: HTMLElement, style?: string): HTMLElement {
         let divElement: HTMLElement;

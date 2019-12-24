@@ -363,7 +363,7 @@ describe('Freeze render module', () => {
         it('Before delete', () => {
             gridObj.selectRow(4);
         });
-        it('Enaure deleteRow method', (done: Function) => {
+        it('Ensure deleteRow method', (done: Function) => {
             selectedRowIndex = parseInt(gridObj.getSelectedRows()[0].getAttribute('aria-rowindex'), 10);
             let batchDelete = (args: Object) => {
                 expect(gridObj.getMovableRows()[3].classList.contains('e-hiddenrow')).toBeTruthy();
@@ -381,7 +381,7 @@ describe('Freeze render module', () => {
         it('Before delete', () => {
             gridObj.selectRow(4);
         });
-        it('Ensure deleteRecord mwthod', (done: Function) => {
+        it('Ensure deleteRecord method', (done: Function) => {
             selectedRowIndex = parseInt(gridObj.getSelectedRows()[0].getAttribute('aria-rowindex'), 10);
             let batchDelete = (args: Object) => {
                 expect(gridObj.getMovableRows()[3].classList.contains('e-hiddenrow')).toBeTruthy();
@@ -400,6 +400,52 @@ describe('Freeze render module', () => {
             let frozenRow: Element = gridObj.getFrozenRowByIndex(2);
             let rowindex: number = parseInt(frozenRow.getAttribute('aria-rowindex'), 10);
             expect(rowindex).toBe(2);
+        });
+        afterAll(() => {
+            gridObj['freezeModule'].destroy();
+            destroy(gridObj);
+        });
+    });
+
+    describe('Ensure movable header scrollLeft after the refrechColumns', () => {
+        let gridObj: Grid;
+        let dBound: () => void;
+        let selectedRowIndex: number;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    height: 400,
+                    width: 200,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true, isFrozen: true, width: 120 },
+                        { headerText: 'CustomerID', field: 'CustomerID', width: 120 },
+                        { headerText: 'EmployeeID', field: 'EmployeeID', width: 120 },
+                        { headerText: 'ShipCountry', field: 'ShipCountry', width: 120 },
+                        { headerText: 'ShipCity', field: 'ShipCity', width: 120 },
+                    ]
+                }, done);
+        });
+        it('set isFrozen', function (done) {
+            (gridObj.columns[1] as Column).isFrozen = true;
+            var dataB = function (args: any) {
+                gridObj.contentModule.getMovableContent().scrollLeft = 300;
+                done();
+            };
+            gridObj.dataBound = dataB;
+            gridObj.refreshColumns();
+        });
+
+        it('Ensure scrollLeft', function (done) {
+            (gridObj.columns[2] as any).isFrozen = true;
+            var dataB = function (args: any) {
+                var hdrScrollLeft = gridObj.headerModule.getMovableHeader().scrollLeft;
+                var cntScrollLeft = gridObj.contentModule.getMovableContent().scrollLeft;
+                expect(hdrScrollLeft).toBe(cntScrollLeft);
+                done();
+            };
+            gridObj.dataBound = dataB;
+            gridObj.refreshColumns();
         });
         afterAll(() => {
             gridObj['freezeModule'].destroy();

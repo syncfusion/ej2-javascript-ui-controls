@@ -305,7 +305,7 @@ function throwError(message) {
  */
 function print(element, printWindow) {
     let div = document.createElement('div');
-    let links = [].slice.call(document.getElementsByTagName('head')[0].querySelectorAll('link, style'));
+    let links = [].slice.call(document.getElementsByTagName('head')[0].querySelectorAll('base, link, style'));
     let reference = '';
     if (isNullOrUndefined(printWindow)) {
         printWindow = window.open('', 'print', 'height=452,width=1024,tabbar=no');

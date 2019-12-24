@@ -5,6 +5,7 @@ import { IAxisSet, IDataSet, PivotEngine, OlapEngine, ITupInfo } from '../../bas
 import { DrillThroughEventArgs } from '../../common';
 import { DrillThroughDialog } from '../../common/popups/drillthrough-dialog';
 import { EventHandler, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
+import { ColumnModel } from '@syncfusion/ej2-grids';
 
 /**
  * `DrillThrough` module.
@@ -151,10 +152,26 @@ export class DrillThrough {
             rawData: rawData,
             rowHeaders: pivotValue.rowHeaders === '' ? '' : pivotValue.rowHeaders.toString().split('.').join(' - '),
             columnHeaders: pivotValue.columnHeaders === '' ? '' : pivotValue.columnHeaders.toString().split('.').join(' - '),
-            value: valuetText + '(' + pivotValue.formattedText + ')'
+            value: valuetText + '(' + pivotValue.formattedText + ')',
+            gridColumns: this.drillThroughDialog.frameGridColumns()
         };
         let drillThrough: DrillThrough = this;
+        let gridColumns: ColumnModel[] = eventArgs.gridColumns;
         this.parent.trigger(events.drillThrough, eventArgs, (observedArgs: DrillThroughEventArgs) => {
+            if (isBlazor()) {
+                for (let i: number = 0; i < observedArgs.gridColumns.length; i++) {
+                    if (gridColumns[i].field === observedArgs.gridColumns[i].field) {
+                        gridColumns[i].field = observedArgs.gridColumns[i].field;
+                        gridColumns[i].editType = observedArgs.gridColumns[i].editType;
+                        gridColumns[i].headerText = observedArgs.gridColumns[i].headerText;
+                        gridColumns[i].type = observedArgs.gridColumns[i].type;
+                        gridColumns[i].validationRules = observedArgs.gridColumns[i].validationRules;
+                        gridColumns[i].visible = observedArgs.gridColumns[i].visible;
+                        gridColumns[i].width = observedArgs.gridColumns[i].width;
+                    }
+                }
+                observedArgs.gridColumns = gridColumns;
+            }
             drillThrough.drillThroughDialog.showDrillThroughDialog(observedArgs);
         });
     }

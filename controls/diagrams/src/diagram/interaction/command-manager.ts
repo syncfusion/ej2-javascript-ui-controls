@@ -460,7 +460,8 @@ export class CommandHandler {
             connector = this.diagram.currentDrawingObject as Connector;
         }
         let target: NodeModel | PointPortModel = this.findTarget(
-            args.targetWrapper, args.target, endPoint === 'ConnectorSourceEnd', true) as (NodeModel | PointPortModel);
+            (args.targetWrapper || args.sourceWrapper),
+            (args.target || args.actualObject), endPoint === 'ConnectorSourceEnd', true) as (NodeModel | PointPortModel);
         let nodeEndId: string = endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
         let portEndId: string = endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
         if (target instanceof Node) {
@@ -473,7 +474,7 @@ export class CommandHandler {
             oldNodeId = connector[nodeEndId];
             oldPortId = connector[portEndId];
             connector[portEndId] = target.id;
-            connector[nodeEndId] = (args.target as Node).id;
+            connector[nodeEndId] = (args.target && (args.target as Node).id || (args.actualObject as Node).id);
             newChanges[nodeEndId] = connector[nodeEndId] as Connector;
             newChanges[portEndId] = connector[portEndId] as Connector;
             let arg: IConnectionChangeEventArgs | IBlazorConnectionChangeEventArgs = {

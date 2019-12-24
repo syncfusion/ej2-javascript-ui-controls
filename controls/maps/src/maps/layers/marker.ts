@@ -324,7 +324,7 @@ export class Marker {
             clusterSeparate(this.sameMarkerData, this.maps, this.markerSVGObject, true);
         }
         let eventArgs: IMarkerClusterClickEventArgs = {
-            cancel: false, name: markerClusterClick, data: options.data, maps: this.maps,
+            cancel: false, name: markerClusterClick, data: options, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY,
             latitude: options.data["latitude"] || options.data["Latitude"], longitude: options.data["longitude"] || options.data["Longitude"]
         };

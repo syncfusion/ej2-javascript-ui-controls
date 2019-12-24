@@ -247,7 +247,7 @@ public isRemote(): boolean {
           rowDetails.rows[i].style.display = 'table-row';
         }
         if ((isBlazor() && (this.parent.dataSource[adaptorName] === 'BlazorAdaptor' && !this.parent[clientRender]))
-            || !this.parent.loadChildOnDemand) {
+            || this.parent.loadChildOnDemand) {
           let targetEle: Element = rowDetails.rows[i].getElementsByClassName('e-treegridcollapse')[0];
           if (!isNullOrUndefined(targetEle)) {
             addClass([targetEle], 'e-treegridexpand');
@@ -307,6 +307,17 @@ public isRemote(): boolean {
         setValue('action', 'beforecontentrender', e);
         this.parent.trigger(events.actionComplete, e);
         hideSpinner(this.parent.element);
+        if (this.parent.grid.aggregates.length > 0) {
+          let gridQuery: Query = getObject('query', e);
+          let result: string = 'result';
+          if (isNullOrUndefined(gridQuery)) {
+            gridQuery = getValue('grid.renderModule.data', this.parent).aggregateQuery(new Query());
+          }
+          if (!isNullOrUndefined(gridQuery)) {
+            let summaryQuery: QueryOptions[] = gridQuery.queries.filter((q: QueryOptions) => q.fn === 'onAggregates');
+            e[result] = this.parent.summaryModule.calculateSummaryValue(summaryQuery, e[result], true);
+          }
+        }
         e.count = this.parent.grid.pageSettings.totalRecordsCount;
         getValue('grid.renderModule', this.parent).dataManagerSuccess(e);
         this.parent.trigger(events.expanded, args);

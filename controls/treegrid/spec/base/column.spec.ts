@@ -140,6 +140,43 @@ describe('TreeGrid Column Module', () => {
       destroy(gridObj);
     });
   });
+  
+    describe('Stacked Header', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          columns: [
+            {headerText: 'Task Details', textAlign: 'Center', columns: [
+            { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 100 },
+            { field: 'taskName', headerText: 'Task Name', width: 250 },
+            ]},
+            { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 135 },
+        ]
+        },
+        done
+      );
+    });
+    it('column Checking after stacked header added dynamically', () => {
+      actionComplete = (args?: Object): void => {
+        if (args['requestType'] == "refresh" ) {
+          expect(gridObj.columns.length == 3).toBe(true);
+        }
+      }
+      gridObj.grid.actionComplete = actionComplete;
+      let cols: ColumnModel = {headerText: 'Price Details', columns: [{ field: 'unitPrice' },{ field: 'price'}]};
+      (gridObj.columns as ColumnModel[]).push(cols)
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

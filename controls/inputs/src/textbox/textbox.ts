@@ -687,17 +687,21 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     public destroy(): void {
         this.unWireEvents();
-        if (this.element.tagName === 'INPUT' && this.multiline) {
-            detach(this.textboxWrapper.container.getElementsByTagName('textarea')[0]);
-            this.respectiveElement = this.element;
-            this.element.removeAttribute('type');
+        if (!(isBlazor() && this.isServerRendered)) {
+            if (this.element.tagName === 'INPUT' && this.multiline) {
+                detach(this.textboxWrapper.container.getElementsByTagName('textarea')[0]);
+                this.respectiveElement = this.element;
+                this.element.removeAttribute('type');
+            }
+            this.respectiveElement.classList.remove('e-input');
+            this.removeAttributes(['aria-placeholder', 'aria-disabled', 'aria-readonly', 'aria-labelledby']);
+            this.textboxWrapper.container.insertAdjacentElement('afterend', this.respectiveElement);
+            detach(this.textboxWrapper.container);
+            this.textboxWrapper = null;
+            super.destroy();
+        } else {
+            this.textboxWrapper = null;
         }
-        this.respectiveElement.classList.remove('e-input');
-        this.removeAttributes(['aria-placeholder', 'aria-disabled', 'aria-readonly', 'aria-labelledby']);
-        this.textboxWrapper.container.insertAdjacentElement('afterend', this.respectiveElement);
-        detach(this.textboxWrapper.container);
-        this.textboxWrapper = null;
-        super.destroy();
     }
 
     /**

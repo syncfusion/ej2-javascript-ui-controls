@@ -549,6 +549,8 @@ export class DateTimePicker extends DatePicker {
      */
     public destroy(): void {
         if (this.popupObject && this.popupObject.element.classList.contains(POPUP)) {
+            this.popupObject.destroy();
+            detach(this.dateTimeWrapper);
             this.dateTimeWrapper = undefined;
             this.liCollections = this.timeCollections = [];
             if (!isNullOrUndefined(this.rippleFn)) {

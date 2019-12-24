@@ -98,6 +98,10 @@ export class StickyNotesAnnotation {
     public opacity: number;
     private isPageCommentsRendered: boolean = false;
     private isCommentsRendered: boolean = false;
+    /** 
+     * @private
+     */
+    public isAnnotationRendered: boolean = false;
 
     /**
      * @private
@@ -281,13 +285,26 @@ export class StickyNotesAnnotation {
                     let isInitialRender: boolean = false;
                     if (proxy.pdfViewerBase.annotationComments) {
                         // tslint:disable-next-line
-                        proxy.pdfViewerBase.annotationComments = (<any>Object).assign(data.annotationDetails, proxy.pdfViewerBase.annotationComments);
+                        proxy.pdfViewerBase.annotationComments = data.annotationDetails;
                     } else {
                         proxy.pdfViewerBase.annotationComments = data.annotationDetails;
                         isInitialRender = true;
                     }
                     if (data.annotationDetails && data.uniqueId === proxy.pdfViewerBase.documentId) {
-                        proxy.pdfViewerBase.documentAnnotationCollections = proxy.pdfViewerBase.annotationComments;
+                        proxy.isAnnotationRendered = true;
+                        // tslint:disable-next-line
+                        let annotationCollections: any;
+                        if (proxy.pdfViewerBase.documentAnnotationCollections) {
+                            // tslint:disable-next-line:max-line-length
+                            annotationCollections = proxy.updateAnnotationsInDocumentCollections(proxy.pdfViewerBase.annotationComments, proxy.pdfViewerBase.documentAnnotationCollections);
+                        } else {
+                            // tslint:disable-next-line
+                            let newCollection : any = proxy.pdfViewerBase.createAnnotationsCollection();
+                            // tslint:disable-next-line:max-line-length
+                            annotationCollections = proxy.updateAnnotationsInDocumentCollections(proxy.pdfViewerBase.annotationComments, newCollection);
+                        }
+                        proxy.pdfViewerBase.annotationComments = annotationCollections;
+                        proxy.pdfViewerBase.documentAnnotationCollections = annotationCollections;
                         for (let j: number = data.startPageIndex; j < data.endPageIndex; j++) {
                             if (data.annotationDetails[j]) {
                                 proxy.renderAnnotationCollections(data.annotationDetails[j], j, isInitialRender);
@@ -309,6 +326,78 @@ export class StickyNotesAnnotation {
         proxy.commentsRequestHandler.onError = function (result: any) {
             proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, proxy.pdfViewer.serverActionSettings.renderComments);
         };
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public updateAnnotationsInDocumentCollections(excistingAnnotation: any, newAnnotation: any): any {
+        for (let i: number = 0; i < this.pdfViewerBase.pageCount; i++) {
+            if (excistingAnnotation[i] && newAnnotation[i]) {
+                // tslint:disable-next-line:max-line-length
+                if (excistingAnnotation[i].textMarkupAnnotation && excistingAnnotation[i].textMarkupAnnotation.length !== 0 && newAnnotation[i].textMarkupAnnotation) {
+                    for (let j: number = 0; j < excistingAnnotation[i].textMarkupAnnotation.length; j++) {
+                        // tslint:disable-next-line:max-line-length
+                        this.updateDocumentAnnotationCollections(excistingAnnotation[i].textMarkupAnnotation[j], newAnnotation[i].textMarkupAnnotation);
+                    }
+                }
+                // tslint:disable-next-line:max-line-length
+                if (excistingAnnotation[i].shapeAnnotation && excistingAnnotation[i].shapeAnnotation.length !== 0 && newAnnotation[i].shapeAnnotation) {
+                    for (let j: number = 0; j < excistingAnnotation[i].shapeAnnotation.length; j++) {
+                        // tslint:disable-next-line:max-line-length
+                        this.updateDocumentAnnotationCollections(excistingAnnotation[i].shapeAnnotation[j], newAnnotation[i].shapeAnnotation);
+                    }
+                }
+                // tslint:disable-next-line:max-line-length
+                if (excistingAnnotation[i].measureShapeAnnotation && excistingAnnotation[i].measureShapeAnnotation.length !== 0 && newAnnotation[i].measureShapeAnnotation) {
+                    for (let j: number = 0; j < excistingAnnotation[i].measureShapeAnnotation.length; j++) {
+                        // tslint:disable-next-line:max-line-length
+                        this.updateDocumentAnnotationCollections(excistingAnnotation[i].measureShapeAnnotation[j], newAnnotation[i].measureShapeAnnotation);
+                    }
+                }
+                // tslint:disable-next-line:max-line-length
+                if (excistingAnnotation[i].stampAnnotations && excistingAnnotation[i].stampAnnotations.length !== 0 && newAnnotation[i].stampAnnotations) {
+                    for (let j: number = 0; j < excistingAnnotation[i].stampAnnotations.length; j++) {
+                        // tslint:disable-next-line:max-line-length
+                        this.updateDocumentAnnotationCollections(excistingAnnotation[i].stampAnnotations[j], newAnnotation[i].stampAnnotations);
+                    }
+                }
+                // tslint:disable-next-line:max-line-length
+                if (excistingAnnotation[i].stickyNotesAnnotation && excistingAnnotation[i].stickyNotesAnnotation.length !== 0 && newAnnotation[i].stickyNotesAnnotation) {
+                    for (let j: number = 0; j < excistingAnnotation[i].stickyNotesAnnotation.length; j++) {
+                        // tslint:disable-next-line:max-line-length
+                        this.updateDocumentAnnotationCollections(excistingAnnotation[i].stickyNotesAnnotation[j], newAnnotation[i].stickyNotesAnnotation);
+                    }
+                }
+                // tslint:disable-next-line:max-line-length
+                if (excistingAnnotation[i].freeTextAnnotation && excistingAnnotation[i].freeTextAnnotation.length !== 0 && newAnnotation[i].freeTextAnnotation) {
+                    for (let j: number = 0; j < excistingAnnotation[i].freeTextAnnotation.length; j++) {
+                        // tslint:disable-next-line:max-line-length
+                        this.updateDocumentAnnotationCollections(excistingAnnotation[i].freeTextAnnotation[j], newAnnotation[i].freeTextAnnotation);
+                    }
+                }
+            }
+        }
+        return newAnnotation;
+    }
+
+    // tslint:disable-next-line
+    private updateDocumentAnnotationCollections(excistingAnnotation: any, newAnnotation: any) {
+        if (newAnnotation.length === 0) {
+            newAnnotation.push(excistingAnnotation);
+        } else {
+            let isAdded: boolean = false;
+            for (let i: number = 0; i < newAnnotation.length; i++) {
+                if (excistingAnnotation.AnnotName === newAnnotation[i].AnnotName) {
+                    isAdded = true;
+                    break;
+                }
+            }
+            if (!isAdded) {
+                newAnnotation.push(excistingAnnotation);
+            }
+        }
     }
 
     // tslint:disable-next-line
@@ -532,8 +621,17 @@ export class StickyNotesAnnotation {
             // tslint:disable-next-line:max-line-length
             this.commentsContainer = createElement('div', { id: this.pdfViewer.element.id + 'commentscontainer' + pageIndex + '_' + this.commentsCount, className: 'e-pv-comments-container' });
             this.commentsContainer.accessKey = pageIndex.toString();
+            let isCommentsAdded: boolean = false;
             if (data) {
                 this.commentsContainer.id = data.AnnotName;
+                if (data.AnnotName) {
+                    for (let j: number = 0; j < accordionContent.childElementCount; j++) {
+                        if (accordionContent.children[j].id === data.AnnotName) {
+                            isCommentsAdded = true;
+                            break;
+                        }
+                    }
+                }
                 if (data.Name && data.Name === 'freeText') {
                     this.commentsContainer.setAttribute('name', 'freeText');
                 } else {
@@ -549,7 +647,9 @@ export class StickyNotesAnnotation {
             this.commentsCount = this.commentsCount + 1;
             this.commentsContainer.appendChild(commentDiv);
             this.updateCommentPanelScrollTop(pageIndex);
-            accordionContent.appendChild(this.commentsContainer);
+            if (!isCommentsAdded) {
+                accordionContent.appendChild(this.commentsContainer);
+            }
             let title: string;
             if (data) {
                 title = this.commentsContainer.getAttribute('name');
@@ -2736,6 +2836,7 @@ export class StickyNotesAnnotation {
         this.isCreateContextMenu = false;
         this.isPageCommentsRendered = false;
         this.isCommentsRendered = false;
+        this.isAnnotationRendered = false;
         if (this.commentMenuObj) {
             this.commentMenuObj.destroy();
         }

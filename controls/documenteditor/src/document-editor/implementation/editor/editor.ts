@@ -2365,7 +2365,7 @@ export class Editor {
     /**
      * @private
      */
-    public insertElementInCurrentLine(selection: Selection, inline: ElementBox, isReLayout: boolean): void {
+    public insertElementInCurrentLine(selection: Selection, inline: ElementBox): void {
         if (this.checkIsNotRedoing()) {
             selection.owner.isShiftingEnabled = true;
         }
@@ -2874,7 +2874,7 @@ export class Editor {
                 for (let k: number = 0; k < lineWidget.children.length; k++) {
                     let inlineCharacterFormat: WCharacterFormat = lineWidget.children[k].characterFormat;
                     let characterFormat: WCharacterFormat = inlineCharacterFormat.cloneFormat();
-                    lineWidget.children[k].characterFormat = insertFormat;
+                    lineWidget.children[k].characterFormat.copyFormat(insertFormat);
                     if (characterFormat.bold) {
                         lineWidget.children[k].characterFormat.bold = characterFormat.bold;
                     }
@@ -4428,9 +4428,12 @@ export class Editor {
     /**
      * @private
      */
-    public updateHeaderFooterWidget(): void {
-        this.updateHeaderFooterWidgetToPage(this.selection.start.paragraph.bodyWidget as HeaderFooterWidget);
-        let headerFooterWidget: HeaderFooterWidget = this.selection.start.paragraph.bodyWidget as HeaderFooterWidget;
+    public updateHeaderFooterWidget(headerFooterWidget?: HeaderFooterWidget): void {
+        if (isNullOrUndefined(headerFooterWidget)) {
+            headerFooterWidget = this.selection.start.paragraph.bodyWidget as HeaderFooterWidget;
+        }
+        this.updateHeaderFooterWidgetToPage(headerFooterWidget);
+
         this.shiftPageContent(headerFooterWidget.headerFooterType, headerFooterWidget.sectionFormat);
     }
     /**
@@ -8102,13 +8105,18 @@ export class Editor {
                 }
             }
         }
-
         let startListLevel: WListLevel = undefined;
         let levelNumber: number = -1;
+        let initialListLevel: WListLevel = undefined;
+        let isSameList: boolean = false;
         if (!isNullOrUndefined(list)) {
             levelNumber = currentParagraph.paragraphFormat.listFormat.listLevelNumber;
             let tempList: WList = this.viewer.getListById(currentParagraph.paragraphFormat.listFormat.listId);
             startListLevel = this.viewer.layout.getListLevel(tempList, levelNumber);
+            if (levelNumber > 0) {
+                initialListLevel = this.viewer.layout.getListLevel(tempList, 0);
+                isSameList = !isNullOrUndefined(initialListLevel) && levelNumber > 0 && selection.start.isInSameParagraph(selection.end);
+            }
             let abstractList: WAbstractList = tempList.abstractList;
             if (!abstractList) {
                 abstractList = this.viewer.getAbstractListById(list.abstractListId);
@@ -8128,9 +8136,9 @@ export class Editor {
                 }
             }
         }
-        if (isNullOrUndefined(list) || (!isNullOrUndefined(list) && ((startListLevel.listLevelPattern !== listLevelPattern) ||
-            startListLevel.numberFormat !== format || (startListLevel.characterFormat.fontFamily !== fontFamily
-                && startListLevel.listLevelPattern === 'Bullet')))) {
+        if (isNullOrUndefined(list) || (!isNullOrUndefined(list) && levelNumber === 0
+            && ((startListLevel.listLevelPattern !== listLevelPattern) || startListLevel.numberFormat !== format
+                || (startListLevel.characterFormat.fontFamily !== fontFamily && startListLevel.listLevelPattern === 'Bullet')))) {
             isUpdate = false;
             list = new WList();
             if (this.viewer.lists.length > 0) {
@@ -8164,12 +8172,27 @@ export class Editor {
                 selection.paragraphFormat.listLevelNumber = 0;
             }
             selection.paragraphFormat.setList(list);
+        } else if (isSameList && !isNullOrUndefined(list)) {
+            let tempList: WList = this.viewer.getListById(currentParagraph.paragraphFormat.listFormat.listId);
+            let listLevel: WListLevel = this.viewer.layout.getListLevel(tempList, levelNumber);
+            if (listLevelPattern === 'Bullet') {
+                listLevel.numberFormat = format;
+                listLevel.characterFormat.fontFamily = fontFamily;
+            } else {
+                listLevel.listLevelPattern = listLevelPattern;
+                let currentFormat: string = listLevel.numberFormat.substring(listLevel.numberFormat.length - 1);
+                if (format.substring(format.length - 1) !== listLevel.numberFormat.substring(listLevel.numberFormat.length - 1)) {
+                    listLevel.numberFormat = listLevel.numberFormat.replace(currentFormat, format.substring(format.length - 1));
+                }
+            }
+            selection.paragraphFormat.setList(tempList);
         } else if (!isNullOrUndefined(list) && isUpdate) {
             selection.paragraphFormat.setList(list);
         } else {
             selection.paragraphFormat.setList(undefined);
         }
     }
+
     private addListLevels(abstractListAdv: WAbstractList, listName: string, selection: Selection): void {
         let bulletCharacters: string[] = ['\uf076', '\uf0d8', '\uf0a7', '\uf0b7', '\uf0a8'];
         for (let i: number = abstractListAdv.levels.length; i < 9; i++) {
@@ -8593,12 +8616,28 @@ export class Editor {
                 return;
             }
         }
-        if (inline && (inline instanceof BookmarkElementBox && inline.bookmarkType === 1
-            || inline.previousNode instanceof BookmarkElementBox)) {
-            if (inline instanceof BookmarkElementBox) {
-                inline = inline.previousNode;
-                paragraph = inline.line.paragraph;
-                offset = inline.line.getOffset(inline, inline.length);
+        if (inline && (inline instanceof BookmarkElementBox || inline.previousNode instanceof BookmarkElementBox)) {
+            if (inline instanceof BookmarkElementBox && inline.bookmarkType === 1) {
+                if (inline.previousNode) {
+                    inline = inline.previousNode;
+                    paragraph = inline.line.paragraph;
+                    offset = inline.line.getOffset(inline, inline.length);
+                } else {
+                    // remove paragraph mark and move bookmark to previous paragraph
+                    if (paragraph.previousRenderedWidget instanceof ParagraphWidget) {
+                        let prevParagraph: ParagraphWidget = paragraph.previousRenderedWidget;
+                        let line: LineWidget = prevParagraph.lastChild as LineWidget;
+                        selection.start.setPositionParagraph(inline.line, inline.line.getOffset(inline, 0));
+                        selection.end.setPositionParagraph(line, line.getEndOffset());
+                        this.removeWholeElement(selection);
+                        return;
+                    }
+                }
+                // Remove bookmark if selection is in between bookmark start and end element.
+            } else if (inline.nextNode instanceof BookmarkElementBox && inline instanceof BookmarkElementBox &&
+                inline.bookmarkType === 0 && inline.reference === inline.nextNode) {
+                this.deleteBookmark(inline.name);
+                return;
             }
             if (inline.length === 1 && inline.nextNode instanceof BookmarkElementBox && inline.previousNode instanceof BookmarkElementBox) {
                 let begin: BookmarkElementBox = inline.previousNode;
@@ -9592,12 +9631,15 @@ export class Editor {
         bookmarkEnd.name = name;
         bookmark.reference = bookmarkEnd;
         bookmarkEnd.reference = bookmark;
-        this.viewer.bookmarks.add(name, bookmark);
         this.initComplexHistory('InsertBookmark');
         this.insertElements([bookmarkEnd], [bookmark]);
         if (this.editorHistory) {
             this.editorHistory.updateComplexHistoryInternal();
         }
+        if (this.viewer.owner.enableHeaderAndFooter) {
+            this.updateHeaderFooterWidget();
+        }
+        this.viewer.bookmarks.add(name, bookmark);
         this.selection.start.setPositionForSelection(bookmark.line, bookmark, 1, this.selection.start.location);
         this.selection.end.setPositionForSelection(bookmarkEnd.line, bookmarkEnd, 0, this.selection.end.location);
         this.selection.fireSelectionChanged(true);
@@ -9627,6 +9669,18 @@ export class Editor {
         this.viewer.bookmarks.remove(bookmark.name);
         bookmark.line.children.splice(bookmark.indexInOwner, 1);
         bookmark.reference.line.children.splice(bookmark.reference.indexInOwner, 1);
+        // Remove bookmark from header footer collections
+        let paragraph: ParagraphWidget = bookmark.line.paragraph;
+        if (bookmark.line.paragraph.isInHeaderFooter) {
+            let headerFooterWidget: HeaderFooterWidget = undefined;
+            if (paragraph.containerWidget instanceof TableCellWidget) {
+                // tslint:disable-next-line:max-line-length
+                headerFooterWidget = (paragraph.containerWidget as TableCellWidget).getContainerTable().containerWidget as HeaderFooterWidget;
+            } else if (paragraph.containerWidget instanceof HeaderFooterWidget) {
+                headerFooterWidget = paragraph.containerWidget;
+            }
+            this.updateHeaderFooterWidget(headerFooterWidget);
+        }
     }
     /**
      * @private
@@ -9634,19 +9688,19 @@ export class Editor {
     public getSelectionInfo(): SelectionInfo {
         let start: TextPosition = this.selection.start;
         let end: TextPosition = this.selection.end;
-        let isEmpty: boolean = this.selection.isEmpty;
         if (!this.selection.isForward) {
             start = this.selection.end;
             end = this.selection.start;
         }
-        let startElementInfo: ElementInfo = start.currentWidget.getInline(start.offset, 0);
-        let endElementInfo: ElementInfo = end.currentWidget.getInline(end.offset, 0);
         if (!(end.offset === this.selection.getLineLength(end.currentWidget) + 1
             && this.selection.isParagraphLastLine(end.currentWidget))) {
             end.offset += 1;
         }
-        // tslint:disable-next-line:max-line-length
-        return { 'start': start.clone(), 'end': end.clone(), 'startElementInfo': startElementInfo, 'endElementInfo': endElementInfo, 'isEmpty': isEmpty };
+        let blockInfo: ParagraphInfo = this.selection.getParagraphInfo(start);
+        let startIndex: string = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        blockInfo = this.selection.getParagraphInfo(end);
+        let endIndex: string = this.selection.getHierarchicalIndex(blockInfo.paragraph, blockInfo.offset.toString());
+        return { 'start': startIndex, 'end': endIndex };
     }
     /**
      * @private
@@ -9654,17 +9708,17 @@ export class Editor {
     public insertElements(endElements: ElementBox[], startElements?: ElementBox[]): void {
         let info: SelectionInfo = this.getSelectionInfo();
         if (!isNullOrUndefined(startElements)) {
-            this.insertElementsInternal(info.start, startElements);
+            this.insertElementsInternal(this.selection.getTextPosBasedOnLogicalIndex(info.start), startElements);
         }
         if (!isNullOrUndefined(endElements)) {
-            this.insertElementsInternal(info.end, endElements);
+            this.insertElementsInternal(this.selection.getTextPosBasedOnLogicalIndex(info.end), endElements);
         }
 
     }
     /**
      * @private
      */
-    public insertElementsInternal(position: TextPosition, elements: ElementBox[]): void {
+    public insertElementsInternal(position: TextPosition, elements: ElementBox[], isRelayout?: boolean): void {
         this.selection.selectPosition(position, position);
         this.initHistory('InsertElements');
         this.updateInsertPosition();
@@ -11435,11 +11489,8 @@ export class Editor {
  * @private
  */
 export interface SelectionInfo {
-    start: TextPosition;
-    end: TextPosition;
-    startElementInfo: ElementInfo;
-    endElementInfo: ElementInfo;
-    isEmpty: boolean;
+    start: string;
+    end: string;
 }
 /**
  * @private

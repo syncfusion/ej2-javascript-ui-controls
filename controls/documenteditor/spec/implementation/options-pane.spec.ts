@@ -115,7 +115,7 @@ describe('Options pane testing', () => {
         viewer = undefined;
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 500);
     });
 
     it('Showing optionspane testing using key press with single word', () => {
@@ -166,7 +166,7 @@ describe('Previous & Next navigation Options pane support testing', () => {
         viewer = undefined;
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 500);
     });
     it('previous navigation testing', () => {
         editor.open(getJson());
@@ -216,7 +216,7 @@ describe('Options pane support testing with clicking list & hovering list', () =
         viewer = undefined;
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 500);
     });
     it('result list block with clicking testing', () => {
         editor.open(getJson());
@@ -266,7 +266,7 @@ describe('Options pane support validation', () => {
         viewer = undefined;
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 500);
     });
     it('Empty text with clicking search icon testing', () => {
         editor.open(getJson());
@@ -345,7 +345,7 @@ describe('Options pane replace support', () => {
         viewer = undefined;
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 500);
     });
     it('Replace with empty content testing', () => {
         editor.open(getJson());
@@ -414,7 +414,7 @@ describe('Replace validation', () => {
         viewer = undefined;
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 500);
     });
     it('Replace text has no matches testing', () => {
         editor.open(getJson());
@@ -474,7 +474,7 @@ describe('Replace All testing', () => {
         viewer = undefined;
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 500);
     });
     it('Replace All testing without EditorHistory', () => {
         editor.open(getJson());
@@ -512,7 +512,7 @@ describe('Search options testing', () => {
         viewer = undefined;
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 500);
     });
     // it('regular change testing', () => {
     //     editor.open(getJson());
@@ -600,7 +600,7 @@ describe('Search options testing', () => {
         viewer = undefined;
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 500);
     });
     it('match case change validation', () => {
         editor.open(getJson());
@@ -656,7 +656,7 @@ describe('search options down arrow click testing', () => {
         viewer = undefined;
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 500);
     });
     it('search optionspane testing', () => {
         editor.open(getJson());
@@ -695,7 +695,7 @@ describe('search options down arrow click testing', () => {
         event.keyCode = 81;
         event.which = 81;
         optionsPane.onKeyDown(event);
-        expect((optionsPane as any).focusedElement.length).toBe(9);
+        expect((optionsPane as any).focusedElement.length).toBe(7);
     });
 });
 describe('tab navigation testing', () => {
@@ -723,7 +723,7 @@ describe('tab navigation testing', () => {
         viewer = undefined;
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 500);
     });
     it('search- tab navigation testing', () => {
         editor.open(getJson());
@@ -769,7 +769,7 @@ describe('tab navigation testing', () => {
         let optionsPane = editor.optionsPaneModule;
         optionsPane.showHideOptionsPane(true);
         optionsPane.onReplacePane();
-        (optionsPane as any).focusedIndex = 8;
+        (optionsPane as any).focusedIndex = 7;
         optionsPane.onKeyDownOnOptionPane(event);
         expect(document.activeElement.classList.contains('e-checkbox')).toBe(true);
     });
@@ -783,7 +783,7 @@ describe('tab navigation testing', () => {
         optionsPane.showHideOptionsPane(true);
         optionsPane.onReplacePane();
         (optionsPane as any).searchInput.value = 'Cycle';
-        (optionsPane as any).focusedIndex = 8;
+        (optionsPane as any).focusedIndex = 5;
         optionsPane.onKeyDownOnOptionPane(event);
         expect('').toBe('');
         optionsPane.onKeyDownOnOptionPane(event);
@@ -817,7 +817,7 @@ describe('open find pane and repalce pane testing', () => {
         viewer = undefined;
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 500);
     });
     it('focus list element testing', () => {
         editor.open(getJson());
@@ -916,7 +916,7 @@ describe('open find pane and repalce pane testing', () => {
         viewer = undefined;
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 500);
     });
     it('find pane testing', () => {
         editor.open(getJson());
@@ -946,11 +946,13 @@ describe('open find pane and repalce pane testing', () => {
         optionsPane.onReplacePane();
         expect(document.activeElement.classList.contains('e-de-search-input')).toBe(true);
         optionsPane.onKeyDownOnOptionPane(event);
-        expect(document.activeElement.classList.contains('e-checkbox')).toBe(true);
+        expect(document.activeElement.classList.contains('e-de-op-close-button')).toBe(true);
+        (optionsPane as any).replaceAllButton.disabled = false;
+        (optionsPane as any).replaceButton.disabled = false;
         optionsPane.onKeyDownOnOptionPane(event);
-        expect(document.activeElement.classList.contains('e-checkbox')).toBe(true);
+        expect(document.activeElement.classList.contains('e-replaceall')).toBe(true);
         optionsPane.onKeyDownOnOptionPane(event);
-        expect(document.activeElement.classList.contains('e-input-group-icon')).toBe(true);
+        expect(document.activeElement.classList.contains('e-replace')).toBe(true);
         optionsPane.onKeyDownOnOptionPane(event);
         event.keyCode = 13;
         event.which = 13;
@@ -975,13 +977,15 @@ describe('open find pane and repalce pane testing', () => {
         optionsPane.onReplacePane();
         expect(document.activeElement.classList.contains('e-de-search-input')).toBe(true);
         optionsPane.onKeyDownOnOptionPane(event);
-        expect(document.activeElement.classList.contains('e-checkbox')).toBe(true);
+        expect(document.activeElement.classList.contains('e-de-op-close-button')).toBe(true);
+        (optionsPane as any).replaceAllButton.disabled = false;
+        (optionsPane as any).replaceButton.disabled = false;
         optionsPane.onKeyDownOnOptionPane(event);
-        expect(document.activeElement.classList.contains('e-checkbox')).toBe(true);
+        expect(document.activeElement.classList.contains('e-replaceall')).toBe(true);
         optionsPane.onKeyDownOnOptionPane(event);
-        expect(document.activeElement.classList.contains('e-de-op-icon')).toBe(true);
+        expect(document.activeElement.classList.contains('e-replace')).toBe(true);
         optionsPane.onKeyDownOnOptionPane(event);
-        expect(document.activeElement.classList.contains('e-arrow-up')).toBe(true);
+        expect(document.activeElement.classList.contains('e-de-op-replacewith')).toBe(true);
         optionsPane.onKeyDownOnOptionPane(event);
         event.keyCode = 13;
         event.which = 13;
@@ -996,7 +1000,7 @@ describe('open find pane and repalce pane testing', () => {
         optionsPane.showHideOptionsPane(true);
         optionsPane.selectedTabItem(event);
         expect(document.activeElement.classList.contains('e-de-search-input')).toBe(true);
-        (optionsPane as any).replaceTabButtonHeader.parentElement.classList.add('e-active');
+        //(optionsPane as any).replaceTabButtonHeader.parentElement.classList.add('e-active');
         optionsPane.close();
         optionsPane.showHideOptionsPane(true);
         expect(document.activeElement.classList.contains('e-de-search-input')).toBe(true);
@@ -1038,7 +1042,7 @@ describe('Close Options pane support testing', () => {
         viewer = undefined;
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 500);
     });
     it('Pressing back space testing with single character', () => {
         editor.open(getJson());
@@ -1105,7 +1109,7 @@ describe('Close Options pane support testing', () => {
         viewer = undefined;
         setTimeout(function () {
             done();
-        }, 1000);
+        }, 500);
     });
     it('destroy method validation1', () => {
         (optionsPane as any).searchText = undefined;

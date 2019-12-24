@@ -114,12 +114,13 @@ export class PageSetupDialog {
         this.initLayoutProperties(this.layoutTab, locale, isRtl);
         let tabObj: Tab = new Tab({ enableRtl: isRtl }, ejtab);
         this.target.addEventListener('keyup', this.keyUpInsertPageSettings);
-        let marginTabHeader: HTMLElement = tabObj.element.getElementsByClassName('e-item e-toolbar-item')[0] as HTMLElement;
-        let marginTabHeaderItem: HTMLElement = marginTabHeader.getElementsByClassName('e-tab-wrap')[0] as HTMLElement;
-        marginTabHeaderItem.classList.add('e-de-page-setup-dlg-margin-tab-header');
-        if (isRtl) {
-            marginTabHeaderItem.classList.add('e-de-rtl');
-        }
+
+        // let marginTabHeader: HTMLElement = tabObj.element.getElementsByClassName('e-item e-toolbar-item')[0] as HTMLElement;
+        // let marginTabHeaderItem: HTMLElement = marginTabHeader.getElementsByClassName('e-tab-wrap')[0] as HTMLElement;
+        // marginTabHeaderItem.classList.add('e-de-page-setup-dlg-margin-tab-header');
+        // if (isRtl) {
+        //     marginTabHeaderItem.classList.add('e-de-rtl');
+        // }
     }
 
     /**

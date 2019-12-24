@@ -3,7 +3,6 @@ import { PivotView } from '../base/pivotview';
 import { contentReady } from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
 import { PivotEngine, OlapEngine } from '../../base';
-import { showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { Column } from '@syncfusion/ej2-grids';
 
 /**
@@ -132,10 +131,10 @@ export class VirtualScroll {
                 let section: number = Math.ceil(top / exactSize);
                 if ((this.parent.scrollPosObject.vertical === section ||
                     engine.pageSettings.rowSize >= engine.rowCount)) {
-                    hideSpinner(this.parent.element);
+                    this.parent.hideWaitingPopup();
                     return;
                 }
-                showSpinner(this.parent.element);
+                this.parent.showWaitingPopup();
                 this.parent.scrollPosObject.vertical = section;
                 engine.pageSettings.rowCurrentPage = section > 1 ? section : 1;
                 let rowStartPos: number = 0;
@@ -189,10 +188,10 @@ export class VirtualScroll {
                     colValues * this.parent.gridSettings.columnWidth);
                 let section: number = Math.ceil(left / exactSize);
                 if (this.parent.scrollPosObject.horizontal === section) {
-                    hideSpinner(this.parent.element);
+                    this.parent.hideWaitingPopup();
                     return;
                 }
-                showSpinner(this.parent.element);
+                this.parent.showWaitingPopup();
                 let pivot: PivotView = this.parent;
                 pivot.scrollPosObject.horizontal = section;
                 engine.pageSettings.columnCurrentPage = section > 1 ? section : 1;

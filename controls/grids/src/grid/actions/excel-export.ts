@@ -561,7 +561,9 @@ export class ExcelExport {
     // tslint:disable-next-line:max-line-length
     private processAggregates(gObj: IGrid, rec: Object[], excelRows: ExcelRow[], currentViewRecords?: Object[], indent?: number, byGroup?: boolean): ExcelRow[] {
         let summaryModel: SummaryModelGenerator = new SummaryModelGenerator(gObj);
-
+        if (gObj.aggregates.length && this.parent !== gObj) {
+            gObj.aggregateModule.prepareSummaryInfo();
+        }
         let data: Object[] | Group = undefined;
         if (!isNullOrUndefined(currentViewRecords)) {
             data = currentViewRecords;
@@ -669,14 +671,18 @@ export class ExcelExport {
     }
 
     private aggregateStyle(col: AggregateColumnModel, style: ExcelStyle, field: string): void {
+        let column: Column = this.parent.getColumnByField(field);
         if (typeof col.format === 'object') {
             let format: DateFormatOptions = col.format;
             style.numberFormat = !isNullOrUndefined(format.format) ? format.format : format.skeleton;
-            style.type = !isNullOrUndefined(format.type) ? format.type.toLowerCase() :
-            this.parent.getColumnByField(field).type.toLowerCase();
+            if (!isNullOrUndefined(format.type)) {
+                style.type = format.type.toLowerCase();
+            }
         } else {
             style.numberFormat = col.format;
-            style.type = this.parent.getColumnByField(field).type.toLowerCase();
+        }
+        if (!isNullOrUndefined(column) && isNullOrUndefined(style.type)) {
+            style.type = column.type.toLowerCase();
         }
     }
 

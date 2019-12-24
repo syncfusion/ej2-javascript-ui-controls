@@ -3,11 +3,12 @@
  */
 import { Maps, ILoadedEventArgs, DataLabel, Zoom } from '../../../src/index';
 import { createElement, remove, setCulture, setCurrencyCode } from '@syncfusion/ej2-base';
-import { usMap } from '../data/data.spec';
+import { usMap , World_Map} from '../data/data.spec';
 import { electiondata } from '../data/us-data.spec';
 import { IDataLabelArgs } from '../../../src/maps/model/interface';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
 import { getElement } from '../../../src/maps/utils/helper';
+//import { world_Map } from '../../../demos/MapData/worldMap';
 Maps.Inject(DataLabel, Zoom);
 
 export function getElementByID(id: string): Element {
@@ -363,6 +364,91 @@ describe('Map layer testing', () => {
             label.layers[0].dataLabelSettings.visible = true;
             label.layers[0].dataLabelSettings.border.width = 2;
             label.layers[0].dataLabelSettings.border.color = "red"; 
+            label.refresh();
+        });
+    });
+	describe('datalabel for sublayer with point type data', () => {
+        let id: string = 'label';
+        let label: Maps;
+        let ele: HTMLDivElement;
+        let spec: Element;
+        let empty_Map: Object = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "name": "Afghanistan"
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            17.9296875,
+                            28.613459424004414
+                        ]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "name": "Argentina"
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            17.578125,
+                            16.636191878397664
+                        ]
+                    }
+                },
+                {
+                    "type": "Feature",
+                    "properties": {
+                        "name": "Australia"
+                    },
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [
+                            19.6875,
+                            30.14512718337613
+                        ]
+                    }
+                }
+            ]
+        };
+        let prevent: Function = (): void => {
+            //Prevent Function
+        };
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+
+            label = new Maps({
+                layers: [{
+                    shapeSettings: {
+                        fill: '#C3E6ED'
+                    },
+                    shapeData: World_Map,
+                },
+                {
+                    type: 'SubLayer',
+                    shapeData: empty_Map,
+                    dataLabelSettings: {
+                        visible: true,
+                        labelPath: 'name'
+                    },
+                }
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            label.destroy();
+        });
+        it('checking with datalabel with intersection', () => {
+            label.loaded = (args: ILoadedEventArgs) => {
+            };
+            label.layers[1].dataLabelSettings.intersectionAction= "Hide"; 
             label.refresh();
         });
     });

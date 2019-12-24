@@ -3063,7 +3063,30 @@ function getLabelText(currentPoint, series, chart) {
     var customLabelFormat = labelFormat.match('{value}') !== null;
     switch (series.seriesType) {
         case 'XY':
-            text.push(currentPoint.text || currentPoint.yValue.toString());
+            /**
+             * I255790
+             * For Polar radar series, the dataLabel appears out of range when axis range is given for yaxis
+             * Cause: Since symbol location for the points which did not lies in within range, lies outside of seriesRect.
+             * Fix: DataLabel rendered after checking WithIn for the points
+             */
+            if (series.chart.chartAreaType === 'PolarRadar') {
+                if (series.drawType.indexOf('Stacking') !== -1) {
+                    if ((series.yAxis.valueType === 'Logarithmic' &&
+                        logWithIn(series.stackedValues.endValues[currentPoint.index], series.yAxis)) ||
+                        withIn(series.stackedValues.endValues[currentPoint.index], series.yAxis.visibleRange)) {
+                        text.push(currentPoint.text || currentPoint.yValue.toString());
+                    }
+                }
+                else {
+                    if ((series.yAxis.valueType === 'Logarithmic' && logWithIn(currentPoint.yValue, series.yAxis)) ||
+                        withIn(currentPoint.yValue, series.yAxis.visibleRange)) {
+                        text.push(currentPoint.text || currentPoint.yValue.toString());
+                    }
+                }
+            }
+            else {
+                text.push(currentPoint.text || currentPoint.yValue.toString());
+            }
             break;
         case 'HighLow':
             text.push(currentPoint.text || Math.max(currentPoint.high, currentPoint.low).toString());
@@ -4617,7 +4640,7 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
         var rotateSize;
         var diffHeight;
         var angle = axis.angle % 360;
-        var anglePadding = ((angle === 90 || angle === -90)) ? -2 : 0;
+        var anglePadding = ((angle === 90) ? -4 : 0) || ((angle === -90) ? 4 : 0);
         var options;
         var yLocation;
         var labelWidth;

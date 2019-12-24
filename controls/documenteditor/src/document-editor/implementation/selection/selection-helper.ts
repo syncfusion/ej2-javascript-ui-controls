@@ -440,10 +440,12 @@ export class TextPosition {
             let info: ElementInfo = this.currentWidget.getInline(this.offset, index) as ElementInfo;
             inline = info.element;
             index = info.index;
-            if (!isNullOrUndefined(inline) && index === inline.length && inline.nextNode instanceof FieldElementBox) {
+            if (!isNullOrUndefined(inline) && index === inline.length && (inline.nextNode instanceof FieldElementBox
+                || inline.nextNode instanceof BookmarkElementBox)) {
                 let nextValidInline: ElementBox = this.selection.getNextValidElement((inline.nextNode as FieldElementBox)) as ElementBox;
-                //Moves to field end mark.
-                if (nextValidInline instanceof FieldElementBox && nextValidInline.fieldType === 1) {
+                //Moves to field end mark or Bookmark end.
+                if (nextValidInline instanceof FieldElementBox && nextValidInline.fieldType === 1
+                    || nextValidInline instanceof BookmarkElementBox && nextValidInline.bookmarkType === 1) {
                     inline = nextValidInline as FieldElementBox;
                     this.offset = this.currentWidget.getOffset(inline, 1);
                 }

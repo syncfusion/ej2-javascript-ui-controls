@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.40 (2019-12-24)
+
+### Chart
+
+#### Bug Fixes
+
+- `#257935` - Axis labels rotated at 90 degree alignment issue now fixed.
+
 ## 17.4.39 (2019-12-17)
 
 ### RangeNavigator

@@ -86,6 +86,12 @@ export class ViewSource {
                 this.updateSourceCode(event);
                 event.preventDefault();
                 break;
+            case 'toolbar-focus':
+                if (this.parent.toolbarSettings.enable) {
+                    let selector: string = '.e-toolbar-item[aria-disabled="false"][title] [tabindex]';
+                    (this.parent.toolbarModule.baseToolbar.toolbarObj.element.querySelector(selector) as HTMLElement).focus();
+                }
+                break;
         }
     }
 

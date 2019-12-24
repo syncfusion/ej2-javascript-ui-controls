@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.40 (2019-12-24)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#258522` - The issue with the connector that is not attached to the node when we draw a connector at the edge of the port has been fixed.
+
 ## 17.4.39 (2019-12-17)
 
 ### Diagram

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.40 (2019-12-24)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#254606` - Web accessibility related issues have been resolved.
+
 ## 17.4.39 (2019-12-17)
 
 ### RichTextEditor

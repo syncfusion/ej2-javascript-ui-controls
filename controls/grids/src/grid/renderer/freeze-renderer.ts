@@ -16,6 +16,7 @@ export class FreezeContentRender extends ContentRender implements IRenderer {
     private frozenContent: Element;
     private movableContent: Element;
 
+
     constructor(parent?: IGrid, locator?: ServiceLocator) {
         super(parent, locator);
     }
@@ -142,13 +143,18 @@ export class FreezeRender extends HeaderRender implements IRenderer {
     }
 
     public refreshUI(): void {
-        if (!isBlazor() || this.parent.frozenRows === 0) {
+        if (!(isBlazor() && this.parent.isServerRendered) || this.parent.frozenRows === 0) {
             let tbody: Element = this.getMovableHeader().querySelector('tbody');
             remove(this.getMovableHeader().querySelector('table'));
             super.refreshUI();
             this.rfshMovable();
             this.getMovableHeader().querySelector('tbody').innerHTML = tbody.innerHTML;
         } else {
+            if (this.parent.getFrozenColumns() && this.freezeReorder) {
+                super.refreshUI();
+                this.freezeReorder = false;
+                super.refreshUI();
+            }
             this.rfshMovable();
         }
         if (!isBlazor() || this.parent.frozenRows === 0) {
@@ -268,7 +274,7 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         let height: number[] = [];
         let width: number[] = [];
         for (let i: number = 0, len: number = fRows.length; i < len; i++) { //separate loop for performance issue 
-            if (!fRows[i].classList.contains('e-columnheader') && !isNullOrUndefined(fRows[i]) && !isNullOrUndefined(mRows[i])) {
+            if (!isNullOrUndefined(fRows[i]) && !isNullOrUndefined(mRows[i])) {
                 height[i] = fRows[i].offsetHeight; //https://pagebuildersandwich.com/increased-plugins-performance-200/
                 width[i] = mRows[i].offsetHeight;
             }

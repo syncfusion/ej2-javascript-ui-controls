@@ -312,7 +312,7 @@ function throwError(message) {
  */
 function print(element, printWindow) {
     var div = document.createElement('div');
-    var links = [].slice.call(document.getElementsByTagName('head')[0].querySelectorAll('link, style'));
+    var links = [].slice.call(document.getElementsByTagName('head')[0].querySelectorAll('base, link, style'));
     var reference = '';
     if (isNullOrUndefined(printWindow)) {
         printWindow = window.open('', 'print', 'height=452,width=1024,tabbar=no');

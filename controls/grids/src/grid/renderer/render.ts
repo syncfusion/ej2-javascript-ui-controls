@@ -531,8 +531,9 @@ export class Render {
     private iterateComplexColumns(obj: Object, field: string, split: Object): void {
         let keys: string[] = Object.keys(obj);
         for (let i: number = 0; i < keys.length; i++) {
-            let childKeys: string[] = Object.keys(obj[keys[i]]);
-            if (typeof obj[keys[i]] === 'object' && childKeys.length) {
+            let childKeys: string[] =  typeof obj[keys[i]] === 'object' && obj[keys[i]] && !(obj[keys[i]] instanceof Date) ?
+            Object.keys(obj[keys[i]]) : [];
+            if (childKeys.length) {
                 this.iterateComplexColumns(obj[keys[i]], field + (keys[i] + '.'), split);
             } else {
                 split[this.counter] = field + keys[i];

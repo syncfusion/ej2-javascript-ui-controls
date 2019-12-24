@@ -618,6 +618,7 @@ export class Selection implements IAction {
             }
             this.clearRowSelection();
             this.clearCellSelection();
+            this.prevRowIndex = undefined;
             this.enableSelectMultiTouch = false;
         }
     }
@@ -730,7 +731,8 @@ export class Selection implements IAction {
         if ((this.selectionSettings.persistSelection && this.isInteracted) || !this.selectionSettings.persistSelection) {
             let cancl: string = 'cancel';
             let rowDeselectObj: Object = {
-                rowIndex: rowIndex, data: data, foreignKeyData: foreignKeyData,
+                rowIndex: rowIndex, data: this.selectionSettings.persistSelection && this.parent.checkAllRows === 'Uncheck' ?
+                 this.persistSelectedData : data, foreignKeyData: foreignKeyData,
                 cancel: false, target: this.actualTarget, isInteracted: this.isInteracted
             };
             if (!isBlazor() || this.parent.isJsComponent) {
@@ -2294,7 +2296,9 @@ export class Selection implements IAction {
     private clickHandler(e: MouseEvent): void {
         let target: HTMLElement = e.target as HTMLElement;
         this.actualTarget = target;
-        this.isInteracted = true;
+        if (parentsUntil(target, 'e-row') || parentsUntil(target, 'e-headerchkcelldiv')) {
+            this.isInteracted = true;
+        }
         this.isMultiCtrlRequest = e.ctrlKey || this.enableSelectMultiTouch ||
             (this.isMacOS && this.cmdKeyPressed);
         this.isMultiShiftRequest = e.shiftKey;
@@ -2684,6 +2688,7 @@ export class Selection implements IAction {
         this.onDataBoundFunction = this.onDataBound.bind(this);
         this.parent.addEventListener(events.dataBound, this.onDataBoundFunction);
         this.parent.on(events.contentReady, this.checkBoxSelectionChanged, this);
+        this.parent.on(events.onEmpty, this.setCheckAllForEmptyGrid, this);
         this.actionCompleteFunc = this.actionCompleteHandler.bind(this);
         this.parent.addEventListener(events.actionComplete, this.actionCompleteFunc);
         this.parent.on(events.click, this.clickHandler, this);
@@ -2699,13 +2704,24 @@ export class Selection implements IAction {
         this.parent.off(events.dataReady, this.dataReady);
         this.parent.removeEventListener(events.dataBound, this.onDataBoundFunction);
         this.parent.removeEventListener(events.actionComplete, this.actionCompleteFunc);
+        this.parent.off(events.onEmpty, this.setCheckAllForEmptyGrid);
         this.parent.off(events.click, this.clickHandler);
+    }
+
+    private setCheckAllForEmptyGrid(): void {
+        let checkAllBox: HTMLElement = this.getCheckAllBox();
+        if (checkAllBox) {
+            this.parent.isCheckBoxSelection = true;
+            let spanEle: HTMLElement = checkAllBox.nextElementSibling as HTMLElement;
+            removeClass([spanEle], ['e-check', 'e-stop', 'e-uncheck']);
+        }
     }
 
     public dataReady(e: { requestType: string }): void {
         if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection) {
             this.disableUI = true;
             this.clearSelection();
+            this.setCheckAllState();
             this.disableUI = false;
         }
     }

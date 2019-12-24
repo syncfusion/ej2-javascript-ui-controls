@@ -1361,7 +1361,7 @@ class DataManipulation {
                     rowDetails.rows[i].style.display = 'table-row';
                 }
                 if ((isBlazor() && (this.parent.dataSource[adaptorName] === 'BlazorAdaptor' && !this.parent[clientRender]))
-                    || !this.parent.loadChildOnDemand) {
+                    || this.parent.loadChildOnDemand) {
                     let targetEle = rowDetails.rows[i].getElementsByClassName('e-treegridcollapse')[0];
                     if (!isNullOrUndefined(targetEle)) {
                         addClass([targetEle], 'e-treegridexpand');
@@ -1417,6 +1417,17 @@ class DataManipulation {
                 setValue('action', 'beforecontentrender', e);
                 this.parent.trigger(actionComplete, e);
                 hideSpinner(this.parent.element);
+                if (this.parent.grid.aggregates.length > 0) {
+                    let gridQuery = getObject('query', e);
+                    let result = 'result';
+                    if (isNullOrUndefined(gridQuery)) {
+                        gridQuery = getValue('grid.renderModule.data', this.parent).aggregateQuery(new Query());
+                    }
+                    if (!isNullOrUndefined(gridQuery)) {
+                        let summaryQuery = gridQuery.queries.filter((q) => q.fn === 'onAggregates');
+                        e[result] = this.parent.summaryModule.calculateSummaryValue(summaryQuery, e[result], true);
+                    }
+                }
                 e.count = this.parent.grid.pageSettings.totalRecordsCount;
                 getValue('grid.renderModule', this.parent).dataManagerSuccess(e);
                 this.parent.trigger(expanded, args);
@@ -1904,6 +1915,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
      * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>}
+     * @blazorType void
      */
     excelExport(excelExportProperties, isMultipleExport, 
     /* tslint:disable-next-line:no-any */
@@ -1917,7 +1929,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
      * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>}
-     *
+     * @blazorType void
      */
     csvExport(excelExportProperties, 
     /* tslint:disable-next-line:no-any */
@@ -1931,7 +1943,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
      * @param  {pdfDoc} pdfDoc - Defined the Pdf Document if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>}
-     *
+     * @blazorType void
      */
     pdfExport(pdfExportProperties, 
     /* tslint:disable-next-line:no-any */
@@ -2341,10 +2353,16 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             this.columns[i].uid = this.grid.columns[i].uid;
         }
         this.wireEvents();
+        let processModel = 'processModel';
+        this.grid[processModel]();
         gridObserver.off('component-rendered', this.gridRendered);
     }
     setBlazorGUID() {
         let guid = 'guid';
+        if (this.editSettings) {
+            this.grid.editSettings[guid] = this.editSettings[guid];
+            this.grid.editSettings.template = this.editSettings.template;
+        }
         for (let i = 0; i < this.aggregates.length; i++) {
             for (let j = 0; j < this.aggregates[i].columns.length; j++) {
                 this.grid.aggregates[i].columns[j][guid] = this.aggregates[i].columns[j][guid];
@@ -3297,13 +3315,17 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
      * @param {RowPosition} position - Defines the new row position to be added.
      */
     addRecord(data, index, position) {
-        this.editModule.addRecord(data, index, position);
+        if (this.editModule) {
+            this.editModule.addRecord(data, index, position);
+        }
     }
     /**
      * Cancels edited state.
      */
     closeEdit() {
-        this.grid.editModule.closeEdit();
+        if (this.grid.editModule) {
+            this.grid.editModule.closeEdit();
+        }
     }
     /**
      * Delete a record with Given options. If fieldName and data is not given then TreeGrid will delete the selected record.
@@ -3312,14 +3334,18 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
      * @param {Object} data - Defines the JSON data of the record to be deleted.
      */
     deleteRecord(fieldName, data) {
-        this.grid.editModule.deleteRecord(fieldName, data);
+        if (this.grid.editModule) {
+            this.grid.editModule.deleteRecord(fieldName, data);
+        }
     }
     /**
      * To edit any particular row by TR element.
      * @param {HTMLTableRowElement} tr - Defines the table row to be edited.
      */
     startEdit(row) {
-        this.grid.editModule.startEdit(row);
+        if (this.grid.editModule) {
+            this.grid.editModule.startEdit(row);
+        }
     }
     /**
      * To edit any particular cell using row index and cell index.
@@ -3327,7 +3353,9 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
      * @param {string} field - Defines the field name of the column to perform cell edit.
      */
     editCell(rowIndex, field) {
-        this.editModule.editCell(rowIndex, field);
+        if (this.editModule) {
+            this.editModule.editCell(rowIndex, field);
+        }
     }
     /**
      * Enables or disables ToolBar items.
@@ -3335,20 +3363,26 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
      * @param {boolean} isEnable - Defines the items to be enabled or disabled.
      */
     enableToolbarItems(items, isEnable) {
-        this.grid.toolbarModule.enableItems(items, isEnable);
+        if (this.grid.toolbarModule) {
+            this.grid.toolbarModule.enableItems(items, isEnable);
+        }
     }
     /**
      * If TreeGrid is in editable state, you can save a record by invoking endEdit.
      */
     endEdit() {
-        this.grid.editModule.endEdit();
+        if (this.grid.editModule) {
+            this.grid.editModule.endEdit();
+        }
     }
     /**
      * Delete any visible row by TR element.
      * @param {HTMLTableRowElement} tr - Defines the table row element.
      */
     deleteRow(tr) {
-        this.grid.editModule.deleteRow(tr);
+        if (this.grid.editModule) {
+            this.grid.editModule.deleteRow(tr);
+        }
     }
     /**
      * Get the names of the primary key columns of the TreeGrid.
@@ -3382,7 +3416,9 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
      * @return {void}
      */
     goToPage(pageNo) {
-        this.grid.pagerModule.goToPage(pageNo);
+        if (this.grid.pagerModule) {
+            this.grid.pagerModule.goToPage(pageNo);
+        }
     }
     /**
      * Defines the text of external message.
@@ -3543,6 +3579,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     }
     updateColumnModel(column) {
         this.columnModel = [];
+        let stackedHeader = false;
         if (!isBlazor() || !this.isServerRendered) {
             let gridColumns = isNullOrUndefined(column) ? this.grid.getColumns() : column;
             let gridColumn;
@@ -3557,7 +3594,12 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             }
             let merge$$1 = 'deepMerge';
             this[merge$$1] = ['columns']; // Workaround for blazor updateModel
-            this.setProperties({ columns: this.columnModel }, true);
+            if (this.grid.columns.length !== this.columnModel.length) {
+                stackedHeader = true;
+            }
+            if (!stackedHeader) {
+                this.setProperties({ columns: this.columnModel }, true);
+            }
             this[merge$$1] = undefined; // Workaround for blazor updateModel
         }
         return this.columnModel;
@@ -4891,19 +4933,23 @@ function addAction(details, treeData, control, isSelfReference, addRowIndex, sel
             break;
         case 'Above':
             if (!isNullOrUndefined(addRowRecord)) {
-                value = addRowRecord;
+                value = extend({}, addRowRecord);
+                value = getPlainData(value);
             }
             else {
-                value = currentViewRecords[addRowIndex + 1];
+                value = extend({}, currentViewRecords[addRowIndex + 1]);
+                value = getPlainData(value);
             }
             break;
         case 'Below':
         case 'Child':
             if (!isNullOrUndefined(addRowRecord)) {
-                value = addRowRecord;
+                value = extend({}, addRowRecord);
+                value = getPlainData(value);
             }
             else {
-                value = currentViewRecords[addRowIndex];
+                value = extend({}, currentViewRecords[addRowIndex]);
+                value = getPlainData(value);
             }
             if (selectedIndex === -1) {
                 treeData.unshift(value);
@@ -5396,6 +5442,12 @@ class RowDD$1 {
             spanContent.className = 'errorValue';
             spanContent.style.paddingLeft = '16px';
             spanContent.innerHTML = content;
+            if (!isNullOrUndefined(spanContent.children) && spanContent.children.length >= 1
+                && spanContent.children[0].classList.contains('e-treecolumn-container')) {
+                spanContent.children[0].style.display = 'inline-block';
+                spanContent.children[0].style.verticalAlign = 'middle';
+                ele.style.display = 'inline-block';
+            }
             dragelem.querySelector('.e-rowcell').appendChild(ele);
             dragelem.querySelector('.e-rowcell').appendChild(spanContent);
         }
@@ -5831,15 +5883,22 @@ class RowDD$1 {
                     this.removeChildItem(deletedRow);
                 }
                 let idx;
+                let idz;
                 let treeGridData = dataSource;
                 for (let i = 0; i < treeGridData.length; i++) {
                     if (treeGridData[i][this.parent.idMapping] === deletedRow.taskData[this.parent.idMapping]) {
                         idx = i;
                     }
                 }
-                if (idx !== -1) {
+                for (let i = 0; i < this.treeGridData.length; i++) {
+                    if (this.treeGridData[i][this.parent.idMapping] === deletedRow.taskData[this.parent.idMapping]) {
+                        idz = i;
+                        break;
+                    }
+                }
+                if (idx !== -1 || idz !== -1) {
                     dataSource.splice(idx, 1);
-                    this.treeGridData.splice(idx, 1);
+                    this.treeGridData.splice(idz, 1);
                 }
             }
             let recordIndex = this.treeGridData.indexOf(deletedRow);
@@ -6858,42 +6917,46 @@ class Aggregate$1 {
         for (let i = 0, len = dataLength; i < len; i++) {
             parentRecord = parentRecords[i];
             childRecordsLength = this.getChildRecordsLength(parentRecord, flatRecords);
-            for (let summaryRowIndex = 1, len = summaryLength; summaryRowIndex <= len; summaryRowIndex++) {
-                let item;
-                item = {};
-                for (let columnIndex = 0, len = columnLength; columnIndex < len; columnIndex++) {
-                    let field = isNullOrUndefined(getObject('field', this.parent.columns[columnIndex])) ?
-                        this.parent.columns[columnIndex] : getObject('field', this.parent.columns[columnIndex]);
-                    item[field] = null;
-                }
-                if (this.parent.aggregates[summaryRowIndex - 1].showChildSummary) {
-                    item = this.createSummaryItem(item, this.parent.aggregates[summaryRowIndex - 1]);
-                    let idx;
-                    flatRecords.map((e, i) => { if (e.uniqueID === parentRecord.uniqueID) {
-                        idx = i;
-                        return;
-                    } });
-                    let currentIndex = idx + childRecordsLength + summaryRowIndex;
-                    let summaryParent = extend({}, parentRecord);
-                    delete summaryParent.childRecords;
-                    delete summaryParent[this.parent.childMapping];
-                    setValue('parentItem', summaryParent, item);
-                    let level = getObject('level', summaryParent);
-                    setValue('level', level + 1, item);
-                    let index = getObject('index', summaryParent);
-                    setValue('isSummaryRow', true, item);
-                    setValue('parentUniqueID', summaryParent.uniqueID, item);
-                    if (isSort) {
-                        let childRecords = getObject('childRecords', parentRecord);
-                        childRecords.push(item);
+            if (childRecordsLength) {
+                for (let summaryRowIndex = 1, len = summaryLength; summaryRowIndex <= len; summaryRowIndex++) {
+                    let item;
+                    item = {};
+                    for (let columnIndex = 0, len = columnLength; columnIndex < len; columnIndex++) {
+                        let field = isNullOrUndefined(getObject('field', this.parent.columns[columnIndex])) ?
+                            this.parent.columns[columnIndex] : getObject('field', this.parent.columns[columnIndex]);
+                        item[field] = null;
                     }
-                    flatRecords.splice(currentIndex, 0, item);
+                    if (this.parent.aggregates[summaryRowIndex - 1].showChildSummary) {
+                        item = this.createSummaryItem(item, this.parent.aggregates[summaryRowIndex - 1]);
+                        let idx;
+                        flatRecords.map((e, i) => { if (e.uniqueID === parentRecord.uniqueID) {
+                            idx = i;
+                            return;
+                        } });
+                        let currentIndex = idx + childRecordsLength + summaryRowIndex;
+                        let summaryParent = extend({}, parentRecord);
+                        delete summaryParent.childRecords;
+                        delete summaryParent[this.parent.childMapping];
+                        setValue('parentItem', summaryParent, item);
+                        let level = getObject('level', summaryParent);
+                        setValue('level', level + 1, item);
+                        let index = getObject('index', summaryParent);
+                        setValue('isSummaryRow', true, item);
+                        setValue('parentUniqueID', summaryParent.uniqueID, item);
+                        if (isSort) {
+                            let childRecords = getObject('childRecords', parentRecord);
+                            if (childRecords.length) {
+                                childRecords.push(item);
+                            }
+                        }
+                        flatRecords.splice(currentIndex, 0, item);
+                    }
+                    else {
+                        continue;
+                    }
                 }
-                else {
-                    continue;
-                }
+                this.flatChildRecords = [];
             }
-            this.flatChildRecords = [];
         }
         return flatRecords;
     }
@@ -7353,7 +7416,7 @@ class Edit$1 {
             (treeObj.editSettings.newRowPosition === 'Child' || treeObj.editSettings.newRowPosition === 'Below'
                 || treeObj.editSettings.newRowPosition === 'Above')) {
             if (eventName === 'actionBegin') {
-                let rowIndex = isNullOrUndefined(eventArgs.row) ? treeObj.getSelectedRowIndexes()[0] :
+                let rowIndex = isNullOrUndefined(eventArgs.row) || !Object.keys(eventArgs.row).length ? this.selectedIndex :
                     eventArgs.row.rowIndex - 1;
                 let keyData = (!isNullOrUndefined(rowIndex) && rowIndex !== -1) ?
                     treeObj.getCurrentViewRecords()[rowIndex][treeObj.getPrimaryKeyFieldNames()[0]] : -1;
@@ -7451,9 +7514,16 @@ class Edit$1 {
         if (this.parent.editSettings.mode === 'Cell') {
             let cellDetails = getValue('editModule.cellDetails', this.parent.grid.editModule);
             let selectRowIndex = cellDetails.rowIndex;
+            let treeColumnIndexValue;
+            if (this.parent.allowRowDragAndDrop) {
+                treeColumnIndexValue = this.parent.treeColumnIndex + 1;
+            }
+            else {
+                treeColumnIndexValue = this.parent.treeColumnIndex;
+            }
             this.parent.renderModule.cellRender({
                 data: cellDetails.rowData,
-                cell: this.parent.getRows()[selectRowIndex].cells[this.parent.treeColumnIndex],
+                cell: this.parent.getRows()[selectRowIndex].cells[treeColumnIndexValue],
                 column: this.parent.grid.getColumns()[this.parent.treeColumnIndex]
             });
             this.updateGridEditMode('Normal');
@@ -7558,7 +7628,12 @@ class Edit$1 {
             if (details.value[key] === data[i][key]) {
                 if (details.action === 'add') {
                     data[i].level = this.internalProperties.level;
-                    data[i].parentItem = this.internalProperties.parentItem;
+                    data[i].taskData = this.internalProperties.taskData;
+                    data[i].uniqueID = this.internalProperties.uniqueID;
+                    if (!isNullOrUndefined(this.internalProperties.parentItem)) {
+                        data[i].parentItem = this.internalProperties.parentItem;
+                        data[i].parentUniqueID = this.internalProperties.parentUniqueID;
+                    }
                 }
             }
             setValue('uniqueIDCollection.' + data[i].uniqueID + '.index', i, this.parent);
@@ -7625,10 +7700,6 @@ class Edit$1 {
             movableRows = this.parent.getMovableDataRows();
         }
         if (this.parent.editSettings.mode !== 'Dialog') {
-            if (this.parent.editSettings.newRowPosition === 'Child' && !(records[index].expanded) &&
-                records[index][this.parent.childMapping] && records[index][this.parent.childMapping].length) {
-                this.parent.expandRow(rows[index + 1], records[index]);
-            }
             if (this.parent.editSettings.newRowPosition === 'Above') {
                 position = 'before';
             }
@@ -7636,7 +7707,9 @@ class Edit$1 {
                 && this.selectedIndex > -1) {
                 position = 'after';
                 // let records: Object[] = this.batchRecords.length ? this.batchRecords : this.parent.grid.getCurrentViewRecords();
-                index += findChildrenRecords(records[index]).length;
+                if (records[index].expanded) {
+                    index += findChildrenRecords(records[index]).length;
+                }
             }
             if (this.selectedIndex > -1 && (index || (this.parent.editSettings.newRowPosition === 'Child'
                 || this.parent.editSettings.newRowPosition === 'Below'))) {
@@ -7814,7 +7887,8 @@ class Edit$1 {
             value.index = 0;
         }
         if (args.action === 'add') {
-            this.internalProperties = { level: value.level, parentItem: value.parentItem };
+            this.internalProperties = { level: value.level, parentItem: value.parentItem, uniqueID: value.uniqueID,
+                taskData: value.taskData, parentUniqueID: isNullOrUndefined(value.parentItem) ? undefined : value.parentItem.uniqueID };
         }
         if (args.requestType === 'delete') {
             let deletedValues = args.data;
