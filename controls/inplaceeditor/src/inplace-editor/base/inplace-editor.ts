@@ -1,7 +1,7 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, Event, EmitType, select } from '@syncfusion/ej2-base';
 import { detach, addClass, removeClass, EventHandler, setStyleAttribute, Complex, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, closest, extend, L10n, compile, Browser, Touch, TapEventArgs } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, updateBlazorTemplate, resetBlazorTemplate, SanitizeHtmlHelper} from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, resetBlazorTemplate, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { DataManager, UrlAdaptor, Query, WebApiAdaptor, ODataV4Adaptor, ReturnOption } from '@syncfusion/ej2-data';
 import { Button, ButtonModel } from '@syncfusion/ej2-buttons';
 import { RichTextEditorModel } from '@syncfusion/ej2-richtexteditor';
@@ -396,7 +396,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             this.setProperties({ model: {} }, true);
         }
         this.titleEle = this.createElement('div', { className: classes.TITLE });
-        if (!isNullOrUndefined(this.popupSettings.model) && this.popupSettings.model.afterOpen) {
+        if (!isNOU(this.popupSettings.model) && this.popupSettings.model.afterOpen) {
             this.afterOpenEvent = this.popupSettings.model.afterOpen;
         }
     }
@@ -470,7 +470,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                 this.renderAndOpen();
             }
         } else {
-            if (!isNullOrUndefined(this.popupSettings.model) && this.popupSettings.model.afterOpen) {
+            if (!isNOU(this.popupSettings.model) && this.popupSettings.model.afterOpen) {
                 this.popupSettings.model.afterOpen = this.afterOpenHandler.bind(this);
             }
             let content: HTMLElement = this.createElement('div', { className: classes.POPUP });
@@ -509,7 +509,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             };
             this.renderControl(this.inlineWrapper);
             if ((isNOU(model.value) && isNOU(this.value)) || (model.value === this.value
-                && (model.value as string[] | number[]).length === 0)) {
+                && (!isNOU(model.value) && (model.value as string[] | number[]).length === 0))) {
                 this.showDropDownPopup();
             }
         } else { this.renderAndOpen(); }
@@ -520,7 +520,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             (this.componentObj as DropDownList).focusIn();
             (this.componentObj as DropDownList).showPopup();
         } else {
-            if (this.isExtModule) { this.notify(events.showPopup, {}); }
+            if (this.isExtModule) { this.notify(((this.type === 'MultiSelect') ? events.setFocus : events.showPopup), {}); }
         }
     }
 
@@ -621,27 +621,28 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             }
             switch (this.type) {
                 case 'Date':
-                    this.componentObj = new DatePicker(this.model as DatePickerModel, ele as HTMLInputElement);
+                    this.componentObj = new DatePicker(this.model as DatePickerModel);
                     break;
                 case 'DateTime':
-                    this.componentObj = new DateTimePicker(this.model as DateTimePickerModel, ele as HTMLInputElement);
+                    this.componentObj = new DateTimePicker(this.model as DateTimePickerModel);
                     break;
                 case 'DropDownList':
-                    this.componentObj = new DropDownList(this.model as DropDownListModel, ele as HTMLInputElement);
+                    this.componentObj = new DropDownList(this.model as DropDownListModel);
                     break;
                 case 'Mask':
-                    this.componentObj = new MaskedTextBox(this.model as MaskedTextBoxModel, ele as HTMLInputElement);
+                    this.componentObj = new MaskedTextBox(this.model as MaskedTextBoxModel);
                     break;
                 case 'Numeric':
                     if (this.model.value) {
                         this.model.value = (this.model.value as string).toString().replace(/[`~!@#$%^&*()_|\=?;:'",<>\{\}\[\]\\\/]/gi, '');
                     }
-                    this.componentObj = new NumericTextBox(this.model as NumericTextBoxModel, ele as HTMLInputElement);
+                    this.componentObj = new NumericTextBox(this.model as NumericTextBoxModel);
                     break;
                 case 'Text':
-                    this.componentObj = new TextBox(this.model as TextBoxModel, ele as HTMLInputElement);
+                    this.componentObj = new TextBox(this.model as TextBoxModel);
                     break;
             }
+            this.componentObj.appendTo(ele as HTMLInputElement);
         }
     }
     private updateAdaptor(): void {
@@ -901,7 +902,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             };
             extend(item, item, beforeEvent);
             this.trigger('beforeSanitizeHtml', item);
-            if (item.cancel && !isNullOrUndefined(item.helper)) {
+            if (item.cancel && !isNOU(item.helper)) {
                 value = item.helper(value);
             } else if (!item.cancel) {
                 value = SanitizeHtmlHelper.serializeValue(item, value);

@@ -1,12 +1,12 @@
 /// <reference path='./node-base-model.d.ts'/>
-import { Property, Complex, Collection, ChildProperty, ComplexFactory, CollectionFactory } from '@syncfusion/ej2-base';
+import { Property, Complex, Collection, ChildProperty, ComplexFactory, CollectionFactory, isBlazor } from '@syncfusion/ej2-base';
 import { ShapeStyle, StrokeStyle } from '../core/appearance';
 import { StrokeStyleModel, ShapeStyleModel } from '../core/appearance-model';
 import { Point } from '../primitives/point';
 import { TextElement } from '../core/elements/text-element';
 import { PointModel } from '../primitives/point-model';
 import { Segments, DecoratorShapes, Transform, ConnectorConstraints, Direction, LayoutOrientation, Status } from '../enum/enum';
-import { DecoratorModel, ConnectorShapeModel, BpmnFlowModel, VectorModel } from './connector-model';
+import { DecoratorModel, ConnectorShapeModel, BpmnFlowModel, VectorModel, DiagramConnectorShapeModel } from './connector-model';
 import { Rect } from '../primitives/rect';
 import { Size } from '../primitives/size';
 import { findAngle, findConnectorPoints, Bridge, getOuterBounds } from '../utility/connector';
@@ -32,33 +32,45 @@ import { Matrix, identityMatrix, rotateMatrix, scaleMatrix, transformPointsByMat
 import { OrthogonalSegmentModel, StraightSegmentModel, BezierSegmentModel, ConnectorModel } from './connector-model';
 import { RelationShipModel, ClassifierMultiplicityModel, MultiplicityLabelModel } from './connector-model';
 import { DiagramHtmlElement } from '../core/elements/html-element';
+import { DiagramConnectorSegmentModel } from './connector-model';
+import { getTemplateContent } from '../utility/dom-util';
+
 let getConnectorType: Function = (obj: ConnectorShape): Object => {
-    if (obj) {
-        switch (obj.type) {
-            case 'Bpmn':
-                return BpmnFlow;
-            case 'UmlActivity':
-                return ActivityFlow;
-            case 'UmlClassifier':
-                return RelationShip;
-            default:
-                return ConnectorShape;
+    if (isBlazor()) {
+        return DiagramConnectorShape;
+    } else {
+        if (obj) {
+            switch (obj.type) {
+                case 'Bpmn':
+                    return BpmnFlow;
+                case 'UmlActivity':
+                    return ActivityFlow;
+                case 'UmlClassifier':
+                    return RelationShip;
+                default:
+                    return ConnectorShape;
+            }
         }
+        return ConnectorShape;
     }
-    return ConnectorShape;
 };
 
 let getSegmentType: Function = (obj: Connector): Object => {
+
     if (obj) {
-        switch (obj.type) {
-            case 'Straight':
-                return StraightSegment;
-            case 'Bezier':
-                return BezierSegment;
-            case 'Orthogonal':
-                return OrthogonalSegment;
-            default:
-                return StraightSegment;
+        if (isBlazor()) {
+            return DiagramConnectorSegment;
+        } else {
+            switch (obj.type) {
+                case 'Straight':
+                    return StraightSegment;
+                case 'Bezier':
+                    return BezierSegment;
+                case 'Orthogonal':
+                    return OrthogonalSegment;
+                default:
+                    return StraightSegment;
+            }
         }
     }
     return undefined;
@@ -129,6 +141,7 @@ export class Decorator extends ChildProperty<Decorator> {
     /**
      * Defines the appearance of the decorator
      * @default new ShapeStyle()
+     * @blazorType DecoratorShapeStyle
      */
     @Complex<ShapeStyleModel>({ fill: 'black', strokeColor: 'black', strokeWidth: 1 }, ShapeStyle)
     public style: ShapeStyleModel;
@@ -259,6 +272,8 @@ export class BpmnFlow extends ConnectorShape {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     * @default 'Default'
+     * @blazorDefaultValue 'Default'
      */
     @Property('Default')
     public message: BpmnMessageFlows;
@@ -269,6 +284,7 @@ export class BpmnFlow extends ConnectorShape {
      * * Directional - Sets the type of Association flow as Directional
      * * BiDirectional - Sets the type of Association flow as BiDirectional
      * * @default 'Default'
+     * @blazorDefaultValue Default
      */
     @Property('Default')
     public association: BpmnAssociationFlows;
@@ -445,6 +461,126 @@ export class OrthogonalSegment extends ConnectorSegment {
 
 }
 
+/**
+ * Defines the behavior of orthogonal segments
+ */
+export class DiagramConnectorSegment extends ChildProperty<DiagramConnectorSegment> {
+
+    /**
+     * Defines the type of the segment
+     * * Straight - Sets the segment type as Straight
+     * * Orthogonal - Sets the segment type as Orthogonal
+     * * Bezier - Sets the segment type as Bezier
+     * @default 'Straight'
+     */
+    @Property('Straight')
+    public type: Segments;
+
+    /**
+     * Defines the segment to be drag or not
+     * @default true
+     */
+    @Property(true)
+    public allowDrag: boolean;
+
+    /**
+     * Sets the end point of the connector segment
+     * @default new Point(0,0)
+     */
+    @Complex<PointModel>({ x: 0, y: 0 }, Point)
+    public point: PointModel;
+
+    /**
+     * Sets the first control point of the connector
+     * @default {}
+     */
+    @Complex<PointModel>({ x: 0, y: 0 }, Point)
+    public point1: PointModel;
+
+    /**
+     * Sets the second control point of the connector
+     * @default {}
+     */
+    @Complex<PointModel>({ x: 0, y: 0 }, Point)
+    public point2: PointModel;
+
+    /**
+     * @private
+     * Sets the first control point of the bezier connector
+     */
+    public bezierPoint1: PointModel;
+
+    /**
+     * @private
+     *  Sets the second control point of the bezier connector
+     */
+    public bezierPoint2: PointModel;
+
+    /**
+     * Defines the length and angle between the source point and the first control point of the diagram
+     * @default {}
+     */
+    @Complex<VectorModel>({ angle: 0, distance: 0 }, Vector)
+    public vector1: VectorModel;
+
+    /**
+     * Defines the length and angle between the target point and the second control point of the diagram
+     * @default {}
+     */
+    @Complex<VectorModel>({ angle: 0, distance: 0 }, Vector)
+    public vector2: VectorModel;
+
+    /**
+     * Defines the length of orthogonal segment
+     * ```html
+     * <div id='diagram'></div>
+     * ```
+     * ```typescript
+     * let connectors: ConnectorModel[] = [{
+     *       id: 'link2', sourcePoint: { x: 0, y: 0 }, targetPoint: { x: 40, y: 40 }, type: 'Orthogonal',
+     *       shape: {
+     *           type: 'Bpmn',
+     *           flow: 'Message',
+     *           association: 'directional'
+     *       }, style: {
+     *           strokeDashArray: '2,2'
+     *       },
+     *       segments: [{ type: 'Orthogonal', length: 30, direction: 'Bottom' },
+     *       { type: 'Orthogonal', length: 80, direction: 'Right' }]
+     *   }];
+     * let diagram: Diagram = new Diagram({
+     * ...
+     * connectors: connectors
+     * ...
+     * });
+     * diagram.appendTo('#diagram');
+     * ```
+     * @default 0
+     * @isBlazorNullableType true
+     */
+    @Property(null)
+    public length: number;
+
+    /**
+     * Sets the direction of orthogonal segment
+     * * Left - Sets the direction type as Left
+     * * Right - Sets the direction type as Right
+     * * Top - Sets the direction type as Top
+     * * Bottom - Sets the direction type as Bottom
+     * @default null
+     * @isBlazorNullableType true
+     */
+    @Property(null)
+    public direction: Direction;
+
+    /**
+     * @private
+     * Returns the module of class OrthogonalSegment
+     */
+    public getClassName(): string {
+        return 'DiagramConnectorSegment';
+    }
+}
 
 /**
  * Get the direction of the control points while the bezier is connected to the node
@@ -657,6 +793,127 @@ export class RelationShip extends ConnectorShape {
 }
 
 /**
+ * Connector shape for blazor
+ */
+export class DiagramConnectorShape extends ChildProperty<DiagramConnectorShape> {
+    /**
+     * Defines the application specific type of connector
+     * * Bpmn - Sets the type of the connection shape as Bpmn
+     * @default 'None'
+     */
+    @Property('None')
+    public type: ConnectionShapes;
+
+    /**
+     * Defines the association direction
+     * @default 'Directional'
+     * @IgnoreSingular
+     */
+    @Property('Directional')
+    public associationType: AssociationFlow;
+
+    /**
+     * Defines the association direction
+     * @default 'Aggregation'
+     * @IgnoreSingular
+     */
+    @Property('Aggregation')
+    public relationship: ClassifierShape;
+
+    /**
+     * Defines the type of the Classifier Multiplicity
+     * @default ''
+     * @IgnoreSingular
+     */
+    @Complex<ClassifierMultiplicityModel>({}, ClassifierMultiplicity)
+    public multiplicity: ClassifierMultiplicityModel;
+
+    /**
+     * Sets the type of the Bpmn flows
+     * * Sequence - Sets the type of the Bpmn Flow as Sequence
+     * * Association - Sets the type of the Bpmn Flow as Association
+     * * Message - Sets the type of the Bpmn Flow as Message
+     * @default 'Sequence'
+     */
+    @Property('Sequence')
+    public bpmnFlow: BpmnFlows;
+
+    /**
+     * Sets the type of the Bpmn message flows
+     * * Default - Sets the type of the Message flow as Default
+     * * InitiatingMessage - Sets the type of the Message flow as InitiatingMessage
+     * * NonInitiatingMessage - Sets the type of the Message flow as NonInitiatingMessage
+     * @default ''
+     */
+    /**
+     * ```html
+     * <div id='diagram'></div>
+     * ```
+     * ```typescript
+     * let nodes: NodeModel[] = [
+     * {
+     *   id: 'node1', width: 60, height: 60, offsetX: 75, offsetY: 90,
+     *   shape: { type: 'Bpmn', shape: 'Event', event: { event: 'Start', trigger: 'Message' } },
+     *     },
+     * {
+     *   id: 'node2', width: 75, height: 70, offsetX: 210, offsetY: 90,
+     *   shape: { type: 'Bpmn', shape: 'Gateway', gateway: { type: 'None' } },
+     *  }];
+     * let connectors: ConnectorModel[] = [{
+     *   id: 'connector', type: 'Straight', sourceID: 'node1', targetID: 'node2',
+     *   shape: { type: 'Bpmn', flow: 'Message', message: 'InitiatingMessage' } as BpmnFlowModel
+     *  },];
+     * let diagram: Diagram = new Diagram({
+     * ...
+     * nodes: nodes, connectors: connectors
+     * ...
+     * });
+     * diagram.appendTo('#diagram');
+     * ```
+     */
+    @Property('Default')
+    public message: BpmnMessageFlows;
+
+    /**
+     * Sets the type of the Bpmn Sequence flows
+     * * Default - Sets the type of the sequence flow as Default
+     * * Normal - Sets the type of the sequence flow as Normal
+     * * Conditional - Sets the type of the sequence flow as Conditional
+     * @default 'Normal'
+     */
+    @Property('Normal')
+    public sequence: BpmnSequenceFlows;
+
+    /**
+     * Sets the type of the Bpmn association flows
+     * * Default - Sets the type of Association flow as Default
+     * * Directional - Sets the type of Association flow as Directional
+     * * BiDirectional - Sets the type of Association flow as BiDirectional
+     * * @default 'Default'
+     */
+    @Property('Default')
+    public association: BpmnAssociationFlows;
+
+    /**
+     * Defines the type of the UMLActivity flows
+     * Object - Sets the type of the UMLActivity Flow as Object
+     * Control - Sets the type of the UMLActivity Flow as Control
+     * Exception - Sets the type of the UMLActivity Flow as Exception
+     * @default 'Object'
+     * @IgnoreSingular
+     */
+    @Property('Object')
+    public umlActivityFlow: UmlActivityFlows;
+
+    /**
+     * Defines the height of the exception flow.
+     * @default '50'
+     */
+    @Property(30)
+    public exceptionFlowHeight: number;
+}
+
+/**
  * Connectors are used to create links between nodes
  */
 export class Connector extends NodeBase implements IElement {
@@ -665,10 +922,10 @@ export class Connector extends NodeBase implements IElement {
      * Defines the shape of the connector
      * @default 'Bpmn'
      * @aspType object
-     * @blazorType object
+     * @blazorType DiagramConnectorShape
      */
     @ComplexFactory(getConnectorType)
-    public shape: ConnectorShapeModel | BpmnFlowModel | RelationShipModel;
+    public shape: ConnectorShapeModel | BpmnFlowModel | RelationShipModel | DiagramConnectorShapeModel;
 
     /**
      * Defines the constraints of connector
@@ -687,7 +944,7 @@ export class Connector extends NodeBase implements IElement {
      * * InheritToolTip - Displays a tooltip for the connectors.
      * * Interaction - Features of the connector used for interaction.
      * * ReadOnly - Enables ReadOnly
-     * @default 'None'
+     * @default 'Default'
      * @aspNumberEnum
      * @blazorNumberEnum
      */
@@ -723,6 +980,7 @@ export class Connector extends NodeBase implements IElement {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     * @blazorType ObservableCollection<DiagramConnectorAnnotation>
      */
     @Collection<PathAnnotationModel>([], PathAnnotation)
     public annotations: PathAnnotationModel[];
@@ -745,10 +1003,10 @@ export class Connector extends NodeBase implements IElement {
      * Defines the segments
      * @default []
      * @aspType object
-     * @blazorType object
+     * @blazorType ObservableCollection<DiagramConnectorSegment>
      */
     @CollectionFactory(getSegmentType)
-    public segments: (OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel)[];
+    public segments: (OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel | DiagramConnectorSegmentModel)[];
 
     /**
      * Sets the source node/connector object of the connector
@@ -795,6 +1053,8 @@ export class Connector extends NodeBase implements IElement {
     /**
      * Defines the source decorator of the connector
      * @default new Decorator()
+     * @blazorType ConnectorSourceDecorator
+     * @blazorDefaultValue new ConnectorSourceDecorator()
      */
     @Complex<DecoratorModel>({ shape: 'None' }, Decorator)
     public sourceDecorator: DecoratorModel;
@@ -802,6 +1062,8 @@ export class Connector extends NodeBase implements IElement {
     /**
      * Defines the target decorator of the connector
      * @default new Decorator()
+     * @blazorType ConnectorTargetDecorator
+     * @blazorDefaultValue new ConnectorTargetDecorator()
      */
     @Complex<DecoratorModel>({ shape: 'Arrow' }, Decorator)
     public targetDecorator: DecoratorModel;
@@ -846,6 +1108,8 @@ export class Connector extends NodeBase implements IElement {
     /**
      * Defines the appearance of the connection path
      * @default ''
+     * @blazorType ConnectorShapeStyle
+     * @blazorDefaultValue new ConnectorShapeStyle()
      */
     @Complex<StrokeStyleModel>({ strokeWidth: 1, strokeColor: 'black' }, StrokeStyle)
     public style: StrokeStyleModel;
@@ -856,6 +1120,7 @@ export class Connector extends NodeBase implements IElement {
     /**
      * Defines the UI of the connector
      * @default null
+     * @deprecated
      */
     @Property(null)
     public wrapper: Container;
@@ -892,8 +1157,7 @@ export class Connector extends NodeBase implements IElement {
             this.id = randomId();
         }
         let bpmnElement: PathElement;
-        let container: Canvas = new Canvas();
-        let segment: PathElement = new PathElement();
+        let container: Canvas = new Canvas(); let segment: PathElement = new PathElement();
         segment.id = this.id + '_path';
         let srcDecorator: PathElement = new PathElement();
         let targetDecorator: PathElement = new PathElement();
@@ -910,7 +1174,8 @@ export class Connector extends NodeBase implements IElement {
 
         switch (this.shape.type) {
             case 'Bpmn':
-                switch ((this.shape as BpmnFlow).flow) {
+                let flow: BpmnFlows = (isBlazor() ? (this.shape as DiagramConnectorShape).bpmnFlow : (this.shape as BpmnFlow).flow);
+                switch (flow) {
                     case 'Sequence':
                         bpmnElement = this.getBpmnSequenceFlow();
                         break;
@@ -927,7 +1192,9 @@ export class Connector extends NodeBase implements IElement {
                 }
                 break;
             case 'UmlActivity':
-                switch ((this.shape as ActivityFlow).flow) {
+                let activityFlow: UmlActivityFlows = (isBlazor() ? (this.shape as DiagramConnectorShape).umlActivityFlow :
+                    (this.shape as ActivityFlow).flow);
+                switch (activityFlow) {
                     case 'Object':
                         this.getUMLObjectFlow();
                         break;
@@ -980,7 +1247,8 @@ export class Connector extends NodeBase implements IElement {
         for (let i: number = 0; this.annotations !== undefined, i < this.annotations.length; i++) {
             container.children.push(
                 this.getAnnotationElement(
-                    this.annotations[i] as PathAnnotation, this.intermediatePoints, bounds, getDescription, diagram.element.id));
+                    this.annotations[i] as PathAnnotation, this.intermediatePoints, bounds,
+                    getDescription, diagram.element.id, diagram.annotationTemplate));
         }
         this.wrapper = container;
         return container;
@@ -1154,14 +1422,19 @@ export class Connector extends NodeBase implements IElement {
     }
     /** @private */
     public getAnnotationElement(
-        annotation: PathAnnotation, points: PointModel[], bounds: Rect, getDescription: Function | string, diagramId: string)
+        annotation: PathAnnotation, points: PointModel[],
+        bounds: Rect, getDescription: Function | string, diagramId: string, annotationTemplate?: string | Function)
         :
         TextElement | DiagramHtmlElement {
         annotation.id = annotation.id || randomId();
         let textele: TextElement | DiagramHtmlElement;
-        if (diagramId && annotation.template) {
-            textele = new DiagramHtmlElement(this.id, diagramId, annotation.id);
-            textele.content = annotation.template;
+        if (isBlazor() && annotation.annotationType === 'Template') {
+            annotation.template = annotation.template ? annotation.template : '';
+        }
+        if (diagramId && (annotation.template || annotation.annotationType === 'Template'
+            || (annotationTemplate && annotation.content === ''))) {
+            textele = new DiagramHtmlElement(this.id, diagramId, annotation.id, annotationTemplate as string);
+            textele = getTemplateContent(textele, annotation, annotationTemplate);
         } else {
             textele = new TextElement();
             textele.content = annotation.content;
@@ -1507,12 +1780,14 @@ export class Connector extends NodeBase implements IElement {
                 if (connector.wrapper.children[3] instanceof PathElement) {
                     element = connector.wrapper.children[3];
                 }
-                if ((connector.shape as BpmnFlow).flow === 'Message') {
+                if ((connector.shape as BpmnFlow).flow === 'Message' ||
+                    (isBlazor() && (connector.shape as DiagramConnectorShape).bpmnFlow === 'Message')) {
                     this.updateShapePosition(connector, element);
                 }
                 break;
             case 'UmlActivity':
-                if ((connector.shape as ActivityFlow).flow === 'Exception') {
+                if ((connector.shape as ActivityFlow).flow === 'Exception' || (isBlazor() &&
+                    (connector.shape as DiagramConnectorShape).umlActivityFlow === 'Exception')) {
                     this.getUMLExceptionFlow(connector.wrapper.children[0] as PathElement);
                 }
                 break;

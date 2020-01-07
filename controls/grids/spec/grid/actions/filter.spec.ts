@@ -2028,4 +2028,94 @@ describe('Check for case sensitive ', ()=>{
             gridObj = actionComplete = null;
         });
     });  
+    
+    describe('EJ2-34861 - Checking the arguments of filtering action', () => {
+        let gridObj: Grid;
+        let actionBegin: (args: any) => void;
+        let actionComplete: (args: any) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData.slice(0, 30),
+                    allowPaging: true,
+                    pageSettings:{pageSize:6},
+                    allowFiltering: true,
+                    filterSettings: { type: "Menu" },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 120 },
+                        { field: 'Freight', headerText: 'Freight', width: 120 },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 120 }
+                    ],
+                }, done);
+        });
+        it('Checking the arguments of filtering action - CustomerID', (done: Function) => {
+            actionBegin = (args) => {
+                if("currentFilterObject" in args){   
+                    if(args.currentFilterObject.field == "CustomerID") {
+                        expect(args.currentFilterObject.field).toBe("CustomerID");
+                        expect(args.currentFilterObject.operator).toBe("startswith");
+                        expect(args.currentFilterObject.value).toBe("M");
+                    }
+                    if(args.currentFilterObject.field == "OrderID") {
+                        expect(args.currentFilterObject.field).toBe("OrderID");
+                        expect(args.currentFilterObject.operator).toBe("greaterthan");
+                        expect(args.currentFilterObject.value).toBe("10250");
+                    }
+                }
+                done();
+            };
+            gridObj.actionBegin = actionBegin;
+            gridObj.actionComplete = actionComplete;
+            gridObj.filterModule.filterByColumn('CustomerID', 'startswith', 'M');
+
+        });
+        it('Checking the arguments of filtering action - OrderID', (done: Function) => {
+            actionComplete = (args) => {
+                if("currentFilterObject" in args){   
+                    if(args.currentFilterObject.field == "CustomerID") {
+                        expect(args.currentFilterObject.field).toBe("CustomerID");
+                        expect(args.currentFilterObject.operator).toBe("startswith");
+                        expect(args.currentFilterObject.value).toBe("M");
+                    }
+                    if(args.currentFilterObject.field == "OrderID") {
+                        expect(args.currentFilterObject.field).toBe("OrderID");
+                        expect(args.currentFilterObject.operator).toBe("greaterthan");
+                        expect(args.currentFilterObject.value).toBe("10250");
+                    }
+                }
+                done();
+            };
+            gridObj.actionBegin = actionBegin;
+            gridObj.actionComplete = actionComplete;
+            gridObj.filterModule.filterByColumn('OrderID', 'greaterthan', '10250');
+
+        });
+        it('Checking the arguments of filtering action - while clear', (done: Function) => {
+            actionComplete = (args) => {
+                if("currentFilterObject" in args){   
+                    if(args.currentFilterObject.field == "CustomerID") {
+                        expect(args.currentFilterObject.field).toBe("CustomerID");
+                        expect(args.currentFilterObject.operator).toBe("startswith");
+                        expect(args.currentFilterObject.value).toBe("M");
+                    }
+                    if(args.currentFilterObject.field == "OrderID") {
+                        expect(args.currentFilterObject.field).toBe("OrderID");
+                        expect(args.currentFilterObject.operator).toBe("greaterthan");
+                        expect(args.currentFilterObject.value).toBe("10250");
+                    }
+                }
+                done();
+            };
+            gridObj.actionBegin = actionBegin;
+            gridObj.actionComplete = actionComplete;
+            (gridObj).removeFilteredColsByField("CustomerID");
+
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionBegin = null;
+            gridObj = actionComplete = null;
+        });
+    });
 });

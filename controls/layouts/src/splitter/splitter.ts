@@ -483,6 +483,7 @@ export class Splitter extends Component<HTMLElement> {
         this.isCollapsed();
         EventHandler.add(document, 'touchstart click', this.onDocumentClick, this);
         this.renderComplete();
+        EventHandler.add(this.element, 'keydown', this.onMove, this);
     }
 
     private onDocumentClick(e: Event | MouseEvent): void {
@@ -491,6 +492,64 @@ export class Splitter extends Component<HTMLElement> {
             this.currentSeparator.classList.remove(SPLIT_BAR_ACTIVE);
         }
     }
+
+    private checkPaneSize(e: MouseEvent | TouchEvent | PointerEvent | KeyboardEvent): void {
+        let prePaneSize: number;
+        let nextPaneSize: number;
+        prePaneSize = this.orientation === 'Horizontal' ? this.previousPane.offsetWidth : this.previousPane.offsetHeight;
+        nextPaneSize = this.orientation === 'Horizontal' ? this.nextPane.offsetWidth : this.nextPane.offsetHeight;
+        if ((this.previousPane.style.flexBasis.indexOf('%') > 0 || this.nextPane.style.flexBasis.indexOf('%') > 0)) {
+            let previousFlexBasis: number = this.updatePaneFlexBasis(this.previousPane);
+            let nextFlexBasis: number = this.updatePaneFlexBasis(this.nextPane);
+            this.totalPercent = previousFlexBasis + nextFlexBasis;
+            this.totalWidth = this.convertPercentageToPixel(this.totalPercent + '%');
+            if (e.type === 'keydown' && (!isNullOrUndefined((<KeyboardEvent>e).keyCode))) {
+                if (((<KeyboardEvent>e).keyCode === 39 || ((<KeyboardEvent>e).keyCode === 40)) && nextPaneSize > 0) {
+                    this.previousPane.style.flexBasis = (previousFlexBasis + 1) + '%';
+                    this.nextPane.style.flexBasis = (nextFlexBasis - 1) + '%';
+                } else if (((<KeyboardEvent>e).keyCode === 37 || ((<KeyboardEvent>e).keyCode === 38)) && prePaneSize > 0) {
+                    this.previousPane.style.flexBasis = (previousFlexBasis - 1) + '%';
+                    this.nextPane.style.flexBasis = (nextFlexBasis + 1) + '%';
+                }
+            }
+        } else {
+            this.totalWidth = (this.orientation === 'Horizontal') ? this.previousPane.offsetWidth + this.nextPane.offsetWidth :
+            this.previousPane.offsetHeight + this.nextPane.offsetHeight;
+            if (e.type === 'keydown' && (!isNullOrUndefined((<KeyboardEvent>e).keyCode))) {
+                if (((<KeyboardEvent>e).keyCode === 39 || ((<KeyboardEvent>e).keyCode === 40)) && nextPaneSize > 0) {
+                    this.addStaticPaneClass();
+                    this.previousPane.style.flexBasis = (prePaneSize + this.separatorSize) + 'px';
+                    this.nextPane.style.flexBasis = (nextPaneSize < this.separatorSize) ? '0px' :
+                    (nextPaneSize - this.separatorSize) + 'px';
+                } else if (((<KeyboardEvent>e).keyCode === 37 || ((<KeyboardEvent>e).keyCode === 38)) && prePaneSize > 0) {
+                    this.addStaticPaneClass();
+                    this.previousPane.style.flexBasis = (prePaneSize < this.separatorSize) ? '0px' :
+                    (prePaneSize - this.separatorSize) + 'px';
+                    this.nextPane.style.flexBasis = (nextPaneSize + this.separatorSize) + 'px';
+                }
+            }
+        }
+    }
+
+    private onMove(event: KeyboardEvent): void {
+        let index: number = this.getSeparatorIndex(this.currentSeparator);
+        let isPrevpaneCollapsed: boolean = this.previousPane.classList.contains(COLLAPSE_PANE);
+        let isPrevpaneExpanded: boolean = this.previousPane.classList.contains(EXPAND_PANE);
+        let isNextpaneExpanded: boolean = this.nextPane.classList.contains(EXPAND_PANE);
+        let isNextpaneCollapsed: boolean = this.nextPane.classList.contains(COLLAPSE_PANE);
+        if (((this.orientation !== 'Horizontal' && event.keyCode === 38) || (this.orientation === 'Horizontal' && event.keyCode === 39) ||
+        (this.orientation === 'Horizontal' && event.keyCode === 37) || (this.orientation !== 'Horizontal' && event.keyCode === 40))
+        && (!isPrevpaneExpanded && !isNextpaneCollapsed && !isPrevpaneCollapsed || (isPrevpaneExpanded) && !isNextpaneCollapsed)) {
+        this.checkPaneSize(event);
+        this.triggerResizing(event);
+        } else if (event.keyCode === 13 && this.paneSettings[index].collapsible) {
+            if (!this.previousPane.classList.contains(COLLAPSE_PANE)) {
+                this.collapse(index);
+            } else {
+                this.expand(index);
+            }
+        }
+    };
 
     /**
      * @hidden
@@ -844,7 +903,12 @@ export class Splitter extends Component<HTMLElement> {
         this.allBars.push(separator);
         let arrow1: HTMLElement = this.createElement('button');
         let arrow2: HTMLElement = this.createElement('button');
+        arrow1.setAttribute('tabindex', '-1');
+        arrow2.setAttribute('tabindex', '-1');
+        arrow1.setAttribute('aria-label', 'Toggle navigation');
+        arrow2.setAttribute('aria-label', 'Toggle navigation');
         let size: string;
+        let proxy: Splitter;
         size = isNullOrUndefined(this.separatorSize) ? '1px' : this.separatorSize + 'px';
         if (this.orientation === 'Horizontal') {
             this.leftArrow = ARROW_LEFT;
@@ -866,6 +930,16 @@ export class Splitter extends Component<HTMLElement> {
         this.addResizeHandler(separator);
         separator.appendChild(arrow1);
         this.updateCollapseIcons(i, arrow1, arrow2);
+        separator.setAttribute('tabindex', '0');
+        proxy = this;
+        separator.addEventListener('focus', () => {
+            separator.classList.add(SPLIT_BAR_ACTIVE);
+            proxy.currentSeparator = separator;
+            proxy.getPaneDetails();
+        });
+        separator.addEventListener('blur', () => {
+            separator.classList.remove(SPLIT_BAR_ACTIVE);
+        });
         return separator;
     }
 
@@ -958,7 +1032,7 @@ export class Splitter extends Component<HTMLElement> {
         return ((target.classList.contains(RESIZE_BAR) || target.classList.contains(SPLIT_BAR)) ? false : true);
     }
 
-    private isMouseEvent(e: MouseEvent | TouchEvent | PointerEvent): boolean {
+    private isMouseEvent(e: MouseEvent | TouchEvent | PointerEvent | KeyboardEvent): boolean {
         let isMouse: boolean = false;
         if (this.getEventType(e.type) === 'mouse' || (!isNullOrUndefined((<PointerEvent>e).pointerType) &&
         this.getEventType((<PointerEvent>e).pointerType) === 'mouse')) {
@@ -967,7 +1041,7 @@ export class Splitter extends Component<HTMLElement> {
         return isMouse;
     }
 
-    private updateCursorPosition(e: MouseEvent | TouchEvent | PointerEvent, type: string): void {
+    private updateCursorPosition(e: MouseEvent | TouchEvent | PointerEvent | KeyboardEvent, type: string): void {
         if (this.isMouseEvent(e)) {
             this.changeCoordinates({ x: (<MouseEvent>e).pageX, y: (<MouseEvent>e).pageY }, type);
         } else {
@@ -1315,7 +1389,25 @@ export class Splitter extends Component<HTMLElement> {
         this.getPaneDetails();
     }
 
-    private onMouseDown(e: MouseEvent | TouchEvent | PointerEvent): void {
+    private triggerResizing(e: MouseEvent | TouchEvent | PointerEvent | KeyboardEvent): void {
+        let eventArgs: ResizingEventArgs = isBlazor() ? {
+            element: this.element,
+            event: e,
+            index: [this.prevPaneIndex, this.nextPaneIndex],
+            paneSize: [this.prePaneDimenson, this.nextPaneDimension],
+            separator: this.currentSeparator
+        } : {
+            element: this.element,
+            event: e,
+            pane: [this.previousPane, this.nextPane],
+            index: [this.prevPaneIndex, this.nextPaneIndex],
+            paneSize: [this.prePaneDimenson, this.nextPaneDimension],
+            separator: this.currentSeparator
+        };
+        this.trigger('resizing', eventArgs);
+    }
+
+    private onMouseDown(e: MouseEvent | TouchEvent | PointerEvent | KeyboardEvent): void {
         e.preventDefault();
         let target: HTMLElement = e.target as HTMLElement;
         if (target.classList.contains(NAVIGATE_ARROW)) { return; }
@@ -1340,15 +1432,7 @@ export class Splitter extends Component<HTMLElement> {
         this.trigger('resizeStart', eventArgs, (resizeStartArgs: ResizeEventArgs) => {
             if (!resizeStartArgs.cancel) {
                 this.wireResizeEvents();
-                if (this.previousPane.style.flexBasis.indexOf('%') > 0 || this.nextPane.style.flexBasis.indexOf('%') > 0) {
-                    let previousFlexBasis: number = this.updatePaneFlexBasis(this.previousPane);
-                    let nextFlexBasis: number = this.updatePaneFlexBasis(this.nextPane);
-                    this.totalPercent = previousFlexBasis + nextFlexBasis;
-                    this.totalWidth = this.convertPercentageToPixel(this.totalPercent + '%');
-                } else {
-                    this.totalWidth = (this.orientation === 'Horizontal') ? this.previousPane.offsetWidth + this.nextPane.offsetWidth :
-                        this.previousPane.offsetHeight + this.nextPane.offsetHeight;
-                }
+                this.checkPaneSize(e);
             }
         });
     }
@@ -1539,21 +1623,7 @@ export class Splitter extends Component<HTMLElement> {
         if (!this.isCursorMoved(e)) { return; }
         this.getPaneDetails();
         this.getPaneDimensions();
-        let eventArgs: ResizingEventArgs = isBlazor() ? {
-            element: this.element,
-            event: e,
-            index: [this.prevPaneIndex, this.nextPaneIndex],
-            paneSize: [this.prePaneDimenson, this.nextPaneDimension],
-            separator: this.currentSeparator
-        } : {
-            element: this.element,
-            event: e,
-            pane: [this.previousPane, this.nextPane],
-            index: [this.prevPaneIndex, this.nextPaneIndex],
-            paneSize: [this.prePaneDimenson, this.nextPaneDimension],
-            separator: this.currentSeparator
-        };
-        this.trigger('resizing', eventArgs);
+        this.triggerResizing(e);
         let left: number = this.validateDraggedPosition(this.getSeparatorPosition(e), this.prePaneDimenson, this.nextPaneDimension);
         let separatorNewPosition: number;
         this.getBorder();

@@ -4,7 +4,7 @@ import { Point } from '../primitives/point';
 import { TextStyleModel, MarginModel } from '../core/appearance-model';
 import { PointModel } from '../primitives/point-model';
 import { HyperlinkModel, AnnotationModel } from '../objects/annotation-model';
-import { HorizontalAlignment, VerticalAlignment, AnnotationAlignment, AnnotationTypes, TextDecoration } from '../enum/enum';
+import { HorizontalAlignment, VerticalAlignment, AnnotationAlignment, AnnotationTypes, TextDecoration, AnnotationType } from '../enum/enum';
 import { AnnotationConstraints } from '../enum/enum';
 import { randomId } from '../utility/base-util';
 
@@ -60,6 +60,15 @@ export class Annotation extends ChildProperty<Annotation> {
      */
     @Property(undefined)
     public template: string | HTMLElement;
+
+    /**
+     *  Defines the type of annotation template
+     * String -  Defines annotation template to be in string
+     * Template - Defines annotation template to be in html content
+     * @default 'String'
+     */
+    @Property('String')
+    public annotationType: AnnotationType;
 
     /**
      * Defines the visibility of the label
@@ -142,6 +151,7 @@ export class Annotation extends ChildProperty<Annotation> {
     /**
      * Defines the appearance of the text
      * @default new TextStyle()
+     * @blazorType AnnotationStyle
      */
     @Complex<TextStyleModel>({ strokeWidth: 0, strokeColor: 'transparent', fill: 'transparent' }, TextStyle)
     public style: TextStyleModel;
@@ -220,8 +230,8 @@ export class Annotation extends ChildProperty<Annotation> {
     @Property()
     public addInfo: Object;
 
-     // tslint:disable-next-line:no-any
-     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
+    // tslint:disable-next-line:no-any
+    constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
         super(parent, propName, defaultValue, isArray);
         if (!(defaultValue as AnnotationModel).id) {
             if (parent.parentObj && parent.parentObj.propName && parent.parentObj.propName === 'phases') {
@@ -241,6 +251,7 @@ export class ShapeAnnotation extends Annotation {
     /**
      * Sets the position of the annotation with respect to its parent bounds
      * @default { x: 0.5, y: 0.5 }
+     * @blazorType NodeAnnotationOffset
      */
     @Complex<PointModel>({ x: 0.5, y: 0.5 }, Point)
     public offset: PointModel;

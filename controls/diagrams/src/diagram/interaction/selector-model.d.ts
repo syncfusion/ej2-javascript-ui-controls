@@ -116,4 +116,16 @@ export interface UserHandleModel {
      */
     verticalAlignment?: VerticalAlignment;
 
+    /**
+     * Defines the visible of user Handle 
+     * @default false
+     */
+    disableNodes?: boolean;
+
+    /**
+     * Defines the visible of user Handle 
+     * @default false
+     */
+    disableConnectors?: boolean;
+
 }

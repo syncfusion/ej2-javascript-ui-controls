@@ -1769,4 +1769,141 @@ describe('node default connector default check', () => {
 });
 
 
+    describe('node template support ', () => {
+        let diagram: Diagram; let ele: HTMLElement;
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramNodeZindexDefault' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+
+                    offsetX: 450,
+                    offsetY: 200,
+                    width: 100,
+                    height: 100,
+                    shape: { type: "HTML", },
+                    style: { fill: 'yellow' }
+                },
+            ];
+
+            diagram = new Diagram({
+                width: '100px', height: '100px', nodes: nodes,
+                nodeTemplate: '#diagramNodeZindexDefault',
+
+            });
+            diagram.appendTo('#diagramNodeZindexDefault');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('node template support checking', (done: Function) => {
+            var child = document.getElementById(diagram.nodes[0].id + "_content_html_element");
+            expect(child.children[0] instanceof HTMLDivElement).toBe(true);
+            done();
+        });
+
+    });
+
+    describe('node and connector annotation template support', () => {
+        let diagram: Diagram; let ele: HTMLElement;
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramtemplate' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1', width: 300, height: 160, offsetX: 250, offsetY: 180,
+                    annotations: [
+                        {
+                            id: "node_label1",
+                            constraints: AnnotationConstraints.Interaction,
+                            template: '<style>th {border: 5px solid #c1dad7}td {border: 5px solid #c1dad7}.c1 { background: #4b8c74 } .c2 { background: #74c476 }  .c3 { background: #a4e56d } .c4 { background: #cffc83 } </style> <table style="width:100%;"> <tbody> <tr> <th class="c1">ID</th> <th class="c2">X</th> <th class="c3">Y</th></tr> <tr> <td class="c1">${id}</td> <td class="c2">${offset.x}</td> <td class="c3">${offset.y}</td> </tr> </tbody> </table>'
+                        },
+                        {
+                            id: "node_label2",
+                            constraints: AnnotationConstraints.Interaction,
+                            offset: { x: 0, y: 0 },
+                            content: "dvv",
+                        },
+                        {
+                            id: "node_label3",
+                            constraints: AnnotationConstraints.Interaction,
+                            offset: { x: 0, y: 0 },
+                        }
+                    ]
+                }
+            ];
+            let connectors: ConnectorModel[] = [
+                {
+                    id: 'connector', sourcePoint: { x: 800, y: 100 }, targetPoint: { x: 600, y: 300 },
+                    annotations: [
+                        {
+                            id: "connector_label1", height: 60, width: 200, offset: 0.5,
+                            constraints: AnnotationConstraints.Interaction,
+                        },
+                        {
+                            id: "connector_labe2l", height: 60, width: 200, offset: 0,
+                            constraints: AnnotationConstraints.Interaction,
+                            content:"dvv",
+                        },
+                        {
+                            id: "connector_labe3l", height: 60, width: 200, offset: 0.5,
+                            constraints: AnnotationConstraints.Interaction,
+                            template: '<style>th {border: 5px solid #c1dad7}td {border: 5px solid #c1dad7}.c1 { background: #4b8c74 } .c2 { background: #74c476 }  .c3 { background: #a4e56d } .c4 { background: #cffc83 } </style> <table style="width:100%;"> <tbody> <tr> <th class="c1">ID</th> <th class="c2">Offset</th> </tr> <tr> <td class="c1">${id}</td> <td class="c2">${offset}</td> </tr> </tbody> </table>'
+                        }
+            
+                    ]
+                }
+            ];
+
+            diagram = new Diagram({
+                width: '100%', height: 900, nodes: nodes, connectors: connectors,
+                annotationTemplate:"#diagramtemplate"
+            });
+            diagram.appendTo('#diagramtemplate');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('node and connector annotation template support', (done: Function) => {
+
+            var annotation1 = diagram.nodes[0].annotations[0].id
+            var annotation1Element = document.getElementById(diagram.nodes[0].id + '_' + annotation1 + '_html_element')
+            expect(annotation1Element instanceof HTMLDivElement).toBe(true);
+
+            var annotation2 = diagram.nodes[0].annotations[1].id
+            var annotation2Element = document.getElementById(diagram.nodes[0].id + '_' + annotation2 + '_groupElement')
+            expect((annotation2Element.children[1].childNodes[0] as HTMLElement).innerHTML === "dvv").toBe(true);
+
+            var annotation3 = diagram.nodes[0].annotations[2].id
+            var annotation3Element = document.getElementById(diagram.nodes[0].id + '_' + annotation3 + '_html_element')
+            expect(annotation3Element instanceof HTMLDivElement).toBe(true);
+
+
+
+            var connectorannotation1 = diagram.connectors[0].annotations[0].id
+            var connectorannotation1Element = document.getElementById(diagram.connectors[0].id + '_' + connectorannotation1 + '_html_element')
+            expect(connectorannotation1Element instanceof HTMLDivElement).toBe(true)
+            
+            var connectorannotation2 = diagram.connectors[0].annotations[1].id
+            var connectorannotation2Element = document.getElementById(diagram.connectors[0].id + '_' + connectorannotation2 + '_groupElement')
+            expect((connectorannotation2Element.children[1].childNodes[0] as HTMLElement).innerHTML === "dvv").toBe(true)
+            
+            var connectorannotation3 = diagram.connectors[0].annotations[2].id
+            var connectorannotation3Element = document.getElementById(diagram.connectors[0].id + '_' + connectorannotation3 + '_html_element')
+            expect(connectorannotation3Element instanceof HTMLDivElement).toBe(true)
+            
+            done();
+        });
+
+    });
+
+
 });

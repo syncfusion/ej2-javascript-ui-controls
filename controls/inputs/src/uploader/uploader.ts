@@ -2700,7 +2700,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         deleteIcon.classList.add(REMOVE_ICON);
         deleteIcon.setAttribute('title', this.localizedTexts('remove'));
         this.pauseButton = this.createElement('span', {className: 'e-icons e-file-reload-btn', attrs: { 'tabindex': this.btnTabIndex}});
-        liElement.insertBefore(this.pauseButton, deleteIcon);
+        deleteIcon.parentElement.insertBefore(this.pauseButton, deleteIcon);
         this.pauseButton.setAttribute('title', this.localizedTexts('retry'));
         let retryElement: HTMLElement = liElement.querySelector('.' + RETRY_ICON) as HTMLElement;
         /* istanbul ignore next */
@@ -3057,7 +3057,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         eventArgs.fileData.statusCode = '5';
         eventArgs.fileData.status = this.localizedTexts('fileUploadCancel');
         this.pauseButton = this.createElement('span', {className: 'e-icons e-file-reload-btn', attrs: { 'tabindex': this.btnTabIndex}});
-        liElement.insertBefore(this.pauseButton, liElement.querySelector('.' + REMOVE_ICON));
+        let removeIcon: Element = liElement.querySelector('.' + REMOVE_ICON);
+        removeIcon.parentElement.insertBefore(this.pauseButton, removeIcon);
         this.pauseButton.setAttribute('title', this.localizedTexts('retry'));
         /* istanbul ignore next */
         this.pauseButton.addEventListener('click', (e: Event) => { this.reloadcanceledFile(e, file, liElement); }, false);
@@ -3417,7 +3418,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         if (isNullOrUndefined(liElement.querySelector('.' + PAUSE_UPLOAD)) && isNullOrUndefined(this.template) ) {
             this.pauseButton = this.createElement('span', {className: 'e-icons e-file-pause-btn', attrs: { 'tabindex': this.btnTabIndex }});
             if (this.browserName === 'msie') { this.pauseButton.classList.add('e-msie'); }
-            liElement.insertBefore(this.pauseButton, liElement.querySelector('.' + ABORT_ICON));
+            let abortIcon: Element = liElement.querySelector('.' + ABORT_ICON);
+            abortIcon.parentElement.insertBefore(this.pauseButton, abortIcon);
             this.pauseButton.setAttribute('title', this.localizedTexts('pause'));
             this.pauseButton.addEventListener('click', (e: Event) => { this.checkPausePlayAction(e); }, false);
         }

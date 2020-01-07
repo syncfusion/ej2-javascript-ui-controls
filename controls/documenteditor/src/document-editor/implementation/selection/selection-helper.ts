@@ -1273,6 +1273,13 @@ export class TextPosition {
         textPosition.setPositionForCurrentIndex(currentIndex);
         textPosition.isUpdateLocation = false;
         let isPositionMoved: boolean = false;
+        if (this.selection.start.paragraph !== this.selection.end.paragraph) {
+            // To select Paragraph mark similar to MS WORD
+            if (this.selection.end.offset === this.selection.end.currentWidget.getEndOffset()
+                && this.selection.isParagraphLastLine(this.selection.end.currentWidget)) {
+                this.selection.end.setPositionParagraph(this.selection.end.currentWidget, this.selection.end.offset + 1);
+            }
+        }
         while (currentIndex !== selectionEndIndex && TextPosition.isForwardSelection(currentIndex, selectionEndIndex)) {
             if (!isPositionMoved) {
                 textPosition.moveNextPosition(false);
@@ -1331,6 +1338,15 @@ export class TextPosition {
         let textPosition: TextPosition = new TextPosition(this.owner);
         textPosition.setPositionForCurrentIndex(currentIndex);
         textPosition.isUpdateLocation = false;
+
+        if (this.selection.start.paragraph !== this.selection.end.paragraph) {
+            // To select Paragraph mark similar to MS WORD
+            if (this.selection.start.offset !== this.selection.getStartOffset(this.selection.start.paragraph)
+                && this.selection.start.offset === this.selection.start.currentWidget.getEndOffset()
+                && this.selection.isParagraphLastLine(this.selection.start.currentWidget)) {
+                this.selection.start.setPositionParagraph(this.selection.start.currentWidget, this.selection.start.offset + 1);
+            }
+        }
         let selectionStartIndex: string = this.selection.start.getHierarchicalIndexInternal();
         while (currentIndex !== selectionEndIndex && TextPosition.isForwardSelection(selectionEndIndex, currentIndex)) {
             let indexInInline: number = 0;
@@ -1732,6 +1748,7 @@ export class TextPosition {
             let point: Point = new Point(left, top);
             selection.updateTextPositionWidget(prevLine, point, this, true);
         }
+
         //Checks if the current position is between field result, then move to field begin.
         let selectionEndIndex: string = this.getHierarchicalIndexInternal();
         this.validateBackwardFieldSelection(currentIndex, selectionEndIndex);

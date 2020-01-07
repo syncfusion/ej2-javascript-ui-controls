@@ -57,6 +57,7 @@ export interface LayoutModel {
     /**
      * * Defines the space between the viewport and the layout
      * @default { left: 50, top: 50, right: 0, bottom: 0 }
+     * @blazorType LayoutMargin
      */
     margin?: MarginModel;
 

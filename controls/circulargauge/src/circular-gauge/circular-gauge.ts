@@ -832,6 +832,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
 
         this.trigger(loaded, this.isBlazor ? {} : { gauge: this });
 
+        removeElement("gauge-measuretext");
+
     }
 
     /**

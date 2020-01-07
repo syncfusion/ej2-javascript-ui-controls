@@ -1,4 +1,4 @@
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined} from '@syncfusion/ej2-base';
 import { Internationalization, setCulture, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';
 // import { IValueFormatter } from '../base/interface';
 /**
@@ -15,8 +15,11 @@ export class ValueFormatter {
         // }
     }
 
-    public getFormatFunction(format: NumberFormatOptions | DateFormatOptions): Function {
+    public getFormatFunction(format: NumberFormatOptions | DateFormatOptions, isServerRendered: boolean): Function {
         if ((<DateFormatOptions>format).type) {
+            if (isServerRendered) {
+                (<DateFormatOptions>format).isServerRendered = true;
+            }
             return this.intl.getDateFormat(<DateFormatOptions>format);
         } else {
             return this.intl.getNumberFormat(<DateFormatOptions>format);
@@ -55,7 +58,7 @@ export class ValueFormatter {
     //     }
     // }
     /* tslint:disable:no-any */
-    public displayText(value: any, format: NumberFormatOptions | DateFormatOptions): string {
-        return this.toView(value, this.getFormatFunction(format)) as string;
+    public displayText(value: any, format: NumberFormatOptions | DateFormatOptions, isServerRendered: boolean): string {
+        return this.toView(value, this.getFormatFunction(format, isServerRendered)) as string;
     }
 }

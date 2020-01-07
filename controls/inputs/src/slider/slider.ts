@@ -3,7 +3,7 @@ import { L10n, Internationalization, NumberFormatOptions } from '@syncfusion/ej2
 import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';
 import { attributes, addClass, removeClass, setStyleAttribute, detach, closest } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, formatUnit, Browser, SanitizeHtmlHelper   } from '@syncfusion/ej2-base';
-import { Tooltip, Position, TooltipEventArgs } from '@syncfusion/ej2-popups';
+import { Tooltip, Position, TooltipEventArgs, getZindexPartial } from '@syncfusion/ej2-popups';
 import { SliderModel, TicksDataModel, TooltipDataModel, LimitDataModel, ColorRangeDataModel } from './slider-model';
 
 /**
@@ -1782,6 +1782,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private tooltipToggle(target?: HTMLElement): void {
+        this.setZindex();
         if (this.isMaterialTooltip) {
             !this.tooltipElement.classList.contains(classNames.materialTooltipOpen) ?
                 this.openMaterialTooltip() : this.refreshTooltip(this.firstHandle);
@@ -3079,7 +3080,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private setZindex(): void {
-        this.zIndex = 6;
+        this.zIndex = getZindexPartial(this.element);
         if (!isNullOrUndefined(this.ticks) && this.ticks.placement !== 'None') {
             this.ul.style.zIndex = (this.zIndex + -7) + '';
             this.element.style.zIndex = (this.zIndex + 2) + '';

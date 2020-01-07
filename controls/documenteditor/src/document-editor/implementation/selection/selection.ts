@@ -395,8 +395,7 @@ export class Selection {
                                 || selectedCells.indexOf(bmEndPos.paragraph.associatedCell) < 0) {
                                 let endCell: TableCellWidget = end.paragraph.isInsideTable && end.paragraph.associatedCell;
                                 let bmEndPosCell: TableCellWidget = bmEndPos.paragraph.associatedCell;
-                                if (endCell && endCell.ownerTable.equals(bmEndPos.paragraph.associatedCell.ownerTable) &&
-                                    endCell.ownerTable.equals(bmEndPosCell.ownerTable) &&
+                                if (endCell && bmEndPosCell && endCell.ownerTable.equals(bmEndPosCell.ownerTable) &&
                                     !(endCell.ownerTable
                                         && selectedCells.indexOf(this.getCellInTable(endCell.ownerTable, bmEndPosCell)) >= 0)) {
                                     continue;
@@ -1435,6 +1434,7 @@ export class Selection {
             if (TextPosition.isForwardSelection(selectionStartIndex, selectionEndIndex)) {
                 textPosition.validateForwardFieldSelection(selectionStartIndex, selectionEndIndex);
             } else {
+
                 textPosition.validateBackwardFieldSelection(selectionStartIndex, selectionEndIndex);
             }
         }

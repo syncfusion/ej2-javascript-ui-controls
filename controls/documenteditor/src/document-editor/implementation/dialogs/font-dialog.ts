@@ -298,6 +298,7 @@ export class FontDialog {
             characterFormat = this.owner.owner.selection.characterFormat;
         }
         this.fontNameList.value = characterFormat.fontFamily;
+        this.fontNameList.dataBind();
         if (!characterFormat.bold && !characterFormat.italic) {
             this.fontStyleText.value = this.fontSizeText.value;
             this.fontStyleText.index = 0;

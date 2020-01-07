@@ -1,4 +1,5 @@
 import { DiagramElement, Corners } from '../core/elements/diagram-element';
+import { compile as baseTemplateComplier } from '@syncfusion/ej2-base';
 import { Rect } from '../primitives/rect';
 import { Size } from '../primitives/size';
 import { PointModel } from '../primitives/point-model';
@@ -7,6 +8,14 @@ import { TextAlign, TextWrap, WhiteSpace, TextDecoration } from '../enum/enum';
 import { getValue } from '@syncfusion/ej2-base';
 import { TextAttributes } from '../rendering/canvas-interface';
 import { getChildNode } from './dom-util';
+import { Diagram } from '../diagram';
+import { Node, BasicShape, Shape, Native, BpmnShape, BpmnActivity, BpmnTask, BpmnSubProcess } from '../objects/node';
+import { IconShape } from '../objects/icon';
+import { TextStyle, ShapeStyle, Margin } from '../core/appearance';
+import { Port } from '../objects/port';
+import { Annotation } from '../objects/annotation';
+import { Connector, Decorator } from '../objects/connector';
+
 /**
  * Implements the basic functionalities
  */
@@ -29,6 +38,40 @@ export function randomId(): string {
     }
     return id;
 }
+
+export function getIndex(comp: Diagram, id: string): number {
+    if (comp.nodes && comp.nodes.length > 0) {
+        for (let i: number = 0; i < comp.nodes.length; i++) {
+            if (comp.nodes[i].id === id) {
+                return i;
+            }
+        }
+    }
+    if (comp.connectors && comp.connectors.length > 0) {
+        for (let i: number = 0; i < comp.connectors.length; i++) {
+            if (comp.connectors[i].id === id) {
+                return i;
+            }
+        }
+    }
+    return null;
+}
+
+/** @private */
+export function templateCompiler(template: string): Function {
+    if (template) {
+        let e: Object;
+        try {
+            if (document.querySelectorAll(template).length) {
+                return baseTemplateComplier(document.querySelector(template).innerHTML.trim());
+            }
+        } catch (e) {
+            return baseTemplateComplier(template);
+        }
+    }
+    return undefined;
+}
+
 
 /** @private */
 export function cornersPointsBeforeRotation(ele: DiagramElement): Rect {
@@ -91,9 +134,80 @@ export function getBounds(element: DiagramElement): Rect {
     element.corners.height = bounds.height;
     return bounds;
 }
+function updateCloneProp(properties: string[], obj: Object): string[] {
+    let prop: string[] = [];
+    if (obj instanceof Node) {
+        prop = ['width', 'height', 'offsetX', 'offsetY', 'container', 'visible', 'horizontalAlignment', 'verticalAlignment',
+            'backgroundColor', 'borderColor', 'borderWidth', 'rotateAngle', 'minHeight', 'minWidth', 'maxHeight',
+            'maxWidth', 'pivot', 'margin', 'flip', 'wrapper', 'constraints', 'style', 'annotations', 'ports', 'isExpanded', 'expandIcon'];
+    } else if (obj instanceof Connector) {
+        prop = ['constraints', 'sourcePadding', 'targetPadding', 'cornerRadius', 'flip', 'sourceID',
+            'sourcePortID', 'targetID', 'targetPortID', 'visible'];
+    } else if (obj instanceof Decorator) {
+        prop = ['height', 'width'];
+    } else if (obj instanceof Shape || obj instanceof IconShape) {
+        prop.push('shape');
+        if (obj instanceof BasicShape) {
+            prop.push('cornerRadius');
+        } else if (obj instanceof Text) {
+            prop.push('margin');
+        } else if (obj instanceof Image) {
+            prop.push('align');
+            prop.push('scale');
+        } else if (obj instanceof Native) {
+            prop.push('scale');
+        } else if (obj instanceof BpmnShape) {
+            prop.push('activity');
+            prop.push('annotations');
+        } else if (obj instanceof IconShape) {
+            prop.push('borderColor');
+            prop.push('borderWidth');
+            prop.push('cornerRadius');
+            prop.push('fill');
+        }
+    } else if (obj instanceof BpmnActivity) {
+        prop.push('subProcess');
+    } else if (obj instanceof BpmnTask) {
+        prop.push('call');
+        prop.push('compensation'); prop.push('loop');
+    } else if (obj instanceof BpmnSubProcess) {
+        prop.push('adhoc');
+        prop.push('boundary');
+        prop.push('compensation');
+        prop.push('loop');
+        prop.push('processes');
+    } else if (obj instanceof Port) {
+        prop.push('height');
+        prop.push('width');
+        prop.push('visibility');
+        prop.push('horizontalAlignment');
+        prop.push('verticalAlignment');
+        prop.push('shape');
+    } else if (obj instanceof Annotation) {
+        prop.push('constraints');
+        prop.push('height');
+        prop.push('horizontalAlignment');
+        prop.push('rotateAngle');
+        prop.push('template');
+        prop.push('verticalAlignment');
+        prop.push('visibility');
+        prop.push('width');
+        prop.push('margin');
+    } else if (obj instanceof Margin) {
+        prop.push('left'); prop.push('right'); prop.push('top'); prop.push('bottom');
+    } else if (obj instanceof TextStyle) {
+        prop = ['strokeWidth', 'strokeDashArray', 'opacity', 'gradient', 'fontSize', 'fontFamily', 'textOverflow',
+            'textDecoration', 'whiteSpace', 'textWrapping', 'textAlign', 'italic', 'bold'];
+    }
+    if (obj instanceof ShapeStyle) {
+        prop.push('strokeColor'); prop.push('color');
+    }
+    properties = properties.concat(prop);
+    return properties;
+}
 
 /** @private */
-export function cloneObject(obj: Object, additionalProp?: Function | string, key?: string): Object {
+export function cloneObject(obj: Object, additionalProp?: Function | string, key?: string, cloneBlazorProp?: boolean): Object {
     let newObject: Object = {};
     let keys: string = 'properties';
     let prop: string = 'propName';
@@ -115,6 +229,9 @@ export function cloneObject(obj: Object, additionalProp?: Function | string, key
         }
         let internalProp: string[] = getInternalProperties(key);
         properties = properties.concat(internalProp);
+        if (cloneBlazorProp) {
+            properties = updateCloneProp(properties, obj);
+        }
         for (let property of properties) {
             if (property !== 'historyManager') {
                 if (property !== 'wrapper') {
@@ -125,12 +242,13 @@ export function cloneObject(obj: Object, additionalProp?: Function | string, key
                         if (obj[property] instanceof Array) {
                             newObject[property] = cloneArray(
                                 (internalProp.indexOf(property) === -1 && obj[keys]) ? obj[keys][property] : obj[property],
-                                additionalProp, property);
+                                additionalProp, property, cloneBlazorProp);
                         } else if (obj[property] instanceof Array === false && obj[property] instanceof HTMLElement) {
                             newObject[property] = obj[property].cloneNode(true).innerHtml;
                         } else if (obj[property] instanceof Array === false && obj[property] instanceof Object) {
                             newObject[property] = cloneObject(
-                                (internalProp.indexOf(property) === -1 && obj[keys]) ? obj[keys][property] : obj[property]);
+                                (internalProp.indexOf(property) === -1 && obj[keys]) ? obj[keys][property] : obj[property],
+                                undefined, undefined, cloneBlazorProp);
                         } else {
                             newObject[property] = obj[property];
                         }
@@ -167,7 +285,7 @@ export function getInternalProperties(propName: string): string[] {
     return [];
 }
 /** @private */
-export function cloneArray(sourceArray: Object[], additionalProp?: Function | string, key?: string): Object[] {
+export function cloneArray(sourceArray: Object[], additionalProp?: Function | string, key?: string, cloneBlazorProp?: boolean): Object[] {
     let clonedArray: Object[];
     if (sourceArray) {
         clonedArray = [];
@@ -175,7 +293,7 @@ export function cloneArray(sourceArray: Object[], additionalProp?: Function | st
             if (sourceArray[i] instanceof Array) {
                 clonedArray.push(sourceArray[i]);
             } else if (sourceArray[i] instanceof Object) {
-                clonedArray.push(cloneObject(sourceArray[i], additionalProp, key));
+                clonedArray.push(cloneObject(sourceArray[i], additionalProp, key, cloneBlazorProp));
             } else {
                 clonedArray.push(sourceArray[i]);
             }

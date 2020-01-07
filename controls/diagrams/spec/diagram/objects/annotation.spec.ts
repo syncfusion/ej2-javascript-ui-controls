@@ -861,5 +861,255 @@ describe('Diagram Control', () => {
         
     });
 
+    describe('Text element With text overflow', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramTextWrapping' });
+            document.body.appendChild(ele);
 
+            diagram = new Diagram({
+                width: '1000px', height: '500px',
+                nodes: [
+                    {
+                        id: 'node1', width: 75, height: 75, offsetX: 300, offsetY: 100,
+                        annotations: [{
+                            id: 'label1',
+                            content: 'The text element given with property of overflow as clip and wrapping as wrap, so pls refer the content',
+                            style: { textOverflow: 'Clip', textWrapping: 'Wrap' }
+                        }]
+                    },
+                    {
+                        id: 'node2', width: 75, height: 75, offsetX: 450, offsetY: 100,
+                        annotations: [{
+                            id: 'label2',
+                            content: 'The text element given with property of overflow as Ellipsis and wrapping as wrap so that element to be clipped',
+                            style: { textOverflow: 'Ellipsis', textWrapping: 'Wrap' }
+                        }]
+                    },
+                    {
+                        id: 'node3', width: 75, height: 75, offsetX: 600, offsetY: 100,
+                        annotations: [{
+                            id: 'label3',
+                            content: 'The text element given with property of overflow as Wrap and wrapping as wrap so that element not to be Wrapped',
+                            style: { textOverflow: 'Wrap', textWrapping: 'Wrap' }
+                        }]
+                    },
+                    {
+                        id: 'node4', width: 75, height: 75, offsetX: 300, offsetY: 200,
+                        annotations: [{
+                            id: 'label4',
+                            content: "The text element's wrapping as WrapWithOverflow and overflow is Clip",
+                            style: { textOverflow: 'Clip', textWrapping: 'WrapWithOverflow' }
+                        }]
+                    },
+                    {
+                        id: 'node5', width: 75, height: 75, offsetX: 450, offsetY: 200,
+                        annotations: [{
+                            id: 'label5',
+                            content: "The text element's wrapping as WrapWithOverflow and overflow is Ellipsis",
+                            style: { textOverflow: 'Ellipsis', textWrapping: 'WrapWithOverflow' }
+                        }]
+                    },
+                    {
+                        id: 'node6', width: 75, height: 75, offsetX: 600, offsetY: 200,
+                        annotations: [{
+                            id: 'label6',
+                            content: "The text element's wrapping as WrapWithOverflow and overflow is Wrap",
+                            style: { textOverflow: 'Wrap', textWrapping: 'WrapWithOverflow' }
+                        }]
+                    },
+                    {
+                        id: 'node7', width: 75, height: 75, offsetX: 300, offsetY: 300,
+                        annotations: [{
+                            id: 'label7',
+                            content: "The text element's wrapping as NoWrap and overflow is Clip",
+                            style: { textOverflow: 'Clip', textWrapping: 'NoWrap' }
+                        }]
+                    },
+                    {
+                        id: 'node8', width: 75, height: 75, offsetX: 450, offsetY: 300,
+                        annotations: [{
+                            id: 'label8',
+                            content: "The text element's wrapping as NoWrap and overflow is Ellipsis",
+                            style: { textOverflow: 'Ellipsis', textWrapping: 'NoWrap' }
+                        }]
+                    },
+                    {
+                        id: 'node9', width: 75, height: 75, offsetX: 600, offsetY: 300,
+                        annotations: [{
+                            id: 'label9',
+                            content: "The text element's wrapping as NoWrap and overflow is Wrap",
+                            style: { textOverflow: 'Wrap', textWrapping: 'NoWrap' }
+                        }]
+                    }
+                ]
+            });
+            diagram.appendTo('#diagramTextWrapping');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+
+
+        it('Checking Text overflow - Clip and TextWrapping - Wrap', (done: Function) => {
+            for (var j = 1; j < diagram.nodes.length + 1; j++) {
+                for (var i = 0; i < document.getElementById('node' + j + '_label' + j + '_groupElement').childNodes[1].childNodes.length; i++) {
+                    console.log('expect((document.getElementById("node' + j + '_label' + j + '_groupElement").childNodes[1].childNodes[' + i + '] as HTMLElement).getAttribute("x") == "' + (document.getElementById("node" + j + "_label" + j + "_groupElement").childNodes[1].childNodes[i] as HTMLElement).getAttribute("x") + '").toBe(true);');
+                    console.log('expect((document.getElementById("node' + j + '_label' + j + '_groupElement").childNodes[1].childNodes[' + i + '] as HTMLElement).getAttribute("y") == "' + (document.getElementById("node" + j + "_label" + j + "_groupElement").childNodes[1].childNodes[i] as HTMLElement).getAttribute("y") + '").toBe(true);');
+                    console.log('expect((document.getElementById("node' + j + '_label' + j + '_groupElement").childNodes[1].childNodes[' + i + '] as HTMLElement).textContent == "' + (document.getElementById("node" + j + "_label" + j + "_groupElement").childNodes[1].childNodes[i] as HTMLElement).textContent + '").toBe(true);');
+                }
+            }
+            expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("x") == "1.1484375").toBe(true);
+            expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("y") == "10.800000000000004").toBe(true);
+            expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[0] as HTMLElement).textContent == "The text elem").toBe(true);
+            expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("x") == "0.8046875").toBe(true);
+            expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("y") == "25.200000000000003").toBe(true);
+            expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[1] as HTMLElement).textContent == "ent given with").toBe(true);
+            expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("x") == "0.8046875").toBe(true);
+            expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("y") == "39.6").toBe(true);
+            expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[2] as HTMLElement).textContent == " property of ov").toBe(true);
+            expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[3] as HTMLElement).getAttribute("x") == "1.1484375").toBe(true);
+            expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[3] as HTMLElement).getAttribute("y") == "54").toBe(true);
+            expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[3] as HTMLElement).textContent == "erflow as clip ").toBe(true);
+            expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("x") == "1.46875").toBe(true);
+            expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("y") == "68.4").toBe(true);
+            expect((document.getElementById("node1_label1_groupElement").childNodes[1].childNodes[4] as HTMLElement).textContent == "and wrapping").toBe(true);
+            done();
+        });
+
+        it('Checking Text overflow - Ellipsis and TextWrapping - Wrap', (done: Function) => {
+            expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("x") == "1.1484375").toBe(true);
+            expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("y") == "10.800000000000004").toBe(true);
+            expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[0] as HTMLElement).textContent == "The text elem").toBe(true);
+            expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("x") == "0.8046875").toBe(true);
+            expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("y") == "25.200000000000003").toBe(true);
+            expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[1] as HTMLElement).textContent == "ent given with").toBe(true);
+            expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("x") == "0.8046875").toBe(true);
+            expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("y") == "39.6").toBe(true);
+            expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[2] as HTMLElement).textContent == " property of ov").toBe(true);
+            expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[3] as HTMLElement).getAttribute("x") == "0.3203125").toBe(true);
+            expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[3] as HTMLElement).getAttribute("y") == "54").toBe(true);
+            expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[3] as HTMLElement).textContent == "erflow as Ellip").toBe(true);
+            expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("x") == "0.3125").toBe(true);
+            expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("y") == "68.4").toBe(true);
+            expect((document.getElementById("node2_label2_groupElement").childNodes[1].childNodes[4] as HTMLElement).textContent == "sis and wr...").toBe(true);
+            done();
+        });
+
+        it('Checking Text overflow - Wrap and TextWrapping - Wrap', (done: Function) => {
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("x") == "2.0078125").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("y") == "10.800000000000004").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[0] as HTMLElement).textContent == "The text elem").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("x") == "1.6640625").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("y") == "25.200000000000003").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[1] as HTMLElement).textContent == "ent given with").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("x") == "0").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("y") == "39.6").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[2] as HTMLElement).textContent == " property of ov").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[3] as HTMLElement).getAttribute("x") == "1.625").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[3] as HTMLElement).getAttribute("y") == "54").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[3] as HTMLElement).textContent == "erflow as Wra").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("x") == "0.6640625").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("y") == "68.4").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[4] as HTMLElement).textContent == "p and wrappin").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[5] as HTMLElement).getAttribute("x") == "0.671875").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[5] as HTMLElement).getAttribute("y") == "82.80000000000001").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[5] as HTMLElement).textContent == "g as wrap so t").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[6] as HTMLElement).getAttribute("x") == "2").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[6] as HTMLElement).getAttribute("y") == "97.19999999999999").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[6] as HTMLElement).textContent == "hat element n").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[7] as HTMLElement).getAttribute("x") == "2.28125").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[7] as HTMLElement).getAttribute("y") == "111.6").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[7] as HTMLElement).textContent == "ot to be Wrap").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[8] as HTMLElement).getAttribute("x") == "28.34375").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[8] as HTMLElement).getAttribute("y") == "126").toBe(true);
+            expect((document.getElementById("node3_label3_groupElement").childNodes[1].childNodes[8] as HTMLElement).textContent == "ped").toBe(true);
+
+            done();
+        });
+
+        it('Checking Text overflow - Clip and TextWrapping - WrapWithOverflow', (done: Function) => {
+            expect((document.getElementById("node4_label4_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("x") == "15.484375").toBe(true);
+            expect((document.getElementById("node4_label4_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("y") == "10.800000000000004").toBe(true);
+            expect((document.getElementById("node4_label4_groupElement").childNodes[1].childNodes[0] as HTMLElement).textContent == "The text").toBe(true);
+            expect((document.getElementById("node4_label4_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("x") == "12.0078125").toBe(true);
+            expect((document.getElementById("node4_label4_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("y") == "25.200000000000003").toBe(true);
+            expect((document.getElementById("node4_label4_groupElement").childNodes[1].childNodes[1] as HTMLElement).textContent == "element's").toBe(true);
+            expect((document.getElementById("node4_label4_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("x") == "4.640625").toBe(true);
+            expect((document.getElementById("node4_label4_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("y") == "39.6").toBe(true);
+            expect((document.getElementById("node4_label4_groupElement").childNodes[1].childNodes[2] as HTMLElement).textContent == "wrapping as").toBe(true);
+            expect((document.getElementById("node4_label4_groupElement").childNodes[1].childNodes[3] as HTMLElement).getAttribute("x") == "4.640625").toBe(true);
+            expect((document.getElementById("node4_label4_groupElement").childNodes[1].childNodes[3] as HTMLElement).getAttribute("y") == "54").toBe(true);
+            expect((document.getElementById("node4_label4_groupElement").childNodes[1].childNodes[3] as HTMLElement).textContent == "WrapWithOverflow").toBe(true);
+            expect((document.getElementById("node4_label4_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("x") == "3.3125").toBe(true);
+            expect((document.getElementById("node4_label4_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("y") == "68.4").toBe(true);
+            expect((document.getElementById("node4_label4_groupElement").childNodes[1].childNodes[4] as HTMLElement).textContent == "and overflow").toBe(true);
+            done();
+        });
+
+        it('Checking Text overflow - Ellipsis and TextWrapping - WrapWithOverflow', (done: Function) => {
+            expect((document.getElementById("node5_label5_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("x") == "15.484375").toBe(true);
+            expect((document.getElementById("node5_label5_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("y") == "10.800000000000004").toBe(true);
+            expect((document.getElementById("node5_label5_groupElement").childNodes[1].childNodes[0] as HTMLElement).textContent == "The text").toBe(true);
+            expect((document.getElementById("node5_label5_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("x") == "12.0078125").toBe(true);
+            expect((document.getElementById("node5_label5_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("y") == "25.200000000000003").toBe(true);
+            expect((document.getElementById("node5_label5_groupElement").childNodes[1].childNodes[1] as HTMLElement).textContent == "element's").toBe(true);
+            expect((document.getElementById("node5_label5_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("x") == "4.640625").toBe(true);
+            expect((document.getElementById("node5_label5_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("y") == "39.6").toBe(true);
+            expect((document.getElementById("node5_label5_groupElement").childNodes[1].childNodes[2] as HTMLElement).textContent == "wrapping as").toBe(true);
+            expect((document.getElementById("node5_label5_groupElement").childNodes[1].childNodes[3] as HTMLElement).getAttribute("x") == "4.640625").toBe(true);
+            expect((document.getElementById("node5_label5_groupElement").childNodes[1].childNodes[3] as HTMLElement).getAttribute("y") == "54").toBe(true);
+            expect((document.getElementById("node5_label5_groupElement").childNodes[1].childNodes[3] as HTMLElement).textContent == "WrapWithOverflow").toBe(true);
+            expect((document.getElementById("node5_label5_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("x") == "3.3125").toBe(true);
+            expect((document.getElementById("node5_label5_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("y") == "68.4").toBe(true);
+            expect((document.getElementById("node5_label5_groupElement").childNodes[1].childNodes[4] as HTMLElement).textContent == "and overf...").toBe(true);
+            done();
+        });
+
+        it('Checking Text overflow - Wrap and TextWrapping - WrapWithOverflow', (done: Function) => {
+            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("x") == "28.0546875").toBe(true);
+            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("y") == "10.800000000000004").toBe(true);
+            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[0] as HTMLElement).textContent == "The text").toBe(true);
+            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("x") == "24.578125").toBe(true);
+            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[1] as HTMLElement).getAttribute("y") == "25.200000000000003").toBe(true);
+            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[1] as HTMLElement).textContent == "element's").toBe(true);
+            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("x") == "17.2109375").toBe(true);
+            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[2] as HTMLElement).getAttribute("y") == "39.6").toBe(true);
+            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[2] as HTMLElement).textContent == "wrapping as").toBe(true);
+            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[3] as HTMLElement).getAttribute("x") == "0").toBe(true);
+            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[3] as HTMLElement).getAttribute("y") == "54").toBe(true);
+            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[3] as HTMLElement).textContent == "WrapWithOverflow").toBe(true);
+            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("x") == "15.8828125").toBe(true);
+            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[4] as HTMLElement).getAttribute("y") == "68.4").toBe(true);
+            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[4] as HTMLElement).textContent == "and overflow").toBe(true);
+            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[5] as HTMLElement).getAttribute("x") == "28.171875").toBe(true);
+            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[5] as HTMLElement).getAttribute("y") == "82.80000000000001").toBe(true);
+            expect((document.getElementById("node6_label6_groupElement").childNodes[1].childNodes[5] as HTMLElement).textContent == "is Wrap").toBe(true);
+            done();
+        });
+
+        it('Checking Text overflow - Clip and TextWrapping - NoWrap', (done: Function) => {
+            expect((document.getElementById("node7_label7_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("x") == "0").toBe(true);
+            expect((document.getElementById("node7_label7_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("y") == "10.8").toBe(true);
+            expect((document.getElementById("node7_label7_groupElement").childNodes[1].childNodes[0] as HTMLElement).textContent == "The text elem").toBe(true);
+            done();
+        });
+
+        it('Checking Text overflow - Ellipsis and TextWrapping - NoWrap', (done: Function) => {
+            expect((document.getElementById("node8_label8_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("x") == "0").toBe(true);
+            expect((document.getElementById("node8_label8_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("y") == "10.8").toBe(true);
+            expect((document.getElementById("node8_label8_groupElement").childNodes[1].childNodes[0] as HTMLElement).textContent == "The text e...").toBe(true);
+            done();
+        });
+
+        it('Checking Text overflow - Wrap and TextWrapping - NoWrap', (done: Function) => {
+            expect((document.getElementById("node9_label9_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("x") == "0").toBe(true);
+            expect((document.getElementById("node9_label9_groupElement").childNodes[1].childNodes[0] as HTMLElement).getAttribute("y") == "10.8").toBe(true);
+            expect((document.getElementById("node9_label9_groupElement").childNodes[1].childNodes[0] as HTMLElement).textContent == "The text element's wrapping as NoWrap and overflow is Wrap").toBe(true);
+            done();
+        });
+    });
 });

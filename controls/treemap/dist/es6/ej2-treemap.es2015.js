@@ -3119,6 +3119,7 @@ let TreeMap = class TreeMap extends Component {
                 case 'renderDirection':
                 case 'leafItemSettings':
                 case 'legendSettings':
+                case 'dataSource':
                     render = true;
                     break;
             }

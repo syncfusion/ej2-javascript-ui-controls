@@ -609,6 +609,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
             enableRtl: this.enableRtl,
             floatLabelType: 'Always',
             min: 1,
+            max: 999,
             change: (args: object) => {
                 self.triggerChangeEvent();
             }
@@ -631,6 +632,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
             value: 1,
             format: '#',
             min: 1,
+            max: 999,
             enableRtl: this.enableRtl,
             floatLabelType: 'Always',
             placeholder: this.localeObj.getConstant(REPEATEVERY),

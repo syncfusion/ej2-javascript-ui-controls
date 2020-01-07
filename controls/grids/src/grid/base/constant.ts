@@ -376,3 +376,5 @@ export const componentRendered: string = 'component-rendered';
 export const restoreFocus: string = 'restore-Focus';
 /** @hidden */
 export const detailStateChange: string = 'detail-state-change';
+/** @hidden */
+export const detailIndentCellInfo: string = 'detail-indentcell-info';

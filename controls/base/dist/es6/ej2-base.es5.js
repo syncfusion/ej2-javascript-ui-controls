@@ -167,7 +167,8 @@ function extend(copied, first, second, deep) {
             var src = result[key];
             var copy = obj1[key];
             var clone;
-            if (deep && !(src instanceof Event) && (isObject(copy) || Array.isArray(copy))) {
+            var blazorEventExtend = isBlazor() ? !(src instanceof Event) : true;
+            if (deep && blazorEventExtend && (isObject(copy) || Array.isArray(copy))) {
                 if (isObject(copy)) {
                     clone = src ? src : {};
                     if (Array.isArray(clone) && clone.hasOwnProperty('isComplexArray')) {
@@ -6007,7 +6008,17 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
         var intCoord = this.getCoordinates(evt);
         this.initialPosition = { x: intCoord.pageX, y: intCoord.pageY };
         if (!this.clone) {
-            var pos = this.element.getBoundingClientRect();
+            var leftPostion = void 0;
+            var topPostion = void 0;
+            if (!isBlazor()) {
+                var pos = this.element.getBoundingClientRect();
+                leftPostion = pos.left;
+                topPostion = pos.top;
+            }
+            else {
+                leftPostion = this.element.offsetLeft;
+                topPostion = this.element.offsetTop;
+            }
             this.getScrollableValues();
             if (evt.clientX === evt.pageX) {
                 this.parentScrollX = 0;
@@ -6015,8 +6026,8 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
             if (evt.clientY === evt.pageY) {
                 this.parentScrollY = 0;
             }
-            this.relativeXPosition = intCoord.pageX - (pos.left + this.parentScrollX);
-            this.relativeYPosition = intCoord.pageY - (pos.top + this.parentScrollY);
+            this.relativeXPosition = intCoord.pageX - (leftPostion + this.parentScrollX);
+            this.relativeYPosition = intCoord.pageY - (topPostion + this.parentScrollY);
         }
         if (this.externalInitialize) {
             this.intDragStart(evt);
@@ -6026,7 +6037,7 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
             EventHandler.add(document, Browser.touchEndEvent, this.intDestroy, this);
         }
         this.toggleEvents(true);
-        document.body.classList.add('e-prevent-select');
+        //document.body.classList.add('e-prevent-select');
         this.externalInitialize = false;
         EventHandler.trigger(document.documentElement, Browser.touchStartEvent, evt);
     };
@@ -6147,6 +6158,7 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
             top: (rect.top + window.pageYOffset) - parseInt(style.marginTop, 10)
         };
     };
+    // tslint:disable-next-line:max-func-body-length
     Draggable.prototype.intDrag = function (evt) {
         if (!isUndefined(evt.changedTouches) && (evt.changedTouches.length !== 1)) {
             return;
@@ -6169,14 +6181,23 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
         var eleObj = this.checkTargetElement(evt);
         if (eleObj.target && eleObj.instance) {
             /* tslint:disable no-any */
-            eleObj.instance.dragData[this.scope] = this.droppables[this.scope];
-            eleObj.instance.intOver(evt, eleObj.target);
-            this.hoverObject = eleObj;
+            var flag = true;
+            if (this.hoverObject) {
+                if (this.hoverObject.instance !== eleObj.instance) {
+                    this.triggerOutFunction(evt, eleObj);
+                }
+                else {
+                    flag = false;
+                }
+            }
+            if (flag) {
+                eleObj.instance.dragData[this.scope] = this.droppables[this.scope];
+                eleObj.instance.intOver(evt, eleObj.target);
+                this.hoverObject = eleObj;
+            }
         }
         else if (this.hoverObject) {
-            this.hoverObject.instance.intOut(evt, eleObj.target);
-            this.hoverObject.instance.dragData[this.scope] = null;
-            this.hoverObject = null;
+            this.triggerOutFunction(evt, eleObj);
         }
         var helperElement = this.droppables[this.scope].helper;
         this.parentClientRect = this.calculateParentPosition(this.helperElement.offsetParent);
@@ -6252,6 +6273,11 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
         this.position.top = top;
         this.pageX = pagex;
         this.pageY = pagey;
+    };
+    Draggable.prototype.triggerOutFunction = function (evt, eleObj) {
+        this.hoverObject.instance.intOut(evt, eleObj.target);
+        this.hoverObject.instance.dragData[this.scope] = null;
+        this.hoverObject = null;
     };
     Draggable.prototype.getDragPosition = function (dragValue) {
         var temp = extend({}, dragValue);
@@ -6376,7 +6402,7 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
     };
     Draggable.prototype.getMousePosition = function (evt, isdragscroll) {
         /* tslint:disable no-any */
-        var dragEle = evt.srcElement;
+        var dragEle = evt.srcElement !== undefined ? evt.srcElement : evt.target;
         var intCoord = this.getCoordinates(evt);
         var pageX;
         var pageY;

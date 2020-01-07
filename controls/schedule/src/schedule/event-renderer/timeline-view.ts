@@ -97,7 +97,13 @@ export class TimelineEvent extends MonthEvent {
         event.Index = overlapCount;
         let appHeight: number = this.eventHeight;
         let diffInDays: number = eventData.count as number;
-        if (startTime <= endTime) {
+        let eventObj: { [key: string]: Object } = extend({}, event, null, true) as { [key: string]: Object };
+        eventObj[this.fields.startTime] = eventData[this.fields.startTime];
+        eventObj[this.fields.endTime] = eventData[this.fields.endTime];
+        let currentDate: Date = util.resetTime(new Date(this.dateRender[this.day].getTime()));
+        let schedule: { [key: string]: Date } = util.getStartEndHours(currentDate, this.startHour, this.endHour);
+        let isValidEvent: boolean = this.isValidEvent(eventObj, startTime, endTime, schedule);
+        if (startTime <= endTime && isValidEvent) {
             let appWidth: number = this.getEventWidth(startTime, endTime, event[this.fields.isAllDay] as boolean, diffInDays);
             appWidth = this.renderType === 'day' ? appWidth - 2 : appWidth;
             let appLeft: number = 0;

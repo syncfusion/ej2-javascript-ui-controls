@@ -1,6 +1,7 @@
 import { DiagramElement } from './diagram-element';
 import { getContent } from '../../utility/dom-util';
 import { AnnotationConstraints } from '../../enum/enum';
+import { templateCompiler } from '../../utility/base-util';
 
 /**
  * HTMLElement defines the basic html elements
@@ -9,17 +10,33 @@ export class DiagramHtmlElement extends DiagramElement {
     /**
      * set the id for each element
      */
-    public constructor(nodeId: string, diagramId: string, annotationId?: string) {
+    public constructor(nodeId: string, diagramId: string, annotationId?: string, nodeTemplate?: string) {
         super();
         this.diagramId = diagramId;
         this.nodeId = nodeId;
         this.annotationId = annotationId;
+        this.templateFn = templateCompiler(nodeTemplate);
     }
+
+    /** @private */
+    public getNodeTemplate(): Function {
+        return this.templateFn;
+    }
+
+    private templateFn: Function;
+
     private data: string | HTMLElement = '';
     /**
      * Gets the node id for the element
      */
     public nodeId: string = '';
+
+    /**
+     * check whether it is html element or not
+     * @private
+     */
+    public isTemplate: boolean;
+
     /**
      * defines the id of the annotation on rendering template on label.
      * @private
@@ -45,7 +62,9 @@ export class DiagramHtmlElement extends DiagramElement {
      */
     public set content(value: string | HTMLElement) {
         this.data = value;
-        this.template = getContent(this, true) as HTMLElement;
+        if (!this.isTemplate) {
+            this.template = getContent(this, true) as HTMLElement;
+        }
         this.isDirt = true;
     }
 

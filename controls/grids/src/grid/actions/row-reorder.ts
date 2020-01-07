@@ -35,7 +35,7 @@ export class RowDD {
     // tslint:disable-next-line:max-func-body-length
     private helper: Function = (e: { sender: MouseEventArgs }) => {
         let gObj: IGrid = this.parent;
-        let target: Element = e.sender.target as Element;
+        let target: Element = this.draggable.currentStateTarget as Element;
         let visualElement: HTMLElement = this.parent.createElement('div', {
             className: 'e-cloneproperties e-draganddrop e-grid e-dragclone',
             styles: 'height:"auto", z-index:2, width:' + gObj.element.offsetWidth
@@ -51,7 +51,7 @@ export class RowDD {
         }
         if (gObj.rowDropSettings.targetID &&
             gObj.selectionSettings.mode === 'Row' && gObj.selectionSettings.type === 'Single') {
-            gObj.selectRow(parseInt((e.sender.target as Element).parentElement.getAttribute('aria-rowindex'), 10));
+            gObj.selectRow(parseInt((this.draggable.currentStateTarget as Element).parentElement.getAttribute('aria-rowindex'), 10));
         }
         this.startedRow = closestElement(target as Element, 'tr').cloneNode(true) as HTMLTableRowElement;
         this.processArgs(target);

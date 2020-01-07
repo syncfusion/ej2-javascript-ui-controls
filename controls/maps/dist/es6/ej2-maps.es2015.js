@@ -40,15 +40,14 @@ function stringToNumber(value, containerSize) {
 function calculateSize(maps) {
     let containerWidth = maps.element.clientWidth;
     let containerHeight = maps.element.clientHeight;
+    let parentHeight = maps.element.parentElement.clientHeight;
+    let parentWidth = maps.element.parentElement.clientWidth;
     if (maps.isBlazor) {
-        if (maps.element.parentElement.style.height !== '' && maps.element.parentElement.style.width !== '') {
-            containerHeight = maps.element.parentElement.clientHeight;
-            containerWidth = maps.element.parentElement.clientWidth;
-        }
-        else {
-            containerHeight = maps.element.clientHeight;
-            containerWidth = maps.element.clientWidth;
-        }
+        containerHeight = parentHeight !== 0 ? parentHeight : containerHeight !== 0 ?
+            containerHeight : 450;
+        containerWidth = parentWidth !== 0 ?
+            parentWidth : containerWidth !== 0 ?
+            containerWidth : 600;
     }
     maps.availableSize = new Size(stringToNumber(maps.width, containerWidth) || containerWidth || 600, stringToNumber(maps.height, containerHeight) || containerHeight || (maps.isDevice ?
         Math.min(window.innerWidth, window.innerHeight) : 450));
@@ -4205,8 +4204,9 @@ class LayerPanel {
             id: this.mapObject.element.id + '_LayerIndex_' + layerIndex
         }));
         if (!this.mapObject.enablePersistence) {
-            if (!isNullOrUndefined(window.localStorage)) {
-                window.localStorage.clear();
+            let itemName = this.mapObject.getModuleName() + this.mapObject.element.id;
+            if (!isNullOrUndefined(window.localStorage) && window.localStorage.getItem(itemName)) {
+                window.localStorage.removeItem(itemName);
             }
         }
         let eventArgs = {
@@ -5552,17 +5552,15 @@ let Maps = class Maps extends Component {
                 if (!isNullOrUndefined(templateGroupEle) && templateGroupEle.childElementCount > 0) {
                     let layerOffset = getElementByID(this.element.id + '_Layer_Collections').getBoundingClientRect();
                     let elementOffset = getElementByID(templateGroupEle.id).getBoundingClientRect();
+                    let offSetLetValue = this.isTileMap ? 0 : (layerOffset.left < elementOffset.left) ?
+                        -(Math.abs(elementOffset.left - layerOffset.left)) : (Math.abs(elementOffset.left - layerOffset.left));
+                    let offSetTopValue = this.isTileMap ? 0 : (layerOffset.top < elementOffset.top) ?
+                        -(Math.abs(elementOffset.top - layerOffset.top)) : Math.abs(elementOffset.top - layerOffset.top);
                     for (let j = 0; j < templateGroupEle.childElementCount; j++) {
                         let currentTemplate = templateGroupEle.childNodes[j];
-                        let templateOffset = currentTemplate.getBoundingClientRect();
-                        currentTemplate.style.left = ((this.isTileMap ? parseFloat(currentTemplate.style.left) :
-                            ((layerOffset.left < elementOffset.left ? (parseFloat(currentTemplate.style.left) -
-                                Math.abs(elementOffset.left - layerOffset.left)) : (parseFloat(currentTemplate.style.left) +
-                                Math.abs(elementOffset.left - layerOffset.left))))) - (templateOffset.width / 2)) + 'px';
-                        currentTemplate.style.top = ((this.isTileMap ? parseFloat(currentTemplate.style.top) :
-                            ((layerOffset.top < elementOffset.top ? (parseFloat(currentTemplate.style.top) -
-                                Math.abs(elementOffset.top - layerOffset.top)) : (parseFloat(currentTemplate.style.top) +
-                                Math.abs(elementOffset.top - layerOffset.top))))) - (templateOffset.height / 2)) + 'px';
+                        currentTemplate.style.left = parseFloat(currentTemplate.style.left) + offSetLetValue + 'px';
+                        currentTemplate.style.top = parseFloat(currentTemplate.style.top) + offSetTopValue + 'px';
+                        currentTemplate.style.transform = 'translate(-50%, -50%)';
                     }
                 }
             }
@@ -9962,6 +9960,7 @@ class Zoom {
         let scale = map.previousScale = map.scale;
         let maxZoom = map.zoomSettings.maxZoom;
         let minZoom = map.zoomSettings.minZoom;
+        newZoomFactor = (minZoom > newZoomFactor && type === 'ZoomIn') ? minZoom + 1 : newZoomFactor;
         let translatePoint = map.previousPoint = map.translatePoint;
         let prevTilePoint = map.tileTranslatePoint;
         if ((!map.isTileMap) && (type === 'ZoomIn' ? newZoomFactor >= minZoom && newZoomFactor <= maxZoom : newZoomFactor >= minZoom)) {
@@ -10586,13 +10585,11 @@ class Zoom {
                 if (type === 'Template') {
                     location.x = ((Math.abs(this.maps.baseMapRectBounds['min']['x'] - location.x)) * scale);
                     location.y = ((Math.abs(this.maps.baseMapRectBounds['min']['y'] - location.y)) * scale);
-                    let templateOffset = element.getBoundingClientRect();
                     let layerOffset = getElementByID(this.maps.element.id + '_Layer_Collections').getBoundingClientRect();
                     let elementOffset = element.parentElement.getBoundingClientRect();
-                    element.style.left = (((location.x) + (layerOffset.left - elementOffset.left) -
-                        (templateOffset.width / 2)) + marker$$1.offset.x) + 'px';
-                    element.style.top = (((location.y) + (layerOffset.top - elementOffset.top)
-                        - (templateOffset.height / 2)) + marker$$1.offset.y) + 'px';
+                    element.style.left = (((location.x) + (layerOffset.left - elementOffset.left)) + marker$$1.offset.x) + 'px';
+                    element.style.top = (((location.y) + (layerOffset.top - elementOffset.top)) + marker$$1.offset.y) + 'px';
+                    element.style.transform = 'translate(-50%, -50%)';
                 }
                 else {
                     location.x = (((location.x + x) * scale) + marker$$1.offset.x);
@@ -10689,6 +10686,7 @@ class Zoom {
         let prevTilePoint = map.tileTranslatePoint;
         map.previousProjection = map.projectionType;
         zoomFactor = (type === 'ZoomOut') ? (Math.round(zoomFactor) === 1 ? 1 : zoomFactor) : zoomFactor;
+        zoomFactor = (minZoom > zoomFactor && type === 'ZoomIn') ? minZoom + 1 : zoomFactor;
         if ((!map.isTileMap) && (type === 'ZoomIn' ? zoomFactor >= minZoom && zoomFactor <= maxZoom : zoomFactor >= minZoom)) {
             let min = map.baseMapRectBounds['min'];
             let max = map.baseMapRectBounds['max'];

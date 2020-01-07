@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty, Collection } from '@syncfusion/ej2-base';import { Margin } from '../core/appearance';import { PointPortModel } from './port-model';import { MarginModel } from '../core/appearance-model';import { DiagramTooltipModel } from './tooltip-model';import { IconShape } from './icon';import { IconShapeModel } from './icon-model';import { DiagramTooltip } from './tooltip';import { PointPort } from './port';import { FlipDirection } from '../enum/enum';
+import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { Margin } from '../core/appearance';import { MarginModel } from '../core/appearance-model';import { DiagramTooltipModel } from './tooltip-model';import { DiagramTooltip } from './tooltip';import { FlipDirection } from '../enum/enum';
 
 /**
  * Interface for a class NodeBase
@@ -30,36 +30,10 @@ export interface NodeBaseModel {
     visible?: boolean;
 
     /**
-     * Defines the collection of connection points of nodes/connectors
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     */
-    ports?: PointPortModel[];
-
-    /**
-     * Defines whether the node is expanded or not
-     * @default true
-     */
-    isExpanded?: boolean;
-
-    /**
      * defines the tooltip for the node
      * @default {}
      */
     tooltip?: DiagramTooltipModel;
-
-    /**
-     * Defines the expanded state of a node
-     * @default {}
-     */
-    expandIcon?: IconShapeModel;
-
-    /**
-     * Defines the collapsed state of a node
-     * @default {}
-     */
-    collapseIcon?: IconShapeModel;
 
     /**
      * Defines whether the node should be automatically positioned or not. Applicable, if layout option is enabled.
@@ -78,7 +52,7 @@ export interface NodeBaseModel {
     /**
      * Flip the element in Horizontal/Vertical directions
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
+     * @blazorDefaultValue None
      * @default None
      */
     flip?: FlipDirection;

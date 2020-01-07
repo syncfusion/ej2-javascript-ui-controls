@@ -731,8 +731,8 @@ export class Drawing {
     /**
      * @private
      */
-    public renderSelector(select?: number, helper?: PdfAnnotationBaseModel): void {
-        if (!helper) {
+    public renderSelector(select?: number, helper?: PdfAnnotationBaseModel, isSelect?: boolean): void {
+        if (!helper || isSelect) {
             let size: Size = new Size();
             let selectorModel: Selector = this.pdfViewer.selectedItems as Selector;
             this.clearSelectorLayer(select);
@@ -780,10 +780,12 @@ export class Drawing {
                                 }
                             }
                             if (node.annotName !== '') {
-                                // tslint:disable-next-line:max-line-length
-                                if (!this.pdfViewer.viewerBase.isAnnotationSelect && !this.pdfViewer.viewerBase.isAnnotationMouseDown && !this.pdfViewer.viewerBase.isAnnotationMouseMove) {
-                                    this.pdfViewer.viewerBase.isAnnotationSelect = true;
-                                    this.pdfViewer.annotationModule.annotationSelect(node.annotName, node.pageIndex, node);
+                                if (helper && (node === helper)) {
+                                    // tslint:disable-next-line:max-line-length
+                                    if (!this.pdfViewer.viewerBase.isAnnotationSelect && !this.pdfViewer.viewerBase.isAnnotationMouseDown && !this.pdfViewer.viewerBase.isAnnotationMouseMove) {
+                                        this.pdfViewer.viewerBase.isAnnotationSelect = true;
+                                        this.pdfViewer.annotationModule.annotationSelect(node.annotName, node.pageIndex, node);
+                                    }
                                 }
                             }
                         }
@@ -1190,7 +1192,7 @@ export class Drawing {
                     selectorModel.wrapper.rotateAngle = selectorModel.rotateAngle = 0;
                     selectorModel.wrapper.children.push(obj.wrapper);
                     if (!preventUpdate) {
-                        this.renderSelector(obj.pageIndex);
+                        this.renderSelector(obj.pageIndex, obj, true);
                     }
                 }
             }

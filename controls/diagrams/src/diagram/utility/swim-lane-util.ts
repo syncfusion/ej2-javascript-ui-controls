@@ -670,9 +670,11 @@ export function laneInterChanged(diagram: Diagram, obj: NodeModel, target: NodeM
         if (sourceIndex !== targetIndex) {
             temp = lanes[sourceLaneIndex];
             if (temp.canMove) {
+
                 undoElement = {
                     target: cloneObject(target), source: cloneObject(obj)
                 };
+                temp = lanes[sourceLaneIndex];
                 lanes.splice(sourceLaneIndex, 1);
                 lanes.splice(targetLaneIndex, 0, temp);
                 redoElement = {

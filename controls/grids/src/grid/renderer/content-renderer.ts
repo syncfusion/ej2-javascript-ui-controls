@@ -65,9 +65,6 @@ export class ContentRender implements IRenderer {
                 if (this.parent.allowTextWrap) {
                     this.parent.notify(events.freezeRender, { case: 'textwrap' });
                 }
-                if (this.parent.getFrozenColumns() !== 0  && !this.parent.allowTextWrap) {
-                    this.parent.notify(events.freezeRender, { case: 'refreshHeight' });
-                }
             }
             if (arg) {
                 let action: string = (arg.requestType || '').toLowerCase() + '-complete';
@@ -426,6 +423,9 @@ export class ContentRender implements IRenderer {
                         }
                         this.isLoaded = true;
                         mCont.querySelector('table').appendChild(this.tbody);
+                        if (this.parent.getFrozenColumns() !== 0  && !this.parent.allowTextWrap) {
+                            this.parent.notify(events.freezeRender, { case: 'refreshHeight' });
+                        }
                         (fCont as HTMLElement).style.height = ((mCont.offsetHeight) - getScrollBarWidth()) + 'px';
                         mCont.style.overflowY = this.parent.height !== 'auto' ? 'scroll' : 'auto';
                         (fCont as HTMLElement).style.borderRightWidth = '1px';

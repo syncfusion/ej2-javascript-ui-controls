@@ -935,10 +935,19 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         }
     }
 
+    /**
+     * To add the hyperlink in the cell 
+     * @param {string | HyperlinkModel} hyperlink
+     * @param {string} address
+     */
     public addHyperlink(hyperlink: string | HyperlinkModel, address: string): void {
         this.insertHyperlink(hyperlink, address, '', true);
     }
 
+    /**
+     * To remove the hyperlink in the cell 
+     * @param {string} range
+     */
     public removeHyperlink(range: string): void {
         let rangeArr: string[];
         let sheet: SheetModel = this.getActiveSheet();
@@ -1457,6 +1466,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                             });
                         }
                     });
+                    break;
+                case 'locale':
+                    this.refresh();
                     break;
             }
         }

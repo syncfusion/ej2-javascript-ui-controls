@@ -1792,9 +1792,9 @@ let CalendarBase = class CalendarBase extends Component {
         date.setFullYear(value.getFullYear(), value.getMonth(), date.getDate());
         if (value.getMonth() !== date.getMonth()) {
             date.setDate(0);
+            this.currentDate = new Date(this.checkValue(value));
         }
         this.setProperties({ value: new Date(this.checkValue(date)) }, true);
-        this.currentDate = new Date(this.checkValue(value));
     }
     compareMonth(start, end) {
         let result;
@@ -3691,7 +3691,7 @@ let DatePicker = class DatePicker extends Calendar {
         //this.calendarElement represent the Calendar object from the Calendar class.
         this.calendarElement.querySelector('table tbody').className = '';
         this.popupObj = new Popup(this.popupWrapper, {
-            content: this.calendarElement,
+            content: this.isBlazorServer ? null : this.calendarElement,
             relateTo: Browser.isDevice ? document.body : this.inputWrapper.container,
             position: Browser.isDevice ? { X: 'center', Y: 'center' } : { X: 'left', Y: 'bottom' },
             offsetY: OFFSETVALUE,

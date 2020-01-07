@@ -21,6 +21,10 @@ export abstract class DiagramTooltip extends ChildProperty<DiagramTooltip> {
     /**
      * Defines the position of the Tooltip
      * @default 'TopLeft'
+     * @aspDefaultValueIgnore
+     * @blazorType Syncfusion.EJ2.Blazor.Popups.Position
+     * @blazorDefaultValue Syncfusion.EJ2.Blazor.Popups.Position.TopLeft
+     * @isEnumeration true
      */
     @Property('TopLeft')
     public position: Position;

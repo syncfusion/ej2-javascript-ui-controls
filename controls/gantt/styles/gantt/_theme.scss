@@ -34,6 +34,10 @@
       border-top-right-radius: $gantt-splitter-border-top-right-radius;
     }
 
+    .e-grid .e-focused:not(.e-menu-item) {
+      box-shadow: $grid-active-container-border !important; // sass-lint:disable-line no-important
+    }
+
     .e-gantt-dialog {
 
       .e-dlg-header {
@@ -190,7 +194,7 @@
       }
 
       .e-active-container {
-        border-color: $gantt-active-container-border !important; // sass-lint:disable-line no-important
+        outline-color: $gantt-active-container-border;
       }
 
       .e-gantt-child-taskbar-inner-div {

@@ -46,14 +46,14 @@ export function stringToNumber(value: string, containerSize: number): number {
 export function calculateSize(maps: Maps): void {
     let containerWidth: number = maps.element.clientWidth;
     let containerHeight: number = maps.element.clientHeight;
+    let parentHeight: number = maps.element.parentElement.clientHeight;
+    let parentWidth: number = maps.element.parentElement.clientWidth;
     if (maps.isBlazor) {
-        if (maps.element.parentElement.style.height !== '' && maps.element.parentElement.style.width !== '') {
-            containerHeight = maps.element.parentElement.clientHeight;
-            containerWidth = maps.element.parentElement.clientWidth;
-        } else {
-            containerHeight = maps.element.clientHeight;
-            containerWidth = maps.element.clientWidth;
-        }
+        containerHeight = parentHeight !== 0 ? parentHeight : containerHeight !== 0 ?
+            containerHeight : 450;
+        containerWidth = parentWidth !== 0 ?
+            parentWidth : containerWidth !== 0 ?
+                containerWidth : 600;
     }
     maps.availableSize = new Size(
         stringToNumber(maps.width, containerWidth) || containerWidth || 600,

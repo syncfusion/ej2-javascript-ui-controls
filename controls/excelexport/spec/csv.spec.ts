@@ -748,4 +748,33 @@ describe('CSV-Export', () => {
             }
         });
     });
+    it('ServerRendered', (done) => {
+        let book: Workbook = new Workbook({
+             isServerRendered : true,
+            /*Global Styles*/styles: [
+                /*Style ->1*/{ name: 'Currency', numberFormat: 'C' },
+            ],
+            worksheets: [
+                {
+                    name: 'CellStyle',
+                    rows: [
+                        { index: 1, cells: [{ index: 1, value: 10, style: { numberFormat: 'C' } }] },
+                        { index: 2, cells: [{ index: 1, value: new Date(), style: { numberFormat: 'd' } }] },
+                    ],
+                }]
+        }, 'csv');
+        book.saveAsBlob('text/csv').then((csvBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(csvBlob.blobData, 'ServerRendered.csv');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(csvBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });        
+    });
 });

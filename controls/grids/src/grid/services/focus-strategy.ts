@@ -180,6 +180,15 @@ export class FocusStrategy {
     }
 
     /** @hidden */
+    public addOutline(): void {
+        let info: FocusInfo = this.getContent().getFocusInfo();
+        if (info.element) {
+            addClass([info.element], ['e-focused']);
+            addClass([info.elementToFocus], ['e-focus']);
+        }
+    }
+
+    /** @hidden */
     public focusHeader(): void {
         this.setActive(false, this.parent.frozenColumns !== 0);
         this.resetFocus();

@@ -18,7 +18,8 @@ export class ColorPicker implements IComponent {
     }
 
     public render(e: NotifyParams): void {
-        this.compObj = new EJ2ColorPicker(this.parent.model as ColorPickerModel, e.target as HTMLInputElement);
+        this.compObj = new EJ2ColorPicker(this.parent.model as ColorPickerModel);
+        this.compObj.appendTo(e.target as HTMLInputElement);
     }
 
     public focus(): void {

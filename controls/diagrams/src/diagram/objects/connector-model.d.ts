@@ -1,4 +1,4 @@
-import { Property, Complex, Collection, ChildProperty, ComplexFactory, CollectionFactory } from '@syncfusion/ej2-base';import { ShapeStyle, StrokeStyle } from '../core/appearance';import { StrokeStyleModel, ShapeStyleModel } from '../core/appearance-model';import { Point } from '../primitives/point';import { TextElement } from '../core/elements/text-element';import { PointModel } from '../primitives/point-model';import { Segments, DecoratorShapes, Transform, ConnectorConstraints, Direction, LayoutOrientation, Status } from '../enum/enum';import { Rect } from '../primitives/rect';import { Size } from '../primitives/size';import { findAngle, findConnectorPoints, Bridge, getOuterBounds } from '../utility/connector';import { getAnnotationPosition, alignLabelOnSegments, updateConnector, setUMLActivityDefaults } from '../utility/diagram-util';import { findDistance, findPath, updatePathElement, setConnectorDefaults } from '../utility/diagram-util';import { randomId, getFunction } from './../utility/base-util';import { flipConnector } from './../utility/diagram-util';import { PathElement } from '../core/elements/path-element';import { PathAnnotation } from './annotation';import { Canvas } from '../core/containers/canvas';import { getDecoratorShape } from './dictionary/common';import { IElement } from './interface/IElement';import { Container } from '../core/containers/container';import { DiagramElement } from '../core/elements/diagram-element';import { HorizontalAlignment, VerticalAlignment, AssociationFlow, ClassifierShape, Multiplicity } from '../enum/enum';import { ConnectionShapes, UmlActivityFlows, BpmnFlows, BpmnMessageFlows, BpmnSequenceFlows, BpmnAssociationFlows } from '../enum/enum';import { SegmentInfo, Alignment } from '../rendering/canvas-interface';import { PathAnnotationModel } from './annotation-model';import { NodeBase } from './node-base';import { DiagramTooltipModel } from './tooltip-model';import { DiagramTooltip } from './tooltip';import { Matrix, identityMatrix, rotateMatrix, scaleMatrix, transformPointsByMatrix, transformPointByMatrix } from '../primitives/matrix';import { DiagramHtmlElement } from '../core/elements/html-element';
+import { Property, Complex, Collection, ChildProperty, ComplexFactory, CollectionFactory, isBlazor } from '@syncfusion/ej2-base';import { ShapeStyle, StrokeStyle } from '../core/appearance';import { StrokeStyleModel, ShapeStyleModel } from '../core/appearance-model';import { Point } from '../primitives/point';import { TextElement } from '../core/elements/text-element';import { PointModel } from '../primitives/point-model';import { Segments, DecoratorShapes, Transform, ConnectorConstraints, Direction, LayoutOrientation, Status } from '../enum/enum';import { Rect } from '../primitives/rect';import { Size } from '../primitives/size';import { findAngle, findConnectorPoints, Bridge, getOuterBounds } from '../utility/connector';import { getAnnotationPosition, alignLabelOnSegments, updateConnector, setUMLActivityDefaults } from '../utility/diagram-util';import { findDistance, findPath, updatePathElement, setConnectorDefaults } from '../utility/diagram-util';import { randomId, getFunction } from './../utility/base-util';import { flipConnector } from './../utility/diagram-util';import { PathElement } from '../core/elements/path-element';import { PathAnnotation } from './annotation';import { Canvas } from '../core/containers/canvas';import { getDecoratorShape } from './dictionary/common';import { IElement } from './interface/IElement';import { Container } from '../core/containers/container';import { DiagramElement } from '../core/elements/diagram-element';import { HorizontalAlignment, VerticalAlignment, AssociationFlow, ClassifierShape, Multiplicity } from '../enum/enum';import { ConnectionShapes, UmlActivityFlows, BpmnFlows, BpmnMessageFlows, BpmnSequenceFlows, BpmnAssociationFlows } from '../enum/enum';import { SegmentInfo, Alignment } from '../rendering/canvas-interface';import { PathAnnotationModel } from './annotation-model';import { NodeBase } from './node-base';import { DiagramTooltipModel } from './tooltip-model';import { DiagramTooltip } from './tooltip';import { Matrix, identityMatrix, rotateMatrix, scaleMatrix, transformPointsByMatrix, transformPointByMatrix } from '../primitives/matrix';import { DiagramHtmlElement } from '../core/elements/html-element';import { getTemplateContent } from '../utility/dom-util';
 import {NodeBaseModel} from "./node-base-model";
 
 /**
@@ -47,6 +47,7 @@ export interface DecoratorModel {
     /**
      * Defines the appearance of the decorator
      * @default new ShapeStyle()
+     * @blazorType DecoratorShapeStyle
      */
     style?: ShapeStyleModel;
 
@@ -167,6 +168,8 @@ export interface BpmnFlowModel extends ConnectorShapeModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
+     * @default 'Default'
+     * @blazorDefaultValue 'Default'
      */
     message?: BpmnMessageFlows;
 
@@ -176,6 +179,7 @@ export interface BpmnFlowModel extends ConnectorShapeModel{
      * * Directional - Sets the type of Association flow as Directional
      * * BiDirectional - Sets the type of Association flow as BiDirectional
      * * @default 'Default'
+     * @blazorDefaultValue Default
      */
     association?: BpmnAssociationFlows;
 
@@ -294,6 +298,99 @@ export interface OrthogonalSegmentModel extends ConnectorSegmentModel{
 }
 
 /**
+ * Interface for a class DiagramConnectorSegment
+ */
+export interface DiagramConnectorSegmentModel {
+
+    /**
+     * Defines the type of the segment
+     * * Straight - Sets the segment type as Straight
+     * * Orthogonal - Sets the segment type as Orthogonal
+     * * Bezier - Sets the segment type as Bezier
+     * @default 'Straight'
+     */
+    type?: Segments;
+
+    /**
+     * Defines the segment to be drag or not
+     * @default true
+     */
+    allowDrag?: boolean;
+
+    /**
+     * Sets the end point of the connector segment
+     * @default new Point(0,0)
+     */
+    point?: PointModel;
+
+    /**
+     * Sets the first control point of the connector
+     * @default {}
+     */
+    point1?: PointModel;
+
+    /**
+     * Sets the second control point of the connector
+     * @default {}
+     */
+    point2?: PointModel;
+
+    /**
+     * Defines the length and angle between the source point and the first control point of the diagram
+     * @default {}
+     */
+    vector1?: VectorModel;
+
+    /**
+     * Defines the length and angle between the target point and the second control point of the diagram
+     * @default {}
+     */
+    vector2?: VectorModel;
+
+    /**
+     * Defines the length of orthogonal segment
+     * ```html
+     * <div id='diagram'></div>
+     * ```
+     * ```typescript
+     * let connectors: ConnectorModel[] = [{
+     *       id: 'link2', sourcePoint: { x: 0, y: 0 }, targetPoint: { x: 40, y: 40 }, type: 'Orthogonal',
+     *       shape: {
+     *           type: 'Bpmn',
+     *           flow: 'Message',
+     *           association: 'directional'
+     *       }, style: {
+     *           strokeDashArray: '2,2'
+     *       },
+     *       segments: [{ type: 'Orthogonal', length: 30, direction: 'Bottom' },
+     *       { type: 'Orthogonal', length: 80, direction: 'Right' }]
+     *   }];
+     * let diagram: Diagram = new Diagram({
+     * ...
+     * connectors: connectors
+     * ...
+     * });
+     * diagram.appendTo('#diagram');
+     * ```
+     * @default 0
+     * @isBlazorNullableType true
+     */
+    length?: number;
+
+    /**
+     * Sets the direction of orthogonal segment
+     * * Left - Sets the direction type as Left
+     * * Right - Sets the direction type as Right
+     * * Top - Sets the direction type as Top
+     * * Bottom - Sets the direction type as Bottom
+     * @default null
+     * @isBlazorNullableType true
+     */
+    direction?: Direction;
+
+}
+
+/**
  * Interface for a class MultiplicityLabel
  */
 export interface MultiplicityLabelModel {
@@ -385,6 +482,112 @@ export interface RelationShipModel extends ConnectorShapeModel{
 }
 
 /**
+ * Interface for a class DiagramConnectorShape
+ */
+export interface DiagramConnectorShapeModel {
+
+    /**
+     * Defines the application specific type of connector
+     * * Bpmn - Sets the type of the connection shape as Bpmn
+     * @default 'None'
+     */
+    type?: ConnectionShapes;
+
+    /**
+     * Defines the association direction
+     * @default 'Directional'
+     * @IgnoreSingular
+     */
+    associationType?: AssociationFlow;
+
+    /**
+     * Defines the association direction
+     * @default 'Aggregation'
+     * @IgnoreSingular
+     */
+    relationship?: ClassifierShape;
+
+    /**
+     * Defines the type of the Classifier Multiplicity
+     * @default ''
+     * @IgnoreSingular
+     */
+    multiplicity?: ClassifierMultiplicityModel;
+
+    /**
+     * Sets the type of the Bpmn flows
+     * * Sequence - Sets the type of the Bpmn Flow as Sequence
+     * * Association - Sets the type of the Bpmn Flow as Association
+     * * Message - Sets the type of the Bpmn Flow as Message
+     * @default 'Sequence'
+     */
+    bpmnFlow?: BpmnFlows;
+
+    /**
+     * ```html
+     * <div id='diagram'></div>
+     * ```
+     * ```typescript
+     * let nodes: NodeModel[] = [
+     * {
+     *   id: 'node1', width: 60, height: 60, offsetX: 75, offsetY: 90,
+     *   shape: { type: 'Bpmn', shape: 'Event', event: { event: 'Start', trigger: 'Message' } },
+     *     },
+     * {
+     *   id: 'node2', width: 75, height: 70, offsetX: 210, offsetY: 90,
+     *   shape: { type: 'Bpmn', shape: 'Gateway', gateway: { type: 'None' } },
+     *  }];
+     * let connectors: ConnectorModel[] = [{
+     *   id: 'connector', type: 'Straight', sourceID: 'node1', targetID: 'node2',
+     *   shape: { type: 'Bpmn', flow: 'Message', message: 'InitiatingMessage' } as BpmnFlowModel
+     *  },];
+     * let diagram: Diagram = new Diagram({
+     * ...
+     * nodes: nodes, connectors: connectors
+     * ...
+     * });
+     * diagram.appendTo('#diagram');
+     * ```
+     */
+    message?: BpmnMessageFlows;
+
+    /**
+     * Sets the type of the Bpmn Sequence flows
+     * * Default - Sets the type of the sequence flow as Default
+     * * Normal - Sets the type of the sequence flow as Normal
+     * * Conditional - Sets the type of the sequence flow as Conditional
+     * @default 'Normal'
+     */
+    sequence?: BpmnSequenceFlows;
+
+    /**
+     * Sets the type of the Bpmn association flows
+     * * Default - Sets the type of Association flow as Default
+     * * Directional - Sets the type of Association flow as Directional
+     * * BiDirectional - Sets the type of Association flow as BiDirectional
+     * * @default 'Default'
+     */
+    association?: BpmnAssociationFlows;
+
+    /**
+     * Defines the type of the UMLActivity flows
+     * Object - Sets the type of the UMLActivity Flow as Object
+     * Control - Sets the type of the UMLActivity Flow as Control
+     * Exception - Sets the type of the UMLActivity Flow as Exception
+     * @default 'Object'
+     * @IgnoreSingular
+     */
+    umlActivityFlow?: UmlActivityFlows;
+
+    /**
+     * Defines the height of the exception flow.
+     * @default '50'
+     */
+    exceptionFlowHeight?: number;
+
+}
+
+/**
  * Interface for a class Connector
  */
 export interface ConnectorModel extends NodeBaseModel{
@@ -393,9 +596,9 @@ export interface ConnectorModel extends NodeBaseModel{
      * Defines the shape of the connector
      * @default 'Bpmn'
      * @aspType object
-     * @blazorType object
+     * @blazorType DiagramConnectorShape
      */
-    shape?: ConnectorShapeModel | BpmnFlowModel | RelationShipModel;
+    shape?: ConnectorShapeModel | BpmnFlowModel | RelationShipModel | DiagramConnectorShapeModel;
 
     /**
      * Defines the constraints of connector
@@ -414,7 +617,7 @@ export interface ConnectorModel extends NodeBaseModel{
      * * InheritToolTip - Displays a tooltip for the connectors.
      * * Interaction - Features of the connector used for interaction.
      * * ReadOnly - Enables ReadOnly
-     * @default 'None'
+     * @default 'Default'
      * @aspNumberEnum
      * @blazorNumberEnum
      */
@@ -442,6 +645,7 @@ export interface ConnectorModel extends NodeBaseModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
+     * @blazorType ObservableCollection<DiagramConnectorAnnotation>
      */
     annotations?: PathAnnotationModel[];
 
@@ -461,9 +665,9 @@ export interface ConnectorModel extends NodeBaseModel{
      * Defines the segments
      * @default []
      * @aspType object
-     * @blazorType object
+     * @blazorType ObservableCollection<DiagramConnectorSegment>
      */
-    segments?: (OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel)[];
+    segments?: (OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel | DiagramConnectorSegmentModel)[];
 
     /**
      * Sets the source node/connector object of the connector
@@ -504,12 +708,16 @@ export interface ConnectorModel extends NodeBaseModel{
     /**
      * Defines the source decorator of the connector
      * @default new Decorator()
+     * @blazorType ConnectorSourceDecorator
+     * @blazorDefaultValue new ConnectorSourceDecorator()
      */
     sourceDecorator?: DecoratorModel;
 
     /**
      * Defines the target decorator of the connector
      * @default new Decorator()
+     * @blazorType ConnectorTargetDecorator
+     * @blazorDefaultValue new ConnectorTargetDecorator()
      */
     targetDecorator?: DecoratorModel;
 
@@ -548,12 +756,15 @@ export interface ConnectorModel extends NodeBaseModel{
     /**
      * Defines the appearance of the connection path
      * @default ''
+     * @blazorType ConnectorShapeStyle
+     * @blazorDefaultValue new ConnectorShapeStyle()
      */
     style?: StrokeStyleModel;
 
     /**
      * Defines the UI of the connector
      * @default null
+     * @deprecated
      */
     wrapper?: Container;
 

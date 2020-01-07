@@ -960,7 +960,7 @@ function measureText(text, font) {
         }
         text = textArray.join(' ');
     }
-    htmlObject.innerHTML = (breakText.indexOf('<br>') > -1) ? breakText : text;
+    htmlObject.innerHTML = (breakText.indexOf('<br>') > -1 || breakText.indexOf('<br/>') > -1) ? breakText : text;
     htmlObject.style.position = 'fixed';
     htmlObject.style.fontSize = font.size;
     htmlObject.style.fontWeight = font.fontWeight;
@@ -1533,6 +1533,11 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         svgObject.setAttribute('height', (rect.height + this.border.width + (!((!this.inverted)) ? 0 : this.arrowPadding) + 5).toString());
         svgObject.setAttribute('width', (rect.width + this.border.width + (((!this.inverted)) ? 0 : this.arrowPadding) + 5).toString());
         svgObject.setAttribute('opacity', '1');
+        if (!isNullOrUndefined(this.tooltipPlacement)) {
+            isTop = this.tooltipPlacement.indexOf('Top') > -1;
+            isBottom = this.tooltipPlacement.indexOf('Bottom') > -1;
+            isLeft = this.tooltipPlacement.indexOf('Left') > -1;
+        }
         pathElement.setAttribute('d', findDirection(this.rx, this.ry, pointRect, arrowLocation, this.arrowPadding, isTop, isBottom, isLeft, tipLocation.x, tipLocation.y, this.tipRadius));
         if (this.enableShadow && this.theme !== 'Bootstrap4') {
             // To fix next chart initial tooltip opacity issue in tab control
@@ -1742,7 +1747,36 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         }
         return tooltipRect;
     };
+    Tooltip.prototype.getCurrentPosition = function (bounds, symbolLocation, arrowLocation, tipLocation) {
+        var position = this.tooltipPlacement;
+        var clipX = this.clipBounds.x;
+        var clipY = this.clipBounds.y;
+        var markerHeight = this.offset;
+        var width = this.elementSize.width + (2 * this.marginX);
+        var height = this.elementSize.height + (2 * this.marginY);
+        var location = new TooltipLocation(symbolLocation.x, symbolLocation.y);
+        if (position === 'Top' || position === 'Bottom') {
+            location = new TooltipLocation(location.x + clipX - this.elementSize.width / 2 - this.padding, location.y + clipY - this.elementSize.height - (2 * this.padding) - this.arrowPadding - markerHeight);
+            arrowLocation.x = tipLocation.x = width / 2;
+            if (position === 'Bottom') {
+                location.y = symbolLocation.y + clipY + markerHeight;
+            }
+        }
+        else {
+            location = new TooltipLocation(location.x + clipX + markerHeight, location.y + clipY - this.elementSize.height / 2 - (this.padding));
+            arrowLocation.y = tipLocation.y = height / 2;
+            if (position === 'Left') {
+                location.x = symbolLocation.x + clipX - markerHeight - (width + this.arrowPadding);
+            }
+        }
+        return new Rect(location.x, location.y, width, height);
+    };
+    // tslint:disable-next-line:max-func-body-length
     Tooltip.prototype.tooltipLocation = function (bounds, symbolLocation, arrowLocation, tipLocation) {
+        if (!isNullOrUndefined(this.tooltipPlacement)) {
+            var tooltipRect = this.getCurrentPosition(bounds, symbolLocation, arrowLocation, tipLocation);
+            return tooltipRect;
+        }
         var location = new TooltipLocation(symbolLocation.x, symbolLocation.y);
         var width = this.elementSize.width + (2 * this.marginX);
         var height = this.elementSize.height + (2 * this.marginY);
@@ -2021,6 +2055,9 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(false)
     ], Tooltip.prototype, "isCanvas", void 0);
+    __decorate([
+        Property(null)
+    ], Tooltip.prototype, "tooltipPlacement", void 0);
     __decorate([
         Event()
     ], Tooltip.prototype, "tooltipRender", void 0);

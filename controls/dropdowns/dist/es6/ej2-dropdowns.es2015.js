@@ -20,7 +20,7 @@ let activeClass = 'e-active';
  * after selected item otherwise it will do from initial.
  * @param  { boolean } ignoreCase - Specifies the case consideration when search has done.
  */
-function incrementalSearch(keyCode, items, selectedIndex, ignoreCase) {
+function incrementalSearch(keyCode, items, selectedIndex, ignoreCase, isBlazor$$1) {
     queryString += String.fromCharCode(keyCode);
     setTimeout(() => { queryString = ''; }, 1000);
     let index;
@@ -49,7 +49,12 @@ function incrementalSearch(keyCode, items, selectedIndex, ignoreCase) {
             }
             i === -1 ? index = 0 : index = i;
             item = listItems[index];
-            text = ignoreCase ? item.innerText.toLowerCase() : item.innerText;
+            if (isBlazor$$1) {
+                text = ignoreCase ? item.textContent.trim().toLowerCase() : item.textContent.trim();
+            }
+            else {
+                text = ignoreCase ? item.innerText.toLowerCase() : item.innerText;
+            }
             if (text.substr(0, strLength) === queryString) {
                 matches.push(listItems[index]);
             }
@@ -170,6 +175,7 @@ const HEADERTEMPLATE_PROPERTY = 'HeaderTemplate';
 const FOOTERTEMPLATE_PROPERTY = 'FooterTemplate';
 const NORECORDSTEMPLATE_PROPERTY = 'NoRecordsTemplate';
 const ACTIONFAILURETEMPLATE_PROPERTY = 'ActionFailureTemplate';
+const NOHEADERTEMPLATE_PROPERTY = 'NoHeaderTemplate';
 /**
  * DropDownBase component will generate the list items based on given data and act as base class to drop-down related components
  */
@@ -317,10 +323,11 @@ let DropDownBase = class DropDownBase extends Component {
             for (let item of compiledString({}, null, null, templateId, this.isStringTemplate)) {
                 ele.appendChild(item);
             }
-            this.DropDownBaseupdateBlazorTemplates(false, false, !actionFailure, actionFailure);
+            this.DropDownBaseupdateBlazorTemplates(false, false, !actionFailure, actionFailure, false, false, false, false);
         }
         else {
-            let l10nLocale = { noRecordsTemplate: 'No Records Found', actionFailureTemplate: 'The Request Failed' };
+            let l10nLocale = { noRecordsTemplate: 'No Records Found', actionFailureTemplate: 'The Request Failed',
+                noHeaderTemplate: 'Group' };
             let componentLocale = new L10n(this.getLocaleName(), {}, this.locale);
             if (componentLocale.getConstant('actionFailureTemplate') !== '') {
                 this.l10n = componentLocale;
@@ -331,6 +338,9 @@ let DropDownBase = class DropDownBase extends Component {
             ele.innerHTML = actionFailure ?
                 this.l10n.getConstant('actionFailureTemplate') : this.l10n.getConstant('noRecordsTemplate');
         }
+    }
+    l10nUpdateUndefinedHeader() {
+        // For update ulelement in action complete data         
     }
     getLocaleName() {
         return 'drop-down-base';
@@ -395,13 +405,13 @@ let DropDownBase = class DropDownBase extends Component {
                 updateBlazorTemplate(this.itemTemplateId, ITEMTEMPLATE_PROPERTY, this, isEmpty);
             }
             if (this.groupTemplate && group) {
-                updateBlazorTemplate(this.groupTemplateId, GROUPTEMPLATE_PROPERTY, this);
+                updateBlazorTemplate(this.groupTemplateId, GROUPTEMPLATE_PROPERTY, this, isEmpty);
             }
             if (this.noRecordsTemplate && noRecord) {
-                updateBlazorTemplate(this.noRecordsTemplateId, NORECORDSTEMPLATE_PROPERTY, this);
+                updateBlazorTemplate(this.noRecordsTemplateId, NORECORDSTEMPLATE_PROPERTY, this, isEmpty);
             }
             if (this.actionFailureTemplate && action) {
-                updateBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE_PROPERTY, this);
+                updateBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE_PROPERTY, this, isEmpty);
             }
             if (value) {
                 updateBlazorTemplate(this.valueTemplateId, VALUETEMPLATE_PROPERTY, this, isEmpty);
@@ -515,6 +525,7 @@ let DropDownBase = class DropDownBase extends Component {
         this.headerTemplateId = `${this.element.id}${HEADERTEMPLATE_PROPERTY}`;
         this.footerTemplateId = `${this.element.id}${FOOTERTEMPLATE_PROPERTY}`;
         this.noRecordsTemplateId = `${this.element.id}${NORECORDSTEMPLATE_PROPERTY}`;
+        this.noHeaderTemplateId = `${this.element.id}${NOHEADERTEMPLATE_PROPERTY}`;
     }
     /**
      * Creates the list items of DropDownBase component.
@@ -678,7 +689,7 @@ let DropDownBase = class DropDownBase extends Component {
             let option = { groupTemplateID: this.groupTemplateId, isStringTemplate: this.isStringTemplate };
             let headerItems = listEle.querySelectorAll('.' + dropDownBaseClasses.group);
             let tempHeaders = ListBase.renderGroupTemplate(this.groupTemplate, dataSource, this.fields.properties, headerItems, option);
-            this.DropDownBaseupdateBlazorTemplates(false, true, false, false);
+            this.DropDownBaseupdateBlazorTemplates(false, true, false, false, false, false, false, false);
         }
     }
     /**
@@ -697,7 +708,20 @@ let DropDownBase = class DropDownBase extends Component {
         else {
             dataSource = this.getSortedDataSource(dataSource);
         }
-        let options = this.listOption(dataSource, fields);
+        if (this.getModuleName() !== 'listbox') {
+            this.l10nUpdate();
+            this.groupHeaderName = this.l10n.getConstant('noHeaderTemplate');
+        }
+        let options = this.listOption(dataSource, fields, this.groupHeaderName);
+        if (fields && fields.groupBy && this.getModuleName() !== 'listbox' && this.getModuleName() !== 'multiselect') {
+            let text = fields.text;
+            options.itemCreated = (args) => {
+                if (args.curData[text] === undefined && args.curData.isHeader) {
+                    args.item.textContent = this.groupHeaderName;
+                    args.item.classList.add('e-undefine-group');
+                }
+            };
+        }
         let spliceData = (dataSource.length > 100) ?
             new DataManager(dataSource).executeLocal(new Query().take(100))
             : dataSource;
@@ -705,7 +729,7 @@ let DropDownBase = class DropDownBase extends Component {
         return ListBase.createList(this.createElement, (this.getModuleName() === 'autocomplete') ? spliceData : dataSource, options, true);
     }
     ;
-    listOption(dataSource, fields) {
+    listOption(dataSource, fields, headerName) {
         let iconCss = isNullOrUndefined(fields.iconCss) ? false : true;
         let fieldValues = !isNullOrUndefined(fields.properties) ?
             fields.properties : fields;
@@ -929,8 +953,17 @@ let DropDownBase = class DropDownBase extends Component {
                     }
                     break;
                 case 'locale':
+                    let l10nLocale = { noRecordsTemplate: 'No Records Found', actionFailureTemplate: 'The Request Failed',
+                        noHeaderTemplate: 'Group' };
+                    this.l10n = new L10n(this.getModuleName() === 'listbox' ? 'listbox' : 'dropdowns', l10nLocale, this.locale);
                     if (this.list && (!isNullOrUndefined(this.liCollections) && this.liCollections.length === 0)) {
                         this.l10nUpdate();
+                    }
+                    else if (this.fields.groupBy && this.list && this.list.querySelector('.e-list-group-item.e-undefine-group')
+                        && this.getModuleName() !== 'listbox') {
+                        let localizedText = this.l10n.getConstant('noHeaderTemplate');
+                        this.list.querySelector('.e-list-group-item.e-undefine-group').innerText = localizedText;
+                        this.l10nUpdateUndefinedHeader();
                     }
                     break;
                 case 'zIndex':
@@ -1723,12 +1756,23 @@ let DropDownList = class DropDownList extends DropDownBase {
     onSearch(e) {
         if (e.charCode !== 32 && e.charCode !== 13) {
             if (this.list === undefined) {
-                this.renderList();
+                if (!this.isServerBlazor) {
+                    this.renderList();
+                }
+                else {
+                    this.isServerIncrementalSearch = true;
+                    // tslint:disable-next-line
+                    this.interopAdaptor.invokeMethodAsync('OnServerRenderList', true);
+                }
             }
             this.searchKeyEvent = e;
-            if (!this.isRequested && !isNullOrUndefined(this.list.querySelector('li')) && this.enabled && !this.readonly) {
-                this.incrementalSearch(e);
-            }
+            this.onServerIncrementalSearch(e);
+        }
+    }
+    onServerIncrementalSearch(e) {
+        if (!this.isRequested && !isNullOrUndefined(this.list) &&
+            !isNullOrUndefined(this.list.querySelector('li')) && this.enabled && !this.readonly) {
+            this.incrementalSearch(e);
         }
     }
     onMouseClick(e) {
@@ -1776,7 +1820,7 @@ let DropDownList = class DropDownList extends DropDownBase {
     ;
     incrementalSearch(e) {
         if (this.liCollections.length > 0) {
-            let li = incrementalSearch(e.charCode, this.liCollections, this.activeIndex, true);
+            let li = incrementalSearch(e.charCode, this.liCollections, this.activeIndex, true, this.isServerBlazor);
             if (!isNullOrUndefined(li)) {
                 this.setSelection(li, e);
                 this.setScrollPosition();
@@ -2654,6 +2698,9 @@ let DropDownList = class DropDownList extends DropDownBase {
                 this.actionCompleteData.list.push(item);
             }
         }
+    }
+    l10nUpdateUndefinedHeader() {
+        this.actionCompleteData.ulElement = this.ulElement;
     }
     focusIndexItem() {
         let value = this.getItemData().value;
@@ -3572,14 +3619,21 @@ let DropDownList = class DropDownList extends DropDownBase {
             this.liCollections = this.ulElement ?
                 this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li) : [];
             this.listData = data;
+            this.initRemoteRender = false;
             this.serverBlazorUpdateSelection();
             this.wireListEvents();
+            if (this.isServerIncrementalSearch && this.searchKeyEvent) {
+                this.isServerIncrementalSearch = false;
+                this.initial = false;
+                this.onServerIncrementalSearch(this.searchKeyEvent);
+            }
             if (this.beforePopupOpen) {
                 this.invokeRenderPopup();
             }
         }
         else if (data != null && this.listData !== data) {
             this.listData = data;
+            this.initRemoteRender = false;
         }
     }
     updateclientItemData(data) {
@@ -6768,7 +6822,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             this.overAllClear.style.display = 'none';
         }
     }
-    listOption(dataSource, fields) {
+    listOption(dataSource, fields, headerName) {
         let iconCss = isNullOrUndefined(fields.iconCss) ? false : true;
         let fieldProperty = isNullOrUndefined(fields.properties) ? fields :
             fields.properties;
@@ -6777,7 +6831,18 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         } : { fields: { value: 'text' } };
         extend(this.listCurrentOptions, this.listCurrentOptions, fields, true);
         if (this.mode === 'CheckBox') {
-            this.notify('listoption', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', dataSource, fieldProperty });
+            let moduleName = this.getModuleName();
+            this.notify('listoption', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', dataSource, fieldProperty,
+                moduleName, headerName });
+        }
+        if (fields && fields.groupBy && this.mode !== 'CheckBox') {
+            let text = fields.text;
+            this.listCurrentOptions.itemCreated = (args) => {
+                if (args.curData[text] === undefined && args.curData.isHeader) {
+                    args.item.textContent = headerName;
+                    args.item.classList.add('e-undefine-group');
+                }
+            };
         }
         return this.listCurrentOptions;
     }
@@ -8731,20 +8796,30 @@ class CheckBoxSelection {
         EventHandler.remove(document, 'mousedown', this.onDocumentClick);
     }
     listOption(args) {
+        let groupHeaderName = args.headerName;
+        let moduleName = args.moduleName;
         if (isNullOrUndefined(this.parent.listCurrentOptions.itemCreated)) {
             this.parent.listCurrentOptions.itemCreated = (e) => {
+                this.updateHeaderName(e, groupHeaderName, moduleName);
                 this.checboxCreate(e);
             };
         }
         else {
             let itemCreated = this.parent.listCurrentOptions.itemCreated;
             this.parent.listCurrentOptions.itemCreated = (e) => {
+                this.updateHeaderName(e, groupHeaderName, moduleName);
                 this.checboxCreate(e);
                 itemCreated.apply(this, [e]);
             };
         }
     }
     ;
+    updateHeaderName(e, groupHeaderName, moduleName) {
+        if (e.text === undefined && e.curData.isHeader && moduleName === 'multiselect') {
+            e.item.textContent = groupHeaderName;
+            e.item.classList.add('e-undefine-group');
+        }
+    }
     setPlaceholder(props) {
         Input.setPlaceholder(props.filterBarPlaceholder, this.filterInput);
     }
@@ -9091,7 +9166,7 @@ class CheckBoxSelection {
             }
         }
         else {
-            let l10nLocale = { selectAllText: 'Select All', unSelectAllText: 'Unselect All' };
+            let l10nLocale = { selectAllText: 'Select All', unSelectAllText: 'Unselect All', noHeaderTemplate: 'Group' };
             let l10n = new L10n(this.parent.getLocaleName(), {}, this.parent.locale);
             if (l10n.getConstant('selectAllText') === '') {
                 l10n = new L10n('dropdowns', l10nLocale, this.parent.locale);
@@ -9451,6 +9526,13 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
         }
     }
     beforeDragEnd(args) {
+        let dragValue = args.droppedElement.getAttribute('data-value');
+        if (this.value.indexOf(dragValue) > -1) {
+            args.items = this.getDataByValues(this.value);
+        }
+        else {
+            args.items = this.getDataByValues([dragValue]);
+        }
         this.trigger('beforeDrop', args);
     }
     // tslint:disable-next-line:max-func-body-length
@@ -9480,50 +9562,29 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
             liColl = [].slice.call(this.liCollections);
             jsonData = [].slice.call(this.jsonData);
             sortedData = [].slice.call(this.sortedData);
-            let fLiColl = [].slice.call(this.liCollections);
             let toIdx = args.currentIndex = this.getCurIdx(this, args.currentIndex);
             let rIdx = listData.indexOf(this.getDataByValue(dropValue));
             let jsonIdx = jsonData.indexOf(this.getDataByValue(dropValue));
             let sIdx = sortedData.indexOf(this.getDataByValue(dropValue));
-            selectedOptions = (this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 && this.allowDragAll)
-                ? this.value : [dropValue];
-            droppedData = this.getDataByValue(dropValue);
-            if (args.handled) {
-                jsonData.splice(toIdx, 0, droppedData);
-                listData.splice(toIdx, 0, droppedData);
-                let rLi = fLiColl.splice(rIdx, 1)[0];
-                liColl.splice(toIdx, 0, rLi);
-                sortedData.splice(toIdx, 0, droppedData);
-            }
-            else {
-                listData.splice(toIdx, 0, listData.splice(rIdx, 1)[0]);
-                jsonData.splice(toIdx, 0, jsonData.splice(jsonIdx, 1)[0]);
-                sortedData.splice(toIdx, 0, sortedData.splice(sIdx, 1)[0]);
-                liColl.splice(toIdx, 0, liColl.splice(rIdx, 1)[0]);
-            }
+            listData.splice(toIdx, 0, listData.splice(rIdx, 1)[0]);
+            jsonData.splice(toIdx, 0, jsonData.splice(jsonIdx, 1)[0]);
+            sortedData.splice(toIdx, 0, sortedData.splice(sIdx, 1)[0]);
+            liColl.splice(toIdx, 0, liColl.splice(rIdx, 1)[0]);
             if (this.allowDragAll) {
                 selectedOptions = this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 ? this.value : [dropValue];
                 selectedOptions.forEach((value) => {
                     if (value !== dropValue) {
-                        toIdx++;
                         let idx = listData.indexOf(this.getDataByValue(value));
                         let jsonIdx = jsonData.indexOf(this.getDataByValue(value));
                         let sIdx = sortedData.indexOf(this.getDataByValue(value));
-                        let li = this.getItems()[this.getIndexByValue(value)];
-                        if (args.handled) {
-                            listData.splice(toIdx, 0, listData[idx]);
-                            jsonData.splice(toIdx, 0, jsonData[jsonIdx]);
-                            sortedData.splice(toIdx, 0, sortedData[sIdx]);
-                            liColl.splice(toIdx, 0, liColl[idx].cloneNode(true));
-                            ul.insertBefore(li.cloneNode(true), ul.getElementsByClassName('e-placeholder')[0]);
+                        if (idx > toIdx) {
+                            toIdx++;
                         }
-                        else {
-                            listData.splice(toIdx, 0, listData.splice(idx, 1)[0]);
-                            jsonData.splice(toIdx, 0, jsonData.splice(jsonIdx, 1)[0]);
-                            sortedData.splice(toIdx, 0, sortedData.splice(sIdx, 1)[0]);
-                            liColl.splice(toIdx, 0, liColl.splice(idx, 1)[0]);
-                            ul.insertBefore(li, ul.getElementsByClassName('e-placeholder')[0]);
-                        }
+                        listData.splice(toIdx, 0, listData.splice(idx, 1)[0]);
+                        jsonData.splice(toIdx, 0, jsonData.splice(jsonIdx, 1)[0]);
+                        sortedData.splice(toIdx, 0, sortedData.splice(sIdx, 1)[0]);
+                        liColl.splice(toIdx, 0, liColl.splice(idx, 1)[0]);
+                        ul.insertBefore(this.getItems()[this.getIndexByValue(value)], ul.getElementsByClassName('e-placeholder')[0]);
                     }
                 });
             }
@@ -9545,19 +9606,11 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
                 ? this.value : [dropValue];
             selectedOptions.forEach((value) => {
                 droppedData = this.getDataByValue(value);
-                let rLi;
                 let srcIdx = this.listData.indexOf(droppedData);
                 let jsonSrcIdx = this.jsonData.indexOf(droppedData);
-                let sortIdx = this.sortedData.indexOf(droppedData);
-                if (!args.handled) {
-                    this.listData.splice(srcIdx, 1);
-                    this.jsonData.splice(jsonSrcIdx, 1);
-                    this.sortedData.splice(sortIdx, 1);
-                    rLi = fLiColl.splice(srcIdx, 1)[0];
-                }
-                else {
-                    rLi = fLiColl[srcIdx].cloneNode(true);
-                }
+                this.listData.splice(srcIdx, 1);
+                this.jsonData.splice(jsonSrcIdx, 1);
+                let rLi = fLiColl.splice(srcIdx, 1)[0];
                 let destIdx = value === dropValue ? args.currentIndex : currIdx;
                 listData.splice(destIdx, 0, droppedData);
                 jsonData.splice(destIdx, 0, droppedData);
@@ -9576,12 +9629,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
                     li = this.getItems()[this.getIndexByValue(value)];
                 }
                 this.removeSelected(this, value === dropValue ? [args.droppedElement] : [li]);
-                if (!args.handled) {
-                    ul.insertBefore(li, ul.getElementsByClassName('e-placeholder')[0]);
-                }
-                else if (value !== dropValue) {
-                    ul.insertBefore(li.cloneNode(true), ul.getElementsByClassName('e-placeholder')[0]);
-                }
+                ul.insertBefore(li, ul.getElementsByClassName('e-placeholder')[0]);
                 currIdx++;
             });
             this.updateSelectedOptions();
@@ -10874,6 +10922,9 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
                     if (this.selectionSettings.showCheckbox) {
                         this.setCheckboxPosition();
                     }
+                    break;
+                case 'dataSource':
+                    this.jsonData = [].slice.call(this.dataSource);
                     break;
             }
         }

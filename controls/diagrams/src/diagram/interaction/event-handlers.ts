@@ -21,7 +21,8 @@ import { ConnectorEditing } from './connector-editing';
 import { Selector } from '../objects/node';
 import { CommandHandler } from './command-manager';
 import { Actions, findToolToActivate, isSelected, getCursor, contains } from './actions';
-import { DiagramAction, KeyModifiers, Keys, DiagramEvent, DiagramTools, RendererAction } from '../enum/enum';
+import { DiagramAction, KeyModifiers, Keys, DiagramEvent, DiagramTools, RendererAction, DiagramConstraints } from '../enum/enum';
+import { BlazorAction } from '../enum/enum';
 import { isPointOverConnector, findObjectType, insertObject, getObjectFromCollection, getTooltipOffset } from '../utility/diagram-util';
 import { getObjectType, getInOutConnectPorts, removeChildNodes, cloneBlazorObject } from '../utility/diagram-util';
 import { canZoomPan, canDraw, canDrag, canZoomTextEdit, canVitualize, canPreventClearSelection } from './../utility/constraints-util';
@@ -37,6 +38,7 @@ import { TextElement } from '../core/elements/text-element';
 import { Size } from '../primitives/size';
 import { cloneObject as clone, cloneObject } from './../utility/base-util';
 import { TransformFactor } from '../interaction/scroller';
+import { InputArgs } from '@syncfusion/ej2-inputs';
 import { Rect } from '../primitives/rect';
 import { identityMatrix, rotateMatrix, transformPointByMatrix, Matrix } from './../primitives/matrix';
 import { LayerModel } from '../diagram/layer-model';
@@ -137,6 +139,8 @@ export class DiagramEventHandler {
     private tool: ToolBase = null;
 
     private eventArgs: MouseEventArgs = null;
+
+    private userHandleObject: string;
 
     private lastObjectUnderMouse: NodeModel | ConnectorModel;
 
@@ -341,12 +345,23 @@ export class DiagramEventHandler {
             let currentAction: Actions = (eventName === DiagramEvent.onUserHandleMouseLeave) ? this.previousAction : this.action;
             let arg: UserHandleEventsArgs = { element: undefined };
             for (let i: number = 0; i < this.diagram.selectedItems.userHandles.length; i++) {
-                if (currentAction === this.diagram.selectedItems.userHandles[i].name) {
+                if ((currentAction === this.diagram.selectedItems.userHandles[i].name) ||
+                    (eventName === DiagramEvent.onUserHandleMouseUp && currentAction === 'Select')) {
                     arg.element = this.diagram.selectedItems.userHandles[i];
                     if (eventName === DiagramEvent.onUserHandleMouseEnter) {
                         this.previousAction = this.action;
                     }
-                    this.diagram.triggerEvent(eventName, arg);
+                    if (eventName === DiagramEvent.onUserHandleMouseDown) {
+                        this.userHandleObject = this.diagram.selectedItems.userHandles[i].name;
+                    }
+                    let element: HTMLElement = document.getElementById(this.diagram.selectedItems.userHandles[i].name + '_userhandle');
+                    if (eventName === DiagramEvent.onUserHandleMouseUp) {
+                        if (element && element.id === this.userHandleObject + '_userhandle') {
+                            this.diagram.triggerEvent(eventName, arg);
+                        }
+                    } else {
+                        this.diagram.triggerEvent(eventName, arg);
+                    }
                 }
             }
         }
@@ -361,6 +376,9 @@ export class DiagramEventHandler {
             this.isScrolling = true;
             evt.preventDefault();
             return;
+        }
+        if (isBlazor()) {
+            this.commandHandler.oldSelectedObjects = cloneObject(this.diagram.selectedItems);
         }
         this.checkUserHandleEvent(DiagramEvent.onUserHandleMouseDown);
         if (!this.checkEditBoxAsTarget(evt) && (canUserInteract(this.diagram)) ||
@@ -764,6 +782,13 @@ export class DiagramEventHandler {
             actualObject: this.eventArgs.actualObject ? { selector: cloneBlazorObject(this.eventArgs.actualObject) } :
                 { diagram: cloneBlazorObject(this.diagram) },
         } as IBlazorClickEventArgs;
+        if (this.eventArgs.source instanceof Node) {
+            (arg as IBlazorClickEventArgs).element.selector.nodes = [];
+            (arg as IBlazorClickEventArgs).element.selector.nodes.push(cloneBlazorObject(this.eventArgs.source) as Node);
+        } else if (this.eventArgs.source instanceof Connector) {
+            (arg as IBlazorClickEventArgs).element.selector.connectors = [];
+            (arg as IBlazorClickEventArgs).element.selector.connectors.push(cloneBlazorObject(this.eventArgs.source) as Connector);
+        }
         return arg;
     }
 
@@ -910,6 +935,7 @@ export class DiagramEventHandler {
     }
     /** @private */
     public mouseWheel(evt: WheelEvent): void {
+        this.diagram.blazorActions = BlazorAction.interaction;
         let up: boolean = (evt.wheelDelta > 0 || -40 * evt.detail > 0) ? true : false;
         let mousePosition: PointModel = this.getMousePosition(evt);
         this.diagram.tooltipObject.close();
@@ -945,6 +971,7 @@ export class DiagramEventHandler {
             }
             this.diagram.isTriggerEvent = false;
         }
+        this.diagram.blazorActions = this.diagram.blazorActions & ~BlazorAction.interaction;
     }
     /** @private */
     public keyDown(evt: KeyboardEvent): void {
@@ -968,11 +995,11 @@ export class DiagramEventHandler {
                                     (this.shiftKeyPressed(command.gesture.keyModifiers) && evt.shiftKey) ||
                                     (this.ctrlKeyPressed(command.gesture.keyModifiers) && ctrlKey)))) {
                             let canExecute: Function = getFunction(command.canExecute);
-                            if (canExecute && canExecute({
-                                'keyDownEventArgs': KeyboardEvent,
-                                parameter: command.parameter
-                            } || isBlazor()
-                            )) {
+                            if (isBlazor() || (canExecute &&
+                                canExecute({
+                                    'keyDownEventArgs': KeyboardEvent,
+                                    parameter: command.parameter
+                                }))) {
                                 evt.preventDefault();
                                 if (evt.key === 'Escape') {
                                     if (this.checkEditBoxAsTarget(evt)) {
@@ -1103,17 +1130,27 @@ export class DiagramEventHandler {
                 target.splice(i, 1);
             }
         }
-        let arg: IMouseEventArgs | IBlazorMouseEventArgs = {
-            targets: cloneBlazorObject(target) as NodeModel[],
-            element: cloneBlazorObject((this.eventArgs.source === this.eventArgs.actualObject) ? undefined : this.eventArgs.source),
-            actualObject: cloneBlazorObject(this.eventArgs.actualObject)
-        };
-        if (isBlazor()) {
+        let arg: IMouseEventArgs | IBlazorMouseEventArgs;
+        if (!isBlazor()) {
+            arg = {
+                targets: cloneBlazorObject(target) as NodeModel[],
+                element: cloneBlazorObject((this.eventArgs.source === this.eventArgs.actualObject) ? undefined : this.eventArgs.source),
+                actualObject: cloneBlazorObject(this.eventArgs.actualObject)
+            };
+        }
+        if (isBlazor() && (this.diagram.mouseEnter || this.diagram.mouseOver)) {
+            arg.actualObject = getObjectType(this.eventArgs.actualObject) === Connector ? {
+                connector: cloneBlazorObject(this.eventArgs.actualObject)
+            }
+                : {
+                    node: cloneBlazorObject(this.eventArgs.actualObject)
+                };
             (arg as IBlazorMouseEventArgs).targets.connector = [];
             (arg as IBlazorMouseEventArgs).targets.node = [];
             this.getBlazorCollectionObject(target, arg as IBlazorMouseEventArgs);
         }
-        if (this.lastObjectUnderMouse && (!this.eventArgs.actualObject || (this.lastObjectUnderMouse !== this.eventArgs.actualObject))) {
+        if (this.lastObjectUnderMouse && this.diagram.mouseLeave
+            && (!this.eventArgs.actualObject || (this.lastObjectUnderMouse !== this.eventArgs.actualObject))) {
             let arg: IMouseEventArgs | IBlazorMouseEventArgs = {
                 targets: undefined, element: cloneBlazorObject(this.lastObjectUnderMouse), actualObject: undefined
             };
@@ -1242,8 +1279,16 @@ export class DiagramEventHandler {
                 position: this.currentPosition, count: evt.detail
             };
             if (isBlazor()) {
+                let selector: SelectorModel;
+                if (obj instanceof Node) {
+                    selector = { nodes: [cloneBlazorObject(obj) as Node] };
+                } else if (obj instanceof Connector) {
+                    selector = { connectors: [cloneBlazorObject(obj) as Connector] };
+                } else {
+                    selector = cloneBlazorObject(obj);
+                }
                 arg = {
-                    source: { selector: cloneBlazorObject(obj) } || { diagram: cloneBlazorObject(this.diagram) },
+                    source: obj ? { selector: selector } : { diagram: cloneBlazorObject(this.diagram) },
                     position: this.currentPosition, count: evt.detail
                 } as IBlazorDoubleClickEventArgs;
             }
@@ -1265,7 +1310,7 @@ export class DiagramEventHandler {
     /**
      * @private
      */
-    public inputChange(): void {
+    public inputChange(evt: InputArgs): void {
         let minWidth: number = 90; let maxWidth: number;
         let minHeight: number = 12; let fontsize: number;
         let textWrapper: DiagramElement;
@@ -1417,11 +1462,12 @@ export class DiagramEventHandler {
             case 'OrthoThumb':
                 return new ConnectorEditing(this.commandHandler, action);
             case 'Draw':
-                let shape: string = 'shape';
+                let shape: string = 'shape'; let basicShape: string = 'basicShape';
                 let type: string = findObjectType(this.diagram.drawingObject);
                 if (type === 'Node' && this.diagram.drawingObject.shape.type === 'Text') {
                     return new TextDrawingTool(this.commandHandler);
-                } else if (type === 'Node' && this.diagram.drawingObject.shape[shape] === 'Polygon' &&
+                } else if (type === 'Node' && (this.diagram.drawingObject.shape[shape] === 'Polygon' ||
+                (isBlazor() && this.diagram.drawingObject.shape[basicShape] === 'Polygon')) &&
                     !((this.diagram.drawingObject.shape as BasicShapeModel).points)) {
                     return new PolygonDrawingTool(this.commandHandler);
                 } else if (type === 'Node' ||
@@ -1527,6 +1573,7 @@ export class DiagramEventHandler {
         return isGroupAction;
     }
 
+
     // tslint:disable-next-line:max-func-body-length
     private updateContainerProperties(): HistoryLog {
         let helperObject: NodeModel; let isChangeProperties: boolean = false;
@@ -1555,29 +1602,32 @@ export class DiagramEventHandler {
                     history.isPreventHistory = true;
                 } else {
                     let parentNode: Node = this.diagram.nameTable[(obj as Node).parentId];
-                    if (!parentNode || (parentNode && parentNode.shape.type !== 'SwimLane')) {
-                        if (parentNode && parentNode.isLane && (obj.constraints & NodeConstraints.AllowMovingOutsideLane)) {
-                            let swimlane: Node = this.diagram.getObject(parentNode.parentId) as Node;
-                            let laneId: string = swimlane.id + (swimlane.shape as SwimLaneModel).lanes[0].id + '0';
-                            let firstlane: NodeModel = this.diagram.getObject(laneId) as Node;
-                            let x: number = firstlane.wrapper.bounds.x; let y: number = firstlane.wrapper.bounds.y;
-                            let width: number = swimlane.wrapper.bounds.bottomRight.x - x;
-                            let height: number = swimlane.wrapper.bounds.bottomRight.y - y;
-                            let swimlaneBounds: Rect = new Rect(x, y, width, height);
-                            if (swimlaneBounds.containsPoint(this.currentPosition)) {
+                    if (!(this.diagram.lineRoutingModule && (this.diagram.constraints & DiagramConstraints.LineRouting))) {
+                        if (!parentNode || (parentNode && parentNode.shape.type !== 'SwimLane')) {
+                            if (parentNode && parentNode.isLane && (obj.constraints & NodeConstraints.AllowMovingOutsideLane)) {
+                                let swimlane: Node = this.diagram.getObject(parentNode.parentId) as Node;
+                                let laneId: string = swimlane.id + (swimlane.shape as SwimLaneModel).lanes[0].id + '0';
+                                let firstlane: NodeModel = this.diagram.getObject(laneId) as Node;
+                                let x: number = firstlane.wrapper.bounds.x; let y: number = firstlane.wrapper.bounds.y;
+                                let width: number = swimlane.wrapper.bounds.bottomRight.x - x;
+                                let height: number = swimlane.wrapper.bounds.bottomRight.y - y;
+                                let swimlaneBounds: Rect = new Rect(x, y, width, height);
+                                if (swimlaneBounds.containsPoint(this.currentPosition)) {
+                                    (obj as Node).offsetX = helperObject.offsetX; (obj as Node).offsetY = helperObject.offsetY;
+                                    (obj as Node).width = helperObject.width; (obj as Node).height = helperObject.height;
+                                    (obj as Node).rotateAngle = helperObject.rotateAngle;
+                                }
+                            } else {
+
                                 (obj as Node).offsetX = helperObject.offsetX; (obj as Node).offsetY = helperObject.offsetY;
-                                (obj as Node).width = helperObject.width; (obj as Node).height = helperObject.height;
+                                if (obj && obj.shape && obj.shape.type !== 'UmlClassifier') {
+                                    if (obj.shape.type !== 'Bpmn'  ||
+                                    (obj.shape.type === 'Bpmn' && (obj.shape as BpmnShapeModel).shape !== 'TextAnnotation')) {
+                                        (obj as Node).width = helperObject.width; (obj as Node).height = helperObject.height;
+                                    }
+                                }
                                 (obj as Node).rotateAngle = helperObject.rotateAngle;
                             }
-                        } else {
-                            (obj as Node).offsetX = helperObject.offsetX; (obj as Node).offsetY = helperObject.offsetY;
-                            if (obj && obj.shape && obj.shape.type !== 'UmlClassifier') {
-                                if (obj.shape.type !== 'Bpmn'  ||
-                                (obj.shape.type === 'Bpmn' && (obj.shape as BpmnShapeModel).shape !== 'TextAnnotation')) {
-                                    (obj as Node).width = helperObject.width; (obj as Node).height = helperObject.height;
-                                }
-                            }
-                            (obj as Node).rotateAngle = helperObject.rotateAngle;
                         }
                     }
                     let undoElement: StackEntryObject;
@@ -1994,15 +2044,16 @@ class ObjectFinder {
             } else if (action === 'Select' && diagram[eventHandler].tool) {
                 for (let i: number = objects.length - 1; i >= 0; i--) {
                     if (objects[i] instanceof Connector) {
-                        if (objects[i - 1] instanceof Node && objects[i - 1].ports) {
-                            let portElement: DiagramElement = this.findTargetElement(objects[i - 1].wrapper, position, undefined);
+                        let objj1 = objects[i - 1] as NodeModel
+                        if (objects[i - 1] instanceof Node && objj1.ports) {
+                            let portElement: DiagramElement = this.findTargetElement(objj1.wrapper, position, undefined);
                             if ((portElement && (portElement.id.match('_icon_content_shape$') || portElement.id.match('_icon_content_rect$')))) {
-                                return objects[i - 1] as IElement;
+                                return objj1 as IElement;
                             }
-                            for (let j: number = 0; j < objects[i - 1].ports.length; j++) {
-                                if (portElement && portElement.id.match('_' + objects[i - 1].ports[j].id + '$')) {
-                                    if (canDraw(objects[i - 1].ports[j], diagram)) {
-                                        return objects[i - 1] as IElement;
+                            for (let j: number = 0; j < objj1.ports.length; j++) {
+                                if (portElement && portElement.id.match('_' + objj1.ports[j].id + '$')) {
+                                    if (canDraw(objj1.ports[j], diagram)) {
+                                        return objj1 as IElement;
                                     }
                                 }
                             }
@@ -2101,6 +2152,7 @@ export interface MouseEventArgs {
     moveTouches?: TouchList | ITouches[];
     clickCount?: number;
     actualObject?: IElement;
+    portId?: string;
 }
 
 /** @private */

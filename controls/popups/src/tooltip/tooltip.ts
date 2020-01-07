@@ -750,6 +750,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             if (isBlazor() && this.isServerRendered) {
                 this.ctrlId = this.element.id;
                 this.tooltipEle = document.querySelector('#' + this.ctrlId + '_content');
+                this.tooltipEle.setAttribute('style', 'width:' + formatUnit(this.width) +
+                 ';height:' + formatUnit(this.height) + ';position:absolute;');
                 this.beforeRenderBlazor(this.contentTargetValue, this);
                 this.afterRenderBlazor(this.contentTargetValue, this.contentEvent, this.contentAnimation, this);
                 this.contentTargetValue = this.contentEvent = this.contentAnimation = null;
@@ -1212,35 +1214,15 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'width':
-                    if (this.tooltipEle) {
-                        if (targetElement) {
-                            this.tooltipEle.style.width = formatUnit(newProp.width);
-                            this.reposition(targetElement);
-                        }
-                    } else if (isBlazor() && this.isServerRendered) {
-                        let args: object = { 'width': formatUnit(newProp.width) };
-                        // tslint:disable
-                        (this as any).interopAdaptor.invokeMethodAsync('OnTooltipServerCall', args);
-                        // tslint:enable
-                        if (targetElement) {
-                            this.reposition(targetElement);
-                        }
+                    if (this.tooltipEle && targetElement) {
+                        this.tooltipEle.style.width = this.tooltipEle.style.maxWidth = formatUnit(newProp.width);
+                        this.reposition(targetElement);
                     }
                     break;
                 case 'height':
-                    if (this.tooltipEle) {
-                        if (targetElement) {
-                            this.tooltipEle.style.height = formatUnit(newProp.height);
-                            this.reposition(targetElement);
-                        }
-                    } else if (isBlazor() && this.isServerRendered) {
-                        let args: object = { 'height': formatUnit(newProp.height) };
-                        // tslint:disable
-                        (this as any).interopAdaptor.invokeMethodAsync('OnTooltipServerCall', args);
-                        // tslint:enable
-                        if (targetElement) {
-                            this.reposition(targetElement);
-                        }
+                    if (this.tooltipEle && targetElement) {
+                        this.tooltipEle.style.height = formatUnit(newProp.height);
+                        this.reposition(targetElement);
                     }
                     break;
                 case 'content':
@@ -1287,11 +1269,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                     if (this.tooltipEle) {
                         if (oldProp.cssClass) { removeClass([this.tooltipEle], oldProp.cssClass.split(' ')); }
                         if (newProp.cssClass) { addClass([this.tooltipEle], newProp.cssClass.split(' ')); }
-                    } else if (isBlazor() && this.isServerRendered) {
-                        let args: object = { 'cssClass': newProp.cssClass };
-                        // tslint:disable
-                        (this as any).interopAdaptor.invokeMethodAsync('OnTooltipServerCall', args);
-                        // tslint:enable
                     }
                     break;
                 case 'enableRtl':

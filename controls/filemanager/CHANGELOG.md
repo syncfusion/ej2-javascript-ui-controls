@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.41 (2020-01-07)
+
+### File Manager
+
+#### Bug Fixes
+
+- `#258121` - Resolved the CSS warnings in Firefox 71.0 version.
+
 ## 17.4.39 (2019-12-17)
 
 ### File Manager

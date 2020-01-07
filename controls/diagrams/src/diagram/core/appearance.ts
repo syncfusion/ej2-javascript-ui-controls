@@ -1,10 +1,13 @@
-import { Property, ChildProperty, Collection, ComplexFactory } from '@syncfusion/ej2-base';
-import { GradientModel, RadialGradientModel, LinearGradientModel, StopModel } from './appearance-model';
+import { Property, ChildProperty, Collection, ComplexFactory, isBlazor } from '@syncfusion/ej2-base';
+import { GradientModel, RadialGradientModel, LinearGradientModel, StopModel, DiagramGradientModel } from './appearance-model';
 import { TextDecoration, WhiteSpace, TextWrap, TextAlign, GradientType, TextOverflow } from '../enum/enum';
 
 /**   @private  */
 let getGradientType: Function = (obj: Gradient): Object => {
     if (obj) {
+        if (isBlazor()) {
+            return DiagramGradient;
+        }
         switch (obj.type) {
             case 'Linear':
                 return LinearGradient;
@@ -197,6 +200,7 @@ export class Gradient extends ChildProperty<Gradient> {
     /**
      * Defines the stop collection of gradient
      * @default []
+     * @blazorType ObservableCollection<DiagramsGradientStop>
      */
     @Collection<StopModel>([], Stop)
     public stops: StopModel[];
@@ -241,7 +245,65 @@ export class Gradient extends ChildProperty<Gradient> {
  * diagram.appendTo('#diagram');
  * ```
  */
-
+/**                
+ * Paints the node with linear color transitions
+ */
+export class DiagramGradient extends Gradient {
+    /**
+     * Defines the x1 value of linear gradient
+     * @default 0
+     */
+    @Property(0)
+    public x1: number;
+    /**
+     * Defines the x2 value of linear gradient
+     * @default 0
+     */
+    @Property(0)
+    public x2: number;
+    /**
+     * Defines the y1 value of linear gradient
+     * @default 0
+     */
+    @Property(0)
+    public y1: number;
+    /**
+     * Defines the y2 value of linear gradient
+     * @default 0
+     */
+    @Property(0)
+    public y2: number;
+    /**
+     * Defines the cx value of radial gradient
+     * @default 0
+     */
+    @Property(0)
+    public cx: number;
+    /**
+     * Defines the cy value of radial gradient
+     * @default cy
+     */
+    @Property(0)
+    public cy: number;
+    /**
+     * Defines the fx value of radial gradient
+     * @default 0
+     */
+    @Property(0)
+    public fx: number;
+    /**
+     * Defines the fy value of radial gradient
+     * @default fy
+     */
+    @Property(0)
+    public fy: number;
+    /**
+     * Defines the r value of radial gradient
+     * @default 50
+     */
+    @Property(50)
+    public r: number;
+}
 /**                
  * Paints the node with linear color transitions
  */
@@ -328,7 +390,6 @@ export class RadialGradient extends Gradient {
     @Property(50)
     public r: number;
 }
-
 /**      
  * Defines the style of shape/path
  */
@@ -387,10 +448,10 @@ export class ShapeStyle extends ChildProperty<ShapeStyle> {
      * Defines the gradient of a shape/path
      * @default null
      * @aspType object
-     * @blazorType object
+     * @blazorType DiagramGradient
      */
     @ComplexFactory(getGradientType)
-    public gradient: GradientModel | LinearGradientModel | RadialGradientModel;
+    public gradient: GradientModel | LinearGradientModel | RadialGradientModel | DiagramGradientModel;
 }
 
 
@@ -524,4 +585,154 @@ export class TextStyle extends ShapeStyle {
      */
     @Property('transparent')
     public fill: string;
+}
+
+/**      
+ * Defines the style of shape/path
+ */
+export class DiagramShapeStyle extends ChildProperty<DiagramShapeStyle> {
+    /**
+     * Sets the fill color of a shape/path
+     * @default 'white'
+     */
+    @Property('white')
+    public fill: string;
+
+    /**
+     * Defines how to handle the text when it exceeds the given size.
+     * * Wrap - Wraps the text to next line, when it exceeds its bounds
+     * * Ellipsis - It truncates the overflown text and represents the clipping with an ellipsis
+     * * Clip - It clips the overflow text
+     * @default 'Wrap'
+     */
+    @Property('Wrap')
+    public textOverflow: TextOverflow;
+
+    /**
+     * Defines the stroke width of the path/shape
+     * @default 1
+     */
+    @Property(1)
+    public strokeWidth: number;
+
+    /**
+     * Defines the gradient of a shape/path
+     * @default null
+     * @aspType object
+     */
+    @ComplexFactory(getGradientType)
+    public gradient: GradientModel | LinearGradientModel | RadialGradientModel;
+
+    /**
+     * Sets the opacity of a shape/path
+     * @default 1
+     */
+    @Property(1)
+    public opacity: number;
+
+    /**
+     * Enables/disables the italic style of text
+     * @default false
+     */
+    @Property(false)
+    public italic: boolean;
+
+    /**
+     * Defines the pattern of dashes and spaces to stroke the path/shape
+     * ```html
+     * <div id='diagram'></div>
+     * ```
+     * ```
+     *  let nodes: NodeModel[] = [{  id: 'node', width: 100, height: 100, offsetX: 100, offsetY: 100,
+     * style: { fill: 'red', strokeColor: 'blue', strokeWidth: 5, 
+     * strokeDashArray: '2 2', opacity: 0.6 } as ShapeStyleModel,
+     * }];
+     * let diagram: Diagram = new Diagram({
+     * ...
+     *   nodes: nodes,
+     * ...
+     * });
+     * diagram.appendTo('#diagram');
+     * ```
+     * @default ''
+     */
+    @Property('')
+    public strokeDashArray: string;
+
+    /**
+     * Sets the font color of a text
+     * @default 'black'
+     */
+    @Property('black')
+    public color: string;
+
+    /**
+     * Defines the font size of a text
+     * @default 12
+     */
+    @Property(12)
+    public fontSize: number;
+
+    /**
+     * Sets the font type of a text
+     * @default 'Arial'
+     */
+    @Property('Arial')
+    public fontFamily: string;
+
+    /**
+     * Defines how the white space and new line characters have to be handled
+     * * PreserveAll - Preserves all empty spaces and empty lines
+     * * CollapseSpace - Collapses the consequent spaces into one
+     * * CollapseAll - Collapses all consequent empty spaces and empty lines
+     * @default 'CollapseSpace'
+     */
+    @Property('CollapseSpace')
+    public whiteSpace: WhiteSpace;
+
+    /**
+     * Defines how the text should be aligned within its bounds
+     * * Left - Aligns the text at the left of the text bounds
+     * * Right - Aligns the text at the right of the text bounds
+     * * Center - Aligns the text at the center of the text bounds
+     * * Justify - Aligns the text in a justified manner
+     * @default 'Center'
+     */
+    @Property('Center')
+    public textAlign: TextAlign;
+
+    /**
+     * Defines how the text should be decorated. For example, with underline/over line
+     * * Overline - Decorates the text with a line above the text
+     * * Underline - Decorates the text with an underline
+     * * LineThrough - Decorates the text by striking it with a line
+     * * None - Text will not have any specific decoration
+     * @default 'None'
+     */
+    @Property('None')
+    public textDecoration: TextDecoration;
+
+    /**
+     * Enables/disables the bold style of text
+     * @default false
+     */
+    @Property(false)
+    public bold: boolean;
+
+    /**
+     * Sets the stroke color of a shape/path
+     * @default 'black'
+     */
+    @Property('black')
+    public strokeColor: string;
+
+    /**
+     * Defines how the text should be wrapped, when the text size exceeds some specific bounds
+     * * WrapWithOverflow - Wraps the text so that no word is broken
+     * * Wrap - Wraps the text and breaks the word, if necessary
+     * * NoWrap - Text will no be wrapped
+     * @default  'WrapWithOverflow'
+     */
+    @Property('WrapWithOverflow')
+    public textWrapping: TextWrap;
 }

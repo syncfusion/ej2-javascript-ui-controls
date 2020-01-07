@@ -363,6 +363,7 @@ export class Edit {
               data[i].parentItem = this.internalProperties.parentItem;
               data[i].parentUniqueID = this.internalProperties.parentUniqueID;
             }
+            data[i].childRecords = this.internalProperties.childRecords;
           }
         }
         setValue('uniqueIDCollection.' + data[i].uniqueID + '.index', i, this.parent);
@@ -601,7 +602,8 @@ export class Edit {
       }
       if (args.action === 'add') {
         this.internalProperties = { level: value.level, parentItem: value.parentItem, uniqueID: value.uniqueID,
-          taskData: value.taskData, parentUniqueID: isNullOrUndefined(value.parentItem) ? undefined : value.parentItem.uniqueID };
+          taskData: value.taskData, parentUniqueID: isNullOrUndefined(value.parentItem) ? undefined : value.parentItem.uniqueID,
+          childRecords: value.childRecords };
       }
       if (args.requestType === 'delete') {
         let deletedValues: ITreeData[] = args.data as Object[];

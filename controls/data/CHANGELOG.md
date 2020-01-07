@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.41 (2020-01-07)
+
+### DataManager
+
+#### Bug Fixes
+
+- `258307` - Expand property is now properly added to the Query class in `ODataV4Adaptor`.
+
 ## 17.3.26 (2019-11-05)
 
 ### DataManager

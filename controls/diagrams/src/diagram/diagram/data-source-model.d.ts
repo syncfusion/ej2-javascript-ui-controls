@@ -97,6 +97,7 @@ export interface ConnectionDataSourceModel {
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
+     * @deprecated
      */
     crudAction?: CrudActionModel;
 
@@ -161,6 +162,7 @@ export interface DataSourceModel {
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
+     * @deprecated
      */
     crudAction?: CrudActionModel;
 

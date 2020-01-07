@@ -32,7 +32,7 @@ function measureText(text, font) {
         document.body.appendChild(htmlObject);
     }
     var style = 'position: absolute; visibility: hidden;' +
-        ';left: 0; top: -100; white-space: nowrap;' + getFontStyle(font);
+        ';left: 0px; top: -100px; white-space: nowrap;' + getFontStyle(font);
     htmlObject.innerHTML = text;
     htmlObject.setAttribute('style', style);
     return new Size(htmlObject.clientWidth, htmlObject.clientHeight);
@@ -4119,6 +4119,7 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
         this.renderLegend();
         this.element.appendChild(this.svgObject);
         this.trigger(loaded, this.isBlazor ? {} : { gauge: this });
+        removeElement("gauge-measuretext");
     };
     /**
      * Method to render legend for accumulation chart

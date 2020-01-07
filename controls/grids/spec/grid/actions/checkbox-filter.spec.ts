@@ -14,6 +14,7 @@ import { createGrid, destroy, getKeyUpObj, getClickObj, getKeyActionObj } from '
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { Edit } from '../../../src/grid/actions/edit';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { Query } from '@syncfusion/ej2-data';
 
 Grid.Inject(Filter, Page,Toolbar, Selection, Group, Freeze, Edit);
 
@@ -2006,6 +2007,88 @@ describe('Checkbox Filter module => ', () => {
         });
         
         afterAll(() => {
+            destroy(gridObj);
+            gridObj = checkBoxFilter = actionBegin = actionComplete = null;
+        });
+    });
+    describe('EJ2-34831  parent query check for Checkbox filter searchlist ', function () {
+        let gridObj: Grid;
+        let actionBegin: () => void;
+        let checkBoxFilter: Element;
+        let actionComplete: () => void;
+        let checkFilterObj: Function = (obj: PredicateModel, field?: string,
+            operator?: string, value?: string, predicate?: string, matchCase?: boolean): boolean => {
+            let isEqual: boolean = true;
+            if (field) {
+                isEqual = isEqual && obj.field === field;
+            }
+            if (operator) {
+                isEqual = isEqual && obj.operator === operator;
+            }
+            if (value) {
+                isEqual = isEqual && obj.value === value;
+            }
+            if (matchCase) {
+                isEqual = isEqual && obj.matchCase === matchCase;
+            }
+            return isEqual;
+        };
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    query: new Query().where("EmployeeID","equal",5),
+                    allowFiltering: true,
+                    allowPaging: false,
+                    filterSettings: { type: 'CheckBox', showFilterBarStatus: true },
+                    columns: [{ field: 'OrderID', type: 'number', visible: true },
+                    { field: 'CustomerID', type: 'string', filter: {type: 'CheckBox'} },
+                    { field: 'Freight', format: 'C2', type: 'number' }
+                    ],
+                    actionBegin: actionBegin,
+                    actionComplete: actionComplete
+                }, done);
+        });        
+        it('Filter OrderID dialog open testing', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if(args.requestType === 'filterafteropen'){
+                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                gridObj.actionComplete =null;
+                done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
+        });
+        it('search OrderID testing for searchlist length', function (done) {
+            actionComplete = (args?: any): void => {
+                expect(checkBoxFilter.querySelectorAll('.e-selectall').length).toBe(1);
+                expect(checkBoxFilter.querySelectorAll('.e-chk-hidden').length).toBe(2);
+                expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(2);
+                expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);
+                gridObj.actionComplete = null;
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            let searchElement: any = gridObj.element.querySelector('.e-searchinput');
+            searchElement.value = '10248';
+            (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13, searchElement));
+        });
+        it('clear OrderID search testing for searchlist length', function (done) {
+            actionComplete = (args?: any): void => {
+                expect(checkBoxFilter.querySelectorAll('.e-selectall').length).toBe(1);
+                expect(checkBoxFilter.querySelectorAll('.e-chk-hidden').length).toBe(gridObj.currentViewData.length+1);
+                expect(checkBoxFilter.querySelectorAll('.e-check').length).toBe(gridObj.currentViewData.length+1);
+                expect(checkBoxFilter.querySelectorAll('.e-uncheck').length).toBe(0);
+                gridObj.actionComplete = null;
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            let searchElement: any = gridObj.element.querySelector('.e-searchinput');
+            searchElement.value = '';
+            (gridObj.filterModule as any).filterModule.checkBoxBase.searchBoxKeyUp(getKeyUpObj(13, searchElement));
+        });
+        afterAll(function () {
             destroy(gridObj);
             gridObj = checkBoxFilter = actionBegin = actionComplete = null;
         });

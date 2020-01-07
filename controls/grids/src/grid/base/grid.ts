@@ -4781,9 +4781,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (e.altKey) {
             if (e.keyCode === 74) {//alt j
                 this.focusModule.focusHeader();
+                this.focusModule.addOutline();
             }
             if (e.keyCode === 87) {//alt w
                 this.focusModule.focusContent();
+                this.focusModule.addOutline();
             }
         }
     }
@@ -4875,6 +4877,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean,
         /* tslint:disable-next-line:no-any */
         workbook?: any, isBlob?: boolean): Promise<any> {
+        if (isBlazor()) {
+            this.excelExportModule.Map(this, excelExportProperties, isMultipleExport, workbook, false, isBlob);
+            return null;
+        }
         return this.excelExportModule ?
             this.excelExportModule.Map(this, excelExportProperties, isMultipleExport, workbook, false, isBlob) : null;
     }
@@ -4892,6 +4898,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         excelExportProperties?: ExcelExportProperties,
         /* tslint:disable-next-line:no-any */
         isMultipleExport?: boolean, workbook?: any, isBlob?: boolean): Promise<any> {
+        if (isBlazor()) {
+            this.excelExportModule.Map(this, excelExportProperties, isMultipleExport, workbook, true, isBlob);
+            return null;  
+        }
         return this.excelExportModule ?
             this.excelExportModule.Map(this, excelExportProperties, isMultipleExport, workbook, true, isBlob) : null;
     }

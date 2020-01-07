@@ -920,17 +920,15 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 if (!isNullOrUndefined(templateGroupEle) && templateGroupEle.childElementCount > 0) {
                     let layerOffset: ClientRect = getElementByID(this.element.id + '_Layer_Collections').getBoundingClientRect();
                     let elementOffset: ClientRect = getElementByID(templateGroupEle.id).getBoundingClientRect();
+                    let offSetLetValue: number = this.isTileMap ? 0 : (layerOffset.left < elementOffset.left) ?
+                        -(Math.abs(elementOffset.left - layerOffset.left)) : (Math.abs(elementOffset.left - layerOffset.left));
+                    let offSetTopValue: number = this.isTileMap ? 0 : (layerOffset.top < elementOffset.top) ?
+                        - (Math.abs(elementOffset.top - layerOffset.top)) : Math.abs(elementOffset.top - layerOffset.top);
                     for (let j: number = 0; j < templateGroupEle.childElementCount; j++) {
                         let currentTemplate: HTMLElement = <HTMLElement>templateGroupEle.childNodes[j];
-                        let templateOffset: ClientRect = currentTemplate.getBoundingClientRect();
-                        currentTemplate.style.left = ((this.isTileMap ? parseFloat(currentTemplate.style.left) :
-                            ((layerOffset.left < elementOffset.left ? (parseFloat(currentTemplate.style.left) -
-                                Math.abs(elementOffset.left - layerOffset.left)) : (parseFloat(currentTemplate.style.left) +
-                                    Math.abs(elementOffset.left - layerOffset.left))))) - (templateOffset.width / 2)) + 'px';
-                        currentTemplate.style.top = ((this.isTileMap ? parseFloat(currentTemplate.style.top) :
-                            ((layerOffset.top < elementOffset.top ? (parseFloat(currentTemplate.style.top) -
-                                Math.abs(elementOffset.top - layerOffset.top)) : (parseFloat(currentTemplate.style.top) +
-                                    Math.abs(elementOffset.top - layerOffset.top))))) - (templateOffset.height / 2)) + 'px';
+                        currentTemplate.style.left = parseFloat(currentTemplate.style.left) + offSetLetValue + 'px';
+                        currentTemplate.style.top = parseFloat(currentTemplate.style.top) + offSetTopValue + 'px';
+                        currentTemplate.style.transform = 'translate(-50%, -50%)';
                     }
                 }
             }

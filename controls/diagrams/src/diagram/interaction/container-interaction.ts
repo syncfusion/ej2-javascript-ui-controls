@@ -1,3 +1,4 @@
+import { isBlazor } from '@syncfusion/ej2-base';
 import { NodeModel, SwimLaneModel } from '../objects/node-model';
 import { Node, SwimLane } from '../objects/node';
 import { Diagram } from '../diagram';
@@ -23,7 +24,6 @@ import { swimLaneMeasureAndArrange, checkLaneSize, checkPhaseOffset, canLaneInte
 import { updatePhaseMaxWidth, updateHeaderMaxWidth, updateConnectorsProperties } from '../utility/swim-lane-util';
 import { considerSwimLanePadding } from '../utility/swim-lane-util';
 import { DiagramAction, DiagramConstraints, NodeConstraints } from '../enum/enum';
-
 /**
  * Interaction for Container
  */
@@ -152,37 +152,49 @@ export function createHelper(diagram: Diagram, obj: Node): Node {
 
 /** @private */
 export function renderContainerHelper(diagram: Diagram, obj: SelectorModel | NodeModel): NodeModel | ConnectorModel {
+    diagram.enableServerDataBinding(false);
     let object: NodeModel | ConnectorModel; let container: Canvas;
     let nodes: NodeModel;
-    if (diagram.selectedObject.helperObject) {
-        nodes = diagram.selectedObject.helperObject;
-    } else if (diagram.selectedItems.nodes.length > 0 || diagram.selectedItems.connectors.length > 0) {
-        if (obj instanceof Selector && obj.nodes.length + obj.connectors.length === 1) {
-            object = (obj.nodes.length > 0) ? obj.nodes[0] : obj.connectors[0];
-            container = diagram.selectedItems.wrapper.children[0] as Canvas;
-        } else {
-            object = obj as NodeModel;
-            container = diagram.selectedItems.wrapper as Canvas;
-        }
-        diagram.selectedObject.actualObject = object as NodeModel;
-        if ((!diagram.currentSymbol) && ((((object as Node).isLane && canLaneInterchange(object as Node, diagram) &&
-            checkParentAsContainer(diagram, object))
-            || ((!(object as Node).isLane) && checkParentAsContainer(diagram, object))) ||
-            ((diagram.constraints & DiagramConstraints.LineRouting) && diagram.selectedItems.nodes.length > 0))) {
-            let node: NodeModel = {
-                id: 'helper',
-                rotateAngle: container.rotateAngle,
-                offsetX: container.offsetX, offsetY: container.offsetY,
-                minWidth: container.minWidth, minHeight: container.minHeight,
-                maxWidth: container.maxWidth, maxHeight: container.maxHeight,
-                width: container.actualSize.width,
-                height: container.actualSize.height,
-                style: { strokeDashArray: '2 2', fill: 'transparent', strokeColor: '#7D7D7D', strokeWidth: 2 }
-            };
-            nodes = createHelper(diagram, node as Node) as NodeModel;
-            diagram.selectedObject.helperObject = nodes;
+    if ((!isBlazor()) || (isBlazor() && (diagram.diagramActions & DiagramAction.ToolAction))) {
+        if (diagram.selectedObject.helperObject) {
+            nodes = diagram.selectedObject.helperObject;
+        } else if (diagram.selectedItems.nodes.length > 0 || diagram.selectedItems.connectors.length > 0) {
+            if (obj instanceof Selector && obj.nodes.length + obj.connectors.length === 1) {
+                object = (obj.nodes.length > 0) ? obj.nodes[0] : obj.connectors[0];
+                container = diagram.selectedItems.wrapper.children[0] as Canvas;
+            } else {
+                object = obj as NodeModel;
+                if (isBlazor()) {
+                    if (obj === diagram.selectedItems.nodes[0]) {
+                        container = diagram.selectedItems.wrapper as Canvas;
+                    } else {
+                        container = obj.wrapper as Canvas;
+                    }
+                } else {
+                    container = diagram.selectedItems.wrapper as Canvas;
+                }
+            }
+            diagram.selectedObject.actualObject = object as NodeModel;
+            if ((!diagram.currentSymbol) && ((((object as Node).isLane && canLaneInterchange(object as Node, diagram) &&
+                checkParentAsContainer(diagram, object))
+                || ((!(object as Node).isLane) && checkParentAsContainer(diagram, object))) ||
+                ((diagram.constraints & DiagramConstraints.LineRouting) && diagram.selectedItems.nodes.length > 0))) {
+                let node: NodeModel = {
+                    id: 'helper',
+                    rotateAngle: container.rotateAngle,
+                    offsetX: container.offsetX, offsetY: container.offsetY,
+                    minWidth: container.minWidth, minHeight: container.minHeight,
+                    maxWidth: container.maxWidth, maxHeight: container.maxHeight,
+                    width: container.actualSize.width,
+                    height: container.actualSize.height,
+                    style: { strokeDashArray: '2 2', fill: 'transparent', strokeColor: '#7D7D7D', strokeWidth: 2 }
+                };
+                nodes = createHelper(diagram, node as Node) as NodeModel;
+                diagram.selectedObject.helperObject = nodes;
+            }
         }
     }
+    diagram.enableServerDataBinding(true);
     return nodes;
 }
 

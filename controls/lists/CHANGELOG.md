@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 17.4.41 (2020-01-07)
+
+### ListBox
+
+#### Bug Fixes
+
+- Provided `items` argument support for `beforeDrop` event.
+
+### ListView
+
+#### Bug Fixes
+
+- #259827 - The issue with the `ListView component that throws script error in IE 11 browser` has been resolved.
+
 ## 17.4.40 (2019-12-24)
 
 ### ListBox

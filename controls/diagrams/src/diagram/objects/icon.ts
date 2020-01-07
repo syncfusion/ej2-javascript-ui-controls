@@ -89,6 +89,7 @@ export class IconShape extends ChildProperty<IconShape> {
     /**
      * Defines the offset of the icon.
      * @default new Point(0.5,1)
+     * @blazorType IconOffset
      */
     @Complex<PointModel>({ x: 0.5, y: 1 }, Point)
     public offset: PointModel;
@@ -138,6 +139,7 @@ export class IconShape extends ChildProperty<IconShape> {
     /**
      * Defines the space that the icon has to be moved from the icon border
      * @default new Margin(2,2,2,2)
+     * @blazorType IconPadding
      */
     @Complex<MarginModel>({ left: 2, right: 2, top: 2, bottom: 2 }, Margin)
     public padding: MarginModel;

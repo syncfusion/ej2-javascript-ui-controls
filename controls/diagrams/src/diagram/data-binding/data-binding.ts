@@ -81,7 +81,7 @@ export class DataBinding {
 
     public initSource(data: DataSourceModel, diagram: Diagram): void {
         let dataSource: DataSourceModel = data; let result: Object[];
-        let mapper: DataSourceModel = data;
+        let mapper: DataSourceModel = data; let node: Node;
         if (dataSource.dataManager instanceof DataManager || dataSource.dataSource instanceof DataManager) {
             let tempObj: DataManager = mapper.dataManager || mapper.dataSource;
             let query: Query = tempObj.defaultQuery || new Query();
@@ -90,8 +90,10 @@ export class DataBinding {
                 let prop: string = 'result';
                 result = e[prop];
                 if (!diagram.isDestroyed) {
+                    diagram.protectPropertyChange(true);
                     this.applyDataSource(data, result, diagram);
                     diagram.refreshDiagram();
+                    diagram.protectPropertyChange(false);
                     diagram.trigger('dataLoaded', { diagram: cloneBlazorObject(diagram) });
                 }
             });
@@ -100,7 +102,7 @@ export class DataBinding {
 
     private applyDataSource(mapper: DataSourceModel, data: Object[], diagram: Diagram): void {
         this.dataTable = {};
-        let obj: Object; let firstNode: Object;
+        let obj: Object; let firstNode: Object; let node: Node; let nodes: Node;
         let rootNodes: Object[] = [];
         let firstLevel: Object[] = []; let item: Object;
         let nextLevel: Object;
@@ -134,12 +136,12 @@ export class DataBinding {
             for (let i: number = 0; i < firstLevel.length; i++) {
                 for (let j: number = 0; j < (firstLevel[i] as DataItems).items.length; j++) {
                     item = (firstLevel[i] as DataItems).items[j];
-                    let node: Node = this.applyNodeTemplate(mapper, item, diagram);
+                    node = this.applyNodeTemplate(mapper, item, diagram);
                     (diagram.nodes as Node[]).push(node);
                     this.dataTable[item[mapper.id]] = node;
                     nextLevel = rootNodes[node.data[mapper.id]];
                     if (nextLevel !== undefined) {
-                        this.renderChildNodes(mapper, nextLevel, node.id, rootNodes, diagram);
+                            this.renderChildNodes(mapper, nextLevel, node.id, rootNodes, diagram);
                     }
                 }
             }
@@ -240,8 +242,9 @@ export class DataBinding {
         return temp;
     }
 
-    private renderChildNodes(mapper: DataSourceModel, parent: Object, value: string, rtNodes: Object[], diagram: Diagram): void {
-        let child: Object; let nextLevel: Object; let node: Node;
+    private renderChildNodes(
+        mapper: DataSourceModel, parent: Object, value: string, rtNodes: Object[], diagram: Diagram): void {
+        let child: Object; let nextLevel: Object; let node: Node; let returnNode: Node;
         for (let j: number = 0; j < (parent as DataItems).items.length; j++) {
             child = (parent as DataItems).items[j];
             node = this.applyNodeTemplate(mapper, child, diagram);
@@ -258,7 +261,7 @@ export class DataBinding {
             if (!canBreak) {
                 nextLevel = rtNodes[node.data[mapper.id]];
                 if (nextLevel !== undefined) {
-                    this.renderChildNodes(mapper, nextLevel, node.id, rtNodes, diagram);
+                        this.renderChildNodes(mapper, nextLevel, node.id, rtNodes, diagram);
                 }
             }
         }

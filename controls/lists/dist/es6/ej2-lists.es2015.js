@@ -1239,7 +1239,8 @@ let ListView = class ListView extends Component {
                 item: undefined, curData: undefined, dataSource: undefined, fields: undefined,
                 options: undefined, text: ''
             };
-            liCollection.forEach((element) => {
+            for (let i = 0; i < liCollection.length; i++) {
+                let element = liCollection[i];
                 args.item = element;
                 args.curData = this.getItemData(element);
                 if (element.querySelector('.' + classNames.checkboxWrapper)) {
@@ -1249,15 +1250,16 @@ let ListView = class ListView extends Component {
                 if (args.item.classList.contains(classNames.selected)) {
                     this.checkInternally(args, args.item.querySelector('.' + classNames.checkboxWrapper));
                 }
-            });
+            }
         }
         else {
             let liCollection = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.itemCheckList));
-            liCollection.forEach((element) => {
+            for (let i = 0; i < liCollection.length; i++) {
+                let element = liCollection[i];
                 element.classList.remove(classNames.selected);
                 element.firstElementChild.classList.remove(classNames.checkbox);
                 this.removeElement(element.querySelector('.' + classNames.checkboxWrapper));
-            });
+            }
             if (this.selectedItems) {
                 this.selectedItems.item.classList.add(classNames.selected);
             }
@@ -1841,13 +1843,14 @@ let ListView = class ListView extends Component {
         this.renderIntoDom(this.curUL);
     }
     setAttributes(liElements) {
-        liElements.forEach((element) => {
+        for (let i = 0; i < liElements.length; i++) {
+            let element = liElements[i];
             if (element.classList.contains('e-list-item')) {
                 element.setAttribute('id', this.element.id + '_' + element.getAttribute('data-uid'));
                 element.setAttribute('aria-selected', 'false');
                 element.setAttribute('tabindex', '-1');
             }
-        });
+        }
     }
     createList() {
         this.currentLiElements = [];
@@ -2204,9 +2207,9 @@ let ListView = class ListView extends Component {
         if (!isNullOrUndefined(finalGetSelectedItem)) {
             if (!isNullOrUndefined(finalGetSelectedItem.data)) {
                 if (this.showCheckBox && this.isNestedList) {
-                    finalGetSelectedItem.data.forEach((currentData) => {
-                        blazorSelectedItem.data.push(currentData.data);
-                    });
+                    for (let i = 0; i < finalGetSelectedItem.data.length; i++) {
+                        blazorSelectedItem.data.push(finalGetSelectedItem.data[i].data);
+                    }
                     if (!isNullOrUndefined(finalGetSelectedItem.data[0])
                         && !isNullOrUndefined(finalGetSelectedItem.data[0].parentId)) {
                         blazorSelectedItem.parentId = finalGetSelectedItem.data[0].parentId;
@@ -2345,8 +2348,8 @@ let ListView = class ListView extends Component {
                 }
                 // check for whether target is nested level or top level in list
                 if (ds instanceof Array) {
-                    data.forEach((currentItem) => {
-                        dataSource.push(currentItem);
+                    for (let i = 0; i < data.length; i++) {
+                        dataSource.push(data[i]);
                         this.setViewDataSource(dataSource);
                         // since it is top level target, get the content container's first child
                         // as it is always the top level UL
@@ -2356,12 +2359,12 @@ let ListView = class ListView extends Component {
                         // check for whether the list was previously empty or not, if it is
                         // proceed to call initial render
                         if (this.contentContainer && targetUL) {
-                            this.addItemIntoDom(currentItem, targetUL, this.curViewDS);
+                            this.addItemIntoDom(data[i], targetUL, this.curViewDS);
                         }
                         else {
                             this.reRender();
                         }
-                    });
+                    }
                     if (this.curUL) {
                         this.updateBlazorTemplates(true);
                     }
@@ -2401,10 +2404,10 @@ let ListView = class ListView extends Component {
         }
         // if it is already rendered element, we need to create and append new elements
         if (isAlreadyRenderedUL && itemQueue) {
-            itemQueue.forEach((currentItem) => {
-                targetDS.push(currentItem);
-                this.addItemIntoDom(currentItem, targetUL, targetDS);
-            });
+            for (let i = 0; i < itemQueue.length; i++) {
+                targetDS.push(itemQueue[i]);
+                this.addItemIntoDom(itemQueue[i], targetUL, targetDS);
+            }
             isRefreshTemplateNeeded = true;
         }
         if (isRefreshTemplateNeeded) {
@@ -3692,26 +3695,19 @@ let Sortable = Sortable_1 = class Sortable extends Base {
             let dropInst = this.getSortableInstance(this.curTarget);
             let prevIdx;
             let curIdx;
-            let handled;
             prevIdx = this.getIndex(this.target);
             if (this.isPlaceHolderPresent(dropInst)) {
                 let curIdx = this.getIndex(dropInst.placeHolderElement, dropInst);
                 let args = { previousIndex: prevIdx, currentIndex: curIdx, target: e.target, droppedElement: this.target,
-                    helper: e.helper, cancel: false, handled: false };
+                    helper: e.helper, cancel: false };
                 this.trigger('beforeDrop', args, (observedArgs) => {
                     if (!observedArgs.cancel) {
-                        handled = observedArgs.handled;
                         this.updateItemClass(dropInst);
-                        if (observedArgs.handled) {
-                            let ele = this.target.cloneNode(true);
-                            this.target.classList.remove('e-grabbed');
-                            this.target = ele;
-                        }
                         dropInst.element.insertBefore(this.target, dropInst.placeHolderElement);
                         let curIdx = this.getIndex(this.target, dropInst);
                         prevIdx = this === dropInst && (prevIdx - curIdx) > 1 ? prevIdx - 1 : prevIdx;
                         this.trigger('drop', { event: e.event, element: dropInst.element, previousIndex: prevIdx, currentIndex: curIdx,
-                            target: e.target, helper: e.helper, droppedElement: this.target, scopeName: this.scope, handled: handled });
+                            target: e.target, helper: e.helper, droppedElement: this.target, scopeName: this.scope });
                     }
                     remove(dropInst.placeHolderElement);
                 });

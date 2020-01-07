@@ -94,7 +94,7 @@ document.getElementById('selectNode').onchange = () => {
 
 document.getElementById('selectPort').onchange = () => {
     let e: string = (document.getElementById('selectPort') as HTMLInputElement).value;
-    port = node.ports[Number(e)] as PointPort;
+    port = (node as NodeModel).ports[Number(e)] as PointPort;
 }
 
 document.getElementById('portShapes').onchange = () => {

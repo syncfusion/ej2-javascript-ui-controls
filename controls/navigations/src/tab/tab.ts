@@ -1796,8 +1796,10 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     this.setCloseButton(newProp.showCloseButton);
                     break;
                 case 'selectedItem':
-                    this.selectedItem = oldProp.selectedItem;
-                    this.select(newProp.selectedItem);
+                    if (!this.isServerRendered) {
+                        this.selectedItem = oldProp.selectedItem;
+                        this.select(newProp.selectedItem);
+                    }
                     break;
                 case 'headerPlacement':
                     if (this.isServerRendered) {

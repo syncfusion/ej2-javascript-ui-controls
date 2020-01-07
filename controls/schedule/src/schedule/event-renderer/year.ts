@@ -168,7 +168,8 @@ export class YearEvent extends TimelineEvent {
                 'data-id': 'Appointment_' + record[this.fields.id],
                 'data-guid': record.Guid as string,
                 'role': 'button', 'tabindex': '0',
-                'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true'
+                'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true',
+                'aria-label': this.parent.getAnnocementString(record)
             }
         });
         if (this.cssClass) {

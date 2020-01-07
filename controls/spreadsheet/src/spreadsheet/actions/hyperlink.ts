@@ -206,7 +206,10 @@ export class SpreadsheetHyperlink {
             rangeAddr = befArgs.hyperlink;
             if (typeof (rangeAddr) === 'string') { address = rangeAddr; }
             if (typeof (rangeAddr) === 'object') { address = rangeAddr.address; }
-            if (address.indexOf('www.') === -1) {
+            if (address.indexOf('http://') > -1 || address.indexOf('www.') > -1) {
+                address = (address.indexOf('http://') === -1) ? 'http://' + address : address;
+                window.open(address);
+            } else if (address.indexOf('www.') === -1) {
                 if (!isNullOrUndefined(address)) {
                     if (this.parent.definedNames) {
                         for (let idx: number = 0; idx < this.parent.definedNames.length; idx++) {
@@ -260,11 +263,6 @@ export class SpreadsheetHyperlink {
                         getUpdateUsingRaf((): void => { this.parent.goTo(rangeAddr); });
                     }
                 }
-            } else {
-                if (address.indexOf('http://') === -1 && address.indexOf('www.') !== -1) {
-                    address = 'http://' + address;
-                }
-                window.open(address);
             }
             this.parent.trigger(afterHyperlinkClick, aftArgs);
         }

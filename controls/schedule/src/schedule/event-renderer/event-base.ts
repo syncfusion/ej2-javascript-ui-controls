@@ -34,6 +34,7 @@ export class EventBase {
         let processed: Object[] = [];
         let temp: number = 1;
         let generateID: boolean = false;
+        let resourceCollection: ResourcesModel[] = this.parent.resourceBase ? this.parent.resourceBase.resourceCollection : [];
         if (events.length > 0 && isNullOrUndefined(events[0][fields.id])) {
             generateID = true;
         }
@@ -51,6 +52,11 @@ export class EventBase {
                 this.processTimezoneChange(event, oldTimezone);
             } else {
                 event = this.processTimezone(event);
+            }
+            for (let level: number = 0; level < resourceCollection.length; level++) {
+                if (event[resourceCollection[level].field] === null || event[resourceCollection[level].field] === 0) {
+                    event[resourceCollection[level].field] = undefined;
+                }
             }
             if (!isNullOrUndefined(event[fields.recurrenceRule]) && event[fields.recurrenceRule] === '') {
                 event[fields.recurrenceRule] = null;
@@ -1071,5 +1077,13 @@ export class EventBase {
             });
         }
         return filteredDates;
+    }
+
+    public isValidEvent(eventObj: { [key: string]: Object }, start: Date, end: Date, schedule: { [key: string]: Date }): boolean {
+        let isHourRange: boolean = end.getTime() > schedule.startHour.getTime() && start.getTime() < schedule.endHour.getTime();
+        let isSameRange: boolean = schedule.startHour.getTime() <= start.getTime() &&
+            (<Date>eventObj[this.parent.eventFields.startTime]).getTime() >= schedule.startHour.getTime() &&
+            (<Date>eventObj[this.parent.eventFields.endTime]).getTime() < schedule.endHour.getTime() && start.getTime() === end.getTime();
+        return isHourRange || isSameRange;
     }
 }

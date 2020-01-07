@@ -1,10 +1,12 @@
 @import 'ej2-base/styles/highcontrast-definition.scss';
-@import './../ribbon/highcontrast-definition.scss';
+@import '../ribbon/highcontrast-definition.scss';
 @import 'ej2-buttons/styles/button/highcontrast-definition.scss';
 @import 'ej2-buttons/styles/check-box/highcontrast-definition.scss';
 @import 'ej2-navigations/styles/tab/highcontrast-definition.scss';
 @import 'ej2-navigations/styles/toolbar/highcontrast-definition.scss';
 @import 'ej2-grids/styles/grid/highcontrast-definition.scss';
+@import 'ej2-calendars/styles/datepicker/highcontrast-definition.scss';
+@import 'ej2-calendars/styles/datetimepicker/highcontrast-definition.scss';
 @import 'highcontrast-definition.scss';
 @import 'icons/highcontrast.scss';
 @import 'all.scss';

@@ -225,29 +225,11 @@ export class PivotEngine {
         }
         if (this.data && (this.data as IDataSet[])[0]) {
             this.fields = Object.keys((this.data as IDataSet[])[0]);
-            let keys: string[] = this.fields;
-            let report: { [key: number]: IFieldOptions[] } = {};
-            report[0] = dataSource.rows;
-            report[1] = dataSource.columns;
-            report[2] = dataSource.values;
-            report[3] = dataSource.filters;
-            let pos: number = 0;
-            while (pos < 4) {
-                if (report[pos]) {
-                    for (let cnt: number = 0; cnt < report[pos].length; cnt++) {
-                        if (this.excludeFields.indexOf(report[pos][cnt].name) > -1) {
-                            report[pos].splice(cnt, 1);
-                            cnt--;
-                        }
-                    }
-                }
-                pos++;
-            }
             this.rows = dataSource.rows ? dataSource.rows : [];
             this.columns = dataSource.columns ? dataSource.columns : [];
             this.filters = dataSource.filters ? dataSource.filters : [];
-            this.formats = dataSource.formatSettings ? dataSource.formatSettings : [];
             this.values = dataSource.values ? dataSource.values : [];
+            this.formats = dataSource.formatSettings ? dataSource.formatSettings : [];
             this.groups = dataSource.groupSettings ? dataSource.groupSettings : [];
             this.calculatedFieldSettings = dataSource.calculatedFieldSettings ? dataSource.calculatedFieldSettings : [];
             this.enableSort = dataSource.enableSorting === undefined ? true : dataSource.enableSorting;
@@ -269,6 +251,7 @@ export class PivotEngine {
             this.allowDataCompression = this.pageSettings && this.pageSettings.allowDataCompression;
             this.savedFieldList = customProperties ? customProperties.savedFieldList : undefined;
             this.getFieldList(fields, this.enableSort, dataSource.allowValueFilter);
+            this.removeIrrelevantFields(dataSource, Object.keys(this.fieldList));
             this.fillFieldMembers(this.data as IDataSet[], this.indexMatrix);
             this.updateSortSettings(dataSource.sortSettings, this.enableSort);
             this.valueMatrix = this.generateValueMatrix(this.data as IDataSet[]);
@@ -281,6 +264,26 @@ export class PivotEngine {
             }
             this.updateFilterMembers(dataSource);
             this.generateGridData(dataSource);
+        }
+    }
+
+    private removeIrrelevantFields(dataSource: IDataOptions, fields: string[]): void {
+        let report: { [key: number]: IFieldOptions[] } = {};
+        report[0] = dataSource.rows;
+        report[1] = dataSource.columns;
+        report[2] = dataSource.values;
+        report[3] = dataSource.filters;
+        let pos: number = 0;
+        while (pos < 4) {
+            if (report[pos]) {
+                for (let cnt: number = 0; cnt < report[pos].length; cnt++) {
+                    if ((this.excludeFields.indexOf(report[pos][cnt].name) > -1) || (!isNullOrUndefined(fields) && fields.indexOf(report[pos][cnt].name) === -1)) {
+                        report[pos].splice(cnt, 1);
+                        cnt--;
+                    }
+                }
+            }
+            pos++;
         }
     }
 
@@ -826,8 +829,10 @@ export class PivotEngine {
             }
         }
         while (lnt--) {
-            this.fieldList[this.calculatedFieldSettings[lnt].name].aggregateType = 'CalculatedField';
-            this.fieldList[this.calculatedFieldSettings[lnt].name].formula = this.calculatedFieldSettings[lnt].formula;
+            if (this.fieldList[this.calculatedFieldSettings[lnt].name]) {
+                this.fieldList[this.calculatedFieldSettings[lnt].name].aggregateType = 'CalculatedField';
+                this.fieldList[this.calculatedFieldSettings[lnt].name].formula = this.calculatedFieldSettings[lnt].formula;
+            }
         }
     }
 
@@ -996,7 +1001,7 @@ export class PivotEngine {
             //}
             while (tkln--) {
                 let key: string = keys[tkln];
-                vMat[len][tkln] = (flList[key].type === 'number') ? data[len][key] as number : 1;
+                vMat[len][tkln] = (flList[key].type === 'number' || isNullOrUndefined(data[len][key])) ? data[len][key] as number : 1;
             }
         }
         return vMat;
@@ -1691,7 +1696,7 @@ export class PivotEngine {
                     this.valueFilteredData = [];
                     let filterElement: IFilter = (<{ [key: string]: Object }>filter).properties ?
                         (<{ [key: string]: Object }>filter).properties : filter;
-                    if (filterElement.type === 'Value' && this.fieldList[filter.name].isSelected) {
+                    if (filterElement.type === 'Value' && this.fieldList[filter.name] && this.fieldList[filter.name].isSelected) {
                         valueFilters[filter.name] = filter;
                         filterElement.items = [];
                         let isAvail: boolean = false;

@@ -602,7 +602,15 @@ export class DiagramRenderer {
     /**   @private  */
     public renderUserHandler(selectorItem: SelectorModel, canvas: HTMLCanvasElement | SVGElement, transform?: Transforms): void {
         let wrapper: DiagramElement = selectorItem.wrapper;
+        let canDraw: boolean;
         for (let obj of selectorItem.userHandles) {
+            canDraw = true;
+            if (obj.disableConnectors && selectorItem.connectors.length > 0) {
+                canDraw = false;
+            }
+            if (obj.disableNodes && selectorItem.nodes.length > 0) {
+                canDraw = false;
+            }
             let element: PathElement = new PathElement();
             let newPoint: PointModel;
             newPoint = getUserHandlePosition(selectorItem, obj, transform);
@@ -611,75 +619,76 @@ export class DiagramRenderer {
             if (obj.visible) {
                 obj.visible = (selectorItem.constraints & SelectorConstraints.UserHandle) ? true : false;
             }
-            if (obj.content === '' && obj.source === '') {
-                let data: string = obj.pathData ? obj.pathData : obj.content;
-                let option: CircleAttributes = this.getBaseAttributes(wrapper) as CircleAttributes;
-                option.id = obj.name + '_userhandle';
-                option.fill = obj.backgroundColor; option.stroke = obj.borderColor; option.strokeWidth = obj.borderWidth;
-                option.centerX = newPoint.x;
-                option.centerY = newPoint.y;
-                option.radius = obj.size * 0.5;
-                option.class = 'e-diagram-userhandle-circle';
-                option.angle = 0;
-                option.visible = obj.visible;
-                option.opacity = 1;
-                this.svgRenderer.drawCircle(canvas as SVGElement, option, 1, { 'aria-label': obj.name + 'user handle' });
+            if (canDraw) {
+                if (obj.content === '' && obj.source === '') {
+                    let data: string = obj.pathData ? obj.pathData : obj.content;
+                    let option: CircleAttributes = this.getBaseAttributes(wrapper) as CircleAttributes;
+                    option.id = obj.name + '_userhandle';
+                    option.fill = obj.backgroundColor; option.stroke = obj.borderColor; option.strokeWidth = obj.borderWidth;
+                    option.centerX = newPoint.x;
+                    option.centerY = newPoint.y;
+                    option.radius = obj.size * 0.5;
+                    option.class = 'e-diagram-userhandle-circle';
+                    option.angle = 0;
+                    option.visible = obj.visible;
+                    option.opacity = 1;
+                    this.svgRenderer.drawCircle(canvas as SVGElement, option, 1, { 'aria-label': obj.name + 'user handle' });
 
-                let pathPading: number = 5;
-                let arrayCollection: Object[] = [];
-                arrayCollection = processPathData(data);
-                arrayCollection = splitArrayCollection(arrayCollection);
-                let pathSize: Rect = measurePath(data);
-                //requiredSize/contentSize
-                let scaleX: number = (obj.size - 0.45 * obj.size) / pathSize.width;
-                let scaleY: number = (obj.size - 0.45 * obj.size) / pathSize.height;
-                let newData: string = transformPath(arrayCollection, scaleX, scaleY, true, pathSize.x, pathSize.y, 0, 0);
-                pathSize = measurePath(newData);
-                let options: PathAttributes = {
-                    x: newPoint.x - pathSize.width / 2,
-                    y: newPoint.y - pathSize.height / 2,
-                    angle: 0, id: '',
-                    class: 'e-diagram-userhandle-path',
-                    fill: obj.pathColor, stroke: obj.backgroundColor, strokeWidth: 0.5, dashArray: '', data: newData,
-                    width: obj.size - pathPading, height: obj.size - pathPading, pivotX: 0, pivotY: 0, opacity: 1, visible: obj.visible
-                };
-                this.svgRenderer.drawPath(
-                    canvas as SVGElement, options as PathAttributes, this.diagramId, undefined,
-                    undefined, { 'aria-label': obj.name + 'user handle' });
-            } else if (obj.content !== '') {
-                let handleContent: DiagramNativeElement;
-                handleContent = new DiagramNativeElement(obj.name, this.diagramId);
-                handleContent.content = obj.content;
-                handleContent.offsetX = newPoint.x;
-                handleContent.offsetY = newPoint.y;
-                handleContent.height = obj.size;
-                handleContent.width = obj.size;
-                handleContent.id = obj.name + '_shape';
-                handleContent.horizontalAlignment = 'Center';
-                handleContent.verticalAlignment = 'Center';
-                handleContent.visible = obj.visible;
-                handleContent.setOffsetWithRespectToBounds(newPoint.x, newPoint.y, 'Fraction');
-                handleContent.relativeMode = 'Object';
-                handleContent.description = obj.name || 'User handle';
-                handleContent.measure(new Size(obj.size, obj.size));
-                handleContent.arrange(handleContent.desiredSize);
-                this.svgRenderer.drawNativeContent(handleContent, canvas, obj.size, obj.size, this.adornerSvgLayer);
-            } else {
-                let element: ImageElement = new ImageElement();
-                let options: BaseAttributes = this.getBaseAttributes(element, transform);
-                options.width = obj.size;
-                options.height = obj.size;
-                (options as ImageAttributes).x = newPoint.x - (obj.size / 2);
-                (options as ImageAttributes).y = newPoint.y - (obj.size / 2);
-                (options as ImageAttributes).sourceWidth = obj.size;
-                (options as ImageAttributes).sourceHeight = obj.size;
-                (options as ImageAttributes).alignment = element.imageAlign;
-                (options as ImageAttributes).source = obj.source;
-                (options as ImageAttributes).scale = element.imageScale;
-                (options as ImageAttributes).visible = obj.visible;
-                (options as ImageAttributes).description = obj.name || 'User handle';
-                (options as ImageAttributes).id = obj.name + '_';
-                this.renderer.drawImage(canvas, options as ImageAttributes, this.adornerSvgLayer, false);
+                    let pathPading: number = 5;
+                    let arrayCollection: Object[] = [];
+                    arrayCollection = processPathData(data);
+                    arrayCollection = splitArrayCollection(arrayCollection);
+                    let pathSize: Rect = measurePath(data);
+                    //requiredSize/contentSize
+                    let scaleX: number = (obj.size - 0.45 * obj.size) / pathSize.width;
+                    let scaleY: number = (obj.size - 0.45 * obj.size) / pathSize.height;
+                    let newData: string = transformPath(arrayCollection, scaleX, scaleY, true, pathSize.x, pathSize.y, 0, 0);
+                    pathSize = measurePath(newData);
+                    let options: PathAttributes = {
+                        x: newPoint.x - pathSize.width / 2,
+                        y: newPoint.y - pathSize.height / 2,
+                        angle: 0, id: '',
+                        class: 'e-diagram-userhandle-path',
+                        fill: obj.pathColor, stroke: obj.backgroundColor, strokeWidth: 0.5, dashArray: '', data: newData,
+                        width: obj.size - pathPading, height: obj.size - pathPading, pivotX: 0, pivotY: 0, opacity: 1, visible: obj.visible
+                    };
+                    this.svgRenderer.drawPath(
+                        canvas as SVGElement, options as PathAttributes, this.diagramId, undefined,
+                        undefined, { 'aria-label': obj.name + 'user handle' });
+                } else if (obj.content !== '') {
+                    let handleContent: DiagramNativeElement;
+                    handleContent = new DiagramNativeElement(obj.name, this.diagramId);
+                    handleContent.content = obj.content;
+                    handleContent.offsetX = newPoint.x;
+                    handleContent.offsetY = newPoint.y;
+                    handleContent.height = obj.size;
+                    handleContent.width = obj.size;
+                    handleContent.id = obj.name + '_shape';
+                    handleContent.horizontalAlignment = 'Center';
+                    handleContent.verticalAlignment = 'Center';
+                    handleContent.visible = obj.visible;
+                    handleContent.setOffsetWithRespectToBounds(newPoint.x, newPoint.y, 'Fraction');
+                    handleContent.relativeMode = 'Object';
+                    handleContent.description = obj.name || 'User handle';
+                    handleContent.measure(new Size(obj.size, obj.size));
+                    handleContent.arrange(handleContent.desiredSize);
+                    this.svgRenderer.drawNativeContent(handleContent, canvas, obj.size, obj.size, this.adornerSvgLayer);
+                } else {
+                    let element: ImageElement = new ImageElement();
+                    let options: BaseAttributes = this.getBaseAttributes(element, transform);
+                    options.width = obj.size;
+                    options.height = obj.size;
+                    (options as ImageAttributes).x = newPoint.x - (obj.size / 2);
+                    (options as ImageAttributes).y = newPoint.y - (obj.size / 2);
+                    (options as ImageAttributes).sourceWidth = obj.size;
+                    (options as ImageAttributes).sourceHeight = obj.size;
+                    (options as ImageAttributes).alignment = element.imageAlign;
+                    (options as ImageAttributes).source = obj.source;
+                    (options as ImageAttributes).scale = element.imageScale;
+                    (options as ImageAttributes).description = obj.name || 'User handle';
+                    (options as ImageAttributes).id = obj.name + '_';
+                    this.renderer.drawImage(canvas, options as ImageAttributes, this.adornerSvgLayer, false);
+                }
             }
         }
     }
@@ -1003,7 +1012,8 @@ export class DiagramRenderer {
         }
         options.dashArray = ''; options.strokeWidth = 0; options.fill = element.style.fill;
         let ariaLabel: Object = element.description ? element.description : element.content ? element.content : element.id;
-        if (element.style.textWrapping === 'Wrap' && this.groupElement && options.height > this.groupElement.actualSize.height &&
+        if ((element.style.textWrapping === 'Wrap' || element.style.textWrapping === 'WrapWithOverflow') &&
+            this.groupElement && options.height > this.groupElement.actualSize.height &&
             (element.style.textOverflow === 'Clip' || element.style.textOverflow === 'Ellipsis')) {
             options.y = options.y + (options.height - this.groupElement.actualSize.height) / 2;
         }

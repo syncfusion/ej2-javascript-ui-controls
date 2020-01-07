@@ -70,6 +70,7 @@ export class Layout extends ChildProperty<Layout> {
     /**
      * * Defines the space between the viewport and the layout
      * @default { left: 50, top: 50, right: 0, bottom: 0 }
+     * @blazorType LayoutMargin
      */
     @Complex<MarginModel>({ left: 50, top: 50, right: 0, bottom: 0 }, Margin)
     public margin: MarginModel;
@@ -348,6 +349,8 @@ export interface TreeInfo {
     hasSubTree?: boolean;
     rows?: number;
     getAssistantDetails?: AssistantsDetails;
+    canEnableSubTree?: boolean;
+    isRootInverse?: boolean;
 }
 
 /**

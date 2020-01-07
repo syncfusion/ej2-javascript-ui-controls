@@ -3,7 +3,7 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel, BasicShapeModel } from '../../../src/diagram/objects/node-model';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
-import { Segments, ConnectorConstraints } from '../../../src/diagram/enum/enum';
+import { Segments, ConnectorConstraints, PortConstraints, PortVisibility  } from '../../../src/diagram/enum/enum';
 import { Connector } from '../../../src/diagram/objects/connector';
 import { StraightSegmentModel } from '../../../src/diagram/objects/connector-model';
 import { PathElement } from '../../../src/diagram/core/elements/path-element';
@@ -1371,5 +1371,128 @@ describe('Diagram Control', () => {
             done();
         });
     });
+    describe('Check connector ', () => {
+       
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let diagramCanvas: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
+            ele = createElement('div', { id: 'checkconnector' });
+            document.body.appendChild(ele);
+            let port: PointPortModel[] =
+[{ id: 'port1', visibility: PortVisibility.Visible, shape: 'Circle',
+
+constraints: PortConstraints.Draw,
+
+offset: { x: 0, y: 0.5 } },
+{ id: 'port2', visibility: PortVisibility.Hover, shape: 'Circle', offset: { x: 0.5, y: 0 } },
+{ id: 'port3', visibility: PortVisibility.Hidden, shape: 'Circle', offset: { x: 1, y: 0.5 } },
+{ id: 'port4', visibility: PortVisibility.Connect, shape: 'Circle', offset: { x: 0.5, y: 1 } }
+]
+let nodes: NodeModel[] = [
+    {
+        id: 'node1', width: 50, height: 50, offsetX: 100,
+        offsetY: 100,ports:port
+    }, {
+        id: 'node2', width: 50, height: 50, offsetX: 300,
+        offsetY: 100,ports:port
+    },
+    {
+        id: 'node3', width: 50, height: 50, offsetX: 100,
+        offsetY: 200,ports:port
+    },
+    {
+        id: 'node4', width: 50, height: 50, offsetX: 300,
+        offsetY: 200,ports:port
+    },
+];
+
+
+let connectors: ConnectorModel[] = [      {
+    id: 'connector1', sourceID:'node1', targetID:'node2', type:'Orthogonal'
+},
+{
+    id: 'connector2', sourceID:'node3', targetID:'node4', type:'Orthogonal'
+},
+{
+    id: 'connector3', sourceID:'node2', targetID:'node3', type:'Orthogonal',
+    segments: [{direction: 'Bottom', type: 'Orthogonal', length: 20}, 
+    {direction: 'Left', type: 'Orthogonal', length: 50}],
+
+},
+{
+    id: 'connector11',
+    type: 'Orthogonal',
+    sourcePoint: { x: 200, y: 500 },
+    segments: [{
+        type: 'Orthogonal',
+        direction: 'Top', length: 100
+    },
+    {
+        type: 'Orthogonal',
+        direction: 'Right', length: 50
+    },
+    ],
+    targetPoint: { x: 400, y: 500 }
+},
+{
+    id: 'connector12',
+    type: 'Orthogonal',
+    sourceID: 'node2',
+    segments: [{
+        type: 'Orthogonal',
+        direction: 'Bottom', length: 10
+    },
+    {
+        type: 'Orthogonal',
+        direction: 'Left', length: 50
+    },
+    {
+        type: 'Orthogonal',
+        direction: 'Top', length: 50
+    },
+    ],
+    targetPoint: { x: 1000, y: 100 }
+}];
+            diagram = new Diagram({
+                width: 1000, height: 1000, connectors: connectors,nodes:nodes,
+                getConnectorDefaults: (obj: ConnectorModel, diagram: Diagram) => {
+                    let connector: ConnectorModel = {};
+                    connector.constraints = ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb;
+                    return connector;
+                },
+            });
+
+            diagram.appendTo('#checkconnector');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking when editing an Orthogonal connector segment in a group', (done: Function) => {
+            debugger;
+            diagram.selectAll();
+            diagram.group();
+            mouseEvents.dragAndDropEvent(diagramCanvas, 500 + diagram.element.offsetLeft, 300 + diagram.element.offsetTop, 500 + diagram.element.offsetLeft, 400 + diagram.element.offsetTop);
+            expect((diagram.connectors[4] as Connector).intermediatePoints[0].x == 300 && (diagram.connectors[4] as Connector).intermediatePoints[0].y == 225 &&
+            (diagram.connectors[4] as Connector).intermediatePoints[1].x == 300 && (diagram.connectors[4] as Connector).intermediatePoints[1].y == 235 &&
+            (diagram.connectors[4] as Connector).intermediatePoints[2].x == 250 && (diagram.connectors[4] as Connector).intermediatePoints[2].y == 235 &&
+            (diagram.connectors[4] as Connector).intermediatePoints[3].x == 250 && (diagram.connectors[4] as Connector).intermediatePoints[3].y == 185 &&
+            (diagram.connectors[4] as Connector).intermediatePoints[4].x == 1000 && (diagram.connectors[4] as Connector).intermediatePoints[4].y == 185
+            ).toBe(true);
+            done();
+        });
+    });
+
 
 });

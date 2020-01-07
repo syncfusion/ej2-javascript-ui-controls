@@ -49,7 +49,8 @@ export class Adaptor {
         search: 'search',
         count: 'requiresCounts',
         where: 'where',
-        aggregates: 'aggregates'
+        aggregates: 'aggregates',
+        expand: 'expand'
     };
 
     /**

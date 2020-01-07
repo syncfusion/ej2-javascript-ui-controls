@@ -1210,19 +1210,27 @@ export class Renderer {
         let cellFormat: WCellFormat = cellWidget.cellFormat;
         let bgColor: string = cellFormat.shading.backgroundColor === '#ffffff' ?
             cellWidget.ownerTable.tableFormat.shading.backgroundColor : cellFormat.shading.backgroundColor;
-
+        let left: number = cellWidget.x - leftMargin - lineWidth;
+        let top: number = cellWidget.y - HelperMethods.convertPointToPixel(cellWidget.topMargin);
+        let width: number = cellWidget.width + leftMargin + lineWidth + cellWidget.margin.right;
         this.pageContext.beginPath();
         if (bgColor !== 'empty') {
             this.pageContext.fillStyle = this.getColor(bgColor);
-            let left: number = cellWidget.x - leftMargin - lineWidth;
-            let top: number = cellWidget.y - HelperMethods.convertPointToPixel(cellWidget.topMargin);
-            // tslint:disable-next-line:max-line-length
-            let width: number = cellWidget.width + leftMargin + lineWidth + cellWidget.margin.right;
-
             // tslint:disable-next-line:max-line-length
             this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), this.getScaledValue(width), this.getScaledValue(height));
             this.pageContext.closePath();
         }
+        //Render foreground color
+        if (cellFormat.shading.hasValue('foregroundColor')) {
+            this.pageContext.beginPath();
+            if (cellFormat.shading.foregroundColor !== 'empty') {
+                this.pageContext.fillStyle = this.getColor(cellFormat.shading.foregroundColor);
+                // tslint:disable-next-line:max-line-length
+                this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), this.getScaledValue(width), this.getScaledValue(height));
+                this.pageContext.closePath();
+            }
+        }
+
     }
     /**
      * Renders single border.

@@ -1,4 +1,4 @@
-import { Query, DataManager } from '@syncfusion/ej2-data';
+import { Query, DataManager, Deferred } from '@syncfusion/ej2-data';
 
 /**
  * data module is used to generate query and dataSource
@@ -43,7 +43,20 @@ export class Data {
      * @private
      */
     public getData(query: Query): Promise<Object> {
-        return this.dataManager.executeQuery(query);
+        if (this.dataManager.ready) {
+            let deferred: Deferred = new Deferred();
+            let ready: Promise<Object> = this.dataManager.ready;
+            ready.then((e: Object) => {
+                (<Promise<Object>>this.dataManager.executeQuery(query)).then((result: Object) => {
+                    deferred.resolve(result);
+                });
+            }).catch((e: Object) => {
+                deferred.reject(e);
+            });
+            return deferred.promise;
+        } else {
+            return this.dataManager.executeQuery(query);
+        }
     }
 
 }

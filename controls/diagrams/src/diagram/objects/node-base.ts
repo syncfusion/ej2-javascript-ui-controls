@@ -1,12 +1,8 @@
-import { Property, Complex, ChildProperty, Collection } from '@syncfusion/ej2-base';
+import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';
 import { Margin } from '../core/appearance';
-import { PointPortModel } from './port-model';
 import { MarginModel } from '../core/appearance-model';
 import { DiagramTooltipModel } from './tooltip-model';
-import { IconShape } from './icon';
-import { IconShapeModel } from './icon-model';
 import { DiagramTooltip } from './tooltip';
-import { PointPort } from './port';
 import { FlipDirection } from '../enum/enum';
 
 
@@ -44,42 +40,12 @@ export abstract class NodeBase extends ChildProperty<NodeBase> {
     @Property(true)
     public visible: boolean;
 
-    /**
-     * Defines the collection of connection points of nodes/connectors
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
-     * @default undefined
-     */
-    @Collection<PointPortModel>([], PointPort)
-    public ports: PointPortModel[];
-
-    /**
-     * Defines whether the node is expanded or not
-     * @default true
-     */
-    @Property(true)
-    public isExpanded: boolean;
-
     /** 
      * defines the tooltip for the node
      * @default {}
      */
     @Complex<DiagramTooltipModel>({}, DiagramTooltip)
     public tooltip: DiagramTooltipModel;
-
-    /**
-     * Defines the expanded state of a node
-     * @default {}
-     */
-    @Complex<IconShapeModel>({}, IconShape)
-    public expandIcon: IconShapeModel;
-
-    /**
-     * Defines the collapsed state of a node
-     * @default {}
-     */
-    @Complex<IconShapeModel>({}, IconShape)
-    public collapseIcon: IconShapeModel;
 
     /**
      * Defines whether the node should be automatically positioned or not. Applicable, if layout option is enabled.
@@ -100,7 +66,7 @@ export abstract class NodeBase extends ChildProperty<NodeBase> {
     /**
      * Flip the element in Horizontal/Vertical directions
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
+     * @blazorDefaultValue None
      * @default None
      */
     @Property('None')

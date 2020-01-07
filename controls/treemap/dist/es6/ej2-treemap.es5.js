@@ -3251,6 +3251,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                 case 'renderDirection':
                 case 'leafItemSettings':
                 case 'legendSettings':
+                case 'dataSource':
                     render = true;
                     break;
             }

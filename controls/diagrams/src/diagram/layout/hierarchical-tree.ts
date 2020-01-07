@@ -104,6 +104,7 @@ export class HierarchicalTree {
         //Update relationship(parent and children)
         for (i = 0; i < layout.firstLevelNodes.length; i++) {
             node = layout.firstLevelNodes[i];
+            let check: boolean;
             this.updateEdges(layout, node, 1, action, nodes);
         }
         if (layout.firstLevelNodes.length > 0) {
@@ -1095,7 +1096,6 @@ export class HierarchicalTree {
         //Return the first parent node
         return layout.nameTable[layout.nameTable[node.inEdges[0]].sourceID];
     }
-
     private updateEdges(layout: ILayout, node: INode, depth: number, action?: DiagramAction, nodes?: INode[]): void {
         let layoutInfo: LayoutInfo;
         layoutInfo = layout.graphNodes[node.id];

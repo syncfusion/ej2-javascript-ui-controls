@@ -86,6 +86,16 @@ describe('PivotView spec', () => {
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
                 expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('ICOLOGY');
             });
+            it('Sorting with unavailable field', () => {
+                dataSourceSettings.sortSettings = [{ name: 'test', order: 'Descending' }];
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('ICOLOGY');
+            });
+            it('Drilled members with unavailable field', () => {
+                dataSourceSettings.drilledMembers = [{ name: 'test', items: ['test', 'ACRUEX'] }];
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('ICOLOGY');
+            });
         });
         describe('Filter settings', () => {
             let ds: IDataSet[] = pivot_dataset as IDataSet[];
@@ -123,6 +133,11 @@ describe('PivotView spec', () => {
             });
             it('Clear filters items', () => {
                 dataSourceSettings.filterSettings = [];
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues).toBeTruthy;
+            });
+            it('Filtering with unavailable field', () => {
+                dataSourceSettings.filterSettings = [{ name: 'test', type: 'Include', items: ['test'] }];
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
                 expect(pivotEngine.pivotValues).toBeTruthy;
             });
@@ -585,6 +600,12 @@ describe('PivotView spec', () => {
                 expect((pivotEngine.pivotValues[2][2] as IDataSet).formattedText).toBe('50089');
                 expect((pivotEngine.pivotValues[3][2] as IDataSet).formattedText).toBe('70839');
             });
+            it('Format with unavailable field', () => {
+                dataSourceSettings.formatSettings = [{ format: 'P2', name: 'test', useGrouping: true }];
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect((pivotEngine.pivotValues[2][2] as IDataSet).formattedText).toBe('50089');
+                expect((pivotEngine.pivotValues[3][2] as IDataSet).formattedText).toBe('70839');
+            });
             describe('With decimal separation', () => {
                 let ds: IDataSet[] = pivot_dataset as IDataSet[];
                 let dataSourceSettings: IDataOptions = {
@@ -811,6 +832,12 @@ describe('PivotView spec', () => {
                 expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('price');
                 expect((pivotEngine.pivotValues[2][2] as IDataSet).formattedText).toBe('1');
             });
+            it('Calculated field with unavailable field', () => {
+                dataSourceSettings.calculatedFieldSettings[0].formula = '!isNaN("Sum(balance)") ? "Count(test)" : "Sum(test)"';
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect((pivotEngine.pivotValues[1][2] as IDataSet).formattedText).toBe('price');
+                expect((pivotEngine.pivotValues[2][2] as IDataSet).formattedText).toBe('0');
+            });
         });
         describe('Paging', () => {
             let ds: IDataSet[] = pivot_dataset as IDataSet[];
@@ -908,6 +935,11 @@ describe('PivotView spec', () => {
             it("Ensure the sort data while single measure", () => {
                 dataSourceSettings.values.pop();
                 dataSourceSettings.valueSortSettings.headerText = "Grand Total";
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect((pivotEngine.pivotValues[2][0] as IDataSet).formattedText).toBe("Bike");
+            });
+            it("Value sorting with unavailable header", () => {
+                dataSourceSettings.valueSortSettings.headerText = "test";
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
                 expect((pivotEngine.pivotValues[2][0] as IDataSet).formattedText).toBe("Bike");
             });
@@ -1099,6 +1131,15 @@ describe('PivotView spec', () => {
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
                 expect(pivotEngine.pivotValues.length).toBe(17);
                 expect(pivotEngine.pivotValues[0].length).toBe(169);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACCEL');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Van');
+            });
+            it('Label filter with unavialble field and member', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'test', type: 'Label', condition: 'Between', value1: 'a', value2: 'c' };
+                dataSourceSettings.filterSettings[1] = { name: 'product', type: 'Label', condition: 'NotBetween', value1: 'test', value2: 'c' };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(18);
+                expect(pivotEngine.pivotValues[0].length).toBe(1747);
                 expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACCEL');
                 expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Van');
             });
@@ -1313,6 +1354,21 @@ describe('PivotView spec', () => {
                 expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACCEL');
                 expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Fri Jul 17 1998 03:22:30 GMT+0530 (India Standard Time)');
             });
+            it('Date filter with unavailabe field and member', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'test', type: 'Date', condition: 'NotBetween', value1: 'test', value2: new Date('02/16/2002') };
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(30);
+                expect(pivotEngine.pivotValues[0].length).toBe(157);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('ACCEL');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe('Fri Jul 17 1998 03:22:30 GMT+0530 (India Standard Time)');
+            });
         });
         describe('Number Filtering', () => {
             let ds: IDataSet[] = pivot_dataset as IDataSet[];
@@ -1520,6 +1576,21 @@ describe('PivotView spec', () => {
                 expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('Tempo');
                 expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe(40);
             });
+            it('Number filter with unavailable field and member', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'test', type: 'Number', condition: 'NotBetween', value1: 'test', value2: '35' };
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(25);
+                expect(pivotEngine.pivotValues[0].length).toBe(17);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('Tempo');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText).toBe(40);
+            });
         });
         describe('Value Filtering', () => {
             let ds: IDataSet[] = pivot_dataset as IDataSet[];
@@ -1665,6 +1736,14 @@ describe('PivotView spec', () => {
                 dataSourceSettings.filterSettings[1] = { name: 'product', type: 'Value', condition: 'NotBetween', value1: '400', value2: '660', measure: 'quantity' };
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
                 expect(pivotEngine.pivotValues.length).toBe(4);
+                expect(pivotEngine.pivotValues[0].length).toBe(11);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
+            });
+            it('Value filter with unavailable field and member', () => {
+                dataSourceSettings.filterSettings[0] = { name: 'test', type: 'Value', condition: 'Between', value1: '400', value2: 'test', measure: 'quantity' };
+                dataSourceSettings.filterSettings[1] = { name: 'product', type: 'Value', condition: 'NotBetween', value1: '400', value2: '660', measure: 'quantity' };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSourceSettings);
+                expect(pivotEngine.pivotValues.length).toBe(22);
                 expect(pivotEngine.pivotValues[0].length).toBe(11);
                 expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
             });
@@ -2562,6 +2641,21 @@ describe('PivotView spec', () => {
                 expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
                 expect((pivotEngine.pivotValues[3][0] as IDataSet).formattedText).toBe('1971');
             });
+            it('Date grouping with unavailable field', () => {
+                dataSourceSettings.groupSettings = [{ name: 'test', type: 'Date', groupInterval: ['Years', 'Quarters', 'Months', 'Days', 'Hours', 'Minutes', 'Seconds'] }];
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(9);
+                expect(pivotEngine.pivotValues[0].length).toBe(10);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).formattedText).toBe('1971');
+            });
         });
         describe('Group by date - Quarter Year', () => {
             let ds: IDataSet[] = (PivotUtil.getClonedData(pivot_dataset) as IDataSet[]);
@@ -3003,6 +3097,21 @@ describe('PivotView spec', () => {
                 dataSourceSettings.expandAll = false;
                 dataSourceSettings.calculatedFieldSettings = [{ name: 'total', formula: '"Sum(balance)"+"Sum(quantity)"' }];
                 dataSourceSettings.values = [{ name: 'balance' }, { name: 'total' }, { name: 'quantity' }];
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine.renderEngine(dataSourceSettings, customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(5);
+                expect(pivotEngine.pivotValues[0].length).toBe(10);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
+                expect((pivotEngine.pivotValues[2][0] as IDataSet).formattedText).toBe('Airways');
+            });
+            it('Custom grouping with unavailable field', () => {
+                dataSourceSettings.groupSettings = [{ name: 'test', type: 'Custom', customGroups: [{ groupName: 'Four wheelers', items: ['Car', 'Tempo', 'Van'] }, { groupName: 'Airways', items: ['Jet', 'Flight'] }] }];
                 let customProperties: ICustomProperties = {
                     mode: '',
                     savedFieldList: undefined,

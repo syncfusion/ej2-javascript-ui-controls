@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 17.4.41 (2020-01-07)
+
+### Common
+
+#### Bug Fixes
+
+- `#I256528` - Resolved `draggable` issue `out` event not triggered.
+- `#F149410` - Resolved `drag and drop` function not working `firefox` browser version 60.8 .
+- `#I258661` - Resolved `LoadCldr` is not working issue.
+- `#I258471` - Improvement the `drag and drop` library performance .
+
 ## 17.2.49 (2019-09-04)
 
 ### Common

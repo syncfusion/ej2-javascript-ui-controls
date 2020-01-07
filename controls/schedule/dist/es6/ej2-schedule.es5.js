@@ -1162,15 +1162,15 @@ var HeaderRenderer = /** @__PURE__ @class */ (function () {
      * @private
      */
     HeaderRenderer.prototype.destroy = function () {
-        if (this.headerPopup) {
+        if (this.headerPopup && !this.headerPopup.isDestroyed) {
             this.headerPopup.destroy();
             this.headerPopup = null;
         }
-        if (this.headerCalendar) {
+        if (this.headerCalendar && !this.headerCalendar.isDestroyed) {
             this.headerCalendar.destroy();
             this.headerCalendar = null;
         }
-        if (!this.toolbarObj.isDestroyed) {
+        if (this.toolbarObj && !this.toolbarObj.isDestroyed) {
             this.toolbarObj.destroy();
             this.removeEventListener();
             remove(this.element);
@@ -1601,6 +1601,8 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
         }
     };
     KeyboardInteraction.prototype.onMouseSelection = function (e) {
+        var appointments = [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_CLASS));
+        addClass(appointments, 'e-allow-select');
         var selectionEdges = this.parent.boundaryValidation(e.pageY, e.pageX);
         if (selectionEdges.bottom || selectionEdges.top || selectionEdges.left || selectionEdges.right) {
             var parent_1 = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
@@ -1627,6 +1629,8 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
     };
     KeyboardInteraction.prototype.onMoveup = function (e) {
         var _this = this;
+        var appointments = [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_CLASS));
+        removeClass(appointments, 'e-allow-select');
         if (e.target.classList.contains(WORK_CELLS_CLASS)) {
             EventHandler.remove(this.parent.getContentTable(), 'mousemove', this.onMouseSelection);
             EventHandler.remove(this.parent.getContentTable(), 'mouseup', this.onMoveup);
@@ -3999,6 +4003,7 @@ var EventBase = /** @__PURE__ @class */ (function () {
         var processed = [];
         var temp = 1;
         var generateID = false;
+        var resourceCollection = this.parent.resourceBase ? this.parent.resourceBase.resourceCollection : [];
         if (events.length > 0 && isNullOrUndefined(events[0][fields.id])) {
             generateID = true;
         }
@@ -4018,6 +4023,11 @@ var EventBase = /** @__PURE__ @class */ (function () {
             }
             else {
                 event_1 = this.processTimezone(event_1);
+            }
+            for (var level = 0; level < resourceCollection.length; level++) {
+                if (event_1[resourceCollection[level].field] === null || event_1[resourceCollection[level].field] === 0) {
+                    event_1[resourceCollection[level].field] = undefined;
+                }
             }
             if (!isNullOrUndefined(event_1[fields.recurrenceRule]) && event_1[fields.recurrenceRule] === '') {
                 event_1[fields.recurrenceRule] = null;
@@ -5052,6 +5062,13 @@ var EventBase = /** @__PURE__ @class */ (function () {
         }
         return filteredDates;
     };
+    EventBase.prototype.isValidEvent = function (eventObj, start, end, schedule) {
+        var isHourRange = end.getTime() > schedule.startHour.getTime() && start.getTime() < schedule.endHour.getTime();
+        var isSameRange = schedule.startHour.getTime() <= start.getTime() &&
+            eventObj[this.parent.eventFields.startTime].getTime() >= schedule.startHour.getTime() &&
+            eventObj[this.parent.eventFields.endTime].getTime() < schedule.endHour.getTime() && start.getTime() === end.getTime();
+        return isHourRange || isSameRange;
+    };
     return EventBase;
 }());
 
@@ -5449,7 +5466,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
                         'data-id': '' + eventData[fields.id],
                         'data-guid': eventData.Guid, 'role': 'button', 'tabindex': '0',
                         'aria-readonly': this_1.parent.eventBase.getReadonlyAttribute(eventData),
-                        'aria-selected': 'false', 'aria-grabbed': 'true'
+                        'aria-selected': 'false', 'aria-grabbed': 'true', 'aria-label': this_1.parent.getAnnocementString(eventData)
                     }
                 });
                 var templateElement = void 0;
@@ -7115,6 +7132,7 @@ var RecurrenceEditor = /** @__PURE__ @class */ (function (_super) {
             enableRtl: this.enableRtl,
             floatLabelType: 'Always',
             min: 1,
+            max: 999,
             change: function (args) {
                 self.triggerChangeEvent();
             }
@@ -7136,6 +7154,7 @@ var RecurrenceEditor = /** @__PURE__ @class */ (function (_super) {
             value: 1,
             format: '#',
             min: 1,
+            max: 999,
             enableRtl: this.enableRtl,
             floatLabelType: 'Always',
             placeholder: this.localeObj.getConstant(REPEATEVERY),
@@ -10437,7 +10456,7 @@ var WorkCellInteraction = /** @__PURE__ @class */ (function () {
         var sameView = this.parent.currentView === navigateView;
         if (isNullOrUndefined(navigateEle) || sameView ||
             isNullOrUndefined(this.parent.viewOptions[navigateView.charAt(0).toLowerCase() + navigateView.slice(1)])) {
-            if (this.parent.activeViewOptions.readonly) {
+            if (this.parent.activeViewOptions.readonly && this.parent.currentView !== 'MonthAgenda') {
                 this.parent.quickPopup.quickPopupHide();
                 return;
             }
@@ -12407,7 +12426,9 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             timelineYear: 'Timeline Year',
             editFollowingEvent: 'Following Events',
             deleteTitle: 'Delete Event',
-            editTitle: 'Edit Event'
+            editTitle: 'Edit Event',
+            beginFrom: 'Begin From',
+            endAt: 'Ends At'
         };
     };
     /**
@@ -12611,6 +12632,21 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             }
         }
         return undefined;
+    };
+    /** @hidden */
+    Schedule.prototype.getAnnocementString = function (event, subject) {
+        var recordSubject = (subject || (event[this.eventFields.subject] || this.eventSettings.fields.subject.default));
+        var startDateText = this.globalize.formatDate(event[this.eventFields.startTime], {
+            type: 'dateTime',
+            skeleton: 'full', calendar: this.getCalendarMode()
+        });
+        var endDateText = this.globalize.formatDate(event[this.eventFields.endTime], {
+            type: 'dateTime',
+            skeleton: 'full', calendar: this.getCalendarMode()
+        });
+        var annocementString = recordSubject + ' ' + this.localeObj.getConstant('beginFrom') + ' '
+            + startDateText + ' ' + this.localeObj.getConstant('endAt') + ' ' + endDateText;
+        return annocementString;
     };
     /** @hidden */
     Schedule.prototype.boundaryValidation = function (pageY, pageX) {
@@ -14319,7 +14355,8 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
             attrs: {
                 'data-id': 'Appointment_' + record[this.fields.id],
                 'role': 'button', 'tabindex': '0',
-                'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true'
+                'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true',
+                'aria-label': this.parent.getAnnocementString(record.data, eventSubject)
             }
         });
         if (!isCloneElement) {
@@ -14695,7 +14732,11 @@ var Resize = /** @__PURE__ @class */ (function (_super) {
                 return;
             }
             if (isBlazor()) {
-                resizeEventArgs.element = getElement(resizeEventArgs.element);
+                if (resizeEventArgs.element) {
+                    resizeEventArgs.element = getElement(resizeEventArgs.element);
+                }
+                resizeEventArgs.data[_this.parent.eventFields.startTime] = _this.parent.getDateTime(resizeEventArgs.data[_this.parent.eventFields.startTime]);
+                resizeEventArgs.data[_this.parent.eventFields.endTime] = _this.parent.getDateTime(resizeEventArgs.data[_this.parent.eventFields.endTime]);
             }
             _this.actionClass('addClass');
             _this.parent.uiStateValues.action = true;
@@ -14873,7 +14914,7 @@ var Resize = /** @__PURE__ @class */ (function (_super) {
         }
         var resizeTime = resetTime(this.parent.getDateFromElement(element));
         resizeTime.setHours(this.parent.activeView.getStartHour().getHours());
-        resizeTime.setMinutes(minutes);
+        resizeTime.setMinutes(minutes + this.parent.activeView.getStartHour().getMinutes());
         if (isTop) {
             this.actionObj.start = this.calculateIntervalTime(resizeTime);
         }
@@ -15202,7 +15243,13 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
         event.Index = overlapCount;
         var appHeight = this.eventHeight;
         var diffInDays = eventData.count;
-        if (startTime <= endTime) {
+        var eventObj = extend({}, event, null, true);
+        eventObj[this.fields.startTime] = eventData[this.fields.startTime];
+        eventObj[this.fields.endTime] = eventData[this.fields.endTime];
+        var currentDate = resetTime(new Date(this.dateRender[this.day].getTime()));
+        var schedule = getStartEndHours(currentDate, this.startHour, this.endHour);
+        var isValidEvent = this.isValidEvent(eventObj, startTime, endTime, schedule);
+        if (startTime <= endTime && isValidEvent) {
             var appWidth = this.getEventWidth(startTime, endTime, event[this.fields.isAllDay], diffInDays);
             appWidth = this.renderType === 'day' ? appWidth - 2 : appWidth;
             var appLeft = 0;
@@ -15558,13 +15605,6 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
             this.resources.forEach(function (resource, index) { return _this.dateRender[index] = resource.renderDates; });
         }
     };
-    VerticalEvent.prototype.isValidEvent = function (eventObj, start, end, schedule) {
-        var isHourRange = end.getTime() > schedule.startHour.getTime() && start.getTime() < schedule.endHour.getTime();
-        var isSameRange = schedule.startHour.getTime() <= start.getTime() &&
-            eventObj[this.fields.startTime].getTime() >= schedule.startHour.getTime() &&
-            eventObj[this.fields.endTime].getTime() < schedule.endHour.getTime() && start.getTime() === end.getTime();
-        return isHourRange || isSameRange;
-    };
     VerticalEvent.prototype.getHeight = function (start, end) {
         var appHeight = (end.getTime() - start.getTime()) / (60 * 1000) * (this.cellHeight * this.slotCount) / this.interval;
         appHeight = (appHeight <= 0) ? this.cellHeight : appHeight;
@@ -15701,7 +15741,8 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
                 'tabindex': '0',
                 'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record),
                 'aria-selected': 'false',
-                'aria-grabbed': 'true'
+                'aria-grabbed': 'true',
+                'aria-label': this.parent.getAnnocementString(record)
             }
         });
         if (record[this.fields.isReadonly]) {
@@ -16608,6 +16649,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
             this.actionObj.clone.style.top = formatUnit(offsetTop);
         }
         var rowIndex = offsetTop / this.actionObj.cellHeight;
+        var heightPerMinute = this.actionObj.cellHeight / this.actionObj.slotInterval;
         var diffInMinutes = parseInt(this.actionObj.clone.style.top, 10) - offsetTop;
         var tr;
         if (this.isAllDayDrag) {
@@ -16637,26 +16679,14 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
             this.appendCloneElement(this.getEventWrapper(colIndex));
             var spanHours = -(((this.actionObj.slotInterval / this.actionObj.cellHeight) * diffInMinutes) * (MS_PER_MINUTE));
             dragStart$$1 = this.parent.getDateFromElement(td);
-            if (this.actionObj.slotInterval === this.actionObj.interval) {
-                if (this.actionObj.clone.querySelector('.' + EVENT_ICON_UP_CLASS)) {
-                    var startTime = new Date(eventStart.getTime());
-                    spanHours = addDays(resetTime(new Date(startTime.getTime())), 1).getTime() - startTime.getTime();
-                }
-                dragStart$$1.setMinutes(dragStart$$1.getMinutes() + (diffInMinutes * this.heightPerMinute));
-                dragStart$$1.setMilliseconds(-spanHours);
+            if (this.actionObj.clone.querySelector('.' + EVENT_ICON_UP_CLASS)) {
+                var startTime = new Date(eventStart.getTime());
+                spanHours = addDays(resetTime(new Date(startTime.getTime())), 1).getTime() - startTime.getTime();
             }
-            else {
-                var hightDiff = this.getHeightDiff(tr, index);
-                if (hightDiff !== 0) {
-                    var timeDiff = Math.round(hightDiff / this.heightPerMinute);
-                    dragStart$$1.setMinutes(dragStart$$1.getMinutes() + (timeDiff * this.actionObj.interval));
-                    dragStart$$1.setMinutes(dragStart$$1.getMinutes() - this.minDiff);
-                }
-                else {
-                    dragStart$$1 = this.actionObj.start;
-                }
-            }
+            dragStart$$1.setMinutes(dragStart$$1.getMinutes() + (diffInMinutes * heightPerMinute));
+            dragStart$$1.setMilliseconds(-spanHours);
             dragStart$$1 = this.calculateIntervalTime(dragStart$$1);
+            dragStart$$1.setMilliseconds(spanHours);
             dragEnd = new Date(dragStart$$1.getTime());
             if (this.actionObj.element.classList.contains(ALLDAY_APPOINTMENT_CLASS)) {
                 dragEnd.setMinutes(dragEnd.getMinutes() + this.actionObj.slotInterval);
@@ -16906,21 +16936,6 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
         }
         return offsetLeft;
     };
-    DragAndDrop.prototype.getHeightDiff = function (tr, index) {
-        var pages = this.scrollArgs.element.getBoundingClientRect();
-        if (pages.top <= this.actionObj.pageY && pages.bottom >= this.actionObj.pageY) {
-            var targetTop = tr.children[index].offsetTop;
-            var pageY = this.actionObj.pageY - pages.top;
-            if (this.parent.enableRtl) {
-                return (targetTop + this.actionObj.cellHeight) - (this.scrollArgs.element.scrollTop + pageY);
-            }
-            else {
-                return (this.scrollArgs.element.scrollTop + pageY) - targetTop;
-            }
-        }
-        return 0;
-    };
-    
     DragAndDrop.prototype.getWidthDiff = function (tr, index) {
         var pages = this.scrollArgs.element.getBoundingClientRect();
         if (pages.left <= this.actionObj.pageX && pages.right >= this.actionObj.pageX) {
@@ -18887,6 +18902,8 @@ var Month = /** @__PURE__ @class */ (function (_super) {
         ntd.appendChild(dateHeader);
         if (this.getModuleName() === 'month') {
             addClass([dateHeader], NAVIGATE_CLASS);
+            var annocementText = this.parent.globalize.formatDate(data.date, { skeleton: 'full', calendar: this.parent.getCalendarMode() });
+            dateHeader.setAttribute('aria-label', annocementText);
         }
     };
     Month.prototype.getMonthStart = function (currentDate) {
@@ -19055,7 +19072,8 @@ var AgendaBase = /** @__PURE__ @class */ (function () {
                         'tabindex': '0',
                         'aria-readonly': this_1.parent.eventBase.getReadonlyAttribute(listData[li]),
                         'aria-selected': 'false',
-                        'aria-grabbed': 'true'
+                        'aria-grabbed': 'true',
+                        'aria-label': this_1.parent.getAnnocementString(listData[li])
                     }
                 });
                 if (!isNullOrUndefined(groupIndex)) {
@@ -20683,7 +20701,8 @@ var YearEvent = /** @__PURE__ @class */ (function (_super) {
                 'data-id': 'Appointment_' + record[this.fields.id],
                 'data-guid': record.Guid,
                 'role': 'button', 'tabindex': '0',
-                'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true'
+                'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true',
+                'aria-label': this.parent.getAnnocementString(record)
             }
         });
         if (this.cssClass) {
@@ -21223,6 +21242,11 @@ var TimelineYear = /** @__PURE__ @class */ (function (_super) {
                     className: DATE_HEADER_CLASS + ' ' + NAVIGATE_CLASS,
                     innerHTML: (isDateAvail) ? date.getDate().toString() : ''
                 });
+                var annocementText = this.parent.globalize.formatDate(date, {
+                    skeleton: 'full',
+                    calendar: this.parent.getCalendarMode()
+                });
+                dateHeader.setAttribute('aria-label', annocementText);
                 if (isDateAvail) {
                     var tds = [td];
                     var classList$$1 = [];

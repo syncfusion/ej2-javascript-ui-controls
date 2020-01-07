@@ -20,8 +20,7 @@ import { EJ2Instance } from '@syncfusion/ej2-navigations';
 import { IElement, PointModel, NodeConstraints } from '../../../src/diagram/index';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
-import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
-Diagram.Inject(UndoRedo, BpmnDiagrams);
+Diagram.Inject(UndoRedo);
 
 let palette: SymbolPalette;
 

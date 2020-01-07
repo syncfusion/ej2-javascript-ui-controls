@@ -17,7 +17,8 @@ export type SearchType = 'StartsWith' | 'Equal';
  * @param  { boolean } ignoreCase - Specifies the case consideration when search has done.
  */
 
-export function incrementalSearch(keyCode: number, items: HTMLElement[], selectedIndex: number, ignoreCase: boolean): Element {
+export function incrementalSearch(
+    keyCode: number, items: HTMLElement[], selectedIndex: number, ignoreCase: boolean, isBlazor?: boolean): Element {
     queryString += String.fromCharCode(keyCode);
     setTimeout(() => { queryString = ''; }, 1000);
     let index: number;
@@ -40,7 +41,11 @@ export function incrementalSearch(keyCode: number, items: HTMLElement[], selecte
             if (i === listItems.length) { i = -1; }
             i === -1 ? index = 0 : index = i;
             item = listItems[index] as HTMLElement;
-            text = ignoreCase ? item.innerText.toLowerCase() : item.innerText;
+            if (isBlazor) {
+                text = ignoreCase ? item.textContent.trim().toLowerCase() : item.textContent.trim();
+            } else {
+                text = ignoreCase ? item.innerText.toLowerCase() : item.innerText;
+            }
             if (text.substr(0, strLength) === queryString) {
                 matches.push(listItems[index]);
             }

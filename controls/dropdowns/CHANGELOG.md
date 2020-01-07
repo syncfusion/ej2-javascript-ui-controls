@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.41 (2020-01-07)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#255830` - filter and grouping are not working on drag and drop and toolbar button states not updated properly has been resolved.
+
 ## 17.4.40 (2019-12-24)
 
 ### DropDownList

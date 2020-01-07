@@ -687,7 +687,7 @@ export class CommentView {
     private initEditView(localObj: L10n): void {
         this.textAreaContainer = createElement('div', { styles: 'display:none' });
         this.textArea = createElement('textarea', { className: 'e-de-cmt-textarea e-input' }) as HTMLTextAreaElement;
-        this.textArea.placeholder = localObj.getConstant('Type your comment hear');
+        this.textArea.placeholder = localObj.getConstant('Type your comment here');
         this.textArea.rows = 1;
         this.textArea.value = this.comment.text.trim();
         this.textArea.addEventListener('keydown', this.updateTextAreaHeight.bind(this));

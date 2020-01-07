@@ -12,6 +12,7 @@ const positionProp: string[] = ['offsetLeft', 'offsetTop'];
 const axisMapper: string[] = ['x', 'y'];
 const axisValueMapper: string[] = ['left', 'top'];
 const isDraggedObject: DragObject = { isDragged: false };
+
 /**
  * Specifies the Direction in which drag movement happen.
  */
@@ -459,12 +460,22 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         let intCoord: Coordinates = this.getCoordinates(evt);
         this.initialPosition = { x: intCoord.pageX, y: intCoord.pageY };
         if (!this.clone) {
-            let pos: PositionModel = this.element.getBoundingClientRect();
+            let leftPostion: any;
+            let topPostion: any;
+            if (!isBlazor()) {
+                let pos: PositionModel = this.element.getBoundingClientRect();
+                leftPostion = pos.left;
+                topPostion = pos.top;
+            } else {
+                leftPostion = this.element.offsetLeft;
+                topPostion = this.element.offsetTop;
+            }
+
             this.getScrollableValues();
             if (evt.clientX === evt.pageX) { this.parentScrollX = 0; }
             if (evt.clientY === evt.pageY) { this.parentScrollY = 0; }
-            this.relativeXPosition = intCoord.pageX - (pos.left + this.parentScrollX);
-            this.relativeYPosition = intCoord.pageY - (pos.top + this.parentScrollY);
+            this.relativeXPosition = intCoord.pageX - (leftPostion + this.parentScrollX);
+            this.relativeYPosition = intCoord.pageY - (topPostion + this.parentScrollY);
         }
         if (this.externalInitialize) {
             this.intDragStart(evt);
@@ -473,7 +484,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             EventHandler.add(document, Browser.touchEndEvent, this.intDestroy, this);
         }
         this.toggleEvents(true);
-        document.body.classList.add('e-prevent-select');
+        //document.body.classList.add('e-prevent-select');
         this.externalInitialize = false;
         EventHandler.trigger(document.documentElement, Browser.touchStartEvent, evt);
     }
@@ -600,6 +611,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             top: (rect.top + window.pageYOffset) - parseInt(style.marginTop, 10)
         };
     }
+    // tslint:disable-next-line:max-func-body-length
     private intDrag(evt: MouseEvent & TouchEvent): void {
         if (!isUndefined(evt.changedTouches) && (evt.changedTouches.length !== 1)) {
             return;
@@ -622,13 +634,21 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         let eleObj: DropObject = this.checkTargetElement(evt);
         if (eleObj.target && eleObj.instance) {
             /* tslint:disable no-any */
-            (<any>eleObj).instance.dragData[this.scope] = this.droppables[this.scope];
-            eleObj.instance.intOver(evt, eleObj.target);
-            this.hoverObject = eleObj;
+            let flag: Boolean = true;
+            if (this.hoverObject) {
+                if (this.hoverObject.instance !== eleObj.instance) {
+                    this.triggerOutFunction(evt, eleObj);
+                } else {
+                    flag = false;
+                }
+            }
+            if (flag) {
+                (<any>eleObj).instance.dragData[this.scope] = this.droppables[this.scope];
+                eleObj.instance.intOver(evt, eleObj.target);
+                this.hoverObject = eleObj;
+            }
         } else if (this.hoverObject) {
-            this.hoverObject.instance.intOut(evt, eleObj.target);
-            (<any>this.hoverObject).instance.dragData[this.scope] = null;
-            this.hoverObject = null;
+            this.triggerOutFunction(evt, eleObj);
         }
         let helperElement: HTMLElement = this.droppables[this.scope].helper;
         this.parentClientRect = this.calculateParentPosition(this.helperElement.offsetParent);
@@ -699,6 +719,11 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         this.position.top = top;
         this.pageX = pagex;
         this.pageY = pagey;
+    }
+    private triggerOutFunction(evt: MouseEvent & TouchEvent, eleObj: DropObject): void {
+        this.hoverObject.instance.intOut(evt, eleObj.target);
+        this.hoverObject.instance.dragData[this.scope] = null;
+        this.hoverObject = null;
     }
     private getDragPosition(dragValue: DragPosition & { position?: string }): {
         [key: string]: Object;
@@ -827,7 +852,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     }
     private getMousePosition(evt: MouseEvent & TouchEvent, isdragscroll?: boolean): PositionModel {
         /* tslint:disable no-any */
-        let dragEle: any = evt.srcElement;
+        let dragEle: any = evt.srcElement !== undefined ? evt.srcElement : evt.target;
         let intCoord: Coordinates = this.getCoordinates(evt);
         let pageX: number;
         let pageY: number;

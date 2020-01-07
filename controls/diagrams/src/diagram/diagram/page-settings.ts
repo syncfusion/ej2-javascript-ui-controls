@@ -1,9 +1,10 @@
 import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';
 import { PageOrientation, BoundaryConstraints, ImageAlignment, ScrollLimit, Scale } from '../enum/enum';
+import { FitModes, DiagramRegions } from '../enum/enum';
 import { MarginModel } from '../core/appearance-model';
 import { Margin } from '../core/appearance';
 import { Rect } from '../primitives/rect';
-import { BackgroundModel } from './page-settings-model';
+import { BackgroundModel, FitOptionsModel } from './page-settings-model';
 
 
 /**
@@ -62,7 +63,45 @@ export class Background extends ChildProperty<Background> {
     @Property('None')
     public align: ImageAlignment;
 }
+export class FitOptions extends ChildProperty<FitOptions> {
+    /**
+     * Defines whether the diagram has to be horizontally/vertically fit into the viewport
+     * @default 'Page'
+     */
+    @Property('Page')
+    public mode: FitModes;
+    /**
+     * Defines the region that has to be fit into the viewport
+     * @default 'PageSettings'
+     */
+    @Property('PageSettings')
+    public region: DiagramRegions;
+    /**
+     * Defines the space to be left between the viewport and the content
+     *  @default { left: 25, right: 25, top: 25, bottom: 25 }
+     */
+    @Complex<MarginModel>({top: 25, bottom: 25, left: 25, right: 25}, Margin)
+    public margin: MarginModel;
+    /**
+     * Enables/Disables zooming to fit the smaller content into larger viewport
+     * @default false
+     */
+    @Property(false)
+    public canZoomIn: boolean;
+    /**
+     * Defines the custom region that has to be fit into the viewport
+     * @default undefined
+     */
+    @Property(undefined)
+    public customBounds: Rect;
+    /**
+     * Enables/Disables  fit while render
+     * @default false
+     */
+    @Property(false)
+    public canFit: boolean;
 
+}
 /** 
  * Defines the size and appearance of diagram page
  * ```html
@@ -84,6 +123,7 @@ export class PageSettings extends ChildProperty<PageSettings> {
     /**
      * Sets the width of a diagram Page
      * @default null
+     * @isBlazorNullableType true
      */
     @Property(null)
     public width: number;
@@ -91,6 +131,7 @@ export class PageSettings extends ChildProperty<PageSettings> {
     /**
      * Sets the height of a diagram Page
      * @default null
+     * @isBlazorNullableType true
      */
     @Property(null)
     public height: number;
@@ -140,6 +181,14 @@ export class PageSettings extends ChildProperty<PageSettings> {
      */
     @Property(false)
     public showPageBreaks: boolean;
+    /**
+     * set the fit options
+     * @default new FitOptions()
+     * @aspType object
+     * @blazorType DiagramFitOptions
+     */
+    @Complex<FitOptionsModel>({}, FitOptions)
+    public fitOptions: FitOptionsModel;
 }
 
 /**

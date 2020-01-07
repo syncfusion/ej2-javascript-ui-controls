@@ -4,6 +4,7 @@ import { Input, InputObject } from '@syncfusion/ej2-inputs';
 import { EventHandler, select, removeClass, addClass, detach, compile, L10n } from '@syncfusion/ej2-base';
 import { Browser, attributes, isNullOrUndefined, KeyboardEventArgs, append, closest, prepend } from '@syncfusion/ej2-base';
 import { dropDownBaseClasses } from '../drop-down-base/drop-down-base';
+import { ItemCreatedArgs } from '@syncfusion/ej2-lists';
 import { MultiSelectModel } from '../multi-select';
 
 
@@ -86,18 +87,28 @@ export class CheckBoxSelection {
     }
 
     public listOption(args: { [key: string]: Object }): void {
+        let groupHeaderName: string = args.headerName as string;
+        let moduleName: string = args.moduleName as string;
         if (isNullOrUndefined(this.parent.listCurrentOptions.itemCreated)) {
-            this.parent.listCurrentOptions.itemCreated = (e: { [key: string]: HTMLElement }) => {
-                this.checboxCreate(e);
+            this.parent.listCurrentOptions.itemCreated = (e: { [key: string]: HTMLElement } | ItemCreatedArgs) => {
+                this.updateHeaderName(e as ItemCreatedArgs, groupHeaderName, moduleName);
+                this.checboxCreate(e as { [key: string]: HTMLElement });
             };
         } else {
             let itemCreated: Function = <Function>this.parent.listCurrentOptions.itemCreated;
-            this.parent.listCurrentOptions.itemCreated = (e: { [key: string]: HTMLElement }) => {
-                this.checboxCreate(e);
+            this.parent.listCurrentOptions.itemCreated = (e: { [key: string]: HTMLElement } | ItemCreatedArgs) => {
+                this.updateHeaderName(e as ItemCreatedArgs, groupHeaderName, moduleName);
+                this.checboxCreate(e as { [key: string]: HTMLElement });
                 itemCreated.apply(this, [e]);
             };
         }
     };
+    private updateHeaderName(e: ItemCreatedArgs, groupHeaderName: string, moduleName: string): void {
+        if (e.text === undefined && (e as ItemCreatedArgs).curData.isHeader && moduleName === 'multiselect') {
+            e.item.textContent = groupHeaderName;
+            e.item.classList.add('e-undefine-group');
+        }
+    }
     private setPlaceholder(props: MultiSelectModel): void {
         Input.setPlaceholder(props.filterBarPlaceholder, this.filterInput as HTMLInputElement);
     }
@@ -441,7 +452,7 @@ export class CheckBoxSelection {
                 this.selectAllSpan.textContent = item.textContent;
             }
         } else {
-            let l10nLocale: Object = { selectAllText: 'Select All', unSelectAllText: 'Unselect All' };
+            let l10nLocale: Object = { selectAllText: 'Select All', unSelectAllText: 'Unselect All', noHeaderTemplate: 'Group' };
             let l10n: L10n = new L10n(this.parent.getLocaleName(), {}, this.parent.locale);
             if (l10n.getConstant('selectAllText') === '') {
                 l10n = new L10n('dropdowns', l10nLocale, this.parent.locale);

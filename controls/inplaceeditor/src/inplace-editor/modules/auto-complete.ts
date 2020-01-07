@@ -19,7 +19,8 @@ export class AutoComplete implements IComponent {
     }
 
     public render(e: NotifyParams): void {
-        this.compObj = new EJ2AutoComplete(this.parent.model as AutoCompleteModel, e.target);
+        this.compObj = new EJ2AutoComplete(this.parent.model as AutoCompleteModel);
+        this.compObj.appendTo(e.target);
     }
 
     /**

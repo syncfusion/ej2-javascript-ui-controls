@@ -675,6 +675,32 @@ describe('Selection Shortcuts testing with Freeze pane', () => {
     });
 });
 
+describe('EJ2-34955 - Grid row Selected Issue Fixes', () =>{
+    let gridObj: Grid;
+    let count: number = 0;
+    beforeAll((done) => {
+        gridObj = createGrid({
+                dataSource: data,
+                selectionSettings: { persistSelection: true },
+                columns: [
+                    { type: 'checkbox', width: 50 },
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' }
+                ],
+                allowPaging: true,
+                rowSelected: function () {
+                   count = count + 1;
+                }
+            }, done);
+        });
+    it('Selected count', function (done) {
+       gridObj.refresh();
+       expect(count).toBe(0);
+       done();
+    });
+});
+
 describe('Grid Selection module', () => {
     describe('grid single seletion functionalities', () => {
         let gridObj: Grid;
@@ -3979,6 +4005,16 @@ describe('EJ2-33599 selection does not maintain while calling setrowdata method'
         gridObj.setRowData(10248, { CustomerID: "aaa", Freight: 11 })
         expect((<any>gridObj.getRows()[0]).cells[0].classList.contains('e-selectionbackground')).toBeTruthy();
         done();
+    });
+
+    it('Check target in rowSelected event', (done: Function) => {
+        gridObj.rowSelected = (args: any) => {
+            expect(args.target).toBeNull();
+            gridObj.rowSelected = null;
+            done();
+        };
+        gridObj.clearSelection();
+        gridObj.selectRow(1);
     });
 
     afterAll(() => {

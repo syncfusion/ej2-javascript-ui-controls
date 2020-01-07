@@ -173,6 +173,20 @@ export class UserHandle extends ChildProperty<UserHandle> {
     public verticalAlignment: VerticalAlignment;
 
     /**
+     * Defines the visible of user Handle 
+     * @default false
+     */
+    @Property(false)
+    public disableNodes: boolean;
+
+    /**
+     * Defines the visible of user Handle 
+     * @default false
+     */
+    @Property(false)
+    public disableConnectors: boolean;
+
+    /**
      * @private
      * Returns the name of class UserHandle
      */

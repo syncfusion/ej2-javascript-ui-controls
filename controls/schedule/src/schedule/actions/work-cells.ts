@@ -40,7 +40,7 @@ export class WorkCellInteraction {
         let sameView: boolean = this.parent.currentView === navigateView;
         if (isNullOrUndefined(navigateEle) || sameView ||
             isNullOrUndefined(this.parent.viewOptions[navigateView.charAt(0).toLowerCase() + navigateView.slice(1)])) {
-            if (this.parent.activeViewOptions.readonly) {
+            if (this.parent.activeViewOptions.readonly && this.parent.currentView !== 'MonthAgenda') {
                 this.parent.quickPopup.quickPopupHide();
                 return;
             }

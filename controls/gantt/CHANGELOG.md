@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.41 (2020-01-07)
+
+### Gantt
+
+#### New Features
+
+- `#253076` - Provided support to focus Gantt on tab key press.
+
 ## 17.4.40 (2019-12-24)
 
 ### Gantt

@@ -54,7 +54,13 @@ export class Resize extends ActionBase {
                 return;
             }
             if (isBlazor()) {
-                resizeEventArgs.element = getElement(resizeEventArgs.element);
+                if (resizeEventArgs.element) {
+                    resizeEventArgs.element = getElement(resizeEventArgs.element);
+                }
+                (resizeEventArgs.data[this.parent.eventFields.startTime] as Date) = this.parent.getDateTime(
+                    (resizeEventArgs.data[this.parent.eventFields.startTime] as Date));
+                (resizeEventArgs.data[this.parent.eventFields.endTime] as Date) = this.parent.getDateTime(
+                    (resizeEventArgs.data[this.parent.eventFields.endTime] as Date));
             }
             this.actionClass('addClass');
             this.parent.uiStateValues.action = true;
@@ -230,7 +236,7 @@ export class Resize extends ActionBase {
         }
         let resizeTime: Date = util.resetTime(this.parent.getDateFromElement(element));
         resizeTime.setHours(this.parent.activeView.getStartHour().getHours());
-        resizeTime.setMinutes(minutes);
+        resizeTime.setMinutes(minutes + this.parent.activeView.getStartHour().getMinutes());
         if (isTop) {
             this.actionObj.start = this.calculateIntervalTime(resizeTime);
         } else {

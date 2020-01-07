@@ -64,7 +64,7 @@ describe('Schedule Month view', () => {
             expect(firstWorkCell.getAttribute('role')).toEqual('gridcell');
             expect(firstWorkCell.getAttribute('aria-selected')).toEqual('false');
             expect(firstWorkCell.getAttribute('data-date')).toEqual(new Date(2017, 9, 1).getTime().toString());
-            expect(firstWorkCell.innerHTML).toEqual('<div class="e-date-header e-navigate">Oct 1</div>');
+            expect(firstWorkCell.innerHTML).toEqual('<div class="e-date-header e-navigate" aria-label="Sunday, October 1, 2017">Oct 1</div>');
         });
 
         it('navigate next date', () => {
@@ -273,7 +273,7 @@ describe('Schedule Month view', () => {
             schObj = util.createSchedule(model, []);
             expect(schObj.element.querySelectorAll('.custom-element').length).toEqual(schObj.getWorkCellElements().length);
             let workCellEle: HTMLElement = createElement('div', {
-                innerHTML: '<div class="e-date-header e-navigate">4</div><span>10/4/17, 12:00 AM</span>'
+                innerHTML: '<div class="e-date-header e-navigate" aria-label="Wednesday, October 4, 2017">4</div><span>10/4/17, 12:00 AM</span>'
             });
             schObj.cellTemplate = '<span>${getShortDateTime(data.date)}</span>';
             schObj.dataBind();
@@ -304,7 +304,7 @@ describe('Schedule Month view', () => {
             let model: ScheduleModel = { navigating: navFn, currentView: 'Month', selectedDate: new Date(2017, 9, 5) };
             schObj = util.createSchedule(model, []);
             expect(navFn).toHaveBeenCalledTimes(0);
-            expect(schObj.element.querySelector('.e-work-cells').innerHTML).toEqual('<div class="e-date-header e-navigate">Oct 1</div>');
+            expect(schObj.element.querySelector('.e-work-cells').innerHTML).toEqual('<div class="e-date-header e-navigate" aria-label="Sunday, October 1, 2017">Oct 1</div>');
             (schObj.element.querySelector('.e-date-header') as HTMLElement).click();
             expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML)
                 .toEqual('<div class="e-header-day">Sun</div><div class="e-header-date e-navigate" role="link">1</div>');
@@ -670,11 +670,11 @@ describe('Schedule Month view', () => {
             expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(63);
             expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>Sunday</span>');
             expect(schObj.element.querySelector('.e-work-cells .e-date-header').innerHTML).toEqual('Oct 1');
-            expect(schObj.element.querySelectorAll('.e-work-cells')[6].innerHTML).toEqual('<div class="e-date-header e-navigate">7</div>');
+            expect(schObj.element.querySelectorAll('.e-work-cells')[6].innerHTML).toEqual('<div class="e-date-header e-navigate" aria-label="Saturday, October 7, 2017">7</div>');
             (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
             expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>Sunday</span>');
             expect(schObj.element.querySelector('.e-work-cells .e-date-header').innerHTML).toEqual('26');
-            expect(schObj.element.querySelectorAll('.e-work-cells')[6].innerHTML).toEqual('<div class="e-date-header e-navigate">2</div>');
+            expect(schObj.element.querySelectorAll('.e-work-cells')[6].innerHTML).toEqual('<div class="e-date-header e-navigate" aria-label="Saturday, December 2, 2017">2</div>');
             (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
             expect(schObj.element.querySelector('.e-date-header-container .e-header-cells').innerHTML).toEqual('<span>Sunday</span>');
             expect(schObj.element.querySelector('.e-work-cells .e-date-header').innerHTML).toEqual('Oct 1');

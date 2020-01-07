@@ -18,7 +18,8 @@ export class ComboBox implements IComponent {
     }
 
     public render(e: NotifyParams): void {
-        this.compObj = new EJ2ComboBox(this.parent.model as ComboBoxModel, e.target);
+        this.compObj = new EJ2ComboBox(this.parent.model as ComboBoxModel);
+        this.compObj.appendTo(e.target);
     }
 
     public focus(): void {

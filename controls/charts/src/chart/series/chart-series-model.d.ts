@@ -106,6 +106,13 @@ export interface DataLabelSettingsModel {
 
     template?: string;
 
+    /**
+     * Show Datalabel Even two Data Labels Are Overflow
+     * @default 'Hide'
+     */
+
+    labelIntersectAction?: string;
+
 }
 
 /**

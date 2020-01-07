@@ -2493,6 +2493,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      * @returns void
      */
     public addPanel(panel: PanelModel): void {
+        this.allowServerDataBinding = false;
         this.maxCol();
         if (!panel.minSizeX) {
             panel.minSizeX = 1;
@@ -2555,6 +2556,8 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                 }
             }
         }
+        this.allowServerDataBinding = true;
+        this.serverDataBind();
     }
 
     /**

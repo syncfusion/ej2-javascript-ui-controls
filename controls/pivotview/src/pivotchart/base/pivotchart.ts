@@ -19,7 +19,6 @@ import {
     RowHeaderPositionGrouping, ChartSeriesType, ChartSeriesCreatedEventArgs, RowHeaderLevelGrouping, ChartLabelInfo
 } from '../../common';
 import { DrillOptionsModel } from '../../pivotview/model/datasourcesettings-model';
-import { showSpinner } from '@syncfusion/ej2-popups';
 import { PivotUtil } from '../../base/util';
 import { OlapEngine, ITupInfo } from '../../base/olap/engine';
 import { SummaryTypes } from '../../base/types';

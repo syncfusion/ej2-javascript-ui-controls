@@ -722,6 +722,9 @@ export class Render {
                 this.parent.grid.width = this.gridSettings.width;
             }
             this.updatePivotColumns();
+            if (keys.indexOf('allowTextWrap') > -1) {
+                this.parent.layoutRefresh();
+            }
         }
         this.clearColumnSelection();
     }

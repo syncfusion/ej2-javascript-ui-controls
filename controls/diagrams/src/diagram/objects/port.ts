@@ -134,6 +134,26 @@ export abstract class Port extends ChildProperty<Port> {
      */
     @Property()
     public addInfo: Object;
+
+    /**
+     * Defines the collection of the objects that are connected to a particular port
+     * @default undefined
+     */
+    @Property()
+    public outEdges: string[];
+
+    /**
+     * Defines the collection of the objects that are connected to a particular port
+     * @default undefined
+     */
+    @Property()
+    public inEdges: string[];
+    // tslint:disable-next-line:no-any
+    constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
+        super(parent, propName, defaultValue, isArray);
+        this.inEdges = [];
+        this.outEdges = [];
+    }
 }
 
 /**
@@ -143,6 +163,7 @@ export class PointPort extends Port {
     /**
      * Defines the position of the port with respect to the boundaries of nodes/connector
      * @default new Point(0.5,0.5)
+     * @blazorType NodePortOffset
      */
     @Complex<PointModel>({ x: 0.5, y: 0.5 }, Point)
     public offset: PointModel;

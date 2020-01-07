@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Collection, ComplexFactory } from '@syncfusion/ej2-base';import { TextDecoration, WhiteSpace, TextWrap, TextAlign, GradientType, TextOverflow } from '../enum/enum';
+import { Property, ChildProperty, Collection, ComplexFactory, isBlazor } from '@syncfusion/ej2-base';import { TextDecoration, WhiteSpace, TextWrap, TextAlign, GradientType, TextOverflow } from '../enum/enum';
 
 /**
  * Interface for a class Thickness
@@ -107,6 +107,7 @@ export interface GradientModel {
     /**
      * Defines the stop collection of gradient
      * @default []
+     * @blazorType ObservableCollection<DiagramsGradientStop>
      */
     stops?: StopModel[];
 
@@ -123,6 +124,67 @@ export interface GradientModel {
      * @default ''
      */
     id?: string;
+
+}
+
+/**
+ * Interface for a class DiagramGradient
+ */
+export interface DiagramGradientModel extends GradientModel{
+
+    /**
+     * Defines the x1 value of linear gradient
+     * @default 0
+     */
+    x1?: number;
+
+    /**
+     * Defines the x2 value of linear gradient
+     * @default 0
+     */
+    x2?: number;
+
+    /**
+     * Defines the y1 value of linear gradient
+     * @default 0
+     */
+    y1?: number;
+
+    /**
+     * Defines the y2 value of linear gradient
+     * @default 0
+     */
+    y2?: number;
+
+    /**
+     * Defines the cx value of radial gradient
+     * @default 0
+     */
+    cx?: number;
+
+    /**
+     * Defines the cy value of radial gradient
+     * @default cy
+     */
+    cy?: number;
+
+    /**
+     * Defines the fx value of radial gradient
+     * @default 0
+     */
+    fx?: number;
+
+    /**
+     * Defines the fy value of radial gradient
+     * @default fy
+     */
+    fy?: number;
+
+    /**
+     * Defines the r value of radial gradient
+     * @default 50
+     */
+    r?: number;
 
 }
 
@@ -248,9 +310,9 @@ export interface ShapeStyleModel {
      * Defines the gradient of a shape/path
      * @default null
      * @aspType object
-     * @blazorType object
+     * @blazorType DiagramGradient
      */
-    gradient?: GradientModel | LinearGradientModel | RadialGradientModel;
+    gradient?: GradientModel | LinearGradientModel | RadialGradientModel | DiagramGradientModel;
 
 }
 
@@ -354,5 +416,141 @@ export interface TextStyleModel extends ShapeStyleModel{
      * @default 'transparent'
      */
     fill?: string;
+
+}
+
+/**
+ * Interface for a class DiagramShapeStyle
+ */
+export interface DiagramShapeStyleModel {
+
+    /**
+     * Sets the fill color of a shape/path
+     * @default 'white'
+     */
+    fill?: string;
+
+    /**
+     * Defines how to handle the text when it exceeds the given size.
+     * * Wrap - Wraps the text to next line, when it exceeds its bounds
+     * * Ellipsis - It truncates the overflown text and represents the clipping with an ellipsis
+     * * Clip - It clips the overflow text
+     * @default 'Wrap'
+     */
+    textOverflow?: TextOverflow;
+
+    /**
+     * Defines the stroke width of the path/shape
+     * @default 1
+     */
+    strokeWidth?: number;
+
+    /**
+     * Defines the gradient of a shape/path
+     * @default null
+     * @aspType object
+     */
+    gradient?: GradientModel | LinearGradientModel | RadialGradientModel;
+
+    /**
+     * Sets the opacity of a shape/path
+     * @default 1
+     */
+    opacity?: number;
+
+    /**
+     * Enables/disables the italic style of text
+     * @default false
+     */
+    italic?: boolean;
+
+    /**
+     * Defines the pattern of dashes and spaces to stroke the path/shape
+     * ```html
+     * <div id='diagram'></div>
+     * ```
+     * ```
+     *  let nodes: NodeModel[] = [{  id: 'node', width: 100, height: 100, offsetX: 100, offsetY: 100,
+     * style: { fill: 'red', strokeColor: 'blue', strokeWidth: 5, 
+     * strokeDashArray: '2 2', opacity: 0.6 } as ShapeStyleModel,
+     * }];
+     * let diagram: Diagram = new Diagram({
+     * ...
+     *   nodes: nodes,
+     * ...
+     * });
+     * diagram.appendTo('#diagram');
+     * ```
+     * @default ''
+     */
+    strokeDashArray?: string;
+
+    /**
+     * Sets the font color of a text
+     * @default 'black'
+     */
+    color?: string;
+
+    /**
+     * Defines the font size of a text
+     * @default 12
+     */
+    fontSize?: number;
+
+    /**
+     * Sets the font type of a text
+     * @default 'Arial'
+     */
+    fontFamily?: string;
+
+    /**
+     * Defines how the white space and new line characters have to be handled
+     * * PreserveAll - Preserves all empty spaces and empty lines
+     * * CollapseSpace - Collapses the consequent spaces into one
+     * * CollapseAll - Collapses all consequent empty spaces and empty lines
+     * @default 'CollapseSpace'
+     */
+    whiteSpace?: WhiteSpace;
+
+    /**
+     * Defines how the text should be aligned within its bounds
+     * * Left - Aligns the text at the left of the text bounds
+     * * Right - Aligns the text at the right of the text bounds
+     * * Center - Aligns the text at the center of the text bounds
+     * * Justify - Aligns the text in a justified manner
+     * @default 'Center'
+     */
+    textAlign?: TextAlign;
+
+    /**
+     * Defines how the text should be decorated. For example, with underline/over line
+     * * Overline - Decorates the text with a line above the text
+     * * Underline - Decorates the text with an underline
+     * * LineThrough - Decorates the text by striking it with a line
+     * * None - Text will not have any specific decoration
+     * @default 'None'
+     */
+    textDecoration?: TextDecoration;
+
+    /**
+     * Enables/disables the bold style of text
+     * @default false
+     */
+    bold?: boolean;
+
+    /**
+     * Sets the stroke color of a shape/path
+     * @default 'black'
+     */
+    strokeColor?: string;
+
+    /**
+     * Defines how the text should be wrapped, when the text size exceeds some specific bounds
+     * * WrapWithOverflow - Wraps the text so that no word is broken
+     * * Wrap - Wraps the text and breaks the word, if necessary
+     * * NoWrap - Text will no be wrapped
+     * @default  'WrapWithOverflow'
+     */
+    textWrapping?: TextWrap;
 
 }

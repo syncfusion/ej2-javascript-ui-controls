@@ -2,18 +2,18 @@ import { Container } from '../../core/containers/container';
 import { Diagram } from '../../diagram';
 import { ConnectorModel } from '../connector-model';
 import { NodeModel } from '../node-model';
-import { Size } from '../../primitives/size';
 import { PointModel } from '../../primitives/point-model';
 import { EventState, ChangeType, State, DiagramAction, HistoryChangeAction } from '../../enum/enum';
 import { SelectorModel } from '../../objects/node-model';
 import { DiagramModel } from '../../diagram-model';
 import { Connector } from '../../objects/connector';
-import { OrthogonalSegmentModel, StraightSegmentModel, BezierSegmentModel} from '../../objects/connector-model';
+import { OrthogonalSegmentModel, StraightSegmentModel, BezierSegmentModel } from '../../objects/connector-model';
 import { UserHandleModel } from '../../interaction/selector-model';
 import { ShapeAnnotation, PathAnnotation } from '../../objects/annotation';
 import { PointPortModel } from '../../objects/port-model';
 import { KeyGestureModel } from '../../diagram/keyboard-commands-model';
-import { Node} from '../../objects/node';
+import { Node } from '../../objects/node';
+import { Size } from '../../primitives/size';
 
 /**
  * IElement interface defines the base of the diagram objects (node/connector)
@@ -109,6 +109,13 @@ export interface IRotationEventArgs {
     /** returns whether to cancel the change or not */
     cancel: boolean;
 }
+/**
+ * IConnectorInitEventArgs notifies when the connector is initiated
+ */
+export interface IConnectorInitEventArgs {
+    /** returns connector that is being changed */
+    element?: ConnectorModel;
+}
 
 /**
  * DiagramCollectionObject is the interface for the diagram objects
@@ -158,17 +165,17 @@ export interface ICollectionChangeEventArgs {
  * IBlazorCollectionChangeEventArgs notifies while the node/connector are added or removed in the diagram
  * 
  */
-export interface IBlazorCollectionChangeEventArgs  {
+export interface IBlazorCollectionChangeEventArgs {
     /** returns the action of diagram */
-cause: DiagramAction;
-/** returns the state of the event */
-state: EventState;
-/** returns the type of the collection change */
-type: ChangeType;
-/** returns whether to cancel the change or not */
-cancel: boolean;
-/** returns the selected element  */
-element?: DiagramEventObject;
+    cause: DiagramAction;
+    /** returns the state of the event */
+    state: EventState;
+    /** returns the type of the collection change */
+    type: ChangeType;
+    /** returns whether to cancel the change or not */
+    cancel: boolean;
+    /** returns the selected element  */
+    element?: DiagramEventObject;
 }
 /**
  * IBlazorSegmentCollectionChangeEventArgs notifies while the segment of the connectors changes
@@ -271,7 +278,7 @@ export interface IDraggingEventArgs {
     /** returns whether to cancel the change or not */
     cancel: boolean;
 }
-export interface ConnectorTargetValue {
+export interface ConnectorValue {
     nodeId: string;
     portId: string;
 }
@@ -282,7 +289,8 @@ export interface ConnectorTargetValue {
  */
 export interface BlazorConnectionObject {
     connector?: ConnectorModel;
-    connectorTargetValue?: ConnectorTargetValue;
+    connectorTargetValue?: ConnectorValue;
+    connectorSourceValue?: ConnectorValue;
 }
 
 /**
@@ -305,12 +313,14 @@ export interface IBlazorConnectionChangeEventArgs {
 }
 
 /**
- * DiagramObject notifies whether it is node or connector
+ * IBlazorDragLeaveEventArgs notifies when the element leaves from  the diagram 
+ * 
  */
-
-export interface DiagramEventObject {
-    node?: NodeModel;
-    connector?: ConnectorModel;
+export interface IBlazorDragLeaveEventArgs {
+    /** returns the id of the diagram */
+    diagram: DiagramModel;
+    /** returns the node or connector that is dragged outside of the diagram */
+    element: DiagramEventObject;
 }
 
 /**
@@ -481,7 +491,7 @@ export interface IBlazorMouseEventArgs {
     /** returns a parent node of the target node or connector */
     element: DiagramMouseEventObject;
     /** returns when mouse hover to the target node or connector */
-    actualObject: Object;
+    actualObject: DiagramMouseEventObject;
     /** returns the target object over which the selected object is dragged */
     targets: DiagramEventObjectCollection;
 }
@@ -612,13 +622,14 @@ export interface ITextEditEventArgs {
  */
 export interface IBlazorHistoryChangeArgs {
     /** returns an array of objects, where each object represents the changes made in last undo/redo */
-    change: SelectorModel;
+    change: ChangedObject;
     /** returns the cause of the event */
     cause: string;
     /** returns a collection of objects that are changed in the last undo/redo */
     source?: DiagramEventObjectCollection;
     /** returns the event action */
     action?: HistoryChangeAction;
+
 }
 /**
  * IHistoryChangeArgs notifies when the label of an element under goes editing
@@ -631,13 +642,40 @@ export interface IHistoryChangeArgs {
     change: SelectorModel;
     /** returns the cause of the event */
     cause: string;
-    /** returns the event action */
-    action?: HistoryChangeAction;
+     /** returns the event action */
+     action?: HistoryChangeAction;
+
 }
+/**
+ * IBlazorChangeArgs
+ * 
+ */
+export interface ChangedObject {
+    /** returns the type of the entry */
+    entryType: string;
+    /** returns a collection of objects that are changed in the last undo/redo */
+    oldValue: ChangedValues;
+    /** returns an array of objects, where each object represents the changes made in last undo/redo */
+    newValue: ChangedValues;
+}
+
+export interface ChangedValues {
+    /** returns a object's offset x  */
+    offsetX?: number;
+    /** returns a object's offset y  */
+    offsetY?: number;
+    /** returns a object's width  */
+    width?: number;
+    /** returns a object's height */
+    height?: number;
+    /** returns a object's rotateangle  */
+    rotateAngle?: number;
+}
+
 
 /**
  * ICustomHistoryChangeArgs notifies when the label of an element under goes editing
- * 
+ *
  */
 export interface ICustomHistoryChangeArgs {
     /** returns the type of the entry that means undo or redo */

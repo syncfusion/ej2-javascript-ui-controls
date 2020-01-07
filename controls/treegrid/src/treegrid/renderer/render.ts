@@ -79,8 +79,7 @@ export class Render {
         if  (!args.data) {
             return;
         }
-        let grid: IGrid = this.parent.grid;
-        let data: ITreeData = <ITreeData>args.data; let index: number;
+        let grid: IGrid = this.parent.grid; let data: ITreeData = <ITreeData>args.data; let index: number;
         let ispadfilter: boolean = isNullOrUndefined(data.filterLevel);
         let pad: number = ispadfilter ? data.level : data.filterLevel;
         let totalIconsWidth: number = 0; let cellElement: HTMLElement;
@@ -91,9 +90,7 @@ export class Render {
         } else { index = data.index; }
         if (grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex
          && (args.requestType === 'add' || args.requestType === 'delete' || isNullOrUndefined(args.cell.querySelector('.e-treecell')))) {
-            let container: Element = createElement('div', {
-                className: 'e-treecolumn-container'
-            });
+            let container: Element = createElement('div', { className: 'e-treecolumn-container' });
             let emptyExpandIcon: HTMLElement = createElement('span', {
                 className: 'e-icons e-none',
                 styles: 'width: 10px; display: inline-block'
@@ -109,9 +106,7 @@ export class Render {
                 }
             if (iconRequired) {
                 addClass([args.cell], 'e-treerowcell');
-                let expandIcon: Element = createElement('span', {
-                    className: 'e-icons'
-                });
+                let expandIcon: Element = createElement('span', { className: 'e-icons' });
                 let expand: boolean;
                 if (this.parent.initialRender) {
                     expand = data.expanded &&
@@ -129,8 +124,7 @@ export class Render {
                 addClass([expandIcon], (expand && collapsed) ? 'e-treegridexpand' : 'e-treegridcollapse');
                 totalIconsWidth += 18;
                 container.appendChild(expandIcon);
-                emptyExpandIcon.style.width = '7px';
-                totalIconsWidth += 7;
+                emptyExpandIcon.style.width = '7px'; totalIconsWidth += 7;
                 container.appendChild(emptyExpandIcon.cloneNode());
             } else if (pad || !pad && !data.level) {
                 // icons width
@@ -142,9 +136,7 @@ export class Render {
             // if (data.hasChildRecords) {
             //     addClass([expandIcon], data.expanded ? 'e-treegridexpand' : 'e-treegridcollapse');
             // }
-            cellElement = createElement('span', {
-                className: 'e-treecell'
-            });
+            cellElement = createElement('span', { className: 'e-treecell' });
             if (this.parent.allowTextWrap) {
                 cellElement.style.width = 'Calc(100% - ' + totalIconsWidth + 'px)';
             }
@@ -162,7 +154,12 @@ export class Render {
             if (this.parent.allowTextWrap) {
                 let checkboxElement: HTMLElement = <HTMLElement>args.cell.querySelectorAll('.e-frame')[0];
                 let width: number = parseInt(checkboxElement.style.width, 16);
-                totalIconsWidth += width;
+                totalIconsWidth += width; totalIconsWidth += 10;
+                if (grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex) {
+                    cellElement = <HTMLElement>args.cell.querySelector('.e-treecell');
+                } else {
+                    cellElement = <HTMLElement>args.cell.querySelector('.e-treecheckbox');
+                }
                 cellElement.style.width = 'Calc(100% - ' + totalIconsWidth + 'px)';
             }
         }

@@ -18,7 +18,8 @@ export class TimePicker implements IComponent {
     }
 
     public render(e: NotifyParams): void {
-        this.compObj = new EJ2TimePicker(this.parent.model as TimePickerModel, e.target as HTMLInputElement);
+        this.compObj = new EJ2TimePicker(this.parent.model as TimePickerModel);
+        this.compObj.appendTo(e.target as HTMLInputElement);
     }
 
     public focus(): void {

@@ -112,6 +112,12 @@ export class TimelineYear extends Year {
                     className: cls.DATE_HEADER_CLASS + ' ' + cls.NAVIGATE_CLASS,
                     innerHTML: (isDateAvail) ? date.getDate().toString() : ''
                 });
+                let annocementText: string = this.parent.globalize.formatDate(date, {
+                    skeleton: 'full',
+                    calendar: this.parent.getCalendarMode()
+                });
+                dateHeader.setAttribute('aria-label', annocementText);
+
                 if (isDateAvail) {
                     let tds: HTMLElement[] = [td];
                     let classList: string[] = [];

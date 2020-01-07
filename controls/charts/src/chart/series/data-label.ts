@@ -191,7 +191,8 @@ export class DataLabel {
                                     }
                                 }
                             }
-                            if (!isCollide(rect, chart.dataLabelCollections, clip) && isRender) {
+                            if ((!isCollide(rect, chart.dataLabelCollections, clip) || dataLabel.labelIntersectAction === 'None')
+                                && isRender) {
                                 chart.dataLabelCollections.push(new Rect(
                                     rect.x + clip.x, rect.y + clip.y, rect.width, rect.height
                                 ));
@@ -344,7 +345,7 @@ export class DataLabel {
         if (!((rect.y > (clipRect.y + clipRect.height)) || (rect.x > (clipRect.x + clipRect.width)) ||
             (rect.x + rect.width < 0) || (rect.y + rect.height < 0))) {
             rect.x = rect.x < 0 ? padding : rect.x;
-            rect.y = rect.y < 0 ? padding : rect.y;
+            rect.y = (rect.y < 0) && !(dataLabel.labelIntersectAction === 'None') ? padding : rect.y;
             rect.x -= (rect.x + rect.width) > (clipRect.x + clipRect.width) ? (rect.x + rect.width)
             - (clipRect.x + clipRect.width) + padding : 0;
             rect.y -= (rect.y + rect.height) > (clipRect.y + clipRect.height) ? (rect.y + rect.height)

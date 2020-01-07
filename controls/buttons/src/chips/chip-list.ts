@@ -653,7 +653,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
             let activeElement: HTMLElement = this.element.querySelector('.' + classNames.active);
             if (activeElement && activeElement !== chipWrapper) {
                 activeElement.classList.remove(classNames.active);
-                chipWrapper.setAttribute('aria-selected', 'false');
+                activeElement.setAttribute('aria-selected', 'false');
             }
             this.setProperties({ selectedChips: null }, true);
         } else {

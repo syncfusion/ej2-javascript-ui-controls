@@ -1161,15 +1161,15 @@ class HeaderRenderer {
      * @private
      */
     destroy() {
-        if (this.headerPopup) {
+        if (this.headerPopup && !this.headerPopup.isDestroyed) {
             this.headerPopup.destroy();
             this.headerPopup = null;
         }
-        if (this.headerCalendar) {
+        if (this.headerCalendar && !this.headerCalendar.isDestroyed) {
             this.headerCalendar.destroy();
             this.headerCalendar = null;
         }
-        if (!this.toolbarObj.isDestroyed) {
+        if (this.toolbarObj && !this.toolbarObj.isDestroyed) {
             this.toolbarObj.destroy();
             this.removeEventListener();
             remove(this.element);
@@ -1596,6 +1596,8 @@ class KeyboardInteraction {
         }
     }
     onMouseSelection(e) {
+        let appointments = [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_CLASS));
+        addClass(appointments, 'e-allow-select');
         let selectionEdges = this.parent.boundaryValidation(e.pageY, e.pageX);
         if (selectionEdges.bottom || selectionEdges.top || selectionEdges.left || selectionEdges.right) {
             let parent = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
@@ -1621,6 +1623,8 @@ class KeyboardInteraction {
         return closest(e.target, '.' + WORK_CELLS_CLASS + ',.' + ALLDAY_CELLS_CLASS);
     }
     onMoveup(e) {
+        let appointments = [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_CLASS));
+        removeClass(appointments, 'e-allow-select');
         if (e.target.classList.contains(WORK_CELLS_CLASS)) {
             EventHandler.remove(this.parent.getContentTable(), 'mousemove', this.onMouseSelection);
             EventHandler.remove(this.parent.getContentTable(), 'mouseup', this.onMoveup);
@@ -3969,6 +3973,7 @@ class EventBase {
         let processed = [];
         let temp = 1;
         let generateID = false;
+        let resourceCollection = this.parent.resourceBase ? this.parent.resourceBase.resourceCollection : [];
         if (events.length > 0 && isNullOrUndefined(events[0][fields.id])) {
             generateID = true;
         }
@@ -3987,6 +3992,11 @@ class EventBase {
             }
             else {
                 event = this.processTimezone(event);
+            }
+            for (let level = 0; level < resourceCollection.length; level++) {
+                if (event[resourceCollection[level].field] === null || event[resourceCollection[level].field] === 0) {
+                    event[resourceCollection[level].field] = undefined;
+                }
             }
             if (!isNullOrUndefined(event[fields.recurrenceRule]) && event[fields.recurrenceRule] === '') {
                 event[fields.recurrenceRule] = null;
@@ -4978,6 +4988,13 @@ class EventBase {
         }
         return filteredDates;
     }
+    isValidEvent(eventObj, start, end, schedule) {
+        let isHourRange = end.getTime() > schedule.startHour.getTime() && start.getTime() < schedule.endHour.getTime();
+        let isSameRange = schedule.startHour.getTime() <= start.getTime() &&
+            eventObj[this.parent.eventFields.startTime].getTime() >= schedule.startHour.getTime() &&
+            eventObj[this.parent.eventFields.endTime].getTime() < schedule.endHour.getTime() && start.getTime() === end.getTime();
+        return isHourRange || isSameRange;
+    }
 }
 
 /**
@@ -5367,7 +5384,7 @@ class QuickPopups {
                         'data-id': '' + eventData[fields.id],
                         'data-guid': eventData.Guid, 'role': 'button', 'tabindex': '0',
                         'aria-readonly': this.parent.eventBase.getReadonlyAttribute(eventData),
-                        'aria-selected': 'false', 'aria-grabbed': 'true'
+                        'aria-selected': 'false', 'aria-grabbed': 'true', 'aria-label': this.parent.getAnnocementString(eventData)
                     }
                 });
                 let templateElement;
@@ -6997,6 +7014,7 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
             enableRtl: this.enableRtl,
             floatLabelType: 'Always',
             min: 1,
+            max: 999,
             change: (args) => {
                 self.triggerChangeEvent();
             }
@@ -7018,6 +7036,7 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
             value: 1,
             format: '#',
             min: 1,
+            max: 999,
             enableRtl: this.enableRtl,
             floatLabelType: 'Always',
             placeholder: this.localeObj.getConstant(REPEATEVERY),
@@ -10174,7 +10193,7 @@ class WorkCellInteraction {
         let sameView = this.parent.currentView === navigateView;
         if (isNullOrUndefined(navigateEle) || sameView ||
             isNullOrUndefined(this.parent.viewOptions[navigateView.charAt(0).toLowerCase() + navigateView.slice(1)])) {
-            if (this.parent.activeViewOptions.readonly) {
+            if (this.parent.activeViewOptions.readonly && this.parent.currentView !== 'MonthAgenda') {
                 this.parent.quickPopup.quickPopupHide();
                 return;
             }
@@ -11989,7 +12008,9 @@ let Schedule = class Schedule extends Component {
             timelineYear: 'Timeline Year',
             editFollowingEvent: 'Following Events',
             deleteTitle: 'Delete Event',
-            editTitle: 'Edit Event'
+            editTitle: 'Edit Event',
+            beginFrom: 'Begin From',
+            endAt: 'Ends At'
         };
     }
     /**
@@ -12191,6 +12212,21 @@ let Schedule = class Schedule extends Component {
             }
         }
         return undefined;
+    }
+    /** @hidden */
+    getAnnocementString(event, subject) {
+        let recordSubject = (subject || (event[this.eventFields.subject] || this.eventSettings.fields.subject.default));
+        let startDateText = this.globalize.formatDate(event[this.eventFields.startTime], {
+            type: 'dateTime',
+            skeleton: 'full', calendar: this.getCalendarMode()
+        });
+        let endDateText = this.globalize.formatDate(event[this.eventFields.endTime], {
+            type: 'dateTime',
+            skeleton: 'full', calendar: this.getCalendarMode()
+        });
+        let annocementString = recordSubject + ' ' + this.localeObj.getConstant('beginFrom') + ' '
+            + startDateText + ' ' + this.localeObj.getConstant('endAt') + ' ' + endDateText;
+        return annocementString;
     }
     /** @hidden */
     boundaryValidation(pageY, pageX) {
@@ -13859,7 +13895,8 @@ class MonthEvent extends EventBase {
             attrs: {
                 'data-id': 'Appointment_' + record[this.fields.id],
                 'role': 'button', 'tabindex': '0',
-                'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true'
+                'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true',
+                'aria-label': this.parent.getAnnocementString(record.data, eventSubject)
             }
         });
         if (!isCloneElement) {
@@ -14209,7 +14246,11 @@ class Resize extends ActionBase {
                 return;
             }
             if (isBlazor()) {
-                resizeEventArgs.element = getElement(resizeEventArgs.element);
+                if (resizeEventArgs.element) {
+                    resizeEventArgs.element = getElement(resizeEventArgs.element);
+                }
+                resizeEventArgs.data[this.parent.eventFields.startTime] = this.parent.getDateTime(resizeEventArgs.data[this.parent.eventFields.startTime]);
+                resizeEventArgs.data[this.parent.eventFields.endTime] = this.parent.getDateTime(resizeEventArgs.data[this.parent.eventFields.endTime]);
             }
             this.actionClass('addClass');
             this.parent.uiStateValues.action = true;
@@ -14380,7 +14421,7 @@ class Resize extends ActionBase {
         }
         let resizeTime = resetTime(this.parent.getDateFromElement(element));
         resizeTime.setHours(this.parent.activeView.getStartHour().getHours());
-        resizeTime.setMinutes(minutes);
+        resizeTime.setMinutes(minutes + this.parent.activeView.getStartHour().getMinutes());
         if (isTop) {
             this.actionObj.start = this.calculateIntervalTime(resizeTime);
         }
@@ -14691,7 +14732,13 @@ class TimelineEvent extends MonthEvent {
         event.Index = overlapCount;
         let appHeight = this.eventHeight;
         let diffInDays = eventData.count;
-        if (startTime <= endTime) {
+        let eventObj = extend({}, event, null, true);
+        eventObj[this.fields.startTime] = eventData[this.fields.startTime];
+        eventObj[this.fields.endTime] = eventData[this.fields.endTime];
+        let currentDate = resetTime(new Date(this.dateRender[this.day].getTime()));
+        let schedule = getStartEndHours(currentDate, this.startHour, this.endHour);
+        let isValidEvent = this.isValidEvent(eventObj, startTime, endTime, schedule);
+        if (startTime <= endTime && isValidEvent) {
             let appWidth = this.getEventWidth(startTime, endTime, event[this.fields.isAllDay], diffInDays);
             appWidth = this.renderType === 'day' ? appWidth - 2 : appWidth;
             let appLeft = 0;
@@ -15028,13 +15075,6 @@ class VerticalEvent extends EventBase {
             this.resources.forEach((resource, index) => this.dateRender[index] = resource.renderDates);
         }
     }
-    isValidEvent(eventObj, start, end, schedule) {
-        let isHourRange = end.getTime() > schedule.startHour.getTime() && start.getTime() < schedule.endHour.getTime();
-        let isSameRange = schedule.startHour.getTime() <= start.getTime() &&
-            eventObj[this.fields.startTime].getTime() >= schedule.startHour.getTime() &&
-            eventObj[this.fields.endTime].getTime() < schedule.endHour.getTime() && start.getTime() === end.getTime();
-        return isHourRange || isSameRange;
-    }
     getHeight(start, end) {
         let appHeight = (end.getTime() - start.getTime()) / (60 * 1000) * (this.cellHeight * this.slotCount) / this.interval;
         appHeight = (appHeight <= 0) ? this.cellHeight : appHeight;
@@ -15167,7 +15207,8 @@ class VerticalEvent extends EventBase {
                 'tabindex': '0',
                 'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record),
                 'aria-selected': 'false',
-                'aria-grabbed': 'true'
+                'aria-grabbed': 'true',
+                'aria-label': this.parent.getAnnocementString(record)
             }
         });
         if (record[this.fields.isReadonly]) {
@@ -16044,6 +16085,7 @@ class DragAndDrop extends ActionBase {
             this.actionObj.clone.style.top = formatUnit(offsetTop);
         }
         let rowIndex = offsetTop / this.actionObj.cellHeight;
+        let heightPerMinute = this.actionObj.cellHeight / this.actionObj.slotInterval;
         let diffInMinutes = parseInt(this.actionObj.clone.style.top, 10) - offsetTop;
         let tr;
         if (this.isAllDayDrag) {
@@ -16073,26 +16115,14 @@ class DragAndDrop extends ActionBase {
             this.appendCloneElement(this.getEventWrapper(colIndex));
             let spanHours = -(((this.actionObj.slotInterval / this.actionObj.cellHeight) * diffInMinutes) * (MS_PER_MINUTE));
             dragStart$$1 = this.parent.getDateFromElement(td);
-            if (this.actionObj.slotInterval === this.actionObj.interval) {
-                if (this.actionObj.clone.querySelector('.' + EVENT_ICON_UP_CLASS)) {
-                    let startTime = new Date(eventStart.getTime());
-                    spanHours = addDays(resetTime(new Date(startTime.getTime())), 1).getTime() - startTime.getTime();
-                }
-                dragStart$$1.setMinutes(dragStart$$1.getMinutes() + (diffInMinutes * this.heightPerMinute));
-                dragStart$$1.setMilliseconds(-spanHours);
+            if (this.actionObj.clone.querySelector('.' + EVENT_ICON_UP_CLASS)) {
+                let startTime = new Date(eventStart.getTime());
+                spanHours = addDays(resetTime(new Date(startTime.getTime())), 1).getTime() - startTime.getTime();
             }
-            else {
-                let hightDiff = this.getHeightDiff(tr, index);
-                if (hightDiff !== 0) {
-                    let timeDiff = Math.round(hightDiff / this.heightPerMinute);
-                    dragStart$$1.setMinutes(dragStart$$1.getMinutes() + (timeDiff * this.actionObj.interval));
-                    dragStart$$1.setMinutes(dragStart$$1.getMinutes() - this.minDiff);
-                }
-                else {
-                    dragStart$$1 = this.actionObj.start;
-                }
-            }
+            dragStart$$1.setMinutes(dragStart$$1.getMinutes() + (diffInMinutes * heightPerMinute));
+            dragStart$$1.setMilliseconds(-spanHours);
             dragStart$$1 = this.calculateIntervalTime(dragStart$$1);
+            dragStart$$1.setMilliseconds(spanHours);
             dragEnd = new Date(dragStart$$1.getTime());
             if (this.actionObj.element.classList.contains(ALLDAY_APPOINTMENT_CLASS)) {
                 dragEnd.setMinutes(dragEnd.getMinutes() + this.actionObj.slotInterval);
@@ -16341,21 +16371,6 @@ class DragAndDrop extends ActionBase {
         }
         return offsetLeft;
     }
-    getHeightDiff(tr, index) {
-        let pages = this.scrollArgs.element.getBoundingClientRect();
-        if (pages.top <= this.actionObj.pageY && pages.bottom >= this.actionObj.pageY) {
-            let targetTop = tr.children[index].offsetTop;
-            let pageY = this.actionObj.pageY - pages.top;
-            if (this.parent.enableRtl) {
-                return (targetTop + this.actionObj.cellHeight) - (this.scrollArgs.element.scrollTop + pageY);
-            }
-            else {
-                return (this.scrollArgs.element.scrollTop + pageY) - targetTop;
-            }
-        }
-        return 0;
-    }
-    ;
     getWidthDiff(tr, index) {
         let pages = this.scrollArgs.element.getBoundingClientRect();
         if (pages.left <= this.actionObj.pageX && pages.right >= this.actionObj.pageX) {
@@ -18218,6 +18233,8 @@ class Month extends ViewBase {
         ntd.appendChild(dateHeader);
         if (this.getModuleName() === 'month') {
             addClass([dateHeader], NAVIGATE_CLASS);
+            let annocementText = this.parent.globalize.formatDate(data.date, { skeleton: 'full', calendar: this.parent.getCalendarMode() });
+            dateHeader.setAttribute('aria-label', annocementText);
         }
     }
     getMonthStart(currentDate) {
@@ -18385,7 +18402,8 @@ class AgendaBase {
                         'tabindex': '0',
                         'aria-readonly': this.parent.eventBase.getReadonlyAttribute(listData[li]),
                         'aria-selected': 'false',
-                        'aria-grabbed': 'true'
+                        'aria-grabbed': 'true',
+                        'aria-label': this.parent.getAnnocementString(listData[li])
                     }
                 });
                 if (!isNullOrUndefined(groupIndex)) {
@@ -19901,7 +19919,8 @@ class YearEvent extends TimelineEvent {
                 'data-id': 'Appointment_' + record[this.fields.id],
                 'data-guid': record.Guid,
                 'role': 'button', 'tabindex': '0',
-                'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true'
+                'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true',
+                'aria-label': this.parent.getAnnocementString(record)
             }
         });
         if (this.cssClass) {
@@ -20404,6 +20423,11 @@ class TimelineYear extends Year {
                     className: DATE_HEADER_CLASS + ' ' + NAVIGATE_CLASS,
                     innerHTML: (isDateAvail) ? date.getDate().toString() : ''
                 });
+                let annocementText = this.parent.globalize.formatDate(date, {
+                    skeleton: 'full',
+                    calendar: this.parent.getCalendarMode()
+                });
+                dateHeader.setAttribute('aria-label', annocementText);
                 if (isDateAvail) {
                     let tds = [td];
                     let classList$$1 = [];

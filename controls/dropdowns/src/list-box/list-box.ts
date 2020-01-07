@@ -705,6 +705,12 @@ export class ListBox extends DropDownBase {
     }
 
     private beforeDragEnd(args: DropEventArgs): void {
+        let dragValue: string = args.droppedElement.getAttribute('data-value');
+        if ((this.value as string[]).indexOf(dragValue) > -1) {
+            args.items = this.getDataByValues(this.value);
+        } else {
+            args.items = this.getDataByValues([dragValue]);
+        }
         this.trigger('beforeDrop', args);
     }
    // tslint:disable-next-line:max-func-body-length
@@ -727,46 +733,29 @@ export class ListBox extends DropDownBase {
             let ul: Element = this.ulElement;
             listData = [].slice.call(this.listData); liColl = [].slice.call(this.liCollections);
             jsonData = [].slice.call(this.jsonData); sortedData = [].slice.call(this.sortedData);
-            let fLiColl: HTMLElement[] = [].slice.call(this.liCollections);
             let toIdx: number = args.currentIndex = this.getCurIdx(this, args.currentIndex);
             let rIdx: number = listData.indexOf(this.getDataByValue(dropValue));
             let jsonIdx: number = jsonData.indexOf(this.getDataByValue(dropValue));
             let sIdx: number = sortedData.indexOf(this.getDataByValue(dropValue));
-            selectedOptions = (this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 && this.allowDragAll)
-            ? this.value : [dropValue];
-            droppedData = this.getDataByValue(dropValue);
-            if (args.handled) {
-                jsonData.splice(toIdx, 0, droppedData); listData.splice(toIdx, 0, droppedData);
-                let rLi: HTMLElement = fLiColl.splice(rIdx, 1)[0];
-                liColl.splice(toIdx, 0, rLi); sortedData.splice(toIdx, 0, droppedData);
-            } else {
-                listData.splice(toIdx, 0, listData.splice(rIdx, 1)[0] as obj);
-                jsonData.splice(toIdx, 0, jsonData.splice(jsonIdx, 1)[0] as obj);
-                sortedData.splice(toIdx, 0, sortedData.splice(sIdx, 1)[0] as obj);
-                liColl.splice(toIdx, 0, liColl.splice(rIdx, 1)[0] as HTMLElement);
-            }
+            listData.splice(toIdx, 0, listData.splice(rIdx, 1)[0] as obj);
+            jsonData.splice(toIdx, 0, jsonData.splice(jsonIdx, 1)[0] as obj);
+            sortedData.splice(toIdx, 0, sortedData.splice(sIdx, 1)[0] as obj);
+            liColl.splice(toIdx, 0, liColl.splice(rIdx, 1)[0] as HTMLElement);
             if (this.allowDragAll) {
                 selectedOptions = this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 ? this.value : [dropValue];
                 selectedOptions.forEach((value: string) => {
                     if (value !== dropValue) {
-                        toIdx++;
                         let idx: number = listData.indexOf(this.getDataByValue(value));
                         let jsonIdx: number = jsonData.indexOf(this.getDataByValue(value));
                         let sIdx: number = sortedData.indexOf(this.getDataByValue(value));
-                        let li: Element = this.getItems()[this.getIndexByValue(value)];
-                        if (args.handled) {
-                            listData.splice(toIdx, 0, listData[idx]);
-                            jsonData.splice(toIdx, 0, jsonData[jsonIdx]);
-                            sortedData.splice(toIdx, 0, sortedData[sIdx]);
-                            liColl.splice(toIdx, 0, liColl[idx].cloneNode(true) as HTMLElement);
-                            ul.insertBefore(li.cloneNode(true), ul.getElementsByClassName('e-placeholder')[0]);
-                        } else {
-                            listData.splice(toIdx, 0, listData.splice(idx, 1)[0] as obj);
-                            jsonData.splice(toIdx, 0, jsonData.splice(jsonIdx, 1)[0] as obj);
-                            sortedData.splice(toIdx, 0, sortedData.splice(sIdx, 1)[0] as obj);
-                            liColl.splice(toIdx, 0, liColl.splice(idx, 1)[0] as HTMLElement);
-                            ul.insertBefore(li, ul.getElementsByClassName('e-placeholder')[0]);
+                        if (idx > toIdx) {
+                            toIdx++;
                         }
+                        listData.splice(toIdx, 0, listData.splice(idx, 1)[0] as obj);
+                        jsonData.splice(toIdx, 0, jsonData.splice(jsonIdx, 1)[0] as obj);
+                        sortedData.splice(toIdx, 0, sortedData.splice(sIdx, 1)[0] as obj);
+                        liColl.splice(toIdx, 0, liColl.splice(idx, 1)[0] as HTMLElement);
+                        ul.insertBefore(this.getItems()[this.getIndexByValue(value)], ul.getElementsByClassName('e-placeholder')[0]);
                     }
                 });
             }
@@ -780,16 +769,11 @@ export class ListBox extends DropDownBase {
             selectedOptions = (this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 && this.allowDragAll)
             ? this.value : [dropValue];
             selectedOptions.forEach((value: string) => {
-                droppedData = this.getDataByValue(value); let rLi: HTMLElement;
+                droppedData = this.getDataByValue(value);
                 let srcIdx: number = (this.listData as dataType[]).indexOf(droppedData);
                 let jsonSrcIdx: number = (this.jsonData as dataType[]).indexOf(droppedData);
-                let sortIdx: number = (this.sortedData as dataType[]).indexOf(droppedData);
-                if (!args.handled) {
-                    this.listData.splice(srcIdx, 1); this.jsonData.splice(jsonSrcIdx, 1);
-                    this.sortedData.splice(sortIdx, 1); rLi = fLiColl.splice(srcIdx, 1)[0];
-                } else {
-                    rLi = fLiColl[srcIdx].cloneNode(true) as HTMLElement;
-                }
+                this.listData.splice(srcIdx, 1); this.jsonData.splice(jsonSrcIdx, 1);
+                let rLi: HTMLElement = fLiColl.splice(srcIdx, 1)[0];
                 let destIdx: number = value === dropValue ? args.currentIndex : currIdx;
                 listData.splice(destIdx, 0, droppedData); jsonData.splice(destIdx, 0, droppedData);
                 liColl.splice(destIdx, 0, rLi); sortedData.splice(destIdx, 0, droppedData);
@@ -805,11 +789,7 @@ export class ListBox extends DropDownBase {
                     li = this.getItems()[this.getIndexByValue(value)];
                 }
                 this.removeSelected(this, value === dropValue ? [args.droppedElement] : [li]);
-                if (!args.handled) {
-                    ul.insertBefore(li, ul.getElementsByClassName('e-placeholder')[0]);
-                } else if (value !== dropValue) {
-                    ul.insertBefore(li.cloneNode(true), ul.getElementsByClassName('e-placeholder')[0]);
-                }
+                ul.insertBefore(li, ul.getElementsByClassName('e-placeholder')[0]);
                 currIdx++;
             });
             this.updateSelectedOptions();
@@ -2127,6 +2107,9 @@ export class ListBox extends DropDownBase {
                     if (this.selectionSettings.showCheckbox) {
                         this.setCheckboxPosition();
                     }
+                    break;
+                case 'dataSource':
+                    this.jsonData = [].slice.call(this.dataSource);
                     break;
             }
         }

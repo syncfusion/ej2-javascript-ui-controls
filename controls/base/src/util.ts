@@ -182,7 +182,8 @@ export function extend(copied: Object, first: Object, second?: Object, deep?: bo
             let src: Object = result[key];
             let copy: Object = obj1[key];
             let clone: Object;
-            if (deep && !(src instanceof Event) && (isObject(copy) || Array.isArray(copy))) {
+            let blazorEventExtend: any = isBlazor() ? !(src instanceof Event) : true;
+            if (deep && blazorEventExtend && (isObject(copy) || Array.isArray(copy))) {
                 if (isObject(copy)) {
                     clone = src ? src : {};
                     if (Array.isArray(clone) && clone.hasOwnProperty('isComplexArray')) {

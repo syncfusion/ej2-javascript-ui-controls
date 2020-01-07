@@ -654,6 +654,26 @@ describe('Chips', () => {
                 let resultantdata: SelectedItem = chips.getSelectedChips() as SelectedItem;
                 expect(resultantdata.index).toBe(2);
             });
+            it('Chip component - selectedChips(Single) with aria-label', () => {
+                chips = new ChipList({ text: 'chip content', chips: stringArray.slice(), selection: "Single", selectedChips: 0 }, '#chip');
+                let chipCollection: HTMLElement[] = Array.prototype.slice.call(element.querySelectorAll('.e-chip'));
+                let activeElement: HTMLElement[] = Array.prototype.slice.call(element.querySelectorAll('.e-active'));
+                expect(activeElement.length).toBe(1);
+                let chipSelected: HTMLElement = activeElement[0]
+                expect(activeElement[0]).toBe(chipCollection[0]);
+                expect(chipSelected.getAttribute("aria-selected")).toBe('true');
+                //array of index = will select last one
+                chips.selectedChips = [1, 2];
+                chips.dataBind();
+                chipCollection = Array.prototype.slice.call(element.querySelectorAll('.e-chip'));
+                activeElement = Array.prototype.slice.call(element.querySelectorAll('.e-active'));
+                expect(activeElement.length).toBe(1);
+                expect(chipSelected.getAttribute("aria-selected")).toBe('false');
+                expect(activeElement[0].getAttribute("aria-selected")).toBe('true');
+                expect(activeElement[0]).toBe(chipCollection[2]);
+                let resultantdata: SelectedItem = chips.getSelectedChips() as SelectedItem;
+                expect(resultantdata.index).toBe(2);
+            });
             it('Chip component - selectedChips(Multiple)', () => {
                 chips = new ChipList({ text: 'chip content', chips: stringArray.slice(), selection: "Multiple", selectedChips: 0 }, '#chip');
                 let chipCollection: HTMLElement[] = Array.prototype.slice.call(element.querySelectorAll('.e-chip'));

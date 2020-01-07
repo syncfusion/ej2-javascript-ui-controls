@@ -729,3 +729,24 @@ describe('Spec for empty method ', () => {
         listObj.updateDataList();
     });
 });
+//Dummy spec l10nUpdateUndefinedHeader method
+describe('Spec for empty method ', () => {
+    let listObj: any;
+    let element: HTMLElement
+    beforeEach(() => {
+        element = createElement('div', { id: 'dropdownbase' });
+        document.body.appendChild(element);
+    });
+    afterEach(() => {
+        if (element) {
+            let parent: HTMLElement = element.parentElement as HTMLElement;
+            parent.remove();
+        };
+        document.body.innerHTML = '';
+    });
+    it('addItem method', () => {
+        listObj = new DropDownBase({ dataSource: datasource });
+        listObj.appendTo(element);
+        listObj.l10nUpdateUndefinedHeader();
+    });
+});

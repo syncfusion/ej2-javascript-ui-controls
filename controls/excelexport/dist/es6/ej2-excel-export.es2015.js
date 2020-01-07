@@ -267,8 +267,11 @@ class ValueFormatter {
         //     this.intl.culture = cultureName;
         // }
     }
-    getFormatFunction(format) {
+    getFormatFunction(format, isServerRendered) {
         if (format.type) {
+            if (isServerRendered) {
+                format.isServerRendered = true;
+            }
             return this.intl.getDateFormat(format);
         }
         else {
@@ -302,8 +305,8 @@ class ValueFormatter {
     //     }
     // }
     /* tslint:disable:no-any */
-    displayText(value, format) {
-        return this.toView(value, this.getFormatFunction(format));
+    displayText(value, format, isServerRendered) {
+        return this.toView(value, this.getFormatFunction(format, isServerRendered));
     }
 }
 
@@ -317,6 +320,9 @@ class CsvHelper {
         this.csvStr = '';
         this.formatter = new ValueFormatter();
         this.isMicrosoftBrowser = !(!navigator.msSaveBlob);
+        if (json.isServerRendered !== null && json.isServerRendered !== undefined) {
+            this.isServerRendered = json.isServerRendered;
+        }
         if (json.styles !== null && json.styles !== undefined) {
             this.globalStyles = new Map();
             for (let i = 0; i < json.styles.length; i++) {
@@ -381,21 +387,21 @@ class CsvHelper {
                 if (cell.style !== undefined && cell.style.numberFormat !== undefined) {
                     /* tslint:disable-next-line:max-line-length */
                     try {
-                        csv += this.parseCellValue(this.formatter.displayText(cell.value, { type: 'dateTime', skeleton: cell.style.numberFormat }));
+                        csv += this.parseCellValue(this.formatter.displayText(cell.value, { type: 'dateTime', skeleton: cell.style.numberFormat }, this.isServerRendered));
                     }
                     catch (error) {
                         /* tslint:disable-next-line:max-line-length */
-                        csv += this.parseCellValue(this.formatter.displayText(cell.value, { type: 'dateTime', format: cell.style.numberFormat }));
+                        csv += this.parseCellValue(this.formatter.displayText(cell.value, { type: 'dateTime', format: cell.style.numberFormat }, this.isServerRendered));
                     }
                 }
                 else if (cell.style !== undefined && cell.style.name !== undefined && this.globalStyles.has(cell.style.name)) {
                     /* tslint:disable-next-line:max-line-length */
                     try {
-                        csv += this.parseCellValue(this.formatter.displayText(cell.value, { type: 'dateTime', skeleton: this.globalStyles.get(cell.style.name) }));
+                        csv += this.parseCellValue(this.formatter.displayText(cell.value, { type: 'dateTime', skeleton: this.globalStyles.get(cell.style.name) }, this.isServerRendered));
                     }
                     catch (error) {
                         /* tslint:disable-next-line:max-line-length */
-                        csv += this.parseCellValue(this.formatter.displayText(cell.value, { type: 'dateTime', format: this.globalStyles.get(cell.style.name) }));
+                        csv += this.parseCellValue(this.formatter.displayText(cell.value, { type: 'dateTime', format: this.globalStyles.get(cell.style.name) }, this.isServerRendered));
                     }
                 }
                 else {
@@ -408,11 +414,11 @@ class CsvHelper {
             else if (typeof (cell.value) === 'number') {
                 if (cell.style !== undefined && cell.style.numberFormat !== undefined) {
                     /* tslint:disable-next-line:max-line-length */
-                    csv += this.parseCellValue(this.formatter.displayText(cell.value, { format: cell.style.numberFormat }));
+                    csv += this.parseCellValue(this.formatter.displayText(cell.value, { format: cell.style.numberFormat }, this.isServerRendered));
                 }
                 else if (cell.style !== undefined && cell.style.name !== undefined && this.globalStyles.has(cell.style.name)) {
                     /* tslint:disable-next-line:max-line-length */
-                    csv += this.parseCellValue(this.formatter.displayText(cell.value, { format: this.globalStyles.get(cell.style.name) }));
+                    csv += this.parseCellValue(this.formatter.displayText(cell.value, { format: this.globalStyles.get(cell.style.name) }, this.isServerRendered));
                 }
                 else {
                     csv += cell.value;

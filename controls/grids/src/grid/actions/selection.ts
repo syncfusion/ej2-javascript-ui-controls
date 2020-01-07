@@ -267,6 +267,7 @@ export class Selection implements IAction {
             return;
         }
         let isRowSelected: boolean = selectedRow.hasAttribute('aria-selected');
+        this.actualTarget = this.isInteracted ? this.actualTarget : null;
         isToggle = !isToggle ? isToggle :
             !this.selectedRowIndexes.length ? false :
                 (this.selectedRowIndexes.length === 1 ? (index === this.selectedRowIndexes[0]) : false);
@@ -2038,7 +2039,9 @@ export class Selection implements IAction {
                 }
                 this.updatePersistCollection(rows[j], checkState);
             }
-            this.isSingleSel() && indexes.length > 0 ? this.selectRow(indexes[0], true) : this.selectRows(indexes);
+            if (indexes.length > 0) {
+                this.isSingleSel() ? this.selectRow(indexes[0], true) : this.selectRows(indexes);
+            }
         }
         if (this.parent.isCheckBoxSelection && this.getCurrentBatchRecordChanges().length > 0) {
             this.setCheckAllState();

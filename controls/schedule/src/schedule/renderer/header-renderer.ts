@@ -466,15 +466,15 @@ export class HeaderRenderer {
      * @private
      */
     public destroy(): void {
-        if (this.headerPopup) {
+        if (this.headerPopup && !this.headerPopup.isDestroyed) {
             this.headerPopup.destroy();
             this.headerPopup = null;
         }
-        if (this.headerCalendar) {
+        if (this.headerCalendar && !this.headerCalendar.isDestroyed) {
             this.headerCalendar.destroy();
             this.headerCalendar = null;
         }
-        if (!this.toolbarObj.isDestroyed) {
+        if (this.toolbarObj && !this.toolbarObj.isDestroyed) {
             this.toolbarObj.destroy();
             this.removeEventListener();
             remove(this.element);

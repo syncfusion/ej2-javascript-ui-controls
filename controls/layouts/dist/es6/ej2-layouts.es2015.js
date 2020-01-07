@@ -239,6 +239,7 @@ let Splitter = class Splitter extends Component {
         this.isCollapsed();
         EventHandler.add(document, 'touchstart click', this.onDocumentClick, this);
         this.renderComplete();
+        EventHandler.add(this.element, 'keydown', this.onMove, this);
     }
     onDocumentClick(e) {
         if (!e.target.classList.contains(SPLIT_BAR) && !isNullOrUndefined(this.currentSeparator)) {
@@ -246,6 +247,68 @@ let Splitter = class Splitter extends Component {
             this.currentSeparator.classList.remove(SPLIT_BAR_ACTIVE);
         }
     }
+    checkPaneSize(e) {
+        let prePaneSize;
+        let nextPaneSize;
+        prePaneSize = this.orientation === 'Horizontal' ? this.previousPane.offsetWidth : this.previousPane.offsetHeight;
+        nextPaneSize = this.orientation === 'Horizontal' ? this.nextPane.offsetWidth : this.nextPane.offsetHeight;
+        if ((this.previousPane.style.flexBasis.indexOf('%') > 0 || this.nextPane.style.flexBasis.indexOf('%') > 0)) {
+            let previousFlexBasis = this.updatePaneFlexBasis(this.previousPane);
+            let nextFlexBasis = this.updatePaneFlexBasis(this.nextPane);
+            this.totalPercent = previousFlexBasis + nextFlexBasis;
+            this.totalWidth = this.convertPercentageToPixel(this.totalPercent + '%');
+            if (e.type === 'keydown' && (!isNullOrUndefined(e.keyCode))) {
+                if ((e.keyCode === 39 || (e.keyCode === 40)) && nextPaneSize > 0) {
+                    this.previousPane.style.flexBasis = (previousFlexBasis + 1) + '%';
+                    this.nextPane.style.flexBasis = (nextFlexBasis - 1) + '%';
+                }
+                else if ((e.keyCode === 37 || (e.keyCode === 38)) && prePaneSize > 0) {
+                    this.previousPane.style.flexBasis = (previousFlexBasis - 1) + '%';
+                    this.nextPane.style.flexBasis = (nextFlexBasis + 1) + '%';
+                }
+            }
+        }
+        else {
+            this.totalWidth = (this.orientation === 'Horizontal') ? this.previousPane.offsetWidth + this.nextPane.offsetWidth :
+                this.previousPane.offsetHeight + this.nextPane.offsetHeight;
+            if (e.type === 'keydown' && (!isNullOrUndefined(e.keyCode))) {
+                if ((e.keyCode === 39 || (e.keyCode === 40)) && nextPaneSize > 0) {
+                    this.addStaticPaneClass();
+                    this.previousPane.style.flexBasis = (prePaneSize + this.separatorSize) + 'px';
+                    this.nextPane.style.flexBasis = (nextPaneSize < this.separatorSize) ? '0px' :
+                        (nextPaneSize - this.separatorSize) + 'px';
+                }
+                else if ((e.keyCode === 37 || (e.keyCode === 38)) && prePaneSize > 0) {
+                    this.addStaticPaneClass();
+                    this.previousPane.style.flexBasis = (prePaneSize < this.separatorSize) ? '0px' :
+                        (prePaneSize - this.separatorSize) + 'px';
+                    this.nextPane.style.flexBasis = (nextPaneSize + this.separatorSize) + 'px';
+                }
+            }
+        }
+    }
+    onMove(event) {
+        let index = this.getSeparatorIndex(this.currentSeparator);
+        let isPrevpaneCollapsed = this.previousPane.classList.contains(COLLAPSE_PANE);
+        let isPrevpaneExpanded = this.previousPane.classList.contains(EXPAND_PANE);
+        let isNextpaneExpanded = this.nextPane.classList.contains(EXPAND_PANE);
+        let isNextpaneCollapsed = this.nextPane.classList.contains(COLLAPSE_PANE);
+        if (((this.orientation !== 'Horizontal' && event.keyCode === 38) || (this.orientation === 'Horizontal' && event.keyCode === 39) ||
+            (this.orientation === 'Horizontal' && event.keyCode === 37) || (this.orientation !== 'Horizontal' && event.keyCode === 40))
+            && (!isPrevpaneExpanded && !isNextpaneCollapsed && !isPrevpaneCollapsed || (isPrevpaneExpanded) && !isNextpaneCollapsed)) {
+            this.checkPaneSize(event);
+            this.triggerResizing(event);
+        }
+        else if (event.keyCode === 13 && this.paneSettings[index].collapsible) {
+            if (!this.previousPane.classList.contains(COLLAPSE_PANE)) {
+                this.collapse(index);
+            }
+            else {
+                this.expand(index);
+            }
+        }
+    }
+    ;
     /**
      * @hidden
      */
@@ -573,7 +636,12 @@ let Splitter = class Splitter extends Component {
         this.allBars.push(separator);
         let arrow1 = this.createElement('button');
         let arrow2 = this.createElement('button');
+        arrow1.setAttribute('tabindex', '-1');
+        arrow2.setAttribute('tabindex', '-1');
+        arrow1.setAttribute('aria-label', 'Toggle navigation');
+        arrow2.setAttribute('aria-label', 'Toggle navigation');
         let size;
+        let proxy;
         size = isNullOrUndefined(this.separatorSize) ? '1px' : this.separatorSize + 'px';
         if (this.orientation === 'Horizontal') {
             this.leftArrow = ARROW_LEFT;
@@ -596,6 +664,16 @@ let Splitter = class Splitter extends Component {
         this.addResizeHandler(separator);
         separator.appendChild(arrow1);
         this.updateCollapseIcons(i, arrow1, arrow2);
+        separator.setAttribute('tabindex', '0');
+        proxy = this;
+        separator.addEventListener('focus', () => {
+            separator.classList.add(SPLIT_BAR_ACTIVE);
+            proxy.currentSeparator = separator;
+            proxy.getPaneDetails();
+        });
+        separator.addEventListener('blur', () => {
+            separator.classList.remove(SPLIT_BAR_ACTIVE);
+        });
         return separator;
     }
     updateResizablePanes(index) {
@@ -1029,6 +1107,23 @@ let Splitter = class Splitter extends Component {
         this.updateBars(this.currentBarIndex);
         this.getPaneDetails();
     }
+    triggerResizing(e) {
+        let eventArgs = isBlazor() ? {
+            element: this.element,
+            event: e,
+            index: [this.prevPaneIndex, this.nextPaneIndex],
+            paneSize: [this.prePaneDimenson, this.nextPaneDimension],
+            separator: this.currentSeparator
+        } : {
+            element: this.element,
+            event: e,
+            pane: [this.previousPane, this.nextPane],
+            index: [this.prevPaneIndex, this.nextPaneIndex],
+            paneSize: [this.prePaneDimenson, this.nextPaneDimension],
+            separator: this.currentSeparator
+        };
+        this.trigger('resizing', eventArgs);
+    }
     onMouseDown(e) {
         e.preventDefault();
         let target = e.target;
@@ -1056,16 +1151,7 @@ let Splitter = class Splitter extends Component {
         this.trigger('resizeStart', eventArgs, (resizeStartArgs) => {
             if (!resizeStartArgs.cancel) {
                 this.wireResizeEvents();
-                if (this.previousPane.style.flexBasis.indexOf('%') > 0 || this.nextPane.style.flexBasis.indexOf('%') > 0) {
-                    let previousFlexBasis = this.updatePaneFlexBasis(this.previousPane);
-                    let nextFlexBasis = this.updatePaneFlexBasis(this.nextPane);
-                    this.totalPercent = previousFlexBasis + nextFlexBasis;
-                    this.totalWidth = this.convertPercentageToPixel(this.totalPercent + '%');
-                }
-                else {
-                    this.totalWidth = (this.orientation === 'Horizontal') ? this.previousPane.offsetWidth + this.nextPane.offsetWidth :
-                        this.previousPane.offsetHeight + this.nextPane.offsetHeight;
-                }
+                this.checkPaneSize(e);
             }
         });
     }
@@ -1250,21 +1336,7 @@ let Splitter = class Splitter extends Component {
         }
         this.getPaneDetails();
         this.getPaneDimensions();
-        let eventArgs = isBlazor() ? {
-            element: this.element,
-            event: e,
-            index: [this.prevPaneIndex, this.nextPaneIndex],
-            paneSize: [this.prePaneDimenson, this.nextPaneDimension],
-            separator: this.currentSeparator
-        } : {
-            element: this.element,
-            event: e,
-            pane: [this.previousPane, this.nextPane],
-            index: [this.prevPaneIndex, this.nextPaneIndex],
-            paneSize: [this.prePaneDimenson, this.nextPaneDimension],
-            separator: this.currentSeparator
-        };
-        this.trigger('resizing', eventArgs);
+        this.triggerResizing(e);
         let left = this.validateDraggedPosition(this.getSeparatorPosition(e), this.prePaneDimenson, this.nextPaneDimension);
         let separatorNewPosition;
         this.getBorder();
@@ -3974,6 +4046,7 @@ let DashboardLayout = class DashboardLayout extends Component {
      * @returns void
      */
     addPanel(panel) {
+        this.allowServerDataBinding = false;
         this.maxCol();
         if (!panel.minSizeX) {
             panel.minSizeX = 1;
@@ -4037,6 +4110,8 @@ let DashboardLayout = class DashboardLayout extends Component {
                 }
             }
         }
+        this.allowServerDataBinding = true;
+        this.serverDataBind();
     }
     /**
      * Allows to update a panel in the DashboardLayout.

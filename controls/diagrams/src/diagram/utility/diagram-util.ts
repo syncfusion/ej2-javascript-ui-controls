@@ -8,7 +8,7 @@ import { StrokeStyle, LinearGradient, RadialGradient, Stop } from './../core/app
 import { TextStyleModel, GradientModel, LinearGradientModel, RadialGradientModel } from './../core/appearance-model';
 import { Point } from './../primitives/point';
 import {
-    PortVisibility, ConnectorConstraints, NodeConstraints, Shapes,
+    PortVisibility, ConnectorConstraints, NodeConstraints, Shapes, UmlActivityFlows, BpmnFlows,
     UmlActivityShapes, PortConstraints, DiagramConstraints, DiagramTools, Transform, EventState, ChangeType
 } from './../enum/enum';
 import { FlowShapes, SelectorConstraints, ThumbsConstraints, FlipDirection, DistributeOptions } from './../enum/enum';
@@ -25,10 +25,10 @@ import {
 import {
     Node, FlowShape, BasicShape, Native, Html, UmlActivityShape, BpmnGateway, BpmnDataObject, BpmnEvent, BpmnSubEvent, BpmnActivity,
     BpmnAnnotation, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration,
-    Lane, Shape, Phase, ChildContainer, SwimLane, Path, Image, Text, BpmnShape, UmlClassifierShape, Header
+    Lane, Shape, Phase, ChildContainer, SwimLane, Path, Image, Text, BpmnShape, UmlClassifierShape, Header, DiagramShape
 } from './../objects/node';
 import { NodeModel } from './../objects/node-model';
-import { BpmnFlow, RelationShip } from './../objects/connector';
+import { BpmnFlow, RelationShip, DiagramConnectorShape } from './../objects/connector';
 import { Connector, bezierPoints, BezierSegment, ActivityFlow, StraightSegment, OrthogonalSegment } from './../objects/connector';
 import { ConnectorModel } from './../objects/connector-model';
 import { DecoratorModel } from './../objects/connector-model';
@@ -62,6 +62,7 @@ import { isBlazor, Browser } from '@syncfusion/ej2-base';
 import { TreeInfo, INode } from '../layout/layout-base';
 import { MouseEventArgs } from '../interaction/event-handlers';
 import { IBlazorDropEventArgs, IBlazorCollectionChangeEventArgs } from '../objects/interface/IElement';
+
 
 
 
@@ -118,7 +119,9 @@ export function setSwimLaneDefaults(child: NodeModel | ConnectorModel, node: Nod
  */
 export function setUMLActivityDefaults(child: NodeModel | ConnectorModel, node: NodeModel | ConnectorModel): void {
     if (node instanceof Node) {
-        switch ((child.shape as UmlActivityShape).shape) {
+        let shape: UmlActivityShapes = (isBlazor() ? (child.shape as DiagramShape).umlActivityShape :
+            (child.shape as UmlActivityShape).shape);
+        switch (shape) {
             case 'JoinNode':
                 if (!(child as NodeModel).width) {
                     node.width = 20;
@@ -153,7 +156,9 @@ export function setUMLActivityDefaults(child: NodeModel | ConnectorModel, node: 
                 break;
         }
     } else {
-        switch ((child.shape as ActivityFlow).flow) {
+        let flow: UmlActivityFlows = (isBlazor() ?
+            (child.shape as DiagramConnectorShape).umlActivityFlow : (child.shape as ActivityFlow).flow);
+        switch (flow) {
             case 'Object':
                 if (!child.style || !child.style.strokeDashArray) {
                     node.style.strokeDashArray = '8 4';
@@ -179,14 +184,15 @@ export function setUMLActivityDefaults(child: NodeModel | ConnectorModel, node: 
         }
     }
 }
-
+/* tslint:disable */
 /**
  * @private
  */
 export function setConnectorDefaults(child: ConnectorModel, node: ConnectorModel): void {
     switch ((child.shape).type) {
         case 'Bpmn':
-            switch ((child.shape as BpmnFlow).flow) {
+            let bpmnFlow: BpmnFlows = (isBlazor() ? (child.shape as DiagramConnectorShape).bpmnFlow : (child.shape as BpmnFlow).flow);
+            switch (bpmnFlow) {
                 case 'Sequence':
                     if (((((child.shape as BpmnFlow).sequence) === 'Normal' && child.type !== 'Bezier')) ||
                         (((child.shape as BpmnFlow).sequence) === 'Default') || (((child.shape as BpmnFlow).sequence) === 'Conditional')) {
@@ -230,7 +236,9 @@ export function setConnectorDefaults(child: ConnectorModel, node: ConnectorModel
             }
             break;
         case 'UmlActivity':
-            switch ((child.shape as ActivityFlow).flow) {
+            let flow: UmlActivityFlows = (isBlazor() ?
+                (child.shape as DiagramConnectorShape).umlActivityFlow : (child.shape as ActivityFlow).flow);
+            switch (flow) {
                 case 'Exception':
                     if ((((child.shape as BpmnFlow).association) === 'Directional') ||
                         (((child.shape as BpmnFlow).association) === 'BiDirectional')) {
@@ -258,7 +266,8 @@ export function setConnectorDefaults(child: ConnectorModel, node: ConnectorModel
                         child.sourceDecorator.style.fill) || 'black';
                 }
                 hasRelation = true;
-            } else if ((child.shape as RelationShip).relationship === 'Aggregation') {
+            } else if ((child.shape as RelationShip).relationship === 'Aggregation' ||
+            (child.shape as RelationShip).relationship === undefined) {
                 if (node.sourceDecorator && node.sourceDecorator.style) {
                     node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
                         child.sourceDecorator.style.fill) || 'white';
@@ -281,7 +290,7 @@ export function setConnectorDefaults(child: ConnectorModel, node: ConnectorModel
             break;
     }
 }
-
+/* tslint:enable */
 /** @private */
 export function findNearestPoint(reference: PointModel, start: PointModel, end: PointModel): PointModel {
     let shortestPoint: PointModel;
@@ -410,7 +419,7 @@ export function updateDefaultValues(
                                 updateDefaultValues(actualNode[key], plainValue[key], defaultValue[key]);
                             } else {
                                 createObject = new PointPort(property, 'ports', defaultValue[key]);
-                                property.ports.push(createObject);
+                                (property as NodeModel).ports.push(createObject);
                             }
                         }
 
@@ -444,6 +453,15 @@ export function updateLayoutValue(actualNode: TreeInfo, defaultValue: object, no
             }
         }
     }
+    if (!actualNode.hasSubTree && (defaultValue as TreeInfo).canEnableSubTree) {
+        actualNode.orientation = (node as Node).layoutInfo.orientation;
+        actualNode.type = (node as Node).layoutInfo.type;
+        if ((node as Node).layoutInfo.offset !== actualNode.offset && ((node as Node).layoutInfo.offset) !== undefined) {
+            actualNode.offset = (node as Node).layoutInfo.offset;
+        }
+    }
+    (node as Node).layoutInfo.hasSubTree = actualNode.hasSubTree;
+
 }
 /* tslint:enable:no-string-literal */
 
@@ -1010,6 +1028,7 @@ function getConstructor(model: object, defaultObject: object): object {
 /* tslint:enable */
 /** @private */
 export function deserialize(model: string, diagram: Diagram): Object {
+    diagram.enableServerDataBinding(false);
     diagram.clear();
     diagram.protectPropertyChange(true);
     let map: Function | string = diagram.dataSourceSettings.doBinding;
@@ -1095,6 +1114,7 @@ export function deserialize(model: string, diagram: Diagram): Object {
         dataObj.selectedItems.connectors = [];
     }
     diagram.selectedItems = dataObj.selectedItems;
+    diagram.enableServerDataBinding(true);
     return dataObj;
 }
 
@@ -1173,8 +1193,10 @@ export function updateStyle(changedObject: TextStyleModel, target: DiagramElemen
                 style.textDecoration = changedObject.textDecoration;
                 break;
             case 'gradient':
-                updateGradient(changedObject.gradient, style.gradient);
-                break;
+                if (style.gradient) {
+                    updateGradient(changedObject.gradient, style.gradient);
+                    break;
+                }
         }
     }
     if (target instanceof TextElement) {
@@ -1309,21 +1331,26 @@ export function updateShape(node: Node, actualObject: Node, oldObject: Node, dia
         case 'Basic':
             let element: DiagramElement;
 
-            element = (actualObject.shape as BasicShape).shape === 'Rectangle' ? new DiagramElement() : new PathElement();
-            if ((actualObject.shape as BasicShape).shape === 'Polygon') {
+            element = ((isBlazor() ? (actualObject.shape as DiagramShape).basicShape === 'Rectangle' :
+                (actualObject.shape as BasicShape).shape === 'Rectangle')) ? new DiagramElement() : new PathElement();
+            if ((!isBlazor() && (actualObject.shape as BasicShape).shape === 'Polygon') ||
+                (isBlazor() && (actualObject.shape as DiagramShape).basicShape === 'Polygon')) {
                 (element as PathElement).data = getPolygonPath((actualObject.shape as BasicShape).points) as string;
             } else {
-                (element as PathElement).data = getBasicShape((actualObject.shape as BasicShape).shape);
+                (element as PathElement).data = getBasicShape((isBlazor() ? (actualObject.shape as DiagramShape).basicShape :
+                    (actualObject.shape as BasicShape).shape));
             }
             updateShapeContent(content, actualObject, diagram);
-            if ((actualObject.shape as BasicShape).shape === 'Rectangle') {
+            if ((!isBlazor() && (actualObject.shape as BasicShape).shape === 'Rectangle') ||
+                (isBlazor() && (actualObject.shape as DiagramShape).basicShape === 'Rectangle')) {
                 element.cornerRadius = (actualObject.shape as BasicShape).cornerRadius;
             }
             content = element;
             break;
         case 'Flow':
             let flowShapeElement: PathElement = new PathElement();
-            flowShapeElement.data = getFlowShape((actualObject.shape as FlowShape).shape);
+            let shape: string = (isBlazor()) ? (actualObject.shape as DiagramShape).flowShape : (actualObject.shape as FlowShape).shape;
+            flowShapeElement.data = getFlowShape(shape);
             content = flowShapeElement;
             updateShapeContent(content, actualObject, diagram);
             break;
@@ -1388,7 +1415,9 @@ export function updateContent(newValues: Node, actualObject: Node, diagram: Diag
             let shapes: FlowShapes = (actualObject.shape as FlowShapeModel).shape;
             let flowshapedata: string = getFlowShape(shapes.toString());
             (actualObject.wrapper.children[0] as PathModel).data = flowshapedata;
-        } else if (actualObject.shape.type === 'UmlActivity' && (newValues.shape as UmlActivityShapeModel).shape !== undefined) {
+        } else if (actualObject.shape.type === 'UmlActivity' &&
+            ((isBlazor() && (newValues.shape as DiagramShape).umlActivityShape !== undefined) ||
+                (!isBlazor() && (newValues.shape as UmlActivityShapeModel).shape !== undefined))) {
             updateUmlActivityNode(actualObject, newValues);
         } else if ((newValues.shape as BasicShapeModel).cornerRadius !== undefined) {
             (actualObject.wrapper.children[0] as BasicShapeModel).cornerRadius = (newValues.shape as BasicShapeModel).cornerRadius;
@@ -1403,15 +1432,24 @@ export function updateContent(newValues: Node, actualObject: Node, diagram: Diag
 }
 /** @private */
 export function updateUmlActivityNode(actualObject: Node, newValues: Node): void {
-    (actualObject.shape as UmlActivityShapeModel).shape = (newValues.shape as UmlActivityShapeModel).shape;
-    let shapes: UmlActivityShapes = (actualObject.shape as UmlActivityShapeModel).shape;
+    if (!isBlazor()) {
+        (actualObject.shape as UmlActivityShapeModel).shape = (newValues.shape as UmlActivityShapeModel).shape;
+    } else {
+        (actualObject.shape as DiagramShape).umlActivityShape = (newValues.shape as DiagramShape).umlActivityShape;
+    }
+    let shapes: UmlActivityShapes = !isBlazor() ? (actualObject.shape as UmlActivityShapeModel).shape :
+        (actualObject.shape as DiagramShape).umlActivityShape;
     let umlActivityShapeData: string = getUMLActivityShape(shapes.toString());
-    if ((actualObject.shape as UmlActivityShapeModel).shape === 'InitialNode') {
+    if ((isBlazor() && (actualObject.shape as DiagramShape).umlActivityShape === 'InitialNode') ||
+        (!isBlazor() && (actualObject.shape as UmlActivityShapeModel).shape === 'InitialNode')) {
         actualObject.wrapper.children[0].style.fill = 'black';
-    } else if ((actualObject.shape as UmlActivityShapeModel).shape === 'ForkNode' ||
-        (actualObject.shape as UmlActivityShapeModel).shape === 'JoinNode') {
+    } else if ((!isBlazor() && ((actualObject.shape as UmlActivityShapeModel).shape === 'ForkNode' ||
+        (actualObject.shape as UmlActivityShapeModel).shape === 'JoinNode')) ||
+        ((isBlazor() && ((actualObject.shape as DiagramShape).umlActivityShape === 'ForkNode' ||
+            (actualObject.shape as DiagramShape).umlActivityShape === 'JoinNode')))) {
         actualObject.wrapper.children[0].style.fill = 'black';
-    } else if ((actualObject.shape as UmlActivityShapeModel).shape === 'FinalNode') {
+    } else if ((!isBlazor() && (actualObject.shape as UmlActivityShapeModel).shape === 'FinalNode') ||
+        (isBlazor() && (actualObject.shape as DiagramShape).umlActivityShape === 'FinalNode')) {
         if (actualObject instanceof Node) {
             actualObject.wrapper = getUMLFinalNode(actualObject);
         }
@@ -1457,10 +1495,11 @@ export function getUMLFinalNode(node: Node): Canvas {
 
 /** @private */
 export function getUMLActivityShapes(umlActivityShape: PathElement, content: DiagramElement, node: Node): DiagramElement {
-    let umlActivityShapeData: string = getUMLActivityShape((node.shape as UmlActivityShape).shape);
+    let shape: UmlActivityShapes = (isBlazor() ? (node.shape as DiagramShape).umlActivityShape : (node.shape as UmlActivityShape).shape);
+    let umlActivityShapeData: string = getUMLActivityShape(shape);
     umlActivityShape.data = umlActivityShapeData;
     content = umlActivityShape;
-    switch ((node.shape as UmlActivityShape).shape) {
+    switch (shape) {
         case 'StructuredNode':
             if (node.annotations) {
                 for (let i: number = 0; i < node.annotations.length; i++) {
@@ -1628,9 +1667,12 @@ export function findPort(node: NodeModel | ConnectorModel, id: string): PointPor
     let port: PointPortModel;
     let portId: string[] = id.split('_');
     id = portId[portId.length - 1];
-    for (let i: number = 0; i < node.ports.length; i++) {
-        if (id === node.ports[i].id) {
-            return node.ports[i];
+    if (node as NodeModel) {
+        node = node as NodeModel;
+        for (let i: number = 0; i < node.ports.length; i++) {
+            if (id === node.ports[i].id) {
+                return node.ports[i];
+            }
         }
     }
     return port;
@@ -1661,7 +1703,8 @@ export function getInOutConnectPorts(node: NodeModel, isInConnect: boolean): Poi
 /** @private */
 export function findObjectIndex(node: NodeModel | ConnectorModel, id: string, annotation?: boolean): string {
     let index: number;
-    let collection: (PointPortModel | ShapeAnnotationModel | PathAnnotationModel)[] = (annotation) ? node.annotations : node.ports;
+    let collection: (PointPortModel | ShapeAnnotationModel | PathAnnotationModel)[]
+        = (annotation) ? node.annotations : (node as NodeModel).ports;
     for (let i: number = 0; i < collection.length; i++) {
         if (collection[i].id === id) {
             return (i).toString();
@@ -2046,7 +2089,17 @@ export function cloneBlazorObject(args: object): Object {
 /** @private */
 export function checkBrowserInfo(): boolean {
     if ((navigator.platform.indexOf('Mac') >= 0 || navigator.platform.indexOf('iPad') >= 0
-        || navigator.platform.indexOf('iPhone') >= 0) && Browser.info.name === 'safari') {
+        || navigator.platform.indexOf('iPhone') >= 0 || navigator.platform.indexOf('MacIntel') >= 0)
+        && (Browser.info.name === 'safari' || Browser.info.name === 'webkit')) {
+        return true;
+    }
+    return false;
+}
+
+/** @private */
+export function canMeasureDecoratorPath(objects: string[]): boolean {
+    if (objects.indexOf('shape') !== -1 || objects.indexOf('pathData') !== -1 ||
+        objects.indexOf('width') !== -1 || objects.indexOf('height') !== -1) {
         return true;
     }
     return false;

@@ -320,7 +320,7 @@ export class TextLayer {
                             initId = 0;
                             lastId = length;
                         }
-                        if (startId === endId) {
+                        if (startId === endId && startPage === endPage) {
                             initId = anchorOffset;
                             lastId = focusOffset;
                         }

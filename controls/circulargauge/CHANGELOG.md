@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## 17.4.41 (2020-01-07)
+
+### CircularGauge
+
+#### Bug Fixes
+
+- `#256184` - The unwanted div element appended in the DOM is removed now.
+
 ## 17.3.9-beta (2019-09-20)
 
 ### CircularGauge

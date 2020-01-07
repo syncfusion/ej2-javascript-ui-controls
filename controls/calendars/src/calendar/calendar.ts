@@ -2052,9 +2052,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         date.setFullYear(value.getFullYear(), value.getMonth(), date.getDate());
         if (value.getMonth() !== date.getMonth()) {
             date.setDate(0);
+            this.currentDate = new Date(this.checkValue(value));
         }
         this.setProperties({ value: new Date(this.checkValue(date)) }, true);
-        this.currentDate = new Date(this.checkValue(value));
     }
     protected compareMonth(start: Date, end: Date): number {
         let result: number;

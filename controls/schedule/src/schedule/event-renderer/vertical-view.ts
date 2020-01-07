@@ -84,14 +84,6 @@ export class VerticalEvent extends EventBase {
         }
     }
 
-    private isValidEvent(eventObj: { [key: string]: Object }, start: Date, end: Date, schedule: { [key: string]: Date }): boolean {
-        let isHourRange: boolean = end.getTime() > schedule.startHour.getTime() && start.getTime() < schedule.endHour.getTime();
-        let isSameRange: boolean = schedule.startHour.getTime() <= start.getTime() &&
-            (<Date>eventObj[this.fields.startTime]).getTime() >= schedule.startHour.getTime() &&
-            (<Date>eventObj[this.fields.endTime]).getTime() < schedule.endHour.getTime() && start.getTime() === end.getTime();
-        return isHourRange || isSameRange;
-    }
-
     public getHeight(start: Date, end: Date): number {
         let appHeight: number = (end.getTime() - start.getTime()) / (60 * 1000) * (this.cellHeight * this.slotCount) / this.interval;
         appHeight = (appHeight <= 0) ? this.cellHeight : appHeight;
@@ -226,7 +218,8 @@ export class VerticalEvent extends EventBase {
                 'tabindex': '0',
                 'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record),
                 'aria-selected': 'false',
-                'aria-grabbed': 'true'
+                'aria-grabbed': 'true',
+                'aria-label': this.parent.getAnnocementString(record)
             }
         });
         if (record[this.fields.isReadonly]) {

@@ -20,7 +20,8 @@ export class Rte implements IComponent {
     }
 
     public render(e: NotifyParams): void {
-        this.compObj = new RichTextEditor(this.parent.model as RichTextEditorModel, e.target);
+        this.compObj = new RichTextEditor(this.parent.model as RichTextEditorModel);
+        this.compObj.appendTo(e.target);
     }
 
     public focus(): void {

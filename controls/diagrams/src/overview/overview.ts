@@ -374,12 +374,14 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private renderNativeLayer(canvas: HTMLElement, view: Overview): void {
-        let nativeLayerSvg: SVGElement = this.parent.createSvg(
-            this.element.id + '_nativeLayer_svg', this.model.width, this.model.height);
-        let nativeLayer: SVGElement = createSvgElement('g', { 'id': this.element.id + '_nativeLayer' });
-        nativeLayerSvg.appendChild(nativeLayer);
-        view.diagramLayerDiv.appendChild(nativeLayerSvg);
-        setAttributeSvg(nativeLayerSvg, { 'class': 'e-native-layer' });
+        if (!document.getElementById(this.element.id + '_nativeLayer_svg')) {
+            let nativeLayerSvg: SVGElement = this.parent.createSvg(
+                this.element.id + '_nativeLayer_svg', this.model.width, this.model.height);
+            let nativeLayer: SVGElement = createSvgElement('g', { 'id': this.element.id + '_nativeLayer' });
+            nativeLayerSvg.appendChild(nativeLayer);
+            view.diagramLayerDiv.appendChild(nativeLayerSvg);
+            setAttributeSvg(nativeLayerSvg, { 'class': 'e-native-layer' });
+        }
     }
 
     private addOverviewRectPanel(view: Overview): void {

@@ -1,10 +1,12 @@
 @import 'ej2-base/styles/bootstrap-definition.scss';
-@import './../ribbon/bootstrap-definition.scss';
+@import '../ribbon/bootstrap-definition.scss';
 @import 'ej2-buttons/styles/button/bootstrap-definition.scss';
 @import 'ej2-buttons/styles/check-box/bootstrap-definition.scss';
 @import 'ej2-navigations/styles/tab/bootstrap-definition.scss';
 @import 'ej2-navigations/styles/toolbar/bootstrap-definition.scss';
 @import 'ej2-grids/styles/grid/bootstrap-definition.scss';
+@import 'ej2-calendars/styles/datepicker/bootstrap-definition.scss';
+@import 'ej2-calendars/styles/datetimepicker/bootstrap-definition.scss';
 @import 'bootstrap-definition.scss';
 @import 'icons/bootstrap.scss';
 @import 'all.scss';

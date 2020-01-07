@@ -1495,7 +1495,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Reopen': 'Reopen',
         'No comments in this document': 'No comments in this document',
         'more': 'more',
-        'Type your comment hear': 'Type your comment hear',
+        'Type your comment here': 'Type your comment here',
         'Next Comment': 'Next Comment',
         'Previous Comment': 'Previous Comment',
         'Un-posted comments': 'Un-posted comments',

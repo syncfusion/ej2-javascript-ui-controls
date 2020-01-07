@@ -225,6 +225,10 @@ export interface SymbolPaletteModel extends ComponentModel{
     /**
      * Defines how many palettes can be at expanded mode at a time
      * @default 'Multiple'
+     * @aspDefaultValueIgnore
+     * @blazorType Syncfusion.EJ2.Blazor.Navigations.ExpandMode
+     * @blazorDefaultValue Syncfusion.EJ2.Blazor.Navigations.ExpandMode.Multiple
+     * @isEnumeration true
      */
     expandMode?: ExpandMode;
 

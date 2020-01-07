@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 17.4.40 (2019-12-24)
+## 17.4.41 (2020-01-07)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Issue with 'setRulesFromSql' method is fixed.
+
+## 17.4.39 (2019-12-17)
 
 ### QueryBuilder
 

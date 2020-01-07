@@ -366,14 +366,16 @@ function getExpandStatus(parent, record, parents) {
  */
 function findChildrenRecords(records) {
     let datas = [];
-    if (isNullOrUndefined(records) || !records.hasChildRecords) {
+    if (isNullOrUndefined(records) || (!records.hasChildRecords && !isNullOrUndefined(records.childRecords)
+        && !records.childRecords.length)) {
         return [];
     }
     if (!isNullOrUndefined(records.childRecords)) {
         let childRecords = records.childRecords;
         for (let i = 0, len = Object.keys(childRecords).length; i < len; i++) {
             datas.push(childRecords[i]);
-            if (childRecords[i].hasChildRecords) {
+            if (childRecords[i].hasChildRecords || (!isNullOrUndefined(childRecords[i].childRecords) &&
+                childRecords[i].childRecords.length)) {
                 datas = [...datas, ...findChildrenRecords(childRecords[i])];
             }
         }
@@ -555,11 +557,14 @@ class Selection {
             containerELe.insertBefore(checkWrap, containerELe.querySelectorAll('.e-treecell')[0]);
         }
         else {
-            let spanEle = checkWrap.querySelector('.e-label');
+            let spanEle = this.parent.createElement('span', { className: 'e-treecheckbox' });
             let data = container.cell.innerHTML;
             container.cell.innerHTML = '';
             spanEle.innerHTML = data;
-            container.cell.appendChild(checkWrap);
+            let divEle = this.parent.createElement('div', { className: 'e-treecheckbox-container' });
+            divEle.appendChild(checkWrap);
+            divEle.appendChild(spanEle);
+            container.cell.appendChild(divEle);
         }
     }
     selectCheckboxes(rowIndexes) {
@@ -1020,9 +1025,7 @@ class Render {
         }
         if (grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex
             && (args.requestType === 'add' || args.requestType === 'delete' || isNullOrUndefined(args.cell.querySelector('.e-treecell')))) {
-            let container = createElement('div', {
-                className: 'e-treecolumn-container'
-            });
+            let container = createElement('div', { className: 'e-treecolumn-container' });
             let emptyExpandIcon = createElement('span', {
                 className: 'e-icons e-none',
                 styles: 'width: 10px; display: inline-block'
@@ -1038,9 +1041,7 @@ class Render {
             }
             if (iconRequired) {
                 addClass([args.cell], 'e-treerowcell');
-                let expandIcon = createElement('span', {
-                    className: 'e-icons'
-                });
+                let expandIcon = createElement('span', { className: 'e-icons' });
                 let expand;
                 if (this.parent.initialRender) {
                     expand = data.expanded &&
@@ -1073,9 +1074,7 @@ class Render {
             // if (data.hasChildRecords) {
             //     addClass([expandIcon], data.expanded ? 'e-treegridexpand' : 'e-treegridcollapse');
             // }
-            cellElement = createElement('span', {
-                className: 'e-treecell'
-            });
+            cellElement = createElement('span', { className: 'e-treecell' });
             if (this.parent.allowTextWrap) {
                 cellElement.style.width = 'Calc(100% - ' + totalIconsWidth + 'px)';
             }
@@ -1094,6 +1093,13 @@ class Render {
                 let checkboxElement = args.cell.querySelectorAll('.e-frame')[0];
                 let width = parseInt(checkboxElement.style.width, 16);
                 totalIconsWidth += width;
+                totalIconsWidth += 10;
+                if (grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex) {
+                    cellElement = args.cell.querySelector('.e-treecell');
+                }
+                else {
+                    cellElement = args.cell.querySelector('.e-treecheckbox');
+                }
                 cellElement.style.width = 'Calc(100% - ' + totalIconsWidth + 'px)';
             }
         }
@@ -2008,7 +2014,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     /**
      * Searches TreeGrid records using the given key.
      * You can customize the default search option by using the
-     * [`searchSettings`](./api-searchSettings.html).
+     * [`searchSettings`](./#searchsettings/).
      * @param  {string} searchString - Defines the key.
      * @return {void}
      */
@@ -2056,7 +2062,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     /**
      * By default, prints all the pages of the TreeGrid and hides the pager.
      * > You can customize print options using the
-     * [`printMode`](./api-treegrid.html#printmode-string).
+     * [`printMode`](./#printmode).
      * @return {void}
      */
     print() {
@@ -7634,6 +7640,7 @@ class Edit$1 {
                         data[i].parentItem = this.internalProperties.parentItem;
                         data[i].parentUniqueID = this.internalProperties.parentUniqueID;
                     }
+                    data[i].childRecords = this.internalProperties.childRecords;
                 }
             }
             setValue('uniqueIDCollection.' + data[i].uniqueID + '.index', i, this.parent);
@@ -7888,7 +7895,8 @@ class Edit$1 {
         }
         if (args.action === 'add') {
             this.internalProperties = { level: value.level, parentItem: value.parentItem, uniqueID: value.uniqueID,
-                taskData: value.taskData, parentUniqueID: isNullOrUndefined(value.parentItem) ? undefined : value.parentItem.uniqueID };
+                taskData: value.taskData, parentUniqueID: isNullOrUndefined(value.parentItem) ? undefined : value.parentItem.uniqueID,
+                childRecords: value.childRecords };
         }
         if (args.requestType === 'delete') {
             let deletedValues = args.data;

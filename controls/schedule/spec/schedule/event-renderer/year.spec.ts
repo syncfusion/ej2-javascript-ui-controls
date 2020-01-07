@@ -209,6 +209,18 @@ describe('Year and TimelineYear View Event Render Module', () => {
             expect(workCell.offsetWidth).toEqual(60);
             expect(workCell.offsetHeight).toEqual(70);
         });
+
+        it('Current date testing', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-month-header.e-current-day').length).toEqual(1);
+                expect(schObj.element.querySelectorAll('.e-work-cells.e-current-day').length).toEqual(1);
+                done();
+            };
+            expect(schObj.element.querySelectorAll('.e-month-header.e-current-day').length).toEqual(0);
+            expect(schObj.element.querySelectorAll('.e-work-cells.e-current-day').length).toEqual(0);
+            schObj.selectedDate = new Date();
+            schObj.dataBind();
+        });
     });
 
     it('memory leak', () => {

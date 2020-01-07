@@ -1875,10 +1875,12 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         this.notify(events.initialLoad, {});
                     }
                     break;
-                case 'pivotValues':
-                case 'displayOption':
                 case 'height':
                 case 'width':
+                    this.layoutRefresh();
+                    break;
+                case 'pivotValues':
+                case 'displayOption':
                     if (!this.showToolbar && newProp.displayOption && Object.keys(newProp.displayOption).length === 1 &&
                         newProp.displayOption.view) {
                         this.currentView = (newProp.displayOption.view === 'Both' ?

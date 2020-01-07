@@ -1,4 +1,4 @@
-import { Property, Complex, Collection, ChildProperty, ComplexFactory } from '@syncfusion/ej2-base';import { ShapeStyle, Margin, TextStyle, Shadow } from '../core/appearance';import { ShapeStyleModel, TextStyleModel, ShadowModel, } from '../core/appearance-model';import { Point } from '../primitives/point';import { Size } from '../primitives/size';import { PointModel } from '../primitives/point-model';import { Shapes, BasicShapes, FlowShapes, UmlActivityShapes, Scale, ImageAlignment, Status, ElementAction } from '../enum/enum';import { IElement } from './interface/IElement';import { Container } from '../core/containers/container';import { Canvas } from '../core/containers/canvas';import { getBasicShape } from './dictionary/basic-shapes';import { DiagramElement } from '../core/elements/diagram-element';import { PathElement } from '../core/elements/path-element';import { TextElement } from '../core/elements/text-element';import { ImageElement } from '../core/elements/image-element';import { DiagramNativeElement } from '../core/elements/native-element';import { RubberBandSelectionMode, ThumbsConstraints } from '../enum/enum';import { Port, PointPort } from './port';import { PointPortModel } from './port-model';import { SelectorConstraints } from '../enum/enum';import { Annotation, ShapeAnnotation } from './annotation';import { ShapeAnnotationModel, HyperlinkModel, PathAnnotationModel } from './annotation-model';import { getPortShape, getIconShape } from './dictionary/common';import { getFlowShape } from './dictionary/flow-shapes';import { HorizontalAlignment, VerticalAlignment, BpmnShapes, BpmnEvents, BpmnTriggers, BpmnGateways, NodeConstraints } from '../enum/enum';import { BpmnDataObjects, BpmnTasks, BpmnSubProcessTypes, BpmnLoops, BranchTypes } from '../enum/enum';import { BpmnBoundary, BpmnActivities, UmlScope } from '../enum/enum';import { MarginModel } from '../core/appearance-model';import { LayoutModel } from '../layout/layout-base-model';import { checkPortRestriction, setUMLActivityDefaults, getUMLActivityShapes, updatePortEdges } from './../utility/diagram-util';import { setSwimLaneDefaults } from './../utility/diagram-util';import { randomId, getFunction } from './../utility/base-util';import { NodeBase } from './node-base';import { canShadow } from './../utility/constraints-util';import { PortVisibility, Stretch } from '../enum/enum';import { IconShapeModel } from './icon-model';import { IconShape } from './icon';import { measurePath } from './../utility/dom-util';import { Rect } from '../primitives/rect';import { getPolygonPath } from './../utility/path-util';import { DiagramHtmlElement } from '../core/elements/html-element';import { StackPanel } from '../core/containers/stack-panel';import { GridPanel, RowDefinition, ColumnDefinition } from '../core/containers/grid';import { Orientation, ContainerTypes, ClassifierShape } from '../enum/enum';import { getULMClassifierShapes } from '../utility/uml-util';import { initSwimLane } from './../utility/swim-lane-util';import { AnnotationModel } from './annotation-model';import { ConnectorModel } from './connector-model';import { Diagram } from '../../diagram/diagram';import { Connector } from './connector';import { UserHandleModel } from '../interaction/selector-model';import { UserHandle } from '../interaction/selector';
+import { Property, Complex, Collection, ChildProperty, ComplexFactory, isBlazor } from '@syncfusion/ej2-base';import { ShapeStyle, Margin, TextStyle, Shadow } from '../core/appearance';import { ShapeStyleModel, TextStyleModel, ShadowModel, } from '../core/appearance-model';import { Point } from '../primitives/point';import { Size } from '../primitives/size';import { PointModel } from '../primitives/point-model';import { Shapes, BasicShapes, FlowShapes, UmlActivityShapes, Scale, ImageAlignment, Status, ElementAction } from '../enum/enum';import { IElement } from './interface/IElement';import { Container } from '../core/containers/container';import { Canvas } from '../core/containers/canvas';import { getBasicShape } from './dictionary/basic-shapes';import { DiagramElement } from '../core/elements/diagram-element';import { PathElement } from '../core/elements/path-element';import { TextElement } from '../core/elements/text-element';import { ImageElement } from '../core/elements/image-element';import { DiagramNativeElement } from '../core/elements/native-element';import { RubberBandSelectionMode, ThumbsConstraints } from '../enum/enum';import { Port, PointPort } from './port';import { PointPortModel } from './port-model';import { SelectorConstraints } from '../enum/enum';import { Annotation, ShapeAnnotation } from './annotation';import { ShapeAnnotationModel, HyperlinkModel, PathAnnotationModel } from './annotation-model';import { getPortShape, getIconShape } from './dictionary/common';import { getFlowShape } from './dictionary/flow-shapes';import { HorizontalAlignment, VerticalAlignment, BpmnShapes, BpmnEvents, BpmnTriggers, BpmnGateways, NodeConstraints } from '../enum/enum';import { BpmnDataObjects, BpmnTasks, BpmnSubProcessTypes, BpmnLoops, BranchTypes } from '../enum/enum';import { BpmnBoundary, BpmnActivities, UmlScope } from '../enum/enum';import { MarginModel } from '../core/appearance-model';import { LayoutModel } from '../layout/layout-base-model';import { checkPortRestriction, setUMLActivityDefaults, getUMLActivityShapes, updatePortEdges } from './../utility/diagram-util';import { setSwimLaneDefaults } from './../utility/diagram-util';import { randomId, getFunction } from './../utility/base-util';import { NodeBase } from './node-base';import { canShadow } from './../utility/constraints-util';import { PortVisibility, Stretch } from '../enum/enum';import { IconShapeModel } from './icon-model';import { IconShape } from './icon';import { measurePath, getContent, getTemplateContent } from './../utility/dom-util';import { Rect } from '../primitives/rect';import { getPolygonPath } from './../utility/path-util';import { DiagramHtmlElement } from '../core/elements/html-element';import { StackPanel } from '../core/containers/stack-panel';import { GridPanel, RowDefinition, ColumnDefinition } from '../core/containers/grid';import { Orientation, ContainerTypes, ClassifierShape } from '../enum/enum';import { getULMClassifierShapes } from '../utility/uml-util';import { initSwimLane } from './../utility/swim-lane-util';import { AnnotationModel } from './annotation-model';import { ConnectorModel } from './connector-model';import { Diagram } from '../../diagram/diagram';import { Connector } from './connector';import { UserHandleModel } from '../interaction/selector-model';import { UserHandle } from '../interaction/selector';import { LayoutInfo } from '../diagram/layoutinfo';import { LayoutInfoModel } from '../diagram/layoutinfo-model';
 import {NodeBaseModel} from "./node-base-model";
 
 /**
@@ -523,6 +523,7 @@ export interface BpmnEventModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     * @default 'Start'
      */
     event?: BpmnEvents;
 
@@ -590,6 +591,7 @@ export interface BpmnSubEventModel {
     /**
      * Defines the position of the sub event
      * @default new Point(0.5,0.5)
+     * @blazorType BpmnSubEventOffset
      */
 
     offset?: PointModel;
@@ -599,6 +601,7 @@ export interface BpmnSubEventModel {
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
+     * @blazorType ObservableCollection<DiagramNodeAnnotation>
      */
     annotations?: ShapeAnnotationModel[];
 
@@ -607,6 +610,7 @@ export interface BpmnSubEventModel {
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
+     * @blazorType ObservableCollection<DiagramPort>
      */
     ports?: PointPortModel[];
 
@@ -790,6 +794,7 @@ export interface BpmnSubProcessModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     * @blazorType ObservableCollection<DiagramBpmnSubEvent>
      */
     events?: BpmnSubEventModel[];
 
@@ -1069,7 +1074,7 @@ export interface MethodArgumentsModel {
      * Sets the shape style of the node
      * @default new ShapeStyle()
      * @aspType object
-     * @blazorType object
+     * @blazorType UMLParameterShapeStyle
      */
     style?: ShapeStyleModel | TextStyleModel;
 
@@ -1105,6 +1110,7 @@ export interface UmlClassMethodModel extends UmlClassAttributeModel{
      * Defines the type of the arguments
      * @default ''
      * @IgnoreSingular
+     * @blazorType ObservableCollection<DiagramMethodArguments>
      */
 
     parameters?: MethodArgumentsModel[];
@@ -1126,6 +1132,7 @@ export interface UmlClassModel {
     /**
      * Defines the text of the bpmn annotation collection
      * @default 'None'
+     * @blazorType ObservableCollection<DiagramUmlClassAttribute>
      */
 
     attributes?: UmlClassAttributeModel[];
@@ -1133,6 +1140,7 @@ export interface UmlClassModel {
     /**
      * Defines the text of the bpmn annotation collection
      * @default 'None'
+     * @blazorType ObservableCollection<DiagramUmlClassMethod>
      */
 
     methods?: UmlClassMethodModel[];
@@ -1190,7 +1198,7 @@ export interface UmlEnumerationMemberModel {
      * Sets the shape style of the node
      * @default new ShapeStyle()
      * @aspType object
-     * @blazorType object
+     * @blazorType EnumerationMemberShapeStyle
      */
     style?: ShapeStyleModel | TextStyleModel;
 
@@ -1211,6 +1219,7 @@ export interface UmlEnumerationModel {
     /**
      * Defines the text of the bpmn annotation collection
      * @default 'None'
+     * @blazorType ObservableCollection<DiagramUmlEnumerationMember>
      */
 
     members?: UmlEnumerationMemberModel[];
@@ -1219,7 +1228,7 @@ export interface UmlEnumerationModel {
      * Sets the shape style of the node
      * @default new ShapeStyle()
      * @aspType object
-     * @blazorType object
+     * @blazorType UMLEnumerationShapeStyle
      */
     style?: ShapeStyleModel | TextStyleModel;
 
@@ -1266,6 +1275,7 @@ export interface UmlClassifierShapeModel extends ShapeModel{
     /**
      * Defines the text of the bpmn annotation collection
      * @default 'None'
+     * @blazorType UMLEnumerationShapeStyle
      */
     enumerationShape?: UmlEnumerationModel;
 
@@ -1279,6 +1289,267 @@ export interface UmlClassifierShapeModel extends ShapeModel{
 }
 
 /**
+ * Interface for a class DiagramShape
+ */
+export interface DiagramShapeModel {
+
+    /**
+     * Defines the type of node shape
+     * @isBlazorNullableType true
+     */
+    type?: Shapes;
+
+    /**
+     * Defines the type of the basic shape
+     * @blazorDefaultValue 'Rectangle'
+     */
+    basicShape?: BasicShapes;
+
+    /**
+     * Defines the type of the flow shape
+     */
+    flowShape?: FlowShapes;
+
+    /**
+     * ```html
+     * <div id='diagram'></div>
+     * ```
+     * ```typescript
+     * let nodes: NodeModel[] = [{
+     *  id: 'node', width: 100, height: 100, offsetX: 100, offsetY: 100,
+     *  shape: {
+     *   type: 'Bpmn', shape: 'Gateway',
+     *   gateway: { type: 'EventBased' } as BpmnGatewayModel
+     *         } as BpmnShapeModel,
+     * }];
+     * let diagram: Diagram = new Diagram({
+     * ...
+     * nodes : nodes,
+     * ...
+     * });
+     * diagram.appendTo('#diagram');
+     * ```
+     * @default 'Event'
+     */
+    bpmnShape?: BpmnShapes;
+
+    /**
+     * Defines the type of the UMLActivity shape
+     * * Action - Sets the type of the UMLActivity Shape as Action
+     * * Decision - Sets the type of the UMLActivity Shape as Decision
+     * * MergeNode - Sets the type of the UMLActivity Shape as MergeNode
+     * * InitialNode - Sets the type of the UMLActivity Shape as InitialNode
+     * * FinalNode - Sets the type of the UMLActivity Shape as FinalNode
+     * * ForkNode - Sets the type of the UMLActivity Shape as ForkNode
+     * * JoinNode - Sets the type of the UMLActivity Shape as JoinNode
+     * * TimeEvent - Sets the type of the UMLActivity Shape as TimeEvent
+     * * AcceptingEvent - Sets the type of the UMLActivity Shape as AcceptingEvent
+     * * SendSignal - Sets the type of the UMLActivity Shape as SendSignal
+     * * ReceiveSignal - Sets the type of the UMLActivity Shape as ReceiveSignal
+     * * StructuredNode - Sets the type of the UMLActivity Shape as StructuredNode
+     * * Note - Sets the type of the UMLActivity Shape as Note
+     * @default 'Action'
+     * @IgnoreSingular
+     */
+    umlActivityShape?: UmlActivityShapes;
+
+    /**
+     * Defines the geometry of a path
+     * ```html
+     * <div id='diagram'></div>
+     * ```
+     * ```typescript
+     * let nodes: NodeModel[] = [{
+     * id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 100,
+     *   shape: { type: 'Path', data: 'M540.3643,137.9336L546.7973,159.7016L570.3633,159.7296'+
+     *   'L550.7723,171.9366L558.9053,194.9966L540.3643,179.4996L521.8223,194.9966L529.9553,171.9366'+
+     *   'L510.3633,159.7296L533.9313,159.7016L540.3643,137.9336z' }
+     * }];
+     * let diagram: Diagram = new Diagram({
+     * ...
+     * nodes: nodes
+     * ...
+     * });
+     * diagram.appendTo('#diagram');
+     * ```
+     * @default ''
+     */
+    data?: string;
+
+    /**
+     * Defines the geometry of a native element.
+     * ```html
+     * <div id='diagram'></div>
+     * ```
+     * ```typescript
+     * let nodes: NodeModel[] = [{
+     * id: 'node1', width: 100, height: 100,
+     * shape: { scale: 'Stretch', 
+     *   type: 'Native', content: '<g><path d='M90,43.841c0,24.213-19.779,43.841-44.182,43.841c-7.747,0-15.025-1.98-21.357-5.455'+
+     * 'L0,90l7.975-23.522' +
+     * 'c-4.023-6.606-6.34-14.354-6.34-22.637C1.635,19.628,21.416,0,45.818,0C70.223,0,90,19.628,90,43.841z M45.818,6.982' +
+     * 'c-20.484,0-37.146,16.535-37.146,36.859c0,8.065,2.629,15.534,7.076,21.61L11.107,79.14l14.275-4.537' +
+     * 'c5.865,3.851,12.891,6.097,20.437,6.097c20.481,0,37.146-16.533,37.146-36.857S66.301,6.982,45.818,6.982z M68.129,53.938' +
+     * 'c-0.273-0.447-0.994-0.717-2.076-1.254c-1.084-0.537-6.41-3.138-7.4-3.495c-0.993-0.358-1.717-0.538-2.438,0.537' +
+     * 'c-0.721,1.076-2.797,3.495-3.43,4.212c-0.632,0.719-1.263,0.809-2.347,0.271c-1.082-0.537-4.571-1.673-8.708-5.333' +
+     * 'c-3.219-2.848-5.393-6.364-6.025-7.441c-0.631-1.075-0.066-1.656,0.475-2.191c0.488-0.482,1.084-1.255,1.625-1.882' +
+     * 'c0.543-0.628,0.723-1.075,1.082-1.793c0.363-0.717,0.182-1.344-0.09-1.883c-0.27-0.537-2.438-5.825-3.34-7.977' +
+     * 'c-0.902-2.15-1.803-1.792-2.436-1.792c-0.631,0-1.354-0.09-2.076-0.09c-0.722,0-1.896,0.269-2.889,1.344' +
+     * 'c-0.992,1.076-3.789,3.676-3.789,8.963c0,5.288,3.879,10.397,4.422,11.113c0.541,0.716,7.49,11.92,18.5,16.223' +
+     * 'C58.2,65.771,58.2,64.336,60.186,64.156c1.984-0.179,6.406-2.599,7.312-5.107C68.398,56.537,68.398,54.386,68.129,53.938z'>'+
+     * '</path></g>',
+     *        }
+     * }];
+     * let diagram: Diagram = new Diagram({
+     * ...
+     * nodes: nodes
+     * ...
+     * });
+     * diagram.appendTo('#diagram');
+     * ```
+     * @default ''
+     */
+    content?: SVGElement | HTMLElement;
+
+    /**
+     * Defines the text of the text element
+     */
+    textContent?: string;
+
+    /**
+     * Defines the scale of the native element.
+     * * None - Sets the stretch type for diagram as None
+     * * Stretch - Sets the stretch type for diagram as Stretch
+     * * Meet - Sets the stretch type for diagram as Meet
+     * * Slice - Sets the stretch type for diagram as Slice
+     * @default 'Stretch'
+     */
+    scale?: Stretch;
+
+    /**
+     * Defines the source of the image
+     * ```html
+     * <div id='diagram'></div>
+     * ```
+     * ```typescript
+     * let nodes: NodeModel[] = [{
+     * id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 100,
+     * shape: { type: 'Image', source: 'https://www.w3schools.com/images/w3schools_green.jpg' }
+     * }];
+     * let diagram: Diagram = new Diagram({
+     * ...
+     * nodes: nodes
+     * ...
+     * });
+     * diagram.appendTo('#diagram');
+     * ```
+     * @default ''
+     */
+    source?: string;
+
+    /**
+     * Defines the alignment of the image within the node boundary.
+     * * None - Alignment value will be set as none
+     * * XMinYMin - smallest X value of the view port and  smallest Y value of the view port
+     * * XMidYMin - midpoint X value of the view port and  smallest Y value of the view port
+     * * XMaxYMin - maximum X value of the view port and  smallest Y value of the view port
+     * * XMinYMid - smallest X value of the view port and midpoint Y value of the view port
+     * * XMidYMid - midpoint X value of the view port and midpoint Y value of the view port
+     * * XMaxYMid - maximum X value of the view port and midpoint Y value of the view port
+     * * XMinYMax - smallest X value of the view port and maximum Y value of the view port
+     * * XMidYMax - midpoint X value of the view port and maximum Y value of the view port
+     * * XMaxYMax - maximum X value of the view port and maximum Y value of the view port
+     * @default 'None'
+     */
+    align?: ImageAlignment;
+
+    /**
+     * Defines the space to be let between the node and its immediate parent
+     * @default 0
+     */
+    margin?: MarginModel;
+
+    /**
+     * Sets the corner of the node
+     * @default 0
+     */
+    cornerRadius?: number;
+
+    /**
+     * Defines the collection of points to draw a polygon
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
+     * @default undefined
+     */
+    points?: PointModel[];
+
+    /**
+     * Defines the type of the BPMN DataObject shape
+     * @default 'None'
+     */
+    dataObject?: BpmnDataObjectModel;
+
+    /**
+     * Defines the type of the BPMN Event shape
+     * @default 'None'
+     */
+    event?: BpmnEventModel;
+
+    /**
+     * Defines the type of the BPMN Gateway shape
+     * @default 'None'
+     */
+    gateway?: BpmnGatewayModel;
+
+    /**
+     * Defines the text of the bpmn annotation collection
+     * @default 'None'
+     * @blazorType ObservableCollection<DiagramBpmnAnnotation>
+     */
+
+    annotations?: BpmnAnnotationModel[];
+
+    /**
+     * Defines the type of the BPMN Activity shape
+     * @default 'None'
+     */
+    activity?: BpmnActivityModel;
+
+    /**
+     * Defines the text of the bpmn annotation
+     * @default 'None'
+     * @blazorType DiagramBpmnAnnotation
+     */
+    annotation?: BpmnAnnotationModel;
+
+    /**
+     * Defines the text of the bpmn annotation collection
+     * @default 'None'
+     */
+    enumerationShape?: UmlEnumerationModel;
+
+    /**
+     * Defines the type of classifier
+     * @default 'Class'
+     * @IgnoreSingular
+     */
+    classifier?: ClassifierShape;
+
+    /**
+     * Defines the text of the bpmn annotation collection
+     * @default 'None'
+     */
+    classShape?: UmlClassModel;
+
+    /**
+     * Defines the text of the bpmn annotation collection
+     * @default 'None'
+     */
+    interfaceShape?: UmlInterfaceModel;
+
+}
+
+/**
  * Interface for a class Node
  */
 export interface NodeModel extends NodeBaseModel{
@@ -1288,6 +1559,7 @@ export interface NodeModel extends NodeBaseModel{
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
+     * @blazorType ObservableCollection<DiagramNodeAnnotation>
      */
     annotations?: ShapeAnnotationModel[];
 
@@ -1298,14 +1570,50 @@ export interface NodeModel extends NodeBaseModel{
     offsetX?: number;
 
     /**
+     * Sets the layout properties using node property
+     * @default new NodeLayoutInfo()
+     * @aspType object
+     * @blazorType DiagramNodeLayoutInfo
+     */
+    layoutInfo?: LayoutInfo;
+
+    /**
      * Sets the y-coordinate of the position of the node
      * @default 0
      */
     offsetY?: number;
 
     /**
+     * Defines the collection of connection points of nodes/connectors
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
+     * @default undefined
+     * @blazorType ObservableCollection<DiagramPort>
+     */
+    ports?: PointPortModel[];
+
+    /**
+     * Defines whether the node is expanded or not
+     * @default true
+     */
+    isExpanded?: boolean;
+
+    /**
+     * Defines the expanded state of a node
+     * @default {}
+     */
+    expandIcon?: IconShapeModel;
+
+    /**
+     * Defines the collapsed state of a node
+     * @default {}
+     */
+    collapseIcon?: IconShapeModel;
+
+    /**
      * Sets the reference point, that will act as the offset values(offsetX, offsetY) of a node
      * @default new Point(0.5,0.5)
+     * @blazorType NodePivotPoint
      */
     pivot?: PointModel;
 
@@ -1367,7 +1675,7 @@ export interface NodeModel extends NodeBaseModel{
      * Sets the shape style of the node
      * @default new ShapeStyle()
      * @aspType object
-     * @blazorType object
+     * @blazorType NodeShapeStyle
      */
     style?: ShapeStyleModel | TextStyleModel;
 
@@ -1379,12 +1687,14 @@ export interface NodeModel extends NodeBaseModel{
 
     /**
      * Sets the border color of the node
+     * @deprecated
      * @default 'none'
      */
     borderColor?: string;
 
     /**
      * Sets the border width of the node
+     * @deprecated
      * @default 0
      * @isBlazorNullableType true
      */
@@ -1399,13 +1709,14 @@ export interface NodeModel extends NodeBaseModel{
      * Defines the shape of a node
      * @default Basic Shape
      * @aspType object
-     * @blazorType object
+     * @blazorType DiagramShape
      */
-    shape?: ShapeModel | FlowShapeModel | BasicShapeModel | ImageModel | PathModel | TextModel | BpmnShapeModel | NativeModel | HtmlModel | UmlActivityShapeModel | UmlClassifierShapeModel | SwimLaneModel;
+    shape?: ShapeModel | FlowShapeModel | BasicShapeModel | ImageModel | PathModel | TextModel | BpmnShapeModel | NativeModel | HtmlModel | UmlActivityShapeModel | UmlClassifierShapeModel | SwimLaneModel | DiagramShapeModel;
 
     /**
      * Sets or gets the UI of a node
      * @default null
+     * @deprecated
      */
     wrapper?: Container;
 
@@ -1463,6 +1774,7 @@ export interface NodeModel extends NodeBaseModel{
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default null
+     * @deprecated
      */
 
     container?: ChildContainerModel;
@@ -1482,7 +1794,7 @@ export interface NodeModel extends NodeBaseModel{
     /**
      * Used to define the rows for the grid container
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
+     * @deprecated
      * @default undefined
      */
 
@@ -1534,7 +1846,8 @@ export interface NodeModel extends NodeBaseModel{
     /**
      * Set the branch for the mind map
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
+     * @blazorDefaultValue null
+     * @isBlazorNullableType true
      * @default ''
      */
     branch?: BranchTypes;
@@ -1598,6 +1911,7 @@ export interface LaneModel {
     /**
      * Defines the collection of child nodes
      * @default []
+     * @blazorType ObservableCollection<DiagramNode>
      */
     children?: NodeModel[];
 
@@ -1749,13 +2063,13 @@ export interface SelectorModel {
 
     /**
      * Defines the collection of selected nodes
-     * @blazorType List<DiagramNode>
+     * @blazorType ObservableCollection<DiagramNode>
      */
     nodes?: NodeModel[];
 
     /**
      * Defines the collection of selected connectors
-     * @blazorType List<DiagramConnector>
+     * @blazorType ObservableCollection<DiagramConnector>
      */
     connectors?: ConnectorModel[];
 
@@ -1798,7 +2112,8 @@ export interface SelectorModel {
 
     /**
      * Sets the pivot of the selector
-     * @default { x: 0.5, y: 0.5 }
+     * @default { x: 0.5, y: 0.5 } 
+     * @blazorType SelectorPivot
      */
     pivot?: PointModel;
 
@@ -1847,6 +2162,7 @@ export interface SelectorModel {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     * @blazorType ObservableCollection<DiagramUserHandle>
      * @default []
      */
     userHandles?: UserHandleModel[];

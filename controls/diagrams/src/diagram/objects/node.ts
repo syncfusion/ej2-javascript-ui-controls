@@ -1,5 +1,5 @@
 /// <reference path='./node-base-model.d.ts'/>
-import { Property, Complex, Collection, ChildProperty, ComplexFactory } from '@syncfusion/ej2-base';
+import { Property, Complex, Collection, ChildProperty, ComplexFactory, isBlazor } from '@syncfusion/ej2-base';
 import { ShapeStyle, Margin, TextStyle, Shadow } from '../core/appearance';
 import { ShapeStyleModel, TextStyleModel, ShadowModel, } from '../core/appearance-model';
 import { Point } from '../primitives/point';
@@ -31,7 +31,7 @@ import { UmlActivityShapeModel, MethodArgumentsModel, UmlClassModel } from './no
 import { BpmnEventModel, BpmnSubEventModel, BpmnAnnotationModel, BpmnActivityModel } from './node-model';
 import { BpmnTaskModel, BpmnSubProcessModel, BpmnGatewayModel } from './node-model';
 import { ShapeModel, BasicShapeModel, FlowShapeModel, ImageModel, PathModel, BpmnShapeModel, BpmnDataObjectModel } from './node-model';
-import { TextModel, NativeModel, HtmlModel } from './node-model';
+import { TextModel, NativeModel, HtmlModel, DiagramShapeModel } from './node-model';
 import { LayoutModel } from '../layout/layout-base-model';
 import { checkPortRestriction, setUMLActivityDefaults, getUMLActivityShapes, updatePortEdges } from './../utility/diagram-util';
 import { setSwimLaneDefaults } from './../utility/diagram-util';
@@ -42,7 +42,7 @@ import { NodeModel, BpmnTransactionSubProcessModel, SwimLaneModel, LaneModel, He
 import { PortVisibility, Stretch } from '../enum/enum';
 import { IconShapeModel } from './icon-model';
 import { IconShape } from './icon';
-import { measurePath } from './../utility/dom-util';
+import { measurePath, getContent, getTemplateContent } from './../utility/dom-util';
 import { Rect } from '../primitives/rect';
 import { getPolygonPath } from './../utility/path-util';
 import { DiagramHtmlElement } from '../core/elements/html-element';
@@ -59,40 +59,45 @@ import { Diagram } from '../../diagram/diagram';
 import { Connector } from './connector';
 import { UserHandleModel } from '../interaction/selector-model';
 import { UserHandle } from '../interaction/selector';
+import { LayoutInfo } from '../diagram/layoutinfo';
+import { LayoutInfoModel } from '../diagram/layoutinfo-model';
 
 
 let getShapeType: Function = (obj: Shape): Object => {
     if (obj) {
-        switch (obj.type) {
-            case 'Basic':
-                return BasicShape;
-            case 'Flow':
-                return FlowShape;
-            case 'Path':
-                return Path;
-            case 'Image':
-                return Image;
-            case 'Text':
-                return Text;
-            case 'Bpmn':
-                return BpmnShape;
-            case 'Native':
-                return Native;
-            case 'HTML':
-                return Html;
-            case 'UmlActivity':
-                return UmlActivityShape;
-            case 'UmlClassifier':
-                return UmlClassifierShape;
-            case 'SwimLane':
-                return SwimLane;
-            default:
-                return BasicShape;
+        if (isBlazor()) {
+            return DiagramShape;
+        } else {
+            switch (obj.type) {
+                case 'Basic':
+                    return BasicShape;
+                case 'Flow':
+                    return FlowShape;
+                case 'Path':
+                    return Path;
+                case 'Image':
+                    return Image;
+                case 'Text':
+                    return Text;
+                case 'Bpmn':
+                    return BpmnShape;
+                case 'Native':
+                    return Native;
+                case 'HTML':
+                    return Html;
+                case 'UmlActivity':
+                    return UmlActivityShape;
+                case 'UmlClassifier':
+                    return UmlClassifierShape;
+                case 'SwimLane':
+                    return SwimLane;
+                default:
+                    return BasicShape;
+            }
         }
     }
-    return BasicShape;
+    return (isBlazor()) ? DiagramShape : BasicShape;
 };
-
 
 /**
  * Defines the behavior of default shape
@@ -702,6 +707,7 @@ export class BpmnEvent extends ChildProperty<BpmnEvent> {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     * @default 'Start'
      */
     @Property('Start')
     public event: BpmnEvents;
@@ -782,6 +788,7 @@ export class BpmnSubEvent extends ChildProperty<BpmnSubEvent> {
     /**
      * Defines the position of the sub event
      * @default new Point(0.5,0.5)
+     * @blazorType BpmnSubEventOffset
      */
 
     @Complex<PointModel>({}, Point)
@@ -792,6 +799,7 @@ export class BpmnSubEvent extends ChildProperty<BpmnSubEvent> {
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
+     * @blazorType ObservableCollection<DiagramNodeAnnotation>
      */
     @Collection<ShapeAnnotationModel>([], ShapeAnnotation)
     public annotations: ShapeAnnotationModel[];
@@ -801,6 +809,7 @@ export class BpmnSubEvent extends ChildProperty<BpmnSubEvent> {
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
+     * @blazorType ObservableCollection<DiagramPort>
      */
     @Collection<PointPortModel>([], PointPort)
     public ports: PointPortModel[];
@@ -1018,6 +1027,7 @@ export class BpmnSubProcess extends ChildProperty<BpmnSubProcess> {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     * @blazorType ObservableCollection<DiagramBpmnSubEvent>
      */
     @Collection<BpmnSubEventModel>([], BpmnSubEvent)
     public events: BpmnSubEventModel[];
@@ -1363,7 +1373,7 @@ export class MethodArguments extends ChildProperty<MethodArguments> {
      * Sets the shape style of the node
      * @default new ShapeStyle()
      * @aspType object
-     * @blazorType object
+     * @blazorType UMLParameterShapeStyle
      */
     @Complex<ShapeStyleModel | TextStyleModel>({}, TextStyle)
     public style: ShapeStyleModel | TextStyleModel;
@@ -1412,6 +1422,7 @@ export class UmlClassMethod extends UmlClassAttribute {
      * Defines the type of the arguments
      * @default ''
      * @IgnoreSingular
+     * @blazorType ObservableCollection<DiagramMethodArguments>
      */
 
     @Collection<MethodArgumentsModel>([], MethodArguments)
@@ -1440,6 +1451,7 @@ export class UmlClass extends ChildProperty<UmlClass> {
     /**
      * Defines the text of the bpmn annotation collection
      * @default 'None'
+     * @blazorType ObservableCollection<DiagramUmlClassAttribute>
      */
 
     @Collection<UmlClassAttributeModel>([], UmlClassAttribute)
@@ -1447,6 +1459,7 @@ export class UmlClass extends ChildProperty<UmlClass> {
     /**
      * Defines the text of the bpmn annotation collection
      * @default 'None'
+     * @blazorType ObservableCollection<DiagramUmlClassMethod>
      */
 
     @Collection<UmlClassMethodModel>([], UmlClassMethod)
@@ -1519,7 +1532,7 @@ export class UmlEnumerationMember extends ChildProperty<UmlEnumerationMember> {
      * Sets the shape style of the node
      * @default new ShapeStyle()
      * @aspType object
-     * @blazorType object
+     * @blazorType EnumerationMemberShapeStyle
      */
     @Complex<ShapeStyleModel | TextStyleModel>({}, TextStyle)
     public style: ShapeStyleModel | TextStyleModel;
@@ -1547,6 +1560,7 @@ export class UmlEnumeration extends ChildProperty<UmlEnumeration> {
     /**
      * Defines the text of the bpmn annotation collection
      * @default 'None'
+     * @blazorType ObservableCollection<DiagramUmlEnumerationMember>
      */
 
     @Collection<UmlEnumerationMemberModel>([], UmlEnumerationMember)
@@ -1555,7 +1569,7 @@ export class UmlEnumeration extends ChildProperty<UmlEnumeration> {
      * Sets the shape style of the node
      * @default new ShapeStyle()
      * @aspType object
-     * @blazorType object
+     * @blazorType UMLEnumerationShapeStyle
      */
     @Complex<ShapeStyleModel | TextStyleModel>({}, TextStyle)
     public style: ShapeStyleModel | TextStyleModel;
@@ -1610,6 +1624,7 @@ export class UmlClassifierShape extends Shape {
     /**
      * Defines the text of the bpmn annotation collection
      * @default 'None'
+     * @blazorType UMLEnumerationShapeStyle
      */
     @Complex<UmlEnumerationModel>({} as UmlEnumeration, UmlEnumeration)
     public enumerationShape: UmlEnumerationModel;
@@ -1630,6 +1645,310 @@ export class UmlClassifierShape extends Shape {
     }
 }
 
+/* tslint:disable */
+/**
+ * Defines the behavior of the UMLActivity shape
+ */
+export class DiagramShape extends ChildProperty<DiagramShape> {
+    /**
+     * Defines the type of node shape
+     * @isBlazorNullableType true
+     */
+    @Property('Basic')
+    public type: Shapes;
+
+    /**
+     * Defines the type of the basic shape
+     * @blazorDefaultValue 'Rectangle'
+     */
+    @Property('Rectangle')
+    public basicShape: BasicShapes;
+
+    /**
+     * Defines the type of the flow shape
+     */
+    @Property('Terminator')
+    public flowShape: FlowShapes;
+
+    /**
+     * Defines the type of the BPMN shape
+     * * Event - Sets the type of the Bpmn Shape as Event
+     * * Gateway - Sets the type of the Bpmn Shape as Gateway
+     * * Message - Sets the type of the Bpmn Shape as Message
+     * * DataObject - Sets the type of the Bpmn Shape as DataObject
+     * * DataSource - Sets the type of the Bpmn Shape as DataSource
+     * * Activity - Sets the type of the Bpmn Shape as Activity
+     * * Group - Sets the type of the Bpmn Shape as Group
+     * * TextAnnotation - Represents the shape as Text Annotation
+     * @default 'Event'
+     */
+    /**
+     * ```html
+     * <div id='diagram'></div>
+     * ```
+     * ```typescript
+     * let nodes: NodeModel[] = [{
+     *  id: 'node', width: 100, height: 100, offsetX: 100, offsetY: 100,
+     *  shape: {
+     *   type: 'Bpmn', shape: 'Gateway',
+     *   gateway: { type: 'EventBased' } as BpmnGatewayModel
+     *         } as BpmnShapeModel,
+     * }];
+     * let diagram: Diagram = new Diagram({
+     * ...
+     * nodes : nodes,
+     * ...
+     * });
+     * diagram.appendTo('#diagram');
+     * ```
+     * @default 'Event'
+     */
+    @Property('Event')
+    public bpmnShape: BpmnShapes;
+
+    /**
+     * Defines the type of the UMLActivity shape
+     * * Action - Sets the type of the UMLActivity Shape as Action
+     * * Decision - Sets the type of the UMLActivity Shape as Decision
+     * * MergeNode - Sets the type of the UMLActivity Shape as MergeNode
+     * * InitialNode - Sets the type of the UMLActivity Shape as InitialNode
+     * * FinalNode - Sets the type of the UMLActivity Shape as FinalNode
+     * * ForkNode - Sets the type of the UMLActivity Shape as ForkNode
+     * * JoinNode - Sets the type of the UMLActivity Shape as JoinNode
+     * * TimeEvent - Sets the type of the UMLActivity Shape as TimeEvent
+     * * AcceptingEvent - Sets the type of the UMLActivity Shape as AcceptingEvent
+     * * SendSignal - Sets the type of the UMLActivity Shape as SendSignal
+     * * ReceiveSignal - Sets the type of the UMLActivity Shape as ReceiveSignal
+     * * StructuredNode - Sets the type of the UMLActivity Shape as StructuredNode
+     * * Note - Sets the type of the UMLActivity Shape as Note
+     * @default 'Action'
+     * @IgnoreSingular
+     */
+    @Property('Action')
+    public umlActivityShape: UmlActivityShapes;
+
+    /**
+     * Defines the geometry of a path
+     * ```html
+     * <div id='diagram'></div>
+     * ```
+     * ```typescript
+     * let nodes: NodeModel[] = [{
+     * id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 100,
+     *   shape: { type: 'Path', data: 'M540.3643,137.9336L546.7973,159.7016L570.3633,159.7296'+
+     *   'L550.7723,171.9366L558.9053,194.9966L540.3643,179.4996L521.8223,194.9966L529.9553,171.9366'+
+     *   'L510.3633,159.7296L533.9313,159.7016L540.3643,137.9336z' }
+     * }];
+     * let diagram: Diagram = new Diagram({
+     * ...
+     * nodes: nodes
+     * ...
+     * });
+     * diagram.appendTo('#diagram');
+     * ```
+     * @default ''
+     */
+    @Property('')
+    public data: string;
+
+    /**
+     * Defines the geometry of a native element.
+     * ```html
+     * <div id='diagram'></div>
+     * ```
+     * ```typescript
+     * let nodes: NodeModel[] = [{
+     * id: 'node1', width: 100, height: 100,
+     * shape: { scale: 'Stretch', 
+     *   type: 'Native', content: '<g><path d='M90,43.841c0,24.213-19.779,43.841-44.182,43.841c-7.747,0-15.025-1.98-21.357-5.455'+
+     * 'L0,90l7.975-23.522' +
+     * 'c-4.023-6.606-6.34-14.354-6.34-22.637C1.635,19.628,21.416,0,45.818,0C70.223,0,90,19.628,90,43.841z M45.818,6.982' +
+     * 'c-20.484,0-37.146,16.535-37.146,36.859c0,8.065,2.629,15.534,7.076,21.61L11.107,79.14l14.275-4.537' +
+     * 'c5.865,3.851,12.891,6.097,20.437,6.097c20.481,0,37.146-16.533,37.146-36.857S66.301,6.982,45.818,6.982z M68.129,53.938' +
+     * 'c-0.273-0.447-0.994-0.717-2.076-1.254c-1.084-0.537-6.41-3.138-7.4-3.495c-0.993-0.358-1.717-0.538-2.438,0.537' +
+     * 'c-0.721,1.076-2.797,3.495-3.43,4.212c-0.632,0.719-1.263,0.809-2.347,0.271c-1.082-0.537-4.571-1.673-8.708-5.333' +
+     * 'c-3.219-2.848-5.393-6.364-6.025-7.441c-0.631-1.075-0.066-1.656,0.475-2.191c0.488-0.482,1.084-1.255,1.625-1.882' +
+     * 'c0.543-0.628,0.723-1.075,1.082-1.793c0.363-0.717,0.182-1.344-0.09-1.883c-0.27-0.537-2.438-5.825-3.34-7.977' +
+     * 'c-0.902-2.15-1.803-1.792-2.436-1.792c-0.631,0-1.354-0.09-2.076-0.09c-0.722,0-1.896,0.269-2.889,1.344' +
+     * 'c-0.992,1.076-3.789,3.676-3.789,8.963c0,5.288,3.879,10.397,4.422,11.113c0.541,0.716,7.49,11.92,18.5,16.223' +
+     * 'C58.2,65.771,58.2,64.336,60.186,64.156c1.984-0.179,6.406-2.599,7.312-5.107C68.398,56.537,68.398,54.386,68.129,53.938z'>'+
+     * '</path></g>',
+     *        }
+     * }];
+     * let diagram: Diagram = new Diagram({
+     * ...
+     * nodes: nodes
+     * ...
+     * });
+     * diagram.appendTo('#diagram');
+     * ```
+     * @default ''
+     */
+    @Property('')
+    public content: SVGElement | HTMLElement;
+
+    /**
+     * Defines the text of the text element
+     */
+    @Property('')
+    public textContent: string;
+
+    /**
+     * Defines the scale of the native element.
+     * * None - Sets the stretch type for diagram as None
+     * * Stretch - Sets the stretch type for diagram as Stretch
+     * * Meet - Sets the stretch type for diagram as Meet
+     * * Slice - Sets the stretch type for diagram as Slice
+     * @default 'Stretch'
+     */
+    @Property('Stretch')
+    public scale: Stretch;
+
+    /**
+     * Defines the source of the image
+     * ```html
+     * <div id='diagram'></div>
+     * ```
+     * ```typescript
+     * let nodes: NodeModel[] = [{
+     * id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 100,
+     * shape: { type: 'Image', source: 'https://www.w3schools.com/images/w3schools_green.jpg' }
+     * }];
+     * let diagram: Diagram = new Diagram({
+     * ...
+     * nodes: nodes
+     * ...
+     * });
+     * diagram.appendTo('#diagram');
+     * ```
+     * @default ''
+     */
+    @Property('')
+    public source: string;
+
+    /**
+     * Defines the alignment of the image within the node boundary.
+     * * None - Alignment value will be set as none
+     * * XMinYMin - smallest X value of the view port and  smallest Y value of the view port
+     * * XMidYMin - midpoint X value of the view port and  smallest Y value of the view port
+     * * XMaxYMin - maximum X value of the view port and  smallest Y value of the view port
+     * * XMinYMid - smallest X value of the view port and midpoint Y value of the view port
+     * * XMidYMid - midpoint X value of the view port and midpoint Y value of the view port
+     * * XMaxYMid - maximum X value of the view port and midpoint Y value of the view port
+     * * XMinYMax - smallest X value of the view port and maximum Y value of the view port
+     * * XMidYMax - midpoint X value of the view port and maximum Y value of the view port
+     * * XMaxYMax - maximum X value of the view port and maximum Y value of the view port
+     * @default 'None'
+     */
+    @Property('None')
+    public align: ImageAlignment;
+
+    /**
+     * Defines the space to be let between the node and its immediate parent
+     * @default 0
+     */
+    @Complex<MarginModel>({}, Margin)
+    public margin: MarginModel;
+
+    /**
+     * Sets the corner of the node
+     * @default 0
+     */
+    @Property(0)
+    public cornerRadius: number;
+
+    /**
+     * Defines the collection of points to draw a polygon
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
+     * @default undefined
+     */
+    @Collection<PointModel>([], Point)
+    public points: PointModel[];
+
+    /**
+     * Defines the type of the BPMN DataObject shape
+     * @default 'None'
+     */
+    @Complex<BpmnDataObjectModel>({}, BpmnDataObject)
+    public dataObject: BpmnDataObjectModel;
+
+    /**
+     * Defines the type of the BPMN Event shape
+     * @default 'None'
+     */
+    @Complex<BpmnEventModel>({}, BpmnEvent)
+    public event: BpmnEventModel;
+
+    /**
+     * Defines the type of the BPMN Gateway shape
+     * @default 'None'
+     */
+    @Complex<BpmnGatewayModel>({}, BpmnGateway)
+    public gateway: BpmnGatewayModel;
+
+    /**
+     * Defines the text of the bpmn annotation collection
+     * @default 'None'
+     * @blazorType ObservableCollection<DiagramBpmnAnnotation>
+     */
+
+    @Collection<BpmnAnnotationModel>([], BpmnAnnotation)
+    public annotations: BpmnAnnotationModel[];
+
+    /**
+     * Defines the type of the BPMN Activity shape
+     * @default 'None'
+     */
+    @Complex<BpmnActivityModel>({}, BpmnActivity)
+    public activity: BpmnActivityModel;
+
+    /**
+     * Defines the text of the bpmn annotation
+     * @default 'None'
+     * @blazorType DiagramBpmnAnnotation
+     */
+    @Complex<BpmnAnnotationModel>({}, BpmnAnnotation)
+    public annotation: BpmnAnnotationModel;
+
+    /**
+     * Defines the text of the bpmn annotation collection
+     * @default 'None'
+     */
+    @Complex<UmlEnumerationModel>({} as UmlEnumeration, UmlEnumeration)
+    public enumerationShape: UmlEnumerationModel;
+    /**
+     * Defines the type of classifier
+     * @default 'Class'
+     * @IgnoreSingular
+     */
+    @Property('Class')
+    public classifier: ClassifierShape;
+
+    /**
+     * Defines the text of the bpmn annotation collection
+     * @default 'None'
+     */
+    @Complex<UmlClassModel>({} as UmlClass, UmlClass)
+    public classShape: UmlClassModel;
+    /**
+     * Defines the text of the bpmn annotation collection
+     * @default 'None'
+     */
+    @Complex<UmlInterfaceModel>({} as UmlInterface, UmlInterface)
+    public interfaceShape: UmlInterfaceModel;
+
+    /**
+     * @private
+     * Returns the name of class UmlClassifierShape
+     */
+    public getClassName(): string {
+        return 'DiagramShape';
+    }
+}
+
+/* tslint:enable */
+
 /**
  * Defines the behavior of nodes
  */
@@ -1640,6 +1959,7 @@ export class Node extends NodeBase implements IElement {
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
+     * @blazorType ObservableCollection<DiagramNodeAnnotation>
      */
     @Collection<ShapeAnnotationModel>([], ShapeAnnotation)
     public annotations: ShapeAnnotationModel[];
@@ -1652,6 +1972,15 @@ export class Node extends NodeBase implements IElement {
     public offsetX: number;
 
     /**
+     * Sets the layout properties using node property
+     * @default new NodeLayoutInfo()
+     * @aspType object
+     * @blazorType DiagramNodeLayoutInfo
+     */
+    @Complex<LayoutInfoModel>({}, LayoutInfo)
+    public layoutInfo: LayoutInfo;
+
+    /**
      * Sets the y-coordinate of the position of the node
      * @default 0
      */
@@ -1659,8 +1988,41 @@ export class Node extends NodeBase implements IElement {
     public offsetY: number;
 
     /**
+     * Defines the collection of connection points of nodes/connectors
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
+     * @default undefined
+     * @blazorType ObservableCollection<DiagramPort>
+     */
+    @Collection<PointPortModel>([], PointPort)
+    public ports: PointPortModel[];
+
+    /**
+     * Defines whether the node is expanded or not
+     * @default true
+     */
+    @Property(true)
+    public isExpanded: boolean;
+
+    /**
+     * Defines the expanded state of a node
+     * @default {}
+     */
+    @Complex<IconShapeModel>({}, IconShape)
+    public expandIcon: IconShapeModel;
+
+    /**
+     * Defines the collapsed state of a node
+     * @default {}
+     */
+    @Complex<IconShapeModel>({}, IconShape)
+    public collapseIcon: IconShapeModel;
+
+
+    /**
      * Sets the reference point, that will act as the offset values(offsetX, offsetY) of a node
      * @default new Point(0.5,0.5)
+     * @blazorType NodePivotPoint
      */
     @Complex<PointModel>({ x: 0.5, y: 0.5 }, Point)
     public pivot: PointModel;
@@ -1730,7 +2092,7 @@ export class Node extends NodeBase implements IElement {
      * Sets the shape style of the node
      * @default new ShapeStyle()
      * @aspType object
-     * @blazorType object
+     * @blazorType NodeShapeStyle
      */
     @Complex<ShapeStyleModel | TextStyleModel>({ fill: 'white' }, TextStyle)
     public style: ShapeStyleModel | TextStyleModel;
@@ -1743,6 +2105,7 @@ export class Node extends NodeBase implements IElement {
     public backgroundColor: string;
     /**
      * Sets the border color of the node
+     * @deprecated
      * @default 'none'
      */
     @Property('none')
@@ -1750,6 +2113,7 @@ export class Node extends NodeBase implements IElement {
 
     /**
      * Sets the border width of the node
+     * @deprecated
      * @default 0
      * @isBlazorNullableType true
      */
@@ -1767,16 +2131,17 @@ export class Node extends NodeBase implements IElement {
      * Defines the shape of a node
      * @default Basic Shape
      * @aspType object
-     * @blazorType object
+     * @blazorType DiagramShape
      */
     @ComplexFactory(getShapeType)
-    public shape: ShapeModel | FlowShapeModel | BasicShapeModel | ImageModel | PathModel | TextModel | BpmnShapeModel | NativeModel | HtmlModel | UmlActivityShapeModel | UmlClassifierShapeModel | SwimLaneModel;
+    public shape: ShapeModel | FlowShapeModel | BasicShapeModel | ImageModel | PathModel | TextModel | BpmnShapeModel | NativeModel | HtmlModel | UmlActivityShapeModel | UmlClassifierShapeModel | SwimLaneModel | DiagramShapeModel;
     /* tslint:enable */
 
 
     /**
      * Sets or gets the UI of a node
      * @default null
+     * @deprecated
      */
     @Property(null)
     public wrapper: Container;
@@ -1838,6 +2203,7 @@ export class Node extends NodeBase implements IElement {
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default null
+     * @deprecated
      */
 
     @Property(null)
@@ -1858,7 +2224,7 @@ export class Node extends NodeBase implements IElement {
     /**
      * Used to define the rows for the grid container
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
+     * @deprecated
      * @default undefined
      */
 
@@ -1916,7 +2282,8 @@ export class Node extends NodeBase implements IElement {
     /**
      * Set the branch for the mind map
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
+     * @blazorDefaultValue null
+     * @isBlazorNullableType true
      * @default ''
      */
     @Property('')
@@ -2002,25 +2369,25 @@ export class Node extends NodeBase implements IElement {
                 imageContent.imageScale = (this.shape as Image).scale; content = imageContent; break;
             case 'Text':
                 let textContent: TextElement = new TextElement();
-                textContent.content = (this.shape as Text).content;
+                textContent.content = (isBlazor() ? (this.shape as DiagramShape).textContent : (this.shape as Text).content);
                 content = textContent; textStyle = this.style as TextStyle;
                 content.style = textStyle; break;
             case 'Basic':
-                if ((this.shape as BasicShape).shape === 'Rectangle') {
+                if ((!isBlazor() && (this.shape as BasicShape).shape === 'Rectangle') || (isBlazor() && (this.shape as DiagramShape).basicShape === 'Rectangle')) {
                     let basicshape: DiagramElement = new DiagramElement();
                     content = basicshape;
                     content.cornerRadius = (this.shape as BasicShape).cornerRadius;
-                } else if ((this.shape as BasicShape).shape === 'Polygon') {
+                } else if ((!isBlazor() && (this.shape as BasicShape).shape === 'Polygon') || (isBlazor() && (this.shape as DiagramShape).basicShape === 'Polygon')) {
                     let path: PathElement = new PathElement();
                     path.data = getPolygonPath((this.shape as BasicShape).points) as string; content = path;
                 } else {
                     let basicshape: PathElement = new PathElement();
-                    let basicshapedata: string = getBasicShape((this.shape as BasicShape).shape);
+                    let basicshapedata: string = getBasicShape((isBlazor()) ? (this.shape as DiagramShape).basicShape : (this.shape as BasicShape).shape);
                     basicshape.data = basicshapedata; content = basicshape;
                 } break;
             case 'Flow':
                 let flowshape: PathElement = new PathElement();
-                let flowshapedata: string = getFlowShape((this.shape as FlowShape).shape);
+                let flowshapedata: string = getFlowShape((isBlazor() ? (this.shape as DiagramShape).flowShape : (this.shape as FlowShape).shape));
                 flowshape.data = flowshapedata; content = flowshape;
                 break;
             case 'UmlActivity':
@@ -2054,8 +2421,13 @@ export class Node extends NodeBase implements IElement {
                 content = nativeContent;
                 break;
             case 'HTML':
-                let htmlContent: DiagramHtmlElement = new DiagramHtmlElement(this.id, diagram.element.id);
-                htmlContent.content = (this.shape as Html).content;
+                let htmlContent: DiagramHtmlElement = new DiagramHtmlElement(this.id, diagram.element.id, undefined, diagram.nodeTemplate);
+                if ((this.shape as Html).content) {
+                    htmlContent.content = (this.shape as Html).content;
+                } else if (diagram.nodeTemplate) {
+                    htmlContent.isTemplate = true;
+                    htmlContent.template = htmlContent.content = getContent(htmlContent, true, this) as HTMLElement
+                }
                 content = htmlContent;
                 break;
             case 'UmlClassifier':
@@ -2094,22 +2466,24 @@ export class Node extends NodeBase implements IElement {
         if (this.maxWidth !== undefined) {
             content.maxWidth = this.maxWidth;
         }
-        if ((this.shape as BasicShape).shape === 'Rectangle' && !(this.shape as BasicShape).cornerRadius) {
+        if ((!isBlazor() && (this.shape as BasicShape).shape === 'Rectangle' && !(this.shape as BasicShape).cornerRadius) ||
+            ((isBlazor()) && ((this.shape as DiagramShape).basicShape === 'Rectangle'
+                && this.shape.type === "Basic" && !(this.shape as DiagramShape).cornerRadius))) {
             content.isRectElement = true;
         }
         content.verticalAlignment = 'Stretch';
-        if (this.shape instanceof Text) {
-            content.margin = this.shape.margin;
+        if ((this.shape instanceof Text) || (isBlazor() && this.shape.type === "Text")) {
+            content.margin = (this.shape as Text).margin;
         }
         if (canShadow(this as NodeModel)) {
             if ((this.constraints & NodeConstraints.Shadow) !== 0) {
                 content.shadow = this.shadow;
             }
         }
-        if ((this.shape.type !== 'Bpmn' || (this.shape as BpmnShape).shape === 'Message' ||
-            (this.shape as BpmnShape).shape === 'DataSource') && (
-                (this.shape.type !== 'UmlActivity' || (this.shape as UmlActivityShape).shape !== 'FinalNode'
-                ))) {
+        if ((this.shape.type !== 'Bpmn' || ((!isBlazor() && (this.shape as BpmnShape).shape === 'Message') || (isBlazor() && (this.shape as DiagramShape).bpmnShape === 'Message')) ||
+            ((!isBlazor() && (this.shape as BpmnShape).shape === 'DataSource') || (isBlazor() && (this.shape as DiagramShape).bpmnShape === 'DataSource'))) && (
+                (this.shape.type !== 'UmlActivity' || ((!isBlazor() && (this.shape as UmlActivityShape).shape !== 'FinalNode') || 
+                (isBlazor() && (this.shape as DiagramShape).umlActivityShape !== 'FinalNode'))))) {
             if (this.shape.type !== 'Text') {
                 content.style = this.style;
             }
@@ -2243,10 +2617,13 @@ export class Node extends NodeBase implements IElement {
     }
 
     /** @private */
-    public initAnnotations(accessibilityContent: Function | string, container: Container, diagramId: string, virtualize?: boolean): void {
+    public initAnnotations(
+        accessibilityContent: Function | string, container: Container, diagramId: string, virtualize?: boolean, annotationTemplate?: string)
+        :
+        void {
         let annotation: DiagramElement;
         for (let i: number = 0; this.annotations !== undefined, i < this.annotations.length; i++) {
-            annotation = this.initAnnotationWrapper(this.annotations[i] as Annotation, diagramId, virtualize, i);
+            annotation = this.initAnnotationWrapper(this.annotations[i] as Annotation, diagramId, virtualize, i, annotationTemplate);
             // tslint:disable-next-line:no-any
             let wrapperContent: any;
             let contentAccessibility: Function = getFunction(accessibilityContent);
@@ -2285,13 +2662,21 @@ export class Node extends NodeBase implements IElement {
         return portContent;
     }
     /** @private */
-    public initAnnotationWrapper(annotation: Annotation, diagramId?: string, virtualize?: boolean, value?: number): DiagramElement {
+    public initAnnotationWrapper(
+        annotation: Annotation, diagramId?: string, virtualize?: boolean,
+        value?: number, annotationTemplate?: string | Function)
+        :
+        DiagramElement {
         annotation.id = annotation.id || value + 'annotation' || randomId();
         let label: ShapeAnnotation = annotation as ShapeAnnotation;
         let annotationcontent: TextElement | DiagramHtmlElement;
-        if (diagramId && annotation.template) {
-            annotationcontent = new DiagramHtmlElement(this.id, diagramId, annotation.id);
-            annotationcontent.content = annotation.template;
+        if (isBlazor() && annotation.annotationType === 'Template') {
+            annotation.template = annotation.template ? annotation.template : '';
+        }
+        if (diagramId && (annotation.template || annotation.annotationType === 'Template'
+            || (annotationTemplate && annotation.content === ''))) {
+            annotationcontent = new DiagramHtmlElement(this.id, diagramId, annotation.id, (annotationTemplate as string));
+            annotationcontent = getTemplateContent(annotationcontent, annotation, annotationTemplate);
         } else {
             annotationcontent = new TextElement();
             (annotationcontent as TextElement).canMeasure = !virtualize;
@@ -2413,7 +2798,7 @@ export class Header extends ChildProperty<Shape> {
      * Sets the content of the header
      * @default ''
      */
-    @Complex<AnnotationModel>({ style: { fill: 'transparent' } }, Annotation)
+    @Complex<AnnotationModel>({ style: { fill: '#111111' } }, Annotation)
     public annotation: Annotation;
 
     /**
@@ -2461,6 +2846,7 @@ export class Lane extends ChildProperty<Shape> {
     /**
      * Defines the collection of child nodes
      * @default []
+     * @blazorType ObservableCollection<DiagramNode>
      */
     @Collection<NodeModel>([], Node)
     public children: NodeModel[];
@@ -2668,14 +3054,14 @@ export class Selector extends ChildProperty<Selector> implements IElement {
 
     /**
      * Defines the collection of selected nodes
-     * @blazorType List<DiagramNode>
+     * @blazorType ObservableCollection<DiagramNode>
      */
     @Collection<NodeModel>([], Node)
     public nodes: NodeModel[];
 
     /**
      * Defines the collection of selected connectors
-     * @blazorType List<DiagramConnector>
+     * @blazorType ObservableCollection<DiagramConnector>
      */
     @Collection<ConnectorModel>([], Connector)
     public connectors: ConnectorModel[];
@@ -2728,7 +3114,8 @@ export class Selector extends ChildProperty<Selector> implements IElement {
 
     /**
      * Sets the pivot of the selector
-     * @default { x: 0.5, y: 0.5 }
+     * @default { x: 0.5, y: 0.5 } 
+     * @blazorType SelectorPivot
      */
     @Complex<PointModel>({ x: 0.5, y: 0.5 }, Point)
     public pivot: PointModel;
@@ -2779,6 +3166,7 @@ export class Selector extends ChildProperty<Selector> implements IElement {
      * });
      * diagram.appendTo('#diagram');
      * ```
+     * @blazorType ObservableCollection<DiagramUserHandle>
      * @default []
      */
     @Collection<UserHandleModel>([], UserHandle)

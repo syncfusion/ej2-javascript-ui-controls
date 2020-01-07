@@ -2,13 +2,27 @@
 
 ## [Unreleased]
 
+## 17.4.41 (2020-01-07)
+
+### Stock Chart
+
+#### New Features
+
+- `#257199` - Provided support to enable/disable the Date Range Picker in Stock Chart's period selector.
+
+#### Bug Fixes
+
+- `#257199` - Tooltip stops showing after resizing window issue has fixed.
+
 ## 17.4.40 (2019-12-24)
 
 ### Chart
 
 #### Bug Fixes
 
-- `#257935` - Axis labels rotated at 90 degree alignment issue now fixed.
+- `#149930` - Chart with DataManager in offline mode makes a request to the server for multiple times issue got fixed.
+- Issue in Stacking line series with multiple axes is fixed now.
+- `#257935` - Alignment issue in axis labels when rotated at 90 degree is fixed now.
 
 ## 17.4.39 (2019-12-17)
 

@@ -13,6 +13,11 @@ export interface LoadEventArgs extends BaseEventArgs {
      * Document name to be loaded into PdfViewer.
      */
     documentName: string;
+    /**
+     * Defines the page details and page count of the PDF document.
+     */
+    // tslint:disable-next-line
+    pageData: any;
 }
 
 /** 
@@ -379,6 +384,25 @@ export interface AnnotationSelectEventArgs extends BaseEventArgs {
      */
     // tslint:disable-next-line
     annotationCollection?: any;
+}
+
+/**
+ * This event arguments provides the necessary information about annotation double click event.
+ */
+export interface AnnotationDoubleClickEventArgs extends BaseEventArgs {
+    /**
+     * Defines the id of the annotation double clicked in the page of the PDF document.
+     */
+    annotationId: string;
+    /**
+     * Defines the page number in which the annotation is double clicked.
+     */
+    pageIndex: number;
+    /**
+     * Defines the annotation double clicked in the PDF document.
+     */
+    // tslint:disable-next-line
+    annotation: any;
 }
 
 /** 

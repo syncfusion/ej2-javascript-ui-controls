@@ -6303,10 +6303,6 @@ class TableWidget extends BlockWidget {
                         }
                     }
                 }
-                let newCellFormat = new WCellFormat();
-                if (isZeroWidth && !this.isDefaultFormatUpdated) {
-                    cell.cellFormat.copyFormat(newCellFormat);
-                }
                 cellWidth = this.getCellWidth(cell.cellFormat.preferredWidth, cell.cellFormat.preferredWidthType, tableWidth, cell);
                 sizeInfo = cell.getCellSizeInfo(isAutoFit);
                 this.tableHolder.addColumns(columnSpan, columnSpan += cell.cellFormat.columnSpan, cellWidth, sizeInfo, offset += cellWidth);
@@ -11246,7 +11242,7 @@ class SpellChecker {
             if (content !== 'Ignore Once') {
                 content = this.manageSpecialCharacters(exactText, content);
                 this.viewer.owner.editor.insertTextInternal(content, true);
-                this.viewer.selection.start = this.viewer.selection.end;
+                this.viewer.selection.start.setPositionInternal(this.viewer.selection.end);
                 this.viewer.clearSelectionHighlight();
                 return;
             }
@@ -11268,7 +11264,7 @@ class SpellChecker {
             if (!isNullOrUndefined(this.currentContextInfo)) {
                 this.removeErrorsFromCollection(this.currentContextInfo);
             }
-            this.viewer.selection.start = this.viewer.selection.end;
+            this.viewer.selection.start.setPositionInternal(this.viewer.selection.end);
             this.viewer.clearSelectionHighlight();
         }
         //this.viewer.owner.errorWordCollection.remove(content);
@@ -12925,7 +12921,7 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
             'Reopen': 'Reopen',
             'No comments in this document': 'No comments in this document',
             'more': 'more',
-            'Type your comment hear': 'Type your comment hear',
+            'Type your comment here': 'Type your comment here',
             'Next Comment': 'Next Comment',
             'Previous Comment': 'Previous Comment',
             'Un-posted comments': 'Un-posted comments',
@@ -21753,16 +21749,25 @@ class Renderer {
         let cellFormat = cellWidget.cellFormat;
         let bgColor = cellFormat.shading.backgroundColor === '#ffffff' ?
             cellWidget.ownerTable.tableFormat.shading.backgroundColor : cellFormat.shading.backgroundColor;
+        let left = cellWidget.x - leftMargin - lineWidth;
+        let top = cellWidget.y - HelperMethods.convertPointToPixel(cellWidget.topMargin);
+        let width = cellWidget.width + leftMargin + lineWidth + cellWidget.margin.right;
         this.pageContext.beginPath();
         if (bgColor !== 'empty') {
             this.pageContext.fillStyle = this.getColor(bgColor);
-            let left = cellWidget.x - leftMargin - lineWidth;
-            let top = cellWidget.y - HelperMethods.convertPointToPixel(cellWidget.topMargin);
-            // tslint:disable-next-line:max-line-length
-            let width = cellWidget.width + leftMargin + lineWidth + cellWidget.margin.right;
             // tslint:disable-next-line:max-line-length
             this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), this.getScaledValue(width), this.getScaledValue(height));
             this.pageContext.closePath();
+        }
+        //Render foreground color
+        if (cellFormat.shading.hasValue('foregroundColor')) {
+            this.pageContext.beginPath();
+            if (cellFormat.shading.foregroundColor !== 'empty') {
+                this.pageContext.fillStyle = this.getColor(cellFormat.shading.foregroundColor);
+                // tslint:disable-next-line:max-line-length
+                this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), this.getScaledValue(width), this.getScaledValue(height));
+                this.pageContext.closePath();
+            }
         }
     }
     /**
@@ -31620,6 +31625,13 @@ class TextPosition {
         textPosition.setPositionForCurrentIndex(currentIndex);
         textPosition.isUpdateLocation = false;
         let isPositionMoved = false;
+        if (this.selection.start.paragraph !== this.selection.end.paragraph) {
+            // To select Paragraph mark similar to MS WORD
+            if (this.selection.end.offset === this.selection.end.currentWidget.getEndOffset()
+                && this.selection.isParagraphLastLine(this.selection.end.currentWidget)) {
+                this.selection.end.setPositionParagraph(this.selection.end.currentWidget, this.selection.end.offset + 1);
+            }
+        }
         while (currentIndex !== selectionEndIndex && TextPosition.isForwardSelection(currentIndex, selectionEndIndex)) {
             if (!isPositionMoved) {
                 textPosition.moveNextPosition(false);
@@ -31678,6 +31690,14 @@ class TextPosition {
         let textPosition = new TextPosition(this.owner);
         textPosition.setPositionForCurrentIndex(currentIndex);
         textPosition.isUpdateLocation = false;
+        if (this.selection.start.paragraph !== this.selection.end.paragraph) {
+            // To select Paragraph mark similar to MS WORD
+            if (this.selection.start.offset !== this.selection.getStartOffset(this.selection.start.paragraph)
+                && this.selection.start.offset === this.selection.start.currentWidget.getEndOffset()
+                && this.selection.isParagraphLastLine(this.selection.start.currentWidget)) {
+                this.selection.start.setPositionParagraph(this.selection.start.currentWidget, this.selection.start.offset + 1);
+            }
+        }
         let selectionStartIndex = this.selection.start.getHierarchicalIndexInternal();
         while (currentIndex !== selectionEndIndex && TextPosition.isForwardSelection(selectionEndIndex, currentIndex)) {
             let indexInInline = 0;
@@ -32915,8 +32935,7 @@ class Selection {
                                 || selectedCells.indexOf(bmEndPos.paragraph.associatedCell) < 0) {
                                 let endCell = end.paragraph.isInsideTable && end.paragraph.associatedCell;
                                 let bmEndPosCell = bmEndPos.paragraph.associatedCell;
-                                if (endCell && endCell.ownerTable.equals(bmEndPos.paragraph.associatedCell.ownerTable) &&
-                                    endCell.ownerTable.equals(bmEndPosCell.ownerTable) &&
+                                if (endCell && bmEndPosCell && endCell.ownerTable.equals(bmEndPosCell.ownerTable) &&
                                     !(endCell.ownerTable
                                         && selectedCells.indexOf(this.getCellInTable(endCell.ownerTable, bmEndPosCell)) >= 0)) {
                                     continue;
@@ -44223,6 +44242,7 @@ class Editor {
         this.isSkipHistory = false;
         this.isPaste = false;
         this.isPasteListUpdated = false;
+        this.isInsertField = false;
         /**
          * @private
          */
@@ -44391,6 +44411,7 @@ class Editor {
      * @param result
      */
     insertField(code, result) {
+        this.isInsertField = true;
         let fieldCode = code;
         if (isNullOrUndefined(result)) {
             fieldCode = HelperMethods.trimStart(fieldCode);
@@ -44431,6 +44452,7 @@ class Editor {
         let widgets = [];
         widgets.push(paragraph);
         this.pasteContentsInternal(widgets);
+        this.isInsertField = false;
     }
     /**
      * To update style for paragraph
@@ -47006,7 +47028,12 @@ class Editor {
                 for (let k = 0; k < lineWidget.children.length; k++) {
                     let inlineCharacterFormat = lineWidget.children[k].characterFormat;
                     let characterFormat = inlineCharacterFormat.cloneFormat();
-                    lineWidget.children[k].characterFormat.copyFormat(insertFormat);
+                    if (isNullOrUndefined(insertFormat.uniqueCharacterFormat)) {
+                        lineWidget.children[k].characterFormat = insertFormat;
+                    }
+                    else {
+                        lineWidget.children[k].characterFormat.copyFormat(insertFormat);
+                    }
                     if (characterFormat.bold) {
                         lineWidget.children[k].characterFormat.bold = characterFormat.bold;
                     }
@@ -47337,11 +47364,20 @@ class Editor {
             lineIndex = paragraph.childWidgets.indexOf(curInline.line);
             insertIndex = curInline.indexInOwner;
             lineWidget = curInline.line;
+            let isRtl = false;
+            if (curInline instanceof TextElementBox) {
+                isRtl = this.viewer.textHelper.getRtlLanguage(curInline.text).isRtl;
+            }
             if (indexInInline === curInline.length) { // Add new Element in current 
-                insertIndex++;
+                if (!bidi) {
+                    insertIndex++;
+                }
             }
             else if (indexInInline === 0) {
-                if (isNullOrUndefined(curInline.previousNode)) {
+                if (isRtl && bidi && this.isInsertField) {
+                    insertIndex++;
+                }
+                else if (isNullOrUndefined(curInline.previousNode)) {
                     insertIndex = 0;
                 }
             }
@@ -47349,8 +47385,14 @@ class Editor {
                 insertIndex++;
                 let prevElement = new TextElementBox();
                 prevElement.characterFormat.copyFormat(curInline.characterFormat);
-                prevElement.text = curInline.text.substring(indexInInline);
-                curInline.text = curInline.text.substr(0, indexInInline);
+                if (bidi && this.isInsertField && isRtl) {
+                    prevElement.text = curInline.text.slice(0, indexInInline);
+                    curInline.text = curInline.text.substring(indexInInline);
+                }
+                else {
+                    prevElement.text = curInline.text.substring(indexInInline);
+                    curInline.text = curInline.text.slice(0, indexInInline);
+                }
                 lineWidget.children.splice(insertIndex, 0, prevElement);
                 prevElement.line = curInline.line;
             }
@@ -47368,6 +47410,9 @@ class Editor {
         }
         if (paragraphFormat) {
             paragraph.paragraphFormat.copyFormat(paragraphFormat);
+        }
+        if (paragraph.paragraphFormat.bidi && this.isInsertField) {
+            this.viewer.layout.reArrangeElementsForRtl(lineWidget, paragraph.paragraphFormat.bidi);
         }
         this.viewer.layout.reLayoutParagraph(paragraph, lineIndex, 0, paragraph.paragraphFormat.bidi);
         this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + length, true);
@@ -48825,6 +48870,18 @@ class Editor {
             selection.skipFormatRetrieval = false;
             return;
         }
+        //Skip consider highlightcolor if paragraph mark alone is selected similar to Microsoft Word behaviour
+        if (property === 'highlightColor' && selection.start.isInSameParagraph(selection.end)) {
+            let start = selection.start;
+            let end = selection.end;
+            if (!this.selection.isForward) {
+                end = selection.start;
+                start = selection.end;
+            }
+            if (end.offset === selection.getLineLength(end.currentWidget) + 1 && end.offset - 1 === start.offset) {
+                return;
+            }
+        }
         this.setOffsetValue(selection);
         this.initHistory(action);
         // Todo: Complete Microsoft Word behavior on apply formatting in empty selection
@@ -49342,7 +49399,12 @@ class Editor {
             }
         }
         if (!paragraph.equals(end.paragraph)) {
-            this.applyCharFormatValue(paragraph.characterFormat, property, value, update);
+            let lastLine = paragraph.childWidgets[paragraph.childWidgets.length - 1];
+            //Skip consider highlightcolor if paragraph mark alone is selected similar to Microsoft Word behaviour
+            if (!(property === 'highlightColor' && selection.isParagraphLastLine(lastLine)
+                && start.currentWidget === lastLine && start.offset === selection.getLineLength(lastLine))) {
+                this.applyCharFormatValue(paragraph.characterFormat, property, value, update);
+            }
             endOffset = length;
         }
         else {
@@ -52788,6 +52850,7 @@ class Editor {
                     let startIndex = this.removedBookmarkElements.indexOf(bookMarkStart);
                     this.removedBookmarkElements.splice(endIndex, 1);
                     this.removedBookmarkElements.splice(startIndex, 1);
+                    i--;
                 }
                 else {
                     if (this.editorHistory.currentBaseHistoryInfo) {
@@ -52808,6 +52871,7 @@ class Editor {
                     let startIndex = this.removedBookmarkElements.indexOf(bookMarkEnd);
                     this.removedBookmarkElements.splice(endIndex, 1);
                     this.removedBookmarkElements.splice(startIndex, 1);
+                    i--;
                 }
                 else {
                     if (this.editorHistory.currentBaseHistoryInfo) {
@@ -53826,20 +53890,16 @@ class Editor {
         }
         else {
             let currentList = undefined;
-            let listLevelNumber = 0;
+            let levelNumber = 0;
             if (!isNullOrUndefined(paragraph.paragraphFormat) && !isNullOrUndefined(paragraph.paragraphFormat.listFormat)) {
                 currentList = this.viewer.getListById(paragraph.paragraphFormat.listFormat.listId);
-                listLevelNumber = paragraph.paragraphFormat.listFormat.listLevelNumber;
+                levelNumber = paragraph.paragraphFormat.listFormat.listLevelNumber;
             }
-            // tslint:disable-next-line:max-line-length
             if (!isNullOrUndefined(currentList) && !isNullOrUndefined(this.viewer.getAbstractListById(currentList.abstractListId))
-                // tslint:disable-next-line:max-line-length
-                && !isNullOrUndefined(this.viewer.getAbstractListById(currentList.abstractListId).levels[listLevelNumber])) {
-                let currentListLevel = this.viewer.layout.getListLevel(currentList, listLevelNumber);
+                && !isNullOrUndefined(this.viewer.getAbstractListById(currentList.abstractListId).levels[levelNumber])) {
+                let currentListLevel = this.viewer.layout.getListLevel(currentList, levelNumber);
                 //Updates the list numbering from document start for reLayouting.
-                if (currentListLevel.listLevelPattern !== 'Bullet') {
-                    this.viewer.layout.getListNumber(paragraph.paragraphFormat.listFormat);
-                }
+                this.updateListNumber(currentListLevel, paragraph, false);
             }
         }
         return false;
@@ -53853,22 +53913,28 @@ class Editor {
                 && !isNullOrUndefined(this.viewer.getAbstractListById(currentList.abstractListId).levels[paragraph.paragraphFormat.listFormat.listLevelNumber])) {
                 let currentListLevel = this.viewer.layout.getListLevel(currentList, listLevelNumber);
                 //Updates the list numbering from document start for reLayouting.
-                if (currentListLevel.listLevelPattern !== 'Bullet') {
-                    let element = undefined;
-                    if (paragraph.childWidgets.length > 0) {
-                        let lineWidget = paragraph.childWidgets[0];
-                        if (lineWidget.children.length > 0) {
-                            if (paragraph.paragraphFormat.bidi) {
-                                element = lineWidget.children[lineWidget.children.length - 1];
-                            }
-                            else {
-                                element = lineWidget.children[0];
-                            }
-                        }
+                this.updateListNumber(currentListLevel, paragraph, true);
+            }
+        }
+    }
+    updateListNumber(currentListLevel, paragraph, isUpdate) {
+        if (currentListLevel.listLevelPattern !== 'Bullet') {
+            let element = undefined;
+            if (paragraph.childWidgets.length > 0) {
+                let lineWidget = paragraph.childWidgets[0];
+                if (lineWidget.children.length > 0) {
+                    if (paragraph.paragraphFormat.bidi) {
+                        element = lineWidget.children[lineWidget.children.length - 1];
                     }
-                    if (!isNullOrUndefined(element)) {
-                        element.text = this.viewer.layout.getListNumber(paragraph.paragraphFormat.listFormat);
+                    else {
+                        element = lineWidget.children[0];
                     }
+                }
+            }
+            if (!isNullOrUndefined(element) && element instanceof ListTextElementBox) {
+                let text = this.viewer.layout.getListNumber(paragraph.paragraphFormat.listFormat);
+                if (isUpdate) {
+                    element.text = text;
                 }
             }
         }
@@ -68620,7 +68686,7 @@ class StyleDialog {
         };
         /* tslint:disable-next-line:no-any */
         this.fontColorUpdate = (args) => {
-            this.characterFormat.fontColor = args.currentValue.rgba;
+            this.characterFormat.fontColor = args.currentValue.hex;
         };
         this.setLeftAlignment = () => {
             if (this.paragraphFormat.textAlignment === 'Left') {
@@ -69859,6 +69925,7 @@ class FontDialog {
                 characterFormat = this.owner.owner.selection.characterFormat;
             }
             this.fontNameList.value = characterFormat.fontFamily;
+            this.fontNameList.dataBind();
             if (!characterFormat.bold && !characterFormat.italic) {
                 this.fontStyleText.value = this.fontSizeText.value;
                 this.fontStyleText.index = 0;
@@ -74166,7 +74233,7 @@ class CommentView {
     initEditView(localObj) {
         this.textAreaContainer = createElement('div', { styles: 'display:none' });
         this.textArea = createElement('textarea', { className: 'e-de-cmt-textarea e-input' });
-        this.textArea.placeholder = localObj.getConstant('Type your comment hear');
+        this.textArea.placeholder = localObj.getConstant('Type your comment here');
         this.textArea.rows = 1;
         this.textArea.value = this.comment.text.trim();
         this.textArea.addEventListener('keydown', this.updateTextAreaHeight.bind(this));

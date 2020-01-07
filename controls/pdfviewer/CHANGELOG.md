@@ -2,6 +2,27 @@
 
 ## [Unreleased]
 
+## 17.4.41 (2020-01-07)
+
+### PDF Viewer
+
+#### New Features
+
+- `#257514` – Provided the support for import/export the custom stamp annotations.
+- `#257231` – Exposed the property to access the search count value.
+- `#258386` – Exposed the API to retrieve the text content and bounds along with page size details.
+
+#### Bug Fixes
+
+- `#259524` – Annotations are rendered properly in the large page size document if the page rendered in fitToPage mode initially.
+- `#259523` – Errors will no longer occur while exporting the annotation if the document contains text web link annotation.
+- `#259134` – The annotationSelect event now triggers properly if we add the multiple annotations to a page.
+- `#258949` – The opacity value is now applied properly if set it on annotation during initialization.
+- `#259383` – The errors will no longer occur if we import the annotations after deleting the added annotations.
+-`#259166` – The text content will be selected properly at the end of the page.
+- `#259078` – The annotations will now be created if we resize the annotation through multipage.
+- `#259564` – The Null reference error will no longer occur while loading the provided PDF document.
+
 ## 17.4.40 (2019-12-24)
 
 ### PDF Viewer

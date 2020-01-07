@@ -399,7 +399,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
             };
             this.renderControl(this.inlineWrapper);
             if ((isNullOrUndefined(model.value) && isNullOrUndefined(this.value)) || (model.value === this.value
-                && model.value.length === 0)) {
+                && (!isNullOrUndefined(model.value) && model.value.length === 0))) {
                 this.showDropDownPopup();
             }
         }
@@ -414,7 +414,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             if (this.isExtModule) {
-                this.notify(showPopup, {});
+                this.notify(((this.type === 'MultiSelect') ? setFocus : showPopup), {});
             }
         }
     };
@@ -521,27 +521,28 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
             }
             switch (this.type) {
                 case 'Date':
-                    this.componentObj = new DatePicker(this.model, ele);
+                    this.componentObj = new DatePicker(this.model);
                     break;
                 case 'DateTime':
-                    this.componentObj = new DateTimePicker(this.model, ele);
+                    this.componentObj = new DateTimePicker(this.model);
                     break;
                 case 'DropDownList':
-                    this.componentObj = new DropDownList(this.model, ele);
+                    this.componentObj = new DropDownList(this.model);
                     break;
                 case 'Mask':
-                    this.componentObj = new MaskedTextBox(this.model, ele);
+                    this.componentObj = new MaskedTextBox(this.model);
                     break;
                 case 'Numeric':
                     if (this.model.value) {
                         this.model.value = this.model.value.toString().replace(/[`~!@#$%^&*()_|\=?;:'",<>\{\}\[\]\\\/]/gi, '');
                     }
-                    this.componentObj = new NumericTextBox(this.model, ele);
+                    this.componentObj = new NumericTextBox(this.model);
                     break;
                 case 'Text':
-                    this.componentObj = new TextBox(this.model, ele);
+                    this.componentObj = new TextBox(this.model);
                     break;
             }
+            this.componentObj.appendTo(ele);
         }
     };
     InPlaceEditor.prototype.updateAdaptor = function () {
@@ -1466,7 +1467,8 @@ var AutoComplete$1 = /** @__PURE__ @class */ (function () {
         this.base = new Base(this.parent, this);
     }
     AutoComplete$$1.prototype.render = function (e) {
-        this.compObj = new AutoComplete(this.parent.model, e.target);
+        this.compObj = new AutoComplete(this.parent.model);
+        this.compObj.appendTo(e.target);
     };
     /**
      * @hidden
@@ -1513,7 +1515,8 @@ var ColorPicker$1 = /** @__PURE__ @class */ (function () {
         this.base = new Base(this.parent, this);
     }
     ColorPicker$$1.prototype.render = function (e) {
-        this.compObj = new ColorPicker(this.parent.model, e.target);
+        this.compObj = new ColorPicker(this.parent.model);
+        this.compObj.appendTo(e.target);
     };
     ColorPicker$$1.prototype.focus = function () {
         this.compObj.element.focus();
@@ -1553,7 +1556,8 @@ var ComboBox$1 = /** @__PURE__ @class */ (function () {
         this.base = new Base(this.parent, this);
     }
     ComboBox$$1.prototype.render = function (e) {
-        this.compObj = new ComboBox(this.parent.model, e.target);
+        this.compObj = new ComboBox(this.parent.model);
+        this.compObj.appendTo(e.target);
     };
     ComboBox$$1.prototype.focus = function () {
         this.compObj.element.focus();
@@ -1630,28 +1634,57 @@ var DateRangePicker$1 = /** @__PURE__ @class */ (function () {
     return DateRangePicker$$1;
 }());
 
+var __assign = (undefined && undefined.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 /**
  * The `MultiSelect` module is used configure the properties of Multi select type editor.
  */
 var MultiSelect$1 = /** @__PURE__ @class */ (function () {
     function MultiSelect$$1(parent) {
+        this.isPopOpen = false;
         this.compObj = undefined;
         this.parent = parent;
         this.parent.multiSelectModule = this;
         this.base = new Base(this.parent, this);
     }
     MultiSelect$$1.prototype.render = function (e) {
-        this.compObj = new MultiSelect(this.parent.model, e.target);
+        var compModel = __assign({}, this.parent.model);
+        this.openEvent = compModel.open;
+        this.closeEvent = compModel.close;
+        compModel.open = this.openHandler.bind(this);
+        compModel.close = this.closeHandler.bind(this);
+        this.compObj = new MultiSelect(compModel);
+        this.compObj.appendTo(e.target);
     };
-    /**
-     * @hidden
-     */
-    MultiSelect$$1.prototype.showPopup = function () {
-        this.compObj.focusIn();
-        this.compObj.showPopup();
+    MultiSelect$$1.prototype.openHandler = function (e) {
+        this.isPopOpen = true;
+        if (this.openEvent) {
+            this.compObj.setProperties({ open: this.openEvent }, true);
+            this.compObj.trigger('open', e);
+        }
+    };
+    MultiSelect$$1.prototype.closeHandler = function (e) {
+        this.isPopOpen = false;
+        if (this.closeEvent) {
+            this.compObj.setProperties({ close: this.closeEvent }, true);
+            this.compObj.trigger('close', e);
+        }
     };
     MultiSelect$$1.prototype.focus = function () {
-        closest(this.compObj.element, '.e-multi-select-wrapper').dispatchEvent(new MouseEvent('mousedown'));
+        if (!this.isPopOpen) {
+            var evt = document.createEvent('MouseEvent');
+            evt.initEvent('mousedown', true, true);
+            closest(this.compObj.element, '.e-multi-select-wrapper').dispatchEvent(evt);
+        }
     };
     MultiSelect$$1.prototype.updateValue = function (e) {
         if (this.compObj && e.type === 'MultiSelect') {
@@ -1692,7 +1725,8 @@ var Rte = /** @__PURE__ @class */ (function () {
         this.base = new Base(this.parent, this);
     }
     Rte.prototype.render = function (e) {
-        this.compObj = new RichTextEditor(this.parent.model, e.target);
+        this.compObj = new RichTextEditor(this.parent.model);
+        this.compObj.appendTo(e.target);
     };
     Rte.prototype.focus = function () {
         this.compObj.focusIn();
@@ -1746,7 +1780,8 @@ var Slider$1 = /** @__PURE__ @class */ (function () {
         this.base = new Base(this.parent, this);
     }
     Slider$$1.prototype.render = function (e) {
-        this.compObj = new Slider(this.parent.model, e.target);
+        this.compObj = new Slider(this.parent.model);
+        this.compObj.appendTo(e.target);
     };
     Slider$$1.prototype.focus = function () {
         this.compObj.element.focus();
@@ -1789,7 +1824,8 @@ var TimePicker$1 = /** @__PURE__ @class */ (function () {
         this.base = new Base(this.parent, this);
     }
     TimePicker$$1.prototype.render = function (e) {
-        this.compObj = new TimePicker(this.parent.model, e.target);
+        this.compObj = new TimePicker(this.parent.model);
+        this.compObj.appendTo(e.target);
     };
     TimePicker$$1.prototype.focus = function () {
         this.compObj.focusIn();

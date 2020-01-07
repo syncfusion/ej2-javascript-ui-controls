@@ -2562,7 +2562,8 @@ var Adaptor = /** @__PURE__ @class */ (function () {
             search: 'search',
             count: 'requiresCounts',
             where: 'where',
-            aggregates: 'aggregates'
+            aggregates: 'aggregates',
+            expand: 'expand'
         };
         /**
          * Specifies the type of adaptor.

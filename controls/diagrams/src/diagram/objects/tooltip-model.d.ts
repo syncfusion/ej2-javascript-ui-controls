@@ -14,6 +14,10 @@ export interface DiagramTooltipModel {
     /**
      * Defines the position of the Tooltip
      * @default 'TopLeft'
+     * @aspDefaultValueIgnore
+     * @blazorType Syncfusion.EJ2.Blazor.Popups.Position
+     * @blazorDefaultValue Syncfusion.EJ2.Blazor.Popups.Position.TopLeft
+     * @isEnumeration true
      */
     position?: Position;
 

@@ -160,6 +160,6 @@ export const completeAction: string = 'actionComplete';
 /** @hidden */
 export const beginAction: string = 'actionBegin';
 /** @hidden */
-export const getFilterRange: string = 'getFilterRange';
-/** @hidden */
 export const filterCellKeyDown: string = 'filterCellKeyDown';
+/** @hidden */
+export const getFilterRange: string = 'getFilterRange';

@@ -16,6 +16,7 @@ import { TransformFactor as Transforms } from '../interaction/scroller';
 import { createSvgElement, createHtmlElement, getBackgroundLayerSvg } from '../utility/dom-util';
 import { removeGradient, checkBrowserInfo } from '../utility/diagram-util';
 import { Container } from '../core/containers/container';
+import { isBlazor } from '@syncfusion/ej2-base';
 /** 
  * SVG Renderer
  */
@@ -331,7 +332,8 @@ export class SvgRenderer implements IRenderer {
                     child.x = setChildPosition(child, childNodes, i, options);
                     offsetX = position.x + child.x - wrapBounds.x;
                     offsetY = position.y + child.dy * (i) + ((options.fontSize) * 0.8);
-                    if ((options.textOverflow === 'Clip' || options.textOverflow === 'Ellipsis') && options.textWrapping === 'Wrap') {
+                    if ((options.textOverflow === 'Clip' || options.textOverflow === 'Ellipsis') &&
+                        (options.textWrapping === 'WrapWithOverflow' || options.textWrapping === 'Wrap') && parentNode) {
                         let size: number = (options.isHorizontalLane) ? parentNode.actualSize.width : parentNode.actualSize.height;
                         if (offsetY < size) {
                             if (options.textOverflow === 'Ellipsis' && childNodes[i + 1]) {
@@ -396,8 +398,10 @@ export class SvgRenderer implements IRenderer {
         }
         let imageObj: HTMLImageElement = new Image();
         imageObj.src = obj.source;
-
         let scale: string = obj.scale !== 'None' ? obj.scale : '';
+        if (isBlazor() && obj.alignment === 'None' && scale === 'Stretch') {
+            scale = '';
+        }
         let imgAlign: string = obj.alignment;
         let aspectRatio: string = imgAlign.charAt(0).toLowerCase() + imgAlign.slice(1);
         if (scale) {
@@ -443,9 +447,10 @@ export class SvgRenderer implements IRenderer {
                 'class': 'foreign-object'
             };
             htmlElement = createHtmlElement('div', attr);
-            htmlElement.appendChild(element.template.cloneNode(true));
+            element.isTemplate ? htmlElement.appendChild(element.template) : htmlElement.appendChild(element.template.cloneNode(true));
             if (indexValue !== undefined && canvas.childNodes.length > indexValue) {
                 canvas.insertBefore(htmlElement, canvas.childNodes[indexValue]);
+
             }
             parentHtmlElement.appendChild(htmlElement);
             canvas.appendChild(parentHtmlElement);
@@ -667,8 +672,6 @@ export class SvgRenderer implements IRenderer {
         pos.y = y + pointY - bounds.height / 2;
         return pos;
     }
-
-
     //end region
 }
 

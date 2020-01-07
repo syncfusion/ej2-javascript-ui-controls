@@ -197,7 +197,6 @@ describe('draggable', () => {
             });
             it('Drag start movement called properly based on the distance moved and without element cloning', () => {
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-                expect(document.body.classList.contains('e-prevent-select')).toBe(true);
                 expect(dragstartEvent).toHaveBeenCalled();
                 instance.intDestroy(mousedown);
             });

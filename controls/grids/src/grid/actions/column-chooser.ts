@@ -397,7 +397,7 @@ export class ColumnChooser implements IAction {
             if (currentCol.type !== 'checkbox') {
                 currentCol.visible = state;
             }
-            this.stateChangeColumns.push(currentCol);
+            isBlazor() ? this.stateChangeColumns.push(JSON.parse(JSON.stringify(currentCol))) : this.stateChangeColumns.push(currentCol);
         }
     }
 

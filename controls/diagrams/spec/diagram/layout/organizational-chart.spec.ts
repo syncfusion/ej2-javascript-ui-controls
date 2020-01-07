@@ -2289,9 +2289,6 @@ describe('layout-info assistant support', () => {
         expect(diagram.nodes[2].offsetY===235&&diagram.nodes[3].offsetY===235).toBe(true);
         done();
     });
-
-});
-
     describe('layout-Type as none', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -2382,3 +2379,10 @@ describe('layout-info assistant support', () => {
             done();
         });
     });
+
+});
+
+
+
+
+

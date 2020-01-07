@@ -460,7 +460,9 @@ describe('Schedule Timeline Week view', () => {
             schObj = util.createSchedule(model, timelineData, done);
         });
         afterAll(() => {
+            let activeView: any = schObj.activeView;
             util.destroy(schObj);
+            activeView.changeCurrentTimePosition();
         });
 
         it('Checking elements', (done: DoneFn) => {
@@ -510,6 +512,15 @@ describe('Schedule Timeline Week view', () => {
         it('Checking more indicator', () => {
             let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
             expect(moreIndicatorList.length).toEqual(1);
+        });
+
+        it('Checking current time indicator with different firstDayOfWeek', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-current-time').length).toEqual(1);
+                done();
+            };
+            schObj.selectedDate = new Date();
+            schObj.dataBind();
         });
     });
 

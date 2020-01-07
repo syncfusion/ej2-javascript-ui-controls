@@ -153,11 +153,14 @@ export class Selection {
       if (!isNullOrUndefined(containerELe)) {
         containerELe.insertBefore(checkWrap, containerELe.querySelectorAll('.e-treecell')[0]);
       } else {
-        let spanEle: HTMLElement = checkWrap.querySelector('.e-label');
+        let spanEle: HTMLElement = this.parent.createElement('span', { className: 'e-treecheckbox' });
         let data: string = container.cell.innerHTML;
         container.cell.innerHTML = '';
         spanEle.innerHTML = data;
-        container.cell.appendChild(checkWrap);
+        let divEle: HTMLElement = this.parent.createElement('div', { className: 'e-treecheckbox-container' });
+        divEle.appendChild(checkWrap);
+        divEle.appendChild(spanEle);
+        container.cell.appendChild(divEle);
       }
     }
 

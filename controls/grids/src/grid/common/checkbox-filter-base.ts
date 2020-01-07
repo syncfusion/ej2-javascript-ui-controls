@@ -3,7 +3,7 @@ import { EventHandler, L10n, isNullOrUndefined, extend, classList, addClass, rem
 import { parentsUntil, getUid, appendChildren, getDatePredicate, getObject, extendObjWithFn } from '../base/util';
 import { remove, debounce } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
-import { DataUtil, Query, DataManager, Predicate, UrlAdaptor, Deferred } from '@syncfusion/ej2-data';
+import { DataUtil, Query, DataManager, Predicate, UrlAdaptor, Deferred, QueryOptions } from '@syncfusion/ej2-data';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { ReturnType } from '../base/type';
 import { IFilterArgs, FilterSearchBeginEventArgs, DataStateChangeEventArgs } from '../base/interface';
@@ -474,6 +474,7 @@ export class CheckBoxFilterBase {
         let column: Column = this.options.column as Column;
         let query: Query = this.isForeignColumn(column) ? this.foreignKeyQuery.clone() : this.options.query.clone();
         let foreignQuery: Query = this.options.query.clone();
+        let pred: QueryOptions = query.queries.filter((e : QueryOptions) => { return e && e.fn === 'onWhere'; })[0];
         query.queries = [];
         foreignQuery.queries = [];
         let parsed: string | number | Date | boolean = (this.options.type !== 'string' && parseFloat(val)) ? parseFloat(val) : val;
@@ -522,7 +523,10 @@ export class CheckBoxFilterBase {
             predicte = getDatePredicate(filterObj, this.options.type);
         }
         if (val.length) {
-            query.where(predicte);
+         predicte = !isNullOrUndefined(pred) ? predicte.and(pred.e as Predicate) : predicte;
+         query.where(predicte);
+        } else if (!isNullOrUndefined(pred)) {
+            query.where(pred.e as Predicate);
         }
         args.filterChoiceCount = !isNullOrUndefined(args.filterChoiceCount) ? args.filterChoiceCount : 1000;
         let fPredicate: { predicate?: Predicate } = {};

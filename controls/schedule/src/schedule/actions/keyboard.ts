@@ -1,5 +1,5 @@
 import { KeyboardEvents, KeyboardEventArgs, closest, EventHandler, extend } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, addClass } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, addClass, removeClass } from '@syncfusion/ej2-base';
 import { View } from '../base/type';
 import { Schedule } from '../base/schedule';
 import { CellClickEventArgs, KeyEventArgs, ResizeEdges, SelectEventArgs } from '../base/interface';
@@ -139,6 +139,8 @@ export class KeyboardInteraction {
     }
 
     public onMouseSelection(e: MouseEvent): void {
+        let appointments: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS)) as Element[];
+        addClass(appointments, 'e-allow-select');
         let selectionEdges: ResizeEdges = this.parent.boundaryValidation(e.pageY, e.pageX);
         if (selectionEdges.bottom || selectionEdges.top || selectionEdges.left || selectionEdges.right) {
             let parent: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
@@ -165,6 +167,8 @@ export class KeyboardInteraction {
         return closest(<Element>e.target, '.' + cls.WORK_CELLS_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS) as HTMLTableCellElement;
     }
     private onMoveup(e: Event): void {
+        let appointments: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_CLASS)) as Element[];
+        removeClass(appointments, 'e-allow-select');
         if ((e.target as HTMLElement).classList.contains(cls.WORK_CELLS_CLASS)) {
             EventHandler.remove(this.parent.getContentTable(), 'mousemove', this.onMouseSelection);
             EventHandler.remove(this.parent.getContentTable(), 'mouseup', this.onMoveup);

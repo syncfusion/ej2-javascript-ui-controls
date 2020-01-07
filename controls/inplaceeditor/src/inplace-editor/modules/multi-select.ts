@@ -1,5 +1,5 @@
-import { closest } from '@syncfusion/ej2-base';
-import { MultiSelect as EJ2MultiSelect, MultiSelectModel } from '@syncfusion/ej2-dropdowns';
+import { closest, EmitType } from '@syncfusion/ej2-base';
+import { MultiSelect as EJ2MultiSelect, MultiSelectModel, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
 import { Base } from './base-module';
 import { InPlaceEditor } from '../base/inplace-editor';
 import { NotifyParams, IComponent } from '../base/interface';
@@ -10,7 +10,10 @@ import { NotifyParams, IComponent } from '../base/interface';
 export class MultiSelect implements IComponent {
     private base: Base;
     protected parent: InPlaceEditor;
+    private isPopOpen: boolean = false;
     public compObj: EJ2MultiSelect = undefined;
+    private openEvent: EmitType<PopupEventArgs>;
+    private closeEvent: EmitType<PopupEventArgs>;
 
     constructor(parent?: InPlaceEditor) {
         this.parent = parent;
@@ -19,19 +22,37 @@ export class MultiSelect implements IComponent {
     }
 
     public render(e: NotifyParams): void {
-        this.compObj = new EJ2MultiSelect(this.parent.model as MultiSelectModel, e.target);
+        let compModel: MultiSelectModel = { ...this.parent.model as MultiSelectModel };
+        this.openEvent = compModel.open;
+        this.closeEvent = compModel.close;
+        compModel.open = this.openHandler.bind(this);
+        compModel.close = this.closeHandler.bind(this);
+        this.compObj = new EJ2MultiSelect(compModel);
+        this.compObj.appendTo(e.target);
     }
 
-    /**
-     * @hidden
-     */
-    public showPopup(): void {
-        this.compObj.focusIn();
-        this.compObj.showPopup();
+    private openHandler(e: PopupEventArgs): void {
+        this.isPopOpen = true;
+        if (this.openEvent) {
+            this.compObj.setProperties({ open: this.openEvent }, true);
+            this.compObj.trigger('open', e);
+        }
+    }
+
+    private closeHandler(e: PopupEventArgs): void {
+        this.isPopOpen = false;
+        if (this.closeEvent) {
+            this.compObj.setProperties({ close: this.closeEvent }, true);
+            this.compObj.trigger('close', e);
+        }
     }
 
     public focus(): void {
-        closest(this.compObj.element, '.e-multi-select-wrapper').dispatchEvent(new MouseEvent('mousedown'));
+        if (!this.isPopOpen) {
+            let evt: MouseEvent = document.createEvent('MouseEvent') as MouseEvent;
+            evt.initEvent('mousedown', true, true);
+            (closest(this.compObj.element, '.e-multi-select-wrapper') as HTMLElement).dispatchEvent(evt);
+        }
     }
 
     public updateValue(e: NotifyParams): void {

@@ -18,7 +18,8 @@ export class Slider implements IComponent {
     }
 
     public render(e: NotifyParams): void {
-        this.compObj = new EJ2Slider(this.parent.model as SliderModel, e.target as HTMLInputElement);
+        this.compObj = new EJ2Slider(this.parent.model as SliderModel);
+        this.compObj.appendTo(e.target as HTMLInputElement);
     }
 
     public focus(): void {

@@ -103,13 +103,13 @@ export class Ruler extends Component<HTMLElement> implements INotifyPropertyChan
     /**   @private  */
     public vRulerOffset: number;
 
-
     /**
      * Constructor for creating the Ruler Component
      */
     constructor(options?: RulerModel, element?: string | HTMLElement) {
         super(options, <HTMLButtonElement | string>element);
     }
+
 
     /**
      * Initializes the values of private members.

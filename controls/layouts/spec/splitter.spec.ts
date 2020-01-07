@@ -4176,4 +4176,289 @@ describe('Splitter Control', () => {
                 expect(splitterObj.allPanes[0].querySelectorAll('style').length).toBeGreaterThan(0);
             });
         });
+        // keyboard accessibility testing
+    describe('on key press', () => {
+        let splitterObj: any;
+        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13 } };
+        let rightarrow: any = { callBack: () => { }, type: 'keydown', which: 39, keyCode: 39, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 39 } };
+        let leftarrow: any = { callBack: () => { }, type: 'keydown', which: 37, keyCode: 37, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 37 } };
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default' });
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', paneSettings: [{ size: "100px" }, { size: "100px" }], separatorSize: 5, width: '400px' });
+            splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+            document.body.innerHTML = '';
+        });
+        it('on right arrow pressing', () => {
+            splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.onMove(rightarrow);
+        });
+        it('on left arrow pressing', () => {
+            splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.onMove(leftarrow);
+        });
+        it('on enter key pressing', () => {
+            splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.onMove(enterKey);
+        });
+    });
+
+    describe('on key press', () => {
+        let splitterObj: any;
+        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13, keyCode: 13 } };
+        let uparrow: any = { callBack: () => { }, type: 'keydown', which: 38, keyCode: 38, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 38, keyCode: 38 } };
+        let downarrow: any = { callBack: () => { }, type: 'keydown', which: 40, keyCode: 40, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 40, keyCode: 40 } };
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default' });
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', orientation: 'Vertical', paneSettings: [{ size: "100px" }, { size: "100px" }], separatorSize: 5, width: '400px' });
+            splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+            document.body.innerHTML = '';
+        });
+         it('on up arrow pressing', () => {
+            splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.onMove(uparrow);
+        });
+        it('on down arrow key pressing', () => {
+            splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.onMove(downarrow);
+        });
+        it('on enter key pressing', () => {
+            splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.onMove(enterKey);
+        });
+    });
+    describe('on key press', () => {
+        let splitterObj: any;
+        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13, keyCode: 13 } };
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default' });
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', orientation: 'Vertical', paneSettings: [{ size: "100px", collapsible: true }, { size: "100px", collapsible: true }], separatorSize: 5, width: '400px' });
+            splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+            document.body.innerHTML = '';
+        });
+        it('on enter key pressing', () => {
+            splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.onMove(enterKey);
+        });
+    });
+    describe('on pane collapsed', () => {
+        let splitterObj: any;
+        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13, keyCode: 13 } };
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default' });
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', orientation: 'Vertical', paneSettings: [{ size: "100px", collapsible: true, collapsed: true }, { size: "100px", collapsible: true }], separatorSize: 5, width: '400px' });
+            splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+            document.body.innerHTML = '';
+        });
+        it('on enter key pressing', () => {
+            splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.onMove(enterKey);
+        });
+    });
+
+    describe('on key press when size %', () => {
+        let splitterObj: any;
+        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13 } };
+        let rightarrow: any = { callBack: () => { }, type: 'keydown', which: 39, keyCode: 39, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 39 } };
+        let leftarrow: any = { callBack: () => { }, type: 'keydown', which: 37, keyCode: 37, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 37 } };
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default' });
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', paneSettings: [{ size: "30%" }, { size: "30%" }], separatorSize: 5, width: '400px' });
+            splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+            document.body.innerHTML = '';
+        });
+        it('on right arrow pressing', () => {
+            splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.onMove(rightarrow);
+        });
+        it('on left arrow pressing', () => {
+            splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.onMove(leftarrow);
+        });
+        it('on enter key pressing', () => {
+            splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.onMove(enterKey);
+        });
+    });
+    describe('on key press when size % vertical', () => {
+        let splitterObj: any;
+        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13 } };
+        let uparrow: any = { callBack: () => { }, type: 'keydown', which: 38, keyCode: 38, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 38 } };
+        let downarrow: any = { callBack: () => { }, type: 'keydown', which: 40, keyCode: 40, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 40 } };
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default' });
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', orientation: 'Vertical', paneSettings: [{ size: "30%" }, { size: "30%" }], separatorSize: 5, width: '400px' });
+            splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+            document.body.innerHTML = '';
+        });
+        it('on up arrow pressing', () => {
+            splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.onMove(uparrow);
+        });
+        it('on down arrow pressing', () => {
+            splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.onMove(downarrow);
+        });
+        it('on enter key pressing', () => {
+            splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.onMove(enterKey);
+        });
+    });
+
+    describe('on key press when no-size vertical', () => {
+        let splitterObj: any;
+        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13 } };
+        let uparrow: any = { callBack: () => { }, type: 'keydown', which: 38, keyCode: 38, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 38 } };
+        let downarrow: any = { callBack: () => { }, type: 'keydown', which: 40, keyCode: 40, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 40 } };
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default' });
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', orientation: 'Vertical', paneSettings: [{  }, { }], separatorSize: 5, width: '400px' });
+            splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+            document.body.innerHTML = '';
+        });
+        it('on up arrow pressing', () => {
+            splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.onMove(uparrow);
+        });
+        it('on down arrow pressing', () => {
+            splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.onMove(downarrow);
+        });
+        it('on enter key pressing', () => {
+            splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.onMove(enterKey);
+        });
+    });
+
+    describe('on key press when size % vertical', () => {
+        let splitterObj: any;
+        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13 } };
+        let leftarrow: any = { callBack: () => { }, type: 'keydown', which: 37, keyCode: 37, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 37 } };
+        let rightarrow: any = { callBack: () => { }, type: 'keydown', which: 39, keyCode: 39, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 39 } };
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default' });
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', paneSettings: [{ size: "30%" }, { size: "30%" }], separatorSize: 5, width: '400px' });
+            splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+            document.body.innerHTML = '';
+        });
+        it('on up arrow pressing', () => {
+            splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.onMove(leftarrow);
+        });
+        it('on down arrow pressing', () => {
+            splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.onMove(rightarrow);
+        });
+        it('on enter key pressing', () => {
+            splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.onMove(enterKey);
+        });
+    });
+
+    describe('on key press when no-size horizont', () => {
+        let splitterObj: any;
+        let enterKey: any = { callBack: () => { }, type: 'keydown', which: 13, keyCode: 13, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 13 } };
+        let leftarrow: any = { callBack: () => { }, type: 'keydown', which: 37, keyCode: 37, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 37 } };
+        let rightarrow: any = { callBack: () => { }, type: 'keydown', which: 39, keyCode: 39, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 39 } };
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default' });
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', paneSettings: [{ size: '200px', collapsible: true }, { collapsible: true }], separatorSize: 5, width: '400px' });
+            splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+            document.body.innerHTML = '';
+        });
+        it('on up arrow pressing', () => {
+            splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.onMove(leftarrow);
+        });
+        it('on down arrow pressing', () => {
+            splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.onMove(rightarrow);
+        });
+        it('on enter key pressing', () => {
+            splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.onMove(enterKey);
+        });
+    });
+    describe('on key press when no-size horizont', () => {
+        let splitterObj: any;
+        let tabKey: any = { callBack: () => { }, type: 'keydown', which: 9, keyCode: 9, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 9 } };
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default' });
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', paneSettings: [{ size: '200px', collapsible: true }, { collapsible: true }], separatorSize: 5, width: '400px' });
+            splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+            document.body.innerHTML = '';
+        });
+        it('on tab pressing', () => {
+            splitterObj.currentSeparator.focus();
+        });
+    });
  });

@@ -423,7 +423,7 @@ export class Annotation {
                 }
                 // tslint:disable-next-line
                 let documentPageCollections: any = this.pdfViewerBase.documentAnnotationCollections[pageNumber];
-                if (documentPageCollections[annotationType]) {
+                if (documentPageCollections && documentPageCollections[annotationType]) {
                     for (let i: number = 0; i < documentPageCollections[annotationType].length; i++) {
                         // tslint:disable-next-line:max-line-length
                         if (annotation.annotName === documentPageCollections[annotationType][i].AnnotName) {
@@ -2784,7 +2784,7 @@ export class Annotation {
      * @private
      */
     // tslint:disable-next-line
-    public annotationSelect(annotationId: any, pageNumber: number, annotation: any, annotationCollection?: any): void {
+    public annotationSelect(annotationId: any, pageNumber: number, annotation: any, annotationCollection?: any, isDblClick?: boolean): void {
         // tslint:disable-next-line
         let annotSettings: any;
         if (annotation.shapeAnnotationType === 'textMarkup') {
@@ -2800,7 +2800,7 @@ export class Annotation {
                 // tslint:disable-next-line:max-line-length
                 strokeColor: annotation.strokeColor, thickness: annotation.thickness, content: annotation.dynamicText,
                 // tslint:disable-next-line:max-line-length
-                fontFamily: annotation.fontFamily, fontSize: annotation.fontSize, fontColor: annotation.fontColor, textAlign: annotation.textAlign
+                fontFamily: annotation.fontFamily, fontSize: annotation.fontSize, fontColor: annotation.fontColor, textAlign: annotation.textAlign, fontStyle: this.updateFreeTextFontStyle(annotation.font)
             };
         } else if (annotation.measureType === '') {
             if (annotation.shapeAnnotationType === 'Line') {
@@ -2850,24 +2850,34 @@ export class Annotation {
             }
         }
         this.addFreeTextProperties(annotation, annotSettings);
-        if (annotation.shapeAnnotationType === 'Stamp' || annotation.shapeAnnotationType === 'Image') {
-            if (!this.pdfViewerBase.isNewStamp) {
-                this.pdfViewer.fireAnnotationSelect(annotationId, pageNumber, annotSettings);
+        if (!isDblClick) {
+            if (annotation.shapeAnnotationType === 'Stamp' || annotation.shapeAnnotationType === 'Image') {
+                if (!this.pdfViewerBase.isNewStamp) {
+                    this.pdfViewer.fireAnnotationSelect(annotationId, pageNumber, annotSettings);
+                }
+            } else {
+                if (annotationCollection) {
+                    // tslint:disable-next-line
+                    let textMarkupCollection: any = [];
+                    for (let i: number = 0; i < annotationCollection.length; i++) {
+                        // tslint:disable-next-line
+                        let textMarkupObject: any = cloneObject(annotationCollection[i]);
+                        textMarkupObject.annotationId = annotationCollection[i].annotName;
+                        delete textMarkupObject.annotName;
+                        textMarkupCollection.push(textMarkupObject);
+                    }
+                    this.pdfViewer.fireAnnotationSelect(annotationId, pageNumber, annotSettings, textMarkupCollection);
+                } else {
+                    this.pdfViewer.fireAnnotationSelect(annotationId, pageNumber, annotSettings);
+                }
             }
         } else {
-            if (annotationCollection) {
-                // tslint:disable-next-line
-                let textMarkupCollection: any = [];
-                for (let i: number = 0; i < annotationCollection.length; i++) {
-                    // tslint:disable-next-line
-                    let textMarkupObject: any = cloneObject(annotationCollection[i]);
-                    textMarkupObject.annotationId = annotationCollection[i].annotName;
-                    delete textMarkupObject.annotName;
-                    textMarkupCollection.push(textMarkupObject);
+            if (annotation.shapeAnnotationType === 'Stamp' || annotation.shapeAnnotationType === 'Image') {
+                if (!this.pdfViewerBase.isNewStamp) {
+                    this.pdfViewer.fireAnnotationDoubleClick(annotationId, pageNumber, annotSettings);
                 }
-                this.pdfViewer.fireAnnotationSelect(annotationId, pageNumber, annotSettings, textMarkupCollection);
             } else {
-                this.pdfViewer.fireAnnotationSelect(annotationId, pageNumber, annotSettings);
+                this.pdfViewer.fireAnnotationDoubleClick(annotationId, pageNumber, annotSettings);
             }
         }
     }
@@ -2993,7 +3003,7 @@ export class Annotation {
                     // tslint:disable-next-line:max-line-length
                     opacity: annotation.opacity, fontColor: annotation.fontColor, fontSize: annotation.fontSize, fontFamily: annotation.fontFamily,
                     // tslint:disable-next-line:max-line-length
-                    dynamicText: annotation.content, fillColor: annotation.fillColor, textAlign: annotation.textAlign, strokeColor: annotation.strokeColor, thickness: annotation.thickness
+                    dynamicText: annotation.content, fillColor: annotation.fillColor, textAlign: annotation.textAlign, strokeColor: annotation.strokeColor, thickness: annotation.thickness, font: this.setFreeTextFontStyle(annotation.fontStyle)
                 });
             }
             let date: Date = new Date();
@@ -3189,6 +3199,34 @@ export class Annotation {
             annotationAuthor = this.pdfViewer.annotationSettings.author;
         }
         return annotationAuthor;
+    }
+
+    // tslint:disable-next-line
+    private updateFreeTextFontStyle(font: any): number {
+        let fontStyle: number = 0;
+        if (font.isBold === 1) {
+            fontStyle = 1;
+        } else if (font.isItalic === 2) {
+            fontStyle = 2;
+        } else if (font.isUnderline === 4) {
+            fontStyle = 4;
+        } else if (font.isStrikeout) {
+            fontStyle = 8;
+        }
+        return fontStyle;
+    }
+
+    // tslint:disable-next-line
+    private setFreeTextFontStyle(fontStyle: number): any {
+        if (fontStyle === 1) {
+            return { isBold: true};
+        } else if (fontStyle === 2) {
+            return { isItalic: true};
+        } else if (fontStyle === 4) {
+            return { isUnderline: true};
+        } else if (fontStyle === 8) {
+            return { isStrikeout: true};
+        }
     }
 
     /**

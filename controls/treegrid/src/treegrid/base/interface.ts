@@ -90,7 +90,7 @@ export interface AggregateTemplateContext {
 }
 
 /**
- * Specifies custom format data interfaces.
+ * @hidden
  */
 export interface ITreeGridCellFormatter {
     getValue(column: Column, data: Object): Object;

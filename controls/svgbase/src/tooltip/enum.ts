@@ -57,3 +57,16 @@ export type TooltipTheme =
 'BootstrapDark'|
 /**  Render a chart with Bootstrap4 theme. */
 'Bootstrap4';
+
+/**
+ * Defines the tooltip position.
+ */
+export type TooltipPlacement =
+/** Render tooltip in Left position */
+'Left' |
+/** Render tooltip in Right position */
+'Right' |
+/** Render tooltip in Top position */
+'Top' |
+/** Render tooltip in Bottom position */
+'Bottom';

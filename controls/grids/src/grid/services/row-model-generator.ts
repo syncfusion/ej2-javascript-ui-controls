@@ -6,6 +6,7 @@ import { Column } from '../models/column';
 import { Cell } from '../models/cell';
 import { getUid } from '../base/util';
 import { getForeignData } from '../../grid/base/util';
+import * as events from '../base/constant';
 
 /**
  * RowModelGenerator is used to generate grid data rows.
@@ -37,7 +38,9 @@ export class RowModelGenerator implements IModelGenerator<Column> {
         let cols: Cell<Column>[] = [];
 
         if (this.parent.detailTemplate || this.parent.childGrid) {
-            cols.push(this.generateCell({} as Column, null, CellType.DetailExpand));
+            let args: object = {};
+            this.parent.notify(events.detailIndentCellInfo, args);
+            cols.push(this.generateCell(args as Column, null, CellType.DetailExpand));
         }
 
         if (this.parent.isRowDragable()) {
@@ -110,7 +113,7 @@ export class RowModelGenerator implements IModelGenerator<Column> {
             'foreignKeyData': column.isForeignColumn && column.isForeignColumn() && getValue(column.field, foreignKeyData)
         };
 
-        if (opt.isDataCell || opt.column.type === 'checkbox') {
+        if (opt.isDataCell || opt.column.type === 'checkbox' || opt.commands) {
             opt.index = oIndex;
         }
 

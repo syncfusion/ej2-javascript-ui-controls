@@ -260,6 +260,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         this.isCollapsed();
         EventHandler.add(document, 'touchstart click', this.onDocumentClick, this);
         this.renderComplete();
+        EventHandler.add(this.element, 'keydown', this.onMove, this);
     };
     Splitter.prototype.onDocumentClick = function (e) {
         if (!e.target.classList.contains(SPLIT_BAR) && !isNullOrUndefined(this.currentSeparator)) {
@@ -267,6 +268,68 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
             this.currentSeparator.classList.remove(SPLIT_BAR_ACTIVE);
         }
     };
+    Splitter.prototype.checkPaneSize = function (e) {
+        var prePaneSize;
+        var nextPaneSize;
+        prePaneSize = this.orientation === 'Horizontal' ? this.previousPane.offsetWidth : this.previousPane.offsetHeight;
+        nextPaneSize = this.orientation === 'Horizontal' ? this.nextPane.offsetWidth : this.nextPane.offsetHeight;
+        if ((this.previousPane.style.flexBasis.indexOf('%') > 0 || this.nextPane.style.flexBasis.indexOf('%') > 0)) {
+            var previousFlexBasis = this.updatePaneFlexBasis(this.previousPane);
+            var nextFlexBasis = this.updatePaneFlexBasis(this.nextPane);
+            this.totalPercent = previousFlexBasis + nextFlexBasis;
+            this.totalWidth = this.convertPercentageToPixel(this.totalPercent + '%');
+            if (e.type === 'keydown' && (!isNullOrUndefined(e.keyCode))) {
+                if ((e.keyCode === 39 || (e.keyCode === 40)) && nextPaneSize > 0) {
+                    this.previousPane.style.flexBasis = (previousFlexBasis + 1) + '%';
+                    this.nextPane.style.flexBasis = (nextFlexBasis - 1) + '%';
+                }
+                else if ((e.keyCode === 37 || (e.keyCode === 38)) && prePaneSize > 0) {
+                    this.previousPane.style.flexBasis = (previousFlexBasis - 1) + '%';
+                    this.nextPane.style.flexBasis = (nextFlexBasis + 1) + '%';
+                }
+            }
+        }
+        else {
+            this.totalWidth = (this.orientation === 'Horizontal') ? this.previousPane.offsetWidth + this.nextPane.offsetWidth :
+                this.previousPane.offsetHeight + this.nextPane.offsetHeight;
+            if (e.type === 'keydown' && (!isNullOrUndefined(e.keyCode))) {
+                if ((e.keyCode === 39 || (e.keyCode === 40)) && nextPaneSize > 0) {
+                    this.addStaticPaneClass();
+                    this.previousPane.style.flexBasis = (prePaneSize + this.separatorSize) + 'px';
+                    this.nextPane.style.flexBasis = (nextPaneSize < this.separatorSize) ? '0px' :
+                        (nextPaneSize - this.separatorSize) + 'px';
+                }
+                else if ((e.keyCode === 37 || (e.keyCode === 38)) && prePaneSize > 0) {
+                    this.addStaticPaneClass();
+                    this.previousPane.style.flexBasis = (prePaneSize < this.separatorSize) ? '0px' :
+                        (prePaneSize - this.separatorSize) + 'px';
+                    this.nextPane.style.flexBasis = (nextPaneSize + this.separatorSize) + 'px';
+                }
+            }
+        }
+    };
+    Splitter.prototype.onMove = function (event) {
+        var index = this.getSeparatorIndex(this.currentSeparator);
+        var isPrevpaneCollapsed = this.previousPane.classList.contains(COLLAPSE_PANE);
+        var isPrevpaneExpanded = this.previousPane.classList.contains(EXPAND_PANE);
+        var isNextpaneExpanded = this.nextPane.classList.contains(EXPAND_PANE);
+        var isNextpaneCollapsed = this.nextPane.classList.contains(COLLAPSE_PANE);
+        if (((this.orientation !== 'Horizontal' && event.keyCode === 38) || (this.orientation === 'Horizontal' && event.keyCode === 39) ||
+            (this.orientation === 'Horizontal' && event.keyCode === 37) || (this.orientation !== 'Horizontal' && event.keyCode === 40))
+            && (!isPrevpaneExpanded && !isNextpaneCollapsed && !isPrevpaneCollapsed || (isPrevpaneExpanded) && !isNextpaneCollapsed)) {
+            this.checkPaneSize(event);
+            this.triggerResizing(event);
+        }
+        else if (event.keyCode === 13 && this.paneSettings[index].collapsible) {
+            if (!this.previousPane.classList.contains(COLLAPSE_PANE)) {
+                this.collapse(index);
+            }
+            else {
+                this.expand(index);
+            }
+        }
+    };
+    
     /**
      * @hidden
      */
@@ -594,7 +657,12 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         this.allBars.push(separator);
         var arrow1 = this.createElement('button');
         var arrow2 = this.createElement('button');
+        arrow1.setAttribute('tabindex', '-1');
+        arrow2.setAttribute('tabindex', '-1');
+        arrow1.setAttribute('aria-label', 'Toggle navigation');
+        arrow2.setAttribute('aria-label', 'Toggle navigation');
         var size;
+        var proxy;
         size = isNullOrUndefined(this.separatorSize) ? '1px' : this.separatorSize + 'px';
         if (this.orientation === 'Horizontal') {
             this.leftArrow = ARROW_LEFT;
@@ -617,6 +685,16 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         this.addResizeHandler(separator);
         separator.appendChild(arrow1);
         this.updateCollapseIcons(i, arrow1, arrow2);
+        separator.setAttribute('tabindex', '0');
+        proxy = this;
+        separator.addEventListener('focus', function () {
+            separator.classList.add(SPLIT_BAR_ACTIVE);
+            proxy.currentSeparator = separator;
+            proxy.getPaneDetails();
+        });
+        separator.addEventListener('blur', function () {
+            separator.classList.remove(SPLIT_BAR_ACTIVE);
+        });
         return separator;
     };
     Splitter.prototype.updateResizablePanes = function (index) {
@@ -1053,6 +1131,23 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         this.updateBars(this.currentBarIndex);
         this.getPaneDetails();
     };
+    Splitter.prototype.triggerResizing = function (e) {
+        var eventArgs = isBlazor() ? {
+            element: this.element,
+            event: e,
+            index: [this.prevPaneIndex, this.nextPaneIndex],
+            paneSize: [this.prePaneDimenson, this.nextPaneDimension],
+            separator: this.currentSeparator
+        } : {
+            element: this.element,
+            event: e,
+            pane: [this.previousPane, this.nextPane],
+            index: [this.prevPaneIndex, this.nextPaneIndex],
+            paneSize: [this.prePaneDimenson, this.nextPaneDimension],
+            separator: this.currentSeparator
+        };
+        this.trigger('resizing', eventArgs);
+    };
     Splitter.prototype.onMouseDown = function (e) {
         var _this = this;
         e.preventDefault();
@@ -1081,16 +1176,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         this.trigger('resizeStart', eventArgs, function (resizeStartArgs) {
             if (!resizeStartArgs.cancel) {
                 _this.wireResizeEvents();
-                if (_this.previousPane.style.flexBasis.indexOf('%') > 0 || _this.nextPane.style.flexBasis.indexOf('%') > 0) {
-                    var previousFlexBasis = _this.updatePaneFlexBasis(_this.previousPane);
-                    var nextFlexBasis = _this.updatePaneFlexBasis(_this.nextPane);
-                    _this.totalPercent = previousFlexBasis + nextFlexBasis;
-                    _this.totalWidth = _this.convertPercentageToPixel(_this.totalPercent + '%');
-                }
-                else {
-                    _this.totalWidth = (_this.orientation === 'Horizontal') ? _this.previousPane.offsetWidth + _this.nextPane.offsetWidth :
-                        _this.previousPane.offsetHeight + _this.nextPane.offsetHeight;
-                }
+                _this.checkPaneSize(e);
             }
         });
     };
@@ -1275,21 +1361,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         }
         this.getPaneDetails();
         this.getPaneDimensions();
-        var eventArgs = isBlazor() ? {
-            element: this.element,
-            event: e,
-            index: [this.prevPaneIndex, this.nextPaneIndex],
-            paneSize: [this.prePaneDimenson, this.nextPaneDimension],
-            separator: this.currentSeparator
-        } : {
-            element: this.element,
-            event: e,
-            pane: [this.previousPane, this.nextPane],
-            index: [this.prevPaneIndex, this.nextPaneIndex],
-            paneSize: [this.prePaneDimenson, this.nextPaneDimension],
-            separator: this.currentSeparator
-        };
-        this.trigger('resizing', eventArgs);
+        this.triggerResizing(e);
         var left = this.validateDraggedPosition(this.getSeparatorPosition(e), this.prePaneDimenson, this.nextPaneDimension);
         var separatorNewPosition;
         this.getBorder();
@@ -4044,6 +4116,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     DashboardLayout.prototype.addPanel = function (panel) {
+        this.allowServerDataBinding = false;
         this.maxCol();
         if (!panel.minSizeX) {
             panel.minSizeX = 1;
@@ -4107,6 +4180,8 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                 }
             }
         }
+        this.allowServerDataBinding = true;
+        this.serverDataBind();
     };
     /**
      * Allows to update a panel in the DashboardLayout.

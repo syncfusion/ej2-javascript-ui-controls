@@ -824,7 +824,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 item: undefined, curData: undefined, dataSource: undefined, fields: undefined,
                 options: undefined, text: ''
             };
-            liCollection.forEach((element: HTMLElement) => {
+            for (let i: number = 0; i < liCollection.length; i++) {
+                let element: HTMLElement = liCollection[i];
                 args.item = element;
                 args.curData = this.getItemData(element);
                 if (element.querySelector('.' + classNames.checkboxWrapper)) {
@@ -834,14 +835,15 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 if (args.item.classList.contains(classNames.selected)) {
                     this.checkInternally(args, args.item.querySelector('.' + classNames.checkboxWrapper));
                 }
-            });
+            }
         } else {
             let liCollection: HTMLElement[] = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.itemCheckList));
-            liCollection.forEach((element: HTMLElement) => {
+            for (let i: number = 0; i < liCollection.length; i++) {
+                let element: HTMLElement = liCollection[i];
                 element.classList.remove(classNames.selected);
                 element.firstElementChild.classList.remove(classNames.checkbox);
                 this.removeElement(element.querySelector('.' + classNames.checkboxWrapper));
-            });
+            }
             if (this.selectedItems) {
                 this.selectedItems.item.classList.add(classNames.selected);
             }
@@ -1430,13 +1432,14 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private setAttributes(liElements: HTMLElement[]): void {
-        liElements.forEach((element: HTMLElement) => {
+        for (let i : number = 0; i < liElements.length; i++) {
+            let element: HTMLElement = liElements[i];
             if (element.classList.contains('e-list-item')) {
                 element.setAttribute('id', this.element.id + '_' + element.getAttribute('data-uid'));
                 element.setAttribute('aria-selected', 'false');
                 element.setAttribute('tabindex', '-1');
             }
-        });
+        }
     }
 
     private createList(): void {
@@ -1797,9 +1800,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         if (!isNullOrUndefined(finalGetSelectedItem)) {
             if (!isNullOrUndefined(finalGetSelectedItem.data)) {
                 if (this.showCheckBox && this.isNestedList) {
-                    finalGetSelectedItem.data.forEach((currentData: DataAndParent) => {
-                        blazorSelectedItem.data.push(currentData.data);
-                    });
+                    for (let i: number = 0; i < finalGetSelectedItem.data.length; i++) {
+                        blazorSelectedItem.data.push(finalGetSelectedItem.data[i].data);
+                    }
                     if (!isNullOrUndefined(finalGetSelectedItem.data[0])
                         && !isNullOrUndefined(finalGetSelectedItem.data[0].parentId)) {
                         blazorSelectedItem.parentId = finalGetSelectedItem.data[0].parentId;
@@ -1938,8 +1941,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 }
                 // check for whether target is nested level or top level in list
                 if (ds instanceof Array) {
-                    data.forEach((currentItem: DataSource) => {
-                        dataSource.push(currentItem);
+                    for (let i: number = 0; i < data.length; i++) {
+                        dataSource.push(data[i]);
                         this.setViewDataSource(dataSource);
                         // since it is top level target, get the content container's first child
                         // as it is always the top level UL
@@ -1949,11 +1952,11 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                         // check for whether the list was previously empty or not, if it is
                         // proceed to call initial render
                         if (this.contentContainer && targetUL) {
-                            this.addItemIntoDom(currentItem, targetUL, this.curViewDS as DataSource[]);
+                            this.addItemIntoDom(data[i], targetUL, this.curViewDS as DataSource[]);
                         } else {
                             this.reRender();
                         }
-                    });
+                    }
                     if (this.curUL) {
                         this.updateBlazorTemplates(true);
                     }
@@ -1994,10 +1997,10 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         }
         // if it is already rendered element, we need to create and append new elements
         if (isAlreadyRenderedUL && itemQueue) {
-            itemQueue.forEach((currentItem: DataSource) => {
-                targetDS.push(currentItem);
-                this.addItemIntoDom(currentItem, targetUL, targetDS);
-            });
+            for (let i: number = 0; i < itemQueue.length; i++) {
+                targetDS.push(itemQueue[i]);
+                this.addItemIntoDom(itemQueue[i], targetUL, targetDS);
+            }
             isRefreshTemplateNeeded = true;
         }
         if (isRefreshTemplateNeeded) {

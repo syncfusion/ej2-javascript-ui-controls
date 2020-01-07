@@ -160,7 +160,10 @@ export interface DiagramMenuEventArgs extends MenuEventArgs {
 
 /** Defines the event before opening the context menu */
 export interface DiagramBeforeMenuOpenEventArgs extends BeforeOpenCloseMenuEventArgs {
-    /** Defines the hidden items of the diagram context menu */
+    /** 
+     * Defines the hidden items of the diagram context menu
+     * @blazorType Object
+     */
     hiddenItems: string[];
     /**
      * @blazorType List<Syncfusion.EJ2.Blazor.Navigations.MenuItemModel>

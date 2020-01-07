@@ -4816,6 +4816,7 @@ let Slider = class Slider extends Component {
         }
     }
     tooltipToggle(target) {
+        this.setZindex();
         if (this.isMaterialTooltip) {
             !this.tooltipElement.classList.contains(classNames.materialTooltipOpen) ?
                 this.openMaterialTooltip() : this.refreshTooltip(this.firstHandle);
@@ -6095,7 +6096,7 @@ let Slider = class Slider extends Component {
         }
     }
     setZindex() {
-        this.zIndex = 6;
+        this.zIndex = getZindexPartial(this.element);
         if (!isNullOrUndefined(this.ticks) && this.ticks.placement !== 'None') {
             this.ul.style.zIndex = (this.zIndex + -7) + '';
             this.element.style.zIndex = (this.zIndex + 2) + '';
@@ -8838,7 +8839,7 @@ let Uploader = class Uploader extends Component {
         deleteIcon.classList.add(REMOVE_ICON);
         deleteIcon.setAttribute('title', this.localizedTexts('remove'));
         this.pauseButton = this.createElement('span', { className: 'e-icons e-file-reload-btn', attrs: { 'tabindex': this.btnTabIndex } });
-        liElement.insertBefore(this.pauseButton, deleteIcon);
+        deleteIcon.parentElement.insertBefore(this.pauseButton, deleteIcon);
         this.pauseButton.setAttribute('title', this.localizedTexts('retry'));
         let retryElement = liElement.querySelector('.' + RETRY_ICON);
         /* istanbul ignore next */
@@ -9188,7 +9189,8 @@ let Uploader = class Uploader extends Component {
         eventArgs.fileData.statusCode = '5';
         eventArgs.fileData.status = this.localizedTexts('fileUploadCancel');
         this.pauseButton = this.createElement('span', { className: 'e-icons e-file-reload-btn', attrs: { 'tabindex': this.btnTabIndex } });
-        liElement.insertBefore(this.pauseButton, liElement.querySelector('.' + REMOVE_ICON));
+        let removeIcon = liElement.querySelector('.' + REMOVE_ICON);
+        removeIcon.parentElement.insertBefore(this.pauseButton, removeIcon);
         this.pauseButton.setAttribute('title', this.localizedTexts('retry'));
         /* istanbul ignore next */
         this.pauseButton.addEventListener('click', (e) => { this.reloadcanceledFile(e, file, liElement); }, false);
@@ -9555,7 +9557,8 @@ let Uploader = class Uploader extends Component {
             if (this.browserName === 'msie') {
                 this.pauseButton.classList.add('e-msie');
             }
-            liElement.insertBefore(this.pauseButton, liElement.querySelector('.' + ABORT_ICON));
+            let abortIcon = liElement.querySelector('.' + ABORT_ICON);
+            abortIcon.parentElement.insertBefore(this.pauseButton, abortIcon);
             this.pauseButton.setAttribute('title', this.localizedTexts('pause'));
             this.pauseButton.addEventListener('click', (e) => { this.checkPausePlayAction(e); }, false);
         }

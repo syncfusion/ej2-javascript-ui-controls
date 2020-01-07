@@ -2597,13 +2597,14 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      */
     public getFilteredRecords(): Promise<Object> | object {
         let predicate: Predicate = this.getPredicate(this.getValidRules(this.rule));
-        let dataManagerQuery: Query = new Query().where(predicate);
+        let dataManagerQuery: Query;
+        dataManagerQuery = isNullOrUndefined(predicate) ? new Query() : new Query().where(predicate);
         if (this.isBlazor()) {
             let adaptr: UrlAdaptor = new UrlAdaptor();
             let dm: DataManager = new DataManager({ url: '', adaptor: new UrlAdaptor });
             let state: { data?: string, pvtData?: Object[] } = adaptr.processQuery(dm, dataManagerQuery);
             let data: Object = JSON.parse(state.data);
-            return data;
+            return Object.keys(data).length ? data : null;
         } else {
             return this.dataManager.executeQuery(dataManagerQuery);
         }
@@ -3190,6 +3191,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         } else if (operator === 'between' && parser[j - 1][0] === 'Conditions') {
                             rule.value = numVal; rule.type = 'number';
                         }
+                        numVal = []; strVal = [];
                         rule.type = this.getTypeFromColumn(rule);
                     }
                 } else if (parser[i + 1][0] === 'Operators') {

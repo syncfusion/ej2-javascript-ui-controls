@@ -136,6 +136,7 @@ export class DropDownList extends DropDownBase implements IInput {
     private isSecondClick: boolean;
     private serverPopupEle: HTMLElement;
     private isServerBlazor: boolean;
+    private isServerIncrementalSearch: boolean;
 
     /**
      * Sets CSS classes to the root element of the component that allows customization of appearance.
@@ -818,12 +819,23 @@ export class DropDownList extends DropDownBase implements IInput {
     private onSearch(e: KeyboardEventArgs): void {
         if (e.charCode !== 32 && e.charCode !== 13) {
             if (this.list === undefined) {
-                this.renderList();
+                if (!this.isServerBlazor) {
+                    this.renderList();
+                } else {
+                    this.isServerIncrementalSearch = true;
+                    // tslint:disable-next-line
+					(this as any).interopAdaptor.invokeMethodAsync('OnServerRenderList', true);
+                }
             }
             this.searchKeyEvent = e;
-            if (!this.isRequested && !isNullOrUndefined(this.list.querySelector('li')) && this.enabled && !this.readonly) {
-                this.incrementalSearch(e);
-            }
+            this.onServerIncrementalSearch(e);
+        }
+    }
+
+    private onServerIncrementalSearch(e: KeyboardEventArgs): void {
+        if (!this.isRequested && !isNullOrUndefined(this.list) &&
+            !isNullOrUndefined(this.list.querySelector('li')) && this.enabled && !this.readonly) {
+            this.incrementalSearch(e);
         }
     }
 
@@ -872,7 +884,7 @@ export class DropDownList extends DropDownBase implements IInput {
 
     protected incrementalSearch(e: KeyboardEventArgs): void {
         if (this.liCollections.length > 0) {
-            let li: Element = incrementalSearch(e.charCode, this.liCollections, this.activeIndex, true);
+            let li: Element = incrementalSearch(e.charCode, this.liCollections, this.activeIndex, true, this.isServerBlazor);
             if (!isNullOrUndefined(li)) {
                 this.setSelection(li, e);
                 this.setScrollPosition();
@@ -1756,6 +1768,10 @@ export class DropDownList extends DropDownBase implements IInput {
         }
     }
 
+    protected l10nUpdateUndefinedHeader(): void {
+        this.actionCompleteData.ulElement = this.ulElement;
+    }
+
     private focusIndexItem(): void {
         let value: string | number = this.getItemData().value;
         this.activeIndex = this.getIndexByValue(value);
@@ -2611,13 +2627,20 @@ export class DropDownList extends DropDownBase implements IInput {
             this.liCollections = this.ulElement ?
                 <NodeListOf<Element> & HTMLElement[]>this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li) : [];
             this.listData = data;
+            this.initRemoteRender = false;
             this.serverBlazorUpdateSelection();
             this.wireListEvents();
+            if (this.isServerIncrementalSearch && this.searchKeyEvent) {
+                this.isServerIncrementalSearch = false;
+                this.initial = false;
+                this.onServerIncrementalSearch(this.searchKeyEvent);
+            }
             if (this.beforePopupOpen) {
                 this.invokeRenderPopup();
             }
         } else if (data != null && this.listData !== data) {
             this.listData = data;
+            this.initRemoteRender = false;
         }
     }
     private updateclientItemData(data: { [key: string]: Object }[] | string[] | boolean[] | number[]): void {

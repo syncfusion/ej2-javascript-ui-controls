@@ -90,7 +90,8 @@ export class WorkbookSave extends SaveWorker {
             '__isAsync', 'beforeCellFormat', 'beforeCellRender', 'beforeDataBound', 'beforeOpen', 'beforeSave', 'beforeSelect',
             'beforeSort', 'cellEdit', 'cellEditing', 'cellSave', 'contextMenuItemSelect', 'contextMenuBeforeClose',
             'contextMenuBeforeOpen', 'created', 'dataBound', 'fileItemSelect', 'fileMenuBeforeClose', 'fileMenuBeforeOpen', 'openFailure',
-            'saveComplete', 'sortComplete', 'select']);
+            'saveComplete', 'sortComplete', 'select', 'actionBegin', 'actionComplete', 'afterHyperlinkClick', 'afterHyperlinkCreate',
+            'beforeHyperlinkClick', 'beforeHyperlinkCreate', 'openComplete']);
         let basicSettings: { [key: string]: Object } = JSON.parse(jsonStr);
         let sheetCount: number = this.parent.sheets.length;
         let i: number = 0;

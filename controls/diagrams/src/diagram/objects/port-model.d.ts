@@ -118,6 +118,18 @@ export interface PortModel {
      */
     addInfo?: Object;
 
+    /**
+     * Defines the collection of the objects that are connected to a particular port
+     * @default undefined
+     */
+    outEdges?: string[];
+
+    /**
+     * Defines the collection of the objects that are connected to a particular port
+     * @default undefined
+     */
+    inEdges?: string[];
+
 }
 
 /**
@@ -128,6 +140,7 @@ export interface PointPortModel extends PortModel{
     /**
      * Defines the position of the port with respect to the boundaries of nodes/connector
      * @default new Point(0.5,0.5)
+     * @blazorType NodePortOffset
      */
     offset?: PointModel;
 

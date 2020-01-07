@@ -262,3 +262,45 @@ describe('UpLetter list previous paragraph is list', () => {
     });
 
 });
+
+let pasteData:string='{"sections":[{"blocks":[{"paragraphFormat":{"leftIndent":0,"rightIndent":0,"textAlignment":"Left","styleName":"Normal","bidi":false},"inlines":[{"name":"text","bookmarkType":0},{"text":"text","characterFormat":{"bold":false,"italic":false,"strikethrough":"None","highlightColor":"Yellow","fontSize":11,"fontFamily":"Calibri","fontColor":"#000000FF","bidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}},{"text":" ","characterFormat":{"bold":false,"italic":false,"strikethrough":"None","fontSize":11,"fontFamily":"Calibri","fontColor":"#000000FF","bidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}},{"name":"text","bookmarkType":1},{"text":"with ","characterFormat":{"bold":false,"italic":false,"strikethrough":"None","fontSize":11,"fontFamily":"Calibri","fontColor":"#000000FF","bidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}},{"name":"multiple","bookmarkType":0},{"text":"multiple ","characterFormat":{"bold":false,"italic":false,"strikethrough":"None","highlightColor":"Yellow","fontSize":11,"fontFamily":"Calibri","fontColor":"#000000FF","bidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}},{"name":"multiple","bookmarkType":1},{"text":"bookmarks in it!","characterFormat":{"bold":false,"italic":false,"strikethrough":"None","fontSize":11,"fontFamily":"Calibri","fontColor":"#000000FF","bidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}]}],"headersFooters":{},"sectionFormat":{"headerDistance":36,"footerDistance":36,"pageWidth":612,"pageHeight":792,"leftMargin":72,"rightMargin":72,"topMargin":72,"bottomMargin":72,"differentFirstPage":false,"differentOddAndEvenPages":false,"bidi":false,"restartPageNumbering":false,"pageStartingNumber":0}}],"paragraphFormat":{"leftIndent":0,"rightIndent":0,"textAlignment":"Left"},"background":{"color":"#FFFFFFFF"},"styles":[{"type":"Paragraph","name":"Normal","next":"Normal","characterFormat":{"bold":false,"italic":false,"strikethrough":"None","fontSize":11,"fontFamily":"Calibri","fontColor":"#000000FF","bidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"textAlignment":"Left"}},{"type":"Character","name":"Default Paragraph Font"}],"defaultTabWidth":36,"formatting":false,"protectionType":"NoProtection","enforcement":false}'
+describe('257171- copy and paste bookmark insert multiple time',()=>{
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableLocalPaste: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('intial paste bookmark child validation', () => {
+        editor.editor.insertText('a');
+       editor.editor.paste(pasteData);
+       expect(editor.selection.start.currentWidget.children.length).toBe(10);
+    });
+    it('After multiple format, paste bookmark validation',()=>{
+        editor.selection.handleEndKey();
+        editor.editor.onEnter();
+        editor.editor.paste(pasteData);
+        editor.editor.applyPasteOptions('MergeWithExistingFormatting');
+        expect(editor.selection.start.currentWidget.children.length).toBe(9);
+        editor.editor.applyPasteOptions('KeepSourceFormatting');
+        editor.editor.applyPasteOptions('MergeWithExistingFormatting');
+        editor.editor.applyPasteOptions('KeepSourceFormatting');
+        expect(editor.selection.start.currentWidget.children.length).toBe(9);
+    })
+});

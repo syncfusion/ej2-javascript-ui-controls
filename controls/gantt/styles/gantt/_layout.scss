@@ -363,6 +363,7 @@
       }
 
       .e-label {
+        margin: 3px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -660,7 +661,8 @@
       }
 
       .e-active-container {
-        border: 1px solid !important; // sass-lint:disable-line no-important
+        outline: 1px solid;
+        outline-offset: 2px;
       }
 
     }

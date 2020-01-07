@@ -226,7 +226,7 @@ export class GanttChart {
         }
         this.parent.notify('chartMouseUp', e);
         if (this.parent.showActiveElement) {
-            if (this.focusedElement) {
+            if (this.focusedElement && !(e.target as HTMLElement).classList.contains('e-split-bar')) {
                 this.focusedElement.tabIndex = this.focusedElement.tabIndex === 0 ? -1 : this.focusedElement.tabIndex;
                 removeClass([this.focusedElement], 'e-active-container');
             }
@@ -673,10 +673,12 @@ export class GanttChart {
         if (!this.parent.showActiveElement) {
             return;
         }
-        e.preventDefault();
         let $target: Element = e.target as Element;
         let isTab: boolean = (e.action === 'tab') ? true : false;
         let nextElement: Element = this.getNextElement($target, isTab);
+        if ($target.classList.contains('e-rowcell') || $target.closest('.e-chart-row-cell')) {
+            e.preventDefault();
+        }
         if ($target.classList.contains('e-rowcell') && (nextElement && nextElement.classList.contains('e-rowcell'))) {
             this.parent.treeGrid.grid.notify('key-pressed', e);
         } else if (nextElement) {
@@ -795,7 +797,7 @@ export class GanttChart {
             let childElement: Element = null;
             if (element.classList.contains('e-left-label-container') ||
                 element.classList.contains('e-right-label-container')) {
-                childElement = element.children[0].children[0];
+                childElement = element.getElementsByTagName('span')[0];
             } else if (element.classList.contains('e-taskbar-main-container')) {
                 /* tslint:disable-next-line:no-any */
                 let rowIndex: number = (closest(element, '.e-chart-row') as any).rowIndex;
@@ -804,12 +806,12 @@ export class GanttChart {
                     data.ganttProperties.isMilestone ? 'e-gantt-milestone' : 'e-gantt-child-taskbar';
                 childElement = element.getElementsByClassName(className)[0];
             }
-            if (focus === 'add') {
+            if (focus === 'add' && !isNullOrUndefined(childElement)) {
                 element.setAttribute('tabIndex', '0');
                 addClass([childElement], 'e-active-container');
                 element.focus();
-                this.focusedElement = element;
-            } else {
+                this.focusedElement = childElement as HTMLElement;
+            }  else if (!isNullOrUndefined(childElement)) {
                 removeClass([childElement], 'e-active-container');
                 element.setAttribute('tabIndex', '-1');
                 element.blur();

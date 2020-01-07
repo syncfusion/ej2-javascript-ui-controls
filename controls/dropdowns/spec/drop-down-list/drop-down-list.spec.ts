@@ -13,7 +13,8 @@ import  {profile , inMB, getMemoryProfile} from '../common/common.spec';
 L10n.load({
     'fr': {
         'dropdowns': {
-            noRecordsTemplate: "Pas de modèle d'enregistrement"
+            noRecordsTemplate: "Pas de modèle d'enregistrement",
+            noHeaderTemplate: "Groupe",
         }
     },
     'es': {
@@ -5213,4 +5214,169 @@ describe('DDList', () => {
             expect(listObj.popupObj.element.querySelector('.e-fixed-header')).toBe(null);
         });
     });
+    describe('Datasource without any one groupBy field as empty', () => {
+        let dropDowns: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdown' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            dropDowns.destroy();
+            element.remove();
+        });
+        it('Check group header removed in single place in middle', (done) => {
+            let groupData = [
+                { vegetable: 'Cabbage', category: 'Leafy and Salad' }, { vegetable: 'Spinach', category: 'Leafy and Salad' },
+                { vegetable: 'Wheatgrass', category: 'Leafy and Salad' }, { vegetable: 'Yarrow', category: 'Leafy and Salad' },
+                { vegetable: 'Chickpea' }, { vegetable: 'Green bean', category: 'Beans' },
+                { vegetable: 'Horse gram', category: 'Beans' }, { vegetable: 'Garlic', category: 'Bulb and Stem' },
+                { vegetable: 'Nopal', category: 'Bulb and Stem' }, { vegetable: 'Onion', category: 'Bulb and Stem' }
+            ];
+            dropDowns = new DropDownList({
+                dataSource: groupData,
+                fields: { groupBy: 'category', text: 'vegetable' },
+                placeholder: 'Select a vegetable'
+            });
+            dropDowns.appendTo(element);
+            dropDowns.open = function(args: any){
+                setTimeout(() => {
+                    let groupElement: HTMLElement[] = dropDowns.list.querySelectorAll(".e-list-group-item");
+                    for (let number = 0; number < groupElement.length; number++){
+                        if (groupElement[number].innerText === 'Group') {
+                            expect(groupElement[number].innerText).toEqual('Group');
+                        }
+                    }
+                    dropDowns.open = null;
+                    dropDowns.hidePopup();
+                    dropDowns.destroy();
+                    done();
+                }, 800)
+            };
+            dropDowns.showPopup();
+        });
+        it('Check group header removed in multiple place', (done) => {
+            let groupData = [
+                { vegetable: 'Cabbage', category: 'Leafy and Salad' }, { vegetable: 'Spinach', category: 'Leafy and Salad' },
+                { vegetable: 'Wheatgrass', category: 'Leafy and Salad' }, { vegetable: 'Yarrow', category: 'Leafy and Salad' },
+                { vegetable: 'Chickpea' }, { vegetable: 'Green bean', category: 'Beans' },
+                { vegetable: 'Horse gram', category: 'Beans' }, { vegetable: 'Garlic', category: 'Bulb and Stem' },
+                { vegetable: 'Nopal'}, { vegetable: 'Onion', category: 'Bulb and Stem' }
+            ];
+            dropDowns = new DropDownList({
+                dataSource: groupData,
+                fields: { groupBy: 'category', text: 'vegetable' },
+                placeholder: 'Select a vegetable'
+            });
+            dropDowns.appendTo(element);
+            dropDowns.open = function(args: any){
+                setTimeout(() => {
+                    let groupElement: HTMLElement[] = dropDowns.list.querySelectorAll(".e-list-group-item");
+                    for (let number = 0; number < groupElement.length; number++){
+                        if (groupElement[number].innerText === 'Group') {
+                            expect(groupElement[number].innerText).toEqual('Group');
+                        }
+                    }
+                    dropDowns.open = null;
+                    dropDowns.hidePopup();
+                    dropDowns.destroy();
+                    done();
+                }, 800)
+            };
+            dropDowns.showPopup();
+        });
+        it('Check group header removed in multiple place in top', (done) => {
+            let groupData = [
+                { vegetable: 'Cabbage' }, { vegetable: 'Spinach', category: 'Leafy and Salad' },
+                { vegetable: 'Wheatgrass', category: 'Leafy and Salad' }, { vegetable: 'Yarrow', category: 'Leafy and Salad' },
+                { vegetable: 'Chickpea' }, { vegetable: 'Green bean', category: 'Beans' },
+                { vegetable: 'Horse gram', category: 'Beans' }, { vegetable: 'Garlic', category: 'Bulb and Stem' },
+                { vegetable: 'Nopal'}, { vegetable: 'Onion'}
+            ];
+            dropDowns = new DropDownList({
+                dataSource: groupData,
+                fields: { groupBy: 'category', text: 'vegetable' },
+                placeholder: 'Select a vegetable'
+            });
+            dropDowns.appendTo(element);
+            dropDowns.open = function(args: any){
+                setTimeout(() => {
+                    let groupElement: HTMLElement[] = dropDowns.list.querySelectorAll(".e-list-group-item");
+                    for (let number = 0; number < groupElement.length; number++){
+                        if (groupElement[number].innerText === 'Group') {
+                            expect(groupElement[number].innerText).toEqual('Group');
+                        }
+                    }
+                    dropDowns.open = null;
+                    dropDowns.hidePopup();
+                    dropDowns.destroy();
+                    done();
+                }, 800)
+            };
+            dropDowns.showPopup();
+        });
+        it('Check locale at initial rendering', (done) => {
+            let groupData = [
+                { vegetable: 'Cabbage' }, { vegetable: 'Spinach', category: 'Leafy and Salad' },
+                { vegetable: 'Wheatgrass', category: 'Leafy and Salad' }, { vegetable: 'Yarrow', category: 'Leafy and Salad' },
+                { vegetable: 'Chickpea' }, { vegetable: 'Green bean', category: 'Beans' },
+                { vegetable: 'Horse gram', category: 'Beans' }, { vegetable: 'Garlic', category: 'Bulb and Stem' },
+                { vegetable: 'Nopal'}, { vegetable: 'Onion'}
+            ];
+            dropDowns = new DropDownList({
+                dataSource: groupData,
+                fields: { groupBy: 'category', text: 'vegetable' },
+                placeholder: 'Select a vegetable',
+                locale: 'fr',
+            });
+            dropDowns.appendTo(element);
+            dropDowns.open = function(args: any){
+                setTimeout(() => {
+                    let groupElement: HTMLElement[] = dropDowns.list.querySelectorAll(".e-list-group-item");
+                    debugger
+                    for (let number = 0; number < groupElement.length; number++){
+                        if (groupElement[number].innerText === 'Groupe') {
+                            expect(groupElement[number].innerText).toEqual('Groupe');
+                        }
+                    }
+                    dropDowns.open = null;
+                    dropDowns.hidePopup();
+                    dropDowns.destroy();
+                    done();
+                }, 800)
+            };
+            dropDowns.showPopup();
+        });
+        it('Check locale at dynamically', (done) => {
+            let groupData = [
+                { vegetable: 'Cabbage' }, { vegetable: 'Spinach', category: 'Leafy and Salad' },
+                { vegetable: 'Wheatgrass', category: 'Leafy and Salad' }, { vegetable: 'Yarrow', category: 'Leafy and Salad' },
+                { vegetable: 'Chickpea' }, { vegetable: 'Green bean', category: 'Beans' },
+                { vegetable: 'Horse gram', category: 'Beans' }, { vegetable: 'Garlic', category: 'Bulb and Stem' },
+                { vegetable: 'Nopal'}, { vegetable: 'Onion'}
+            ];
+            dropDowns = new DropDownList({
+                dataSource: groupData,
+                fields: { groupBy: 'category', text: 'vegetable' },
+                placeholder: 'Select a vegetable',
+            });
+            dropDowns.appendTo(element);
+            dropDowns.locale = 'fr',
+            dropDowns.open = function(args: any){
+                setTimeout(() => {
+                    let groupElement: HTMLElement[] = dropDowns.list.querySelectorAll(".e-list-group-item");
+                    debugger
+                    for (let number = 0; number < groupElement.length; number++){
+                        if (groupElement[number].innerText === 'Groupe') {
+                            expect(groupElement[number].innerText).toEqual('Groupe');
+                        }
+                    }
+                    dropDowns.open = null;
+                    dropDowns.hidePopup();
+                    dropDowns.destroy();
+                    done();
+                }, 800)
+            };
+            dropDowns.showPopup();
+        });
+    });    
 });

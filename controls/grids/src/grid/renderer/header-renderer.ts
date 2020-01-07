@@ -367,7 +367,9 @@ export class HeaderRender implements IRenderer {
                 }
             }
             if (gObj.detailTemplate || gObj.childGrid) {
-                rows[i].cells.push(this.generateCell({} as Column, CellType.DetailHeader));
+                let args: object = {};
+                this.parent.notify(events.detailIndentCellInfo, args);
+                rows[i].cells.push(this.generateCell(args as Column, CellType.DetailHeader));
             }
             if (gObj.isRowDragable()) {
                 rows[i].cells.push(this.generateCell({} as Column, CellType.RowDragHIcon));
@@ -585,7 +587,7 @@ export class HeaderRender implements IRenderer {
 
 
     private colPosRefresh(): void {
-        if (isBlazor() && this.parent.isServerRendered) {
+        if (isBlazor() && this.parent.isServerRendered && this.parent.frozenRows && this.parent.getFrozenColumns()) {
             this.freezeReorder = true;
         }
         this.refreshUI();
@@ -598,10 +600,15 @@ export class HeaderRender implements IRenderer {
     public refreshUI(): void {
         let frzCols: number = this.parent.getFrozenColumns();
         let isVFTable: boolean = this.parent.enableColumnVirtualization && frzCols !== 0;
+        let setFrozenTable: boolean = isBlazor() && this.parent.isServerRendered && this.parent.frozenRows !== 0 && frzCols !== 0;
         let headerDiv: Element = this.getPanel();
         this.toggleStackClass(headerDiv);
         let table: Element = (this.parent.enableColumnVirtualization && frzCols) || this.freezeReorder
             ? this.headerPanel.querySelector('.e-movableheader').querySelector('.e-table') : this.getTable();
+        if (setFrozenTable && !isVFTable) {
+            table = this.freezeReorder ? this.headerPanel.querySelector('.e-movableheader').querySelector('.e-table') :
+                this.headerPanel.querySelector('.e-frozenheader').querySelector('.e-table');
+        }
         if (table) {
             if (isBlazor() && this.parent.isServerRendered) {
                 table.removeChild(table.querySelector('colgroup'));
@@ -617,7 +624,7 @@ export class HeaderRender implements IRenderer {
             table.insertBefore(findHeaderRow.thead, table.firstChild);
             this.updateColGroup(colGroup);
             table.insertBefore(this.setColGroup(colGroup), table.firstChild);
-            if (!(isVFTable && this.freezeReorder)) {
+            if (!isVFTable && !setFrozenTable) {
                 this.setTable(table);
             }
             if (!(isBlazor() && this.parent.isServerRendered)) {

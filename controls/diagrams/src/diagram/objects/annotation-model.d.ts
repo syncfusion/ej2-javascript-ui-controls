@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { TextStyle, Margin } from '../core/appearance';import { Point } from '../primitives/point';import { TextStyleModel, MarginModel } from '../core/appearance-model';import { PointModel } from '../primitives/point-model';import { HorizontalAlignment, VerticalAlignment, AnnotationAlignment, AnnotationTypes, TextDecoration } from '../enum/enum';import { AnnotationConstraints } from '../enum/enum';import { randomId } from '../utility/base-util';
+import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { TextStyle, Margin } from '../core/appearance';import { Point } from '../primitives/point';import { TextStyleModel, MarginModel } from '../core/appearance-model';import { PointModel } from '../primitives/point-model';import { HorizontalAlignment, VerticalAlignment, AnnotationAlignment, AnnotationTypes, TextDecoration, AnnotationType } from '../enum/enum';import { AnnotationConstraints } from '../enum/enum';import { randomId } from '../utility/base-util';
 
 /**
  * Interface for a class Hyperlink
@@ -51,6 +51,14 @@ export interface AnnotationModel {
      * @default 'undefined'
      */
     template?: string | HTMLElement;
+
+    /**
+     *  Defines the type of annotation template
+     * String -  Defines annotation template to be in string
+     * Template - Defines annotation template to be in html content
+     * @default 'String'
+     */
+    annotationType?: AnnotationType;
 
     /**
      * Defines the visibility of the label
@@ -126,6 +134,7 @@ export interface AnnotationModel {
     /**
      * Defines the appearance of the text
      * @default new TextStyle()
+     * @blazorType AnnotationStyle
      */
     style?: TextStyleModel;
 
@@ -207,6 +216,7 @@ export interface ShapeAnnotationModel extends AnnotationModel{
     /**
      * Sets the position of the annotation with respect to its parent bounds
      * @default { x: 0.5, y: 0.5 }
+     * @blazorType NodeAnnotationOffset
      */
     offset?: PointModel;
 

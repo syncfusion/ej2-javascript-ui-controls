@@ -140,9 +140,10 @@ export class LayerPanel {
             id: this.mapObject.element.id + '_LayerIndex_' + layerIndex
         }));
         if (!this.mapObject.enablePersistence) {
-            if (!isNullOrUndefined(window.localStorage)) {
-                window.localStorage.clear();
-            }
+            let itemName: string = this.mapObject.getModuleName() + this.mapObject.element.id;
+            if (!isNullOrUndefined(window.localStorage) && window.localStorage.getItem(itemName)) {
+                window.localStorage.removeItem(itemName);
+             }
         }
         let eventArgs: ILayerRenderingEventArgs = {
             cancel: false, name: layerRendering, index: layerIndex,

@@ -294,4 +294,45 @@ describe('Diagram Control', () => {
         });
 
     });
+    describe('Port edges', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramPortDragIssue' });
+            document.body.appendChild(ele);
+            let node: NodeModel = {
+                id: "node", offsetX: 250, offsetY: 250, width: 100, height: 100, rotateAngle: 180, annotations: [{content: "Test"}],
+                ports: [
+                    { id: "port", width: 25, height: 25, offset: {x: 0.5, y: 1}, visibility: PortVisibility.Visible },
+                    { id: 'port2', visibility: PortVisibility.Hover, shape: 'Circle', offset: { x: 0.5, y: 0 } },
+                    { id: 'port3', visibility: PortVisibility.Hidden, shape: 'Circle', offset: { x: 1, y: 0.5 } },
+                    { id: 'port4', visibility: PortVisibility.Connect, shape: 'Circle', offset: { x: 0.5, y: 1 } }
+                   
+                ]
+            };
+            let connector: ConnectorModel = {id:"connector1",sourceID: "node", sourcePortID: "port", targetPoint: { x: 350, y: 250 }};
+            diagram = new Diagram({ width: 800, height: 800, nodes: [node], connectors: [connector] });
+            diagram.appendTo('#diagramPortDragIssue');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking port inedges and out edges at runtime', (done: Function) => {
+            expect((diagram.nodes[0].ports[0]).outEdges[0] ==="connector1").toBe(true);
+            done();
+            diagram.connectors[0].sourcePortID ="port2";
+            diagram.dataBind();
+            diagram.undo();
+            expect((diagram.nodes[0].ports[0]).outEdges[0] ==="connector1").toBe(true);
+            done();
+            diagram.redo();
+            expect((diagram.nodes[0].ports[0]).outEdges.length === 0).toBe(true);
+            done();
+            expect(((diagram.nodes[0].ports[1]).outEdges[0] === "connector1")).toBe(true);
+            done();
+        });
+    });
 });

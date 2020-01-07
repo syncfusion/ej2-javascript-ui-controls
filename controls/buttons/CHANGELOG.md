@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.41 (2020-01-07)
+
+### Chips
+
+#### Bug Fixes
+
+- `#256994` - The issue with aria-selected value maintenance in a single selection has been fixed.
+
 ## 17.4.39 (2019-12-17)
 
 ### Chips

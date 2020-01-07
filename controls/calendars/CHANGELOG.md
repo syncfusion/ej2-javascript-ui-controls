@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.41 (2020-01-07)
+
+### Calendar
+
+#### Bug Fixes
+
+- Issue with "change event triggered while again click on the selected month in month view" has been resolved.
+
 ## 17.4.40 (2019-12-24)
 
 ### DateRangePicker

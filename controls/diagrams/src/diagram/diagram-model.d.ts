@@ -1,4 +1,4 @@
-import { Component, Property, Complex, Collection, EventHandler, L10n, Droppable, remove, Ajax, isBlazor } from '@syncfusion/ej2-base';import { Browser, ModuleDeclaration, Event, EmitType } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';import { CanvasRenderer } from './rendering/canvas-renderer';import { SvgRenderer } from './rendering/svg-renderer';import { DiagramRenderer } from './rendering/renderer';import { BaseAttributes } from './rendering/canvas-interface';import { PageSettings, ScrollSettings } from './diagram/page-settings';import { PageSettingsModel, ScrollSettingsModel } from './diagram/page-settings-model';import { DiagramElement } from './core/elements/diagram-element';import { ServiceLocator } from './objects/service';import { IElement, IDataLoadedEventArgs, ISelectionChangeEventArgs, IClickEventArgs, ScrollValues } from './objects/interface/IElement';import { UserHandleEventsArgs } from './objects/interface/IElement';import { IBlazorDropEventArgs, IBlazorScrollChangeEventArgs, } from './objects/interface/IElement';import { DiagramEventObjectCollection, IBlazorCollectionChangeEventArgs } from './objects/interface/IElement';import { ICommandExecuteEventArgs, IBlazorDragEnterEventArgs } from './objects/interface/IElement';import { ISizeChangeEventArgs, IConnectionChangeEventArgs, IEndChangeEventArgs, IDoubleClickEventArgs } from './objects/interface/IElement';import { ICollectionChangeEventArgs, IPropertyChangeEventArgs, IDraggingEventArgs, IRotationEventArgs } from './objects/interface/IElement';import { ISegmentCollectionChangeEventArgs, IBlazorPropertyChangeEventArgs } from './objects/interface/IElement';import { IDragEnterEventArgs, IDragLeaveEventArgs, IDragOverEventArgs, IDropEventArgs } from './objects/interface/IElement';import { ITextEditEventArgs, IHistoryChangeArgs, IScrollChangeEventArgs } from './objects/interface/IElement';import { IMouseEventArgs, IBlazorHistoryChangeArgs } from './objects/interface/IElement';import { IBlazorCustomHistoryChangeArgs, IImageLoadEventArgs } from './objects/interface/IElement';import { StackEntryObject, IExpandStateChangeEventArgs } from './objects/interface/IElement';import { ZoomOptions, IPrintOptions, IExportOptions, IFitOptions, ActiveLabel } from './objects/interface/interfaces';import { View, IDataSource, IFields } from './objects/interface/interfaces';import { Container } from './core/containers/container';import { Node, BpmnShape, BpmnAnnotation, SwimLane, Path } from './objects/node';import { cloneBlazorObject, } from './utility/diagram-util';import { updateDefaultValues, getCollectionChangeEventArguements, checkBrowserInfo } from './utility/diagram-util';import { flipConnector, updatePortEdges, alignElement, setConnectorDefaults } from './utility/diagram-util';import { Segment } from './interaction/scroller';import { Connector } from './objects/connector';import { ConnectorModel, BpmnFlowModel } from './objects/connector-model';import { SnapSettings } from './diagram/grid-lines';import { RulerSettings } from './diagram/ruler-settings';import { removeRulerElements, updateRuler, getRulerSize } from './ruler/ruler';import { renderRuler, renderOverlapElement } from './ruler/ruler';import { RulerSettingsModel } from './diagram/ruler-settings-model';import { SnapSettingsModel } from './diagram/grid-lines-model';import { NodeModel, TextModel, BpmnShapeModel, BpmnAnnotationModel, HeaderModel, HtmlModel } from './objects/node-model';import { UmlActivityShapeModel, SwimLaneModel, LaneModel, PhaseModel } from './objects/node-model';import { Size } from './primitives/size';import { Keys, KeyModifiers, DiagramTools, AlignmentMode, AnnotationConstraints, NodeConstraints, RendererAction } from './enum/enum';import { DiagramConstraints, BridgeDirection, AlignmentOptions, SelectorConstraints, PortVisibility, DiagramEvent } from './enum/enum';import { DistributeOptions, SizingOptions, RenderingMode, DiagramAction, ThumbsConstraints, NudgeDirection } from './enum/enum';import { RealAction, ElementAction, FlipDirection, Orientation, PortConstraints, HistoryChangeAction } from './enum/enum';import { PathElement } from './core/elements/path-element';import { TextElement } from './core/elements/text-element';import { updateStyle, removeItem, updateConnector, updateShape, setUMLActivityDefaults, findNodeByName } from './utility/diagram-util';import { setSwimLaneDefaults } from './utility/diagram-util';import { checkPortRestriction, serialize, deserialize, updateHyperlink, getObjectType, removeGradient } from './utility/diagram-util';import { Rect } from './primitives/rect';import { getPortShape } from './objects/dictionary/common';import { PointPortModel } from './objects/port-model';import { ShapeAnnotationModel, AnnotationModel, PathAnnotationModel } from './objects/annotation-model';import { ShapeAnnotation, PathAnnotation, Annotation } from './objects/annotation';import { PointModel } from './primitives/point-model';import { Canvas } from './core/containers/canvas';import { GridPanel, ColumnDefinition } from './core/containers/grid';import { DataSourceModel } from './diagram/data-source-model';import { DataSource } from './diagram/data-source';import { LayoutModel } from './layout/layout-base-model';import { Layout, INode, ILayout } from './layout/layout-base';import { DataBinding } from './data-binding/data-binding';import { Selector } from './objects/node';import { SelectorModel } from './objects/node-model';import { DiagramEventHandler } from './interaction/event-handlers';import { CommandHandler } from './interaction/command-manager';import { DiagramScroller } from './interaction/scroller';import { Actions, isSelected } from './interaction/actions';import { ToolBase } from './interaction/tool';import { BpmnDiagrams } from './objects/bpmn';import { DiagramContextMenu } from './objects/context-menu';import { ConnectorBridging } from './objects/connector-bridging';import { SpatialSearch } from './interaction/spatial-search/spatial-search';import { HistoryEntry, History } from './diagram/history';import { UndoRedo } from './objects/undo-redo';import { ConnectorEditing } from './interaction/connector-editing';import { Ruler } from '../ruler/index';import { BeforeOpenCloseMenuEventArgs, MenuEventArgs, EJ2Instance } from '@syncfusion/ej2-navigations';import { setAttributeSvg, setAttributeHtml, measureHtmlText, removeElement, createMeasureElements, getDomIndex } from './utility/dom-util';import { getDiagramElement, getScrollerWidth, getHTMLLayer } from './utility/dom-util';import { getBackgroundLayer, createHtmlElement, createSvgElement, getNativeLayerSvg } from './utility/dom-util';import { getPortLayerSvg, getDiagramLayerSvg } from './utility/dom-util';import { getAdornerLayerSvg, getSelectorElement, getGridLayerSvg, getBackgroundLayerSvg } from './utility/dom-util';import { CommandManager, ContextMenuSettings } from './diagram/keyboard-commands';import { CommandManagerModel, CommandModel, ContextMenuSettingsModel } from './diagram/keyboard-commands-model';import { canDelete, canInConnect, canOutConnect, canRotate, canVitualize, canDrawThumbs } from './utility/constraints-util';import { canPortInConnect, canPortOutConnect } from './utility/constraints-util';import { canResize, canSingleSelect, canZoomPan, canZoomTextEdit } from './utility/constraints-util';import { canDragSourceEnd, canDragTargetEnd, canDragSegmentThumb, enableReadOnly, canMove } from './utility/constraints-util';import { findAnnotation, arrangeChild, getInOutConnectPorts, removeChildNodes } from './utility/diagram-util';import { randomId, cloneObject, extendObject, getFunction, getBounds } from './utility/base-util';import { Snapping } from './objects/snapping';import { DiagramTooltipModel } from './objects/tooltip-model';import { TextStyleModel, ShadowModel } from './core/appearance-model';import { TransformFactor } from './interaction/scroller';import { RadialTree } from './layout/radial-tree';import { HierarchicalTree } from './layout/hierarchical-tree';import { ComplexHierarchicalTree } from './layout/complex-hierarchical-tree';import { MindMap } from './layout/mind-map';import { DiagramTooltip, initTooltip } from './objects/tooltip';import { Tooltip } from '@syncfusion/ej2-popups';import { PrintAndExport } from './print-settings';import { Port, PointPort } from './objects/port';import { SymmetricLayout, IGraphObject } from './layout/symmetrical-layout';import { LayoutAnimation } from './objects/layout-animation';import { canShadow } from './utility/constraints-util';import { Layer } from './diagram/layer';import { LayerModel } from './diagram/layer-model';import { DiagramNativeElement } from './core/elements/native-element';import { DiagramHtmlElement } from './core/elements/html-element';import { IconShapeModel } from './objects/icon-model';import { canAllowDrop } from './utility/constraints-util';import { checkParentAsContainer, addChildToContainer, updateLaneBoundsAfterAddChild } from './interaction/container-interaction';import { DataManager } from '@syncfusion/ej2-data';import { getConnectors, updateConnectorsProperties, phaseDefine } from './utility/swim-lane-util';import { swimLaneMeasureAndArrange } from './utility/swim-lane-util';import { arrangeChildNodesInSwimLane, updateHeaderMaxWidth, updatePhaseMaxWidth } from './utility/swim-lane-util';import { addLane, addPhase } from './utility/swim-lane-util';import { ContextMenuItemModel } from './../diagram/objects/interface/interfaces';import { SerializationSettingsModel } from './diagram/serialization-settings-model';import { SerializationSettings } from './diagram/serialization-settings';import { removeSwimLane, removeLane, removePhase, removeLaneChildNode } from './utility/swim-lane-util';import { RowDefinition } from './core/containers/grid';import { CustomCursorAction } from './diagram/custom-cursor';import { CustomCursorActionModel } from './diagram/custom-cursor-model';import { LineRouting } from './interaction/line-routing';
+import { Component, Property, Complex, Collection, EventHandler, L10n, Droppable, remove, Ajax, isBlazor } from '@syncfusion/ej2-base';import { Browser, ModuleDeclaration, Event, EmitType } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';import { CanvasRenderer } from './rendering/canvas-renderer';import { SvgRenderer } from './rendering/svg-renderer';import { DiagramRenderer } from './rendering/renderer';import { BaseAttributes } from './rendering/canvas-interface';import { PageSettings, ScrollSettings } from './diagram/page-settings';import { PageSettingsModel, ScrollSettingsModel } from './diagram/page-settings-model';import { DiagramElement } from './core/elements/diagram-element';import { ServiceLocator } from './objects/service';import { IElement, IDataLoadedEventArgs, ISelectionChangeEventArgs, IClickEventArgs, ScrollValues } from './objects/interface/IElement';import { ChangedObject } from './objects/interface/IElement';import { IBlazorDragLeaveEventArgs } from './objects/interface/IElement';import { UserHandleEventsArgs } from './objects/interface/IElement';import { IBlazorDropEventArgs, IBlazorScrollChangeEventArgs, } from './objects/interface/IElement';import { DiagramEventObjectCollection, IBlazorCollectionChangeEventArgs } from './objects/interface/IElement';import { ICommandExecuteEventArgs, IBlazorDragEnterEventArgs } from './objects/interface/IElement';import { ISizeChangeEventArgs, IConnectionChangeEventArgs, IEndChangeEventArgs, IDoubleClickEventArgs } from './objects/interface/IElement';import { ICollectionChangeEventArgs, IPropertyChangeEventArgs, IDraggingEventArgs, IRotationEventArgs } from './objects/interface/IElement';import { ISegmentCollectionChangeEventArgs, IBlazorPropertyChangeEventArgs } from './objects/interface/IElement';import { IDragEnterEventArgs, IDragLeaveEventArgs, IDragOverEventArgs, IDropEventArgs } from './objects/interface/IElement';import { ITextEditEventArgs, IHistoryChangeArgs, IScrollChangeEventArgs } from './objects/interface/IElement';import { IMouseEventArgs, IBlazorHistoryChangeArgs } from './objects/interface/IElement';import { IBlazorCustomHistoryChangeArgs, IImageLoadEventArgs } from './objects/interface/IElement';import { StackEntryObject, IExpandStateChangeEventArgs } from './objects/interface/IElement';import { ZoomOptions, IPrintOptions, IExportOptions, IFitOptions, ActiveLabel } from './objects/interface/interfaces';import { View, IDataSource, IFields } from './objects/interface/interfaces';import { Container } from './core/containers/container';import { Node, BpmnShape, BpmnAnnotation, SwimLane, Path, DiagramShape, UmlActivityShape, FlowShape, BasicShape } from './objects/node';import { cloneBlazorObject } from './utility/diagram-util';import { updateDefaultValues, getCollectionChangeEventArguements, checkBrowserInfo } from './utility/diagram-util';import { flipConnector, updatePortEdges, alignElement, setConnectorDefaults } from './utility/diagram-util';import { Segment } from './interaction/scroller';import { Connector } from './objects/connector';import { ConnectorModel, BpmnFlowModel } from './objects/connector-model';import { SnapSettings } from './diagram/grid-lines';import { RulerSettings } from './diagram/ruler-settings';import { removeRulerElements, updateRuler, getRulerSize } from './ruler/ruler';import { renderRuler, renderOverlapElement } from './ruler/ruler';import { RulerSettingsModel } from './diagram/ruler-settings-model';import { SnapSettingsModel } from './diagram/grid-lines-model';import { NodeModel, TextModel, BpmnShapeModel, BpmnAnnotationModel, HeaderModel, HtmlModel } from './objects/node-model';import { UmlActivityShapeModel, SwimLaneModel, LaneModel, PhaseModel } from './objects/node-model';import { Size } from './primitives/size';import { Keys, KeyModifiers, DiagramTools, AlignmentMode, AnnotationConstraints, NodeConstraints, RendererAction } from './enum/enum';import { BlazorAction } from './enum/enum';import { DiagramConstraints, BridgeDirection, AlignmentOptions, SelectorConstraints, PortVisibility, DiagramEvent } from './enum/enum';import { DistributeOptions, SizingOptions, RenderingMode, DiagramAction, ThumbsConstraints, NudgeDirection } from './enum/enum';import { RealAction, ElementAction, FlipDirection, Orientation, PortConstraints, HistoryChangeAction } from './enum/enum';import { PathElement } from './core/elements/path-element';import { TextElement } from './core/elements/text-element';import { updateStyle, removeItem, updateConnector, updateShape, setUMLActivityDefaults, findNodeByName } from './utility/diagram-util';import { setSwimLaneDefaults } from './utility/diagram-util';import { checkPortRestriction, serialize, deserialize, updateHyperlink, getObjectType, removeGradient } from './utility/diagram-util';import { Rect } from './primitives/rect';import { getPortShape } from './objects/dictionary/common';import { PointPortModel } from './objects/port-model';import { ShapeAnnotationModel, AnnotationModel, PathAnnotationModel } from './objects/annotation-model';import { ShapeAnnotation, PathAnnotation, Annotation } from './objects/annotation';import { PointModel } from './primitives/point-model';import { Canvas } from './core/containers/canvas';import { GridPanel, ColumnDefinition } from './core/containers/grid';import { DataSourceModel } from './diagram/data-source-model';import { DataSource } from './diagram/data-source';import { LayoutModel } from './layout/layout-base-model';import { Layout, INode, ILayout } from './layout/layout-base';import { DataBinding } from './data-binding/data-binding';import { Selector } from './objects/node';import { SelectorModel } from './objects/node-model';import { DiagramEventHandler } from './interaction/event-handlers';import { CommandHandler } from './interaction/command-manager';import { DiagramScroller } from './interaction/scroller';import { Actions, isSelected } from './interaction/actions';import { ToolBase } from './interaction/tool';import { BpmnDiagrams } from './objects/bpmn';import { DiagramContextMenu } from './objects/context-menu';import { ConnectorBridging } from './objects/connector-bridging';import { SpatialSearch } from './interaction/spatial-search/spatial-search';import { HistoryEntry, History } from './diagram/history';import { UndoRedo } from './objects/undo-redo';import { ConnectorEditing } from './interaction/connector-editing';import { Ruler } from '../ruler/index';import { BeforeOpenCloseMenuEventArgs, MenuEventArgs, EJ2Instance } from '@syncfusion/ej2-navigations';import { setAttributeSvg, setAttributeHtml, measureHtmlText, removeElement, createMeasureElements, getDomIndex } from './utility/dom-util';import { getDiagramElement, getScrollerWidth, getHTMLLayer } from './utility/dom-util';import { getBackgroundLayer, createHtmlElement, createSvgElement, getNativeLayerSvg } from './utility/dom-util';import { getPortLayerSvg, getDiagramLayerSvg } from './utility/dom-util';import { getAdornerLayerSvg, getSelectorElement, getGridLayerSvg, getBackgroundLayerSvg } from './utility/dom-util';import { CommandManager, ContextMenuSettings } from './diagram/keyboard-commands';import { CommandManagerModel, CommandModel, ContextMenuSettingsModel } from './diagram/keyboard-commands-model';import { canDelete, canInConnect, canOutConnect, canRotate, canVitualize, canDrawThumbs } from './utility/constraints-util';import { canPortInConnect, canPortOutConnect } from './utility/constraints-util';import { canResize, canSingleSelect, canZoomPan, canZoomTextEdit } from './utility/constraints-util';import { canDragSourceEnd, canDragTargetEnd, canDragSegmentThumb, enableReadOnly, canMove } from './utility/constraints-util';import { findAnnotation, arrangeChild, getInOutConnectPorts, removeChildNodes, canMeasureDecoratorPath } from './utility/diagram-util';import { randomId, cloneObject, extendObject, getFunction, getBounds } from './utility/base-util';import { Snapping } from './objects/snapping';import { DiagramTooltipModel } from './objects/tooltip-model';import { TextStyleModel, ShadowModel } from './core/appearance-model';import { TransformFactor } from './interaction/scroller';import { RadialTree } from './layout/radial-tree';import { HierarchicalTree } from './layout/hierarchical-tree';import { ComplexHierarchicalTree } from './layout/complex-hierarchical-tree';import { MindMap } from './layout/mind-map';import { DiagramTooltip, initTooltip } from './objects/tooltip';import { Tooltip } from '@syncfusion/ej2-popups';import { PrintAndExport } from './print-settings';import { Port, PointPort } from './objects/port';import { SymmetricLayout, IGraphObject } from './layout/symmetrical-layout';import { LayoutAnimation } from './objects/layout-animation';import { canShadow } from './utility/constraints-util';import { Layer } from './diagram/layer';import { LayerModel } from './diagram/layer-model';import { DiagramNativeElement } from './core/elements/native-element';import { DiagramHtmlElement } from './core/elements/html-element';import { IconShapeModel } from './objects/icon-model';import { canAllowDrop } from './utility/constraints-util';import { checkParentAsContainer, addChildToContainer, updateLaneBoundsAfterAddChild } from './interaction/container-interaction';import { DataManager } from '@syncfusion/ej2-data';import { getConnectors, updateConnectorsProperties, phaseDefine } from './utility/swim-lane-util';import { swimLaneMeasureAndArrange } from './utility/swim-lane-util';import { arrangeChildNodesInSwimLane, updateHeaderMaxWidth, updatePhaseMaxWidth } from './utility/swim-lane-util';import { addLane, addPhase } from './utility/swim-lane-util';import { ContextMenuItemModel } from './../diagram/objects/interface/interfaces';import { SerializationSettingsModel } from './diagram/serialization-settings-model';import { SerializationSettings } from './diagram/serialization-settings';import { removeSwimLane, removeLane, removePhase, removeLaneChildNode } from './utility/swim-lane-util';import { RowDefinition } from './core/containers/grid';import { CustomCursorAction } from './diagram/custom-cursor';import { CustomCursorActionModel } from './diagram/custom-cursor-model';import { LineRouting } from './interaction/line-routing';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -48,7 +48,6 @@ export interface DiagramModel extends ComponentModel{
      * });
      * diagram.appendTo('#diagram');
      * ```
-     * @deprecated
      */
     contextMenuSettings?: ContextMenuSettingsModel;
 
@@ -211,6 +210,7 @@ export interface DiagramModel extends ComponentModel{
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
+     * @blazorType ObservableCollection<DiagramNode>
      */
     nodes?: NodeModel[];
 
@@ -230,7 +230,6 @@ export interface DiagramModel extends ComponentModel{
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
-     * @deprecated
      */
     drawingObject?: NodeModel | ConnectorModel;
 
@@ -254,6 +253,7 @@ export interface DiagramModel extends ComponentModel{
      * diagram.appendTo('#diagram');
      * ```
      * @default []
+     * @blazorType ObservableCollection<DiagramConnector>
      */
     connectors?: ConnectorModel[];
 
@@ -288,9 +288,20 @@ export interface DiagramModel extends ComponentModel{
     /**
      * Customizes the undo redo functionality 
      * @default undefined
-     * @deprecated
      */
     historyManager?: History;
+
+    /**
+     * Customizes the node template 
+     * @default undefined
+     */
+    nodeTemplate?: string;
+
+    /**
+     * Customizes the annotation template 
+     * @default undefined
+     */
+    annotationTemplate?: string;
 
     /**
      * Helps to return the default properties of node
@@ -602,6 +613,7 @@ export interface DiagramModel extends ComponentModel{
     /**
      * A collection of JSON objects where each object represents a custom cursor action. Layer is a named category of diagram shapes.
      * @default []
+     * @blazorType ObservableCollection<DiagramCustomCursor>
      */
     customCursor?: CustomCursorActionModel[];
 
@@ -638,7 +650,7 @@ export interface DiagramModel extends ComponentModel{
     /**
      * Defines the collection of selected items, size and position of the selector
      * @default {}
-     * @deprecated
+     * @blazorType DiagramSelectedItems
      */
     selectedItems?: SelectorModel;
 
@@ -657,7 +669,6 @@ export interface DiagramModel extends ComponentModel{
     /**
      * Defines a set of custom commands and binds them with a set of desired key gestures
      * @default {}
-     * @deprecated
      */
     commandManager?: CommandManagerModel;
 
@@ -665,12 +676,12 @@ export interface DiagramModel extends ComponentModel{
      * Triggers after diagram is populated from the external data source
      * @event
      * @blazorProperty 'DataLoaded'
+     * @deprecated
      */
     dataLoaded?: EmitType<IDataLoadedEventArgs>;
 
     /**
      * Triggers when a symbol is dragged into diagram from symbol palette
-     * @deprecated
      * @event
      * @blazorProperty 'DragEnter'
      * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorDragEnterEventArgs
@@ -688,6 +699,7 @@ export interface DiagramModel extends ComponentModel{
      * Triggers when a symbol is dragged over diagram
      * @event
      * @blazorProperty 'DragOver'
+     * @deprecated
      */
     dragOver?: EmitType<IDragOverEventArgs>;
 
@@ -725,7 +737,6 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when editor got focus at the time of node’s label or text node editing.
-     * @deprecated
      * @event
      * @blazorProperty 'TextEdited'
      */
@@ -736,12 +747,12 @@ export interface DiagramModel extends ComponentModel{
      * @event
      * @blazorProperty 'ScrollChanged'
      * @blazorType 'IBlazorScrollChangeEventArgs'
+     * @deprecated
      */
     scrollChange?: EmitType<IScrollChangeEventArgs>;
 
     /**
      * Triggers when the selection is changed in diagram
-     * @deprecated
      * @event
      * @blazorProperty 'SelectionChanged'
      * @blazorType 'IBlazorSelectionChangeEventArgs'
@@ -750,7 +761,6 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when a node is resized
-     * @deprecated
      * @event
      * @blazorProperty 'OnSizeChange'
      */
@@ -758,7 +768,6 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when the connection is changed
-     * @deprecated
      * @event
      * @blazorProperty 'OnConnectionChange'
      * @blazorType 'IBlazorConnectionChangeEventArgs'
@@ -801,12 +810,12 @@ export interface DiagramModel extends ComponentModel{
      * Triggers after animation is completed for the diagram elements.
      * @event
      * @blazorProperty 'OnAnimationComplete'
+     * @deprecated
      */
     animationComplete?: EmitType<Object>;
 
     /**
      * Triggers when the diagram elements are rotated
-     * @deprecated
      * @event
      * @blazorProperty 'OnRotateChange'
      */
@@ -867,6 +876,7 @@ export interface DiagramModel extends ComponentModel{
 
     /**
      * Triggers when the state of the expand and collapse icon change for a node.
+     * @deprecated
      * @event
      * @blazorProperty 'OnExpandStateChange'
      */
@@ -899,6 +909,7 @@ export interface DiagramModel extends ComponentModel{
      * Triggered when mouse hovers a node/connector.
      * @event
      * @blazorProperty 'MouseOver'
+     * @deprecated
      * @blazorType Syncfusion.EJ2.Blazor.Diagrams.IBlazorMouseEventArgs
      */
     mouseOver?: EmitType<IMouseEventArgs>;
@@ -916,6 +927,7 @@ export interface DiagramModel extends ComponentModel{
      * @event
      * @blazorProperty 'OnContextMenuItemRender'
      * @blazorType Syncfusion.EJ2.Blazor.Diagrams.DiagramMenuEventArgs
+     * @deprecated
      */
     contextMenuBeforeItemRender?: EmitType<MenuEventArgs>;
 
@@ -937,12 +949,12 @@ export interface DiagramModel extends ComponentModel{
     /**
      * A collection of JSON objects where each object represents a layer. Layer is a named category of diagram shapes.
      * @default []
+     * @blazorType ObservableCollection<DiagramLayer>
      */
     layers?: LayerModel[];
 
     /**
      * Triggers when a symbol is dragged and dropped from symbol palette to drawing area
-     * @deprecated
      * @event
      * @blazorProperty 'OnDrop'
      * @blazorType 'IBlazorDropEventArgs'

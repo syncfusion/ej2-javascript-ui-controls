@@ -1631,10 +1631,6 @@ export class TableWidget extends BlockWidget {
                         }
                     }
                 }
-                let newCellFormat: WCellFormat = new WCellFormat();
-                if (isZeroWidth && !this.isDefaultFormatUpdated) {
-                    cell.cellFormat.copyFormat(newCellFormat);
-                }
                 cellWidth = this.getCellWidth(cell.cellFormat.preferredWidth, cell.cellFormat.preferredWidthType, tableWidth, cell);
                 sizeInfo = cell.getCellSizeInfo(isAutoFit);
                 this.tableHolder.addColumns(columnSpan, columnSpan += cell.cellFormat.columnSpan, cellWidth, sizeInfo, offset += cellWidth);

@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 17.3.17 (2019-10-15)
+## 17.4.41 (2020-01-07)
+
+### Excel Export
+
+#### Bug Fixes
+
+- Date issue is fixed for CSV export.
+
+## 17.4.39 (2019-12-17)
 
 ### Excel Export
 

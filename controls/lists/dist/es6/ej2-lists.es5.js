@@ -1258,32 +1258,33 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     ListView.prototype.setCheckbox = function () {
-        var _this = this;
         if (this.showCheckBox) {
             var liCollection = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.listItem));
-            var args_1 = {
+            var args = {
                 item: undefined, curData: undefined, dataSource: undefined, fields: undefined,
                 options: undefined, text: ''
             };
-            liCollection.forEach(function (element) {
-                args_1.item = element;
-                args_1.curData = _this.getItemData(element);
+            for (var i = 0; i < liCollection.length; i++) {
+                var element = liCollection[i];
+                args.item = element;
+                args.curData = this.getItemData(element);
                 if (element.querySelector('.' + classNames.checkboxWrapper)) {
-                    _this.removeElement(element.querySelector('.' + classNames.checkboxWrapper));
+                    this.removeElement(element.querySelector('.' + classNames.checkboxWrapper));
                 }
-                _this.renderCheckbox(args_1);
-                if (args_1.item.classList.contains(classNames.selected)) {
-                    _this.checkInternally(args_1, args_1.item.querySelector('.' + classNames.checkboxWrapper));
+                this.renderCheckbox(args);
+                if (args.item.classList.contains(classNames.selected)) {
+                    this.checkInternally(args, args.item.querySelector('.' + classNames.checkboxWrapper));
                 }
-            });
+            }
         }
         else {
             var liCollection = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.itemCheckList));
-            liCollection.forEach(function (element) {
+            for (var i = 0; i < liCollection.length; i++) {
+                var element = liCollection[i];
                 element.classList.remove(classNames.selected);
                 element.firstElementChild.classList.remove(classNames.checkbox);
-                _this.removeElement(element.querySelector('.' + classNames.checkboxWrapper));
-            });
+                this.removeElement(element.querySelector('.' + classNames.checkboxWrapper));
+            }
             if (this.selectedItems) {
                 this.selectedItems.item.classList.add(classNames.selected);
             }
@@ -1875,14 +1876,14 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         this.renderIntoDom(this.curUL);
     };
     ListView.prototype.setAttributes = function (liElements) {
-        var _this = this;
-        liElements.forEach(function (element) {
+        for (var i = 0; i < liElements.length; i++) {
+            var element = liElements[i];
             if (element.classList.contains('e-list-item')) {
-                element.setAttribute('id', _this.element.id + '_' + element.getAttribute('data-uid'));
+                element.setAttribute('id', this.element.id + '_' + element.getAttribute('data-uid'));
                 element.setAttribute('aria-selected', 'false');
                 element.setAttribute('tabindex', '-1');
             }
-        });
+        }
     };
     ListView.prototype.createList = function () {
         this.currentLiElements = [];
@@ -2242,9 +2243,9 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(finalGetSelectedItem)) {
             if (!isNullOrUndefined(finalGetSelectedItem.data)) {
                 if (this.showCheckBox && this.isNestedList) {
-                    finalGetSelectedItem.data.forEach(function (currentData) {
-                        blazorSelectedItem.data.push(currentData.data);
-                    });
+                    for (var i = 0; i < finalGetSelectedItem.data.length; i++) {
+                        blazorSelectedItem.data.push(finalGetSelectedItem.data[i].data);
+                    }
                     if (!isNullOrUndefined(finalGetSelectedItem.data[0])
                         && !isNullOrUndefined(finalGetSelectedItem.data[0].parentId)) {
                         blazorSelectedItem.parentId = finalGetSelectedItem.data[0].parentId;
@@ -2367,7 +2368,6 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         this.addItemInternally(data, fields, dataSource);
     };
     ListView.prototype.addItemInternally = function (data, fields, dataSource) {
-        var _this = this;
         if (data instanceof Array) {
             if (this.enableVirtualization) {
                 this.virtualizationModule.addItem(data, fields, dataSource);
@@ -2385,23 +2385,23 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                 }
                 // check for whether target is nested level or top level in list
                 if (ds instanceof Array) {
-                    data.forEach(function (currentItem) {
-                        dataSource.push(currentItem);
-                        _this.setViewDataSource(dataSource);
+                    for (var i = 0; i < data.length; i++) {
+                        dataSource.push(data[i]);
+                        this.setViewDataSource(dataSource);
                         // since it is top level target, get the content container's first child
                         // as it is always the top level UL
-                        var targetUL = _this.contentContainer
-                            ? _this.contentContainer.children[0]
+                        var targetUL = this.contentContainer
+                            ? this.contentContainer.children[0]
                             : null;
                         // check for whether the list was previously empty or not, if it is
                         // proceed to call initial render
-                        if (_this.contentContainer && targetUL) {
-                            _this.addItemIntoDom(currentItem, targetUL, _this.curViewDS);
+                        if (this.contentContainer && targetUL) {
+                            this.addItemIntoDom(data[i], targetUL, this.curViewDS);
                         }
                         else {
-                            _this.reRender();
+                            this.reRender();
                         }
-                    });
+                    }
                     if (this.curUL) {
                         this.updateBlazorTemplates(true);
                     }
@@ -2418,7 +2418,6 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     ListView.prototype.addItemInNestedList = function (targetItemData, itemQueue) {
-        var _this = this;
         var targetItemId = targetItemData[this.fields.id];
         var targetChildDS = targetItemData[this.fields.child];
         var isAlreadyRenderedUL = this.element.querySelector('[pid=\'' + targetItemId + '\']');
@@ -2442,10 +2441,10 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         }
         // if it is already rendered element, we need to create and append new elements
         if (isAlreadyRenderedUL && itemQueue) {
-            itemQueue.forEach(function (currentItem) {
-                targetDS.push(currentItem);
-                _this.addItemIntoDom(currentItem, targetUL, targetDS);
-            });
+            for (var i = 0; i < itemQueue.length; i++) {
+                targetDS.push(itemQueue[i]);
+                this.addItemIntoDom(itemQueue[i], targetUL, targetDS);
+            }
             isRefreshTemplateNeeded = true;
         }
         if (isRefreshTemplateNeeded) {
@@ -3764,26 +3763,19 @@ var Sortable = /** @__PURE__ @class */ (function (_super) {
             var dropInst = _this.getSortableInstance(_this.curTarget);
             var prevIdx;
             var curIdx;
-            var handled;
             prevIdx = _this.getIndex(_this.target);
             if (_this.isPlaceHolderPresent(dropInst)) {
                 var curIdx_1 = _this.getIndex(dropInst.placeHolderElement, dropInst);
                 var args = { previousIndex: prevIdx, currentIndex: curIdx_1, target: e.target, droppedElement: _this.target,
-                    helper: e.helper, cancel: false, handled: false };
+                    helper: e.helper, cancel: false };
                 _this.trigger('beforeDrop', args, function (observedArgs) {
                     if (!observedArgs.cancel) {
-                        handled = observedArgs.handled;
                         _this.updateItemClass(dropInst);
-                        if (observedArgs.handled) {
-                            var ele = _this.target.cloneNode(true);
-                            _this.target.classList.remove('e-grabbed');
-                            _this.target = ele;
-                        }
                         dropInst.element.insertBefore(_this.target, dropInst.placeHolderElement);
                         var curIdx_2 = _this.getIndex(_this.target, dropInst);
                         prevIdx = _this === dropInst && (prevIdx - curIdx_2) > 1 ? prevIdx - 1 : prevIdx;
                         _this.trigger('drop', { event: e.event, element: dropInst.element, previousIndex: prevIdx, currentIndex: curIdx_2,
-                            target: e.target, helper: e.helper, droppedElement: _this.target, scopeName: _this.scope, handled: handled });
+                            target: e.target, helper: e.helper, droppedElement: _this.target, scopeName: _this.scope });
                     }
                     remove(dropInst.placeHolderElement);
                 });

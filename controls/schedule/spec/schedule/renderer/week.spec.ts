@@ -735,7 +735,9 @@ describe('Schedule Week view', () => {
             schObj = util.createSchedule(model, [], done);
         });
         afterAll(() => {
+            let activeView: any = schObj.activeView;
             util.destroy(schObj);
+            activeView.changeCurrentTimePosition();
         });
 
         it('header rows count', () => {
@@ -748,6 +750,15 @@ describe('Schedule Week view', () => {
 
         it('date header cells count', () => {
             expect(schObj.element.querySelectorAll('.e-date-header-wrap .e-header-cells').length).toBe(21);
+        });
+
+        it('Checking current time indicator', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-current-timeline').length).toEqual(3);
+                done();
+            };
+            schObj.selectedDate = new Date();
+            schObj.dataBind();
         });
     });
 

@@ -4449,6 +4449,92 @@ describe(' Islamic Calendar', () => {
             expect(Cal.value !== new Date('5/5/2017')).toBe(true);
         });
     });
+    describe('Value while change the month', () => {
+        let cal: any;
+        let calendar: Calendar;
+        let mouseEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            currentTarget: null,
+            target: null,
+            stopPropagation: (): void => { /** NO Code */ }
+        };
+        beforeEach(() => {
+            let ele: HTMLElement = createElement('div', { id: 'calendar' });
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            if (calendar) {
+                calendar.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('change with value property ', () => {
+            cal = new Calendar({
+                start: "Year", depth: "Year", value: new Date('2/1/2009'),
+                change: function (args: ChangedEventArgs): void {
+                    expect(args.value.valueOf()).toBe(cal.value.valueOf());
+                }
+            });
+            cal.appendTo('#calendar');
+            cal.value = new Date('3/3/2017');
+            cal.dataBind();
+            cal.value = new Date('7/2/2007');
+            cal.dataBind();
+        });
+        it('change without value property ', () => {
+            cal = new Calendar({
+                start: "Year", depth: "Year",
+                change: function (args: ChangedEventArgs): void {
+                    expect(args.value.valueOf()).toBe(cal.value.valueOf());
+                }
+            });
+            cal.appendTo('#calendar');
+            cal.value = new Date('3/3/2020');
+            cal.dataBind();
+            cal.todayElement.click();
+            cal.value = new Date('10/10/2010');
+            cal.dataBind();
+        });
+        it('Click on same month for multiple times', () => {
+            cal = new Calendar({
+                start: "Year", depth: "Year",
+                change: function (args: ChangedEventArgs): void {
+                    expect(args.value.valueOf()).toBe(cal.value.valueOf());
+                }
+            });
+            cal.appendTo('#calendar');
+            cal.value = new Date('3/3/2020');
+            cal.dataBind();
+            cal.value = new Date('3/3/2020');
+            cal.dataBind();
+        });
+    it('Set start as year and depth as decade', () => {
+        cal = new Calendar({
+            start: "Year", depth: "Decade",
+            change: function (args: ChangedEventArgs): void {
+                expect(args.value.valueOf()).toBe(cal.value.valueOf());
+            }
+        });
+        cal.appendTo('#calendar');
+        cal.value = new Date('5/9/2020');
+        cal.dataBind();
+        cal.value = new Date('10/3/2013');
+        cal.dataBind();
+        });
+    it('Set start as decade and depth as year', () => {
+        cal = new Calendar({
+            start: "Decade", depth: "Year",
+            change: function (args: ChangedEventArgs): void {
+                expect(args.value.valueOf()).toBe(cal.value.valueOf());
+            }
+        });
+        cal.appendTo('#calendar');
+        cal.value = new Date('8/3/2020');
+        cal.dataBind();
+        cal.value = new Date('3/1/2010');
+        cal.dataBind();
+        });
+    });
 });
     it('memory leak', () => {     
         profile.sample();

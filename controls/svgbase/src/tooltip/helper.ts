@@ -28,7 +28,7 @@ export function measureText(text: string, font: TextStyleModel): Size {
         }
         text = textArray.join(' ');
     }
-    htmlObject.innerHTML = (breakText.indexOf('<br>') > -1) ? breakText : text;
+    htmlObject.innerHTML = (breakText.indexOf('<br>') > -1 || breakText.indexOf('<br/>') > -1) ? breakText : text;
     htmlObject.style.position = 'fixed';
     htmlObject.style.fontSize = font.size;
     htmlObject.style.fontWeight = font.fontWeight;

@@ -734,6 +734,49 @@ describe('DatePicker Control', () => {
         });
     });
 
+    describe('EJ2-35030 - I258797 - Date picker value submit issue fix testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        let buttonEle: HTMLElement;
+        beforeAll((done: Function): void => {
+            editorObj = renderEditor({
+                type: 'Date',
+                value: new Date(),
+                mode: 'Inline',
+                model: {
+                    placeholder: 'Select a date',
+                    allowEdit: false,
+                    min: new Date(),
+                    format: 'MMM d, yy'
+                }
+            });
+            ele = editorObj.element;
+            done();
+        });
+        it('element availability testing', () => {
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-datepicker', ele).length === 1).toEqual(true);
+        });
+        it('Inline - Submit testing', (done: Function) => {
+            setTimeout(() => {
+                expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+                buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
+                buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+                let formEle: HTMLElement = <HTMLElement>select('.' + classes.FORM, ele);
+                expect(formEle).toEqual(null);
+                done();
+            }, 400);
+        });
+        afterAll((): void => {
+            destroy(editorObj);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

@@ -607,6 +607,9 @@ export class Filter implements IAction {
                     let iconClass: string = this.parent.showColumnMenu ? '.e-columnmenu' : '.e-icon-filter';
                     fltrElement.querySelector(iconClass).classList.remove('e-filtered');
                 }
+                let cloneActualPredicate: PredicateModel;
+                column.isForeignColumn() ? cloneActualPredicate = extend({}, this.actualPredicate[column.foreignKeyValue][0]) :
+                cloneActualPredicate = extend({}, this.actualPredicate[field][0]);
                 this.isRemove = true;
                 if (this.actualPredicate[field]) {
                     delete this.actualPredicate[field];
@@ -616,10 +619,8 @@ export class Filter implements IAction {
                 }
                 if (this.refresh) {
                     this.parent.notify(events.modelChanged, {
-                        requestType: 'filtering', type: events.actionBegin, currentFilterObject: {
-                            field: column.field, operator: this.operator, value: this.value as string, predicate: this.predicate,
-                            matchCase: this.matchCase, ignoreAccent: this.ignoreAccent, actualFilterValue: {}, actualOperator: {}
-                        }, currentFilterColumn: column
+                        requestType: 'filtering', type: events.actionBegin, currentFilterObject: cloneActualPredicate,
+                        currentFilterColumn: column
                     });
                 }
                 break;

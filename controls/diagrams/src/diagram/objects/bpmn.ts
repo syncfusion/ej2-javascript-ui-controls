@@ -1,4 +1,4 @@
-import { Node, BpmnActivity, BpmnTask, BpmnSubProcess, BpmnShape, BpmnSubEvent } from './../objects/node';
+import { Node, BpmnActivity, BpmnTask, BpmnSubProcess, BpmnShape, BpmnSubEvent, DiagramShape } from './../objects/node';
 import { DiagramElement } from './../core/elements/diagram-element';
 import { Canvas } from './../core/containers/canvas';
 import { Container } from './../core/containers/container';
@@ -31,6 +31,7 @@ import { Rect } from '../primitives/rect';
 import { Size } from '../primitives/size';
 import { getDiagramElement } from '../utility/dom-util';
 import { Segment } from '../interaction/scroller';
+import { isBlazor } from '@syncfusion/ej2-base';
 
 /**
  * BPMN Diagrams contains the BPMN functionalities
@@ -101,17 +102,18 @@ export class BpmnDiagrams {
     }
     /** @private */
     public initBPMNContent(content: DiagramElement, node: Node, diagram: Diagram): DiagramElement {
-        let shape: BpmnShape = node.shape as BpmnShape;
-        if (shape.shape === 'Event') {
+        let shape: BpmnShape | DiagramShape = (isBlazor() ? node.shape as DiagramShape : node.shape as BpmnShape);
+        let bpmnShape: BpmnShapes = (isBlazor() ? (node.shape as DiagramShape).bpmnShape : (node.shape as BpmnShape).shape);
+        if (bpmnShape === 'Event') {
             content = this.getBPMNEventShape(node, shape.event);
         }
-        if (shape.shape === 'Gateway') {
+        if (bpmnShape === 'Gateway') {
             content = this.getBPMNGatewayShape(node);
         }
-        if (shape.shape === 'DataObject') {
+        if (bpmnShape === 'DataObject') {
             content = this.getBPMNDataObjectShape(node);
         }
-        if (shape.shape === 'Message' || shape.shape === 'DataSource') {
+        if (bpmnShape === 'Message' || bpmnShape === 'DataSource') {
             content = this.getBPMNShapes(node);
         }
         // if (shape.shape === 'Group') {
@@ -120,10 +122,10 @@ export class BpmnDiagrams {
         //     content.horizontalAlignment = 'Center';
         //     content.verticalAlignment = 'Center';
         // }
-        if (shape.shape === 'Activity') {
+        if (bpmnShape === 'Activity') {
             content = this.getBPMNActivityShape(node);
         }
-        if (shape.shape === 'TextAnnotation') {
+        if (bpmnShape === 'TextAnnotation') {
             content = this.renderBPMNTextAnnotation(diagram, node, content);
         }
         let annotations: {} = {};
@@ -144,9 +146,11 @@ export class BpmnDiagrams {
         if ((node.constraints & NodeConstraints.Shadow) !== 0) {
             bpmnShape.shadow = node.shadow;
         }
-        let bpmnShapeData: string = getBpmnShapePathData((node.shape as BpmnShape).shape);
+        let bpmnShapeData: string = getBpmnShapePathData((isBlazor() ? (node.shape as DiagramShape).bpmnShape :
+            (node.shape as BpmnShape).shape));
         bpmnShape.data = bpmnShapeData;
-        bpmnShape.id = node.id + '_' + (node.shape as BpmnShape).shape;
+        bpmnShape.id = node.id + '_' + (isBlazor() ? (node.shape as DiagramShape).bpmnShape :
+            (node.shape as BpmnShape).shape);
         if (node.width !== undefined && node.height !== undefined) {
             bpmnShape.width = node.width;
             bpmnShape.height = node.height;
@@ -347,7 +351,8 @@ export class BpmnDiagrams {
             'C149.7764,62.3279000000001,156.2414,55.8629000000001,164.1884,55.8629000000001C172.1354,55.8629000000001,178.6024,' +
             '62.3279000000001,178.6024,70.2769000000001C178.6024,78.2259000000001,172.1354,84.6909000000001,164.1884,84.6909000000001';
         let shapeEvent: BpmnEventModel = (node.shape as BpmnShape).event;
-        if ((node.shape as BpmnShape).shape === 'Event') {
+        if ((!isBlazor() && (node.shape as BpmnShape).shape === 'Event') ||
+            (isBlazor() && (node.shape as DiagramShape).bpmnShape === 'Event')) {
             event = shapeEvent.event;
             trigger = shapeEvent.trigger;
         }
@@ -363,7 +368,8 @@ export class BpmnDiagrams {
             width = size.width; height = size.height;
         }
         let shapeActivity: BpmnActivityModel = (node.shape as BpmnShape).activity;
-        if ((node.shape as BpmnShape).shape === 'Activity') {
+        if ((!isBlazor() && (node.shape as BpmnShape).shape === 'Activity') ||
+            (isBlazor() && (node.shape as DiagramShape).bpmnShape === 'Activity')) {
             let subProcess: Object = shapeActivity.subProcess;
             event = subEvent.event;
             trigger = subEvent.trigger;
@@ -650,7 +656,8 @@ export class BpmnDiagrams {
     /** @private */
     public dropBPMNchild(target: Node, source: Node, diagram: Diagram): void {
         if (source && source.shape.type === 'Bpmn' && target.shape.type === 'Bpmn'
-            && (source.shape as BpmnShape).shape !== 'TextAnnotation') {
+            && ((!isBlazor() && (source.shape as BpmnShape).shape !== 'TextAnnotation') ||
+                (isBlazor() && (source.shape as DiagramShape).bpmnShape !== 'TextAnnotation'))) {
             let subProcess: BpmnSubProcessModel = (diagram.nameTable[target.id].shape as BpmnShape).activity.subProcess;
             if (diagram.currentSymbol && target.shape.type === 'Bpmn' && !subProcess.collapsed) {
                 source.processId = target.id;
@@ -1094,8 +1101,8 @@ export class BpmnDiagrams {
     /** @private */
     public getTextAnnotationWrapper(node: NodeModel, id: string): TextElement {
         if (node && node.shape.type === 'Bpmn') {
-            let shape: BpmnShape = node.shape as BpmnShape;
-            if (shape.shape === 'TextAnnotation') {
+            let shape: BpmnShapes = (isBlazor() ? (node.shape as DiagramShape).bpmnShape : (node.shape as BpmnShape).shape);
+            if (shape === 'TextAnnotation') {
                 return node.wrapper.children[1] as TextElement;
             } else if (this.annotationObjects[node.id] && this.annotationObjects[node.id][id]) {
                 let annotationNode: NodeModel = this.annotationObjects[node.id][id].node;
@@ -1136,7 +1143,8 @@ export class BpmnDiagrams {
         //remove annotation node wrapper
         //remove from a quad
         if (node.shape.type === 'Bpmn') {
-            if ((node.shape as BpmnShape).shape === 'TextAnnotation') {
+            if ((!isBlazor() && (node.shape as BpmnShape).shape === 'TextAnnotation') ||
+                (isBlazor() && (node.shape as DiagramShape).bpmnShape === 'TextAnnotation')) {
                 let id: string[] = node.id.split('_');
                 let annotationId: string = id[id.length - 1];
                 let nodeId: string = id[id.length - 3] || id[0];
@@ -1444,18 +1452,22 @@ export class BpmnDiagrams {
         if (changedProp.style) {
             updateStyle(
                 changedProp.style,
-                elementWrapper instanceof Container ? ((actualObject.shape as BpmnShape).shape === 'Activity') ?
+                elementWrapper instanceof Container ? ((!isBlazor() && (actualObject.shape as BpmnShape).shape === 'Activity' ||
+                    (isBlazor() && (actualObject.shape as DiagramShape).bpmnShape === 'Activity'))) ?
                     (elementWrapper.children[0] as Container).children[0] :
                     elementWrapper.children[0] : elementWrapper);
 
             if (changedProp.style && changedProp.style.strokeColor) {
                 if ((elementWrapper as Container).children.length > 0) {
-                    if ((actualObject.shape as BpmnShape).shape === 'Activity' &&
+                    if (((!isBlazor() && (actualObject.shape as BpmnShape).shape === 'Activity') ||
+                        (isBlazor() && (actualObject.shape as DiagramShape).bpmnShape === 'Activity')) &&
                         (actualObject.shape as BpmnShape).activity.activity === 'SubProcess') {
                         let child: DiagramElement = (elementWrapper as Container).children[0];
                         this.updateBPMNStyle(child, changedProp.style.strokeColor);
-                    } else if ((actualObject.shape as BpmnShape).shape === 'Gateway' ||
-                        (actualObject.shape as BpmnShape).shape === 'Event') {
+                    } else if (((!isBlazor() && (actualObject.shape as BpmnShape).shape === 'Gateway')
+                        || (isBlazor() && (actualObject.shape as DiagramShape).bpmnShape === 'Gateway')) ||
+                        ((!isBlazor() && (actualObject.shape as BpmnShape).shape === 'Event')
+                            || (isBlazor() && (actualObject.shape as DiagramShape).bpmnShape === 'Event'))) {
                         this.updateBPMNStyle(elementWrapper, changedProp.style.strokeColor);
                     }
                 }
@@ -2001,7 +2013,8 @@ export class BpmnDiagrams {
                 currentNode.visible = visible;
                 diagram.updateElementVisibility(currentNode.wrapper, currentNode, visible);
                 if (visible) {
-                    if ((currentNode.shape as BpmnShape).shape === 'Event') {
+                    if ((!isBlazor() && (currentNode.shape as BpmnShape).shape === 'Event') ||
+                        (isBlazor() && (currentNode.shape as DiagramShape).bpmnShape === 'Event')) {
                         this.setEventVisibility(currentNode, (currentNode.wrapper.children[0] as Container).children);
                     }
                     if (((currentNode.shape as BpmnShape).activity as BpmnShapeModel).activity === 'SubProcess') {
@@ -2017,14 +2030,17 @@ export class BpmnDiagrams {
             }
         }
         if (visible) {
-            if ((node.shape as BpmnShape).shape === 'Event') {
+            if ((!isBlazor() && (node.shape as BpmnShape).shape === 'Event') ||
+                (isBlazor() && (node.shape as DiagramShape).bpmnShape === 'Event')) {
                 this.setEventVisibility(node, (node.wrapper.children[0] as Container).children);
             }
             if (((node.shape as BpmnShape).activity as BpmnShapeModel).activity === 'SubProcess') {
                 this.setSubProcessVisibility(node);
             }
             if (((node.shape as BpmnShape).activity as BpmnShapeModel).activity === 'Task' &&
-                (node.shape as BpmnShape).shape === 'Activity' && (node.shape as BpmnShape).activity.subProcess.loop === 'None') {
+                ((!isBlazor() && (node.shape as BpmnShape).shape === 'Activity') ||
+                    (isBlazor() && (node.shape as DiagramShape).bpmnShape === 'Activity'))
+                && (node.shape as BpmnShape).activity.subProcess.loop === 'None') {
                 ((node.wrapper.children[0] as Container).children[0] as Container).children[3].visible = false;
             }
         }

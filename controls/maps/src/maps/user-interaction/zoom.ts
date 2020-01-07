@@ -93,6 +93,7 @@ export class Zoom {
         let scale: number = map.previousScale = map.scale;
         let maxZoom: number = map.zoomSettings.maxZoom;
         let minZoom: number = map.zoomSettings.minZoom;
+        newZoomFactor = (minZoom > newZoomFactor && type === 'ZoomIn') ? minZoom + 1 : newZoomFactor;
         let translatePoint: Point = map.previousPoint = map.translatePoint;
         let prevTilePoint: Point = map.tileTranslatePoint;
         if ((!map.isTileMap) && (type === 'ZoomIn' ? newZoomFactor >= minZoom && newZoomFactor <= maxZoom : newZoomFactor >= minZoom)) {
@@ -714,13 +715,11 @@ export class Zoom {
                 if (type === 'Template') {
                     location.x = ((Math.abs(this.maps.baseMapRectBounds['min']['x'] - location.x)) * scale);
                     location.y = ((Math.abs(this.maps.baseMapRectBounds['min']['y'] - location.y)) * scale);
-                    let templateOffset: ClientRect = element.getBoundingClientRect();
                     let layerOffset: ClientRect = getElementByID(this.maps.element.id + '_Layer_Collections').getBoundingClientRect();
                     let elementOffset: ClientRect = element.parentElement.getBoundingClientRect();
-                    (<HTMLElement>element).style.left = (((location.x) + (layerOffset.left - elementOffset.left) -
-                        (templateOffset.width / 2)) + marker.offset.x) + 'px';
-                    (<HTMLElement>element).style.top = (((location.y) + (layerOffset.top - elementOffset.top)
-                        - (templateOffset.height / 2)) + marker.offset.y) + 'px';
+                    (<HTMLElement>element).style.left = (((location.x) + (layerOffset.left - elementOffset.left)) + marker.offset.x) + 'px';
+                    (<HTMLElement>element).style.top = (((location.y) + (layerOffset.top - elementOffset.top)) + marker.offset.y) + 'px';
+                    (<HTMLElement>element).style.transform = 'translate(-50%, -50%)';
                 } else {
                     location.x = (((location.x + x) * scale) + marker.offset.x);
                     location.y = (((location.y + y) * scale) + marker.offset.y);
@@ -813,6 +812,7 @@ export class Zoom {
         let prevTilePoint: Point = map.tileTranslatePoint;
         map.previousProjection = map.projectionType;
         zoomFactor = (type === 'ZoomOut') ? (Math.round(zoomFactor) === 1 ? 1 : zoomFactor) : zoomFactor;
+        zoomFactor = (minZoom > zoomFactor && type === 'ZoomIn') ? minZoom + 1 : zoomFactor;
         let zoomArgs: IMapZoomEventArgs;
         if ((!map.isTileMap) && (type === 'ZoomIn' ? zoomFactor >= minZoom && zoomFactor <= maxZoom : zoomFactor >= minZoom)) {
             let min: Object = map.baseMapRectBounds['min'] as Object;

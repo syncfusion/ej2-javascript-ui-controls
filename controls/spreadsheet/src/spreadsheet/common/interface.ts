@@ -24,13 +24,16 @@ export interface IRenderer {
     showHideHeaders(): void;
 }
 
+/**
+ * CellRenderEventArgs
+ */
 export interface CellRenderEventArgs {
-  /** Defines the cell. */
-  cell: CellModel;
-  /** Defines the cell element. */
-  element: HTMLElement;
-  /** Defines the cell address. */
-  address: string;
+    /** Defines the cell. */
+    cell: CellModel;
+    /** Defines the cell element. */
+    element: HTMLElement;
+    /** Defines the cell address. */
+    address: string;
 }
 
 export interface StyleType {
@@ -98,13 +101,24 @@ export interface RefreshArgs {
     left?: number;
     refresh: RefreshType;
 }
+
+/**
+ * OpenOptions
+ */
 export interface OpenOptions {
+    /** Defines the file. */
     file?: FileList | string;
 }
 
+/**
+ * BeforeOpenEventArgs
+ */
 export interface BeforeOpenEventArgs {
+    /** Defines the file. */
     file: FileList | string;
+    /** Defines the cancel option. */
     cancel: boolean;
+    /** Defines the request data. */
     requestData: object;
 }
 
@@ -112,12 +126,21 @@ export interface BeforeOpenEventArgs {
  * MenuSelectArgs
  */
 export interface MenuSelectArgs extends MenuEventArgs {
+    /** Defines the cancel option. */
     cancel: boolean;
 }
+
+/**
+ * OpenFailureArgs
+ */
 export interface OpenFailureArgs {
+    /** Defines the status. */
     status: string;
+    /** Defines the status text. */
     statusText: string;
+    /** Defines the stack. */
     stack?: string;
+    /** Defines the message. */
     message?: string;
 }
 
@@ -159,19 +182,36 @@ export interface IAriaOptions<T> {
     busy?: T;
     colcount?: string;
 }
+
+/**
+ * CellEditEventArgs
+ */
 export interface CellEditEventArgs {
+    /** Defines the value. */
     value: string;
+    /** Defines the old value. */
     oldValue: string;
+    /** Defines the element. */
     element: HTMLElement;
+    /** Defines the address. */
     address: string;
+    /** Defines the cancel option. */
     cancel: boolean;
 }
 
+/**
+ * CellSaveEventArgs
+ */
 export interface CellSaveEventArgs {
+    /** Defines the value. */
     value: string;
+    /** Defines the old value. */
     oldValue: string;
+    /** Defines the element. */
     element: HTMLElement;
+    /** Defines the address. */
     address: string;
+    /** Defines the formula. */
     formula?: string;
 }
 

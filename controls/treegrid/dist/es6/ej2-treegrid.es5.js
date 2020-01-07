@@ -408,14 +408,16 @@ function getExpandStatus(parent, record, parents) {
  */
 function findChildrenRecords(records) {
     var datas = [];
-    if (isNullOrUndefined(records) || !records.hasChildRecords) {
+    if (isNullOrUndefined(records) || (!records.hasChildRecords && !isNullOrUndefined(records.childRecords)
+        && !records.childRecords.length)) {
         return [];
     }
     if (!isNullOrUndefined(records.childRecords)) {
         var childRecords = records.childRecords;
         for (var i = 0, len = Object.keys(childRecords).length; i < len; i++) {
             datas.push(childRecords[i]);
-            if (childRecords[i].hasChildRecords) {
+            if (childRecords[i].hasChildRecords || (!isNullOrUndefined(childRecords[i].childRecords) &&
+                childRecords[i].childRecords.length)) {
                 datas = datas.concat(findChildrenRecords(childRecords[i]));
             }
         }
@@ -597,11 +599,14 @@ var Selection = /** @__PURE__ @class */ (function () {
             containerELe.insertBefore(checkWrap, containerELe.querySelectorAll('.e-treecell')[0]);
         }
         else {
-            var spanEle = checkWrap.querySelector('.e-label');
+            var spanEle = this.parent.createElement('span', { className: 'e-treecheckbox' });
             var data = container.cell.innerHTML;
             container.cell.innerHTML = '';
             spanEle.innerHTML = data;
-            container.cell.appendChild(checkWrap);
+            var divEle = this.parent.createElement('div', { className: 'e-treecheckbox-container' });
+            divEle.appendChild(checkWrap);
+            divEle.appendChild(spanEle);
+            container.cell.appendChild(divEle);
         }
     };
     Selection.prototype.selectCheckboxes = function (rowIndexes) {
@@ -1106,9 +1111,7 @@ var Render = /** @__PURE__ @class */ (function () {
         }
         if (grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex
             && (args.requestType === 'add' || args.requestType === 'delete' || isNullOrUndefined(args.cell.querySelector('.e-treecell')))) {
-            var container = createElement('div', {
-                className: 'e-treecolumn-container'
-            });
+            var container = createElement('div', { className: 'e-treecolumn-container' });
             var emptyExpandIcon = createElement('span', {
                 className: 'e-icons e-none',
                 styles: 'width: 10px; display: inline-block'
@@ -1124,9 +1127,7 @@ var Render = /** @__PURE__ @class */ (function () {
             }
             if (iconRequired) {
                 addClass([args.cell], 'e-treerowcell');
-                var expandIcon = createElement('span', {
-                    className: 'e-icons'
-                });
+                var expandIcon = createElement('span', { className: 'e-icons' });
                 var expand = void 0;
                 if (this.parent.initialRender) {
                     expand = data.expanded &&
@@ -1159,9 +1160,7 @@ var Render = /** @__PURE__ @class */ (function () {
             // if (data.hasChildRecords) {
             //     addClass([expandIcon], data.expanded ? 'e-treegridexpand' : 'e-treegridcollapse');
             // }
-            cellElement = createElement('span', {
-                className: 'e-treecell'
-            });
+            cellElement = createElement('span', { className: 'e-treecell' });
             if (this.parent.allowTextWrap) {
                 cellElement.style.width = 'Calc(100% - ' + totalIconsWidth + 'px)';
             }
@@ -1180,6 +1179,13 @@ var Render = /** @__PURE__ @class */ (function () {
                 var checkboxElement = args.cell.querySelectorAll('.e-frame')[0];
                 var width = parseInt(checkboxElement.style.width, 16);
                 totalIconsWidth += width;
+                totalIconsWidth += 10;
+                if (grid.getColumnIndexByUid(args.column.uid) === this.parent.treeColumnIndex) {
+                    cellElement = args.cell.querySelector('.e-treecell');
+                }
+                else {
+                    cellElement = args.cell.querySelector('.e-treecheckbox');
+                }
                 cellElement.style.width = 'Calc(100% - ' + totalIconsWidth + 'px)';
             }
         }
@@ -2196,7 +2202,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     /**
      * Searches TreeGrid records using the given key.
      * You can customize the default search option by using the
-     * [`searchSettings`](./api-searchSettings.html).
+     * [`searchSettings`](./#searchsettings/).
      * @param  {string} searchString - Defines the key.
      * @return {void}
      */
@@ -2244,7 +2250,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     /**
      * By default, prints all the pages of the TreeGrid and hides the pager.
      * > You can customize print options using the
-     * [`printMode`](./api-treegrid.html#printmode-string).
+     * [`printMode`](./#printmode).
      * @return {void}
      */
     TreeGrid.prototype.print = function () {
@@ -7917,6 +7923,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                         data[i].parentItem = this.internalProperties.parentItem;
                         data[i].parentUniqueID = this.internalProperties.parentUniqueID;
                     }
+                    data[i].childRecords = this.internalProperties.childRecords;
                 }
             }
             setValue('uniqueIDCollection.' + data[i].uniqueID + '.index', i, this.parent);
@@ -8171,7 +8178,8 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         }
         if (args.action === 'add') {
             this.internalProperties = { level: value.level, parentItem: value.parentItem, uniqueID: value.uniqueID,
-                taskData: value.taskData, parentUniqueID: isNullOrUndefined(value.parentItem) ? undefined : value.parentItem.uniqueID };
+                taskData: value.taskData, parentUniqueID: isNullOrUndefined(value.parentItem) ? undefined : value.parentItem.uniqueID,
+                childRecords: value.childRecords };
         }
         if (args.requestType === 'delete') {
             var deletedValues = args.data;

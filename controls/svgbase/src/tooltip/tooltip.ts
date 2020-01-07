@@ -1,5 +1,5 @@
 import {  NotifyPropertyChanges, Property, Event, Complex, INotifyPropertyChanged, updateBlazorTemplate } from '@syncfusion/ej2-base';
-import {  extend,  compile as templateComplier, Component, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
+import {  extend,  compile as templateComplier, Component, resetBlazorTemplate, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '../svg-render/index';
 import {  ChildProperty, createElement, EmitType, remove, Browser, AnimationOptions, Animation} from '@syncfusion/ej2-base';
 import { TextStyleModel, TooltipBorderModel, TooltipModel, ToolLocationModel, AreaBoundsModel } from './tooltip-model';
@@ -7,7 +7,7 @@ import { ITooltipThemeStyle, ITooltipRenderingEventArgs, ITooltipAnimationComple
 import { ITooltipLoadedEventArgs, getTooltipThemeColor } from './interface';
 import { Size, Rect, Side, measureText, getElement, findDirection, drawSymbol, textElement } from './helper';
 import { removeElement, TextOption, TooltipLocation, PathOption } from './helper';
-import { TooltipShape, TooltipTheme } from './enum';
+import { TooltipShape, TooltipTheme, TooltipPlacement } from './enum';
 
 /**
  * Configures the fonts in charts.
@@ -389,6 +389,14 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     public isCanvas: boolean;
 
     /**
+     * To place tooltip in a particular position.
+     * @default null.
+     * @private.
+     */
+    @Property(null)
+    public tooltipPlacement: TooltipPlacement;
+
+    /**
      * Triggers before each axis range is rendered.
      * @event
      * @private.
@@ -607,7 +615,11 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         svgObject.setAttribute('height', (rect.height + this.border.width + (!((!this.inverted)) ? 0 : this.arrowPadding) + 5).toString());
         svgObject.setAttribute('width', (rect.width + this.border.width + (((!this.inverted)) ? 0 : this.arrowPadding) + 5).toString());
         svgObject.setAttribute('opacity', '1');
-
+        if (!isNullOrUndefined(this.tooltipPlacement)) {
+            isTop = this.tooltipPlacement.indexOf('Top') > -1;
+            isBottom = this.tooltipPlacement.indexOf('Bottom') > -1;
+            isLeft = this.tooltipPlacement.indexOf('Left') > -1;
+        }
         pathElement.setAttribute('d', findDirection(
             this.rx, this.ry, pointRect, arrowLocation,
             this.arrowPadding, isTop, isBottom, isLeft, tipLocation.x, tipLocation.y, this.tipRadius
@@ -821,9 +833,43 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
         return tooltipRect;
     }
-
+    private getCurrentPosition(bounds: Rect, symbolLocation: TooltipLocation, arrowLocation: TooltipLocation,
+                               tipLocation: TooltipLocation): Rect {
+        let position: TooltipPlacement = this.tooltipPlacement;
+        let clipX: number = this.clipBounds.x;
+        let clipY: number = this.clipBounds.y;
+        let markerHeight: number = this.offset;
+        let width: number = this.elementSize.width + (2 * this.marginX);
+        let height: number = this.elementSize.height + (2 * this.marginY);
+        let location: TooltipLocation = new TooltipLocation(symbolLocation.x, symbolLocation.y);
+        if (position === 'Top' || position === 'Bottom') {
+            location = new TooltipLocation(
+                location.x + clipX - this.elementSize.width / 2 - this.padding,
+                location.y + clipY - this.elementSize.height - (2 * this.padding) - this.arrowPadding - markerHeight
+            );
+            arrowLocation.x = tipLocation.x = width / 2;
+            if (position === 'Bottom') {
+                location.y = symbolLocation.y + clipY + markerHeight;
+            }
+        } else {
+            location = new TooltipLocation(
+                location.x + clipX + markerHeight,
+                location.y + clipY - this.elementSize.height / 2 - (this.padding)
+            );
+            arrowLocation.y = tipLocation.y = height / 2;
+            if (position === 'Left') {
+                location.x = symbolLocation.x + clipX - markerHeight - (width + this.arrowPadding);
+            }
+        }
+        return new Rect(location.x, location.y, width, height);
+    }
+    // tslint:disable-next-line:max-func-body-length
     private tooltipLocation(bounds: Rect, symbolLocation: TooltipLocation, arrowLocation: TooltipLocation,
                             tipLocation: TooltipLocation): Rect {
+        if (!isNullOrUndefined(this.tooltipPlacement)) {
+            let tooltipRect: Rect = this.getCurrentPosition(bounds, symbolLocation, arrowLocation, tipLocation);
+            return tooltipRect;
+        }
         let location: TooltipLocation = new TooltipLocation(symbolLocation.x, symbolLocation.y);
         let width: number = this.elementSize.width + (2 * this.marginX);
         let height: number = this.elementSize.height + (2 * this.marginY);
@@ -834,7 +880,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         let clipY: number = this.clipBounds.y;
         let boundsX: number = bounds.x;
         let boundsY: number = bounds.y;
-
         if (!this.inverted) {
             location = new TooltipLocation(
                 location.x + clipX - this.elementSize.width / 2 - this.padding,
@@ -905,7 +950,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
         return new Rect(location.x, location.y, width, height);
     }
-
     private animateTooltipDiv(tooltipDiv: HTMLDivElement, rect: Rect): void {
         let x: number = parseFloat(tooltipDiv.style.left);
         let y: number = parseFloat(tooltipDiv.style.top);

@@ -22,7 +22,7 @@ import { FormFields } from './index';
 import { Print, CalibrationUnit } from './index';
 // tslint:disable-next-line:max-line-length
 import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs } from './index';
-import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs } from './index';
+import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs } from './index';
 import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs } from './index';
 import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';
 import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';
@@ -175,6 +175,12 @@ export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
      */
     @Property('ExportFormFields')
     public exportFormFields: string;
+
+    /**
+     * specifies the export action of PdfViewer.
+     */
+    @Property('RenderPdfTexts')
+    public renderTexts: string;
 
 }
 
@@ -1567,6 +1573,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public zoomMode: ZoomMode;
 
     /**
+     * Enable or disables the get the document text collections.
+     * @default false
+     */
+    @Property(false)
+    public isExtractText: boolean;
+
+    /**
      * Defines the settings of the PdfViewer toolbar.
      */
     // tslint:disable-next-line:max-line-length
@@ -1599,7 +1612,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of the PdfViewer service.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ load: 'Load', renderPages: 'RenderPdfPages', unload: 'Unload', download: 'Download', renderThumbnail: 'RenderThumbnailImages', print: 'PrintImages', renderComments: 'RenderAnnotationComments', importAnnotations: 'ImportAnnotations', exportAnnotations: 'ExportAnnotations', importFormFields: 'ImportFormFields', exportFormFields: 'ExportFormFields' })
+    @Property({ load: 'Load', renderPages: 'RenderPdfPages', unload: 'Unload', download: 'Download', renderThumbnail: 'RenderThumbnailImages', print: 'PrintImages', renderComments: 'RenderAnnotationComments', importAnnotations: 'ImportAnnotations', exportAnnotations: 'ExportAnnotations', importFormFields: 'ImportFormFields', exportFormFields: 'ExportFormFields', renderTexts: 'RenderPdfTexts' })
     public serverActionSettings: ServerActionSettingsModel;
 
     /**
@@ -2029,6 +2042,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Event()
     public annotationSelect: EmitType<AnnotationSelectEventArgs>;
+
+    /**
+     * Triggers an event when the annotation is double click.
+     * @event
+     * @blazorProperty 'OnAnnotationDoubleClick'
+     */
+    @Event()
+    public annotationDoubleClick: EmitType<AnnotationDoubleClickEventArgs>;
 
     /**
      * Triggers when an annotation is moved over the page of the PDF document.
@@ -2670,8 +2691,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * @private
      */
-    public fireDocumentLoad(): void {
-        let eventArgs: LoadEventArgs = { name: 'documentLoad', documentName: this.fileName };
+    // tslint:disable-next-line
+    public fireDocumentLoad(pageData: any): void {
+        let eventArgs: LoadEventArgs = { name: 'documentLoad', documentName: this.fileName, pageData: pageData };
         this.trigger('documentLoad', eventArgs);
     }
 
@@ -2801,6 +2823,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             eventArgs = { name: 'annotationSelect', annotationId: id, pageIndex: pageNumber, annotation: annotation, annotationCollection: annotationCollection };
         }
         this.trigger('annotationSelect', eventArgs);
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireAnnotationDoubleClick(id: string, pageNumber: number, annotation: any): void {
+        // tslint:disable-next-line:max-line-length
+        let eventArgs: AnnotationDoubleClickEventArgs = { name: 'annotationDblClick', annotationId: id, pageIndex: pageNumber, annotation: annotation };
+        this.trigger('annotationDoubleClick', eventArgs);
     }
 
     /**

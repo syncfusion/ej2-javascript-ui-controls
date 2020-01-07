@@ -2,6 +2,18 @@
  * enum module defines the public enumerations
  */
 
+
+/**
+ * @private
+ */
+export enum BlazorAction {
+    /** Return the layout value is true when doLayout is called   */
+    Default = 0,
+    /** Need to return the layout value when doLayout is called  */
+    expandNode = 1 << 1,
+    /** Enabled during the mouse interaction  */
+    interaction = 1 << 2,
+}
 /**
  * Defines how the diagram elements have to be aligned with respect to its immediate parent
  * * Stretch - Stretches the diagram element throughout its immediate parent
@@ -171,6 +183,9 @@ export type LayoutType =
  * Alignment position
  * Left - Sets the branch type as Left
  * Right - Sets the branch type as Right
+ * SubLeft - Sets the branch type as SubLeft
+ * SubRight - Sets the branch type as SubRight
+ * Root - Sets the branch type as Root
  */
 export type BranchTypes =
     /**
@@ -180,7 +195,19 @@ export type BranchTypes =
     /**
      * Right - Sets the branch type as Right
      */
-    'Right';
+    'Right' |
+    /**
+     * SubLeft - Sets the branch type as SubLeft
+     */
+   'SubLeft' |
+    /**
+     * SubRight - Sets the branch type as SubRight
+     */
+    'SubRight' |
+    /**
+     * Root - Sets the branch type as Root
+     */
+    'Root' ;
 
 /**
  * Defines how the first segments have to be defined in a layout
@@ -342,6 +369,19 @@ export type DiagramRegions =
     'Content' |
     /** CustomBounds - Exported with given bounds. */
     'CustomBounds';
+
+/**
+ * Defines the type of annotation template
+ * String -  Defines annotation template to be in string
+ * Template - Defines annotation template to be in html content
+ * @IgnoreSingular
+ */
+
+export type AnnotationType =
+    /** String -  Defines annotation template to be in string */
+    'String' |
+    /** Template - Defines annotation template to be in html content */
+    'Template';
 
 /**
  * Constraints to define when a port has to be visible
@@ -1075,14 +1115,14 @@ export type GradientType =
  * HTML - Sets the type of the node as HTML
  */
 export type Shapes =
+    /** Basic - Sets the type of the node as Basic */
+    'Basic' |
     /** Path - Sets the type of the node as Path */
     'Path' |
     /** Text - Sets the type of the node as Text */
     'Text' |
     /** Image - Sets the type of the node as Image */
     'Image' |
-    /** Basic - Sets the type of the node as Basic */
-    'Basic' |
     /** Flow - Sets the type of the node as Flow */
     'Flow' |
     /** Bpmn - Sets the type of the node as Bpmn */
@@ -1178,6 +1218,8 @@ export type ImageAlignment =
  * StoredData - Sets the type of the flow shape as StoredData
  */
 export type FlowShapes =
+    /** Terminator - Sets the type of the flow shape as Terminator */
+    'Terminator' |
     /** Process - Sets the type of the flow shape as Process */
     'Process' |
     /** Decision - Sets the type of the flow shape as Decision */
@@ -1186,8 +1228,6 @@ export type FlowShapes =
     'Document' |
     /** PreDefinedProcess - Sets the type of the flow shape as PreDefinedProcess */
     'PreDefinedProcess' |
-    /** Terminator - Sets the type of the flow shape as Terminator */
-    'Terminator' |
     /** PaperTap - Sets the type of the flow shape as PaperTap */
     'PaperTap' |
     /** DirectData - Sets the type of the flow shape as DirectData */
@@ -1491,10 +1531,10 @@ export type BpmnDataObjects =
  * SubProcess - Sets the type of the Bpmn Activity as SubProcess
  */
 export type BpmnActivities =
-    /** None - Sets the type of the Bpmn Activity as None */
-    'None' |
     /** Task - Sets the type of the Bpmn Activity as Task */
     'Task' |
+    /** None - Sets the type of the Bpmn Activity as None */
+    'None' |
     /** SubProcess - Sets the type of the Bpmn Activity as SubProcess */
     'SubProcess';
 
@@ -1638,10 +1678,10 @@ export type BpmnMessageFlows =
  * Conditional - Sets the type of the sequence flow as Conditional
  */
 export type BpmnSequenceFlows =
-    /** Default - Sets the type of the sequence flow as Default */
-    'Default' |
     /** Normal - Sets the type of the sequence flow as Normal */
     'Normal' |
+    /** Default - Sets the type of the sequence flow as Default */
+    'Default' |
     /** Conditional - Sets the type of the sequence flow as Conditional */
     'Conditional';
 
@@ -1678,10 +1718,10 @@ export type Segments =
  * DoubleArrow - Sets the decorator shape as DoubleArrow
  */
 export type DecoratorShapes =
-    /** None - Sets the decorator shape as None */
-    'None' |
     /** Arrow - Sets the decorator shape as Arrow */
     'Arrow' |
+    /** None - Sets the decorator shape as None */
+    'None' |
     /** Diamond - Sets the decorator shape as Diamond */
     'Diamond' |
     /** OpenArrow - Sets the decorator shape as OpenArrow */
@@ -2194,6 +2234,8 @@ export enum DiagramAction {
     PreventCollectionChangeOnDragOver = 1 << 12,
     /** Use to prevent the z order on dragging the diagram elements */
     PreventZIndexOnDragging = 1 << 13,
+    /** Indicates whether group dragging has been activated */
+    isGroupDragging  = 1 << 14,
 }
 /** @private */
 export type DiagramHistoryAction = 'AddNodeToLane';
@@ -2311,19 +2353,19 @@ export enum DiagramEvent {
     'sourcePointChange', 'targetPointChange', 'connectionChange', 'animationComplete', 'click', 'doubleClick',
     'scrollChange', 'dragEnter', 'dragLeave', 'dragOver', 'textEdit', 'paletteSelectionChange', 'historyChange',
     'mouseEnter', 'mouseLeave', 'mouseOver', 'expandStateChange', 'segmentCollectionChange', 'commandExecute', 'historyStateChange',
-    'onUserHandleMouseDown', 'onUserHandleMouseUp', 'onUserHandleMouseEnter', 'onUserHandleMouseLeave', 'onImageLoad'
+    'onUserHandleMouseDown', 'onUserHandleMouseUp', 'onUserHandleMouseEnter', 'onUserHandleMouseLeave', 'onImageLoad',
+    'onDoBindingInit'
 }
-
 /**
  * @private
  */
 export type HistoryChangeAction =
-/** Node - Defines the history entry type is node */
-'CustomAction' |
-/** Connector - Defines the history entry type is Connector */
-'Undo' |
-/** Selector - Defines the history entry type is Selector Model */
-'Redo';
+    /** Node - Defines the history entry type is node */
+    'CustomAction' |
+    /** Connector - Defines the history entry type is Connector */
+    'Undo' |
+    /** Selector - Defines the history entry type is Selector Model */
+    'Redo';
 
 export type HistoryEntryType =
     /** Node - Defines the history entry type is node */
@@ -2527,15 +2569,15 @@ export type UmlScope = 'Public' | 'Protected' | 'Private' | 'Package';
  * * DirectedAssociation - Indicates the scope is private.
  * * Dependency - Indicates the scope is package.
  */
-export type ClassifierShape = 'Class' | 'Interface' | 'Enumeration' | 'Inheritance' |
-    'Association' | 'Aggregation' | 'Composition' | 'Realization' | 'Dependency';
+export type ClassifierShape = 'Aggregation' | 'Class' | 'Interface' | 'Enumeration' | 'Inheritance' |
+    'Association' | 'Composition' | 'Realization' | 'Dependency';
 /**
  * Defines the direction the uml connectors
  * * Default - Indicates the direction is Default.
  * * Directional - Indicates the direction is single Directional.
  * * BiDirectional - Indicates the direction is BiDirectional.
  */
-export type AssociationFlow = 'Default' | 'Directional' | 'BiDirectional';
+export type AssociationFlow = 'Directional' | 'Default' | 'BiDirectional';
 /**
  * Define the Multiplicity of uml connector shapes
  * * OneToOne - Indicates the connector multiplicity is OneToOne.

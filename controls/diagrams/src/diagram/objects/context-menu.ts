@@ -1,4 +1,4 @@
-import { L10n } from '@syncfusion/ej2-base';
+import { L10n, isBlazor } from '@syncfusion/ej2-base';
 import { remove } from '@syncfusion/ej2-base';
 import { ContextMenu as Menu, MenuItemModel, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { ServiceLocator } from './service';
@@ -248,7 +248,7 @@ export class DiagramContextMenu {
         }
     }
 
-    private contextMenuBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
+    private async contextMenuBeforeOpen(args: BeforeOpenCloseMenuEventArgs): Promise<void> {
         if ( !this.parent.checkMenu &&
             ( window.navigator.userAgent.indexOf('Linux') !== -1 || window.navigator.userAgent.indexOf('X11') !== -1 )) {
             this.parent.checkMenu = args.cancel = true;
@@ -265,7 +265,14 @@ export class DiagramContextMenu {
             }
         }
         this.eventArgs = args.event;
-        this.parent.trigger(contextMenuOpen, diagramArgs);
+        if (isBlazor()) {
+            diagramArgs = await this.parent.trigger(contextMenuOpen, diagramArgs) as DiagramBeforeMenuOpenEventArgs;
+            if (typeof diagramArgs === 'string') {
+                diagramArgs = JSON.parse(diagramArgs);
+            }
+        } else {
+            this.parent.trigger(contextMenuOpen, diagramArgs);
+        }
         let hidden: boolean = true;
         this.hiddenItems = this.hiddenItems.concat(diagramArgs.hiddenItems);
         this.contextMenu.enableItems(this.disableItems, false, true);

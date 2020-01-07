@@ -120,6 +120,7 @@ export class Editor {
     public isPaste: boolean = false;
     public isPasteListUpdated: boolean = false;
     public base64: Base64;
+    private isInsertField: boolean = false;
 
     /**
      * Initialize the editor module
@@ -158,6 +159,7 @@ export class Editor {
      * @param result
      */
     public insertField(code: string, result?: string): void {
+        this.isInsertField = true;
         let fieldCode: string = code;
         if (isNullOrUndefined(result)) {
             fieldCode = HelperMethods.trimStart(fieldCode);
@@ -198,7 +200,7 @@ export class Editor {
         let widgets: BlockWidget[] = [];
         widgets.push(paragraph);
         this.pasteContentsInternal(widgets);
-
+        this.isInsertField = false;
     }
 
     /**
@@ -2874,7 +2876,11 @@ export class Editor {
                 for (let k: number = 0; k < lineWidget.children.length; k++) {
                     let inlineCharacterFormat: WCharacterFormat = lineWidget.children[k].characterFormat;
                     let characterFormat: WCharacterFormat = inlineCharacterFormat.cloneFormat();
-                    lineWidget.children[k].characterFormat.copyFormat(insertFormat);
+                    if (isNullOrUndefined(insertFormat.uniqueCharacterFormat)) {
+                        lineWidget.children[k].characterFormat = insertFormat;
+                    } else {
+                        lineWidget.children[k].characterFormat.copyFormat(insertFormat);
+                    }
                     if (characterFormat.bold) {
                         lineWidget.children[k].characterFormat.bold = characterFormat.bold;
                     }
@@ -3203,18 +3209,32 @@ export class Editor {
             lineIndex = paragraph.childWidgets.indexOf(curInline.line);
             insertIndex = curInline.indexInOwner;
             lineWidget = curInline.line;
+            let isRtl: boolean = false;
+            if (curInline instanceof TextElementBox) {
+                isRtl = this.viewer.textHelper.getRtlLanguage(curInline.text).isRtl;
+            }
             if (indexInInline === curInline.length) { // Add new Element in current 
-                insertIndex++;
+                if (!bidi) {
+                    insertIndex++;
+                }
             } else if (indexInInline === 0) {
-                if (isNullOrUndefined(curInline.previousNode)) {
+                if (isRtl && bidi && this.isInsertField) {
+                    insertIndex++;
+                } else if (isNullOrUndefined(curInline.previousNode)) {
                     insertIndex = 0;
                 }
+
             } else {
                 insertIndex++;
                 let prevElement: TextElementBox = new TextElementBox();
                 prevElement.characterFormat.copyFormat(curInline.characterFormat);
-                prevElement.text = (curInline as TextElementBox).text.substring(indexInInline);
-                (curInline as TextElementBox).text = (curInline as TextElementBox).text.substr(0, indexInInline);
+                if (bidi && this.isInsertField && isRtl) {
+                    prevElement.text = (curInline as TextElementBox).text.slice(0, indexInInline);
+                    (curInline as TextElementBox).text = (curInline as TextElementBox).text.substring(indexInInline);
+                } else {
+                    prevElement.text = (curInline as TextElementBox).text.substring(indexInInline);
+                    (curInline as TextElementBox).text = (curInline as TextElementBox).text.slice(0, indexInInline);
+                }
                 lineWidget.children.splice(insertIndex, 0, prevElement);
                 prevElement.line = curInline.line;
             }
@@ -3232,6 +3252,9 @@ export class Editor {
         }
         if (paragraphFormat) {
             paragraph.paragraphFormat.copyFormat(paragraphFormat);
+        }
+        if (paragraph.paragraphFormat.bidi && this.isInsertField) {
+            this.viewer.layout.reArrangeElementsForRtl(lineWidget, paragraph.paragraphFormat.bidi);
         }
         this.viewer.layout.reLayoutParagraph(paragraph, lineIndex, 0, paragraph.paragraphFormat.bidi);
         this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + length, true);
@@ -4656,6 +4679,19 @@ export class Editor {
             selection.skipFormatRetrieval = false;
             return;
         }
+        //Skip consider highlightcolor if paragraph mark alone is selected similar to Microsoft Word behaviour
+        if (property === 'highlightColor' && selection.start.isInSameParagraph(selection.end)) {
+            let start: TextPosition = selection.start;
+            let end: TextPosition = selection.end;
+            if (!this.selection.isForward) {
+                end = selection.start;
+                start = selection.end;
+            }
+            if (end.offset === selection.getLineLength(end.currentWidget) + 1 && end.offset - 1 === start.offset) {
+                return;
+            }
+        }
+
         this.setOffsetValue(selection);
         this.initHistory(action);
         // Todo: Complete Microsoft Word behavior on apply formatting in empty selection
@@ -5167,8 +5203,14 @@ export class Editor {
             }
         }
         if (!paragraph.equals(end.paragraph)) {
-            this.applyCharFormatValue(paragraph.characterFormat, property, value, update);
+            let lastLine: LineWidget = paragraph.childWidgets[paragraph.childWidgets.length - 1] as LineWidget;
+            //Skip consider highlightcolor if paragraph mark alone is selected similar to Microsoft Word behaviour
+            if (!(property === 'highlightColor' && selection.isParagraphLastLine(lastLine)
+                && start.currentWidget === lastLine && start.offset === selection.getLineLength(lastLine))) {
+                this.applyCharFormatValue(paragraph.characterFormat, property, value, update);
+            }
             endOffset = length;
+
         } else {
             let lastLine: LineWidget = paragraph.childWidgets[paragraph.childWidgets.length - 1] as LineWidget;
             if (selection.isParagraphLastLine(lastLine) && end.currentWidget === lastLine
@@ -8485,6 +8527,7 @@ export class Editor {
                     let startIndex: number = this.removedBookmarkElements.indexOf(bookMarkStart);
                     this.removedBookmarkElements.splice(endIndex, 1);
                     this.removedBookmarkElements.splice(startIndex, 1);
+                    i--;
                 } else {
                     if (this.editorHistory.currentBaseHistoryInfo) {
                         this.initComplexHistory(this.editorHistory.currentBaseHistoryInfo.action);
@@ -8503,6 +8546,7 @@ export class Editor {
                     let startIndex: number = this.removedBookmarkElements.indexOf(bookMarkEnd);
                     this.removedBookmarkElements.splice(endIndex, 1);
                     this.removedBookmarkElements.splice(startIndex, 1);
+                    i--;
                 } else {
                     if (this.editorHistory.currentBaseHistoryInfo) {
                         this.initComplexHistory(this.editorHistory.currentBaseHistoryInfo.action);
@@ -9478,20 +9522,16 @@ export class Editor {
             return true;
         } else {
             let currentList: WList = undefined;
-            let listLevelNumber: number = 0;
+            let levelNumber: number = 0;
             if (!isNullOrUndefined(paragraph.paragraphFormat) && !isNullOrUndefined(paragraph.paragraphFormat.listFormat)) {
                 currentList = this.viewer.getListById(paragraph.paragraphFormat.listFormat.listId);
-                listLevelNumber = paragraph.paragraphFormat.listFormat.listLevelNumber;
+                levelNumber = paragraph.paragraphFormat.listFormat.listLevelNumber;
             }
-            // tslint:disable-next-line:max-line-length
             if (!isNullOrUndefined(currentList) && !isNullOrUndefined(this.viewer.getAbstractListById(currentList.abstractListId))
-                // tslint:disable-next-line:max-line-length
-                && !isNullOrUndefined(this.viewer.getAbstractListById(currentList.abstractListId).levels[listLevelNumber])) {
-                let currentListLevel: WListLevel = this.viewer.layout.getListLevel(currentList, listLevelNumber);
+                && !isNullOrUndefined(this.viewer.getAbstractListById(currentList.abstractListId).levels[levelNumber])) {
+                let currentListLevel: WListLevel = this.viewer.layout.getListLevel(currentList, levelNumber);
                 //Updates the list numbering from document start for reLayouting.
-                if (currentListLevel.listLevelPattern !== 'Bullet') {
-                    this.viewer.layout.getListNumber(paragraph.paragraphFormat.listFormat);
-                }
+                this.updateListNumber(currentListLevel, paragraph, false);
             }
         }
         return false;
@@ -9506,21 +9546,27 @@ export class Editor {
                 && !isNullOrUndefined(this.viewer.getAbstractListById(currentList.abstractListId).levels[paragraph.paragraphFormat.listFormat.listLevelNumber])) {
                 let currentListLevel: WListLevel = this.viewer.layout.getListLevel(currentList, listLevelNumber);
                 //Updates the list numbering from document start for reLayouting.
-                if (currentListLevel.listLevelPattern !== 'Bullet') {
-                    let element: ListTextElementBox = undefined;
-                    if (paragraph.childWidgets.length > 0) {
-                        let lineWidget: LineWidget = paragraph.childWidgets[0] as LineWidget;
-                        if (lineWidget.children.length > 0) {
-                            if (paragraph.paragraphFormat.bidi) {
-                                element = lineWidget.children[lineWidget.children.length - 1] as ListTextElementBox;
-                            } else {
-                                element = lineWidget.children[0] as ListTextElementBox;
-                            }
-                        }
+                this.updateListNumber(currentListLevel, paragraph, true);
+            }
+        }
+    }
+    private updateListNumber(currentListLevel: WListLevel, paragraph: ParagraphWidget, isUpdate: boolean): void {
+        if (currentListLevel.listLevelPattern !== 'Bullet') {
+            let element: ListTextElementBox = undefined;
+            if (paragraph.childWidgets.length > 0) {
+                let lineWidget: LineWidget = paragraph.childWidgets[0] as LineWidget;
+                if (lineWidget.children.length > 0) {
+                    if (paragraph.paragraphFormat.bidi) {
+                        element = lineWidget.children[lineWidget.children.length - 1] as ListTextElementBox;
+                    } else {
+                        element = lineWidget.children[0] as ListTextElementBox;
                     }
-                    if (!isNullOrUndefined(element)) {
-                        element.text = this.viewer.layout.getListNumber(paragraph.paragraphFormat.listFormat);
-                    }
+                }
+            }
+            if (!isNullOrUndefined(element) && element instanceof ListTextElementBox) {
+                let text: string = this.viewer.layout.getListNumber(paragraph.paragraphFormat.listFormat);
+                if (isUpdate) {
+                    element.text = text;
                 }
             }
         }

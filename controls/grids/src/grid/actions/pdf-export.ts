@@ -45,6 +45,8 @@ export class PdfExport {
     private blobPromise: Promise<{ blobData: Blob }>;
     private globalResolve: Function;
     private gridPool: Object;
+    private headerOnPages: number[] = [];
+    private drawPosition: Object = { xPosition: 0, yPosition: 0 };
 
     /**
      * Constructor for the Grid PDF Export module
@@ -102,19 +104,24 @@ export class PdfExport {
             parent.expandedRows = getPrintGridModel(parent).expandedRows;
         }
         let args: Object = {
-            requestType: 'beforePdfExport', cancel: false
+            requestType: 'beforePdfExport', cancel: false,
+            headerPageNumbers: [], gridDrawPosition: { xPosition: 0, yPosition: 0 }
         };
         if (!isBlazor()) {
             let gridObject: string = 'gridObject';
             args[gridObject] = parent;
         }
         let can: string = 'cancel';
+        let header: string = 'headerPageNumbers';
+        let drawPos: string = 'gridDrawPosition';
         parent.trigger(events.beforePdfExport, args);
         if (args[can] === true) {
             return new Promise((resolve: Function, reject: Function) => {
                 return resolve();
             });
         }
+        this.headerOnPages = args[header];
+        this.drawPosition = args[drawPos];
         this.parent.log('exporting_begin', this.getModuleName());
         if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.dataSource)
         && pdfExportProperties.dataSource instanceof DataManager) {
@@ -163,7 +170,10 @@ export class PdfExport {
             this.helper.checkAndExport(this.gridPool, this.globalResolve);
         }).then(() => {
             // draw the grid
-            pdfGrid.draw(pdfPage, 0, 0);
+            let xPosition: string = 'xPosition';
+            let yPosition: string = 'yPosition';
+            pdfGrid.draw(pdfPage, this.drawPosition[xPosition], this.drawPosition[yPosition]);
+            this.drawHeader(pdfExportProperties);
             if (!isMultipleExport) {
                 // save the PDF
                 if (!this.isBlob) {
@@ -445,14 +455,7 @@ export class PdfExport {
                 this.gridTheme = pdfExportProperties.theme;
             }
             let clientSize: SizeF = this.pdfDocument.pageSettings.size;
-            if (!isNullOrUndefined(pdfExportProperties.header)) {
-                /* tslint:disable-next-line:no-any */
-                let header: any = pdfExportProperties.header;
-                let position: PointF = new PointF(0, header.fromTop);
-                let size: SizeF = new SizeF((clientSize.width - 80), (header.height * 0.75));
-                let bounds: RectangleF = new RectangleF(position, size);
-                this.pdfDocument.template.top = this.drawPageTemplate(new PdfPageTemplateElement(bounds), header);
-            }
+            this.drawHeader(pdfExportProperties);
             if (!isNullOrUndefined(pdfExportProperties.footer)) {
                 /* tslint:disable-next-line:no-any */
                 let footer: any = pdfExportProperties.footer;
@@ -488,6 +491,28 @@ export class PdfExport {
             this.customDataSource = false;
         }
         return dataSource;
+    }
+
+    private drawHeader(pdfExportProperties: PdfExportProperties): void {
+        let clientSize: SizeF = this.pdfDocument.pageSettings.size;
+        if (!isNullOrUndefined(pdfExportProperties.header)) {
+             /* tslint:disable-next-line:no-any */
+            let header: any = pdfExportProperties.header;
+            let position: PointF = new PointF(0, header.fromTop);
+            let size: SizeF = new SizeF((clientSize.width - 80), (header.height * 0.75));
+            let bounds: RectangleF = new RectangleF(position, size);
+            if (!this.headerOnPages.length) {
+                this.pdfDocument.template.top = this.drawPageTemplate(new PdfPageTemplateElement(bounds), header);
+            } else {
+                let headerTemplate: PdfPageTemplateElement = this.drawPageTemplate(new PdfPageTemplateElement(bounds), header);
+                this.headerOnPages.filter((index: number) => {
+                    if (index - 1 >= 0 && index - 1 < this.pdfDocument.pages.count - 1) {
+                        this.pdfDocument.pages.getPageByIndex(index - 1).graphics
+                        .drawPdfTemplate(headerTemplate.template, new PointF(0, 0));
+                    }
+                });
+            }
+        }
     }
 
     private drawPageTemplate(template: PdfPageTemplateElement, element: PdfHeader | PdfFooter): PdfPageTemplateElement {

@@ -473,6 +473,9 @@ export class Month extends ViewBase implements IRenderer {
         ntd.appendChild(dateHeader);
         if (this.getModuleName() === 'month') {
             addClass([dateHeader], cls.NAVIGATE_CLASS);
+            let annocementText: string =
+                this.parent.globalize.formatDate(data.date, { skeleton: 'full', calendar: this.parent.getCalendarMode() });
+            dateHeader.setAttribute('aria-label', annocementText);
         }
     }
 

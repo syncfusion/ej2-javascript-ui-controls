@@ -481,4 +481,40 @@ describe('Command Column ', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-34867 - Custom command column command button id checking => ', function () {
+        let gridObj: Grid;
+        beforeAll(function (done) {
+            gridObj = createGrid({
+                dataSource: data,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                allowPaging: true,
+                columns: [
+                    { headerText: 'Command Column 1', width: 160, commands: [{ buttonOption: { content: 'ADD', cssClass: 'e-flat' }}]},
+                    { headerText: 'Command Column 2', width: 160, commands: [{ buttonOption: { content: 'SUB', cssClass: 'e-flat' }}]},
+                    { headerText: 'Command Column 3', width: 160, commands: [{ buttonOption: { content: 'MUL', cssClass: 'e-flat' }}]},
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' }
+                ]
+            
+            }, done);
+        });
+        it('Custom command column command button id checking', function () {
+            let rows = <HTMLTableRowElement>gridObj.getRows()[0];
+            let uid1 = gridObj.getRows()[0].querySelectorAll('.e-unboundcelldiv')[0].querySelector('.e-btn').getAttribute('data-uid');
+            let uid2 = gridObj.getRows()[0].querySelectorAll('.e-unboundcelldiv')[1].querySelector('.e-btn').getAttribute('data-uid');
+            let uid3 = gridObj.getRows()[0].querySelectorAll('.e-unboundcelldiv')[2].querySelector('.e-btn').getAttribute('data-uid');
+            let buttonId1 = gridObj.element.id + '_' + '0' + '_' + uid1;
+            let buttonId2 = gridObj.element.id + '_' + '0' + '_' + uid2;
+            let buttonId3 = gridObj.element.id + '_' + '0' + '_' + uid3;
+            expect(rows.querySelectorAll('.e-unboundcelldiv')[0].querySelector('.e-btn').getAttribute('id')).toBe(buttonId1);
+            expect(rows.querySelectorAll('.e-unboundcelldiv')[1].querySelector('.e-btn').getAttribute('id')).toBe(buttonId2);
+            expect(rows.querySelectorAll('.e-unboundcelldiv')[2].querySelector('.e-btn').getAttribute('id')).toBe(buttonId3);
+           });
+        afterAll(function () {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

@@ -96,7 +96,9 @@ export class Tooltip extends BaseTooltip {
         let svgElement: HTMLElement ;
         let elementId: string = this.chart.enableCanvas ? this.element.id + '_tooltip_group' : this.element.id + '_tooltip_svg';
         svgElement = this.getElement(elementId);
-        let isTooltip: boolean = (svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0);
+        // To prevent the disappearance of the tooltip, while resize the stock chart.
+        let isStockSvg: boolean = this.chart.stockChart && svgElement && (svgElement.firstChild.childNodes.length > 1);
+        let isTooltip: boolean = (svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0 && !isStockSvg);
         let tooltipDiv: HTMLDivElement = this.getTooltipElement(isTooltip);
         if (this.chart.enableCanvas && tooltipDiv) {
             document.getElementById(this.chart.element.id + '_Secondary_Element').appendChild(tooltipDiv);
@@ -184,7 +186,8 @@ export class Tooltip extends BaseTooltip {
                                    point.series.clipRect, point.point, this.findShapes(),
                                    this.findMarkerHeight(<PointData>this.currentPoints[0]),
                                    this.chart.chartAxisLayoutPanel.seriesClipRect, null, this.getTemplateText(point),
-                                   this.chart.tooltip.template ? argsData.template : '');
+                                   this.chart.tooltip.template ? argsData.template : '',
+                                   this.chart.tooltip.position);
             } else {
                 this.removeHighlight(this.control);
                 remove(this.getElement(this.element.id + '_tooltip'));

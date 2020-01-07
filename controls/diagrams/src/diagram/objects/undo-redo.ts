@@ -168,7 +168,9 @@ export class UndoRedo {
                     this.groupUndo = false;
                 }
             } else {
-                diagram.historyManager.undo(entry);
+                if (!isBlazor()) {
+                    diagram.historyManager.undo(entry);
+                }
                 let arg: ICustomHistoryChangeArgs | IBlazorCustomHistoryChangeArgs = {
                     entryType: 'undo', oldValue: entry.undoObject, newValue: entry.redoObject
                 };
@@ -457,6 +459,10 @@ export class UndoRedo {
 
     private recordAnnotationChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
         let entryObject: NodeModel | ConnectorModel = ((isRedo) ? entry.redoObject : entry.undoObject) as NodeModel | ConnectorModel;
+        if (diagram.canEnableBlazorObject) {
+            let node: object = cloneObject(diagram.nameTable[entryObject.id]);
+            diagram.insertValue(node, node instanceof Node ? true : false);
+        }
         let oldElement: ShapeAnnotation | PathAnnotation = findAnnotation(
             entryObject, entry.objectId) as ShapeAnnotation | PathAnnotation;
         let undoChanges: Object = diagram.commandHandler.getAnnotationChanges(diagram.nameTable[entryObject.id], oldElement);
@@ -574,8 +580,13 @@ export class UndoRedo {
     }
 
     private recordPortChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
+
         let entryObject: NodeModel = ((isRedo) ? (entry.redoObject as SelectorModel).nodes[0] :
             (entry.undoObject as SelectorModel).nodes[0]);
+        if (diagram.canEnableBlazorObject) {
+            let node: object = cloneObject(diagram.nameTable[entryObject.id]);
+            diagram.insertValue(node, true);
+        }
         let oldElement: PointPort = findPort(entryObject, entry.objectId) as PointPort;
         let undoChanges: Object = diagram.commandHandler.getPortChanges(diagram.nameTable[entryObject.id], oldElement);
         let currentObject: NodeModel | ConnectorModel = diagram.nameTable[entryObject.id];
@@ -746,10 +757,12 @@ export class UndoRedo {
         let connector: ConnectorModel = diagram.nameTable[obj.id];
         let node: Node;
         if (obj.sourcePortID !== connector.sourcePortID) {
+            diagram.removePortEdges(diagram.nameTable[connector.sourceID], connector.sourcePortID, connector.id, false);
             connector.sourcePortID = obj.sourcePortID;
             diagram.connectorPropertyChange(connector as Connector, {} as Connector, { sourcePortID: obj.sourcePortID } as Connector);
         }
         if (obj.targetPortID !== connector.targetPortID) {
+            diagram.removePortEdges(diagram.nameTable[connector.targetID], connector.targetPortID, connector.id, true);
             connector.targetPortID = obj.targetPortID;
             diagram.connectorPropertyChange(connector as Connector, {} as Connector, { targetPortID: obj.targetPortID } as Connector);
         }
@@ -760,6 +773,7 @@ export class UndoRedo {
             } else {
                 node = diagram.nameTable[obj.sourceID];
                 node.outEdges.push(obj.id);
+                diagram.updatePortEdges(node, obj, false);
             }
             connector.sourceID = obj.sourceID;
             diagram.connectorPropertyChange(connector as Connector, {} as Connector, { sourceID: obj.sourceID } as Connector);
@@ -771,6 +785,7 @@ export class UndoRedo {
             } else {
                 node = diagram.nameTable[obj.targetID];
                 node.inEdges.push(obj.id);
+                diagram.updatePortEdges(node, obj, true);
             }
             connector.targetID = obj.targetID;
             diagram.connectorPropertyChange(connector as Connector, {} as Connector, { targetID: obj.targetID } as Connector);
@@ -910,7 +925,9 @@ export class UndoRedo {
                     this.groupUndo = false;
                 }
             } else {
-                diagram.historyManager.redo(entry);
+                if (!isBlazor()) {
+                    diagram.historyManager.redo(entry);
+                }
                 let arg: ICustomHistoryChangeArgs | IBlazorCustomHistoryChangeArgs = {
                     entryType: 'redo', oldValue: entry.redoObject, newValue: entry.undoObject
                 };

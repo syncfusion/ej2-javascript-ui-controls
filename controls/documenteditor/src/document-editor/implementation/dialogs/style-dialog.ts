@@ -318,7 +318,7 @@ export class StyleDialog {
     }
     /* tslint:disable-next-line:no-any */
     private fontColorUpdate = (args: any): void => {
-        this.characterFormat.fontColor = args.currentValue.rgba;
+        this.characterFormat.fontColor = args.currentValue.hex;
     }
     private createParagraphOptions(parentDiv: HTMLElement): void {
         let alignmentDiv: HTMLElement = createElement('div', { className: 'e-de-style-paragraph-group-button' });

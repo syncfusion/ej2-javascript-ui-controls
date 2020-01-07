@@ -9,6 +9,7 @@ import { beforePrint } from '../model/constants';
 import { PdfPageOrientation, PdfDocument, PdfBitmap, SizeF, PdfMargins } from '@syncfusion/ej2-pdf-export';
 import { RangeNavigator } from '../..';
 import { StockChart } from '../../stock-chart/stock-chart';
+import { BulletChart } from '../../bullet-chart/bullet-chart';
 /**
  * Export Functionalities
  */
@@ -19,14 +20,14 @@ interface IControlValue {
     svg: Element;
 }
 export class ExportUtils {
-    private control: Chart | AccumulationChart | RangeNavigator | StockChart;
+    private control: Chart | AccumulationChart | RangeNavigator | StockChart | BulletChart;
     private printWindow: Window;
 
     /**
      * Constructor for chart and accumulation annotation
      * @param control
      */
-    constructor(control: Chart | AccumulationChart | RangeNavigator | StockChart) {
+    constructor(control: Chart | AccumulationChart | RangeNavigator | StockChart | BulletChart) {
         this.control = control;
     }
 
@@ -77,7 +78,7 @@ export class ExportUtils {
     public export(
         type: ExportType, fileName: string,
         orientation?: PdfPageOrientation,
-        controls?: (Chart | AccumulationChart | RangeNavigator | StockChart)[],
+        controls?: (Chart | AccumulationChart | RangeNavigator | StockChart | BulletChart)[],
         width?: number, height?: number, isVertical?: boolean
     ): void {
         let controlValue: IControlValue = this.getControlsValue(controls, isVertical);
@@ -139,7 +140,7 @@ export class ExportUtils {
                     } else {
                         this.triggerDownload(
                             fileName, type,
-                            element.toDataURL('image/png').replace('image/png', 'image/octet-stream'),
+                            element.toDataURL('image/' + type.toLowerCase()),
                             isDownload
                         );
                     }
@@ -175,7 +176,8 @@ export class ExportUtils {
      * @param controls
      * @param name
      */
-    private getControlsValue(controls: (Chart | RangeNavigator | AccumulationChart | StockChart)[], isVertical?: boolean): IControlValue {
+    // tslint:disable-next-line:max-line-length
+    private getControlsValue(controls: (Chart | RangeNavigator | AccumulationChart | StockChart | BulletChart)[], isVertical?: boolean): IControlValue {
         let width: number = 0;
         let height: number = 0;
         let content: string = '';
@@ -184,7 +186,7 @@ export class ExportUtils {
             id: 'Svg_Export_Element',
             width: 200, height: 200
         });
-        controls.map((control: Chart | RangeNavigator | AccumulationChart) => {
+        controls.map((control: Chart | RangeNavigator | AccumulationChart | BulletChart) => {
             let svg: Node = control.svgObject.cloneNode(true);
             let groupEle: Element = control.renderer.createGroup({
                 style: (isNullOrUndefined(isVertical) || isVertical) ? 'transform: translateY(' + height + 'px)' :

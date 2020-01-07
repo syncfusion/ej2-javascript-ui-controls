@@ -231,8 +231,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     @Property()
     public ignoreSymbolsOnSearch: string[];
 
-
-
     /**
      * Defines the content of a symbol
      * @aspDefaultValueIgnore
@@ -300,6 +298,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     /**
      * Defines how many palettes can be at expanded mode at a time
      * @default 'Multiple'
+     * @aspDefaultValueIgnore
+     * @blazorType Syncfusion.EJ2.Blazor.Navigations.ExpandMode
+     * @blazorDefaultValue Syncfusion.EJ2.Blazor.Navigations.ExpandMode.Multiple
+     * @isEnumeration true
      */
     @Property('Multiple')
     public expandMode: ExpandMode;
@@ -362,6 +364,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     private highlightedSymbol: HTMLElement;
     private selectedSymbol: NodeModel | ConnectorModel;
     private info: string = 'info';
+    private oldObject: string = null;
     private timer: Object;
     private draggable: Draggable;
     private laneTable: {} = {};
@@ -614,7 +617,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     //end region - protected methods
 
     //region - private methods to render symbols
-
     /**
      * Method to initialize the items in the symbols
      */
@@ -1253,9 +1255,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             } else {
                 let id: string = (<HTMLElement>evt.target).id.split('_container')[0];
                 if (id && this.selectedSymbol) {
-                    let args: IPaletteSelectionChangeArgs = { oldValue: this.selectedSymbol.id, newValue: id };
+                    let args: IPaletteSelectionChangeArgs = { oldValue: this.oldObject, newValue: id };
                     let event: string = 'paletteSelectionChange';
                     this.trigger(event, args);
+                    this.oldObject = id;
                     evt.preventDefault();
                 }
             }

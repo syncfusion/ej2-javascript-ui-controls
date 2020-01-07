@@ -165,7 +165,7 @@ export class SpellChecker {
             if (content !== 'Ignore Once') {
                 content = this.manageSpecialCharacters(exactText, content);
                 this.viewer.owner.editor.insertTextInternal(content, true);
-                this.viewer.selection.start = this.viewer.selection.end;
+                this.viewer.selection.start.setPositionInternal(this.viewer.selection.end);
                 this.viewer.clearSelectionHighlight();
                 return;
             } else {
@@ -186,7 +186,7 @@ export class SpellChecker {
             if (!isNullOrUndefined(this.currentContextInfo)) {
                 this.removeErrorsFromCollection(this.currentContextInfo);
             }
-            this.viewer.selection.start = this.viewer.selection.end;
+            this.viewer.selection.start.setPositionInternal(this.viewer.selection.end);
             this.viewer.clearSelectionHighlight();
         }
         //this.viewer.owner.errorWordCollection.remove(content);

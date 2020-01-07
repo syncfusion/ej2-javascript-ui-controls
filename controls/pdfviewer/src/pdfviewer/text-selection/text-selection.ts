@@ -158,7 +158,7 @@ export class TextSelection {
                     let rangeBounds: ClientRect = range.getBoundingClientRect();
                     // tslint:disable-next-line:max-line-length
                     // tslint:disable-next-line
-                    if (rangeBounds.left <= x && rangeBounds.right >= x && parseInt(rangeBounds.top.toString()) <= y && rangeBounds.bottom >= y) {
+                    if (rangeBounds.left <= x && rangeBounds.right >= parseInt(x.toString()) && parseInt(rangeBounds.top.toString()) <= y && rangeBounds.bottom >= y) {
                         range.detach();
                         this.textSelectionOnMouseMove(targetElement.childNodes[i], x, y, isExtended);
                     } else {
@@ -1201,7 +1201,7 @@ export class TextSelection {
         // tslint:disable-next-line:radix
         let currentFocusOffset: number = parseInt(endNode.split('_' + pageNumber + '_')[1]);
         let range: Range = document.createRange();
-        if (currentAnchorOffset < currentFocusOffset) {
+        if (currentAnchorOffset <= currentFocusOffset) {
             range.setStart(startElement, startOffset);
             range.setEnd(endElement, endOffset);
         } else {
@@ -1887,8 +1887,12 @@ export class TextSelection {
     }
 
     private getClientValueTop(clientValue: number, pageNumber: number): number {
-        // tslint:disable-next-line:max-line-length
-        return clientValue - this.pdfViewerBase.getElement('_pageDiv_' + pageNumber).getBoundingClientRect().top;
+        if (this.pdfViewerBase.getElement('_pageDiv_' + pageNumber)) {
+            // tslint:disable-next-line:max-line-length
+            return clientValue - this.pdfViewerBase.getElement('_pageDiv_' + pageNumber).getBoundingClientRect().top;
+        } else {
+            return clientValue;
+        }
     }
 
     private isScrolledOnScrollBar(event: TouchEvent): boolean {

@@ -543,29 +543,11 @@ class PivotEngine {
         }
         if (this.data && this.data[0]) {
             this.fields = Object.keys(this.data[0]);
-            let keys = this.fields;
-            let report = {};
-            report[0] = dataSource.rows;
-            report[1] = dataSource.columns;
-            report[2] = dataSource.values;
-            report[3] = dataSource.filters;
-            let pos = 0;
-            while (pos < 4) {
-                if (report[pos]) {
-                    for (let cnt = 0; cnt < report[pos].length; cnt++) {
-                        if (this.excludeFields.indexOf(report[pos][cnt].name) > -1) {
-                            report[pos].splice(cnt, 1);
-                            cnt--;
-                        }
-                    }
-                }
-                pos++;
-            }
             this.rows = dataSource.rows ? dataSource.rows : [];
             this.columns = dataSource.columns ? dataSource.columns : [];
             this.filters = dataSource.filters ? dataSource.filters : [];
-            this.formats = dataSource.formatSettings ? dataSource.formatSettings : [];
             this.values = dataSource.values ? dataSource.values : [];
+            this.formats = dataSource.formatSettings ? dataSource.formatSettings : [];
             this.groups = dataSource.groupSettings ? dataSource.groupSettings : [];
             this.calculatedFieldSettings = dataSource.calculatedFieldSettings ? dataSource.calculatedFieldSettings : [];
             this.enableSort = dataSource.enableSorting === undefined ? true : dataSource.enableSorting;
@@ -587,6 +569,7 @@ class PivotEngine {
             this.allowDataCompression = this.pageSettings && this.pageSettings.allowDataCompression;
             this.savedFieldList = customProperties ? customProperties.savedFieldList : undefined;
             this.getFieldList(fields, this.enableSort, dataSource.allowValueFilter);
+            this.removeIrrelevantFields(dataSource, Object.keys(this.fieldList));
             this.fillFieldMembers(this.data, this.indexMatrix);
             this.updateSortSettings(dataSource.sortSettings, this.enableSort);
             this.valueMatrix = this.generateValueMatrix(this.data);
@@ -599,6 +582,25 @@ class PivotEngine {
             }
             this.updateFilterMembers(dataSource);
             this.generateGridData(dataSource);
+        }
+    }
+    removeIrrelevantFields(dataSource, fields) {
+        let report = {};
+        report[0] = dataSource.rows;
+        report[1] = dataSource.columns;
+        report[2] = dataSource.values;
+        report[3] = dataSource.filters;
+        let pos = 0;
+        while (pos < 4) {
+            if (report[pos]) {
+                for (let cnt = 0; cnt < report[pos].length; cnt++) {
+                    if ((this.excludeFields.indexOf(report[pos][cnt].name) > -1) || (!isNullOrUndefined(fields) && fields.indexOf(report[pos][cnt].name) === -1)) {
+                        report[pos].splice(cnt, 1);
+                        cnt--;
+                    }
+                }
+            }
+            pos++;
         }
     }
     getGroupedRawData(dataSourceSettings) {
@@ -1166,8 +1168,10 @@ class PivotEngine {
             }
         }
         while (lnt--) {
-            this.fieldList[this.calculatedFieldSettings[lnt].name].aggregateType = 'CalculatedField';
-            this.fieldList[this.calculatedFieldSettings[lnt].name].formula = this.calculatedFieldSettings[lnt].formula;
+            if (this.fieldList[this.calculatedFieldSettings[lnt].name]) {
+                this.fieldList[this.calculatedFieldSettings[lnt].name].aggregateType = 'CalculatedField';
+                this.fieldList[this.calculatedFieldSettings[lnt].name].formula = this.calculatedFieldSettings[lnt].formula;
+            }
         }
     }
     /* tslint:disable:typedef */
@@ -1338,7 +1342,7 @@ class PivotEngine {
             //}
             while (tkln--) {
                 let key = keys[tkln];
-                vMat[len][tkln] = (flList[key].type === 'number') ? data[len][key] : 1;
+                vMat[len][tkln] = (flList[key].type === 'number' || isNullOrUndefined(data[len][key])) ? data[len][key] : 1;
             }
         }
         return vMat;
@@ -2058,7 +2062,7 @@ class PivotEngine {
                     this.valueFilteredData = [];
                     let filterElement = filter.properties ?
                         filter.properties : filter;
-                    if (filterElement.type === 'Value' && this.fieldList[filter.name].isSelected) {
+                    if (filterElement.type === 'Value' && this.fieldList[filter.name] && this.fieldList[filter.name].isSelected) {
                         valueFilters[filter.name] = filter;
                         filterElement.items = [];
                         let isAvail = false;
@@ -6118,6 +6122,9 @@ class Render {
                 this.parent.grid.width = this.gridSettings.width;
             }
             this.updatePivotColumns();
+            if (keys.indexOf('allowTextWrap') > -1) {
+                this.parent.layoutRefresh();
+            }
         }
         this.clearColumnSelection();
     }
@@ -15687,10 +15694,12 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                         this.notify(initialLoad, {});
                     }
                     break;
-                case 'pivotValues':
-                case 'displayOption':
                 case 'height':
                 case 'width':
+                    this.layoutRefresh();
+                    break;
+                case 'pivotValues':
+                case 'displayOption':
                     if (!this.showToolbar && newProp.displayOption && Object.keys(newProp.displayOption).length === 1 &&
                         newProp.displayOption.view) {
                         this.currentView = (newProp.displayOption.view === 'Both' ?

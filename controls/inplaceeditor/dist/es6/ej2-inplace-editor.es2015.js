@@ -365,7 +365,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             };
             this.renderControl(this.inlineWrapper);
             if ((isNullOrUndefined(model.value) && isNullOrUndefined(this.value)) || (model.value === this.value
-                && model.value.length === 0)) {
+                && (!isNullOrUndefined(model.value) && model.value.length === 0))) {
                 this.showDropDownPopup();
             }
         }
@@ -380,7 +380,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         }
         else {
             if (this.isExtModule) {
-                this.notify(showPopup, {});
+                this.notify(((this.type === 'MultiSelect') ? setFocus : showPopup), {});
             }
         }
     }
@@ -487,27 +487,28 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             }
             switch (this.type) {
                 case 'Date':
-                    this.componentObj = new DatePicker(this.model, ele);
+                    this.componentObj = new DatePicker(this.model);
                     break;
                 case 'DateTime':
-                    this.componentObj = new DateTimePicker(this.model, ele);
+                    this.componentObj = new DateTimePicker(this.model);
                     break;
                 case 'DropDownList':
-                    this.componentObj = new DropDownList(this.model, ele);
+                    this.componentObj = new DropDownList(this.model);
                     break;
                 case 'Mask':
-                    this.componentObj = new MaskedTextBox(this.model, ele);
+                    this.componentObj = new MaskedTextBox(this.model);
                     break;
                 case 'Numeric':
                     if (this.model.value) {
                         this.model.value = this.model.value.toString().replace(/[`~!@#$%^&*()_|\=?;:'",<>\{\}\[\]\\\/]/gi, '');
                     }
-                    this.componentObj = new NumericTextBox(this.model, ele);
+                    this.componentObj = new NumericTextBox(this.model);
                     break;
                 case 'Text':
-                    this.componentObj = new TextBox(this.model, ele);
+                    this.componentObj = new TextBox(this.model);
                     break;
             }
+            this.componentObj.appendTo(ele);
         }
     }
     updateAdaptor() {
@@ -1425,7 +1426,8 @@ class AutoComplete$1 {
         this.base = new Base(this.parent, this);
     }
     render(e) {
-        this.compObj = new AutoComplete(this.parent.model, e.target);
+        this.compObj = new AutoComplete(this.parent.model);
+        this.compObj.appendTo(e.target);
     }
     /**
      * @hidden
@@ -1471,7 +1473,8 @@ class ColorPicker$1 {
         this.base = new Base(this.parent, this);
     }
     render(e) {
-        this.compObj = new ColorPicker(this.parent.model, e.target);
+        this.compObj = new ColorPicker(this.parent.model);
+        this.compObj.appendTo(e.target);
     }
     focus() {
         this.compObj.element.focus();
@@ -1510,7 +1513,8 @@ class ComboBox$1 {
         this.base = new Base(this.parent, this);
     }
     render(e) {
-        this.compObj = new ComboBox(this.parent.model, e.target);
+        this.compObj = new ComboBox(this.parent.model);
+        this.compObj.appendTo(e.target);
     }
     focus() {
         this.compObj.element.focus();
@@ -1590,23 +1594,41 @@ class DateRangePicker$1 {
  */
 class MultiSelect$1 {
     constructor(parent) {
+        this.isPopOpen = false;
         this.compObj = undefined;
         this.parent = parent;
         this.parent.multiSelectModule = this;
         this.base = new Base(this.parent, this);
     }
     render(e) {
-        this.compObj = new MultiSelect(this.parent.model, e.target);
+        let compModel = Object.assign({}, this.parent.model);
+        this.openEvent = compModel.open;
+        this.closeEvent = compModel.close;
+        compModel.open = this.openHandler.bind(this);
+        compModel.close = this.closeHandler.bind(this);
+        this.compObj = new MultiSelect(compModel);
+        this.compObj.appendTo(e.target);
     }
-    /**
-     * @hidden
-     */
-    showPopup() {
-        this.compObj.focusIn();
-        this.compObj.showPopup();
+    openHandler(e) {
+        this.isPopOpen = true;
+        if (this.openEvent) {
+            this.compObj.setProperties({ open: this.openEvent }, true);
+            this.compObj.trigger('open', e);
+        }
+    }
+    closeHandler(e) {
+        this.isPopOpen = false;
+        if (this.closeEvent) {
+            this.compObj.setProperties({ close: this.closeEvent }, true);
+            this.compObj.trigger('close', e);
+        }
     }
     focus() {
-        closest(this.compObj.element, '.e-multi-select-wrapper').dispatchEvent(new MouseEvent('mousedown'));
+        if (!this.isPopOpen) {
+            let evt = document.createEvent('MouseEvent');
+            evt.initEvent('mousedown', true, true);
+            closest(this.compObj.element, '.e-multi-select-wrapper').dispatchEvent(evt);
+        }
     }
     updateValue(e) {
         if (this.compObj && e.type === 'MultiSelect') {
@@ -1646,7 +1668,8 @@ class Rte {
         this.base = new Base(this.parent, this);
     }
     render(e) {
-        this.compObj = new RichTextEditor(this.parent.model, e.target);
+        this.compObj = new RichTextEditor(this.parent.model);
+        this.compObj.appendTo(e.target);
     }
     focus() {
         this.compObj.focusIn();
@@ -1699,7 +1722,8 @@ class Slider$1 {
         this.base = new Base(this.parent, this);
     }
     render(e) {
-        this.compObj = new Slider(this.parent.model, e.target);
+        this.compObj = new Slider(this.parent.model);
+        this.compObj.appendTo(e.target);
     }
     focus() {
         this.compObj.element.focus();
@@ -1741,7 +1765,8 @@ class TimePicker$1 {
         this.base = new Base(this.parent, this);
     }
     render(e) {
-        this.compObj = new TimePicker(this.parent.model, e.target);
+        this.compObj = new TimePicker(this.parent.model);
+        this.compObj.appendTo(e.target);
     }
     focus() {
         this.compObj.focusIn();

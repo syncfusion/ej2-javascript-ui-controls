@@ -82,7 +82,7 @@ export interface TreeGridModel extends ComponentModel{
     dataSource?: Object | DataManager;
 
     /**
-   * Defines the external [`Query`](../../data/query/) 
+   * Defines the external [`Query`](https://ej2.syncfusion.com/documentation/data/api-query.html) 
    * that will be executed along with data processing.    
    * @default null    
    * @blazorType Syncfusion.EJ2.Blazor.Data.Query
@@ -171,7 +171,7 @@ export interface TreeGridModel extends ComponentModel{
     /**
    * If `showColumnMenu` set to true, then it will enable the column menu options in each columns.
    * 
-   * > Check the [`Column menu`](./columns.html#column-menu) for its configuration.
+   * > Check the [`Column menu`](../../treegrid/columns/#column-menu/) for its configuration.
    * @default false    
    */
     showColumnMenu?: boolean;
@@ -197,7 +197,7 @@ export interface TreeGridModel extends ComponentModel{
 
     /**
    * Configures the TreeGrid aggregate rows.
-   * > Check the [`Aggregates`](./aggregates.html) for its configuration.
+   * > Check the [`Aggregates`](../../treegrid/aggregates/) for its configuration.
    * @default []
    */
     aggregates?: AggregateRowModel[];
@@ -314,7 +314,7 @@ export interface TreeGridModel extends ComponentModel{
     /**
      * The row template that renders customized rows from the given template. 
      * By default, TreeGrid renders a table row for every data source item.
-     * > * It accepts either [template string](../../common/template-engine.html) or HTML element ID.   
+     * > * It accepts either [template string](../../common/template-engine/) or HTML element ID.   
      * > * The row template must be a table row.  
      * 
      * > Check the [`Row Template`](../../treegrid/row) customization.
@@ -329,7 +329,7 @@ export interface TreeGridModel extends ComponentModel{
 
     /**
    * If `enableAltRow` is set to true, the TreeGrid will render with `e-altrow` CSS class to the alternative tr elements.    
-   * > Check the [`AltRow`](./row.html#styling-alternate-rows) to customize the styles of alternative rows.
+   * > Check the [`AltRow`](../../treegrid/row/#styling-alternate-rows/) to customize the styles of alternative rows.
    * @default true 
    */
     enableAltRow?: boolean;
@@ -772,7 +772,7 @@ export interface TreeGridModel extends ComponentModel{
     /**
    * If `allowExcelExport` set to true, then it will allow the user to export treegrid to Excel file.
    * 
-   * > Check the [`ExcelExport`](./excel-exporting.html) to configure exporting document.
+   * > Check the [`ExcelExport`](../../treegrid/excel-exporting/) to configure exporting document.
    * @default false    
    */
     allowExcelExport?: boolean;
@@ -780,7 +780,7 @@ export interface TreeGridModel extends ComponentModel{
     /**
    * If `allowPdfExport` set to true, then it will allow the user to export treegrid to Pdf file.
    * 
-   * > Check the [`Pdfexport`](./pdf-exporting.html) to configure the exporting document.
+   * > Check the [`Pdfexport`](../../treegrid/pdf-export/) to configure the exporting document.
    * @default false    
    */
     allowPdfExport?: boolean;

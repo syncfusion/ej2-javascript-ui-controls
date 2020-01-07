@@ -1369,7 +1369,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             timelineYear: 'Timeline Year',
             editFollowingEvent: 'Following Events',
             deleteTitle: 'Delete Event',
-            editTitle: 'Edit Event'
+            editTitle: 'Edit Event',
+            beginFrom: 'Begin From',
+            endAt: 'Ends At'
         };
     }
 
@@ -1600,6 +1602,22 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             }
         }
         return undefined;
+    }
+
+    /** @hidden */
+    public getAnnocementString(event: { [key: string]: Object }, subject?: string): string {
+        let recordSubject: string = (subject || (event[this.eventFields.subject] || this.eventSettings.fields.subject.default)) as string;
+        let startDateText: string = this.globalize.formatDate(event[this.eventFields.startTime] as Date, {
+            type: 'dateTime',
+            skeleton: 'full', calendar: this.getCalendarMode()
+        });
+        let endDateText: string = this.globalize.formatDate(event[this.eventFields.endTime] as Date, {
+            type: 'dateTime',
+            skeleton: 'full', calendar: this.getCalendarMode()
+        });
+        let annocementString: string = recordSubject + ' ' + this.localeObj.getConstant('beginFrom') + ' '
+            + startDateText + ' ' + this.localeObj.getConstant('endAt') + ' ' + endDateText;
+        return annocementString;
     }
 
     /** @hidden */

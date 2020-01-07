@@ -2537,13 +2537,14 @@ let QueryBuilder = class QueryBuilder extends Component {
      */
     getFilteredRecords() {
         let predicate = this.getPredicate(this.getValidRules(this.rule));
-        let dataManagerQuery = new Query().where(predicate);
+        let dataManagerQuery;
+        dataManagerQuery = isNullOrUndefined(predicate) ? new Query() : new Query().where(predicate);
         if (this.isBlazor()) {
             let adaptr = new UrlAdaptor();
             let dm = new DataManager({ url: '', adaptor: new UrlAdaptor });
             let state = adaptr.processQuery(dm, dataManagerQuery);
             let data = JSON.parse(state.data);
-            return data;
+            return Object.keys(data).length ? data : null;
         }
         else {
             return this.dataManager.executeQuery(dataManagerQuery);
@@ -3208,6 +3209,8 @@ let QueryBuilder = class QueryBuilder extends Component {
                             rule.value = numVal;
                             rule.type = 'number';
                         }
+                        numVal = [];
+                        strVal = [];
                         rule.type = this.getTypeFromColumn(rule);
                     }
                 }

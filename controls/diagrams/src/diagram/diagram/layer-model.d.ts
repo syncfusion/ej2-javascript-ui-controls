@@ -28,6 +28,7 @@ export interface LayerModel {
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      * @default undefined
+     * @isBlazorNullableType true
      */
     objects?: string[];
 

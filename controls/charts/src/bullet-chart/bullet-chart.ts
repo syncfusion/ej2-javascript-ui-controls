@@ -14,7 +14,12 @@ import { BulletChartTheme } from './utils/theme';
 import { ScaleGroup } from './renderer/scale-render';
 import { redrawElement, textElement, getElement, appendChildElement } from '../common/utils/helper';
 import { BulletTooltip } from './user-interaction/tooltip';
-import { RectOption, stringToNumber, ChartTheme } from '../chart/index';
+import { RectOption, stringToNumber, ChartTheme, IPrintEventArgs } from '../chart/index';
+import {  ExportType, } from '../chart/index';
+import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
+import { AccumulationChart } from '../accumulation-chart/index';
+import { Chart } from '../chart/index';
+import { RangeNavigator } from '../range-navigator/index';
 import { getTitle, logBase } from '../common/utils/helper';
 import { BulletTooltipSettings, Range, BulletLabelStyle, BulletDataLabel } from './model/bullet-base';
 import { MajorTickLinesSettings, MinorTickLinesSettings } from './model/bullet-base';
@@ -22,6 +27,7 @@ import { BulletTooltipSettingsModel, RangeModel } from './model/bullet-base-mode
 import { MajorTickLinesSettingsModel, MinorTickLinesSettingsModel } from './model/bullet-base-model';
 import { BulletLabelStyleModel, BulletDataLabelModel } from './model/bullet-base-model';
 import { resized } from '../common/model/constants';
+import { ExportUtils } from '../common/utils/export';
 import { IBulletResizeEventArgs, IBulletStyle, IBulletchartTooltipEventArgs, IBulletLoadedEventArgs } from './model/bullet-interface';
 import { IFeatureBarBounds } from './model/bullet-interface';
 import { getBulletThemeColor } from './utils/theme';
@@ -380,6 +386,22 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     @Event()
     public load: EmitType<IBulletLoadedEventArgs>;
 
+    /**
+     * Triggers after the bullet chart rendering
+     * @event
+     * @blazorProperty 'Loaded'
+     */
+    @Event()
+    public loaded: EmitType<IBulletLoadedEventArgs>;
+
+    /**
+     * Triggers before the prints gets started.
+     * @event
+     * @blazorProperty 'OnPrint'
+     */
+
+    @Event()
+    public beforePrint: EmitType<IPrintEventArgs>;
 
 
     /** @private */
@@ -504,6 +526,9 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         this.calculatePosition();
 
         this.renderBulletElements();
+
+        let blazor: string = 'Blazor';
+        this.trigger('loaded', { bulletChart: window[blazor] ? {} : this });
 
         this.allowServerDataBinding = true;
         this.renderComplete();
@@ -1224,6 +1249,27 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
+     * Handles the print method for bullet chart control.
+     */
+    public print(id?: string[] | string | Element): void {
+        new ExportUtils(this).print(id);
+    }
+
+    /**
+     * Handles the export method for bullet chart control.
+     * @param type
+     * @param fileName
+     */
+    public export(
+        type: ExportType, fileName: string, orientation?: PdfPageOrientation,
+        controls?: (Chart | AccumulationChart | RangeNavigator | BulletChart)[],
+        width?: number, height?: number, isVertical ?: boolean
+    ): void {
+        controls = controls ? controls : [this];
+        new ExportUtils(this).export(type, fileName, orientation, controls, width, height, isVertical);
+    }
+
+    /**
      * Called internally if any of the property value changed.
      * @private
      */
@@ -1301,11 +1347,13 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
             if (!refreshBounds && renderer) {
                 this.removeSvg();
                 this.renderBulletElements();
-                this.trigger('loaded', { BulletChart: this });
+                let blazor: string = 'Blazor';
+                this.trigger('loaded', { bulletChart: window[blazor] ? {} : this });
             }
             if (refreshBounds) {
                 this.render();
-                this.trigger('loaded', { BulletChart: this });
+                let blazor: string = 'Blazor';
+                this.trigger('loaded', { bulletChart: window[blazor] ? {} : this });
                 this.redraw = false;
             }
         }

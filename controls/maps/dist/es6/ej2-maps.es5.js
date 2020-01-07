@@ -54,15 +54,14 @@ function stringToNumber(value, containerSize) {
 function calculateSize(maps) {
     var containerWidth = maps.element.clientWidth;
     var containerHeight = maps.element.clientHeight;
+    var parentHeight = maps.element.parentElement.clientHeight;
+    var parentWidth = maps.element.parentElement.clientWidth;
     if (maps.isBlazor) {
-        if (maps.element.parentElement.style.height !== '' && maps.element.parentElement.style.width !== '') {
-            containerHeight = maps.element.parentElement.clientHeight;
-            containerWidth = maps.element.parentElement.clientWidth;
-        }
-        else {
-            containerHeight = maps.element.clientHeight;
-            containerWidth = maps.element.clientWidth;
-        }
+        containerHeight = parentHeight !== 0 ? parentHeight : containerHeight !== 0 ?
+            containerHeight : 450;
+        containerWidth = parentWidth !== 0 ?
+            parentWidth : containerWidth !== 0 ?
+            containerWidth : 600;
     }
     maps.availableSize = new Size(stringToNumber(maps.width, containerWidth) || containerWidth || 600, stringToNumber(maps.height, containerHeight) || containerHeight || (maps.isDevice ?
         Math.min(window.innerWidth, window.innerHeight) : 450));
@@ -4423,8 +4422,9 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
             id: this.mapObject.element.id + '_LayerIndex_' + layerIndex
         }));
         if (!this.mapObject.enablePersistence) {
-            if (!isNullOrUndefined(window.localStorage)) {
-                window.localStorage.clear();
+            var itemName = this.mapObject.getModuleName() + this.mapObject.element.id;
+            if (!isNullOrUndefined(window.localStorage) && window.localStorage.getItem(itemName)) {
+                window.localStorage.removeItem(itemName);
             }
         }
         var eventArgs = {
@@ -5812,17 +5812,15 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
                 if (!isNullOrUndefined(templateGroupEle) && templateGroupEle.childElementCount > 0) {
                     var layerOffset = getElementByID(this.element.id + '_Layer_Collections').getBoundingClientRect();
                     var elementOffset = getElementByID(templateGroupEle.id).getBoundingClientRect();
+                    var offSetLetValue = this.isTileMap ? 0 : (layerOffset.left < elementOffset.left) ?
+                        -(Math.abs(elementOffset.left - layerOffset.left)) : (Math.abs(elementOffset.left - layerOffset.left));
+                    var offSetTopValue = this.isTileMap ? 0 : (layerOffset.top < elementOffset.top) ?
+                        -(Math.abs(elementOffset.top - layerOffset.top)) : Math.abs(elementOffset.top - layerOffset.top);
                     for (var j = 0; j < templateGroupEle.childElementCount; j++) {
                         var currentTemplate = templateGroupEle.childNodes[j];
-                        var templateOffset = currentTemplate.getBoundingClientRect();
-                        currentTemplate.style.left = ((this.isTileMap ? parseFloat(currentTemplate.style.left) :
-                            ((layerOffset.left < elementOffset.left ? (parseFloat(currentTemplate.style.left) -
-                                Math.abs(elementOffset.left - layerOffset.left)) : (parseFloat(currentTemplate.style.left) +
-                                Math.abs(elementOffset.left - layerOffset.left))))) - (templateOffset.width / 2)) + 'px';
-                        currentTemplate.style.top = ((this.isTileMap ? parseFloat(currentTemplate.style.top) :
-                            ((layerOffset.top < elementOffset.top ? (parseFloat(currentTemplate.style.top) -
-                                Math.abs(elementOffset.top - layerOffset.top)) : (parseFloat(currentTemplate.style.top) +
-                                Math.abs(elementOffset.top - layerOffset.top))))) - (templateOffset.height / 2)) + 'px';
+                        currentTemplate.style.left = parseFloat(currentTemplate.style.left) + offSetLetValue + 'px';
+                        currentTemplate.style.top = parseFloat(currentTemplate.style.top) + offSetTopValue + 'px';
+                        currentTemplate.style.transform = 'translate(-50%, -50%)';
                     }
                 }
             }
@@ -10270,6 +10268,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
         var scale = map.previousScale = map.scale;
         var maxZoom = map.zoomSettings.maxZoom;
         var minZoom = map.zoomSettings.minZoom;
+        newZoomFactor = (minZoom > newZoomFactor && type === 'ZoomIn') ? minZoom + 1 : newZoomFactor;
         var translatePoint = map.previousPoint = map.translatePoint;
         var prevTilePoint = map.tileTranslatePoint;
         if ((!map.isTileMap) && (type === 'ZoomIn' ? newZoomFactor >= minZoom && newZoomFactor <= maxZoom : newZoomFactor >= minZoom)) {
@@ -10898,13 +10897,11 @@ var Zoom = /** @__PURE__ @class */ (function () {
                 if (type === 'Template') {
                     location_2.x = ((Math.abs(this.maps.baseMapRectBounds['min']['x'] - location_2.x)) * scale);
                     location_2.y = ((Math.abs(this.maps.baseMapRectBounds['min']['y'] - location_2.y)) * scale);
-                    var templateOffset = element.getBoundingClientRect();
                     var layerOffset = getElementByID(this.maps.element.id + '_Layer_Collections').getBoundingClientRect();
                     var elementOffset = element.parentElement.getBoundingClientRect();
-                    element.style.left = (((location_2.x) + (layerOffset.left - elementOffset.left) -
-                        (templateOffset.width / 2)) + marker$$1.offset.x) + 'px';
-                    element.style.top = (((location_2.y) + (layerOffset.top - elementOffset.top)
-                        - (templateOffset.height / 2)) + marker$$1.offset.y) + 'px';
+                    element.style.left = (((location_2.x) + (layerOffset.left - elementOffset.left)) + marker$$1.offset.x) + 'px';
+                    element.style.top = (((location_2.y) + (layerOffset.top - elementOffset.top)) + marker$$1.offset.y) + 'px';
+                    element.style.transform = 'translate(-50%, -50%)';
                 }
                 else {
                     location_2.x = (((location_2.x + x) * scale) + marker$$1.offset.x);
@@ -11001,6 +10998,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
         var prevTilePoint = map.tileTranslatePoint;
         map.previousProjection = map.projectionType;
         zoomFactor = (type === 'ZoomOut') ? (Math.round(zoomFactor) === 1 ? 1 : zoomFactor) : zoomFactor;
+        zoomFactor = (minZoom > zoomFactor && type === 'ZoomIn') ? minZoom + 1 : zoomFactor;
         if ((!map.isTileMap) && (type === 'ZoomIn' ? zoomFactor >= minZoom && zoomFactor <= maxZoom : zoomFactor >= minZoom)) {
             var min = map.baseMapRectBounds['min'];
             var max = map.baseMapRectBounds['max'];

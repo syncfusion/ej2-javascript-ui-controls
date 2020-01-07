@@ -4919,6 +4919,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Slider.prototype.tooltipToggle = function (target) {
+        this.setZindex();
         if (this.isMaterialTooltip) {
             !this.tooltipElement.classList.contains(classNames.materialTooltipOpen) ?
                 this.openMaterialTooltip() : this.refreshTooltip(this.firstHandle);
@@ -6205,7 +6206,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Slider.prototype.setZindex = function () {
-        this.zIndex = 6;
+        this.zIndex = getZindexPartial(this.element);
         if (!isNullOrUndefined(this.ticks) && this.ticks.placement !== 'None') {
             this.ul.style.zIndex = (this.zIndex + -7) + '';
             this.element.style.zIndex = (this.zIndex + 2) + '';
@@ -9042,7 +9043,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         deleteIcon.classList.add(REMOVE_ICON);
         deleteIcon.setAttribute('title', this.localizedTexts('remove'));
         this.pauseButton = this.createElement('span', { className: 'e-icons e-file-reload-btn', attrs: { 'tabindex': this.btnTabIndex } });
-        liElement.insertBefore(this.pauseButton, deleteIcon);
+        deleteIcon.parentElement.insertBefore(this.pauseButton, deleteIcon);
         this.pauseButton.setAttribute('title', this.localizedTexts('retry'));
         var retryElement = liElement.querySelector('.' + RETRY_ICON);
         /* istanbul ignore next */
@@ -9398,7 +9399,8 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         eventArgs.fileData.statusCode = '5';
         eventArgs.fileData.status = this.localizedTexts('fileUploadCancel');
         this.pauseButton = this.createElement('span', { className: 'e-icons e-file-reload-btn', attrs: { 'tabindex': this.btnTabIndex } });
-        liElement.insertBefore(this.pauseButton, liElement.querySelector('.' + REMOVE_ICON));
+        var removeIcon = liElement.querySelector('.' + REMOVE_ICON);
+        removeIcon.parentElement.insertBefore(this.pauseButton, removeIcon);
         this.pauseButton.setAttribute('title', this.localizedTexts('retry'));
         /* istanbul ignore next */
         this.pauseButton.addEventListener('click', function (e) { _this.reloadcanceledFile(e, file, liElement); }, false);
@@ -9768,7 +9770,8 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             if (this.browserName === 'msie') {
                 this.pauseButton.classList.add('e-msie');
             }
-            liElement.insertBefore(this.pauseButton, liElement.querySelector('.' + ABORT_ICON));
+            var abortIcon = liElement.querySelector('.' + ABORT_ICON);
+            abortIcon.parentElement.insertBefore(this.pauseButton, abortIcon);
             this.pauseButton.setAttribute('title', this.localizedTexts('pause'));
             this.pauseButton.addEventListener('click', function (e) { _this.checkPausePlayAction(e); }, false);
         }

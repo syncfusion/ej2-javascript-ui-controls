@@ -366,8 +366,12 @@ export class TextMarkupAnnotation {
 
 
     private getClientValueTop(clientValue: number, pageNumber: number): number {
-        // tslint:disable-next-line:max-line-length
-        return clientValue - this.pdfViewerBase.getElement('_pageDiv_' + pageNumber).getBoundingClientRect().top;
+        if (this.pdfViewerBase.getElement('_pageDiv_' + pageNumber)) {
+            // tslint:disable-next-line:max-line-length
+            return clientValue - this.pdfViewerBase.getElement('_pageDiv_' + pageNumber).getBoundingClientRect().top;
+        } else {
+            return clientValue;
+        }
     }
     /**
      * @private
@@ -402,6 +406,13 @@ export class TextMarkupAnnotation {
                     let annotation: any = annotations[i];
                     let annotationObject: ITextMarkupAnnotation = null;
                     if (annotation.TextMarkupAnnotationType) {
+                        if (!annotation.Author) {
+                            // tslint:disable-next-line:max-line-length
+                            annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('textMarkup', annotation.TextMarkupAnnotationType);
+                        }
+                        if (!annotation.Subject) {
+                            annotation.Subject = annotation.TextMarkupAnnotationType;
+                        }
                         // tslint:disable-next-line:max-line-length
                         annotationObject = {
                             textMarkupAnnotationType: annotation.TextMarkupAnnotationType, color: annotation.Color, opacity: annotation.Opacity, bounds: annotation.Bounds, author: annotation.Author, subject: annotation.Subject, modifiedDate: annotation.ModifiedDate, note: annotation.Note, rect: annotation.Rect,
@@ -459,9 +470,22 @@ export class TextMarkupAnnotation {
         if (this.pdfViewer.enableTextMarkupResizer && this.isExtended && window.getSelection().toString()) {
             let pageBounds: IPageAnnotationBounds[] = this.getDrawnBounds();
             if (pageBounds[0] && pageBounds[0].bounds) {
-                this.updateTextMarkupAnnotationBounds(pageBounds);
+                // tslint:disable-next-line
+                let currentAnnot: any = this.currentTextMarkupAnnotation;
+                for (let k: number = 0; k < pageBounds.length; k++) {
+                    if (currentAnnot && currentAnnot.pageNumber === pageBounds[k].pageIndex) {
+                        this.currentTextMarkupAnnotation = currentAnnot;
+                        this.selectTextMarkupCurrentPage = pageBounds[k].pageIndex;
+                        this.updateTextMarkupAnnotationBounds(pageBounds, k);
+                    } else {
+                        if (currentAnnot && type === '') {
+                            type = currentAnnot.textMarkupAnnotationType;
+                        }
+                        // tslint:disable-next-line:max-line-length
+                        this.drawTextMarkups(type, pageBounds[k].bounds, pageBounds[k].pageIndex, pageBounds[k].rect, this.pdfViewerBase.getZoomFactor(), pageBounds[k].textContent, pageBounds[k].startIndex, pageBounds[k].endIndex);
+                    }
+                }
             }
-
         } else if (window.getSelection().toString()) {
             let pageBounds: IPageAnnotationBounds[] = this.getDrawnBounds();
             if (pageBounds.length > 0) {
@@ -502,17 +526,17 @@ export class TextMarkupAnnotation {
     }
 
     // tslint:disable-next-line
-    private updateTextMarkupAnnotationBounds(pageBounds: IPageAnnotationBounds[]): void {
+    private updateTextMarkupAnnotationBounds(pageBounds: IPageAnnotationBounds[],currentIndex: number): void {
         if (this.currentTextMarkupAnnotation) {
             let pageAnnotations: ITextMarkupAnnotation[] = this.getAnnotations(this.selectTextMarkupCurrentPage, null);
             let annotation: ITextMarkupAnnotation = null;
             if (pageAnnotations) {
                 for (let i: number = 0; i < pageAnnotations.length; i++) {
                     if (JSON.stringify(this.currentTextMarkupAnnotation) === JSON.stringify(pageAnnotations[i])) {
-                        pageAnnotations[i].bounds = pageBounds[0].bounds;
-                        pageAnnotations[i].textMarkupContent = pageBounds[0].textContent;
-                        pageAnnotations[i].textMarkupStartIndex = pageBounds[0].startIndex;
-                        pageAnnotations[i].textMarkupEndIndex = pageBounds[0].endIndex;
+                        pageAnnotations[i].bounds = pageBounds[currentIndex].bounds;
+                        pageAnnotations[i].textMarkupContent = pageBounds[currentIndex].textContent;
+                        pageAnnotations[i].textMarkupStartIndex = pageBounds[currentIndex].startIndex;
+                        pageAnnotations[i].textMarkupEndIndex = pageBounds[currentIndex].endIndex;
                         let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                         annotation = pageAnnotations[i];
@@ -1156,6 +1180,12 @@ export class TextMarkupAnnotation {
                             break;
                         }
                     }
+                    if (!pageEndId) {
+                        pageEndId = pageStartId;
+                    }
+                    if (!pageEndOffset) {
+                        pageEndOffset = endOffset;
+                    }
                     let startElementNode: Node = this.pdfViewerBase.getElement('_text_' + i + '_' + pageStartId).childNodes[0];
                     let endElementNode: Node = this.pdfViewerBase.getElement('_text_' + i + '_' + pageEndId).childNodes[0];
                     let pageRange: Range = document.createRange();
@@ -1184,13 +1214,37 @@ export class TextMarkupAnnotation {
         let startIndex: number;
         let endIndex: number;
         if (storedData) {
+            let previousIndex: number = 0;
             let pageText: string = storedData.pageText.replace(/(\r\n|\n|\r)/gm, '');
+            for (let p: number = 0; p < pageNumber; p++) {
+                if (this.pdfViewer.isExtractText) {
+                    // tslint:disable-next-line:max-line-length
+                    if (this.pdfViewer.textSearchModule && this.pdfViewer.textSearchModule.documentTextCollection && this.pdfViewer.textSearchModule.isTextRetrieved) {
+                        if (this.pdfViewer.textSearchModule.documentTextCollection[p]) {
+                            previousIndex = previousIndex + this.pdfViewer.textSearchModule.documentTextCollection[p][p].PageText.length;
+                        }
+                    } else {
+                        // tslint:disable-next-line:max-line-length
+                        if (this.pdfViewer.textSearchModule && this.pdfViewer.textSearchModule.documentTextCollection) {
+                            if (pageNumber <= this.pdfViewer.textSearchModule.documentTextCollection.length) {
+                                if (this.pdfViewer.textSearchModule.documentTextCollection[p]) {
+                                    // tslint:disable-next-line:max-line-length
+                                    previousIndex = previousIndex + this.pdfViewer.textSearchModule.documentTextCollection[p][p].PageText.length;
+                                }
+                            } else {
+                                previousIndex = 0;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
             if (!isNullOrUndefined(parentText)) {
                 let parentIndex: number = pageText.indexOf(parentText);
                 let initialIndex: number = parentText.indexOf(content);
-                startIndex = parentIndex + initialIndex;
+                startIndex = (parentIndex + initialIndex) + previousIndex;
             } else {
-                startIndex = pageText.indexOf(content);
+                startIndex = (pageText.indexOf(content)) + previousIndex;
             }
             endIndex = startIndex + (content.length - 1);
         }

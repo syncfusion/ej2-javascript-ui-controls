@@ -78,6 +78,7 @@ export interface IconShapeModel {
     /**
      * Defines the offset of the icon.
      * @default new Point(0.5,1)
+     * @blazorType IconOffset
      */
     offset?: PointModel;
 
@@ -120,6 +121,7 @@ export interface IconShapeModel {
     /**
      * Defines the space that the icon has to be moved from the icon border
      * @default new Margin(2,2,2,2)
+     * @blazorType IconPadding
      */
     padding?: MarginModel;
 

@@ -8,12 +8,13 @@ import { processPathData, splitArrayCollection, transformPath } from './path-uti
 import { whiteSpaceToString, wordBreakToString, textAlignToString, bBoxText } from './base-util';
 import { Matrix, identityMatrix, transformPointByMatrix, rotateMatrix } from '../primitives/matrix';
 import { ITouches } from '../objects/interface/interfaces';
-import { compile, createElement, Browser } from '@syncfusion/ej2-base';
+import { compile, createElement, Browser, isBlazor } from '@syncfusion/ej2-base';
 import { DiagramHtmlElement } from '../core/elements/html-element';
 import { Node } from '../objects/node';
 import { DiagramNativeElement } from '../core/elements/native-element';
 import { BaseAttributes, TextAttributes, SubTextElement, TextBounds } from '../rendering/canvas-interface';
-import { getElement } from './diagram-util';
+import { getElement, cloneBlazorObject } from './diagram-util';
+import { Annotation, PathAnnotation } from '../objects/annotation';
 
 /**
  * Defines the functionalities that need to access DOM
@@ -320,7 +321,6 @@ export function measureImage(source: string, contentSize: Size, id?: string, cal
             callback(id, { width: loadedImage.width, height: loadedImage.height });
         }
     };
-
     return contentSize;
 }
 
@@ -639,7 +639,9 @@ export function removeElement(elementId: string, contentId?: string): void {
     }
 }
 
-export function getContent(element: DiagramHtmlElement | DiagramNativeElement, isHtml: boolean): HTMLElement | SVGElement {
+export function getContent(
+    element: DiagramHtmlElement | DiagramNativeElement, isHtml: boolean,
+    nodeObject?: Node | Annotation | PathAnnotation): HTMLElement | SVGElement {
     let div: SVGElement | HTMLElement;
     if (isHtml) {
         let attr: Object = { 'style': 'height: 100%; width: 100%' };
@@ -650,39 +652,27 @@ export function getContent(element: DiagramHtmlElement | DiagramNativeElement, i
     let node: Object = getElement(element);
     let content: string = '';
     let sentNode: Object = {};
+    let isSvg: boolean = false;
     if (node instanceof Node) {
         sentNode = node;
+        if (node.shape.type === 'Native') {
+            isSvg = true;
+        }
         let blazor: string = 'Blazor';
-        if (window[blazor]) {
-            sentNode = {};
-            let id: string = 'id';
-            let height: string = 'height';
-            let width: string = 'width';
-            let offsetX: string = 'offsetX';
-            let offsetY: string = 'offsetY';
-            let text: string = 'content';
-            let annotations: string = 'annotations';
-            let addInfo: string = 'addInfo';
-            content = node[id] + 'content_diagram';
-            sentNode[id] = node[id];
-            sentNode[height] = node[height];
-            sentNode[width] = node[width];
-            sentNode[offsetX] = node[offsetX];
-            sentNode[offsetY] = node[offsetY];
-            sentNode[addInfo] = node[addInfo];
-            if (node.annotations && node.annotations.length > 0) {
-                sentNode[annotations] = [];
-                for (let i: number = 0; i < node.annotations.length; i++) {
-                    sentNode[annotations][i] = { content: node.annotations[i][text] };
-                }
-            }
+        if (isBlazor()) {
+            content = 'diagramsf_node_template';
+            sentNode = cloneBlazorObject(node);
         }
     } else {
         sentNode = node;
-        content = element.diagramId + 'template_diagram';
+        //new
+        if (isBlazor()) {
+            sentNode = cloneBlazorObject(node);
+            content = 'diagramsf_annotation_template';
+        }
     }
     let item: HTMLElement | SVGElement;
-    if (typeof element.content === 'string') {
+    if (typeof element.content === 'string' && !(element as DiagramHtmlElement).isTemplate) {
         let template: HTMLElement = document.getElementById(element.content);
         if (template) {
             div.appendChild(template);
@@ -692,11 +682,22 @@ export function getContent(element: DiagramHtmlElement | DiagramNativeElement, i
             for (item of compiledString(sentNode, null, null, content)) {
                 div.appendChild(item);
             }
+            //new
+            // for (item of compiledString(sentNode, null, null, content, undefined, undefined, isSvg)) {
+            //     div.appendChild(item);
+            // }
+        }
+    } else if ((element as DiagramHtmlElement).isTemplate) {
+        let compiledString: Function;
+        compiledString = (element as DiagramHtmlElement).getNodeTemplate()(nodeObject, undefined, 'template', undefined, undefined, false);
+        for (let i: number = 0; i < compiledString.length; i++) {
+            div.appendChild(compiledString[i]);
         }
     } else {
-        div.appendChild(element.content);
+        div.appendChild(element.content as HTMLElement);
     }
-    return isHtml ? div.cloneNode(true) as HTMLElement : div.cloneNode(true) as SVGElement;
+    return (element as DiagramHtmlElement).isTemplate ?
+        div : (isHtml ? div.cloneNode(true) as HTMLElement : div.cloneNode(true) as SVGElement);
 }
 
 /** @private */
@@ -761,9 +762,21 @@ export function createMeasureElements(): void {
 export function setChildPosition(temp: SubTextElement, childNodes: SubTextElement[], i: number, options: TextAttributes): number {
     if (childNodes.length > 1 && temp.x === 0 &&
         (options.textOverflow === 'Clip' || options.textOverflow === 'Ellipsis') &&
-        options.textWrapping === 'Wrap') {
+        (options.textWrapping === 'Wrap' || options.textWrapping === 'WrapWithOverflow')) {
         temp.x = childNodes[i - 1] ? childNodes[i - 1].x : -(temp.width / 2);
         return temp.x;
     }
     return temp.x;
+}
+
+/** @private */
+export function getTemplateContent(
+    annotationcontent: DiagramHtmlElement, annotation: Annotation, annotationTemplate?: string | Function): DiagramHtmlElement {
+    if (annotationTemplate && !annotation.template) {
+        annotationcontent.isTemplate = true;
+        annotationcontent.template = annotationcontent.content = getContent(annotationcontent, true, annotation) as HTMLElement;
+    } else {
+        annotationcontent.content = annotation.template;
+    }
+    return annotationcontent;
 }

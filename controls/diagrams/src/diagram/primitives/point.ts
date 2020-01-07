@@ -174,3 +174,4 @@ export class Point extends ChildProperty<Point> {
     }
 
 }
+

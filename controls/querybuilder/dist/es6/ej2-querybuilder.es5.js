@@ -2611,13 +2611,14 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
      */
     QueryBuilder.prototype.getFilteredRecords = function () {
         var predicate = this.getPredicate(this.getValidRules(this.rule));
-        var dataManagerQuery = new Query().where(predicate);
+        var dataManagerQuery;
+        dataManagerQuery = isNullOrUndefined(predicate) ? new Query() : new Query().where(predicate);
         if (this.isBlazor()) {
             var adaptr = new UrlAdaptor();
             var dm = new DataManager({ url: '', adaptor: new UrlAdaptor });
             var state = adaptr.processQuery(dm, dataManagerQuery);
             var data = JSON.parse(state.data);
-            return data;
+            return Object.keys(data).length ? data : null;
         }
         else {
             return this.dataManager.executeQuery(dataManagerQuery);
@@ -3282,6 +3283,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                             rule.value = numVal;
                             rule.type = 'number';
                         }
+                        numVal = [];
+                        strVal = [];
                         rule.type = this.getTypeFromColumn(rule);
                     }
                 }

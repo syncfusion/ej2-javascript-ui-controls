@@ -1325,6 +1325,9 @@ var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, 
 /**   @private  */
 var getGradientType = function (obj) {
     if (obj) {
+        if (isBlazor()) {
+            return DiagramGradient;
+        }
         switch (obj.type) {
             case 'Linear':
                 return LinearGradient;
@@ -1498,6 +1501,43 @@ var Gradient = /** @__PURE__ @class */ (function (_super) {
 /**
  * Paints the node with linear color transitions
  */
+var DiagramGradient = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(DiagramGradient, _super);
+    function DiagramGradient() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property(0)
+    ], DiagramGradient.prototype, "x1", void 0);
+    __decorate$3([
+        Property(0)
+    ], DiagramGradient.prototype, "x2", void 0);
+    __decorate$3([
+        Property(0)
+    ], DiagramGradient.prototype, "y1", void 0);
+    __decorate$3([
+        Property(0)
+    ], DiagramGradient.prototype, "y2", void 0);
+    __decorate$3([
+        Property(0)
+    ], DiagramGradient.prototype, "cx", void 0);
+    __decorate$3([
+        Property(0)
+    ], DiagramGradient.prototype, "cy", void 0);
+    __decorate$3([
+        Property(0)
+    ], DiagramGradient.prototype, "fx", void 0);
+    __decorate$3([
+        Property(0)
+    ], DiagramGradient.prototype, "fy", void 0);
+    __decorate$3([
+        Property(50)
+    ], DiagramGradient.prototype, "r", void 0);
+    return DiagramGradient;
+}(Gradient));
+/**
+ * Paints the node with linear color transitions
+ */
 var LinearGradient = /** @__PURE__ @class */ (function (_super) {
     __extends$3(LinearGradient, _super);
     function LinearGradient() {
@@ -1666,10 +1706,80 @@ var TextStyle = /** @__PURE__ @class */ (function (_super) {
     ], TextStyle.prototype, "fill", void 0);
     return TextStyle;
 }(ShapeStyle));
+/**
+ * Defines the style of shape/path
+ */
+var DiagramShapeStyle = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(DiagramShapeStyle, _super);
+    function DiagramShapeStyle() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property('white')
+    ], DiagramShapeStyle.prototype, "fill", void 0);
+    __decorate$3([
+        Property('Wrap')
+    ], DiagramShapeStyle.prototype, "textOverflow", void 0);
+    __decorate$3([
+        Property(1)
+    ], DiagramShapeStyle.prototype, "strokeWidth", void 0);
+    __decorate$3([
+        ComplexFactory(getGradientType)
+    ], DiagramShapeStyle.prototype, "gradient", void 0);
+    __decorate$3([
+        Property(1)
+    ], DiagramShapeStyle.prototype, "opacity", void 0);
+    __decorate$3([
+        Property(false)
+    ], DiagramShapeStyle.prototype, "italic", void 0);
+    __decorate$3([
+        Property('')
+    ], DiagramShapeStyle.prototype, "strokeDashArray", void 0);
+    __decorate$3([
+        Property('black')
+    ], DiagramShapeStyle.prototype, "color", void 0);
+    __decorate$3([
+        Property(12)
+    ], DiagramShapeStyle.prototype, "fontSize", void 0);
+    __decorate$3([
+        Property('Arial')
+    ], DiagramShapeStyle.prototype, "fontFamily", void 0);
+    __decorate$3([
+        Property('CollapseSpace')
+    ], DiagramShapeStyle.prototype, "whiteSpace", void 0);
+    __decorate$3([
+        Property('Center')
+    ], DiagramShapeStyle.prototype, "textAlign", void 0);
+    __decorate$3([
+        Property('None')
+    ], DiagramShapeStyle.prototype, "textDecoration", void 0);
+    __decorate$3([
+        Property(false)
+    ], DiagramShapeStyle.prototype, "bold", void 0);
+    __decorate$3([
+        Property('black')
+    ], DiagramShapeStyle.prototype, "strokeColor", void 0);
+    __decorate$3([
+        Property('WrapWithOverflow')
+    ], DiagramShapeStyle.prototype, "textWrapping", void 0);
+    return DiagramShapeStyle;
+}(ChildProperty));
 
 /**
  * enum module defines the public enumerations
  */
+/**
+ * @private
+ */
+var BlazorAction;
+(function (BlazorAction) {
+    /** Return the layout value is true when doLayout is called   */
+    BlazorAction[BlazorAction["Default"] = 0] = "Default";
+    /** Need to return the layout value when doLayout is called  */
+    BlazorAction[BlazorAction["expandNode"] = 2] = "expandNode";
+    /** Enabled during the mouse interaction  */
+    BlazorAction[BlazorAction["interaction"] = 4] = "interaction";
+})(BlazorAction || (BlazorAction = {}));
 /**
  * Constraints to define when a port has to be visible
  * Visible - Always shows the port
@@ -2408,6 +2518,8 @@ var DiagramAction;
     DiagramAction[DiagramAction["PreventCollectionChangeOnDragOver"] = 4096] = "PreventCollectionChangeOnDragOver";
     /** Use to prevent the z order on dragging the diagram elements */
     DiagramAction[DiagramAction["PreventZIndexOnDragging"] = 8192] = "PreventZIndexOnDragging";
+    /** Indicates whether group dragging has been activated */
+    DiagramAction[DiagramAction["isGroupDragging"] = 16384] = "isGroupDragging";
 })(DiagramAction || (DiagramAction = {}));
 /**
  * Defines the Selector type to be drawn
@@ -2482,6 +2594,7 @@ var DiagramEvent;
     DiagramEvent[DiagramEvent["onUserHandleMouseEnter"] = 29] = "onUserHandleMouseEnter";
     DiagramEvent[DiagramEvent["onUserHandleMouseLeave"] = 30] = "onUserHandleMouseLeave";
     DiagramEvent[DiagramEvent["onImageLoad"] = 31] = "onImageLoad";
+    DiagramEvent[DiagramEvent["onDoBindingInit"] = 32] = "onDoBindingInit";
 })(DiagramEvent || (DiagramEvent = {}));
 /** Enables/Disables certain features of port connection
  * @aspNumberEnum
@@ -3827,8 +3940,12 @@ var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, 
  */
 var Port = /** @__PURE__ @class */ (function (_super) {
     __extends$10(Port, _super);
-    function Port() {
-        return _super !== null && _super.apply(this, arguments) || this;
+    // tslint:disable-next-line:no-any
+    function Port(parent, propName, defaultValue, isArray) {
+        var _this = _super.call(this, parent, propName, defaultValue, isArray) || this;
+        _this.inEdges = [];
+        _this.outEdges = [];
+        return _this;
     }
     __decorate$4([
         Property('')
@@ -3866,6 +3983,12 @@ var Port = /** @__PURE__ @class */ (function (_super) {
     __decorate$4([
         Property()
     ], Port.prototype, "addInfo", void 0);
+    __decorate$4([
+        Property()
+    ], Port.prototype, "outEdges", void 0);
+    __decorate$4([
+        Property()
+    ], Port.prototype, "inEdges", void 0);
     return Port;
 }(ChildProperty));
 /**
@@ -3955,6 +4078,9 @@ var Annotation = /** @__PURE__ @class */ (function (_super) {
     __decorate$5([
         Property(undefined)
     ], Annotation.prototype, "template", void 0);
+    __decorate$5([
+        Property('String')
+    ], Annotation.prototype, "annotationType", void 0);
     __decorate$5([
         Property(true)
     ], Annotation.prototype, "visibility", void 0);
@@ -6925,108 +7051,36 @@ var __decorate$8 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /**
- * Defines the behavior of default IconShapes
- */
-var IconShape = /** @__PURE__ @class */ (function (_super) {
-    __extends$14(IconShape, _super);
-    function IconShape() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$8([
-        Property('None')
-    ], IconShape.prototype, "shape", void 0);
-    __decorate$8([
-        Property('white')
-    ], IconShape.prototype, "fill", void 0);
-    __decorate$8([
-        Property('Auto')
-    ], IconShape.prototype, "horizontalAlignment", void 0);
-    __decorate$8([
-        Property('Auto')
-    ], IconShape.prototype, "verticalAlignment", void 0);
-    __decorate$8([
-        Property(10)
-    ], IconShape.prototype, "width", void 0);
-    __decorate$8([
-        Property(10)
-    ], IconShape.prototype, "height", void 0);
-    __decorate$8([
-        Complex({ x: 0.5, y: 1 }, Point)
-    ], IconShape.prototype, "offset", void 0);
-    __decorate$8([
-        Property('#1a1a1a')
-    ], IconShape.prototype, "borderColor", void 0);
-    __decorate$8([
-        Property(1)
-    ], IconShape.prototype, "borderWidth", void 0);
-    __decorate$8([
-        Complex({}, Margin)
-    ], IconShape.prototype, "margin", void 0);
-    __decorate$8([
-        Property('')
-    ], IconShape.prototype, "pathData", void 0);
-    __decorate$8([
-        Property('')
-    ], IconShape.prototype, "content", void 0);
-    __decorate$8([
-        Property(0)
-    ], IconShape.prototype, "cornerRadius", void 0);
-    __decorate$8([
-        Complex({ left: 2, right: 2, top: 2, bottom: 2 }, Margin)
-    ], IconShape.prototype, "padding", void 0);
-    return IconShape;
-}(ChildProperty));
-
-var __extends$15 = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate$9 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
  * Defines the tooltip that should be shown when the mouse hovers over node.
  * An object that defines the description, appearance and alignments of tooltip
  */
 var DiagramTooltip = /** @__PURE__ @class */ (function (_super) {
-    __extends$15(DiagramTooltip, _super);
+    __extends$14(DiagramTooltip, _super);
     function DiagramTooltip() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$9([
+    __decorate$8([
         Property('')
     ], DiagramTooltip.prototype, "content", void 0);
-    __decorate$9([
+    __decorate$8([
         Property('TopLeft')
     ], DiagramTooltip.prototype, "position", void 0);
-    __decorate$9([
+    __decorate$8([
         Property('Mouse')
     ], DiagramTooltip.prototype, "relativeMode", void 0);
-    __decorate$9([
+    __decorate$8([
         Property(true)
     ], DiagramTooltip.prototype, "showTipPointer", void 0);
-    __decorate$9([
+    __decorate$8([
         Property('auto')
     ], DiagramTooltip.prototype, "width", void 0);
-    __decorate$9([
+    __decorate$8([
         Property('auto')
     ], DiagramTooltip.prototype, "height", void 0);
-    __decorate$9([
+    __decorate$8([
         Property('Auto')
     ], DiagramTooltip.prototype, "openOn", void 0);
-    __decorate$9([
+    __decorate$8([
         Property()
     ], DiagramTooltip.prototype, "animation", void 0);
     return DiagramTooltip;
@@ -7131,20 +7185,8 @@ var NodeBase = /** @__PURE__ @class */ (function (_super) {
         Property(true)
     ], NodeBase.prototype, "visible", void 0);
     __decorate$7([
-        Collection([], PointPort)
-    ], NodeBase.prototype, "ports", void 0);
-    __decorate$7([
-        Property(true)
-    ], NodeBase.prototype, "isExpanded", void 0);
-    __decorate$7([
         Complex({}, DiagramTooltip)
     ], NodeBase.prototype, "tooltip", void 0);
-    __decorate$7([
-        Complex({}, IconShape)
-    ], NodeBase.prototype, "expandIcon", void 0);
-    __decorate$7([
-        Complex({}, IconShape)
-    ], NodeBase.prototype, "collapseIcon", void 0);
     __decorate$7([
         Property(false)
     ], NodeBase.prototype, "excludeFromLayout", void 0);
@@ -7157,7 +7199,7 @@ var NodeBase = /** @__PURE__ @class */ (function (_super) {
     return NodeBase;
 }(ChildProperty));
 
-var __extends$16 = (undefined && undefined.__extends) || (function () {
+var __extends$15 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -7174,11 +7216,11 @@ var __extends$16 = (undefined && undefined.__extends) || (function () {
  * HTMLElement defines the basic html elements
  */
 var DiagramHtmlElement = /** @__PURE__ @class */ (function (_super) {
-    __extends$16(DiagramHtmlElement, _super);
+    __extends$15(DiagramHtmlElement, _super);
     /**
      * set the id for each element
      */
-    function DiagramHtmlElement(nodeId, diagramId, annotationId) {
+    function DiagramHtmlElement(nodeId, diagramId, annotationId, nodeTemplate) {
         var _this = _super.call(this) || this;
         _this.data = '';
         /**
@@ -7197,8 +7239,13 @@ var DiagramHtmlElement = /** @__PURE__ @class */ (function (_super) {
         _this.diagramId = diagramId;
         _this.nodeId = nodeId;
         _this.annotationId = annotationId;
+        _this.templateFn = templateCompiler(nodeTemplate);
         return _this;
     }
+    /** @private */
+    DiagramHtmlElement.prototype.getNodeTemplate = function () {
+        return this.templateFn;
+    };
     Object.defineProperty(DiagramHtmlElement.prototype, "content", {
         /**
          * Gets or sets the geometry of the html element
@@ -7211,7 +7258,9 @@ var DiagramHtmlElement = /** @__PURE__ @class */ (function (_super) {
          */
         set: function (value) {
             this.data = value;
-            this.template = getContent(this, true);
+            if (!this.isTemplate) {
+                this.template = getContent(this, true);
+            }
             this.isDirt = true;
         },
         enumerable: true,
@@ -7241,31 +7290,41 @@ var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, 
 };
 /// <reference path='./node-base-model.d.ts'/>
 var getConnectorType = function (obj) {
-    if (obj) {
-        switch (obj.type) {
-            case 'Bpmn':
-                return BpmnFlow;
-            case 'UmlActivity':
-                return ActivityFlow;
-            case 'UmlClassifier':
-                return RelationShip;
-            default:
-                return ConnectorShape;
-        }
+    if (isBlazor()) {
+        return DiagramConnectorShape;
     }
-    return ConnectorShape;
+    else {
+        if (obj) {
+            switch (obj.type) {
+                case 'Bpmn':
+                    return BpmnFlow;
+                case 'UmlActivity':
+                    return ActivityFlow;
+                case 'UmlClassifier':
+                    return RelationShip;
+                default:
+                    return ConnectorShape;
+            }
+        }
+        return ConnectorShape;
+    }
 };
 var getSegmentType = function (obj) {
     if (obj) {
-        switch (obj.type) {
-            case 'Straight':
-                return StraightSegment;
-            case 'Bezier':
-                return BezierSegment;
-            case 'Orthogonal':
-                return OrthogonalSegment;
-            default:
-                return StraightSegment;
+        if (isBlazor()) {
+            return DiagramConnectorSegment;
+        }
+        else {
+            switch (obj.type) {
+                case 'Straight':
+                    return StraightSegment;
+                case 'Bezier':
+                    return BezierSegment;
+                case 'Orthogonal':
+                    return OrthogonalSegment;
+                default:
+                    return StraightSegment;
+            }
         }
     }
     return undefined;
@@ -7457,6 +7516,50 @@ var OrthogonalSegment = /** @__PURE__ @class */ (function (_super) {
     return OrthogonalSegment;
 }(ConnectorSegment));
 /**
+ * Defines the behavior of orthogonal segments
+ */
+var DiagramConnectorSegment = /** @__PURE__ @class */ (function (_super) {
+    __extends$12(DiagramConnectorSegment, _super);
+    function DiagramConnectorSegment() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    /**
+     * @private
+     * Returns the module of class OrthogonalSegment
+     */
+    DiagramConnectorSegment.prototype.getClassName = function () {
+        return 'DiagramConnectorSegment';
+    };
+    __decorate$6([
+        Property('Straight')
+    ], DiagramConnectorSegment.prototype, "type", void 0);
+    __decorate$6([
+        Property(true)
+    ], DiagramConnectorSegment.prototype, "allowDrag", void 0);
+    __decorate$6([
+        Complex({ x: 0, y: 0 }, Point)
+    ], DiagramConnectorSegment.prototype, "point", void 0);
+    __decorate$6([
+        Complex({ x: 0, y: 0 }, Point)
+    ], DiagramConnectorSegment.prototype, "point1", void 0);
+    __decorate$6([
+        Complex({ x: 0, y: 0 }, Point)
+    ], DiagramConnectorSegment.prototype, "point2", void 0);
+    __decorate$6([
+        Complex({ angle: 0, distance: 0 }, Vector)
+    ], DiagramConnectorSegment.prototype, "vector1", void 0);
+    __decorate$6([
+        Complex({ angle: 0, distance: 0 }, Vector)
+    ], DiagramConnectorSegment.prototype, "vector2", void 0);
+    __decorate$6([
+        Property(null)
+    ], DiagramConnectorSegment.prototype, "length", void 0);
+    __decorate$6([
+        Property(null)
+    ], DiagramConnectorSegment.prototype, "direction", void 0);
+    return DiagramConnectorSegment;
+}(ChildProperty));
+/**
  * Get the direction of the control points while the bezier is connected to the node
  */
 function getDirection(bounds, points, excludeBounds) {
@@ -7635,6 +7738,46 @@ var RelationShip = /** @__PURE__ @class */ (function (_super) {
     return RelationShip;
 }(ConnectorShape));
 /**
+ * Connector shape for blazor
+ */
+var DiagramConnectorShape = /** @__PURE__ @class */ (function (_super) {
+    __extends$12(DiagramConnectorShape, _super);
+    function DiagramConnectorShape() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$6([
+        Property('None')
+    ], DiagramConnectorShape.prototype, "type", void 0);
+    __decorate$6([
+        Property('Directional')
+    ], DiagramConnectorShape.prototype, "associationType", void 0);
+    __decorate$6([
+        Property('Aggregation')
+    ], DiagramConnectorShape.prototype, "relationship", void 0);
+    __decorate$6([
+        Complex({}, ClassifierMultiplicity)
+    ], DiagramConnectorShape.prototype, "multiplicity", void 0);
+    __decorate$6([
+        Property('Sequence')
+    ], DiagramConnectorShape.prototype, "bpmnFlow", void 0);
+    __decorate$6([
+        Property('Default')
+    ], DiagramConnectorShape.prototype, "message", void 0);
+    __decorate$6([
+        Property('Normal')
+    ], DiagramConnectorShape.prototype, "sequence", void 0);
+    __decorate$6([
+        Property('Default')
+    ], DiagramConnectorShape.prototype, "association", void 0);
+    __decorate$6([
+        Property('Object')
+    ], DiagramConnectorShape.prototype, "umlActivityFlow", void 0);
+    __decorate$6([
+        Property(30)
+    ], DiagramConnectorShape.prototype, "exceptionFlowHeight", void 0);
+    return DiagramConnectorShape;
+}(ChildProperty));
+/**
  * Connectors are used to create links between nodes
  */
 var Connector = /** @__PURE__ @class */ (function (_super) {
@@ -7680,7 +7823,8 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
         container.offsetY = bounds.y + container.pivot.y * bounds.height;
         switch (this.shape.type) {
             case 'Bpmn':
-                switch (this.shape.flow) {
+                var flow = (isBlazor() ? this.shape.bpmnFlow : this.shape.flow);
+                switch (flow) {
                     case 'Sequence':
                         bpmnElement = this.getBpmnSequenceFlow();
                         break;
@@ -7697,7 +7841,9 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
                 }
                 break;
             case 'UmlActivity':
-                switch (this.shape.flow) {
+                var activityFlow = (isBlazor() ? this.shape.umlActivityFlow :
+                    this.shape.flow);
+                switch (activityFlow) {
                     case 'Object':
                         this.getUMLObjectFlow();
                         break;
@@ -7745,7 +7891,7 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
         container.width = segment.width;
         container.height = segment.height;
         for (var i = 0; this.annotations !== undefined, i < this.annotations.length; i++) {
-            container.children.push(this.getAnnotationElement(this.annotations[i], this.intermediatePoints, bounds, getDescription, diagram.element.id));
+            container.children.push(this.getAnnotationElement(this.annotations[i], this.intermediatePoints, bounds, getDescription, diagram.element.id, diagram.annotationTemplate));
         }
         this.wrapper = container;
         return container;
@@ -7922,12 +8068,16 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
         return findPath(sourcePt, targetPt);
     };
     /** @private */
-    Connector.prototype.getAnnotationElement = function (annotation, points, bounds, getDescription, diagramId) {
+    Connector.prototype.getAnnotationElement = function (annotation, points, bounds, getDescription, diagramId, annotationTemplate) {
         annotation.id = annotation.id || randomId();
         var textele;
-        if (diagramId && annotation.template) {
-            textele = new DiagramHtmlElement(this.id, diagramId, annotation.id);
-            textele.content = annotation.template;
+        if (isBlazor() && annotation.annotationType === 'Template') {
+            annotation.template = annotation.template ? annotation.template : '';
+        }
+        if (diagramId && (annotation.template || annotation.annotationType === 'Template'
+            || (annotationTemplate && annotation.content === ''))) {
+            textele = new DiagramHtmlElement(this.id, diagramId, annotation.id, annotationTemplate);
+            textele = getTemplateContent(textele, annotation, annotationTemplate);
         }
         else {
             textele = new TextElement();
@@ -8313,12 +8463,14 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
                 if (connector.wrapper.children[3] instanceof PathElement) {
                     element = connector.wrapper.children[3];
                 }
-                if (connector.shape.flow === 'Message') {
+                if (connector.shape.flow === 'Message' ||
+                    (isBlazor() && connector.shape.bpmnFlow === 'Message')) {
                     this.updateShapePosition(connector, element);
                 }
                 break;
             case 'UmlActivity':
-                if (connector.shape.flow === 'Exception') {
+                if (connector.shape.flow === 'Exception' || (isBlazor() &&
+                    connector.shape.umlActivityFlow === 'Exception')) {
                     this.getUMLExceptionFlow(connector.wrapper.children[0]);
                 }
                 break;
@@ -8442,7 +8594,7 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
     return Connector;
 }(NodeBase));
 
-var __extends$17 = (undefined && undefined.__extends) || (function () {
+var __extends$16 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -8455,7 +8607,7 @@ var __extends$17 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$10 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$9 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -8474,7 +8626,7 @@ var __decorate$10 = (undefined && undefined.__decorate) || function (decorators,
  * ```
  */
 var Ruler = /** @__PURE__ @class */ (function (_super) {
-    __extends$17(Ruler, _super);
+    __extends$16(Ruler, _super);
     /**
      * Constructor for creating the Ruler Component
      */
@@ -8810,28 +8962,28 @@ var Ruler = /** @__PURE__ @class */ (function (_super) {
     Ruler.prototype.unWireEvents = function () {
         //unWire Events
     };
-    __decorate$10([
+    __decorate$9([
         Property(5)
     ], Ruler.prototype, "interval", void 0);
-    __decorate$10([
+    __decorate$9([
         Property(100)
     ], Ruler.prototype, "segmentWidth", void 0);
-    __decorate$10([
+    __decorate$9([
         Property('Horizontal')
     ], Ruler.prototype, "orientation", void 0);
-    __decorate$10([
+    __decorate$9([
         Property('RightOrBottom')
     ], Ruler.prototype, "tickAlignment", void 0);
-    __decorate$10([
+    __decorate$9([
         Property('red')
     ], Ruler.prototype, "markerColor", void 0);
-    __decorate$10([
+    __decorate$9([
         Property(25)
     ], Ruler.prototype, "thickness", void 0);
-    __decorate$10([
+    __decorate$9([
         Property(null)
     ], Ruler.prototype, "arrangeTick", void 0);
-    __decorate$10([
+    __decorate$9([
         Property(400)
     ], Ruler.prototype, "length", void 0);
     return Ruler;
@@ -9329,7 +9481,7 @@ function avoidDrawSelector(rendererActions) {
     }
 }
 
-var __extends$18 = (undefined && undefined.__extends) || (function () {
+var __extends$17 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -9342,7 +9494,7 @@ var __extends$18 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$11 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$10 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -9388,7 +9540,7 @@ var __decorate$11 = (undefined && undefined.__decorate) || function (decorators,
  * @default {}
  */
 var UserHandle = /** @__PURE__ @class */ (function (_super) {
-    __extends$18(UserHandle, _super);
+    __extends$17(UserHandle, _super);
     function UserHandle() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -9399,54 +9551,60 @@ var UserHandle = /** @__PURE__ @class */ (function (_super) {
     UserHandle.prototype.getClassName = function () {
         return 'UserHandle';
     };
-    __decorate$11([
+    __decorate$10([
         Property('')
     ], UserHandle.prototype, "name", void 0);
-    __decorate$11([
+    __decorate$10([
         Property('')
     ], UserHandle.prototype, "pathData", void 0);
-    __decorate$11([
+    __decorate$10([
         Property('')
     ], UserHandle.prototype, "content", void 0);
-    __decorate$11([
+    __decorate$10([
         Property('')
     ], UserHandle.prototype, "source", void 0);
-    __decorate$11([
+    __decorate$10([
         Property('#000000')
     ], UserHandle.prototype, "backgroundColor", void 0);
-    __decorate$11([
+    __decorate$10([
         Property('top')
     ], UserHandle.prototype, "side", void 0);
-    __decorate$11([
+    __decorate$10([
         Property('')
     ], UserHandle.prototype, "borderColor", void 0);
-    __decorate$11([
+    __decorate$10([
         Property(0.5)
     ], UserHandle.prototype, "borderWidth", void 0);
-    __decorate$11([
+    __decorate$10([
         Property(25)
     ], UserHandle.prototype, "size", void 0);
-    __decorate$11([
+    __decorate$10([
         Property('white')
     ], UserHandle.prototype, "pathColor", void 0);
-    __decorate$11([
+    __decorate$10([
         Property(10)
     ], UserHandle.prototype, "displacement", void 0);
-    __decorate$11([
+    __decorate$10([
         Property(true)
     ], UserHandle.prototype, "visible", void 0);
-    __decorate$11([
+    __decorate$10([
         Property(0)
     ], UserHandle.prototype, "offset", void 0);
-    __decorate$11([
+    __decorate$10([
         Complex({}, Margin)
     ], UserHandle.prototype, "margin", void 0);
-    __decorate$11([
+    __decorate$10([
         Property('Center')
     ], UserHandle.prototype, "horizontalAlignment", void 0);
-    __decorate$11([
+    __decorate$10([
         Property('Center')
     ], UserHandle.prototype, "verticalAlignment", void 0);
+    __decorate$10([
+        Property(false)
+    ], UserHandle.prototype, "disableNodes", void 0);
+    __decorate$10([
+        Property(false)
+    ], UserHandle.prototype, "disableConnectors", void 0);
     return UserHandle;
 }(ChildProperty));
 
@@ -9486,7 +9644,7 @@ var umlActivityShapes = {
     'Note': 'M20 12 L4 12 L4 22 L22 22 L22 14 L20 14 L20 12 L22 14 Z',
 };
 
-var __extends$19 = (undefined && undefined.__extends) || (function () {
+var __extends$18 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -9499,7 +9657,7 @@ var __extends$19 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$12 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$11 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -9509,14 +9667,14 @@ var __decorate$12 = (undefined && undefined.__decorate) || function (decorators,
  * Defines the combination of keys and modifier keys
  */
 var KeyGesture = /** @__PURE__ @class */ (function (_super) {
-    __extends$19(KeyGesture, _super);
+    __extends$18(KeyGesture, _super);
     function KeyGesture() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$12([
+    __decorate$11([
         Property()
     ], KeyGesture.prototype, "key", void 0);
-    __decorate$12([
+    __decorate$11([
         Property()
     ], KeyGesture.prototype, "keyModifiers", void 0);
     return KeyGesture;
@@ -9525,7 +9683,7 @@ var KeyGesture = /** @__PURE__ @class */ (function (_super) {
  * Defines a command and a key gesture to define when the command should be executed
  */
 var Command = /** @__PURE__ @class */ (function (_super) {
-    __extends$19(Command, _super);
+    __extends$18(Command, _super);
     function Command() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -9536,19 +9694,19 @@ var Command = /** @__PURE__ @class */ (function (_super) {
     Command.prototype.getClassName = function () {
         return 'Command';
     };
-    __decorate$12([
+    __decorate$11([
         Property('')
     ], Command.prototype, "name", void 0);
-    __decorate$12([
+    __decorate$11([
         Property()
     ], Command.prototype, "canExecute", void 0);
-    __decorate$12([
+    __decorate$11([
         Property()
     ], Command.prototype, "execute", void 0);
-    __decorate$12([
+    __decorate$11([
         Complex({}, KeyGesture)
     ], Command.prototype, "gesture", void 0);
-    __decorate$12([
+    __decorate$11([
         Property('')
     ], Command.prototype, "parameter", void 0);
     return Command;
@@ -9557,11 +9715,11 @@ var Command = /** @__PURE__ @class */ (function (_super) {
  * Defines the collection of commands and the corresponding key gestures
  */
 var CommandManager = /** @__PURE__ @class */ (function (_super) {
-    __extends$19(CommandManager, _super);
+    __extends$18(CommandManager, _super);
     function CommandManager() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$12([
+    __decorate$11([
         Collection([], Command)
     ], CommandManager.prototype, "commands", void 0);
     return CommandManager;
@@ -9570,23 +9728,23 @@ var CommandManager = /** @__PURE__ @class */ (function (_super) {
  * Defines the behavior of the context menu items
  */
 var ContextMenuSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$19(ContextMenuSettings, _super);
+    __extends$18(ContextMenuSettings, _super);
     function ContextMenuSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$12([
+    __decorate$11([
         Property()
     ], ContextMenuSettings.prototype, "show", void 0);
-    __decorate$12([
+    __decorate$11([
         Property()
     ], ContextMenuSettings.prototype, "showCustomMenuOnly", void 0);
-    __decorate$12([
+    __decorate$11([
         Property()
     ], ContextMenuSettings.prototype, "items", void 0);
     return ContextMenuSettings;
 }(ChildProperty));
 
-var __extends$20 = (undefined && undefined.__extends) || (function () {
+var __extends$19 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -9603,7 +9761,7 @@ var __extends$20 = (undefined && undefined.__extends) || (function () {
  * Grid panel is used to arrange the children in a table like structure
  */
 var GridPanel = /** @__PURE__ @class */ (function (_super) {
-    __extends$20(GridPanel, _super);
+    __extends$19(GridPanel, _super);
     function GridPanel() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.childTable = [];
@@ -10207,7 +10365,7 @@ var GridRow = /** @__PURE__ @class */ (function () {
 }());
 /** @private */
 var GridCell = /** @__PURE__ @class */ (function (_super) {
-    __extends$20(GridCell, _super);
+    __extends$19(GridCell, _super);
     function GridCell() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.columnSpan = 1;
@@ -10217,7 +10375,7 @@ var GridCell = /** @__PURE__ @class */ (function (_super) {
     return GridCell;
 }(Canvas));
 var GridCellItem = /** @__PURE__ @class */ (function (_super) {
-    __extends$20(GridCellItem, _super);
+    __extends$19(GridCellItem, _super);
     function GridCellItem() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.rowId = 0;
@@ -10351,40 +10509,54 @@ function createHelper(diagram, obj) {
 }
 /** @private */
 function renderContainerHelper(diagram, obj) {
+    diagram.enableServerDataBinding(false);
     var object;
     var container;
     var nodes;
-    if (diagram.selectedObject.helperObject) {
-        nodes = diagram.selectedObject.helperObject;
+    if ((!isBlazor()) || (isBlazor() && (diagram.diagramActions & DiagramAction.ToolAction))) {
+        if (diagram.selectedObject.helperObject) {
+            nodes = diagram.selectedObject.helperObject;
+        }
+        else if (diagram.selectedItems.nodes.length > 0 || diagram.selectedItems.connectors.length > 0) {
+            if (obj instanceof Selector && obj.nodes.length + obj.connectors.length === 1) {
+                object = (obj.nodes.length > 0) ? obj.nodes[0] : obj.connectors[0];
+                container = diagram.selectedItems.wrapper.children[0];
+            }
+            else {
+                object = obj;
+                if (isBlazor()) {
+                    if (obj === diagram.selectedItems.nodes[0]) {
+                        container = diagram.selectedItems.wrapper;
+                    }
+                    else {
+                        container = obj.wrapper;
+                    }
+                }
+                else {
+                    container = diagram.selectedItems.wrapper;
+                }
+            }
+            diagram.selectedObject.actualObject = object;
+            if ((!diagram.currentSymbol) && (((object.isLane && canLaneInterchange(object, diagram) &&
+                checkParentAsContainer(diagram, object))
+                || ((!object.isLane) && checkParentAsContainer(diagram, object))) ||
+                ((diagram.constraints & DiagramConstraints.LineRouting) && diagram.selectedItems.nodes.length > 0))) {
+                var node = {
+                    id: 'helper',
+                    rotateAngle: container.rotateAngle,
+                    offsetX: container.offsetX, offsetY: container.offsetY,
+                    minWidth: container.minWidth, minHeight: container.minHeight,
+                    maxWidth: container.maxWidth, maxHeight: container.maxHeight,
+                    width: container.actualSize.width,
+                    height: container.actualSize.height,
+                    style: { strokeDashArray: '2 2', fill: 'transparent', strokeColor: '#7D7D7D', strokeWidth: 2 }
+                };
+                nodes = createHelper(diagram, node);
+                diagram.selectedObject.helperObject = nodes;
+            }
+        }
     }
-    else if (diagram.selectedItems.nodes.length > 0 || diagram.selectedItems.connectors.length > 0) {
-        if (obj instanceof Selector && obj.nodes.length + obj.connectors.length === 1) {
-            object = (obj.nodes.length > 0) ? obj.nodes[0] : obj.connectors[0];
-            container = diagram.selectedItems.wrapper.children[0];
-        }
-        else {
-            object = obj;
-            container = diagram.selectedItems.wrapper;
-        }
-        diagram.selectedObject.actualObject = object;
-        if ((!diagram.currentSymbol) && (((object.isLane && canLaneInterchange(object, diagram) &&
-            checkParentAsContainer(diagram, object))
-            || ((!object.isLane) && checkParentAsContainer(diagram, object))) ||
-            ((diagram.constraints & DiagramConstraints.LineRouting) && diagram.selectedItems.nodes.length > 0))) {
-            var node = {
-                id: 'helper',
-                rotateAngle: container.rotateAngle,
-                offsetX: container.offsetX, offsetY: container.offsetY,
-                minWidth: container.minWidth, minHeight: container.minHeight,
-                maxWidth: container.maxWidth, maxHeight: container.maxHeight,
-                width: container.actualSize.width,
-                height: container.actualSize.height,
-                style: { strokeDashArray: '2 2', fill: 'transparent', strokeColor: '#7D7D7D', strokeWidth: 2 }
-            };
-            nodes = createHelper(diagram, node);
-            diagram.selectedObject.helperObject = nodes;
-        }
-    }
+    diagram.enableServerDataBinding(true);
     return nodes;
 }
 /** @private */
@@ -11324,6 +11496,7 @@ function laneInterChanged(diagram, obj, target, position) {
                 undoElement = {
                     target: cloneObject(target), source: cloneObject(obj)
                 };
+                temp = lanes[sourceLaneIndex];
                 lanes.splice(sourceLaneIndex, 1);
                 lanes.splice(targetLaneIndex, 0, temp);
                 redoElement = {
@@ -12532,7 +12705,9 @@ function setSwimLaneDefaults(child, node) {
  */
 function setUMLActivityDefaults(child, node) {
     if (node instanceof Node) {
-        switch (child.shape.shape) {
+        var shape = (isBlazor() ? child.shape.umlActivityShape :
+            child.shape.shape);
+        switch (shape) {
             case 'JoinNode':
                 if (!child.width) {
                     node.width = 20;
@@ -12568,7 +12743,9 @@ function setUMLActivityDefaults(child, node) {
         }
     }
     else {
-        switch (child.shape.flow) {
+        var flow = (isBlazor() ?
+            child.shape.umlActivityFlow : child.shape.flow);
+        switch (flow) {
             case 'Object':
                 if (!child.style || !child.style.strokeDashArray) {
                     node.style.strokeDashArray = '8 4';
@@ -12594,13 +12771,15 @@ function setUMLActivityDefaults(child, node) {
         }
     }
 }
+/* tslint:disable */
 /**
  * @private
  */
 function setConnectorDefaults(child, node) {
     switch ((child.shape).type) {
         case 'Bpmn':
-            switch (child.shape.flow) {
+            var bpmnFlow = (isBlazor() ? child.shape.bpmnFlow : child.shape.flow);
+            switch (bpmnFlow) {
                 case 'Sequence':
                     if ((((child.shape.sequence) === 'Normal' && child.type !== 'Bezier')) ||
                         ((child.shape.sequence) === 'Default') || ((child.shape.sequence) === 'Conditional')) {
@@ -12644,7 +12823,9 @@ function setConnectorDefaults(child, node) {
             }
             break;
         case 'UmlActivity':
-            switch (child.shape.flow) {
+            var flow = (isBlazor() ?
+                child.shape.umlActivityFlow : child.shape.flow);
+            switch (flow) {
                 case 'Exception':
                     if (((child.shape.association) === 'Directional') ||
                         ((child.shape.association) === 'BiDirectional')) {
@@ -12675,7 +12856,8 @@ function setConnectorDefaults(child, node) {
                 }
                 hasRelation = true;
             }
-            else if (child.shape.relationship === 'Aggregation') {
+            else if (child.shape.relationship === 'Aggregation' ||
+                child.shape.relationship === undefined) {
                 if (node.sourceDecorator && node.sourceDecorator.style) {
                     node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
                         child.sourceDecorator.style.fill) || 'white';
@@ -12703,6 +12885,7 @@ function setConnectorDefaults(child, node) {
             break;
     }
 }
+/* tslint:enable */
 /** @private */
 function findNearestPoint(reference, start, end) {
     var shortestPoint;
@@ -12860,6 +13043,14 @@ function updateLayoutValue(actualNode, defaultValue, nodes, node) {
             }
         }
     }
+    if (!actualNode.hasSubTree && defaultValue.canEnableSubTree) {
+        actualNode.orientation = node.layoutInfo.orientation;
+        actualNode.type = node.layoutInfo.type;
+        if (node.layoutInfo.offset !== actualNode.offset && (node.layoutInfo.offset) !== undefined) {
+            actualNode.offset = node.layoutInfo.offset;
+        }
+    }
+    node.layoutInfo.hasSubTree = actualNode.hasSubTree;
 }
 /* tslint:enable:no-string-literal */
 /** @private */
@@ -13362,7 +13553,7 @@ function getConstructor(model, defaultObject) {
                 constructor = new Image$1(parent, '', obj);
                 break;
             case 'Text':
-                constructor = new Text(parent, '', obj);
+                constructor = new Text$1(parent, '', obj);
                 break;
             case 'BasicShape':
                 constructor = new BasicShape(parent, '', obj);
@@ -13482,6 +13673,7 @@ function getConstructor(model, defaultObject) {
 /* tslint:enable */
 /** @private */
 function deserialize(model, diagram) {
+    diagram.enableServerDataBinding(false);
     diagram.clear();
     diagram.protectPropertyChange(true);
     var map = diagram.dataSourceSettings.doBinding;
@@ -13563,6 +13755,7 @@ function deserialize(model, diagram) {
         dataObj.selectedItems.connectors = [];
     }
     diagram.selectedItems = dataObj.selectedItems;
+    diagram.enableServerDataBinding(true);
     return dataObj;
 }
 /** @private */
@@ -13642,8 +13835,10 @@ function updateStyle(changedObject, target) {
                 style.textDecoration = changedObject.textDecoration;
                 break;
             case 'gradient':
-                updateGradient(changedObject.gradient, style.gradient);
-                break;
+                if (style.gradient) {
+                    updateGradient(changedObject.gradient, style.gradient);
+                    break;
+                }
         }
     }
     if (target instanceof TextElement) {
@@ -13728,7 +13923,7 @@ function updateShapeContent(content, actualObject, diagram) {
     content.verticalAlignment = actualObject.wrapper.children[0].verticalAlignment;
     content.relativeMode = actualObject.wrapper.children[0].relativeMode;
     content.visible = actualObject.wrapper.children[0].visible;
-    if (actualObject.shape instanceof Text) {
+    if (actualObject.shape instanceof Text$1) {
         content.margin = actualObject.shape.margin;
     }
     content.id = actualObject.wrapper.children[0].id;
@@ -13769,22 +13964,27 @@ function updateShape(node, actualObject, oldObject, diagram) {
             break;
         case 'Basic':
             var element = void 0;
-            element = actualObject.shape.shape === 'Rectangle' ? new DiagramElement() : new PathElement();
-            if (actualObject.shape.shape === 'Polygon') {
+            element = ((isBlazor() ? actualObject.shape.basicShape === 'Rectangle' :
+                actualObject.shape.shape === 'Rectangle')) ? new DiagramElement() : new PathElement();
+            if ((!isBlazor() && actualObject.shape.shape === 'Polygon') ||
+                (isBlazor() && actualObject.shape.basicShape === 'Polygon')) {
                 element.data = getPolygonPath(actualObject.shape.points);
             }
             else {
-                element.data = getBasicShape(actualObject.shape.shape);
+                element.data = getBasicShape((isBlazor() ? actualObject.shape.basicShape :
+                    actualObject.shape.shape));
             }
             updateShapeContent(content, actualObject, diagram);
-            if (actualObject.shape.shape === 'Rectangle') {
+            if ((!isBlazor() && actualObject.shape.shape === 'Rectangle') ||
+                (isBlazor() && actualObject.shape.basicShape === 'Rectangle')) {
                 element.cornerRadius = actualObject.shape.cornerRadius;
             }
             content = element;
             break;
         case 'Flow':
             var flowShapeElement = new PathElement();
-            flowShapeElement.data = getFlowShape(actualObject.shape.shape);
+            var shape = (isBlazor()) ? actualObject.shape.flowShape : actualObject.shape.shape;
+            flowShapeElement.data = getFlowShape(shape);
             content = flowShapeElement;
             updateShapeContent(content, actualObject, diagram);
             break;
@@ -13807,7 +14007,7 @@ function updateShape(node, actualObject, oldObject, diagram) {
     else {
         content.width = actualObject.wrapper.children[0].width;
         content.height = actualObject.wrapper.children[0].height;
-        if (actualObject.shape instanceof Text) {
+        if (actualObject.shape instanceof Text$1) {
             content.margin = actualObject.shape.margin;
         }
         content.style = actualObject.style;
@@ -13856,7 +14056,9 @@ function updateContent(newValues, actualObject, diagram) {
             var flowshapedata = getFlowShape(shapes.toString());
             actualObject.wrapper.children[0].data = flowshapedata;
         }
-        else if (actualObject.shape.type === 'UmlActivity' && newValues.shape.shape !== undefined) {
+        else if (actualObject.shape.type === 'UmlActivity' &&
+            ((isBlazor() && newValues.shape.umlActivityShape !== undefined) ||
+                (!isBlazor() && newValues.shape.shape !== undefined))) {
             updateUmlActivityNode(actualObject, newValues);
         }
         else if (newValues.shape.cornerRadius !== undefined) {
@@ -13873,17 +14075,27 @@ function updateContent(newValues, actualObject, diagram) {
 }
 /** @private */
 function updateUmlActivityNode(actualObject, newValues) {
-    actualObject.shape.shape = newValues.shape.shape;
-    var shapes = actualObject.shape.shape;
+    if (!isBlazor()) {
+        actualObject.shape.shape = newValues.shape.shape;
+    }
+    else {
+        actualObject.shape.umlActivityShape = newValues.shape.umlActivityShape;
+    }
+    var shapes = !isBlazor() ? actualObject.shape.shape :
+        actualObject.shape.umlActivityShape;
     var umlActivityShapeData = getUMLActivityShape(shapes.toString());
-    if (actualObject.shape.shape === 'InitialNode') {
+    if ((isBlazor() && actualObject.shape.umlActivityShape === 'InitialNode') ||
+        (!isBlazor() && actualObject.shape.shape === 'InitialNode')) {
         actualObject.wrapper.children[0].style.fill = 'black';
     }
-    else if (actualObject.shape.shape === 'ForkNode' ||
-        actualObject.shape.shape === 'JoinNode') {
+    else if ((!isBlazor() && (actualObject.shape.shape === 'ForkNode' ||
+        actualObject.shape.shape === 'JoinNode')) ||
+        ((isBlazor() && (actualObject.shape.umlActivityShape === 'ForkNode' ||
+            actualObject.shape.umlActivityShape === 'JoinNode')))) {
         actualObject.wrapper.children[0].style.fill = 'black';
     }
-    else if (actualObject.shape.shape === 'FinalNode') {
+    else if ((!isBlazor() && actualObject.shape.shape === 'FinalNode') ||
+        (isBlazor() && actualObject.shape.umlActivityShape === 'FinalNode')) {
         if (actualObject instanceof Node) {
             actualObject.wrapper = getUMLFinalNode(actualObject);
         }
@@ -13927,10 +14139,11 @@ function getUMLFinalNode(node) {
 }
 /** @private */
 function getUMLActivityShapes(umlActivityShape, content, node) {
-    var umlActivityShapeData = getUMLActivityShape(node.shape.shape);
+    var shape = (isBlazor() ? node.shape.umlActivityShape : node.shape.shape);
+    var umlActivityShapeData = getUMLActivityShape(shape);
     umlActivityShape.data = umlActivityShapeData;
     content = umlActivityShape;
-    switch (node.shape.shape) {
+    switch (shape) {
         case 'StructuredNode':
             if (node.annotations) {
                 for (var i = 0; i < node.annotations.length; i++) {
@@ -14095,9 +14308,12 @@ function findPort(node, id) {
     var port;
     var portId = id.split('_');
     id = portId[portId.length - 1];
-    for (var i = 0; i < node.ports.length; i++) {
-        if (id === node.ports[i].id) {
-            return node.ports[i];
+    if (node) {
+        node = node;
+        for (var i = 0; i < node.ports.length; i++) {
+            if (id === node.ports[i].id) {
+                return node.ports[i];
+            }
         }
     }
     return port;
@@ -14503,11 +14719,92 @@ function cloneBlazorObject(args) {
 /** @private */
 function checkBrowserInfo() {
     if ((navigator.platform.indexOf('Mac') >= 0 || navigator.platform.indexOf('iPad') >= 0
-        || navigator.platform.indexOf('iPhone') >= 0) && Browser.info.name === 'safari') {
+        || navigator.platform.indexOf('iPhone') >= 0 || navigator.platform.indexOf('MacIntel') >= 0)
+        && (Browser.info.name === 'safari' || Browser.info.name === 'webkit')) {
         return true;
     }
     return false;
 }
+/** @private */
+function canMeasureDecoratorPath(objects) {
+    if (objects.indexOf('shape') !== -1 || objects.indexOf('pathData') !== -1 ||
+        objects.indexOf('width') !== -1 || objects.indexOf('height') !== -1) {
+        return true;
+    }
+    return false;
+}
+
+var __extends$20 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$12 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Defines the behavior of default IconShapes
+ */
+var IconShape = /** @__PURE__ @class */ (function (_super) {
+    __extends$20(IconShape, _super);
+    function IconShape() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$12([
+        Property('None')
+    ], IconShape.prototype, "shape", void 0);
+    __decorate$12([
+        Property('white')
+    ], IconShape.prototype, "fill", void 0);
+    __decorate$12([
+        Property('Auto')
+    ], IconShape.prototype, "horizontalAlignment", void 0);
+    __decorate$12([
+        Property('Auto')
+    ], IconShape.prototype, "verticalAlignment", void 0);
+    __decorate$12([
+        Property(10)
+    ], IconShape.prototype, "width", void 0);
+    __decorate$12([
+        Property(10)
+    ], IconShape.prototype, "height", void 0);
+    __decorate$12([
+        Complex({ x: 0.5, y: 1 }, Point)
+    ], IconShape.prototype, "offset", void 0);
+    __decorate$12([
+        Property('#1a1a1a')
+    ], IconShape.prototype, "borderColor", void 0);
+    __decorate$12([
+        Property(1)
+    ], IconShape.prototype, "borderWidth", void 0);
+    __decorate$12([
+        Complex({}, Margin)
+    ], IconShape.prototype, "margin", void 0);
+    __decorate$12([
+        Property('')
+    ], IconShape.prototype, "pathData", void 0);
+    __decorate$12([
+        Property('')
+    ], IconShape.prototype, "content", void 0);
+    __decorate$12([
+        Property(0)
+    ], IconShape.prototype, "cornerRadius", void 0);
+    __decorate$12([
+        Complex({ left: 2, right: 2, top: 2, bottom: 2 }, Margin)
+    ], IconShape.prototype, "padding", void 0);
+    return IconShape;
+}(ChildProperty));
 
 var __extends$21 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -14947,6 +15244,64 @@ function getStyle(stack, node) {
     return newStyle;
 }
 
+var __extends$22 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$13 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * A collection of JSON objects where each object represents a layer.
+ * Layer is a named category of diagram shapes.
+ */
+var LayoutInfo = /** @__PURE__ @class */ (function (_super) {
+    __extends$22(LayoutInfo, _super);
+    function LayoutInfo() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$13([
+        Property('Horizontal')
+    ], LayoutInfo.prototype, "orientation", void 0);
+    __decorate$13([
+        Property('Center')
+    ], LayoutInfo.prototype, "type", void 0);
+    __decorate$13([
+        Property(undefined)
+    ], LayoutInfo.prototype, "offset", void 0);
+    __decorate$13([
+        Property(false)
+    ], LayoutInfo.prototype, "enableRouting", void 0);
+    __decorate$13([
+        Property([])
+    ], LayoutInfo.prototype, "children", void 0);
+    __decorate$13([
+        Property('')
+    ], LayoutInfo.prototype, "assistants", void 0);
+    __decorate$13([
+        Property('')
+    ], LayoutInfo.prototype, "level", void 0);
+    __decorate$13([
+        Property('')
+    ], LayoutInfo.prototype, "hasSubTree", void 0);
+    __decorate$13([
+        Property('')
+    ], LayoutInfo.prototype, "rows", void 0);
+    return LayoutInfo;
+}(ChildProperty));
+
 var __extends$2 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -14969,34 +15324,39 @@ var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, 
 /// <reference path='./node-base-model.d.ts'/>
 var getShapeType = function (obj) {
     if (obj) {
-        switch (obj.type) {
-            case 'Basic':
-                return BasicShape;
-            case 'Flow':
-                return FlowShape;
-            case 'Path':
-                return Path;
-            case 'Image':
-                return Image$1;
-            case 'Text':
-                return Text;
-            case 'Bpmn':
-                return BpmnShape;
-            case 'Native':
-                return Native;
-            case 'HTML':
-                return Html;
-            case 'UmlActivity':
-                return UmlActivityShape;
-            case 'UmlClassifier':
-                return UmlClassifierShape;
-            case 'SwimLane':
-                return SwimLane;
-            default:
-                return BasicShape;
+        if (isBlazor()) {
+            return DiagramShape;
+        }
+        else {
+            switch (obj.type) {
+                case 'Basic':
+                    return BasicShape;
+                case 'Flow':
+                    return FlowShape;
+                case 'Path':
+                    return Path;
+                case 'Image':
+                    return Image$1;
+                case 'Text':
+                    return Text$1;
+                case 'Bpmn':
+                    return BpmnShape;
+                case 'Native':
+                    return Native;
+                case 'HTML':
+                    return Html;
+                case 'UmlActivity':
+                    return UmlActivityShape;
+                case 'UmlClassifier':
+                    return UmlClassifierShape;
+                case 'SwimLane':
+                    return SwimLane;
+                default:
+                    return BasicShape;
+            }
         }
     }
-    return BasicShape;
+    return (isBlazor()) ? DiagramShape : BasicShape;
 };
 /**
  * Defines the behavior of default shape
@@ -15115,7 +15475,7 @@ var Image$1 = /** @__PURE__ @class */ (function (_super) {
 /**
  * Defines the behavior of the text shape
  */
-var Text = /** @__PURE__ @class */ (function (_super) {
+var Text$1 = /** @__PURE__ @class */ (function (_super) {
     __extends$2(Text, _super);
     function Text() {
         return _super !== null && _super.apply(this, arguments) || this;
@@ -15718,6 +16078,97 @@ var UmlClassifierShape = /** @__PURE__ @class */ (function (_super) {
     ], UmlClassifierShape.prototype, "classifier", void 0);
     return UmlClassifierShape;
 }(Shape));
+/* tslint:disable */
+/**
+ * Defines the behavior of the UMLActivity shape
+ */
+var DiagramShape = /** @__PURE__ @class */ (function (_super) {
+    __extends$2(DiagramShape, _super);
+    function DiagramShape() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    /**
+     * @private
+     * Returns the name of class UmlClassifierShape
+     */
+    DiagramShape.prototype.getClassName = function () {
+        return 'DiagramShape';
+    };
+    __decorate$2([
+        Property('Basic')
+    ], DiagramShape.prototype, "type", void 0);
+    __decorate$2([
+        Property('Rectangle')
+    ], DiagramShape.prototype, "basicShape", void 0);
+    __decorate$2([
+        Property('Terminator')
+    ], DiagramShape.prototype, "flowShape", void 0);
+    __decorate$2([
+        Property('Event')
+    ], DiagramShape.prototype, "bpmnShape", void 0);
+    __decorate$2([
+        Property('Action')
+    ], DiagramShape.prototype, "umlActivityShape", void 0);
+    __decorate$2([
+        Property('')
+    ], DiagramShape.prototype, "data", void 0);
+    __decorate$2([
+        Property('')
+    ], DiagramShape.prototype, "content", void 0);
+    __decorate$2([
+        Property('')
+    ], DiagramShape.prototype, "textContent", void 0);
+    __decorate$2([
+        Property('Stretch')
+    ], DiagramShape.prototype, "scale", void 0);
+    __decorate$2([
+        Property('')
+    ], DiagramShape.prototype, "source", void 0);
+    __decorate$2([
+        Property('None')
+    ], DiagramShape.prototype, "align", void 0);
+    __decorate$2([
+        Complex({}, Margin)
+    ], DiagramShape.prototype, "margin", void 0);
+    __decorate$2([
+        Property(0)
+    ], DiagramShape.prototype, "cornerRadius", void 0);
+    __decorate$2([
+        Collection([], Point)
+    ], DiagramShape.prototype, "points", void 0);
+    __decorate$2([
+        Complex({}, BpmnDataObject)
+    ], DiagramShape.prototype, "dataObject", void 0);
+    __decorate$2([
+        Complex({}, BpmnEvent)
+    ], DiagramShape.prototype, "event", void 0);
+    __decorate$2([
+        Complex({}, BpmnGateway)
+    ], DiagramShape.prototype, "gateway", void 0);
+    __decorate$2([
+        Collection([], BpmnAnnotation)
+    ], DiagramShape.prototype, "annotations", void 0);
+    __decorate$2([
+        Complex({}, BpmnActivity)
+    ], DiagramShape.prototype, "activity", void 0);
+    __decorate$2([
+        Complex({}, BpmnAnnotation)
+    ], DiagramShape.prototype, "annotation", void 0);
+    __decorate$2([
+        Complex({}, UmlEnumeration)
+    ], DiagramShape.prototype, "enumerationShape", void 0);
+    __decorate$2([
+        Property('Class')
+    ], DiagramShape.prototype, "classifier", void 0);
+    __decorate$2([
+        Complex({}, UmlClass)
+    ], DiagramShape.prototype, "classShape", void 0);
+    __decorate$2([
+        Complex({}, UmlInterface)
+    ], DiagramShape.prototype, "interfaceShape", void 0);
+    return DiagramShape;
+}(ChildProperty));
+/* tslint:enable */
 /**
  * Defines the behavior of nodes
  */
@@ -15810,32 +16261,32 @@ var Node = /** @__PURE__ @class */ (function (_super) {
                 break;
             case 'Text':
                 var textContent = new TextElement();
-                textContent.content = this.shape.content;
+                textContent.content = (isBlazor() ? this.shape.textContent : this.shape.content);
                 content = textContent;
                 textStyle = this.style;
                 content.style = textStyle;
                 break;
             case 'Basic':
-                if (this.shape.shape === 'Rectangle') {
+                if ((!isBlazor() && this.shape.shape === 'Rectangle') || (isBlazor() && this.shape.basicShape === 'Rectangle')) {
                     var basicshape = new DiagramElement();
                     content = basicshape;
                     content.cornerRadius = this.shape.cornerRadius;
                 }
-                else if (this.shape.shape === 'Polygon') {
+                else if ((!isBlazor() && this.shape.shape === 'Polygon') || (isBlazor() && this.shape.basicShape === 'Polygon')) {
                     var path = new PathElement();
                     path.data = getPolygonPath(this.shape.points);
                     content = path;
                 }
                 else {
                     var basicshape = new PathElement();
-                    var basicshapedata = getBasicShape(this.shape.shape);
+                    var basicshapedata = getBasicShape((isBlazor()) ? this.shape.basicShape : this.shape.shape);
                     basicshape.data = basicshapedata;
                     content = basicshape;
                 }
                 break;
             case 'Flow':
                 var flowshape = new PathElement();
-                var flowshapedata = getFlowShape(this.shape.shape);
+                var flowshapedata = getFlowShape((isBlazor() ? this.shape.flowShape : this.shape.shape));
                 flowshape.data = flowshapedata;
                 content = flowshape;
                 break;
@@ -15870,8 +16321,14 @@ var Node = /** @__PURE__ @class */ (function (_super) {
                 content = nativeContent;
                 break;
             case 'HTML':
-                var htmlContent = new DiagramHtmlElement(this.id, diagram.element.id);
-                htmlContent.content = this.shape.content;
+                var htmlContent = new DiagramHtmlElement(this.id, diagram.element.id, undefined, diagram.nodeTemplate);
+                if (this.shape.content) {
+                    htmlContent.content = this.shape.content;
+                }
+                else if (diagram.nodeTemplate) {
+                    htmlContent.isTemplate = true;
+                    htmlContent.template = htmlContent.content = getContent(htmlContent, true, this);
+                }
                 content = htmlContent;
                 break;
             case 'UmlClassifier':
@@ -15911,11 +16368,13 @@ var Node = /** @__PURE__ @class */ (function (_super) {
         if (this.maxWidth !== undefined) {
             content.maxWidth = this.maxWidth;
         }
-        if (this.shape.shape === 'Rectangle' && !this.shape.cornerRadius) {
+        if ((!isBlazor() && this.shape.shape === 'Rectangle' && !this.shape.cornerRadius) ||
+            ((isBlazor()) && (this.shape.basicShape === 'Rectangle'
+                && this.shape.type === "Basic" && !this.shape.cornerRadius))) {
             content.isRectElement = true;
         }
         content.verticalAlignment = 'Stretch';
-        if (this.shape instanceof Text) {
+        if ((this.shape instanceof Text$1) || (isBlazor() && this.shape.type === "Text")) {
             content.margin = this.shape.margin;
         }
         if (canShadow(this)) {
@@ -15923,8 +16382,9 @@ var Node = /** @__PURE__ @class */ (function (_super) {
                 content.shadow = this.shadow;
             }
         }
-        if ((this.shape.type !== 'Bpmn' || this.shape.shape === 'Message' ||
-            this.shape.shape === 'DataSource') && ((this.shape.type !== 'UmlActivity' || this.shape.shape !== 'FinalNode'))) {
+        if ((this.shape.type !== 'Bpmn' || ((!isBlazor() && this.shape.shape === 'Message') || (isBlazor() && this.shape.bpmnShape === 'Message')) ||
+            ((!isBlazor() && this.shape.shape === 'DataSource') || (isBlazor() && this.shape.bpmnShape === 'DataSource'))) && ((this.shape.type !== 'UmlActivity' || ((!isBlazor() && this.shape.shape !== 'FinalNode') ||
+            (isBlazor() && this.shape.umlActivityShape !== 'FinalNode'))))) {
             if (this.shape.type !== 'Text') {
                 content.style = this.style;
             }
@@ -16057,10 +16517,10 @@ var Node = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /** @private */
-    Node.prototype.initAnnotations = function (accessibilityContent, container, diagramId, virtualize) {
+    Node.prototype.initAnnotations = function (accessibilityContent, container, diagramId, virtualize, annotationTemplate) {
         var annotation;
         for (var i = 0; this.annotations !== undefined, i < this.annotations.length; i++) {
-            annotation = this.initAnnotationWrapper(this.annotations[i], diagramId, virtualize, i);
+            annotation = this.initAnnotationWrapper(this.annotations[i], diagramId, virtualize, i, annotationTemplate);
             // tslint:disable-next-line:no-any
             var wrapperContent = void 0;
             var contentAccessibility = getFunction(accessibilityContent);
@@ -16099,13 +16559,17 @@ var Node = /** @__PURE__ @class */ (function (_super) {
         return portContent;
     };
     /** @private */
-    Node.prototype.initAnnotationWrapper = function (annotation, diagramId, virtualize, value) {
+    Node.prototype.initAnnotationWrapper = function (annotation, diagramId, virtualize, value, annotationTemplate) {
         annotation.id = annotation.id || value + 'annotation' || randomId();
         var label = annotation;
         var annotationcontent;
-        if (diagramId && annotation.template) {
-            annotationcontent = new DiagramHtmlElement(this.id, diagramId, annotation.id);
-            annotationcontent.content = annotation.template;
+        if (isBlazor() && annotation.annotationType === 'Template') {
+            annotation.template = annotation.template ? annotation.template : '';
+        }
+        if (diagramId && (annotation.template || annotation.annotationType === 'Template'
+            || (annotationTemplate && annotation.content === ''))) {
+            annotationcontent = new DiagramHtmlElement(this.id, diagramId, annotation.id, annotationTemplate);
+            annotationcontent = getTemplateContent(annotationcontent, annotation, annotationTemplate);
         }
         else {
             annotationcontent = new TextElement();
@@ -16214,8 +16678,23 @@ var Node = /** @__PURE__ @class */ (function (_super) {
         Property(0)
     ], Node.prototype, "offsetX", void 0);
     __decorate$2([
+        Complex({}, LayoutInfo)
+    ], Node.prototype, "layoutInfo", void 0);
+    __decorate$2([
         Property(0)
     ], Node.prototype, "offsetY", void 0);
+    __decorate$2([
+        Collection([], PointPort)
+    ], Node.prototype, "ports", void 0);
+    __decorate$2([
+        Property(true)
+    ], Node.prototype, "isExpanded", void 0);
+    __decorate$2([
+        Complex({}, IconShape)
+    ], Node.prototype, "expandIcon", void 0);
+    __decorate$2([
+        Complex({}, IconShape)
+    ], Node.prototype, "collapseIcon", void 0);
     __decorate$2([
         Complex({ x: 0.5, y: 0.5 }, Point)
     ], Node.prototype, "pivot", void 0);
@@ -16314,7 +16793,7 @@ var Header = /** @__PURE__ @class */ (function (_super) {
         Property('')
     ], Header.prototype, "id", void 0);
     __decorate$2([
-        Complex({ style: { fill: 'transparent' } }, Annotation)
+        Complex({ style: { fill: '#111111' } }, Annotation)
     ], Header.prototype, "annotation", void 0);
     __decorate$2([
         Complex({ fill: '#E7F4FF', strokeColor: '#CCCCCC' }, ShapeStyle)
@@ -17156,7 +17635,7 @@ function removeElement(elementId, contentId) {
         div.parentNode.removeChild(div);
     }
 }
-function getContent(element, isHtml) {
+function getContent(element, isHtml, nodeObject) {
     var div;
     if (isHtml) {
         var attr = { 'style': 'height: 100%; width: 100%' };
@@ -17170,38 +17649,24 @@ function getContent(element, isHtml) {
     var sentNode = {};
     if (node instanceof Node) {
         sentNode = node;
-        var blazor = 'Blazor';
-        if (window[blazor]) {
-            sentNode = {};
-            var id = 'id';
-            var height = 'height';
-            var width = 'width';
-            var offsetX = 'offsetX';
-            var offsetY = 'offsetY';
-            var text = 'content';
-            var annotations = 'annotations';
-            var addInfo = 'addInfo';
-            content = node[id] + 'content_diagram';
-            sentNode[id] = node[id];
-            sentNode[height] = node[height];
-            sentNode[width] = node[width];
-            sentNode[offsetX] = node[offsetX];
-            sentNode[offsetY] = node[offsetY];
-            sentNode[addInfo] = node[addInfo];
-            if (node.annotations && node.annotations.length > 0) {
-                sentNode[annotations] = [];
-                for (var i = 0; i < node.annotations.length; i++) {
-                    sentNode[annotations][i] = { content: node.annotations[i][text] };
-                }
-            }
+        if (node.shape.type === 'Native') {
+            
+        }
+        if (isBlazor()) {
+            content = 'diagramsf_node_template';
+            sentNode = cloneBlazorObject(node);
         }
     }
     else {
         sentNode = node;
-        content = element.diagramId + 'template_diagram';
+        //new
+        if (isBlazor()) {
+            sentNode = cloneBlazorObject(node);
+            content = 'diagramsf_annotation_template';
+        }
     }
     var item;
-    if (typeof element.content === 'string') {
+    if (typeof element.content === 'string' && !element.isTemplate) {
         var template = document.getElementById(element.content);
         if (template) {
             div.appendChild(template);
@@ -17213,12 +17678,24 @@ function getContent(element, isHtml) {
                 item = _a[_i];
                 div.appendChild(item);
             }
+            //new
+            // for (item of compiledString(sentNode, null, null, content, undefined, undefined, isSvg)) {
+            //     div.appendChild(item);
+            // }
+        }
+    }
+    else if (element.isTemplate) {
+        var compiledString = void 0;
+        compiledString = element.getNodeTemplate()(nodeObject, undefined, 'template', undefined, undefined, false);
+        for (var i = 0; i < compiledString.length; i++) {
+            div.appendChild(compiledString[i]);
         }
     }
     else {
         div.appendChild(element.content);
     }
-    return isHtml ? div.cloneNode(true) : div.cloneNode(true);
+    return element.isTemplate ?
+        div : (isHtml ? div.cloneNode(true) : div.cloneNode(true));
 }
 /** @private */
 function setAttributeSvg(svg, attributes) {
@@ -17275,11 +17752,22 @@ function createMeasureElements() {
 function setChildPosition(temp, childNodes, i, options) {
     if (childNodes.length > 1 && temp.x === 0 &&
         (options.textOverflow === 'Clip' || options.textOverflow === 'Ellipsis') &&
-        options.textWrapping === 'Wrap') {
+        (options.textWrapping === 'Wrap' || options.textWrapping === 'WrapWithOverflow')) {
         temp.x = childNodes[i - 1] ? childNodes[i - 1].x : -(temp.width / 2);
         return temp.x;
     }
     return temp.x;
+}
+/** @private */
+function getTemplateContent(annotationcontent, annotation, annotationTemplate) {
+    if (annotationTemplate && !annotation.template) {
+        annotationcontent.isTemplate = true;
+        annotationcontent.template = annotationcontent.content = getContent(annotationcontent, true, annotation);
+    }
+    else {
+        annotationcontent.content = annotation.template;
+    }
+    return annotationcontent;
 }
 
 /**
@@ -17307,6 +17795,37 @@ function randomId() {
         id += chars.substring(num, num + 1);
     }
     return id;
+}
+function getIndex(comp, id) {
+    if (comp.nodes && comp.nodes.length > 0) {
+        for (var i = 0; i < comp.nodes.length; i++) {
+            if (comp.nodes[i].id === id) {
+                return i;
+            }
+        }
+    }
+    if (comp.connectors && comp.connectors.length > 0) {
+        for (var i = 0; i < comp.connectors.length; i++) {
+            if (comp.connectors[i].id === id) {
+                return i;
+            }
+        }
+    }
+    return null;
+}
+/** @private */
+function templateCompiler(template) {
+    if (template) {
+        try {
+            if (document.querySelectorAll(template).length) {
+                return compile(document.querySelector(template).innerHTML.trim());
+            }
+        }
+        catch (e) {
+            return compile(template);
+        }
+    }
+    return undefined;
 }
 /** @private */
 function cornersPointsBeforeRotation(ele) {
@@ -17362,8 +17881,99 @@ function getBounds(element) {
     element.corners.height = bounds.height;
     return bounds;
 }
+function updateCloneProp(properties, obj) {
+    var prop = [];
+    if (obj instanceof Node) {
+        prop = ['width', 'height', 'offsetX', 'offsetY', 'container', 'visible', 'horizontalAlignment', 'verticalAlignment',
+            'backgroundColor', 'borderColor', 'borderWidth', 'rotateAngle', 'minHeight', 'minWidth', 'maxHeight',
+            'maxWidth', 'pivot', 'margin', 'flip', 'wrapper', 'constraints', 'style', 'annotations', 'ports', 'isExpanded', 'expandIcon'];
+    }
+    else if (obj instanceof Connector) {
+        prop = ['constraints', 'sourcePadding', 'targetPadding', 'cornerRadius', 'flip', 'sourceID',
+            'sourcePortID', 'targetID', 'targetPortID', 'visible'];
+    }
+    else if (obj instanceof Decorator) {
+        prop = ['height', 'width'];
+    }
+    else if (obj instanceof Shape || obj instanceof IconShape) {
+        prop.push('shape');
+        if (obj instanceof BasicShape) {
+            prop.push('cornerRadius');
+        }
+        else if (obj instanceof Text) {
+            prop.push('margin');
+        }
+        else if (obj instanceof Image) {
+            prop.push('align');
+            prop.push('scale');
+        }
+        else if (obj instanceof Native) {
+            prop.push('scale');
+        }
+        else if (obj instanceof BpmnShape) {
+            prop.push('activity');
+            prop.push('annotations');
+        }
+        else if (obj instanceof IconShape) {
+            prop.push('borderColor');
+            prop.push('borderWidth');
+            prop.push('cornerRadius');
+            prop.push('fill');
+        }
+    }
+    else if (obj instanceof BpmnActivity) {
+        prop.push('subProcess');
+    }
+    else if (obj instanceof BpmnTask) {
+        prop.push('call');
+        prop.push('compensation');
+        prop.push('loop');
+    }
+    else if (obj instanceof BpmnSubProcess) {
+        prop.push('adhoc');
+        prop.push('boundary');
+        prop.push('compensation');
+        prop.push('loop');
+        prop.push('processes');
+    }
+    else if (obj instanceof Port) {
+        prop.push('height');
+        prop.push('width');
+        prop.push('visibility');
+        prop.push('horizontalAlignment');
+        prop.push('verticalAlignment');
+        prop.push('shape');
+    }
+    else if (obj instanceof Annotation) {
+        prop.push('constraints');
+        prop.push('height');
+        prop.push('horizontalAlignment');
+        prop.push('rotateAngle');
+        prop.push('template');
+        prop.push('verticalAlignment');
+        prop.push('visibility');
+        prop.push('width');
+        prop.push('margin');
+    }
+    else if (obj instanceof Margin) {
+        prop.push('left');
+        prop.push('right');
+        prop.push('top');
+        prop.push('bottom');
+    }
+    else if (obj instanceof TextStyle) {
+        prop = ['strokeWidth', 'strokeDashArray', 'opacity', 'gradient', 'fontSize', 'fontFamily', 'textOverflow',
+            'textDecoration', 'whiteSpace', 'textWrapping', 'textAlign', 'italic', 'bold'];
+    }
+    if (obj instanceof ShapeStyle) {
+        prop.push('strokeColor');
+        prop.push('color');
+    }
+    properties = properties.concat(prop);
+    return properties;
+}
 /** @private */
-function cloneObject(obj, additionalProp, key) {
+function cloneObject(obj, additionalProp, key, cloneBlazorProp) {
     var newObject = {};
     var keys = 'properties';
     var prop = 'propName';
@@ -17386,6 +17996,9 @@ function cloneObject(obj, additionalProp, key) {
         }
         var internalProp = getInternalProperties(key);
         properties = properties.concat(internalProp);
+        if (cloneBlazorProp) {
+            properties = updateCloneProp(properties, obj);
+        }
         for (var _i = 0, properties_1 = properties; _i < properties_1.length; _i++) {
             var property = properties_1[_i];
             if (property !== 'historyManager') {
@@ -17393,13 +18006,13 @@ function cloneObject(obj, additionalProp, key) {
                     var isEventEmmitter = obj[property] && obj.hasOwnProperty('observers') ? true : false;
                     if (!isEventEmmitter) {
                         if (obj[property] instanceof Array) {
-                            newObject[property] = cloneArray((internalProp.indexOf(property) === -1 && obj[keys]) ? obj[keys][property] : obj[property], additionalProp, property);
+                            newObject[property] = cloneArray((internalProp.indexOf(property) === -1 && obj[keys]) ? obj[keys][property] : obj[property], additionalProp, property, cloneBlazorProp);
                         }
                         else if (obj[property] instanceof Array === false && obj[property] instanceof HTMLElement) {
                             newObject[property] = obj[property].cloneNode(true).innerHtml;
                         }
                         else if (obj[property] instanceof Array === false && obj[property] instanceof Object) {
-                            newObject[property] = cloneObject((internalProp.indexOf(property) === -1 && obj[keys]) ? obj[keys][property] : obj[property]);
+                            newObject[property] = cloneObject((internalProp.indexOf(property) === -1 && obj[keys]) ? obj[keys][property] : obj[property], undefined, undefined, cloneBlazorProp);
                         }
                         else {
                             newObject[property] = obj[property];
@@ -17438,7 +18051,7 @@ function getInternalProperties(propName) {
     return [];
 }
 /** @private */
-function cloneArray(sourceArray, additionalProp, key) {
+function cloneArray(sourceArray, additionalProp, key, cloneBlazorProp) {
     var clonedArray;
     if (sourceArray) {
         clonedArray = [];
@@ -17447,7 +18060,7 @@ function cloneArray(sourceArray, additionalProp, key) {
                 clonedArray.push(sourceArray[i]);
             }
             else if (sourceArray[i] instanceof Object) {
-                clonedArray.push(cloneObject(sourceArray[i], additionalProp, key));
+                clonedArray.push(cloneObject(sourceArray[i], additionalProp, key, cloneBlazorProp));
             }
             else {
                 clonedArray.push(sourceArray[i]);
@@ -18634,7 +19247,8 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
                     child.x = setChildPosition(child, childNodes, i, options);
                     offsetX = position.x + child.x - wrapBounds.x;
                     offsetY = position.y + child.dy * (i) + ((options.fontSize) * 0.8);
-                    if ((options.textOverflow === 'Clip' || options.textOverflow === 'Ellipsis') && options.textWrapping === 'Wrap') {
+                    if ((options.textOverflow === 'Clip' || options.textOverflow === 'Ellipsis') &&
+                        (options.textWrapping === 'WrapWithOverflow' || options.textWrapping === 'Wrap') && parentNode) {
                         var size = (options.isHorizontalLane) ? parentNode.actualSize.width : parentNode.actualSize.height;
                         if (offsetY < size) {
                             if (options.textOverflow === 'Ellipsis' && childNodes[i + 1]) {
@@ -18696,6 +19310,9 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
         var imageObj = new Image();
         imageObj.src = obj.source;
         var scale = obj.scale !== 'None' ? obj.scale : '';
+        if (isBlazor() && obj.alignment === 'None' && scale === 'Stretch') {
+            scale = '';
+        }
         var imgAlign = obj.alignment;
         var aspectRatio = imgAlign.charAt(0).toLowerCase() + imgAlign.slice(1);
         if (scale) {
@@ -18742,7 +19359,7 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
                 'class': 'foreign-object'
             };
             htmlElement = createHtmlElement('div', attr);
-            htmlElement.appendChild(element.template.cloneNode(true));
+            element.isTemplate ? htmlElement.appendChild(element.template) : htmlElement.appendChild(element.template.cloneNode(true));
             if (indexValue !== undefined && canvas.childNodes.length > indexValue) {
                 canvas.insertBefore(htmlElement, canvas.childNodes[indexValue]);
             }
@@ -19429,8 +20046,16 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
     /**   @private  */
     DiagramRenderer.prototype.renderUserHandler = function (selectorItem, canvas, transform) {
         var wrapper = selectorItem.wrapper;
+        var canDraw$$1;
         for (var _i = 0, _a = selectorItem.userHandles; _i < _a.length; _i++) {
             var obj = _a[_i];
+            canDraw$$1 = true;
+            if (obj.disableConnectors && selectorItem.connectors.length > 0) {
+                canDraw$$1 = false;
+            }
+            if (obj.disableNodes && selectorItem.nodes.length > 0) {
+                canDraw$$1 = false;
+            }
             var element = new PathElement();
             var newPoint = void 0;
             newPoint = getUserHandlePosition(selectorItem, obj, transform);
@@ -19439,76 +20064,77 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
             if (obj.visible) {
                 obj.visible = (selectorItem.constraints & SelectorConstraints.UserHandle) ? true : false;
             }
-            if (obj.content === '' && obj.source === '') {
-                var data = obj.pathData ? obj.pathData : obj.content;
-                var option = this.getBaseAttributes(wrapper);
-                option.id = obj.name + '_userhandle';
-                option.fill = obj.backgroundColor;
-                option.stroke = obj.borderColor;
-                option.strokeWidth = obj.borderWidth;
-                option.centerX = newPoint.x;
-                option.centerY = newPoint.y;
-                option.radius = obj.size * 0.5;
-                option.class = 'e-diagram-userhandle-circle';
-                option.angle = 0;
-                option.visible = obj.visible;
-                option.opacity = 1;
-                this.svgRenderer.drawCircle(canvas, option, 1, { 'aria-label': obj.name + 'user handle' });
-                var pathPading = 5;
-                var arrayCollection = [];
-                arrayCollection = processPathData(data);
-                arrayCollection = splitArrayCollection(arrayCollection);
-                var pathSize = measurePath(data);
-                //requiredSize/contentSize
-                var scaleX = (obj.size - 0.45 * obj.size) / pathSize.width;
-                var scaleY = (obj.size - 0.45 * obj.size) / pathSize.height;
-                var newData = transformPath(arrayCollection, scaleX, scaleY, true, pathSize.x, pathSize.y, 0, 0);
-                pathSize = measurePath(newData);
-                var options = {
-                    x: newPoint.x - pathSize.width / 2,
-                    y: newPoint.y - pathSize.height / 2,
-                    angle: 0, id: '',
-                    class: 'e-diagram-userhandle-path',
-                    fill: obj.pathColor, stroke: obj.backgroundColor, strokeWidth: 0.5, dashArray: '', data: newData,
-                    width: obj.size - pathPading, height: obj.size - pathPading, pivotX: 0, pivotY: 0, opacity: 1, visible: obj.visible
-                };
-                this.svgRenderer.drawPath(canvas, options, this.diagramId, undefined, undefined, { 'aria-label': obj.name + 'user handle' });
-            }
-            else if (obj.content !== '') {
-                var handleContent = void 0;
-                handleContent = new DiagramNativeElement(obj.name, this.diagramId);
-                handleContent.content = obj.content;
-                handleContent.offsetX = newPoint.x;
-                handleContent.offsetY = newPoint.y;
-                handleContent.height = obj.size;
-                handleContent.width = obj.size;
-                handleContent.id = obj.name + '_shape';
-                handleContent.horizontalAlignment = 'Center';
-                handleContent.verticalAlignment = 'Center';
-                handleContent.visible = obj.visible;
-                handleContent.setOffsetWithRespectToBounds(newPoint.x, newPoint.y, 'Fraction');
-                handleContent.relativeMode = 'Object';
-                handleContent.description = obj.name || 'User handle';
-                handleContent.measure(new Size(obj.size, obj.size));
-                handleContent.arrange(handleContent.desiredSize);
-                this.svgRenderer.drawNativeContent(handleContent, canvas, obj.size, obj.size, this.adornerSvgLayer);
-            }
-            else {
-                var element_1 = new ImageElement();
-                var options = this.getBaseAttributes(element_1, transform);
-                options.width = obj.size;
-                options.height = obj.size;
-                options.x = newPoint.x - (obj.size / 2);
-                options.y = newPoint.y - (obj.size / 2);
-                options.sourceWidth = obj.size;
-                options.sourceHeight = obj.size;
-                options.alignment = element_1.imageAlign;
-                options.source = obj.source;
-                options.scale = element_1.imageScale;
-                options.visible = obj.visible;
-                options.description = obj.name || 'User handle';
-                options.id = obj.name + '_';
-                this.renderer.drawImage(canvas, options, this.adornerSvgLayer, false);
+            if (canDraw$$1) {
+                if (obj.content === '' && obj.source === '') {
+                    var data = obj.pathData ? obj.pathData : obj.content;
+                    var option = this.getBaseAttributes(wrapper);
+                    option.id = obj.name + '_userhandle';
+                    option.fill = obj.backgroundColor;
+                    option.stroke = obj.borderColor;
+                    option.strokeWidth = obj.borderWidth;
+                    option.centerX = newPoint.x;
+                    option.centerY = newPoint.y;
+                    option.radius = obj.size * 0.5;
+                    option.class = 'e-diagram-userhandle-circle';
+                    option.angle = 0;
+                    option.visible = obj.visible;
+                    option.opacity = 1;
+                    this.svgRenderer.drawCircle(canvas, option, 1, { 'aria-label': obj.name + 'user handle' });
+                    var pathPading = 5;
+                    var arrayCollection = [];
+                    arrayCollection = processPathData(data);
+                    arrayCollection = splitArrayCollection(arrayCollection);
+                    var pathSize = measurePath(data);
+                    //requiredSize/contentSize
+                    var scaleX = (obj.size - 0.45 * obj.size) / pathSize.width;
+                    var scaleY = (obj.size - 0.45 * obj.size) / pathSize.height;
+                    var newData = transformPath(arrayCollection, scaleX, scaleY, true, pathSize.x, pathSize.y, 0, 0);
+                    pathSize = measurePath(newData);
+                    var options = {
+                        x: newPoint.x - pathSize.width / 2,
+                        y: newPoint.y - pathSize.height / 2,
+                        angle: 0, id: '',
+                        class: 'e-diagram-userhandle-path',
+                        fill: obj.pathColor, stroke: obj.backgroundColor, strokeWidth: 0.5, dashArray: '', data: newData,
+                        width: obj.size - pathPading, height: obj.size - pathPading, pivotX: 0, pivotY: 0, opacity: 1, visible: obj.visible
+                    };
+                    this.svgRenderer.drawPath(canvas, options, this.diagramId, undefined, undefined, { 'aria-label': obj.name + 'user handle' });
+                }
+                else if (obj.content !== '') {
+                    var handleContent = void 0;
+                    handleContent = new DiagramNativeElement(obj.name, this.diagramId);
+                    handleContent.content = obj.content;
+                    handleContent.offsetX = newPoint.x;
+                    handleContent.offsetY = newPoint.y;
+                    handleContent.height = obj.size;
+                    handleContent.width = obj.size;
+                    handleContent.id = obj.name + '_shape';
+                    handleContent.horizontalAlignment = 'Center';
+                    handleContent.verticalAlignment = 'Center';
+                    handleContent.visible = obj.visible;
+                    handleContent.setOffsetWithRespectToBounds(newPoint.x, newPoint.y, 'Fraction');
+                    handleContent.relativeMode = 'Object';
+                    handleContent.description = obj.name || 'User handle';
+                    handleContent.measure(new Size(obj.size, obj.size));
+                    handleContent.arrange(handleContent.desiredSize);
+                    this.svgRenderer.drawNativeContent(handleContent, canvas, obj.size, obj.size, this.adornerSvgLayer);
+                }
+                else {
+                    var element_1 = new ImageElement();
+                    var options = this.getBaseAttributes(element_1, transform);
+                    options.width = obj.size;
+                    options.height = obj.size;
+                    options.x = newPoint.x - (obj.size / 2);
+                    options.y = newPoint.y - (obj.size / 2);
+                    options.sourceWidth = obj.size;
+                    options.sourceHeight = obj.size;
+                    options.alignment = element_1.imageAlign;
+                    options.source = obj.source;
+                    options.scale = element_1.imageScale;
+                    options.description = obj.name || 'User handle';
+                    options.id = obj.name + '_';
+                    this.renderer.drawImage(canvas, options, this.adornerSvgLayer, false);
+                }
             }
         }
     };
@@ -19804,7 +20430,8 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
         options.strokeWidth = 0;
         options.fill = element.style.fill;
         var ariaLabel = element.description ? element.description : element.content ? element.content : element.id;
-        if (element.style.textWrapping === 'Wrap' && this.groupElement && options.height > this.groupElement.actualSize.height &&
+        if ((element.style.textWrapping === 'Wrap' || element.style.textWrapping === 'WrapWithOverflow') &&
+            this.groupElement && options.height > this.groupElement.actualSize.height &&
             (element.style.textOverflow === 'Clip' || element.style.textOverflow === 'Ellipsis')) {
             options.y = options.y + (options.height - this.groupElement.actualSize.height) / 2;
         }
@@ -20158,7 +20785,7 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
     return DiagramRenderer;
 }());
 
-var __extends$22 = (undefined && undefined.__extends) || (function () {
+var __extends$23 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -20171,7 +20798,7 @@ var __extends$22 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$13 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$14 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -20181,23 +20808,48 @@ var __decorate$13 = (undefined && undefined.__decorate) || function (decorators,
  * Defines the size and appearance of the diagram page
  */
 var Background = /** @__PURE__ @class */ (function (_super) {
-    __extends$22(Background, _super);
+    __extends$23(Background, _super);
     function Background() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$13([
+    __decorate$14([
         Property('')
     ], Background.prototype, "source", void 0);
-    __decorate$13([
+    __decorate$14([
         Property('transparent')
     ], Background.prototype, "color", void 0);
-    __decorate$13([
+    __decorate$14([
         Property('None')
     ], Background.prototype, "scale", void 0);
-    __decorate$13([
+    __decorate$14([
         Property('None')
     ], Background.prototype, "align", void 0);
     return Background;
+}(ChildProperty));
+var FitOptions = /** @__PURE__ @class */ (function (_super) {
+    __extends$23(FitOptions, _super);
+    function FitOptions() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$14([
+        Property('Page')
+    ], FitOptions.prototype, "mode", void 0);
+    __decorate$14([
+        Property('PageSettings')
+    ], FitOptions.prototype, "region", void 0);
+    __decorate$14([
+        Complex({ top: 25, bottom: 25, left: 25, right: 25 }, Margin)
+    ], FitOptions.prototype, "margin", void 0);
+    __decorate$14([
+        Property(false)
+    ], FitOptions.prototype, "canZoomIn", void 0);
+    __decorate$14([
+        Property(undefined)
+    ], FitOptions.prototype, "customBounds", void 0);
+    __decorate$14([
+        Property(false)
+    ], FitOptions.prototype, "canFit", void 0);
+    return FitOptions;
 }(ChildProperty));
 /**
  * Defines the size and appearance of diagram page
@@ -20217,78 +20869,81 @@ var Background = /** @__PURE__ @class */ (function (_super) {
  * @default {}
  */
 var PageSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$22(PageSettings, _super);
+    __extends$23(PageSettings, _super);
     function PageSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$13([
+    __decorate$14([
         Property(null)
     ], PageSettings.prototype, "width", void 0);
-    __decorate$13([
+    __decorate$14([
         Property(null)
     ], PageSettings.prototype, "height", void 0);
-    __decorate$13([
+    __decorate$14([
         Complex({}, Margin)
     ], PageSettings.prototype, "margin", void 0);
-    __decorate$13([
+    __decorate$14([
         Property('Landscape')
     ], PageSettings.prototype, "orientation", void 0);
-    __decorate$13([
+    __decorate$14([
         Property('Infinity')
     ], PageSettings.prototype, "boundaryConstraints", void 0);
-    __decorate$13([
+    __decorate$14([
         Complex({}, Background)
     ], PageSettings.prototype, "background", void 0);
-    __decorate$13([
+    __decorate$14([
         Property(false)
     ], PageSettings.prototype, "multiplePage", void 0);
-    __decorate$13([
+    __decorate$14([
         Property(false)
     ], PageSettings.prototype, "showPageBreaks", void 0);
+    __decorate$14([
+        Complex({}, FitOptions)
+    ], PageSettings.prototype, "fitOptions", void 0);
     return PageSettings;
 }(ChildProperty));
 /**
  * Diagram ScrollSettings module handles the scroller properties of the diagram
  */
 var ScrollSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$22(ScrollSettings, _super);
+    __extends$23(ScrollSettings, _super);
     function ScrollSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$13([
+    __decorate$14([
         Property(0)
     ], ScrollSettings.prototype, "horizontalOffset", void 0);
-    __decorate$13([
+    __decorate$14([
         Property(0)
     ], ScrollSettings.prototype, "verticalOffset", void 0);
-    __decorate$13([
+    __decorate$14([
         Property(1)
     ], ScrollSettings.prototype, "currentZoom", void 0);
-    __decorate$13([
+    __decorate$14([
         Property(0)
     ], ScrollSettings.prototype, "viewPortWidth", void 0);
-    __decorate$13([
+    __decorate$14([
         Property(0)
     ], ScrollSettings.prototype, "viewPortHeight", void 0);
-    __decorate$13([
+    __decorate$14([
         Property(0.2)
     ], ScrollSettings.prototype, "minZoom", void 0);
-    __decorate$13([
+    __decorate$14([
         Property(30)
     ], ScrollSettings.prototype, "maxZoom", void 0);
-    __decorate$13([
+    __decorate$14([
         Property('Diagram')
     ], ScrollSettings.prototype, "scrollLimit", void 0);
-    __decorate$13([
+    __decorate$14([
         Property()
     ], ScrollSettings.prototype, "scrollableArea", void 0);
-    __decorate$13([
+    __decorate$14([
         Property(false)
     ], ScrollSettings.prototype, "canAutoScroll", void 0);
-    __decorate$13([
+    __decorate$14([
         Complex({ left: 15, right: 15, top: 15, bottom: 15 }, Margin)
     ], ScrollSettings.prototype, "autoScrollBorder", void 0);
-    __decorate$13([
+    __decorate$14([
         Complex({ left: 0, right: 0, top: 0, bottom: 0 }, Margin)
     ], ScrollSettings.prototype, "padding", void 0);
     return ScrollSettings;
@@ -20311,74 +20966,6 @@ var ServiceLocator = /** @__PURE__ @class */ (function () {
     return ServiceLocator;
 }());
 
-var __extends$23 = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate$14 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * Provides a visual guidance while dragging or arranging the objects on the Diagram surface
- */
-var Gridlines = /** @__PURE__ @class */ (function (_super) {
-    __extends$23(Gridlines, _super);
-    function Gridlines() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$14([
-        Property('lightgray')
-    ], Gridlines.prototype, "lineColor", void 0);
-    __decorate$14([
-        Property('')
-    ], Gridlines.prototype, "lineDashArray", void 0);
-    __decorate$14([
-        Property([1.25, 18.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75])
-    ], Gridlines.prototype, "lineIntervals", void 0);
-    __decorate$14([
-        Property([20])
-    ], Gridlines.prototype, "snapIntervals", void 0);
-    return Gridlines;
-}(ChildProperty));
-/**
- * Defines the gridlines and defines how and when the objects have to be snapped
- * @default {}
- */
-var SnapSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$23(SnapSettings, _super);
-    function SnapSettings() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$14([
-        Complex({}, Gridlines)
-    ], SnapSettings.prototype, "horizontalGridlines", void 0);
-    __decorate$14([
-        Complex({}, Gridlines)
-    ], SnapSettings.prototype, "verticalGridlines", void 0);
-    __decorate$14([
-        Property(SnapConstraints.All)
-    ], SnapSettings.prototype, "constraints", void 0);
-    __decorate$14([
-        Property(5)
-    ], SnapSettings.prototype, "snapAngle", void 0);
-    __decorate$14([
-        Property(5)
-    ], SnapSettings.prototype, "snapObjectDistance", void 0);
-    return SnapSettings;
-}(ChildProperty));
-
 var __extends$24 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -20399,32 +20986,100 @@ var __decorate$15 = (undefined && undefined.__decorate) || function (decorators,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /**
- * Defines the properties of both horizontal and vertical guides/rulers to measure the diagram area.
+ * Provides a visual guidance while dragging or arranging the objects on the Diagram surface
  */
-var DiagramRuler = /** @__PURE__ @class */ (function (_super) {
-    __extends$24(DiagramRuler, _super);
-    function DiagramRuler() {
+var Gridlines = /** @__PURE__ @class */ (function (_super) {
+    __extends$24(Gridlines, _super);
+    function Gridlines() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate$15([
+        Property('lightgray')
+    ], Gridlines.prototype, "lineColor", void 0);
+    __decorate$15([
+        Property('')
+    ], Gridlines.prototype, "lineDashArray", void 0);
+    __decorate$15([
+        Property([1.25, 18.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75, 0.25, 19.75])
+    ], Gridlines.prototype, "lineIntervals", void 0);
+    __decorate$15([
+        Property([20])
+    ], Gridlines.prototype, "snapIntervals", void 0);
+    return Gridlines;
+}(ChildProperty));
+/**
+ * Defines the gridlines and defines how and when the objects have to be snapped
+ * @default {}
+ */
+var SnapSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$24(SnapSettings, _super);
+    function SnapSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$15([
+        Complex({}, Gridlines)
+    ], SnapSettings.prototype, "horizontalGridlines", void 0);
+    __decorate$15([
+        Complex({}, Gridlines)
+    ], SnapSettings.prototype, "verticalGridlines", void 0);
+    __decorate$15([
+        Property(SnapConstraints.All)
+    ], SnapSettings.prototype, "constraints", void 0);
+    __decorate$15([
+        Property(5)
+    ], SnapSettings.prototype, "snapAngle", void 0);
+    __decorate$15([
+        Property(5)
+    ], SnapSettings.prototype, "snapObjectDistance", void 0);
+    return SnapSettings;
+}(ChildProperty));
+
+var __extends$25 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$16 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Defines the properties of both horizontal and vertical guides/rulers to measure the diagram area.
+ */
+var DiagramRuler = /** @__PURE__ @class */ (function (_super) {
+    __extends$25(DiagramRuler, _super);
+    function DiagramRuler() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$16([
         Property(5)
     ], DiagramRuler.prototype, "interval", void 0);
-    __decorate$15([
+    __decorate$16([
         Property(100)
     ], DiagramRuler.prototype, "segmentWidth", void 0);
-    __decorate$15([
+    __decorate$16([
         Property('Horizontal')
     ], DiagramRuler.prototype, "orientation", void 0);
-    __decorate$15([
+    __decorate$16([
         Property('RightOrBottom')
     ], DiagramRuler.prototype, "tickAlignment", void 0);
-    __decorate$15([
+    __decorate$16([
         Property('red')
     ], DiagramRuler.prototype, "markerColor", void 0);
-    __decorate$15([
+    __decorate$16([
         Property(25)
     ], DiagramRuler.prototype, "thickness", void 0);
-    __decorate$15([
+    __decorate$16([
         Property(null)
     ], DiagramRuler.prototype, "arrangeTick", void 0);
     return DiagramRuler;
@@ -20448,23 +21103,60 @@ var DiagramRuler = /** @__PURE__ @class */ (function (_super) {
  * @default {}
  */
 var RulerSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$24(RulerSettings, _super);
+    __extends$25(RulerSettings, _super);
     function RulerSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$15([
+    __decorate$16([
         Property(false)
     ], RulerSettings.prototype, "showRulers", void 0);
-    __decorate$15([
+    __decorate$16([
         Property(true)
     ], RulerSettings.prototype, "dynamicGrid", void 0);
-    __decorate$15([
+    __decorate$16([
         Complex({ orientation: 'Horizontal' }, DiagramRuler)
     ], RulerSettings.prototype, "horizontalRuler", void 0);
-    __decorate$15([
+    __decorate$16([
         Complex({ orientation: 'Vertical' }, DiagramRuler)
     ], RulerSettings.prototype, "verticalRuler", void 0);
     return RulerSettings;
+}(ChildProperty));
+
+var __extends$27 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$18 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * A collection of JSON objects where each object represents a layer.
+ * Layer is a named category of diagram shapes.
+ */
+var DataMappingItems = /** @__PURE__ @class */ (function (_super) {
+    __extends$27(DataMappingItems, _super);
+    function DataMappingItems() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$18([
+        Property('')
+    ], DataMappingItems.prototype, "property", void 0);
+    __decorate$18([
+        Property('')
+    ], DataMappingItems.prototype, "field", void 0);
+    return DataMappingItems;
 }(ChildProperty));
 
 var __extends$26 = (undefined && undefined.__extends) || (function () {
@@ -20481,43 +21173,6 @@ var __extends$26 = (undefined && undefined.__extends) || (function () {
     };
 })();
 var __decorate$17 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * A collection of JSON objects where each object represents a layer.
- * Layer is a named category of diagram shapes.
- */
-var DataMappingItems = /** @__PURE__ @class */ (function (_super) {
-    __extends$26(DataMappingItems, _super);
-    function DataMappingItems() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$17([
-        Property('')
-    ], DataMappingItems.prototype, "property", void 0);
-    __decorate$17([
-        Property('')
-    ], DataMappingItems.prototype, "field", void 0);
-    return DataMappingItems;
-}(ChildProperty));
-
-var __extends$25 = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate$16 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -20553,97 +21208,97 @@ var __decorate$16 = (undefined && undefined.__decorate) || function (decorators,
  * ```
  */
 var CrudAction = /** @__PURE__ @class */ (function (_super) {
-    __extends$25(CrudAction, _super);
+    __extends$26(CrudAction, _super);
     function CrudAction() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$16([
+    __decorate$17([
         Property('')
     ], CrudAction.prototype, "read", void 0);
-    __decorate$16([
+    __decorate$17([
         Property('')
     ], CrudAction.prototype, "create", void 0);
-    __decorate$16([
+    __decorate$17([
         Property('')
     ], CrudAction.prototype, "update", void 0);
-    __decorate$16([
+    __decorate$17([
         Property('')
     ], CrudAction.prototype, "destroy", void 0);
-    __decorate$16([
+    __decorate$17([
         Property()
     ], CrudAction.prototype, "customFields", void 0);
     return CrudAction;
 }(ChildProperty));
 var ConnectionDataSource = /** @__PURE__ @class */ (function (_super) {
-    __extends$25(ConnectionDataSource, _super);
+    __extends$26(ConnectionDataSource, _super);
     function ConnectionDataSource() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$16([
+    __decorate$17([
         Property('')
     ], ConnectionDataSource.prototype, "id", void 0);
-    __decorate$16([
+    __decorate$17([
         Property('')
     ], ConnectionDataSource.prototype, "sourceID", void 0);
-    __decorate$16([
+    __decorate$17([
         Property('')
     ], ConnectionDataSource.prototype, "targetID", void 0);
-    __decorate$16([
+    __decorate$17([
         Property(null)
     ], ConnectionDataSource.prototype, "sourcePointX", void 0);
-    __decorate$16([
+    __decorate$17([
         Property(null)
     ], ConnectionDataSource.prototype, "sourcePointY", void 0);
-    __decorate$16([
+    __decorate$17([
         Property(null)
     ], ConnectionDataSource.prototype, "targetPointX", void 0);
-    __decorate$16([
+    __decorate$17([
         Property(null)
     ], ConnectionDataSource.prototype, "targetPointY", void 0);
-    __decorate$16([
+    __decorate$17([
         Property(null)
     ], ConnectionDataSource.prototype, "dataManager", void 0);
-    __decorate$16([
+    __decorate$17([
         Complex({}, CrudAction)
     ], ConnectionDataSource.prototype, "crudAction", void 0);
     return ConnectionDataSource;
 }(ChildProperty));
 var DataSource = /** @__PURE__ @class */ (function (_super) {
-    __extends$25(DataSource, _super);
+    __extends$26(DataSource, _super);
     function DataSource() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$16([
+    __decorate$17([
         Property('')
     ], DataSource.prototype, "id", void 0);
-    __decorate$16([
+    __decorate$17([
         Property(null)
     ], DataSource.prototype, "dataManager", void 0);
-    __decorate$16([
+    __decorate$17([
         Property(null)
     ], DataSource.prototype, "dataSource", void 0);
-    __decorate$16([
+    __decorate$17([
         Property('')
     ], DataSource.prototype, "root", void 0);
-    __decorate$16([
+    __decorate$17([
         Property('')
     ], DataSource.prototype, "parentId", void 0);
-    __decorate$16([
+    __decorate$17([
         Property()
     ], DataSource.prototype, "doBinding", void 0);
-    __decorate$16([
+    __decorate$17([
         Collection([], DataMappingItems)
     ], DataSource.prototype, "dataMapSettings", void 0);
-    __decorate$16([
+    __decorate$17([
         Complex({}, CrudAction)
     ], DataSource.prototype, "crudAction", void 0);
-    __decorate$16([
+    __decorate$17([
         Complex({}, ConnectionDataSource)
     ], DataSource.prototype, "connectionDataSource", void 0);
     return DataSource;
 }(ChildProperty));
 
-var __extends$27 = (undefined && undefined.__extends) || (function () {
+var __extends$28 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -20656,7 +21311,7 @@ var __extends$27 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$18 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$19 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -20666,65 +21321,65 @@ var __decorate$18 = (undefined && undefined.__decorate) || function (decorators,
  * Defines the behavior of the automatic layouts
  */
 var Layout = /** @__PURE__ @class */ (function (_super) {
-    __extends$27(Layout, _super);
+    __extends$28(Layout, _super);
     function Layout() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$18([
+    __decorate$19([
         Property('')
     ], Layout.prototype, "fixedNode", void 0);
-    __decorate$18([
+    __decorate$19([
         Property(30)
     ], Layout.prototype, "horizontalSpacing", void 0);
-    __decorate$18([
+    __decorate$19([
         Property(30)
     ], Layout.prototype, "verticalSpacing", void 0);
-    __decorate$18([
+    __decorate$19([
         Property(30)
     ], Layout.prototype, "maxIteration", void 0);
-    __decorate$18([
+    __decorate$19([
         Property(40)
     ], Layout.prototype, "springFactor", void 0);
-    __decorate$18([
+    __decorate$19([
         Property(50)
     ], Layout.prototype, "springLength", void 0);
-    __decorate$18([
+    __decorate$19([
         Complex({ left: 50, top: 50, right: 0, bottom: 0 }, Margin)
     ], Layout.prototype, "margin", void 0);
-    __decorate$18([
+    __decorate$19([
         Property('Auto')
     ], Layout.prototype, "horizontalAlignment", void 0);
-    __decorate$18([
+    __decorate$19([
         Property('Auto')
     ], Layout.prototype, "verticalAlignment", void 0);
-    __decorate$18([
+    __decorate$19([
         Property('TopToBottom')
     ], Layout.prototype, "orientation", void 0);
-    __decorate$18([
+    __decorate$19([
         Property('Auto')
     ], Layout.prototype, "connectionDirection", void 0);
-    __decorate$18([
+    __decorate$19([
         Property('Default')
     ], Layout.prototype, "connectorSegments", void 0);
-    __decorate$18([
+    __decorate$19([
         Property('None')
     ], Layout.prototype, "type", void 0);
-    __decorate$18([
+    __decorate$19([
         Property()
     ], Layout.prototype, "getLayoutInfo", void 0);
-    __decorate$18([
+    __decorate$19([
         Property()
     ], Layout.prototype, "layoutInfo", void 0);
-    __decorate$18([
+    __decorate$19([
         Property()
     ], Layout.prototype, "getBranch", void 0);
-    __decorate$18([
+    __decorate$19([
         Property()
     ], Layout.prototype, "bounds", void 0);
-    __decorate$18([
+    __decorate$19([
         Property(true)
     ], Layout.prototype, "enableAnimation", void 0);
-    __decorate$18([
+    __decorate$19([
         Property('')
     ], Layout.prototype, "root", void 0);
     return Layout;
@@ -21180,7 +21835,356 @@ var cursors = {
     'LabelResizeSouthWest': 'sw-resize',
 };
 
-var __extends$28 = (undefined && undefined.__extends) || (function () {
+/**
+ * Defines the behavior of commands
+ */
+/* tslint:disable */
+var DeepDiffMapper = /** @__PURE__ @class */ (function () {
+    function DeepDiffMapper() {
+        this.valueCreated = 'created';
+        this.valueUpdated = "updated";
+        this.valueDeleted = "deleted";
+        this.valueUnchanged = "unchanged";
+        /** @private */
+        this.newNodeObject = [];
+        /** @private */
+        this.newConnectorObject = [];
+        /**   @private  */
+        this.diagramObject = {};
+        /* tslint:enable */
+    }
+    /** @private */
+    DeepDiffMapper.prototype.updateObjectCollection = function (layers, diagram) {
+        for (var i = 0; i < layers.length; i++) {
+            if (layers[i]['objects']) {
+                layers[i]['objects'] = (diagram.layers[i].objects);
+            }
+            else {
+                layers[i]['objects'] = [];
+                layers[i]['objects'] = diagram.layers[i].objects;
+            }
+        }
+    };
+    /**   @private  */
+    DeepDiffMapper.prototype.getOldObject = function (id, isNode, diagram) {
+        var oldObject = isNode ? diagram.oldNodeObjects : diagram.oldConnectorObjects;
+        for (var i = 0; i < oldObject.length; i++) {
+            if (oldObject[i].id === id) {
+                return oldObject[i];
+            }
+        }
+        return undefined;
+    };
+    /** @private */
+    DeepDiffMapper.prototype.changeSegments = function (diff, newObject) {
+        for (var _i = 0, _a = Object.keys(diff); _i < _a.length; _i++) {
+            var prop = _a[_i];
+            if (prop === 'segments') {
+                var seg = this.removeNullValues(newObject[prop]);
+                diff[prop] = seg;
+            }
+        }
+        return diff;
+    };
+    DeepDiffMapper.prototype.removeNullValues = function (segments) {
+        var newSegments = [];
+        var seg = {};
+        for (var i = 0; i < segments.length; i++) {
+            seg = this.removeNullObjectValues(segments[i]);
+            newSegments.push(seg);
+        }
+        return newSegments;
+    };
+    
+    /** @private */
+    DeepDiffMapper.prototype.removeNullObjectValues = function (segment) {
+        var newSegObject = {};
+        for (var _i = 0, _a = Object.keys(segment); _i < _a.length; _i++) {
+            var prop = _a[_i];
+            if (segment[prop] !== undefined) {
+                newSegObject[prop] = (segment[prop] instanceof Object) ? this.removeNullObjectValues(segment[prop]) : segment[prop];
+            }
+        }
+        return newSegObject;
+    };
+    
+    /** @private */
+    DeepDiffMapper.prototype.getDifferenceValues = function (selectedObject, args, labelDrag, diagram) {
+        var diffValue;
+        var diff;
+        var result;
+        var isNode = selectedObject instanceof Node;
+        var oldObject;
+        if (selectedObject) {
+            oldObject = isNode ? this.getOldObject(selectedObject.id, true, diagram) : this.getOldObject(selectedObject.id, false, diagram);
+            if (oldObject) {
+                var newObject = cloneObject(selectedObject);
+                result = this.map(newObject, oldObject);
+                diffValue = this.frameObject({}, result);
+                diff = this.removeEmptyValues(diffValue);
+                diff = this.changeSegments(diff, newObject);
+                if (diff.children) {
+                    diff.children = cloneObject(selectedObject).children;
+                }
+                return this.getDiagramObjects(diff, selectedObject.id, isNode, args, labelDrag, diagram);
+            }
+        }
+    };
+    /** @private */
+    DeepDiffMapper.prototype.getLayerObject = function (oldDiagram, temp, diagram) {
+        if (isBlazor()) {
+            var diffLayers = {};
+            diffLayers['layers'] = [];
+            var newDiagram = {};
+            newDiagram['layers'] = [];
+            for (var i = 0; i < diagram.layers.length; i++) {
+                newDiagram['layers'].push(cloneObject(diagram.layers[i]));
+            }
+            var result = void 0;
+            for (var i = 0; i < newDiagram['layers'].length; i++) {
+                if (!temp) {
+                    result = this.map(cloneObject(newDiagram['layers'][i]), oldDiagram['layers'][i]);
+                }
+                else {
+                    result = this.map(oldDiagram['layers'][i], cloneObject(newDiagram['layers'][i]));
+                }
+                var diffValue = this.frameObject({}, result);
+                var diff = this.removeEmptyValues(diffValue);
+                diffLayers['layers'][i] = diff;
+            }
+            this.updateObjectCollection(diffLayers['layers'], diagram);
+            return diffLayers;
+        }
+    };
+    /** @private */
+    DeepDiffMapper.prototype.getDiagramObjects = function (diffValue, object, isNode, args, labelDrag, diagram) {
+        var index = 0;
+        index = getIndex(diagram, object);
+        diffValue.ejsIndex = index;
+        if (isNode) {
+            this.newNodeObject.push(diffValue);
+        }
+        else {
+            this.newConnectorObject.push(diffValue);
+        }
+        if (args && (((args.sourceWrapper instanceof TextElement) && labelDrag) || args.portId)) {
+            var tempObject = void 0;
+            var objectValue = void 0;
+            if (isNode) {
+                objectValue = args.portId ? this.newNodeObject[0].ports : this.newNodeObject[0].annotations;
+            }
+            else {
+                objectValue = this.newConnectorObject[0].annotations || [];
+            }
+            for (var i = 0; i < objectValue.length; i++) {
+                if (Object.keys(objectValue[i]).length > 0) {
+                    var selectedObject = diagram.nameTable[object];
+                    tempObject = objectValue[i];
+                    if (args.portId) {
+                        this.newNodeObject[0].ports = [tempObject];
+                    }
+                    else {
+                        for (var j = 0; j < selectedObject.annotations.length; j++) {
+                            if (args.sourceWrapper.id === selectedObject.id + "_" + selectedObject.annotations[j].id) {
+                                tempObject.ejsIndex = j;
+                            }
+                        }
+                        if (isNode) {
+                            this.newNodeObject[0].annotations = [tempObject];
+                        }
+                        else {
+                            this.newConnectorObject[0].annotations = [tempObject];
+                        }
+                    }
+                }
+            }
+        }
+        this.diagramObject = { nodes: this.newNodeObject, connectors: this.newConnectorObject };
+        //return returnValue;
+    };
+    DeepDiffMapper.prototype.removeArrayValues = function (obj) {
+        var newObj = [];
+        var value = JSON.stringify(obj);
+        if (!(value === JSON.stringify({ 'data': [] }))) {
+            for (var i = 0; i < obj.length; i++) {
+                if (obj[i] instanceof Object) {
+                    var newValue = this.removeEmptyValues(obj[i]);
+                    newObj.push(newValue);
+                }
+                else {
+                    newObj.push(obj[i]);
+                }
+            }
+        }
+        return newObj;
+    };
+    /** @private */
+    DeepDiffMapper.prototype.removeEmptyValues = function (frame) {
+        var newObj = {};
+        for (var _i = 0, _a = Object.keys(frame); _i < _a.length; _i++) {
+            var prop = _a[_i];
+            if (prop !== 'wrapper' && prop !== 'data') {
+                var obj = frame[prop];
+                var value = JSON.stringify(obj);
+                if (obj instanceof Array) {
+                    var newValue = this.removeArrayValues(obj);
+                    if (JSON.stringify(newValue) !== '[]') {
+                        newObj[prop] = newValue;
+                    }
+                }
+                else {
+                    if (obj instanceof Object) {
+                        if (!(value === JSON.stringify({ 'data': [] }))) {
+                            var newValue = this.removeEmptyValues(obj);
+                            if (JSON.stringify(newValue) !== '{}') {
+                                newObj[prop] = newValue;
+                            }
+                        }
+                    }
+                    else {
+                        if (!(value === JSON.stringify(['data']) || value === JSON.stringify('data')
+                            || value === JSON.stringify({ 'data': [] }))) {
+                            if (prop !== 'version' && prop !== 'ejsAction') {
+                                newObj[prop] = frame[prop];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return newObj;
+    };
+    DeepDiffMapper.prototype.map = function (obj1, obj2, arrayName) {
+        if (this.isFunction(obj1) || this.isFunction(obj2)) {
+            throw 'Invalid argument. Function given, object expected.';
+        }
+        if (this.isValue(obj1) || this.isValue(obj2)) {
+            return {
+                type: this.compareValues(obj1, obj2),
+                data: obj1 === undefined ? obj2 : obj1
+            };
+        }
+        var diff = {};
+        if (this.isArray(obj1)) {
+            for (var i = 0; i < obj1.length; i++) {
+                if (!diff[arrayName]) {
+                    diff[arrayName] = [];
+                }
+                var ss = this.map(obj1[i], obj2[i]);
+                diff[arrayName].push(ss);
+            }
+        }
+        else {
+            for (var key in obj1) {
+                if (this.isFunction(obj1[key])) {
+                    continue;
+                }
+                var value2 = undefined;
+                if (obj2[key] !== undefined) {
+                    value2 = obj2[key];
+                }
+                var kk = this.map(obj1[key], value2, this.isArray(value2) ? key : undefined);
+                if (this.isArray(value2)) {
+                    diff[key] = kk[key];
+                }
+                else {
+                    diff[key] = kk;
+                }
+            }
+        }
+        if (this.isArray(obj2)) {
+            for (var i = 0; i < obj2.length; i++) {
+                if (!diff[arrayName]) {
+                    diff[arrayName] = [];
+                }
+                if (this.isFunction(obj2[i]) || diff[arrayName][i] !== undefined) {
+                    if (diff[arrayName][i].type && diff[arrayName][i].type !== this.valueUpdated) {
+                        delete diff[arrayName];
+                    }
+                    continue;
+                }
+                var ss = this.map(undefined, obj2[i]);
+                diff[arrayName][i] = ss;
+            }
+        }
+        else {
+            for (var key in obj2) {
+                if (this.isFunction(obj2[key]) || diff[key] !== undefined) {
+                    if (diff[key].type && diff[key].type !== this.valueUpdated) {
+                        delete diff[key];
+                    }
+                    continue;
+                }
+                var kk = this.map(undefined, obj2[key]);
+                diff[key] = kk;
+            }
+        }
+        return diff;
+    };
+    DeepDiffMapper.prototype.compareValues = function (value1, value2) {
+        if (value1 === value2) {
+            return this.valueUnchanged;
+        }
+        if (this.isDate(value1) && this.isDate(value2) && value1.getTime() === value2.getTime()) {
+            return this.valueUnchanged;
+        }
+        if (value1 === undefined) {
+            return this.valueCreated;
+        }
+        if (value2 === undefined) {
+            return this.valueDeleted;
+        }
+        return this.valueUpdated;
+    };
+    DeepDiffMapper.prototype.isFunction = function (x) {
+        return Object.prototype.toString.call(x) === '[object Function]';
+    };
+    DeepDiffMapper.prototype.isArray = function (x) {
+        return Object.prototype.toString.call(x) === '[object Array]';
+    };
+    DeepDiffMapper.prototype.isDate = function (x) {
+        return Object.prototype.toString.call(x) === '[object Date]';
+    };
+    DeepDiffMapper.prototype.isObject = function (x) {
+        return Object.prototype.toString.call(x) === '[object Object]';
+    };
+    DeepDiffMapper.prototype.isValue = function (x) {
+        return !this.isObject(x) && !this.isArray(x);
+    };
+    DeepDiffMapper.prototype.frameObject = function (final, obj) {
+        for (var key in obj) {
+            if (this.isArray(obj[key])) {
+                if (!final[key]) {
+                    final[key] = [];
+                }
+                for (var i = 0; i < obj[key].length; i++) {
+                    var kk = this.frameObject({}, obj[key][i]);
+                    final[key].push(kk);
+                }
+            }
+            else {
+                if (key != 'type') {
+                    if (this.isFunction(obj[key])) {
+                        continue;
+                    }
+                    if (this.isValue(obj[key])) {
+                        return obj['data'];
+                    }
+                    else {
+                        var kk = this.frameObject({}, obj[key]);
+                        if (this.isValue(kk) || Object.keys(kk).length > 0) {
+                            final[key] = kk;
+                        }
+                    }
+                }
+            }
+        }
+        return final;
+    };
+    return DeepDiffMapper;
+}());
+
+var __extends$29 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -21193,6 +22197,41 @@ var __extends$28 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __awaiter$1 = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator$1 = (undefined && undefined.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
 /**
  * Defines the interactive tools
  */
@@ -21207,6 +22246,7 @@ var ToolBase = /** @__PURE__ @class */ (function () {
          * Command that is corresponding to the current action
          */
         this.commandHandler = null;
+        this.deepDiffer = new DeepDiffMapper();
         /**
          * Sets/Gets whether the interaction is being done
          */
@@ -21239,6 +22279,10 @@ var ToolBase = /** @__PURE__ @class */ (function () {
     };
     /**   @private  */
     ToolBase.prototype.mouseDown = function (args) {
+        if (isBlazor()) {
+            this.commandHandler.enableCloneObject(true);
+            this.commandHandler.ismouseEvents(true);
+        }
         this.currentElement = args.source;
         this.startPosition = this.currentPosition = this.prevPosition = args.position;
         this.isTooltipVisible = true;
@@ -21267,7 +22311,11 @@ var ToolBase = /** @__PURE__ @class */ (function () {
         // this.currentElement = currentElement;
         this.isTooltipVisible = false;
         this.commandHandler.endTransaction(this.isProtectChange);
-        //At the end
+        if (isBlazor()) {
+            this.commandHandler.enableCloneObject(false);
+            this.commandHandler.ismouseEvents(false);
+            this.commandHandler.getBlazorOldValues(args, this instanceof LabelDragTool);
+        }
         this.endAction();
     };
     ToolBase.prototype.endAction = function () {
@@ -21419,7 +22467,7 @@ var ToolBase = /** @__PURE__ @class */ (function () {
  * Helps to select the objects
  */
 var SelectTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$28(SelectTool, _super);
+    __extends$29(SelectTool, _super);
     function SelectTool(commandHandler, protectChange, action) {
         var _this = _super.call(this, commandHandler, true) || this;
         _this.action = action;
@@ -21470,6 +22518,7 @@ var SelectTool = /** @__PURE__ @class */ (function (_super) {
                     else {
                         if (args.clickCount === 1) {
                             this.commandHandler.unSelect(args.source);
+                            this.commandHandler.updateBlazorSelector();
                         }
                     }
                 }
@@ -21490,7 +22539,7 @@ var SelectTool = /** @__PURE__ @class */ (function (_super) {
  * Helps to edit the selected connectors
  */
 var ConnectTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$28(ConnectTool, _super);
+    __extends$29(ConnectTool, _super);
     function ConnectTool(commandHandler, endPoint) {
         var _this = _super.call(this, commandHandler, true) || this;
         _this.endPoint = endPoint;
@@ -21498,98 +22547,151 @@ var ConnectTool = /** @__PURE__ @class */ (function (_super) {
     }
     /**   @private  */
     ConnectTool.prototype.mouseDown = function (args) {
-        this.inAction = true;
-        this.undoElement = undefined;
-        if (!(this instanceof ConnectorDrawingTool)) {
-            this.undoElement = cloneObject(args.source);
-        }
-        _super.prototype.mouseDown.call(this, args);
-        var oldValue;
-        var connectors;
-        if (args.source && args.source.connectors) {
-            oldValue = { x: this.prevPosition.x, y: this.prevPosition.y };
-            connectors = args.source.connectors[0];
-        }
-        // Sets the selected segment 
-        if (this.endPoint === 'BezierSourceThumb' || this.endPoint === 'BezierTargetThumb') {
-            for (var i = 0; i < connectors.segments.length; i++) {
-                var segment = connectors.segments[i];
-                var segmentpoint1 = !Point.isEmptyPoint(segment.point1) ? segment.point1 : segment.bezierPoint1;
-                var segmentpoint2 = !Point.isEmptyPoint(segment.point2) ? segment.point2 : segment.bezierPoint2;
-                if (contains(this.currentPosition, segmentpoint1, connectors.hitPadding) ||
-                    contains(this.currentPosition, segmentpoint2, connectors.hitPadding)) {
-                    this.selectedSegment = segment;
+        return __awaiter$1(this, void 0, void 0, function () {
+            var selectorModel, connector, arg, trigger, temparg, oldValue, connectors, i, segment, segmentpoint1, segmentpoint2;
+            return __generator$1(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!(isBlazor() && args && args.source)) return [3 /*break*/, 2];
+                        selectorModel = args.source;
+                        if (!selectorModel.connectors) return [3 /*break*/, 2];
+                        connector = selectorModel.connectors[0];
+                        arg = {
+                            connector: cloneBlazorObject(connector),
+                            oldValue: { connectorTargetValue: { portId: undefined, nodeId: undefined } },
+                            newValue: { connectorTargetValue: { portId: undefined, nodeId: undefined } },
+                            cancel: false, state: 'Changing', connectorEnd: this.endPoint
+                        };
+                        trigger = DiagramEvent.connectionChange;
+                        temparg = void 0;
+                        return [4 /*yield*/, this.commandHandler.triggerEvent(trigger, arg)];
+                    case 1:
+                        temparg = (_a.sent());
+                        this.tempArgs = temparg;
+                        if (arg.cancel || (temparg && temparg.cancel)) {
+                            this.canCancel = true;
+                        }
+                        _a.label = 2;
+                    case 2:
+                        this.inAction = true;
+                        this.undoElement = undefined;
+                        if (!(this instanceof ConnectorDrawingTool)) {
+                            this.undoElement = cloneObject(args.source);
+                        }
+                        _super.prototype.mouseDown.call(this, args);
+                        if (args.source && args.source.connectors) {
+                            oldValue = { x: this.prevPosition.x, y: this.prevPosition.y };
+                            connectors = args.source.connectors[0];
+                        }
+                        // Sets the selected segment 
+                        if (this.endPoint === 'BezierSourceThumb' || this.endPoint === 'BezierTargetThumb') {
+                            for (i = 0; i < connectors.segments.length; i++) {
+                                segment = connectors.segments[i];
+                                segmentpoint1 = !Point.isEmptyPoint(segment.point1) ? segment.point1 : segment.bezierPoint1;
+                                segmentpoint2 = !Point.isEmptyPoint(segment.point2) ? segment.point2 : segment.bezierPoint2;
+                                if (contains(this.currentPosition, segmentpoint1, connectors.hitPadding) ||
+                                    contains(this.currentPosition, segmentpoint2, connectors.hitPadding)) {
+                                    this.selectedSegment = segment;
+                                }
+                            }
+                        }
+                        this.currentPosition = args.position;
+                        return [2 /*return*/];
                 }
-            }
-        }
-        this.currentPosition = args.position;
+            });
+        });
     };
     /**   @private  */
     ConnectTool.prototype.mouseUp = function (args) {
-        this.checkPropertyValue();
-        this.commandHandler.updateSelector();
-        this.commandHandler.removeSnap();
-        this.commandHandler.changeAnnotationDrag(args);
-        if ((!(this instanceof ConnectorDrawingTool)) && ((this.endPoint === 'ConnectorSourceEnd' &&
-            args.source.connectors.length &&
-            ((!Point.equals(args.source.connectors[0].sourcePoint, this.undoElement.connectors[0].sourcePoint) ||
-                (args.source.connectors[0].sourceID !== this.undoElement.connectors[0].sourceID)))) ||
-            (this.endPoint === 'ConnectorTargetEnd' &&
-                ((!Point.equals(args.source.connectors[0].targetPoint, this.undoElement.connectors[0].targetPoint))
-                    || (args.source.connectors[0].targetID !== this.undoElement.connectors[0].targetID))))) {
-            var oldValues = void 0;
-            var connector = void 0;
-            if (args.source && args.source.connectors) {
-                oldValues = {
-                    x: this.prevPosition.x, y: this.prevPosition.y
-                };
-                connector = args.source.connectors[0];
-            }
-            var targetPortName = void 0;
-            var targetNodeNode = void 0;
-            if (args.target) {
-                var target = this.commandHandler.findTarget(args.targetWrapper, args.target, this.endPoint === 'ConnectorSourceEnd', true);
-                (target instanceof PointPort) ? targetPortName = target.id : targetNodeNode = target.id;
-            }
-            var arg = {
-                connector: connector, state: 'Completed', targetNode: targetNodeNode,
-                oldValue: oldValues, newValue: oldValues, cancel: false, targetPort: targetPortName
-            };
-            if (isBlazor()) {
-                arg = {
-                    connector: cloneBlazorObject(connector), state: 'Completed', targetNode: targetNodeNode,
-                    oldValue: cloneBlazorObject(oldValues), newValue: oldValues, cancel: arg.cancel, targetPort: targetPortName
-                };
-            }
-            var trigger = this.endPoint === 'ConnectorSourceEnd' ? DiagramEvent.sourcePointChange : DiagramEvent.targetPointChange;
-            this.commandHandler.triggerEvent(trigger, arg);
-            this.commandHandler.removeTerminalSegment(connector, true);
-            if (this.undoElement && args.source) {
-                var obj = void 0;
-                obj = cloneObject(args.source);
-                var entry = {
-                    type: 'ConnectionChanged', redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement),
-                    category: 'Internal'
-                };
-                this.commandHandler.addHistoryEntry(entry);
-            }
-        }
-        else if (!(this instanceof ConnectorDrawingTool) &&
-            (this.endPoint === 'BezierTargetThumb' || this.endPoint === 'BezierSourceThumb')) {
-            if (this.undoElement && args.source) {
-                var obj = void 0;
-                obj = cloneObject(args.source);
-                var entry = {
-                    type: 'SegmentChanged', redoObject: obj, undoObject: this.undoElement, category: 'Internal'
-                };
-                this.commandHandler.addHistoryEntry(entry);
-            }
-        }
-        _super.prototype.mouseUp.call(this, args);
+        return __awaiter$1(this, void 0, void 0, function () {
+            var trigger, temparg, oldValues, connector, targetPortName, targetNodeNode, target, arg, trigger, obj, entry, obj, entry;
+            return __generator$1(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!isBlazor()) return [3 /*break*/, 2];
+                        trigger = DiagramEvent.connectionChange;
+                        temparg = void 0;
+                        return [4 /*yield*/, this.commandHandler.triggerEvent(trigger, this.tempArgs)];
+                    case 1:
+                        temparg = (_a.sent());
+                        if (temparg) {
+                            this.commandHandler.updateConnectorValue(temparg);
+                        }
+                        _a.label = 2;
+                    case 2:
+                        this.checkPropertyValue();
+                        this.commandHandler.updateSelector();
+                        this.commandHandler.removeSnap();
+                        this.commandHandler.changeAnnotationDrag(args);
+                        if ((!(this instanceof ConnectorDrawingTool)) && ((this.endPoint === 'ConnectorSourceEnd' &&
+                            args.source.connectors.length &&
+                            ((!Point.equals(args.source.connectors[0].sourcePoint, this.undoElement.connectors[0].sourcePoint) ||
+                                (args.source.connectors[0].sourceID !== this.undoElement.connectors[0].sourceID)))) ||
+                            (this.endPoint === 'ConnectorTargetEnd' &&
+                                ((!Point.equals(args.source.connectors[0].targetPoint, this.undoElement.connectors[0].targetPoint))
+                                    || (args.source.connectors[0].targetID !== this.undoElement.connectors[0].targetID))))) {
+                            oldValues = void 0;
+                            connector = void 0;
+                            if (args.source && args.source.connectors) {
+                                oldValues = {
+                                    x: this.prevPosition.x, y: this.prevPosition.y
+                                };
+                                connector = args.source.connectors[0];
+                            }
+                            targetPortName = void 0;
+                            targetNodeNode = void 0;
+                            if (args.target) {
+                                target = this.commandHandler.findTarget(args.targetWrapper, args.target, this.endPoint === 'ConnectorSourceEnd', true);
+                                (target instanceof PointPort) ? targetPortName = target.id : targetNodeNode = target.id;
+                            }
+                            arg = {
+                                connector: connector, state: 'Completed', targetNode: targetNodeNode,
+                                oldValue: oldValues, newValue: oldValues, cancel: false, targetPort: targetPortName
+                            };
+                            if (isBlazor()) {
+                                arg = {
+                                    connector: cloneBlazorObject(connector), state: 'Completed', targetNode: targetNodeNode,
+                                    oldValue: cloneBlazorObject(oldValues), newValue: oldValues, cancel: arg.cancel, targetPort: targetPortName
+                                };
+                            }
+                            trigger = this.endPoint === 'ConnectorSourceEnd' ? DiagramEvent.sourcePointChange : DiagramEvent.targetPointChange;
+                            this.commandHandler.triggerEvent(trigger, arg);
+                            this.commandHandler.removeTerminalSegment(connector, true);
+                            if (this.undoElement && args.source) {
+                                obj = void 0;
+                                obj = cloneObject(args.source);
+                                entry = {
+                                    type: 'ConnectionChanged', redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement),
+                                    category: 'Internal'
+                                };
+                                this.commandHandler.addHistoryEntry(entry);
+                            }
+                        }
+                        else if (!(this instanceof ConnectorDrawingTool) &&
+                            (this.endPoint === 'BezierTargetThumb' || this.endPoint === 'BezierSourceThumb')) {
+                            if (this.undoElement && args.source) {
+                                obj = void 0;
+                                obj = cloneObject(args.source);
+                                entry = {
+                                    type: 'SegmentChanged', redoObject: obj, undoObject: this.undoElement, category: 'Internal'
+                                };
+                                this.commandHandler.addHistoryEntry(entry);
+                            }
+                        }
+                        this.commandHandler.updateBlazorSelector();
+                        this.canCancel = undefined;
+                        this.tempArgs = undefined;
+                        _super.prototype.mouseUp.call(this, args);
+                        return [2 /*return*/];
+                }
+            });
+        });
     };
+    /* tslint:disable */
     /**   @private  */
     ConnectTool.prototype.mouseMove = function (args) {
         _super.prototype.mouseMove.call(this, args);
+        var tempArgs;
         if ((!(this instanceof ConnectorDrawingTool)) && ((this.endPoint === 'ConnectorSourceEnd' &&
             Point.equals(args.source.connectors[0].sourcePoint, this.undoElement.connectors[0].sourcePoint)) ||
             (this.endPoint === 'ConnectorTargetEnd' &&
@@ -21667,24 +22769,24 @@ var ConnectTool = /** @__PURE__ @class */ (function (_super) {
                 if (args.target && ((this.endPoint === 'ConnectorSourceEnd' && (canOutConnect(args.target) || canPortOutConnect(outPort)))
                     || (this.endPoint === 'ConnectorTargetEnd' && (canInConnect(args.target) || canPortInConnect(inPort))))) {
                     if (this.commandHandler.canDisconnect(this.endPoint, args, targetPortId, targetNodeId)) {
-                        this.commandHandler.disConnect(args.source, this.endPoint);
+                        tempArgs = this.commandHandler.disConnect(args.source, this.endPoint, this.canCancel);
                     }
                     var target = this.commandHandler.findTarget(args.targetWrapper, args.target, this.endPoint === 'ConnectorSourceEnd', true);
                     if (target instanceof Node) {
                         if ((canInConnect(target) && this.endPoint === 'ConnectorTargetEnd')
                             || (canOutConnect(target) && this.endPoint === 'ConnectorSourceEnd')) {
-                            this.commandHandler.connect(this.endPoint, args);
+                            tempArgs = this.commandHandler.connect(this.endPoint, args, this.canCancel);
                         }
                     }
                     else {
                         var isConnect = this.checkConnect(target);
                         if (isConnect) {
-                            this.commandHandler.connect(this.endPoint, args);
+                            tempArgs = this.commandHandler.connect(this.endPoint, args, this.canCancel);
                         }
                     }
                 }
                 else if (this.endPoint.indexOf('Bezier') === -1) {
-                    this.commandHandler.disConnect(args.source, this.endPoint);
+                    tempArgs = this.commandHandler.disConnect(args.source, this.endPoint, this.canCancel);
                     this.commandHandler.updateSelector();
                 }
             }
@@ -21692,6 +22794,9 @@ var ConnectTool = /** @__PURE__ @class */ (function (_super) {
                 var content = this.getTooltipContent(args.position);
                 this.commandHandler.showTooltip(args.source, args.position, content, 'ConnectTool', this.isTooltipVisible);
                 this.isTooltipVisible = false;
+            }
+            if (tempArgs) {
+                this.tempArgs = tempArgs;
             }
         }
         this.prevPosition = this.currentPosition;
@@ -21728,11 +22833,12 @@ var ConnectTool = /** @__PURE__ @class */ (function (_super) {
  * Drags the selected objects
  */
 var MoveTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$28(MoveTool, _super);
+    __extends$29(MoveTool, _super);
     function MoveTool(commandHandler, objType) {
         var _this = _super.call(this, commandHandler, true) || this;
         /**   @private  */
         _this.currentTarget = null;
+        _this.canCancel = false;
         _this.objectType = objType;
         return _this;
     }
@@ -21757,121 +22863,175 @@ var MoveTool = /** @__PURE__ @class */ (function (_super) {
         if (this.objectType === 'Port') {
             this.portId = args.sourceWrapper.id;
         }
+        var oldValues;
+        if (isBlazor()) {
+            this.startPosition = this.currentPosition = this.prevPosition = args.position;
+            this.initialOffset = { x: 0, y: 0 };
+            if (args.source) {
+                oldValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
+            }
+            var arg = {
+                source: cloneObject(args.source), state: 'Start', oldValue: oldValues, newValue: {},
+                target: cloneObject(args.target), targetPosition: args.position, allowDrop: true, cancel: false
+            };
+            this.tempArgs = arg;
+        }
         _super.prototype.mouseDown.call(this, args);
         this.initialOffset = { x: 0, y: 0 };
     };
     /* tslint:disable */
     /**   @private  */
     MoveTool.prototype.mouseUp = function (args, isPreventHistory) {
-        this.checkPropertyValue();
-        var obj;
-        var historyAdded = false;
-        var object;
-        var redoObject = { nodes: [], connectors: [] };
-        if (this.objectType !== 'Port') {
-            if (args.source instanceof Node || args.source instanceof Connector) {
-                if (args.source instanceof Node) {
-                    redoObject.nodes.push(cloneObject(args.source));
-                }
-                else {
-                    redoObject.connectors.push(cloneObject(args.source));
-                }
-                obj = cloneObject(redoObject);
-                var wrapper = args.source.wrapper;
-                obj.offsetX = wrapper.offsetX;
-                obj.offsetY = wrapper.offsetY;
-            }
-            else {
-                obj = cloneObject(args.source);
-            }
-            object = this.commandHandler.renderContainerHelper(args.source) || args.source;
-            if ((object.id === 'helper' && !obj.nodes[0].isLane && !obj.nodes[0].isPhase)
-                || (object.id !== 'helper')) {
-                if (object.offsetX !== this.undoElement.offsetX || object.offsetY !== this.undoElement.offsetY) {
-                    var oldValues = void 0;
-                    var newValues = void 0;
-                    if (args.source) {
-                        newValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
-                        oldValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
-                    }
-                    var arg = {
-                        source: args.source, state: 'Completed', oldValue: oldValues, newValue: newValues,
-                        target: this.currentTarget, targetPosition: this.currentPosition, allowDrop: true, cancel: false
-                    };
-                    arg = {
-                        source: cloneBlazorObject(args.source), state: 'Completed',
-                        oldValue: cloneBlazorObject(oldValues), newValue: cloneBlazorObject(newValues),
-                        target: cloneBlazorObject(this.currentTarget), targetPosition: cloneBlazorObject(this.currentPosition),
-                        allowDrop: arg.allowDrop, cancel: arg.cancel
-                    };
-                    if (isBlazor()) {
-                        arg = this.getBlazorPositionChangeEventArgs(arg, this.currentTarget);
-                    }
-                    this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg);
-                    if (!isPreventHistory) {
-                        this.commandHandler.startGroupAction();
-                        historyAdded = true;
-                        var entry = {
-                            type: 'PositionChanged',
+        return __awaiter$1(this, void 0, void 0, function () {
+            var oldValues, newValues, arg, blazorArgs, tx, ty, obj, historyAdded, object, redoObject, wrapper, arg, entry, entry_1, snappedPoint, arg, nodes, isEndGroup, i, entry;
+            return __generator$1(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!(isBlazor() && this.objectType !== 'Port')) return [3 /*break*/, 2];
+                        if (args.source) {
+                            newValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
+                            oldValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
+                        }
+                        arg = {
+                            source: cloneBlazorObject(args.source), state: 'Completed',
+                            oldValue: cloneBlazorObject(this.tempArgs.oldValue), newValue: cloneBlazorObject(newValues),
+                            target: cloneBlazorObject(this.currentTarget), targetPosition: cloneBlazorObject(this.currentPosition),
+                            allowDrop: true, cancel: false
+                        };
+                        return [4 /*yield*/, this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg)];
+                    case 1:
+                        blazorArgs = _a.sent();
+                        if (blazorArgs && blazorArgs.cancel) {
+                            this.canCancel = true;
+                        }
+                        if (this.canCancel) {
+                            tx = this.tempArgs.oldValue.offsetX - args.source.wrapper.offsetX;
+                            ty = this.tempArgs.oldValue.offsetY - args.source.wrapper.offsetY;
+                            this.commandHandler.dragSelectedObjects(tx, ty);
+                        }
+                        _a.label = 2;
+                    case 2:
+                        this.checkPropertyValue();
+                        historyAdded = false;
+                        redoObject = { nodes: [], connectors: [] };
+                        if (!(this.objectType !== 'Port')) return [3 /*break*/, 7];
+                        if (args.source instanceof Node || args.source instanceof Connector) {
+                            if (args.source instanceof Node) {
+                                redoObject.nodes.push(cloneObject(args.source));
+                            }
+                            else {
+                                redoObject.connectors.push(cloneObject(args.source));
+                            }
+                            obj = cloneObject(redoObject);
+                            wrapper = args.source.wrapper;
+                            obj.offsetX = wrapper.offsetX;
+                            obj.offsetY = wrapper.offsetY;
+                        }
+                        else {
+                            obj = cloneObject(args.source);
+                        }
+                        object = this.commandHandler.renderContainerHelper(args.source) || args.source;
+                        if ((object.id === 'helper' && !obj.nodes[0].isLane && !obj.nodes[0].isPhase)
+                            || (object.id !== 'helper')) {
+                            if (object.offsetX !== this.undoElement.offsetX || object.offsetY !== this.undoElement.offsetY) {
+                                if (args.source) {
+                                    newValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
+                                    oldValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
+                                }
+                                arg = {
+                                    source: args.source, state: 'Completed', oldValue: oldValues, newValue: newValues,
+                                    target: this.currentTarget, targetPosition: this.currentPosition, allowDrop: true, cancel: false
+                                };
+                                arg = {
+                                    source: cloneBlazorObject(args.source), state: 'Completed',
+                                    oldValue: cloneBlazorObject(oldValues), newValue: cloneBlazorObject(newValues),
+                                    target: cloneBlazorObject(this.currentTarget), targetPosition: cloneBlazorObject(this.currentPosition),
+                                    allowDrop: arg.allowDrop, cancel: arg.cancel
+                                };
+                                if (isBlazor()) {
+                                    arg = this.getBlazorPositionChangeEventArgs(arg, this.currentTarget);
+                                }
+                                if (!isBlazor()) {
+                                    this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg);
+                                }
+                                if (!isPreventHistory) {
+                                    this.commandHandler.startGroupAction();
+                                    historyAdded = true;
+                                    entry = {
+                                        type: 'PositionChanged',
+                                        redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement), category: 'Internal'
+                                    };
+                                    if (obj.nodes[0] && obj.nodes[0].processId) {
+                                        entry_1 = {
+                                            type: 'SizeChanged', category: 'Internal',
+                                            undoObject: this.undoParentElement, redoObject: this.commandHandler.getSubProcess(args.source)
+                                        };
+                                        this.commandHandler.addHistoryEntry(entry_1);
+                                    }
+                                    this.commandHandler.addHistoryEntry(entry);
+                                }
+                            }
+                        }
+                        snappedPoint = this.commandHandler.snapPoint(this.prevPosition, this.currentPosition, 0, 0);
+                        this.commandHandler.removeSnap();
+                        this.commandHandler.removeHighlighter();
+                        if (!(args.source && this.currentTarget && canAllowDrop(this.currentTarget) &&
+                            this.commandHandler.isDroppable(args.source, this.currentTarget))) return [3 /*break*/, 6];
+                        this.commandHandler.drop(this.currentElement, this.currentTarget, this.currentPosition);
+                        arg = {
+                            element: args.source, target: this.currentTarget, position: this.currentPosition, cancel: false
+                        };
+                        if (!isBlazor()) return [3 /*break*/, 4];
+                        arg = getDropEventArguements(args, arg);
+                        return [4 /*yield*/, this.commandHandler.triggerEvent(DiagramEvent.drop, arg)];
+                    case 3:
+                        arg = (_a.sent()) || arg;
+                        return [3 /*break*/, 5];
+                    case 4:
+                        this.commandHandler.triggerEvent(DiagramEvent.drop, arg);
+                        _a.label = 5;
+                    case 5:
+                        if (!arg.cancel && args.source && this.commandHandler.isParentAsContainer(this.currentTarget)) {
+                            nodes = (args.source instanceof Selector) ? args.source.nodes : [args.source];
+                            isEndGroup = false;
+                            for (i = 0; i < nodes.length; i++) {
+                                if (!nodes[i].container) {
+                                    isEndGroup = true;
+                                    this.commandHandler.dropChildToContainer(this.currentTarget, nodes[i]);
+                                    this.commandHandler.renderContainerHelper(nodes[i]);
+                                }
+                            }
+                            if (historyAdded && this.commandHandler.isContainer && isEndGroup) {
+                                this.commandHandler.endGroupAction();
+                            }
+                        }
+                        _a.label = 6;
+                    case 6:
+                        if (args.source && this.currentTarget) {
+                            this.commandHandler.dropAnnotation(args.source, this.currentTarget);
+                        }
+                        this.commandHandler.updateSelector();
+                        if (historyAdded && !this.commandHandler.isContainer) {
+                            this.commandHandler.endGroupAction();
+                        }
+                        return [3 /*break*/, 8];
+                    case 7:
+                        redoObject.nodes.push(cloneObject(args.source));
+                        args.portId = this.portId;
+                        obj = cloneObject(redoObject);
+                        entry = {
+                            type: 'PortPositionChanged', objectId: this.portId,
                             redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement), category: 'Internal'
                         };
-                        if (obj.nodes[0] && obj.nodes[0].processId) {
-                            var entry_1 = {
-                                type: 'SizeChanged', category: 'Internal',
-                                undoObject: this.undoParentElement, redoObject: this.commandHandler.getSubProcess(args.source)
-                            };
-                            this.commandHandler.addHistoryEntry(entry_1);
-                        }
                         this.commandHandler.addHistoryEntry(entry);
-                    }
+                        _a.label = 8;
+                    case 8:
+                        this.commandHandler.updateBlazorSelector();
+                        _super.prototype.mouseUp.call(this, args);
+                        return [2 /*return*/];
                 }
-            }
-            var snappedPoint = this.commandHandler.snapPoint(this.prevPosition, this.currentPosition, 0, 0);
-            this.commandHandler.removeSnap();
-            this.commandHandler.removeHighlighter();
-            if (args.source && this.currentTarget && canAllowDrop(this.currentTarget) &&
-                this.commandHandler.isDroppable(args.source, this.currentTarget)) {
-                this.commandHandler.drop(this.currentElement, this.currentTarget, this.currentPosition);
-                var arg = {
-                    element: args.source, target: this.currentTarget, position: this.currentPosition, cancel: false
-                };
-                if (isBlazor) {
-                    arg = getDropEventArguements(args, arg);
-                }
-                this.commandHandler.triggerEvent(DiagramEvent.drop, arg);
-                if (!arg.cancel && args.source && this.commandHandler.isParentAsContainer(this.currentTarget)) {
-                    var nodes = (args.source instanceof Selector) ? args.source.nodes : [args.source];
-                    var isEndGroup = false;
-                    for (var i = 0; i < nodes.length; i++) {
-                        if (!nodes[i].container) {
-                            isEndGroup = true;
-                            this.commandHandler.dropChildToContainer(this.currentTarget, nodes[i]);
-                            this.commandHandler.renderContainerHelper(nodes[i]);
-                        }
-                    }
-                    if (historyAdded && this.commandHandler.isContainer && isEndGroup) {
-                        this.commandHandler.endGroupAction();
-                    }
-                }
-            }
-            if (args.source && this.currentTarget) {
-                this.commandHandler.dropAnnotation(args.source, this.currentTarget);
-            }
-            this.commandHandler.updateSelector();
-            if (historyAdded && !this.commandHandler.isContainer) {
-                this.commandHandler.endGroupAction();
-            }
-        }
-        else {
-            redoObject.nodes.push(cloneObject(args.source));
-            obj = cloneObject(redoObject);
-            var entry = {
-                type: 'PortPositionChanged', objectId: this.portId,
-                redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement), category: 'Internal'
-            };
-            this.commandHandler.addHistoryEntry(entry);
-        }
-        _super.prototype.mouseUp.call(this, args);
+            });
+        });
     };
     MoveTool.prototype.getBlazorPositionChangeEventArgs = function (args, target) {
         args = {
@@ -21923,10 +23083,7 @@ var MoveTool = /** @__PURE__ @class */ (function (_super) {
             newValue: cloneBlazorObject(oldValues),
             target: args.target, targetPosition: args.position, allowDrop: arg.allowDrop, cancel: arg.cancel
         };
-        if (isBlazor()) {
-            arg = this.getBlazorPositionChangeEventArgs(arg, args.target);
-        }
-        if (isSame) {
+        if (isSame && !isBlazor()) {
             this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg);
         }
         this.currentPosition = args.position;
@@ -21961,8 +23118,10 @@ var MoveTool = /** @__PURE__ @class */ (function (_super) {
             if (isBlazor()) {
                 arg_1 = this.getBlazorPositionChangeEventArgs(arg_1, args.target);
             }
-            this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg_1);
-            if (!arg_1.cancel) {
+            if (!isBlazor()) {
+                this.commandHandler.triggerEvent(DiagramEvent.positionChange, arg_1);
+            }
+            if (!arg_1.cancel && !this.canCancel) {
                 this.blocked = !this.commandHandler.dragSelectedObjects(snappedPoint.x, snappedPoint.y);
                 var blocked = !(this.commandHandler.mouseOver(this.currentElement, this.currentTarget, this.currentPosition));
                 this.blocked = this.blocked || blocked;
@@ -22021,12 +23180,25 @@ var MoveTool = /** @__PURE__ @class */ (function (_super) {
  * Rotates the selected objects
  */
 var RotateTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$28(RotateTool, _super);
+    __extends$29(RotateTool, _super);
     function RotateTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
     /**   @private  */
     RotateTool.prototype.mouseDown = function (args) {
+        if (isBlazor()) {
+            var object = void 0;
+            object = this.commandHandler.renderContainerHelper(args.source) || args.source;
+            var oldValue = { rotateAngle: object.wrapper.rotateAngle };
+            var arg = {
+                source: cloneBlazorObject(args.source), state: 'Start', oldValue: oldValue, newValue: undefined, cancel: false
+            };
+            var temparg = arg;
+            this.tempArgs = temparg;
+            if (this.tempArgs && this.tempArgs.cancel) {
+                this.canCancel = true;
+            }
+        }
         this.undoElement = cloneObject(args.source);
         if (this.undoElement.nodes[0] && this.undoElement.nodes[0].children) {
             var objects = [];
@@ -22040,26 +23212,56 @@ var RotateTool = /** @__PURE__ @class */ (function (_super) {
     };
     /**   @private  */
     RotateTool.prototype.mouseUp = function (args) {
-        this.checkPropertyValue();
-        var object;
-        object = this.commandHandler.renderContainerHelper(args.source) || args.source;
-        if (this.undoElement.rotateAngle !== object.wrapper.rotateAngle) {
-            var oldValue = { rotateAngle: object.wrapper.rotateAngle };
-            var arg = {
-                source: args.source, state: 'Completed', oldValue: oldValue,
-                newValue: oldValue, cancel: false
-            };
-            this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg);
-            var obj = void 0;
-            obj = cloneObject(args.source);
-            var entry = {
-                type: 'RotationChanged', redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement), category: 'Internal',
-                childTable: this.childTable
-            };
-            this.commandHandler.addHistoryEntry(entry);
-            this.commandHandler.updateSelector();
-        }
-        _super.prototype.mouseUp.call(this, args);
+        return __awaiter$1(this, void 0, void 0, function () {
+            var object_2, oldValue, newValue, arg, args1, object, oldValue, arg, obj, entry;
+            return __generator$1(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.checkPropertyValue();
+                        if (!isBlazor()) return [3 /*break*/, 2];
+                        object_2 = this.commandHandler.renderContainerHelper(args.source) || args.source;
+                        oldValue = { rotateAngle: this.tempArgs.oldValue.rotateAngle };
+                        newValue = { rotateAngle: object_2.wrapper.rotateAngle };
+                        arg = {
+                            source: cloneBlazorObject(args.source), state: 'Completed', oldValue: oldValue, newValue: newValue, cancel: false
+                        };
+                        return [4 /*yield*/, this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg)];
+                    case 1:
+                        args1 = _a.sent();
+                        if (args1 && args1.cancel) {
+                            this.canCancel = true;
+                        }
+                        if (this.canCancel) {
+                            this.commandHandler.rotatePropertyChnage(this.tempArgs.oldValue.rotateAngle);
+                        }
+                        _a.label = 2;
+                    case 2:
+                        object = this.commandHandler.renderContainerHelper(args.source) || args.source;
+                        if (this.undoElement.rotateAngle !== object.wrapper.rotateAngle) {
+                            oldValue = { rotateAngle: object.wrapper.rotateAngle };
+                            arg = {
+                                source: args.source, state: 'Completed', oldValue: oldValue,
+                                newValue: oldValue, cancel: false
+                            };
+                            if (!isBlazor())
+                                this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg);
+                            obj = void 0;
+                            obj = cloneObject(args.source);
+                            entry = {
+                                type: 'RotationChanged', redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement), category: 'Internal',
+                                childTable: this.childTable
+                            };
+                            this.commandHandler.addHistoryEntry(entry);
+                            this.commandHandler.updateSelector();
+                        }
+                        this.commandHandler.updateBlazorSelector();
+                        this.canCancel = undefined;
+                        this.tempArgs = undefined;
+                        _super.prototype.mouseUp.call(this, args);
+                        return [2 /*return*/];
+                }
+            });
+        });
     };
     /**   @private  */
     RotateTool.prototype.mouseMove = function (args) {
@@ -22071,7 +23273,9 @@ var RotateTool = /** @__PURE__ @class */ (function (_super) {
             var arg_2 = {
                 source: args.source, state: 'Start', oldValue: oldValue_1, newValue: oldValue_1, cancel: false
             };
-            this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg_2);
+            if (!isBlazor()) {
+                this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg_2);
+            }
         }
         this.currentPosition = args.position;
         var refPoint = { x: object.wrapper.offsetX, y: object.wrapper.offsetY };
@@ -22089,8 +23293,10 @@ var RotateTool = /** @__PURE__ @class */ (function (_super) {
             source: cloneBlazorObject(args.source), state: 'Progress', oldValue: cloneBlazorObject(oldValue),
             newValue: cloneBlazorObject(newValue), cancel: arg.cancel
         };
-        this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg1);
-        if (!arg1.cancel) {
+        if (!isBlazor()) {
+            this.commandHandler.triggerEvent(DiagramEvent.rotateChange, arg1);
+        }
+        if ((!isBlazor() && !arg1.cancel) || (isBlazor() && !this.canCancel)) {
             this.blocked = !(this.commandHandler.rotateSelectedItems(angle - object.wrapper.rotateAngle));
         }
         if (this.commandHandler.canEnableDefaultTooltip()) {
@@ -22117,16 +23323,36 @@ var RotateTool = /** @__PURE__ @class */ (function (_super) {
  * Scales the selected objects
  */
 var ResizeTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$28(ResizeTool, _super);
+    __extends$29(ResizeTool, _super);
     function ResizeTool(commandHandler, corner) {
         var _this = _super.call(this, commandHandler, true) || this;
         /**   @private  */
         _this.initialBounds = new Rect();
+        _this.canCancel = false;
         _this.corner = corner;
         return _this;
     }
     /**   @private  */
     ResizeTool.prototype.mouseDown = function (args) {
+        var oldValues;
+        if (isBlazor()) {
+            this.startPosition = this.currentPosition = this.prevPosition = args.position;
+            this.currentElement = args.source;
+            this.initialBounds.x = args.source.wrapper.offsetX;
+            this.initialBounds.y = args.source.wrapper.offsetY;
+            this.initialBounds.height = args.source.wrapper.actualSize.height;
+            this.initialBounds.width = args.source.wrapper.actualSize.width;
+            if (args.source) {
+                oldValues = {
+                    offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY,
+                    width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height
+                };
+            }
+            var arg = {
+                source: cloneBlazorObject(args.source), state: 'Start', oldValue: oldValues, newValue: cloneBlazorObject(this.currentElement), cancel: false
+            };
+            this.tempArgs = arg;
+        }
         this.undoElement = cloneObject(args.source);
         this.undoParentElement = this.commandHandler.getSubProcess(args.source);
         _super.prototype.mouseDown.call(this, args);
@@ -22147,43 +23373,78 @@ var ResizeTool = /** @__PURE__ @class */ (function (_super) {
     };
     /**   @private  */
     ResizeTool.prototype.mouseUp = function (args, isPreventHistory) {
-        this.checkPropertyValue();
-        this.commandHandler.removeSnap();
-        var object;
-        this.commandHandler.updateSelector();
-        object = this.commandHandler.renderContainerHelper(args.source) || args.source;
-        if (this.undoElement.offsetX !== object.wrapper.offsetX || this.undoElement.offsetY !== object.wrapper.offsetY) {
-            var deltaValues = this.updateSize(args.source, this.currentPosition, this.prevPosition, this.corner, this.initialBounds);
-            this.blocked = this.scaleObjects(deltaValues.width, deltaValues.height, this.corner, this.currentPosition, this.prevPosition, object);
-            var oldValue = {
-                offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY,
-                width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height
-            };
-            var arg = {
-                source: args.source, state: 'Completed',
-                oldValue: oldValue, newValue: oldValue, cancel: false
-            };
-            this.commandHandler.triggerEvent(DiagramEvent.sizeChange, arg);
-            var obj = cloneObject(args.source);
-            var entry = {
-                type: 'SizeChanged', redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement), category: 'Internal',
-                childTable: this.childTable
-            };
-            if (!isPreventHistory) {
-                this.commandHandler.startGroupAction();
-                this.commandHandler.addHistoryEntry(entry);
-                if (obj.nodes[0] && obj.nodes[0].processId) {
-                    var entry_2 = {
-                        type: 'SizeChanged', redoObject: this.commandHandler.getSubProcess(args.source),
-                        undoObject: this.undoParentElement, category: 'Internal'
-                    };
-                    this.commandHandler.addHistoryEntry(entry_2);
+        return __awaiter$1(this, void 0, void 0, function () {
+            var obj, oldValues, arg, blazarArgs, scaleWidth, scaleHeight, object, deltaValues, oldValue, arg, obj, entry, entry_2;
+            return __generator$1(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!isBlazor()) return [3 /*break*/, 3];
+                        obj = cloneObject(args.source);
+                        oldValues = {
+                            width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height,
+                            offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY
+                        };
+                        arg = {
+                            oldValue: this.tempArgs.oldValue, newValue: oldValues, cancel: false,
+                            source: cloneBlazorObject(args.source), state: 'Completed'
+                        };
+                        if (!!this.canCancel) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.commandHandler.triggerEvent(DiagramEvent.sizeChange, arg)];
+                    case 1:
+                        blazarArgs = _a.sent();
+                        if (blazarArgs && blazarArgs.cancel) {
+                            scaleWidth = this.tempArgs.oldValue.width / obj.wrapper.actualSize.width;
+                            scaleHeight = this.tempArgs.oldValue.height / obj.wrapper.actualSize.height;
+                            this.commandHandler.scaleSelectedItems(scaleWidth, scaleHeight, this.getPivot(this.corner));
+                        }
+                        _a.label = 2;
+                    case 2:
+                        this.tempArgs = undefined;
+                        this.canCancel = undefined;
+                        _a.label = 3;
+                    case 3:
+                        this.checkPropertyValue();
+                        this.commandHandler.removeSnap();
+                        this.commandHandler.updateSelector();
+                        object = this.commandHandler.renderContainerHelper(args.source) || args.source;
+                        if (this.undoElement.offsetX !== object.wrapper.offsetX || this.undoElement.offsetY !== object.wrapper.offsetY) {
+                            deltaValues = this.updateSize(args.source, this.currentPosition, this.prevPosition, this.corner, this.initialBounds);
+                            this.blocked = this.scaleObjects(deltaValues.width, deltaValues.height, this.corner, this.currentPosition, this.prevPosition, object);
+                            oldValue = {
+                                offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY,
+                                width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height
+                            };
+                            arg = {
+                                source: cloneBlazorObject(args.source), state: 'Completed',
+                                oldValue: oldValue, newValue: oldValue, cancel: false
+                            };
+                            if (!isBlazor()) {
+                                this.commandHandler.triggerEvent(DiagramEvent.sizeChange, arg);
+                            }
+                            obj = cloneObject(args.source);
+                            entry = {
+                                type: 'SizeChanged', redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement), category: 'Internal',
+                                childTable: this.childTable
+                            };
+                            if (!isPreventHistory) {
+                                this.commandHandler.startGroupAction();
+                                this.commandHandler.addHistoryEntry(entry);
+                                if (obj.nodes[0] && obj.nodes[0].processId) {
+                                    entry_2 = {
+                                        type: 'SizeChanged', redoObject: this.commandHandler.getSubProcess(args.source),
+                                        undoObject: this.undoParentElement, category: 'Internal'
+                                    };
+                                    this.commandHandler.addHistoryEntry(entry_2);
+                                }
+                                this.commandHandler.endGroupAction();
+                            }
+                        }
+                        this.commandHandler.updateBlazorSelector();
+                        _super.prototype.mouseUp.call(this, args);
+                        return [2 /*return*/, !this.blocked];
                 }
-                this.commandHandler.endGroupAction();
-            }
-        }
-        _super.prototype.mouseUp.call(this, args);
-        return !this.blocked;
+            });
+        });
     };
     /**   @private  */
     ResizeTool.prototype.mouseMove = function (args) {
@@ -22198,7 +23459,9 @@ var ResizeTool = /** @__PURE__ @class */ (function (_super) {
             var arg = {
                 source: args.source, state: 'Start', oldValue: oldValue, newValue: this.currentElement, cancel: false
             };
-            this.commandHandler.triggerEvent(DiagramEvent.sizeChange, arg);
+            if (!isBlazor()) {
+                this.commandHandler.triggerEvent(DiagramEvent.sizeChange, arg);
+            }
         }
         this.currentPosition = args.position;
         var x = this.currentPosition.x - this.startPosition.x;
@@ -22283,8 +23546,10 @@ var ResizeTool = /** @__PURE__ @class */ (function (_super) {
             source: cloneBlazorObject(source), state: 'Progress',
             oldValue: cloneBlazorObject(oldValue), newValue: cloneBlazorObject(newValue), cancel: arg.cancel
         };
-        this.commandHandler.triggerEvent(DiagramEvent.sizeChange, arg1);
-        if (arg1.cancel) {
+        if (!isBlazor()) {
+            this.commandHandler.triggerEvent(DiagramEvent.sizeChange, arg1);
+        }
+        if (arg1.cancel || this.canCancel) {
             this.commandHandler.scaleSelectedItems(1 / deltaWidth, 1 / deltaHeight, this.getPivot(this.corner));
         }
         return this.blocked;
@@ -22295,7 +23560,7 @@ var ResizeTool = /** @__PURE__ @class */ (function (_super) {
  * Draws a node that is defined by the user
  */
 var NodeDrawingTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$28(NodeDrawingTool, _super);
+    __extends$29(NodeDrawingTool, _super);
     function NodeDrawingTool(commandHandler, sourceObject) {
         var _this = _super.call(this, commandHandler, true) || this;
         _this.sourceObject = sourceObject;
@@ -22336,6 +23601,7 @@ var NodeDrawingTool = /** @__PURE__ @class */ (function (_super) {
             this.commandHandler.addObjectToDiagram(this.drawingObject);
             this.drawingObject = null;
         }
+        this.commandHandler.updateBlazorSelector();
         _super.prototype.mouseUp.call(this, args);
         this.inAction = false;
     };
@@ -22355,16 +23621,21 @@ var NodeDrawingTool = /** @__PURE__ @class */ (function (_super) {
  * Draws a connector that is defined by the user
  */
 var ConnectorDrawingTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$28(ConnectorDrawingTool, _super);
+    __extends$29(ConnectorDrawingTool, _super);
     function ConnectorDrawingTool(commandHandler, endPoint, sourceObject) {
         var _this = _super.call(this, commandHandler, endPoint) || this;
         _this.sourceObject = sourceObject;
         return _this;
     }
-    /**   @private  */
+    /** @private */
     ConnectorDrawingTool.prototype.mouseDown = function (args) {
-        _super.prototype.mouseDown.call(this, args);
-        this.inAction = true;
+        return __awaiter$1(this, void 0, void 0, function () {
+            return __generator$1(this, function (_a) {
+                _super.prototype.mouseDown.call(this, args);
+                this.inAction = true;
+                return [2 /*return*/];
+            });
+        });
     };
     /**   @private  */
     ConnectorDrawingTool.prototype.mouseMove = function (args) {
@@ -22393,13 +23664,19 @@ var ConnectorDrawingTool = /** @__PURE__ @class */ (function (_super) {
     };
     /**   @private  */
     ConnectorDrawingTool.prototype.mouseUp = function (args) {
-        this.checkPropertyValue();
-        if (this.drawingObject && this.drawingObject instanceof Connector) {
-            this.commandHandler.addObjectToDiagram(this.drawingObject);
-            this.drawingObject = null;
-        }
-        this.inAction = false;
-        _super.prototype.mouseUp.call(this, args);
+        return __awaiter$1(this, void 0, void 0, function () {
+            return __generator$1(this, function (_a) {
+                this.checkPropertyValue();
+                if (this.drawingObject && this.drawingObject instanceof Connector) {
+                    this.commandHandler.addObjectToDiagram(this.drawingObject);
+                    this.drawingObject = null;
+                }
+                this.commandHandler.updateBlazorSelector();
+                this.inAction = false;
+                _super.prototype.mouseUp.call(this, args);
+                return [2 /*return*/];
+            });
+        });
     };
     /**   @private  */
     ConnectorDrawingTool.prototype.endAction = function () {
@@ -22414,7 +23691,7 @@ var ConnectorDrawingTool = /** @__PURE__ @class */ (function (_super) {
     return ConnectorDrawingTool;
 }(ConnectTool));
 var TextDrawingTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$28(TextDrawingTool, _super);
+    __extends$29(TextDrawingTool, _super);
     function TextDrawingTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
@@ -22478,7 +23755,7 @@ var TextDrawingTool = /** @__PURE__ @class */ (function (_super) {
  * Pans the diagram control on drag
  */
 var ZoomPanTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$28(ZoomPanTool, _super);
+    __extends$29(ZoomPanTool, _super);
     function ZoomPanTool(commandHandler, zoom) {
         var _this = _super.call(this, commandHandler) || this;
         _this.zooming = zoom;
@@ -22537,7 +23814,7 @@ var ZoomPanTool = /** @__PURE__ @class */ (function (_super) {
  * Animate the layout during expand and collapse
  */
 var ExpandTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$28(ExpandTool, _super);
+    __extends$29(ExpandTool, _super);
     function ExpandTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
@@ -22553,7 +23830,7 @@ var ExpandTool = /** @__PURE__ @class */ (function (_super) {
  * Opens the annotation hypeLink at mouse up
  */
 var LabelTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$28(LabelTool, _super);
+    __extends$29(LabelTool, _super);
     function LabelTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
@@ -22570,7 +23847,7 @@ var LabelTool = /** @__PURE__ @class */ (function (_super) {
  * Draws a Polygon shape node dynamically using polygon Tool
  */
 var PolygonDrawingTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$28(PolygonDrawingTool, _super);
+    __extends$29(PolygonDrawingTool, _super);
     function PolygonDrawingTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
@@ -22591,6 +23868,9 @@ var PolygonDrawingTool = /** @__PURE__ @class */ (function (_super) {
                     points: [{ x: this.startPoint.x, y: this.startPoint.y }, { x: this.currentPosition.x, y: this.currentPosition.y }]
                 }
             };
+            if (isBlazor() && node.shape.type === 'Basic') {
+                node.shape.basicShape = 'Polygon';
+            }
             this.drawingObject = this.commandHandler.drawObject(node);
         }
         else {
@@ -22646,7 +23926,7 @@ var PolygonDrawingTool = /** @__PURE__ @class */ (function (_super) {
  * Draws a PolyLine Connector dynamically using PolyLine Drawing Tool
  */
 var PolyLineDrawingTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$28(PolyLineDrawingTool, _super);
+    __extends$29(PolyLineDrawingTool, _super);
     function PolyLineDrawingTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
@@ -22705,7 +23985,7 @@ var PolyLineDrawingTool = /** @__PURE__ @class */ (function (_super) {
     return PolyLineDrawingTool;
 }(ToolBase));
 var LabelDragTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$28(LabelDragTool, _super);
+    __extends$29(LabelDragTool, _super);
     function LabelDragTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
@@ -22756,7 +24036,7 @@ var LabelDragTool = /** @__PURE__ @class */ (function (_super) {
     return LabelDragTool;
 }(ToolBase));
 var LabelResizeTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$28(LabelResizeTool, _super);
+    __extends$29(LabelResizeTool, _super);
     function LabelResizeTool(commandHandler, corner) {
         var _this = _super.call(this, commandHandler, true) || this;
         _this.corner = corner;
@@ -22835,7 +24115,7 @@ var LabelResizeTool = /** @__PURE__ @class */ (function (_super) {
     return LabelResizeTool;
 }(ToolBase));
 var LabelRotateTool = /** @__PURE__ @class */ (function (_super) {
-    __extends$28(LabelRotateTool, _super);
+    __extends$29(LabelRotateTool, _super);
     function LabelRotateTool(commandHandler) {
         return _super.call(this, commandHandler, true) || this;
     }
@@ -22885,7 +24165,7 @@ var LabelRotateTool = /** @__PURE__ @class */ (function (_super) {
     return LabelRotateTool;
 }(ToolBase));
 
-var __extends$29 = (undefined && undefined.__extends) || (function () {
+var __extends$30 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -22902,7 +24182,7 @@ var __extends$29 = (undefined && undefined.__extends) || (function () {
  * Multiple segments editing for Connector
  */
 var ConnectorEditing = /** @__PURE__ @class */ (function (_super) {
-    __extends$29(ConnectorEditing, _super);
+    __extends$30(ConnectorEditing, _super);
     function ConnectorEditing(commandHandler, endPoint) {
         var _this = _super.call(this, commandHandler, true) || this;
         _this.endPoint = endPoint;
@@ -23890,12 +25170,24 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
             var currentAction = (eventName === DiagramEvent.onUserHandleMouseLeave) ? this.previousAction : this.action;
             var arg = { element: undefined };
             for (var i = 0; i < this.diagram.selectedItems.userHandles.length; i++) {
-                if (currentAction === this.diagram.selectedItems.userHandles[i].name) {
+                if ((currentAction === this.diagram.selectedItems.userHandles[i].name) ||
+                    (eventName === DiagramEvent.onUserHandleMouseUp && currentAction === 'Select')) {
                     arg.element = this.diagram.selectedItems.userHandles[i];
                     if (eventName === DiagramEvent.onUserHandleMouseEnter) {
                         this.previousAction = this.action;
                     }
-                    this.diagram.triggerEvent(eventName, arg);
+                    if (eventName === DiagramEvent.onUserHandleMouseDown) {
+                        this.userHandleObject = this.diagram.selectedItems.userHandles[i].name;
+                    }
+                    var element = document.getElementById(this.diagram.selectedItems.userHandles[i].name + '_userhandle');
+                    if (eventName === DiagramEvent.onUserHandleMouseUp) {
+                        if (element && element.id === this.userHandleObject + '_userhandle') {
+                            this.diagram.triggerEvent(eventName, arg);
+                        }
+                    }
+                    else {
+                        this.diagram.triggerEvent(eventName, arg);
+                    }
                 }
             }
         }
@@ -23908,6 +25200,9 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
             this.isScrolling = true;
             evt.preventDefault();
             return;
+        }
+        if (isBlazor()) {
+            this.commandHandler.oldSelectedObjects = cloneObject(this.diagram.selectedItems);
         }
         this.checkUserHandleEvent(DiagramEvent.onUserHandleMouseDown);
         if (!this.checkEditBoxAsTarget(evt) && (canUserInteract(this.diagram)) ||
@@ -24337,6 +25632,14 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
             actualObject: this.eventArgs.actualObject ? { selector: cloneBlazorObject(this.eventArgs.actualObject) } :
                 { diagram: cloneBlazorObject(this.diagram) },
         };
+        if (this.eventArgs.source instanceof Node) {
+            arg.element.selector.nodes = [];
+            arg.element.selector.nodes.push(cloneBlazorObject(this.eventArgs.source));
+        }
+        else if (this.eventArgs.source instanceof Connector) {
+            arg.element.selector.connectors = [];
+            arg.element.selector.connectors.push(cloneBlazorObject(this.eventArgs.source));
+        }
         return arg;
     };
     DiagramEventHandler.prototype.addSwimLaneObject = function (selectedNode) {
@@ -24502,6 +25805,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
     };
     /** @private */
     DiagramEventHandler.prototype.mouseWheel = function (evt) {
+        this.diagram.blazorActions = BlazorAction.interaction;
         var up = (evt.wheelDelta > 0 || -40 * evt.detail > 0) ? true : false;
         var mousePosition = this.getMousePosition(evt);
         this.diagram.tooltipObject.close();
@@ -24539,6 +25843,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
             }
             this.diagram.isTriggerEvent = false;
         }
+        this.diagram.blazorActions = this.diagram.blazorActions & ~BlazorAction.interaction;
     };
     /** @private */
     DiagramEventHandler.prototype.keyDown = function (evt) {
@@ -24562,10 +25867,11 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
                                     (this.shiftKeyPressed(command.gesture.keyModifiers) && evt.shiftKey) ||
                                     (this.ctrlKeyPressed(command.gesture.keyModifiers) && ctrlKey)))) {
                             var canExecute = getFunction(command.canExecute);
-                            if (canExecute && canExecute({
-                                'keyDownEventArgs': KeyboardEvent,
-                                parameter: command.parameter
-                            } || isBlazor())) {
+                            if (isBlazor() || (canExecute &&
+                                canExecute({
+                                    'keyDownEventArgs': KeyboardEvent,
+                                    parameter: command.parameter
+                                }))) {
                                 evt.preventDefault();
                                 if (evt.key === 'Escape') {
                                     if (this.checkEditBoxAsTarget(evt)) {
@@ -24695,17 +26001,27 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
                 target.splice(i, 1);
             }
         }
-        var arg = {
-            targets: cloneBlazorObject(target),
-            element: cloneBlazorObject((this.eventArgs.source === this.eventArgs.actualObject) ? undefined : this.eventArgs.source),
-            actualObject: cloneBlazorObject(this.eventArgs.actualObject)
-        };
-        if (isBlazor()) {
+        var arg;
+        if (!isBlazor()) {
+            arg = {
+                targets: cloneBlazorObject(target),
+                element: cloneBlazorObject((this.eventArgs.source === this.eventArgs.actualObject) ? undefined : this.eventArgs.source),
+                actualObject: cloneBlazorObject(this.eventArgs.actualObject)
+            };
+        }
+        if (isBlazor() && (this.diagram.mouseEnter || this.diagram.mouseOver)) {
+            arg.actualObject = getObjectType(this.eventArgs.actualObject) === Connector ? {
+                connector: cloneBlazorObject(this.eventArgs.actualObject)
+            }
+                : {
+                    node: cloneBlazorObject(this.eventArgs.actualObject)
+                };
             arg.targets.connector = [];
             arg.targets.node = [];
             this.getBlazorCollectionObject(target, arg);
         }
-        if (this.lastObjectUnderMouse && (!this.eventArgs.actualObject || (this.lastObjectUnderMouse !== this.eventArgs.actualObject))) {
+        if (this.lastObjectUnderMouse && this.diagram.mouseLeave
+            && (!this.eventArgs.actualObject || (this.lastObjectUnderMouse !== this.eventArgs.actualObject))) {
             var arg_1 = {
                 targets: undefined, element: cloneBlazorObject(this.lastObjectUnderMouse), actualObject: undefined
             };
@@ -24826,8 +26142,18 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
                 position: this.currentPosition, count: evt.detail
             };
             if (isBlazor()) {
+                var selector = void 0;
+                if (obj instanceof Node) {
+                    selector = { nodes: [cloneBlazorObject(obj)] };
+                }
+                else if (obj instanceof Connector) {
+                    selector = { connectors: [cloneBlazorObject(obj)] };
+                }
+                else {
+                    selector = cloneBlazorObject(obj);
+                }
                 arg = {
-                    source: { selector: cloneBlazorObject(obj) } || { diagram: cloneBlazorObject(this.diagram) },
+                    source: obj ? { selector: selector } : { diagram: cloneBlazorObject(this.diagram) },
                     position: this.currentPosition, count: evt.detail
                 };
             }
@@ -24847,7 +26173,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
-    DiagramEventHandler.prototype.inputChange = function () {
+    DiagramEventHandler.prototype.inputChange = function (evt) {
         var minWidth = 90;
         var maxWidth;
         var minHeight = 12;
@@ -25001,11 +26327,13 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
                 return new ConnectorEditing(this.commandHandler, action);
             case 'Draw':
                 var shape = 'shape';
+                var basicShape = 'basicShape';
                 var type = findObjectType(this.diagram.drawingObject);
                 if (type === 'Node' && this.diagram.drawingObject.shape.type === 'Text') {
                     return new TextDrawingTool(this.commandHandler);
                 }
-                else if (type === 'Node' && this.diagram.drawingObject.shape[shape] === 'Polygon' &&
+                else if (type === 'Node' && (this.diagram.drawingObject.shape[shape] === 'Polygon' ||
+                    (isBlazor() && this.diagram.drawingObject.shape[basicShape] === 'Polygon')) &&
                     !(this.diagram.drawingObject.shape.points)) {
                     return new PolygonDrawingTool(this.commandHandler);
                 }
@@ -25136,35 +26464,37 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
                 }
                 else {
                     var parentNode = this.diagram.nameTable[obj.parentId];
-                    if (!parentNode || (parentNode && parentNode.shape.type !== 'SwimLane')) {
-                        if (parentNode && parentNode.isLane && (obj.constraints & NodeConstraints.AllowMovingOutsideLane)) {
-                            var swimlane = this.diagram.getObject(parentNode.parentId);
-                            var laneId = swimlane.id + swimlane.shape.lanes[0].id + '0';
-                            var firstlane = this.diagram.getObject(laneId);
-                            var x = firstlane.wrapper.bounds.x;
-                            var y = firstlane.wrapper.bounds.y;
-                            var width = swimlane.wrapper.bounds.bottomRight.x - x;
-                            var height = swimlane.wrapper.bounds.bottomRight.y - y;
-                            var swimlaneBounds = new Rect(x, y, width, height);
-                            if (swimlaneBounds.containsPoint(this.currentPosition)) {
-                                obj.offsetX = helperObject.offsetX;
-                                obj.offsetY = helperObject.offsetY;
-                                obj.width = helperObject.width;
-                                obj.height = helperObject.height;
-                                obj.rotateAngle = helperObject.rotateAngle;
-                            }
-                        }
-                        else {
-                            obj.offsetX = helperObject.offsetX;
-                            obj.offsetY = helperObject.offsetY;
-                            if (obj && obj.shape && obj.shape.type !== 'UmlClassifier') {
-                                if (obj.shape.type !== 'Bpmn' ||
-                                    (obj.shape.type === 'Bpmn' && obj.shape.shape !== 'TextAnnotation')) {
+                    if (!(this.diagram.lineRoutingModule && (this.diagram.constraints & DiagramConstraints.LineRouting))) {
+                        if (!parentNode || (parentNode && parentNode.shape.type !== 'SwimLane')) {
+                            if (parentNode && parentNode.isLane && (obj.constraints & NodeConstraints.AllowMovingOutsideLane)) {
+                                var swimlane = this.diagram.getObject(parentNode.parentId);
+                                var laneId = swimlane.id + swimlane.shape.lanes[0].id + '0';
+                                var firstlane = this.diagram.getObject(laneId);
+                                var x = firstlane.wrapper.bounds.x;
+                                var y = firstlane.wrapper.bounds.y;
+                                var width = swimlane.wrapper.bounds.bottomRight.x - x;
+                                var height = swimlane.wrapper.bounds.bottomRight.y - y;
+                                var swimlaneBounds = new Rect(x, y, width, height);
+                                if (swimlaneBounds.containsPoint(this.currentPosition)) {
+                                    obj.offsetX = helperObject.offsetX;
+                                    obj.offsetY = helperObject.offsetY;
                                     obj.width = helperObject.width;
                                     obj.height = helperObject.height;
+                                    obj.rotateAngle = helperObject.rotateAngle;
                                 }
                             }
-                            obj.rotateAngle = helperObject.rotateAngle;
+                            else {
+                                obj.offsetX = helperObject.offsetX;
+                                obj.offsetY = helperObject.offsetY;
+                                if (obj && obj.shape && obj.shape.type !== 'UmlClassifier') {
+                                    if (obj.shape.type !== 'Bpmn' ||
+                                        (obj.shape.type === 'Bpmn' && obj.shape.shape !== 'TextAnnotation')) {
+                                        obj.width = helperObject.width;
+                                        obj.height = helperObject.height;
+                                    }
+                                }
+                                obj.rotateAngle = helperObject.rotateAngle;
+                            }
                         }
                     }
                     var undoElement = void 0;
@@ -25601,15 +26931,16 @@ var ObjectFinder = /** @__PURE__ @class */ (function () {
             else if (action === 'Select' && diagram[eventHandler].tool) {
                 for (var i = objects.length - 1; i >= 0; i--) {
                     if (objects[i] instanceof Connector) {
-                        if (objects[i - 1] instanceof Node && objects[i - 1].ports) {
-                            var portElement = this.findTargetElement(objects[i - 1].wrapper, position, undefined);
+                        var objj1 = objects[i - 1];
+                        if (objects[i - 1] instanceof Node && objj1.ports) {
+                            var portElement = this.findTargetElement(objj1.wrapper, position, undefined);
                             if ((portElement && (portElement.id.match('_icon_content_shape$') || portElement.id.match('_icon_content_rect$')))) {
-                                return objects[i - 1];
+                                return objj1;
                             }
-                            for (var j = 0; j < objects[i - 1].ports.length; j++) {
-                                if (portElement && portElement.id.match('_' + objects[i - 1].ports[j].id + '$')) {
-                                    if (canDraw(objects[i - 1].ports[j], diagram)) {
-                                        return objects[i - 1];
+                            for (var j = 0; j < objj1.ports.length; j++) {
+                                if (portElement && portElement.id.match('_' + objj1.ports[j].id + '$')) {
+                                    if (canDraw(objj1.ports[j], diagram)) {
+                                        return objj1;
                                     }
                                 }
                             }
@@ -25695,7 +27026,7 @@ var ObjectFinder = /** @__PURE__ @class */ (function () {
     return ObjectFinder;
 }());
 
-var __extends$30 = (undefined && undefined.__extends) || (function () {
+var __extends$31 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -25708,7 +27039,7 @@ var __extends$30 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$19 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$20 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -25719,7 +27050,7 @@ var __decorate$19 = (undefined && undefined.__decorate) || function (decorators,
  * Layer is a named category of diagram shapes.
  */
 var Layer = /** @__PURE__ @class */ (function (_super) {
-    __extends$30(Layer, _super);
+    __extends$31(Layer, _super);
     // tslint:disable-next-line:no-any
     function Layer(parent, propName, defaultValue, isArray) {
         var _this = _super.call(this, parent, propName, defaultValue, isArray) || this;
@@ -25730,27 +27061,62 @@ var Layer = /** @__PURE__ @class */ (function (_super) {
         _this.objects = [];
         return _this;
     }
-    __decorate$19([
+    __decorate$20([
         Property('')
     ], Layer.prototype, "id", void 0);
-    __decorate$19([
+    __decorate$20([
         Property(true)
     ], Layer.prototype, "visible", void 0);
-    __decorate$19([
+    __decorate$20([
         Property(false)
     ], Layer.prototype, "lock", void 0);
-    __decorate$19([
+    __decorate$20([
         Property()
     ], Layer.prototype, "objects", void 0);
-    __decorate$19([
+    __decorate$20([
         Property()
     ], Layer.prototype, "addInfo", void 0);
-    __decorate$19([
+    __decorate$20([
         Property(-1)
     ], Layer.prototype, "zIndex", void 0);
     return Layer;
 }(ChildProperty));
 
+var __awaiter$2 = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator$2 = (undefined && undefined.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
 /**
  * Defines the behavior of commands
  */
@@ -25758,10 +27124,20 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
     function CommandHandler(diagram) {
         /**   @private  */
         this.clipboardData = {};
+        // private newNodeObject: Object[] = [];
+        // private newConnectorObject: Object[] = [];
+        /**   @private  */
+        this.diagramObject = {};
+        /**   @private  */
+        this.newSelectedObjects = {};
+        /**   @private  */
+        this.oldSelectedObjects = {};
         /**   @private  */
         this.connectorsTable = [];
         /**   @private  */
         this.processTable = {};
+        /**   @private  */
+        this.deepDiffer = new DeepDiffMapper();
         /** @private */
         this.isContainer = false;
         this.childTable = {};
@@ -25862,20 +27238,61 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
-    CommandHandler.prototype.triggerEvent = function (event, args) {
-        if (event === DiagramEvent.drop || event === DiagramEvent.positionChange ||
-            event === DiagramEvent.connectionChange) {
-            if (this.diagram.currentSymbol) {
-                return;
+    CommandHandler.prototype.updateConnectorValue = function (args) {
+        if (args.cancel) {
+            var newChanges = {};
+            var oldChanges = {};
+            var connector = this.diagram.nameTable[args.connector.id];
+            var nodeEndId = args.connectorEnd === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
+            var portEndId = args.connectorEnd === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
+            oldChanges[nodeEndId] = args.newValue.connectorTargetValue.nodeId;
+            oldChanges[portEndId] = args.newValue.connectorTargetValue.portId;
+            newChanges[nodeEndId] = args.oldValue.connectorTargetValue.nodeId;
+            newChanges[portEndId] = args.oldValue.connectorTargetValue.portId;
+            if (args.cancel && args.connectorEnd !== 'ConnectorTargetEnd') {
+                connector.sourceID = args.oldValue.connectorTargetValue.nodeId;
+                if (args.connector.sourcePortID) {
+                    connector.sourcePortID = args.oldValue.connectorTargetValue.portId;
+                }
+                this.diagram.connectorPropertyChange(connector, oldChanges, newChanges);
             }
-            if (event === DiagramEvent.drop) {
-                args.source = this.diagram;
-            }
-            if (this.diagram.currentDrawingObject && event !== DiagramEvent.positionChange) {
-                return;
+            if (args.cancel && args.connectorEnd === 'ConnectorTargetEnd') {
+                if (args.connector.targetPortID) {
+                    connector.targetPortID = args.oldValue.connectorTargetValue.portId;
+                }
+                connector.targetID = args.oldValue.connectorTargetValue.nodeId;
+                this.diagram.connectorPropertyChange(connector, oldChanges, newChanges);
             }
         }
-        this.diagram.triggerEvent(event, args);
+    };
+    /**
+     * @private
+     */
+    CommandHandler.prototype.triggerEvent = function (event, args) {
+        return __awaiter$2(this, void 0, void 0, function () {
+            var temparg;
+            return __generator$2(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (event === DiagramEvent.drop || event === DiagramEvent.positionChange ||
+                            event === DiagramEvent.connectionChange) {
+                            if (this.diagram.currentSymbol) {
+                                return [2 /*return*/];
+                            }
+                            if (event === DiagramEvent.drop) {
+                                args.source = this.diagram;
+                            }
+                            if (this.diagram.currentDrawingObject && event !== DiagramEvent.positionChange) {
+                                return [2 /*return*/];
+                            }
+                        }
+                        return [4 /*yield*/, this.diagram.triggerEvent(event, args)];
+                    case 1:
+                        temparg = _a.sent();
+                        return [2 /*return*/, temparg];
+                }
+            });
+        });
     };
     /**
      * @private
@@ -25892,9 +27309,11 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
-    CommandHandler.prototype.disConnect = function (obj, endPoint) {
+    CommandHandler.prototype.disConnect = function (obj, endPoint, canCancel) {
+        var checkBlazor = isBlazor();
         var oldChanges = {};
         var newChanges = {};
+        var returnargs;
         var selectorModel;
         var connector;
         if (obj instanceof Selector) {
@@ -25917,7 +27336,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                         connector[portEndId] = '';
                         newChanges[portEndId] = connector[portEndId];
                     }
-                    this.connectionEventChange(connector, oldChanges, newChanges, endPoint);
+                    returnargs = this.connectionEventChange(connector, oldChanges, newChanges, endPoint, canCancel);
                 }
             }
             else if ((endPoint !== 'OrthoThumb' && endPoint !== 'SegmentEnd') && (connector.sourceID || connector.targetID)) {
@@ -25944,8 +27363,11 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                         newValue: { connector: cloneBlazorObject(newChanges) },
                         cancel: false, state: 'Changed', connectorEnd: endPoint
                     };
+                    returnargs = arg;
                 }
-                this.triggerEvent(DiagramEvent.connectionChange, arg);
+                if (!checkBlazor) {
+                    this.triggerEvent(DiagramEvent.connectionChange, arg);
+                }
                 if (arg.cancel) {
                     connector.sourceID = oldChanges.sourceID;
                     connector.sourcePortID = oldChanges.sourcePortID;
@@ -25964,15 +27386,27 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                             connector: cloneBlazorObject(connector), oldValue: { connector: oldChanges },
                             newValue: { connector: newChanges }, cancel: false, state: 'Changed', connectorEnd: endPoint
                         };
+                        returnargs = arg;
                     }
-                    this.triggerEvent(DiagramEvent.connectionChange, arg);
+                    if (!checkBlazor) {
+                        this.triggerEvent(DiagramEvent.connectionChange, arg);
+                    }
                 }
             }
         }
+        return returnargs;
     };
-    CommandHandler.prototype.connectionEventChange = function (connector, oldChanges, newChanges, endPoint) {
+    CommandHandler.prototype.connectionEventChange = function (connector, oldChanges, newChanges, endPoint, canCancel) {
+        var checkBlazor = isBlazor();
         var nodeEndId = endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
         var portEndId = endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
+        var connectedNode;
+        if (this.enableCloneObject) {
+            connectedNode = this.diagram.nameTable[newChanges[nodeEndId]];
+            var nodeObject = cloneObject(connectedNode);
+            this.diagram.insertValue(nodeObject, true);
+        }
+        var returnargs;
         var arg = {
             connector: cloneBlazorObject(connector), oldValue: { nodeId: oldChanges[nodeEndId], portId: oldChanges[portEndId] },
             newValue: { nodeId: newChanges[nodeEndId], portId: newChanges[portEndId] },
@@ -25982,12 +27416,32 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             arg = {
                 connector: cloneBlazorObject(connector),
                 cancel: false, state: 'Changing', connectorEnd: endPoint,
-                oldValue: { connectorTargetValue: { portId: oldChanges[portEndId], nodeId: oldChanges[nodeEndId] } },
-                newValue: { connectorTargetValue: { portId: newChanges[portEndId], nodeId: newChanges[nodeEndId] } }
+                oldValue: undefined, newValue: undefined
             };
+            if (endPoint === 'ConnectorSourceEnd') {
+                arg.oldValue = {
+                    connectorSourceValue: {
+                        portId: oldChanges[portEndId], nodeId: oldChanges[nodeEndId]
+                    }
+                };
+                arg.newValue = {
+                    connectorSourceValue: { nodeId: newChanges[nodeEndId], portId: newChanges[portEndId], }
+                };
+            }
+            else {
+                arg.oldValue = {
+                    connectorTargetValue: { nodeId: oldChanges[nodeEndId], portId: oldChanges[portEndId] }
+                };
+                arg.newValue = {
+                    connectorTargetValue: { nodeId: newChanges[nodeEndId], portId: newChanges[portEndId] }
+                };
+            }
+            returnargs = arg;
         }
-        this.triggerEvent(DiagramEvent.connectionChange, arg);
-        if (arg.cancel) {
+        if (!checkBlazor) {
+            this.triggerEvent(DiagramEvent.connectionChange, arg);
+        }
+        if (arg.cancel || (isBlazor() && canCancel)) {
             connector[nodeEndId] = oldChanges[nodeEndId];
             connector[portEndId] = oldChanges[portEndId];
             newChanges = oldChanges;
@@ -26006,13 +27460,40 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             if (isBlazor()) {
                 arg = {
                     connector: cloneBlazorObject(connector),
-                    oldValue: { connectorTargetValue: { portId: oldChanges[portEndId], nodeId: oldChanges[nodeEndId] } },
-                    newValue: { connectorTargetValue: { portId: newChanges[portEndId], nodeId: newChanges[nodeEndId] } },
+                    oldValue: undefined,
+                    newValue: undefined,
                     cancel: false, state: 'Changed', connectorEnd: endPoint
                 };
+                if (endPoint === 'ConnectorSourceEnd') {
+                    arg.newValue = {
+                        connectorSourceValue: { portId: newChanges[portEndId], nodeId: newChanges[nodeEndId] }
+                    };
+                    arg.oldValue = {
+                        connectorSourceValue: { portId: oldChanges[portEndId], nodeId: oldChanges[nodeEndId] }
+                    };
+                }
+                else {
+                    arg.oldValue = {
+                        connectorTargetValue: { nodeId: oldChanges[nodeEndId], portId: oldChanges[portEndId], }
+                    };
+                    arg.newValue = {
+                        connectorTargetValue: { portId: newChanges[portEndId], nodeId: newChanges[nodeEndId] }
+                    };
+                }
+                returnargs = arg;
             }
-            this.triggerEvent(DiagramEvent.connectionChange, arg);
+            if (!checkBlazor) {
+                this.triggerEvent(DiagramEvent.connectionChange, arg);
+            }
         }
+        if (this.enableCloneObject) {
+            if (connectedNode === undefined) {
+                connectedNode = this.diagram.nameTable[oldChanges[nodeEndId]];
+                var nodeObject = cloneObject(connectedNode);
+                this.diagram.insertValue(nodeObject, true);
+            }
+        }
+        return returnargs;
     };
     /**
      * @private
@@ -26022,7 +27503,8 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             if (element && element.id === argsTarget.id + '_content') {
                 return argsTarget;
             }
-            if (source && argsTarget.shape.type === 'Bpmn' && argsTarget.shape.shape === 'Activity') {
+            if (source && argsTarget.shape.type === 'Bpmn' && ((!isBlazor() && argsTarget.shape.shape === 'Activity') ||
+                (isBlazor() && argsTarget.shape.bpmnShape === 'Activity'))) {
                 if (argsTarget.shape.activity.subProcess.type === 'Transaction') {
                     var transaction = argsTarget.shape.activity.subProcess.transaction;
                     if (transaction.success.visible && element.id.indexOf(argsTarget.id + '_success') === 0) {
@@ -26094,7 +27576,8 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             var annotationId = id[id.length - 1];
             var nodeId = id[id.length - 3] || id[0];
             if (args.target && args.target.id !== nodeId &&
-                args.target.shape.shape !== 'TextAnnotation') {
+                ((!isBlazor() && args.target.shape.shape !== 'TextAnnotation') ||
+                    (isBlazor() && args.target.shape.bpmnShape !== 'TextAnnotation'))) {
                 this.diagram.startGroupAction();
                 var parentNode = this.diagram.nameTable[id[0]];
                 var clonedNode = this.getAnnotation(parentNode, id[1]);
@@ -26120,16 +27603,19 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    /* tslint:disable */
     /**
      * @private
      */
-    CommandHandler.prototype.connect = function (endPoint, args) {
+    CommandHandler.prototype.connect = function (endPoint, args, canCancel) {
+        var checkBlazor;
         var newChanges = {};
         var oldChanges = {};
         var oldNodeId;
         var oldPortId;
         var selectorModel;
         var connector;
+        var returnargs;
         if (args.source instanceof Selector) {
             selectorModel = args.source;
             connector = selectorModel.connectors[0];
@@ -26145,7 +27631,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             connector[nodeEndId] = target.id;
             newChanges[nodeEndId] = connector[nodeEndId];
             oldChanges[portEndId] = connector[portEndId];
-            this.connectionEventChange(connector, oldChanges, newChanges, endPoint);
+            returnargs = this.connectionEventChange(connector, oldChanges, newChanges, endPoint, canCancel);
         }
         else {
             oldNodeId = connector[nodeEndId];
@@ -26162,13 +27648,32 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             if (isBlazor()) {
                 arg = {
                     connector: cloneBlazorObject(connector),
-                    oldValue: { connectorTargetValue: { portId: oldChanges[portEndId], nodeId: oldChanges[nodeEndId] } },
-                    newValue: { connectorTargetValue: { portId: newChanges[portEndId], nodeId: newChanges[nodeEndId] } },
+                    oldValue: undefined,
+                    newValue: undefined,
                     cancel: false, state: 'Changing', connectorEnd: endPoint
                 };
+                if (endPoint === 'ConnectorSourceEnd') {
+                    arg.oldValue = {
+                        connectorSourceValue: { portId: oldChanges[portEndId], nodeId: oldChanges[nodeEndId] }
+                    };
+                    arg.newValue = {
+                        connectorSourceValue: { portId: newChanges[portEndId], nodeId: newChanges[nodeEndId] }
+                    };
+                }
+                else {
+                    arg.newValue = {
+                        connectorTargetValue: { portId: newChanges[portEndId], nodeId: newChanges[nodeEndId] }
+                    };
+                    arg.oldValue = {
+                        connectorTargetValue: { portId: oldChanges[portEndId], nodeId: oldChanges[nodeEndId] }
+                    };
+                }
+                returnargs = arg;
             }
-            this.triggerEvent(DiagramEvent.connectionChange, arg);
-            if (arg.cancel) {
+            if (!checkBlazor) {
+                this.triggerEvent(DiagramEvent.connectionChange, arg);
+            }
+            if (arg.cancel || (isBlazor() && canCancel)) {
                 connector[nodeEndId] = oldNodeId;
                 connector[portEndId] = oldPortId;
                 newChanges[nodeEndId] = oldNodeId;
@@ -26184,17 +27689,37 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 };
                 if (isBlazor()) {
                     arg = {
-                        newValue: { connectorTargetValue: { portId: newChanges[portEndId], nodeId: newChanges[nodeEndId] } },
+                        newValue: undefined,
                         connector: cloneBlazorObject(connector),
-                        oldValue: { connectorTargetValue: { portId: oldChanges[portEndId], nodeId: oldChanges[nodeEndId] } },
+                        oldValue: undefined,
                         cancel: false, state: 'Changed', connectorEnd: endPoint,
                     };
+                    if (endPoint === 'ConnectorSourceEnd') {
+                        arg.oldValue = {
+                            connectorSourceValue: { portId: oldChanges[portEndId], nodeId: oldChanges[nodeEndId] }
+                        };
+                        arg.newValue = {
+                            connectorTargetValue: { portId: newChanges[portEndId], nodeId: newChanges[nodeEndId] }
+                        };
+                    }
+                    else {
+                        arg.oldValue = {
+                            connectorTargetValue: { portId: oldChanges[portEndId], nodeId: oldChanges[nodeEndId] }
+                        };
+                        arg.newValue = {
+                            connectorTargetValue: { portId: newChanges[portEndId], nodeId: newChanges[nodeEndId] }
+                        };
+                    }
                 }
-                this.triggerEvent(DiagramEvent.connectionChange, arg);
+                if (!checkBlazor) {
+                    this.triggerEvent(DiagramEvent.connectionChange, arg);
+                }
             }
         }
         this.renderHighlighter(args, undefined, endPoint === 'ConnectorSourceEnd');
+        return returnargs;
     };
+    /* tslint:enable */
     /** @private */
     CommandHandler.prototype.cut = function () {
         this.clipboardData.pasteIndex = 0;
@@ -26209,14 +27734,26 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             this.diagram.refreshDiagramLayer();
         }
     };
+    CommandHandler.prototype.UpdateBlazorDiagramModelLayers = function (layer) {
+        var ejsInterop = 'ejsInterop';
+        var updatedModel = cloneBlazorObject(layer);
+        var blazor = 'Blazor';
+        if (window && window[blazor]) {
+            var obj = { 'methodName': 'UpdateBlazorDiagramModelLayers', 'diagramobj': JSON.stringify(updatedModel) };
+            window[ejsInterop].updateBlazorProperties(obj, this.diagram);
+        }
+    };
     /** @private */
     CommandHandler.prototype.addLayer = function (layer, objects) {
         layer.id = layer.id || randomId();
         layer.zIndex = this.diagram.layers.length;
+        this.diagram.enableServerDataBinding(false);
         layer = new Layer(this.diagram, 'layers', layer, true);
+        this.diagram.enableServerDataBinding(true);
         layer.objectZIndex = -1;
         layer.zIndexTable = {};
         this.diagram.layers.push(layer);
+        this.UpdateBlazorDiagramModelLayers(layer);
         this.diagram.layerZIndexTable[layer.zIndex] = layer.id;
         this.diagram.activeLayer = layer;
         var layers = layer.objects;
@@ -26467,7 +28004,8 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 if (node.ports && node.ports.length > 0) {
                     this.diagram.removePorts(node, node.ports);
                 }
-                if (node.annotations && node.annotations.length > 0) {
+                if (node.annotations && node.annotations.length > 0
+                    && (!isBlazor() || isBlazor() && node.annotations[0].content !== '')) {
                     this.diagram.removeLabels(node, node.annotations);
                 }
                 var parentNode = this.diagram.nameTable[node.parentId];
@@ -26510,6 +28048,10 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                     var copy = copiedItems_1[_i];
                     objectTable[copy.id] = copy;
                 }
+                var copiedObject = [];
+                if (multiSelect) {
+                    this.diagram.isServerUpdate = true;
+                }
                 for (var j = 0; j < copiedItems.length; j++) {
                     var copy = copiedItems[j];
                     if (getObjectType(copy) === Connector) {
@@ -26525,10 +28067,12 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                             clonedObj.targetID = keyTable[nodeId];
                         }
                         var newObj = this.cloneConnector(clonedObj, multiSelect);
+                        copiedObject.push(newObj);
                         keyTable[copy.id] = newObj.id;
                     }
                     else {
                         var newNode = this.cloneNode(copy, multiSelect);
+                        copiedObject.push(newNode);
                         //bpmn text annotations will not be pasted
                         if (newNode) {
                             keyTable[copy.id] = newNode.id;
@@ -26556,6 +28100,10 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                             }
                         }
                     }
+                }
+                if (multiSelect) {
+                    this.diagram.isServerUpdate = false;
+                    this.diagram.UpdateBlazorDiagramModelCollection(copiedItems[0], copiedObject);
                 }
                 if (groupAction === true) {
                     this.diagram.historyManager.endGroupAction();
@@ -26610,7 +28158,8 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         else if (node.children && node.children.length && (!children || !children.length)) {
             newNode = this.cloneGroup(node, multiSelect);
         }
-        else if (node.shape && node.shape.shape === 'TextAnnotation' && node.id.indexOf('_textannotation_') !== -1 &&
+        else if (node.shape && ((!isBlazor() && node.shape.shape === 'TextAnnotation') ||
+            (isBlazor() && node.shape.bpmnShape === 'TextAnnotation')) && node.id.indexOf('_textannotation_') !== -1 &&
             this.diagram.nameTable[node.id]) {
             var checkAnnotation = node.id.split('_textannotation_');
             var parentNode = void 0;
@@ -26803,6 +28352,11 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
      * @private
      */
     CommandHandler.prototype.drawObject = function (obj) {
+        var oldProtectPropertyChangeValue;
+        if (isBlazor()) {
+            oldProtectPropertyChangeValue = this.diagram.getProtectPropertyChangeValue();
+            this.diagram.protectPropertyChange(true);
+        }
         var newObj;
         var cloneObject$$1;
         if (obj && obj.shape) {
@@ -26828,6 +28382,9 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         }
         this.diagram.updateDiagramObject(newObj);
         this.diagram.currentDrawingObject = newObj;
+        if (isBlazor()) {
+            this.diagram.protectPropertyChange(oldProtectPropertyChangeValue);
+        }
         return newObj;
     };
     /**
@@ -26868,7 +28425,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         if (isBlazor()) {
             arg = {
                 cause: this.diagram.diagramActions, newValue: {}, oldValue: {},
-                state: 'Changing', type: 'Addition', cancel: false
+                state: arg.state, type: arg.type, cancel: false
             };
             var argOldValue = arg.oldValue;
             var argNewValue = arg.newValue;
@@ -26876,7 +28433,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             argOldValue.nodes = [];
             argNewValue.connectors = [];
             argNewValue.nodes = [];
-            this.updateArgsObject(obj, arg, argNewValue);
+            this.updateArgsObject(this.getSelectedObject(), arg, argNewValue);
             this.updateArgsObject(oldValue, arg, argOldValue);
             return arg;
         }
@@ -26889,11 +28446,11 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             newValue: obj, cause: this.diagram.diagramActions,
             state: 'Changing', type: 'Addition', cancel: false
         };
+        this.diagram.enableServerDataBinding(false);
         var select = true;
-        if (isBlazor()) {
-            arg = this.updateSelectionChangeEventArgs(arg, obj, oldValue ? oldValue : []);
+        if (!isBlazor()) {
+            this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
         }
-        this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
         var canDoMultipleSelection = canMultiSelect(this.diagram);
         var canDoSingleSelection = canSingleSelect(this.diagram);
         if (canDoSingleSelection || canDoMultipleSelection) {
@@ -26945,10 +28502,36 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 newValue: cloneBlazorObject(this.getSelectedObject()),
                 cause: this.diagram.diagramActions, state: 'Changed', type: 'Addition', cancel: false,
             };
-            this.updateBlazorSelectorModel(oldValue);
-            arg = this.updateSelectionChangeEventArgs(arg, obj, oldValue);
-            this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
             this.diagram.renderSelector(multipleSelection || (obj && obj.length > 1));
+            this.updateBlazorSelectorModel(oldValue);
+            if (isBlazor()) {
+                arg = this.updateSelectionChangeEventArgs(arg, obj, oldValue ? oldValue : []);
+            }
+            this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
+            this.diagram.enableServerDataBinding(true);
+        }
+    };
+    /** @private */
+    CommandHandler.prototype.updateBlazorSelector = function () {
+        if (isBlazor()) {
+            this.newSelectedObjects = cloneObject(this.diagram.selectedItems);
+            var result = this.deepDiffer.map(cloneObject(this.newSelectedObjects), this.oldSelectedObjects);
+            var diffValue = this.deepDiffer.frameObject({}, result);
+            var diff = this.deepDiffer.removeEmptyValues(diffValue);
+            diff.nodes = [];
+            for (var i = 0; i < this.diagram.selectedItems.nodes.length; i++) {
+                diff.nodes.push(this.diagram.selectedItems.nodes[i].id);
+            }
+            diff.connectors = [];
+            for (var i = 0; i < this.diagram.selectedItems.connectors.length; i++) {
+                diff.connectors.push(this.diagram.selectedItems.connectors[i].id);
+            }
+            var ejsInterop = 'ejsInterop';
+            var blazor = 'Blazor';
+            if (window && window[blazor]) {
+                var obj = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': { selectedItems: diff } };
+                window[ejsInterop].updateBlazorProperties(obj, this.diagram);
+            }
         }
     };
     /**
@@ -27037,6 +28620,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
     };
     /** @private */
     CommandHandler.prototype.select = function (obj, multipleSelection, preventUpdate) {
+        this.diagram.enableServerDataBinding(false);
         var hasLayer = this.getObjectLayer(obj.id);
         if ((canSelect(obj) && !(obj instanceof Selector) && !isSelected(this.diagram, obj))
             && (hasLayer && !hasLayer.lock && hasLayer.visible) && obj.wrapper.visible) {
@@ -27078,6 +28662,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 this.diagram.renderSelector(multipleSelection);
             }
         }
+        this.diagram.enableServerDataBinding(true);
     };
     CommandHandler.prototype.getObjectCollectionId = function (isNode, clearSelection) {
         var id = [];
@@ -27134,10 +28719,9 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             state: 'Changing', type: 'Removal', cancel: false
         };
         if (!this.diagram.currentSymbol) {
-            if (isBlazor()) {
-                arg = this.updateSelectionChangeEventArgs(arg, [], objArray);
+            if (!isBlazor()) {
+                this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
             }
-            this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
         }
         if (isSelected(this.diagram, obj)) {
             var selectormodel = this.diagram.selectedItems;
@@ -27164,7 +28748,9 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 selectormodel.wrapper.children.splice(index, 1);
                 this.diagram.updateSelector();
                 if (!this.diagram.currentSymbol) {
-                    arg = this.updateSelectionChangeEventArgs(arg, [], objArray);
+                    if (isBlazor()) {
+                        arg = this.updateSelectionChangeEventArgs(arg, [], objArray);
+                    }
                     this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
                 }
             }
@@ -27519,8 +29105,104 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         var selectormodel = this.diagram.selectedItems;
         return (selectormodel.nodes).concat(selectormodel.connectors);
     };
+    /**   @private  */
+    CommandHandler.prototype.updateBlazorProperties = function (isObjectInteraction) {
+        var ejsInterop = 'ejsInterop';
+        var blazor = 'Blazor';
+        if (!isObjectInteraction) {
+            if (window && window[blazor]) {
+                var obj = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': this.diagramObject };
+                window[ejsInterop].updateBlazorProperties(obj, this.diagram);
+            }
+        }
+        else {
+            if (window && window[blazor]) {
+                var obj = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': this.deepDiffer.diagramObject };
+                window[ejsInterop].updateBlazorProperties(obj, this.diagram);
+            }
+        }
+        this.diagram.enableServerDataBinding(true);
+        this.deepDiffer.newNodeObject = [];
+        this.deepDiffer.newConnectorObject = [];
+        this.diagramObject = [];
+        this.diagram.oldNodeObjects = [];
+        this.diagram.oldConnectorObjects = [];
+    };
+    /**   @private  */
+    CommandHandler.prototype.enableCloneObject = function (value) {
+        this.diagram.canEnableBlazorObject = value;
+    };
+    /**   @private  */
+    CommandHandler.prototype.ismouseEvents = function (value) {
+        if (value) {
+            this.diagram.blazorActions = BlazorAction.interaction;
+        }
+        else {
+            this.diagram.blazorActions = ~BlazorAction.interaction;
+        }
+    };
+    /** @private */
+    CommandHandler.prototype.updateLayerObject = function (oldDiagram, temp) {
+        if (isBlazor()) {
+            var diffLayers = {};
+            diffLayers = this.deepDiffer.getLayerObject(oldDiagram, temp, this.diagram);
+            this.diagramObject = diffLayers;
+            this.updateBlazorProperties();
+        }
+    };
+    /* tslint:enable:no-string-literal */
+    /** @private */
+    CommandHandler.prototype.getDiagramOldValues = function (oldDiagram, attribute) {
+        var newDiagram = {};
+        for (var i = 0; i < attribute.length; i++) {
+            newDiagram[attribute[i]] = cloneObject(this.diagram[attribute[i]]);
+        }
+        var newObject = cloneObject(newDiagram);
+        var result = this.deepDiffer.map(newObject, oldDiagram);
+        var diffValue = this.deepDiffer.frameObject({}, result);
+        var diff = this.deepDiffer.removeEmptyValues(diffValue);
+        diff = this.deepDiffer.changeSegments(diff, newObject);
+        this.diagramObject = diff;
+        this.updateBlazorProperties();
+    };
+    /* tslint:disable */
+    /** @private */
+    CommandHandler.prototype.getBlazorOldValues = function (args, labelDrag) {
+        if (isBlazor()) {
+            var oldNodeObject = this.diagram.oldNodeObjects;
+            for (var i = 0; i < oldNodeObject.length; i++) {
+                if (oldNodeObject[i].id) {
+                    this.deepDiffer.getDifferenceValues(this.diagram.nameTable[oldNodeObject[i].id], args, labelDrag, this.diagram);
+                }
+            }
+            var oldConnectorObject = this.diagram.oldConnectorObjects;
+            for (var i = 0; i < oldConnectorObject.length; i++) {
+                if (oldConnectorObject[i].id) {
+                    this.deepDiffer.getDifferenceValues(this.diagram.nameTable[oldConnectorObject[i].id], args, labelDrag, this.diagram);
+                }
+            }
+            if (oldNodeObject.length > 0 || oldConnectorObject.length > 0) {
+                this.updateBlazorProperties(true);
+            }
+        }
+    };
+    /** @private */
+    CommandHandler.prototype.getObjectChanges = function (previousObject, currentObject, changedNodes) {
+        for (var i = 0; i < previousObject.length; i++) {
+            var value = this.deepDiffer.map(currentObject[i], previousObject[i]);
+            var result = this.deepDiffer.frameObject({}, value);
+            var change = this.deepDiffer.removeEmptyValues(result);
+            if (change.children) {
+                change.children = cloneObject(currentObject[i]).children;
+            }
+            change = this.deepDiffer.changeSegments(change, currentObject[i]);
+            change.ejsIndex = getIndex(this.diagram, currentObject[i].id);
+            changedNodes.push(change);
+        }
+    };
     /** @private */
     CommandHandler.prototype.clearSelection = function (triggerAction) {
+        this.diagram.enableServerDataBinding(false);
         if (hasSelection(this.diagram)) {
             var selectormodel = this.diagram.selectedItems;
             var arrayNodes = this.getSelectedObject();
@@ -27533,10 +29215,12 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             };
             this.updateBlazorSelectorModel(arrayNodes, true);
             if (triggerAction) {
-                if (isBlazor()) {
-                    arg = this.updateSelectionChangeEventArgs(arg, [], arrayNodes);
+                if (!isBlazor()) {
+                    this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
                 }
-                this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
+                else {
+                    this.oldSelectedObjects = cloneObject(selectormodel);
+                }
             }
             if (!arg.cancel) {
                 selectormodel.offsetX = 0;
@@ -27554,10 +29238,14 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                         oldValue: cloneBlazorObject(arrayNodes), newValue: [], cause: this.diagram.diagramActions,
                         state: 'Changed', type: 'Removal', cancel: false
                     };
-                    arg = this.updateSelectionChangeEventArgs(arg, [], arrayNodes);
+                    if (isBlazor()) {
+                        arg = this.updateSelectionChangeEventArgs(arg, [], arrayNodes);
+                    }
                     this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
                 }
             }
+            this.updateBlazorSelector();
+            this.diagram.enableServerDataBinding(true);
         }
     };
     /** @private */
@@ -27655,12 +29343,16 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 obj.offsetX += tx;
                 obj.offsetY += ty;
                 if (obj.children && !(obj.container)) {
+                    if (!(checkParentAsContainer(this.diagram, obj, true))) {
+                        this.diagram.diagramActions = this.diagram.diagramActions | DiagramAction.isGroupDragging;
+                    }
                     var nodes = this.getAllDescendants(obj, elements);
                     for (var i = 0; i < nodes.length; i++) {
                         tempNode = (this.diagram.nameTable[nodes[i].id]);
                         this.drag(tempNode, tx, ty);
                     }
                     this.updateInnerParentProperties(obj);
+                    this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.isGroupDragging;
                 }
                 if (checkParentAsContainer(this.diagram, obj, true)) {
                     checkChildNodeInContainer(this.diagram, obj);
@@ -27739,7 +29431,8 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                                         ty = actualObject.wrapper.bounds.middleRight.y - existingInnerBounds.middleRight.y;
                                         break;
                                 }
-                                this.dragSourceEnd(connector, tx, ty, true, null, 'ConnectorSourceEnd', undefined, undefined, undefined, true);
+                                this.dragSourceEnd(connector, tx, ty, true, null, 'ConnectorSourceEnd', undefined, undefined, undefined, (actualObject.parentId &&
+                                    (this.diagram.diagramActions & DiagramAction.isGroupDragging)) ? false : true);
                             }
                         }
                         else {
@@ -28226,6 +29919,17 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             }
         }
         return true;
+    };
+    /** @private */
+    CommandHandler.prototype.rotatePropertyChnage = function (angle) {
+        var selectedItems = this.diagram.selectedItems;
+        var objects = [];
+        objects = objects.concat(selectedItems.nodes);
+        objects = objects.concat(selectedItems.connectors);
+        var pivotValue = { x: selectedItems.offsetX, y: selectedItems.offsetY };
+        this.rotateObjects(selectedItems, objects, angle - selectedItems.rotateAngle, pivotValue);
+        selectedItems.wrapper.rotateAngle = selectedItems.rotateAngle = angle;
+        this.diagram.updateSelector();
     };
     /** @private */
     CommandHandler.prototype.rotateObjects = function (parent, objects, angle, pivot, includeParent) {
@@ -29021,7 +30725,9 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         if (this.diagram.layoutAnimateModule && this.diagram.layout.enableAnimation && this.diagram.organizationalChartModule) {
             this.diagram.organizationalChartModule.isAnimation = true;
         }
+        this.diagram.blazorActions = BlazorAction.expandNode;
         objects = this.diagram.doLayout();
+        this.diagram.blazorActions = BlazorAction.Default;
         this.diagram.preventNodesUpdate = preventNodesUpdate;
         this.diagram.preventConnectorsUpdate = false;
         if (this.diagram.layoutAnimateModule && this.diagram.organizationalChartModule) {
@@ -29114,6 +30820,12 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
      */
     CommandHandler.prototype.updateSelectedNodeProperties = function (object) {
         if (this.diagram.lineRoutingModule && (this.diagram.constraints & DiagramConstraints.LineRouting)) {
+            var previousNodeObject = [];
+            var previousConnectorObject = [];
+            var updateNodeObject = [];
+            var updateConnectorObject = [];
+            var changeNodes = [];
+            var changeConnectors = [];
             this.diagram.protectPropertyChange(true);
             var objects = [];
             var connectors = [];
@@ -29128,6 +30840,9 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 this.diagram.selectedItems.wrapper.rotateAngle = this.diagram.selectedItems.rotateAngle = helperObject.rotateAngle;
                 if (actualObject instanceof Node &&
                     actualObject.shape.type !== 'SwimLane' && !actualObject.isLane && !actualObject.isPhase && !actualObject.isHeader) {
+                    if (isBlazor()) {
+                        previousNodeObject.push(cloneObject(actualObject, undefined, undefined, true));
+                    }
                     actualObject.offsetX += offsetX;
                     actualObject.offsetY += offsetY;
                     actualObject.width += width;
@@ -29137,6 +30852,9 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                         offsetX: actualObject.offsetX, offsetY: actualObject.offsetY,
                         width: actualObject.width, height: actualObject.height, rotateAngle: actualObject.rotateAngle
                     });
+                    if (isBlazor()) {
+                        updateNodeObject.push(cloneObject(actualObject, undefined, undefined, true));
+                    }
                     objects = this.diagram.spatialSearch.findObjects(actualObject.wrapper.outerBounds);
                 }
                 else if (actualObject instanceof Selector) {
@@ -29175,10 +30893,27 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             for (var i = 0; i < connectors.length; i++) {
                 var connector = this.diagram.nameTable[connectors[i]];
                 if (connector instanceof Connector) {
+                    if (isBlazor()) {
+                        previousConnectorObject.push(cloneObject(connector, undefined, undefined, true));
+                    }
                     this.diagram.lineRoutingModule.refreshConnectorSegments(this.diagram, connector, true);
+                    if (isBlazor()) {
+                        updateConnectorObject.push(cloneObject(connector, undefined, undefined, true));
+                    }
                 }
             }
             this.updateSelector();
+            if (isBlazor()) {
+                this.getObjectChanges(previousNodeObject, updateNodeObject, changeNodes);
+                this.getObjectChanges(previousConnectorObject, updateConnectorObject, changeConnectors);
+                var ejsInterop = 'ejsInterop';
+                var blazor = 'Blazor';
+                var diagramObject = { nodes: changeNodes, connectors: changeConnectors };
+                if (window && window[blazor] && (changeConnectors.length + changeNodes.length)) {
+                    var obj = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': diagramObject };
+                    window[ejsInterop].updateBlazorProperties(obj, this.diagram);
+                }
+            }
             this.diagram.protectPropertyChange(false);
         }
     };
@@ -29230,7 +30965,8 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
     CommandHandler.prototype.isDroppable = function (source, targetNodes) {
         var node = this.diagram.nameTable[source.id] || source.nodes[0];
         if (node) {
-            if (node.shape.shape === 'TextAnnotation') {
+            if ((!isBlazor() && node.shape.shape === 'TextAnnotation') ||
+                (isBlazor() && node.shape.bpmnShape === 'TextAnnotation')) {
                 return true;
             }
             if (node && node.shape.type === 'Bpmn') {
@@ -29307,7 +31043,8 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
     CommandHandler.prototype.dropAnnotation = function (source, target) {
         var node = (source instanceof Node) ? source : source.nodes[0];
         if (this.diagram.bpmnModule && target.shape.type === 'Bpmn'
-            && node.shape.shape === 'TextAnnotation') {
+            && ((!isBlazor() && node.shape.shape === 'TextAnnotation') ||
+                (isBlazor() && node.shape.bpmnShape === 'TextAnnotation'))) {
             var hasTarget = 'hasTarget';
             node[hasTarget] = target.id;
             node.shape.annotation.nodeId = target.id;
@@ -30692,7 +32429,7 @@ var SpatialSearch = /** @__PURE__ @class */ (function () {
     return SpatialSearch;
 }());
 
-var __extends$31 = (undefined && undefined.__extends) || (function () {
+var __extends$32 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -30705,7 +32442,7 @@ var __extends$31 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$20 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$21 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -30727,17 +32464,17 @@ var __decorate$20 = (undefined && undefined.__decorate) || function (decorators,
  * @default {}
  */
 var SerializationSettings = /** @__PURE__ @class */ (function (_super) {
-    __extends$31(SerializationSettings, _super);
+    __extends$32(SerializationSettings, _super);
     function SerializationSettings() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$20([
+    __decorate$21([
         Property(false)
     ], SerializationSettings.prototype, "preventDefaults", void 0);
     return SerializationSettings;
 }(ChildProperty));
 
-var __extends$32 = (undefined && undefined.__extends) || (function () {
+var __extends$33 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -30750,7 +32487,7 @@ var __extends$32 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$21 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$22 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -30761,14 +32498,14 @@ var __decorate$21 = (undefined && undefined.__decorate) || function (decorators,
  * Layer is a named category of diagram shapes.
  */
 var CustomCursorAction = /** @__PURE__ @class */ (function (_super) {
-    __extends$32(CustomCursorAction, _super);
+    __extends$33(CustomCursorAction, _super);
     function CustomCursorAction() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$21([
+    __decorate$22([
         Property('')
     ], CustomCursorAction.prototype, "action", void 0);
-    __decorate$21([
+    __decorate$22([
         Property('')
     ], CustomCursorAction.prototype, "cursor", void 0);
     return CustomCursorAction;
@@ -30793,6 +32530,41 @@ var __decorate = (undefined && undefined.__decorate) || function (decorators, ta
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (undefined && undefined.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
 /**
  * Represents the Diagram control
  * ```html
@@ -30816,6 +32588,16 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         /** @private */
         _this.checkMenu = false;
         /** @private */
+        _this.isServerUpdate = false;
+        /** @private */
+        _this.oldNodeObjects = [];
+        /** @private */
+        _this.oldDiagramObject = {};
+        /** @private */
+        _this.oldConnectorObjects = [];
+        /** @private */
+        _this.canEnableBlazorObject = false;
+        /** @private */
         _this.connectorTable = {};
         /** @private */
         _this.groupTable = {};
@@ -30830,9 +32612,13 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         /** @private */
         _this.preventConnectorsUpdate = false;
         /** @private */
+        _this.callBlazorModel = true;
+        /** @private */
         _this.selectionConnectorsList = [];
         /** @private */
         _this.deleteVirtualObject = false;
+        _this.changedConnectorCollection = [];
+        _this.changedNodesCollection = [];
         _this.crudDeleteNodes = [];
         _this.diagramid = 88123;
         /** @private */
@@ -30840,6 +32626,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         _this.renderTimer = null;
         var child;
         var node;
+        _this.ignoreCollectionWatch = true;
         for (var i = 0; options && options.nodes && i < options.nodes.length; i++) {
             child = options.nodes[i];
             node = _this.nodes[i];
@@ -30860,12 +32647,14 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             if (_this.nodeDefaults) {
                 updateDefaultValues(node, child, _this.nodeDefaults);
             }
+            _this.updateAnnotationText(node.annotations);
         }
         if (options && options.connectors && _this.connectorDefaults) {
             for (var i = 0; options && options.connectors && i < options.connectors.length; i++) {
                 child = options.connectors[i];
                 node = _this.connectors[i];
                 updateDefaultValues(node, child, _this.connectorDefaults);
+                _this.updateAnnotationText(node.annotations);
             }
         }
         for (var i = 0; options && options.connectors && i < options.connectors.length; i++) {
@@ -30874,9 +32663,74 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             if (defaultConnector.shape && defaultConnector.shape.type !== 'None') {
                 setConnectorDefaults(defaultConnector, connector);
             }
+            if (isBlazor()) {
+                var defaultPropChanges = cloneObject(_this.bulkChanges);
+                _this.enableServerDataBinding(true);
+                _this.protectPropertyChange(true);
+                var keys = Object.keys(defaultPropChanges);
+                for (var i_1 = 0; i_1 < keys.length; i_1++) {
+                    var key = keys[i_1];
+                    var split = key.split('-');
+                    if (split && split[0]) {
+                        if (split[0] === 'nodes') {
+                            defaultPropChanges[key].ejsIndex = Number(split[1]);
+                            _this.changedNodesCollection.push(defaultPropChanges[key]);
+                        }
+                        if (split[0] === 'connectors') {
+                            defaultPropChanges[key].ejsIndex = Number(split[1]);
+                            _this.changedConnectorCollection.push(defaultPropChanges[key]);
+                        }
+                    }
+                }
+            }
         }
         return _this;
     }
+    Diagram.prototype.updateAnnotationText = function (annotations) {
+        if (isBlazor() && annotations.length > 0) {
+            for (var i = 0; annotations && i < annotations.length; i++) {
+                var label = annotations[i];
+                label.content = label.content.split('\\n').join('\n');
+            }
+        }
+    };
+    Diagram.prototype.callFromServer = function (arg) {
+        var methodName = 'methodName';
+        var mId = 'id';
+        if (arg[methodName] === 'getParentID') {
+            var id = arg[mId];
+            return this.nameTable[id].parentId;
+        }
+        else if (arg[methodName] === 'getEdges') {
+            var outEdge = 'outEdge';
+            var isOutEdge = arg[outEdge];
+            var id = arg[mId];
+            if (isOutEdge) {
+                return this.nameTable[id].outEdges;
+            }
+            else {
+                return this.nameTable[id].inEdges;
+            }
+        }
+        else if (arg[methodName] === 'updateDiagramObjects') {
+            var obj = 'obj';
+            var isAdding = 'IsAdding';
+            var args = arg[obj];
+            this.isServerUpdate = true;
+            if (arg[isAdding]) {
+                this.add(args);
+            }
+            else {
+                this.remove(args);
+            }
+            this.isServerUpdate = false;
+        }
+        else if (arg[methodName] === 'invokeLoadDiagramMethod') {
+            var data = 'data';
+            this.loadDiagram(arg[data]);
+        }
+    };
+    
     Diagram.prototype.clearCollection = function (isConnector) {
         var collection = [];
         var obj;
@@ -30902,213 +32756,215 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         var isPropertyChanged = true;
         var refreshLayout = false;
         var refereshColelction = false;
-        for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
-            var prop = _a[_i];
-            switch (prop) {
-                case 'width':
-                case 'height':
-                    this.element.style.width = this.getSizeValue(this.width);
-                    this.element.style.height = this.getSizeValue(this.height);
-                    this.eventHandler.updateViewPortSize(this.element);
-                    for (var _b = 0, _c = this.views; _b < _c.length; _b++) {
-                        var view = _c[_b];
-                        var temp = this.views[view];
-                        if (!(temp instanceof Diagram)) {
-                            temp.updateView(temp);
-                        }
-                    }
-                    break;
-                case 'nodes':
-                    if (newProp.nodes.length > 0 && oldProp.nodes.length === 0) {
-                        this.clearCollection();
-                        refereshColelction = true;
-                    }
-                    else {
-                        for (var _d = 0, _e = Object.keys(newProp.nodes); _d < _e.length; _d++) {
-                            var key = _e[_d];
-                            var index = Number(key);
-                            var actualObject = this.nodes[index];
-                            var changedProp = newProp.nodes[index];
-                            refreshLayout = refreshLayout || changedProp.excludeFromLayout !== undefined;
-                            this.nodePropertyChange(actualObject, oldProp.nodes[index], changedProp, undefined, true, true);
-                            var args = {
-                                element: cloneBlazorObject(actualObject), cause: this.diagramActions,
-                                oldValue: cloneBlazorObject(oldProp.nodes[index]),
-                                newValue: cloneBlazorObject(newProp.nodes[index])
-                            };
-                            if (isBlazor()) {
-                                args.element = { node: cloneBlazorObject(actualObject) };
-                                args.oldValue = { node: cloneBlazorObject(oldValue) };
-                                args.newValue = { node: cloneBlazorObject(newValue) };
-                            }
-                            this.triggerEvent(DiagramEvent.propertyChange, args);
-                            if (isPropertyChanged) {
-                                isPropertyChanged = false;
+        if (this.diagramActions & DiagramAction.Render) {
+            for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
+                var prop = _a[_i];
+                switch (prop) {
+                    case 'width':
+                    case 'height':
+                        this.element.style.width = this.getSizeValue(this.width);
+                        this.element.style.height = this.getSizeValue(this.height);
+                        this.eventHandler.updateViewPortSize(this.element);
+                        for (var _b = 0, _c = this.views; _b < _c.length; _b++) {
+                            var view = _c[_b];
+                            var temp = this.views[view];
+                            if (!(temp instanceof Diagram)) {
+                                temp.updateView(temp);
                             }
                         }
-                        if (this.mode === 'Canvas') {
-                            this.refreshDiagramLayer();
+                        break;
+                    case 'nodes':
+                        if (newProp.nodes.length > 0 && oldProp.nodes.length === 0) {
+                            this.clearCollection();
+                            refereshColelction = true;
                         }
-                    }
-                    break;
-                case 'connectors':
-                    
-                    if (newProp.connectors.length > 0 && oldProp.connectors.length === 0) {
-                        this.clearCollection(true);
-                        refereshColelction = true;
-                    }
-                    else {
-                        for (var _f = 0, _g = Object.keys(newProp.connectors); _f < _g.length; _f++) {
-                            var key = _g[_f];
-                            var index = Number(key);
-                            var actualObject = this.connectors[index];
-                            var changedProp = newProp.connectors[index];
-                            this.connectorPropertyChange(actualObject, oldProp.connectors[index], changedProp, true, true);
-                            var args = {
-                                element: cloneBlazorObject(actualObject), cause: this.diagramActions,
-                                oldValue: cloneBlazorObject(oldProp.connectors[index]),
-                                newValue: cloneBlazorObject(newProp.connectors[index])
-                            };
-                            if (isBlazor()) {
-                                args.element = { connector: cloneBlazorObject(actualObject) };
-                                args.oldValue = { connector: cloneBlazorObject(oldValue) };
-                                args.newValue = { connector: cloneBlazorObject(newValue) };
+                        else {
+                            for (var _d = 0, _e = Object.keys(newProp.nodes); _d < _e.length; _d++) {
+                                var key = _e[_d];
+                                var index = Number(key);
+                                var actualObject = this.nodes[index];
+                                var changedProp = newProp.nodes[index];
+                                refreshLayout = refreshLayout || changedProp.excludeFromLayout !== undefined;
+                                this.nodePropertyChange(actualObject, oldProp.nodes[index], changedProp, undefined, true, true);
+                                var args = {
+                                    element: cloneBlazorObject(actualObject), cause: this.diagramActions,
+                                    oldValue: cloneBlazorObject(oldProp.nodes[index]),
+                                    newValue: cloneBlazorObject(newProp.nodes[index])
+                                };
+                                if (isBlazor()) {
+                                    args.element = { node: cloneBlazorObject(actualObject) };
+                                    args.oldValue = { node: cloneBlazorObject(oldValue) };
+                                    args.newValue = { node: cloneBlazorObject(newValue) };
+                                }
+                                this.triggerEvent(DiagramEvent.propertyChange, args);
+                                if (isPropertyChanged) {
+                                    isPropertyChanged = false;
+                                }
                             }
-                            this.triggerEvent(DiagramEvent.propertyChange, args);
-                            if (actualObject && actualObject.parentId && this.nameTable[actualObject.parentId].shape.type === 'UmlClassifier') {
-                                this.updateConnectorEdges(this.nameTable[actualObject.parentId] || actualObject);
-                            }
-                            if (isPropertyChanged) {
-                                isPropertyChanged = false;
+                            if (this.mode === 'Canvas') {
+                                this.refreshDiagramLayer();
                             }
                         }
+                        break;
+                    case 'connectors':
+                        
+                        if (newProp.connectors.length > 0 && oldProp.connectors.length === 0) {
+                            this.clearCollection(true);
+                            refereshColelction = true;
+                        }
+                        else {
+                            for (var _f = 0, _g = Object.keys(newProp.connectors); _f < _g.length; _f++) {
+                                var key = _g[_f];
+                                var index = Number(key);
+                                var actualObject = this.connectors[index];
+                                var changedProp = newProp.connectors[index];
+                                this.connectorPropertyChange(actualObject, oldProp.connectors[index], changedProp, true, true);
+                                var args = {
+                                    element: cloneBlazorObject(actualObject), cause: this.diagramActions,
+                                    oldValue: cloneBlazorObject(oldProp.connectors[index]),
+                                    newValue: cloneBlazorObject(newProp.connectors[index])
+                                };
+                                if (isBlazor()) {
+                                    args.element = { connector: cloneBlazorObject(actualObject) };
+                                    args.oldValue = { connector: cloneBlazorObject(oldValue) };
+                                    args.newValue = { connector: cloneBlazorObject(newValue) };
+                                }
+                                this.triggerEvent(DiagramEvent.propertyChange, args);
+                                if (actualObject && actualObject.parentId && this.nameTable[actualObject.parentId].shape.type === 'UmlClassifier') {
+                                    this.updateConnectorEdges(this.nameTable[actualObject.parentId] || actualObject);
+                                }
+                                if (isPropertyChanged) {
+                                    isPropertyChanged = false;
+                                }
+                            }
+                            this.updateBridging();
+                            if (this.mode === 'Canvas') {
+                                this.refreshDiagramLayer();
+                            }
+                        }
+                        break;
+                    case 'bridgeDirection':
                         this.updateBridging();
                         if (this.mode === 'Canvas') {
                             this.refreshDiagramLayer();
                         }
-                    }
-                    break;
-                case 'bridgeDirection':
-                    this.updateBridging();
-                    if (this.mode === 'Canvas') {
-                        this.refreshDiagramLayer();
-                    }
-                    break;
-                case 'backgroundColor':
-                    this.intOffPageBackground();
-                    break;
-                case 'pageSettings':
-                    this.validatePageSize();
-                    this.updatePage();
-                    break;
-                case 'selectedItems':
-                    if (newProp.selectedItems.userHandles && this.selectedItems.wrapper && this.selectedItems.userHandles) {
-                        if (this.selectedItems.userHandles.length > 0) {
+                        break;
+                    case 'backgroundColor':
+                        this.intOffPageBackground();
+                        break;
+                    case 'pageSettings':
+                        this.validatePageSize();
+                        this.updatePage();
+                        break;
+                    case 'selectedItems':
+                        if (newProp.selectedItems.userHandles && this.selectedItems.wrapper && this.selectedItems.userHandles) {
+                            if (this.selectedItems.userHandles.length > 0) {
+                                this.renderSelector(true);
+                                break;
+                            }
+                        }
+                        if (newProp.selectedItems.constraints) {
                             this.renderSelector(true);
                             break;
                         }
-                    }
-                    if (newProp.selectedItems.constraints) {
-                        this.renderSelector(true);
                         break;
-                    }
-                    break;
-                case 'snapSettings':
-                    this.updateSnapSettings(newProp);
-                    break;
-                case 'commandManager':
-                    this.initCommands();
-                    break;
-                case 'layout':
-                    refreshLayout = true;
-                    break;
-                case 'dataSourceSettings':
-                    this.clear();
-                    this.initObjects();
-                    if (this.layout.type === 'None') {
-                        refereshColelction = true;
-                    }
-                    else {
+                    case 'snapSettings':
+                        this.updateSnapSettings(newProp);
+                        break;
+                    case 'commandManager':
+                        this.initCommands();
+                        break;
+                    case 'layout':
                         refreshLayout = true;
-                    }
-                    break;
-                case 'tooltip':
-                    initTooltip(this);
-                    break;
-                case 'rulerSettings':
-                    this.updateRulerSettings(newProp);
-                    break;
-                case 'layers':
-                    this.updateLayer(newProp);
-                    break;
-                case 'scrollSettings':
-                    this.updateScrollSettings(newProp);
-                    break;
-                case 'locale':
-                    this.realActions |= RealAction.PreventDataInit;
-                    _super.prototype.refresh.call(this);
-                    this.realActions &= ~RealAction.PreventDataInit;
-                    break;
-                case 'contextMenuSettings':
-                    if (newProp.contextMenuSettings.showCustomMenuOnly !== undefined) {
-                        this.contextMenuSettings.showCustomMenuOnly = newProp.contextMenuSettings.showCustomMenuOnly;
-                    }
-                    if (newProp.contextMenuSettings.show !== undefined) {
-                        this.contextMenuSettings.show = newProp.contextMenuSettings.show;
-                    }
-                    if (newProp.contextMenuSettings.items) {
-                        var items = newProp.contextMenuSettings.items;
-                        for (var _h = 0, _j = Object.keys(items); _h < _j.length; _h++) {
-                            var key = _j[_h];
-                            var index = Number(key);
-                            this.contextMenuSettings.items[index] = items[index];
+                        break;
+                    case 'dataSourceSettings':
+                        this.clear();
+                        this.initObjects();
+                        if (this.layout.type === 'None') {
+                            refereshColelction = true;
                         }
-                    }
-                    break;
-                case 'serializationSettings':
-                    if (newProp.serializationSettings.preventDefaults !== undefined) {
-                        this.serializationSettings.preventDefaults = newProp.serializationSettings.preventDefaults;
-                    }
-                    break;
-            }
-        }
-        if (refreshLayout) {
-            this.doLayout();
-        }
-        if (isPropertyChanged) {
-            var args = {
-                element: cloneBlazorObject(this), cause: this.diagramActions,
-                oldValue: cloneBlazorObject(oldProp), newValue: cloneBlazorObject(newProp)
-            };
-            if (isBlazor()) {
-                args.element = { diagram: cloneBlazorObject(this) };
-                args.oldValue = { diagram: cloneBlazorObject(oldValue) };
-                args.newValue = { diagram: cloneBlazorObject(newValue) };
-            }
-            this.triggerEvent(DiagramEvent.propertyChange, args);
-        }
-        if (!refereshColelction && (this.canLogChange()) && (this.modelChanged(newProp, oldProp))) {
-            var entry = { type: 'PropertyChanged', undoObject: oldProp, redoObject: newProp, category: 'Internal' };
-            this.addHistoryEntry(entry);
-        }
-        this.resetDiagramActions();
-        if (refereshColelction) {
-            this.initObjects(true);
-            this.refreshDiagramLayer();
-        }
-        if (!refereshColelction) {
-            for (var _k = 0, _l = this.views; _k < _l.length; _k++) {
-                var temp = _l[_k];
-                var view = this.views[temp];
-                if (!(view instanceof Diagram)) {
-                    if (newProp.scrollSettings && newProp.scrollSettings.currentZoom != oldProp.scrollSettings.currentZoom) {
-                        view.updateHtmlLayer(view);
-                    }
-                    this.refreshCanvasDiagramLayer(view);
+                        else {
+                            refreshLayout = true;
+                        }
+                        break;
+                    case 'tooltip':
+                        initTooltip(this);
+                        break;
+                    case 'rulerSettings':
+                        this.updateRulerSettings(newProp);
+                        break;
+                    case 'layers':
+                        this.updateLayer(newProp);
+                        break;
+                    case 'scrollSettings':
+                        this.updateScrollSettings(newProp);
+                        break;
+                    case 'locale':
+                        this.realActions |= RealAction.PreventDataInit;
+                        _super.prototype.refresh.call(this);
+                        this.realActions &= ~RealAction.PreventDataInit;
+                        break;
+                    case 'contextMenuSettings':
+                        if (newProp.contextMenuSettings.showCustomMenuOnly !== undefined) {
+                            this.contextMenuSettings.showCustomMenuOnly = newProp.contextMenuSettings.showCustomMenuOnly;
+                        }
+                        if (newProp.contextMenuSettings.show !== undefined) {
+                            this.contextMenuSettings.show = newProp.contextMenuSettings.show;
+                        }
+                        if (newProp.contextMenuSettings.items) {
+                            var items = newProp.contextMenuSettings.items;
+                            for (var _h = 0, _j = Object.keys(items); _h < _j.length; _h++) {
+                                var key = _j[_h];
+                                var index = Number(key);
+                                this.contextMenuSettings.items[index] = items[index];
+                            }
+                        }
+                        break;
+                    case 'serializationSettings':
+                        if (newProp.serializationSettings.preventDefaults !== undefined) {
+                            this.serializationSettings.preventDefaults = newProp.serializationSettings.preventDefaults;
+                        }
+                        break;
                 }
             }
+            if (refreshLayout) {
+                this.doLayout();
+            }
+            if (isPropertyChanged && this.propertyChange) {
+                var args = {
+                    element: cloneBlazorObject(this), cause: this.diagramActions,
+                    oldValue: cloneBlazorObject(oldProp), newValue: cloneBlazorObject(newProp)
+                };
+                if (isBlazor()) {
+                    args.element = { diagram: cloneBlazorObject(this) };
+                    args.oldValue = { diagram: cloneBlazorObject(oldValue) };
+                    args.newValue = { diagram: cloneBlazorObject(newValue) };
+                }
+                this.triggerEvent(DiagramEvent.propertyChange, args);
+            }
+            if (!refereshColelction && (this.canLogChange()) && (this.modelChanged(newProp, oldProp))) {
+                var entry = { type: 'PropertyChanged', undoObject: oldProp, redoObject: newProp, category: 'Internal' };
+                this.addHistoryEntry(entry);
+            }
+            this.resetDiagramActions();
+            if (refereshColelction) {
+                this.initObjects(true);
+                this.refreshDiagramLayer();
+            }
+            if (!refereshColelction) {
+                for (var _k = 0, _l = this.views; _k < _l.length; _k++) {
+                    var temp = _l[_k];
+                    var view = this.views[temp];
+                    if (!(view instanceof Diagram)) {
+                        if (newProp.scrollSettings && newProp.scrollSettings.currentZoom != oldProp.scrollSettings.currentZoom) {
+                            view.updateHtmlLayer(view);
+                        }
+                        this.refreshCanvasDiagramLayer(view);
+                    }
+                }
+            }
+            this.resetTemplate();
         }
-        this.resetTemplate();
     };
     /* tslint:enable */
     Diagram.prototype.updateSnapSettings = function (newProp) {
@@ -31216,7 +33072,25 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      * Renders the diagram control with nodes and connectors
      */
     Diagram.prototype.render = function () {
+        this.ignoreCollectionWatch = true;
         var collapsedNode = [];
+        if (isBlazor()) {
+            var changedNodes = [];
+            var changedConnectors = [];
+            for (var i = 0; i < this.changedNodesCollection.length; i++) {
+                changedNodes.push(this.commandHandler.deepDiffer.removeEmptyValues(this.changedNodesCollection[i]));
+            }
+            for (var i = 0; i < this.changedConnectorCollection.length; i++) {
+                changedConnectors.push(this.commandHandler.deepDiffer.removeEmptyValues(this.changedConnectorCollection[i]));
+            }
+            var ejsInterop = 'ejsInterop';
+            var blazor = 'Blazor';
+            var diagramObject = { nodes: changedNodes, connectors: changedConnectors };
+            if (window && window[blazor] && !this.dataSourceSettings.dataSource) {
+                var obj = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': diagramObject };
+                window[ejsInterop].updateBlazorProperties(obj, this);
+            }
+        }
         if (this.dataSourceSettings.crudAction.read) {
             this.renderInitialCrud();
         }
@@ -31228,7 +33102,30 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         this.initObjects(true);
         this.doLayout();
         if (this.lineRoutingModule) {
+            var previousConnectorObject = [];
+            var updateConnectorObject = [];
+            var changeConnectors = [];
+            if (isBlazor()) {
+                for (var _i = 0, _a = this.connectors; _i < _a.length; _i++) {
+                    var obj = _a[_i];
+                    previousConnectorObject.push(cloneObject(obj, undefined, undefined, true));
+                }
+            }
             this.lineRoutingModule.lineRouting(this);
+            if (isBlazor()) {
+                for (var _b = 0, _c = this.connectors; _b < _c.length; _b++) {
+                    var obj = _c[_b];
+                    updateConnectorObject.push(cloneObject(obj, undefined, undefined, true));
+                }
+                this.commandHandler.getObjectChanges(previousConnectorObject, updateConnectorObject, changeConnectors);
+                var ejsInterop = 'ejsInterop';
+                var blazor = 'Blazor';
+                var diagramObject = { nodes: [], connectors: changeConnectors };
+                if (window && window[blazor]) {
+                    var obj = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': diagramObject };
+                    window[ejsInterop].updateBlazorProperties(obj, this);
+                }
+            }
         }
         this.validatePageSize();
         this.renderPageBreaks();
@@ -31272,10 +33169,13 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         this.initCommands();
         this.updateTemplate();
         this.isLoading = false;
-        if (isBlazor()) {
-            this.tool = DiagramTools.ZoomPan;
-        }
         this.renderComplete();
+        this.updateFitToPage();
+    };
+    Diagram.prototype.updateFitToPage = function () {
+        if (this.pageSettings && this.pageSettings.fitOptions && this.pageSettings.fitOptions.canFit) {
+            this.fitToPage(this.pageSettings.fitOptions);
+        }
     };
     Diagram.prototype.updateTemplate = function () {
         var node;
@@ -31285,16 +33185,16 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             node = this.nodes[i];
             annotation = node.annotations[0];
             if (node.shape.type === 'HTML' || node.shape.type === 'Native') {
-                updateBlazorTemplate(node.id + 'content_diagram', 'Content', this.nodes[i].shape);
+                updateBlazorTemplate('diagramsf_node_template', 'NodeTemplate', this);
             }
-            else if (annotation && annotation.template instanceof HTMLElement) {
-                updateBlazorTemplate(this.element.id + 'template_diagram', 'Template', annotation);
+            else if (annotation && annotation.annotationType === 'Template') {
+                updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this);
             }
         }
         for (var i = 0; i < this.connectors.length; i++) {
             pathAnnotation = this.connectors[i].annotations[0];
-            if (pathAnnotation && pathAnnotation.template instanceof HTMLElement) {
-                updateBlazorTemplate(this.element.id + 'template_diagram', 'Template', pathAnnotation);
+            if (pathAnnotation && pathAnnotation.annotationType === 'Template') {
+                updateBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate', this);
             }
         }
     };
@@ -31306,19 +33206,26 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             htmlNode = this.nodes[i];
             templateAnnotation = htmlNode.annotations[0];
             if (htmlNode.shape.type === 'HTML' && htmlNode.shape.content instanceof HTMLElement) {
-                resetBlazorTemplate(htmlNode.id + 'content', 'Content');
+                resetBlazorTemplate('diagramsf_node_template', 'NodeTemplate');
             }
-            else if (templateAnnotation && templateAnnotation.template instanceof HTMLElement) {
-                resetBlazorTemplate(this.element.id + 'template', 'Template');
+            else if (templateAnnotation && templateAnnotation.annotationType === 'Template') {
+                resetBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate');
             }
         }
         for (var i = 0; i < this.connectors.length; i++) {
             path = this.connectors[i].annotations[0];
-            if (path && path.template instanceof HTMLElement) {
-                resetBlazorTemplate(this.element.id + 'template', 'Template');
+            if (path && path.annotationType === 'Template') {
+                resetBlazorTemplate('diagramsf_annotation_template', 'AnnotationTemplate');
             }
         }
     };
+    //Call back function to the node template
+    // private measureNode(node: NodeModel): void {
+    //     if (node.shape.type === 'Native' && isBlazor()) {
+    //         node.wrapper.measure(new Size(node.width, node.height));
+    //         node.wrapper.arrange(node.wrapper.desiredSize);
+    //     }
+    // }
     Diagram.prototype.renderInitialCrud = function () {
         var tempObj = this;
         if (tempObj.dataSourceSettings.crudAction.read) {
@@ -31407,7 +33314,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         if (this.layout.type === 'OrganizationalChart' || this.layout.type === 'HierarchicalTree') {
             modules.push({
                 member: 'OrganizationalChart',
-                args: []
+                args: [this]
             });
         }
         if (this.layout.type === 'ComplexHierarchicalTree') {
@@ -31560,10 +33467,12 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      */
     Diagram.prototype.unSelect = function (obj) {
         if (isBlazor()) {
+            this.commandHandler.oldSelectedObjects = cloneObject(this.selectedItems);
             obj = this.nameTable[obj.id] || obj;
         }
         if (obj && isSelected(this, obj)) {
             this.commandHandler.unSelect(obj);
+            this.commandHandler.updateBlazorSelector();
         }
     };
     /**
@@ -31576,7 +33485,10 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      * Update the diagram clipboard dimension
      */
     Diagram.prototype.updateViewPort = function () {
+        var attribute = this.getZoomingAttribute();
+        this.updateBlazorDiagramProperties(attribute);
         this.eventHandler.updateViewPortSize(this.element);
+        this.updateBlazorDiagramProperties(attribute, true);
     };
     Diagram.prototype.cutCommand = function () {
         this.cut();
@@ -31589,6 +33501,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Add a process into the sub-process
+     * @blazorArgsType process|DiagramNode
      */
     Diagram.prototype.addProcess = function (process, parentId) {
         if (this.bpmnModule) {
@@ -31609,6 +33522,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     /**
      * Adds the given objects/ the objects in the diagram clipboard to diagram control
      * @param obj Defines the objects to be added to diagram
+     * @deprecated
      */
     Diagram.prototype.paste = function (obj) {
         this.commandHandler.paste(obj);
@@ -31617,19 +33531,28 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      * fit the diagram to the page with respect to mode and region
      */
     Diagram.prototype.fitToPage = function (options) {
+        var attribute = this.getZoomingAttribute();
+        this.updateBlazorDiagramProperties(attribute);
         this.scroller.fitToPage(options);
+        this.updateBlazorDiagramProperties(attribute, true);
     };
     /**
      * bring the specified bounds into the viewport
      */
     Diagram.prototype.bringIntoView = function (bound) {
+        var attribute = this.getZoomingAttribute();
+        this.updateBlazorDiagramProperties(attribute);
         this.scroller.bringIntoView(bound);
+        this.updateBlazorDiagramProperties(attribute, true);
     };
     /**
      * bring the specified bounds to the center of the viewport
      */
     Diagram.prototype.bringToCenter = function (bound) {
+        var attribute = this.getZoomingAttribute();
+        this.updateBlazorDiagramProperties(attribute);
         this.scroller.bringToCenter(bound);
+        this.updateBlazorDiagramProperties(attribute, true);
     };
     Diagram.prototype.copyCommand = function () {
         this.copy();
@@ -31645,19 +33568,31 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      * Group the selected nodes and connectors in diagram
      */
     Diagram.prototype.group = function () {
+        this.callBlazorModel = false;
+        this.insertBlazorDiagramObjects(this.selectedItems);
         this.commandHandler.group();
+        this.callBlazorModel = true;
+        this.commandHandler.getBlazorOldValues();
     };
     /**
      * UnGroup the selected nodes and connectors in diagram
      */
     Diagram.prototype.unGroup = function () {
+        this.callBlazorModel = false;
+        this.insertBlazorDiagramObjects(this.selectedItems);
         this.commandHandler.unGroup();
+        this.callBlazorModel = true;
+        this.commandHandler.getBlazorOldValues();
     };
     /**
      * send the selected nodes or connectors back
      */
     Diagram.prototype.sendToBack = function () {
+        var objectName = this.selectedItems.nodes.length ? this.selectedItems.nodes[0]
+            : this.selectedItems.connectors[0];
+        this.insertBlazorDiagramObjects(objectName);
         this.commandHandler.sendToBack();
+        this.commandHandler.getBlazorOldValues();
     };
     /**
      * set the active layer
@@ -31671,6 +33606,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      * add the layer into diagram
      * @param layer defines the layer model which is to be added
      * @param layerObject defines the object of the layer
+     * @blazorArgsType layer|DiagramLayer
      */
     Diagram.prototype.addLayer = function (layer, layerObject) {
         this.commandHandler.addLayer(layer, layerObject);
@@ -31687,21 +33623,44 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      * @param objects define the objects id of string array
      */
     Diagram.prototype.moveObjects = function (objects, targetLayer) {
+        var oldValues = cloneObject(this.layers);
+        this.enableServerDataBinding(false);
         this.commandHandler.moveObjects(objects, targetLayer);
+        var result = this.commandHandler.deepDiffer.map(oldValues, cloneObject(this.layers));
+        var diffValue = this.commandHandler.deepDiffer.frameObject({}, result);
+        this.oldDiagramObject = { layers: diffValue };
+        this.commandHandler.updateBlazorProperties();
     };
+    /* tslint:disable */
+    Diagram.prototype.layerObjectUpdate = function () {
+        if (isBlazor()) {
+            this.enableServerDataBinding(false);
+            this.oldDiagramObject['layers'] = [];
+            for (var i = 0; i < this.layers.length; i++) {
+                var leyerObject = cloneObject(this.layers[i]);
+                leyerObject.ejsIndex = this.layers[i].zIndex;
+                this.oldDiagramObject['layers'].push(leyerObject);
+            }
+        }
+    };
+    /* tslint:enable */
     /**
      * move the layer backward
      * @param layerName define the name of the layer
      */
     Diagram.prototype.sendLayerBackward = function (layerName) {
+        this.layerObjectUpdate();
         this.commandHandler.sendLayerBackward(layerName);
+        this.commandHandler.updateLayerObject(this.oldDiagramObject, true);
     };
     /**
      * move the layer forward
      * @param layerName define the name of the layer
      */
     Diagram.prototype.bringLayerForward = function (layerName) {
+        this.layerObjectUpdate();
         this.commandHandler.bringLayerForward(layerName);
+        this.commandHandler.updateLayerObject(this.oldDiagramObject);
     };
     /**
      * clone a layer with its object
@@ -31714,19 +33673,31 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      * bring the selected nodes or connectors to front
      */
     Diagram.prototype.bringToFront = function () {
+        var objectName = this.selectedItems.nodes.length ? this.selectedItems.nodes[0]
+            : this.selectedItems.connectors[0];
+        this.insertBlazorDiagramObjects(objectName);
         this.commandHandler.bringToFront();
+        this.commandHandler.getBlazorOldValues();
     };
     /**
      * send the selected nodes or connectors forward
      */
     Diagram.prototype.moveForward = function () {
+        var objectName = this.selectedItems.nodes.length ? this.selectedItems.nodes[0]
+            : this.selectedItems.connectors[0];
+        this.insertBlazorDiagramObjects(objectName);
         this.commandHandler.sendForward();
+        this.commandHandler.getBlazorOldValues();
     };
     /**
      * send the selected nodes or connectors back
      */
     Diagram.prototype.sendBackward = function () {
+        var objectName = this.selectedItems.nodes.length ? this.selectedItems.nodes[0]
+            : this.selectedItems.connectors[0];
+        this.insertBlazorDiagramObjects(objectName);
         this.commandHandler.sendBackward();
+        this.commandHandler.getBlazorOldValues();
     };
     /**
      * gets the node or connector having the given name
@@ -31785,6 +33756,29 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         }
         this.refreshCanvasLayers();
     };
+    Diagram.prototype.insertBlazorDiagramObjects = function (actualObject) {
+        if (isBlazor() && !(this.blazorActions & BlazorAction.interaction)) {
+            this.enableServerDataBinding(false);
+            if (actualObject instanceof Selector) {
+                for (var i = 0; i < actualObject.nodes.length; i++) {
+                    this.insertBlazorDiagramObjects(actualObject.nodes[i]);
+                }
+                for (var i = 0; i < actualObject.connectors.length; i++) {
+                    this.insertBlazorDiagramObjects(actualObject.connectors[i]);
+                }
+            }
+            if (!(actualObject instanceof Selector)) {
+                var object = void 0;
+                if (actualObject && actualObject.children && actualObject.children.length > 0) {
+                    for (var i = 0; i < actualObject.children.length; i++) {
+                        this.insertBlazorDiagramObjects(this.nameTable[actualObject.children[i]]);
+                    }
+                }
+                object = cloneObject(this.nameTable[actualObject.id]);
+                this.insertValue(object, !(getObjectType(actualObject) === Connector));
+            }
+        }
+    };
     /**
      * Drags the given object by the specified pixels
      * @param obj Defines the nodes/connectors to be dragged
@@ -31792,6 +33786,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      * @param ty Defines the distance by which the given objects have to be vertically moved
      */
     Diagram.prototype.drag = function (obj, tx, ty) {
+        this.insertBlazorDiagramObjects(obj);
         if (isBlazor() && obj.id) {
             obj = this.nameTable[obj.id] || obj;
         }
@@ -31806,6 +33801,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             if (obj.nodes && obj.nodes.length) {
                 for (var _i = 0, _a = obj.nodes; _i < _a.length; _i++) {
                     var node = _a[_i];
+                    this.callBlazorModel = false;
                     this.drag(node, tx, ty);
                     if (node.parentId) {
                         var parent_1 = this.nameTable[node.parentId];
@@ -31815,8 +33811,10 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                         }
                     }
                 }
+                this.callBlazorModel = true;
             }
             if (obj.connectors && obj.connectors.length) {
+                this.callBlazorModel = false;
                 for (var _b = 0, _c = obj.connectors; _b < _c.length; _b++) {
                     var conn = _c[_b];
                     this.drag(conn, tx, ty);
@@ -31824,6 +33822,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                         this.selectionConnectorsList.push(conn);
                     }
                 }
+                this.callBlazorModel = true;
             }
             this.updateSelector();
         }
@@ -31849,6 +33848,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         if (!(this.diagramActions & DiagramAction.ToolAction)) {
             this.updateSelector();
         }
+        if (this.callBlazorModel && (!(this.blazorActions & BlazorAction.interaction))) {
+            this.commandHandler.getBlazorOldValues();
+        }
     };
     /**
      * Scales the given objects by the given ratio
@@ -31858,28 +33860,36 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      * @param pivot Defines the reference point with respect to which the objects will be resized
      */
     Diagram.prototype.scale = function (obj, sx, sy, pivot) {
+        this.insertBlazorDiagramObjects(obj);
         var checkBoundaryConstraints = true;
         if (obj.id) {
             obj = this.nameTable[obj.id] || obj;
         }
         if (obj instanceof Selector) {
             if (obj.nodes && obj.nodes.length) {
+                this.callBlazorModel = false;
                 for (var _i = 0, _a = obj.nodes; _i < _a.length; _i++) {
                     var node = _a[_i];
                     checkBoundaryConstraints = this.commandHandler.scale(node, sx, sy, pivot, obj);
                 }
+                this.callBlazorModel = true;
             }
             if (obj.connectors && obj.connectors.length) {
+                this.callBlazorModel = false;
                 for (var _b = 0, _c = obj.connectors; _b < _c.length; _b++) {
                     var conn = _c[_b];
                     this.commandHandler.scale(conn, sx, sy, pivot, obj);
                 }
+                this.callBlazorModel = true;
             }
             this.updateSelector();
             this.refreshCanvasLayers();
         }
         else {
             this.commandHandler.scale(obj, sx, sy, pivot, (obj.children ? obj : undefined));
+        }
+        if (this.callBlazorModel && (!(this.blazorActions & BlazorAction.interaction))) {
+            this.commandHandler.getBlazorOldValues();
         }
         return checkBoundaryConstraints;
     };
@@ -31890,6 +33900,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      * @param pivot Defines the reference point with reference to which the objects have to be rotated
      */
     Diagram.prototype.rotate = function (obj, angle, pivot) {
+        this.insertBlazorDiagramObjects(obj);
         var checkBoundaryConstraints;
         if (obj.id) {
             obj = this.nameTable[obj.id] || obj;
@@ -31897,6 +33908,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         if (obj) {
             pivot = pivot || { x: obj.wrapper.offsetX, y: obj.wrapper.offsetY };
             if (obj instanceof Selector) {
+                this.callBlazorModel = false;
                 obj.rotateAngle += angle;
                 obj.wrapper.rotateAngle += angle;
                 var bounds = getBounds(obj.wrapper);
@@ -31910,10 +33922,14 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 objects = objects.concat(obj.nodes);
                 objects = objects.concat(obj.connectors);
                 this.commandHandler.rotateObjects(obj, objects, angle, pivot);
+                this.callBlazorModel = true;
             }
             else {
                 this.commandHandler.rotateObjects(obj, [obj], angle, pivot);
             }
+        }
+        if (this.callBlazorModel && (!(this.blazorActions & BlazorAction.interaction))) {
+            this.commandHandler.getBlazorOldValues();
         }
         return checkBoundaryConstraints;
     };
@@ -31924,7 +33940,11 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      * @param ty Defines the distance by which the end point has to be vertically moved
      */
     Diagram.prototype.dragSourceEnd = function (obj, tx, ty) {
+        this.insertBlazorDiagramObjects(obj);
         this.commandHandler.dragSourceEnd(obj, tx, ty);
+        if (this.callBlazorModel) {
+            this.commandHandler.getBlazorOldValues();
+        }
     };
     /**
      * Moves the target point of the given connector
@@ -31933,7 +33953,11 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      * @param ty Defines the distance by which the end point has to be vertically moved
      */
     Diagram.prototype.dragTargetEnd = function (obj, tx, ty) {
+        this.insertBlazorDiagramObjects(obj);
         this.commandHandler.dragTargetEnd(obj, tx, ty);
+        if (this.callBlazorModel) {
+            this.commandHandler.getBlazorOldValues();
+        }
     };
     /**
      * Finds all the objects that is under the given mouse position
@@ -32040,6 +34064,17 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    /**
+     * Adds the given custom change in the diagram control to the track
+     * @param entry Defines the entry/information about a change in diagram
+     */
+    Diagram.prototype.addCustomHistoryEntry = function (entry) {
+        if (isBlazor() && this.undoRedoModule && (this.constraints & DiagramConstraints.UndoRedo)) {
+            entry.type = undefined;
+            entry.category = 'External';
+            this.undoRedoModule.addHistoryEntry(entry, this);
+        }
+    };
     /** @private */
     Diagram.prototype.historyChangeTrigger = function (entry, action) {
         var change = {};
@@ -32141,17 +34176,39 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      * Restores the last action that is performed
      */
     Diagram.prototype.undo = function () {
+        this.canEnableBlazorObject = true;
+        this.callBlazorModel = false;
         if (this.undoRedoModule && (this.constraints & DiagramConstraints.UndoRedo)) {
             this.undoRedoModule.undo(this);
         }
+        this.commandHandler.getBlazorOldValues();
+        this.callBlazorModel = true;
+        this.canEnableBlazorObject = false;
     };
     /**
      * Restores the last undone action
      */
     Diagram.prototype.redo = function () {
+        this.canEnableBlazorObject = true;
+        this.callBlazorModel = false;
         if (this.undoRedoModule && (this.constraints & DiagramConstraints.UndoRedo)) {
             this.undoRedoModule.redo(this);
         }
+        this.commandHandler.getBlazorOldValues();
+        this.callBlazorModel = true;
+        this.canEnableBlazorObject = false;
+    };
+    Diagram.prototype.getBlazorDiagramObjects = function (objects) {
+        if (objects) {
+            for (var j = 0; j < objects.length; j++) {
+                this.insertBlazorDiagramObjects(objects[j]);
+            }
+        }
+        else {
+            this.insertBlazorDiagramObjects(this.selectedItems);
+        }
+        this.callBlazorModel = false;
+        this.canEnableBlazorObject = true;
     };
     /**
      * Aligns the group of objects to with reference to the first object in the group
@@ -32159,12 +34216,16 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      * @param option Defines the factor, by which the objects have to be aligned
      */
     Diagram.prototype.align = function (option, objects, type) {
+        this.getBlazorDiagramObjects(objects);
         if (!objects) {
             objects = [];
             objects = objects.concat(this.selectedItems.nodes, this.selectedItems.connectors);
         }
         this.diagramActions = this.diagramActions | DiagramAction.PublicMethod;
         this.commandHandler.align(objects, option, (type ? type : 'Object'));
+        this.commandHandler.getBlazorOldValues();
+        this.callBlazorModel = true;
+        this.canEnableBlazorObject = false;
     };
     /**
      * Arranges the group of objects with equal intervals, but within the group of objects
@@ -32172,12 +34233,16 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      * @param option Defines the factor to distribute the shapes
      */
     Diagram.prototype.distribute = function (option, objects) {
+        this.getBlazorDiagramObjects(objects);
         if (!objects) {
             objects = [];
             objects = objects.concat(this.selectedItems.nodes, this.selectedItems.connectors);
         }
         this.diagramActions = this.diagramActions | DiagramAction.PublicMethod;
         this.commandHandler.distribute(objects, option);
+        this.commandHandler.getBlazorOldValues();
+        this.canEnableBlazorObject = false;
+        this.callBlazorModel = true;
     };
     /**
      * Scales the given objects to the size of the first object in the group
@@ -32185,12 +34250,33 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      * @param option Defines whether the node has to be horizontally scaled, vertically scaled or both
      */
     Diagram.prototype.sameSize = function (option, objects) {
+        this.getBlazorDiagramObjects(objects);
         if (!objects) {
             objects = [];
             objects = objects.concat(this.selectedItems.nodes, this.selectedItems.connectors);
         }
         this.diagramActions = this.diagramActions | DiagramAction.PublicMethod;
         this.commandHandler.sameSize(objects, option);
+        this.commandHandler.getBlazorOldValues();
+        this.canEnableBlazorObject = false;
+        this.callBlazorModel = true;
+    };
+    Diagram.prototype.updateBlazorDiagramProperties = function (attribute, canCall) {
+        if (isBlazor() && !canCall) {
+            this.enableServerDataBinding(false);
+            for (var i = 0; i < attribute.length; i++) {
+                this.oldDiagramObject[attribute[i]] = cloneObject(this[attribute[i]]);
+            }
+        }
+        if (canCall) {
+            this.commandHandler.getDiagramOldValues(this.oldDiagramObject, attribute);
+        }
+    };
+    Diagram.prototype.getZoomingAttribute = function () {
+        var attribute = [];
+        attribute.push('scrollSettings');
+        attribute.push('snapSettings');
+        return attribute;
     };
     /**
      * Scales the diagram control by the given factor
@@ -32198,7 +34284,12 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      * @param focusedPoint Defines the point with respect to which the diagram has to be zoomed
      */
     Diagram.prototype.zoom = function (factor, focusedPoint) {
+        var attribute = this.getZoomingAttribute();
+        this.updateBlazorDiagramProperties(attribute);
         this.scroller.zoom(factor, 0, 0, focusedPoint);
+        if (!(this.blazorActions & BlazorAction.interaction)) {
+            this.updateBlazorDiagramProperties(attribute, true);
+        }
     };
     /**
      * Scales the diagram control by the given factor
@@ -32206,9 +34297,12 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      *
      */
     Diagram.prototype.zoomTo = function (options) {
+        var attribute = this.getZoomingAttribute();
+        this.updateBlazorDiagramProperties(attribute);
         var factor = options.zoomFactor ? options.zoomFactor : 0.2;
         factor = options.type === 'ZoomOut' ? 1 / (1 + factor) : (1 + factor);
         this.scroller.zoom(factor, 0, 0, options.focusPoint);
+        this.updateBlazorDiagramProperties(attribute, true);
     };
     /**
      * Pans the diagram control to the given horizontal and vertical offsets
@@ -32216,15 +34310,30 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      * @param verticalOffset Defines the vertical distance to which the diagram has to be scrolled
      */
     Diagram.prototype.pan = function (horizontalOffset, verticalOffset, focusedPoint) {
+        var attribute = this.getZoomingAttribute();
+        this.updateBlazorDiagramProperties(attribute);
         this.scroller.zoom(1, horizontalOffset, verticalOffset, focusedPoint);
+        this.updateBlazorDiagramProperties(attribute, true);
     };
     /**
      * Resets the zoom and scroller offsets to default values
      */
     Diagram.prototype.reset = function () {
+        var attribute = this.getZoomingAttribute();
+        this.updateBlazorDiagramProperties(attribute);
         this.scroller.zoom(1 / this.scroller.currentZoom, -this.scroller.horizontalOffset, -this.scroller.verticalOffset, { x: 0, y: 0 });
+        this.updateBlazorDiagramProperties(attribute, true);
     };
     Diagram.prototype.resetSegments = function () {
+        var previousConnectorObject = [];
+        var updateConnectorObject = [];
+        var changeConnectors = [];
+        if (isBlazor()) {
+            for (var _i = 0, _a = this.connectors; _i < _a.length; _i++) {
+                var obj = _a[_i];
+                previousConnectorObject.push(cloneObject(obj, undefined, undefined, true));
+            }
+        }
         if (this.constraints & DiagramConstraints.LineRouting && this.lineRoutingModule) {
             this.lineRoutingModule.lineRouting(this);
         }
@@ -32238,13 +34347,41 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             }
             this.protectPropertyChange(false);
         }
+        if (isBlazor()) {
+            for (var _b = 0, _c = this.connectors; _b < _c.length; _b++) {
+                var obj = _c[_b];
+                updateConnectorObject.push(cloneObject(obj, undefined, undefined, true));
+            }
+            this.commandHandler.getObjectChanges(previousConnectorObject, updateConnectorObject, changeConnectors);
+            var ejsInterop = 'ejsInterop';
+            var blazor = 'Blazor';
+            var diagramObject = { nodes: [], connectors: changeConnectors };
+            if (window && window[blazor]) {
+                var obj = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': diagramObject };
+                window[ejsInterop].updateBlazorProperties(obj, this);
+            }
+        }
     };
     /** @private */
     Diagram.prototype.triggerEvent = function (eventName, args) {
-        if (args) {
-            this.updateEventValue(args);
-        }
-        this.trigger(DiagramEvent[eventName], args);
+        return __awaiter(this, void 0, void 0, function () {
+            var eventArgs;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (args) {
+                            this.updateEventValue(args);
+                        }
+                        return [4 /*yield*/, this.trigger(DiagramEvent[eventName], args)];
+                    case 1:
+                        eventArgs = _a.sent();
+                        if (isBlazor() && typeof eventArgs === 'string') {
+                            eventArgs = JSON.parse(eventArgs);
+                        }
+                        return [2 /*return*/, eventArgs];
+                }
+            });
+        });
     };
     Diagram.prototype.updateEventValue = function (args) {
         var element = args.element;
@@ -32340,16 +34477,135 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     /**
      * Adds the given node to diagram control
      * @param obj Defines the node that has to be added to diagram
+     * @blazorArgsType obj|DiagramNode
      */
     Diagram.prototype.addNode = function (obj, group) {
         return this.add(obj, group);
     };
     /**
+     * Will return the history stack values
+     * @param obj returns the history stack values
+     */
+    Diagram.prototype.getHistoryStack = function (isUndoStack) {
+        return isUndoStack ? this.historyManager.undoStack : this.historyManager.redoStack;
+    };
+    /* tslint:disable */
+    /**
+     * Return the edges for the given node
+     * @param obj return the edge of the given node
+     */
+    Diagram.prototype.getEdges = function (args) {
+        return args['outEdge'] ? this.nameTable[args['id']].outEdges : this.nameTable[args['id']].inEdges;
+    };
+    /* tslint:enable */
+    /**
+     * Returns the parent id for the node
+     * @param obj returns the parent id
+     */
+    Diagram.prototype.getParentId = function (id) {
+        return this.nameTable[id].parentId;
+    };
+    /**
      * Adds the given connector to diagram control
      * @param obj Defines the connector that has to be added to diagram
+     * @blazorArgsType obj|DiagramConnector
      */
     Diagram.prototype.addConnector = function (obj) {
         return this.add(obj);
+    };
+    /** @private */
+    Diagram.prototype.UpdateBlazorDiagramModelCollection = function (obj, copiedObject, multiSelectDelete) {
+        var ejsInterop = 'ejsInterop';
+        var updatedModel = cloneBlazorObject(obj);
+        var blazor = 'Blazor';
+        if (window && window[blazor] && (!this.isServerUpdate || multiSelectDelete)) {
+            this.isServerUpdate = true;
+            var removalIndexCollection = [];
+            var updatedModelCollection = [];
+            var connectorModelCollection = [];
+            var elements = [];
+            var removalIndex = void 0;
+            var tempNode = [];
+            var objectTypeCollection = [];
+            if (!copiedObject) {
+                if (!multiSelectDelete) {
+                    tempNode = this.commandHandler.getChildren(obj, elements);
+                }
+                else {
+                    tempNode = multiSelectDelete;
+                }
+                for (var i = 0; i < tempNode.length; i++) {
+                    updatedModel = cloneBlazorObject(tempNode[i]);
+                    updatedModelCollection.push(updatedModel);
+                    if (getObjectType(tempNode[i]) === Connector) {
+                        removalIndex = this.connectors.indexOf(tempNode[i]);
+                    }
+                    else {
+                        removalIndex = this.nodes.indexOf(tempNode[i]);
+                    }
+                    removalIndexCollection.push(removalIndex);
+                    objectTypeCollection.push(getObjectType(tempNode[i]) === Connector ? 'Connector' : 'Node');
+                }
+                if (!multiSelectDelete) {
+                    updatedModelCollection.push(cloneBlazorObject(obj));
+                    removalIndexCollection.push(this.nodes.indexOf(obj));
+                    objectTypeCollection.push(getObjectType(obj) === Connector ? 'Connector' : 'Node');
+                }
+            }
+            if (copiedObject && copiedObject.length > 0) {
+                for (var i = 0; i < copiedObject.length; i++) {
+                    updatedModel = cloneBlazorObject(copiedObject[i]);
+                    var isNode = (copiedObject[i] instanceof Node) ? true : false;
+                    isNode ? updatedModelCollection.push(updatedModel) : connectorModelCollection.push(updatedModel);
+                    objectTypeCollection.push(getObjectType(copiedObject[i]) === Connector ? 'Connector' : 'Node');
+                }
+            }
+            var dgmObj = { 'methodName': 'UpdateBlazorDiagramObjects',
+                'diagramobj': { 'nodeObj': JSON.stringify(updatedModelCollection),
+                    'ObjectType': objectTypeCollection,
+                    'removalIndex': copiedObject ? undefined : removalIndexCollection,
+                    'isMultipleObjects': true, 'annotationIndex': undefined,
+                    'connectorObj': JSON.stringify(connectorModelCollection) } };
+            window[ejsInterop].updateBlazorProperties(dgmObj, this);
+        }
+    };
+    Diagram.prototype.UpdateBlazorDiagramModel = function (obj, objectType, removalIndex, annotationNodeIndex) {
+        var ejsInterop = 'ejsInterop';
+        var updatedModel = cloneBlazorObject(obj);
+        var blazor = 'Blazor';
+        if (window && window[blazor] && !this.isServerUpdate && !(this.diagramActions & DiagramAction.Clear)) {
+            var dgmObj = { 'methodName': 'UpdateBlazorDiagramObjects',
+                'diagramobj': { 'nodeObj': JSON.stringify(updatedModel),
+                    'ObjectType': objectType, 'removalIndex': removalIndex,
+                    'isMultipleObjects': false,
+                    'annotationIndex': annotationNodeIndex, 'connectorObj': undefined } };
+            window[ejsInterop].updateBlazorProperties(dgmObj, this);
+        }
+    };
+    /**
+     * @private
+     */
+    Diagram.prototype.addBlazorDiagramObjects = function () {
+        var nodesCollection = [];
+        var connectorCollection = [];
+        if (this.dataBindingModule && !(this.realActions & RealAction.PreventDataInit)) {
+            for (var i = 0; i < this.nodes.length; i++) {
+                nodesCollection.push(cloneObject(this.nodes[i], undefined, undefined, true));
+            }
+            for (var i = 0; i < this.connectors.length; i++) {
+                connectorCollection.push(cloneObject(this.connectors[i], undefined, undefined, true));
+            }
+        }
+        var ejsInterop = 'ejsInterop';
+        var blazor = 'Blazor';
+        if (window && window[blazor]) {
+            var obj = { 'methodName': 'AddBlazorObjects',
+                'diagramobj': { 'nodeObj': JSON.stringify(nodesCollection), 'isConnector': false } };
+            window[ejsInterop].updateBlazorProperties(obj, this);
+            obj = { 'methodName': 'AddBlazorObjects',
+                'diagramobj': { 'nodeObj': JSON.stringify(connectorCollection), 'isConnector': true } };
+            window[ejsInterop].updateBlazorProperties(obj, this);
+        }
     };
     Diagram.prototype.removeNodeEdges = function (elementId, id, isOutEdges) {
         var node = this.nameTable[elementId];
@@ -32415,6 +34671,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     updateDefaultValues(newObj, obj, this.connectorDefaults);
                     this.connectors.push(newObj);
                     this.initObject(newObj);
+                    this.UpdateBlazorDiagramModel(newObj, "Connector");
                     if (obj.visible === false) {
                         this.updateElementVisibility(newObj.wrapper, newObj, obj.visible);
                     }
@@ -32428,6 +34685,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     newObj.status = 'New';
                     this.nodes.push(newObj);
                     this.initObject(newObj, layers, undefined, group);
+                    this.UpdateBlazorDiagramModel(newObj, "Node");
                     if (this.bpmnModule) {
                         if (newObj.shape.annotations && newObj.shape.annotations.length !== 0) {
                             for (var _i = 0, _a = this.bpmnModule.getTextAnnotationConn(newObj); _i < _a.length; _i++) {
@@ -32768,6 +35026,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                             }
                         }
                         index = this.nodes.indexOf(currentObj);
+                        if (isBlazor() && (obj.id !== 'helper')) {
+                            this.UpdateBlazorDiagramModel(obj, "Node", index);
+                        }
                         if (index !== -1) {
                             this.crudDeleteNodes.push(this.nameTable[currentObj.id]);
                             this.nodes.splice(index, 1);
@@ -32776,6 +35037,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     }
                     else {
                         index = this.connectors.indexOf(currentObj);
+                        this.UpdateBlazorDiagramModel(obj, "Connector", index);
                         if (index !== -1) {
                             this.crudDeleteNodes.push(this.nameTable[currentObj.id]);
                             this.connectors.splice(index, 1);
@@ -32839,7 +35101,20 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                         this.remove(this.nameTable[selectedItems[i].targetID]);
                         return;
                     }
+                    if (isBlazor()) {
+                        if (!this.isServerUpdate && selectedItems && selectedItems.length > 1) {
+                            this.isServerUpdate = true;
+                            this.UpdateBlazorDiagramModelCollection(selectedItems[0], undefined, selectedItems);
+                        }
+                        if (selectedItems[i].parentId) {
+                            this.insertBlazorDiagramObjects(this.nameTable[selectedItems[i].parentId]);
+                        }
+                    }
                     this.remove(selectedItems[i]);
+                    if (isBlazor() && selectedItems[i].parentId) {
+                        this.commandHandler.getBlazorOldValues();
+                        this.isServerUpdate = false;
+                    }
                 }
             }
             if (groupAction) {
@@ -32848,6 +35123,17 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             this.clearSelection();
         }
         this.tooltipObject.close();
+        if (isBlazor() && selectedItems && selectedItems.length > 0) {
+            var check = true;
+            for (var k = 0; k < selectedItems.length; k++) {
+                if (this.nameTable[selectedItems[k].id]) {
+                    check = false;
+                }
+            }
+            if (check) {
+                this.isServerUpdate = false;
+            }
+        }
     };
     /* tslint:enable */
     Diagram.prototype.isStackChild = function (obj) {
@@ -32947,6 +35233,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Clears all nodes and objects in the diagram
+     * @deprecated
      */
     Diagram.prototype.clear = function () {
         this.clearObjects();
@@ -32993,6 +35280,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         }
         this.startTextEdit(laneHeader);
     };
+    /* tslint:disable */
     /**
      * Specified annotation to edit mode
      * @param node Defines node/connector that contains the annotation to be edited
@@ -33000,9 +35288,6 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
      */
     Diagram.prototype.startTextEdit = function (node, id) {
         if (!canZoomPan(this) || canSingleSelect(this)) {
-            if (isBlazor()) {
-                node = this.nameTable[node.id] || node;
-            }
             this.textEditing = true;
             var transform = this.scroller.transform;
             var scale = canZoomTextEdit(this) ? transform.scale : 1;
@@ -33017,6 +35302,13 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 node = (this.selectedItems.nodes[0]) ? this.selectedItems.nodes[0] : this.selectedItems.connectors[0];
             }
             if (node) {
+                if (isBlazor()) {
+                    var selectedNode = cloneObject(node);
+                    if (selectedNode.annotations.length > 0) {
+                        this.insertValue(selectedNode, (node instanceof Node) ? true : false);
+                    }
+                    node = this.nameTable[node.id] || node;
+                }
                 if (node.shape && node.shape.type === 'UmlClassifier') {
                     node = this.nameTable[node.children[0]];
                 }
@@ -33114,6 +35406,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    /* tslint:enable */
     Diagram.prototype.updateNodeExpand = function (node, visibility) {
         for (var i = 0; i < node.outEdges.length; i++) {
             var connector = this.nameTable[node.outEdges[i]];
@@ -33174,7 +35467,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             else if (this.mindMapChartModule) {
-                this.mindMapChartModule.updateLayout(nodes, this.nameTable, this.layout, viewPort, this.dataSourceSettings.id, this.dataSourceSettings.root);
+                if (nodes && nodes.length > 0) {
+                    this.mindMapChartModule.updateLayout(nodes, this.nameTable, this.layout, viewPort, this.dataSourceSettings.id, this.dataSourceSettings.root);
+                }
                 update = true;
             }
             else if (this.radialTreeModule) {
@@ -33249,7 +35544,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 this.protectPropertyChange(propChange);
             }
         }
-        return layout;
+        return ((this.blazorActions & BlazorAction.expandNode) ? layout : true);
     };
     /**
      * Serializes the diagram control as a string
@@ -33260,6 +35555,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     /**
      * Converts the given string as a Diagram Control
      * @param data Defines the behavior of the diagram to be loaded
+     * @deprecated
      */
     Diagram.prototype.loadDiagram = function (data) {
         return deserialize(data, this);
@@ -33352,6 +35648,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Add ports at the run time
+     * @blazorArgsType obj|DiagramNode
      */
     Diagram.prototype.addPorts = function (obj, ports) {
         this.protectPropertyChange(true);
@@ -33426,11 +35723,16 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             if (obj instanceof Node) {
                 newObj = new ShapeAnnotation(obj, 'annotations', labels[i], true);
                 obj.annotations.push(newObj);
+                if (isBlazor()) {
+                    var selectedNode = cloneObject(obj);
+                    this.insertValue(selectedNode, (obj instanceof Node) ? true : false);
+                }
+                this.UpdateBlazorDiagramModel(newObj, 'NodeAnnotation', undefined, this.nodes.indexOf(obj));
                 if (obj.children) {
                     var node = obj;
-                    for (var i_1 = 0; i_1 < node.wrapper.children.length; i_1++) {
-                        if (node.wrapper.children[i_1].id === node.id + 'group_container') {
-                            var container = node.wrapper.children[i_1];
+                    for (var i_2 = 0; i_2 < node.wrapper.children.length; i_2++) {
+                        if (node.wrapper.children[i_2].id === node.id + 'group_container') {
+                            var container = node.wrapper.children[i_2];
                             container.children.push(obj.initAnnotationWrapper(obj.annotations[obj.annotations.length - 1], this.element.id));
                         }
                     }
@@ -33441,7 +35743,12 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             }
             else if (obj instanceof Connector) {
                 newObj = new PathAnnotation(obj, 'annotations', labels[i], true);
+                this.UpdateBlazorDiagramModel(newObj, 'ConnectorAnnotation', undefined, this.connectors.indexOf(obj));
                 obj.annotations.push(newObj);
+                if (isBlazor()) {
+                    var selectedNode = cloneObject(obj);
+                    this.insertValue(selectedNode, (obj instanceof Node) ? true : false);
+                }
                 var segment = canvas.children[0];
                 var bounds = new Rect(segment.offsetX - segment.width / 2, segment.offsetY - segment.height / 2, segment.width, segment.height);
                 canvas.children.push(obj.getAnnotationElement(obj.annotations[obj.annotations.length - 1], obj.intermediatePoints, bounds, this.getDescription, this.element.id));
@@ -33824,7 +36131,40 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         setAttributeSvg(svgObj, { 'id': id, 'width': width, 'height': height });
         return svgObj;
     };
+    Diagram.prototype.updateBazorShape = function () {
+        for (var i = 0; i < this.nodes.length; i++) {
+            var node = this.nodes[i];
+            switch (node.shape.type) {
+                case 'Bpmn':
+                    node.shape.bpmnShape =
+                        node.shape.shape ? node.shape.shape
+                            : node.shape.bpmnShape;
+                    break;
+                case 'UmlActivity':
+                    node.shape.umlActivityShape =
+                        node.shape.shape ? node.shape.shape
+                            : node.shape.umlActivityShape;
+                    break;
+                case 'Flow':
+                    node.shape.flowShape =
+                        node.shape.shape ? node.shape.shape
+                            : node.shape.flowShape;
+                    break;
+                case 'Basic':
+                    node.shape.basicShape =
+                        node.shape.shape ? node.shape.shape
+                            : node.shape.basicShape;
+                    break;
+                case 'Text':
+                    node.shape.textContent =
+                        node.shape.content ? node.shape.content
+                            : node.shape.textContent;
+                    break;
+            }
+        }
+    };
     Diagram.prototype.initObjects = function (isLoad) {
+        this.updateBazorShape();
         if (!this.isLoading) {
             this.initData();
         }
@@ -33838,22 +36178,38 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         var tempTabel = {};
         var bpmnTable = {};
         var groups = [];
-        for (var _i = 0, _a = this.nodes; _i < _a.length; _i++) {
-            var obj = _a[_i];
+        var previousNodeObject = [];
+        var previousConnectorObject = [];
+        var updateNodeObject = [];
+        var updateConnectorObject = [];
+        var changeNodes = [];
+        var changeConnectors = [];
+        if (isBlazor()) {
+            for (var _i = 0, _a = this.nodes; _i < _a.length; _i++) {
+                var obj = _a[_i];
+                previousNodeObject.push(cloneObject(obj, undefined, undefined, true));
+            }
+            for (var _b = 0, _c = this.connectors; _b < _c.length; _b++) {
+                var obj = _c[_b];
+                previousConnectorObject.push(cloneObject(obj, undefined, undefined, true));
+            }
+        }
+        for (var _d = 0, _e = this.nodes; _d < _e.length; _d++) {
+            var obj = _e[_d];
             obj.id = obj.id || randomId();
             this.addToLayer(obj, hasLayers);
             tempTabel[obj.id] = obj;
         }
-        for (var _b = 0, _c = this.connectors; _b < _c.length; _b++) {
-            var obj = _c[_b];
+        for (var _f = 0, _g = this.connectors; _f < _g.length; _f++) {
+            var obj = _g[_f];
             obj.id = obj.id || randomId();
             this.addToLayer(obj, hasLayers);
             tempTabel[obj.id] = obj;
         }
-        for (var _d = 0, _e = this.layers; _d < _e.length; _d++) {
-            var layer = _e[_d];
-            for (var _f = 0, _g = layer.objects; _f < _g.length; _f++) {
-                var obj = _g[_f];
+        for (var _h = 0, _j = this.layers; _h < _j.length; _h++) {
+            var layer = _j[_h];
+            for (var _k = 0, _l = layer.objects; _k < _l.length; _k++) {
+                var obj = _l[_k];
                 if (tempTabel[obj]) {
                     if (!(tempTabel[obj] instanceof Connector)) {
                         if (tempTabel[obj].children) {
@@ -33887,26 +36243,45 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             if (this.bpmnModule) {
-                for (var _h = 0, _j = this.bpmnModule.textAnnotationConnectors; _h < _j.length; _h++) {
-                    var obj = _j[_h];
+                for (var _m = 0, _o = this.bpmnModule.textAnnotationConnectors; _m < _o.length; _m++) {
+                    var obj = _o[_m];
                     this.initConnectors(obj, layer, false);
                 }
             }
         }
-        for (var _k = 0, _l = Object.keys(bpmnTable); _k < _l.length; _k++) {
-            var obj = _l[_k];
+        for (var _p = 0, _q = Object.keys(bpmnTable); _p < _q.length; _p++) {
+            var obj = _q[_p];
             this.initObject(tempTabel[obj]);
             this.bpmnModule.updateDocks(tempTabel[obj], this);
         }
-        for (var _m = 0, groups_1 = groups; _m < groups_1.length; _m++) {
-            var obj = groups_1[_m];
+        for (var _r = 0, groups_1 = groups; _r < groups_1.length; _r++) {
+            var obj = groups_1[_r];
             var layer = this.commandHandler.getObjectLayer(obj);
             this.initNodes(tempTabel[obj], layer);
         }
-        for (var _o = 0, connectors_1 = connectors; _o < connectors_1.length; _o++) {
-            var connector = connectors_1[_o];
+        for (var _s = 0, connectors_1 = connectors; _s < connectors_1.length; _s++) {
+            var connector = connectors_1[_s];
             var layer = this.commandHandler.getObjectLayer(connector.id);
             this.initConnectors(connector, layer);
+        }
+        if (isBlazor()) {
+            for (var _t = 0, _u = this.nodes; _t < _u.length; _t++) {
+                var obj = _u[_t];
+                updateNodeObject.push(cloneObject(obj, undefined, undefined, true));
+            }
+            for (var _v = 0, _w = this.connectors; _v < _w.length; _v++) {
+                var obj = _w[_v];
+                updateConnectorObject.push(cloneObject(obj, undefined, undefined, true));
+            }
+            this.commandHandler.getObjectChanges(previousNodeObject, updateNodeObject, changeNodes);
+            this.commandHandler.getObjectChanges(previousConnectorObject, updateConnectorObject, changeConnectors);
+            var ejsInterop = 'ejsInterop';
+            var blazor = 'Blazor';
+            var diagramObject = { nodes: changeNodes, connectors: changeConnectors };
+            if (window && window[blazor] && this.diagramActions && !this.dataSourceSettings.dataSource) {
+                var obj = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': diagramObject };
+                window[ejsInterop].updateBlazorProperties(obj, this);
+            }
         }
     };
     Diagram.prototype.addToLayer = function (obj, hasLayers) {
@@ -33963,7 +36338,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             oldValue: oldValue,
             newValue: newValue, source: this
         };
-        if (isBlazor()) {
+        if (isBlazor() && this.scrollChange) {
             arg = {
                 oldValue: oldValue,
                 newValue: newValue,
@@ -34168,7 +36543,8 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 var targetPort = this.getConnectedPort(targetNode, obj);
                 var outPort = this.findInOutConnectPorts(sourceNode, false);
                 var inPort = this.findInOutConnectPorts(targetNode, true);
-                if ((sourceNode !== undefined && canOutConnect(sourceNode)) || (obj.sourcePortID !== '' && canPortOutConnect(outPort))) {
+                if ((sourceNode !== undefined && canOutConnect(sourceNode)) || (obj.sourcePortID !== ''
+                    && canPortOutConnect(outPort))) {
                     obj.sourceWrapper = this.getEndNodeWrapper(sourceNode, obj, true);
                     if (obj.sourcePortID) {
                         if (port && port.constraints && !(port.constraints & PortConstraints.None)) {
@@ -34176,7 +36552,8 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                         }
                     }
                 }
-                if ((targetNode !== undefined && canInConnect(targetNode)) || (obj.targetPortID !== '' && canPortInConnect(inPort))) {
+                if ((targetNode !== undefined && canInConnect(targetNode)) || (obj.targetPortID !== ''
+                    && canPortInConnect(inPort))) {
                     obj.targetWrapper = this.getEndNodeWrapper(targetNode, obj, false);
                     if (obj.targetPortID) {
                         if (targetPort && targetPort.constraints && !(targetPort.constraints & PortConstraints.None)) {
@@ -34422,7 +36799,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             (obj.children ? canvas : content).description = obj.annotations.length ? obj.annotations[0].content : obj.id;
         }
         var container = obj.children ? portContainer : canvas;
-        obj.initAnnotations(this.getDescription, container, this.element.id, canVitualize(this) ? true : false);
+        obj.initAnnotations(this.getDescription, container, this.element.id, canVitualize(this) ? true : false, this.annotationTemplate);
         obj.initPorts(this.getDescription, container);
         obj.initIcons(this.getDescription, this.layout, container, diagramId);
         if (obj.shape.type === 'SwimLane' && obj.wrapper && obj.wrapper.children.length > 0 &&
@@ -34658,6 +37035,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             if (node && node.outEdges && node.outEdges.indexOf(obj.id) === -1) {
                 node.outEdges.push(obj.id);
             }
+            this.updatePortEdges(node, obj, false);
         }
         if (obj.targetID !== undefined && obj.targetID !== '') {
             var node = this.nameTable[obj.targetID];
@@ -34667,9 +37045,25 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             if (node && node.inEdges && node.inEdges.indexOf(obj.id) === -1) {
                 node.inEdges.push(obj.id);
             }
+            this.updatePortEdges(node, obj, true);
             if (node && node.visible && node.outEdges) {
                 var value = node.outEdges.length === 0 ? false : true;
                 this.updateIconVisibility(node, value);
+            }
+        }
+    };
+    /** @private */
+    Diagram.prototype.updatePortEdges = function (node, obj, isInEdges) {
+        if (node) {
+            for (var i = 0; i < node.ports.length; i++) {
+                var port = node.ports[i];
+                var portId = (isInEdges) ? obj.targetPortID : obj.sourcePortID;
+                if (port.id === portId) {
+                    var portEdges = (isInEdges) ? port.inEdges : port.outEdges;
+                    if (portEdges.indexOf(obj.id) === -1) {
+                        portEdges.push(obj.id);
+                    }
+                }
             }
         }
     };
@@ -34679,6 +37073,34 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         this.doLayout();
         this.updateBridging();
         this.scroller.setSize();
+        this.addBlazorDiagramObjects();
+        if (isBlazor() && this.layout && this.layout.layoutInfo && this.layout.layoutInfo.isRootInverse && this.nodes.length > 2) {
+            var rootNode = this.nodes[0];
+            if (rootNode.outEdges.length > 1) {
+                var isProtectedChange = this.isProtectedOnChange;
+                var connector = this.nameTable[rootNode.outEdges[1]];
+                this.protectPropertyChange(false);
+                this.preventUpdate = true;
+                connector.sourcePortID = rootNode.ports[1].id;
+                this.preventUpdate = false;
+                this.dataBind();
+                this.protectPropertyChange(isProtectedChange);
+            }
+        }
+        if (isBlazor()) {
+            var view = void 0;
+            for (var _i = 0, _a = this.views; _i < _a.length; _i++) {
+                var temp = _a[_i];
+                view = this.views[temp];
+                if (view.renderDocument) {
+                    view.renderDocument(view);
+                    view.diagramRenderer.setLayers();
+                    view.updateView(view);
+                    this.renderNodes(view);
+                }
+            }
+        }
+        this.updateFitToPage();
     };
     Diagram.prototype.updateCanupdateStyle = function (element, value) {
         for (var j = 0; j < element.length; j++) {
@@ -35288,6 +37710,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     };
     /** @private */
     Diagram.prototype.renderSelector = function (multipleSelection, isSwimLane) {
+        if (isBlazor()) {
+            this.commandHandler.oldSelectedObjects = cloneObject(this.selectedItems);
+        }
         var size = new Size();
         var selectorModel = this.selectedItems;
         var selectorConstraints = selectorModel.constraints;
@@ -35361,6 +37786,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 this.diagramRenderer.renderUserHandler(selectorModel, selectorElement, this.scroller.transform);
             }
         }
+        this.commandHandler.updateBlazorSelector();
     };
     /** @private */
     Diagram.prototype.updateSelector = function () {
@@ -35513,7 +37939,8 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     /** @private */
     Diagram.prototype.getEndNodeWrapper = function (node, connector, source) {
         if (node.shape.type === 'Bpmn' && node.wrapper.children[0] instanceof Canvas) {
-            if (node.shape.shape === 'Activity') {
+            if ((!isBlazor() && node.shape.shape === 'Activity') ||
+                (isBlazor() && node.shadow.bpmnShape === 'Activity')) {
                 if (source && node.shape.activity.subProcess.type === 'Transaction'
                     && connector.sourcePortID) {
                     var portId = connector.sourcePortID;
@@ -35551,104 +37978,137 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     /**
      * @private
      */
+    /* tslint:disable */
     Diagram.prototype.endEdit = function () {
-        if (this.diagramActions & DiagramAction.TextEdit) {
-            var textArea = document.getElementById(this.element.id + '_editBox');
-            var text = textArea.value;
-            EventHandler.remove(textArea, 'input', this.eventHandler.inputChange);
-            EventHandler.remove(textArea, 'focusout', this.focusOutEdit);
-            var element = document.getElementById(this.element.id + '_editTextBoxDiv');
-            var args = { oldValue: this.activeLabel.text, newValue: text, cancel: false };
-            var bpmnAnnotation = false;
-            var node = void 0;
-            element.parentNode.removeChild(element);
-            var textWrapper = void 0;
-            if (this.bpmnModule) {
-                node = this.bpmnModule.isBpmnTextAnnotation(this.activeLabel, this);
-                textWrapper = this.bpmnModule.getTextAnnotationWrapper(node, this.activeLabel.id);
-                bpmnAnnotation = node ? true : false;
-                if (bpmnAnnotation) {
-                    if (element.textContent !== text || text !== this.activeLabel.text) {
+        return __awaiter(this, void 0, void 0, function () {
+            var textArea, text, element, args, bpmnAnnotation, node, textWrapper, deleteNode, annotation, clonedObject, selectedNode, swimLaneNode, laneHeader, phaseHeader, collection, j;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!(this.diagramActions & DiagramAction.TextEdit)) return [3 /*break*/, 9];
+                        this.enableServerDataBinding(false);
+                        textArea = document.getElementById(this.element.id + '_editBox');
+                        if (!((isBlazor() && textArea && textArea.value) || !isBlazor())) return [3 /*break*/, 9];
+                        text = textArea.value;
+                        EventHandler.remove(textArea, 'input', this.eventHandler.inputChange);
+                        EventHandler.remove(textArea, 'focusout', this.focusOutEdit);
+                        element = document.getElementById(this.element.id + '_editTextBoxDiv');
+                        args = { oldValue: this.activeLabel.text, newValue: text, cancel: false };
+                        bpmnAnnotation = false;
+                        node = void 0;
+                        element.parentNode.removeChild(element);
+                        textWrapper = void 0;
+                        if (!this.bpmnModule) return [3 /*break*/, 4];
+                        node = this.bpmnModule.isBpmnTextAnnotation(this.activeLabel, this);
+                        textWrapper = this.bpmnModule.getTextAnnotationWrapper(node, this.activeLabel.id);
+                        bpmnAnnotation = node ? true : false;
+                        if (!bpmnAnnotation) return [3 /*break*/, 4];
+                        if (!(element.textContent !== text || text !== this.activeLabel.text)) return [3 /*break*/, 4];
+                        if (!isBlazor()) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.triggerEvent(DiagramEvent.textEdit, args)];
+                    case 1:
+                        args = (_a.sent()) || args;
+                        return [3 /*break*/, 3];
+                    case 2:
                         this.triggerEvent(DiagramEvent.textEdit, args);
+                        _a.label = 3;
+                    case 3:
                         if (!args.cancel) {
                             this.bpmnModule.updateTextAnnotationContent(node, this.activeLabel, text, this);
                         }
-                    }
-                }
-            }
-            if (!bpmnAnnotation) {
-                node = this.nameTable[this.activeLabel.parentId];
-                var deleteNode = this.eventHandler.isAddTextNode(node, true);
-                if (!deleteNode && (element.textContent !== text || text !== this.activeLabel.text)) {
-                    this.triggerEvent(DiagramEvent.textEdit, args);
-                }
-                if (!textWrapper) {
-                    textWrapper = this.getWrapper(node.wrapper, this.activeLabel.id);
-                }
-                var annotation = findAnnotation(node, this.activeLabel.id);
-                if (annotation.content !== text && !args.cancel) {
-                    if (node.parentId && this.nameTable[node.parentId].shape.type === 'UmlClassifier'
-                        && text.indexOf('+') === -1 && text.indexOf('-') === -1 && text.indexOf('#') === -1
-                        && text.indexOf('~') === -1 && node.id.indexOf('_umlClass_header') === -1) {
-                        text = ' + ' + text;
-                    }
-                    if (node.isLane || node.isPhase) {
-                        this.protectPropertyChange(true);
-                    }
-                    annotation.content = text;
-                    this.dataBind();
-                    this.updateSelector();
-                    if (node.isLane || node.isPhase) {
-                        this.protectPropertyChange(false);
-                    }
-                }
-                if (deleteNode) {
-                    this.removeObjectsFromLayer(node);
-                    this.removeFromAQuad(node);
-                    delete this.nameTable[this.activeLabel.parentId];
-                    if (text !== '') {
-                        this.clearSelection();
-                        var clonedObject = cloneObject(node);
-                        node = this.add(clonedObject);
-                        this.updateDiagramObject(node);
-                        this.commandHandler.select(this.nameTable[node.id]);
-                    }
-                }
-            }
-            if (this.selectedItems.nodes.length) {
-                var selectedNode = this.nameTable[this.activeLabel.parentId];
-                var swimLaneNode = this.nameTable[selectedNode.parentId];
-                if ((swimLaneNode && swimLaneNode.shape.type === 'SwimLane') || (selectedNode.shape.type === 'SwimLane')) {
-                    var laneHeader = 'LaneHeaderParent';
-                    var phaseHeader = 'PhaseHeaderParent';
-                    if ((selectedNode.shape.type === 'SwimLane')) {
-                        swimLaneNode = this.nameTable[this.activeLabel.parentId];
-                        selectedNode = node;
-                    }
-                    if ((selectedNode.isLane || selectedNode.isPhase)) {
-                        var collection = selectedNode.isLane ?
-                            swimLaneNode.shape.lanes : swimLaneNode.shape.phases;
-                        for (var j = 0; j < collection.length; j++) {
-                            if (collection[j].id === (selectedNode[laneHeader] || selectedNode[phaseHeader])) {
-                                collection[j].header.annotation.content = selectedNode.annotations[0].content;
+                        _a.label = 4;
+                    case 4:
+                        if (!!bpmnAnnotation) return [3 /*break*/, 8];
+                        node = this.nameTable[this.activeLabel.parentId];
+                        deleteNode = this.eventHandler.isAddTextNode(node, true);
+                        if (!(!deleteNode && (element.textContent !== text || text !== this.activeLabel.text))) return [3 /*break*/, 7];
+                        if (!isBlazor()) return [3 /*break*/, 6];
+                        return [4 /*yield*/, this.triggerEvent(DiagramEvent.textEdit, args)];
+                    case 5:
+                        args = (_a.sent()) || args;
+                        return [3 /*break*/, 7];
+                    case 6:
+                        this.triggerEvent(DiagramEvent.textEdit, args);
+                        _a.label = 7;
+                    case 7:
+                        if (!textWrapper) {
+                            textWrapper = this.getWrapper(node.wrapper, this.activeLabel.id);
+                        }
+                        annotation = findAnnotation(node, this.activeLabel.id);
+                        if (annotation.content !== text && !args.cancel) {
+                            if (node.parentId && this.nameTable[node.parentId].shape.type === 'UmlClassifier'
+                                && text.indexOf('+') === -1 && text.indexOf('-') === -1 && text.indexOf('#') === -1
+                                && text.indexOf('~') === -1 && node.id.indexOf('_umlClass_header') === -1) {
+                                text = ' + ' + text;
+                            }
+                            if (node.isLane || node.isPhase) {
+                                this.protectPropertyChange(true);
+                            }
+                            if (isBlazor() && (node.shape).type === "Text") {
+                                node.shape.textContent = text;
+                            }
+                            annotation.content = text;
+                            this.dataBind();
+                            this.updateSelector();
+                            if (node.isLane || node.isPhase) {
+                                this.protectPropertyChange(false);
                             }
                         }
-                    }
-                    else if (selectedNode.isHeader && swimLaneNode.shape.hasHeader) {
-                        swimLaneNode.shape.header.annotation.content = selectedNode.annotations[0].content;
-                    }
+                        if (deleteNode) {
+                            this.removeObjectsFromLayer(node);
+                            this.removeFromAQuad(node);
+                            delete this.nameTable[this.activeLabel.parentId];
+                            if (text !== '') {
+                                this.clearSelection();
+                                clonedObject = cloneObject(node);
+                                node = this.add(clonedObject);
+                                this.updateDiagramObject(node);
+                                this.commandHandler.select(this.nameTable[node.id]);
+                            }
+                        }
+                        _a.label = 8;
+                    case 8:
+                        if (this.selectedItems.nodes.length) {
+                            selectedNode = this.nameTable[this.activeLabel.parentId];
+                            swimLaneNode = this.nameTable[selectedNode.parentId];
+                            if ((swimLaneNode && swimLaneNode.shape.type === 'SwimLane') || (selectedNode.shape.type === 'SwimLane')) {
+                                laneHeader = 'LaneHeaderParent';
+                                phaseHeader = 'PhaseHeaderParent';
+                                if ((selectedNode.shape.type === 'SwimLane')) {
+                                    swimLaneNode = this.nameTable[this.activeLabel.parentId];
+                                    selectedNode = node;
+                                }
+                                if ((selectedNode.isLane || selectedNode.isPhase)) {
+                                    collection = selectedNode.isLane ?
+                                        swimLaneNode.shape.lanes : swimLaneNode.shape.phases;
+                                    for (j = 0; j < collection.length; j++) {
+                                        if (collection[j].id === (selectedNode[laneHeader] || selectedNode[phaseHeader])) {
+                                            collection[j].header.annotation.content = selectedNode.annotations[0].content;
+                                        }
+                                    }
+                                }
+                                else if (selectedNode.isHeader && swimLaneNode.shape.hasHeader) {
+                                    swimLaneNode.shape.header.annotation.content = selectedNode.annotations[0].content;
+                                }
+                            }
+                            this.dataBind();
+                        }
+                        textWrapper.visible = true;
+                        this.updateDiagramObject(node);
+                        this.diagramActions = this.diagramActions & ~DiagramAction.TextEdit;
+                        if (this.activeLabel.isGroup) {
+                            this.endGroupAction();
+                        }
+                        this.activeLabel = { id: '', parentId: '', isGroup: false, text: undefined };
+                        this.commandHandler.getBlazorOldValues();
+                        this.enableServerDataBinding(true);
+                        _a.label = 9;
+                    case 9: return [2 /*return*/];
                 }
-                this.dataBind();
-            }
-            textWrapper.visible = true;
-            this.updateDiagramObject(node);
-            this.diagramActions = this.diagramActions & ~DiagramAction.TextEdit;
-            if (this.activeLabel.isGroup) {
-                this.endGroupAction();
-            }
-            this.activeLabel = { id: '', parentId: '', isGroup: false, text: undefined };
-        }
+            });
+        });
     };
+    /* tslint:enable */
     /** @private */
     Diagram.prototype.canLogChange = function () {
         if ((this.diagramActions & DiagramAction.Render) && (!(this.diagramActions & DiagramAction.ToolAction)) &&
@@ -35683,6 +38143,14 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         if (node.children) {
             delete this.groupTable[node.id];
         }
+        if (isBlazor()) {
+            for (var i = 0; i < this.nodes.length; i++) {
+                if (node.id === this.nodes[i].id) {
+                    this.UpdateBlazorDiagramModel(node, 'Node', i);
+                }
+            }
+        }
+        this.UpdateBlazorDiagramModel(node, 'Node', (this.nodes.indexOf(node)));
         this.nodes.splice(this.nodes.indexOf(node), 1);
     };
     /** @private */
@@ -35692,6 +38160,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         if (node.children) {
             tempNode = this.commandHandler.getChildren(node, elements);
         }
+        this.UpdateBlazorDiagramModelCollection(node);
         for (var _i = 0, tempNode_1 = tempNode; _i < tempNode_1.length; _i++) {
             var nodes = tempNode_1[_i];
             if (this.nameTable[nodes.id]) {
@@ -35924,9 +38393,26 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         }
         return update;
     };
+    /** @private */
+    Diagram.prototype.insertValue = function (oldNodeObject, isNode) {
+        var value;
+        var oldObjects = isNode ? this.oldNodeObjects : this.oldConnectorObjects;
+        for (var i = 0; i < oldObjects.length; i++) {
+            if (oldObjects[i].id === oldNodeObject.id) {
+                value = true;
+            }
+        }
+        if (!value) {
+            isNode ? (this.oldNodeObjects.push(oldNodeObject)) : this.oldConnectorObjects.push(oldNodeObject);
+        }
+    };
     /* tslint:disable */
     /** @private */
     Diagram.prototype.nodePropertyChange = function (actualObject, oldObject, node, isLayout, rotate, propertyChange) {
+        if (this.canEnableBlazorObject) {
+            var node_2 = cloneObject(actualObject);
+            this.insertValue(node_2, true);
+        }
         var existingBounds = actualObject.wrapper.outerBounds;
         var existingInnerBounds = actualObject.wrapper.bounds;
         var updateConnector$$1 = false;
@@ -36063,7 +38549,8 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             updateConnector$$1 = true;
             this.bpmnModule.updateBPMN(node, oldObject, actualObject, this);
         }
-        if (actualObject.shape.type === 'UmlActivity' && actualObject.shape.shape === 'FinalNode') {
+        if (actualObject.shape.type === 'UmlActivity' && ((!isBlazor() && actualObject.shape.shape === 'FinalNode') ||
+            (isBlazor() && actualObject.shape.umlActivityShape === 'FinalNode'))) {
             update = true;
             updateConnector$$1 = true;
             this.updateUMLActivity(node, oldObject, actualObject, this);
@@ -36199,10 +38686,10 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     this.updateConnectorEdges(actualObject);
                     if (actualObject.id !== 'helper' && !(this.diagramActions & DiagramAction.ToolAction)) {
                         var objects_2 = this.spatialSearch.findObjects(actualObject.wrapper.outerBounds);
-                        for (var i_2 = 0; i_2 < objects_2.length; i_2++) {
-                            var object = objects_2[i_2];
+                        for (var i_3 = 0; i_3 < objects_2.length; i_3++) {
+                            var object = objects_2[i_3];
                             if (object instanceof Connector) {
-                                this.connectorPropertyChange(objects_2[i_2], {}, {
+                                this.connectorPropertyChange(objects_2[i_3], {}, {
                                     sourceID: object.sourceID,
                                     targetID: object.targetID,
                                     sourcePortID: object.sourcePortID,
@@ -36325,6 +38812,10 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     /* tslint:disable */
     /** @private */
     Diagram.prototype.connectorPropertyChange = function (actualObject, oldProp, newProp, disableBridging, propertyChange) {
+        if (this.canEnableBlazorObject) {
+            var node = cloneObject(actualObject);
+            this.insertValue(node, false);
+        }
         var existingBounds = actualObject.wrapper.bounds;
         var updateSelector = false;
         var points = [];
@@ -36348,6 +38839,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     if (actualObject.sourcePortID && newProp.sourcePortID === undefined) {
                         actualObject.sourcePortWrapper = sourceNode ? this.getWrapper(sourceNode.wrapper, actualObject.sourcePortID) : undefined;
                     }
+                    this.removePortEdges(this.nameTable[oldProp.sourceID] || sourceNode, oldProp.sourcePortID || actualObject.sourcePortID, actualObject.id, false);
                 }
                 if (newProp.sourceID !== undefined && oldProp.sourceID !== undefined && oldProp.sourceID !== '') {
                     var oldSource = this.nameTable[oldProp.sourceID];
@@ -36365,6 +38857,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     if (actualObject.targetPortID && newProp.targetPortID === undefined) {
                         actualObject.targetPortWrapper = targetNode ? this.getWrapper(targetNode.wrapper, actualObject.targetPortID) : undefined;
                     }
+                    this.removePortEdges(this.nameTable[oldProp.targetID] || targetNode, oldProp.targetPortID || actualObject.targetPortID, actualObject.id, true);
                 }
                 if (oldProp !== undefined && oldProp.targetID !== undefined && oldProp.targetID !== '') {
                     var oldTarget = this.nameTable[oldProp.targetID];
@@ -36407,7 +38900,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             updateStyle(newProp.style, actualObject.wrapper.children[0]);
         }
         if (points.length > 0 || newProp.sourceDecorator !== undefined || (newProp.targetDecorator !== undefined
-            && Object.keys(newProp.targetDecorator).indexOf('style') === -1) || newProp.cornerRadius !== undefined) {
+            && (canMeasureDecoratorPath(Object.keys(newProp.targetDecorator)))) || newProp.cornerRadius !== undefined) {
             updateConnector(actualObject, points.length > 0 ? points : actualObject.intermediatePoints);
             if (newProp.type !== undefined) {
                 updateSelector = true;
@@ -36456,6 +38949,18 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         this.triggerPropertyChange(propertyChange, actualObject, oldProp, newProp);
     };
     /* tslint:enable */
+    /** @private */
+    Diagram.prototype.removePortEdges = function (node, portId, item, isInEdges) {
+        if (node) {
+            for (var i = 0; i < node.ports.length; i++) {
+                var port = node.ports[i];
+                if (port.id === portId) {
+                    var portEdge = (isInEdges) ? port.inEdges : port.outEdges;
+                    removeItem(portEdge, item);
+                }
+            }
+        }
+    };
     Diagram.prototype.getpropertyChangeArgs = function (element, oldProp, newProp, args) {
         args.element = { connector: cloneBlazorObject(element) };
         args.oldValue = { connector: cloneBlazorObject(oldProp) };
@@ -36731,8 +39236,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         if (changedObject.content !== undefined) {
             if (annotationWrapper) {
                 isMeasure = true;
-                if ((actualObject.shape.type === 'UmlActivity' &&
-                    actualObject.shape.shape === 'StructuredNode')) {
+                if (actualObject.shape.type === 'UmlActivity' &&
+                    ((isBlazor && actualObject.shape.umlActivityShape === 'StructuredNode') ||
+                        (!isBlazor && actualObject.shape.shape === 'StructuredNode'))) {
                     annotationWrapper.content = '<<' + changedObject.content + '>>';
                 }
                 else {
@@ -36968,6 +39474,19 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         this.isProtectedOnChange = enable;
     };
     /** @private */
+    Diagram.prototype.getProtectPropertyChangeValue = function () {
+        return this.isProtectedOnChange;
+    };
+    /** @private */
+    Diagram.prototype.enableServerDataBinding = function (enable) {
+        if (isBlazor()) {
+            this.allowServerDataBinding = enable;
+            if (enable) {
+                this.bulkChanges = {};
+            }
+        }
+    };
+    /** @private */
     Diagram.prototype.updateShadow = function (nodeShadow, changedShadow) {
         if (changedShadow.angle !== undefined) {
             nodeShadow.angle = changedShadow.angle;
@@ -37027,6 +39546,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                         var childtable = 'childTable';
                         if (sourceElement) {
                             var obj = sourceElement[selectedSymbols];
+                            _this.allowServerDataBinding = false;
                             clonedObject = cloneObject(sourceElement[selectedSymbols]);
                             childTable = sourceElement[childtable];
                             var wrapper = obj.wrapper.children[0].children[0];
@@ -37199,6 +39719,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                             delete _this['enterTable'];
                         }
                         _this.droppable[selectedSymbols] = selectedSymbol;
+                        _this.allowServerDataBinding = true;
                     }
                 }
             }
@@ -37209,127 +39730,145 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             }
         };
         // tslint:disable-next-line:no-any
-        this.droppable.drop = function (args) {
-            var source = 'sourceElement';
-            var value;
-            if (_this.currentSymbol) {
-                var isPhase = false;
-                var orientation_2;
-                var isConnector = void 0;
-                isConnector = (_this.currentSymbol instanceof Connector) ? true : false;
-                if (args.event.touches) {
-                    _this.eventHandler.mouseUp(args.event);
-                }
-                var newObj = void 0;
-                var arg = void 0;
-                arg = {
-                    source: _this.droppable[source],
-                    element: _this.currentSymbol,
-                    target: _this.eventHandler['hoverNode'] || _this.eventHandler['lastObjectUnderMouse'] || _this, cancel: false,
-                    position: { x: _this.currentSymbol.wrapper.offsetX, y: _this.currentSymbol.wrapper.offsetY }
-                };
-                if (isBlazor()) {
-                    arg = {
-                        source: cloneBlazorObject(_this.droppable[source]),
-                        element: getObjectType(_this.currentSymbol) === Connector ? { connector: cloneBlazorObject(_this.currentSymbol) } : { node: cloneBlazorObject(_this.currentSymbol) },
-                        cancel: false,
-                        position: { x: _this.currentSymbol.wrapper.offsetX, y: _this.currentSymbol.wrapper.offsetY }
-                    };
-                    _this.getDropEventArgs(arg);
-                }
-                _this.triggerEvent(DiagramEvent.drop, arg);
-                var clonedObject = void 0;
-                var id = 'id';
-                clonedObject = cloneObject(_this.currentSymbol);
-                clonedObject['hasTarget'] = _this.currentSymbol['hasTarget'];
-                _this.removeFromAQuad(_this.currentSymbol);
-                _this.removeObjectsFromLayer(_this.nameTable[_this.currentSymbol.id]);
-                _this.removeElements(_this.currentSymbol);
-                if (_this.currentSymbol.shape.isLane ||
-                    _this.currentSymbol.shape.isPhase) {
-                    _this.removeChildInNodes(_this.currentSymbol);
-                }
-                if (arg.cancel) {
-                    removeChildNodes(_this.currentSymbol, _this);
-                }
-                if (_this.currentSymbol.shape.isPhase) {
-                    isPhase = true;
-                    orientation_2 = _this.currentSymbol.shape.orientation;
-                }
-                delete _this.nameTable[_this.currentSymbol.id];
-                _this.currentSymbol = null;
-                _this.protectPropertyChange(true);
-                if (!arg.cancel) {
-                    _this.startGroupAction();
-                    if (clonedObject && (clonedObject.shape.isLane || isPhase)) {
-                        if (isPhase) {
-                            clonedObject.shape.isPhase = isPhase;
-                            clonedObject.shape.orientation = orientation_2;
+        this.droppable.drop = function (args) { return __awaiter(_this, void 0, void 0, function () {
+            var source, value, isPhase, orientation_2, isConnector, newObj, node, conn, arg, clonedObject, id, nodeId, selectedSymbols, arg, clonedObject, id;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        source = 'sourceElement';
+                        if (!this.currentSymbol) return [3 /*break*/, 4];
+                        isPhase = false;
+                        isConnector = void 0;
+                        isConnector = (this.currentSymbol instanceof Connector) ? true : false;
+                        if (args.event.touches) {
+                            this.eventHandler.mouseUp(args.event);
                         }
-                        _this.eventHandler.addSwimLaneObject(clonedObject);
-                    }
-                    if (clonedObject.shape.type === 'Bpmn' && clonedObject.shape.annotation
-                        && clonedObject['hasTarget']) {
-                        var nodeId = clonedObject.shape.annotation.nodeId;
-                        clonedObject.shape.annotation.id = clonedObject.id;
-                        _this.addTextAnnotation(clonedObject.shape.annotation, _this.nameTable[nodeId]);
-                        clonedObject.nodeId = '';
-                    }
-                    if (!clonedObject.shape.isLane && !isPhase) {
-                        if (clonedObject.children) {
-                            _this.addChildNodes(clonedObject);
+                        newObj = void 0;
+                        
+                        
+                        arg = void 0;
+                        arg = {
+                            source: this.droppable[source],
+                            element: this.currentSymbol,
+                            target: this.eventHandler['hoverNode'] || this.eventHandler['lastObjectUnderMouse'] || this, cancel: false,
+                            position: { x: this.currentSymbol.wrapper.offsetX, y: this.currentSymbol.wrapper.offsetY }
+                        };
+                        if (!isBlazor()) return [3 /*break*/, 2];
+                        arg = {
+                            source: cloneBlazorObject(this.droppable[source]),
+                            element: getObjectType(this.currentSymbol) === Connector ? { connector: cloneBlazorObject(this.currentSymbol) } : { node: cloneBlazorObject(this.currentSymbol) },
+                            cancel: false,
+                            position: { x: this.currentSymbol.wrapper.offsetX, y: this.currentSymbol.wrapper.offsetY }
+                        };
+                        this.getDropEventArgs(arg);
+                        return [4 /*yield*/, this.triggerEvent(DiagramEvent.drop, arg)];
+                    case 1:
+                        arg = (_a.sent()) || arg;
+                        return [3 /*break*/, 3];
+                    case 2:
+                        this.triggerEvent(DiagramEvent.drop, arg);
+                        _a.label = 3;
+                    case 3:
+                        clonedObject = void 0;
+                        id = 'id';
+                        clonedObject = cloneObject(this.currentSymbol);
+                        clonedObject['hasTarget'] = this.currentSymbol['hasTarget'];
+                        this.removeFromAQuad(this.currentSymbol);
+                        this.removeObjectsFromLayer(this.nameTable[this.currentSymbol.id]);
+                        this.removeElements(this.currentSymbol);
+                        if (this.currentSymbol.shape.isLane ||
+                            this.currentSymbol.shape.isPhase) {
+                            this.removeChildInNodes(this.currentSymbol);
                         }
-                        if (arg.target && (arg.target instanceof Node) && !isConnector && checkParentAsContainer(_this, arg.target)
-                            && canAllowDrop(arg.target)) {
-                            addChildToContainer(_this, arg.target, clonedObject);
+                        if (arg.cancel) {
+                            removeChildNodes(this.currentSymbol, this);
+                        }
+                        if (this.currentSymbol.shape.isPhase) {
+                            isPhase = true;
+                            orientation_2 = this.currentSymbol.shape.orientation;
+                        }
+                        delete this.nameTable[this.currentSymbol.id];
+                        this.currentSymbol = null;
+                        this.protectPropertyChange(true);
+                        if (!arg.cancel) {
+                            this.startGroupAction();
+                            if (clonedObject && (clonedObject.shape.isLane || isPhase)) {
+                                if (isPhase) {
+                                    clonedObject.shape.isPhase = isPhase;
+                                    clonedObject.shape.orientation = orientation_2;
+                                }
+                                this.eventHandler.addSwimLaneObject(clonedObject);
+                            }
+                            if (clonedObject.shape.type === 'Bpmn' && clonedObject.shape.annotation
+                                && clonedObject['hasTarget']) {
+                                nodeId = clonedObject.shape.annotation.nodeId;
+                                clonedObject.shape.annotation.id = clonedObject.id;
+                                this.addTextAnnotation(clonedObject.shape.annotation, this.nameTable[nodeId]);
+                                clonedObject.nodeId = '';
+                            }
+                            if (!clonedObject.shape.isLane && !isPhase) {
+                                if (clonedObject.children) {
+                                    this.addChildNodes(clonedObject);
+                                }
+                                if (arg.target && (arg.target instanceof Node) && !isConnector && checkParentAsContainer(this, arg.target)
+                                    && canAllowDrop(arg.target)) {
+                                    addChildToContainer(this, arg.target, clonedObject);
+                                }
+                                else {
+                                    this.allowServerDataBinding = false;
+                                    value = this.add(clonedObject, true);
+                                    this.allowServerDataBinding = true;
+                                }
+                                if ((clonedObject || value) && canSingleSelect(this)) {
+                                    this.select([this.nameTable[clonedObject[id]]]);
+                                }
+                            }
                         }
                         else {
-                            value = _this.add(clonedObject, true);
+                            this.clearSelectorLayer();
                         }
-                        if ((clonedObject || value) && canSingleSelect(_this)) {
-                            _this.select([_this.nameTable[clonedObject[id]]]);
+                        this.protectPropertyChange(false);
+                        newObj = this.nameTable[clonedObject[id]];
+                        if (clonedObject['hasTarget']) {
+                            clonedObject.nodeId = clonedObject['hasTarget'];
+                            this.remove(clonedObject);
                         }
-                    }
+                        if (this.bpmnModule && newObj instanceof Node && clonedObject.processId) {
+                            newObj.processId = clonedObject.processId;
+                            this.bpmnModule.dropBPMNchild(this.nameTable[newObj.processId], newObj, this);
+                        }
+                        this.endGroupAction();
+                        if (this.mode !== 'SVG') {
+                            this.refreshDiagramLayer();
+                        }
+                        delete this.droppable[source];
+                        selectedSymbols = 'selectedSymbols';
+                        remove(this.droppable[selectedSymbols]);
+                        return [3 /*break*/, 5];
+                    case 4:
+                        arg = {
+                            source: cloneBlazorObject(args.droppedElement),
+                            element: undefined,
+                            target: cloneBlazorObject(this.eventHandler['hoverNode'] || (this.eventHandler['lastObjectUnderMouse']) || this), cancel: false,
+                            position: undefined
+                        };
+                        if (isBlazor()) {
+                            arg = {
+                                source: cloneBlazorObject(args.droppedElement),
+                                element: undefined,
+                                cancel: false,
+                                position: undefined,
+                            };
+                            this.getDropEventArgs(arg);
+                        }
+                        this.triggerEvent(DiagramEvent.drop, arg);
+                        clonedObject = void 0;
+                        id = 'id';
+                        _a.label = 5;
+                    case 5: return [2 /*return*/];
                 }
-                _this.protectPropertyChange(false);
-                newObj = _this.nameTable[clonedObject[id]];
-                if (clonedObject['hasTarget']) {
-                    clonedObject.nodeId = clonedObject['hasTarget'];
-                    _this.remove(clonedObject);
-                }
-                if (_this.bpmnModule && newObj instanceof Node && clonedObject.processId) {
-                    newObj.processId = clonedObject.processId;
-                    _this.bpmnModule.dropBPMNchild(_this.nameTable[newObj.processId], newObj, _this);
-                }
-                _this.endGroupAction();
-                if (_this.mode !== 'SVG') {
-                    _this.refreshDiagramLayer();
-                }
-                delete _this.droppable[source];
-                var selectedSymbols = 'selectedSymbols';
-                remove(_this.droppable[selectedSymbols]);
-            }
-            else {
-                var arg = {
-                    source: cloneBlazorObject(args.droppedElement),
-                    element: undefined,
-                    target: cloneBlazorObject(_this.eventHandler['hoverNode'] || (_this.eventHandler['lastObjectUnderMouse']) || _this), cancel: false,
-                    position: undefined
-                };
-                if (isBlazor()) {
-                    arg = {
-                        source: cloneBlazorObject(args.droppedElement),
-                        element: undefined,
-                        cancel: false,
-                        position: undefined,
-                    };
-                    _this.getDropEventArgs(arg);
-                }
-                _this.triggerEvent(DiagramEvent.drop, arg);
-                var clonedObject = void 0;
-                var id = 'id';
-            }
-        };
+            });
+        }); };
         this.droppable.out = function (args) {
             if (_this.currentSymbol && !_this.eventHandler.focus) {
                 _this.unSelect(_this.currentSymbol);
@@ -37339,9 +39878,14 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 }
                 _this.removeObjectsFromLayer(_this.nameTable[_this.currentSymbol.id]);
                 delete _this.nameTable[_this.currentSymbol.id];
-                _this.triggerEvent(DiagramEvent.dragLeave, {
-                    element: cloneBlazorObject(_this.currentSymbol), diagram: cloneBlazorObject(_this)
-                });
+                var args_1 = {
+                    element: cloneBlazorObject(_this.currentSymbol),
+                    diagram: _this
+                };
+                if (isBlazor()) {
+                    args_1 = _this.getBlazorDragLeaveEventArgs(args_1);
+                }
+                _this.triggerEvent(DiagramEvent.dragLeave, args_1);
                 if (_this.mode !== 'SVG') {
                     _this.refreshDiagramLayer();
                 }
@@ -37361,6 +39905,14 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 _this.previousSelectedObject = null;
             }
         };
+    };
+    Diagram.prototype.getBlazorDragLeaveEventArgs = function (args) {
+        args = {
+            diagram: cloneBlazorObject(this),
+            element: getObjectType(args.element) === Connector ? { connector: cloneBlazorObject(args.element) }
+                : { node: cloneBlazorObject(args.element) }
+        };
+        return args;
     };
     Diagram.prototype.getDropEventArgs = function (arg) {
         if ((this.eventHandler['lastObjectUnderMouse'] || this.eventHandler['hoverNode'])) {
@@ -37656,6 +40208,12 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property()
     ], Diagram.prototype, "historyManager", void 0);
+    __decorate([
+        Property()
+    ], Diagram.prototype, "nodeTemplate", void 0);
+    __decorate([
+        Property()
+    ], Diagram.prototype, "annotationTemplate", void 0);
     __decorate([
         Property()
     ], Diagram.prototype, "getNodeDefaults", void 0);
@@ -38670,8 +41228,10 @@ var DataBinding = /** @__PURE__ @class */ (function () {
                 var prop = 'result';
                 result = e[prop];
                 if (!diagram.isDestroyed) {
+                    diagram.protectPropertyChange(true);
                     _this.applyDataSource(data, result, diagram);
                     diagram.refreshDiagram();
+                    diagram.protectPropertyChange(false);
                     diagram.trigger('dataLoaded', { diagram: cloneBlazorObject(diagram) });
                 }
             });
@@ -38681,6 +41241,7 @@ var DataBinding = /** @__PURE__ @class */ (function () {
         this.dataTable = {};
         var obj;
         var firstNode;
+        var node;
         var rootNodes = [];
         var firstLevel = [];
         var item;
@@ -38718,7 +41279,7 @@ var DataBinding = /** @__PURE__ @class */ (function () {
             for (var i = 0; i < firstLevel.length; i++) {
                 for (var j = 0; j < firstLevel[i].items.length; j++) {
                     item = firstLevel[i].items[j];
-                    var node = this.applyNodeTemplate(mapper, item, diagram);
+                    node = this.applyNodeTemplate(mapper, item, diagram);
                     diagram.nodes.push(node);
                     this.dataTable[item[mapper.id]] = node;
                     nextLevel = rootNodes[node.data[mapper.id]];
@@ -38893,6 +41454,41 @@ var DataBinding = /** @__PURE__ @class */ (function () {
     return DataBinding;
 }());
 
+var __awaiter$3 = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator$3 = (undefined && undefined.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
 /**
  * @private
  */
@@ -39092,46 +41688,66 @@ var DiagramContextMenu = /** @__PURE__ @class */ (function () {
         }
     };
     DiagramContextMenu.prototype.contextMenuBeforeOpen = function (args) {
-        if (!this.parent.checkMenu &&
-            (window.navigator.userAgent.indexOf('Linux') !== -1 || window.navigator.userAgent.indexOf('X11') !== -1)) {
-            this.parent.checkMenu = args.cancel = true;
-        }
-        if (this.parent.checkMenu) {
-            this.hiddenItems = [];
-        }
-        var diagramArgs = args;
-        diagramArgs.hiddenItems = [];
-        for (var _i = 0, _a = args.items; _i < _a.length; _i++) {
-            var item = _a[_i];
-            this.ensureItems(item, args.event);
-            if (item.items.length) {
-                for (var _b = 0, _c = item.items; _b < _c.length; _b++) {
-                    var newItem = _c[_b];
-                    this.ensureItems(newItem, args.event);
+        return __awaiter$3(this, void 0, void 0, function () {
+            var diagramArgs, _i, _a, item, _b, _c, newItem, hidden, contextItems;
+            return __generator$3(this, function (_d) {
+                switch (_d.label) {
+                    case 0:
+                        if (!this.parent.checkMenu &&
+                            (window.navigator.userAgent.indexOf('Linux') !== -1 || window.navigator.userAgent.indexOf('X11') !== -1)) {
+                            this.parent.checkMenu = args.cancel = true;
+                        }
+                        if (this.parent.checkMenu) {
+                            this.hiddenItems = [];
+                        }
+                        diagramArgs = args;
+                        diagramArgs.hiddenItems = [];
+                        for (_i = 0, _a = args.items; _i < _a.length; _i++) {
+                            item = _a[_i];
+                            this.ensureItems(item, args.event);
+                            if (item.items.length) {
+                                for (_b = 0, _c = item.items; _b < _c.length; _b++) {
+                                    newItem = _c[_b];
+                                    this.ensureItems(newItem, args.event);
+                                }
+                            }
+                        }
+                        this.eventArgs = args.event;
+                        if (!isBlazor()) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.parent.trigger(contextMenuOpen, diagramArgs)];
+                    case 1:
+                        diagramArgs = (_d.sent());
+                        if (typeof diagramArgs === 'string') {
+                            diagramArgs = JSON.parse(diagramArgs);
+                        }
+                        return [3 /*break*/, 3];
+                    case 2:
+                        this.parent.trigger(contextMenuOpen, diagramArgs);
+                        _d.label = 3;
+                    case 3:
+                        hidden = true;
+                        this.hiddenItems = this.hiddenItems.concat(diagramArgs.hiddenItems);
+                        this.contextMenu.enableItems(this.disableItems, false, true);
+                        contextItems = this;
+                        args.items.forEach(function (item) {
+                            if (contextItems.hiddenItems.indexOf(item.id) > -1) {
+                                contextItems.contextMenu.hideItems([item.id], true);
+                            }
+                        });
+                        contextItems.contextMenu.items.forEach(function (item) {
+                            if (contextItems.hiddenItems.indexOf(item.id) === -1) {
+                                hidden = false;
+                                contextItems.contextMenu.showItems([item.id], true);
+                            }
+                        });
+                        if (hidden) {
+                            diagramArgs.cancel = hidden;
+                            this.hiddenItems = [];
+                        }
+                        return [2 /*return*/];
                 }
-            }
-        }
-        this.eventArgs = args.event;
-        this.parent.trigger(contextMenuOpen, diagramArgs);
-        var hidden = true;
-        this.hiddenItems = this.hiddenItems.concat(diagramArgs.hiddenItems);
-        this.contextMenu.enableItems(this.disableItems, false, true);
-        var contextItems = this;
-        args.items.forEach(function (item) {
-            if (contextItems.hiddenItems.indexOf(item.id) > -1) {
-                contextItems.contextMenu.hideItems([item.id], true);
-            }
+            });
         });
-        contextItems.contextMenu.items.forEach(function (item) {
-            if (contextItems.hiddenItems.indexOf(item.id) === -1) {
-                hidden = false;
-                contextItems.contextMenu.showItems([item.id], true);
-            }
-        });
-        if (hidden) {
-            diagramArgs.cancel = hidden;
-            this.hiddenItems = [];
-        }
     };
     DiagramContextMenu.prototype.ensureTarget = function (item) {
         var selectedLength = this.parent.selectedItems.nodes.length +
@@ -39354,17 +41970,18 @@ var BpmnDiagrams = /** @__PURE__ @class */ (function () {
     };
     /** @private */
     BpmnDiagrams.prototype.initBPMNContent = function (content, node, diagram) {
-        var shape = node.shape;
-        if (shape.shape === 'Event') {
+        var shape = (isBlazor() ? node.shape : node.shape);
+        var bpmnShape = (isBlazor() ? node.shape.bpmnShape : node.shape.shape);
+        if (bpmnShape === 'Event') {
             content = this.getBPMNEventShape(node, shape.event);
         }
-        if (shape.shape === 'Gateway') {
+        if (bpmnShape === 'Gateway') {
             content = this.getBPMNGatewayShape(node);
         }
-        if (shape.shape === 'DataObject') {
+        if (bpmnShape === 'DataObject') {
             content = this.getBPMNDataObjectShape(node);
         }
-        if (shape.shape === 'Message' || shape.shape === 'DataSource') {
+        if (bpmnShape === 'Message' || bpmnShape === 'DataSource') {
             content = this.getBPMNShapes(node);
         }
         // if (shape.shape === 'Group') {
@@ -39373,10 +41990,10 @@ var BpmnDiagrams = /** @__PURE__ @class */ (function () {
         //     content.horizontalAlignment = 'Center';
         //     content.verticalAlignment = 'Center';
         // }
-        if (shape.shape === 'Activity') {
+        if (bpmnShape === 'Activity') {
             content = this.getBPMNActivityShape(node);
         }
-        if (shape.shape === 'TextAnnotation') {
+        if (bpmnShape === 'TextAnnotation') {
             content = this.renderBPMNTextAnnotation(diagram, node, content);
         }
         if (shape.annotations.length > 0) {
@@ -39395,9 +42012,11 @@ var BpmnDiagrams = /** @__PURE__ @class */ (function () {
         if ((node.constraints & NodeConstraints.Shadow) !== 0) {
             bpmnShape.shadow = node.shadow;
         }
-        var bpmnShapeData = getBpmnShapePathData(node.shape.shape);
+        var bpmnShapeData = getBpmnShapePathData((isBlazor() ? node.shape.bpmnShape :
+            node.shape.shape));
         bpmnShape.data = bpmnShapeData;
-        bpmnShape.id = node.id + '_' + node.shape.shape;
+        bpmnShape.id = node.id + '_' + (isBlazor() ? node.shape.bpmnShape :
+            node.shape.shape);
         if (node.width !== undefined && node.height !== undefined) {
             bpmnShape.width = node.width;
             bpmnShape.height = node.height;
@@ -39636,7 +42255,8 @@ var BpmnDiagrams = /** @__PURE__ @class */ (function () {
             'C149.7764,62.3279000000001,156.2414,55.8629000000001,164.1884,55.8629000000001C172.1354,55.8629000000001,178.6024,' +
             '62.3279000000001,178.6024,70.2769000000001C178.6024,78.2259000000001,172.1354,84.6909000000001,164.1884,84.6909000000001';
         var shapeEvent = node.shape.event;
-        if (node.shape.shape === 'Event') {
+        if ((!isBlazor() && node.shape.shape === 'Event') ||
+            (isBlazor() && node.shape.bpmnShape === 'Event')) {
             event = shapeEvent.event;
             trigger = shapeEvent.trigger;
         }
@@ -39654,7 +42274,8 @@ var BpmnDiagrams = /** @__PURE__ @class */ (function () {
             height = size.height;
         }
         var shapeActivity = node.shape.activity;
-        if (node.shape.shape === 'Activity') {
+        if ((!isBlazor() && node.shape.shape === 'Activity') ||
+            (isBlazor() && node.shape.bpmnShape === 'Activity')) {
             var subProcess = shapeActivity.subProcess;
             event = subEvent.event;
             trigger = subEvent.trigger;
@@ -39981,7 +42602,8 @@ var BpmnDiagrams = /** @__PURE__ @class */ (function () {
     /** @private */
     BpmnDiagrams.prototype.dropBPMNchild = function (target, source, diagram) {
         if (source && source.shape.type === 'Bpmn' && target.shape.type === 'Bpmn'
-            && source.shape.shape !== 'TextAnnotation') {
+            && ((!isBlazor() && source.shape.shape !== 'TextAnnotation') ||
+                (isBlazor() && source.shape.bpmnShape !== 'TextAnnotation'))) {
             var subProcess = diagram.nameTable[target.id].shape.activity.subProcess;
             if (diagram.currentSymbol && target.shape.type === 'Bpmn' && !subProcess.collapsed) {
                 source.processId = target.id;
@@ -40417,8 +43039,8 @@ var BpmnDiagrams = /** @__PURE__ @class */ (function () {
     /** @private */
     BpmnDiagrams.prototype.getTextAnnotationWrapper = function (node, id) {
         if (node && node.shape.type === 'Bpmn') {
-            var shape = node.shape;
-            if (shape.shape === 'TextAnnotation') {
+            var shape = (isBlazor() ? node.shape.bpmnShape : node.shape.shape);
+            if (shape === 'TextAnnotation') {
                 return node.wrapper.children[1];
             }
             else if (this.annotationObjects[node.id] && this.annotationObjects[node.id][id]) {
@@ -40456,7 +43078,8 @@ var BpmnDiagrams = /** @__PURE__ @class */ (function () {
         //remove annotation node wrapper
         //remove from a quad
         if (node.shape.type === 'Bpmn') {
-            if (node.shape.shape === 'TextAnnotation') {
+            if ((!isBlazor() && node.shape.shape === 'TextAnnotation') ||
+                (isBlazor() && node.shape.bpmnShape === 'TextAnnotation')) {
                 var id = node.id.split('_');
                 var annotationId = id[id.length - 1];
                 var nodeId = id[id.length - 3] || id[0];
@@ -40757,18 +43380,22 @@ var BpmnDiagrams = /** @__PURE__ @class */ (function () {
             this.updateBPMNEvent(actualObject, changedProp, oldObject);
         }
         if (changedProp.style) {
-            updateStyle(changedProp.style, elementWrapper instanceof Container ? (actualObject.shape.shape === 'Activity') ?
+            updateStyle(changedProp.style, elementWrapper instanceof Container ? ((!isBlazor() && actualObject.shape.shape === 'Activity' ||
+                (isBlazor() && actualObject.shape.bpmnShape === 'Activity'))) ?
                 elementWrapper.children[0].children[0] :
                 elementWrapper.children[0] : elementWrapper);
             if (changedProp.style && changedProp.style.strokeColor) {
                 if (elementWrapper.children.length > 0) {
-                    if (actualObject.shape.shape === 'Activity' &&
+                    if (((!isBlazor() && actualObject.shape.shape === 'Activity') ||
+                        (isBlazor() && actualObject.shape.bpmnShape === 'Activity')) &&
                         actualObject.shape.activity.activity === 'SubProcess') {
                         var child = elementWrapper.children[0];
                         this.updateBPMNStyle(child, changedProp.style.strokeColor);
                     }
-                    else if (actualObject.shape.shape === 'Gateway' ||
-                        actualObject.shape.shape === 'Event') {
+                    else if (((!isBlazor() && actualObject.shape.shape === 'Gateway')
+                        || (isBlazor() && actualObject.shape.bpmnShape === 'Gateway')) ||
+                        ((!isBlazor() && actualObject.shape.shape === 'Event')
+                            || (isBlazor() && actualObject.shape.bpmnShape === 'Event'))) {
                         this.updateBPMNStyle(elementWrapper, changedProp.style.strokeColor);
                     }
                 }
@@ -41301,7 +43928,8 @@ var BpmnDiagrams = /** @__PURE__ @class */ (function () {
                 currentNode.visible = visible;
                 diagram.updateElementVisibility(currentNode.wrapper, currentNode, visible);
                 if (visible) {
-                    if (currentNode.shape.shape === 'Event') {
+                    if ((!isBlazor() && currentNode.shape.shape === 'Event') ||
+                        (isBlazor() && currentNode.shape.bpmnShape === 'Event')) {
                         this.setEventVisibility(currentNode, currentNode.wrapper.children[0].children);
                     }
                     if (currentNode.shape.activity.activity === 'SubProcess') {
@@ -41317,14 +43945,17 @@ var BpmnDiagrams = /** @__PURE__ @class */ (function () {
             }
         }
         if (visible) {
-            if (node.shape.shape === 'Event') {
+            if ((!isBlazor() && node.shape.shape === 'Event') ||
+                (isBlazor() && node.shape.bpmnShape === 'Event')) {
                 this.setEventVisibility(node, node.wrapper.children[0].children);
             }
             if (node.shape.activity.activity === 'SubProcess') {
                 this.setSubProcessVisibility(node);
             }
             if (node.shape.activity.activity === 'Task' &&
-                node.shape.shape === 'Activity' && node.shape.activity.subProcess.loop === 'None') {
+                ((!isBlazor() && node.shape.shape === 'Activity') ||
+                    (isBlazor() && node.shape.bpmnShape === 'Activity'))
+                && node.shape.activity.subProcess.loop === 'None') {
                 node.wrapper.children[0].children[0].children[3].visible = false;
             }
         }
@@ -43640,7 +46271,9 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
                 }
             }
             else {
-                diagram.historyManager.undo(entry);
+                if (!isBlazor()) {
+                    diagram.historyManager.undo(entry);
+                }
                 var arg = {
                     entryType: 'undo', oldValue: entry.undoObject, newValue: entry.redoObject
                 };
@@ -43922,6 +46555,10 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
     };
     UndoRedo.prototype.recordAnnotationChanged = function (entry, diagram, isRedo) {
         var entryObject = ((isRedo) ? entry.redoObject : entry.undoObject);
+        if (diagram.canEnableBlazorObject) {
+            var node = cloneObject(diagram.nameTable[entryObject.id]);
+            diagram.insertValue(node, node instanceof Node ? true : false);
+        }
         var oldElement = findAnnotation(entryObject, entry.objectId);
         var undoChanges = diagram.commandHandler.getAnnotationChanges(diagram.nameTable[entryObject.id], oldElement);
         var currentObject = diagram.nameTable[entryObject.id];
@@ -44039,6 +46676,10 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
     UndoRedo.prototype.recordPortChanged = function (entry, diagram, isRedo) {
         var entryObject = ((isRedo) ? entry.redoObject.nodes[0] :
             entry.undoObject.nodes[0]);
+        if (diagram.canEnableBlazorObject) {
+            var node = cloneObject(diagram.nameTable[entryObject.id]);
+            diagram.insertValue(node, true);
+        }
         var oldElement = findPort(entryObject, entry.objectId);
         var undoChanges = diagram.commandHandler.getPortChanges(diagram.nameTable[entryObject.id], oldElement);
         var currentObject = diagram.nameTable[entryObject.id];
@@ -44199,10 +46840,12 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
         var connector = diagram.nameTable[obj.id];
         var node;
         if (obj.sourcePortID !== connector.sourcePortID) {
+            diagram.removePortEdges(diagram.nameTable[connector.sourceID], connector.sourcePortID, connector.id, false);
             connector.sourcePortID = obj.sourcePortID;
             diagram.connectorPropertyChange(connector, {}, { sourcePortID: obj.sourcePortID });
         }
         if (obj.targetPortID !== connector.targetPortID) {
+            diagram.removePortEdges(diagram.nameTable[connector.targetID], connector.targetPortID, connector.id, true);
             connector.targetPortID = obj.targetPortID;
             diagram.connectorPropertyChange(connector, {}, { targetPortID: obj.targetPortID });
         }
@@ -44214,6 +46857,7 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
             else {
                 node = diagram.nameTable[obj.sourceID];
                 node.outEdges.push(obj.id);
+                diagram.updatePortEdges(node, obj, false);
             }
             connector.sourceID = obj.sourceID;
             diagram.connectorPropertyChange(connector, {}, { sourceID: obj.sourceID });
@@ -44226,6 +46870,7 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
             else {
                 node = diagram.nameTable[obj.targetID];
                 node.inEdges.push(obj.id);
+                diagram.updatePortEdges(node, obj, true);
             }
             connector.targetID = obj.targetID;
             diagram.connectorPropertyChange(connector, {}, { targetID: obj.targetID });
@@ -44372,7 +47017,9 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
                 }
             }
             else {
-                diagram.historyManager.redo(entry);
+                if (!isBlazor()) {
+                    diagram.historyManager.redo(entry);
+                }
                 var arg = {
                     entryType: 'redo', oldValue: entry.redoObject, newValue: entry.undoObject
                 };
@@ -49772,7 +52419,7 @@ var CrossReduction = /** @__PURE__ @class */ (function () {
  * Diagram component exported items
  */
 
-var __extends$33 = (undefined && undefined.__extends) || (function () {
+var __extends$34 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -49785,7 +52432,7 @@ var __extends$33 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$22 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$23 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -49806,26 +52453,26 @@ var getObjectType$1 = function (obj) {
  * A palette allows to display a group of related symbols and it textually annotates the group with its header.
  */
 var Palette = /** @__PURE__ @class */ (function (_super) {
-    __extends$33(Palette, _super);
+    __extends$34(Palette, _super);
     function Palette() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$22([
+    __decorate$23([
         Property('')
     ], Palette.prototype, "id", void 0);
-    __decorate$22([
+    __decorate$23([
         Property()
     ], Palette.prototype, "height", void 0);
-    __decorate$22([
+    __decorate$23([
         Property(true)
     ], Palette.prototype, "expanded", void 0);
-    __decorate$22([
+    __decorate$23([
         Property('')
     ], Palette.prototype, "iconCss", void 0);
-    __decorate$22([
+    __decorate$23([
         Property('')
     ], Palette.prototype, "title", void 0);
-    __decorate$22([
+    __decorate$23([
         CollectionFactory(getObjectType$1)
     ], Palette.prototype, "symbols", void 0);
     return Palette;
@@ -49834,17 +52481,17 @@ var Palette = /** @__PURE__ @class */ (function (_super) {
  * customize the preview size and position of the individual palette items.
  */
 var SymbolPreview = /** @__PURE__ @class */ (function (_super) {
-    __extends$33(SymbolPreview, _super);
+    __extends$34(SymbolPreview, _super);
     function SymbolPreview() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    __decorate$22([
+    __decorate$23([
         Property()
     ], SymbolPreview.prototype, "width", void 0);
-    __decorate$22([
+    __decorate$23([
         Property()
     ], SymbolPreview.prototype, "height", void 0);
-    __decorate$22([
+    __decorate$23([
         Complex({}, Point)
     ], SymbolPreview.prototype, "offset", void 0);
     return SymbolPreview;
@@ -49864,7 +52511,7 @@ var SymbolPreview = /** @__PURE__ @class */ (function (_super) {
  * and to drag and drop those nodes/connectors to drawing area
  */
 var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
-    __extends$33(SymbolPalette, _super);
+    __extends$34(SymbolPalette, _super);
     //region - protected methods 
     /**
      * Constructor for creating the component
@@ -49877,6 +52524,7 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
         /**   @private  */
         _this.childTable = {};
         _this.info = 'info';
+        _this.oldObject = null;
         _this.laneTable = {};
         _this.isExpand = false;
         _this.isExpandMode = false;
@@ -50758,9 +53406,10 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
             else {
                 var id = evt.target.id.split('_container')[0];
                 if (id && this.selectedSymbol) {
-                    var args = { oldValue: this.selectedSymbol.id, newValue: id };
+                    var args = { oldValue: this.oldObject, newValue: id };
                     var event_1 = 'paletteSelectionChange';
                     this.trigger(event_1, args);
+                    this.oldObject = id;
                     evt.preventDefault();
                 }
             }
@@ -51119,70 +53768,70 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
         EventHandler.remove(this.element, keyEvent, this.keyUp);
         EventHandler.remove(document, keyDownEvent, this.keyDown);
     };
-    __decorate$22([
+    __decorate$23([
         Property('S')
     ], SymbolPalette.prototype, "accessKey", void 0);
-    __decorate$22([
+    __decorate$23([
         Property('100%')
     ], SymbolPalette.prototype, "width", void 0);
-    __decorate$22([
+    __decorate$23([
         Property('100%')
     ], SymbolPalette.prototype, "height", void 0);
-    __decorate$22([
+    __decorate$23([
         Collection([], Palette)
     ], SymbolPalette.prototype, "palettes", void 0);
-    __decorate$22([
+    __decorate$23([
         Property()
     ], SymbolPalette.prototype, "getSymbolInfo", void 0);
-    __decorate$22([
+    __decorate$23([
         Property()
     ], SymbolPalette.prototype, "symbolInfo", void 0);
-    __decorate$22([
+    __decorate$23([
         Property()
     ], SymbolPalette.prototype, "filterSymbols", void 0);
-    __decorate$22([
+    __decorate$23([
         Property()
     ], SymbolPalette.prototype, "ignoreSymbolsOnSearch", void 0);
-    __decorate$22([
+    __decorate$23([
         Property()
     ], SymbolPalette.prototype, "getSymbolTemplate", void 0);
-    __decorate$22([
+    __decorate$23([
         Property()
     ], SymbolPalette.prototype, "symbolWidth", void 0);
-    __decorate$22([
+    __decorate$23([
         Property()
     ], SymbolPalette.prototype, "symbolHeight", void 0);
-    __decorate$22([
+    __decorate$23([
         Complex({ left: 10, right: 10, top: 10, bottom: 10 }, Margin)
     ], SymbolPalette.prototype, "symbolMargin", void 0);
-    __decorate$22([
+    __decorate$23([
         Property(true)
     ], SymbolPalette.prototype, "allowDrag", void 0);
-    __decorate$22([
+    __decorate$23([
         Complex({}, SymbolPreview)
     ], SymbolPalette.prototype, "symbolPreview", void 0);
-    __decorate$22([
+    __decorate$23([
         Property(false)
     ], SymbolPalette.prototype, "enableSearch", void 0);
-    __decorate$22([
+    __decorate$23([
         Property(true)
     ], SymbolPalette.prototype, "enableAnimation", void 0);
-    __decorate$22([
+    __decorate$23([
         Property('Multiple')
     ], SymbolPalette.prototype, "expandMode", void 0);
-    __decorate$22([
+    __decorate$23([
         Event()
     ], SymbolPalette.prototype, "paletteSelectionChange", void 0);
-    __decorate$22([
+    __decorate$23([
         Property()
     ], SymbolPalette.prototype, "getNodeDefaults", void 0);
-    __decorate$22([
+    __decorate$23([
         Property()
     ], SymbolPalette.prototype, "nodeDefaults", void 0);
-    __decorate$22([
+    __decorate$23([
         Property()
     ], SymbolPalette.prototype, "getConnectorDefaults", void 0);
-    __decorate$22([
+    __decorate$23([
         Property()
     ], SymbolPalette.prototype, "connectorDefaults", void 0);
     return SymbolPalette;
@@ -51192,7 +53841,7 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
  * Exported symbol palette files
  */
 
-var __extends$34 = (undefined && undefined.__extends) || (function () {
+var __extends$35 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -51205,7 +53854,7 @@ var __extends$34 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$23 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$24 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -51233,7 +53882,7 @@ var __decorate$23 = (undefined && undefined.__decorate) || function (decorators,
  * ```
  */
 var Overview = /** @__PURE__ @class */ (function (_super) {
-    __extends$34(Overview, _super);
+    __extends$35(Overview, _super);
     function Overview(options, element) {
         var _this = _super.call(this, options, element) || this;
         /** @private */
@@ -51481,11 +54130,13 @@ var Overview = /** @__PURE__ @class */ (function (_super) {
         return htmlLayer;
     };
     Overview.prototype.renderNativeLayer = function (canvas, view) {
-        var nativeLayerSvg = this.parent.createSvg(this.element.id + '_nativeLayer_svg', this.model.width, this.model.height);
-        var nativeLayer = createSvgElement('g', { 'id': this.element.id + '_nativeLayer' });
-        nativeLayerSvg.appendChild(nativeLayer);
-        view.diagramLayerDiv.appendChild(nativeLayerSvg);
-        setAttributeSvg(nativeLayerSvg, { 'class': 'e-native-layer' });
+        if (!document.getElementById(this.element.id + '_nativeLayer_svg')) {
+            var nativeLayerSvg = this.parent.createSvg(this.element.id + '_nativeLayer_svg', this.model.width, this.model.height);
+            var nativeLayer = createSvgElement('g', { 'id': this.element.id + '_nativeLayer' });
+            nativeLayerSvg.appendChild(nativeLayer);
+            view.diagramLayerDiv.appendChild(nativeLayerSvg);
+            setAttributeSvg(nativeLayerSvg, { 'class': 'e-native-layer' });
+        }
     };
     Overview.prototype.addOverviewRectPanel = function (view) {
         var svg = document.getElementById(this.canvas.id + '_overviewsvg');
@@ -52104,16 +54755,16 @@ var Overview = /** @__PURE__ @class */ (function (_super) {
          */
         return 'Overview';
     };
-    __decorate$23([
+    __decorate$24([
         Property('100%')
     ], Overview.prototype, "width", void 0);
-    __decorate$23([
+    __decorate$24([
         Property('100%')
     ], Overview.prototype, "height", void 0);
-    __decorate$23([
+    __decorate$24([
         Property('')
     ], Overview.prototype, "sourceID", void 0);
-    __decorate$23([
+    __decorate$24([
         Event()
     ], Overview.prototype, "created", void 0);
     return Overview;
@@ -52127,5 +54778,5 @@ var Overview = /** @__PURE__ @class */ (function (_super) {
  * Diagram component exported items
  */
 
-export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, setUMLActivityDefaults, setConnectorDefaults, findNearestPoint, isDiagramChild, groupHasType, updateDefaultValues, updateLayoutValue, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getCollectionChangeEventArguements, getDropEventArguements, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, updatePathElement, checkPort, findPath, findDistance, cloneBlazorObject, checkBrowserInfo, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, Selector, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, UserHandle, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, LineRouting, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, CustomCursorAction, DataMappingItems, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolPreview, SymbolPalette, Ruler, Overview };
+export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, BlazorAction, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, DiagramGradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramShapeStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, getIndex, templateCompiler, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, setUMLActivityDefaults, setConnectorDefaults, findNearestPoint, isDiagramChild, groupHasType, updateDefaultValues, updateLayoutValue, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getCollectionChangeEventArguements, getDropEventArguements, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, updatePathElement, checkPort, findPath, findDistance, cloneBlazorObject, checkBrowserInfo, canMeasureDecoratorPath, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text$1 as Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, DiagramShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, Selector, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, DiagramConnectorSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, DiagramConnectorShape, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, UserHandle, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, LineRouting, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, CustomCursorAction, DataMappingItems, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolPreview, SymbolPalette, Ruler, Overview };
 //# sourceMappingURL=ej2-diagrams.es5.js.map

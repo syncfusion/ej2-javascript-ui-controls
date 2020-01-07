@@ -86,14 +86,16 @@ export function getExpandStatus (parent: TreeGrid, record: ITreeData, parents: I
  */
 export function findChildrenRecords(records: ITreeData): Object[] {
   let datas: Object[] = [];
-  if (isNullOrUndefined(records) || !records.hasChildRecords) {
+  if (isNullOrUndefined(records) || (!records.hasChildRecords && !isNullOrUndefined(records.childRecords)
+     && !records.childRecords.length)) {
     return [];
   }
   if (!isNullOrUndefined(records.childRecords)) {
   let childRecords: ITreeData[] = records.childRecords;
   for (let i: number = 0, len: number = Object.keys(childRecords).length; i < len; i++) {
       datas.push(childRecords[i]);
-      if (childRecords[i].hasChildRecords) {
+      if (childRecords[i].hasChildRecords || (!isNullOrUndefined(childRecords[i].childRecords) &&
+         childRecords[i].childRecords.length)) {
         datas = [...datas, ...findChildrenRecords(childRecords[i])];
       }
   }

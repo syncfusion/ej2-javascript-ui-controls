@@ -1,6 +1,6 @@
 import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, Touch, compile, createElement, extend, getValue, isBlazor, isNullOrUndefined, merge, print, remove, resetBlazorTemplate, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { CanvasRenderer, PathOption, Rect, Size, SvgRenderer, TextOption, Tooltip, findDirection, getElement, measureText, removeElement, textElement } from '@syncfusion/ej2-svg-base';
-import { DataManager, DataUtil, Query } from '@syncfusion/ej2-data';
+import { DataManager, DataUtil, Deferred, Query } from '@syncfusion/ej2-data';
 import { PdfBitmap, PdfDocument, PdfPageOrientation, SizeF } from '@syncfusion/ej2-pdf-export';
 import { Toolbar } from '@syncfusion/ej2-navigations';
 import { DateRangePicker } from '@syncfusion/ej2-calendars';
@@ -592,6 +592,9 @@ var TooltipSettings = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Complex({ color: '#cccccc', width: 0.5 }, Border)
     ], TooltipSettings.prototype, "border", void 0);
+    __decorate$1([
+        Property('None')
+    ], TooltipSettings.prototype, "position", void 0);
     return TooltipSettings;
 }(ChildProperty));
 /**
@@ -5250,6 +5253,9 @@ var DataLabelSettings = /** @__PURE__ @class */ (function (_super) {
     __decorate$4([
         Property(null)
     ], DataLabelSettings.prototype, "template", void 0);
+    __decorate$4([
+        Property('Hide')
+    ], DataLabelSettings.prototype, "labelIntersectAction", void 0);
     return DataLabelSettings;
 }(ChildProperty));
 /**
@@ -5997,7 +6003,8 @@ var Series = /** @__PURE__ @class */ (function (_super) {
             var series = seriesCollection_1[_i];
             if (series.type.indexOf('Stacking') !== -1 || (series.drawType.indexOf('Stacking') !== -1 &&
                 (series.chart.chartAreaType === 'PolarRadar'))) {
-                stackingGroup = (series.type.indexOf('StackingArea') !== -1) ? 'StackingArea100' : series.stackingGroup;
+                stackingGroup = (series.type.indexOf('StackingArea') !== -1) ? 'StackingArea100' :
+                    (series.type.indexOf('StackingLine') !== -1) ? 'StackingLine100' : series.stackingGroup;
                 if (!lastPositive[stackingGroup]) {
                     lastPositive[stackingGroup] = [];
                     lastNegative[stackingGroup] = [];
@@ -6069,7 +6076,8 @@ var Series = /** @__PURE__ @class */ (function (_super) {
             var series = seriesCollection_2[_i];
             series.yAxis.isStack100 = series.type.indexOf('100') !== -1 ? true : false;
             if (series.type.indexOf('Stacking') !== -1) {
-                stackingGroup = (series.type.indexOf('StackingArea') !== -1) ? 'StackingArea100' : series.stackingGroup;
+                stackingGroup = (series.type.indexOf('StackingArea') !== -1) ? 'StackingArea100' :
+                    (series.type.indexOf('StackingLine') !== -1) ? 'StackingLine100' : series.stackingGroup;
                 if (!frequencies[stackingGroup]) {
                     frequencies[stackingGroup] = [];
                 }
@@ -6387,7 +6395,22 @@ var Data = /** @__PURE__ @class */ (function () {
      * @private
      */
     Data.prototype.getData = function (query) {
-        return this.dataManager.executeQuery(query);
+        var _this = this;
+        if (this.dataManager.ready) {
+            var deferred_1 = new Deferred();
+            var ready = this.dataManager.ready;
+            ready.then(function (e) {
+                _this.dataManager.executeQuery(query).then(function (result) {
+                    deferred_1.resolve(result);
+                });
+            }).catch(function (e) {
+                deferred_1.reject(e);
+            });
+            return deferred_1.promise;
+        }
+        else {
+            return this.dataManager.executeQuery(query);
+        }
     };
     return Data;
 }());
@@ -7588,7 +7611,7 @@ var ExportUtils = /** @__PURE__ @class */ (function () {
                         window.navigator.msSaveOrOpenBlob(element.msToBlob(), fileName + '.' + type.toLocaleLowerCase());
                     }
                     else {
-                        _this.triggerDownload(fileName, type, element.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
+                        _this.triggerDownload(fileName, type, element.toDataURL('image/' + type.toLowerCase()), isDownload);
                     }
                 }
             });
@@ -7621,6 +7644,7 @@ var ExportUtils = /** @__PURE__ @class */ (function () {
      * @param controls
      * @param name
      */
+    // tslint:disable-next-line:max-line-length
     ExportUtils.prototype.getControlsValue = function (controls, isVertical) {
         var width = 0;
         var height = 0;
@@ -9558,7 +9582,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
                                 series.emptyPointSettings || series.type || series.boxPlotMode || series.showMean)) {
                                 blazorProp = true;
                             }
-                            if (series && (series.dataSource || series.xName || series.yName || series.size ||
+                            if (series && (series.dataSource || series.query || series.xName || series.yName || series.size ||
                                 series.high || series.low || series.open || series.close || series.fill || series.name || blazorProp)) {
                                 extend(this.getVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
@@ -17942,25 +17966,61 @@ var BaseTooltip = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    BaseTooltip.prototype.createTooltip = function (chart, isFirst, location, clipLocation, point, shapes, offset, bounds, extraPoints, templatePoint, customTemplate) {
+    BaseTooltip.prototype.createTooltip = function (chart, isFirst, location, clipLocation, point, shapes, offset, bounds, extraPoints, templatePoint, customTemplate, tooltipPosition) {
         if (extraPoints === void 0) { extraPoints = null; }
         if (templatePoint === void 0) { templatePoint = null; }
+        if (tooltipPosition === void 0) { tooltipPosition = 'None'; }
         var series = this.currentPoints[0].series;
         var module = chart.tooltipModule || chart.accumulationTooltipModule;
+        var isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
+        var inverted = this.chart.requireInvertedAxis && series.isRectSeries;
+        var position = null;
+        if (tooltipPosition === 'Auto' && this.text.length <= 1) {
+            var contentSize = measureText(this.text[0], chart.tooltip.textStyle);
+            var headerSize = (!(this.header === '' || this.header === '<b></b>')) ? measureText(this.header, this.textStyle) :
+                new Size(0, 0);
+            // marker size + arrowpadding + 2 * padding + markerpadding
+            var markerSize = 10 + 12 + (2 * 10) + 5;
+            contentSize.width = Math.max(contentSize.width, headerSize.width) + ((shapes.length > 0) ? markerSize : 0);
+            var heightPadding = 12 + (2 * 10) + (headerSize.height > 0 ? (2 * 10) : 0);
+            contentSize.height = contentSize.height + headerSize.height + heightPadding;
+            position = this.getCurrentPosition(isNegative, inverted);
+            position = this.getPositionBySize(contentSize, new Rect(0, 0, bounds.width, bounds.height), location, position);
+            isNegative = (position === 'Left') || (position === 'Bottom');
+            inverted = (position === 'Left') || (position === 'Right');
+        }
+        else if (tooltipPosition !== 'None' && this.text.length <= 1) {
+            position = tooltipPosition;
+            isNegative = (position === 'Left') || (position === 'Bottom');
+            inverted = (position === 'Left') || (position === 'Right');
+        }
         if (isFirst) {
             this.svgTooltip = new Tooltip({
                 opacity: chart.tooltip.opacity,
-                header: this.headerText, content: this.text, fill: chart.tooltip.fill, border: chart.tooltip.border,
-                enableAnimation: chart.tooltip.enableAnimation, location: location, shared: chart.tooltip.shared,
-                shapes: shapes, clipBounds: this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation,
-                areaBounds: bounds, palette: this.findPalette(), template: customTemplate || chart.tooltip.template, data: templatePoint,
-                theme: chart.theme, offset: offset, textStyle: chart.tooltip.textStyle,
-                isNegative: (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0),
-                inverted: this.chart.requireInvertedAxis && series.isRectSeries,
+                header: this.headerText,
+                content: this.text,
+                fill: chart.tooltip.fill,
+                border: chart.tooltip.border,
+                enableAnimation: chart.tooltip.enableAnimation,
+                location: location,
+                shared: chart.tooltip.shared,
+                shapes: shapes,
+                clipBounds: this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation,
+                areaBounds: bounds,
+                palette: this.findPalette(),
+                template: customTemplate || chart.tooltip.template,
+                data: templatePoint,
+                theme: chart.theme,
+                offset: offset,
+                textStyle: chart.tooltip.textStyle,
+                isNegative: isNegative,
+                inverted: inverted,
                 arrowPadding: this.text.length > 1 || this.chart.stockChart ? 0 : 12,
-                availableSize: chart.availableSize, duration: this.chart.tooltip.duration,
+                availableSize: chart.availableSize,
+                duration: this.chart.tooltip.duration,
                 isCanvas: this.chart.enableCanvas,
                 blazorTemplate: { name: 'Template', parent: this.chart.tooltip },
+                tooltipPlacement: position,
                 tooltipRender: function () {
                     module.removeHighlight(module.control);
                     module.highlightPoints();
@@ -17984,12 +18044,84 @@ var BaseTooltip = /** @__PURE__ @class */ (function (_super) {
                 this.svgTooltip.data = templatePoint;
                 this.svgTooltip.template = chart.tooltip.template;
                 this.svgTooltip.textStyle = chart.tooltip.textStyle;
-                this.svgTooltip.isNegative = (series.isRectSeries && series.type !== 'Waterfall' && point && point.y < 0);
+                this.svgTooltip.isNegative = isNegative;
+                this.svgTooltip.inverted = inverted;
                 this.svgTooltip.clipBounds = this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation;
                 this.svgTooltip.arrowPadding = this.text.length > 1 || this.chart.stockChart ? 0 : 12;
+                this.svgTooltip.tooltipPlacement = position;
                 this.svgTooltip.dataBind();
             }
         }
+    };
+    BaseTooltip.prototype.getPositionBySize = function (textSize, bounds, arrowLocation, position) {
+        var isTop = this.isTooltipFitPosition('Top', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
+        var isBottom = this.isTooltipFitPosition('Bottom', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
+        var isRight = this.isTooltipFitPosition('Right', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
+        var isLeft = this.isTooltipFitPosition('Left', new Rect(0, 0, bounds.width, bounds.height), arrowLocation, textSize);
+        var tooltipPos;
+        if (isTop || isBottom || isRight || isLeft) {
+            if (position === 'Top') {
+                tooltipPos = isTop ? 'Top' : (isBottom ? 'Bottom' : (isRight ? 'Right' : 'Left'));
+            }
+            else if (position === 'Bottom') {
+                tooltipPos = isBottom ? 'Bottom' : (isTop ? 'Top' : (isRight ? 'Right' : 'Left'));
+            }
+            else if (position === 'Right') {
+                tooltipPos = isRight ? 'Right' : (isLeft ? 'Left' : (isTop ? 'Top' : 'Bottom'));
+            }
+            else {
+                tooltipPos = isLeft ? 'Left' : (isRight ? 'Right' : (isTop ? 'Top' : 'Bottom'));
+            }
+        }
+        else {
+            var size = [(arrowLocation.x - bounds.x), ((bounds.x + bounds.width) - arrowLocation.x), (arrowLocation.y - bounds.y),
+                ((bounds.y + bounds.height) - arrowLocation.y)];
+            var index = size.indexOf(Math.max.apply(this, size));
+            position = (index === 0) ? 'Left' : (index === 1) ? 'Right' : (index === 2) ? 'Top' : 'Bottom';
+            return position;
+        }
+        return tooltipPos;
+    };
+    BaseTooltip.prototype.isTooltipFitPosition = function (position, bounds, location, size) {
+        var start = new ChartLocation(0, 0);
+        var end = new ChartLocation(0, 0);
+        switch (position) {
+            case 'Top':
+                start.x = location.x - (size.width / 2);
+                start.y = location.y - size.height;
+                end.x = location.x + (size.width / 2);
+                end.y = location.y;
+                break;
+            case 'Bottom':
+                start.x = location.x - (size.width / 2);
+                start.y = location.y;
+                end.x = location.x + (size.width / 2);
+                end.y = location.y + size.height;
+                break;
+            case 'Right':
+                start.x = location.x;
+                start.y = location.y - (size.height / 2);
+                end.x = location.x + size.width;
+                end.y = location.y + (size.height / 2);
+                break;
+            case 'Left':
+                start.x = location.x - size.width;
+                start.y = location.y - (size.height / 2);
+                end.x = location.x;
+                end.y = location.y + (size.height / 2);
+                break;
+        }
+        return (withInBounds(start.x, start.y, bounds) && withInBounds(end.x, end.y, bounds));
+    };
+    BaseTooltip.prototype.getCurrentPosition = function (isNegative, inverted) {
+        var position;
+        if (inverted) {
+            position = isNegative ? 'Left' : 'Right';
+        }
+        else {
+            position = isNegative ? 'Bottom' : 'Top';
+        }
+        return position;
     };
     BaseTooltip.prototype.findPalette = function () {
         var colors = [];
@@ -18191,7 +18323,9 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
         var svgElement;
         var elementId = this.chart.enableCanvas ? this.element.id + '_tooltip_group' : this.element.id + '_tooltip_svg';
         svgElement = this.getElement(elementId);
-        var isTooltip = (svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0);
+        // To prevent the disappearance of the tooltip, while resize the stock chart.
+        var isStockSvg = this.chart.stockChart && svgElement && (svgElement.firstChild.childNodes.length > 1);
+        var isTooltip = (svgElement && parseInt(svgElement.getAttribute('opacity'), 10) > 0 && !isStockSvg);
         var tooltipDiv = this.getTooltipElement(isTooltip);
         if (this.chart.enableCanvas && tooltipDiv) {
             document.getElementById(this.chart.element.id + '_Secondary_Element').appendChild(tooltipDiv);
@@ -18276,7 +18410,7 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
                 _this.headerText = argsData.headerText;
                 _this.formattedText = _this.formattedText.concat(argsData.text);
                 _this.text = _this.formattedText;
-                _this.createTooltip(_this.chart, isFirst, _this.getSymbolLocation(point), point.series.clipRect, point.point, _this.findShapes(), _this.findMarkerHeight(_this.currentPoints[0]), _this.chart.chartAxisLayoutPanel.seriesClipRect, null, _this.getTemplateText(point), _this.chart.tooltip.template ? argsData.template : '');
+                _this.createTooltip(_this.chart, isFirst, _this.getSymbolLocation(point), point.series.clipRect, point.point, _this.findShapes(), _this.findMarkerHeight(_this.currentPoints[0]), _this.chart.chartAxisLayoutPanel.seriesClipRect, null, _this.getTemplateText(point), _this.chart.tooltip.template ? argsData.template : '', _this.chart.tooltip.position);
             }
             else {
                 _this.removeHighlight(_this.control);
@@ -21166,7 +21300,8 @@ var DataLabel = /** @__PURE__ @class */ (function () {
                                     }
                                 }
                             }
-                            if (!isCollide(rect, chart.dataLabelCollections, clip) && isRender) {
+                            if ((!isCollide(rect, chart.dataLabelCollections, clip) || dataLabel.labelIntersectAction === 'None')
+                                && isRender) {
                                 chart.dataLabelCollections.push(new Rect(rect.x + clip.x, rect.y + clip.y, rect.width, rect.height));
                                 if (_this.isShape) {
                                     shapeRect = chart.renderer.drawRectangle(new RectOption(_this.commonId + index + '_TextShape_' + i, argsData.color, argsData.border, dataLabel.opacity, rect, dataLabel.rx, dataLabel.ry), new Int32Array([clip.x, clip.y]));
@@ -21275,7 +21410,7 @@ var DataLabel = /** @__PURE__ @class */ (function () {
         if (!((rect.y > (clipRect.y + clipRect.height)) || (rect.x > (clipRect.x + clipRect.width)) ||
             (rect.x + rect.width < 0) || (rect.y + rect.height < 0))) {
             rect.x = rect.x < 0 ? padding : rect.x;
-            rect.y = rect.y < 0 ? padding : rect.y;
+            rect.y = (rect.y < 0) && !(dataLabel.labelIntersectAction === 'None') ? padding : rect.y;
             rect.x -= (rect.x + rect.width) > (clipRect.x + clipRect.width) ? (rect.x + rect.width)
                 - (clipRect.x + clipRect.width) + padding : 0;
             rect.y -= (rect.y + rect.height) > (clipRect.y + clipRect.height) ? (rect.y + rect.height)
@@ -31284,10 +31419,10 @@ var PeriodSelector = /** @__PURE__ @class */ (function () {
         if (enableCustom) {
             this.calendarId = controlId + '_calendar';
             selector.push({ template: '<button id=' + this.calendarId + '></button>', align: 'Right' });
-            selctorArgs = {
-                selector: selector, name: 'RangeSelector', cancel: false, enableCustomFormat: true, content: 'Date Range'
-            };
         }
+        selctorArgs = {
+            selector: selector, name: 'RangeSelector', cancel: false, enableCustomFormat: true, content: 'Date Range'
+        };
         if (this.rootControl.getModuleName() === 'stockChart') {
             selector.push({ template: createElement('button', { id: controlId + '_reset', innerHTML: 'Reset',
                     styles: buttonStyles, className: 'e-dropdown-btn e-btn' }),
@@ -31325,54 +31460,56 @@ var PeriodSelector = /** @__PURE__ @class */ (function () {
         this.toolbar[isStringTemplate] = true;
         this.toolbar.appendTo(selectorElement);
         this.triggerChange = true;
-        this.datePicker = new DateRangePicker({
-            min: new Date(this.control.seriesXMin),
-            max: new Date(this.control.seriesXMax),
-            format: 'dd\'\/\'MM\'\/\'yyyy', placeholder: 'Select a range',
-            showClearButton: false, startDate: new Date(this.control.startValue),
-            endDate: new Date(this.control.endValue),
-            created: function (args) {
-                if (selctorArgs.enableCustomFormat) {
-                    var datePickerElement = document.getElementsByClassName('e-date-range-wrapper')[0];
-                    datePickerElement.style.display = 'none';
-                    datePickerElement.insertAdjacentElement('afterend', createElement('div', {
-                        id: 'customRange',
-                        innerHTML: selctorArgs.content, className: 'e-btn e-dropdown-btn',
-                        styles: 'font-family: "Segoe UI"; font-size: 14px; font-weight: 500; text-transform: none '
-                    }));
-                    getElement$1('customRange').insertAdjacentElement('afterbegin', (createElement('span', {
-                        id: 'dateIcon', className: 'e-input-group-icon e-range-icon e-btn-icon e-icons',
-                        styles: 'font-size: 16px; min-height: 0px; margin: -3px 0 0 0; outline: none; min-width: 30px'
-                        // fix for date range icon alignment issue.
-                    })));
-                    document.getElementById('customRange').onclick = function () {
-                        _this.datePicker.show(getElement$1('customRange'));
-                    };
-                }
-            },
-            change: function (args) {
-                if (_this.triggerChange) {
-                    if (_this.control.rangeSlider && args.event) {
-                        _this.control.rangeSlider.performAnimation(args.startDate.getTime(), args.endDate.getTime(), _this.control.rangeNavigatorControl);
+        if (enableCustom) {
+            this.datePicker = new DateRangePicker({
+                min: new Date(this.control.seriesXMin),
+                max: new Date(this.control.seriesXMax),
+                format: 'dd\'\/\'MM\'\/\'yyyy', placeholder: 'Select a range',
+                showClearButton: false, startDate: new Date(this.control.startValue),
+                endDate: new Date(this.control.endValue),
+                created: function (args) {
+                    if (selctorArgs.enableCustomFormat) {
+                        var datePickerElement = document.getElementsByClassName('e-date-range-wrapper')[0];
+                        datePickerElement.style.display = 'none';
+                        datePickerElement.insertAdjacentElement('afterend', createElement('div', {
+                            id: 'customRange',
+                            innerHTML: selctorArgs.content, className: 'e-btn e-dropdown-btn',
+                            styles: 'font-family: "Segoe UI"; font-size: 14px; font-weight: 500; text-transform: none '
+                        }));
+                        getElement$1('customRange').insertAdjacentElement('afterbegin', (createElement('span', {
+                            id: 'dateIcon', className: 'e-input-group-icon e-range-icon e-btn-icon e-icons',
+                            styles: 'font-size: 16px; min-height: 0px; margin: -3px 0 0 0; outline: none; min-width: 30px'
+                            // fix for date range icon alignment issue.
+                        })));
+                        document.getElementById('customRange').onclick = function () {
+                            _this.datePicker.show(getElement$1('customRange'));
+                        };
                     }
-                    else if (args.event) {
-                        _this.rootControl.rangeChanged(args.startDate.getTime(), args.endDate.getTime());
-                    }
-                    _this.nodes = _this.toolbar.element.querySelectorAll('.e-toolbar-left')[0];
-                    if (!_this.rootControl.resizeTo && _this.control.rangeSlider && _this.control.rangeSlider.isDrag) {
-                        /**
-                         * Issue: While disabling range navigator console error throws
-                         * Fix:Check with rangeSlider present or not. Then checked with isDrag.
-                         */
-                        for (var i = 0, length_1 = _this.nodes.childNodes.length; i < length_1; i++) {
-                            _this.nodes.childNodes[i].childNodes[0].classList.remove('e-active');
-                            _this.nodes.childNodes[i].childNodes[0].classList.remove('e-active');
+                },
+                change: function (args) {
+                    if (_this.triggerChange) {
+                        if (_this.control.rangeSlider && args.event) {
+                            _this.control.rangeSlider.performAnimation(args.startDate.getTime(), args.endDate.getTime(), _this.control.rangeNavigatorControl);
+                        }
+                        else if (args.event) {
+                            _this.rootControl.rangeChanged(args.startDate.getTime(), args.endDate.getTime());
+                        }
+                        _this.nodes = _this.toolbar.element.querySelectorAll('.e-toolbar-left')[0];
+                        if (!_this.rootControl.resizeTo && _this.control.rangeSlider && _this.control.rangeSlider.isDrag) {
+                            /**
+                             * Issue: While disabling range navigator console error throws
+                             * Fix:Check with rangeSlider present or not. Then checked with isDrag.
+                             */
+                            for (var i = 0, length_1 = _this.nodes.childNodes.length; i < length_1; i++) {
+                                _this.nodes.childNodes[i].childNodes[0].classList.remove('e-active');
+                                _this.nodes.childNodes[i].childNodes[0].classList.remove('e-active');
+                            }
                         }
                     }
                 }
-            }
-        });
-        this.datePicker.appendTo('#' + this.calendarId);
+            });
+            this.datePicker.appendTo('#' + this.calendarId);
+        }
     };
     PeriodSelector.prototype.updateCustomElement = function () {
         var selector = [];
@@ -35595,6 +35732,8 @@ var BulletChart = /** @__PURE__ @class */ (function (_super) {
         this.findRange();
         this.calculatePosition();
         this.renderBulletElements();
+        var blazor = 'Blazor';
+        this.trigger('loaded', { bulletChart: window[blazor] ? {} : this });
         this.allowServerDataBinding = true;
         this.renderComplete();
     };
@@ -36240,6 +36379,21 @@ var BulletChart = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
+     * Handles the print method for bullet chart control.
+     */
+    BulletChart.prototype.print = function (id) {
+        new ExportUtils(this).print(id);
+    };
+    /**
+     * Handles the export method for bullet chart control.
+     * @param type
+     * @param fileName
+     */
+    BulletChart.prototype.export = function (type, fileName, orientation, controls, width, height, isVertical) {
+        controls = controls ? controls : [this];
+        new ExportUtils(this).export(type, fileName, orientation, controls, width, height, isVertical);
+    };
+    /**
      * Called internally if any of the property value changed.
      * @private
      */
@@ -36321,11 +36475,13 @@ var BulletChart = /** @__PURE__ @class */ (function (_super) {
             if (!refreshBounds && renderer) {
                 this.removeSvg();
                 this.renderBulletElements();
-                this.trigger('loaded', { BulletChart: this });
+                var blazor = 'Blazor';
+                this.trigger('loaded', { bulletChart: window[blazor] ? {} : this });
             }
             if (refreshBounds) {
                 this.render();
-                this.trigger('loaded', { BulletChart: this });
+                var blazor = 'Blazor';
+                this.trigger('loaded', { bulletChart: window[blazor] ? {} : this });
                 this.redraw = false;
             }
         }
@@ -36493,6 +36649,12 @@ var BulletChart = /** @__PURE__ @class */ (function (_super) {
     __decorate$13([
         Event()
     ], BulletChart.prototype, "load", void 0);
+    __decorate$13([
+        Event()
+    ], BulletChart.prototype, "loaded", void 0);
+    __decorate$13([
+        Event()
+    ], BulletChart.prototype, "beforePrint", void 0);
     BulletChart = __decorate$13([
         NotifyPropertyChanges
     ], BulletChart);

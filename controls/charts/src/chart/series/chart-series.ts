@@ -146,6 +146,14 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
     @Property(null)
     public template: string;
 
+    /**
+     * Show Datalabel Even two Data Labels Are Overflow
+     * @default 'Hide'
+     */
+
+     @Property('Hide')
+     public labelIntersectAction: string;
+
 }
 
 
@@ -1729,7 +1737,8 @@ export class Series extends SeriesBase {
         for (let series of seriesCollection) {
             if (series.type.indexOf('Stacking') !== -1 || (series.drawType.indexOf('Stacking') !== -1 &&
                 (series.chart.chartAreaType === 'PolarRadar'))) {
-                stackingGroup = (series.type.indexOf('StackingArea') !== -1) ? 'StackingArea100' : series.stackingGroup;
+                stackingGroup = (series.type.indexOf('StackingArea') !== -1) ? 'StackingArea100' :
+                                (series.type.indexOf('StackingLine') !== -1) ? 'StackingLine100' : series.stackingGroup;
                 if (!lastPositive[stackingGroup]) {
                     lastPositive[stackingGroup] = [];
                     lastNegative[stackingGroup] = [];
@@ -1796,7 +1805,8 @@ export class Series extends SeriesBase {
         for (let series of seriesCollection) {
             series.yAxis.isStack100 = series.type.indexOf('100') !== -1 ? true : false;
             if (series.type.indexOf('Stacking') !== -1) {
-                stackingGroup = (series.type.indexOf('StackingArea') !== -1) ? 'StackingArea100' : series.stackingGroup;
+                stackingGroup = (series.type.indexOf('StackingArea') !== -1) ? 'StackingArea100' :
+                                (series.type.indexOf('StackingLine') !== -1) ? 'StackingLine100' : series.stackingGroup;
                 if (!frequencies[stackingGroup]) {
                     frequencies[stackingGroup] = [];
                 }
