@@ -13,7 +13,7 @@ import { RangeNavigator } from '../../range-navigator/range-navigator';
 import { AccumulationSeries, AccPoints } from '../../accumulation-chart/model/acc-base';
 import { IShapes } from '../model/interface';
 import { IAxisLabelRenderEventArgs } from '../../chart/model/chart-interface';
-import { axisLabelRender } from '../model/constants';
+import { axisLabelRender, regSub } from '../model/constants';
 import { StockChart } from '../../stock-chart/stock-chart';
 import { measureText, findDirection, Rect, TextOption, Size, PathOption, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 
@@ -1568,6 +1568,37 @@ export function textWrap(currentLabel: string, maximumWidth: number, font: FontM
         }
     }
     return labelCollection;
+}
+
+/**
+ * Method to support the subscript and superscript value to text
+ */
+export function getUnicodeText(text: string, regexp: RegExp): string {
+    let title: string = text.replace(regexp, ' ');
+    let digit: string[] = text.match(regexp);
+    let digitSpecific: string = ' ';
+    let convertedText: string = ' ';
+    let k: number = 0;
+    let unicodeSub: object = {
+        '0': '\u2080', '1': '\u2081', '2': '\u2082', '3': '\u2083', '4': '\u2084',
+        '5': '\u2085', '6': '\u2086', '7': '\u2087', '8': '\u2088', '9': '\u2089'
+    };
+    let unicodeSup: object = {
+        '0': '\u2070', '1': '\u00B9', '2': '\u00B2', '3': '\u00B3', '4': '\u2074',
+        '5': '\u2075', '6': '\u2076', '7': '\u2077', '8': '\u2078', '9': '\u2079'
+    };
+    for (let i: number = 0; i <= title.length - 1; i++) {
+        if (title[i] === ' ') {
+            digitSpecific = (regexp === regSub) ? digit[k].replace(/~/g, '') : digit[k].replace(/\^/g, '');
+            for (let j: number = 0; j < digitSpecific.length; j++) {
+                convertedText += (regexp === regSub) ? unicodeSub[digitSpecific[j]] : unicodeSup[digitSpecific[j]];
+            }
+            k++;
+        } else {
+            convertedText += title[i];
+        }
+    }
+    return convertedText.trim();
 }
 
 /**

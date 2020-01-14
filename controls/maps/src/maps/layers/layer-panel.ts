@@ -118,6 +118,12 @@ export class LayerPanel {
                 panel.mapObject.tileTranslatePoint.y = 0;
             }
         }
+        if (!isNullOrUndefined(panel.mapObject.centerLatOfGivenLocation) && !isNullOrUndefined(panel.mapObject.centerLongOfGivenLocation) &&
+            panel.mapObject.zoomNotApplied) {
+            center.y = panel.mapObject.centerLatOfGivenLocation;
+            center.x = panel.mapObject.centerLongOfGivenLocation;
+            panel.mapObject.tileZoomLevel = panel.mapObject.mapScaleValue = panel.mapObject.scaleOfGivenLocation;
+        }
         panel.mapObject.tileTranslatePoint = panel.panTileMap(
             panel.mapObject.availableSize.width, panel.mapObject.availableSize.height, center
         );
@@ -901,7 +907,7 @@ export class LayerPanel {
         x -= position.x - (factorX / 2);
         y = (y - (position.y - (factorY / 2))) + padding;
         this.mapObject.scale = Math.pow(2, level - 1);
-        if (!isNullOrUndefined(this.mapObject.tileTranslatePoint)) {
+        if (!isNullOrUndefined(this.mapObject.tileTranslatePoint) && !this.mapObject.zoomNotApplied) {
             if (this.mapObject.tileTranslatePoint.x !== 0 && this.mapObject.tileTranslatePoint.x !== x) {
                 x = this.mapObject.tileTranslatePoint.x;
             }

@@ -4,7 +4,7 @@
 
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import { EventHandler, EmitType } from '@syncfusion/ej2-base';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, enableRipple  } from '@syncfusion/ej2-base';
 import { TreeView, DragAndDropEventArgs, NodeEditEventArgs, NodeCheckEventArgs, NodeExpandEventArgs,  NodeSelectEventArgs } from "../../src/treeview/treeview";
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, localData, localData1, localData2, localData3, remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6, hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6, localData7, localData8, localData9, checkData, XSSData, XSSnestedData, checkboxData} from '../../spec/treeview/datasource.spec';
@@ -2362,6 +2362,59 @@ describe('TreeView control', () => {
                 treeObj.touchClickObj.tap(tapEvent);
                 expect(i).toEqual(1);
             });
+
+            it('Ripple Effect testing', () => {
+                enableRipple(true);
+                treeObj = new TreeView({
+                    fields: { dataSource: hierarchicalData1, id: "nodeId", text: "nodeText", child:"nodeChild" },
+                },'#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                expect(li[0].querySelector('.e-icons').classList.contains('e-icon-expandable')).toBe(true);
+                var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                li[0].querySelector('.e-icons').dispatchEvent(e);
+                var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                li[0].querySelector('.e-icons').dispatchEvent(e);
+                var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                li[0].querySelector('.e-icons').dispatchEvent(e);
+                expect(li[0].querySelector('.e-icons').classList.contains('e-ripple')).toBe(true);
+                expect(li[0].querySelector('.e-icons').classList.contains('e-icon-expandable')).toBe(false);
+                expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(true);
+                enableRipple(false);
+            });
+
+            it('Ripple Effect testing on full row', () => {
+                enableRipple(true);
+                treeObj = new TreeView({
+                    fields: { dataSource: hierarchicalData1, id: "nodeId", text: "nodeText", child:"nodeChild" },
+                },'#tree1');
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                expect(li[0].querySelector('.e-icons').classList.contains('e-icon-expandable')).toBe(true);
+                var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                li[0].querySelector('.e-fullrow').dispatchEvent(e);
+                var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                li[0].querySelector('.e-fullrow').dispatchEvent(e);
+                var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                li[0].querySelector('.e-fullrow').dispatchEvent(e);
+                expect(li[0].querySelector('.e-fullrow').classList.contains('e-ripple')).toBe(true);
+                expect(li[0].classList.contains('e-active')).toBe(true);
+                expect(treeObj.selectedNodes).toContain('01');
+                var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                li[0].querySelector('.e-icons').dispatchEvent(e);
+                var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                li[0].querySelector('.e-icons').dispatchEvent(e);
+                var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                expect(li[0].querySelector('.e-icons').classList.contains('e-ripple')).toBe(true);
+                expect(li[0].querySelector('.e-icons').classList.contains('e-icon-expandable')).toBe(false);
+                expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(true);
+                var nli : Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                nli[1].querySelector('.e-fullrow').dispatchEvent(e);
+                var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                nli[1].querySelector('.e-fullrow').dispatchEvent(e);
+                expect(nli[1].querySelector('.e-fullrow').classList.contains('e-ripple')).toBe(true);
+                enableRipple(false);
+            });
+
             it('nodeExpanded event is triggered', (done: Function) => {
                 let i:number=0, nodeData:any;
                 treeObj = new TreeView({

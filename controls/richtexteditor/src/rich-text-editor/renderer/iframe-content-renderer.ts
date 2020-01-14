@@ -115,7 +115,6 @@ export class IframeContentRender extends ContentRender {
         iFrameContent = this.setThemeColor(iFrameContent, { color: '#333' });
         iframe.contentDocument.write(iFrameContent);
         iframe.contentDocument.close();
-
     }
     private setThemeColor(content: string, styles: { [key: string]: string }): string {
         let fontColor: string = getComputedStyle(this.parent.element, '.e-richtexteditor').getPropertyValue('color');

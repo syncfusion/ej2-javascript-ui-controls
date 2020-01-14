@@ -469,7 +469,7 @@ export class DropDownList extends DropDownBase implements IInput {
         this.removeSelection();
         this.removeFocus();
         this.list.scrollTop = 0;
-        if (this.getModuleName() !== 'autocomplete') {
+        if (this.getModuleName() !== 'autocomplete' && !isNullOrUndefined(this.ulElement)) {
             let li: Element = this.ulElement.querySelector('.' + dropDownListClasses.li);
             if (li) { li.classList.add(dropDownListClasses.focus); }
         }
@@ -1242,7 +1242,11 @@ export class DropDownList extends DropDownBase implements IInput {
     protected setValue(e?: KeyboardEventArgs): boolean {
         let dataItem: { [key: string]: string } = this.getItemData();
         if (dataItem.value === null) {
-            Input.setValue(null, this.inputElement, this.floatLabelType, this.showClearButton);
+            if (isBlazor() && dataItem.text !== null || dataItem.text !== '') {
+                Input.setValue(dataItem.text, this.inputElement, this.floatLabelType, this.showClearButton);
+            } else {
+                Input.setValue(null, this.inputElement, this.floatLabelType, this.showClearButton);
+            }
         } else {
             Input.setValue(dataItem.text, this.inputElement, this.floatLabelType, this.showClearButton);
         }
@@ -1768,10 +1772,6 @@ export class DropDownList extends DropDownBase implements IInput {
         }
     }
 
-    protected l10nUpdateUndefinedHeader(): void {
-        this.actionCompleteData.ulElement = this.ulElement;
-    }
-
     private focusIndexItem(): void {
         let value: string | number = this.getItemData().value;
         this.activeIndex = this.getIndexByValue(value);
@@ -1908,7 +1908,7 @@ export class DropDownList extends DropDownBase implements IInput {
         }
     }
     private serverBlazorUpdateSelection(): void {
-        if (this.isServerBlazor && this.value) {
+        if (this.isServerBlazor && (this.value !== null || this.index !== null || this.text !== null)) {
             this.removeSelection();
             this.removeFocus();
             this.removeHover();

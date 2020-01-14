@@ -972,6 +972,10 @@ const dragStart = 'dragStart';
 const drag = 'drag';
 /** @private */
 const dragEnd = 'dragEnd';
+/*** @private*/
+const regSub = /~\d+~/g;
+/*** @private*/
+const regSup = /\^\d+\^/g;
 
 var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -3335,6 +3339,37 @@ function textWrap(currentLabel, maximumWidth, font) {
         }
     }
     return labelCollection;
+}
+/**
+ * Method to support the subscript and superscript value to text
+ */
+function getUnicodeText(text, regexp) {
+    let title = text.replace(regexp, ' ');
+    let digit = text.match(regexp);
+    let digitSpecific = ' ';
+    let convertedText = ' ';
+    let k = 0;
+    let unicodeSub = {
+        '0': '\u2080', '1': '\u2081', '2': '\u2082', '3': '\u2083', '4': '\u2084',
+        '5': '\u2085', '6': '\u2086', '7': '\u2087', '8': '\u2088', '9': '\u2089'
+    };
+    let unicodeSup = {
+        '0': '\u2070', '1': '\u00B9', '2': '\u00B2', '3': '\u00B3', '4': '\u2074',
+        '5': '\u2075', '6': '\u2076', '7': '\u2077', '8': '\u2078', '9': '\u2079'
+    };
+    for (let i = 0; i <= title.length - 1; i++) {
+        if (title[i] === ' ') {
+            digitSpecific = (regexp === regSub) ? digit[k].replace(/~/g, '') : digit[k].replace(/\^/g, '');
+            for (let j = 0; j < digitSpecific.length; j++) {
+                convertedText += (regexp === regSub) ? unicodeSub[digitSpecific[j]] : unicodeSup[digitSpecific[j]];
+            }
+            k++;
+        }
+        else {
+            convertedText += title[i];
+        }
+    }
+    return convertedText.trim();
 }
 /**
  * Method to reset the blazor templates
@@ -7854,9 +7889,21 @@ let Chart = class Chart extends Component {
         this.titleCollection = [];
         this.subTitleCollection = [];
         if (this.title) {
+            if (regSub.test(this.title)) {
+                this.title = getUnicodeText(this.title, regSub);
+            }
+            if (regSup.test(this.title)) {
+                this.title = getUnicodeText(this.title, regSup);
+            }
             this.titleCollection = getTitle(this.title, this.titleStyle, width);
             titleHeight = (measureText(this.title, this.titleStyle).height * this.titleCollection.length) + padding;
             if (this.subTitle) {
+                if (regSub.test(this.subTitle)) {
+                    this.subTitle = getUnicodeText(this.subTitle, regSub);
+                }
+                if (regSup.test(this.subTitle)) {
+                    this.subTitle = getUnicodeText(this.subTitle, regSup);
+                }
                 let maxWidth = 0;
                 for (let titleText of this.titleCollection) {
                     titleWidth = measureText(titleText, this.titleStyle).width;
@@ -8134,7 +8181,7 @@ let Chart = class Chart extends Component {
             appendChildElement(this.enableCanvas, this.svgObject, this.htmlObject, this.redraw, true, 'x', 'y', null, null, true, true, previousRect);
             this.htmlObject = null;
         }
-        // to draw back ground image for chart area    
+        // to draw back ground image for chart area
         let backGroundImage = this.chartArea.backgroundImage;
         if (backGroundImage) {
             let width = this.chartArea.border.width;
@@ -17043,6 +17090,12 @@ class Tooltip$1 extends BaseTooltip {
             return '';
         }
         this.header = this.parseTemplate(data.point, data.series, this.header, data.series.xAxis, data.series.yAxis);
+        if (regSub.test(this.header)) {
+            this.header = getUnicodeText(this.header, regSub);
+        }
+        if (regSup.test(this.header)) {
+            this.header = getUnicodeText(this.header, regSup);
+        }
         if (this.header.replace(/<b>/g, '').replace(/<\/b>/g, '').trim() !== '') {
             return this.header;
         }
@@ -20843,7 +20896,7 @@ class Legend extends BaseLegend {
             if (series.category !== 'Indicator') {
                 seriesType = (chart.chartAreaType === 'PolarRadar') ? series.drawType :
                     series.type;
-                // To set legend color when use pointColorMapping    
+                // To set legend color when use pointColorMapping
                 fill = series.pointColorMapping ? (series.points[0].interior ? series.points[0].interior : series.interior) :
                     series.interior;
                 this.legendCollections.push(new LegendOptions(series.name, fill, series.legendShape, (series.category === 'TrendLine' ?
@@ -20876,6 +20929,12 @@ class Legend extends BaseLegend {
         this.maxItemHeight = Math.max(measureText('MeasureText', legend.textStyle).height, legend.shapeHeight);
         let render = false;
         for (let legendOption of this.legendCollections) {
+            if (regSub.test(legendOption.text)) {
+                legendOption.text = getUnicodeText(legendOption.text, regSub);
+            }
+            if (regSup.test(legendOption.text)) {
+                legendOption.text = getUnicodeText(legendOption.text, regSup);
+            }
             legendEventArgs = {
                 fill: legendOption.fill, text: legendOption.text, shape: legendOption.shape,
                 markerShape: legendOption.markerShape, name: legendRender, cancel: false
@@ -24865,7 +24924,7 @@ let AccumulationChart = class AccumulationChart extends Component {
         if (!this.isTouch) {
             this.titleTooltip(e, this.mouseX, this.mouseY);
         }
-        if (this.type === 'Pie' && this.pieSeriesModule &&
+        if (this.enableBorderOnMouseMove && this.type === 'Pie' && this.pieSeriesModule &&
             withInBounds(this.mouseX, this.mouseY, this.initialClipRect)) {
             this.pieSeriesModule.findSeries(e);
         }
@@ -24899,7 +24958,7 @@ let AccumulationChart = class AccumulationChart extends Component {
         if (this.visibleSeries[0].explode) {
             this.accBaseModule.processExplode(e);
         }
-        if (this.pieSeriesModule && this.type === 'Pie') {
+        if (this.enableBorderOnMouseMove && this.pieSeriesModule && this.type === 'Pie') {
             this.pieSeriesModule.findSeries(e);
         }
         this.trigger(chartMouseClick, { target: e.target.id, x: this.mouseX, y: this.mouseY });
@@ -25491,6 +25550,9 @@ __decorate$7([
 __decorate$7([
     Property('None')
 ], AccumulationChart.prototype, "selectionMode", void 0);
+__decorate$7([
+    Property(true)
+], AccumulationChart.prototype, "enableBorderOnMouseMove", void 0);
 __decorate$7([
     Property(false)
 ], AccumulationChart.prototype, "isMultiSelect", void 0);
@@ -33560,7 +33622,7 @@ __decorate$14([
 class BulletTooltipSettings extends ChildProperty {
 }
 __decorate$14([
-    Property(true)
+    Property(false)
 ], BulletTooltipSettings.prototype, "enable", void 0);
 __decorate$14([
     Property(null)
@@ -34006,14 +34068,14 @@ let BulletChart = class BulletChart extends Component {
                         y = this.margin.top + elementSize.height / 2 + padding;
                         break;
                     case 'Bottom':
-                        x = (this.availableSize.width) / 2;
+                        x = (this.availableSize.width) / 2 + padding * 2;
                         // tslint:disable-next-line:max-line-length
                         y = this.availableSize.height - this.margin.bottom - elementSize.height / 3 + padding * 2 - ((subTitleSize.height) ? subTitleSize.height + padding : 0);
                         break;
                     case 'Left':
                         y = this.findVerticalAlignment(margin);
                         anchor = (alignment === 'Far') ? 'start' : ((alignment === 'Near') ? 'end' : 'middle');
-                        x = margin.left;
+                        x = margin.left + elementSize.height / 3;
                         // tslint:disable-next-line:max-line-length
                         break;
                     case 'Right':
@@ -34242,6 +34304,9 @@ let BulletChart = class BulletChart extends Component {
         if (!this.isTouch(e)) {
             let id = 'tooltipDiv' + this.element.id;
             let tooltipDiv = document.getElementById(id);
+            if (isBlazor()) {
+                resetBlazorTemplate(this.element.id + 'parent_template' + '_blazorTemplate');
+            }
             if (tooltipDiv) {
                 remove(tooltipDiv);
             }
@@ -34608,12 +34673,13 @@ class BulletTooltip {
         let str = '';
         let font = this.control.tooltip.textStyle.fontStyle ? this.control.tooltip.textStyle.fontStyle :
             BulletChartTheme.tooltipLabelFont.fontStyle;
+        let fill = this.control.tooltip.fill ? this.control.tooltip.fill : this.control.themeStyle.tooltipFill;
         let color = BulletChartTheme.tooltipLabelFont.color || this.control.themeStyle.tooltipBoldLabel;
         let fontSize = BulletChartTheme.titleFont.size;
         let style = 'left:' + pageX + 'px;' + 'top:' + pageY + 'px;' +
             'display: block; position: absolute; "z-index": "13000",cursor: default;' +
             'font-family: Segoe UI;' + 'color:' + color + '; font-size: 13px; background-color:' +
-            this.control.themeStyle.tooltipFill + '; border: 1px solid #707070;' + 'font-style:' + font + ';';
+            fill + '; border: 1px solid #707070;' + 'font-style:' + font + ';';
         // adding css prop to the div
         tooltipDiv.setAttribute('style', style);
         if (targetClass === this.control.svgObject.id + '_Caption') {
@@ -34630,12 +34696,14 @@ class BulletTooltip {
     /**
      * To display the bullet chart tooltip
      */
+    // tslint:disable-next-line:max-func-body-length
     _displayTooltip(e, targetClass, targetId, mouseX, mouseY) {
         if (targetClass !== 'undefined' && this.control.tooltip.enable && (targetClass === this.control.svgObject.id + '_FeatureMeasure' ||
             targetClass === this.control.svgObject.id + '_ComparativeMeasure')) {
             let locale = this.control.locale;
             let localizedText = locale && this.control.enableGroupSeparator;
             let data;
+            let blazorTooltipData;
             let measureId;
             let currentVal;
             let targetVal = [];
@@ -34653,6 +34721,7 @@ class BulletTooltip {
             }
             else {
                 data = { value: currentVal, target: targetVal, category: categoryVal };
+                blazorTooltipData = { value: currentVal, target: targetVal.toString(), category: categoryVal };
             }
             let style = 'position: absolute; z-index: 13000; display: block;';
             if (document.getElementsByClassName('tooltipDiv' + this.control.element.id).length === 0) {
@@ -34666,10 +34735,16 @@ class BulletTooltip {
             };
             if (this.control.tooltip.template !== '' && this.control.tooltip.template != null) {
                 this.updateTemplateFn();
-                let templateElement = this.templateFn(data);
                 let elem = this.control.createElement('div', { id: this.control.element.id + 'parent_template' });
+                let templateElement = this.templateFn(blazorTooltipData, null, null, elem.id + '_blazorTemplate', '');
                 while (templateElement && templateElement.length > 0) {
-                    elem.appendChild(templateElement[0]);
+                    if (isBlazor()) {
+                        elem.appendChild(templateElement[0]);
+                        templateElement = null;
+                    }
+                    else {
+                        elem.appendChild(templateElement[0]);
+                    }
                 }
                 argsData.template = elem.innerHTML;
                 this.control.trigger(tooltipRender, argsData);
@@ -34689,6 +34764,9 @@ class BulletTooltip {
                 tooltipdiv.style.color = BulletChartTheme.tooltipLabelFont.color || this.control.themeStyle.tooltipBoldLabel;
                 tooltipdiv.style.fontSize = BulletChartTheme.titleFont.size;
             }
+            let fill = this.control.tooltip.fill ? this.control.tooltip.fill : this.control.themeStyle.tooltipFill;
+            let borderWidth = this.control.tooltip.border.width ? this.control.tooltip.border.width : 1;
+            let borderColor = this.control.tooltip.border.color ? this.control.tooltip.border.color : 'Black';
             let xPos = mouseX;
             let yPos = mouseY;
             xPos = ((xPos + stringToNumber(tooltipdiv.getAttribute('width'), this.control.containerWidth) < window.innerWidth) ?
@@ -34703,12 +34781,15 @@ class BulletTooltip {
             }
             if (this.control.tooltip.template !== '' && this.control.tooltip.template != null) {
                 tooltipdiv.setAttribute('style', 'position: absolute;left:' + (xPos + 20) + 'px;' + 'top:' + (yPos + 20) + 'px;');
+                if (isBlazor()) {
+                    updateBlazorTemplate(this.control.element.id + 'parent_template' + '_blazorTemplate', 'Template', this.control.tooltip);
+                }
             }
             else {
                 let divStyle = style + 'left:' + (xPos + 20) + 'px;' + 'top:' + (yPos + 20) + 'px;' +
                     '-webkit-border-radius: 5px 5px 5px 5px; -moz-border-radius: 5px 5px 5px 5px;-o-border-radius: 5px 5px 5px 5px;' +
-                    'border-radius: 5px 5px 5px 5px;' + 'background-color:' + this.control.themeStyle.tooltipFill + ';' + 'color:' +
-                    tooltipdiv.style.color + '; border: 1px Solid Black;' +
+                    'border-radius: 5px 5px 5px 5px;' + 'background-color:' + fill + ';' + 'color:' +
+                    tooltipdiv.style.color + '; border:' + borderWidth + 'px Solid' + ' ' + borderColor + ';' +
                     'padding-bottom: 7px;' + 'font-style:' + BulletChartTheme.tooltipLabelFont.fontStyle +
                     '; padding-left: 10px; font-family: Segoe UI; padding-right: 10px; padding-top: 7px';
                 tooltipdiv.setAttribute('style', divStyle);
@@ -40801,5 +40882,5 @@ class SparklineTooltip {
  * Chart components exported.
  */
 
-export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartTheme, getBulletThemeColor, BulletTooltip, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
+export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, getUnicodeText, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, regSub, regSup, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartTheme, getBulletThemeColor, BulletTooltip, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
 //# sourceMappingURL=ej2-charts.es2015.js.map

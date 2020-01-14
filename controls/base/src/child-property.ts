@@ -22,8 +22,8 @@ export class ChildProperty<T> {
         this.parentObj = <T & ParentObject>parent;
         this.controlParent = this.parentObj.controlParent || this.parentObj;
         this.propName = propName;
-        this.setProperties(defaultValue, true);
         this.isParentArray = isArray;
+        this.setProperties(defaultValue, true);
     }
     /**
      * Updates the property changes
@@ -120,7 +120,7 @@ export class ChildProperty<T> {
             let parent: Object;
             let newChanges: Object = {};
             let parentKey: string = isSaveChanges ? this.getParentKey(true) + '.' + key : key;
-
+            /* istanbul ignore else  */
             if (parentKey.indexOf('.') !== -1) {
                 let complexKeys: string[] = parentKey.split('.');
                 parent = newChanges;
@@ -134,6 +134,7 @@ export class ChildProperty<T> {
                 parent = newChanges[parentKey];
                 newChanges[parentKey][key] = value;
             }
+            /* istanbul ignore next */
             if (this.isParentArray) {
                 let actionProperty: string = 'ejsAction';
                 parent[actionProperty] = action ? action : 'none';
@@ -145,6 +146,7 @@ export class ChildProperty<T> {
         // tslint:disable-next-line:no-any
         let index: any = '';
         let propName: string = this.propName;
+        /* istanbul ignore next */
         if (this.isParentArray) {
             index = this.parentObj[this.propName].indexOf(this);
             let valueLength: number = this.parentObj[this.propName].length;

@@ -453,6 +453,13 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
     public textAlign: string;
 
     /**
+     * Represents the unique Name of the annotation 
+     * @default ''
+     */
+    @Property('')
+    public signatureName: string;
+
+    /**
      * Represents the text style of annotation
      * @default ''
      */

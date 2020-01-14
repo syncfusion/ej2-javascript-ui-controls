@@ -151,16 +151,16 @@ export class Aggregate {
         let sumData: Object[] = new DataManager(summaryData).executeLocal(qry);
         let types: AggregateType[] = <AggregateType[]>summaryColumn.type; let summaryKey: string;
         types = <AggregateType[]>[summaryColumn.type];
-        types.forEach((type: AggregateType) => {
-            summaryKey = type;
-            let key: string = summaryColumn.field + ' - ' + type.toLowerCase();
-            let val: Object = type !== 'Custom' ? getObject('aggregates', sumData) :
-            calculateAggregate(type, sumData, summaryColumn, this.parent);
+        for (let i: number = 0; i < types.length; i++) {
+            summaryKey = types[i];
+            let key: string = summaryColumn.field + ' - ' + types[i].toLowerCase();
+            let val: Object = types[i] !== 'Custom' ? getObject('aggregates', sumData) :
+            calculateAggregate(types[i], sumData, summaryColumn, this.parent);
             let disp: string = summaryColumn.columnName;
-            let value: Object = type !== 'Custom' ? val[key] : val;
+            let value: Object = types[i] !== 'Custom' ? val[key] : val;
             single[disp] = single[disp] || {}; single[disp][key] = value;
-            single[disp][type] = !isNullOrUndefined(val) ? formatFn(value) : ' ';
-        });
+            single[disp][types[i]] = !isNullOrUndefined(val) ? formatFn(value) : ' ';
+        }
         helper.format = summaryColumn.getFormatter();
         let cellElement: Element = createElement('td', {
             className: 'e-summary'

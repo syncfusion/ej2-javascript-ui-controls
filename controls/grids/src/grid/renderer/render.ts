@@ -154,12 +154,14 @@ export class Render {
                 if (args.requestType !== 'virtualscroll') {
                     this.parent.showSpinner();
                 }
-                if (args.requestType === 'delete' || args.requestType === 'save' ) {
+                if (args.requestType === 'delete' || args.requestType === 'save') {
                     this.parent.notify(events.addDeleteAction, args);
+                    this.parent.notify('add-delete-success', args);
+                } else {
+                    this.parent.allowServerDataBinding = true;
+                    this.parent.serverDataBind();
+                    this.parent.allowServerDataBinding = false;
                 }
-                this.parent.allowServerDataBinding = true;
-                this.parent.serverDataBind();
-                this.parent.allowServerDataBinding = false;
             } else {
                 this.refreshDataManager(args);
             }

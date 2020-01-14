@@ -200,10 +200,10 @@ export class BulletLabelStyle extends ChildProperty<BulletLabelStyle> {
 export class BulletTooltipSettings extends ChildProperty<BulletTooltipSettings> {
     /**
      * Enables / Disables the visibility of the tooltip.
-     * @default true.
+     * @default false.
      */
 
-    @Property(true)
+    @Property(false)
     public enable: boolean;
 
     /**

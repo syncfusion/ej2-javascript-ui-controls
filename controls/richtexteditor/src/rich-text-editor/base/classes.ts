@@ -91,6 +91,8 @@ export const CLS_IMGBREAK: string = 'e-imgbreak';
 /** @hidden @deprecated */
 export const CLS_CAPTION: string = 'e-img-caption';
 /** @hidden @deprecated */
+export const CLS_RTE_CAPTION: string = 'e-rte-img-caption';
+/** @hidden @deprecated */
 export const CLS_CAPINLINE: string = 'e-caption-inline';
 /** @hidden @deprecated */
 export const CLS_IMGINLINE: string = 'e-imginline';

@@ -2212,6 +2212,11 @@ export class Annotation {
                     this.pdfViewer.annotation.measureAnnotationModule.modifyInCollection('bounds', this.pdfViewer.annotation.getEventPageNumber(event), pdfAnnotationBase);
                 }
             }
+            // tslint:disable-next-line:max-line-length
+            if (this.pdfViewerBase.navigationPane && this.pdfViewerBase.navigationPane.annotationMenuObj && this.pdfViewer.isSignatureEditable && pdfAnnotationBase.shapeAnnotationType === 'HandWrittenSignature') {
+                // tslint:disable-next-line:max-line-length
+                this.pdfViewerBase.navigationPane.annotationMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Export Annotations')], true);
+            }
             if (this.pdfViewer.toolbarModule) {
                 if (this.pdfViewer.toolbarModule.annotationToolbarModule && this.pdfViewer.enableAnnotationToolbar) {
                     this.pdfViewer.toolbarModule.annotationToolbarModule.clearTextMarkupMode();

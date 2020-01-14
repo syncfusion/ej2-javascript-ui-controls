@@ -718,6 +718,10 @@ var restoreFocus = 'restore-Focus';
 var detailStateChange = 'detail-state-change';
 /** @hidden */
 var detailIndentCellInfo = 'detail-indentcell-info';
+/** @hidden */
+var virtaulKeyHandler = 'virtaul-key-handler';
+/** @hidden */
+var virtaulCellFocus = 'virtaul-cell-focus';
 
 /**
  * Defines types of Cell
@@ -1123,6 +1127,8 @@ var Data = /** @__PURE__ @class */ (function () {
                     crud = this.dataManager.insert(args.data, query.fromTable, query, args.index);
                     break;
             }
+            var promise = 'promise';
+            args[promise] = crud;
             if (crud && !Array.isArray(crud) && !crud.hasOwnProperty('deletedRecords')) {
                 return crud.then(function (result) {
                     return _this.insert(query, args);
@@ -4592,10 +4598,13 @@ var Render = /** @__PURE__ @class */ (function () {
                 }
                 if (args.requestType === 'delete' || args.requestType === 'save') {
                     _this.parent.notify(addDeleteAction, args);
+                    _this.parent.notify('add-delete-success', args);
                 }
-                _this.parent.allowServerDataBinding = true;
-                _this.parent.serverDataBind();
-                _this.parent.allowServerDataBinding = false;
+                else {
+                    _this.parent.allowServerDataBinding = true;
+                    _this.parent.serverDataBind();
+                    _this.parent.allowServerDataBinding = false;
+                }
             }
             else {
                 _this.refreshDataManager(args);
@@ -5622,16 +5631,18 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
         this.active = content ? isFrozen ? this.fContent : this.content :
             isFrozen ? this.fHeader : this.header;
     };
-    FocusStrategy.prototype.setFocusedElement = function (element) {
+    FocusStrategy.prototype.setFocusedElement = function (element, e) {
         var _this = this;
         this.currentInfo.elementToFocus = element;
         setTimeout(function () {
             if (!isNullOrUndefined(_this.currentInfo.elementToFocus)) {
+                _this.parent.notify('virtaul-key-handler', e);
                 _this.currentInfo.elementToFocus.focus();
             }
         }, 0);
     };
     FocusStrategy.prototype.focus = function (e) {
+        this.parent.notify(virtaulCellFocus, e);
         this.removeFocus();
         this.addFocus(this.getContent().getFocusInfo(), e);
     };
@@ -5681,7 +5692,7 @@ var FocusStrategy = /** @__PURE__ @class */ (function () {
         addClass([info.elementToFocus], ['e-focus']);
         info.element.tabIndex = 0;
         if (!isFocused) {
-            this.setFocusedElement(info.elementToFocus);
+            this.setFocusedElement(info.elementToFocus, e);
         }
         this.parent.notify(cellFocused, {
             element: info.elementToFocus,
@@ -6127,8 +6138,14 @@ var ContentFocus = /** @__PURE__ @class */ (function () {
             this.matrix.current[0] = this.matrix.current[0] - 1;
             this.matrix.current[1] = this.matrix.matrix[current[0]].length;
         }
+        var isHeaderFocus = false;
+        var row = document.activeElement.parentElement;
+        if (this.parent.enableVirtualization && row.classList.contains('e-row')) {
+            var rowIndex = parseInt(row.getAttribute('aria-rowindex'), 10);
+            isHeaderFocus = rowIndex > 0;
+        }
         var info = {
-            swap: ((action === 'upArrow' || enterFrozen) && current[0] === 0) || frozenSwap,
+            swap: !isHeaderFocus ? ((action === 'upArrow' || enterFrozen) && current[0] === 0) || frozenSwap : false,
             toHeader: (action === 'upArrow' || enterFrozen) && current[0] === 0,
             toFrozen: frozenSwap
         };
@@ -10121,6 +10138,7 @@ var BlazorAction = /** @__PURE__ @class */ (function () {
             return;
         }
         this.parent.on('detailclick', this.onDetailRowClick, this);
+        this.parent.on('add-delete-success', this.addDeleteSuccess, this);
         this.parent.on('editsuccess', this.editSuccess, this);
         this.parent.on('setvisibility', this.setColumnVisibility, this);
         this.parent.on('offset', this.setServerOffSet, this);
@@ -10131,6 +10149,7 @@ var BlazorAction = /** @__PURE__ @class */ (function () {
             return;
         }
         this.parent.off('detailclick', this.onDetailRowClick);
+        this.parent.off('add-delete-success', this.addDeleteSuccess);
         this.parent.off('editsuccess', this.editSuccess);
         this.parent.off('setvisibility', this.setColumnVisibility);
         this.parent.off('offset', this.setServerOffSet);
@@ -10141,6 +10160,22 @@ var BlazorAction = /** @__PURE__ @class */ (function () {
     BlazorAction.prototype.modelChanged = function (args) {
         this.actionArgs = args;
         this.parent.currentAction = args;
+    };
+    BlazorAction.prototype.addDeleteSuccess = function (args) {
+        var _this = this;
+        var editArgs;
+        var action = 'name';
+        var data = 'data';
+        editArgs = {
+            requestType: args.requestType,
+            data: args[data],
+            action: args[action]
+        };
+        args.promise.then(function (e) { return _this.editSuccess(editArgs); }).catch(function (e) {
+            _this.parent.trigger(actionFailure, ((isBlazor() && e instanceof Array) ? e[0] : e));
+            _this.parent.hideSpinner();
+            _this.parent.log('actionfailure', { error: e });
+        });
     };
     BlazorAction.prototype.editSuccess = function (args) {
         this.actionArgs = args;
@@ -13834,6 +13869,21 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
         return rowEle;
     };
+    /**
+    * Gets the hidden columns from the Grid.
+    * @return {Column[]}
+    * @blazorType List<GridColumn>
+    */
+    Grid.prototype.getHiddenColumns = function () {
+        var cols = [];
+        for (var _i = 0, _a = this.columnModel; _i < _a.length; _i++) {
+            var col = _a[_i];
+            if (col.visible === false) {
+                cols.push(col);
+            }
+        }
+        return cols;
+    };
     var Grid_1;
     __decorate$1([
         Property([])
@@ -16618,8 +16668,7 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         mPredicate = new Predicate(field, firstOperator.toLowerCase(), firstValue, !matchCase, ignoreAccent);
-        if (!isNullOrUndefined(secondValue)) {
-            secondOperator = !isNullOrUndefined(secondOperator) ? secondOperator : 'equal';
+        if (!isNullOrUndefined(secondValue) && !isNullOrUndefined(secondOperator)) {
             fColl.push({
                 field: field,
                 predicate: predicate,
@@ -24264,7 +24313,7 @@ function summaryIterator(aggregates, callback) {
  * @hidden
  */
 var InterSectionObserver = /** @__PURE__ @class */ (function () {
-    function InterSectionObserver(element, options) {
+    function InterSectionObserver(parent, element, options) {
         var _this = this;
         this.fromWheel = false;
         this.touchMove = false;
@@ -24301,9 +24350,39 @@ var InterSectionObserver = /** @__PURE__ @class */ (function () {
                 }, axis: 'X'
             }
         };
+        this.parent = parent;
         this.element = element;
         this.options = options;
+        this.addEventListener();
     }
+    InterSectionObserver.prototype.virtualKeyHandler = function (args) {
+        if (args && (args.action === 'upArrow' || args.action === 'downArrow') && isNullOrUndefined(this.activeKey)) {
+            this.activeKey = args.action;
+        }
+    };
+    /**
+     * @hidden
+     */
+    InterSectionObserver.prototype.addEventListener = function () {
+        this.parent.on('virtaul-key-handler', this.virtualKeyHandler, this);
+        this.parent.on('key-pressed', this.virtualKeyHandler, this);
+    };
+    /**
+     * @hidden
+     */
+    InterSectionObserver.prototype.removeEventListener = function () {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        this.parent.off('virtaul-key-handler', this.virtualKeyHandler);
+        this.parent.off('key-pressed', this.virtualKeyHandler);
+    };
+    /**
+     * @hidden
+     */
+    InterSectionObserver.prototype.destroy = function () {
+        this.removeEventListener();
+    };
     InterSectionObserver.prototype.observe = function (callback, onEnterCallback) {
         var _this = this;
         this.containerRect = this.options.container.getBoundingClientRect();
@@ -24314,6 +24393,16 @@ var InterSectionObserver = /** @__PURE__ @class */ (function () {
         var info = this.sentinelInfo[direction];
         return info.check(this.element.getBoundingClientRect(), info);
     };
+    InterSectionObserver.prototype.ensureKeyFocus = function () {
+        if (this.activeKey !== 'upArrow' && this.activeKey !== 'downArrow') {
+            return false;
+        }
+        var row = document.activeElement.parentElement;
+        var rowIndex = parseInt(row.getAttribute('aria-rowindex'), 10);
+        var blockSize = this.parent.contentModule.getBlockSize() - 1;
+        rowIndex = this.activeKey === 'upArrow' ? rowIndex - blockSize : rowIndex + blockSize;
+        return !isNullOrUndefined(this.parent.getRowByIndex(rowIndex));
+    };
     InterSectionObserver.prototype.virtualScrollHandler = function (callback, onEnterCallback) {
         var _this = this;
         var delay = Browser.info.name === 'chrome' ? 200 : 100;
@@ -24322,29 +24411,36 @@ var InterSectionObserver = /** @__PURE__ @class */ (function () {
         var debounced100 = debounce(callback, delay);
         var debounced50 = debounce(callback, 50);
         return function (e) {
-            var top = e.target.scrollTop;
-            var left = e.target.scrollLeft;
-            var direction = prevTop < top ? 'down' : 'up';
-            direction = prevLeft === left ? direction : prevLeft < left ? 'right' : 'left';
-            prevTop = top;
-            prevLeft = left;
-            var current = _this.sentinelInfo[direction];
-            if (_this.options.axes.indexOf(current.axis) === -1) {
-                return;
-            }
-            var check = _this.check(direction);
-            if (current.entered) {
-                onEnterCallback(_this.element, current, direction, { top: top, left: left }, _this.fromWheel, check);
-            }
-            if (check) {
-                var fn = debounced100; //this.fromWheel ? this.options.debounceEvent ? debounced100 : callback : debounced100;
-                if (current.axis === 'X') {
-                    fn = debounced50;
+            var isKeyDown = _this.ensureKeyFocus();
+            if (!isKeyDown) {
+                var top_1 = e.target.scrollTop;
+                var left = e.target.scrollLeft;
+                var direction = prevTop < top_1 ? 'down' : 'up';
+                direction = prevLeft === left ? direction : prevLeft < left ? 'right' : 'left';
+                prevTop = top_1;
+                prevLeft = left;
+                var current = _this.sentinelInfo[direction];
+                if (_this.options.axes.indexOf(current.axis) === -1) {
+                    return;
                 }
-                fn({ direction: direction, sentinel: current, offset: { top: top, left: left },
-                    focusElement: document.activeElement });
+                var check = _this.check(direction);
+                if (current.entered) {
+                    onEnterCallback(_this.element, current, direction, { top: top_1, left: left }, _this.fromWheel, check);
+                }
+                if (check) {
+                    var fn = debounced100;
+                    //this.fromWheel ? this.options.debounceEvent ? debounced100 : callback : debounced100;
+                    if (current.axis === 'X') {
+                        fn = debounced50;
+                    }
+                    fn({ direction: direction, sentinel: current, offset: { top: top_1, left: left },
+                        focusElement: document.activeElement });
+                }
+                _this.fromWheel = false;
             }
-            _this.fromWheel = false;
+            else {
+                _this.activeKey = undefined;
+            }
         };
     };
     InterSectionObserver.prototype.setPageHeight = function (value) {
@@ -24606,7 +24702,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             container: content, pageHeight: this.getBlockHeight() * 2, debounceEvent: debounceEvent,
             axes: this.parent.enableColumnVirtualization ? ['X', 'Y'] : ['Y']
         };
-        this.observer = new InterSectionObserver(this.virtualEle.wrapper, opt);
+        this.observer = new InterSectionObserver(this.parent, this.virtualEle.wrapper, opt);
     };
     VirtualContentRenderer.prototype.renderEmpty = function (tbody) {
         this.getTable().appendChild(tbody);
@@ -24685,6 +24781,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         return this.vgenerator.isBlockAvailable(blk);
     };
     VirtualContentRenderer.prototype.getInfoFromView = function (direction, info, e) {
+        var isBlockAdded = false;
         var tempBlocks = [];
         var infoType = { direction: direction, sentinelInfo: info, offsets: e };
         var vHeight = this.parent.height.toString().indexOf('%') < 0 ? this.content.getBoundingClientRect().height :
@@ -24693,11 +24790,21 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         infoType.blockIndexes = tempBlocks = this.vgenerator.getBlockIndexes(infoType.page);
         infoType.loadSelf = !this.vgenerator.isBlockAvailable(tempBlocks[infoType.block]);
         var blocks = this.ensureBlocks(infoType);
+        if (this.activeKey === 'upArrow' && infoType.blockIndexes.toString() !== blocks.toString()) {
+            // To avoid dupilcate row index problem in key focus support
+            var newBlock = blocks[blocks.length - 1];
+            if (infoType.blockIndexes.indexOf(newBlock) === -1) {
+                isBlockAdded = true;
+            }
+        }
         infoType.blockIndexes = blocks;
         infoType.loadNext = !blocks.filter(function (val) { return tempBlocks.indexOf(val) === -1; })
             .every(this.block.bind(this));
         infoType.event = (infoType.loadNext || infoType.loadSelf) ? modelChanged : refreshVirtualBlock;
         infoType.nextInfo = infoType.loadNext ? { page: Math.max(1, infoType.page + (direction === 'down' ? 1 : -1)) } : {};
+        if (isBlockAdded) {
+            infoType.blockIndexes = [infoType.blockIndexes[0] - 1, infoType.blockIndexes[0], infoType.blockIndexes[0] + 1];
+        }
         infoType.columnIndexes = info.axis === 'X' ? this.vgenerator.getColumnIndexes() : this.parent.getColumnIndexesInView();
         if (this.parent.enableColumnVirtualization && info.axis === 'X') {
             infoType.event = refreshVirtualBlock;
@@ -24842,7 +24949,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             this.observer.setPageHeight(this.getOffset(blocks[blocks.length - 1]) - this.getOffset(blocks[0] - 1));
         }
         this.prevInfo = info;
-        if (this.isFocused) {
+        if (this.isFocused && this.activeKey !== 'downArrow' && this.activeKey !== 'upArrow') {
             this.content.focus();
         }
         var lastPage = Math.ceil(this.getTotalBlocks() / 2);
@@ -24858,6 +24965,51 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             && e.requestType === 'virtualscroll' && e.virtualInfo.sentinelInfo.axis === 'X') {
             this.refreshMvTbalTransform();
         }
+        this.focusCell(e, cOffset);
+    };
+    VirtualContentRenderer.prototype.focusCell = function (e, cOffset) {
+        if (this.activeKey !== 'upArrow' && this.activeKey !== 'downArrow') {
+            return;
+        }
+        var row = this.parent.getRowByIndex(this.rowIndex);
+        var firstRow;
+        var lastRow;
+        var rows = this.parent.getRows();
+        var rowHeight = this.parent.getRowHeight();
+        var scrollEleHeight = this.parent.getContent().firstElementChild.getBoundingClientRect().height;
+        var transform = getTransformValues(this.getTable().parentElement);
+        if (isNullOrUndefined(row)) {
+            var firstRowTop = rows[0].getBoundingClientRect().top;
+            var lastRowTop = rows[rows.length - 1].getBoundingClientRect().top;
+            if (this.parent.pageSettings.currentPage !== 1) {
+                if (firstRowTop > rowHeight) { // adjusted the table transform to avoid the white space in top
+                    var value = (transform.height + this.parent.getRowHeight()) - firstRowTop;
+                    this.virtualEle.adjustTable(cOffset, value);
+                }
+                if (lastRowTop < scrollEleHeight) { // adjusted the table transform to avoid the white space in bottom
+                    var value = (scrollEleHeight - lastRowTop) + transform.height;
+                    this.virtualEle.adjustTable(cOffset, value);
+                }
+            }
+            for (var i = 0; i < rows.length; i++) {
+                if (this.isViewPortFirstRow(rows[i], rowHeight)) {
+                    firstRow = rows[i];
+                    break;
+                }
+            }
+            for (var i = rows.length - 1; i >= 0; i--) {
+                if (this.isViewPortLastRow(rows[i], scrollEleHeight)) {
+                    lastRow = rows[i];
+                    break;
+                }
+            }
+        }
+        var virtualRow = this.activeKey === 'downArrow' ? firstRow : lastRow;
+        var target = !isNullOrUndefined(row) ? row.cells[this.cellIndex]
+            : virtualRow.cells[this.cellIndex];
+        this.parent.focusModule.onClick({ target: target }, true);
+        this.parent.selectRow(parseInt(target.parentElement.getAttribute('aria-rowindex'), 10));
+        this.activeKey = this.parent.allowSelection ? this.activeKey : undefined;
     };
     VirtualContentRenderer.prototype.onDataReady = function (e) {
         if (!isNullOrUndefined(e.count)) {
@@ -24963,9 +25115,12 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         };
     };
     VirtualContentRenderer.prototype.dataBound = function () {
-        if (this.isSelection) {
+        if (this.isSelection && this.activeKey !== 'upArrow' && this.activeKey !== 'downArrow') {
             this.isSelection = false;
             this.parent.selectRow(this.selectedRowIndex);
+        }
+        else {
+            this.activeKey = undefined;
         }
     };
     VirtualContentRenderer.prototype.eventListener = function (action) {
@@ -24974,6 +25129,9 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         this.parent.addEventListener(dataBound, this.dataBound.bind(this));
         this.parent[action](refreshVirtualBlock, this.refreshContentRows, this);
         this.parent[action](selectVirtualRow, this.selectVirtualRow, this);
+        this.parent[action](virtaulKeyHandler, this.virtualKeyHandler, this);
+        this.parent[action](keyPressed, this.virtualKeyHandler, this);
+        this.parent[action](virtaulCellFocus, this.virtualCellFocus, this);
         this.actions.forEach(function (event) { return _this.parent[action](event + "-begin", _this.onActionBegin, _this); });
         var fn = function () {
             _this.observer.observe(function (scrollArgs) { return _this.scrollListener(scrollArgs); }, _this.onEntered());
@@ -24990,6 +25148,34 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             _this.parent.off(contentReady, fn);
         };
         this.parent.on(contentReady, fn, this);
+    };
+    VirtualContentRenderer.prototype.virtualCellFocus = function (e) {
+        // To decide the action (select or scroll), when using arrow keys for cell focus
+        var ele = document.activeElement;
+        if (ele.classList.contains('e-rowcell')
+            && e && (e.action === 'upArrow' || e.action === 'downArrow')) {
+            var rowIndex = parseInt(ele.parentElement.getAttribute('aria-rowindex'), 10);
+            if (e && (e.action === 'downArrow' || e.action === 'upArrow')) {
+                e.action === 'downArrow' ? rowIndex += 1 : rowIndex -= 1;
+                this.rowIndex = rowIndex;
+                this.cellIndex = parseInt(ele.getAttribute('aria-colindex'), 10);
+                var row = this.parent.getRowByIndex(rowIndex);
+                var top_2 = this.parent.getContent().firstElementChild.scrollTop;
+                if (isNullOrUndefined(row)) {
+                    this.parent.getContent().firstElementChild.scrollTop = e.action === 'downArrow' ?
+                        top_2 + this.parent.getRowHeight() : top_2 - this.parent.getRowHeight();
+                }
+                else {
+                    this.parent.selectRow(rowIndex);
+                }
+            }
+        }
+    };
+    VirtualContentRenderer.prototype.virtualKeyHandler = function (args) {
+        if (args && (args.action === 'upArrow' || args.action === 'downArrow')
+            && isNullOrUndefined(this.activeKey)) {
+            this.activeKey = args.action;
+        }
     };
     VirtualContentRenderer.prototype.getBlockSize = function () {
         return this.parent.pageSettings.pageSize >> 1;
@@ -25137,14 +25323,24 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         }
     };
     VirtualContentRenderer.prototype.selectVirtualRow = function (args) {
-        this.isSelection = true;
-        this.selectedRowIndex = args.selectedIndex;
-        var page = Math.ceil((args.selectedIndex + 1) / this.parent.pageSettings.pageSize);
-        var blockIndexes = this.vgenerator.getBlockIndexes(page);
-        var scrollTop = this.offsets[blockIndexes[0] - 1];
-        var ele = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
-            : this.parent.getContent().firstElementChild;
-        ele.scrollTop = scrollTop;
+        if (this.activeKey !== 'upArrow' && this.activeKey !== 'downArrow') {
+            this.isSelection = true;
+            this.selectedRowIndex = args.selectedIndex;
+            var page = Math.ceil((args.selectedIndex + 1) / this.parent.pageSettings.pageSize);
+            var blockIndexes = this.vgenerator.getBlockIndexes(page);
+            var scrollTop = this.offsets[blockIndexes[0] - 1];
+            var ele = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
+                : this.parent.getContent().firstElementChild;
+            ele.scrollTop = scrollTop;
+        }
+    };
+    VirtualContentRenderer.prototype.isViewPortFirstRow = function (row, rowHeight) {
+        var top = row.getBoundingClientRect().top;
+        return top > rowHeight;
+    };
+    VirtualContentRenderer.prototype.isViewPortLastRow = function (row, eleHeight) {
+        var top = row.getBoundingClientRect().top;
+        return top < eleHeight;
     };
     return VirtualContentRenderer;
 }(ContentRender));
@@ -30075,6 +30271,9 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
             _this.book.styles = _this.styles;
             if (!isMultipleExport) {
                 if (_this.isCsvExport) {
+                    if (isBlazor() && gObj.isServerRendered) {
+                        _this.book.isServerRendered = gObj.isServerRendered;
+                    }
                     var book = new Workbook(_this.book, 'csv', gObj.locale, gObj.currencyCode);
                     if (!_this.isBlob) {
                         if (!isNullOrUndefined(exportProperties) && exportProperties.fileName) {
@@ -31209,7 +31408,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
     PdfExport.prototype.drawHeader = function (pdfExportProperties) {
         var _this = this;
         var clientSize = this.pdfDocument.pageSettings.size;
-        if (!isNullOrUndefined(pdfExportProperties.header)) {
+        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.header)) {
             /* tslint:disable-next-line:no-any */
             var header = pdfExportProperties.header;
             var position = new PointF(0, header.fromTop);
@@ -34838,5 +35037,5 @@ var MaskedTextBoxCellEdit = /** @__PURE__ @class */ (function () {
  * Export Grid components
  */
 
-export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, getUpdateUsingRaf, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
+export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, getUpdateUsingRaf, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, virtaulKeyHandler, virtaulCellFocus, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
 //# sourceMappingURL=ej2-grids.es5.js.map

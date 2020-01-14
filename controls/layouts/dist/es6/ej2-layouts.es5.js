@@ -128,6 +128,8 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         _this.validElementAttributes = ['data-orientation', 'data-width', 'data-height'];
         _this.iconsDelay = 300;
         _this.templateElement = [];
+        _this.collapseFlag = false;
+        _this.expandFlag = true;
         return _this;
     }
     /**
@@ -257,7 +259,9 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         this.getPanesDimensions();
         this.setPaneSettings();
         this.setRTL(this.enableRtl);
+        this.collapseFlag = true;
         this.isCollapsed();
+        this.collapseFlag = false;
         EventHandler.add(document, 'touchstart click', this.onDocumentClick, this);
         this.renderComplete();
         EventHandler.add(this.element, 'keydown', this.onMove, this);
@@ -506,26 +510,52 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Splitter.prototype.isCollapsed = function (index) {
+        var _this = this;
+        this.expandFlag = false;
         if (!isNullOrUndefined(index)) {
-            if (this.allPanes.length <= 2) {
-                this.updateIsCollapsed(index, this.targetArrows().collapseArrow, this.targetArrows().lastBarArrow);
+            this.collapseFlag = true;
+            var targetEle = void 0;
+            var lastBarIndex = (index === this.allBars.length);
+            var barIndex = lastBarIndex ? index - 1 : index;
+            if (!lastBarIndex && this.allPanes[index + 1].classList.contains(COLLAPSE_PANE) && index !== 0) {
+                targetEle = this.collapseArrow(barIndex - 1, this.targetArrows().lastBarArrow);
             }
             else {
-                var targetEle = void 0;
-                var lastBarIndex = (index === this.allBars.length);
-                var barIndex = lastBarIndex ? index - 1 : index;
-                if (!lastBarIndex && this.allPanes[index + 1].classList.contains(COLLAPSE_PANE) && index !== 0) {
-                    targetEle = this.collapseArrow(barIndex - 1, this.targetArrows().lastBarArrow);
-                }
-                else {
-                    targetEle = (lastBarIndex) ? this.collapseArrow(barIndex, this.targetArrows().lastBarArrow) :
-                        this.collapseArrow(barIndex, this.targetArrows().collapseArrow);
-                }
-                this.allPanes[index].classList.add(PANE_HIDDEN);
-                this.allPanes[index].classList.add(COLLAPSE_PANE);
-                this.allPanes[index].setAttribute('aria-expanded', 'false');
-                this.allPanes[index].style.flexGrow = '0';
+                targetEle = (lastBarIndex) ? this.collapseArrow(barIndex, this.targetArrows().lastBarArrow) :
+                    this.collapseArrow(barIndex, this.targetArrows().collapseArrow);
             }
+            var event_1 = { target: targetEle };
+            var eventArgs = this.beforeAction(event_1);
+            this.trigger('beforeCollapse', eventArgs, function (beforeCollapseArgs) {
+                if (!beforeCollapseArgs.cancel) {
+                    var collapsedindex = [];
+                    collapsedindex[0] = index;
+                    var j = 1;
+                    for (var i = 0; i < _this.allPanes.length; i++) {
+                        if (_this.allPanes[i].classList.contains(COLLAPSE_PANE)) {
+                            collapsedindex[j] = i;
+                            j++;
+                        }
+                    }
+                    _this.updateIsCollapsed(index, _this.targetArrows().collapseArrow, _this.targetArrows().lastBarArrow);
+                    collapsedindex = collapsedindex.sort();
+                    _this.updateIsCollapsed(index, _this.targetArrows().collapseArrow, _this.targetArrows().lastBarArrow);
+                    for (var i = 0; i < collapsedindex.length; i++) {
+                        if (!_this.allPanes[collapsedindex[i]].classList.contains(COLLAPSE_PANE)) {
+                            _this.updateIsCollapsed(collapsedindex[i], _this.targetArrows().collapseArrow, _this.targetArrows().lastBarArrow);
+                        }
+                    }
+                    for (var i = collapsedindex.length; i > 0; i--) {
+                        if (!_this.allPanes[collapsedindex[i - 1]].classList.contains(COLLAPSE_PANE)) {
+                            var targetArrow = _this.targetArrows();
+                            _this.updateIsCollapsed(collapsedindex[i - 1], targetArrow.collapseArrow, targetArrow.lastBarArrow);
+                        }
+                    }
+                    var collapseEventArgs = _this.afterAction(event_1);
+                    _this.trigger('collapsed', collapseEventArgs);
+                    _this.collapseFlag = false;
+                }
+            });
         }
         else {
             for (var m = 0; m < this.allPanes.length; m++) {
@@ -548,6 +578,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
                 }
             }
         }
+        this.expandFlag = true;
     };
     Splitter.prototype.targetArrows = function () {
         this.splitterProperty();
@@ -730,7 +761,9 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
                 if (separator) {
                     addClass([separator], LAST_BAR);
                 }
-                this.updateResizablePanes(i);
+                if (childCount > 1) {
+                    this.updateResizablePanes(i);
+                }
             }
         }
         if (Browser.info.name === 'msie') {
@@ -861,36 +894,76 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
     Splitter.prototype.expandAction = function (e) {
         var _this = this;
         this.splitterDetails(e);
-        var collapseClass = [COLLAPSE_PANE, PANE_HIDDEN];
         var eventArgs = this.beforeAction(e);
-        this.trigger('beforeExpand', eventArgs, function (beforeExpandArgs) {
-            if (!beforeExpandArgs.cancel) {
-                _this.nextPane.style.flexGrow = '0';
-                if (_this.previousPane.classList.contains('e-collapsed') && _this.previousPane.style.flexGrow === '0') {
-                    _this.previousPane.style.flexGrow = '0';
+        if (this.expandFlag) {
+            this.trigger('beforeExpand', eventArgs, function (beforeExpandArgs) {
+                if (!beforeExpandArgs.cancel) {
+                    _this.expandPane(e);
                 }
-                else {
-                    _this.previousPane.style.flexGrow = '1';
-                }
-                if (!_this.previousPane.classList.contains(COLLAPSE_PANE)) {
-                    removeClass([_this.nextPane], EXPAND_PANE);
-                    removeClass([_this.previousPane], collapseClass);
-                    addClass([_this.previousPane], EXPAND_PANE);
-                    addClass([_this.nextPane], collapseClass);
-                }
-                else {
-                    (_this.currentBarIndex !== 0) ?
-                        _this.previousPane.style.flexGrow = '' : _this.nextPane.style.flexGrow = '';
-                    removeClass([_this.previousPane], collapseClass);
-                    removeClass([_this.nextPane], EXPAND_PANE);
-                }
-                _this.updateIconsOnExpand(e);
-                _this.previousPane.setAttribute('aria-expanded', 'true');
-                _this.nextPane.setAttribute('aria-expanded', 'false');
                 var expandEventArgs = _this.afterAction(e);
                 _this.trigger('expanded', expandEventArgs);
+            });
+        }
+        else {
+            this.expandPane(e);
+        }
+    };
+    Splitter.prototype.expandPane = function (e) {
+        var collapseCount = this.element.querySelectorAll('.' + COLLAPSE_PANE).length;
+        var flexStatus = (!this.previousPane.classList.contains(COLLAPSE_PANE) &&
+            this.previousPane.classList.contains(STATIC_PANE) && !this.nextPane.classList.contains(COLLAPSE_PANE) &&
+            !this.nextPane.classList.contains(EXPAND_PANE) && this.nextPane.nextElementSibling.classList.contains(PANE) &&
+            !this.nextPane.nextElementSibling.classList.contains(STATIC_PANE) && !(collapseCount === this.allPanes.length - 2));
+        var collapseClass = [COLLAPSE_PANE, PANE_HIDDEN];
+        if (!this.previousPane.classList.contains(COLLAPSE_PANE)) {
+            removeClass([this.nextPane], EXPAND_PANE);
+            removeClass([this.previousPane], collapseClass);
+            addClass([this.previousPane], EXPAND_PANE);
+            addClass([this.nextPane], collapseClass);
+        }
+        else {
+            removeClass([this.previousPane], collapseClass);
+            removeClass([this.nextPane], EXPAND_PANE);
+        }
+        this.updateIconsOnExpand(e);
+        this.previousPane.setAttribute('aria-expanded', 'true');
+        this.nextPane.setAttribute('aria-expanded', 'false');
+        this.updateFlexGrow(this.checkStaticPanes());
+        if (flexStatus) {
+            this.previousPane.classList.remove(EXPAND_PANE);
+            this.previousPane.style.flexGrow = '';
+        }
+    };
+    Splitter.prototype.checkStaticPanes = function () {
+        var staticPane = true;
+        for (var i = 0; i < this.allPanes.length; i++) {
+            if (!this.allPanes[i].classList.contains(COLLAPSE_PANE) && staticPane) {
+                if (this.allPanes[i].classList.contains(STATIC_PANE)) {
+                    staticPane = true;
+                }
+                else {
+                    staticPane = false;
+                }
             }
-        });
+        }
+        return staticPane;
+    };
+    Splitter.prototype.updateFlexGrow = function (status) {
+        var panes = this.allPanes;
+        for (var i = 0; i < panes.length; i++) {
+            if (panes[i].classList.contains(EXPAND_PANE)) {
+                panes[i].style.flexGrow = '1';
+            }
+            else if (panes[i].classList.contains(COLLAPSE_PANE)) {
+                panes[i].style.flexGrow = '0';
+            }
+            else {
+                panes[i].style.flexGrow = '';
+            }
+            if (status && !this.nextPane.classList.contains(COLLAPSE_PANE)) {
+                this.nextPane.style.flexGrow = '1';
+            }
+        }
     };
     Splitter.prototype.hideTargetBarIcon = function (targetBar, targetArrow) {
         addClass([select('.' + targetArrow, targetBar)], HIDE_ICON);
@@ -965,29 +1038,48 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
     Splitter.prototype.collapseAction = function (e) {
         var _this = this;
         this.splitterDetails(e);
-        var collapseClass = [COLLAPSE_PANE, PANE_HIDDEN];
-        this.previousPane.style.flexGrow = '0';
-        this.nextPane.style.flexGrow = '1';
         var eventArgs = this.beforeAction(e);
-        this.trigger('beforeCollapse', eventArgs, function (beforeCollapseArgs) {
-            if (!beforeCollapseArgs.cancel) {
-                if (_this.nextPane.classList.contains(COLLAPSE_PANE)) {
-                    removeClass([_this.previousPane], EXPAND_PANE);
-                    removeClass([_this.nextPane], collapseClass);
+        if (this.collapseFlag) {
+            this.collapsePane(e);
+        }
+        else {
+            this.trigger('beforeCollapse', eventArgs, function (beforeCollapseArgs) {
+                if (!beforeCollapseArgs.cancel) {
+                    _this.collapsePane(e);
+                    var collapseEventArgs = _this.afterAction(e);
+                    _this.trigger('collapsed', collapseEventArgs);
                 }
-                else {
-                    removeClass([_this.previousPane], EXPAND_PANE);
-                    removeClass([_this.nextPane], collapseClass);
-                    addClass([_this.nextPane], EXPAND_PANE);
-                    addClass([_this.previousPane], collapseClass);
-                }
-                _this.updateIconsOnCollapse(e);
-                _this.previousPane.setAttribute('aria-expanded', 'false');
-                _this.nextPane.setAttribute('aria-expanded', 'true');
-                var collapseEventArgs = _this.afterAction(e);
-                _this.trigger('collapsed', collapseEventArgs);
-            }
-        });
+            });
+        }
+    };
+    Splitter.prototype.collapsePane = function (e) {
+        var collapseCount = this.element.querySelectorAll('.' + COLLAPSE_PANE).length;
+        var flexStatus = (this.previousPane.classList.contains(STATIC_PANE) &&
+            !this.previousPane.classList.contains(COLLAPSE_PANE) && !this.nextPane.classList.contains(COLLAPSE_PANE) &&
+            this.nextPane.nextElementSibling.classList.contains(PANE) &&
+            !this.nextPane.nextElementSibling.classList.contains(STATIC_PANE) &&
+            !this.nextPane.nextElementSibling.classList.contains(COLLAPSE_PANE) &&
+            !(collapseCount === this.allPanes.length - 2)) || (this.nextPane.classList.contains(COLLAPSE_PANE) &&
+            !this.previousPane.classList.contains(STATIC_PANE) && this.nextPane.classList.contains(STATIC_PANE));
+        var collapseClass = [COLLAPSE_PANE, PANE_HIDDEN];
+        if (this.nextPane.classList.contains(COLLAPSE_PANE)) {
+            removeClass([this.previousPane], EXPAND_PANE);
+            removeClass([this.nextPane], collapseClass);
+        }
+        else {
+            removeClass([this.previousPane], EXPAND_PANE);
+            removeClass([this.nextPane], collapseClass);
+            addClass([this.nextPane], EXPAND_PANE);
+            addClass([this.previousPane], collapseClass);
+        }
+        this.updateIconsOnCollapse(e);
+        this.previousPane.setAttribute('aria-expanded', 'false');
+        this.nextPane.setAttribute('aria-expanded', 'true');
+        this.updateFlexGrow(this.checkStaticPanes());
+        if (flexStatus) {
+            this.nextPane.classList.remove(EXPAND_PANE);
+            this.nextPane.style.flexGrow = '';
+        }
     };
     Splitter.prototype.beforeAction = function (e) {
         var eventArgs = isBlazor() ? {
@@ -1173,6 +1265,9 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
             separator: this.currentSeparator,
             cancel: false
         };
+        for (var i = 0; i < this.element.querySelectorAll('iframe').length; i++) {
+            this.element.querySelectorAll('iframe')[i].style.pointerEvents = 'none';
+        }
         this.trigger('resizeStart', eventArgs, function (resizeStartArgs) {
             if (!resizeStartArgs.cancel) {
                 _this.wireResizeEvents();
@@ -1190,8 +1285,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
                 previous = this.convertPixelToPercentage(this.convertPixelToNumber(pane.style.flexBasis));
             }
             else {
-                var offset = (this.orientation === 'Horizontal') ? (pane.offsetWidth + this.currentSeparator.offsetWidth) :
-                    (pane.offsetHeight + this.currentSeparator.offsetHeight);
+                var offset = (this.orientation === 'Horizontal') ? (pane.offsetWidth) : (pane.offsetHeight);
                 previous = this.convertPixelToPercentage(offset);
             }
         }
@@ -1405,36 +1499,6 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         this.addStaticPaneClass();
         this.previousPane.style.flexBasis = this.prevPaneCurrentWidth;
         this.nextPane.style.flexBasis = this.nextPaneCurrentWidth;
-        var lastBar = this.element.querySelector('.e-last-bar');
-        var sepSize = parseInt(isNullOrUndefined(this.separatorSize) ? '1' : this.separatorSize.toString(), 10);
-        if (this.orientation === 'Horizontal') {
-            if ((lastBar.offsetLeft + sepSize + this.element.offsetLeft) > (this.element.offsetWidth + this.element.offsetLeft)) {
-                this.validatelastBar(lastBar, sepSize);
-            }
-        }
-        else {
-            if ((lastBar.offsetTop + sepSize + this.element.offsetTop) > (this.element.offsetHeight + this.element.offsetTop)) {
-                this.validatelastBar(lastBar, sepSize);
-            }
-        }
-    };
-    Splitter.prototype.validatelastBar = function (lastBar, sepSize) {
-        var lastbarIndex = this.getSeparatorIndex(lastBar);
-        if (this.allPanes[lastbarIndex + 1].style.flexBasis.indexOf('%') > -1) {
-            this.allPanes[lastbarIndex + 1].style.flexBasis = this.convertPixelToPercentage(sepSize) + '%';
-        }
-        else {
-            this.allPanes[lastbarIndex + 1].style.flexBasis = parseFloat(this.allPanes[lastbarIndex + 1].style.flexBasis)
-                + sepSize + 'px';
-        }
-        if (this.allPanes[lastbarIndex].style.flexBasis.indexOf('%') > -1) {
-            this.allPanes[lastbarIndex].style.flexBasis = (parseFloat(this.allPanes[lastbarIndex].style.flexBasis)
-                - this.convertPixelToPercentage(this.separatorSize)) + '%';
-        }
-        else {
-            this.allPanes[lastbarIndex].style.flexBasis = parseFloat(this.allPanes[lastbarIndex].style.flexBasis)
-                - sepSize + 'px';
-        }
     };
     Splitter.prototype.validateMinRange = function (paneIndex, paneCurrentWidth, pane) {
         var paneMinRange = null;
@@ -1586,6 +1650,9 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
             separator: this.currentSeparator,
             paneSize: [this.prePaneDimenson, this.nextPaneDimension]
         };
+        for (var i = 0; i < this.element.querySelectorAll('iframe').length; i++) {
+            this.element.querySelectorAll('iframe')[i].style.pointerEvents = 'auto';
+        }
         this.trigger('resizeStop', eventArgs);
     };
     Splitter.prototype.panesDimension = function (index, child) {
@@ -1698,7 +1765,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         childCount = target.children.length;
         var child = [].slice.call(target.children);
         this.sizeFlag = false;
-        if (childCount > 1) {
+        if (childCount > 0) {
             for (var i = 0; i < childCount; i++) {
                 // To accept only div and span element as pane
                 if (child[i].nodeName === 'DIV' || child[i].nodeName === 'SPAN') {

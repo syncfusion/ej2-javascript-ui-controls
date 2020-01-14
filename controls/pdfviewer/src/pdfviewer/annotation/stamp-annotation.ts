@@ -264,7 +264,7 @@ export class StampAnnotation {
                 // tslint:disable-next-line:max-line-length
                 id: 'sign' + this.pdfViewerBase.signatureCount, bounds: { x: X, y: Y, width: annotation.bounds.width, height: annotation.bounds.height }, pageIndex: pageIndex, data: annotation.data,
                 // tslint:disable-next-line:max-line-length
-                shapeAnnotationType: 'HandWrittenSignature', thickness: annotation.thickness, strokeColor: annotation.strokeColor, opacity: annotation.opacity
+                shapeAnnotationType: 'HandWrittenSignature', thickness: annotation.thickness, strokeColor: annotation.strokeColor, opacity: annotation.opacity, signatureName: annotation.signatureName,
             };
         }
         return (annot as PdfAnnotationBase);

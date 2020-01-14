@@ -387,6 +387,12 @@ export interface PdfAnnotationBaseModel {
     textAlign?: string;
 
     /**
+     * Represents the unique Name of the annotation 
+     * @default ''
+     */
+    signatureName?: string;
+
+    /**
      * Represents the text style of annotation
      * @default ''
      */

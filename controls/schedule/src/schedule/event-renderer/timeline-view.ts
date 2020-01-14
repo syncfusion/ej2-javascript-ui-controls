@@ -298,7 +298,7 @@ export class TimelineEvent extends MonthEvent {
             return slotTd;
         } else {
             let daySlot: number =
-                (((schedule.endHour.getTime() - schedule.startHour.getTime()) / (60 * 1000)) / this.interval) * this.slotCount;
+                Math.round((((schedule.endHour.getTime() - schedule.startHour.getTime()) / (60 * 1000)) / this.interval) * this.slotCount);
             return (daySlot * day) + slotTd;
         }
     }

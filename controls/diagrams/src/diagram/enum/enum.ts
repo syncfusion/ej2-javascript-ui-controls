@@ -2236,6 +2236,8 @@ export enum DiagramAction {
     PreventZIndexOnDragging = 1 << 13,
     /** Indicates whether group dragging has been activated */
     isGroupDragging  = 1 << 14,
+    /** Indicates whether drag is initiated by mouse  */
+    DragUsingMouse  = 1 << 15,
 }
 /** @private */
 export type DiagramHistoryAction = 'AddNodeToLane';

@@ -4,7 +4,7 @@ import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { PdfAnnotationBaseModel } from '../../diagram/pdf-annotation-model';
 import { PdfAnnotationBase } from '../../diagram/pdf-annotation';
-import { splitArrayCollection, processPathData } from '@syncfusion/ej2-drawings';
+import { splitArrayCollection, processPathData, getPathString } from '@syncfusion/ej2-drawings';
 import { ColorPicker } from '@syncfusion/ej2-inputs';
 
 /**
@@ -19,6 +19,7 @@ export interface ISignAnnotation {
     thickness: number;
     id: string;
     data: string;
+    signatureName: string;
 }
 /**
  * @hidden
@@ -101,6 +102,7 @@ export class Signature {
         let zoomvalue: number = this.pdfViewerBase.getZoomFactor();
         let annot: PdfAnnotationBaseModel;
         if (this.pdfViewerBase.isToolbarSignClicked) {
+            let annotationName: string = this.pdfViewer.annotation.createGUID();
             this.pdfViewerBase.currentSignatureAnnot = null;
             this.pdfViewerBase.isSignatureAdded = true;
             let pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
@@ -123,7 +125,7 @@ export class Signature {
             annot = {
                 // tslint:disable-next-line:max-line-length
                 id: 'sign' + this.pdfViewerBase.signatureCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data: this.outputString,
-                shapeAnnotationType: 'HandWrittenSignature', opacity: opacity, strokeColor: strokeColor, thickness: thickness,
+                shapeAnnotationType: 'HandWrittenSignature', opacity: opacity, strokeColor: strokeColor, thickness: thickness, signatureName: annotationName,
             };
             this.hideSignaturePanel();
             this.pdfViewerBase.currentSignatureAnnot = annot;
@@ -361,11 +363,12 @@ export class Signature {
         let annot: PdfAnnotationBaseModel;
         // tslint:disable-next-line
         let currentAnnotation: any = this.pdfViewerBase.currentSignatureAnnot;
+        let annotationName: string = this.pdfViewer.annotation.createGUID();
         if (currentAnnotation) {
             annot = {
                 // tslint:disable-next-line:max-line-length
                 id: currentAnnotation.id, bounds: { x: left, y: top, width: currentAnnotation.bounds.width, height: currentAnnotation.bounds.height }, pageIndex: currentAnnotation.pageIndex, data: currentAnnotation.data,
-                shapeAnnotationType: 'HandWrittenSignature', opacity: currentAnnotation.opacity, strokeColor: currentAnnotation.strokeColor, thickness: currentAnnotation.thickness,
+                shapeAnnotationType: 'HandWrittenSignature', opacity: currentAnnotation.opacity, strokeColor: currentAnnotation.strokeColor, thickness: currentAnnotation.thickness, signatureName: annotationName,
             };
             this.pdfViewer.add(annot as PdfAnnotationBase);
             // tslint:disable-next-line
@@ -375,6 +378,49 @@ export class Signature {
             this.storeSignatureData(currentAnnotation.pageIndex, annot);
             this.pdfViewerBase.currentSignatureAnnot = null;
             this.pdfViewerBase.signatureCount++;
+        }
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public renderExistingSignature(annotationCollection: any, pageIndex: number, isImport: boolean): void {
+        let annot: PdfAnnotationBaseModel;
+        for (let n: number = 0; n < annotationCollection.length; n++) {
+            // tslint:disable-next-line
+            let currentAnnotation: any = annotationCollection[n];
+            //tslint:disable-next-line
+            if (currentAnnotation) {
+                // tslint:disable-next-line
+                let bounds: any = currentAnnotation.Bounds;
+                let currentLeft: number = this.ConvertPointToPixel(bounds.X);
+                let currentTop: number = this.ConvertPointToPixel(bounds.Y);
+                let currentWidth: number = this.ConvertPointToPixel(bounds.Width);
+                let currentHeight: number = this.ConvertPointToPixel(bounds.Height);
+                // tslint:disable-next-line
+                let data: any = currentAnnotation.PathData;
+                if (isImport) {
+                    data = getPathString(JSON.parse(currentAnnotation.PathData));
+                }
+                annot = {
+                    // tslint:disable-next-line:max-line-length
+                    id: 'sign' + this.pdfViewerBase.signatureCount, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data: data,
+                    shapeAnnotationType: 'HandWrittenSignature', opacity: currentAnnotation.Opacity, strokeColor: currentAnnotation.StrokeColor, thickness: currentAnnotation.Thickness, signatureName: currentAnnotation.SignatureName,
+                };
+                this.pdfViewer.add(annot as PdfAnnotationBase);
+                // tslint:disable-next-line
+                let canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + currentAnnotation.pageIndex);
+                // tslint:disable-next-line
+                this.pdfViewer.renderDrawing(canvass as any, annot.pageIndex);
+                this.storeSignatureData(annot.pageIndex, annot);
+                this.pdfViewerBase.currentSignatureAnnot = null;
+                this.pdfViewerBase.signatureCount++;
+                // tslint:disable-next-line:max-line-length
+                if (this.pdfViewerBase.navigationPane && this.pdfViewerBase.navigationPane.annotationMenuObj && this.pdfViewer.isSignatureEditable) {
+                    // tslint:disable-next-line:max-line-length
+                    this.pdfViewerBase.navigationPane.annotationMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Export Annotations')], true);
+                }
+            }
         }
     }
 
@@ -394,7 +440,7 @@ export class Signature {
         }
         annotation = {
             // tslint:disable-next-line:max-line-length
-            id: annotations.id, bounds: { left: left, top: top, width: annotations.bounds.width, height: annotations.bounds.height }, shapeAnnotationType: 'Signature', opacity: annotations.opacity, thickness: annotations.thickness, strokeColor: annotations.strokeColor, pageIndex: annotations.pageIndex, data: annotations.data
+            id: annotations.id, bounds: { left: left, top: top, width: annotations.bounds.width, height: annotations.bounds.height }, shapeAnnotationType: 'Signature', opacity: annotations.opacity, thickness: annotations.thickness, strokeColor: annotations.strokeColor, pageIndex: annotations.pageIndex, data: annotations.data, signatureName: annotations.signatureName,
         };
         // tslint:disable-next-line
         let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_sign');
@@ -506,6 +552,14 @@ export class Signature {
     public setAnnotationMode(): void {
         this.pdfViewerBase.isToolbarSignClicked = true;
         this.showSignatureDialog(true);
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public ConvertPointToPixel(number: any): any {
+        return (number * (96 / 72));
     }
 
     /**

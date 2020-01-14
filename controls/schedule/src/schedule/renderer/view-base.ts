@@ -22,7 +22,7 @@ export namespace ViewHelper {
     };
     export const getTime: Function = (proxy: Schedule, date: Date) => {
         if (proxy.isAdaptive) {
-            if (proxy.timeFormat === 'HH:mm') {
+            if (proxy.timeFormat === 'HH:mm' || proxy.timeFormat === 'HH.mm') {
                 return proxy.globalize.formatDate(date, { format: 'H', calendar: proxy.getCalendarMode() });
             }
             return proxy.globalize.formatDate(date, { skeleton: 'h', calendar: proxy.getCalendarMode() });

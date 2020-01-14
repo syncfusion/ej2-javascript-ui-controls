@@ -394,13 +394,13 @@ export class Selection {
           this.selectedItems = []; this.selectedIndexes = [];
           childData = (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0) ?
             this.parent.getCurrentViewRecords() : this.parent.flatData;
-          childData.forEach((record: ITreeData) => {
-            if (record.hasChildRecords) {
-              this.updateParentSelection(record);
-            } else {
-              this.updateSelectedItems(record, record.checkboxState);
+          for (let i: number = 0; i < childData.length; i ++) {
+            if (childData[i].hasChildRecords) {
+              this.updateParentSelection(childData[i]);
+          } else {
+              this.updateSelectedItems(childData[i], childData[i].checkboxState);
             }
-          });
+          }
           this.headerSelection();
         }
       }

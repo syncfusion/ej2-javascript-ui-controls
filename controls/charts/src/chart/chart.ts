@@ -87,12 +87,12 @@ import { IZoomCompleteEventArgs, ILoadedEventArgs } from '../chart/model/chart-i
 import { IMultiLevelLabelClickEventArgs, ILegendClickEventArgs } from '../chart/model/chart-interface';
 import { IAnimationCompleteEventArgs, IMouseEventArgs, IPointEventArgs } from '../chart/model/chart-interface';
 import { chartMouseClick, pointClick, pointMove, chartMouseLeave, resized } from '../common/model/constants';
-import { chartMouseDown, chartMouseMove, chartMouseUp, load } from '../common/model/constants';
+import { chartMouseDown, chartMouseMove, chartMouseUp, load, regSub, regSup } from '../common/model/constants';
 import { IPrintEventArgs, IAxisRangeCalculatedEventArgs, IDataEditingEventArgs } from '../chart/model/chart-interface';
 import { ChartAnnotationSettingsModel } from './model/chart-base-model';
 import { ChartAnnotationSettings } from './model/chart-base';
 import { ChartAnnotation } from './annotation/annotation';
-import { getElement, getTitle } from '../common/utils/helper';
+import { getElement, getTitle,  getUnicodeText} from '../common/utils/helper';
 import { Alignment, ExportType } from '../common/utils/enum';
 import { MultiColoredLineSeries } from './series/multi-colored-line-series';
 import { MultiColoredAreaSeries } from './series/multi-colored-area-series';
@@ -1758,9 +1758,21 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.titleCollection = [];
         this.subTitleCollection = [];
         if (this.title) {
+            if (regSub.test(this.title)) {
+                this.title = getUnicodeText(this.title, regSub);
+            }
+            if (regSup.test(this.title)) {
+                this.title = getUnicodeText(this.title, regSup);
+            }
             this.titleCollection = getTitle(this.title, this.titleStyle, width);
             titleHeight = (measureText(this.title, this.titleStyle).height * this.titleCollection.length) + padding;
             if (this.subTitle) {
+                if (regSub.test(this.subTitle)) {
+                    this.subTitle = getUnicodeText(this.subTitle, regSub);
+                }
+                if (regSup.test(this.subTitle)) {
+                    this.subTitle = getUnicodeText(this.subTitle, regSup);
+                }
                 let maxWidth: number = 0;
                 for (let titleText of this.titleCollection) {
                     titleWidth = measureText(titleText, this.titleStyle).width;
@@ -2080,7 +2092,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             );
             this.htmlObject = null;
         }
-        // to draw back ground image for chart area    
+        // to draw back ground image for chart area
         let backGroundImage: string = this.chartArea.backgroundImage;
         if (backGroundImage) {
             let width: number = this.chartArea.border.width;

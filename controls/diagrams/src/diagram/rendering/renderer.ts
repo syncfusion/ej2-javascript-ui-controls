@@ -1144,7 +1144,8 @@ export class DiagramRenderer {
     /**   @private  */
     public renderContainer(
         group: Container, canvas: HTMLCanvasElement | SVGElement, htmlLayer: HTMLElement,
-        transform?: Transforms, parentSvg?: SVGSVGElement, createParent?: boolean, fromPalette?: boolean, indexValue?: number):
+        transform?: Transforms, parentSvg?: SVGSVGElement, createParent?: boolean, fromPalette?: boolean,
+        indexValue?: number):
         void {
         let svgParent: SvgParent = { svg: parentSvg, g: canvas };
         if (this.diagramId) {
@@ -1240,7 +1241,7 @@ export class DiagramRenderer {
                 (element as Container).children.length && ((element as Container).children[0] instanceof DiagramHtmlElement)) {
                 let id: string[] = canvas.id.split('_preview');
                 let layer: HTMLElement = document.getElementById(id[0] + '_html_div') ||
-                    getHTMLLayer(this.diagramId).children[0] as HTMLElement;
+                (getHTMLLayer(this.diagramId).children[0]) as HTMLElement;
                 canvas = layer.querySelector(('#' + element.id + '_content_html_element'));
                 if (canvas) {
                     canvas.style.transform = 'scale(' + scaleX + ',' + scaleY + ')';
@@ -1344,11 +1345,15 @@ export class DiagramRenderer {
 
         let tx: number = transform.tx * transform.scale;
         let ty: number = transform.ty * transform.scale;
-
+        let domTable: string = 'domTable';
         if (tx !== this.transform.x || ty !== this.transform.y || (tx === 0 || ty === 0)) {
             //diagram layer
             if (svgMode) {
-                let diagramLayer: SVGElement = this.diagramSvgLayer.getElementById(this.diagramId + '_diagramLayer') as SVGElement;
+                if (!window[domTable][this.diagramId + '_diagramLayer']) {
+                    window[domTable][this.diagramId + '_diagramLayer'] =
+                    this.diagramSvgLayer.getElementById(this.diagramId + '_diagramLayer');
+                }
+                let diagramLayer: SVGElement = window[domTable][this.diagramId + '_diagramLayer'] as SVGElement;
                 diagramLayer.setAttribute('transform', 'translate('
                     + (transform.tx * transform.scale) + ',' + (transform.ty * transform.scale) + '),scale('
                     + transform.scale + ')');
@@ -1360,24 +1365,33 @@ export class DiagramRenderer {
                 + (transform.ty * transform.scale) + ')');
 
             //portslayer    
-            let portsLayer: SVGElement = this.iconSvgLayer.getElementById(this.diagramId + '_diagramPorts') as SVGElement;
+            if (!window[domTable][this.diagramId + '_diagramPorts']) {
+                window[domTable][this.diagramId + '_diagramPorts'] = this.iconSvgLayer.getElementById(this.diagramId + '_diagramPorts');
+            }
+            let portsLayer: SVGElement = window[domTable][this.diagramId + '_diagramPorts'] as SVGElement;
             portsLayer.setAttribute('transform', 'translate('
                 + (transform.tx * transform.scale) + ',' + (transform.ty * transform.scale) + '),scale('
                 + transform.scale + ')');
             //expandlayer
-            let expandLayer: SVGElement = this.iconSvgLayer.getElementById(this.diagramId + '_diagramExpander') as SVGElement;
+            if (!window[domTable][this.diagramId + '_diagramExpander']) {
+                window[domTable][this.diagramId + '_diagramExpander'] =
+                this.iconSvgLayer.getElementById(this.diagramId + '_diagramExpander');
+            }
+            let expandLayer: SVGElement = window[domTable][this.diagramId + '_diagramExpander'] as SVGElement;
             expandLayer.setAttribute('transform', 'translate('
                 + (transform.tx * transform.scale) + ',' + (transform.ty * transform.scale) + '),scale('
                 + transform.scale + ')');
             //nativelayer
-            let nativeLayer: SVGElement = this.nativeSvgLayer.getElementById(this.diagramId + '_nativeLayer') as SVGElement;
+            if (!window[domTable][this.diagramId + '_nativeLayer']) {
+                window[domTable][this.diagramId + '_nativeLayer'] = this.nativeSvgLayer.getElementById(this.diagramId + '_nativeLayer');
+            }
+            let nativeLayer: SVGElement = window[domTable][this.diagramId + '_nativeLayer'] as SVGElement;
             nativeLayer.setAttribute('transform', 'translate('
                 + (transform.tx * transform.scale) + ',' + (transform.ty * transform.scale) + '),scale('
                 + transform.scale + ')');
 
             //htmlLayer
             let htmlLayer: HTMLElement = getHTMLLayer(this.diagramId).children[0] as HTMLElement;
-
             htmlLayer.style.transform = 'translate('
                 + (transform.tx * transform.scale) + 'px,' + (transform.ty * transform.scale) + 'px)scale('
                 + transform.scale + ')';

@@ -377,7 +377,73 @@ describe('Chart Control', () => {
             chart.backgroundImage = 'https://cdn.syncfusion.com/content/images/freetrials/essential-studio.png?v=03102019101652';
             chart.refresh();
         });
-    });
+        it('Support Subscript in chart title', function (done) {
+            loaded = function (args) {
+                chart.loaded = null;
+                text= document.getElementById('container_ChartTitle');
+                expect(text.textContent).toEqual("H₂₃₄O₂,CO₄₅₆₂H₃");
+                done();
+            };
+            chart.title= 'H~234~O~2~,CO~4562~H~3~';
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Suport Superscript in chart title', (done: Function) => {
+            loaded = (args: Object): void => {
+                chart.loaded = null;
+                text = document.getElementById('container_ChartTitle');
+                expect(text.textContent).toEqual("H²³⁴O²,CO⁴⁵⁶²H³");
+                done();
+            };
+            chart.title = 'H^234^O^2^,CO^4562^H^3^';
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Suport Subscript and Superscript in chart title', (done: Function) => {
+            loaded = (args: Object): void => {
+                chart.loaded = null;
+                text = document.getElementById('container_ChartTitle');
+                expect(text.textContent).toEqual("H₂₃₄O²,CO⁴⁵⁶²H₃");
+                done();
+            };
+            chart.title= 'H~234~O^2^,CO^4562^H~3~';
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Suport Subscript in chart subtitle', function (done) {
+            loaded = function (args) {
+                chart.loaded = null;
+                text= document.getElementById('container_ChartSubTitle');
+                expect(text.textContent).toEqual("H₂₃₄O₂,CO₄₅₆₂H₃");
+                done();
+            };
+            chart.subTitle= 'H~234~O~2~,CO~4562~H~3~';
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Suport Superscript in chart subtitle', (done: Function) => {
+            loaded = (args: Object): void => {
+                chart.loaded = null;
+                text = document.getElementById('container_ChartSubTitle');
+                expect(text.textContent).toEqual("H²³⁴O²,CO⁴⁵⁶²H³");
+                done();
+            };
+            chart.subTitle =  'H^234^O^2^,CO^4562^H^3^';
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Suport Subscript and Superscript in chart subtitle', (done: Function) => {
+            loaded = (args: Object): void => {
+                chart.loaded = null;
+                text = document.getElementById('container_ChartSubTitle');
+                expect(text.textContent).toEqual("H₂₃₄O²,CO⁴⁵⁶²H₃");
+                done();
+            };
+            chart.subTitle= 'H~234~O^2^,CO^4562^H~3~';
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+});
     describe('Chart checking localization', () => {
         L10n.load({
             'de-DE': {

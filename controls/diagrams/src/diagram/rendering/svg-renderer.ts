@@ -428,6 +428,7 @@ export class SvgRenderer implements IRenderer {
                 for (j = 0; j < parentElement.childNodes.length; j++) {
                     if ((parentElement.childNodes[j] as HTMLElement).id === element.id + '_html_element') {
                         htmlElement = parentElement.childNodes[j] as HTMLElement;
+                        break;
                     }
                 }
             }

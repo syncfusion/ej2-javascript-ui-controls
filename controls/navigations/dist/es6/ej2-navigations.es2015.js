@@ -7359,6 +7359,9 @@ let Tab = class Tab extends Component {
         if (trg === null) {
             return;
         }
+        if (this.isServerRendered && trg.classList.contains(CLS_TB_POPUP)) {
+            this.popupHandler(trg);
+        }
         let root = closest(trg, '.' + CLS_TAB);
         if (this.element !== root) {
             return;
@@ -7393,6 +7396,9 @@ let Tab = class Tab extends Component {
     setActive(value) {
         this.tbItem = selectAll('.' + CLS_TB_ITEM, this.getTabHeader());
         let trg = this.tbItem[value];
+        if (this.isServerRendered) {
+            value = parseInt(trg.getAttribute('data-index'), 10);
+        }
         if (value < 0 || isNaN(value) || this.tbItem.length === 0) {
             return;
         }
@@ -7539,7 +7545,12 @@ let Tab = class Tab extends Component {
         }
         else {
             this.isPopup = false;
-            if (!isNullOrUndefined(trgParent) && trgIndex !== this.selectedItem) {
+            if (this.isServerRendered && !isNullOrUndefined(trgParent)) {
+                if (parseInt(trgParent.getAttribute('data-index'), 10) !== this.selectedItem) {
+                    this.select(trgIndex);
+                }
+            }
+            else if (!isNullOrUndefined(trgParent) && trgIndex !== this.selectedItem) {
                 this.select(trgIndex);
             }
         }
@@ -8259,6 +8270,8 @@ const INDETERMINATE = 'e-stop';
 const CHECKBOXWRAP = 'e-checkbox-wrapper';
 const CHECKBOXFRAME = 'e-frame';
 const CHECKBOXRIPPLE = 'e-ripple-container';
+const RIPPLE = 'e-ripple';
+const RIPPLEELMENT = 'e-ripple-element';
 const FOCUS = 'e-node-focus';
 const IMAGE = 'e-list-img';
 const BIGGER = 'e-bigger';
@@ -9531,6 +9544,8 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 return;
             }
             else {
+                let rippleElement = select('.' + RIPPLEELMENT, li);
+                let rippleIcons = select('.' + ICON, li);
                 this.removeHover();
                 this.setFocusElement(li);
                 if (this.showCheckBox && !li.classList.contains('e-disable')) {
@@ -9547,6 +9562,17 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 }
                 else if (classList$$1.contains(COLLAPSIBLE)) {
                     this.collapseNode(li, target, event);
+                }
+                else if (rippleElement && rippleIcons) {
+                    if (rippleIcons.classList.contains(RIPPLE) && rippleIcons.classList.contains(EXPANDABLE)) {
+                        this.expandAction(li, rippleIcons, event);
+                    }
+                    else if (rippleIcons.classList.contains(RIPPLE) && rippleIcons.classList.contains(COLLAPSIBLE)) {
+                        this.collapseNode(li, rippleIcons, event);
+                    }
+                    else if (!classList$$1.contains(PARENTITEM) && !classList$$1.contains(LISTITEM)) {
+                        this.toggleSelect(li, event.originalEvent, false);
+                    }
                 }
                 else {
                     if (!classList$$1.contains(PARENTITEM) && !classList$$1.contains(LISTITEM)) {

@@ -12,7 +12,7 @@ import { isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
 import { Point, getTranslate, convertGeoToPoint, clusterTemplate, marker, markerTemplate, getZoomTranslate } from '../utils/helper';
 import {
     getElementByID, mergeSeparateCluster, clusterSeparate, removeElement, getElement,
-    markerColorChoose, markerShapeChoose
+    markerColorChoose, markerShapeChoose, calculateZoomLevel
 } from '../utils/helper';
 
 /**
@@ -57,6 +57,7 @@ export class Marker {
         currentLayer.markerSettings.map((markerSettings: MarkerSettings, markerIndex: number) => {
             let markerData: Object[] = <Object[]>markerSettings.dataSource;
             markerData.forEach((data: Object, dataIndex: number) => {
+                this.maps.markerNullCount = markerIndex > 0 && dataIndex === 0 ? 0 : this.maps.markerNullCount;
                 let eventArgs: IMarkerRenderingEventArgs = {
                     cancel: false, name: markerRendering, fill: markerSettings.fill, height: markerSettings.height,
                     width: markerSettings.width, imageUrl: markerSettings.imageUrl, shape: markerSettings.shape,
@@ -77,8 +78,8 @@ export class Marker {
                     if (markerSettings.shapeValuePath !== eventArgs.shapeValuePath ) {
                         eventArgs = markerShapeChoose(eventArgs, data);
                     }
-                    let lng: number = data['longitude'];
-                    let lat: number = data['latitude'];
+                    let lng: number = parseFloat(data['longitude']);
+                    let lat: number = parseFloat(data['latitude']);
                     if (this.maps.isBlazor) {
                         let data1: Object = {};
                         let text: string[] = [];
@@ -120,7 +121,10 @@ export class Marker {
                     }
                     markerTemplateCount += (eventArgs.cancel) ? 1 : 0;
                     markerCount += (eventArgs.cancel) ? 1 : 0;
-                    if (this.markerSVGObject.childElementCount === (markerData.length - markerTemplateCount) && (type !== 'Template')) {
+                    this.maps.markerNullCount = (isNullOrUndefined(lng) || isNullOrUndefined(lat))
+                        ? this.maps.markerNullCount + 1 : this.maps.markerNullCount;
+                    let markerDataLength: number = markerData.length - this.maps.markerNullCount;
+                    if (this.markerSVGObject.childElementCount === (markerDataLength - markerTemplateCount) && (type !== 'Template')) {
                         layerElement.appendChild(this.markerSVGObject);
                         if (currentLayer.markerClusterSettings.allowClustering) {
                             this.maps.svgObject.appendChild(this.markerSVGObject);
@@ -139,31 +143,6 @@ export class Marker {
                 });
             });
         });
-    }
-    /**
-     * To find zoom level for the marker min and max latitude values
-     */ 
-    private calculateMarkerZoomLevel(minLat : number , maxLat : number, minLong : number, maxLong : number,
-        mapWidth : number, mapHeight : number): number {
-        let latRatio: number; let lngRatio: number; let scaleFactor: number;
-        let maxZoomFact = 10;
-        let latZoom: number; let lngZoom : number; let result: number;
-        let maxLatSin: number = Math.sin(maxLat * Math.PI / 180);
-        let maxLatRad: number = Math.log((1 + maxLatSin) / (1 - maxLatSin)) / 2;
-        let maxLatValue: number = Math.max(Math.min(maxLatRad, Math.PI), -Math.PI) / 2;
-        let minLatSin: number = Math.sin(minLat * Math.PI / 180);
-        let minLatRad: number = Math.log((1 + minLatSin) / (1 - minLatSin)) / 2;
-        let minLatValue: number = Math.max(Math.min(minLatRad, Math.PI), -Math.PI) / 2;
-        latRatio = (maxLatValue - minLatValue) / Math.PI;
-        let lngDiff: number = maxLong - minLong;
-        lngRatio = ((lngDiff < 0) ? (lngDiff + 360) : lngDiff) / 360;
-        let WORLD_PX_HEIGHT: number = 256;
-        let WORLD_PX_WIDTH: number = 256;
-        latZoom = Math.floor(Math.log(mapHeight / WORLD_PX_HEIGHT / latRatio) / Math.LN2);
-        lngZoom = Math.floor(Math.log(mapWidth / WORLD_PX_WIDTH / lngRatio) / Math.LN2);
-        result = Math.min(latZoom, lngZoom);
-        scaleFactor = Math.min(result, maxZoomFact - 1);
-        return scaleFactor;
     }
     /**
      * To find zoom level for individual layers like India, USA.
@@ -198,25 +177,27 @@ export class Marker {
                     currentLayer.markerSettings.forEach((markerSetting: MarkerSettingsModel, markerIndex: number) => {
                         let markerData: Object[] = <Object[]>markerSetting.dataSource;
                         markerData.forEach((data: Object, dataIndex: number) => {
+                            let latitude: number = parseFloat(data['latitude']);
+                            let longitude: number = parseFloat(data['longitude']);
                             minLong = isNullOrUndefined(minLong) && dataIndex === 0 ?
-                                data['longitude'] : minLong;
+                                longitude : minLong;
                             maxLat = isNullOrUndefined(maxLat) && dataIndex === 0 ?
-                                data['latitude'] : maxLat;
+                                latitude : maxLat;
                             minLat = isNullOrUndefined(minLat) && dataIndex === 0 ?
-                                data['latitude'] : minLat;
+                                latitude : minLat;
                             maxLong = isNullOrUndefined(maxLong) && dataIndex === 0 ?
-                                data['longitude'] : maxLong;
-                            if (minLong > data['longitude']) {
-                                minLong = data['longitude'];
+                                longitude : maxLong;
+                            if (minLong > longitude) {
+                                minLong = longitude;
                             }
-                            if (minLat > data['latitude']) {
-                                minLat = data['latitude'];
+                            if (minLat > latitude) {
+                                minLat = latitude;
                             }
-                            if (maxLong < data['longitude']) {
-                                maxLong = data['longitude'];
+                            if (maxLong < longitude) {
+                                maxLong = longitude;
                             }
-                            if (maxLat < data['latitude']) {
-                                maxLat = data['latitude'];
+                            if (maxLat < latitude) {
+                                maxLat = latitude;
                             }
                         });
                     });
@@ -231,8 +212,9 @@ export class Marker {
                 this.maps.centerPosition.longitude = centerLong;
                 let markerFactor: number;
                 if (this.maps.isTileMap || this.maps.baseMapRectBounds['min']['x'] === 0) {
-                    zoomLevel = this.calculateMarkerZoomLevel(minLat, maxLat, minLong, maxLong, mapWidth, mapHeight);
+                    zoomLevel = calculateZoomLevel(minLat, maxLat, minLong, maxLong, mapWidth, mapHeight);
                     if(this.maps.isTileMap) {
+                        zoomLevel = Math.floor(zoomLevel);
                         markerFactor = isNullOrUndefined(this.maps.markerZoomFactor) ?
                         zoomLevel : isNullOrUndefined(this.maps.mapScaleValue) ?
                         zoomLevel : this.maps.mapScaleValue > 1 && this.maps.markerZoomFactor !== 1? 

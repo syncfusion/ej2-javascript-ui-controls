@@ -29,6 +29,7 @@ export class DetailRow {
   public addEventListener(): void {
     this.parent.on('dataBoundArg', this.dataBoundArg, this);
     this.parent.on('detaildataBound', this.detaildataBound, this);
+    this.parent.grid.on('detail-indentcell-info', this.setIndentVisibility, this);
     this.parent.on('childRowExpand', this.childRowExpand, this);
     this.parent.on('rowExpandCollapse', this.rowExpandCollapse, this);
     this.parent.on('actioncomplete', this.actioncomplete, this);
@@ -43,7 +44,14 @@ export class DetailRow {
     this.parent.off('childRowExpand', this.childRowExpand);
     this.parent.off('rowExpandCollapse', this.rowExpandCollapse);
     this.parent.off('actioncomplete', this.actioncomplete);
+    this.parent.grid.off('detail-indentcell-info', this.setIndentVisibility);
   }
+
+  private setIndentVisibility(args: Object): void {
+    let visible: string = 'visible';
+    args[visible] = false;
+  }
+
   private dataBoundArg(): void {
     let detailele: HTMLTableRowElement[] = this.parent.getRows().filter((e: HTMLTableRowElement) => {
       return !e.classList.contains('e-detailrow');

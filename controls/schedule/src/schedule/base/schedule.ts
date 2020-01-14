@@ -758,8 +758,17 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /** @hidden */
-    public layoutReady(): void {
-        if (this.isServerRenderer() && this.activeView) {
+    public layoutReady(resourceCollection?: Object[], isFirstRender?: boolean, isSetModel?: boolean): void {
+        if (!this.isServerRenderer()) {
+            return;
+        }
+        if (resourceCollection && resourceCollection.length > 0 && (isFirstRender || isSetModel)) {
+            this.resourceCollection = resourceCollection;
+            if (this.resourceBase) {
+                this.resourceBase.refreshLayout(isSetModel);
+            }
+        }
+        if (this.activeView) {
             this.activeView.serverRenderLayout();
             if (this.renderModule) {
                 this.renderModule.refreshDataManager();

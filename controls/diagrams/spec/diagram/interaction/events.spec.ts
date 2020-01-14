@@ -376,6 +376,63 @@ describe('Diagram Control', () => {
         });
     });
 
+    describe('Testing connection change events on mouse up', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram2' });
+            document.body.appendChild(ele);
+            let selArray: (NodeModel | ConnectorModel)[] = [];
+            let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 500, offsetY: 500 };
+            let node1: NodeModel = { id: 'node11', width: 100, height: 100, offsetX: 100, offsetY: 500 };
+
+            let connector: ConnectorModel = { id: 'connector1', sourceID: 'node1', targetID: 'node11' };
+
+            diagram = new Diagram({
+                width: 800, height: 500, nodes: [node, node1],
+                connectors: [connector]
+            });
+            diagram.appendTo('#diagram2');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+
+
+        it('Checking connection change event ', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.connectionChange = (args: IConnectionChangeEventArgs) => {
+                if (args.state === 'Changed') {
+                    done();
+                }
+            };
+            mouseEvents.clickEvent(diagramCanvas, 300, 500);
+            mouseEvents.dragAndDropEvent(diagramCanvas, 200, 500, 500, 600);
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            diagram.connectionChange = (args: IConnectionChangeEventArgs) => {
+                if (args.state === 'Changed') {
+                    done();
+                }
+            };
+            mouseEvents.clickEvent(diagramCanvas, 300, 500);
+            mouseEvents.dragAndDropEvent(diagramCanvas, 200, 500, 500, 600);
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 0, 0);
+            done();
+        });
+    });
+
+
     describe('Testing events', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

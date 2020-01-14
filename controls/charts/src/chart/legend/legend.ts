@@ -8,11 +8,12 @@ import { ChartSeriesType, ChartDrawType } from '../utils/enum';
 import { LegendOptions, BaseLegend } from '../../common/legend/legend';
 import { Chart } from '../../chart';
 import { LegendSettingsModel } from '../../common/legend/legend-model';
-import { textTrim, ChartLocation, removeElement, RectOption, withInBounds, blazorTemplatesReset } from '../../common/utils/helper';
+import { textTrim, ChartLocation, removeElement, RectOption, withInBounds, blazorTemplatesReset} from '../../common/utils/helper';
+import { getUnicodeText} from '../../common/utils/helper';
 import { Size, measureText, Rect, CanvasRenderer, getElement } from '@syncfusion/ej2-svg-base';
 import { ILegendRegions } from '../../common/model/interface';
 import { ILegendRenderEventArgs, ILegendClickEventArgs } from '../../chart/model/chart-interface';
-import { legendRender, legendClick } from '../../common/model/constants';
+import { legendRender, legendClick, regSub, regSup} from '../../common/model/constants';
 import { Axis } from '../axis/axis';
 /**
  * `Legend` module is used to render legend for the chart.
@@ -70,7 +71,7 @@ export class Legend extends BaseLegend {
             if (series.category !== 'Indicator') {
                 seriesType = (chart.chartAreaType === 'PolarRadar') ? <ChartDrawType>series.drawType :
                     <ChartSeriesType>series.type;
-                // To set legend color when use pointColorMapping    
+                // To set legend color when use pointColorMapping
                 fill = series.pointColorMapping ? (series.points[0].interior ? series.points[0].interior : series.interior) :
                     series.interior;
                 this.legendCollections.push(new LegendOptions(
@@ -105,6 +106,12 @@ export class Legend extends BaseLegend {
         this.maxItemHeight = Math.max(measureText('MeasureText', legend.textStyle).height, legend.shapeHeight);
         let render: boolean = false;
         for (let legendOption of this.legendCollections) {
+            if (regSub.test(legendOption.text)) {
+                legendOption.text = getUnicodeText(legendOption.text, regSub);
+            }
+            if (regSup.test(legendOption.text)) {
+                legendOption.text = getUnicodeText(legendOption.text, regSup);
+            }
             legendEventArgs = {
                 fill: legendOption.fill, text: legendOption.text, shape: legendOption.shape,
                 markerShape: legendOption.markerShape, name: legendRender, cancel: false

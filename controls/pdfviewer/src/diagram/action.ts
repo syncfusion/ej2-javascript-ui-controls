@@ -1,8 +1,8 @@
 import { IElement } from '@syncfusion/ej2-drawings';
 import { PointModel } from '@syncfusion/ej2-drawings';
 import { Rect } from '@syncfusion/ej2-drawings';
-import { DrawingElement } from '@syncfusion/ej2-drawings';
-import { Container } from '@syncfusion/ej2-drawings';
+import { DrawingElement , Point, Matrix, identityMatrix, rotateMatrix} from '@syncfusion/ej2-drawings';
+import { Container, transformPointByMatrix } from '@syncfusion/ej2-drawings';
 import { PdfViewerBase, PdfViewer } from '../pdfviewer';
 import { PdfAnnotationBaseModel, PdfBoundsModel } from './pdf-annotation-model';
 import { ZOrderPageTable } from './pdf-annotation';
@@ -75,6 +75,16 @@ export function findObjectUnderMouse(
             let pt: PointModel = { x: offsetX / pdfBase.getZoomFactor(), y: offsetY / pdfBase.getZoomFactor() };
             let obj: DrawingElement = findElementUnderMouse(objects[i] as IElement, pt, offsetForSelector);
             let isOver: boolean = isPointOverConnector(objects[i], pt);
+            if (obj && !isOver) {
+                let newpoint: PointModel = CalculateLeaderPoints(objects[i], obj);
+                if (newpoint) {
+                    let rect: Rect = Rect.toBounds([newpoint, newpoint]);
+                    rect.Inflate(10);
+                    if (rect.containsPoint(pt)) {
+                        isOver = true;
+                    }
+                }
+            }
             if (obj && isOver) {
                 actualTarget = objects[i];
                 break;
@@ -82,6 +92,33 @@ export function findObjectUnderMouse(
         }
     }
     return actualTarget as IElement;
+}
+/** @private */
+// tslint:disable-next-line
+export function CalculateLeaderPoints(selector: any, currentobject: any): any {
+    let leaderCount: number = 0;
+    let sourcePoint: PointModel = selector.sourcePoint;
+    let targetPoint: PointModel = selector.targetPoint;
+    if (selector.shapeAnnotationType === 'Distance') {
+        let segment: DrawingElement = currentobject;
+        let newPoint1: PointModel;
+        let angle: number = Point.findAngle(selector.sourcePoint, selector.targetPoint);
+        if (segment.id.indexOf('leader') > -1) {
+            let center: PointModel = selector.wrapper.children[0].bounds.center;
+            if (leaderCount === 0 && segment.id.indexOf('leader1') > -1) {
+                newPoint1 = { x: selector.sourcePoint.x, y: selector.sourcePoint.y - selector.leaderHeight };
+                center = sourcePoint;
+            } else {
+                newPoint1 = { x: selector.targetPoint.x, y: selector.targetPoint.y - selector.leaderHeight };
+                center = targetPoint;
+
+            }
+            let matrix: Matrix = identityMatrix();
+            rotateMatrix(matrix, angle, center.x, center.y);
+            let rotatedPoint: PointModel = transformPointByMatrix(matrix, { x: newPoint1.x, y: newPoint1.y });
+            return rotatedPoint;
+        }
+    }
 }
 /** @private */
 export function findElementUnderMouse(obj: IElement, position: PointModel, padding?: number): DrawingElement {

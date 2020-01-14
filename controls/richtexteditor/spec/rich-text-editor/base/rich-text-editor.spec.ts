@@ -632,6 +632,31 @@ describe('RTE base module', () => {
 
     });
 
+    describe('rte Iframe mode', () => {
+        let rteObj: RichTextEditor;
+        let elem: HTMLElement;
+        let editNode: HTMLElement;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                enableRtl: false,
+                iframeSettings: {
+                    enable: true
+                }
+            });
+            editNode = rteObj.contentModule.getEditPanel() as HTMLElement;
+            elem = rteObj.element;
+        });
+
+        it('focus method testing', () => {
+            rteObj.focusIn();
+            expect(document.activeElement === rteObj.contentModule.getPanel()).toBe(true);            
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
+    
     describe('RTE Events', () => {
         let rteObj: RichTextEditor;
         let elem: HTMLElement;
@@ -1804,6 +1829,23 @@ describe('RTE base module', () => {
             expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
             rteObj.executeCommand('insertHTML', 'inserted an html');
             expect((rteObj as any).placeHolderWrapper.style.display).toBe('none');
+        });
+
+        it('ensure insert image on execute command', () => {
+            destroy(rteObj);
+            rteObj = renderRTE({
+                height: '200px',
+                width: '400px'
+            });
+            (rteObj as any).inputElement.focus();
+            let curDocument: Document;
+            curDocument = rteObj.contentModule.getDocument();
+            setCursorPoint(curDocument, (rteObj as any).inputElement, 0);
+            let el = document.createElement("img"); 
+            el.src = "https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png"; 
+            (rteObj as any).inputElement.focus();
+            rteObj.executeCommand("insertImage", el);
+            expect((rteObj as any).inputElement.querySelector('img').src).toBe('https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png');
         });
         afterAll(() => {
             destroy(rteObj);

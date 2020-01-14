@@ -789,10 +789,6 @@
       border-top: 0;
     }
 
-    &.e-default .e-grouptopleftcell {
-      border-top: $grid-grouptopleftcell-border-top;
-    }
-
     &.e-default .e-gridheader .e-headercell.e-firstheader,
     &.e-default.e-horizontallines .e-headercell.e-firstheader {
       border-left: 1px solid;
@@ -1479,12 +1475,6 @@
       overflow: hidden;
       padding: $grid-filterbarcell-padding;
       vertical-align: middle;
-    }
-
-    .e-rowdragheader {
-      border-color: $grid-header-border-color;
-      border-style: $grid-border-type;
-      border-width: $grid-filterbarcell-border-width;
     }
 
     .e-filterbarcell input {

@@ -329,7 +329,6 @@ var Button = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'disabled':
                     this.controlStatus(newProp.disabled);
-                    this.unWireEvents();
                     break;
                 case 'iconCss':
                     var span = this.element.querySelector('span.e-btn-icon');

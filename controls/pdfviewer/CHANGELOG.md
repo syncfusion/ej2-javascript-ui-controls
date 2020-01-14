@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 17.4.43 (2020-01-14)
+
+### PDF Viewer
+
+#### New Features
+
+- `#255057` – Provided the support for validating the form fields value whether it is filled or not in the loaded PDF document.
+- `#258786`, `#259327` – Provided the support for exporting and importing the handwritten signature.
+
+#### Bug Fixes
+
+- `#149882` – The downloadEnd event triggers properly if we save the document in server side.
+- `#257630` – The importSuccess event triggers properly if we save the document in server side.
+- `#260295` – The distance calibrate annotation now resized properly.
+- `#260128` – The volume and area calibrate annotation fill color is updated correctly on importing the annotations.
+
 ## 17.4.41 (2020-01-07)
 
 ### PDF Viewer

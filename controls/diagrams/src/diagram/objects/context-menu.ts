@@ -277,17 +277,19 @@ export class DiagramContextMenu {
         this.hiddenItems = this.hiddenItems.concat(diagramArgs.hiddenItems);
         this.contextMenu.enableItems(this.disableItems, false, true);
         let contextItems: DiagramContextMenu = this;
-        args.items.forEach((item: MenuItemModel) => {
+        for (let i: number = 0; i < args.items.length; i++) {
+            let item: MenuItemModel = args.items[i];
             if (contextItems.hiddenItems.indexOf(item.id) > -1) {
                 contextItems.contextMenu.hideItems([item.id], true);
             }
-        });
-        contextItems.contextMenu.items.forEach((item: MenuItemModel) => {
+        }
+        for (let i: number = 0; i < contextItems.contextMenu.items.length; i++) {
+            let item: MenuItemModel = contextItems.contextMenu.items[i];
             if (contextItems.hiddenItems.indexOf(item.id) === -1) {
                 hidden = false;
                 contextItems.contextMenu.showItems([item.id], true);
             }
-        });
+        }
         if (hidden) {
             diagramArgs.cancel = hidden;
             this.hiddenItems = [];

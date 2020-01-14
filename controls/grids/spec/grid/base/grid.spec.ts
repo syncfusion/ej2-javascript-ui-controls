@@ -1394,3 +1394,46 @@ describe('Grid base module', () => {
             gridObj = row = td = null;
         });
     });
+
+    describe('getting hidden columns ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: false,
+                    allowGrouping: true,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID' },
+                        { headerText: 'CustomerID', field: 'CustomerID', visible: false },
+                        { headerText: 'OrderDate', field: 'OrderDate' },
+                        { headerText: 'EmployeeID', field: 'EmployeeID' },
+                        { headerText: 'ShipAddress', field: 'Shipping Address of the order' },
+                        { headerText: 'ShipCity', field: 'ShipCity' },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    ],
+                }, done);
+        });
+        it('testing for one column', () => {
+            expect(gridObj.getHiddenColumns()[0].field).toBe('CustomerID');
+        });
+        it('testing for Employee Id column ', () => {
+            gridObj.getColumnByField('CustomerID').visible = true;
+            gridObj.getColumnByField('EmployeeID').visible = false;
+            expect(gridObj.getHiddenColumns()[0].field).toBe('EmployeeID');
+        });
+        it('visible false for two columns ', () => {
+            gridObj.getColumnByField('ShipCity').visible = false;
+            expect(gridObj.getHiddenColumns()[0].field).toBe('EmployeeID');
+            expect(gridObj.getHiddenColumns()[1].field).toBe('ShipCity');
+        });
+        it('checking for all columns visible true', () => {
+            gridObj.getColumnByField('ShipCity').visible = true;
+            gridObj.getColumnByField('EmployeeID').visible = true;
+            gridObj.getColumnByField('OrderID').visible = true;
+            expect(gridObj.getHiddenColumns().length).toBe(0);
+        })
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });

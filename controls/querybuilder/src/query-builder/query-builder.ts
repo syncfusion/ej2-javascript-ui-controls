@@ -2806,9 +2806,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     switch (ruleColl.operator) {
                         case 'between':
                             if (column.type === 'date') {
-                                pred = new Predicate(ruleColl.field, 'greaterthan', this.getDate(value[j] as string, format));
+                                pred = new Predicate(ruleColl.field, 'greaterthanorequal', this.getDate(value[j] as string, format));
                             } else {
-                                pred = new Predicate(ruleColl.field, 'greaterthan', value[j]);
+                                pred = new Predicate(ruleColl.field, 'greaterthanorequal', value[j]);
                             }
                             break;
                         case 'notbetween':
@@ -2829,9 +2829,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     switch (ruleColl.operator) {
                         case 'between':
                         if (column.type === 'date') {
-                            pred = pred.and(ruleColl.field, 'lessthan', this.getDate(value[j] as string, format));
+                            pred = pred.and(ruleColl.field, 'lessthanorequal', this.getDate(value[j] as string, format));
                         } else {
-                            pred = pred.and(ruleColl.field, 'lessthan', value[j]);
+                            pred = pred.and(ruleColl.field, 'lessthanorequal', value[j]);
                         }
                             break;
                         case 'notbetween':
@@ -3044,9 +3044,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         let conditions: string[] = ['and', 'or', 'not'];
         let subOp: string[] = ['IN', 'NOT IN', 'LIKE', 'NOT LIKE', 'BETWEEN', 'NOT BETWEEN', 'IS NULL', 'IS NOT NULL',
         'IS EMPTY', 'IS NOT EMPTY'];
-        let regexStr: string;
-        let regex: RegExp;
-        let matchValue: string;
+        let regexStr: string; let regex: RegExp; let matchValue: string;
         for (let i: number = 0, iLen: number = operators.length; i < iLen; i++) {
             regexStr = /^\w+$/.test(operators[i]) ? '\\b' : '';
             regex = new RegExp('^(' + operators[i] + ')' + regexStr, 'ig');
@@ -3055,12 +3053,15 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 return operators[i].length;
             }
         }
-        for (let i: number = 0, iLen: number = conditions.length; i < iLen; i++) {
-            regexStr = /^\w+$/.test(conditions[i]) ? '\\b' : '';
-            regex = new RegExp('^(' + conditions[i] + ')' + regexStr, 'ig');
-            if (regex.exec(sqlString)) {
-                this.parser.push(['Conditions', conditions[i].toLowerCase()]);
-                return conditions[i].length;
+        let lastPasrser: string[] = this.parser[this.parser.length - 1];
+        if (!lastPasrser || (lastPasrser && lastPasrser[0] !== 'Literal')) {
+            for (let i: number = 0, iLen: number = conditions.length; i < iLen; i++) {
+                regexStr = /^\w+$/.test(conditions[i]) ? '\\b' : '';
+                regex = new RegExp('^(' + conditions[i] + ')' + regexStr, 'ig');
+                if (regex.exec(sqlString)) {
+                    this.parser.push(['Conditions', conditions[i].toLowerCase()]);
+                    return conditions[i].length;
+                }
             }
         }
         for (let i: number = 0, iLen: number = subOp.length; i < iLen; i++) {
@@ -3164,7 +3165,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                             if (operator.indexOf('like') > -1 && parser[j][0] === 'String') {
                                 rule.value = parser[j][1].replace(/'/g, '').replace(/%/g, '');
                                 rule.type = 'string';
-                            } else if (operator === 'between') {
+                            } else if (operator.indexOf('between') > -1) {
                                 if (parser[j][0] === 'Literal' || parser[j][0] === 'Left') {
                                     break;
                                 }
@@ -3188,7 +3189,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                             rule.value = numVal; rule.type = 'number';
                         } else if (parser[j - 1][0] === 'String') {
                             rule.value = strVal; rule.type = 'string';
-                        } else if (operator === 'between' && parser[j - 1][0] === 'Conditions') {
+                        } else if (operator.indexOf('between') > -1 && parser[j - 1][0] === 'Conditions') {
                             rule.value = numVal; rule.type = 'number';
                         }
                         numVal = []; strVal = [];

@@ -299,8 +299,14 @@
     }
 
     &.e-resize-lines .e-headercell .e-rhandler,
-    &.e-resize-lines .e-headercell .e-rsuppress {
+    &.e-resize-lines .e-headercell .e-rsuppress,
+    &.e-resize-lines .e-rowdragheader {
       border-right: 1px solid $grid-header-border-color;
+    }
+
+    &.e-rtl.e-resize-lines .e-rowdragheader {
+      border-left: 1px solid $grid-header-border-color;
+      border-right-width: 0;
     }
 
     &.e-resize-lines .e-focused .e-rhandler {

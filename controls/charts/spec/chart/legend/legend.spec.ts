@@ -849,6 +849,39 @@ describe('Chart Legend', () => {
             chartObj.loaded = loaded;
             chartObj.refresh();
         });
+        it('Suport Subscript legend text', (done: Function) => {
+            loaded = (args: Object): void => {
+                chartObj.loaded = null;
+                legendElement = document.getElementById(legendId + '_text_0');
+                expect(legendElement.textContent).toEqual("H₂₃₄O₂,CO₄₅₆₂H₃");
+                done();
+            };
+            chartObj.series[0].name = 'H~234~O~2~,CO~4562~H~3~';
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+        it('Suport Superscript legend text', (done: Function) => {
+            loaded = (args: Object): void => {
+                chartObj.loaded = null;
+                legendElement = document.getElementById(legendId + '_text_0');
+                expect(legendElement.textContent).toEqual("H²³⁴O²,CO⁴⁵⁶²H³");
+                done();
+            };
+            chartObj.series[0].name = 'H^234^O^2^,CO^4562^H^3^';
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+        it('Suport Subscript and Superscript legend text', (done: Function) => {
+            loaded = (args: Object): void => {
+                chartObj.loaded = null;
+                legendElement = document.getElementById(legendId + '_text_0');
+                expect(legendElement.textContent).toEqual("H₂₃₄O²,CO⁴⁵⁶²H₃");
+                done();
+            };
+            chartObj.series[0].name = 'H~234~O^2^,CO^4562^H~3~';
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
     });
     describe('Customer issue: Legend color is not working when use point color mapping', () => {
         let chartObj: Chart;

@@ -819,6 +819,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect(linkPop.querySelectorAll('.e-rte-toolbar').length).toBe(1);
             (<HTMLElement>linkTBItems.item(2)).click();
             expect((<any>rteObj).contentModule.getEditPanel().querySelector('span.e-img-caption')).not.toBe(null);
+            expect((<any>rteObj).contentModule.getEditPanel().querySelector('span.e-rte-img-caption')).not.toBe(null);
             expect((<any>rteObj).contentModule.getEditPanel().querySelector('span.e-img-wrap')).not.toBe(null);
             expect((<any>rteObj).imageModule.captionEle.querySelector('img').classList.contains('e-rte-image')).toBe(true);
             trget.dispatchEvent(clickEvent);

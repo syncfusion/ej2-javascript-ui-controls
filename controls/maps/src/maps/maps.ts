@@ -35,7 +35,7 @@ import { ISelectionEventArgs, IShapeSelectedEventArgs, IMapPanEventArgs, IMapZoo
 import { IBubbleRenderingEventArgs, IAnimationCompleteEventArgs, IPrintEventArgs, IThemeStyle } from './model/interface';
 import { LayerPanel } from './layers/layer-panel';
 import { GeoLocation, Rect, RectOption, measureText, getElementByID, MapAjax } from '../maps/utils/helper';
-import { findPosition, textTrim, TextOption, renderTextElement, convertGeoToPoint } from '../maps/utils/helper';
+import { findPosition, textTrim, TextOption, renderTextElement, convertGeoToPoint, calculateZoomLevel } from '../maps/utils/helper';
 import { Annotations } from '../maps/user-interaction/annotation';
 import { FontModel, DataLabel, MarkerSettings, IAnnotationRenderingEventArgs } from './index';
 import { NavigationLineSettingsModel, changeBorderWidth } from './index';
@@ -548,6 +548,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public zoomTranslatePoint: Point = new Point(0, 0);
     /** @public */
     public markerZoomFactor: number;
+    /** @private */
+    public markerNullCount: number = 0;
     /** @public */
     public previousProjection: String;
     /** @private */
@@ -568,6 +570,14 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public previousScale: number;
     /** @private */
     public previousPoint: Point;
+    /** @private */
+    public centerLatOfGivenLocation: number;
+     /** @private */
+    public centerLongOfGivenLocation: number;
+    /** @private */
+    public scaleOfGivenLocation: number;
+    /** @private */
+    public zoomNotApplied: boolean = false;
     /** @public */
     public dataLabelShape: number[] = [];
     public zoomShapeCollection: object[] = [];
@@ -1511,6 +1521,33 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 }
             }
         }
+    }
+
+    /**
+     * To add marker
+     * @param minLatitude
+     * @param maxLatitude
+     * @param minLongitude
+     * @param maxLongitude
+     */
+    public zoomToCoordinates(minLatitude: number, minLongitude: number, maxLatitude: number, maxLongitude: number): void {
+        let centerLatitude: number;
+        let centerLongtitude: number;
+        if (minLatitude > maxLatitude) {
+            [minLatitude, maxLatitude] = [maxLatitude, minLatitude];
+        }
+        if (minLongitude > maxLongitude) {
+            [minLongitude, maxLongitude] = [maxLongitude, minLongitude];
+        }
+        centerLatitude = (minLatitude + maxLatitude) / 2;
+        centerLongtitude = (minLongitude + maxLongitude) / 2;
+        this.centerLatOfGivenLocation = centerLatitude;
+        this.centerLongOfGivenLocation = centerLongtitude;
+        this.scaleOfGivenLocation = calculateZoomLevel(minLatitude, maxLatitude, minLongitude, maxLongitude,
+                                                       this.mapAreaRect.width, this.mapAreaRect.height);
+        this.scaleOfGivenLocation = this.isTileMap ? Math.floor(this.scaleOfGivenLocation) : this.scaleOfGivenLocation;
+        this.zoomNotApplied = true;
+        this.refresh();
     }
 
     /**

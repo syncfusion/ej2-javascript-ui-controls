@@ -162,6 +162,13 @@ describe('Zoom feature tesing for map control', () => {
             };
             map.refresh();
         });
+        it('Checking with Zoom using public methode', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+               let element: Element = document.getElementById("container_LayerIndex_0_Polygon_Group");
+               expect(element.getAttribute("transform")).toBe("scale( 3.5401749953507036 ) translate( -235.4806354357185 -124.03396322064374 ) ");
+            };
+            map.zoomToCoordinates( 19.1555762, 13.4107368,  52.4643089, 72.8849595);
+        });
         it('Checking with reset button with persistence', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_Reset_Rect');
@@ -246,7 +253,12 @@ describe('Zoom feature tesing for map control', () => {
             map.layers[0].layerType = 'Bing';
             map.refresh();
         });
-
+        it('Checking with public methode zooming', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = getElementByID(map.element.id + '_svg');
+            };
+            map.zoomToCoordinates( 52.4643089, 13.4107368, 19.1555762, 72.8849595);
+        });
         it('Checking with double tab zooming ', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let element: Element = getElementByID(map.element.id + '_svg');
@@ -982,6 +994,13 @@ describe('Zoom feature tesing for map control', () => {
                     },];
                 map.refresh();
             });
+            it('Checking with Zoom using public methode', () => {
+                map.loaded = (args: ILoadedEventArgs) => {
+                   let element: Element = document.getElementById("container_tile_parent");
+                   expect(element.getAttribute("style")).toBe("position: absolute; left: 18px; top: 18px; height: 492px; width: 492px; overflow: hidden;");
+                };
+                map.zoomToCoordinates( 19.1555762, 13.4107368,  52.4643089, 72.8849595);
+            });
     });
 
     describe('Checking with mouse canel event ', () => {
@@ -1620,6 +1639,13 @@ describe('Zoom feature tesing for map control', () => {
             map.enablePersistence = true;
             map.refresh();
         });
+        it('Checking with Zoom using public methode', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById("container_tile_parent");
+                   expect(element.getAttribute("style")).toBe("position: absolute; left: 18px; top: 37px; height: 473px; width: 492px; overflow: hidden;");
+            };
+            map.zoomToCoordinates( 19.1555762, 13.4107368,  52.4643089, 72.8849595);
+        });
     });
 
     describe('Checking with Zoom Factor with Center Position', () => {
@@ -1950,6 +1976,45 @@ describe('Zoom feature tesing for map control', () => {
             map.enablePersistence = true;
             map.refresh();
         });      
+    });
+    describe('Checking public methode zooming', () => {
+        let id: string = 'container';
+        let map: Maps;
+        let prevent: Function = (): void => {
+        };
+        let ele: HTMLDivElement;
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            map = new Maps({
+                zoomSettings: {
+                    enable: true,
+                },
+                layers: [
+                    {
+                        shapeData: MapData,
+                        key: "AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L",
+                    }
+                ]
+            }, '#' + id);
+            let bing: BingMap = new BingMap(map);
+            bing.imageUrl = imageUrl;
+            bing.maxZoom = zoomMax;
+            bing.subDomains = subDomains;
+            map.mapLayerPanel["bing"] = bing;
+        });
+        afterAll(() => {
+            remove(ele);
+            map.destroy();
+        });
+        it('Checking with Zoom using public methode', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+               let element: Element = document.getElementById("container_LayerIndex_0_Polygon_Group");
+               expect(element.getAttribute("transform")).toBe("scale( 3.5401749953507036 ) translate( -235.4806354357185 -124.03396322064374 ) ");
+            };
+            map.zoomToCoordinates( 19.1555762, 13.4107368,  52.4643089, 72.8849595);
+        }); 
     });
     it('memory leak', () => {
         profile.sample();

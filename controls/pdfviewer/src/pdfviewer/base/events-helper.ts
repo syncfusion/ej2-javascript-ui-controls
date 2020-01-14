@@ -73,6 +73,21 @@ export interface AjaxRequestFailureEventArgs extends BaseEventArgs {
 }
 
 /** 
+ * This event arguments provides the necessary information about form validation.
+ */
+export interface ValidateFormFieldsArgs extends BaseEventArgs {
+    /** 
+     * The form fields object from PDF document being loaded.
+     */
+    // tslint:disable-next-line
+    formField: any;
+    /**
+     * Document name to be loaded into PdfViewer
+     */
+    documentName: string;
+}
+
+/** 
  * This event arguments provides the necessary information about page click event.
  */
 export interface PageClickEventArgs extends BaseEventArgs {

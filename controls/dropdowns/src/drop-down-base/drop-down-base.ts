@@ -2,10 +2,10 @@ import { Component, EventHandler, addClass, append, Property, Event, KeyboardEve
 import { setStyleAttribute, extend, removeClass, prepend, isNullOrUndefined, detach, getValue, AnimationModel } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, rippleEffect, RippleOptions, ChildProperty, Complex } from '@syncfusion/ej2-base';
 import { DataManager, Query, DataOptions, DataUtil } from '@syncfusion/ej2-data';
-import { ListBase, SortOrder, cssClass as ListBaseClasses, ItemCreatedArgs } from '@syncfusion/ej2-lists';
+import { ListBase, SortOrder, cssClass as ListBaseClasses } from '@syncfusion/ej2-lists';
 import { DropDownBaseModel, FieldSettingsModel } from './drop-down-base-model';
 import { Popup } from '@syncfusion/ej2-popups';
-import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 
 export type FilterType = 'StartsWith' | 'EndsWith' | 'Contains';
 
@@ -66,7 +66,6 @@ const HEADERTEMPLATE_PROPERTY: string = 'HeaderTemplate';
 const FOOTERTEMPLATE_PROPERTY: string = 'FooterTemplate';
 const NORECORDSTEMPLATE_PROPERTY: string = 'NoRecordsTemplate';
 const ACTIONFAILURETEMPLATE_PROPERTY: string = 'ActionFailureTemplate';
-const NOHEADERTEMPLATE_PROPERTY: string = 'NoHeaderTemplate';
 
 export interface DropDownBaseClassList {
     root: string;
@@ -217,10 +216,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected footerTemplateId: string;
     protected noRecordsTemplateId: string;
     protected actionFailureTemplateId: string;
-    protected noHeaderTemplateId: string;
-    protected headerElement: HTMLElement;
-    protected groupHeaderName: string;
-
     /**
      * The `fields` property maps the columns of the data table and binds the data to the component.
      * * text - Maps the text column from data table for each list item.
@@ -570,8 +565,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
             this.DropDownBaseupdateBlazorTemplates(false, false, !actionFailure, actionFailure, false, false, false, false);
         } else {
-            let l10nLocale: Object = { noRecordsTemplate: 'No Records Found', actionFailureTemplate: 'The Request Failed',
-                                       noHeaderTemplate: 'Group'};
+            let l10nLocale: Object = { noRecordsTemplate: 'No Records Found', actionFailureTemplate: 'The Request Failed'};
             let componentLocale: L10n = new L10n(this.getLocaleName(), {}, this.locale);
             if (componentLocale.getConstant('actionFailureTemplate') !== '') {
                 this.l10n = componentLocale;
@@ -583,9 +577,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         }
     }
 
-    protected l10nUpdateUndefinedHeader(): void {
-        // For update ulelement in action complete data         
-    }
     protected getLocaleName(): string {
         return 'drop-down-base';
     };
@@ -598,6 +589,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
     protected getFormattedValue(value: string): string | number | boolean {
         if (this.listData && this.listData.length) {
             let item: { [key: string]: Object } = this.typeOfData(this.listData);
+            if (isBlazor() && isNullOrUndefined(value) || value === 'null') {
+                return null;
+            }
             if (typeof getValue((this.fields.value ? this.fields.value : 'value'), item.item as { [key: string]: Object }) === 'number'
                 || item.typeof === 'number') {
                 return parseFloat(value);
@@ -771,7 +765,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         this.headerTemplateId = `${this.element.id}${HEADERTEMPLATE_PROPERTY}`;
         this.footerTemplateId = `${this.element.id}${FOOTERTEMPLATE_PROPERTY}`;
         this.noRecordsTemplateId = `${this.element.id}${NORECORDSTEMPLATE_PROPERTY}`;
-        this.noHeaderTemplateId = `${this.element.id}${NOHEADERTEMPLATE_PROPERTY}`;
     }
     /**
      * Creates the list items of DropDownBase component.
@@ -981,20 +974,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         } else {
             dataSource = this.getSortedDataSource(dataSource);
         }
-        if (this.getModuleName() !== 'listbox') {
-            this.l10nUpdate();
-            this.groupHeaderName = this.l10n.getConstant('noHeaderTemplate');
-        }
-        let options: { [key: string]: Object } = <{ [key: string]: Object }>this.listOption(dataSource, fields, this.groupHeaderName);
-        if (fields && fields.groupBy && this.getModuleName() !== 'listbox' && this.getModuleName() !== 'multiselect' ) {
-            let text: string = fields.text;
-            options.itemCreated = (args: ItemCreatedArgs) => {
-                if (args.curData[text] === undefined && args.curData.isHeader) {
-                    args.item.textContent = this.groupHeaderName;
-                    args.item.classList.add('e-undefine-group');
-                }
-            };
-        }
+        let options: { [key: string]: Object } = <{ [key: string]: Object }>this.listOption(dataSource, fields);
         let spliceData: { [key: string]: Object; }[] = (dataSource.length > 100) ?
             <{ [key: string]: Object }[]>new DataManager(dataSource as DataOptions | JSON[]).executeLocal(new Query().take(100))
             : dataSource;
@@ -1004,7 +984,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
 
     protected listOption(
         dataSource: { [key: string]: Object }[] | string[] | number[] | boolean[],
-        fields: FieldSettingsModel, headerName?: string): FieldSettingsModel {
+        fields: FieldSettingsModel): FieldSettingsModel {
         let iconCss: boolean = isNullOrUndefined(fields.iconCss) ? false : true;
         let fieldValues: FieldSettingsModel = !isNullOrUndefined((fields as FieldSettingsModel & { properties: Object }).properties) ?
             (fields as FieldSettingsModel & { properties: Object }).properties : fields;
@@ -1069,7 +1049,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 <{ [key: string]: Object }[]>new DataManager(dataSource as DataOptions | JSON[]).executeLocal(new Query().take(100))
                 : dataSource;
             ulElement = this.templateListItem((this.getModuleName() === 'autocomplete') ? spliceData : dataSource, fields);
-            this.DropDownBaseupdateBlazorTemplates(true, false, false, false, false, false, false, false);
+            let isTempEmpty: boolean = (this.getModuleName() === 'listbox') ? true : false;
+            this.DropDownBaseupdateBlazorTemplates(true, false, false, false, false, false, false, isTempEmpty);
         } else {
             ulElement = this.createListItems(listData, fields);
         }
@@ -1090,7 +1071,13 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         let item: { [key: string]: Object } = { typeof: null, item: null };
         for (let i: number = 0; (!isNullOrUndefined(items) && i < items.length); i++) {
             if (!isNullOrUndefined(items[i])) {
-                return item = { typeof: typeof items[i], item: items[i] };
+                let listDataType: boolean = typeof (items[i]) === 'string' ||
+                    typeof (items[i]) === 'number' || typeof (items[i]) === 'boolean';
+                let isNullData: boolean = listDataType ? isNullOrUndefined(items[i]) :
+                    isNullOrUndefined(getValue((this.fields.value ? this.fields.value : 'value'), items[i]));
+                if (!isNullData) {
+                    return item = { typeof: typeof items[i], item: items[i] };
+                }
             }
         }
         return item;
@@ -1235,17 +1222,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                     }
                     break;
                 case 'locale':
-                    let l10nLocale: Object = {noRecordsTemplate: 'No Records Found', actionFailureTemplate: 'The Request Failed',
-                                              noHeaderTemplate: 'Group'};
-                        this.l10n = new L10n(this.getModuleName() === 'listbox' ? 'listbox' : 'dropdowns', l10nLocale, this.locale);
-                    if (this.list && (!isNullOrUndefined(this.liCollections) && this.liCollections.length === 0)) {
-                        this.l10nUpdate();
-                    } else if (this.fields.groupBy && this.list && this.list.querySelector('.e-list-group-item.e-undefine-group')
-                               && this.getModuleName() !== 'listbox') {
-                        let localizedText: string = this.l10n.getConstant('noHeaderTemplate');
-                        (this.list.querySelector('.e-list-group-item.e-undefine-group') as HTMLElement).innerText =  localizedText;
-                        this.l10nUpdateUndefinedHeader();
-                    }
+                    if (this.list && (!isNullOrUndefined(this.liCollections) && this.liCollections.length === 0)) { this.l10nUpdate(); }
                     break;
                 case 'zIndex':
                     this.setProperties({ zIndex: newProp.zIndex }, true);

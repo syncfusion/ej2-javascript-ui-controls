@@ -56,6 +56,8 @@ const INDETERMINATE: string = 'e-stop';
 const CHECKBOXWRAP: string = 'e-checkbox-wrapper';
 const CHECKBOXFRAME: string = 'e-frame';
 const CHECKBOXRIPPLE: string = 'e-ripple-container';
+const RIPPLE: string = 'e-ripple';
+const RIPPLEELMENT: string = 'e-ripple-element';
 const FOCUS: string = 'e-node-focus';
 const IMAGE: string = 'e-list-img';
 const BIGGER: string = 'e-bigger';
@@ -2052,6 +2054,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             if (!li) {
                 return;
             } else {
+                let rippleElement: Element =  select('.' + RIPPLEELMENT, li);
+                let rippleIcons: Element = select('.' + ICON, li);
                 this.removeHover();
                 this.setFocusElement(li);
                 if (this.showCheckBox && !li.classList.contains('e-disable')) {
@@ -2064,9 +2068,17 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     }
                 }
                 if (classList.contains(EXPANDABLE)) {
-                        this.expandAction(li, target, event);
+                    this.expandAction(li, target, event);
                 } else if (classList.contains(COLLAPSIBLE)) {
-                        this.collapseNode(li, target, event);
+                    this.collapseNode(li, target, event);
+                } else if (rippleElement && rippleIcons) {
+                    if (rippleIcons.classList.contains(RIPPLE) && rippleIcons.classList.contains(EXPANDABLE)) {
+                        this.expandAction(li, rippleIcons, event);
+                    } else if (rippleIcons.classList.contains(RIPPLE) && rippleIcons.classList.contains(COLLAPSIBLE)) {
+                        this.collapseNode(li, rippleIcons, event);
+                    } else if (!classList.contains(PARENTITEM) && !classList.contains(LISTITEM)) {
+                        this.toggleSelect(li, event.originalEvent, false);
+                    }
                 } else {
                     if (!classList.contains(PARENTITEM) && !classList.contains(LISTITEM)) {
                         this.toggleSelect(li, event.originalEvent, false);

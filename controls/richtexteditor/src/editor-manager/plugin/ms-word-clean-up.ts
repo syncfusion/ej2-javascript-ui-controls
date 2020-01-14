@@ -81,6 +81,7 @@ export class MsWordPaste {
     }
 
     private imageConversion(elm: HTMLElement, rtfData: string): void {
+        this.checkVShape(elm);
         let imgElem: NodeListOf<HTMLImageElement> = elm.querySelectorAll('img');
         let imgSrc: string[] = [];
         let base64Src: string[] = [];
@@ -97,6 +98,26 @@ export class MsWordPaste {
             for (let i: number = 0; i < imgElem.length; i++) {
                 imgElem[i].setAttribute('src', base64Src[i]);
                 imgElem[i].setAttribute('id', 'msWordImg-' + imgName[i]);
+            }
+        }
+    }
+
+    private checkVShape(elm: HTMLElement): void {
+        let allNodes: NodeListOf<Element> = elm.querySelectorAll('*');
+        for (let i: number = 0; i < allNodes.length; i++) {
+            switch (allNodes[i].nodeName) {
+                case 'V:SHAPETYPE':
+                    detach(allNodes[i]);
+                    break;
+                case 'V:SHAPE':
+                    if (allNodes[i].firstElementChild.nodeName === 'V:IMAGEDATA') {
+                        let src: string = (allNodes[i].firstElementChild as HTMLElement).getAttribute('src');
+                        let imgElement: HTMLElement = createElement('img') as HTMLElement;
+                        imgElement.setAttribute('src', src);
+                        allNodes[i].parentElement.insertBefore(imgElement, allNodes[i]);
+                        detach(allNodes[i]);
+                    }
+                    break;
             }
         }
     }
@@ -448,16 +469,25 @@ export class MsWordPaste {
                     temp.setAttribute('level', collection[index].nestedLevel.toString());
                 }
             } else if (collection[index].nestedLevel > pLevel) {
-                for (let j: number = 0; j < collection[index].nestedLevel - pLevel; j++) {
-                    prevList.appendChild(temp = createElement(collection[index].listType));
-                    prevList = createElement('li', { styles: 'list-style-type: none;' });
+                if (!isNOU(prevList)) {
+                    for (let j: number = 0; j < collection[index].nestedLevel - pLevel; j++) {
+                        prevList.appendChild(temp = createElement(collection[index].listType));
+                        prevList = createElement('li', { styles: 'list-style-type: none;' });
+                        temp.appendChild(prevList);
+                    }
+                    prevList.appendChild(pElement);
+                    temp.setAttribute('level', collection[index].nestedLevel.toString());
+                    temp.style.listStyle = this.getListStyle(collection[index].listType, collection[index].nestedLevel);
+                    (temp.childNodes[0] as HTMLElement).style.listStyle =
+                        this.getListStyle(collection[index].listType, collection[index].nestedLevel);
+                } else {
+                    root.appendChild(temp = createElement(collection[index].listType));
+                    prevList = createElement('li');
+                    prevList.appendChild(pElement);
                     temp.appendChild(prevList);
+                    temp.setAttribute('level', collection[index].nestedLevel.toString());
+                    temp.style.listStyle = this.getListStyle(collection[index].listType, collection[index].nestedLevel);
                 }
-                prevList.appendChild(pElement);
-                temp.setAttribute('level', collection[index].nestedLevel.toString());
-                temp.style.listStyle = this.getListStyle(collection[index].listType, collection[index].nestedLevel);
-                (temp.childNodes[0] as HTMLElement).style.listStyle =
-                    this.getListStyle(collection[index].listType, collection[index].nestedLevel);
             } else if (collection[index].nestedLevel === 1) {
                 if ((root.lastChild as HTMLElement).tagName.toLowerCase() === collection[index].listType) {
                     temp = root.lastChild as HTMLElement;
@@ -508,7 +538,17 @@ export class MsWordPaste {
     }
 
     private getListContent(elem: Element): void {
-        this.listContents.push(elem.firstElementChild.textContent.trim());
+        let pushContent: string = '';
+        if (elem.firstElementChild.textContent.trim() === '' &&
+        !isNOU(elem.firstElementChild.firstElementChild) &&
+        elem.firstElementChild.firstElementChild.nodeName === 'IMG') {
+            pushContent = elem.innerHTML.trim();
+            this.listContents.push('');
+            this.listContents.push(pushContent);
+        } else {
+            pushContent = elem.firstElementChild.textContent.trim();
+            this.listContents.push(pushContent);
+        }
         detach(elem.firstElementChild);
         this.listContents.push(elem.innerHTML);
     }

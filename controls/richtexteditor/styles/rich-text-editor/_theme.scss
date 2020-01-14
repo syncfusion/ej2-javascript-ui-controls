@@ -438,11 +438,11 @@
     border: 1px solid $rte-table-span-active-border-color;
   }
 
-  .e-richtexteditor .e-rte-content .e-content table.e-alternate-border tbody tr:nth-child(2n) {
+  .e-rte-table.e-alternate-border tbody tr:nth-child(2n) {
     background-color: $rte-table-alternate-color;
   }
 
-  .e-richtexteditor .e-rte-content .e-content table th {
+  .e-rte-table th {
     background-color: $rte-table-header-bg;
   }
 

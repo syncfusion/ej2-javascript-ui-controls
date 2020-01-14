@@ -648,7 +648,8 @@ export class StampTool extends MoveTool {
  */
 export class ConnectTool extends ToolBase {
 
-    protected endPoint: string;
+    /**   @private  */
+    public endPoint: string;
 
     /**   @private  */
     public selectedSegment: PointModel;

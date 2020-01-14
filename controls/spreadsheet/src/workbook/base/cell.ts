@@ -1,8 +1,9 @@
 import { Property, ChildProperty, Complex, extend } from '@syncfusion/ej2-base';
-import { SheetModel, getRowsHeight, getColumnsWidth, CellModel } from './index';
+import { SheetModel, getRowsHeight, getColumnsWidth } from './index';
 import { CellStyleModel, CellStyle, HyperlinkModel } from '../common/index';
 import { getRow } from './row';
 import { RowModel } from './row-model';
+import { CellModel } from './cell-model';
 /**
  * Represents the cell.
  */

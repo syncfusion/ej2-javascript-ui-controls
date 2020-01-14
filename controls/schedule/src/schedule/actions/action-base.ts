@@ -285,7 +285,8 @@ export class ActionBase {
         if (this.actionObj.scroll.enable && isNullOrUndefined(this.actionObj.scrollInterval)) {
             this.actionObj.scrollInterval = window.setInterval(
                 () => {
-                    if (this.autoScrollValidation(e) && !this.actionObj.clone.classList.contains(cls.ALLDAY_APPOINTMENT_CLASS)) {
+                    if (this.autoScrollValidation(e) && !this.actionObj.clone.classList.contains(cls.ALLDAY_APPOINTMENT_CLASS) &&
+                        this.actionObj.groupIndex !== 0) {
                         this.autoScroll();
                         if (this.actionObj.action === 'drag') {
                             this.parent.dragAndDropModule.updateDraggingDateTime(e);

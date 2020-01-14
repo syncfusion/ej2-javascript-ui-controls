@@ -5317,4 +5317,19 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         return rowEle;
     }
+     /**
+     * Gets the hidden columns from the Grid.
+     * @return {Column[]} 
+     * @blazorType List<GridColumn>
+     */
+    public getHiddenColumns(): Column[] {
+        let cols: Column[] = []
+        for (let col of this.columnModel) {
+            if (col.visible === false) {
+                cols.push(col);
+            }
+        }
+        return cols;
+    }
+
 }

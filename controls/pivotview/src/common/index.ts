@@ -13,6 +13,7 @@ export * from './base/pivot-common';
 export * from './base/interface';
 export * from './base/enum';
 export * from './base/constant';
+export * from './base/themes';
 export * from './popups/error-dialog';
 export * from './popups/filter-dialog';
 export * from './popups/context-menu';

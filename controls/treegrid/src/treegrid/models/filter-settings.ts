@@ -1,5 +1,5 @@
 import { Collection, Property, ChildProperty } from '@syncfusion/ej2-base';
-import { ICustomOptr, FilterBarMode, FilterType, PredicateModel } from '@syncfusion/ej2-grids';
+import { ICustomOptr, FilterBarMode, FilterType, PredicateModel as GridPredicateModel } from '@syncfusion/ej2-grids';
 import { FilterHierarchyMode } from '../enum';
 
 
@@ -156,8 +156,8 @@ export class FilterSettings extends ChildProperty<FilterSettings> {
      * Specifies the columns to be filtered at initial rendering of the TreeGrid. You can also get the columns that were currently filtered.
      * @default []
      */
-    @Collection<PredicateModel[]>([], Predicate)
-    public columns: PredicateModel[];
+    @Collection<GridPredicateModel[]>([], Predicate)
+    public columns: GridPredicateModel[];
     /**
      * Defines options for filtering type. The available options are
      * * `Menu` - Specifies the filter type as menu.

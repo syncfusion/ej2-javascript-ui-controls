@@ -816,7 +816,6 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
     };
     Selection.prototype.updateGridActions = function (args) {
-        var _this = this;
         var requestType = args.requestType;
         var childData;
         var childLength;
@@ -857,14 +856,14 @@ var Selection = /** @__PURE__ @class */ (function () {
                 this.selectedIndexes = [];
                 childData = (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0) ?
                     this.parent.getCurrentViewRecords() : this.parent.flatData;
-                childData.forEach(function (record) {
-                    if (record.hasChildRecords) {
-                        _this.updateParentSelection(record);
+                for (var i = 0; i < childData.length; i++) {
+                    if (childData[i].hasChildRecords) {
+                        this.updateParentSelection(childData[i]);
                     }
                     else {
-                        _this.updateSelectedItems(record, record.checkboxState);
+                        this.updateSelectedItems(childData[i], childData[i].checkboxState);
                     }
-                });
+                }
                 this.headerSelection();
             }
         }
@@ -1607,8 +1606,16 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
         var requestType = getObject('requestType', args);
         var actionData = getObject('data', args);
         var action = getObject('action', args);
+        var actionAddArgs = actionArgs;
+        var primaryKeyColumnName = this.parent.getPrimaryKeyFieldNames()[0];
+        var dataValue = getObject('data', actionAddArgs);
+        if ((!isNullOrUndefined(actionAddArgs)) && (!isNullOrUndefined(actionAddArgs.action)) && (actionAddArgs.action === 'add')
+            && (!isNullOrUndefined(actionAddArgs.data)) && isNullOrUndefined(actionAddArgs.data[primaryKeyColumnName])) {
+            actionAddArgs.data[primaryKeyColumnName] = args.result[actionAddArgs.index][primaryKeyColumnName];
+            dataValue.taskData[primaryKeyColumnName] = args.result[actionAddArgs.index][primaryKeyColumnName];
+        }
         if ((!isNullOrUndefined(actionArgs) && Object.keys(actionArgs).length) || requestType === 'save') {
-            requestType = requestType ? requestType : actionArgs.requestType.toString();
+            requestType = requestType ? requestType : actionArgs.requestType;
             actionData = actionData ? actionData : getObject('data', actionArgs);
             action = action ? action : getObject('action', actionArgs);
             if (this.parent.editSettings.mode === 'Batch') {
@@ -3449,7 +3456,6 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * @hidden
      */
     TreeGrid.prototype.getPersistData = function () {
-        var _this = this;
         var keyEntity = ['pageSettings', 'sortSettings',
             'filterSettings', 'columns', 'searchSettings', 'selectedRowIndex'];
         var ignoreOnPersist = {
@@ -3460,33 +3466,32 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         };
         var ignoreOnColumn = ['filter', 'edit', 'filterBarTemplate', 'headerTemplate', 'template',
             'commandTemplate', 'commands', 'dataSource'];
-        keyEntity.forEach(function (value) {
-            var currentObject = _this[value];
-            for (var _i = 0, _a = ignoreOnPersist[value]; _i < _a.length; _i++) {
+        for (var i = 0; i < keyEntity.length; i++) {
+            var currentObject = this[keyEntity[i]];
+            for (var _i = 0, _a = ignoreOnPersist[keyEntity[i]]; _i < _a.length; _i++) {
                 var val = _a[_i];
                 delete currentObject[val];
             }
-        });
+        }
         this.ignoreInArrays(ignoreOnColumn, this.columns);
         return this.addOnPersist(keyEntity);
     };
     TreeGrid.prototype.ignoreInArrays = function (ignoreOnColumn, columns) {
-        var _this = this;
-        columns.forEach(function (column) {
-            if (column.columns) {
-                _this.ignoreInColumn(ignoreOnColumn, column);
-                _this.ignoreInArrays(ignoreOnColumn, column.columns);
+        for (var i = 0; i < columns.length; i++) {
+            if (columns[i].columns) {
+                this.ignoreInColumn(ignoreOnColumn, columns[i]);
+                this.ignoreInArrays(ignoreOnColumn, columns[i].columns);
             }
             else {
-                _this.ignoreInColumn(ignoreOnColumn, column);
+                this.ignoreInColumn(ignoreOnColumn, columns[i]);
             }
-        });
+        }
     };
     TreeGrid.prototype.ignoreInColumn = function (ignoreOnColumn, column) {
-        ignoreOnColumn.forEach(function (val) {
-            delete column[val];
+        for (var i = 0; i < ignoreOnColumn.length; i++) {
+            delete column[ignoreOnColumn[i]];
             column.filter = {};
-        });
+        }
     };
     TreeGrid.prototype.mouseClickHandler = function (e) {
         if (!isNullOrUndefined(e.touches)) {
@@ -7281,7 +7286,6 @@ var Aggregate$1 = /** @__PURE__ @class */ (function () {
         return itemData;
     };
     Aggregate$$1.prototype.getSummaryValues = function (summaryColumn, summaryData) {
-        var _this = this;
         var qry = new Query();
         var single;
         single = {};
@@ -7299,17 +7303,17 @@ var Aggregate$1 = /** @__PURE__ @class */ (function () {
         var types = summaryColumn.type;
         var summaryKey;
         types = [summaryColumn.type];
-        types.forEach(function (type) {
-            summaryKey = type;
-            var key = summaryColumn.field + ' - ' + type.toLowerCase();
-            var val = type !== 'Custom' ? getObject('aggregates', sumData) :
-                calculateAggregate(type, sumData, summaryColumn, _this.parent);
+        for (var i = 0; i < types.length; i++) {
+            summaryKey = types[i];
+            var key = summaryColumn.field + ' - ' + types[i].toLowerCase();
+            var val = types[i] !== 'Custom' ? getObject('aggregates', sumData) :
+                calculateAggregate(types[i], sumData, summaryColumn, this.parent);
             var disp = summaryColumn.columnName;
-            var value = type !== 'Custom' ? val[key] : val;
+            var value_1 = types[i] !== 'Custom' ? val[key] : val;
             single[disp] = single[disp] || {};
-            single[disp][key] = value;
-            single[disp][type] = !isNullOrUndefined(val) ? formatFn(value) : ' ';
-        });
+            single[disp][key] = value_1;
+            single[disp][types[i]] = !isNullOrUndefined(val) ? formatFn(value_1) : ' ';
+        }
         helper.format = summaryColumn.getFormatter();
         var cellElement = createElement('td', {
             className: 'e-summary'
@@ -8316,6 +8320,7 @@ var DetailRow$1 = /** @__PURE__ @class */ (function () {
     DetailRow$$1.prototype.addEventListener = function () {
         this.parent.on('dataBoundArg', this.dataBoundArg, this);
         this.parent.on('detaildataBound', this.detaildataBound, this);
+        this.parent.grid.on('detail-indentcell-info', this.setIndentVisibility, this);
         this.parent.on('childRowExpand', this.childRowExpand, this);
         this.parent.on('rowExpandCollapse', this.rowExpandCollapse, this);
         this.parent.on('actioncomplete', this.actioncomplete, this);
@@ -8332,6 +8337,11 @@ var DetailRow$1 = /** @__PURE__ @class */ (function () {
         this.parent.off('childRowExpand', this.childRowExpand);
         this.parent.off('rowExpandCollapse', this.rowExpandCollapse);
         this.parent.off('actioncomplete', this.actioncomplete);
+        this.parent.grid.off('detail-indentcell-info', this.setIndentVisibility);
+    };
+    DetailRow$$1.prototype.setIndentVisibility = function (args) {
+        var visible = 'visible';
+        args[visible] = false;
     };
     DetailRow$$1.prototype.dataBoundArg = function () {
         var detailele = this.parent.getRows().filter(function (e) {
@@ -8478,7 +8488,7 @@ var VirtualTreeContentRenderer = /** @__PURE__ @class */ (function (_super) {
     VirtualTreeContentRenderer.prototype.renderTable = function () {
         _super.prototype.renderTable.call(this);
         getValue('observer', this).options.debounceEvent = false;
-        this.observers = new TreeInterSectionObserver(getValue('observer', this).element, getValue('observer', this).options);
+        this.observers = new TreeInterSectionObserver(this.parent, getValue('observer', this).element, getValue('observer', this).options);
         this.contents = this.getPanel().firstChild;
     };
     VirtualTreeContentRenderer.prototype.scrollListeners = function (scrollArgs) {

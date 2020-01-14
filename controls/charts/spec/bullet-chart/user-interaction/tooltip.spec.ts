@@ -52,5 +52,20 @@ describe('Bullet Chart Scale', () => {
             trigger.mousemoveEvent(segement, 0, 0, 200, 200);
             done();
         });
-    })
+        it('Checking with tooltip border and fill customization', (done: Function) => {
+            bullet.tooltip.enable = true;
+            bullet.tooltip.border = {width: 4, color: 'green'};
+            bullet.tooltip.fill = 'red';
+            bullet.refresh();
+
+            segement = document.getElementById(sliceid);
+            trigger.mousemoveEvent(segement, 0, 0, 200, 35);
+            let tooltip: HTMLElement = document.getElementById('tooltipDivcontainer');
+            expect(tooltip != null).toBe(true);
+            expect(tooltip.style.getPropertyValue('background-color')).toBe('red');
+            segement = document.getElementById('container_svg_ComparativeMeasure_0');
+            trigger.mousemoveEvent(segement, 0, 0, 200, 200);
+            done();
+        });
+    });
 });

@@ -105,15 +105,17 @@ export class EventBase {
             if (this.parent.dataType === 'olap') {
                 treeData = this.getOlapData(fieldName, isInclude);
             } else {
+                let members: IAxisSet[] =
+                    PivotUtil.getClonedData(this.parent.engineModule.fieldList[fieldName].dateMember as []) as IAxisSet[];
                 /* tslint:disable:typedef */
-                this.parent.engineModule.fieldList[fieldName].dateMember =
+                members =
                     this.parent.engineModule.fieldList[fieldName].sort === 'Ascending' ?
-                        (this.parent.engineModule.fieldList[fieldName].dateMember.sort((a, b) => (a.actualText > b.actualText) ? 1 :
+                        (members.sort((a, b) => (a.actualText > b.actualText) ? 1 :
                             ((b.actualText > a.actualText) ? -1 : 0))) :
                         this.parent.engineModule.fieldList[fieldName].sort === 'Descending' ?
-                            (this.parent.engineModule.fieldList[fieldName].dateMember.sort((a, b) => (a.actualText < b.actualText) ? 1 :
+                            (members.sort((a, b) => (a.actualText < b.actualText) ? 1 :
                                 ((b.actualText < a.actualText) ? -1 : 0))) :
-                            this.parent.engineModule.fieldList[fieldName].dateMember;
+                            members;
                 /* tslint:enable:typedef */
                 let filterObj: IFilter = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
                 if (!isNullOrUndefined(filterObj)) {
@@ -121,7 +123,7 @@ export class EventBase {
                     filterItems = filterObj.items ? filterObj.items : [];
                 }
                 treeData =
-                    this.getTreeData(isInclude, this.parent.engineModule.fieldList[fieldName].dateMember, filterItems, fieldName);
+                    this.getTreeData(isInclude, members, filterItems, fieldName);
             }
         }
         if (this.parent.filterDialog.dialogPopUp) {

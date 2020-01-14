@@ -4376,7 +4376,7 @@ function getObjectArray(instance, curKey, defaultValue, type, isSetter, isFactor
             result.push(inst);
         }
         else {
-            result.push(createInstance(curType, [instance, curKey, defaultValue[i], true]));
+            result.push(createInstance(curType, [instance, curKey, defaultValue[i], false]));
         }
     }
     return result;
@@ -5324,8 +5324,8 @@ var ChildProperty = /** @__PURE__ @class */ (function () {
         this.parentObj = parent;
         this.controlParent = this.parentObj.controlParent || this.parentObj;
         this.propName = propName;
-        this.setProperties(defaultValue, true);
         this.isParentArray = isArray;
+        this.setProperties(defaultValue, true);
     }
     /**
      * Updates the property changes
@@ -5429,6 +5429,7 @@ var ChildProperty = /** @__PURE__ @class */ (function () {
             var parent_1;
             var newChanges = {};
             var parentKey = isSaveChanges ? this.getParentKey(true) + '.' + key : key;
+            /* istanbul ignore else  */
             if (parentKey.indexOf('.') !== -1) {
                 var complexKeys = parentKey.split('.');
                 parent_1 = newChanges;
@@ -5443,6 +5444,7 @@ var ChildProperty = /** @__PURE__ @class */ (function () {
                 parent_1 = newChanges[parentKey];
                 newChanges[parentKey][key] = value;
             }
+            /* istanbul ignore next */
             if (this.isParentArray) {
                 var actionProperty = 'ejsAction';
                 parent_1[actionProperty] = action ? action : 'none';
@@ -5454,6 +5456,7 @@ var ChildProperty = /** @__PURE__ @class */ (function () {
         // tslint:disable-next-line:no-any
         var index = '';
         var propName = this.propName;
+        /* istanbul ignore next */
         if (this.isParentArray) {
             index = this.parentObj[this.propName].indexOf(this);
             var valueLength = this.parentObj[this.propName].length;

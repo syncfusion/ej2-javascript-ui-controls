@@ -355,9 +355,9 @@ export class CommandHandler {
         }
         let returnargs: IConnectionChangeEventArgs | IBlazorConnectionChangeEventArgs;
         let arg: IConnectionChangeEventArgs | IBlazorConnectionChangeEventArgs = {
+            cancel: false, state: 'Changing', connectorEnd: endPoint,
             connector: cloneBlazorObject(connector), oldValue: { nodeId: oldChanges[nodeEndId], portId: oldChanges[portEndId] },
-            newValue: { nodeId: newChanges[nodeEndId], portId: newChanges[portEndId] },
-            cancel: false, state: 'Changing', connectorEnd: endPoint
+            newValue: { nodeId: newChanges[nodeEndId], portId: newChanges[portEndId] }
         };
         if (isBlazor()) {
             arg = {
@@ -400,14 +400,14 @@ export class CommandHandler {
                     nodeId: newChanges[nodeEndId],
                     portId: newChanges[portEndId]
                 },
-                cancel: false, state: 'Changed', connectorEnd: endPoint
+                cancel: false, state: 'Changing', connectorEnd: endPoint
             };
             if (isBlazor()) {
                 arg = {
                     connector: cloneBlazorObject(connector),
                     oldValue: undefined,
                     newValue: undefined,
-                    cancel: false, state: 'Changed', connectorEnd: endPoint
+                    cancel: false, state: 'Changing', connectorEnd: endPoint
                 };
                 if (endPoint === 'ConnectorSourceEnd') {
 
@@ -427,9 +427,7 @@ export class CommandHandler {
                 }
                 returnargs = arg;
             }
-            if (!checkBlazor) {
-                this.triggerEvent(DiagramEvent.connectionChange, arg);
-            }
+
         }
         if (this.enableCloneObject) {
             if (connectedNode === undefined) {
@@ -636,14 +634,14 @@ export class CommandHandler {
                 arg = {
                     connector: cloneBlazorObject(connector), oldValue: { nodeId: oldNodeId, portId: oldPortId },
                     newValue: { nodeId: newChanges[nodeEndId], portId: newChanges[portEndId] }, cancel: false,
-                    state: 'Changed', connectorEnd: endPoint
+                    state: 'Changing', connectorEnd: endPoint
                 };
                 if (isBlazor()) {
                     arg = {
                         newValue: undefined,
                         connector: cloneBlazorObject(connector),
                         oldValue: undefined,
-                        cancel: false, state: 'Changed', connectorEnd: endPoint,
+                        cancel: false, state: 'Changing', connectorEnd: endPoint,
                     };
                     if (endPoint === 'ConnectorSourceEnd') {
                         (arg as IBlazorConnectionChangeEventArgs).oldValue = {
@@ -661,9 +659,7 @@ export class CommandHandler {
                         };
                     }
                 }
-                if (!checkBlazor) {
-                    this.triggerEvent(DiagramEvent.connectionChange, arg);
-                }
+
             }
         }
         this.renderHighlighter(args, undefined, endPoint === 'ConnectorSourceEnd');
@@ -1494,7 +1490,7 @@ export class CommandHandler {
             let ejsInterop: string = 'ejsInterop';
             let blazor: string = 'Blazor';
             if (window && window[blazor]) {
-                let obj: object = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': { selectedItems: diff }};
+                let obj: object = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': { selectedItems: diff } };
                 window[ejsInterop].updateBlazorProperties(obj, this.diagram);
             }
         }
@@ -1970,8 +1966,10 @@ export class CommandHandler {
                 zIndexTable[currentObject] = intersectArray[intersectArray.length - 1].id;
                 this.diagram.nameTable[zIndexTable[currentObject]].zIndex = currentObject;
                 if (this.diagram.mode === 'SVG') {
-                    this.moveSvgNode(objectId, zIndexTable[intersectArray[intersectArray.length - 1].zIndex]);
-                    this.updateNativeNodeIndex(objectId, zIndexTable[intersectArray[intersectArray.length - 1].zIndex]);
+                    if (!(node.children && node.children.length > 0)) {
+                        this.moveSvgNode(objectId, zIndexTable[intersectArray[intersectArray.length - 1].zIndex]);
+                        this.updateNativeNodeIndex(objectId, zIndexTable[intersectArray[intersectArray.length - 1].zIndex]);
+                    }
                 } else {
                     this.diagram.refreshCanvasLayers();
                 }
@@ -2154,10 +2152,10 @@ export class CommandHandler {
         }
     }
 
-    
 
-  
-   
+
+
+
 
     /** @private */
 
@@ -2175,7 +2173,7 @@ export class CommandHandler {
         }
     }
 
-   
+
 
 
     /** @private */
@@ -2413,8 +2411,8 @@ export class CommandHandler {
                                     connector, tx, ty, true, null, 'ConnectorSourceEnd', undefined, undefined, undefined,
                                     (actualObject.parentId &&
                                         (this.diagram.diagramActions & DiagramAction.isGroupDragging)) ? false : true);
-                                }
-                            } else {
+                            }
+                        } else {
                             let firstSegment: OrthogonalSegment = connector.segments[0] as OrthogonalSegment;
                             let secondSegment: OrthogonalSegment = connector.segments[1] as OrthogonalSegment;
                             let cornerPoints: Corners = swapBounds(
@@ -3612,13 +3610,13 @@ export class CommandHandler {
         }
         obj = renderContainerHelper(this.diagram, obj) || obj;
         if (this.checkBoundaryConstraints(tx, ty)) {
-            this.diagram.diagramActions = this.diagram.diagramActions | DiagramAction.PreventZIndexOnDragging;
+            this.diagram.diagramActions = this.diagram.diagramActions | (DiagramAction.PreventZIndexOnDragging | DiagramAction.DragUsingMouse);
             let actualObject: Node = this.diagram.selectedObject.actualObject as Node;
             if ((actualObject && actualObject instanceof Node && actualObject.isLane &&
                 canLaneInterchange(actualObject, this.diagram)) || (!actualObject || !actualObject.isLane)) {
                 this.diagram.drag(obj, tx, ty);
             }
-            this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.PreventZIndexOnDragging;
+            this.diagram.diagramActions = this.diagram.diagramActions & ~(DiagramAction.PreventZIndexOnDragging | DiagramAction.DragUsingMouse);
             this.diagram.refreshCanvasLayers();
             return true;
         }
@@ -3864,7 +3862,7 @@ export class CommandHandler {
                 let blazor: string = 'Blazor';
                 let diagramObject: Object = { nodes: changeNodes, connectors: changeConnectors };
                 if (window && window[blazor] && (changeConnectors.length + changeNodes.length)) {
-                    let obj:object = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': diagramObject };
+                    let obj: object = { 'methodName': 'UpdateBlazorProperties', 'diagramobj': diagramObject };
                     window[ejsInterop].updateBlazorProperties(obj, this.diagram);
                 }
             }

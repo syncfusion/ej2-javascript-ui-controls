@@ -95,12 +95,24 @@ export class FormFields {
             // tslint:disable-next-line
             let currentData: any = formFieldsData[m];
             if (currentData.Name === 'Textbox' || currentData.Name === 'Password' || currentData.Multiline) {
+                if (currentData.Text === '' || currentData.Text === null) {
+                    this.pdfViewerBase.validateForm = true;
+                }
                 datas[currentData.FieldName] = currentData.Text;
             } else if (currentData.Name === 'RadioButton' && currentData.Selected) {
+                if (currentData.Selected === false) {
+                    this.pdfViewerBase.validateForm = true;
+                }
                 datas[currentData.GroupName] = currentData.Value;
             } else if (currentData.Name === 'CheckBox') {
+                if (currentData.Selected === false) {
+                    this.pdfViewerBase.validateForm = true;
+                }
                 datas[currentData.GroupName] = currentData.Selected;
             } else if (currentData.Name === 'DropDown') {
+                if (currentData.SelectedValue === '') {
+                    this.pdfViewerBase.validateForm = true;
+                }
                 datas[currentData.Text] = currentData.SelectedValue;
             } else if (currentData.Name === 'ListBox') {
                 // tslint:disable-next-line
@@ -117,6 +129,9 @@ export class FormFields {
                 let collectionData: any = processPathData(currentData.Value);
                 // tslint:disable-next-line
                 let csData: any = splitArrayCollection(collectionData);
+                if (currentData.Value === null || currentData.Value === '') {
+                    this.pdfViewerBase.validateForm = true;
+                }
                 datas[currentData.FieldName] = JSON.stringify(csData);
             }
         }

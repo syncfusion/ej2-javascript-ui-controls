@@ -1,4 +1,4 @@
-import { Property, Collection, ChildProperty } from '@syncfusion/ej2-base';import { CellModel, SheetModel, RowModel } from './index';import { Cell } from './cell';
+import { Property, Collection, ChildProperty } from '@syncfusion/ej2-base';import { CellModel, SheetModel } from './index';import { Cell } from './cell';
 
 /**
  * Interface for a class Row

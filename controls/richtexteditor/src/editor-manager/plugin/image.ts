@@ -77,6 +77,7 @@ export class ImageCommand {
     }
 
     private createImage(e: IHtmlItem): void {
+        e.item.url = isNullOrUndefined(e.item.url) || e.item.url === 'undefined' ? e.item.src : e.item.url;
         if (!isNullOrUndefined(e.item.selectParent) && (e.item.selectParent[0] as HTMLElement).tagName === 'IMG') {
             let imgEle: HTMLElement = e.item.selectParent[0] as HTMLElement;
             imgEle.setAttribute('src', e.item.url);

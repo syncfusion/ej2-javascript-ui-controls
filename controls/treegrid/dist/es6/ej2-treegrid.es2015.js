@@ -809,14 +809,14 @@ class Selection {
                 this.selectedIndexes = [];
                 childData = (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0) ?
                     this.parent.getCurrentViewRecords() : this.parent.flatData;
-                childData.forEach((record) => {
-                    if (record.hasChildRecords) {
-                        this.updateParentSelection(record);
+                for (let i = 0; i < childData.length; i++) {
+                    if (childData[i].hasChildRecords) {
+                        this.updateParentSelection(childData[i]);
                     }
                     else {
-                        this.updateSelectedItems(record, record.checkboxState);
+                        this.updateSelectedItems(childData[i], childData[i].checkboxState);
                     }
-                });
+                }
                 this.headerSelection();
             }
         }
@@ -1516,8 +1516,16 @@ class DataManipulation {
         let requestType = getObject('requestType', args);
         let actionData = getObject('data', args);
         let action = getObject('action', args);
+        let actionAddArgs = actionArgs;
+        let primaryKeyColumnName = this.parent.getPrimaryKeyFieldNames()[0];
+        let dataValue = getObject('data', actionAddArgs);
+        if ((!isNullOrUndefined(actionAddArgs)) && (!isNullOrUndefined(actionAddArgs.action)) && (actionAddArgs.action === 'add')
+            && (!isNullOrUndefined(actionAddArgs.data)) && isNullOrUndefined(actionAddArgs.data[primaryKeyColumnName])) {
+            actionAddArgs.data[primaryKeyColumnName] = args.result[actionAddArgs.index][primaryKeyColumnName];
+            dataValue.taskData[primaryKeyColumnName] = args.result[actionAddArgs.index][primaryKeyColumnName];
+        }
         if ((!isNullOrUndefined(actionArgs) && Object.keys(actionArgs).length) || requestType === 'save') {
-            requestType = requestType ? requestType : actionArgs.requestType.toString();
+            requestType = requestType ? requestType : actionArgs.requestType;
             actionData = actionData ? actionData : getObject('data', actionArgs);
             action = action ? action : getObject('action', actionArgs);
             if (this.parent.editSettings.mode === 'Batch') {
@@ -3261,31 +3269,31 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         };
         let ignoreOnColumn = ['filter', 'edit', 'filterBarTemplate', 'headerTemplate', 'template',
             'commandTemplate', 'commands', 'dataSource'];
-        keyEntity.forEach((value) => {
-            let currentObject = this[value];
-            for (let val of ignoreOnPersist[value]) {
+        for (let i = 0; i < keyEntity.length; i++) {
+            let currentObject = this[keyEntity[i]];
+            for (let val of ignoreOnPersist[keyEntity[i]]) {
                 delete currentObject[val];
             }
-        });
+        }
         this.ignoreInArrays(ignoreOnColumn, this.columns);
         return this.addOnPersist(keyEntity);
     }
     ignoreInArrays(ignoreOnColumn, columns) {
-        columns.forEach((column) => {
-            if (column.columns) {
-                this.ignoreInColumn(ignoreOnColumn, column);
-                this.ignoreInArrays(ignoreOnColumn, column.columns);
+        for (let i = 0; i < columns.length; i++) {
+            if (columns[i].columns) {
+                this.ignoreInColumn(ignoreOnColumn, columns[i]);
+                this.ignoreInArrays(ignoreOnColumn, columns[i].columns);
             }
             else {
-                this.ignoreInColumn(ignoreOnColumn, column);
+                this.ignoreInColumn(ignoreOnColumn, columns[i]);
             }
-        });
+        }
     }
     ignoreInColumn(ignoreOnColumn, column) {
-        ignoreOnColumn.forEach((val) => {
-            delete column[val];
+        for (let i = 0; i < ignoreOnColumn.length; i++) {
+            delete column[ignoreOnColumn[i]];
             column.filter = {};
-        });
+        }
     }
     mouseClickHandler(e) {
         if (!isNullOrUndefined(e.touches)) {
@@ -7021,17 +7029,17 @@ class Aggregate$1 {
         let types = summaryColumn.type;
         let summaryKey;
         types = [summaryColumn.type];
-        types.forEach((type) => {
-            summaryKey = type;
-            let key = summaryColumn.field + ' - ' + type.toLowerCase();
-            let val = type !== 'Custom' ? getObject('aggregates', sumData) :
-                calculateAggregate(type, sumData, summaryColumn, this.parent);
+        for (let i = 0; i < types.length; i++) {
+            summaryKey = types[i];
+            let key = summaryColumn.field + ' - ' + types[i].toLowerCase();
+            let val = types[i] !== 'Custom' ? getObject('aggregates', sumData) :
+                calculateAggregate(types[i], sumData, summaryColumn, this.parent);
             let disp = summaryColumn.columnName;
-            let value = type !== 'Custom' ? val[key] : val;
+            let value = types[i] !== 'Custom' ? val[key] : val;
             single[disp] = single[disp] || {};
             single[disp][key] = value;
-            single[disp][type] = !isNullOrUndefined(val) ? formatFn(value) : ' ';
-        });
+            single[disp][types[i]] = !isNullOrUndefined(val) ? formatFn(value) : ' ';
+        }
         helper.format = summaryColumn.getFormatter();
         let cellElement = createElement('td', {
             className: 'e-summary'
@@ -8031,6 +8039,7 @@ class DetailRow$1 {
     addEventListener() {
         this.parent.on('dataBoundArg', this.dataBoundArg, this);
         this.parent.on('detaildataBound', this.detaildataBound, this);
+        this.parent.grid.on('detail-indentcell-info', this.setIndentVisibility, this);
         this.parent.on('childRowExpand', this.childRowExpand, this);
         this.parent.on('rowExpandCollapse', this.rowExpandCollapse, this);
         this.parent.on('actioncomplete', this.actioncomplete, this);
@@ -8047,6 +8056,11 @@ class DetailRow$1 {
         this.parent.off('childRowExpand', this.childRowExpand);
         this.parent.off('rowExpandCollapse', this.rowExpandCollapse);
         this.parent.off('actioncomplete', this.actioncomplete);
+        this.parent.grid.off('detail-indentcell-info', this.setIndentVisibility);
+    }
+    setIndentVisibility(args) {
+        let visible = 'visible';
+        args[visible] = false;
     }
     dataBoundArg() {
         let detailele = this.parent.getRows().filter((e) => {
@@ -8176,7 +8190,7 @@ class VirtualTreeContentRenderer extends VirtualContentRenderer {
     renderTable() {
         super.renderTable();
         getValue('observer', this).options.debounceEvent = false;
-        this.observers = new TreeInterSectionObserver(getValue('observer', this).element, getValue('observer', this).options);
+        this.observers = new TreeInterSectionObserver(this.parent, getValue('observer', this).element, getValue('observer', this).options);
         this.contents = this.getPanel().firstChild;
     }
     scrollListeners(scrollArgs) {

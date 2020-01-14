@@ -1,4 +1,5 @@
-import { Component, NumberFormatOptions, DateFormatOptions, EmitType, KeyboardEventArgs, L10n } from '@syncfusion/ej2-base';
+import { Component, NumberFormatOptions, DateFormatOptions, EmitType } from '@syncfusion/ej2-base';
+import { KeyboardEventArgs as BaseKeyboardEventArgs, L10n } from '@syncfusion/ej2-base';
 import { Query, DataManager, Group } from '@syncfusion/ej2-data';
 import { ItemModel, MenuItemModel, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { ButtonModel, CheckBoxModel, SwitchModel } from '@syncfusion/ej2-buttons';
@@ -775,6 +776,7 @@ export interface NotifyArgs {
     focusElement?: HTMLElement;
     rowObject?: Row<Column>;
     renderMovableContent?: boolean;
+    promise?: Promise<Object>;
 }
 
 /**
@@ -1887,10 +1889,10 @@ export interface IFocus {
     getFocusable?: (element: HTMLElement) => HTMLElement;
     selector?: (row: Row<Column>, cell: Cell<Column>) => boolean;
     generateRows?: (rows: Row<Column>[], optionals?: Object) => void;
-    getInfo?: (e?: KeyboardEventArgs) => FocusedContainer;
+    getInfo?: (e?: BaseKeyboardEventArgs) => FocusedContainer;
     validator?: () => Function;
     getNextCurrent?: (previous: number[], swap?: SwapInfo, active?: IFocus, action?: string) => number[];
-    preventDefault?: (e: KeyboardEventArgs, info: FocusInfo) => void;
+    preventDefault?: (e: BaseKeyboardEventArgs, info: FocusInfo) => void;
 }
 /**
  * @hidden
@@ -1912,7 +1914,7 @@ export interface CellFocusArgs {
     indexes?: number[];
     byKey?: boolean;
     byClick?: boolean;
-    keyArgs?: KeyboardEventArgs;
+    keyArgs?: BaseKeyboardEventArgs;
     clickArgs?: Event;
     isJump?: boolean;
     container?: FocusedContainer;

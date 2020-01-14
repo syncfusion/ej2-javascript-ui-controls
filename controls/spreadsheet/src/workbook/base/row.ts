@@ -1,6 +1,7 @@
 import { Property, Collection, ChildProperty } from '@syncfusion/ej2-base';
-import { CellModel, SheetModel, RowModel } from './index';
+import { CellModel, SheetModel } from './index';
 import { Cell } from './cell';
+import { RowModel } from './row-model';
 
 /**
  * Configures the Row behavior for the spreadsheet.

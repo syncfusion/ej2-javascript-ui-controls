@@ -1146,6 +1146,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         let trgHdrEle: Element = this.getTabHeader();
         let trg: HTEle = <HTEle>select('.' + CLS_TB_ITEM + '.' + CLS_ACTIVE, trgHdrEle);
         if (trg === null) { return; }
+        if (this.isServerRendered && trg.classList.contains(CLS_TB_POPUP)) {
+            this.popupHandler(trg);
+        }
         let root: HTEle = <HTEle>closest(trg, '.' + CLS_TAB);
         if (this.element !== root) { return; }
         this.tbItems = <HTEle>select('.' + CLS_TB_ITEMS, trgHdrEle);
@@ -1173,6 +1176,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     private setActive(value: number): void {
         this.tbItem = selectAll('.' + CLS_TB_ITEM, this.getTabHeader());
         let trg: HTEle = this.tbItem[value];
+        if (this.isServerRendered) {
+            value = parseInt(trg.getAttribute('data-index'), 10);
+        }
         if (value < 0 || isNaN(value) || this.tbItem.length === 0) { return; }
         if (value >= 0) {
             this.allowServerDataBinding = false;
@@ -1305,7 +1311,13 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             this.showPopup(this.show);
         } else {
             this.isPopup = false;
-            if (!isNOU(trgParent) && trgIndex !== this.selectedItem) { this.select(trgIndex); }
+            if (this.isServerRendered && !isNOU(trgParent)) {
+                if (parseInt(trgParent.getAttribute('data-index'), 10) !== this.selectedItem) {
+                    this.select(trgIndex);
+                }
+            } else if (!isNOU(trgParent) && trgIndex !== this.selectedItem) {
+                this.select(trgIndex);
+            }
         }
     }
     private swipeHandler(e: SwipeEventArgs): void {

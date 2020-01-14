@@ -1842,6 +1842,8 @@ describe('Diagram Control', () => {
                 (diagram.selectedItems.connectors as ConnectorModel)[0].segments.length !== 0).toBe(true);
             diagram.drawingObject = null;
             done();
+            expect(diagram.connectors[0].wrapper.children[2].rotateAngle === 225).toBe(true);
+            done();
         });
         it('Draw Polyline connector on mouseleave', (done: Function) => {
             diagram.tool = DiagramTools.DrawOnce;

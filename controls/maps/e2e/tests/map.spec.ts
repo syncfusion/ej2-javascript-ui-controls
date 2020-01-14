@@ -1,3 +1,7 @@
+/**
+ * spec
+ */
+
 import {browser, element, By , by } from "@syncfusion/ej2-base/e2e/index";
 import { WebElement, Options } from "selenium-webdriver";
 import { Property } from "@syncfusion/ej2-base";
@@ -299,8 +303,8 @@ describe('Map component test spec', function () {
         browser.load('/demos/zooming.html');
         property_singletap =element(by.id('singletap'));
         browser.actions().click(property_singletap).perform();
-        property =element(by.id('mapszooming_Zooming_ToolBar_Zoom_Rect'));
-        browser.actions().click(property).perform();
+        // property =element(by.id('mapszooming_Zooming_ToolBar_Zoom_Rect'));
+        // browser.actions().click(property).perform();
         zoom_continent=element(by.id("mapszooming_LayerIndex_0_shapeIndex_134_dataIndex_1"));
         browser.actions().click(zoom_continent).perform();
         // take and compare screen shots.

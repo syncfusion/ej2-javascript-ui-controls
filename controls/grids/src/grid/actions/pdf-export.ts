@@ -495,7 +495,7 @@ export class PdfExport {
 
     private drawHeader(pdfExportProperties: PdfExportProperties): void {
         let clientSize: SizeF = this.pdfDocument.pageSettings.size;
-        if (!isNullOrUndefined(pdfExportProperties.header)) {
+        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.header)) {
              /* tslint:disable-next-line:no-any */
             let header: any = pdfExportProperties.header;
             let position: PointF = new PointF(0, header.fromTop);

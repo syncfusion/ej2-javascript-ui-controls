@@ -1491,9 +1491,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
             this.isServerUpdate = true;
             if (arg[isAdding]) {
-                 this.add(args);
+                this.add(args);
             } else {
-                 this.remove(args);
+                this.remove(args);
             }
             this.isServerUpdate = false;
 
@@ -1844,6 +1844,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public render(): void {
         this.ignoreCollectionWatch = true;
+        let domTable: string = 'domTable';
+        window[domTable] = {};
         let collapsedNode: NodeModel[] = [];
         if (isBlazor()) {
             let changedNodes: NodeModel[] = []; let changedConnectors: ConnectorModel[] = [];
@@ -2183,6 +2185,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
         }
+        let domTable: string = 'domTable';
+        window[domTable] = {};
     }
 
     /**
@@ -2653,6 +2657,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.callBlazorModel = true;
             }
             this.updateSelector();
+            if ((this.diagramActions & DiagramAction.DragUsingMouse)) {
+                this.updatePage();
+            }
         } else {
             if (obj instanceof Node) {
                 if (this.bpmnModule) { this.bpmnModule.updateAnnotationDrag(obj, this, tx, ty); }
@@ -2669,7 +2676,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             this.selectionConnectorsList = [];
         }
-        if (!(this.diagramActions & DiagramAction.ToolAction)) {
+        if (!(this.diagramActions & DiagramAction.ToolAction) && !(this.diagramActions & DiagramAction.DragUsingMouse)) {
             this.updateSelector();
         }
         if (this.callBlazorModel && (!(this.blazorActions & BlazorAction.interaction))) {
@@ -3416,12 +3423,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     objectTypeCollection.push(getObjectType(copiedObject[i]) === Connector ? 'Connector' : 'Node');
                 }
             }
-            let dgmObj: object = { 'methodName': 'UpdateBlazorDiagramObjects',
-            'diagramobj': {'nodeObj': JSON.stringify(updatedModelCollection),
-                'ObjectType': objectTypeCollection,
-                'removalIndex': copiedObject ? undefined : removalIndexCollection,
-                'isMultipleObjects': true, 'annotationIndex': undefined,
-                'connectorObj': JSON.stringify(connectorModelCollection) } };
+            let dgmObj: object = {
+                'methodName': 'UpdateBlazorDiagramObjects',
+                'diagramobj': {
+                    'nodeObj': JSON.stringify(updatedModelCollection),
+                    'ObjectType': objectTypeCollection,
+                    'removalIndex': copiedObject ? undefined : removalIndexCollection,
+                    'isMultipleObjects': true, 'annotationIndex': undefined,
+                    'connectorObj': JSON.stringify(connectorModelCollection)
+                }
+            };
             window[ejsInterop].updateBlazorProperties(dgmObj, this);
         }
     }
@@ -3434,11 +3445,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         let updatedModel: object = cloneBlazorObject(obj);
         let blazor: string = 'Blazor';
         if (window && window[blazor] && !this.isServerUpdate && !(this.diagramActions & DiagramAction.Clear)) {
-            let dgmObj: object = { 'methodName': 'UpdateBlazorDiagramObjects',
-            'diagramobj': {'nodeObj': JSON.stringify(updatedModel),
-            'ObjectType': objectType, 'removalIndex': removalIndex,
-            'isMultipleObjects': false,
-            'annotationIndex': annotationNodeIndex, 'connectorObj': undefined } };
+            let dgmObj: object = {
+                'methodName': 'UpdateBlazorDiagramObjects',
+                'diagramobj': {
+                    'nodeObj': JSON.stringify(updatedModel),
+                    'ObjectType': objectType, 'removalIndex': removalIndex,
+                    'isMultipleObjects': false,
+                    'annotationIndex': annotationNodeIndex, 'connectorObj': undefined
+                }
+            };
             window[ejsInterop].updateBlazorProperties(dgmObj, this);
 
         }
@@ -3460,11 +3475,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         let ejsInterop: string = 'ejsInterop';
         let blazor: string = 'Blazor';
         if (window && window[blazor]) {
-            let obj: object = { 'methodName': 'AddBlazorObjects',
-            'diagramobj': {'nodeObj': JSON.stringify(nodesCollection), 'isConnector': false} };
+            let obj: object = {
+                'methodName': 'AddBlazorObjects',
+                'diagramobj': { 'nodeObj': JSON.stringify(nodesCollection), 'isConnector': false }
+            };
             window[ejsInterop].updateBlazorProperties(obj, this);
-            obj = { 'methodName': 'AddBlazorObjects',
-            'diagramobj': {'nodeObj': JSON.stringify(connectorCollection), 'isConnector': true}  };
+            obj = {
+                'methodName': 'AddBlazorObjects',
+                'diagramobj': { 'nodeObj': JSON.stringify(connectorCollection), 'isConnector': true }
+            };
             window[ejsInterop].updateBlazorProperties(obj, this);
         }
     }
@@ -5960,6 +5979,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         type = obj.shape.type === 'HTML' ? 'html' : 'native';
                     }
                     index = getDomIndex(viewId, objects[i].id, type);
+                    break;
                 }
             }
         }
@@ -5968,7 +5988,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /** @private */
     public updateDiagramObject(obj: (NodeModel | ConnectorModel), canIgnoreIndex?: boolean, isUpdateObject?: boolean): void {
-        let view: View;
+        let view: View; let domTable: string = 'domTable';
         for (let temp of this.views) {
             view = this.views[temp];
             if (this.diagramActions) {
@@ -5979,8 +5999,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                     if ((layer === undefined || (layer && layer.visible)) || isUpdateObject) {
                         let htmlLayer: HTMLElement = getHTMLLayer(this.element.id);
+                        if (!window[domTable][view.element.id + '_diagramLayer']) {
+                            window[domTable][view.element.id + '_diagramLayer'] =
+                                document.getElementById(view.element.id + '_diagramLayer');
+                        }
                         let diagramElementsLayer: HTMLCanvasElement =
-                            document.getElementById(view.element.id + '_diagramLayer') as HTMLCanvasElement;
+                            window[domTable][view.element.id + '_diagramLayer'] as HTMLCanvasElement;
                         if (this.diagramActions & DiagramAction.Interactions) {
                             this.updateCanupdateStyle(obj.wrapper.children, true);
                         }
@@ -6327,7 +6351,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /** @private */
     public setOffset(offsetX: number, offsetY: number): void {
-        let container: HTMLElement = document.getElementById(this.element.id + 'content');
+        let domTable: string = 'domTable';
+        if (!window[domTable][this.element.id + 'content']) {
+            window[domTable][this.element.id + 'content'] = document.getElementById(this.element.id + 'content');
+        }
+        let container: HTMLElement = window[domTable][this.element.id + 'content'];
         if (container) {
             container.scrollLeft = offsetX;
             container.scrollTop = offsetY;
@@ -6400,7 +6428,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.snapSettings, getGridLayerSvg(this.element.id), this.scroller.transform, this.rulerSettings, this.hRuler, this.vRuler
         );
         this.diagramRenderer.transformLayers(this.scroller.transform, this.mode === 'SVG');
-        this.updateSelector();
+        if (!(this.diagramActions & DiagramAction.DragUsingMouse)) {
+            this.updateSelector();
+        }
         this.renderPageBreaks(bounds);
     }
 
@@ -8270,7 +8300,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private updatePage(): void {
-        if (this.diagramActions & DiagramAction.Render) {
+        if ((this.diagramActions & DiagramAction.Render) &&
+            !(this.diagramActions & DiagramAction.DragUsingMouse)) {
             this.scroller.updateScrollOffsets();
             this.scroller.setSize();
             //updating overview

@@ -102,6 +102,12 @@ export interface AccumulationChartModel extends ComponentModel{
     selectionMode?: AccumulationSelectionMode;
 
     /**
+     * If set true, enables the border in pie and accumulation chart while mouse moving.
+     * @default true
+     */
+    enableBorderOnMouseMove?: boolean;
+
+    /**
      * If set true, enables the multi selection in accumulation chart. It requires `selectionMode` to be `Point`.
      * @default false
      */

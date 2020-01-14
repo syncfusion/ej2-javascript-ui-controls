@@ -355,6 +355,8 @@ export class Data implements IDataProcessor {
                     crud = this.dataManager.insert(args.data, query.fromTable, query, args.index) as Promise<Object>;
                     break;
             }
+            let promise: string = 'promise';
+            args[promise] = crud;
             if (crud && !Array.isArray(crud) && !crud.hasOwnProperty('deletedRecords')) {
                 return crud.then((result: ReturnType) => {
                     return this.insert(query, args);

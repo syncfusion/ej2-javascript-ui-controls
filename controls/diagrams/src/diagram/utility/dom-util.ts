@@ -5,7 +5,7 @@ import { TextStyleModel } from './../core/appearance-model';
 import { PathElement } from '../core/elements/path-element';
 import { TextElement } from '../core/elements/text-element';
 import { processPathData, splitArrayCollection, transformPath } from './path-util';
-import { whiteSpaceToString, wordBreakToString, textAlignToString, bBoxText } from './base-util';
+import { whiteSpaceToString, wordBreakToString, textAlignToString, bBoxText, cloneObject } from './base-util';
 import { Matrix, identityMatrix, transformPointByMatrix, rotateMatrix } from '../primitives/matrix';
 import { ITouches } from '../objects/interface/interfaces';
 import { compile, createElement, Browser, isBlazor } from '@syncfusion/ej2-base';
@@ -522,9 +522,15 @@ export function getBackgroundLayer(diagramId: string): SVGSVGElement {
 
 /** @private */
 export function getGridLayer(diagramId: string): SVGElement {
+    let domTable: string = 'domTable';
     let expandCollapse: SVGElement = null;
-    let diagramGridSvg: SVGSVGElement = getGridLayerSvg(diagramId);
-    expandCollapse = diagramGridSvg.getElementById(diagramId + '_gridline') as SVGElement;
+    if (!window[domTable][diagramId + '_gridline']) {
+        let diagramGridSvg: SVGSVGElement = getGridLayerSvg(diagramId);
+        expandCollapse = diagramGridSvg.getElementById(diagramId + '_gridline') as SVGElement;
+        window[domTable][diagramId + '_gridline'] = expandCollapse;
+    } else {
+        expandCollapse = window[domTable][diagramId + '_gridline'];
+    }
     return expandCollapse;
 }
 
@@ -555,10 +561,16 @@ export function getNativeLayer(diagramId: string): SVGElement {
 /** @private */
 export function getHTMLLayer(diagramId: string): HTMLElement {
     let htmlLayer: HTMLElement = null;
-    let element: HTMLElement = getDiagramElement(diagramId);
-    let elementcoll: NodeList;
-    elementcoll = element.getElementsByClassName('e-html-layer');
-    htmlLayer = elementcoll[0] as HTMLElement;
+    let domTable: string = 'domTable';
+    if (!window[domTable][diagramId + 'html_layer']) {
+        let element: HTMLElement = getDiagramElement(diagramId);
+        let elementcoll: NodeList;
+        elementcoll = element.getElementsByClassName('e-html-layer');
+        htmlLayer = elementcoll[0] as HTMLElement;
+        window[domTable][diagramId + 'html_layer'] = htmlLayer;
+    } else {
+        htmlLayer = window[domTable][diagramId + 'html_layer'] as HTMLElement;
+    }
     return htmlLayer;
 }
 
@@ -672,7 +684,7 @@ export function getContent(
         }
     }
     let item: HTMLElement | SVGElement;
-    if (typeof element.content === 'string' && !(element as DiagramHtmlElement).isTemplate) {
+    if (typeof element.content === 'string' && (!(element as DiagramHtmlElement).isTemplate || isBlazor())) {
         let template: HTMLElement = document.getElementById(element.content);
         if (template) {
             div.appendChild(template);
@@ -689,7 +701,8 @@ export function getContent(
         }
     } else if ((element as DiagramHtmlElement).isTemplate) {
         let compiledString: Function;
-        compiledString = (element as DiagramHtmlElement).getNodeTemplate()(nodeObject, undefined, 'template', undefined, undefined, false);
+        compiledString = (element as DiagramHtmlElement).getNodeTemplate()(
+            cloneObject(nodeObject), undefined, 'template', undefined, undefined, false);
         for (let i: number = 0; i < compiledString.length; i++) {
             div.appendChild(compiledString[i]);
         }

@@ -1180,7 +1180,8 @@ export class ListBox extends DropDownBase {
         }
         let len: number = this.getSelectedItems().length;
         if (this.showSelectAll && searchCount) {
-            this.notify('checkSelectAll', { module: 'CheckBoxSelection', value: (searchCount === len) ? 'check' : 'uncheck' });
+            this.notify('checkSelectAll', { module: 'CheckBoxSelection',
+                    value: (searchCount === len) ? 'check' : (len === 0) ? 'uncheck' : 'indeterminate'});
         }
     }
 
@@ -1332,6 +1333,9 @@ export class ListBox extends DropDownBase {
     private toolbarClickHandler(e: MouseEvent): void {
         let btn: Element = closest(e.target as Element, 'button');
         if (btn) {
+            if ((btn as HTMLButtonElement).disabled) {
+                return;
+            }
             switch (btn.getAttribute('data-value')) {
                 case 'moveUp':
                     this.moveUpDown(true);
@@ -1396,6 +1400,7 @@ export class ListBox extends DropDownBase {
         let sortData: dataType[] = [].slice.call(fListBox.sortedData); let tSortData: dataType[] = [].slice.call(tListBox.sortedData);
         let fliCollections: HTMLElement[] = [].slice.call(fListBox.liCollections); let dataLiIdx: number[] = [];
         let tliCollections: HTMLElement[] = [].slice.call(tListBox.liCollections);
+        let tempItems: dataType[] = [];
         let data: dataType[] = []; let elems: Element[] = fListBox.getSelectedItems();
         if (value) {
             elems = value;
@@ -1416,6 +1421,15 @@ export class ListBox extends DropDownBase {
                 // To update lb original data
                 jsonIdx.push(Array.prototype.indexOf.call(fListBox.jsonData, fListBox.getDataByElems([ele])[0]));
             });
+            if (this.sortOrder !== 'None') {
+                sortIdx.forEach((i: number) => {
+                    tempItems.push(fListBox.sortedData[i]);
+                });
+            } else {
+                jsonIdx.forEach((i: number) => {
+                    tempItems.push(fListBox.jsonData[i]);
+                });
+            }
             let rLiCollection: HTMLElement[] = [];
             dataLiIdx.sort((n1: number, n2: number) => n1 - n2).reverse().forEach((i: number) => {
                 rLiCollection.push(fliCollections.splice(i, 1)[0]);
@@ -1466,10 +1480,10 @@ export class ListBox extends DropDownBase {
             (fListBox.listData as dataType[]) = listData;
             (fListBox.sortedData as dataType[]) = sortData;
             index = (index) ? index : tListData.length;
-            for (let i: number = 0; i < data.length; i++) {
-                tListData.splice(index, 0, data[i]);
-                tJsonData.splice(index, 0, data[i]);
-                tSortData.splice(index, 0, data[i]);
+            for (let i: number = 0; i < tempItems.length; i++) {
+                tListData.splice(index, 0, tempItems[i]);
+                tJsonData.splice(index, 0, tempItems[i]);
+                tSortData.splice(index, 0, tempItems[i]);
             }
             (tListBox.listData as dataType[]) = tListData;
             tListBox.jsonData = tJsonData as {[key: string]: object}[];
@@ -1615,7 +1629,7 @@ export class ListBox extends DropDownBase {
     private keyDownHandler(e: KeyboardEvent): void {
         if ([32, 35, 36, 37, 38, 39, 40, 65].indexOf(e.keyCode) > -1 && !this.allowFiltering) {
             e.preventDefault();
-            if (e.keyCode === 32) {
+            if (e.keyCode === 32 && this.ulElement.children.length) {
                 this.selectHandler({
                     target: this.ulElement.getElementsByClassName('e-focused')[0],
                     ctrlKey: e.ctrlKey, shiftKey: e.shiftKey
@@ -1657,15 +1671,17 @@ export class ListBox extends DropDownBase {
             removeClass([fli], 'e-focused');
         }
         let cli: Element = ul.children[fliIdx];
-        fliIdx = this.getValidIndex(cli, fliIdx, e.keyCode);
-        if (fliIdx === -1) {
-            addClass([fli], 'e-focused');
-            return;
-        }
-        (ul.children[fliIdx] as HTMLElement).focus();
-        ul.children[fliIdx].classList.add('e-focused');
-        if (!e.ctrlKey) {
-            this.selectHandler({ target: ul.children[fliIdx], ctrlKey: e.ctrlKey, shiftKey: e.shiftKey }, true);
+        if (cli) {
+            fliIdx = this.getValidIndex(cli, fliIdx, e.keyCode);
+            if (fliIdx === -1) {
+                addClass([fli], 'e-focused');
+                return;
+            }
+            (ul.children[fliIdx] as HTMLElement).focus();
+            ul.children[fliIdx].classList.add('e-focused');
+            if (!e.ctrlKey) {
+                this.selectHandler({ target: ul.children[fliIdx], ctrlKey: e.ctrlKey, shiftKey: e.shiftKey }, true);
+            }
         }
     }
 

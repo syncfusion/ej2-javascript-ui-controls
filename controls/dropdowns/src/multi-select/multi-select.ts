@@ -14,7 +14,7 @@ import { append, addClass, removeClass, closest, detach, remove, select } from '
 import { getUniqueID, formatUnit, isNullOrUndefined, isUndefined, ModuleDeclaration } from '@syncfusion/ej2-base';
 /* tslint:disable */
 import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
-import { SortOrder, ItemCreatedArgs } from '@syncfusion/ej2-lists';
+import { SortOrder } from '@syncfusion/ej2-lists';
 import { CheckBoxSelection } from './checkbox-selection';
 import { createFloatLabel, removeFloating, floatLabelFocus, floatLabelBlur } from './float-label';
 import { IMulitSelect } from './interface';
@@ -2284,7 +2284,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
 
-    protected listOption(dataSource: { [key: string]: Object }[], fields: FieldSettingsModel, headerName?: string): FieldSettingsModel {
+    protected listOption(dataSource: { [key: string]: Object }[], fields: FieldSettingsModel): FieldSettingsModel {
         let iconCss: boolean = isNullOrUndefined(fields.iconCss) ? false : true;
         let fieldProperty: Object = isNullOrUndefined((fields as FieldSettingsModel & { properties: Object }).properties) ? fields :
         (fields as FieldSettingsModel & { properties: Object }).properties;
@@ -2293,18 +2293,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         } : { fields: { value: 'text' } as Object };
         extend(this.listCurrentOptions, this.listCurrentOptions, fields, true);
         if (this.mode === 'CheckBox') {
-            let moduleName: string = this.getModuleName();
-            this.notify('listoption', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', dataSource, fieldProperty,
-                        moduleName, headerName });
-        }
-        if (fields && fields.groupBy && this.mode !== 'CheckBox') {
-            let text: string = fields.text;
-            this.listCurrentOptions.itemCreated = (args: ItemCreatedArgs) => {
-                if (args.curData[text] === undefined && args.curData.isHeader) {
-                    args.item.textContent = headerName;
-                    args.item.classList.add('e-undefine-group');
-                }
-            };
+            this.notify('listoption', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', dataSource, fieldProperty });
         }
         return this.listCurrentOptions;
     }

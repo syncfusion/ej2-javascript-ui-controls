@@ -3,7 +3,7 @@ import { DataManager, Query, Group, DataUtil, QueryOptions, ReturnOption } from 
 import { ITreeData, RowExpandedEventArgs } from './interface';
 import { TreeGrid } from './treegrid';
 import { showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
-import { getObject, BeforeDataBoundArgs, getUid, NotifyArgs } from '@syncfusion/ej2-grids';
+import { getObject, BeforeDataBoundArgs, getUid, NotifyArgs, SaveEventArgs, Action } from '@syncfusion/ej2-grids';
 import { isRemoteData, isOffline, isCountRequired } from '../utils';
 import * as events from './constant';
 import { Column } from '../models';
@@ -392,15 +392,20 @@ public isRemote(): boolean {
    * @hidden
    */
   public dataProcessor(args?: BeforeDataBoundArgs) : void {
-    let isExport: boolean = getObject('isExport', args);
-    let expresults: Object = getObject('expresults', args);
-    let exportType: string = getObject('exportType', args);
-    let isPrinting: boolean = getObject('isPrinting', args);
+    let isExport: boolean = getObject('isExport', args); let expresults: Object = getObject('expresults', args);
+    let exportType: string = getObject('exportType', args); let isPrinting: boolean = getObject('isPrinting', args);
     let dataObj: Object; let actionArgs: NotifyArgs = getObject('actionArgs', args);
-    let requestType: string = getObject('requestType', args);
-    let actionData: Object = getObject('data', args); let action: string = getObject('action', args);
+    let requestType: Action = getObject('requestType', args); let actionData: Object = getObject('data', args);
+    let action: string = getObject('action', args); let actionAddArgs: SaveEventArgs = actionArgs;
+    let primaryKeyColumnName: string = this.parent.getPrimaryKeyFieldNames()[0];
+    let dataValue: ITreeData = getObject('data', actionAddArgs);
+    if ((!isNullOrUndefined(actionAddArgs)) && (!isNullOrUndefined(actionAddArgs.action)) && (actionAddArgs.action === 'add')
+      && (!isNullOrUndefined(actionAddArgs.data)) && isNullOrUndefined(actionAddArgs.data[primaryKeyColumnName])) {
+      actionAddArgs.data[primaryKeyColumnName] = args.result[actionAddArgs.index][primaryKeyColumnName];
+      dataValue.taskData[primaryKeyColumnName] = args.result[actionAddArgs.index][primaryKeyColumnName];
+    }
     if ((!isNullOrUndefined(actionArgs) && Object.keys(actionArgs).length) || requestType === 'save') {
-      requestType = requestType ? requestType : actionArgs.requestType.toString();
+      requestType = requestType ? requestType : actionArgs.requestType;
       actionData = actionData ? actionData : getObject('data', actionArgs);
       action = action ? action : getObject('action', actionArgs);
       if (this.parent.editSettings.mode === 'Batch') {
@@ -427,17 +432,14 @@ public isRemote(): boolean {
          (this.parent.grid.searchSettings.key.length > 0)) {
       let qry: Query = new Query(); let gridQuery: Query = getObject('query', args);
       if (isNullOrUndefined(gridQuery)) {
-        gridQuery = new Query();
-        gridQuery = getValue('grid.renderModule.data', this.parent).filterQuery(gridQuery);
+        gridQuery = new Query(); gridQuery = getValue('grid.renderModule.data', this.parent).filterQuery(gridQuery);
         gridQuery = getValue('grid.renderModule.data', this.parent).searchQuery(gridQuery);
       }
       let fltrQuery: QueryOptions[]  = gridQuery.queries.filter((q: QueryOptions) => q.fn === 'onWhere');
       let srchQuery: QueryOptions[]  = gridQuery.queries.filter((q: QueryOptions) => q.fn === 'onSearch');
-      qry.queries = fltrQuery.concat(srchQuery);
-      let filteredData: Object = new DataManager(results).executeLocal(qry);
+      qry.queries = fltrQuery.concat(srchQuery); let filteredData: Object = new DataManager(results).executeLocal(qry);
       this.parent.notify('updateFilterRecs', { data: filteredData });
-      results = <ITreeData[]>this.dataResults.result;
-      this.dataResults.result = null;
+      results = <ITreeData[]>this.dataResults.result; this.dataResults.result = null;
       if (this.parent.grid.aggregates.length > 0) {
         let query: Query = getObject('query', args);
         if (isNullOrUndefined(gridQuery)) {
@@ -474,10 +476,8 @@ public isRemote(): boolean {
       sortedData = <Object[]>modifiedData;
       let sortArgs: { modifiedData: ITreeData[], filteredData: ITreeData[], srtQry: Query}
       = {modifiedData: <Object[]>modifiedData, filteredData: results, srtQry: srtQry};
-      this.parent.notify('createSort', sortArgs);
-      results = sortArgs.modifiedData;
-      this.dataResults.result = null; this.sortedData = results;
-      this.parent.notify('updateModel', {});
+      this.parent.notify('createSort', sortArgs); results = sortArgs.modifiedData;
+      this.dataResults.result = null; this.sortedData = results; this.parent.notify('updateModel', {});
       if (this.parent.grid.aggregates.length > 0 && !isNullOrUndefined(query)) {
         let isSort: boolean = false;
         let query: Query = getObject('query', args);

@@ -688,3 +688,15 @@ export type PivotChartTheme =
     'BootstrapDark' |
     /**  Render a chart with Bootstrap4 theme. */
     'Bootstrap4';
+
+export declare type LabelPosition =
+    /** Position the label outside the point. */
+    'Outer' |
+    /** Position the label on top of the point. */
+    'Top' |
+    /** Position the label on bottom of the point. */
+    'Bottom' |
+    /** Position the label to middle of the point. */
+    'Middle' |
+    /** Position the label based on series. */
+    'Auto';

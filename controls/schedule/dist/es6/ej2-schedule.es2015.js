@@ -2,7 +2,7 @@ import { Animation, Browser, ChildProperty, Collection, Complex, Component, Drag
 import { Dialog, Popup, Tooltip, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Toolbar, TreeView } from '@syncfusion/ej2-navigations';
 import { Calendar, DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
-import { DataManager, DataUtil, Deferred, Predicate, Query } from '@syncfusion/ej2-data';
+import { DataManager, Deferred, Predicate, Query } from '@syncfusion/ej2-data';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 import { FormValidator, Input, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
@@ -10963,14 +10963,13 @@ class ResourceBase {
     bindResourcesData(isSetModel) {
         this.parent.showSpinner();
         if (isBlazor()) {
+            // the resourceCollection will be updated in layoutReady method
             // tslint:disable-next-line:no-any
-            this.parent.interopAdaptor.invokeMethodAsync('BindResourcesData').then((result) => {
-                if (this.parent.isDestroyed) {
-                    return;
-                }
-                this.parent.resourceCollection = DataUtil.parse.parseJson(result);
-                this.refreshLayout(isSetModel);
-            }).catch((e) => this.dataManagerFailure(e));
+            // (this.parent as any).interopAdaptor.invokeMethodAsync('BindResourcesData').then((result: string) => {
+            //     if (this.parent.isDestroyed) { return; }
+            //     this.parent.resourceCollection = DataUtil.parse.parseJson(result);
+            //     this.refreshLayout(isSetModel);
+            // }).catch((e: ReturnType) => this.dataManagerFailure(e));
             return;
         }
         let promises = [];
@@ -11411,8 +11410,17 @@ let Schedule = class Schedule extends Component {
         this.renderComplete();
     }
     /** @hidden */
-    layoutReady() {
-        if (this.isServerRenderer() && this.activeView) {
+    layoutReady(resourceCollection, isFirstRender, isSetModel) {
+        if (!this.isServerRenderer()) {
+            return;
+        }
+        if (resourceCollection && resourceCollection.length > 0 && (isFirstRender || isSetModel)) {
+            this.resourceCollection = resourceCollection;
+            if (this.resourceBase) {
+                this.resourceBase.refreshLayout(isSetModel);
+            }
+        }
+        if (this.activeView) {
             this.activeView.serverRenderLayout();
             if (this.renderModule) {
                 this.renderModule.refreshDataManager();
@@ -13585,7 +13593,8 @@ class ActionBase {
     updateScrollPosition(e) {
         if (this.actionObj.scroll.enable && isNullOrUndefined(this.actionObj.scrollInterval)) {
             this.actionObj.scrollInterval = window.setInterval(() => {
-                if (this.autoScrollValidation(e) && !this.actionObj.clone.classList.contains(ALLDAY_APPOINTMENT_CLASS)) {
+                if (this.autoScrollValidation(e) && !this.actionObj.clone.classList.contains(ALLDAY_APPOINTMENT_CLASS) &&
+                    this.actionObj.groupIndex !== 0) {
                     this.autoScroll();
                     if (this.actionObj.action === 'drag') {
                         this.parent.dragAndDropModule.updateDraggingDateTime(e);
@@ -14924,7 +14933,7 @@ class TimelineEvent extends MonthEvent {
             return slotTd;
         }
         else {
-            let daySlot = (((schedule.endHour.getTime() - schedule.startHour.getTime()) / (60 * 1000)) / this.interval) * this.slotCount;
+            let daySlot = Math.round((((schedule.endHour.getTime() - schedule.startHour.getTime()) / (60 * 1000)) / this.interval) * this.slotCount);
             return (daySlot * day) + slotTd;
         }
     }
@@ -16429,7 +16438,7 @@ class DragAndDrop extends ActionBase {
         translateY = (isNullOrUndefined(translateY)) ? 0 : translateY;
         let rowHeight = (this.parent.rowAutoHeight) ?
             ~~(dragArea.querySelector('table').offsetHeight / trCollection.length) : this.actionObj.cellHeight;
-        let rowIndex = Math.floor(Math.floor((this.actionObj.Y + (dragArea.scrollTop - translateY)) -
+        let rowIndex = Math.floor(Math.floor((this.actionObj.Y + (dragArea.scrollTop - translateY - window.scrollY)) -
             dragArea.getBoundingClientRect().top) / rowHeight);
         rowIndex = (rowIndex < 0) ? 0 : (rowIndex > trCollection.length - 1) ? trCollection.length - 1 : rowIndex;
         this.actionObj.index = rowIndex;
@@ -16521,7 +16530,7 @@ var ViewHelper;
     };
     ViewHelper.getTime = (proxy, date) => {
         if (proxy.isAdaptive) {
-            if (proxy.timeFormat === 'HH:mm') {
+            if (proxy.timeFormat === 'HH:mm' || proxy.timeFormat === 'HH.mm') {
                 return proxy.globalize.formatDate(date, { format: 'H', calendar: proxy.getCalendarMode() });
             }
             return proxy.globalize.formatDate(date, { skeleton: 'h', calendar: proxy.getCalendarMode() });

@@ -1,5 +1,3 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-schedule/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-schedule)
-
 # ej2-schedule
 
 The schedule component is an event calendar that facilitates almost all the basic Outlook and Google Calendar features, allowing the user to plan and manage appointments and time efficiently. It receives data from a variety of data sources, such as an array of JSON objects, OData web services, RESTful or WCF services, and [`DataManager`](https://ej2.syncfusion.com/documentation/data/?lang=typescript) with built-in load on demand support to reduce the data transfer and load time. Also, it is availed with the multiple resources support that allots an unique individual space for more than one resources on the same calendar.

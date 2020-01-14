@@ -312,7 +312,6 @@ let Button = class Button extends Component {
                     break;
                 case 'disabled':
                     this.controlStatus(newProp.disabled);
-                    this.unWireEvents();
                     break;
                 case 'iconCss':
                     let span = this.element.querySelector('span.e-btn-icon');

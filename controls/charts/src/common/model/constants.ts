@@ -74,3 +74,7 @@ export const dragStart: string = 'dragStart';
 export const drag: string = 'drag';
 /** @private */
 export const dragEnd: string = 'dragEnd';
+/*** @private*/
+export const regSub: RegExp = /~\d+~/g;
+/*** @private*/
+export const regSup: RegExp = /\^\d+\^/g;

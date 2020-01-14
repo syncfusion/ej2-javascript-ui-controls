@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.41 (2020-01-07)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+`#F149335` - Excel export issue has been fixed.
+
 ## 17.4.39 (2019-12-17)
 
 ### Spreadsheet
@@ -12,14 +20,6 @@
 - **Undo Redo:** Provides the option to perform undo redo operations in spreadsheet.
 - **Collaborative Editing:** Provides the option for real time changes across multiple users in the Spreadsheet.
 - **Hyperlink:** Provides the option to navigate the web links or cell reference within the sheet or to other sheets in spreadsheet.
-
-## 17.3.29 (2019-11-26)
-
-### Spreadsheet
-
-#### Bug Fixes
-
-`#F149335` - Excel export issue has been fixed.
 
 ## 17.3.16 (2019-10-09)
 

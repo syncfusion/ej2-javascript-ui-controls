@@ -1283,6 +1283,12 @@ function getTranslate(mapObject, layer, animate) {
             mapObject.mapScaleValue = zoomFactorValue = mapObject.markerZoomFactor;
         }
     }
+    let center = mapObject.centerPosition;
+    if (!isNullOrUndefined(mapObject.centerLatOfGivenLocation) && !isNullOrUndefined(mapObject.centerLongOfGivenLocation) && mapObject.zoomNotApplied) {
+        center.latitude = mapObject.centerLatOfGivenLocation;
+        center.longitude = mapObject.centerLongOfGivenLocation;
+        mapObject.mapScaleValue = scaleFactor = zoomFactorValue = mapObject.scaleOfGivenLocation;
+    }
     let min = mapObject.baseMapRectBounds['min'];
     let max = mapObject.baseMapRectBounds['max'];
     let zoomFactor = animate ? 1 : mapObject.mapScaleValue;
@@ -1297,23 +1303,23 @@ function getTranslate(mapObject, layer, animate) {
     let mapWidth = Math.abs(max['x'] - min['x']);
     let mapHeight = Math.abs(min['y'] - max['y']);
     let factor = animate ? 1 : mapObject.markerZoomFactor === 1 ? mapObject.mapScaleValue : zoomFactorValue;
-    let center = mapObject.centerPosition;
+    let titleTextSize = measureText(mapObject.titleSettings.text, mapObject.titleSettings.textStyle);
     if (!isNullOrUndefined(center.longitude) && !isNullOrUndefined(center.latitude)) {
         let leftPosition = ((mapWidth + Math.abs(mapObject.mapAreaRect.width - mapWidth)) / 2) / factor;
         let topPosition = ((mapHeight + Math.abs(mapObject.mapAreaRect.height - mapHeight)) / 2) / factor;
         let point = convertGeoToPoint(center.latitude, center.longitude, mapObject.mapLayerPanel.calculateFactor(layer), layer, mapObject);
         if (isNullOrUndefined(mapObject.previousProjection) || mapObject.previousProjection !== mapObject.projectionType) {
             x = -point.x + leftPosition;
-            y = -point.y + topPosition;
+            y = -point.y + topPosition + (titleTextSize['height'] / 2);
             scaleFactor = zoomFactor;
         }
         else {
-            if (Math.floor(mapObject.scale) !== 1 && mapObject.zoomSettings.shouldZoomInitially) {
+            if (Math.floor(mapObject.scale) !== 1 && mapObject.zoomSettings.shouldZoomInitially || (mapObject.zoomNotApplied)) {
                 x = -point.x + leftPosition;
                 y = -point.y + topPosition;
             }
             else {
-                if (mapObject.zoomSettings.shouldZoomInitially) {
+                if (mapObject.zoomSettings.shouldZoomInitially || mapObject.zoomNotApplied) {
                     x = -point.x + leftPosition;
                     y = -point.y + topPosition;
                     scaleFactor = zoomFactor;
@@ -1356,15 +1362,24 @@ function getTranslate(mapObject, layer, animate) {
                         + ((size.width / 2) - (mapWidth / 2)));
                 }
                 else {
-                    x = mapObject.zoomTranslatePoint.x;
-                    y = mapObject.zoomTranslatePoint.y;
+                    if (!isNullOrUndefined(mapObject.previousProjection) && mapObject.mapScaleValue === 1) {
+                        scaleFactor = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
+                        mapWidth *= scaleFactor;
+                        x = size.x + ((-(min['x'])) + ((size.width / 2) - (mapWidth / 2)));
+                        mapHeight *= scaleFactor;
+                        y = size.y + ((-(min['y'])) + ((size.height / 2) - (mapHeight / 2)));
+                    }
+                    else {
+                        x = mapObject.zoomTranslatePoint.x;
+                        y = mapObject.zoomTranslatePoint.y;
+                    }
                 }
             }
         }
     }
     if (!isNullOrUndefined(mapObject.translatePoint)) {
-        x = (mapObject.enablePersistence && mapObject.translatePoint.x != 0) ? mapObject.translatePoint.x : x;
-        y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0) ? mapObject.translatePoint.y : y;
+        x = (mapObject.enablePersistence && mapObject.translatePoint.x != 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.x : x;
+        y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.y : y;
     }
     scaleFactor = (mapObject.enablePersistence) ? ((mapObject.mapScaleValue >= 1) ? mapObject.mapScaleValue : 1) : scaleFactor;
     return { scale: scaleFactor, location: new Point(x, y) };
@@ -1383,6 +1398,12 @@ function getZoomTranslate(mapObject, layer, animate) {
             ? mapObject.scale : (isNullOrUndefined(mapObject.markerZoomFactor)) ? mapObject.mapScaleValue : mapObject.markerZoomFactor;
         zoomFactorValue = mapObject.mapScaleValue;
     }
+    let center = mapObject.centerPosition;
+    if (!isNullOrUndefined(mapObject.centerLatOfGivenLocation) && !isNullOrUndefined(mapObject.centerLongOfGivenLocation) && mapObject.zoomNotApplied) {
+        center.latitude = mapObject.centerLatOfGivenLocation;
+        center.longitude = mapObject.centerLongOfGivenLocation;
+        mapObject.mapScaleValue = scaleFactor = zoomFactorValue = mapObject.scaleOfGivenLocation;
+    }
     let zoomFactor = animate ? 1 : mapObject.mapScaleValue;
     let size = mapObject.mapAreaRect;
     let x;
@@ -1392,12 +1413,11 @@ function getZoomTranslate(mapObject, layer, animate) {
     let factor = animate ? 1 : mapObject.mapScaleValue;
     let mapWidth = Math.abs(max['x'] - min['x']);
     let mapHeight = Math.abs(min['y'] - max['y']);
-    let center = mapObject.centerPosition;
     if (!isNullOrUndefined(center.longitude) && !isNullOrUndefined(center.latitude)) {
         let topPosition = ((mapHeight + Math.abs(mapObject.mapAreaRect.height - mapHeight)) / 2) / factor;
         let leftPosition = ((mapWidth + Math.abs(mapObject.mapAreaRect.width - mapWidth)) / 2) / factor;
         let point = convertGeoToPoint(center.latitude, center.longitude, mapObject.mapLayerPanel.calculateFactor(layer), layer, mapObject);
-        if (!isNullOrUndefined(mapObject.zoomTranslatePoint) || !isNullOrUndefined(mapObject.previousProjection)) {
+        if ((!isNullOrUndefined(mapObject.zoomTranslatePoint) || !isNullOrUndefined(mapObject.previousProjection)) && !mapObject.zoomNotApplied) {
             if (mapObject.previousProjection !== mapObject.projectionType) {
                 x = -point.x + leftPosition;
                 y = -point.y + topPosition;
@@ -1405,6 +1425,7 @@ function getZoomTranslate(mapObject, layer, animate) {
             else {
                 x = mapObject.zoomTranslatePoint.x;
                 y = mapObject.zoomTranslatePoint.y;
+                zoomFactorValue = zoomFactor;
             }
         }
         else {
@@ -1412,8 +1433,8 @@ function getZoomTranslate(mapObject, layer, animate) {
             y = -point.y + topPosition;
         }
         if (!isNullOrUndefined(mapObject.translatePoint)) {
-            x = (mapObject.enablePersistence && mapObject.translatePoint.x != 0) ? mapObject.translatePoint.x : x;
-            y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0) ? mapObject.translatePoint.y : y;
+            y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.y : y;
+            x = (mapObject.enablePersistence && mapObject.translatePoint.x != 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.x : x;
         }
         scaleFactor = zoomFactorValue !== 0 ? zoomFactorValue : 1;
     }
@@ -1449,8 +1470,8 @@ function getZoomTranslate(mapObject, layer, animate) {
             }
         }
         if (!isNullOrUndefined(mapObject.translatePoint)) {
-            x = (mapObject.enablePersistence && mapObject.translatePoint.x != 0) ? mapObject.translatePoint.x : leftPosition;
-            y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0) ? mapObject.translatePoint.y : topPosition;
+            x = (mapObject.enablePersistence && mapObject.translatePoint.x != 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.x : leftPosition;
+            y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.y : topPosition;
         }
     }
     scaleFactor = (mapObject.enablePersistence) ? (mapObject.mapScaleValue == 0 ? 1 : mapObject.mapScaleValue) : scaleFactor;
@@ -2078,6 +2099,34 @@ function smoothTranslate(element, delay, duration, point) {
     }, () => {
         element.setAttribute('transform', 'translate( ' + point.x + ' ' + point.y + ' )');
     });
+}
+/**
+ * To find zoom level for the min and max latitude values
+ */
+function calculateZoomLevel(minLat, maxLat, minLong, maxLong, mapWidth, mapHeight) {
+    let latRatio;
+    let lngRatio;
+    let scaleFactor;
+    let maxZoomFact = 10;
+    let latZoom;
+    let lngZoom;
+    let result;
+    let maxLatSin = Math.sin(maxLat * Math.PI / 180);
+    let maxLatRad = Math.log((1 + maxLatSin) / (1 - maxLatSin)) / 2;
+    let maxLatValue = Math.max(Math.min(maxLatRad, Math.PI), -Math.PI) / 2;
+    let minLatSin = Math.sin(minLat * Math.PI / 180);
+    let minLatRad = Math.log((1 + minLatSin) / (1 - minLatSin)) / 2;
+    let minLatValue = Math.max(Math.min(minLatRad, Math.PI), -Math.PI) / 2;
+    latRatio = (maxLatValue - minLatValue) / Math.PI;
+    let lngDiff = maxLong - minLong;
+    lngRatio = ((lngDiff < 0) ? (lngDiff + 360) : lngDiff) / 360;
+    let WORLD_PX_HEIGHT = 256;
+    let WORLD_PX_WIDTH = 256;
+    latZoom = Math.log(mapHeight / WORLD_PX_HEIGHT / latRatio) / Math.LN2;
+    lngZoom = Math.log(mapWidth / WORLD_PX_WIDTH / lngRatio) / Math.LN2;
+    result = Math.min(latZoom, lngZoom);
+    scaleFactor = Math.min(result, maxZoomFact - 1);
+    return scaleFactor;
 }
 
 /**
@@ -3298,6 +3347,7 @@ class Marker {
         currentLayer.markerSettings.map((markerSettings, markerIndex) => {
             let markerData = markerSettings.dataSource;
             markerData.forEach((data, dataIndex) => {
+                this.maps.markerNullCount = markerIndex > 0 && dataIndex === 0 ? 0 : this.maps.markerNullCount;
                 let eventArgs = {
                     cancel: false, name: markerRendering, fill: markerSettings.fill, height: markerSettings.height,
                     width: markerSettings.width, imageUrl: markerSettings.imageUrl, shape: markerSettings.shape,
@@ -3318,8 +3368,8 @@ class Marker {
                     if (markerSettings.shapeValuePath !== eventArgs.shapeValuePath) {
                         eventArgs = markerShapeChoose(eventArgs, data);
                     }
-                    let lng = data['longitude'];
-                    let lat = data['latitude'];
+                    let lng = parseFloat(data['longitude']);
+                    let lat = parseFloat(data['latitude']);
                     if (this.maps.isBlazor) {
                         let data1 = {};
                         let text = [];
@@ -3358,7 +3408,10 @@ class Marker {
                     }
                     markerTemplateCount += (eventArgs.cancel) ? 1 : 0;
                     markerCount += (eventArgs.cancel) ? 1 : 0;
-                    if (this.markerSVGObject.childElementCount === (markerData.length - markerTemplateCount) && (type !== 'Template')) {
+                    this.maps.markerNullCount = (isNullOrUndefined(lng) || isNullOrUndefined(lat))
+                        ? this.maps.markerNullCount + 1 : this.maps.markerNullCount;
+                    let markerDataLength = markerData.length - this.maps.markerNullCount;
+                    if (this.markerSVGObject.childElementCount === (markerDataLength - markerTemplateCount) && (type !== 'Template')) {
                         layerElement.appendChild(this.markerSVGObject);
                         if (currentLayer.markerClusterSettings.allowClustering) {
                             this.maps.svgObject.appendChild(this.markerSVGObject);
@@ -3375,34 +3428,6 @@ class Marker {
                 });
             });
         });
-    }
-    /**
-     * To find zoom level for the marker min and max latitude values
-     */
-    calculateMarkerZoomLevel(minLat, maxLat, minLong, maxLong, mapWidth, mapHeight) {
-        let latRatio;
-        let lngRatio;
-        let scaleFactor;
-        let maxZoomFact = 10;
-        let latZoom;
-        let lngZoom;
-        let result;
-        let maxLatSin = Math.sin(maxLat * Math.PI / 180);
-        let maxLatRad = Math.log((1 + maxLatSin) / (1 - maxLatSin)) / 2;
-        let maxLatValue = Math.max(Math.min(maxLatRad, Math.PI), -Math.PI) / 2;
-        let minLatSin = Math.sin(minLat * Math.PI / 180);
-        let minLatRad = Math.log((1 + minLatSin) / (1 - minLatSin)) / 2;
-        let minLatValue = Math.max(Math.min(minLatRad, Math.PI), -Math.PI) / 2;
-        latRatio = (maxLatValue - minLatValue) / Math.PI;
-        let lngDiff = maxLong - minLong;
-        lngRatio = ((lngDiff < 0) ? (lngDiff + 360) : lngDiff) / 360;
-        let WORLD_PX_HEIGHT = 256;
-        let WORLD_PX_WIDTH = 256;
-        latZoom = Math.floor(Math.log(mapHeight / WORLD_PX_HEIGHT / latRatio) / Math.LN2);
-        lngZoom = Math.floor(Math.log(mapWidth / WORLD_PX_WIDTH / lngRatio) / Math.LN2);
-        result = Math.min(latZoom, lngZoom);
-        scaleFactor = Math.min(result, maxZoomFact - 1);
-        return scaleFactor;
     }
     /**
      * To find zoom level for individual layers like India, USA.
@@ -3443,25 +3468,27 @@ class Marker {
                     currentLayer.markerSettings.forEach((markerSetting, markerIndex) => {
                         let markerData = markerSetting.dataSource;
                         markerData.forEach((data, dataIndex) => {
+                            let latitude = parseFloat(data['latitude']);
+                            let longitude = parseFloat(data['longitude']);
                             minLong = isNullOrUndefined(minLong) && dataIndex === 0 ?
-                                data['longitude'] : minLong;
+                                longitude : minLong;
                             maxLat = isNullOrUndefined(maxLat) && dataIndex === 0 ?
-                                data['latitude'] : maxLat;
+                                latitude : maxLat;
                             minLat = isNullOrUndefined(minLat) && dataIndex === 0 ?
-                                data['latitude'] : minLat;
+                                latitude : minLat;
                             maxLong = isNullOrUndefined(maxLong) && dataIndex === 0 ?
-                                data['longitude'] : maxLong;
-                            if (minLong > data['longitude']) {
-                                minLong = data['longitude'];
+                                longitude : maxLong;
+                            if (minLong > longitude) {
+                                minLong = longitude;
                             }
-                            if (minLat > data['latitude']) {
-                                minLat = data['latitude'];
+                            if (minLat > latitude) {
+                                minLat = latitude;
                             }
-                            if (maxLong < data['longitude']) {
-                                maxLong = data['longitude'];
+                            if (maxLong < longitude) {
+                                maxLong = longitude;
                             }
-                            if (maxLat < data['latitude']) {
-                                maxLat = data['latitude'];
+                            if (maxLat < latitude) {
+                                maxLat = latitude;
                             }
                         });
                     });
@@ -3476,8 +3503,9 @@ class Marker {
                 this.maps.centerPosition.longitude = centerLong;
                 let markerFactor;
                 if (this.maps.isTileMap || this.maps.baseMapRectBounds['min']['x'] === 0) {
-                    zoomLevel = this.calculateMarkerZoomLevel(minLat, maxLat, minLong, maxLong, mapWidth, mapHeight);
+                    zoomLevel = calculateZoomLevel(minLat, maxLat, minLong, maxLong, mapWidth, mapHeight);
                     if (this.maps.isTileMap) {
+                        zoomLevel = Math.floor(zoomLevel);
                         markerFactor = isNullOrUndefined(this.maps.markerZoomFactor) ?
                             zoomLevel : isNullOrUndefined(this.maps.mapScaleValue) ?
                             zoomLevel : this.maps.mapScaleValue > 1 && this.maps.markerZoomFactor !== 1 ?
@@ -4187,6 +4215,12 @@ class LayerPanel {
                 panel.mapObject.tileTranslatePoint.x = 0;
                 panel.mapObject.tileTranslatePoint.y = 0;
             }
+        }
+        if (!isNullOrUndefined(panel.mapObject.centerLatOfGivenLocation) && !isNullOrUndefined(panel.mapObject.centerLongOfGivenLocation) &&
+            panel.mapObject.zoomNotApplied) {
+            center.y = panel.mapObject.centerLatOfGivenLocation;
+            center.x = panel.mapObject.centerLongOfGivenLocation;
+            panel.mapObject.tileZoomLevel = panel.mapObject.mapScaleValue = panel.mapObject.scaleOfGivenLocation;
         }
         panel.mapObject.tileTranslatePoint = panel.panTileMap(panel.mapObject.availableSize.width, panel.mapObject.availableSize.height, center);
         panel.generateTiles(panel.mapObject.tileZoomLevel, panel.mapObject.tileTranslatePoint, bing);
@@ -4946,7 +4980,7 @@ class LayerPanel {
         x -= position.x - (factorX / 2);
         y = (y - (position.y - (factorY / 2))) + padding;
         this.mapObject.scale = Math.pow(2, level - 1);
-        if (!isNullOrUndefined(this.mapObject.tileTranslatePoint)) {
+        if (!isNullOrUndefined(this.mapObject.tileTranslatePoint) && !this.mapObject.zoomNotApplied) {
             if (this.mapObject.tileTranslatePoint.x !== 0 && this.mapObject.tileTranslatePoint.x !== x) {
                 x = this.mapObject.tileTranslatePoint.x;
             }
@@ -5233,6 +5267,8 @@ let Maps = class Maps extends Component {
         /** @public */
         this.zoomTranslatePoint = new Point(0, 0);
         /** @private */
+        this.markerNullCount = 0;
+        /** @private */
         this.tileTranslatePoint = new Point(0, 0);
         /** @private */
         this.baseTileTranslatePoint = new Point(0, 0);
@@ -5240,6 +5276,8 @@ let Maps = class Maps extends Component {
         this.isDevice = false;
         /** @private */
         this.staticMapZoom = this.zoomSettings.enable ? this.zoomSettings.zoomFactor : 0;
+        /** @private */
+        this.zoomNotApplied = false;
         /** @public */
         this.dataLabelShape = [];
         this.zoomShapeCollection = [];
@@ -6105,6 +6143,31 @@ let Maps = class Maps extends Component {
                 }
             }
         }
+    }
+    /**
+     * To add marker
+     * @param minLatitude
+     * @param maxLatitude
+     * @param minLongitude
+     * @param maxLongitude
+     */
+    zoomToCoordinates(minLatitude, minLongitude, maxLatitude, maxLongitude) {
+        let centerLatitude;
+        let centerLongtitude;
+        if (minLatitude > maxLatitude) {
+            [minLatitude, maxLatitude] = [maxLatitude, minLatitude];
+        }
+        if (minLongitude > maxLongitude) {
+            [minLongitude, maxLongitude] = [maxLongitude, minLongitude];
+        }
+        centerLatitude = (minLatitude + maxLatitude) / 2;
+        centerLongtitude = (minLongitude + maxLongitude) / 2;
+        this.centerLatOfGivenLocation = centerLatitude;
+        this.centerLongOfGivenLocation = centerLongtitude;
+        this.scaleOfGivenLocation = calculateZoomLevel(minLatitude, maxLatitude, minLongitude, maxLongitude, this.mapAreaRect.width, this.mapAreaRect.height);
+        this.scaleOfGivenLocation = this.isTileMap ? Math.floor(this.scaleOfGivenLocation) : this.scaleOfGivenLocation;
+        this.zoomNotApplied = true;
+        this.refresh();
     }
     /**
      * Method to romove multiple selected shapes maps
@@ -7075,14 +7138,14 @@ class DataLabel {
                     text = eventargs.text;
                 }
                 let textSize = measureText(text, style);
-                let trimmedLable = textTrim(width, text, style);
-                let elementSize = measureText(trimmedLable, style);
+                let trimmedLable = text;
+                let elementSize = textSize;
                 let startY = location['y'] - textSize['height'] / 4;
                 let endY = location['y'] + textSize['height'] / 4;
                 let start = location['y'] - textSize['height'] / 4;
                 let end = location['y'] + textSize['height'] / 4;
                 position = filter(shapePoint[midIndex], startY, endY);
-                if (position.length > 5 && (shapeData['geometry']['type'] !== 'MultiPolygon') &&
+                if (!isPoint && position.length > 5 && (shapeData['geometry']['type'] !== 'MultiPolygon') &&
                     (shapeData['type'] !== 'MultiPolygon')) {
                     let location1 = findMidPointOfPolygon(position, projectionType);
                     if (zoomLabelsPosition && scaleZoomValue > 1) {
@@ -7097,8 +7160,6 @@ class DataLabel {
                 }
                 let xpositionEnds = location['x'] + textSize['width'] / 2;
                 let xpositionStart = location['x'] - textSize['width'] / 2;
-                trimmedLable = textTrim(width, text, style);
-                elementSize = measureText(trimmedLable, style);
                 this.value[index] = { rightWidth: xpositionEnds, leftWidth: xpositionStart, heightTop: start, heightBottom: end };
                 let labelElement;
                 if (eventargs.template !== '') {
@@ -7113,6 +7174,8 @@ class DataLabel {
                 }
                 else {
                     if (dataLabelSettings.smartLabelMode === 'Trim') {
+                        trimmedLable = textTrim(width, text, style);
+                        elementSize = measureText(trimmedLable, style);
                         options = new TextOption(labelId, textLocation.x, textLocation.y, 'middle', trimmedLable, '', '');
                     }
                     if (dataLabelSettings.smartLabelMode === 'None') {
@@ -7168,6 +7231,7 @@ class DataLabel {
                                 }
                             }
                         }
+                        elementSize = measureText(trimmedLable, style);
                         intersect.push(this.value[index]);
                         options = new TextOption(labelId, textLocation.x, (textLocation.y), 'middle', trimmedLable, '', '');
                     }
@@ -9989,6 +10053,7 @@ class Zoom {
             map.mapLayerPanel.generateTiles(newZoomFactor, map.tileTranslatePoint);
         }
         this.applyTransform();
+        this.maps.zoomNotApplied = false;
     }
     triggerZoomEvent(prevTilePoint, prevLevel) {
         let map = this.maps;
@@ -10052,6 +10117,7 @@ class Zoom {
                 map.scale = (Math.pow(2, zoomCalculationFactor));
             }
             this.applyTransform(true);
+            this.maps.zoomNotApplied = false;
             this.zoomingRect = null;
         }
     }
@@ -10326,6 +10392,7 @@ class Zoom {
         currentLayers.markerSettings.map((markerSettings, markerIndex) => {
             let markerDatas = markerSettings.dataSource;
             markerDatas.forEach((data, dataIndex) => {
+                this.maps.markerNullCount = markerIndex > 0 && dataIndex === 0 ? 0 : this.maps.markerNullCount;
                 let eventArgs = {
                     template: markerSettings.template, data: data, maps: this.maps, marker: markerSettings,
                     cancel: false, name: markerRendering, fill: markerSettings.fill, colorValuePath: markerSettings.colorValuePath,
@@ -10346,8 +10413,8 @@ class Zoom {
                     if (markerSettings.colorValuePath !== eventArgs.colorValuePath) {
                         eventArgs = markerColorChoose(eventArgs, data);
                     }
-                    let lati = data['latitude'];
-                    let long = data['longitude'];
+                    let lati = parseFloat(data['latitude']);
+                    let long = parseFloat(data['longitude']);
                     let offset = markerSettings.offset;
                     if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(long) && !isNullOrUndefined(lati)) {
                         let markerID = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
@@ -10366,7 +10433,10 @@ class Zoom {
                     }
                     markerTemplateCounts += (eventArgs.cancel) ? 1 : 0;
                     markerCounts += (eventArgs.cancel) ? 1 : 0;
-                    if (markerSVGObject.childElementCount === (markerDatas.length - markerTemplateCounts) && (type !== 'Template')) {
+                    this.maps.markerNullCount = (!isNullOrUndefined(lati) || !isNullOrUndefined(long))
+                        ? this.maps.markerNullCount : this.maps.markerNullCount + 1;
+                    let markerDataLength = markerDatas.length - this.maps.markerNullCount;
+                    if (markerSVGObject.childElementCount === (markerDataLength - markerTemplateCounts) && (type !== 'Template')) {
                         layerElement.appendChild(markerSVGObject);
                         if (currentLayers.markerClusterSettings.allowClustering) {
                             this.maps.svgObject.appendChild(markerSVGObject);
@@ -10552,8 +10622,8 @@ class Zoom {
         let layer = this.maps.layersCollection[layerIndex];
         let marker$$1 = layer.markerSettings[markerIndex];
         if (!isNullOrUndefined(marker$$1) && !isNullOrUndefined(marker$$1.dataSource) && !isNullOrUndefined(marker$$1.dataSource[dataIndex])) {
-            let lng = marker$$1.dataSource[dataIndex]['longitude'];
-            let lat = marker$$1.dataSource[dataIndex]['latitude'];
+            let lng = parseFloat(marker$$1.dataSource[dataIndex]['longitude']);
+            let lat = parseFloat(marker$$1.dataSource[dataIndex]['latitude']);
             let duration = this.currentLayer.animationDuration;
             let location = (this.maps.isTileMap) ? convertTileLatLongToPoint(new Point(lng, lat), this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true) : convertGeoToPoint(lat, lng, factor, layer, this.maps);
             if (this.maps.isTileMap) {
@@ -10624,7 +10694,7 @@ class Zoom {
             let panningXDirection = ((xDifference < 0 ? layerRect.left <= (elementRect.left + map.mapAreaRect.x) :
                 ((layerRect.left + layerRect.width) >= (elementRect.left + elementRect.width) + map.mapAreaRect.x + map.margin.left)));
             let panningYDirection = ((yDifference < 0 ? layerRect.top <= (elementRect.top + map.mapAreaRect.y) :
-                ((layerRect.top + layerRect.height) >= (elementRect.top + elementRect.height) + map.mapAreaRect.y + map.margin.top)));
+                ((layerRect.top + layerRect.height + map.margin.top) >= (elementRect.top + elementRect.height))));
             panArgs = {
                 cancel: false, name: pan, maps: !map.isBlazor ? map : null,
                 tileTranslatePoint: {}, translatePoint: { previous: translatePoint, current: new Point(x, y) },
@@ -10643,6 +10713,7 @@ class Zoom {
                 map.translatePoint = new Point(map.translatePoint.x, y);
                 this.applyTransform();
             }
+            this.maps.zoomNotApplied = false;
         }
         else if (this.maps.tileZoomLevel > 1) {
             x = map.tileTranslatePoint.x - xDifference;
@@ -10665,6 +10736,7 @@ class Zoom {
         }
         map.zoomTranslatePoint = map.translatePoint;
         this.mouseDownPoints = this.mouseMovePoints;
+        this.maps.zoomNotApplied = false;
         this.isSingleClick = false;
     }
     toAlignSublayer() {
@@ -10716,6 +10788,7 @@ class Zoom {
             map.mapLayerPanel.generateTiles(tileZoomFactor, map.tileTranslatePoint);
         }
         this.applyTransform(true);
+        this.maps.zoomNotApplied = false;
     }
     /* tslint:disable:max-func-body-length */
     createZoomingToolbars() {
@@ -11101,7 +11174,7 @@ class Zoom {
         this.touchMoveList = [];
         this.lastScale = 1;
         this.maps.element.style.cursor = 'auto';
-        if ((!isNullOrUndefined(this.distanceX) || !isNullOrUndefined(this.distanceY)) && this.currentLayer.type === 'SubLayer') {
+        if ((!isNullOrUndefined(this.distanceX) || !isNullOrUndefined(this.distanceY)) && (!isNullOrUndefined(this.currentLayer) && this.currentLayer.type === 'SubLayer')) {
             this.toAlignSublayer();
             this.distanceX = this.distanceY = null;
         }
@@ -11210,5 +11283,5 @@ class Zoom {
  * exporting all modules from maps index
  */
 
-export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClusterRendering, markerClick, markerClusterClick, markerMouseMove, markerClusterMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, ConnectorLineSettings, MarkerClusterSettings, MarkerClusterData, ColorMappingSettings, InitialShapeSelectionSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, ToggleLegendSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, drawSymbols, markerColorChoose, markerShapeChoose, clusterTemplate, mergeSeparateCluster, clusterSeparate, marker, markerTemplate, maintainSelection, maintainStyleClass, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, getRatioOfBubble, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, getTranslate, getZoomTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, triggerItemSelectionEvent, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
+export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClusterRendering, markerClick, markerClusterClick, markerMouseMove, markerClusterMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, ConnectorLineSettings, MarkerClusterSettings, MarkerClusterData, ColorMappingSettings, InitialShapeSelectionSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, ToggleLegendSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, drawSymbols, markerColorChoose, markerShapeChoose, clusterTemplate, mergeSeparateCluster, clusterSeparate, marker, markerTemplate, maintainSelection, maintainStyleClass, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, getRatioOfBubble, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, getTranslate, getZoomTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, triggerItemSelectionEvent, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, calculateZoomLevel, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
 //# sourceMappingURL=ej2-maps.es2015.js.map

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.43 (2020-01-14)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#F150435` - Script error occurs during disabled toolbar button click has been resolved.
+
 ## 17.4.41 (2020-01-07)
 
 ### ListBox

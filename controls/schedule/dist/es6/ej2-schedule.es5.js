@@ -2,7 +2,7 @@ import { Animation, Browser, ChildProperty, Collection, Complex, Component, Drag
 import { Dialog, Popup, Tooltip, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Toolbar, TreeView } from '@syncfusion/ej2-navigations';
 import { Calendar, DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
-import { DataManager, DataUtil, Deferred, Predicate, Query } from '@syncfusion/ej2-data';
+import { DataManager, Deferred, Predicate, Query } from '@syncfusion/ej2-data';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 import { FormValidator, Input, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
@@ -11326,14 +11326,13 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
         var _this = this;
         this.parent.showSpinner();
         if (isBlazor()) {
+            // the resourceCollection will be updated in layoutReady method
             // tslint:disable-next-line:no-any
-            this.parent.interopAdaptor.invokeMethodAsync('BindResourcesData').then(function (result) {
-                if (_this.parent.isDestroyed) {
-                    return;
-                }
-                _this.parent.resourceCollection = DataUtil.parse.parseJson(result);
-                _this.refreshLayout(isSetModel);
-            }).catch(function (e) { return _this.dataManagerFailure(e); });
+            // (this.parent as any).interopAdaptor.invokeMethodAsync('BindResourcesData').then((result: string) => {
+            //     if (this.parent.isDestroyed) { return; }
+            //     this.parent.resourceCollection = DataUtil.parse.parseJson(result);
+            //     this.refreshLayout(isSetModel);
+            // }).catch((e: ReturnType) => this.dataManagerFailure(e));
             return;
         }
         var promises = [];
@@ -11820,8 +11819,17 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         this.renderComplete();
     };
     /** @hidden */
-    Schedule.prototype.layoutReady = function () {
-        if (this.isServerRenderer() && this.activeView) {
+    Schedule.prototype.layoutReady = function (resourceCollection, isFirstRender, isSetModel) {
+        if (!this.isServerRenderer()) {
+            return;
+        }
+        if (resourceCollection && resourceCollection.length > 0 && (isFirstRender || isSetModel)) {
+            this.resourceCollection = resourceCollection;
+            if (this.resourceBase) {
+                this.resourceBase.refreshLayout(isSetModel);
+            }
+        }
+        if (this.activeView) {
             this.activeView.serverRenderLayout();
             if (this.renderModule) {
                 this.renderModule.refreshDataManager();
@@ -14019,7 +14027,8 @@ var ActionBase = /** @__PURE__ @class */ (function () {
         var _this = this;
         if (this.actionObj.scroll.enable && isNullOrUndefined(this.actionObj.scrollInterval)) {
             this.actionObj.scrollInterval = window.setInterval(function () {
-                if (_this.autoScrollValidation(e) && !_this.actionObj.clone.classList.contains(ALLDAY_APPOINTMENT_CLASS)) {
+                if (_this.autoScrollValidation(e) && !_this.actionObj.clone.classList.contains(ALLDAY_APPOINTMENT_CLASS) &&
+                    _this.actionObj.groupIndex !== 0) {
                     _this.autoScroll();
                     if (_this.actionObj.action === 'drag') {
                         _this.parent.dragAndDropModule.updateDraggingDateTime(e);
@@ -15437,7 +15446,7 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
             return slotTd;
         }
         else {
-            var daySlot = (((schedule.endHour.getTime() - schedule.startHour.getTime()) / (60 * 1000)) / this.interval) * this.slotCount;
+            var daySlot = Math.round((((schedule.endHour.getTime() - schedule.startHour.getTime()) / (60 * 1000)) / this.interval) * this.slotCount);
             return (daySlot * day) + slotTd;
         }
     };
@@ -16994,7 +17003,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
         translateY = (isNullOrUndefined(translateY)) ? 0 : translateY;
         var rowHeight = (this.parent.rowAutoHeight) ?
             ~~(dragArea.querySelector('table').offsetHeight / trCollection.length) : this.actionObj.cellHeight;
-        var rowIndex = Math.floor(Math.floor((this.actionObj.Y + (dragArea.scrollTop - translateY)) -
+        var rowIndex = Math.floor(Math.floor((this.actionObj.Y + (dragArea.scrollTop - translateY - window.scrollY)) -
             dragArea.getBoundingClientRect().top) / rowHeight);
         rowIndex = (rowIndex < 0) ? 0 : (rowIndex > trCollection.length - 1) ? trCollection.length - 1 : rowIndex;
         this.actionObj.index = rowIndex;
@@ -17088,7 +17097,7 @@ var ViewHelper;
     };
     ViewHelper.getTime = function (proxy, date) {
         if (proxy.isAdaptive) {
-            if (proxy.timeFormat === 'HH:mm') {
+            if (proxy.timeFormat === 'HH:mm' || proxy.timeFormat === 'HH.mm') {
                 return proxy.globalize.formatDate(date, { format: 'H', calendar: proxy.getCalendarMode() });
             }
             return proxy.globalize.formatDate(date, { skeleton: 'h', calendar: proxy.getCalendarMode() });

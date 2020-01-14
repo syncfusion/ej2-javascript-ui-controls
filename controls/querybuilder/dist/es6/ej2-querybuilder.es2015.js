@@ -2773,10 +2773,10 @@ let QueryBuilder = class QueryBuilder extends Component {
                         switch (ruleColl.operator) {
                             case 'between':
                                 if (column.type === 'date') {
-                                    pred = new Predicate(ruleColl.field, 'greaterthan', this.getDate(value[j], format));
+                                    pred = new Predicate(ruleColl.field, 'greaterthanorequal', this.getDate(value[j], format));
                                 }
                                 else {
-                                    pred = new Predicate(ruleColl.field, 'greaterthan', value[j]);
+                                    pred = new Predicate(ruleColl.field, 'greaterthanorequal', value[j]);
                                 }
                                 break;
                             case 'notbetween':
@@ -2799,10 +2799,10 @@ let QueryBuilder = class QueryBuilder extends Component {
                         switch (ruleColl.operator) {
                             case 'between':
                                 if (column.type === 'date') {
-                                    pred = pred.and(ruleColl.field, 'lessthan', this.getDate(value[j], format));
+                                    pred = pred.and(ruleColl.field, 'lessthanorequal', this.getDate(value[j], format));
                                 }
                                 else {
-                                    pred = pred.and(ruleColl.field, 'lessthan', value[j]);
+                                    pred = pred.and(ruleColl.field, 'lessthanorequal', value[j]);
                                 }
                                 break;
                             case 'notbetween':
@@ -3047,12 +3047,15 @@ let QueryBuilder = class QueryBuilder extends Component {
                 return operators[i].length;
             }
         }
-        for (let i = 0, iLen = conditions.length; i < iLen; i++) {
-            regexStr = /^\w+$/.test(conditions[i]) ? '\\b' : '';
-            regex = new RegExp('^(' + conditions[i] + ')' + regexStr, 'ig');
-            if (regex.exec(sqlString)) {
-                this.parser.push(['Conditions', conditions[i].toLowerCase()]);
-                return conditions[i].length;
+        let lastPasrser = this.parser[this.parser.length - 1];
+        if (!lastPasrser || (lastPasrser && lastPasrser[0] !== 'Literal')) {
+            for (let i = 0, iLen = conditions.length; i < iLen; i++) {
+                regexStr = /^\w+$/.test(conditions[i]) ? '\\b' : '';
+                regex = new RegExp('^(' + conditions[i] + ')' + regexStr, 'ig');
+                if (regex.exec(sqlString)) {
+                    this.parser.push(['Conditions', conditions[i].toLowerCase()]);
+                    return conditions[i].length;
+                }
             }
         }
         for (let i = 0, iLen = subOp.length; i < iLen; i++) {
@@ -3174,7 +3177,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                                 rule.value = parser[j][1].replace(/'/g, '').replace(/%/g, '');
                                 rule.type = 'string';
                             }
-                            else if (operator === 'between') {
+                            else if (operator.indexOf('between') > -1) {
                                 if (parser[j][0] === 'Literal' || parser[j][0] === 'Left') {
                                     break;
                                 }
@@ -3205,7 +3208,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                             rule.value = strVal;
                             rule.type = 'string';
                         }
-                        else if (operator === 'between' && parser[j - 1][0] === 'Conditions') {
+                        else if (operator.indexOf('between') > -1 && parser[j - 1][0] === 'Conditions') {
                             rule.value = numVal;
                             rule.type = 'number';
                         }

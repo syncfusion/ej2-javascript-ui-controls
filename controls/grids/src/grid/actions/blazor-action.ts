@@ -1,5 +1,5 @@
 import { IGrid, ActionArgs, NotifyArgs } from '../base/interface';
-import { Observer } from '@syncfusion/ej2-base';
+import { Observer, isBlazor } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
 import { Column } from '../models/column';
 import { Row } from '../models/row';
@@ -32,6 +32,7 @@ export class BlazorAction {
             return;
         }
         this.parent.on('detailclick', this.onDetailRowClick, this);
+        this.parent.on('add-delete-success', this.addDeleteSuccess, this);
         this.parent.on('editsuccess', this.editSuccess, this);
         this.parent.on('setvisibility', this.setColumnVisibility, this);
         this.parent.on('offset', this.setServerOffSet, this);
@@ -43,6 +44,7 @@ export class BlazorAction {
             return;
         }
         this.parent.off('detailclick', this.onDetailRowClick);
+        this.parent.off('add-delete-success', this.addDeleteSuccess);
         this.parent.off('editsuccess', this.editSuccess);
         this.parent.off('setvisibility', this.setColumnVisibility);
         this.parent.off('offset', this.setServerOffSet);
@@ -56,6 +58,23 @@ export class BlazorAction {
         this.parent.currentAction = args;
     }
 
+    public addDeleteSuccess(args: NotifyArgs): void {
+
+        let editArgs: Object;
+        let action: string = 'name';
+        let data: string = 'data';
+        editArgs = {
+            requestType: args.requestType,
+            data: args[data],
+            action: args[action]
+        };
+        args.promise.then((e: ReturnType) => this.editSuccess(editArgs)
+        ).catch((e: Error) => {
+            this.parent.trigger(events.actionFailure, ((isBlazor() && e instanceof Array) ? e[0] : e));
+            this.parent.hideSpinner();
+            this.parent.log('actionfailure', { error: e });
+        });
+    }
     public editSuccess(args: ActionArgs): void {
         this.actionArgs = args;
         this.parent.currentAction = args;

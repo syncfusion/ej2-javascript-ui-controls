@@ -109,6 +109,8 @@ let Splitter = class Splitter extends Component {
         this.validElementAttributes = ['data-orientation', 'data-width', 'data-height'];
         this.iconsDelay = 300;
         this.templateElement = [];
+        this.collapseFlag = false;
+        this.expandFlag = true;
     }
     /**
      * Gets called when the model property changes.The data that describes the old and new values of the property that changed.
@@ -236,7 +238,9 @@ let Splitter = class Splitter extends Component {
         this.getPanesDimensions();
         this.setPaneSettings();
         this.setRTL(this.enableRtl);
+        this.collapseFlag = true;
         this.isCollapsed();
+        this.collapseFlag = false;
         EventHandler.add(document, 'touchstart click', this.onDocumentClick, this);
         this.renderComplete();
         EventHandler.add(this.element, 'keydown', this.onMove, this);
@@ -485,26 +489,51 @@ let Splitter = class Splitter extends Component {
         }
     }
     isCollapsed(index) {
+        this.expandFlag = false;
         if (!isNullOrUndefined(index)) {
-            if (this.allPanes.length <= 2) {
-                this.updateIsCollapsed(index, this.targetArrows().collapseArrow, this.targetArrows().lastBarArrow);
+            this.collapseFlag = true;
+            let targetEle;
+            let lastBarIndex = (index === this.allBars.length);
+            let barIndex = lastBarIndex ? index - 1 : index;
+            if (!lastBarIndex && this.allPanes[index + 1].classList.contains(COLLAPSE_PANE) && index !== 0) {
+                targetEle = this.collapseArrow(barIndex - 1, this.targetArrows().lastBarArrow);
             }
             else {
-                let targetEle;
-                let lastBarIndex = (index === this.allBars.length);
-                let barIndex = lastBarIndex ? index - 1 : index;
-                if (!lastBarIndex && this.allPanes[index + 1].classList.contains(COLLAPSE_PANE) && index !== 0) {
-                    targetEle = this.collapseArrow(barIndex - 1, this.targetArrows().lastBarArrow);
-                }
-                else {
-                    targetEle = (lastBarIndex) ? this.collapseArrow(barIndex, this.targetArrows().lastBarArrow) :
-                        this.collapseArrow(barIndex, this.targetArrows().collapseArrow);
-                }
-                this.allPanes[index].classList.add(PANE_HIDDEN);
-                this.allPanes[index].classList.add(COLLAPSE_PANE);
-                this.allPanes[index].setAttribute('aria-expanded', 'false');
-                this.allPanes[index].style.flexGrow = '0';
+                targetEle = (lastBarIndex) ? this.collapseArrow(barIndex, this.targetArrows().lastBarArrow) :
+                    this.collapseArrow(barIndex, this.targetArrows().collapseArrow);
             }
+            let event = { target: targetEle };
+            let eventArgs = this.beforeAction(event);
+            this.trigger('beforeCollapse', eventArgs, (beforeCollapseArgs) => {
+                if (!beforeCollapseArgs.cancel) {
+                    let collapsedindex = [];
+                    collapsedindex[0] = index;
+                    let j = 1;
+                    for (let i = 0; i < this.allPanes.length; i++) {
+                        if (this.allPanes[i].classList.contains(COLLAPSE_PANE)) {
+                            collapsedindex[j] = i;
+                            j++;
+                        }
+                    }
+                    this.updateIsCollapsed(index, this.targetArrows().collapseArrow, this.targetArrows().lastBarArrow);
+                    collapsedindex = collapsedindex.sort();
+                    this.updateIsCollapsed(index, this.targetArrows().collapseArrow, this.targetArrows().lastBarArrow);
+                    for (let i = 0; i < collapsedindex.length; i++) {
+                        if (!this.allPanes[collapsedindex[i]].classList.contains(COLLAPSE_PANE)) {
+                            this.updateIsCollapsed(collapsedindex[i], this.targetArrows().collapseArrow, this.targetArrows().lastBarArrow);
+                        }
+                    }
+                    for (let i = collapsedindex.length; i > 0; i--) {
+                        if (!this.allPanes[collapsedindex[i - 1]].classList.contains(COLLAPSE_PANE)) {
+                            let targetArrow = this.targetArrows();
+                            this.updateIsCollapsed(collapsedindex[i - 1], targetArrow.collapseArrow, targetArrow.lastBarArrow);
+                        }
+                    }
+                    let collapseEventArgs = this.afterAction(event);
+                    this.trigger('collapsed', collapseEventArgs);
+                    this.collapseFlag = false;
+                }
+            });
         }
         else {
             for (let m = 0; m < this.allPanes.length; m++) {
@@ -527,6 +556,7 @@ let Splitter = class Splitter extends Component {
                 }
             }
         }
+        this.expandFlag = true;
     }
     targetArrows() {
         this.splitterProperty();
@@ -709,7 +739,9 @@ let Splitter = class Splitter extends Component {
                 if (separator) {
                     addClass([separator], LAST_BAR);
                 }
-                this.updateResizablePanes(i);
+                if (childCount > 1) {
+                    this.updateResizablePanes(i);
+                }
             }
         }
         if (Browser.info.name === 'msie') {
@@ -838,36 +870,76 @@ let Splitter = class Splitter extends Component {
     }
     expandAction(e) {
         this.splitterDetails(e);
-        let collapseClass = [COLLAPSE_PANE, PANE_HIDDEN];
         let eventArgs = this.beforeAction(e);
-        this.trigger('beforeExpand', eventArgs, (beforeExpandArgs) => {
-            if (!beforeExpandArgs.cancel) {
-                this.nextPane.style.flexGrow = '0';
-                if (this.previousPane.classList.contains('e-collapsed') && this.previousPane.style.flexGrow === '0') {
-                    this.previousPane.style.flexGrow = '0';
+        if (this.expandFlag) {
+            this.trigger('beforeExpand', eventArgs, (beforeExpandArgs) => {
+                if (!beforeExpandArgs.cancel) {
+                    this.expandPane(e);
                 }
-                else {
-                    this.previousPane.style.flexGrow = '1';
-                }
-                if (!this.previousPane.classList.contains(COLLAPSE_PANE)) {
-                    removeClass([this.nextPane], EXPAND_PANE);
-                    removeClass([this.previousPane], collapseClass);
-                    addClass([this.previousPane], EXPAND_PANE);
-                    addClass([this.nextPane], collapseClass);
-                }
-                else {
-                    (this.currentBarIndex !== 0) ?
-                        this.previousPane.style.flexGrow = '' : this.nextPane.style.flexGrow = '';
-                    removeClass([this.previousPane], collapseClass);
-                    removeClass([this.nextPane], EXPAND_PANE);
-                }
-                this.updateIconsOnExpand(e);
-                this.previousPane.setAttribute('aria-expanded', 'true');
-                this.nextPane.setAttribute('aria-expanded', 'false');
                 let expandEventArgs = this.afterAction(e);
                 this.trigger('expanded', expandEventArgs);
+            });
+        }
+        else {
+            this.expandPane(e);
+        }
+    }
+    expandPane(e) {
+        let collapseCount = this.element.querySelectorAll('.' + COLLAPSE_PANE).length;
+        let flexStatus = (!this.previousPane.classList.contains(COLLAPSE_PANE) &&
+            this.previousPane.classList.contains(STATIC_PANE) && !this.nextPane.classList.contains(COLLAPSE_PANE) &&
+            !this.nextPane.classList.contains(EXPAND_PANE) && this.nextPane.nextElementSibling.classList.contains(PANE) &&
+            !this.nextPane.nextElementSibling.classList.contains(STATIC_PANE) && !(collapseCount === this.allPanes.length - 2));
+        let collapseClass = [COLLAPSE_PANE, PANE_HIDDEN];
+        if (!this.previousPane.classList.contains(COLLAPSE_PANE)) {
+            removeClass([this.nextPane], EXPAND_PANE);
+            removeClass([this.previousPane], collapseClass);
+            addClass([this.previousPane], EXPAND_PANE);
+            addClass([this.nextPane], collapseClass);
+        }
+        else {
+            removeClass([this.previousPane], collapseClass);
+            removeClass([this.nextPane], EXPAND_PANE);
+        }
+        this.updateIconsOnExpand(e);
+        this.previousPane.setAttribute('aria-expanded', 'true');
+        this.nextPane.setAttribute('aria-expanded', 'false');
+        this.updateFlexGrow(this.checkStaticPanes());
+        if (flexStatus) {
+            this.previousPane.classList.remove(EXPAND_PANE);
+            this.previousPane.style.flexGrow = '';
+        }
+    }
+    checkStaticPanes() {
+        let staticPane = true;
+        for (let i = 0; i < this.allPanes.length; i++) {
+            if (!this.allPanes[i].classList.contains(COLLAPSE_PANE) && staticPane) {
+                if (this.allPanes[i].classList.contains(STATIC_PANE)) {
+                    staticPane = true;
+                }
+                else {
+                    staticPane = false;
+                }
             }
-        });
+        }
+        return staticPane;
+    }
+    updateFlexGrow(status) {
+        let panes = this.allPanes;
+        for (let i = 0; i < panes.length; i++) {
+            if (panes[i].classList.contains(EXPAND_PANE)) {
+                panes[i].style.flexGrow = '1';
+            }
+            else if (panes[i].classList.contains(COLLAPSE_PANE)) {
+                panes[i].style.flexGrow = '0';
+            }
+            else {
+                panes[i].style.flexGrow = '';
+            }
+            if (status && !this.nextPane.classList.contains(COLLAPSE_PANE)) {
+                this.nextPane.style.flexGrow = '1';
+            }
+        }
     }
     hideTargetBarIcon(targetBar, targetArrow) {
         addClass([select('.' + targetArrow, targetBar)], HIDE_ICON);
@@ -941,29 +1013,48 @@ let Splitter = class Splitter extends Component {
     }
     collapseAction(e) {
         this.splitterDetails(e);
-        let collapseClass = [COLLAPSE_PANE, PANE_HIDDEN];
-        this.previousPane.style.flexGrow = '0';
-        this.nextPane.style.flexGrow = '1';
         let eventArgs = this.beforeAction(e);
-        this.trigger('beforeCollapse', eventArgs, (beforeCollapseArgs) => {
-            if (!beforeCollapseArgs.cancel) {
-                if (this.nextPane.classList.contains(COLLAPSE_PANE)) {
-                    removeClass([this.previousPane], EXPAND_PANE);
-                    removeClass([this.nextPane], collapseClass);
+        if (this.collapseFlag) {
+            this.collapsePane(e);
+        }
+        else {
+            this.trigger('beforeCollapse', eventArgs, (beforeCollapseArgs) => {
+                if (!beforeCollapseArgs.cancel) {
+                    this.collapsePane(e);
+                    let collapseEventArgs = this.afterAction(e);
+                    this.trigger('collapsed', collapseEventArgs);
                 }
-                else {
-                    removeClass([this.previousPane], EXPAND_PANE);
-                    removeClass([this.nextPane], collapseClass);
-                    addClass([this.nextPane], EXPAND_PANE);
-                    addClass([this.previousPane], collapseClass);
-                }
-                this.updateIconsOnCollapse(e);
-                this.previousPane.setAttribute('aria-expanded', 'false');
-                this.nextPane.setAttribute('aria-expanded', 'true');
-                let collapseEventArgs = this.afterAction(e);
-                this.trigger('collapsed', collapseEventArgs);
-            }
-        });
+            });
+        }
+    }
+    collapsePane(e) {
+        let collapseCount = this.element.querySelectorAll('.' + COLLAPSE_PANE).length;
+        let flexStatus = (this.previousPane.classList.contains(STATIC_PANE) &&
+            !this.previousPane.classList.contains(COLLAPSE_PANE) && !this.nextPane.classList.contains(COLLAPSE_PANE) &&
+            this.nextPane.nextElementSibling.classList.contains(PANE) &&
+            !this.nextPane.nextElementSibling.classList.contains(STATIC_PANE) &&
+            !this.nextPane.nextElementSibling.classList.contains(COLLAPSE_PANE) &&
+            !(collapseCount === this.allPanes.length - 2)) || (this.nextPane.classList.contains(COLLAPSE_PANE) &&
+            !this.previousPane.classList.contains(STATIC_PANE) && this.nextPane.classList.contains(STATIC_PANE));
+        let collapseClass = [COLLAPSE_PANE, PANE_HIDDEN];
+        if (this.nextPane.classList.contains(COLLAPSE_PANE)) {
+            removeClass([this.previousPane], EXPAND_PANE);
+            removeClass([this.nextPane], collapseClass);
+        }
+        else {
+            removeClass([this.previousPane], EXPAND_PANE);
+            removeClass([this.nextPane], collapseClass);
+            addClass([this.nextPane], EXPAND_PANE);
+            addClass([this.previousPane], collapseClass);
+        }
+        this.updateIconsOnCollapse(e);
+        this.previousPane.setAttribute('aria-expanded', 'false');
+        this.nextPane.setAttribute('aria-expanded', 'true');
+        this.updateFlexGrow(this.checkStaticPanes());
+        if (flexStatus) {
+            this.nextPane.classList.remove(EXPAND_PANE);
+            this.nextPane.style.flexGrow = '';
+        }
     }
     beforeAction(e) {
         let eventArgs = isBlazor() ? {
@@ -1148,6 +1239,9 @@ let Splitter = class Splitter extends Component {
             separator: this.currentSeparator,
             cancel: false
         };
+        for (let i = 0; i < this.element.querySelectorAll('iframe').length; i++) {
+            this.element.querySelectorAll('iframe')[i].style.pointerEvents = 'none';
+        }
         this.trigger('resizeStart', eventArgs, (resizeStartArgs) => {
             if (!resizeStartArgs.cancel) {
                 this.wireResizeEvents();
@@ -1165,8 +1259,7 @@ let Splitter = class Splitter extends Component {
                 previous = this.convertPixelToPercentage(this.convertPixelToNumber(pane.style.flexBasis));
             }
             else {
-                let offset = (this.orientation === 'Horizontal') ? (pane.offsetWidth + this.currentSeparator.offsetWidth) :
-                    (pane.offsetHeight + this.currentSeparator.offsetHeight);
+                let offset = (this.orientation === 'Horizontal') ? (pane.offsetWidth) : (pane.offsetHeight);
                 previous = this.convertPixelToPercentage(offset);
             }
         }
@@ -1380,36 +1473,6 @@ let Splitter = class Splitter extends Component {
         this.addStaticPaneClass();
         this.previousPane.style.flexBasis = this.prevPaneCurrentWidth;
         this.nextPane.style.flexBasis = this.nextPaneCurrentWidth;
-        let lastBar = this.element.querySelector('.e-last-bar');
-        let sepSize = parseInt(isNullOrUndefined(this.separatorSize) ? '1' : this.separatorSize.toString(), 10);
-        if (this.orientation === 'Horizontal') {
-            if ((lastBar.offsetLeft + sepSize + this.element.offsetLeft) > (this.element.offsetWidth + this.element.offsetLeft)) {
-                this.validatelastBar(lastBar, sepSize);
-            }
-        }
-        else {
-            if ((lastBar.offsetTop + sepSize + this.element.offsetTop) > (this.element.offsetHeight + this.element.offsetTop)) {
-                this.validatelastBar(lastBar, sepSize);
-            }
-        }
-    }
-    validatelastBar(lastBar, sepSize) {
-        let lastbarIndex = this.getSeparatorIndex(lastBar);
-        if (this.allPanes[lastbarIndex + 1].style.flexBasis.indexOf('%') > -1) {
-            this.allPanes[lastbarIndex + 1].style.flexBasis = this.convertPixelToPercentage(sepSize) + '%';
-        }
-        else {
-            this.allPanes[lastbarIndex + 1].style.flexBasis = parseFloat(this.allPanes[lastbarIndex + 1].style.flexBasis)
-                + sepSize + 'px';
-        }
-        if (this.allPanes[lastbarIndex].style.flexBasis.indexOf('%') > -1) {
-            this.allPanes[lastbarIndex].style.flexBasis = (parseFloat(this.allPanes[lastbarIndex].style.flexBasis)
-                - this.convertPixelToPercentage(this.separatorSize)) + '%';
-        }
-        else {
-            this.allPanes[lastbarIndex].style.flexBasis = parseFloat(this.allPanes[lastbarIndex].style.flexBasis)
-                - sepSize + 'px';
-        }
     }
     validateMinRange(paneIndex, paneCurrentWidth, pane) {
         let paneMinRange = null;
@@ -1561,6 +1624,9 @@ let Splitter = class Splitter extends Component {
             separator: this.currentSeparator,
             paneSize: [this.prePaneDimenson, this.nextPaneDimension]
         };
+        for (let i = 0; i < this.element.querySelectorAll('iframe').length; i++) {
+            this.element.querySelectorAll('iframe')[i].style.pointerEvents = 'auto';
+        }
         this.trigger('resizeStop', eventArgs);
     }
     panesDimension(index, child) {
@@ -1673,7 +1739,7 @@ let Splitter = class Splitter extends Component {
         childCount = target.children.length;
         let child = [].slice.call(target.children);
         this.sizeFlag = false;
-        if (childCount > 1) {
+        if (childCount > 0) {
             for (let i = 0; i < childCount; i++) {
                 // To accept only div and span element as pane
                 if (child[i].nodeName === 'DIV' || child[i].nodeName === 'SPAN') {

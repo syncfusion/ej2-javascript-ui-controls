@@ -121,6 +121,7 @@ export class Zoom {
             map.mapLayerPanel.generateTiles(newZoomFactor, map.tileTranslatePoint);
         }
         this.applyTransform();
+        this.maps.zoomNotApplied = false;
     }
 
     private triggerZoomEvent(prevTilePoint: Point, prevLevel: number): void {
@@ -184,6 +185,7 @@ export class Zoom {
                 map.scale = (Math.pow(2, zoomCalculationFactor));
             }
             this.applyTransform(true);
+            this.maps.zoomNotApplied = false;
             this.zoomingRect = null;
         }
     }
@@ -463,6 +465,7 @@ export class Zoom {
             currentLayers.markerSettings.map((markerSettings: MarkerSettings, markerIndex: number) => {
                 let markerDatas: Object[] = <Object[]>markerSettings.dataSource;
                 markerDatas.forEach((data: Object, dataIndex: number) => {
+                    this.maps.markerNullCount = markerIndex > 0 && dataIndex === 0 ? 0 : this.maps.markerNullCount;
                     let eventArgs: IMarkerRenderingEventArgs = {
                         template: markerSettings.template, data: data, maps: this.maps, marker: markerSettings,
                         cancel: false, name: markerRendering, fill: markerSettings.fill, colorValuePath: markerSettings.colorValuePath,
@@ -483,8 +486,8 @@ export class Zoom {
                         if (markerSettings.colorValuePath !== eventArgs.colorValuePath ) {
                             eventArgs = markerColorChoose(eventArgs, data);
                         }
-                        let lati: number = data['latitude'];
-                        let long: number = data['longitude'];
+                        let lati: number = parseFloat(data['latitude']);
+                        let long: number = parseFloat(data['longitude']);
                         let offset: Point = markerSettings.offset;
                         if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(long) && !isNullOrUndefined(lati)) {
                             let markerID: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
@@ -505,8 +508,11 @@ export class Zoom {
                             }
                         }
                         markerTemplateCounts += (eventArgs.cancel) ? 1 : 0;                        
-                        markerCounts += (eventArgs.cancel) ? 1 : 0;                  
-                        if (markerSVGObject.childElementCount === (markerDatas.length - markerTemplateCounts) && (type !== 'Template')) {
+                        markerCounts += (eventArgs.cancel) ? 1 : 0;
+                        this.maps.markerNullCount = (!isNullOrUndefined(lati) || !isNullOrUndefined(long))
+                            ? this.maps.markerNullCount : this.maps.markerNullCount + 1;
+                        let markerDataLength: number = markerDatas.length - this.maps.markerNullCount;
+                        if (markerSVGObject.childElementCount === (markerDataLength - markerTemplateCounts) && (type !== 'Template')) {
                             layerElement.appendChild(markerSVGObject);
                             if (currentLayers.markerClusterSettings.allowClustering) {
                                 this.maps.svgObject.appendChild(markerSVGObject);
@@ -681,8 +687,8 @@ export class Zoom {
         let layer: LayerSettings = <LayerSettings>this.maps.layersCollection[layerIndex];
         let marker: MarkerSettings = <MarkerSettings>layer.markerSettings[markerIndex];
         if (!isNullOrUndefined(marker) && !isNullOrUndefined(marker.dataSource) && !isNullOrUndefined(marker.dataSource[dataIndex])) {
-            let lng: number = marker.dataSource[dataIndex]['longitude'];
-            let lat: number = marker.dataSource[dataIndex]['latitude'];
+            let lng: number = parseFloat(marker.dataSource[dataIndex]['longitude']);
+            let lat: number = parseFloat(marker.dataSource[dataIndex]['latitude']);
             let duration: number = this.currentLayer.animationDuration;
             let location: Point = (this.maps.isTileMap) ? convertTileLatLongToPoint(
                 new Point(lng, lat), this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true
@@ -751,7 +757,7 @@ export class Zoom {
             let panningXDirection: boolean = ((xDifference < 0 ? layerRect.left <= (elementRect.left + map.mapAreaRect.x) :
                 ((layerRect.left + layerRect.width) >= (elementRect.left + elementRect.width) + map.mapAreaRect.x + map.margin.left)));
             let panningYDirection: boolean = ((yDifference < 0 ? layerRect.top <= (elementRect.top + map.mapAreaRect.y) :
-                ((layerRect.top + layerRect.height) >= (elementRect.top + elementRect.height) + map.mapAreaRect.y + map.margin.top)));
+                ((layerRect.top + layerRect.height + map.margin.top) >= (elementRect.top + elementRect.height))));
             panArgs = {
                 cancel: false, name: pan, maps: !map.isBlazor ? map : null,
                 tileTranslatePoint: {}, translatePoint: { previous: translatePoint, current: new Point(x, y) },
@@ -768,6 +774,7 @@ export class Zoom {
                 map.translatePoint = new Point(map.translatePoint.x, y);
                 this.applyTransform();
             }
+            this.maps.zoomNotApplied = false;
         } else if (this.maps.tileZoomLevel > 1) {
             x = map.tileTranslatePoint.x - xDifference;
             y = map.tileTranslatePoint.y - yDifference;
@@ -789,6 +796,7 @@ export class Zoom {
         }
         map.zoomTranslatePoint = map.translatePoint;
         this.mouseDownPoints = this.mouseMovePoints;
+        this.maps.zoomNotApplied = false;
         this.isSingleClick = false;
     }
 
@@ -842,6 +850,7 @@ export class Zoom {
             map.mapLayerPanel.generateTiles(tileZoomFactor, map.tileTranslatePoint);
         }
         this.applyTransform(true);
+        this.maps.zoomNotApplied = false;
     }
 
     /* tslint:disable:max-func-body-length */
@@ -1253,7 +1262,7 @@ export class Zoom {
         this.touchMoveList = [];
         this.lastScale = 1;
         this.maps.element.style.cursor = 'auto';
-        if ((!isNullOrUndefined(this.distanceX) || !isNullOrUndefined(this.distanceY)) && this.currentLayer.type === 'SubLayer') {
+        if ((!isNullOrUndefined(this.distanceX) || !isNullOrUndefined(this.distanceY)) && (!isNullOrUndefined(this.currentLayer) && this.currentLayer.type === 'SubLayer')) {
             this.toAlignSublayer();
             this.distanceX = this.distanceY = null;
         }

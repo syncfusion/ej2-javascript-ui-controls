@@ -378,3 +378,7 @@ export const restoreFocus: string = 'restore-Focus';
 export const detailStateChange: string = 'detail-state-change';
 /** @hidden */
 export const detailIndentCellInfo: string = 'detail-indentcell-info';
+/** @hidden */
+export const virtaulKeyHandler: string = 'virtaul-key-handler';
+/** @hidden */
+export const virtaulCellFocus: string = 'virtaul-cell-focus';

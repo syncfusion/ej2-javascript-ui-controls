@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 17.4.43 (2020-01-14)
+
+### Splitter
+
+#### Bug Fixes
+
+- `#255853` - Resolved the issue "Splitter resizing does not work as expected if it has an iframe element".
+
+- `#259892` - Resolved the issue "Splitter pane is not properly resized when it has percentage pane size".
+
 ## 17.4.41 (2020-01-07)
 
 ### Dashboard Layout

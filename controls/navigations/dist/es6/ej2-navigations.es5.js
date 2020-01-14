@@ -7628,6 +7628,9 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         if (trg === null) {
             return;
         }
+        if (this.isServerRendered && trg.classList.contains(CLS_TB_POPUP)) {
+            this.popupHandler(trg);
+        }
         var root = closest(trg, '.' + CLS_TAB);
         if (this.element !== root) {
             return;
@@ -7662,6 +7665,9 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
     Tab.prototype.setActive = function (value) {
         this.tbItem = selectAll('.' + CLS_TB_ITEM, this.getTabHeader());
         var trg = this.tbItem[value];
+        if (this.isServerRendered) {
+            value = parseInt(trg.getAttribute('data-index'), 10);
+        }
         if (value < 0 || isNaN(value) || this.tbItem.length === 0) {
             return;
         }
@@ -7808,7 +7814,12 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             this.isPopup = false;
-            if (!isNullOrUndefined(trgParent) && trgIndex !== this.selectedItem) {
+            if (this.isServerRendered && !isNullOrUndefined(trgParent)) {
+                if (parseInt(trgParent.getAttribute('data-index'), 10) !== this.selectedItem) {
+                    this.select(trgIndex);
+                }
+            }
+            else if (!isNullOrUndefined(trgParent) && trgIndex !== this.selectedItem) {
                 this.select(trgIndex);
             }
         }
@@ -8546,6 +8557,8 @@ var INDETERMINATE = 'e-stop';
 var CHECKBOXWRAP = 'e-checkbox-wrapper';
 var CHECKBOXFRAME = 'e-frame';
 var CHECKBOXRIPPLE = 'e-ripple-container';
+var RIPPLE = 'e-ripple';
+var RIPPLEELMENT = 'e-ripple-element';
 var FOCUS = 'e-node-focus';
 var IMAGE = 'e-list-img';
 var BIGGER = 'e-bigger';
@@ -9841,6 +9854,8 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 return;
             }
             else {
+                var rippleElement = select('.' + RIPPLEELMENT, li);
+                var rippleIcons = select('.' + ICON, li);
                 this.removeHover();
                 this.setFocusElement(li);
                 if (this.showCheckBox && !li.classList.contains('e-disable')) {
@@ -9857,6 +9872,17 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 }
                 else if (classList$$1.contains(COLLAPSIBLE)) {
                     this.collapseNode(li, target, event);
+                }
+                else if (rippleElement && rippleIcons) {
+                    if (rippleIcons.classList.contains(RIPPLE) && rippleIcons.classList.contains(EXPANDABLE)) {
+                        this.expandAction(li, rippleIcons, event);
+                    }
+                    else if (rippleIcons.classList.contains(RIPPLE) && rippleIcons.classList.contains(COLLAPSIBLE)) {
+                        this.collapseNode(li, rippleIcons, event);
+                    }
+                    else if (!classList$$1.contains(PARENTITEM) && !classList$$1.contains(LISTITEM)) {
+                        this.toggleSelect(li, event.originalEvent, false);
+                    }
                 }
                 else {
                     if (!classList$$1.contains(PARENTITEM) && !classList$$1.contains(LISTITEM)) {

@@ -193,7 +193,6 @@ var HEADERTEMPLATE_PROPERTY = 'HeaderTemplate';
 var FOOTERTEMPLATE_PROPERTY = 'FooterTemplate';
 var NORECORDSTEMPLATE_PROPERTY = 'NoRecordsTemplate';
 var ACTIONFAILURETEMPLATE_PROPERTY = 'ActionFailureTemplate';
-var NOHEADERTEMPLATE_PROPERTY = 'NoHeaderTemplate';
 /**
  * DropDownBase component will generate the list items based on given data and act as base class to drop-down related components
  */
@@ -348,8 +347,7 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
             this.DropDownBaseupdateBlazorTemplates(false, false, !actionFailure, actionFailure, false, false, false, false);
         }
         else {
-            var l10nLocale = { noRecordsTemplate: 'No Records Found', actionFailureTemplate: 'The Request Failed',
-                noHeaderTemplate: 'Group' };
+            var l10nLocale = { noRecordsTemplate: 'No Records Found', actionFailureTemplate: 'The Request Failed' };
             var componentLocale = new L10n(this.getLocaleName(), {}, this.locale);
             if (componentLocale.getConstant('actionFailureTemplate') !== '') {
                 this.l10n = componentLocale;
@@ -360,9 +358,6 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
             ele.innerHTML = actionFailure ?
                 this.l10n.getConstant('actionFailureTemplate') : this.l10n.getConstant('noRecordsTemplate');
         }
-    };
-    DropDownBase.prototype.l10nUpdateUndefinedHeader = function () {
-        // For update ulelement in action complete data         
     };
     DropDownBase.prototype.getLocaleName = function () {
         return 'drop-down-base';
@@ -376,6 +371,9 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
     DropDownBase.prototype.getFormattedValue = function (value) {
         if (this.listData && this.listData.length) {
             var item = this.typeOfData(this.listData);
+            if (isBlazor() && isNullOrUndefined(value) || value === 'null') {
+                return null;
+            }
             if (typeof getValue((this.fields.value ? this.fields.value : 'value'), item.item) === 'number'
                 || item.typeof === 'number') {
                 return parseFloat(value);
@@ -548,7 +546,6 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
         this.headerTemplateId = "" + this.element.id + HEADERTEMPLATE_PROPERTY;
         this.footerTemplateId = "" + this.element.id + FOOTERTEMPLATE_PROPERTY;
         this.noRecordsTemplateId = "" + this.element.id + NORECORDSTEMPLATE_PROPERTY;
-        this.noHeaderTemplateId = "" + this.element.id + NOHEADERTEMPLATE_PROPERTY;
     };
     /**
      * Creates the list items of DropDownBase component.
@@ -721,7 +718,6 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
      * To create the ul li list items
      */
     DropDownBase.prototype.createListItems = function (dataSource, fields) {
-        var _this = this;
         if (dataSource && fields.groupBy || this.element.querySelector('optgroup')) {
             if (fields.groupBy) {
                 if (this.sortOrder !== 'None') {
@@ -734,20 +730,7 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
         else {
             dataSource = this.getSortedDataSource(dataSource);
         }
-        if (this.getModuleName() !== 'listbox') {
-            this.l10nUpdate();
-            this.groupHeaderName = this.l10n.getConstant('noHeaderTemplate');
-        }
-        var options = this.listOption(dataSource, fields, this.groupHeaderName);
-        if (fields && fields.groupBy && this.getModuleName() !== 'listbox' && this.getModuleName() !== 'multiselect') {
-            var text_1 = fields.text;
-            options.itemCreated = function (args) {
-                if (args.curData[text_1] === undefined && args.curData.isHeader) {
-                    args.item.textContent = _this.groupHeaderName;
-                    args.item.classList.add('e-undefine-group');
-                }
-            };
-        }
+        var options = this.listOption(dataSource, fields);
         var spliceData = (dataSource.length > 100) ?
             new DataManager(dataSource).executeLocal(new Query().take(100))
             : dataSource;
@@ -755,7 +738,7 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
         return ListBase.createList(this.createElement, (this.getModuleName() === 'autocomplete') ? spliceData : dataSource, options, true);
     };
     
-    DropDownBase.prototype.listOption = function (dataSource, fields, headerName) {
+    DropDownBase.prototype.listOption = function (dataSource, fields) {
         var iconCss = isNullOrUndefined(fields.iconCss) ? false : true;
         var fieldValues = !isNullOrUndefined(fields.properties) ?
             fields.properties : fields;
@@ -820,7 +803,8 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
                 new DataManager(dataSource).executeLocal(new Query().take(100))
                 : dataSource;
             ulElement = this.templateListItem((this.getModuleName() === 'autocomplete') ? spliceData : dataSource, fields);
-            this.DropDownBaseupdateBlazorTemplates(true, false, false, false, false, false, false, false);
+            var isTempEmpty = (this.getModuleName() === 'listbox') ? true : false;
+            this.DropDownBaseupdateBlazorTemplates(true, false, false, false, false, false, false, isTempEmpty);
         }
         else {
             ulElement = this.createListItems(listData, fields);
@@ -839,7 +823,13 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
         var item = { typeof: null, item: null };
         for (var i = 0; (!isNullOrUndefined(items) && i < items.length); i++) {
             if (!isNullOrUndefined(items[i])) {
-                return item = { typeof: typeof items[i], item: items[i] };
+                var listDataType = typeof (items[i]) === 'string' ||
+                    typeof (items[i]) === 'number' || typeof (items[i]) === 'boolean';
+                var isNullData = listDataType ? isNullOrUndefined(items[i]) :
+                    isNullOrUndefined(getValue((this.fields.value ? this.fields.value : 'value'), items[i]));
+                if (!isNullData) {
+                    return item = { typeof: typeof items[i], item: items[i] };
+                }
             }
         }
         return item;
@@ -980,17 +970,8 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
                     }
                     break;
                 case 'locale':
-                    var l10nLocale = { noRecordsTemplate: 'No Records Found', actionFailureTemplate: 'The Request Failed',
-                        noHeaderTemplate: 'Group' };
-                    this.l10n = new L10n(this.getModuleName() === 'listbox' ? 'listbox' : 'dropdowns', l10nLocale, this.locale);
                     if (this.list && (!isNullOrUndefined(this.liCollections) && this.liCollections.length === 0)) {
                         this.l10nUpdate();
-                    }
-                    else if (this.fields.groupBy && this.list && this.list.querySelector('.e-list-group-item.e-undefine-group')
-                        && this.getModuleName() !== 'listbox') {
-                        var localizedText = this.l10n.getConstant('noHeaderTemplate');
-                        this.list.querySelector('.e-list-group-item.e-undefine-group').innerText = localizedText;
-                        this.l10nUpdateUndefinedHeader();
                     }
                     break;
                 case 'zIndex':
@@ -1455,7 +1436,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         this.removeSelection();
         this.removeFocus();
         this.list.scrollTop = 0;
-        if (this.getModuleName() !== 'autocomplete') {
+        if (this.getModuleName() !== 'autocomplete' && !isNullOrUndefined(this.ulElement)) {
             var li = this.ulElement.querySelector('.' + dropDownListClasses.li);
             if (li) {
                 li.classList.add(dropDownListClasses.focus);
@@ -2228,7 +2209,12 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
     DropDownList.prototype.setValue = function (e) {
         var dataItem = this.getItemData();
         if (dataItem.value === null) {
-            Input.setValue(null, this.inputElement, this.floatLabelType, this.showClearButton);
+            if (isBlazor() && dataItem.text !== null || dataItem.text !== '') {
+                Input.setValue(dataItem.text, this.inputElement, this.floatLabelType, this.showClearButton);
+            }
+            else {
+                Input.setValue(null, this.inputElement, this.floatLabelType, this.showClearButton);
+            }
         }
         else {
             Input.setValue(dataItem.text, this.inputElement, this.floatLabelType, this.showClearButton);
@@ -2751,9 +2737,6 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    DropDownList.prototype.l10nUpdateUndefinedHeader = function () {
-        this.actionCompleteData.ulElement = this.ulElement;
-    };
     DropDownList.prototype.focusIndexItem = function () {
         var value = this.getItemData().value;
         this.activeIndex = this.getIndexByValue(value);
@@ -2911,7 +2894,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DropDownList.prototype.serverBlazorUpdateSelection = function () {
-        if (this.isServerBlazor && this.value) {
+        if (this.isServerBlazor && (this.value !== null || this.index !== null || this.text !== null)) {
             this.removeSelection();
             this.removeFocus();
             this.removeHover();
@@ -6942,7 +6925,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             this.overAllClear.style.display = 'none';
         }
     };
-    MultiSelect.prototype.listOption = function (dataSource, fields, headerName) {
+    MultiSelect.prototype.listOption = function (dataSource, fields) {
         var iconCss = isNullOrUndefined(fields.iconCss) ? false : true;
         var fieldProperty = isNullOrUndefined(fields.properties) ? fields :
             fields.properties;
@@ -6951,18 +6934,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         } : { fields: { value: 'text' } };
         extend(this.listCurrentOptions, this.listCurrentOptions, fields, true);
         if (this.mode === 'CheckBox') {
-            var moduleName = this.getModuleName();
-            this.notify('listoption', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', dataSource: dataSource, fieldProperty: fieldProperty,
-                moduleName: moduleName, headerName: headerName });
-        }
-        if (fields && fields.groupBy && this.mode !== 'CheckBox') {
-            var text_1 = fields.text;
-            this.listCurrentOptions.itemCreated = function (args) {
-                if (args.curData[text_1] === undefined && args.curData.isHeader) {
-                    args.item.textContent = headerName;
-                    args.item.classList.add('e-undefine-group');
-                }
-            };
+            this.notify('listoption', { module: 'CheckBoxSelection', enable: this.mode === 'CheckBox', dataSource: dataSource, fieldProperty: fieldProperty });
         }
         return this.listCurrentOptions;
     };
@@ -8926,30 +8898,20 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
     };
     CheckBoxSelection.prototype.listOption = function (args) {
         var _this = this;
-        var groupHeaderName = args.headerName;
-        var moduleName = args.moduleName;
         if (isNullOrUndefined(this.parent.listCurrentOptions.itemCreated)) {
             this.parent.listCurrentOptions.itemCreated = function (e) {
-                _this.updateHeaderName(e, groupHeaderName, moduleName);
                 _this.checboxCreate(e);
             };
         }
         else {
             var itemCreated_1 = this.parent.listCurrentOptions.itemCreated;
             this.parent.listCurrentOptions.itemCreated = function (e) {
-                _this.updateHeaderName(e, groupHeaderName, moduleName);
                 _this.checboxCreate(e);
                 itemCreated_1.apply(_this, [e]);
             };
         }
     };
     
-    CheckBoxSelection.prototype.updateHeaderName = function (e, groupHeaderName, moduleName) {
-        if (e.text === undefined && e.curData.isHeader && moduleName === 'multiselect') {
-            e.item.textContent = groupHeaderName;
-            e.item.classList.add('e-undefine-group');
-        }
-    };
     CheckBoxSelection.prototype.setPlaceholder = function (props) {
         Input.setPlaceholder(props.filterBarPlaceholder, this.filterInput);
     };
@@ -9083,6 +9045,15 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
         }
         else if (state === 'uncheck' && (frameSpan.classList.contains(CHECK) || frameSpan.classList.contains(INDETERMINATE))) {
             removeClass([frameSpan], [CHECK, INDETERMINATE]);
+            ariaState = 'false';
+            if (selectAll) {
+                this.parent.selectAllItems(false, e);
+                this.setLocale();
+            }
+        }
+        else if (state === 'indeterminate' && !(frameSpan.classList.contains(INDETERMINATE))) {
+            removeClass([frameSpan], [CHECK]);
+            frameSpan.classList.add(INDETERMINATE);
             ariaState = 'false';
             if (selectAll) {
                 this.parent.selectAllItems(false, e);
@@ -9284,6 +9255,10 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
             this.changeState(this.checkAllParent, e.value, null, null, false);
             this.setLocale();
         }
+        if (e.value === 'indeterminate') {
+            this.changeState(this.checkAllParent, e.value, null, null, false);
+            this.setLocale();
+        }
     };
     CheckBoxSelection.prototype.setLocale = function (unSelect) {
         if (this.parent.selectAllText !== 'Select All' || this.parent.unSelectAllText !== 'Unselect All') {
@@ -9297,7 +9272,7 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
             }
         }
         else {
-            var l10nLocale = { selectAllText: 'Select All', unSelectAllText: 'Unselect All', noHeaderTemplate: 'Group' };
+            var l10nLocale = { selectAllText: 'Select All', unSelectAllText: 'Unselect All' };
             var l10n = new L10n(this.parent.getLocaleName(), {}, this.parent.locale);
             if (l10n.getConstant('selectAllText') === '') {
                 l10n = new L10n('dropdowns', l10nLocale, this.parent.locale);
@@ -10187,7 +10162,8 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         }
         var len = this.getSelectedItems().length;
         if (this.showSelectAll && searchCount) {
-            this.notify('checkSelectAll', { module: 'CheckBoxSelection', value: (searchCount === len) ? 'check' : 'uncheck' });
+            this.notify('checkSelectAll', { module: 'CheckBoxSelection',
+                value: (searchCount === len) ? 'check' : (len === 0) ? 'uncheck' : 'indeterminate' });
         }
     };
     ListBox.prototype.getQuery = function (query) {
@@ -10339,6 +10315,9 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     ListBox.prototype.toolbarClickHandler = function (e) {
         var btn = closest(e.target, 'button');
         if (btn) {
+            if (btn.disabled) {
+                return;
+            }
             switch (btn.getAttribute('data-value')) {
                 case 'moveUp':
                     this.moveUpDown(true);
@@ -10406,6 +10385,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         var fliCollections = [].slice.call(fListBox.liCollections);
         var dataLiIdx = [];
         var tliCollections = [].slice.call(tListBox.liCollections);
+        var tempItems = [];
         var data = [];
         var elems = fListBox.getSelectedItems();
         if (value) {
@@ -10427,6 +10407,16 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                 // To update lb original data
                 jsonIdx.push(Array.prototype.indexOf.call(fListBox.jsonData, fListBox.getDataByElems([ele])[0]));
             });
+            if (this.sortOrder !== 'None') {
+                sortIdx.forEach(function (i) {
+                    tempItems.push(fListBox.sortedData[i]);
+                });
+            }
+            else {
+                jsonIdx.forEach(function (i) {
+                    tempItems.push(fListBox.jsonData[i]);
+                });
+            }
             var rLiCollection_1 = [];
             dataLiIdx.sort(function (n1, n2) { return n1 - n2; }).reverse().forEach(function (i) {
                 rLiCollection_1.push(fliCollections.splice(i, 1)[0]);
@@ -10483,10 +10473,10 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             fListBox.listData = listData;
             fListBox.sortedData = sortData;
             index = (index) ? index : tListData.length;
-            for (var i = 0; i < data.length; i++) {
-                tListData.splice(index, 0, data[i]);
-                tJsonData.splice(index, 0, data[i]);
-                tSortData.splice(index, 0, data[i]);
+            for (var i = 0; i < tempItems.length; i++) {
+                tListData.splice(index, 0, tempItems[i]);
+                tJsonData.splice(index, 0, tempItems[i]);
+                tSortData.splice(index, 0, tempItems[i]);
             }
             tListBox.listData = tListData;
             tListBox.jsonData = tJsonData;
@@ -10624,7 +10614,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     ListBox.prototype.keyDownHandler = function (e) {
         if ([32, 35, 36, 37, 38, 39, 40, 65].indexOf(e.keyCode) > -1 && !this.allowFiltering) {
             e.preventDefault();
-            if (e.keyCode === 32) {
+            if (e.keyCode === 32 && this.ulElement.children.length) {
                 this.selectHandler({
                     target: this.ulElement.getElementsByClassName('e-focused')[0],
                     ctrlKey: e.ctrlKey, shiftKey: e.shiftKey
@@ -10671,15 +10661,17 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             removeClass([fli], 'e-focused');
         }
         var cli = ul.children[fliIdx];
-        fliIdx = this.getValidIndex(cli, fliIdx, e.keyCode);
-        if (fliIdx === -1) {
-            addClass([fli], 'e-focused');
-            return;
-        }
-        ul.children[fliIdx].focus();
-        ul.children[fliIdx].classList.add('e-focused');
-        if (!e.ctrlKey) {
-            this.selectHandler({ target: ul.children[fliIdx], ctrlKey: e.ctrlKey, shiftKey: e.shiftKey }, true);
+        if (cli) {
+            fliIdx = this.getValidIndex(cli, fliIdx, e.keyCode);
+            if (fliIdx === -1) {
+                addClass([fli], 'e-focused');
+                return;
+            }
+            ul.children[fliIdx].focus();
+            ul.children[fliIdx].classList.add('e-focused');
+            if (!e.ctrlKey) {
+                this.selectHandler({ target: ul.children[fliIdx], ctrlKey: e.ctrlKey, shiftKey: e.shiftKey }, true);
+            }
         }
     };
     ListBox.prototype.KeyUp = function (e) {

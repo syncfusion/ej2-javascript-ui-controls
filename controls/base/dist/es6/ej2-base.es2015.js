@@ -4237,7 +4237,7 @@ function getObjectArray(instance, curKey, defaultValue, type, isSetter, isFactor
             result.push(inst);
         }
         else {
-            result.push(createInstance(curType, [instance, curKey, defaultValue[i], true]));
+            result.push(createInstance(curType, [instance, curKey, defaultValue[i], false]));
         }
     }
     return result;
@@ -5150,8 +5150,8 @@ class ChildProperty {
         this.parentObj = parent;
         this.controlParent = this.parentObj.controlParent || this.parentObj;
         this.propName = propName;
-        this.setProperties(defaultValue, true);
         this.isParentArray = isArray;
+        this.setProperties(defaultValue, true);
     }
     /**
      * Updates the property changes
@@ -5255,6 +5255,7 @@ class ChildProperty {
             let parent;
             let newChanges = {};
             let parentKey = isSaveChanges ? this.getParentKey(true) + '.' + key : key;
+            /* istanbul ignore else  */
             if (parentKey.indexOf('.') !== -1) {
                 let complexKeys = parentKey.split('.');
                 parent = newChanges;
@@ -5269,6 +5270,7 @@ class ChildProperty {
                 parent = newChanges[parentKey];
                 newChanges[parentKey][key] = value;
             }
+            /* istanbul ignore next */
             if (this.isParentArray) {
                 let actionProperty = 'ejsAction';
                 parent[actionProperty] = action ? action : 'none';
@@ -5280,6 +5282,7 @@ class ChildProperty {
         // tslint:disable-next-line:no-any
         let index = '';
         let propName = this.propName;
+        /* istanbul ignore next */
         if (this.isParentArray) {
             index = this.parentObj[this.propName].indexOf(this);
             let valueLength = this.parentObj[this.propName].length;

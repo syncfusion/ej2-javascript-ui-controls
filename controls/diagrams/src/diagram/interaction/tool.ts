@@ -7,7 +7,7 @@ import { Point } from '../primitives/point';
 import { BpmnSubEvent } from '../objects/node';
 import { PointPort } from '../objects/port';
 import { IElement, ISizeChangeEventArgs, IDraggingEventArgs, IEndChangeEventArgs } from '../objects/interface/IElement';
-import { IBlazorConnectionChangeEventArgs } from '../objects/interface/IElement';
+import { IBlazorConnectionChangeEventArgs, IConnectionChangeEventArgs } from '../objects/interface/IElement';
 import { IBlazorDropEventArgs } from '../objects/interface/IElement';
 import { IRotationEventArgs, IDoubleClickEventArgs, IClickEventArgs, IDropEventArgs } from '../objects/interface/IElement';
 import { CommandHandler } from './command-manager';
@@ -369,6 +369,10 @@ export class ConnectTool extends ToolBase {
 
     protected endPoint: string;
 
+    protected oldConnector: ConnectorModel;
+
+    protected isConnected: boolean = false;
+
     /** @private */
     public tempArgs: IBlazorConnectionChangeEventArgs;
 
@@ -389,6 +393,7 @@ export class ConnectTool extends ToolBase {
             let selectorModel: SelectorModel = args.source as SelectorModel;
             if (selectorModel.connectors) {
                 let connector: Connector = selectorModel.connectors[0] as Connector;
+                this.oldConnector = cloneObject(connector);
                 let arg: IBlazorConnectionChangeEventArgs = {
                     connector: cloneBlazorObject(connector),
                     oldValue: { connectorTargetValue: { portId: undefined, nodeId: undefined } },
@@ -415,6 +420,7 @@ export class ConnectTool extends ToolBase {
         if (args.source && (args.source as SelectorModel).connectors) {
             oldValue = { x: this.prevPosition.x, y: this.prevPosition.y };
             connectors = (args.source as SelectorModel).connectors[0];
+            this.oldConnector = cloneObject(connectors);
         }
         // Sets the selected segment 
         if (this.endPoint === 'BezierSourceThumb' || this.endPoint === 'BezierTargetThumb') {
@@ -441,6 +447,22 @@ export class ConnectTool extends ToolBase {
                 this.commandHandler.updateConnectorValue(temparg);
             }
         }
+        if (this.isConnected) {
+            let connector: ConnectorModel = (args.source as SelectorModel).connectors[0];
+            let nodeEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
+            let portEndId: string = this.endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
+            let arg: IConnectionChangeEventArgs | IBlazorConnectionChangeEventArgs = {
+                connector: cloneBlazorObject(connector),
+                oldValue: { nodeId: this.oldConnector[nodeEndId], portId: this.oldConnector[portEndId] },
+                newValue: { nodeId: connector[nodeEndId], portId: connector[portEndId] }, cancel: false,
+                state: 'Changed', connectorEnd: this.endPoint
+            };
+            if (connector[nodeEndId] !== this.oldConnector[nodeEndId]) {
+                this.commandHandler.triggerEvent(DiagramEvent.connectionChange, arg);
+                this.isConnected = false;
+            }
+        }
+
         this.checkPropertyValue();
         this.commandHandler.updateSelector();
         this.commandHandler.removeSnap();
@@ -586,6 +608,7 @@ export class ConnectTool extends ToolBase {
                     if (this.commandHandler.canDisconnect(this.endPoint, args, targetPortId, targetNodeId)) {
                         tempArgs = this.commandHandler.disConnect(
                             args.source, this.endPoint, this.canCancel) as IBlazorConnectionChangeEventArgs;
+                        this.isConnected = true;
                     }
                     let target: NodeModel | PointPortModel = this.commandHandler.findTarget(
                         args.targetWrapper, args.target, this.endPoint === 'ConnectorSourceEnd', true) as (NodeModel | PointPortModel);
@@ -595,14 +618,17 @@ export class ConnectTool extends ToolBase {
 
                             tempArgs = this.commandHandler.connect(
                                 this.endPoint, args, this.canCancel) as IBlazorConnectionChangeEventArgs;
+                            this.isConnected = true;
                         }
                     } else {
                         let isConnect: boolean = this.checkConnect(target as PointPortModel);
                         if (isConnect) {
+                            this.isConnected = true;
                             tempArgs = this.commandHandler.connect(this.endPoint, args, this.canCancel) as IBlazorConnectionChangeEventArgs;
                         }
                     }
                 } else if (this.endPoint.indexOf('Bezier') === -1) {
+                    this.isConnected = true;
                     tempArgs = this.commandHandler.disConnect(
                         args.source, this.endPoint, this.canCancel) as IBlazorConnectionChangeEventArgs;
                     this.commandHandler.updateSelector();
@@ -1028,8 +1054,8 @@ export class RotateTool extends ToolBase {
         if (isBlazor()) {
             let object: NodeModel | SelectorModel;
             object = (this.commandHandler.renderContainerHelper(args.source) as Node) || args.source as Node | Selector;
-            let oldValue: SelectorModel = { rotateAngle:this.tempArgs.oldValue.rotateAngle };
-            let newValue: SelectorModel = { rotateAngle:object.wrapper.rotateAngle};
+            let oldValue: SelectorModel = { rotateAngle: this.tempArgs.oldValue.rotateAngle };
+            let newValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
             let arg: IRotationEventArgs = {
                 source: cloneBlazorObject(args.source), state: 'Completed', oldValue: oldValue, newValue: newValue, cancel: false
             };
@@ -1814,6 +1840,8 @@ export class PolyLineDrawingTool extends ToolBase {
         super.mouseMove(args);
         if (this.inAction) {
             if (this.drawingObject) {
+                let drawObject: ConnectorModel = this.drawingObject as ConnectorModel;
+                (drawObject.segments[drawObject.segments.length - 1] as StraightSegment).point = { x: 0, y: 0 };
                 this.commandHandler.addObjectToDiagram(this.drawingObject);
             }
         }

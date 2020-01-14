@@ -128,7 +128,7 @@ function getObjectArray<T>(
             inst.setProperties(defaultValue[i], true);
             result.push(inst);
         } else {
-            result.push(createInstance(curType, [instance, curKey, defaultValue[i], true]));
+            result.push(createInstance(curType, [instance, curKey, defaultValue[i], false]));
         }
     }
     return result;

@@ -108,9 +108,9 @@ export interface IBulletTooltipContent {
     /** Defines the actual value of the feature bar */
     value: string | number;
     /** Defines the target value of the comparative bar */
-    target: string[] | number[];
+    target?: string[] | number[] | string;
     /** Defines the category values */
-    category: string | number;
+    category?: string | number;
 }
 /**
  * interface for loaded event
@@ -129,11 +129,23 @@ export interface IBulletchartTooltipEventArgs {
     /** Defines the actual value of the feature bar - Read Only */
     value: string | number;
     /** Defines the target value of the comparative bar - Read Only */
-    target: string[] | number[];
+    target: string[] | number[] | string;
     /** Defines the name of the Event - Read Only */
     name: string;
     /** Defines the tooltip template */
     template?: string;
     /** Defines the tooltip text */
     text?: string;
+}
+
+/**
+ * Bullet chart tooltip template
+ */
+export interface IBulletTemplate {
+    /** Defines the actual value of the feature bar */
+    value: string;
+    /** Defines the target value of the comparative bar */
+    target: string;
+    /** Defines the category values */
+    category: string;
 }

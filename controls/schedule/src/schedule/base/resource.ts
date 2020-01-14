@@ -499,12 +499,13 @@ export class ResourceBase {
     public bindResourcesData(isSetModel: boolean): void {
         this.parent.showSpinner();
         if (isBlazor()) {
+            // the resourceCollection will be updated in layoutReady method
             // tslint:disable-next-line:no-any
-            (this.parent as any).interopAdaptor.invokeMethodAsync('BindResourcesData').then((result: string) => {
-                if (this.parent.isDestroyed) { return; }
-                this.parent.resourceCollection = DataUtil.parse.parseJson(result);
-                this.refreshLayout(isSetModel);
-            }).catch((e: ReturnType) => this.dataManagerFailure(e));
+            // (this.parent as any).interopAdaptor.invokeMethodAsync('BindResourcesData').then((result: string) => {
+            //     if (this.parent.isDestroyed) { return; }
+            //     this.parent.resourceCollection = DataUtil.parse.parseJson(result);
+            //     this.refreshLayout(isSetModel);
+            // }).catch((e: ReturnType) => this.dataManagerFailure(e));
             return;
         }
         let promises: Promise<Object>[] = [];
@@ -547,7 +548,7 @@ export class ResourceBase {
         return resourceObj;
     }
 
-    private refreshLayout(isSetModel: boolean): void {
+    public refreshLayout(isSetModel: boolean): void {
         this.parent.uiStateValues.groupIndex = 0;
         this.parent.renderElements(isSetModel);
     }

@@ -1,5 +1,6 @@
-import { SheetModel, ColumnModel } from './index';
+import { SheetModel } from './index';
 import { Property, ChildProperty } from '@syncfusion/ej2-base';
+import { ColumnModel } from './column-model';
 
 /**
  * Configures the Column behavior for the spreadsheet.

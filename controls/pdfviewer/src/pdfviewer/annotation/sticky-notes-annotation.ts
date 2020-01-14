@@ -377,6 +377,13 @@ export class StickyNotesAnnotation {
                         this.updateDocumentAnnotationCollections(excistingAnnotation[i].freeTextAnnotation[j], newAnnotation[i].freeTextAnnotation);
                     }
                 }
+                // tslint:disable-next-line:max-line-length
+                if (excistingAnnotation[i].signatureAnnotation && excistingAnnotation[i].signatureAnnotation.length !== 0 && newAnnotation[i].signatureAnnotation) {
+                    for (let j: number = 0; j < excistingAnnotation[i].signatureAnnotation.length; j++) {
+                        // tslint:disable-next-line:max-line-length
+                        this.updateDocumentAnnotationCollections(excistingAnnotation[i].signatureAnnotation[j], newAnnotation[i].signatureAnnotation);
+                    }
+                }
             }
         }
         return newAnnotation;

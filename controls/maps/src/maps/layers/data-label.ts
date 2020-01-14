@@ -194,14 +194,14 @@ export class DataLabel {
                     text = eventargs.text;
                 }
                 let textSize: Size = measureText(text, style);
-                let trimmedLable: string = textTrim(width, text, style);
-                let elementSize: Size = measureText(trimmedLable, style);
+                let trimmedLable: string = text;
+                let elementSize: Size = textSize;
                 let startY: number = location['y'] - textSize['height'] / 4;
                 let endY: number = location['y'] + textSize['height'] / 4;
                 let start: number = location['y'] - textSize['height'] / 4;
                 let end: number = location['y'] + textSize['height'] / 4;
                 position = filter(shapePoint[midIndex], startY, endY);
-                if (position.length > 5 && (shapeData['geometry']['type'] !== 'MultiPolygon') &&
+                if (!isPoint && position.length > 5 && (shapeData['geometry']['type'] !== 'MultiPolygon') &&
                     (shapeData['type'] !== 'MultiPolygon')) {
                     let location1: object = findMidPointOfPolygon(position, projectionType);
                     if(zoomLabelsPosition && scaleZoomValue > 1) {
@@ -216,8 +216,6 @@ export class DataLabel {
                 }
                 let xpositionEnds: number = location['x'] + textSize['width'] / 2;
                 let xpositionStart: number = location['x'] - textSize['width'] / 2;
-                trimmedLable = textTrim(width, text, style);
-                elementSize = measureText(trimmedLable, style);
                 this.value[index] = { rightWidth: xpositionEnds, leftWidth: xpositionStart, heightTop: start, heightBottom: end };
                 let labelElement: HTMLElement;
                 if (eventargs.template !== '') {
@@ -232,6 +230,8 @@ export class DataLabel {
                     labelTemplateElement.appendChild(labelElement);
                 } else {
                     if (dataLabelSettings.smartLabelMode === 'Trim') {
+                        trimmedLable = textTrim(width, text, style);
+                        elementSize = measureText(trimmedLable, style);
                         options = new TextOption(labelId, textLocation.x, textLocation.y, 'middle', trimmedLable, '', '');
                     }
                     if (dataLabelSettings.smartLabelMode === 'None') {
@@ -285,6 +285,7 @@ export class DataLabel {
                                 }
                             }
                         }
+                        elementSize = measureText(trimmedLable, style);
                         intersect.push(this.value[index]);
                         options = new TextOption(labelId, textLocation.x, (textLocation.y), 'middle', trimmedLable, '', '');
                     }

@@ -400,12 +400,12 @@ describe('ChildProperty', () => {
         });
         it("change exisiting colletion 0th index => ", (done: Function) => {
             demoClass1.subjectArray[0].subID = "testing0";
-            expect(bulkChanges).toEqual({"subjectArray-0": { subID: "testing0", ejsAction: "none"}});
+            expect(bulkChanges).toEqual({"subjectArray": { subID: "testing0"}});
             done();
         });
         it("change exisiting colletion 1st index => ", (done: Function) => {
             demoClass1.subjectArray[1].subID = "testing1";
-            expect(bulkChanges).toEqual({"subjectArray-1": { subID: "testing1", ejsAction: "none"}});
+            expect(bulkChanges).toEqual({"subjectArray": { subID: "testing1"}});
             done();
         });
         afterAll(() => {

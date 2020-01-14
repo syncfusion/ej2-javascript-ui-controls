@@ -288,7 +288,6 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
                     break;
                 case 'disabled':
                     this.controlStatus(newProp.disabled);
-                    this.unWireEvents();
                     break;
                 case 'iconCss':
                     let span: Element = this.element.querySelector('span.e-btn-icon');

@@ -425,8 +425,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
             return;
         }
         mPredicate = new Predicate(field, firstOperator.toLowerCase(), firstValue, !matchCase, ignoreAccent);
-        if (!isNullOrUndefined(secondValue)) {
-            secondOperator = !isNullOrUndefined(secondOperator) ? secondOperator as string : 'equal';
+        if (!isNullOrUndefined(secondValue) && !isNullOrUndefined(secondOperator)) {
             fColl.push({
                 field: field,
                 predicate: predicate,

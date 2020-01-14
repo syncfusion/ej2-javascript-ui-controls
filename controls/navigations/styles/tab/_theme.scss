@@ -249,6 +249,13 @@
               }
             }
           }
+
+          &.e-disable.e-overlay {
+            .e-tab-text,
+            .e-tab-icon {
+              color: $tab-disable-text-color;
+            }
+          }
         }
       }
 

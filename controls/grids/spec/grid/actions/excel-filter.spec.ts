@@ -756,4 +756,64 @@ describe('Excel Filter =>', () => {
                 actionComplete = null;
             });
         });
+        describe('EJ2-35295 custom filter operator testing => ', () => {
+            let gridObj: Grid;
+            let excelFilter: Element;
+            let actionComplete: (args: any) => void;
+            beforeAll((done: Function) => {
+                gridObj = createGrid(
+                    {
+                        dataSource: filterData,
+                        allowFiltering: true,
+                        allowPaging: false,
+                        pageSettings: { currentPage: 1 },
+                        filterSettings: { type: 'Excel' },
+                        columns: [
+                            { field: 'OrderID', visible: true,width: 120 },
+                            { field: 'CustomerID', headerText: 'CustomerID', width:120},
+                            { field:'Fright',headerText:'Frieght', width:130 , filter:{operator:"equal" }},
+                            { field: 'ShipCountry',  headerText: 'Ship Country', width: 120,filter:{operator:"startswith" } }
+                        ],
+                        actionComplete : actionComplete
+                    }, done);
+                });
+
+                it('Filter OrderID dialog open testing', (done: Function) => {
+                    actionComplete = (args?: any): void => {
+                        if(args.requestType === 'filterafteropen'){
+                            excelFilter = gridObj.element.querySelector('.e-excelfilter');
+                        gridObj.actionComplete =null;
+                        done();
+                        }
+                    };
+                    gridObj.actionComplete = actionComplete;
+                    (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
+                });
+
+                it('Filtering with null operator testing', (done: Function) => {    
+                    actionComplete = (args?: any): void => {               
+                        expect(gridObj.filterSettings.columns.length).toBe(1);
+                        gridObj.actionComplete =null;
+                        done();
+                    };
+                    gridObj.actionComplete = actionComplete;
+                    (gridObj.filterModule as any).filterModule.excelFilterBase.filterByColumn("OrderID","equal",10248,'or',true,true,null,10250);
+                });
+
+                it('Filtering with equal operator testing', (done: Function) => {    
+                    actionComplete = (args?: any): void => {               
+                        expect(gridObj.filterSettings.columns.length).toBe(2);
+                        gridObj.actionComplete =null;
+                        done();
+                    };
+                    gridObj.actionComplete = actionComplete;
+                    (gridObj.filterModule as any).filterModule.excelFilterBase.filterByColumn("OrderID","equal",10248,'or',true,true,'equal',10250);
+                });
+
+            afterAll(() => {
+                destroy(gridObj);
+                gridObj = excelFilter = getActualProperties = getString = null;
+                actionComplete = null;
+            });
+        });
     });

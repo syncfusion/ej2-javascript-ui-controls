@@ -70,11 +70,18 @@ export class Print {
             // tslint:disable-next-line
             (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;
         }
+        proxy.pdfViewerBase.createFormfieldsJsonData();
         proxy.printRequestHandler = new AjaxHandler(proxy.pdfViewer);
         proxy.printRequestHandler.url = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.print;
         proxy.printRequestHandler.responseType = null;
         proxy.printRequestHandler.mode = false;
+        if (this.pdfViewerBase.validateForm && this.pdfViewer.enableFormFieldsValidation) {
+            this.pdfViewer.fireValidatedFailed(proxy.pdfViewer.serverActionSettings.download);
+            this.pdfViewerBase.validateForm = false;
+            this.pdfViewerBase.showPrintLoadingIndicator(false);
+        } else {
         proxy.printRequestHandler.send(jsonObject);
+        }
         // tslint:disable-next-line
         proxy.printRequestHandler.onSuccess = function (result: any) {
             // tslint:disable-next-line

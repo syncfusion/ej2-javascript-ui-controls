@@ -85,6 +85,7 @@ export interface IHtmlItemArgs {
     selection?: NodeSelection;
     selectNode?: Node[];
     selectParent?: Node[];
+    src?: string;
     url?: string;
     text?: string;
     title?: string;

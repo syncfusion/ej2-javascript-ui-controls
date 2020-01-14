@@ -1419,7 +1419,13 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
         if(mapObject.mapScaleValue !== mapObject.markerZoomFactor && !mapObject.enablePersistence) {
             mapObject.mapScaleValue = zoomFactorValue = mapObject.markerZoomFactor;
         }
-    }
+    } 
+    let center: CenterPositionModel = mapObject.centerPosition;
+    if (!isNullOrUndefined(mapObject.centerLatOfGivenLocation) && !isNullOrUndefined(mapObject.centerLongOfGivenLocation) && mapObject.zoomNotApplied) {
+        center.latitude = mapObject.centerLatOfGivenLocation;
+        center.longitude = mapObject.centerLongOfGivenLocation;
+        mapObject.mapScaleValue = scaleFactor = zoomFactorValue = mapObject.scaleOfGivenLocation;
+    } 
     let min: Object = mapObject.baseMapRectBounds['min'] as Object;
     let max: Object = mapObject.baseMapRectBounds['max'] as Object;
     let zoomFactor: number = animate ? 1 : mapObject.mapScaleValue;
@@ -1433,7 +1439,7 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
     let mapWidth: number = Math.abs(max['x'] - min['x']);
     let mapHeight: number = Math.abs(min['y'] - max['y']);
     let factor: number = animate ? 1 : mapObject.markerZoomFactor === 1 ?  mapObject.mapScaleValue : zoomFactorValue;
-    let center: CenterPositionModel = mapObject.centerPosition;
+    let titleTextSize : Size =  measureText(mapObject.titleSettings.text, mapObject.titleSettings.textStyle);
     if (!isNullOrUndefined(center.longitude) && !isNullOrUndefined(center.latitude)) {
         let leftPosition: number = ((mapWidth + Math.abs(mapObject.mapAreaRect.width - mapWidth)) / 2) / factor;
         let topPosition: number = ((mapHeight + Math.abs(mapObject.mapAreaRect.height - mapHeight)) / 2) / factor;
@@ -1441,14 +1447,14 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
             center.latitude, center.longitude, mapObject.mapLayerPanel.calculateFactor(layer), layer, mapObject);
         if (isNullOrUndefined(mapObject.previousProjection) || mapObject.previousProjection !== mapObject.projectionType) {
             x = -point.x + leftPosition;
-            y = -point.y + topPosition;
+            y = -point.y + topPosition + (titleTextSize['height']/2);
             scaleFactor = zoomFactor;
         } else {
-            if(Math.floor(mapObject.scale) !== 1 && mapObject.zoomSettings.shouldZoomInitially) {
+            if(Math.floor(mapObject.scale) !== 1 && mapObject.zoomSettings.shouldZoomInitially || (mapObject.zoomNotApplied)) {
                 x = -point.x + leftPosition;
                 y = -point.y + topPosition;
             } else {
-                if(mapObject.zoomSettings.shouldZoomInitially) {
+                if(mapObject.zoomSettings.shouldZoomInitially || mapObject.zoomNotApplied) {
                     x = -point.x + leftPosition;
                     y = -point.y + topPosition;
                     scaleFactor = zoomFactor;
@@ -1484,15 +1490,23 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
                     x = size.x + ((-(min['x'])) 
                         + ((size.width / 2) - (mapWidth / 2)));
                 } else {
-                    x = mapObject.zoomTranslatePoint.x;
-                    y = mapObject.zoomTranslatePoint.y;
+                    if (!isNullOrUndefined(mapObject.previousProjection) && mapObject.mapScaleValue === 1) {
+                        scaleFactor = parseFloat(Math.min(size.width / mapWidth, size.height / mapHeight).toFixed(2));
+                        mapWidth *= scaleFactor;
+                        x = size.x + ((-(min['x'])) + ((size.width / 2) - (mapWidth / 2)));
+                        mapHeight *= scaleFactor;                        
+                        y = size.y + ((-(min['y'])) + ((size.height / 2) - (mapHeight / 2)));
+                    } else {
+                        x = mapObject.zoomTranslatePoint.x;
+                        y = mapObject.zoomTranslatePoint.y;
+                    }
                 }
             }   
         }
     }
     if (!isNullOrUndefined(mapObject.translatePoint)) {
-        x = (mapObject.enablePersistence && mapObject.translatePoint.x != 0) ? mapObject.translatePoint.x : x;
-        y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0) ? mapObject.translatePoint.y : y;
+        x = (mapObject.enablePersistence && mapObject.translatePoint.x != 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.x : x;
+        y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.y : y;
     }
     scaleFactor = (mapObject.enablePersistence) ? ((mapObject.mapScaleValue >= 1) ? mapObject.mapScaleValue : 1) : scaleFactor;
     return { scale: scaleFactor, location: new Point(x, y) };
@@ -1512,33 +1526,39 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
             ? mapObject.scale : (isNullOrUndefined(mapObject.markerZoomFactor)) ? mapObject.mapScaleValue : mapObject.markerZoomFactor;
             zoomFactorValue = mapObject.mapScaleValue;
         }
+    let center: CenterPositionModel = mapObject.centerPosition;
+    if (!isNullOrUndefined(mapObject.centerLatOfGivenLocation) && !isNullOrUndefined(mapObject.centerLongOfGivenLocation) && mapObject.zoomNotApplied) {
+        center.latitude = mapObject.centerLatOfGivenLocation;
+        center.longitude = mapObject.centerLongOfGivenLocation;
+        mapObject.mapScaleValue = scaleFactor = zoomFactorValue = mapObject.scaleOfGivenLocation;
+    }
     let zoomFactor: number = animate ? 1 : mapObject.mapScaleValue;
     let size: Rect = mapObject.mapAreaRect; let x: number; let y: number;
     let min: Object = mapObject.baseMapRectBounds['min'] as Object;
     let max: Object = mapObject.baseMapRectBounds['max'] as Object;
     let factor: number = animate ? 1 : mapObject.mapScaleValue;
     let mapWidth: number = Math.abs(max['x'] - min['x']); let mapHeight: number = Math.abs(min['y'] - max['y']);
-    let center: CenterPositionModel = mapObject.centerPosition;
     if (!isNullOrUndefined(center.longitude) && !isNullOrUndefined(center.latitude)) {
         let topPosition: number = ((mapHeight + Math.abs(mapObject.mapAreaRect.height - mapHeight)) / 2) / factor;
         let leftPosition: number = ((mapWidth + Math.abs(mapObject.mapAreaRect.width - mapWidth)) / 2) / factor;
         let point: Point = convertGeoToPoint(
             center.latitude, center.longitude, mapObject.mapLayerPanel.calculateFactor(layer), layer, mapObject);
-        if (!isNullOrUndefined(mapObject.zoomTranslatePoint) || !isNullOrUndefined(mapObject.previousProjection)) {
+        if ((!isNullOrUndefined(mapObject.zoomTranslatePoint) || !isNullOrUndefined(mapObject.previousProjection)) && !mapObject.zoomNotApplied) {
             if (mapObject.previousProjection !== mapObject.projectionType) {
                 x = -point.x + leftPosition;
                 y = -point.y + topPosition;
             } else {
                 x = mapObject.zoomTranslatePoint.x;
                 y = mapObject.zoomTranslatePoint.y;
+                zoomFactorValue = zoomFactor;
             }
         } else {
             x = -point.x + leftPosition;
             y = -point.y + topPosition;
         }
         if (!isNullOrUndefined(mapObject.translatePoint)) {
-            x = (mapObject.enablePersistence && mapObject.translatePoint.x != 0) ? mapObject.translatePoint.x : x;
-            y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0) ? mapObject.translatePoint.y : y;
+            y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.y : y;
+            x = (mapObject.enablePersistence && mapObject.translatePoint.x != 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.x : x;
         }
         scaleFactor = zoomFactorValue !== 0 ? zoomFactorValue : 1;
     } else {
@@ -1571,8 +1591,8 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
             }
         }
         if (!isNullOrUndefined(mapObject.translatePoint)) {
-            x = (mapObject.enablePersistence && mapObject.translatePoint.x != 0) ? mapObject.translatePoint.x : leftPosition;
-            y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0) ? mapObject.translatePoint.y : topPosition;
+            x = (mapObject.enablePersistence && mapObject.translatePoint.x != 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.x : leftPosition;
+            y = (mapObject.enablePersistence && mapObject.translatePoint.y != 0 && !mapObject.zoomNotApplied) ? mapObject.translatePoint.y : topPosition;
         }
     }
     scaleFactor = (mapObject.enablePersistence) ? (mapObject.mapScaleValue == 0 ? 1 : mapObject.mapScaleValue) : scaleFactor;
@@ -2256,6 +2276,32 @@ export function smoothTranslate(element: Element, delay: number, duration: numbe
             element.setAttribute('transform', 'translate( ' + point.x + ' ' + point.y + ' )');
         }
     );
+}
+
+/**
+ * To find zoom level for the min and max latitude values
+ */ 
+export function calculateZoomLevel(minLat : number , maxLat : number, minLong : number, maxLong : number,
+    mapWidth : number, mapHeight : number): number {
+    let latRatio: number; let lngRatio: number; let scaleFactor: number;
+    let maxZoomFact = 10;
+    let latZoom: number; let lngZoom : number; let result: number;
+    let maxLatSin: number = Math.sin(maxLat * Math.PI / 180);
+    let maxLatRad: number = Math.log((1 + maxLatSin) / (1 - maxLatSin)) / 2;
+    let maxLatValue: number = Math.max(Math.min(maxLatRad, Math.PI), -Math.PI) / 2;
+    let minLatSin: number = Math.sin(minLat * Math.PI / 180);
+    let minLatRad: number = Math.log((1 + minLatSin) / (1 - minLatSin)) / 2;
+    let minLatValue: number = Math.max(Math.min(minLatRad, Math.PI), -Math.PI) / 2;
+    latRatio = (maxLatValue - minLatValue) / Math.PI;
+    let lngDiff: number = maxLong - minLong;
+    lngRatio = ((lngDiff < 0) ? (lngDiff + 360) : lngDiff) / 360;
+    let WORLD_PX_HEIGHT: number = 256;
+    let WORLD_PX_WIDTH: number = 256;
+    latZoom = Math.log(mapHeight / WORLD_PX_HEIGHT / latRatio) / Math.LN2;
+    lngZoom = Math.log(mapWidth / WORLD_PX_WIDTH / lngRatio) / Math.LN2;
+    result = Math.min(latZoom, lngZoom);
+    scaleFactor = Math.min(result, maxZoomFact - 1);
+    return scaleFactor;
 }
 
 

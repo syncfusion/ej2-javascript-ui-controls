@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.43 (2020-01-14)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Issue with predicate generation for between operator is fixed.
+
 ## 17.4.41 (2020-01-07)
 
 ### QueryBuilder
@@ -22,7 +30,7 @@
 #### Bug Fixes
 
 - Tooltip is not destroyed while using destroy method.
-- Predicate is not created for Date type when between operator is selected.
+- Predicate is not created for Date type when between operator is fixed.
 
 ## 17.3.27 (2019-11-12)
 

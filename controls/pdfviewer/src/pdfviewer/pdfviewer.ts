@@ -32,6 +32,7 @@ import { SelectorModel } from '../diagram/selector-model';
 import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';
 import { renderAdornerLayer } from '../diagram/dom-util';
 import { ThumbnailClickEventArgs } from './index';
+import { ValidateFormFieldsArgs } from './base';
 
 /**
  * The `ToolbarSettings` module is used to provide the toolbar settings of PDF viewer.
@@ -1417,6 +1418,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     @Property(true)
     public enableThumbnail: boolean;
 
+    /**    
+     * Enables or disable saving Hand Written signature as editable in the PDF.
+     * @default false
+     */
+    @Property(false)
+    public isSignatureEditable: boolean;
+
     /**
      * Enables or disables the bookmark view in the PDF viewer
      * @default true
@@ -1508,6 +1516,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Property(true)
     public enableFormFields: boolean;
+
+    /** 
+     * Enable or disable the form fields validation.
+     * @default false
+     */
+    @Property(false)
+    public enableFormFieldsValidation: boolean;
 
     /**
      * Enable or disable the free text annotation in the Pdfviewer.
@@ -1962,6 +1977,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Event()
     public ajaxRequestFailed: EmitType<AjaxRequestFailureEventArgs>;
+
+    /**
+     * Triggers when validation is failed.
+     * @event
+     * @blazorProperty 'validateFormFields'
+     */
+    @Event()
+    public validateFormFields: EmitType<ValidateFormFieldsArgs>;
 
     /**
      * Triggers when the mouse click is performed over the page of the PDF document.
@@ -2726,6 +2749,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * @private
      */
+    public fireValidatedFailed(action: string): void {
+        let eventArgs: ValidateFormFieldsArgs = { formField: this.viewerBase.createFormfieldsJsonData(), documentName: this.fileName };
+        this.trigger('validateFormFields', eventArgs);
+    }
+
+    /**
+     * @private
+     */
     public firePageClick(x: number, y: number, pageNumber: number): void {
         let eventArgs: PageClickEventArgs = { name: 'pageClick', documentName: this.fileName, x: x, y: y, pageNumber: pageNumber };
         this.trigger('pageClick', eventArgs);
@@ -2975,6 +3006,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             let annotationSelect: number = this.annotationModule.textMarkupAnnotationModule.selectTextMarkupCurrentPage;
             if (annotationSelect) {
                 this.annotationModule.textMarkupAnnotationModule.clearCurrentAnnotationSelection(annotationSelect, true);
+            }
+            if (!multipleSelection) {
+                if (this.viewerBase.activeElements && this.viewerBase.activeElements.activePageID >= 0) {
+                    this.clearSelection(this.viewerBase.activeElements.activePageID);
+                }
             }
             this.drawing.select(objArray, multipleSelection, preventUpdate);
         }

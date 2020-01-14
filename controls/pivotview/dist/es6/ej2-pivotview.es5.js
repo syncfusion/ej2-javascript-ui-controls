@@ -7,7 +7,7 @@ import { ColorPicker, MaskedTextBox, NumericTextBox } from '@syncfusion/ej2-inpu
 import { CheckBoxSelection, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
 import { Workbook } from '@syncfusion/ej2-excel-export';
 import { PdfBorders, PdfColor, PdfDocument, PdfFontFamily, PdfFontStyle, PdfGrid, PdfPageTemplateElement, PdfPen, PdfSolidBrush, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfVerticalAlignment, PointF, RectangleF } from '@syncfusion/ej2-pdf-export';
-import { Animation, AreaSeries, AxisLine, BarSeries, Border, BubbleSeries, Category, Chart, ChartArea, ChartLocation, ChartSegment, ColumnSeries, CornerRadius, Crosshair, CrosshairSettings, CrosshairTooltip, DataLabelSettings, EmptyPointSettings, ErrorBarCapSettings, ErrorBarSettings, Export, Font, Indexes, LabelBorder, Legend, LineSeries, MajorGridLines, MajorTickLines, Margin, MarkerSettings, MinorGridLines, MinorTickLines, MultiColoredAreaSeries, MultiColoredLineSeries, MultiLevelLabel, ParetoSeries, PolarSeries, RadarSeries, RangeAreaSeries, RangeColumnSeries, ScatterSeries, ScrollBar, SplineAreaSeries, SplineSeries, StackingAreaSeries, StackingBarSeries, StackingColumnSeries, StepAreaSeries, StepLineSeries, StripLineSettings, Theme, Tooltip as Tooltip$1, Trendline, Zoom } from '@syncfusion/ej2-charts';
+import { AreaSeries, BarSeries, BubbleSeries, Category, Chart, ChartLocation, ColumnSeries, Crosshair, Export, Legend, LineSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiLevelLabel, ParetoSeries, PolarSeries, RadarSeries, RangeAreaSeries, RangeColumnSeries, ScatterSeries, ScrollBar, SplineAreaSeries, SplineSeries, StackingAreaSeries, StackingBarSeries, StackingColumnSeries, StepAreaSeries, StepLineSeries, Tooltip as Tooltip$1, Zoom } from '@syncfusion/ej2-charts';
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
@@ -10420,6 +10420,85 @@ var PivotChart = /** @__PURE__ @class */ (function () {
  */
 /** @hidden */
 
+/**
+ * Specifies Chart Themes
+ */
+var Theme;
+(function (Theme) {
+    /** @private */
+    Theme.axisLabelFont = {
+        size: '12px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+    /** @private */
+    Theme.axisTitleFont = {
+        size: '14px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+    /** @private */
+    Theme.chartTitleFont = {
+        size: '15px',
+        fontWeight: '500',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+    /** @private */
+    Theme.chartSubTitleFont = {
+        size: '11px',
+        fontWeight: '500',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+    /** @private */
+    Theme.crosshairLabelFont = {
+        size: '13px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+    /** @private */
+    Theme.tooltipLabelFont = {
+        size: '13px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+    /** @private */
+    Theme.legendLabelFont = {
+        size: '13px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+    /** @private */
+    Theme.stripLineLabelFont = {
+        size: '12px',
+        fontWeight: 'Regular',
+        color: '#353535',
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+    /** @private */
+    Theme.stockEventFont = {
+        size: '13px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+})(Theme || (Theme = {}));
+
 var __extends$3 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -10439,6 +10518,662 @@ var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, 
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+/**
+ * Configures the animation behavior for chart series.
+ */
+var Animation = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(Animation, _super);
+    function Animation() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property(true)
+    ], Animation.prototype, "enable", void 0);
+    __decorate$3([
+        Property(1000)
+    ], Animation.prototype, "duration", void 0);
+    __decorate$3([
+        Property(0)
+    ], Animation.prototype, "delay", void 0);
+    return Animation;
+}(ChildProperty));
+var ChartSegment = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(ChartSegment, _super);
+    function ChartSegment() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property(null)
+    ], ChartSegment.prototype, "value", void 0);
+    __decorate$3([
+        Property(null)
+    ], ChartSegment.prototype, "color", void 0);
+    __decorate$3([
+        Property('0')
+    ], ChartSegment.prototype, "dashArray", void 0);
+    return ChartSegment;
+}(ChildProperty));
+/**
+ * Configures the fonts in charts.
+ */
+var Font = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(Font, _super);
+    function Font() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property('Normal')
+    ], Font.prototype, "fontStyle", void 0);
+    __decorate$3([
+        Property('16px')
+    ], Font.prototype, "size", void 0);
+    __decorate$3([
+        Property('Normal')
+    ], Font.prototype, "fontWeight", void 0);
+    __decorate$3([
+        Property('')
+    ], Font.prototype, "color", void 0);
+    __decorate$3([
+        Property('Center')
+    ], Font.prototype, "textAlignment", void 0);
+    __decorate$3([
+        Property('Segoe UI')
+    ], Font.prototype, "fontFamily", void 0);
+    __decorate$3([
+        Property(1)
+    ], Font.prototype, "opacity", void 0);
+    __decorate$3([
+        Property('Trim')
+    ], Font.prototype, "textOverflow", void 0);
+    return Font;
+}(ChildProperty));
+/**
+ * Configures the chart margins.
+ */
+var Margin = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(Margin, _super);
+    function Margin() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property(10)
+    ], Margin.prototype, "left", void 0);
+    __decorate$3([
+        Property(10)
+    ], Margin.prototype, "right", void 0);
+    __decorate$3([
+        Property(10)
+    ], Margin.prototype, "top", void 0);
+    __decorate$3([
+        Property(10)
+    ], Margin.prototype, "bottom", void 0);
+    return Margin;
+}(ChildProperty));
+/**
+ * Configures the borders in the chart.
+ */
+var Border = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(Border, _super);
+    function Border() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property('')
+    ], Border.prototype, "color", void 0);
+    __decorate$3([
+        Property(1)
+    ], Border.prototype, "width", void 0);
+    return Border;
+}(ChildProperty));
+/**
+ * Configures the marker position in the chart.
+ */
+var Offset = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(Offset, _super);
+    function Offset() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property(0)
+    ], Offset.prototype, "x", void 0);
+    __decorate$3([
+        Property(0)
+    ], Offset.prototype, "y", void 0);
+    return Offset;
+}(ChildProperty));
+/**
+ * Series and point index
+ * @public
+ */
+var Indexes = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(Indexes, _super);
+    function Indexes() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property(0)
+    ], Indexes.prototype, "series", void 0);
+    __decorate$3([
+        Property(0)
+    ], Indexes.prototype, "point", void 0);
+    return Indexes;
+}(ChildProperty));
+/**
+ * Configures the chart area.
+ */
+var ChartArea = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(ChartArea, _super);
+    function ChartArea() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Complex({}, Border)
+    ], ChartArea.prototype, "border", void 0);
+    __decorate$3([
+        Property('transparent')
+    ], ChartArea.prototype, "background", void 0);
+    __decorate$3([
+        Property(1)
+    ], ChartArea.prototype, "opacity", void 0);
+    __decorate$3([
+        Property(null)
+    ], ChartArea.prototype, "backgroundImage", void 0);
+    return ChartArea;
+}(ChildProperty));
+/**
+ * Configures the crosshair in the chart.
+ */
+var CrosshairSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(CrosshairSettings, _super);
+    function CrosshairSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property(false)
+    ], CrosshairSettings.prototype, "enable", void 0);
+    __decorate$3([
+        Property('')
+    ], CrosshairSettings.prototype, "dashArray", void 0);
+    __decorate$3([
+        Complex({ color: null, width: 1 }, Border)
+    ], CrosshairSettings.prototype, "line", void 0);
+    __decorate$3([
+        Property('Both')
+    ], CrosshairSettings.prototype, "lineType", void 0);
+    return CrosshairSettings;
+}(ChildProperty));
+/**
+ * Configures the data label in the series.
+ */
+var DataLabelSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(DataLabelSettings, _super);
+    function DataLabelSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property(false)
+    ], DataLabelSettings.prototype, "visible", void 0);
+    __decorate$3([
+        Property(null)
+    ], DataLabelSettings.prototype, "name", void 0);
+    __decorate$3([
+        Property('transparent')
+    ], DataLabelSettings.prototype, "fill", void 0);
+    __decorate$3([
+        Property(1)
+    ], DataLabelSettings.prototype, "opacity", void 0);
+    __decorate$3([
+        Property(0)
+    ], DataLabelSettings.prototype, "angle", void 0);
+    __decorate$3([
+        Property(false)
+    ], DataLabelSettings.prototype, "enableRotation", void 0);
+    __decorate$3([
+        Property('Auto')
+    ], DataLabelSettings.prototype, "position", void 0);
+    __decorate$3([
+        Property(5)
+    ], DataLabelSettings.prototype, "rx", void 0);
+    __decorate$3([
+        Property(5)
+    ], DataLabelSettings.prototype, "ry", void 0);
+    __decorate$3([
+        Property('Center')
+    ], DataLabelSettings.prototype, "alignment", void 0);
+    __decorate$3([
+        Complex({ width: null, color: null }, Border)
+    ], DataLabelSettings.prototype, "border", void 0);
+    __decorate$3([
+        Complex({ left: 5, right: 5, top: 5, bottom: 5 }, Margin)
+    ], DataLabelSettings.prototype, "margin", void 0);
+    __decorate$3([
+        Complex({ size: '11px', color: '', fontStyle: 'Normal', fontWeight: 'Normal', fontFamily: 'Segoe UI' }, Font)
+    ], DataLabelSettings.prototype, "font", void 0);
+    __decorate$3([
+        Property(null)
+    ], DataLabelSettings.prototype, "template", void 0);
+    return DataLabelSettings;
+}(ChildProperty));
+/**
+ *  Configures the marker in the series.
+ */
+var MarkerSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(MarkerSettings, _super);
+    function MarkerSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property(false)
+    ], MarkerSettings.prototype, "visible", void 0);
+    __decorate$3([
+        Property('Circle')
+    ], MarkerSettings.prototype, "shape", void 0);
+    __decorate$3([
+        Property('')
+    ], MarkerSettings.prototype, "imageUrl", void 0);
+    __decorate$3([
+        Property(5)
+    ], MarkerSettings.prototype, "width", void 0);
+    __decorate$3([
+        Property(5)
+    ], MarkerSettings.prototype, "height", void 0);
+    __decorate$3([
+        Complex({ width: 2, color: null }, Border)
+    ], MarkerSettings.prototype, "border", void 0);
+    __decorate$3([
+        Complex({ x: 0, y: 0 }, Offset)
+    ], MarkerSettings.prototype, "offset", void 0);
+    __decorate$3([
+        Property(null)
+    ], MarkerSettings.prototype, "fill", void 0);
+    __decorate$3([
+        Property(1)
+    ], MarkerSettings.prototype, "opacity", void 0);
+    __decorate$3([
+        Complex({}, DataLabelSettings)
+    ], MarkerSettings.prototype, "dataLabel", void 0);
+    return MarkerSettings;
+}(ChildProperty));
+/**
+ * Configures Error bar in series.
+ */
+var ErrorBarCapSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(ErrorBarCapSettings, _super);
+    function ErrorBarCapSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property(1)
+    ], ErrorBarCapSettings.prototype, "width", void 0);
+    __decorate$3([
+        Property(10)
+    ], ErrorBarCapSettings.prototype, "length", void 0);
+    __decorate$3([
+        Property(null)
+    ], ErrorBarCapSettings.prototype, "color", void 0);
+    __decorate$3([
+        Property(1)
+    ], ErrorBarCapSettings.prototype, "opacity", void 0);
+    return ErrorBarCapSettings;
+}(ChildProperty));
+/**
+ * Error bar settings
+ * @public
+ */
+var ErrorBarSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(ErrorBarSettings, _super);
+    function ErrorBarSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property(false)
+    ], ErrorBarSettings.prototype, "visible", void 0);
+    __decorate$3([
+        Property('Fixed')
+    ], ErrorBarSettings.prototype, "type", void 0);
+    __decorate$3([
+        Property('Both')
+    ], ErrorBarSettings.prototype, "direction", void 0);
+    __decorate$3([
+        Property('Vertical')
+    ], ErrorBarSettings.prototype, "mode", void 0);
+    __decorate$3([
+        Property(1)
+    ], ErrorBarSettings.prototype, "verticalError", void 0);
+    __decorate$3([
+        Property(null)
+    ], ErrorBarSettings.prototype, "color", void 0);
+    __decorate$3([
+        Property(1)
+    ], ErrorBarSettings.prototype, "width", void 0);
+    __decorate$3([
+        Property(1)
+    ], ErrorBarSettings.prototype, "horizontalError", void 0);
+    __decorate$3([
+        Property(3)
+    ], ErrorBarSettings.prototype, "verticalNegativeError", void 0);
+    __decorate$3([
+        Property(3)
+    ], ErrorBarSettings.prototype, "verticalPositiveError", void 0);
+    __decorate$3([
+        Property(1)
+    ], ErrorBarSettings.prototype, "horizontalNegativeError", void 0);
+    __decorate$3([
+        Property(1)
+    ], ErrorBarSettings.prototype, "horizontalPositiveError", void 0);
+    __decorate$3([
+        Complex(null, ErrorBarCapSettings)
+    ], ErrorBarSettings.prototype, "errorBarCap", void 0);
+    return ErrorBarSettings;
+}(ChildProperty));
+/**
+ * Defines the behavior of the Trendlines
+ */
+var Trendline = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(Trendline, _super);
+    function Trendline() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property('')
+    ], Trendline.prototype, "name", void 0);
+    __decorate$3([
+        Property('0')
+    ], Trendline.prototype, "dashArray", void 0);
+    __decorate$3([
+        Property(true)
+    ], Trendline.prototype, "visible", void 0);
+    __decorate$3([
+        Property(2)
+    ], Trendline.prototype, "period", void 0);
+    __decorate$3([
+        Property('Linear')
+    ], Trendline.prototype, "type", void 0);
+    __decorate$3([
+        Property(0)
+    ], Trendline.prototype, "backwardForecast", void 0);
+    __decorate$3([
+        Property(0)
+    ], Trendline.prototype, "forwardForecast", void 0);
+    __decorate$3([
+        Property(2)
+    ], Trendline.prototype, "polynomialOrder", void 0);
+    __decorate$3([
+        Complex({}, MarkerSettings)
+    ], Trendline.prototype, "marker", void 0);
+    __decorate$3([
+        Property(true)
+    ], Trendline.prototype, "enableTooltip", void 0);
+    __decorate$3([
+        Complex({}, Animation)
+    ], Trendline.prototype, "animation", void 0);
+    __decorate$3([
+        Property('')
+    ], Trendline.prototype, "fill", void 0);
+    __decorate$3([
+        Property(1)
+    ], Trendline.prototype, "width", void 0);
+    __decorate$3([
+        Property(null)
+    ], Trendline.prototype, "intercept", void 0);
+    __decorate$3([
+        Property('SeriesType')
+    ], Trendline.prototype, "legendShape", void 0);
+    return Trendline;
+}(ChildProperty));
+/**
+ * Configures the Empty Points of series
+ */
+var EmptyPointSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(EmptyPointSettings, _super);
+    function EmptyPointSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property(null)
+    ], EmptyPointSettings.prototype, "fill", void 0);
+    __decorate$3([
+        Complex({ color: 'transparent', width: 0 }, Border)
+    ], EmptyPointSettings.prototype, "border", void 0);
+    __decorate$3([
+        Property('Gap')
+    ], EmptyPointSettings.prototype, "mode", void 0);
+    return EmptyPointSettings;
+}(ChildProperty));
+/**
+ * Column series rounded corner options
+ */
+var CornerRadius = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(CornerRadius, _super);
+    function CornerRadius() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property(0)
+    ], CornerRadius.prototype, "topLeft", void 0);
+    __decorate$3([
+        Property(0)
+    ], CornerRadius.prototype, "topRight", void 0);
+    __decorate$3([
+        Property(0)
+    ], CornerRadius.prototype, "bottomLeft", void 0);
+    __decorate$3([
+        Property(0)
+    ], CornerRadius.prototype, "bottomRight", void 0);
+    return CornerRadius;
+}(ChildProperty));
+/**
+ * Configures the crosshair ToolTip.
+ */
+var CrosshairTooltip = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(CrosshairTooltip, _super);
+    function CrosshairTooltip() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property(false)
+    ], CrosshairTooltip.prototype, "enable", void 0);
+    __decorate$3([
+        Property(null)
+    ], CrosshairTooltip.prototype, "fill", void 0);
+    __decorate$3([
+        Complex(Theme.crosshairLabelFont, Font)
+    ], CrosshairTooltip.prototype, "textStyle", void 0);
+    return CrosshairTooltip;
+}(ChildProperty));
+/**
+ * Strip line properties
+ */
+var StripLineSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(StripLineSettings, _super);
+    function StripLineSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property(true)
+    ], StripLineSettings.prototype, "visible", void 0);
+    __decorate$3([
+        Property(false)
+    ], StripLineSettings.prototype, "startFromAxis", void 0);
+    __decorate$3([
+        Property(null)
+    ], StripLineSettings.prototype, "start", void 0);
+    __decorate$3([
+        Property(null)
+    ], StripLineSettings.prototype, "end", void 0);
+    __decorate$3([
+        Property(null)
+    ], StripLineSettings.prototype, "size", void 0);
+    __decorate$3([
+        Property('#808080')
+    ], StripLineSettings.prototype, "color", void 0);
+    __decorate$3([
+        Property(null)
+    ], StripLineSettings.prototype, "dashArray", void 0);
+    __decorate$3([
+        Property('Auto')
+    ], StripLineSettings.prototype, "sizeType", void 0);
+    __decorate$3([
+        Property(false)
+    ], StripLineSettings.prototype, "isRepeat", void 0);
+    __decorate$3([
+        Property(null)
+    ], StripLineSettings.prototype, "repeatEvery", void 0);
+    __decorate$3([
+        Property(null)
+    ], StripLineSettings.prototype, "repeatUntil", void 0);
+    __decorate$3([
+        Property(false)
+    ], StripLineSettings.prototype, "isSegmented", void 0);
+    __decorate$3([
+        Property(null)
+    ], StripLineSettings.prototype, "segmentStart", void 0);
+    __decorate$3([
+        Property(null)
+    ], StripLineSettings.prototype, "segmentEnd", void 0);
+    __decorate$3([
+        Property(null)
+    ], StripLineSettings.prototype, "segmentAxisName", void 0);
+    __decorate$3([
+        Complex({ color: 'transparent', width: 1 }, Border)
+    ], StripLineSettings.prototype, "border", void 0);
+    __decorate$3([
+        Property('')
+    ], StripLineSettings.prototype, "text", void 0);
+    __decorate$3([
+        Property(null)
+    ], StripLineSettings.prototype, "rotation", void 0);
+    __decorate$3([
+        Property('Middle')
+    ], StripLineSettings.prototype, "horizontalAlignment", void 0);
+    __decorate$3([
+        Property('Middle')
+    ], StripLineSettings.prototype, "verticalAlignment", void 0);
+    __decorate$3([
+        Complex(Theme.stripLineLabelFont, Font)
+    ], StripLineSettings.prototype, "textStyle", void 0);
+    __decorate$3([
+        Property('Behind')
+    ], StripLineSettings.prototype, "zIndex", void 0);
+    __decorate$3([
+        Property(1)
+    ], StripLineSettings.prototype, "opacity", void 0);
+    return StripLineSettings;
+}(ChildProperty));
+/**
+ * label border properties.
+ */
+var LabelBorder = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(LabelBorder, _super);
+    function LabelBorder() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property('')
+    ], LabelBorder.prototype, "color", void 0);
+    __decorate$3([
+        Property(1)
+    ], LabelBorder.prototype, "width", void 0);
+    __decorate$3([
+        Property('Rectangle')
+    ], LabelBorder.prototype, "type", void 0);
+    return LabelBorder;
+}(ChildProperty));
+/**
+ * Configures the major grid lines in the `axis`.
+ */
+var MajorGridLines = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(MajorGridLines, _super);
+    function MajorGridLines() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property(1)
+    ], MajorGridLines.prototype, "width", void 0);
+    __decorate$3([
+        Property('')
+    ], MajorGridLines.prototype, "dashArray", void 0);
+    __decorate$3([
+        Property(null)
+    ], MajorGridLines.prototype, "color", void 0);
+    return MajorGridLines;
+}(ChildProperty));
+/**
+ * Configures the minor grid lines in the `axis`.
+ */
+var MinorGridLines = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(MinorGridLines, _super);
+    function MinorGridLines() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property(0.7)
+    ], MinorGridLines.prototype, "width", void 0);
+    __decorate$3([
+        Property('')
+    ], MinorGridLines.prototype, "dashArray", void 0);
+    __decorate$3([
+        Property(null)
+    ], MinorGridLines.prototype, "color", void 0);
+    return MinorGridLines;
+}(ChildProperty));
+/**
+ * Configures the axis line of a chart.
+ */
+var AxisLine = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(AxisLine, _super);
+    function AxisLine() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property(1)
+    ], AxisLine.prototype, "width", void 0);
+    __decorate$3([
+        Property('')
+    ], AxisLine.prototype, "dashArray", void 0);
+    __decorate$3([
+        Property(null)
+    ], AxisLine.prototype, "color", void 0);
+    return AxisLine;
+}(ChildProperty));
+/**
+ * Configures the major tick lines.
+ */
+var MajorTickLines = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(MajorTickLines, _super);
+    function MajorTickLines() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property(1)
+    ], MajorTickLines.prototype, "width", void 0);
+    __decorate$3([
+        Property(5)
+    ], MajorTickLines.prototype, "height", void 0);
+    __decorate$3([
+        Property(null)
+    ], MajorTickLines.prototype, "color", void 0);
+    return MajorTickLines;
+}(ChildProperty));
+/**
+ * Configures the minor tick lines.
+ */
+var MinorTickLines = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(MinorTickLines, _super);
+    function MinorTickLines() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property(0.7)
+    ], MinorTickLines.prototype, "width", void 0);
+    __decorate$3([
+        Property(5)
+    ], MinorTickLines.prototype, "height", void 0);
+    __decorate$3([
+        Property(null)
+    ], MinorTickLines.prototype, "color", void 0);
+    return MinorTickLines;
+}(ChildProperty));
 /**
  *  third party configures for chart series in chart settings.
  */
@@ -18713,15 +19448,16 @@ var EventBase = /** @__PURE__ @class */ (function () {
                 treeData = this.getOlapData(fieldName, isInclude);
             }
             else {
+                var members = PivotUtil.getClonedData(this.parent.engineModule.fieldList[fieldName].dateMember);
                 /* tslint:disable:typedef */
-                this.parent.engineModule.fieldList[fieldName].dateMember =
+                members =
                     this.parent.engineModule.fieldList[fieldName].sort === 'Ascending' ?
-                        (this.parent.engineModule.fieldList[fieldName].dateMember.sort(function (a, b) { return (a.actualText > b.actualText) ? 1 :
+                        (members.sort(function (a, b) { return (a.actualText > b.actualText) ? 1 :
                             ((b.actualText > a.actualText) ? -1 : 0); })) :
                         this.parent.engineModule.fieldList[fieldName].sort === 'Descending' ?
-                            (this.parent.engineModule.fieldList[fieldName].dateMember.sort(function (a, b) { return (a.actualText < b.actualText) ? 1 :
+                            (members.sort(function (a, b) { return (a.actualText < b.actualText) ? 1 :
                                 ((b.actualText < a.actualText) ? -1 : 0); })) :
-                            this.parent.engineModule.fieldList[fieldName].dateMember;
+                            members;
                 /* tslint:enable:typedef */
                 var filterObj = PivotUtil.getFilterItemByName(fieldName, this.parent.dataSourceSettings.filterSettings);
                 if (!isNullOrUndefined(filterObj)) {
@@ -18729,7 +19465,7 @@ var EventBase = /** @__PURE__ @class */ (function () {
                     filterItems = filterObj.items ? filterObj.items : [];
                 }
                 treeData =
-                    this.getTreeData(isInclude, this.parent.engineModule.fieldList[fieldName].dateMember, filterItems, fieldName);
+                    this.getTreeData(isInclude, members, filterItems, fieldName);
             }
         }
         if (this.parent.filterDialog.dialogPopUp) {
@@ -29163,5 +29899,5 @@ var Grouping = /** @__PURE__ @class */ (function () {
  * Export PivotGrid components
  */
 
-export { GroupingBarSettings, CellEditSettings, ConditionalSettings, HyperlinkSettings, DisplayOption, PivotView, Render, ExcelExport$1 as ExcelExport, PDFExport, KeyboardInteraction, VirtualScroll$1 as VirtualScroll, DrillThrough, PivotChart, PivotFieldList, TreeViewRenderer, AxisFieldRenderer, AxisTableRenderer, DialogRenderer, EventBase, NodeStateModified, DataSourceUpdate, FieldList, CommonKeyboardInteraction, GroupingBar, CalculatedField, ConditionalFormatting, PivotCommon, load, enginePopulating, enginePopulated, onFieldDropped, beforePivotTableRender, afterPivotTableRender, beforeExport, excelHeaderQueryCellInfo, pdfHeaderQueryCellInfo, excelQueryCellInfo, pdfQueryCellInfo, onPdfCellRender, dataBound, queryCellInfo, headerCellInfo, hyperlinkCellClick, resizing, resizeStop, cellClick, drillThrough, beforeColumnsRender, selected, cellSelecting, drill, cellSelected, cellDeselected, rowSelected, rowDeselected, beginDrillThrough, saveReport, fetchReport, loadReport, renameReport, removeReport, newReport, toolbarRender, toolbarClick, chartTooltipRender, chartLoaded, chartLoad, chartResized, chartAxisLabelRender, chartSeriesCreated, aggregateCellInfo, contextMenuClick, contextMenuOpen, fieldListRefreshed, conditionalFormatting, beforePdfExport, beforeExcelExport, memberFiltering, initialLoad, uiUpdate, scroll, contentReady, dataReady, initSubComponent, treeViewUpdate, pivotButtonUpdate, initCalculatedField, click, initToolbar, initFormatting, initGrouping, ErrorDialog, FilterDialog, PivotContextMenu, AggregateMenu, Toolbar$2 as Toolbar, NumberFormatting, Grouping, PivotEngine, PivotUtil, OlapEngine, MDXQuery };
+export { GroupingBarSettings, CellEditSettings, ConditionalSettings, HyperlinkSettings, DisplayOption, PivotView, Render, ExcelExport$1 as ExcelExport, PDFExport, KeyboardInteraction, VirtualScroll$1 as VirtualScroll, DrillThrough, PivotChart, PivotFieldList, TreeViewRenderer, AxisFieldRenderer, AxisTableRenderer, DialogRenderer, EventBase, NodeStateModified, DataSourceUpdate, FieldList, CommonKeyboardInteraction, GroupingBar, CalculatedField, ConditionalFormatting, PivotCommon, load, enginePopulating, enginePopulated, onFieldDropped, beforePivotTableRender, afterPivotTableRender, beforeExport, excelHeaderQueryCellInfo, pdfHeaderQueryCellInfo, excelQueryCellInfo, pdfQueryCellInfo, onPdfCellRender, dataBound, queryCellInfo, headerCellInfo, hyperlinkCellClick, resizing, resizeStop, cellClick, drillThrough, beforeColumnsRender, selected, cellSelecting, drill, cellSelected, cellDeselected, rowSelected, rowDeselected, beginDrillThrough, saveReport, fetchReport, loadReport, renameReport, removeReport, newReport, toolbarRender, toolbarClick, chartTooltipRender, chartLoaded, chartLoad, chartResized, chartAxisLabelRender, chartSeriesCreated, aggregateCellInfo, contextMenuClick, contextMenuOpen, fieldListRefreshed, conditionalFormatting, beforePdfExport, beforeExcelExport, memberFiltering, initialLoad, uiUpdate, scroll, contentReady, dataReady, initSubComponent, treeViewUpdate, pivotButtonUpdate, initCalculatedField, click, initToolbar, initFormatting, initGrouping, Theme, ErrorDialog, FilterDialog, PivotContextMenu, AggregateMenu, Toolbar$2 as Toolbar, NumberFormatting, Grouping, PivotEngine, PivotUtil, OlapEngine, MDXQuery };
 //# sourceMappingURL=ej2-pivotview.es5.js.map

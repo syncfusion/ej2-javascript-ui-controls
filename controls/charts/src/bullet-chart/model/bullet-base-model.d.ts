@@ -175,7 +175,7 @@ export interface BulletTooltipSettingsModel {
 
     /**
      * Enables / Disables the visibility of the tooltip.
-     * @default true.
+     * @default false.
      */
 
     enable?: boolean;

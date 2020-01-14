@@ -1,4 +1,4 @@
-import { SheetModel, ColumnModel } from './index';import { Property, ChildProperty } from '@syncfusion/ej2-base';
+import { SheetModel } from './index';import { Property, ChildProperty } from '@syncfusion/ej2-base';
 
 /**
  * Interface for a class Column

@@ -584,6 +584,7 @@ export class Drawing {
         container.style.fill = 'transparent';
         container.style.strokeWidth = 0;
         container.children = [];
+        setElementStype(obj, segment);
         container.children.push(segment);
 
         if (leaders.length > 0) {

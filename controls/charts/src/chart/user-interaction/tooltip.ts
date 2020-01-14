@@ -1,6 +1,6 @@
 import { Chart } from '../chart';
 import { extend, Browser, remove } from '@syncfusion/ej2-base';
-import { PointData, ChartLocation } from '../../common/utils/helper';
+import { PointData, ChartLocation,  getUnicodeText} from '../../common/utils/helper';
 import { Rect } from '@syncfusion/ej2-svg-base';
 import { valueToCoefficient, removeElement, valueToPolarCoefficient, withInBounds } from '../../common/utils/helper';
 import { Axis } from '../axis/axis';
@@ -9,7 +9,7 @@ import { BaseTooltip } from '../../common/user-interaction/tooltip';
 import { ChartShape } from '../utils/enum';
 import { StockChart } from '../../stock-chart/stock-chart';
 import { ITooltipRenderEventArgs } from '../model/chart-interface';
-import { tooltipRender } from '../../common/model/constants';
+import { tooltipRender, regSub, regSup } from '../../common/model/constants';
 
 /**
  * `Tooltip` module is used to render the tooltip for chart series.
@@ -116,6 +116,12 @@ export class Tooltip extends BaseTooltip {
             return '';
         }
         this.header = this.parseTemplate(data.point, data.series, this.header, data.series.xAxis, data.series.yAxis);
+        if (regSub.test(this.header)) {
+            this.header = getUnicodeText(this.header, regSub);
+        }
+        if (regSup.test(this.header)) {
+            this.header = getUnicodeText(this.header, regSup);
+        }
         if (this.header.replace(/<b>/g, '').replace(/<\/b>/g, '').trim() !== '') {
             return this.header;
         }

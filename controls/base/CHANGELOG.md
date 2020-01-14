@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 17.4.43 (2020-01-14)
+
+### Common
+
+#### Bug Fixes
+
+- `#I254197`, `#I255889`, `#I257234`, `#I257859`, `#I258137`, `#I259025`, `#I260213`, `#I260331` - Resolved Compilation issue with Typescript Latest version.
+- Resolved Server side `updateModel` method is called for each child property in `blazor`.
+
 ## 17.4.41 (2020-01-07)
 
 ### Common

@@ -225,6 +225,13 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     public selectionMode: AccumulationSelectionMode;
 
     /**
+     * If set true, enables the border in pie and accumulation chart while mouse moving.
+     * @default true
+     */
+    @Property(true)
+    public enableBorderOnMouseMove: boolean;
+
+    /**
      * If set true, enables the multi selection in accumulation chart. It requires `selectionMode` to be `Point`.
      * @default false
      */
@@ -882,7 +889,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         if (!this.isTouch) {
             this.titleTooltip(e, this.mouseX, this.mouseY);
         }
-        if (this.type === 'Pie' && this.pieSeriesModule &&
+        if (this.enableBorderOnMouseMove && this.type === 'Pie' && this.pieSeriesModule &&
             withInBounds(this.mouseX, this.mouseY, this.initialClipRect)) {
             this.pieSeriesModule.findSeries(e);
         }
@@ -921,7 +928,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         if (this.visibleSeries[0].explode) {
             this.accBaseModule.processExplode(e);
         }
-        if (this.pieSeriesModule && this.type === 'Pie') {
+        if (this.enableBorderOnMouseMove && this.pieSeriesModule && this.type === 'Pie') {
             this.pieSeriesModule.findSeries(e);
         }
         this.trigger(chartMouseClick, { target: (<Element>e.target).id, x: this.mouseX, y: this.mouseY });

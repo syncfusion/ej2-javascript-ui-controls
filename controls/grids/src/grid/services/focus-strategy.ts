@@ -157,11 +157,12 @@ export class FocusStrategy {
             isFrozen ? this.fHeader : this.header;
     }
 
-    public setFocusedElement(element: HTMLElement): void {
+    public setFocusedElement(element: HTMLElement, e?: KeyboardEventArgs): void {
         this.currentInfo.elementToFocus = element;
         setTimeout(
             () => {
                 if (!isNullOrUndefined(this.currentInfo.elementToFocus)) {
+                    this.parent.notify('virtaul-key-handler', e);
                     this.currentInfo.elementToFocus.focus();
                 }
             },
@@ -169,6 +170,7 @@ export class FocusStrategy {
     }
 
     public focus(e?: KeyboardEventArgs): void {
+        this.parent.notify(event.virtaulCellFocus, e);
         this.removeFocus();
         this.addFocus(this.getContent().getFocusInfo(), e);
     }
@@ -216,7 +218,7 @@ export class FocusStrategy {
         addClass([info.elementToFocus], ['e-focus']);
         info.element.tabIndex = 0;
         if (!isFocused) {
-            this.setFocusedElement(info.elementToFocus);
+            this.setFocusedElement(info.elementToFocus, e);
         }
         this.parent.notify(event.cellFocused, {
             element: info.elementToFocus,
@@ -654,8 +656,14 @@ export class ContentFocus implements IFocus {
             this.matrix.current[0] = this.matrix.current[0] - 1;
             this.matrix.current[1] = this.matrix.matrix[current[0]].length;
         }
+        let isHeaderFocus: boolean = false;
+        let row: Element = document.activeElement.parentElement;
+        if (this.parent.enableVirtualization && row.classList.contains('e-row')) {
+            let rowIndex: number = parseInt(row.getAttribute('aria-rowindex'), 10);
+            isHeaderFocus = rowIndex > 0;
+        }
         let info: SwapInfo = {
-            swap: ((action === 'upArrow' || enterFrozen) && current[0] === 0) || frozenSwap,
+            swap: !isHeaderFocus ? ((action === 'upArrow' || enterFrozen) && current[0] === 0) || frozenSwap : false,
             toHeader: (action === 'upArrow' || enterFrozen) && current[0] === 0,
             toFrozen: frozenSwap
         };

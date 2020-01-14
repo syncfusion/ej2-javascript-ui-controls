@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.43 (2020-01-14)
+
+### Button
+
+#### Bug Fixes
+
+- Disabled button not working properly has been resolved.
+
 ## 17.4.41 (2020-01-07)
 
 ### Chips

@@ -186,10 +186,25 @@ export interface ImageFailedEventArgs {
 }
 
 export interface ResponseEventArgs {
+    /**
+     * Returns the headers information of the upload image.
+     */
     headers?: string;
+    /**
+     * Returns the readyState information.
+     */
     readyState?: object;
+    /**
+     * Returns the upload image statusCode.
+     */
     statusCode?: object;
+    /**
+     * Returns the upload image statusText.
+     */
     statusText?: string;
+    /**
+     * Returns the credentials status of the upload image.
+     */
     withCredentials?: boolean;
 }
 
@@ -2267,7 +2282,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             let active: Element = document.activeElement;
             if (active === this.element || active === this.getToolbarElement() || active === this.contentModule.getEditPanel()
                 || ((this.iframeSettings.enable && active === this.contentModule.getPanel()) &&
-                    !(e.target as HTMLElement).classList.contains('e-img-inner')
+                e.target && !(e.target as HTMLElement).classList.contains('e-img-inner')
                     && (e.target && (e.target as HTMLElement).parentElement
                     && !(e.target as HTMLElement).parentElement.classList.contains('e-img-wrap')))
                 || closest(active, '.e-rte-toolbar') === this.getToolbarElement()) {

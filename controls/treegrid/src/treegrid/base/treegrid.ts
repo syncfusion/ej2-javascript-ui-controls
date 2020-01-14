@@ -2385,31 +2385,31 @@ private getGridEditSettings(): GridEditModel {
     };
     let ignoreOnColumn: string[] = ['filter', 'edit', 'filterBarTemplate', 'headerTemplate', 'template',
         'commandTemplate', 'commands', 'dataSource'];
-    keyEntity.forEach((value: string) => {
-        let currentObject: Object = this[value];
-        for (let val of ignoreOnPersist[value]) {
-            delete currentObject[val];
-        }
-    });
+    for (let i: number = 0; i < keyEntity.length; i++) {
+      let currentObject: Object = this[keyEntity[i]];
+      for (let val of ignoreOnPersist[keyEntity[i]]) {
+        delete currentObject[val];
+      }
+    }
     this.ignoreInArrays(ignoreOnColumn, <Column[]>this.columns);
     return this.addOnPersist(keyEntity);
   }
   private ignoreInArrays(ignoreOnColumn: string[], columns: Column[]): void {
-      columns.forEach((column: Column) => {
-          if (column.columns) {
-              this.ignoreInColumn(ignoreOnColumn, column);
-              this.ignoreInArrays(ignoreOnColumn, <Column[]>column.columns);
-          } else {
-              this.ignoreInColumn(ignoreOnColumn, column);
-          }
-      });
+    for (let i: number = 0; i < columns.length; i++) {
+      if (columns[i].columns) {
+        this.ignoreInColumn(ignoreOnColumn, columns[i]);
+        this.ignoreInArrays(ignoreOnColumn, <Column[]>columns[i].columns);
+      } else {
+        this.ignoreInColumn(ignoreOnColumn, columns[i]);
+      }
+    }
   }
 
   private ignoreInColumn(ignoreOnColumn: string[], column: Column): void {
-      ignoreOnColumn.forEach((val: string) => {
-          delete column[val];
-          column.filter = {};
-      });
+    for (let i: number = 0; i < ignoreOnColumn.length; i++) {
+      delete column[ignoreOnColumn[i]];
+      column.filter = {};
+    }
   }
   private mouseClickHandler(e: MouseEvent & TouchEvent): void {
     if (!isNullOrUndefined(e.touches)) {

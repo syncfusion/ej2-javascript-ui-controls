@@ -1,5 +1,5 @@
 import { Column } from '../models/column';
-import { SaveEventArgs, DataStateChangeEventArgs } from '@syncfusion/ej2-grids';
+import { SaveEventArgs, DataStateChangeEventArgs as GridDataStateChangeEventArgs } from '@syncfusion/ej2-grids';
 /**
  * Specifies FlatData interfaces.
  * @hidden
@@ -139,7 +139,7 @@ export interface CellSaveEventArgs extends SaveEventArgs {
     /** Defines edited column */
     column?: Column;
 }
-export interface DataStateChangeEventArgs extends DataStateChangeEventArgs {
+export interface DataStateChangeEventArgs extends GridDataStateChangeEventArgs {
     /** Defines the child records for the respective parent row */
     childData? : ITreeData[];
     /**

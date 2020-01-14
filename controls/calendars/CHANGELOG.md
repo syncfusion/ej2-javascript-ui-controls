@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.43 (2020-01-14)
+
+### Calendar
+
+#### Bug Fixes
+
+- Issue with "datepicker popup not opened in IE browser" has been resolved.
+
 ## 17.4.41 (2020-01-07)
 
 ### Calendar

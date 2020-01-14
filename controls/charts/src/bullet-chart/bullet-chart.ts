@@ -1,6 +1,6 @@
-import { Component, Property, NotifyPropertyChanges, Browser, Complex, Event, EmitType } from '@syncfusion/ej2-base';
+import { Component, Property, NotifyPropertyChanges, Browser, Complex, Event, EmitType, isBlazor } from '@syncfusion/ej2-base';
 import { EventHandler, remove, INotifyPropertyChanged, ModuleDeclaration, Collection, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { Internationalization } from '@syncfusion/ej2-base';
+import { Internationalization, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { SvgRenderer, Rect, Size, measureText, TextOption } from '@syncfusion/ej2-svg-base';
 import { Query } from '@syncfusion/ej2-data';
 import { OrientationType, TickPosition, LabelsPlacement, TextPosition, FeatureType, TargetType } from './utils/enum';
@@ -919,14 +919,14 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
                     y =  this.margin.top + elementSize.height / 2 + padding;
                     break;
                 case 'Bottom':
-                    x = (this.availableSize.width) / 2;
+                    x = (this.availableSize.width) / 2 + padding * 2;
                     // tslint:disable-next-line:max-line-length
                     y =  this.availableSize.height - this.margin.bottom - elementSize.height / 3 + padding * 2 - ((subTitleSize.height) ? subTitleSize.height + padding  : 0);
                     break;
                 case 'Left':
                     y = this.findVerticalAlignment(margin);
                     anchor = (alignment === 'Far') ? 'start' : ((alignment === 'Near') ? 'end' : 'middle');
-                    x = margin.left;
+                    x = margin.left + elementSize.height / 3;
                     // tslint:disable-next-line:max-line-length
                     break;
                 case 'Right':
@@ -1187,6 +1187,9 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         if (!this.isTouch(e)) {
             let id: string = 'tooltipDiv' + this.element.id;
             let tooltipDiv: Element = document.getElementById(id);
+            if (isBlazor()) {
+                resetBlazorTemplate(this.element.id + 'parent_template' + '_blazorTemplate');
+            }
             if (tooltipDiv) {
                 remove(tooltipDiv);
             }

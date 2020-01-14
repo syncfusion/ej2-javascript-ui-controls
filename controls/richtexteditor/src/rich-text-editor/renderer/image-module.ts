@@ -87,10 +87,12 @@ export class Image {
         this.parent.off(events.initialEnd, this.afterRender);
         this.parent.off(events.paste, this.imagePaste);
         this.parent.off(events.destroy, this.removeEventListener);
-        this.parent.inputElement.ownerDocument.removeEventListener('drop', this.dragDrop.bind(this), true);
-        this.parent.inputElement.ownerDocument.removeEventListener('dragstart', this.dragStart.bind(this), true);
-        this.parent.inputElement.ownerDocument.removeEventListener('dragenter', this.dragEnter.bind(this), true);
-        this.parent.inputElement.ownerDocument.removeEventListener('dragover', this.dragOver.bind(this), true);
+        let dropElement : HTMLElement | Document = this.parent.iframeSettings.enable ? this.parent.inputElement.ownerDocument
+        : this.parent.inputElement;
+        dropElement.removeEventListener('drop', this.dragDrop.bind(this), true);
+        dropElement.removeEventListener('dragstart', this.dragStart.bind(this), true);
+        dropElement.removeEventListener('dragenter', this.dragEnter.bind(this), true);
+        dropElement.removeEventListener('dragover', this.dragOver.bind(this), true);
         if (!isNullOrUndefined(this.contentModule)) {
             EventHandler.remove(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.imageClick);
             this.parent.formatter.editorManager.observer.off(events.checkUndo, this.undoStack);
@@ -112,10 +114,12 @@ export class Image {
             EventHandler.add(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart, this);
             EventHandler.add(this.parent.element.ownerDocument, 'mousedown', this.onDocumentClick, this);
         }
-        this.parent.inputElement.ownerDocument.addEventListener('drop', this.dragDrop.bind(this), true);
-        this.parent.inputElement.ownerDocument.addEventListener('dragstart', this.dragStart.bind(this), true);
-        this.parent.inputElement.ownerDocument.addEventListener('dragenter', this.dragOver.bind(this), true);
-        this.parent.inputElement.ownerDocument.addEventListener('dragover', this.dragOver.bind(this), true);
+        let dropElement : HTMLElement | Document = this.parent.iframeSettings.enable ? this.parent.inputElement.ownerDocument :
+         this.parent.inputElement;
+        dropElement.addEventListener('drop', this.dragDrop.bind(this), true);
+        dropElement.addEventListener('dragstart', this.dragStart.bind(this), true);
+        dropElement.addEventListener('dragenter', this.dragOver.bind(this), true);
+        dropElement.addEventListener('dragover', this.dragOver.bind(this), true);
     }
 
     private undoStack(args?: { [key: string]: string }): void {
@@ -902,7 +906,7 @@ export class Image {
             }
         } else {
             this.captionEle = this.parent.createElement('span', {
-                className: classes.CLS_CAPTION,
+                className: classes.CLS_CAPTION + ' ' + classes.CLS_RTE_CAPTION,
                 attrs: { contenteditable: 'false', draggable: 'false' }
             });
             let imgWrap: HTMLElement = this.parent.createElement('span', { className: 'e-img-wrap' });
