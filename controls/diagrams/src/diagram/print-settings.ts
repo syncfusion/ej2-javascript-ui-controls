@@ -800,7 +800,7 @@ export class PrintAndExport {
             ctx.fillStyle = 'transparent';
             ctx.fillRect(0, 0, bounds.width + (margin.left + margin.right), bounds.height + (margin.top + margin.bottom));
             ctx.drawImage(
-                img, bounds.x, bounds.y, bounds.width, bounds.height,
+                img, 0, 0, bounds.width, bounds.height,
                 margin.left, margin.top, bounds.width, bounds.height);
             image = canvas.toDataURL();
             if (options.printOptions) {

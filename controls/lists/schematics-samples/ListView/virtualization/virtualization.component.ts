@@ -57,8 +57,9 @@ export class VirtualizationListComponent implements OnInit {
         if (Browser.isDevice) {
             this.liElement.classList.add('ui-mobile');
         }
-
-        [[1010, 'data1'], [5010, 'data5'], [10010, 'data10'], [25010, 'data25']].forEach((ds: string[] | number[]) => {
+        let dsArray: ((string | number)[])[] = [[1010, 'data1'], [5010, 'data5'], [10010, 'data10'], [25010, 'data25']];
+        for (let i: number; i < dsArray.length; i++) {
+            let ds: (string | number)[] = dsArray[i];
             const data: { [key: string]: string | object }[] = this.commonData.slice();
             let index: number;
             let spyIndex: number;
@@ -70,7 +71,7 @@ export class VirtualizationListComponent implements OnInit {
                 spyIndex = index;
             }
             this.dataSource[ds[1]] = data;
-        });
+        }
     }
 
     public onActionComplete() {

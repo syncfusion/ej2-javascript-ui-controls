@@ -1847,6 +1847,24 @@ describe('RTE base module', () => {
             rteObj.executeCommand("insertImage", el);
             expect((rteObj as any).inputElement.querySelector('img').src).toBe('https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png');
         });
+
+        it('ensure insert table on execute command', () => {
+            destroy(rteObj);
+            rteObj = renderRTE({
+                height: '200px',
+                width: '400px'
+            });
+            (rteObj as any).inputElement.focus();
+            let selection: NodeSelection = new NodeSelection();
+            let range: Range;
+            let saveSelection: NodeSelection;
+            range = selection.getRange(document);
+            saveSelection = selection.save(range, document);
+            rteObj.executeCommand('insertTable', {row: 2, columns: 5, selection: saveSelection});
+            expect((rteObj as any).inputElement.querySelector('table')).not.toBe(null);
+            expect((rteObj as any).inputElement.querySelectorAll('tr').length).toBe(2);
+            expect((rteObj as any).inputElement.querySelectorAll('tr')[0].querySelectorAll('td').length).toBe(5);
+        });
         afterAll(() => {
             destroy(rteObj);
         });

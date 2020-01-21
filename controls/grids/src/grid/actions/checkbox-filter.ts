@@ -14,6 +14,7 @@ export class CheckBoxFilter {
 
     protected parent: IGrid;
     public checkBoxBase: CheckBoxFilterBase;
+    public isresetFocus: boolean;
 
     /**
      * Constructor for checkbox filtering module
@@ -21,6 +22,7 @@ export class CheckBoxFilter {
      */
     constructor(parent?: IGrid, filterSettings?: FilterSettings, serviceLocator?: ServiceLocator) {
         this.parent = parent;
+        this.isresetFocus = true;
         this.checkBoxBase = new CheckBoxFilterBase(parent as IXLFilter);
         this.addEventListener();
     }
@@ -43,7 +45,9 @@ export class CheckBoxFilter {
     public closeDialog(): void {
         this.removeEventListener();
         this.checkBoxBase.closeDialog();
-        this.parent.notify(events.restoreFocus, {});
+        if (this.isresetFocus) {
+            this.parent.notify(events.restoreFocus, {});
+        }
     }
 
     /**

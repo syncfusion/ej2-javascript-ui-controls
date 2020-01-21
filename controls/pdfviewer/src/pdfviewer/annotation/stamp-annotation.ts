@@ -210,7 +210,7 @@ export class StampAnnotation {
                                 image.onload = (): void => {
                                     let currentLocation: IRectCollection;
                                     if (isImport) {
-                                        currentLocation = proxy.calculateImagePosition(position, null, true);
+                                        currentLocation = proxy.calculateImagePosition(position, false, false);
                                     } else {
                                         currentLocation = proxy.calculateImagePosition(position);
                                     }
@@ -1049,7 +1049,7 @@ export class StampAnnotation {
                 note: annotation.Note, strokeColor: annotation.StrokeColor, fillColor: annotation.FillColor, opacity: annotation.Opacity, stampFillcolor: annotation.FillColor,
                 // tslint:disable-next-line:max-line-length
                 rotateAngle: annotation.RotateAngle, creationDate: annotation.ModifiedDate, pageNumber: pageNumber, icon: '', stampAnnotationPath: this.findImageData(annotation.Apperarance), randomId: 'image', isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: ' ',
-                bounds: this.calculateImagePosition(annotation.Rect, false, true), annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, author: annotation.Author, modifiedDate: annotation.ModifiedDate }, shapeAnnotationType: 'stamp'
+                bounds: this.calculateImagePosition(annotation.Rect, false, false), annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, author: annotation.Author, modifiedDate: annotation.ModifiedDate }, shapeAnnotationType: 'stamp'
             };
             this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_stamp');
         }

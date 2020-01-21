@@ -6787,6 +6787,12 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             this.items = this.toolbarItemData(this.getItems(e.newProp.toolbarSettings.items.map(function (item) { return item.trim(); })));
             var eventArgs = { items: this.items };
             this.parent.trigger('toolbarCreate', eventArgs, function (toolbarCreateArgs) {
+                if (_this.buttonObj) {
+                    _this.buttonObj.destroy();
+                }
+                if (_this.layoutBtnObj) {
+                    _this.layoutBtnObj.destroy();
+                }
                 _this.items = toolbarCreateArgs.items;
                 _this.toolbarObj.items = _this.items;
                 _this.toolbarObj.dataBind();

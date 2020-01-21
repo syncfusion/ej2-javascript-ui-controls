@@ -1377,6 +1377,7 @@ let MenuBase = class MenuBase extends Component {
                 this.trigger('beforeClose', beforeCloseArgs, (observedCloseArgs) => {
                     let popupEle;
                     let closeArgs;
+                    let popupId = '';
                     let popupObj;
                     let isOpen = !observedCloseArgs.cancel;
                     if (isOpen || this.isCMenu) {
@@ -1389,6 +1390,7 @@ let MenuBase = class MenuBase extends Component {
                             this.destroyScrollObj(getInstance(popupEle.children[0], VScroll), popupEle.children[0]);
                             popupObj = getInstance(popupEle, Popup);
                             popupObj.hide();
+                            popupId = popupEle.id;
                             popupObj.destroy();
                             detach(popupEle);
                         }
@@ -1399,16 +1401,32 @@ let MenuBase = class MenuBase extends Component {
                         this.trigger('onClose', closeArgs);
                         this.navIdx.pop();
                     }
+                    let trgtliId;
+                    let closedLi;
+                    let trgtLi;
+                    let trgtpopUp = this.getWrapper() && this.getUlByNavIdx();
+                    let liElem = e && e.target && this.getLI(e.target);
                     if (this.isCMenu) {
                         if (this.canOpen(e.target)) {
                             this.openMenu(null, null, this.pageY, this.pageX, e);
                         }
                         this.isCMenu = false;
                     }
-                    else if (isOpen && this.hamburgerMode && ulIndex !== null) {
+                    if (this.isMenu && trgtpopUp && popupId.length) {
+                        trgtliId = new RegExp('(.*)-ej2menu-' + this.element.id + '-popup').exec(popupId)[1];
+                        closedLi = trgtpopUp.querySelector('#' + trgtliId);
+                        trgtLi = (liElem && trgtpopUp.querySelector('#' + liElem.id));
+                    }
+                    if (isOpen && this.hamburgerMode && ulIndex) {
                         this.afterCloseMenu(e);
                     }
-                    else if (isOpen && !ulIndex && this.navIdx.length) {
+                    else if (isOpen && !this.hamburgerMode && this.navIdx.length && closedLi && !trgtLi) {
+                        this.closeMenu(this.navIdx[this.navIdx.length - 1], e);
+                    }
+                    else if (isOpen && !ulIndex && ((this.hamburgerMode && this.navIdx.length) || this.navIdx.length === 1)) {
+                        this.closeMenu(null, e);
+                    }
+                    else if (isOpen && isNullOrUndefined(ulIndex) && this.navIdx.length) {
                         this.closeMenu(null, e);
                     }
                     else if (isOpen && !this.isMenu && !ulIndex && this.navIdx.length === 0 && !this.isMenusClosed) {
@@ -1549,7 +1567,9 @@ let MenuBase = class MenuBase extends Component {
             let menuIconElem = ul.querySelector('.e-menu-icon');
             let menuIconElemStyle = getComputedStyle(menuIconElem);
             let blankIconIndent = (parseInt(menuIconElemStyle.marginRight, 10) + menuIconElem.offsetWidth + liIndent);
-            blankIconElem.forEach((element) => element.style.textIndent = blankIconIndent + 'px');
+            for (let i = 0; i < blankIconElem.length; i++) {
+                blankIconElem[i].style.textIndent = blankIconIndent + 'px';
+            }
         }
     }
     generatePopup(popupWrapper, ul, li, isNestedOrVertical) {

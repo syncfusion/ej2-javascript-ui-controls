@@ -6605,6 +6605,12 @@ class Toolbar$1 {
             this.items = this.toolbarItemData(this.getItems(e.newProp.toolbarSettings.items.map((item) => item.trim())));
             let eventArgs = { items: this.items };
             this.parent.trigger('toolbarCreate', eventArgs, (toolbarCreateArgs) => {
+                if (this.buttonObj) {
+                    this.buttonObj.destroy();
+                }
+                if (this.layoutBtnObj) {
+                    this.layoutBtnObj.destroy();
+                }
                 this.items = toolbarCreateArgs.items;
                 this.toolbarObj.items = this.items;
                 this.toolbarObj.dataBind();

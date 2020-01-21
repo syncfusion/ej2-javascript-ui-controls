@@ -1,11 +1,11 @@
 import { ContextMenuType } from './enum';
-import { ContextMenuOpenEventArgs, ContextMenuClickEventArgs, RecordDoubleClickEventArgs } from '@syncfusion/ej2-grids';
+import { ContextMenuOpenEventArgs as GridContextMenuOpenEventArgs } from '@syncfusion/ej2-grids';
+import { ContextMenuClickEventArgs as GridContextMenuClickEventArgs } from '@syncfusion/ej2-grids';
+import { RecordDoubleClickEventArgs as GridRecordDoubleClickEventArgs } from '@syncfusion/ej2-grids';
 import { RowSelectingEventArgs as GridRowSelectingEventArgs } from '@syncfusion/ej2-grids';
 import { CellSelectingEventArgs as GridCellSelectingEventArgs } from '@syncfusion/ej2-grids';
 import { RowDeselectEventArgs as GridRowDeselectEventArgs} from '@syncfusion/ej2-grids';
 import { RowSelectEventArgs as GridRowSelectEventArgs, RowDataBoundEventArgs as GridRowDataBoundEventArgs } from '@syncfusion/ej2-grids';
-import { Gantt } from '../base/gantt';
-import { IGanttData, IValidateMode } from '../base/interface';
 import { Column } from '../models/column';
 import { TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { TimelineViewMode } from '../base/enum';
@@ -418,7 +418,7 @@ export interface ICollapsingEventArgs {
     cancel?: boolean;
 
 }
-export interface ContextMenuOpenEventArgs extends ContextMenuOpenEventArgs {
+export interface ContextMenuOpenEventArgs extends GridContextMenuOpenEventArgs {
     /** Defines the TreeGrid row element */
     gridRow?: Element;
     /** Defines the chart row element */
@@ -441,7 +441,7 @@ export interface ContextMenuOpenEventArgs extends ContextMenuOpenEventArgs {
     left?: number;
 }
 
-export interface ContextMenuClickEventArgs extends ContextMenuClickEventArgs {
+export interface ContextMenuClickEventArgs extends GridContextMenuClickEventArgs {
     /** Defines the selected row record */
     rowData?: IGanttData;
     /** Defines the context menu type */
@@ -641,7 +641,7 @@ export interface ITaskbarClickEventArgs {
     target?: Element;
 }
 
-export interface RecordDoubleClickEventArgs extends RecordDoubleClickEventArgs {
+export interface RecordDoubleClickEventArgs extends GridRecordDoubleClickEventArgs {
     /** Defines the row element. */
     row?: Element;
     /** Defines the data of record. */

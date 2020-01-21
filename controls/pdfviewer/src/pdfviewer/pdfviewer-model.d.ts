@@ -1122,6 +1122,11 @@ export interface PdfViewerModel extends ComponentModel{
     documentPath?: string;
 
     /**
+     * Gets or sets the download file name in the PdfViewer control.
+     */
+    downloadFileName?: string;
+
+    /**
      * Defines the scrollable height of the PdfViewer control.
      * @default 'auto'
      */

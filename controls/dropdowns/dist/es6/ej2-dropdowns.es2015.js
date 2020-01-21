@@ -6646,7 +6646,9 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         if (!this.value) {
             this.value = [];
         }
-        this.setProperties({ value: [].concat([], this.value, [value]) }, true);
+        if (this.value.indexOf(value) < 0) {
+            this.setProperties({ value: [].concat([], this.value, [value]) }, true);
+        }
         let element = this.findListElement(this.list, 'li', 'data-value', value);
         this.removeFocus();
         if (element) {
@@ -9039,8 +9041,8 @@ class CheckBoxSelection {
             if (!Browser.isIE) {
                 target = !isNullOrUndefined(e) && e.relatedTarget;
             }
-            if (document.body.contains(this.parent.popupObj.element) && this.parent.popupObj.element.contains(target) && !Browser.isIE
-                && this.filterInput) {
+            if (this.parent.popupObj && document.body.contains(this.parent.popupObj.element) && this.parent.popupObj.element.contains(target)
+                && !Browser.isIE && this.filterInput) {
                 this.filterInput.focus();
                 return;
             }
@@ -9050,19 +9052,20 @@ class CheckBoxSelection {
                 this.parent.scrollFocusStatus = false;
                 return;
             }
-            if (document.body.contains(this.parent.popupObj.element) && !this.parent.popupObj.element.classList.contains('e-popup-close')) {
+            if (this.parent.popupObj && document.body.contains(this.parent.popupObj.element)
+                && !this.parent.popupObj.element.classList.contains('e-popup-close')) {
                 this.parent.inputFocus = false;
                 this.parent.updateValueState(e, this.parent.value, this.parent.tempValues);
                 this.parent.dispatchEvent(this.parent.hiddenElement, 'change');
             }
-            if (document.body.contains(this.parent.popupObj.element) &&
+            if (this.parent.popupObj && document.body.contains(this.parent.popupObj.element) &&
                 !this.parent.popupObj.element.classList.contains('e-popup-close')) {
                 this.parent.inputFocus = false;
                 this.parent.overAllWrapper.classList.remove(FOCUS$1);
                 this.parent.trigger('blur');
                 this.parent.focused = true;
             }
-            if (document.body.contains(this.parent.popupObj.element) &&
+            if (this.parent.popupObj && document.body.contains(this.parent.popupObj.element) &&
                 !this.parent.popupObj.element.classList.contains('e-popup-close') && !Browser.isDevice) {
                 this.parent.hidePopup();
             }
@@ -9509,7 +9512,11 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
         else {
             args.items = this.getDataByValues([dragValue]);
         }
-        this.trigger('beforeDrop', args);
+        let callBackPromise = new Deferred();
+        this.trigger('beforeDrop', args, (observedArgs) => {
+            callBackPromise.resolve(observedArgs);
+        });
+        return callBackPromise;
     }
     // tslint:disable-next-line:max-func-body-length
     dragEnd(args) {
@@ -9538,13 +9545,14 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
             liColl = [].slice.call(this.liCollections);
             jsonData = [].slice.call(this.jsonData);
             sortedData = [].slice.call(this.sortedData);
+            let toSortIdx = args.currentIndex;
             let toIdx = args.currentIndex = this.getCurIdx(this, args.currentIndex);
             let rIdx = listData.indexOf(this.getDataByValue(dropValue));
             let jsonIdx = jsonData.indexOf(this.getDataByValue(dropValue));
             let sIdx = sortedData.indexOf(this.getDataByValue(dropValue));
             listData.splice(toIdx, 0, listData.splice(rIdx, 1)[0]);
             jsonData.splice(toIdx, 0, jsonData.splice(jsonIdx, 1)[0]);
-            sortedData.splice(toIdx, 0, sortedData.splice(sIdx, 1)[0]);
+            sortedData.splice(toSortIdx, 0, sortedData.splice(sIdx, 1)[0]);
             liColl.splice(toIdx, 0, liColl.splice(rIdx, 1)[0]);
             if (this.allowDragAll) {
                 selectedOptions = this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 ? this.value : [dropValue];
@@ -9558,7 +9566,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
                         }
                         listData.splice(toIdx, 0, listData.splice(idx, 1)[0]);
                         jsonData.splice(toIdx, 0, jsonData.splice(jsonIdx, 1)[0]);
-                        sortedData.splice(toIdx, 0, sortedData.splice(sIdx, 1)[0]);
+                        sortedData.splice(toSortIdx, 0, sortedData.splice(sIdx, 1)[0]);
                         liColl.splice(toIdx, 0, liColl.splice(idx, 1)[0]);
                         ul.insertBefore(this.getItems()[this.getIndexByValue(value)], ul.getElementsByClassName('e-placeholder')[0]);
                     }
@@ -9584,8 +9592,10 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
                 droppedData = this.getDataByValue(value);
                 let srcIdx = this.listData.indexOf(droppedData);
                 let jsonSrcIdx = this.jsonData.indexOf(droppedData);
+                let sortIdx = this.sortedData.indexOf(droppedData);
                 this.listData.splice(srcIdx, 1);
                 this.jsonData.splice(jsonSrcIdx, 1);
+                this.sortedData.splice(sortIdx, 1);
                 let rLi = fLiColl.splice(srcIdx, 1)[0];
                 let destIdx = value === dropValue ? args.currentIndex : currIdx;
                 listData.splice(destIdx, 0, droppedData);
@@ -9627,7 +9637,6 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
             listObj.liCollections = liColl;
             listObj.jsonData = extend([], [], jsonData, false);
             listObj.listData = extend([], [], listData, false);
-            listObj.sortedData = extend([], [], sortedData, false);
             if (this.listData.length === 0) {
                 this.l10nUpdate();
             }
@@ -9851,6 +9860,25 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
      */
     getDataList() {
         return this.jsonData;
+    }
+    /**
+     * Returns the sorted Data in ListBox
+     * @returns {{ [key: string]: Object }[] | string[] | boolean[] | number[]}
+     */
+    getSortedList() {
+        let sortData;
+        let tempData;
+        sortData = tempData = this.sortedData;
+        if (this.fields.groupBy) {
+            sortData = [];
+            for (let i = 0; i < tempData.length; i++) {
+                if (tempData[i].isHeader) {
+                    continue;
+                }
+                sortData.push(tempData[i]);
+            }
+        }
+        return sortData;
     }
     getElemByValue(value) {
         let elem = [];
@@ -10174,9 +10202,10 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
             return;
         }
         (isUp ? elems : elems.reverse()).forEach((ele) => {
+            let jsonToIdx = Array.prototype.indexOf.call(this.ulElement.querySelectorAll('.e-list-item'), ele);
             let idx = Array.prototype.indexOf.call(this.ulElement.children, ele);
             moveTo(this.ulElement, this.ulElement, [idx], isUp ? idx - 1 : idx + 2);
-            this.changeData(idx, isUp ? idx - 1 : idx + 1, ele);
+            this.changeData(idx, isUp ? idx - 1 : idx + 1, isUp ? jsonToIdx - 1 : jsonToIdx + 1, ele);
         });
         elems[0].focus();
         if (!isKey && this.toolbarSettings.items.length) {
@@ -10236,7 +10265,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
                 });
             }
             else {
-                jsonIdx.forEach((i) => {
+                jsonIdx.reverse().forEach((i) => {
                     tempItems.push(fListBox.jsonData[i]);
                 });
             }
@@ -10375,17 +10404,21 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
             fListBox.l10nUpdate();
         }
     }
-    changeData(fromIdx, toIdx, ele) {
+    changeData(fromIdx, toIdx, jsonToIdx, ele) {
         let listData = [].slice.call(this.listData);
         let jsonData = [].slice.call(this.jsonData);
+        let sortData = [].slice.call(this.sortedData);
         let jsonIdx = Array.prototype.indexOf.call(this.jsonData, this.getDataByElems([ele])[0]);
+        let sortIdx = Array.prototype.indexOf.call(this.sortedData, this.getDataByElems([ele])[0]);
         let liColl = [].slice.call(this.liCollections);
         listData.splice(toIdx, 0, listData.splice(fromIdx, 1)[0]);
-        jsonData.splice(toIdx, 0, jsonData.splice(jsonIdx, 1)[0]);
+        jsonData.splice(jsonToIdx, 0, jsonData.splice(jsonIdx, 1)[0]);
+        sortData.splice(toIdx, 0, sortData.splice(sortIdx, 1)[0]);
         liColl.splice(toIdx, 0, liColl.splice(fromIdx, 1)[0]);
         this.listData = listData;
         this.jsonData = jsonData;
         this.liCollections = liColl;
+        this.sortedData = sortData;
     }
     getSelectedItems() {
         let ele = [];
@@ -10604,7 +10637,20 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
             }
         });
         if (this.mainList.childElementCount === this.ulElement.childElementCount) {
-            this.setProperties({ value: selectedOptions }, true);
+            if (this.allowFiltering) {
+                for (let i = 0; i < selectedOptions.length; i++) {
+                    if (values.indexOf(selectedOptions[i]) > -1) {
+                        continue;
+                    }
+                    else {
+                        values.push(selectedOptions[i]);
+                    }
+                }
+                this.setProperties({ value: values }, true);
+            }
+            else {
+                this.setProperties({ value: selectedOptions }, true);
+            }
         }
         this.updateSelectTag();
         this.updateToolBarState();
@@ -11025,6 +11071,28 @@ __decorate$5([
 ListBox = ListBox_1 = __decorate$5([
     NotifyPropertyChanges
 ], ListBox);
+/**
+ * Deferred is used to handle asynchronous operation.
+ */
+class Deferred {
+    constructor() {
+        /**
+         * Promise is an object that represents a value that may not be available yet, but will be resolved at some point in the future.
+         */
+        this.promise = new Promise((resolve, reject) => {
+            this.resolve = resolve;
+            this.reject = reject;
+        });
+        /**
+         * Defines the callback function triggers when the Deferred object is resolved.
+         */
+        this.then = this.promise.then.bind(this.promise);
+        /**
+         * Defines the callback function triggers when the Deferred object is rejected.
+         */
+        this.catch = this.promise.catch.bind(this.promise);
+    }
+}
 
 /**
  * export all modules from current location

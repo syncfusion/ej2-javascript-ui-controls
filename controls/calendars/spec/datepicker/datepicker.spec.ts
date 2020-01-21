@@ -1862,6 +1862,30 @@ describe('Datepicker', () => {
             expect(datepicker.changedArgs.isInteracted).toBe(true);
         });
     });
+    describe('Change the same value with interaction and without interaction', () => {
+        let datepicker: any;
+        beforeEach(() => {
+            let ele: HTMLElement = createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+            datepicker = new DatePicker({ value: new Date("12/12/2016") });
+            datepicker.appendTo('#date');
+        });
+        afterEach(() => {
+            if (datepicker) {
+                datepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Key events enter after changing value', () => {
+            datepicker.todayElement.click();
+            expect(datepicker.changedArgs.isInteracted).toBe(true);
+            datepicker.value = new Date();
+            datepicker.dataBind();
+            datepicker.inputElement.value = '5/5/2020';
+            datepicker.inputBlurHandler();
+            expect(datepicker.changedArgs.isInteracted).toBe(true);
+        });
+    });
     describe('clear button related testing', () => {
         let mouseEventArgs: any = { preventDefault: function () { }, target: null };
         let date: DatePicker;

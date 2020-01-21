@@ -123,15 +123,21 @@ describe('FileManager control LargeIcons view', () => {
             expect(feObj.element.querySelectorAll('.e-toolbar-item').length).toEqual(0);
             feObj.toolbarSettings = { visible: true };
             feObj.dataBind();
-            // expect(document.getElementById('file_toolbar').classList.contains('e-toolbar')).toEqual(true);
+            expect(document.querySelectorAll('#file_tb_sortby-popup').length).toBe(1)
+            expect(document.querySelectorAll('#file_tb_view-popup').length).toBe(1)
+            expect(document.getElementById('file_toolbar').classList.contains('e-toolbar')).toEqual(true);
             // expect(feObj.element.querySelectorAll('.e-toolbar-item').length).toEqual(toolbarItems.length);
             feObj.toolbarSettings = { items: toolbarItems1 };
             feObj.dataBind();
+            expect(document.querySelectorAll('#file_tb_sortby-popup').length).toBe(0)
+            expect(document.querySelectorAll('#file_tb_view-popup').length).toBe(0)
             expect(document.getElementById('file_toolbar').classList.contains('e-toolbar')).toEqual(true);
             expect(feObj.element.querySelectorAll('.e-toolbar-item').length).toEqual(toolbarItems1.length);
             expect(feObj.element.querySelectorAll('.e-toolbar-item').length).toEqual(13);
             feObj.toolbarSettings = { items: toolbarItems };
             feObj.dataBind();
+            expect(document.querySelectorAll('#file_tb_sortby-popup').length).toBe(1)
+            expect(document.querySelectorAll('#file_tb_view-popup').length).toBe(1)
             expect(document.getElementById('file_toolbar').classList.contains('e-toolbar')).toEqual(true);
             expect(feObj.element.querySelectorAll('.e-toolbar-item').length).toEqual(toolbarItems.length);
             expect(feObj.element.querySelectorAll('.e-toolbar-item').length).toEqual(14);

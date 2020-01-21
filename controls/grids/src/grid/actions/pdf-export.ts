@@ -23,7 +23,8 @@ import { DataManager, Query, Group } from '@syncfusion/ej2-data';
 import { getValue } from '@syncfusion/ej2-base';
 import { Grid } from '../base/grid';
 import { Cell } from '../models/cell';
-import { getUid, getPrintGridModel } from '../base/util';
+import { getUid, getPrintGridModel, measureColumnDepth } from '../base/util';
+import { ColumnModel } from '../models/models';
 
 /**
  * `PDF Export` module is used to handle the exportToPDF action.
@@ -385,70 +386,70 @@ export class PdfExport {
             });
         }
     }
-    private processGridHeaders(childLevels: number, pdfGrid: PdfGrid, rows: Row<Column>[], gridColumn: Column[],
-                               border: PdfBorders, headerFont: PdfFont, headerBrush: PdfSolidBrush, grid: IGrid,
+    private processGridHeaders(childLevels: number, pdfGrid: PdfGrid, rows: Row<Column>[],
+                               gridColumn: Column[], border: PdfBorders, headerFont: PdfFont, headerBrush: PdfSolidBrush, grid: IGrid,
                                allowHorizontalOverflow: boolean): PdfGrid {
         let columnCount: number = gridColumn.length + childLevels;
-        // add columns
+        let depth: number = measureColumnDepth(grid.columns as Column[]);
+        let cols: Column[] | string[] | ColumnModel[] = grid.columns;
         pdfGrid.columns.add(columnCount);
-        // add header
         pdfGrid.headers.add(rows.length);
-        // set cell values of each rows in the header
-        for (let i: number = 0; i < rows.length; i++) {
-            let gridHeader: PdfGridRow = pdfGrid.headers.getHeader(i);
+        let applyTextAndSpan: Function = (rowIdx: number, colIdx: number, col: Column, rowSpan: number, colSpan: number) => {
+            let gridHeader: PdfGridRow = pdfGrid.headers.getHeader(rowIdx);
+            let pdfCell: PdfGridCell = gridHeader.cells.getCell(colIdx);
+            let cell: Cell<Column> = rows[rowIdx].cells[colIdx];
+            if (!isNullOrUndefined((col as Column).headerTextAlign)) {
+                pdfCell.style.stringFormat = this.getHorizontalAlignment(col.headerTextAlign);
+            }
+            if (rowSpan > 0) {
+                pdfCell.rowSpan = rowSpan;
+                pdfCell.style.stringFormat = this.getVerticalAlignment('Bottom', pdfCell.style.stringFormat, col.textAlign);
+            }
+            if (colSpan > 0) {
+                pdfCell.columnSpan = colSpan;
+            }
             gridHeader.style.setBorder(border);
             gridHeader.style.setFont(headerFont);
             gridHeader.style.setTextBrush(headerBrush);
-            let colSpan: number = 0;
-            let cellLength: number = rows[i].cells.length;
-            for (let j: number = 0; j < cellLength; j++) {
-                let cell: Cell<Column> = rows[i].cells[j];
-                let pdfCell: PdfGridCell = gridHeader.cells.getCell(j + colSpan);
-                switch (cell.cellType) {
-                    case CellType.HeaderIndent:
-                    case CellType.DetailHeader:
-                        pdfCell.value = '';
-                        pdfCell.width = 20;
-                    break;
-                    case CellType.Header:
-                    case CellType.StackedHeader:
-                        if (pdfCell.value !== null ) {
-                            if (!isNullOrUndefined(cell.column.headerTextAlign)) {
-                                pdfCell.style.stringFormat = this.getHorizontalAlignment(cell.column.headerTextAlign);
-                            }
-                            if (!isNullOrUndefined(cell.rowSpan)) {
-                                pdfCell.rowSpan = cell.rowSpan;
-                                pdfCell.style.stringFormat = this.getVerticalAlignment
-                                ('Bottom', pdfCell.style.stringFormat, cell.column.textAlign);
-                                for (let k: number = 1; k < rows[i].cells[j].rowSpan; k++) {
-                                    pdfGrid.headers.getHeader(i + k).cells.getCell(j).value = null;
-                                }
-                            }
-                            if (!isNullOrUndefined(cell.colSpan)) {
-                                pdfCell.columnSpan = cell.colSpan;
-                                colSpan += cell.colSpan - 1;
-                            }
-                            pdfCell.value = cell.column.headerText;
-                            let args: Object = {
-                                cell: pdfCell,
-                                gridCell: cell,
-                                style: pdfCell.style
-                            };
-                            this.parent.trigger(events.pdfHeaderQueryCellInfo, args);
-                        } else {
-                            colSpan += pdfCell.columnSpan;
-                            j = j - 1;
-                        }
-                    break;
+            pdfCell.value = col.headerText;
+            if (!isNullOrUndefined(cell) && (cell.cellType === CellType.HeaderIndent || cell.cellType === CellType.DetailHeader)) {
+                pdfCell.value = '';
+                pdfCell.width = 20;
+            }
+            let args: Object = {
+                cell: pdfCell,
+                gridCell: cell,
+                style: pdfCell.style
+            };
+            this.parent.trigger(events.pdfHeaderQueryCellInfo, args);
+        };
+        let recuHeader: Function = (cols: Column[], depth: number, spanCnt: number, colIndex: number,
+            rowIndex: number, isRoot: boolean) => {
+            let cidx: number = 0;
+            for (let i: number = 0; i < cols.length; i++) {
+                if (isRoot) {
+                    cidx = cidx + spanCnt + (i === 0 ? 0 : -1);
+                    colIndex = cidx;
+                    spanCnt = 0;
+                }
+                if ((cols[i] as Column).columns && (cols[i] as Column).columns.length) {
+                    let newSpanCnt: number = recuHeader((cols[i] as Column).columns, depth - 1, 0, i + colIndex, rowIndex + 1, false);
+                    applyTextAndSpan(rowIndex, i + colIndex, cols[i] as Column, 0, newSpanCnt);
+                    spanCnt = spanCnt + newSpanCnt;
+                    colIndex = colIndex + newSpanCnt - 1;
+                } else if (cols[i].visible) {
+                    spanCnt++;
+                    applyTextAndSpan(rowIndex, i + colIndex, cols[i] as Column, depth, 0);
                 }
             }
-        }
+            return spanCnt;
+        };
+        recuHeader(cols, depth, 0, 0, 0, true);
         if (pdfGrid.columns.count >= 6 && allowHorizontalOverflow) {
             pdfGrid.style.allowHorizontalOverflow = true;
         }
         return pdfGrid;
     }
-
     private processExportProperties(pdfExportProperties: PdfExportProperties, dataSource: Object[]): Object[] {
         if (!isNullOrUndefined(pdfExportProperties)) {
             if (!isNullOrUndefined(pdfExportProperties.theme)) {
@@ -725,7 +726,7 @@ export class PdfExport {
                     /* tslint:disable-next-line:max-line-length */
                     if (!isNullOrUndefined(cell.column.footerTemplate) || !isNullOrUndefined(cell.column.groupCaptionTemplate) || !isNullOrUndefined(cell.column.groupFooterTemplate)) {
                         /* tslint:disable-next-line:no-any */
-                        let result: any = this.getTemplateFunction(templateFn, i, leastCaptionSummaryIndex, cell.column);
+                        let result: any = this.getTemplateFunction(templateFn, i, leastCaptionSummaryIndex, cell);
                         templateFn = result.templateFunction;
                         leastCaptionSummaryIndex = result.leastCaptionSummaryIndex;
                         /* tslint:disable-next-line:max-line-length */
@@ -771,16 +772,16 @@ export class PdfExport {
         }
     }
     /* tslint:disable-next-line:no-any */
-    private getTemplateFunction(templateFn: any, index: number, leastCaptionSummaryIndex: number, column: any): any {
-        if (!isNullOrUndefined(column.footerTemplate)) {
-            templateFn[getEnumValue(CellType, CellType.Summary)] = compile(column.footerTemplate);
-        } else if (!isNullOrUndefined(column.groupCaptionTemplate)) {
+    private getTemplateFunction(templateFn: any, index: number, leastCaptionSummaryIndex: number, cell: any): any {
+        if (!isNullOrUndefined(cell.column.footerTemplate) &&  cell.cellType === CellType.Summary) {
+            templateFn[getEnumValue(CellType, CellType.Summary)] = compile(cell.column.footerTemplate);
+        } else if (!isNullOrUndefined(cell.column.groupCaptionTemplate)) {
             if (leastCaptionSummaryIndex === -1) {
                 leastCaptionSummaryIndex = index;
             }
-            templateFn[getEnumValue(CellType, CellType.CaptionSummary)] = compile(column.groupCaptionTemplate);
+            templateFn[getEnumValue(CellType, CellType.CaptionSummary)] = compile(cell.column.groupCaptionTemplate);
         } else {
-            templateFn[getEnumValue(CellType, CellType.GroupSummary)] = compile(column.groupFooterTemplate);
+            templateFn[getEnumValue(CellType, CellType.GroupSummary)] = compile(cell.column.groupFooterTemplate);
         }
         return { templateFunction: templateFn, leastCaptionSummaryIndex: leastCaptionSummaryIndex };
     }

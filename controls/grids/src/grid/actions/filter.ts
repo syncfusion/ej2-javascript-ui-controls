@@ -45,7 +45,7 @@ export class Filter implements IAction {
     private cellText: Object = {};
     private nextFlMenuOpen: string = '';
     private type: Object = { 'Menu': FilterMenuRenderer, 'CheckBox': CheckBoxFilter, 'Excel': ExcelFilter };
-    private filterModule: { openDialog: Function, closeDialog: Function, destroy: Function };
+    private filterModule: { openDialog: Function, closeDialog: Function, destroy: Function, isresetFocus: boolean };
     /** @hidden */
     public filterOperators: IFilterOperator = {
         contains: 'contains', endsWith: 'endswith', equal: 'equal', greaterThan: 'greaterthan', greaterThanOrEqual: 'greaterthanorequal',
@@ -408,7 +408,7 @@ export class Filter implements IAction {
                     if (this.contentRefresh) {
                         this.parent.notify(events.modelChanged, {
                             currentFilterObject: this.currentFilterObject, currentFilteringColumn: this.column ?
-                                this.column.field : undefined,
+                                this.column.field : undefined, action: 'filter',
                             columns: this.filterSettings.columns, requestType: 'filtering', type: events.actionBegin, cancel: false
                         });
                         this.refreshFilterSettings();
@@ -620,7 +620,7 @@ export class Filter implements IAction {
                 if (this.refresh) {
                     this.parent.notify(events.modelChanged, {
                         requestType: 'filtering', type: events.actionBegin, currentFilterObject: cloneActualPredicate,
-                        currentFilterColumn: column
+                        currentFilterColumn: column, action: 'clearFilter'
                     });
                 }
                 break;
@@ -982,6 +982,8 @@ export class Filter implements IAction {
                 && (!closest(target, '.e-filter-item.e-menu-item'))) && !datepickerEle) {
                 if ((hasDialog && (!parentsUntil(target, 'e-filter-popup'))
                     && (!parentsUntil(target, 'e-popup-flmenu'))) || (!popupEle)) {
+                    this.filterModule.isresetFocus = parentsUntil(target, 'e-grid') &&
+                    parentsUntil(target, 'e-grid').id === this.parent.element.id;
                     this.filterModule.closeDialog(target);
                 }
             }

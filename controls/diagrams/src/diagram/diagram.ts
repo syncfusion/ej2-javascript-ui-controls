@@ -4300,10 +4300,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Automatically updates the diagram objects based on the type of the layout
      */
     public doLayout(): ILayout | boolean {
-        let update: boolean = false;
-        let layout: ILayout;
-        let propChange: boolean = this.isProtectedOnChange;
-        this.protectPropertyChange(true);
+        let update: boolean = false; let layout: ILayout;
+        let propChange: boolean = this.isProtectedOnChange; this.protectPropertyChange(true);
         let nodes: INode[] = this.removeChildrenFromLayout(this.nodes as INode[]);
         let viewPort: PointModel = { x: this.scroller.viewPortWidth, y: this.scroller.viewPortHeight };
         if (this.layout.type !== 'None') {
@@ -4396,6 +4394,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (!propChange) {
                 this.protectPropertyChange(propChange);
             }
+        }
+        if (update && !this.diagramActions) {
+            this.updateDiagramElementQuad();
         }
         return ((this.blazorActions & BlazorAction.expandNode) ? layout : true);
     }

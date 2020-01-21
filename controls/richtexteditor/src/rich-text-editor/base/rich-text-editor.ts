@@ -12,7 +12,7 @@ import { ViewSource } from '../renderer/view-source';
 import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs} from './interface';
 import { BeforeQuickToolbarOpenArgs } from './interface';
 import { IExecutionGroup, executeGroup, CommandName, ResizeArgs, QuickToolbarEventArgs } from './interface';
-import { ILinkCommandsArgs, IImageCommandsArgs, BeforeSanitizeHtmlArgs } from './interface';
+import { ILinkCommandsArgs, IImageCommandsArgs, BeforeSanitizeHtmlArgs, ITableCommandsArgs } from './interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { RenderType, ToolbarType } from './enum';
@@ -1233,7 +1233,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @public
      */
     public executeCommand(
-        commandName: CommandName, value?: string | HTMLElement | ILinkCommandsArgs | IImageCommandsArgs): void {
+        commandName: CommandName, value?: string | HTMLElement | ILinkCommandsArgs |
+        IImageCommandsArgs | ITableCommandsArgs): void {
         value = this.htmlPurifier(commandName, value);
         if (this.editorMode === 'HTML') {
             let range: Range = this.getRange();
@@ -1259,7 +1260,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private htmlPurifier(
-        command: CommandName, value?: string | HTMLElement | ILinkCommandsArgs | IImageCommandsArgs): string {
+        command: CommandName, value?: string | HTMLElement | ILinkCommandsArgs |
+        IImageCommandsArgs | ITableCommandsArgs): string {
         if (this.editorMode === 'HTML') {
             switch (command) {
                 case 'insertHTML':
@@ -1268,6 +1270,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     } else {
                         value = this.htmlEditorModule.sanitizeHelper((value as HTMLElement).outerHTML);
                     }
+                    break;
+                case 'insertTable':
+                    (value as { [key: string]: object }).width = { minWidth: this.tableSettings.minWidth,
+                    maxWidth: this.tableSettings.maxWidth, width: this.tableSettings.width };
                     break;
                 case 'insertImage':
                     let temp: HTMLElement = this.createElement('img', {

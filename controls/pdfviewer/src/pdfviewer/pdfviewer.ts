@@ -1353,7 +1353,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Gets or sets the download file name in the PdfViewer control.
      */
-    public downloadFileName: string = null;
+    @Property()
+    public downloadFileName: string;
 
     /**
      * Defines the scrollable height of the PdfViewer control.

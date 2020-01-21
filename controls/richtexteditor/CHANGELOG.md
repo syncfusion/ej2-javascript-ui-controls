@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.44 (2021-01-21)
+
+### RichTextEditor
+
+#### New Features
+
+- `#256724`, `#F149821` - Provided the support to insert a table using the `executeCommand` public method in the RichTextEditor.
+
 ## 17.4.43 (2020-01-14)
 
 ### RichTextEditor

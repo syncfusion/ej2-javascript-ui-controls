@@ -1906,6 +1906,7 @@ export class DatePicker extends Calendar implements IInput {
                             this.changeTrigger(null);
                         }
                     }
+                    this.isInteracted = true;
                     break;
                 case 'format':
                     this.checkFormat();

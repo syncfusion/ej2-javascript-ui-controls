@@ -116,7 +116,7 @@ export class FieldSettings extends ChildProperty<FieldSettings> {
     public iconCss: string;
     /**
      * This property used for nested navigation of list-items.
-     * Refer the documentation [here](./listview/nested-list)
+     * Refer the documentation [here](../../listview/nested-list)
      *  to know more about this property with demo.
      */
     @Property('child')
@@ -129,7 +129,7 @@ export class FieldSettings extends ChildProperty<FieldSettings> {
 
     /**
      * It wraps the list view element into a group based on the value of groupBy property.
-     * Refer the documentation [here](./listview/grouping)
+     * Refer the documentation [here](../../listview/grouping)
      *  to know more about this property with demo.
      */
     @Property('groupBy')
@@ -374,7 +374,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * The ListView supports to customize the content of each list items with the help of template property.
-     * Refer the documentation [here](./listview/customizing-templates)
+     * Refer the documentation [here](../../listview/customizing-templates)
      *  to know more about this property with demo.
      *
      * {% codeBlock src="listview/template-api/index.ts" %}{% endcodeBlock %}
@@ -1701,7 +1701,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * It is used to get the currently [here](./api-selectedItem)
+     * It is used to get the currently [here](./selectedItem)
      *  item details from the list items.
      * @blazorType ListSelectedItem<TValue>
      */

@@ -670,6 +670,8 @@ let Splitter = class Splitter extends Component {
         arrow2.setAttribute('tabindex', '-1');
         arrow1.setAttribute('aria-label', 'Toggle navigation');
         arrow2.setAttribute('aria-label', 'Toggle navigation');
+        arrow1.setAttribute('type', 'button');
+        arrow2.setAttribute('type', 'button');
         let size;
         let proxy;
         size = isNullOrUndefined(this.separatorSize) ? '1px' : this.separatorSize + 'px';
@@ -4408,15 +4410,12 @@ let DashboardLayout = class DashboardLayout extends Component {
             this.dragCollection[i].destroy();
         }
         this.removeAllPanel();
-        if (this.table) {
-            this.table.remove();
-        }
         super.destroy();
     }
     removeAllPanel() {
-        this.panelCollection.forEach((item) => {
-            item.remove();
-        });
+        while (this.element.firstElementChild) {
+            detach(this.element.firstElementChild);
+        }
     }
     setEnableRtl() {
         this.enableRtl ? addClass([this.element], 'e-rtl') : removeClass([this.element], 'e-rtl');

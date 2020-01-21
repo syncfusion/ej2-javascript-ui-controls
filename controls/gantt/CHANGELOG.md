@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 17.4.43 (2020-01-14)
+## 17.4.44 (2021-01-21)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#260331` - Typescript declaration issue fixed.
+
+## 17.4.41 (2020-01-07)
 
 ### Gantt
 

@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 17.4.44 (2021-01-21)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- Resolved the script error while destroying the dashboard layout component in IE11 browser.
+
+### Splitter
+
+#### Bug Fixes
+
+- `#I261044` - Issue with expand and collapse icons button type has been resolved.
+
 ## 17.4.43 (2020-01-14)
 
 ### Splitter

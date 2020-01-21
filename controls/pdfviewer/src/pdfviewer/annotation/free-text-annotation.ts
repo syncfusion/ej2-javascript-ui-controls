@@ -859,7 +859,7 @@ export class FreeTextAnnotation {
                 }, annotName: annotation.AnnotName, shapeAnnotationType: 'FreeText',
                 // tslint:disable-next-line
                 pageIndex: pageNumber, opacity: annotation.Opacity, fontColor: annotation.FontColor, fontSize: annotation.FontSize,
-                fontFamily: annotation.FontFamily, notes: annotation.MarkupText,
+                fontFamily: annotation.FontFamily, notes: annotation.MarkupText, textAlign: annotation.TextAlign,
                 // tslint:disable-next-line
                 comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
                 font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline }

@@ -1456,6 +1456,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 this.trigger('beforeClose', beforeCloseArgs, function (observedCloseArgs) {
                     var popupEle;
                     var closeArgs;
+                    var popupId = '';
                     var popupObj;
                     var isOpen = !observedCloseArgs.cancel;
                     if (isOpen || _this.isCMenu) {
@@ -1468,6 +1469,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                             _this.destroyScrollObj(getInstance(popupEle.children[0], VScroll), popupEle.children[0]);
                             popupObj = getInstance(popupEle, Popup);
                             popupObj.hide();
+                            popupId = popupEle.id;
                             popupObj.destroy();
                             detach(popupEle);
                         }
@@ -1478,16 +1480,32 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                         _this.trigger('onClose', closeArgs);
                         _this.navIdx.pop();
                     }
+                    var trgtliId;
+                    var closedLi;
+                    var trgtLi;
+                    var trgtpopUp = _this.getWrapper() && _this.getUlByNavIdx();
+                    var liElem = e && e.target && _this.getLI(e.target);
                     if (_this.isCMenu) {
                         if (_this.canOpen(e.target)) {
                             _this.openMenu(null, null, _this.pageY, _this.pageX, e);
                         }
                         _this.isCMenu = false;
                     }
-                    else if (isOpen && _this.hamburgerMode && ulIndex !== null) {
+                    if (_this.isMenu && trgtpopUp && popupId.length) {
+                        trgtliId = new RegExp('(.*)-ej2menu-' + _this.element.id + '-popup').exec(popupId)[1];
+                        closedLi = trgtpopUp.querySelector('#' + trgtliId);
+                        trgtLi = (liElem && trgtpopUp.querySelector('#' + liElem.id));
+                    }
+                    if (isOpen && _this.hamburgerMode && ulIndex) {
                         _this.afterCloseMenu(e);
                     }
-                    else if (isOpen && !ulIndex && _this.navIdx.length) {
+                    else if (isOpen && !_this.hamburgerMode && _this.navIdx.length && closedLi && !trgtLi) {
+                        _this.closeMenu(_this.navIdx[_this.navIdx.length - 1], e);
+                    }
+                    else if (isOpen && !ulIndex && ((_this.hamburgerMode && _this.navIdx.length) || _this.navIdx.length === 1)) {
+                        _this.closeMenu(null, e);
+                    }
+                    else if (isOpen && isNullOrUndefined(ulIndex) && _this.navIdx.length) {
                         _this.closeMenu(null, e);
                     }
                     else if (isOpen && !_this.isMenu && !ulIndex && _this.navIdx.length === 0 && !_this.isMenusClosed) {
@@ -1632,8 +1650,10 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         if (blankIconElem && blankIconElem.length) {
             var menuIconElem = ul.querySelector('.e-menu-icon');
             var menuIconElemStyle = getComputedStyle(menuIconElem);
-            var blankIconIndent_1 = (parseInt(menuIconElemStyle.marginRight, 10) + menuIconElem.offsetWidth + liIndent);
-            blankIconElem.forEach(function (element) { return element.style.textIndent = blankIconIndent_1 + 'px'; });
+            var blankIconIndent = (parseInt(menuIconElemStyle.marginRight, 10) + menuIconElem.offsetWidth + liIndent);
+            for (var i = 0; i < blankIconElem.length; i++) {
+                blankIconElem[i].style.textIndent = blankIconIndent + 'px';
+            }
         }
     };
     MenuBase.prototype.generatePopup = function (popupWrapper, ul, li, isNestedOrVertical) {

@@ -2117,7 +2117,9 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (!this.value) {
             this.value = <string[]>[];
         }
-        this.setProperties({ value: <[number | string]>[].concat([], this.value, [value]) }, true);
+        if ((this.value as string[]).indexOf(value as string) < 0) {
+            this.setProperties({ value: <[number | string]>[].concat([], this.value, [value]) }, true);
+        }
         let element: HTMLElement = this.findListElement(this.list, 'li', 'data-value', value);
         this.removeFocus();
         if (element) {

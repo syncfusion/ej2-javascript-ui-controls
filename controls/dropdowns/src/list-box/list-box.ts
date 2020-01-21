@@ -7,7 +7,7 @@ import { EventHandler, closest, removeClass, addClass, Complex, Property, ChildP
 import { ModuleDeclaration, NotifyPropertyChanges, getComponent, EmitType, Event, extend, detach, attributes } from '@syncfusion/ej2-base';
 import { getUniqueID, Browser, formatUnit, isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
 import { prepend, append , isBlazor, BlazorDragEventArgs, resetBlazorTemplate} from '@syncfusion/ej2-base';
-import { cssClass, Sortable, moveTo, SortOrder, DropEventArgs } from '@syncfusion/ej2-lists';
+import { cssClass, Sortable, moveTo, SortOrder } from '@syncfusion/ej2-lists';
 import { SelectionSettingsModel, ListBoxModel, ToolbarSettingsModel } from './list-box-model';
 import { Button } from '@syncfusion/ej2-buttons';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
@@ -704,16 +704,21 @@ export class ListBox extends DropDownBase {
         }
     }
 
-    private beforeDragEnd(args: DropEventArgs): void {
+    private beforeDragEnd(args: DropEventArgs): void | Deferred {
         let dragValue: string = args.droppedElement.getAttribute('data-value');
         if ((this.value as string[]).indexOf(dragValue) > -1) {
             args.items = this.getDataByValues(this.value);
         } else {
             args.items = this.getDataByValues([dragValue]);
         }
-        this.trigger('beforeDrop', args);
+        let callBackPromise: Deferred = new Deferred();
+        this.trigger('beforeDrop', args, (observedArgs: DropEventArgs) => {
+            callBackPromise.resolve(observedArgs);
+        });
+        return callBackPromise;
     }
-   // tslint:disable-next-line:max-func-body-length
+
+    // tslint:disable-next-line:max-func-body-length
     private dragEnd(args: DropEventArgs): void {
         let listData: dataType[]; let liColl: HTMLElement[]; let jsonData: dataType[]; let droppedData: dataType;
         let selectedOptions: (string | boolean | number)[]; let sortedData: dataType[];
@@ -733,13 +738,14 @@ export class ListBox extends DropDownBase {
             let ul: Element = this.ulElement;
             listData = [].slice.call(this.listData); liColl = [].slice.call(this.liCollections);
             jsonData = [].slice.call(this.jsonData); sortedData = [].slice.call(this.sortedData);
+            let toSortIdx: number = args.currentIndex;
             let toIdx: number = args.currentIndex = this.getCurIdx(this, args.currentIndex);
             let rIdx: number = listData.indexOf(this.getDataByValue(dropValue));
             let jsonIdx: number = jsonData.indexOf(this.getDataByValue(dropValue));
             let sIdx: number = sortedData.indexOf(this.getDataByValue(dropValue));
             listData.splice(toIdx, 0, listData.splice(rIdx, 1)[0] as obj);
             jsonData.splice(toIdx, 0, jsonData.splice(jsonIdx, 1)[0] as obj);
-            sortedData.splice(toIdx, 0, sortedData.splice(sIdx, 1)[0] as obj);
+            sortedData.splice(toSortIdx, 0, sortedData.splice(sIdx, 1)[0] as obj);
             liColl.splice(toIdx, 0, liColl.splice(rIdx, 1)[0] as HTMLElement);
             if (this.allowDragAll) {
                 selectedOptions = this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 ? this.value : [dropValue];
@@ -753,7 +759,7 @@ export class ListBox extends DropDownBase {
                         }
                         listData.splice(toIdx, 0, listData.splice(idx, 1)[0] as obj);
                         jsonData.splice(toIdx, 0, jsonData.splice(jsonIdx, 1)[0] as obj);
-                        sortedData.splice(toIdx, 0, sortedData.splice(sIdx, 1)[0] as obj);
+                        sortedData.splice(toSortIdx, 0, sortedData.splice(sIdx, 1)[0] as obj);
                         liColl.splice(toIdx, 0, liColl.splice(idx, 1)[0] as HTMLElement);
                         ul.insertBefore(this.getItems()[this.getIndexByValue(value)], ul.getElementsByClassName('e-placeholder')[0]);
                     }
@@ -772,7 +778,9 @@ export class ListBox extends DropDownBase {
                 droppedData = this.getDataByValue(value);
                 let srcIdx: number = (this.listData as dataType[]).indexOf(droppedData);
                 let jsonSrcIdx: number = (this.jsonData as dataType[]).indexOf(droppedData);
+                let sortIdx: number = (this.sortedData as dataType[]).indexOf(droppedData);
                 this.listData.splice(srcIdx, 1); this.jsonData.splice(jsonSrcIdx, 1);
+                this.sortedData.splice(sortIdx, 1);
                 let rLi: HTMLElement = fLiColl.splice(srcIdx, 1)[0];
                 let destIdx: number = value === dropValue ? args.currentIndex : currIdx;
                 listData.splice(destIdx, 0, droppedData); jsonData.splice(destIdx, 0, droppedData);
@@ -809,7 +817,6 @@ export class ListBox extends DropDownBase {
             this.liCollections = fLiColl; listObj.liCollections = liColl;
             (listObj.jsonData as dataType[]) = extend([], [], jsonData, false) as dataType[];
             (listObj.listData as dataType[]) = extend([], [], listData, false) as dataType[];
-            (listObj.sortedData as dataType[]) = extend([], [], sortedData, false) as dataType[];
             if (this.listData.length === 0) {
                 this.l10nUpdate();
             }
@@ -1038,6 +1045,24 @@ export class ListBox extends DropDownBase {
      */
     public getDataList(): { [key: string]: Object }[] | string[] | boolean[] | number[] {
         return this.jsonData;
+    }
+    /**
+     * Returns the sorted Data in ListBox
+     * @returns {{ [key: string]: Object }[] | string[] | boolean[] | number[]}
+     */
+    public getSortedList(): { [key: string]: Object }[] | string[] | boolean[] | number[] {
+        let sortData: dataType[]; let tempData: { [key: string]: Object }[] | string[] | boolean[] | number[];
+        sortData = tempData = this.sortedData;
+        if (this.fields.groupBy) {
+            sortData = [];
+            for (let i: number = 0; i < tempData.length; i++) {
+                if ((tempData[i] as { [key: string]: Object }).isHeader) {
+                    continue;
+                }
+                sortData.push(tempData[i]);
+            }
+        }
+        return sortData as { [key: string]: Object }[] | string[] | boolean[] | number[];
     }
     private getElemByValue(value: string[] | number[] | boolean[]): Element[] {
         let elem: Element[] = [];
@@ -1369,9 +1394,10 @@ export class ListBox extends DropDownBase {
             return;
         }
         (isUp ? elems : elems.reverse()).forEach((ele: Element) => {
+            let jsonToIdx: number = Array.prototype.indexOf.call(this.ulElement.querySelectorAll('.e-list-item'), ele);
             let idx: number = Array.prototype.indexOf.call(this.ulElement.children, ele);
             moveTo(this.ulElement, this.ulElement, [idx], isUp ? idx - 1 : idx + 2);
-            this.changeData(idx, isUp ? idx - 1 : idx + 1, ele);
+            this.changeData(idx, isUp ? idx - 1 : idx + 1, isUp ? jsonToIdx - 1 : jsonToIdx + 1, ele);
         });
         (elems[0] as HTMLElement).focus();
         if (!isKey && this.toolbarSettings.items.length) {
@@ -1426,7 +1452,7 @@ export class ListBox extends DropDownBase {
                     tempItems.push(fListBox.sortedData[i]);
                 });
             } else {
-                jsonIdx.forEach((i: number) => {
+                jsonIdx.reverse().forEach((i: number) => {
                     tempItems.push(fListBox.jsonData[i]);
                 });
             }
@@ -1564,17 +1590,21 @@ export class ListBox extends DropDownBase {
         }
     }
 
-    private changeData(fromIdx: number, toIdx: number, ele: Element): void {
+    private changeData(fromIdx: number, toIdx: number, jsonToIdx: number, ele: Element): void {
         let listData: obj[] = [].slice.call(this.listData);
         let jsonData: obj[] = [].slice.call(this.jsonData);
+        let sortData: obj[] = [].slice.call(this.sortedData);
         let jsonIdx: number = Array.prototype.indexOf.call(this.jsonData, this.getDataByElems([ele])[0]);
+        let sortIdx: number = Array.prototype.indexOf.call(this.sortedData, this.getDataByElems([ele])[0]);
         let liColl: HTMLElement[] = [].slice.call(this.liCollections);
         listData.splice(toIdx, 0, listData.splice(fromIdx, 1)[0] as obj);
-        jsonData.splice(toIdx, 0, jsonData.splice(jsonIdx, 1)[0] as obj);
+        jsonData.splice(jsonToIdx, 0, jsonData.splice(jsonIdx, 1)[0] as obj);
+        sortData.splice(toIdx, 0, sortData.splice(sortIdx, 1)[0] as obj);
         liColl.splice(toIdx, 0, liColl.splice(fromIdx, 1)[0] as HTMLElement);
         this.listData = listData;
         this.jsonData = jsonData;
         this.liCollections = liColl;
+        this.sortedData = sortData;
     }
 
     private getSelectedItems(): Element[] {
@@ -1806,7 +1836,19 @@ export class ListBox extends DropDownBase {
             }
         });
         if (this.mainList.childElementCount === this.ulElement.childElementCount) {
-            this.setProperties({ value: selectedOptions }, true);
+            if (this.allowFiltering) {
+                for (let i: number = 0; i < selectedOptions.length; i++) {
+                    if (values.indexOf(selectedOptions[i]) > -1) {
+                        continue;
+                    } else {
+                        values.push(selectedOptions[i]);
+                    }
+                }
+                this.setProperties({ value: values }, true);
+            } else {
+                this.setProperties({ value: selectedOptions }, true);
+            }
+
         }
         this.updateSelectTag();
         this.updateToolBarState();
@@ -2169,4 +2211,46 @@ export interface ListBoxChangeEventArgs extends BaseEventArgs {
     items: Object[];
     value: number | string | boolean;
     event: Event;
+}
+
+/**
+ * Interface for change event args.
+ */
+export interface DropEventArgs {
+    previousIndex: number;
+    currentIndex: number;
+    droppedElement: Element;
+    target: Element;
+    helper: Element;
+    cancel?: boolean;
+    items?: Object[];
+}
+
+/**
+ * Deferred is used to handle asynchronous operation.
+ */
+class Deferred {
+    /**
+     * Resolve a Deferred object and call doneCallbacks with the given args.
+     */
+    public resolve: Function;
+    /**
+     * Reject a Deferred object and call failCallbacks with the given args.
+     */
+    public reject: Function;
+    /**
+     * Promise is an object that represents a value that may not be available yet, but will be resolved at some point in the future. 
+     */
+    public promise: Promise<Object> = new Promise((resolve: Function, reject: Function) => {
+        this.resolve = resolve;
+        this.reject = reject;
+    });
+    /**
+     * Defines the callback function triggers when the Deferred object is resolved.
+     */
+    public then: Function = this.promise.then.bind(this.promise);
+    /**
+     * Defines the callback function triggers when the Deferred object is rejected.
+     */
+    public catch: Function = this.promise.catch.bind(this.promise);
 }

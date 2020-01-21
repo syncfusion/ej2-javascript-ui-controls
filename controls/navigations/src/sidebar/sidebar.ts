@@ -175,7 +175,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      * The main content area will not be adjusted within the screen width.
      * * `Auto` - Sidebar with `Over` type in mobile resolution and `Push` type in other higher resolutions.
      * > For more details about SidebarType refer to 
-     * [`SidebarType`](./variations.html#types) documentation.
+     * [`SidebarType`](../../sidebar/variations/) documentation.
      * @default 'Auto'
      */
     @Property('Auto')

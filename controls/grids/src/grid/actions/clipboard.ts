@@ -11,7 +11,7 @@ import { ISelectedCell } from '../../index';
 export class Clipboard implements IAction {
     //Internal variables 
     private activeElement: Element;
-    private clipBoardTextArea: HTMLInputElement;
+    protected clipBoardTextArea: HTMLInputElement;
     private copyContent: string = '';
     private isSelect: boolean = false;
     //Module declarations
@@ -169,7 +169,7 @@ export class Clipboard implements IAction {
         }
     }
 
-    private setCopyData(withHeader?: boolean): void {
+    protected setCopyData(withHeader?: boolean): void {
         if (window.getSelection().toString() === '') {
             let isFrozen: number = this.parent.getFrozenColumns();
             this.clipBoardTextArea.value = this.copyContent = '';

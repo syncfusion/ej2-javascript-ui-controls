@@ -298,7 +298,7 @@ export class DiagramEventHandler {
             bottomLeft = { x: (width - 17), y: height };
             bottomRight = { x: width, y: height };
             bounds = Rect.toBounds([topLeft, topRight, bottomLeft, bottomRight]);
-            if (bounds.containsPoint({ x: x, y: y })) {
+            if (bounds.containsPoint({ x: x + diagramCanvas.scrollLeft, y: y + diagramCanvas.scrollTop})) {
                 return true;
             }
         }
@@ -308,7 +308,7 @@ export class DiagramEventHandler {
             bottomLeft = { x: 0, y: height };
             bottomRight = { x: width, y: height };
             bounds = Rect.toBounds([topLeft, topRight, bottomLeft, bottomRight]);
-            if (bounds.containsPoint({ x: x, y: y })) {
+            if (bounds.containsPoint({  x: x + diagramCanvas.scrollLeft, y: y + diagramCanvas.scrollTop})) {
                 return true;
             }
         }

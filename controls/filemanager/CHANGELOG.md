@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.44 (2021-01-21)
+
+### File Manager
+
+#### Bug Fixes
+
+- Resolved the script error when navigate any folder after changing the toolbar settings dynamically in the file manager component. 
+
 ## 17.4.43 (2020-01-14)
 
 ### File Manager

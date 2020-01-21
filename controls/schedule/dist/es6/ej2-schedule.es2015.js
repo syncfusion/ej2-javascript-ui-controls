@@ -12085,7 +12085,8 @@ let Schedule = class Schedule extends Component {
     }
     /** @hidden */
     isAllDayCell(td) {
-        if (['Month', 'TimelineMonth', 'TimelineYear'].indexOf(this.currentView) > -1 || td.classList.contains(ALLDAY_CELLS_CLASS) ||
+        if (['Month', 'TimelineMonth', 'TimelineYear', 'MonthAgenda'].indexOf(this.currentView) > -1 ||
+            td.classList.contains(ALLDAY_CELLS_CLASS) ||
             td.classList.contains(HEADER_CELLS_CLASS) || !this.activeViewOptions.timeScale.enable) {
             return true;
         }

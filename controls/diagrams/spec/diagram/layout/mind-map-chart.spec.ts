@@ -5,7 +5,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import {
     ConnectorModel, Node,
-    DataBinding, HierarchicalTree, NodeModel, Rect, TextElement, LayoutAnimation, Container, StackPanel, ImageElement, TreeInfo, TextModel
+    DataBinding, HierarchicalTree, NodeModel, Rect, TextElement, LayoutAnimation, Container, StackPanel, ImageElement, TreeInfo, TextModel, ConnectorConstraints, PortVisibility, NodeConstraints, PointPort
 } from '../../../src/diagram/index';
 import { MindMap } from '../../../src/diagram/layout/mind-map';
 import { SpatialSearch } from '../../../src/diagram/interaction/spatial-search/spatial-search';
@@ -342,7 +342,7 @@ describe('Diagram Control', () => {
         beforeAll(() => {
             ele = createElement('div', { id: 'diagram' });
             document.body.appendChild(ele);
-            
+
             diagram = new Diagram({
                 width: '100%', height: '550px',
                 layout: { type: 'MindMap' },
@@ -371,6 +371,186 @@ describe('Diagram Control', () => {
         });
         it('Without datasource without root', (done: Function) => {
             expect(diagram.nodes[0].branch === 'Left').toBe(true);
+            done();
+        });
+    });
+
+
+    describe('mindmap expand collapse icon not working issue fix ', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let data: object[] = [
+            { id: 1, Label: 'Barbie Silks', fill: 'red', branch: 'Root' },
+            { id: 2, Label: 'Categories', parentId: 1, branch: 'Right', fill: 'red' },
+            { id: 3, Label: 'Products', parentId: 1, branch: 'Right', fill: 'red' },
+            { id: 4, Label: 'Orders', parentId: 1, branch: 'Left', fill: 'red' },
+            { id: 5, Label: 'Transactions', parentId: 1, branch: 'Left', fill: 'red' },
+            { id: 6, Label: 'Users', parentId: 1, branch: 'Left', fill: 'red' },
+            { id: 7, Label: 'Create Category', parentId: 2, branch: 'subRight' },
+            { id: 8, Label: 'Update Category', parentId: 2, branch: 'subRight' },
+            { id: 9, Label: 'Delete Category', parentId: 2, branch: 'subRight' },
+            { id: 10, Label: 'Create Product', parentId: 3, branch: 'subRight' },
+            { id: 11, Label: 'Update Product', parentId: 3, branch: 'subRight' },
+            { id: 12, Label: 'Delete Product', parentId: 3, branch: 'subRight' },
+            { id: 13, Label: 'Create Order', parentId: 4, branch: 'subLeft' },
+            { id: 14, Label: 'Delete Order', parentId: 4, branch: 'subLeft' },
+            { id: 15, Label: 'Initiate Transaction', parentId: 5, branch: 'subLeft' },
+            { id: 16, Label: 'Update Transaction', parentId: 5, branch: 'subLeft' },
+            { id: 17, Label: 'Cancel Transaction', parentId: 5, branch: 'subLeft' },
+            { id: 18, Label: 'Add User', parentId: 6, branch: 'subLeft' },
+            { id: 19, Label: 'Update User', parentId: 6, branch: 'subLeft' },
+            { id: 20, Label: 'Delete User', parentId: 6, branch: 'subLeft' },
+        ];
+
+        let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
+        function getPort() {
+            let port = [
+                {
+                    id: "port1",
+                    offset: { x: 0, y: 0.5 },
+                    visibility: PortVisibility.Hidden,
+                    style: { fill: "black" }
+                },
+                {
+                    id: "port2",
+                    offset: { x: 1, y: 0.5 },
+                    visibility: PortVisibility.Hidden,
+                    style: { fill: "black" }
+                }
+            ];
+            return port;
+        }
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+
+            diagram = new Diagram({
+                width: '100%', height: '550px',
+                layout: {
+                    type: "MindMap",
+                    getBranch: (node: any) => {
+                        return node.data.branch;
+                    },
+                    horizontalSpacing: 50
+                },
+                dataSourceSettings: {
+                    id: "id",
+                    parentId: "parentId",
+                    dataSource: items,
+                    root: String(1)
+                },
+                getNodeDefaults: (obj: any) => {
+                    obj.constraints =
+                        NodeConstraints.Default & ~NodeConstraints.Drag;
+                    if (
+                        obj.data.branch === "Left" ||
+                        obj.data.branch === "Right" ||
+                        obj.data.branch === "Root"
+                    ) {
+                        obj.shape = { type: "Basic", shape: "Ellipse" };
+                        obj.borderColor =
+                            "black"; /* tslint:disable:no-string-literal */
+                        obj.style = {
+                            fill: obj.data.branch === "Root" ? "#E74C3C" : "#F39C12",
+                            strokeColor: "none",
+                            strokeWidth: 2
+                        };
+                        obj.annotations = [
+                            {
+                                content: obj.data.Label,
+                                margin: { left: 10, right: 10, top: 10, bottom: 10 },
+                                style: { color: "white" }
+                            }
+                        ];
+                        let port = getPort();
+                        for (let i = 0; i < port.length; i++) {
+                            obj.ports.push(new PointPort(obj, "ports", port[i], true));
+                        }
+                    } else {
+                        let color; /* tslint:disable:no-string-literal */
+                        if (
+                            obj.data.branch === "Right" ||
+                            obj.data.branch === "subRight"
+                        ) {
+                            color = "#8E44AD";
+                        } else {
+                            color = "#3498DB";
+                        }
+                        obj.shape = { type: "Basic", shape: "Rectangle" };
+                        obj.style = { fill: color, strokeWidth: 0 };
+                        obj.minWidth = 100;
+                        obj.height = 4;
+                        let port = getPort();
+                        for (let i = 0; i < port.length; i++) {
+                            obj.ports.push(new PointPort(obj, "ports", port[i], true));
+                        }
+                        obj.annotations = [
+                            {
+                                content: obj.data.Label,
+                                offset: { x: 0.5, y: 0 },
+                                verticalAlignment: "Bottom"
+                            }
+                        ];
+                        obj.shape.margin = {
+                            left: 0,
+                            right: 0,
+                            top: 0,
+                            bottom: 0
+                        };
+                    }
+                    //define expand icon
+                    obj.expandIcon = {
+                        height: 10,
+                        width: 10,
+                        shape: "Minus",
+                        fill: "lightgray",
+                        offset: { x: 0.5, y: 1 }
+                    };
+                    //define collapse icon
+                    obj.collapseIcon = {
+                        height: 10,
+                        width: 10,
+                        shape: "Plus",
+                        fill: "lightgray",
+                        offset: { x: 0.5, y: 1 }
+                    };
+                    return obj;
+                }, getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                    connector.type = "Bezier";
+                    connector.targetDecorator = { shape: "None" };
+                    let sourceNode: any = diagram.getObject(connector.sourceID);
+                    let targetNode: any = diagram.getObject(connector.targetID);
+                    if (
+                        targetNode.data.branch === "Right" ||
+                        targetNode.data.branch === "subRight"
+                    ) {
+                        connector.sourcePortID = sourceNode.ports[0].id;
+                        connector.targetPortID = targetNode.ports[1].id;
+                        connector.style = { strokeWidth: 5, strokeColor: "#8E44AD" };
+                    } else if (
+                        targetNode.data.branch === "Left" ||
+                        targetNode.data.branch === "subLeft"
+                    ) {
+                        connector.sourcePortID = sourceNode.ports[1].id;
+                        connector.targetPortID = targetNode.ports[0].id;
+                        connector.style = { strokeWidth: 5, strokeColor: "#3498DB" };
+                    }
+                    connector.constraints &= ~ConnectorConstraints.Select;
+                    return connector;
+                }
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('mindmap expand collapse icon not working issue fix ', (done: Function) => {
+            expect(diagram.nodes[3].visible && diagram.nodes[4].visible).toBe(true);
+            var node = diagram.nodes[1];
+            node.isExpanded = false
+            diagram.dataBind();
+            expect(!diagram.nodes[3].visible && !diagram.nodes[4].visible).toBe(true);
             done();
         });
     });

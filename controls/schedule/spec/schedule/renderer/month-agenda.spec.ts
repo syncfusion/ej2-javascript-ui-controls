@@ -76,6 +76,14 @@ describe('Month-agenda view rendering', () => {
                 expect(firstWorkCell.innerHTML).toEqual('<div class="e-date-header">1</div>');
             });
 
+            it('getCellDetails', () => {
+                let firstWorkCell: HTMLElement = schObj.element.querySelector('.e-work-cells') as HTMLElement;
+                let data: CellClickEventArgs = schObj.getCellDetails(firstWorkCell);
+                expect(data.startTime.getTime()).toEqual(new Date(2017, 9, 1).getTime());
+                expect(data.endTime.getTime()).toEqual(new Date(2017, 9, 2).getTime());
+                expect(data.isAllDay).toEqual(true);
+            });
+
             it('navigate next date', () => {
                 util.triggerSwipeEvent(schObj.element.querySelector('.e-table-container'), 100);
                 expect(schObj.element.querySelectorAll('.e-date-header-container .e-header-cells').length).toEqual(1 * 7);

@@ -692,6 +692,8 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         arrow2.setAttribute('tabindex', '-1');
         arrow1.setAttribute('aria-label', 'Toggle navigation');
         arrow2.setAttribute('aria-label', 'Toggle navigation');
+        arrow1.setAttribute('type', 'button');
+        arrow2.setAttribute('type', 'button');
         var size;
         var proxy;
         size = isNullOrUndefined(this.separatorSize) ? '1px' : this.separatorSize + 'px';
@@ -4480,15 +4482,12 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
             this.dragCollection[i].destroy();
         }
         this.removeAllPanel();
-        if (this.table) {
-            this.table.remove();
-        }
         _super.prototype.destroy.call(this);
     };
     DashboardLayout.prototype.removeAllPanel = function () {
-        this.panelCollection.forEach(function (item) {
-            item.remove();
-        });
+        while (this.element.firstElementChild) {
+            detach(this.element.firstElementChild);
+        }
     };
     DashboardLayout.prototype.setEnableRtl = function () {
         this.enableRtl ? addClass([this.element], 'e-rtl') : removeClass([this.element], 'e-rtl');

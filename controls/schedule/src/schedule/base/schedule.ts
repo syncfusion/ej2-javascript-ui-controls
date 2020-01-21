@@ -1458,7 +1458,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /** @hidden */
     public isAllDayCell(td: Element): boolean {
-        if (['Month', 'TimelineMonth', 'TimelineYear'].indexOf(this.currentView) > -1 || td.classList.contains(cls.ALLDAY_CELLS_CLASS) ||
+        if (['Month', 'TimelineMonth', 'TimelineYear', 'MonthAgenda'].indexOf(this.currentView) > -1 ||
+            td.classList.contains(cls.ALLDAY_CELLS_CLASS) ||
             td.classList.contains(cls.HEADER_CELLS_CLASS) || !this.activeViewOptions.timeScale.enable) {
             return true;
         }

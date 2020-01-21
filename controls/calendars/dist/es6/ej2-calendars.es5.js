@@ -4535,6 +4535,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                             this.changeTrigger(null);
                         }
                     }
+                    this.isInteracted = true;
                     break;
                 case 'format':
                     this.checkFormat();

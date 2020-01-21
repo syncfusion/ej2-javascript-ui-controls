@@ -2137,7 +2137,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         return parentId;
     };
     /**
-     * It is used to get the currently [here](./api-selectedItem)
+     * It is used to get the currently [here](./selectedItem)
      *  item details from the list items.
      * @blazorType ListSelectedItem<TValue>
      */
@@ -2741,20 +2741,21 @@ var Virtualization = /** @__PURE__ @class */ (function () {
         return itemCount;
     };
     Virtualization.prototype.uiIndicesInitialization = function () {
-        var _this = this;
         this.uiIndices = { 'activeIndices': [], 'disabledItemIndices': [], 'hiddenItemIndices': [] };
-        this.listViewInstance.curViewDS.forEach(function (ds, index) {
-            if (_this.listViewInstance.showCheckBox && ds[_this.listViewInstance.fields.isChecked]) {
-                _this.uiIndices.activeIndices.push(index);
+        var data = this.listViewInstance.curViewDS;
+        for (var i = 0; i < data.length; i++) {
+            if (this.listViewInstance.showCheckBox && data[i][this.listViewInstance.fields.isChecked]) {
+                this.uiIndices.activeIndices.push(i);
             }
-            if (!isNullOrUndefined(ds[_this.listViewInstance.fields.enabled]) && !ds[_this.listViewInstance.fields.enabled]) {
-                _this.uiIndices.disabledItemIndices.push(index);
+            if (!isNullOrUndefined(data[i][this.listViewInstance.fields.enabled]) && !data[i][this.listViewInstance.fields.enabled]) {
+                this.uiIndices.disabledItemIndices.push(i);
             }
-        });
+        }
         if (this.isNgTemplate()) {
-            Array.prototype.forEach.call(this.listViewInstance.element.querySelectorAll('.' + classNames.listItem), function (item, index) {
-                item.context = _this.listViewInstance.viewContainerRef._embeddedViews[index].context;
-            });
+            var items = this.listViewInstance.element.querySelectorAll('.' + classNames.listItem);
+            for (var index = 0; index < items.length; index++) {
+                items[index].context = this.listViewInstance.viewContainerRef._embeddedViews[index].context;
+            }
         }
     };
     Virtualization.prototype.refreshItemHeight = function () {
@@ -2816,12 +2817,12 @@ var Virtualization = /** @__PURE__ @class */ (function () {
         this.scrollPosition = scroll;
     };
     Virtualization.prototype.onLongScroll = function (listDiff, isScrollingDown) {
-        var _this = this;
         var index = isScrollingDown ? (this.uiFirstIndex + listDiff) : (this.uiFirstIndex - listDiff);
-        Array.prototype.forEach.call(this.listViewInstance.ulElement.querySelectorAll('li'), function (element) {
-            _this.updateUI(element, index);
+        var elements = this.listViewInstance.ulElement.querySelectorAll('li');
+        for (var i = 0; i < elements.length; i++) {
+            this.updateUI(elements[i], index);
             index++;
-        });
+        }
         this.uiLastIndex = isScrollingDown ? (this.uiLastIndex + listDiff) : (this.uiLastIndex - listDiff);
         this.uiFirstIndex = isScrollingDown ? (this.uiFirstIndex + listDiff) : (this.uiFirstIndex - listDiff);
     };
@@ -2966,18 +2967,19 @@ var Virtualization = /** @__PURE__ @class */ (function () {
     Virtualization.prototype.getSelectedItems = function () {
         var _this = this;
         if (!isNullOrUndefined(this.activeIndex) || (this.listViewInstance.showCheckBox && this.uiIndices.activeIndices.length)) {
-            var dataCollection_1 = [];
-            var textCollection_1 = [];
+            var dataCollection = [];
+            var textCollection = [];
             if (typeof this.listViewInstance.dataSource[0] === 'string' ||
                 typeof this.listViewInstance.dataSource[0] === 'number') {
                 var curViewDS_1 = this.listViewInstance.curViewDS;
                 if (this.listViewInstance.showCheckBox) {
-                    this.uiIndices.activeIndices.forEach(function (index) {
-                        dataCollection_1.push(curViewDS_1[index]);
-                    });
+                    var indices = this.uiIndices.activeIndices;
+                    for (var i = 0; i < indices.length; i++) {
+                        dataCollection.push(curViewDS_1[indices[i]]);
+                    }
                     return {
-                        text: dataCollection_1,
-                        data: dataCollection_1,
+                        text: dataCollection,
+                        data: dataCollection,
                         index: this.uiIndices.activeIndices.map(function (index) {
                             return _this.listViewInstance.dataSource.indexOf(curViewDS_1[index]);
                         })
@@ -2993,17 +2995,18 @@ var Virtualization = /** @__PURE__ @class */ (function () {
             }
             else {
                 var curViewDS_2 = this.listViewInstance.curViewDS;
-                var text_1 = this.listViewInstance.fields.text;
+                var text = this.listViewInstance.fields.text;
                 if (this.listViewInstance.showCheckBox) {
-                    this.uiIndices.activeIndices.forEach(function (index) {
-                        textCollection_1.push(curViewDS_2[index][text_1]);
-                        dataCollection_1.push(curViewDS_2[index]);
-                    });
+                    var indexArray = this.uiIndices.activeIndices;
+                    for (var i = 0; i < indexArray.length; i++) {
+                        textCollection.push(curViewDS_2[indexArray[i]][text]);
+                        dataCollection.push(curViewDS_2[indexArray[i]]);
+                    }
                     var dataSource_1 = this.listViewInstance.dataSource instanceof DataManager
                         ? curViewDS_2 : this.listViewInstance.dataSource;
                     return {
-                        text: textCollection_1,
-                        data: dataCollection_1,
+                        text: textCollection,
+                        data: dataCollection,
                         index: this.uiIndices.activeIndices.map(function (index) {
                             return dataSource_1.indexOf(curViewDS_2[index]);
                         })
@@ -3152,15 +3155,15 @@ var Virtualization = /** @__PURE__ @class */ (function () {
         this.activeIndex = Array.prototype.indexOf.call(this.listViewInstance.curUL.querySelectorAll('li'), li) + this.uiFirstIndex;
     };
     Virtualization.prototype.checkedItem = function (checked) {
-        var _this = this;
         if (checked) {
             this.uiIndices.activeIndices = [];
             this.activeIndex = undefined;
-            this.listViewInstance.curViewDS.forEach(function (ds, index) {
-                if (!ds.isHeader) {
-                    _this.uiIndices.activeIndices.push(index);
+            var data = this.listViewInstance.curViewDS;
+            for (var index = 0; index < data.length; index++) {
+                if (!data[index].isHeader) {
+                    this.uiIndices.activeIndices.push(index);
                 }
-            });
+            }
         }
         else {
             this.activeIndex = undefined;
@@ -3273,9 +3276,9 @@ var Virtualization = /** @__PURE__ @class */ (function () {
         this.listDiff = Math.round(parseFloat(this.topElement.style.height) / this.listItemHeight);
     };
     Virtualization.prototype.changeUiIndices = function (index, increment) {
-        var _this = this;
-        Object.keys(this.uiIndices).forEach(function (key) {
-            _this.uiIndices[key] = _this.uiIndices[key].map(function (i) {
+        var keys = Object.keys(this.uiIndices);
+        for (var ind = 0; ind < keys.length; ind++) {
+            this.uiIndices[keys[ind]] = this.uiIndices[keys[ind]].map(function (i) {
                 if (i >= index) {
                     return increment ? ++i : --i;
                 }
@@ -3283,58 +3286,58 @@ var Virtualization = /** @__PURE__ @class */ (function () {
                     return i;
                 }
             });
-        });
+        }
     };
     Virtualization.prototype.addItem = function (data, fields, dataSource) {
-        var _this = this;
-        data.forEach(function (currentItem) {
+        for (var i = 0; i < data.length; i++) {
+            var currentItem = data[i];
             // push the given data to main data array
             dataSource.push(currentItem);
             // recalculate all the group data or other datasource related things
-            _this.listViewInstance.setViewDataSource(dataSource);
+            this.listViewInstance.setViewDataSource(dataSource);
             // render list items for first time due to no datasource present earlier
-            if (!_this.domItemCount) {
+            if (!this.domItemCount) {
                 // fresh rendering for first time
-                if ((_this.listViewInstance.template || _this.listViewInstance.groupTemplate) && !_this.isNgTemplate()) {
-                    _this.listViewInstance.listBaseOption.template = null;
-                    _this.listViewInstance.listBaseOption.groupTemplate = null;
-                    _this.listViewInstance.listBaseOption.itemCreated = _this.createUIItem.bind(_this);
+                if ((this.listViewInstance.template || this.listViewInstance.groupTemplate) && !this.isNgTemplate()) {
+                    this.listViewInstance.listBaseOption.template = null;
+                    this.listViewInstance.listBaseOption.groupTemplate = null;
+                    this.listViewInstance.listBaseOption.itemCreated = this.createUIItem.bind(this);
                 }
-                _this.uiVirtualization();
+                this.uiVirtualization();
                 // when expected expected DOM count doesn't meet the condition we need to create and inject new item into DOM
             }
-            else if (_this.domItemCount < _this.expectedDomItemCount) {
-                var ds = _this.listViewInstance.findItemFromDS(dataSource, fields);
+            else if (this.domItemCount < this.expectedDomItemCount) {
+                var ds = this.listViewInstance.findItemFromDS(dataSource, fields);
                 if (ds instanceof Array) {
-                    if (_this.listViewInstance.ulElement) {
-                        var index = _this.listViewInstance.curViewDS.indexOf(currentItem);
+                    if (this.listViewInstance.ulElement) {
+                        var index = this.listViewInstance.curViewDS.indexOf(currentItem);
                         // inject new list item into DOM
-                        _this.createAndInjectNewItem(currentItem, index);
+                        this.createAndInjectNewItem(currentItem, index);
                         // check for group header item
-                        var curViewDS = _this.listViewInstance.curViewDS[index - 1];
+                        var curViewDS = this.listViewInstance.curViewDS[index - 1];
                         if (curViewDS && curViewDS.isHeader && curViewDS.items.length === 1) {
                             // target group item index in datasource
                             --index;
                             // inject new group header into DOM for previously created list item
-                            _this.createAndInjectNewItem(curViewDS, index);
+                            this.createAndInjectNewItem(curViewDS, index);
                         }
                     }
                     // recollect all the list item into collection
-                    _this.listViewInstance.liCollection =
-                        _this.listViewInstance.curUL.querySelectorAll('li');
+                    this.listViewInstance.liCollection =
+                        this.listViewInstance.curUL.querySelectorAll('li');
                 }
             }
             else {
-                var index = _this.listViewInstance.curViewDS.indexOf(currentItem);
+                var index = this.listViewInstance.curViewDS.indexOf(currentItem);
                 // virtually new add list item based on the scollbar position
-                _this.addUiItem(index);
+                this.addUiItem(index);
                 // check for group header item needs to be added
-                var curViewDS = _this.listViewInstance.curViewDS[index - 1];
+                var curViewDS = this.listViewInstance.curViewDS[index - 1];
                 if (curViewDS && curViewDS.isHeader && curViewDS.items.length === 1) {
-                    _this.addUiItem(index - 1);
+                    this.addUiItem(index - 1);
                 }
             }
-        });
+        }
     };
     Virtualization.prototype.createAndInjectNewItem = function (itemData, index) {
         // generate li item for given datasource
@@ -3406,7 +3409,9 @@ var Virtualization = /** @__PURE__ @class */ (function () {
             listElement.insertBefore(listElement.context.template, null);
             listElement.context.template = element;
             listElement.context.type = 'flatList';
-            groupTemplateNodes.forEach(function (node) { return node.onChange(newData); });
+            for (var i = 0; i < groupTemplateNodes.length; i++) {
+                groupTemplateNodes[i].onChange(newData);
+            }
         }
         else if (!newData.isHeader && listElement.context.type === 'flatList') {
             var element = listElement.firstElementChild;
@@ -3414,13 +3419,19 @@ var Virtualization = /** @__PURE__ @class */ (function () {
             listElement.insertBefore(listElement.context.template, null);
             listElement.context.template = element;
             listElement.context.type = 'groupList';
-            flatTemplateNodes.forEach(function (node) { return node.onChange(newData); });
+            for (var i = 0; i < flatTemplateNodes.length; i++) {
+                flatTemplateNodes[i].onChange(newData);
+            }
         }
         else if (!newData.isHeader) {
-            flatTemplateNodes.forEach(function (node) { return node.onChange(newData); });
+            for (var i = 0; i < flatTemplateNodes.length; i++) {
+                flatTemplateNodes[i].onChange(newData);
+            }
         }
         else {
-            groupTemplateNodes.forEach(function (node) { return node.onChange(newData); });
+            for (var i = 0; i < groupTemplateNodes.length; i++) {
+                groupTemplateNodes[i].onChange(newData);
+            }
         }
     };
     Virtualization.prototype.updateContextData = function (listElement, node, isHeader) {
@@ -3432,7 +3443,6 @@ var Virtualization = /** @__PURE__ @class */ (function () {
         }
     };
     Virtualization.prototype.classProperty = function (element, listElement, isHeader) {
-        var _this = this;
         var regex = new RegExp('\\${([^}]*)}', 'g');
         var resultantOutput = [];
         var regexMatch;
@@ -3445,7 +3455,8 @@ var Virtualization = /** @__PURE__ @class */ (function () {
             }
         }
         if (resultantOutput && resultantOutput.length) {
-            resultantOutput.forEach(function (classNameMatch) {
+            var _loop_1 = function (i) {
+                var classNameMatch = resultantOutput[i];
                 var classFunction;
                 if (classNameMatch[1].indexOf('?') !== -1 && classNameMatch[1].indexOf(':') !== -1) {
                     // tslint:disable-next-line:no-function-constructor-with-string-args
@@ -3457,10 +3468,10 @@ var Virtualization = /** @__PURE__ @class */ (function () {
                 }
                 var subNode = {};
                 if (isHeader) {
-                    subNode.bindedvalue = classFunction(_this.headerData);
+                    subNode.bindedvalue = classFunction(this_1.headerData);
                 }
                 else {
-                    subNode.bindedvalue = classFunction(_this.templateData);
+                    subNode.bindedvalue = classFunction(this_1.templateData);
                 }
                 subNode.onChange = function (value) {
                     if (subNode.bindedvalue) {
@@ -3472,18 +3483,22 @@ var Virtualization = /** @__PURE__ @class */ (function () {
                     }
                     subNode.bindedvalue = newCss;
                 };
-                classNameMatch[0].split(' ').forEach(function (className) {
-                    element.classList.remove(className);
-                });
+                var className = classNameMatch[0].split(' ');
+                for (var i_1 = 0; i_1 < className.length; i_1++) {
+                    element.classList.remove(className[i_1]);
+                }
                 if (subNode.bindedvalue) {
                     addClass([element], subNode.bindedvalue.split(' ').filter(function (css) { return css; }));
                 }
-                _this.updateContextData(listElement, subNode, isHeader);
-            });
+                this_1.updateContextData(listElement, subNode, isHeader);
+            };
+            var this_1 = this;
+            for (var i = 0; i < resultantOutput.length; i++) {
+                _loop_1(i);
+            }
         }
     };
     Virtualization.prototype.attributeProperty = function (element, listElement, isHeader) {
-        var _this = this;
         var attributeNames = [];
         for (var i = 0; i < element.attributes.length; i++) {
             attributeNames.push(element.attributes[i].nodeName);
@@ -3491,7 +3506,8 @@ var Virtualization = /** @__PURE__ @class */ (function () {
         if (attributeNames.indexOf('class') !== -1) {
             attributeNames.splice(attributeNames.indexOf('class'), 1);
         }
-        attributeNames.forEach(function (attributeName) {
+        var _loop_2 = function (i) {
+            var attributeName = attributeNames[i];
             var attrNameMatch = new RegExp('\\${([^}]*)}', 'g').exec(attributeName) || [];
             var attrValueMatch = new RegExp('\\${([^}]*)}', 'g').exec(element.getAttribute(attributeName))
                 || [];
@@ -3514,12 +3530,12 @@ var Virtualization = /** @__PURE__ @class */ (function () {
                 }
                 var subNode_1 = {};
                 if (isHeader) {
-                    subNode_1.bindedvalue = [attrNameMatch[1] === undefined ? undefined : attributeNameFunction(_this.headerData),
-                        attrValueMatch[1] === undefined ? undefined : attributeValueFunction(_this.headerData)];
+                    subNode_1.bindedvalue = [attrNameMatch[1] === undefined ? undefined : attributeNameFunction(this_2.headerData),
+                        attrValueMatch[1] === undefined ? undefined : attributeValueFunction(this_2.headerData)];
                 }
                 else {
-                    subNode_1.bindedvalue = [attrNameMatch[1] === undefined ? undefined : attributeNameFunction(_this.templateData),
-                        attrValueMatch[1] === undefined ? undefined : attributeValueFunction(_this.templateData)];
+                    subNode_1.bindedvalue = [attrNameMatch[1] === undefined ? undefined : attributeNameFunction(this_2.templateData),
+                        attrValueMatch[1] === undefined ? undefined : attributeValueFunction(this_2.templateData)];
                 }
                 subNode_1.attrName = subNode_1.bindedvalue[0] === undefined ?
                     attributeName : subNode_1.bindedvalue[0];
@@ -3536,12 +3552,15 @@ var Virtualization = /** @__PURE__ @class */ (function () {
                     subNode_1.bindedvalue[1];
                 element.removeAttribute(attributeName);
                 element.setAttribute(subNode_1.attrName, attributeValue);
-                _this.updateContextData(listElement, subNode_1, isHeader);
+                this_2.updateContextData(listElement, subNode_1, isHeader);
             }
-        });
+        };
+        var this_2 = this;
+        for (var i = 0; i < attributeNames.length; i++) {
+            _loop_2(i);
+        }
     };
     Virtualization.prototype.textProperty = function (element, listElement, isHeader) {
-        var _this = this;
         var regex = new RegExp('\\${([^}]*)}', 'g');
         var resultantOutput = [];
         var regexMatch;
@@ -3562,7 +3581,8 @@ var Virtualization = /** @__PURE__ @class */ (function () {
             }
         });
         if (resultantOutput && resultantOutput.length && !isChildHasTextContent) {
-            resultantOutput.forEach(function (textPropertyMatch) {
+            var _loop_3 = function (i) {
+                var textPropertyMatch = resultantOutput[i];
                 var subNode = {};
                 var textFunction;
                 if (textPropertyMatch[1].indexOf('?') !== -1 && textPropertyMatch[1].indexOf(':') !== -1) {
@@ -3574,18 +3594,22 @@ var Virtualization = /** @__PURE__ @class */ (function () {
                     textFunction = new Function('data', 'return ' + 'data.' + textPropertyMatch[1]);
                 }
                 if (isHeader) {
-                    subNode.bindedvalue = textFunction(_this.headerData);
+                    subNode.bindedvalue = textFunction(this_3.headerData);
                 }
                 else {
-                    subNode.bindedvalue = textFunction(_this.templateData);
+                    subNode.bindedvalue = textFunction(this_3.templateData);
                 }
                 subNode.onChange = function (value) {
                     element.innerText = element.innerText.replace(subNode.bindedvalue, textFunction(value));
                     subNode.bindedvalue = textFunction(value);
                 };
                 element.innerText = element.innerText.replace(textPropertyMatch[0], subNode.bindedvalue);
-                _this.updateContextData(listElement, subNode, isHeader);
-            });
+                this_3.updateContextData(listElement, subNode, isHeader);
+            };
+            var this_3 = this;
+            for (var i = 0; i < resultantOutput.length; i++) {
+                _loop_3(i);
+            }
         }
     };
     Virtualization.prototype.reRenderUiVirtualization = function () {

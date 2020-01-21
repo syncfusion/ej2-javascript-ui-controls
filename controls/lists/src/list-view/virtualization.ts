@@ -109,19 +109,20 @@ export class Virtualization {
 
     private uiIndicesInitialization(): void {
         this.uiIndices = { 'activeIndices': [], 'disabledItemIndices': [], 'hiddenItemIndices': [] };
-        (this.listViewInstance.curViewDS as DataSource[]).forEach((ds: DataSource, index: number) => {
-            if (this.listViewInstance.showCheckBox && ds[this.listViewInstance.fields.isChecked]) {
-                this.uiIndices.activeIndices.push(index);
+        let data: DataSource[] = this.listViewInstance.curViewDS as DataSource[];
+        for (let i: number = 0; i < data.length; i++) {
+            if (this.listViewInstance.showCheckBox && data[i][this.listViewInstance.fields.isChecked]) {
+                this.uiIndices.activeIndices.push(i);
             }
-            if (!isNullOrUndefined(ds[this.listViewInstance.fields.enabled]) && !ds[this.listViewInstance.fields.enabled]) {
-                this.uiIndices.disabledItemIndices.push(index);
+            if (!isNullOrUndefined(data[i][this.listViewInstance.fields.enabled]) && !data[i][this.listViewInstance.fields.enabled]) {
+                this.uiIndices.disabledItemIndices.push(i);
             }
-        });
+        }
         if (this.isNgTemplate()) {
-            Array.prototype.forEach.call(
-                this.listViewInstance.element.querySelectorAll('.' + classNames.listItem), (item: ElementContext, index: number) => {
-                    item.context = this.listViewInstance.viewContainerRef._embeddedViews[index].context;
-                });
+            let items: ElementContext[] = this.listViewInstance.element.querySelectorAll('.' + classNames.listItem);
+            for (let index: number = 0; index < items.length; index++) {
+                items[index].context = this.listViewInstance.viewContainerRef._embeddedViews[index].context;
+            }
         }
     }
 
@@ -183,10 +184,11 @@ export class Virtualization {
 
     private onLongScroll(listDiff: number, isScrollingDown: boolean): void {
         let index: number = isScrollingDown ? (this.uiFirstIndex + listDiff) : (this.uiFirstIndex - listDiff);
-        Array.prototype.forEach.call(this.listViewInstance.ulElement.querySelectorAll('li'), (element: HTMLElement) => {
-            this.updateUI(element, index);
+        let elements: HTMLElement[] = this.listViewInstance.ulElement.querySelectorAll('li');
+        for (let i: number = 0; i < elements.length; i++) {
+            this.updateUI(elements[i], index);
             index++;
-        });
+        }
         this.uiLastIndex = isScrollingDown ? (this.uiLastIndex + listDiff) : (this.uiLastIndex - listDiff);
         this.uiFirstIndex = isScrollingDown ? (this.uiFirstIndex + listDiff) : (this.uiFirstIndex - listDiff);
     }
@@ -335,9 +337,10 @@ export class Virtualization {
                 typeof (this.listViewInstance.dataSource as number[])[0] === 'number') {
                 let curViewDS: string[] | number[] = this.listViewInstance.curViewDS as string[] | number[];
                 if (this.listViewInstance.showCheckBox) {
-                    this.uiIndices.activeIndices.forEach((index: number) => {
-                        (dataCollection as string[]).push((curViewDS as string[])[index]);
-                    });
+                    let indices: number[] = this.uiIndices.activeIndices;
+                    for (let i: number = 0; i < indices.length; i++) {
+                        (dataCollection as string[]).push((curViewDS as string[])[indices[i]]);
+                    }
                     return {
                         text: dataCollection as string[],
                         data: dataCollection,
@@ -355,10 +358,11 @@ export class Virtualization {
                 let curViewDS: { [key: string]: Object | string }[] = this.listViewInstance.curViewDS as { [key: string]: Object; }[];
                 let text: string = this.listViewInstance.fields.text;
                 if (this.listViewInstance.showCheckBox) {
-                    this.uiIndices.activeIndices.forEach((index: number) => {
-                        textCollection.push((curViewDS[index] as { [key: string]: string; })[text]);
-                        (dataCollection as { [key: string]: Object; }[]).push(curViewDS[index] as DataSource);
-                    });
+                    let indexArray: number[] = this.uiIndices.activeIndices;
+                    for (let i: number = 0; i < indexArray.length; i++) {
+                        textCollection.push((curViewDS[indexArray[i]] as { [key: string]: string; })[text]);
+                        (dataCollection as { [key: string]: Object; }[]).push(curViewDS[indexArray[i]] as DataSource);
+                    }
                     let dataSource: { [key: string]: Object; }[] =
                         this.listViewInstance.dataSource instanceof DataManager
                             ? curViewDS : this.listViewInstance.dataSource;
@@ -514,11 +518,12 @@ export class Virtualization {
         if (checked) {
             this.uiIndices.activeIndices = [];
             this.activeIndex = undefined;
-            (this.listViewInstance.curViewDS as DataSource[]).forEach((ds: DataSource, index: number) => {
-                if (!ds.isHeader) {
+            let data: DataSource[] = this.listViewInstance.curViewDS as DataSource[];
+            for (let index: number = 0; index < data.length; index++) {
+                if (!data[index].isHeader) {
                     this.uiIndices.activeIndices.push(index);
                 }
-            });
+            }
 
         } else {
             this.activeIndex = undefined;
@@ -629,19 +634,21 @@ export class Virtualization {
     }
 
     private changeUiIndices(index: number, increment: boolean): void {
-        Object.keys(this.uiIndices).forEach((key: string) => {
-            this.uiIndices[key] = this.uiIndices[key].map((i: number) => {
+        let keys: string[] = Object.keys(this.uiIndices);
+        for (let ind: number = 0; ind < keys.length; ind++) {
+            this.uiIndices[keys[ind]] = this.uiIndices[keys[ind]].map((i: number) => {
                 if (i >= index) {
                     return increment ? ++i : --i;
                 } else {
                     return i;
                 }
             });
-        });
+        }
     }
 
     public addItem(data: DataSource[], fields: Fields, dataSource: DataSource[]): void {
-        data.forEach((currentItem: { [key: string]: Object; }) => {
+        for (let i: number = 0; i < data.length; i++) {
+            let currentItem: { [key: string]: Object; } = data[i];
             // push the given data to main data array
             dataSource.push(currentItem);
             // recalculate all the group data or other datasource related things
@@ -689,7 +696,7 @@ export class Virtualization {
                     this.addUiItem(index - 1);
                 }
             }
-        });
+        }
     }
 
     private createAndInjectNewItem(itemData: DataSource, index: number): void {
@@ -767,18 +774,26 @@ export class Virtualization {
             listElement.insertBefore((<ElementContext>listElement).context.template as HTMLElement, null);
             (<ElementContext>listElement).context.template = element;
             (<ElementContext>listElement).context.type = 'flatList';
-            groupTemplateNodes.forEach((node: { [key: string]: Function }) => node.onChange(newData));
+            for (let i: number = 0; i < groupTemplateNodes.length; i++) {
+                (groupTemplateNodes[i] as { [key: string]: Function }).onChange(newData);
+            }
         } else if (!newData.isHeader && (<ElementContext>listElement).context.type === 'flatList') {
             let element: HTMLElement = listElement.firstElementChild as HTMLElement;
             detach(listElement.firstElementChild);
             listElement.insertBefore((<ElementContext>listElement).context.template as HTMLElement, null);
             (<ElementContext>listElement).context.template = element;
             (<ElementContext>listElement).context.type = 'groupList';
-            flatTemplateNodes.forEach((node: { [key: string]: Function }) => node.onChange(newData));
+            for (let i: number = 0; i < flatTemplateNodes.length; i++) {
+                (flatTemplateNodes[i] as { [key: string]: Function }).onChange(newData);
+            }
         } else if (!newData.isHeader) {
-            flatTemplateNodes.forEach((node: { [key: string]: Function }) => node.onChange(newData));
+            for (let i: number = 0; i < flatTemplateNodes.length; i++) {
+                (flatTemplateNodes[i] as { [key: string]: Function }).onChange(newData);
+            }
         } else {
-            groupTemplateNodes.forEach((node: { [key: string]: Function }) => node.onChange(newData));
+            for (let i: number = 0; i < groupTemplateNodes.length; i++) {
+                (groupTemplateNodes[i] as { [key: string]: Function }).onChange(newData);
+            }
         }
     }
 
@@ -802,7 +817,8 @@ export class Virtualization {
             }
         }
         if (resultantOutput && resultantOutput.length) {
-            resultantOutput.forEach((classNameMatch: RegExpExecArray) => {
+            for (let i: number = 0; i < resultantOutput.length; i++) {
+                let classNameMatch: RegExpExecArray = resultantOutput[i];
                 let classFunction: Function;
                 if (classNameMatch[1].indexOf('?') !== -1 && classNameMatch[1].indexOf(':') !== -1) {
                     // tslint:disable-next-line:no-function-constructor-with-string-args
@@ -827,14 +843,13 @@ export class Virtualization {
                     }
                     subNode.bindedvalue = newCss;
                 };
-                classNameMatch[0].split(' ').forEach((className: string) => {
-                    element.classList.remove(className);
-                });
+                let className: string[] = classNameMatch[0].split(' ');
+                for (let i: number = 0; i < className.length; i++) { element.classList.remove(className[i]); }
                 if (subNode.bindedvalue) {
                     addClass([element], (subNode.bindedvalue as string).split(' ').filter((css: string) => css));
                 }
                 this.updateContextData(listElement, subNode, isHeader);
-            });
+            }
         }
     }
     private attributeProperty(element: HTMLElement, listElement: HTMLElement, isHeader: Boolean): void {
@@ -845,7 +860,8 @@ export class Virtualization {
         if (attributeNames.indexOf('class') !== -1) {
             attributeNames.splice(attributeNames.indexOf('class'), 1);
         }
-        attributeNames.forEach((attributeName: string) => {
+        for (let i: number = 0; i < attributeNames.length; i++) {
+            let attributeName: string = attributeNames[i];
             let attrNameMatch: RegExpExecArray | string[] = new RegExp('\\${([^}]*)}', 'g').exec(attributeName) || [];
             let attrValueMatch: RegExpExecArray | string[] = new RegExp('\\${([^}]*)}', 'g').exec(element.getAttribute(attributeName))
                 || [];
@@ -890,7 +906,7 @@ export class Virtualization {
                 element.setAttribute(subNode.attrName as string, attributeValue as string);
                 this.updateContextData(listElement, subNode, isHeader);
             }
-        });
+        }
 
     }
 
@@ -915,7 +931,8 @@ export class Virtualization {
             }
         });
         if (resultantOutput && resultantOutput.length && !isChildHasTextContent) {
-            resultantOutput.forEach((textPropertyMatch: RegExpExecArray) => {
+            for (let i: number = 0; i < resultantOutput.length; i++) {
+                let textPropertyMatch: RegExpExecArray = resultantOutput[i];
                 let subNode: { [key: string]: string | Function } = {};
                 let textFunction: Function;
                 if (textPropertyMatch[1].indexOf('?') !== -1 && textPropertyMatch[1].indexOf(':') !== -1) {
@@ -936,7 +953,7 @@ export class Virtualization {
                 };
                 element.innerText = element.innerText.replace(textPropertyMatch[0], subNode.bindedvalue as string);
                 this.updateContextData(listElement, subNode, isHeader);
-            });
+            }
         }
     }
 

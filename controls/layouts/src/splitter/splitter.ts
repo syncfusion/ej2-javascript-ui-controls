@@ -937,6 +937,8 @@ export class Splitter extends Component<HTMLElement> {
         arrow2.setAttribute('tabindex', '-1');
         arrow1.setAttribute('aria-label', 'Toggle navigation');
         arrow2.setAttribute('aria-label', 'Toggle navigation');
+        arrow1.setAttribute('type', 'button');
+        arrow2.setAttribute('type', 'button');
         let size: string;
         let proxy: Splitter;
         size = isNullOrUndefined(this.separatorSize) ? '1px' : this.separatorSize + 'px';

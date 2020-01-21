@@ -3729,11 +3729,11 @@ export class CommandHandler {
             connector.visible = visibility;
             let oldValues: (NodeModel | ConnectorModel) = {
                 visible: target.visible,
-                style: { opacity: target.style.opacity }
+                style: { opacity: target.wrapper.style.opacity }
             };
             let newValues: (NodeModel | ConnectorModel) = {
                 visible: target.visible,
-                style: { opacity: target.style.opacity }
+                style: { opacity: target.wrapper.style.opacity }
             };
             if (value) {
                 if (target.isExpanded) {

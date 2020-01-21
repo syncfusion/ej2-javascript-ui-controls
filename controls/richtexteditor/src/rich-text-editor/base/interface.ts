@@ -328,6 +328,15 @@ export interface ILinkCommandsArgs {
     selectParent?: Node[];
 }
 
+export interface ITableCommandsArgs {
+    /** Defines the number of rows to be inserted in the table */
+    row?: number;
+    /** Defines the number of columns to be inserted in the table */
+    columns?: number;
+    /** Defines the instance of the current selection */
+    selection?: NodeSelection;
+}
+
 /**
  * @deprecated
  */
@@ -355,6 +364,18 @@ export interface ITableNotifyArgs {
     enable?: boolean;
     properties?: Object;
     self?: Table;
+}
+
+export interface ItemClickEventArgs {
+    /** Defines the current Toolbar Item Object. */
+    item: ItemModel;
+    /** 
+     * Defines the current Event arguments. 
+     * @blazorType MouseEventArgs
+     */
+    originalEvent: Event;
+    /** Defines the prevent action. */
+    cancel?: boolean;
 }
 
 export interface IEditorModel {
@@ -870,6 +891,10 @@ export const executeGroup: { [key: string]: IExecutionGroup } = {
         command: 'Images',
         subCommand: 'Image',
     },
+    'insertTable': {
+        command: 'Table',
+        subCommand: 'CreateTable'
+    },
     'insertBrOnReturn': {
         command: 'InsertHTML',
         subCommand: 'InsertHTML',
@@ -898,4 +923,4 @@ export declare type CommandName = 'bold' | 'italic' | 'underline' | 'strikeThrou
     'justifyCenter' | 'justifyFull' | 'justifyLeft' | 'justifyRight' | 'undo' | 'createLink' |
     'formatBlock' | 'heading' | 'indent' | 'insertHTML' | 'insertOrderedList' | 'insertUnorderedList' |
     'insertParagraph' | 'outdent' | 'redo' | 'removeFormat' | 'insertText' | 'insertImage' |
-    'insertHorizontalRule' | 'insertBrOnReturn' | 'insertCode';
+    'insertHorizontalRule' | 'insertBrOnReturn' | 'insertCode' | 'insertTable';

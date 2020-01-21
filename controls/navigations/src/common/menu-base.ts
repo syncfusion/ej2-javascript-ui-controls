@@ -729,14 +729,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     protected closeMenu(ulIndex: number = 0, e: MouseEvent | KeyboardEvent = null): void {
         if (this.isMenuVisible()) {
-            let sli: Element;
-            let ul: HTMLElement;
-            let item: MenuItemModel;
-            let items: MenuItemModel[];
-            let beforeCloseArgs: BeforeOpenCloseMenuEventArgs;
-            let wrapper: Element = this.getWrapper();
-            let popups: Element[] = this.getPopups();
-            let isClose: boolean = false;
+            let sli: Element; let ul: HTMLElement; let item: MenuItemModel; let items: MenuItemModel[];
+            let beforeCloseArgs: BeforeOpenCloseMenuEventArgs; let wrapper: Element = this.getWrapper();
+            let popups: Element[] = this.getPopups(); let isClose: boolean = false;
             let cnt: number = this.isMenu ? popups.length + 1 : wrapper.childElementCount;
             ul = this.isMenu && cnt !== 1 ? select('.e-ul', popups[cnt - 2]) as HTMLElement
                 : selectAll('.e-menu-parent', wrapper)[cnt - 1] as HTMLElement;
@@ -752,7 +747,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 items = item ? item.items : this.items as objColl;
                 beforeCloseArgs = { element: ul, parentItem: item, items: items, event: e, cancel: false };
                 this.trigger('beforeClose', beforeCloseArgs, (observedCloseArgs: BeforeOpenCloseMenuEventArgs) => {
-                    let popupEle: HTMLElement; let closeArgs: OpenCloseMenuEventArgs;
+                    let popupEle: HTMLElement; let closeArgs: OpenCloseMenuEventArgs; let popupId: string = '';
                     let popupObj: Popup; let isOpen: boolean = !observedCloseArgs.cancel;
                     if (isOpen || this.isCMenu) {
                         if (this.isMenu) {
@@ -764,9 +759,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                             this.destroyScrollObj(
                                 getInstance(popupEle.children[0] as HTMLElement, VScroll) as VScroll, popupEle.children[0]);
                             popupObj = getInstance(popupEle, Popup) as Popup;
-                            popupObj.hide();
-                            popupObj.destroy();
-                            detach(popupEle);
+                            popupObj.hide(); popupId = popupEle.id; popupObj.destroy(); detach(popupEle);
                         } else {
                             this.toggleAnimation(ul, false);
                         }
@@ -774,14 +767,26 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         this.trigger('onClose', closeArgs);
                         this.navIdx.pop();
                     }
+                    let trgtliId: string; let closedLi: Element; let trgtLi: Element;
+                    let trgtpopUp: HTMLElement = this.getWrapper() && this.getUlByNavIdx();
+                    let liElem: Element = e && e.target && this.getLI(e.target as Element);
                     if (this.isCMenu) {
                         if (this.canOpen(e.target as Element)) {
                             this.openMenu(null, null, this.pageY, this.pageX, e);
                         }
                         this.isCMenu = false;
-                    } else if (isOpen && this.hamburgerMode && ulIndex !== null) {
+                    }
+                    if (this.isMenu && trgtpopUp && popupId.length) {
+                        trgtliId = new RegExp('(.*)-ej2menu-' + this.element.id + '-popup').exec(popupId)[1];
+                        closedLi = trgtpopUp.querySelector('#' + trgtliId); trgtLi = (liElem && trgtpopUp.querySelector('#' + liElem.id));
+                    }
+                    if (isOpen && this.hamburgerMode && ulIndex) {
                         this.afterCloseMenu(e as MouseEvent);
-                    } else if (isOpen && !ulIndex && this.navIdx.length) {
+                    } else if (isOpen && !this.hamburgerMode && this.navIdx.length && closedLi && !trgtLi) {
+                        this.closeMenu(this.navIdx[this.navIdx.length - 1], e);
+                    } else if (isOpen && !ulIndex && ((this.hamburgerMode && this.navIdx.length) || this.navIdx.length === 1)) {
+                        this.closeMenu(null, e);
+                    } else if (isOpen && isNullOrUndefined(ulIndex) && this.navIdx.length) {
                         this.closeMenu(null, e);
                     } else if (isOpen && !this.isMenu && !ulIndex && this.navIdx.length === 0 && !this.isMenusClosed) {
                         this.isMenusClosed = true;
@@ -917,7 +922,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             let menuIconElem: HTMLElement = ul.querySelector('.e-menu-icon');
             let menuIconElemStyle: CSSStyleDeclaration = getComputedStyle(menuIconElem);
             let blankIconIndent: number = (parseInt(menuIconElemStyle.marginRight, 10) + menuIconElem.offsetWidth + liIndent);
-            blankIconElem.forEach((element: HTMLElement) => element.style.textIndent = blankIconIndent + 'px');
+            for (let i: number = 0; i < blankIconElem.length; i++) {
+                (blankIconElem[i] as HTMLElement).style.textIndent = blankIconIndent + 'px';
+            }
         }
     }
 

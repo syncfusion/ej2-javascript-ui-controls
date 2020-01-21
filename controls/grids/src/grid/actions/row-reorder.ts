@@ -64,10 +64,8 @@ export class RowDD {
         let cancel: string = 'cancel';
         let cloneElement: string = 'cloneElement';
         if (args[cancel]) {
-            visualElement = args[cloneElement];
-            return visualElement;
+            return false;
         }
-
         removeElement(this.startedRow, '.e-indentcell');
         removeElement(this.startedRow, '.e-detailrowcollapse');
         removeElement(this.startedRow, '.e-detailrowexpand');

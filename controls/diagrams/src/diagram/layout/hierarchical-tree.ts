@@ -497,7 +497,7 @@ export class HierarchicalTree {
     private hasChild(layout: ILayout, shape: INode): number {
         //Check whether the node has children            
         let shape1: LayoutInfo = layout.graphNodes[shape.id];
-        return shape1.tree.children && shape1.tree.children.length;
+        return shape1 ? shape1.tree.children && shape1.tree.children.length : 0;
     }
 
     private updateHorizontalTree(layout: ILayout, shape: INode, prev: INode, x: number, y: number, level: number): Bounds {

@@ -12505,7 +12505,8 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
     };
     /** @hidden */
     Schedule.prototype.isAllDayCell = function (td) {
-        if (['Month', 'TimelineMonth', 'TimelineYear'].indexOf(this.currentView) > -1 || td.classList.contains(ALLDAY_CELLS_CLASS) ||
+        if (['Month', 'TimelineMonth', 'TimelineYear', 'MonthAgenda'].indexOf(this.currentView) > -1 ||
+            td.classList.contains(ALLDAY_CELLS_CLASS) ||
             td.classList.contains(HEADER_CELLS_CLASS) || !this.activeViewOptions.timeScale.enable) {
             return true;
         }

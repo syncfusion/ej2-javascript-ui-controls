@@ -4489,6 +4489,7 @@ let DatePicker = class DatePicker extends Calendar {
                             this.changeTrigger(null);
                         }
                     }
+                    this.isInteracted = true;
                     break;
                 case 'format':
                     this.checkFormat();

@@ -6762,7 +6762,9 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         if (!this.value) {
             this.value = [];
         }
-        this.setProperties({ value: [].concat([], this.value, [value]) }, true);
+        if (this.value.indexOf(value) < 0) {
+            this.setProperties({ value: [].concat([], this.value, [value]) }, true);
+        }
         var element = this.findListElement(this.list, 'li', 'data-value', value);
         this.removeFocus();
         if (element) {
@@ -9168,8 +9170,8 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
             if (!Browser.isIE) {
                 target = !isNullOrUndefined(e) && e.relatedTarget;
             }
-            if (document.body.contains(this.parent.popupObj.element) && this.parent.popupObj.element.contains(target) && !Browser.isIE
-                && this.filterInput) {
+            if (this.parent.popupObj && document.body.contains(this.parent.popupObj.element) && this.parent.popupObj.element.contains(target)
+                && !Browser.isIE && this.filterInput) {
                 this.filterInput.focus();
                 return;
             }
@@ -9179,19 +9181,20 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
                 this.parent.scrollFocusStatus = false;
                 return;
             }
-            if (document.body.contains(this.parent.popupObj.element) && !this.parent.popupObj.element.classList.contains('e-popup-close')) {
+            if (this.parent.popupObj && document.body.contains(this.parent.popupObj.element)
+                && !this.parent.popupObj.element.classList.contains('e-popup-close')) {
                 this.parent.inputFocus = false;
                 this.parent.updateValueState(e, this.parent.value, this.parent.tempValues);
                 this.parent.dispatchEvent(this.parent.hiddenElement, 'change');
             }
-            if (document.body.contains(this.parent.popupObj.element) &&
+            if (this.parent.popupObj && document.body.contains(this.parent.popupObj.element) &&
                 !this.parent.popupObj.element.classList.contains('e-popup-close')) {
                 this.parent.inputFocus = false;
                 this.parent.overAllWrapper.classList.remove(FOCUS$1);
                 this.parent.trigger('blur');
                 this.parent.focused = true;
             }
-            if (document.body.contains(this.parent.popupObj.element) &&
+            if (this.parent.popupObj && document.body.contains(this.parent.popupObj.element) &&
                 !this.parent.popupObj.element.classList.contains('e-popup-close') && !Browser.isDevice) {
                 this.parent.hidePopup();
             }
@@ -9668,7 +9671,11 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         else {
             args.items = this.getDataByValues([dragValue]);
         }
-        this.trigger('beforeDrop', args);
+        var callBackPromise = new Deferred();
+        this.trigger('beforeDrop', args, function (observedArgs) {
+            callBackPromise.resolve(observedArgs);
+        });
+        return callBackPromise;
     };
     // tslint:disable-next-line:max-func-body-length
     ListBox.prototype.dragEnd = function (args) {
@@ -9698,13 +9705,14 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             liColl = [].slice.call(this.liCollections);
             jsonData = [].slice.call(this.jsonData);
             sortedData = [].slice.call(this.sortedData);
+            var toSortIdx_1 = args.currentIndex;
             var toIdx_1 = args.currentIndex = this.getCurIdx(this, args.currentIndex);
             var rIdx = listData.indexOf(this.getDataByValue(dropValue));
             var jsonIdx = jsonData.indexOf(this.getDataByValue(dropValue));
             var sIdx = sortedData.indexOf(this.getDataByValue(dropValue));
             listData.splice(toIdx_1, 0, listData.splice(rIdx, 1)[0]);
             jsonData.splice(toIdx_1, 0, jsonData.splice(jsonIdx, 1)[0]);
-            sortedData.splice(toIdx_1, 0, sortedData.splice(sIdx, 1)[0]);
+            sortedData.splice(toSortIdx_1, 0, sortedData.splice(sIdx, 1)[0]);
             liColl.splice(toIdx_1, 0, liColl.splice(rIdx, 1)[0]);
             if (this.allowDragAll) {
                 selectedOptions = this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 ? this.value : [dropValue];
@@ -9718,7 +9726,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                         }
                         listData.splice(toIdx_1, 0, listData.splice(idx, 1)[0]);
                         jsonData.splice(toIdx_1, 0, jsonData.splice(jsonIdx_1, 1)[0]);
-                        sortedData.splice(toIdx_1, 0, sortedData.splice(sIdx_1, 1)[0]);
+                        sortedData.splice(toSortIdx_1, 0, sortedData.splice(sIdx_1, 1)[0]);
                         liColl.splice(toIdx_1, 0, liColl.splice(idx, 1)[0]);
                         ul_1.insertBefore(_this.getItems()[_this.getIndexByValue(value)], ul_1.getElementsByClassName('e-placeholder')[0]);
                     }
@@ -9744,8 +9752,10 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                 droppedData = _this.getDataByValue(value);
                 var srcIdx = _this.listData.indexOf(droppedData);
                 var jsonSrcIdx = _this.jsonData.indexOf(droppedData);
+                var sortIdx = _this.sortedData.indexOf(droppedData);
                 _this.listData.splice(srcIdx, 1);
                 _this.jsonData.splice(jsonSrcIdx, 1);
+                _this.sortedData.splice(sortIdx, 1);
                 var rLi = fLiColl_1.splice(srcIdx, 1)[0];
                 var destIdx = value === dropValue ? args.currentIndex : currIdx_1;
                 listData.splice(destIdx, 0, droppedData);
@@ -9787,7 +9797,6 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             listObj.liCollections = liColl;
             listObj.jsonData = extend([], [], jsonData, false);
             listObj.listData = extend([], [], listData, false);
-            listObj.sortedData = extend([], [], sortedData, false);
             if (this.listData.length === 0) {
                 this.l10nUpdate();
             }
@@ -10015,6 +10024,25 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
      */
     ListBox.prototype.getDataList = function () {
         return this.jsonData;
+    };
+    /**
+     * Returns the sorted Data in ListBox
+     * @returns {{ [key: string]: Object }[] | string[] | boolean[] | number[]}
+     */
+    ListBox.prototype.getSortedList = function () {
+        var sortData;
+        var tempData;
+        sortData = tempData = this.sortedData;
+        if (this.fields.groupBy) {
+            sortData = [];
+            for (var i = 0; i < tempData.length; i++) {
+                if (tempData[i].isHeader) {
+                    continue;
+                }
+                sortData.push(tempData[i]);
+            }
+        }
+        return sortData;
     };
     ListBox.prototype.getElemByValue = function (value) {
         var elem = [];
@@ -10351,9 +10379,10 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         (isUp ? elems : elems.reverse()).forEach(function (ele) {
+            var jsonToIdx = Array.prototype.indexOf.call(_this.ulElement.querySelectorAll('.e-list-item'), ele);
             var idx = Array.prototype.indexOf.call(_this.ulElement.children, ele);
             moveTo(_this.ulElement, _this.ulElement, [idx], isUp ? idx - 1 : idx + 2);
-            _this.changeData(idx, isUp ? idx - 1 : idx + 1, ele);
+            _this.changeData(idx, isUp ? idx - 1 : idx + 1, isUp ? jsonToIdx - 1 : jsonToIdx + 1, ele);
         });
         elems[0].focus();
         if (!isKey && this.toolbarSettings.items.length) {
@@ -10413,7 +10442,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                 });
             }
             else {
-                jsonIdx.forEach(function (i) {
+                jsonIdx.reverse().forEach(function (i) {
                     tempItems.push(fListBox.jsonData[i]);
                 });
             }
@@ -10552,17 +10581,21 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             fListBox.l10nUpdate();
         }
     };
-    ListBox.prototype.changeData = function (fromIdx, toIdx, ele) {
+    ListBox.prototype.changeData = function (fromIdx, toIdx, jsonToIdx, ele) {
         var listData = [].slice.call(this.listData);
         var jsonData = [].slice.call(this.jsonData);
+        var sortData = [].slice.call(this.sortedData);
         var jsonIdx = Array.prototype.indexOf.call(this.jsonData, this.getDataByElems([ele])[0]);
+        var sortIdx = Array.prototype.indexOf.call(this.sortedData, this.getDataByElems([ele])[0]);
         var liColl = [].slice.call(this.liCollections);
         listData.splice(toIdx, 0, listData.splice(fromIdx, 1)[0]);
-        jsonData.splice(toIdx, 0, jsonData.splice(jsonIdx, 1)[0]);
+        jsonData.splice(jsonToIdx, 0, jsonData.splice(jsonIdx, 1)[0]);
+        sortData.splice(toIdx, 0, sortData.splice(sortIdx, 1)[0]);
         liColl.splice(toIdx, 0, liColl.splice(fromIdx, 1)[0]);
         this.listData = listData;
         this.jsonData = jsonData;
         this.liCollections = liColl;
+        this.sortedData = sortData;
     };
     ListBox.prototype.getSelectedItems = function () {
         var ele = [];
@@ -10784,7 +10817,20 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             }
         });
         if (this.mainList.childElementCount === this.ulElement.childElementCount) {
-            this.setProperties({ value: selectedOptions }, true);
+            if (this.allowFiltering) {
+                for (var i = 0; i < selectedOptions.length; i++) {
+                    if (values.indexOf(selectedOptions[i]) > -1) {
+                        continue;
+                    }
+                    else {
+                        values.push(selectedOptions[i]);
+                    }
+                }
+                this.setProperties({ value: values }, true);
+            }
+            else {
+                this.setProperties({ value: selectedOptions }, true);
+            }
         }
         this.updateSelectTag();
         this.updateToolBarState();
@@ -11215,6 +11261,30 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     ], ListBox);
     return ListBox;
 }(DropDownBase));
+/**
+ * Deferred is used to handle asynchronous operation.
+ */
+var Deferred = /** @__PURE__ @class */ (function () {
+    function Deferred() {
+        var _this = this;
+        /**
+         * Promise is an object that represents a value that may not be available yet, but will be resolved at some point in the future.
+         */
+        this.promise = new Promise(function (resolve, reject) {
+            _this.resolve = resolve;
+            _this.reject = reject;
+        });
+        /**
+         * Defines the callback function triggers when the Deferred object is resolved.
+         */
+        this.then = this.promise.then.bind(this.promise);
+        /**
+         * Defines the callback function triggers when the Deferred object is rejected.
+         */
+        this.catch = this.promise.catch.bind(this.promise);
+    }
+    return Deferred;
+}());
 
 /**
  * export all modules from current location

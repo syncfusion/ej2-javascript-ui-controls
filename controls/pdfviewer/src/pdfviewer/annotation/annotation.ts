@@ -15,6 +15,7 @@ import { updateDistanceLabel, updateRadiusLabel, updatePerimeterLabel, updateCal
 import { AnnotationPropertiesChangeEventArgs, ISize } from '../base';
 import { FreeTextAnnotation } from './free-text-annotation';
 import { InputElement } from './input-element';
+import { InPlaceEditor } from '@syncfusion/ej2-inplace-editor';
 
 /**
  * @hidden
@@ -258,9 +259,10 @@ export class Annotation {
             if (shapeType === 'StickyNotes') {
                 this.updateImportAnnotationCollection(this.pdfViewer.selectedItems.annotations[0], pageNumber, 'stickyNotesAnnotation');
             }
-            if (shapeType === 'Stamp') {
+            if (shapeType === 'Stamp' || 'Image') {
                 this.updateImportAnnotationCollection(this.pdfViewer.selectedItems.annotations[0], pageNumber, 'stampAnnotations');
             }
+
             // tslint:disable-next-line:max-line-length
             this.pdfViewer.annotation.addAction(pageNumber, null, this.pdfViewer.selectedItems.annotations[0], 'Delete', '', undoElement, this.pdfViewer.selectedItems.annotations[0]);
             // tslint:disable-next-line
@@ -421,16 +423,16 @@ export class Annotation {
                         }
                     }
                 }
-                // tslint:disable-next-line
-                let documentPageCollections: any = this.pdfViewerBase.documentAnnotationCollections[pageNumber];
-                if (documentPageCollections && documentPageCollections[annotationType]) {
-                    for (let i: number = 0; i < documentPageCollections[annotationType].length; i++) {
-                        // tslint:disable-next-line:max-line-length
-                        if (annotation.annotName === documentPageCollections[annotationType][i].AnnotName) {
-                            this.pdfViewerBase.documentAnnotationCollections[pageNumber][annotationType].splice(i, 1);
-                            break;
-                        }
-                    }
+            }
+        }
+        // tslint:disable-next-line
+        let documentPageCollections: any = this.pdfViewerBase.documentAnnotationCollections[pageNumber];
+        if (documentPageCollections && documentPageCollections[annotationType]) {
+            for (let i: number = 0; i < documentPageCollections[annotationType].length; i++) {
+                // tslint:disable-next-line:max-line-length
+                if (annotation.annotName === documentPageCollections[annotationType][i].AnnotName) {
+                    this.pdfViewerBase.documentAnnotationCollections[pageNumber][annotationType].splice(i, 1);
+                    break;
                 }
             }
         }
@@ -3010,6 +3012,25 @@ export class Annotation {
                     // tslint:disable-next-line:max-line-length
                     dynamicText: annotation.content, fillColor: annotation.fillColor, textAlign: annotation.textAlign, strokeColor: annotation.strokeColor, thickness: annotation.thickness, font: this.setFreeTextFontStyle(annotation.fontStyle)
                 });
+                if (annotation.content) {
+                    let text: string = annotation.content;
+                    // tslint:disable-next-line
+                    let commentsDiv: any = document.getElementById(this.pdfViewer.selectedItems.annotations[0].annotName);
+                    if (commentsDiv && commentsDiv.childNodes && text !== 'label') {
+                        if (commentsDiv.childNodes[0].ej2_instances) {
+                            commentsDiv.childNodes[0].ej2_instances[0].value = text;
+                        } else if (commentsDiv.childNodes[0].childNodes && commentsDiv.childNodes[0].childNodes[1].ej2_instances) {
+                            commentsDiv.childNodes[0].childNodes[1].ej2_instances[0].value = text;
+                        }
+                    }
+                }
+                // tslint:disable-next-line
+                let newCommentDiv: any = document.getElementById(this.pdfViewer.element.id + '_commenttextbox_editor');
+                // tslint:disable-next-line
+                let commentObj: any = new InPlaceEditor({
+                    value: annotation.content,
+                });
+                commentObj.appendTo(newCommentDiv);
             }
             let date: Date = new Date();
             currentAnnotation.modifiedDate = date.toLocaleString();

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.44 (2021-01-21)
+
+### Menu
+
+#### Bug Fixes
+
+- Issue with closing sub menu is fixed.
+
 ## 17.4.43 (2020-01-14)
 
 ### TreeView

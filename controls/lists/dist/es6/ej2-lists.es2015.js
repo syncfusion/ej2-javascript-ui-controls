@@ -2101,7 +2101,7 @@ let ListView = class ListView extends Component {
         return parentId;
     }
     /**
-     * It is used to get the currently [here](./api-selectedItem)
+     * It is used to get the currently [here](./selectedItem)
      *  item details from the list items.
      * @blazorType ListSelectedItem<TValue>
      */
@@ -2703,18 +2703,20 @@ class Virtualization {
     }
     uiIndicesInitialization() {
         this.uiIndices = { 'activeIndices': [], 'disabledItemIndices': [], 'hiddenItemIndices': [] };
-        this.listViewInstance.curViewDS.forEach((ds, index) => {
-            if (this.listViewInstance.showCheckBox && ds[this.listViewInstance.fields.isChecked]) {
-                this.uiIndices.activeIndices.push(index);
+        let data = this.listViewInstance.curViewDS;
+        for (let i = 0; i < data.length; i++) {
+            if (this.listViewInstance.showCheckBox && data[i][this.listViewInstance.fields.isChecked]) {
+                this.uiIndices.activeIndices.push(i);
             }
-            if (!isNullOrUndefined(ds[this.listViewInstance.fields.enabled]) && !ds[this.listViewInstance.fields.enabled]) {
-                this.uiIndices.disabledItemIndices.push(index);
+            if (!isNullOrUndefined(data[i][this.listViewInstance.fields.enabled]) && !data[i][this.listViewInstance.fields.enabled]) {
+                this.uiIndices.disabledItemIndices.push(i);
             }
-        });
+        }
         if (this.isNgTemplate()) {
-            Array.prototype.forEach.call(this.listViewInstance.element.querySelectorAll('.' + classNames.listItem), (item, index) => {
-                item.context = this.listViewInstance.viewContainerRef._embeddedViews[index].context;
-            });
+            let items = this.listViewInstance.element.querySelectorAll('.' + classNames.listItem);
+            for (let index = 0; index < items.length; index++) {
+                items[index].context = this.listViewInstance.viewContainerRef._embeddedViews[index].context;
+            }
         }
     }
     refreshItemHeight() {
@@ -2776,10 +2778,11 @@ class Virtualization {
     }
     onLongScroll(listDiff, isScrollingDown) {
         let index = isScrollingDown ? (this.uiFirstIndex + listDiff) : (this.uiFirstIndex - listDiff);
-        Array.prototype.forEach.call(this.listViewInstance.ulElement.querySelectorAll('li'), (element) => {
-            this.updateUI(element, index);
+        let elements = this.listViewInstance.ulElement.querySelectorAll('li');
+        for (let i = 0; i < elements.length; i++) {
+            this.updateUI(elements[i], index);
             index++;
-        });
+        }
         this.uiLastIndex = isScrollingDown ? (this.uiLastIndex + listDiff) : (this.uiLastIndex - listDiff);
         this.uiFirstIndex = isScrollingDown ? (this.uiFirstIndex + listDiff) : (this.uiFirstIndex - listDiff);
     }
@@ -2928,9 +2931,10 @@ class Virtualization {
                 typeof this.listViewInstance.dataSource[0] === 'number') {
                 let curViewDS = this.listViewInstance.curViewDS;
                 if (this.listViewInstance.showCheckBox) {
-                    this.uiIndices.activeIndices.forEach((index) => {
-                        dataCollection.push(curViewDS[index]);
-                    });
+                    let indices = this.uiIndices.activeIndices;
+                    for (let i = 0; i < indices.length; i++) {
+                        dataCollection.push(curViewDS[indices[i]]);
+                    }
                     return {
                         text: dataCollection,
                         data: dataCollection,
@@ -2949,10 +2953,11 @@ class Virtualization {
                 let curViewDS = this.listViewInstance.curViewDS;
                 let text = this.listViewInstance.fields.text;
                 if (this.listViewInstance.showCheckBox) {
-                    this.uiIndices.activeIndices.forEach((index) => {
-                        textCollection.push(curViewDS[index][text]);
-                        dataCollection.push(curViewDS[index]);
-                    });
+                    let indexArray = this.uiIndices.activeIndices;
+                    for (let i = 0; i < indexArray.length; i++) {
+                        textCollection.push(curViewDS[indexArray[i]][text]);
+                        dataCollection.push(curViewDS[indexArray[i]]);
+                    }
                     let dataSource = this.listViewInstance.dataSource instanceof DataManager
                         ? curViewDS : this.listViewInstance.dataSource;
                     return {
@@ -3107,11 +3112,12 @@ class Virtualization {
         if (checked) {
             this.uiIndices.activeIndices = [];
             this.activeIndex = undefined;
-            this.listViewInstance.curViewDS.forEach((ds, index) => {
-                if (!ds.isHeader) {
+            let data = this.listViewInstance.curViewDS;
+            for (let index = 0; index < data.length; index++) {
+                if (!data[index].isHeader) {
                     this.uiIndices.activeIndices.push(index);
                 }
-            });
+            }
         }
         else {
             this.activeIndex = undefined;
@@ -3224,8 +3230,9 @@ class Virtualization {
         this.listDiff = Math.round(parseFloat(this.topElement.style.height) / this.listItemHeight);
     }
     changeUiIndices(index, increment) {
-        Object.keys(this.uiIndices).forEach((key) => {
-            this.uiIndices[key] = this.uiIndices[key].map((i) => {
+        let keys = Object.keys(this.uiIndices);
+        for (let ind = 0; ind < keys.length; ind++) {
+            this.uiIndices[keys[ind]] = this.uiIndices[keys[ind]].map((i) => {
                 if (i >= index) {
                     return increment ? ++i : --i;
                 }
@@ -3233,10 +3240,11 @@ class Virtualization {
                     return i;
                 }
             });
-        });
+        }
     }
     addItem(data, fields, dataSource) {
-        data.forEach((currentItem) => {
+        for (let i = 0; i < data.length; i++) {
+            let currentItem = data[i];
             // push the given data to main data array
             dataSource.push(currentItem);
             // recalculate all the group data or other datasource related things
@@ -3283,7 +3291,7 @@ class Virtualization {
                     this.addUiItem(index - 1);
                 }
             }
-        });
+        }
     }
     createAndInjectNewItem(itemData, index) {
         // generate li item for given datasource
@@ -3355,7 +3363,9 @@ class Virtualization {
             listElement.insertBefore(listElement.context.template, null);
             listElement.context.template = element;
             listElement.context.type = 'flatList';
-            groupTemplateNodes.forEach((node) => node.onChange(newData));
+            for (let i = 0; i < groupTemplateNodes.length; i++) {
+                groupTemplateNodes[i].onChange(newData);
+            }
         }
         else if (!newData.isHeader && listElement.context.type === 'flatList') {
             let element = listElement.firstElementChild;
@@ -3363,13 +3373,19 @@ class Virtualization {
             listElement.insertBefore(listElement.context.template, null);
             listElement.context.template = element;
             listElement.context.type = 'groupList';
-            flatTemplateNodes.forEach((node) => node.onChange(newData));
+            for (let i = 0; i < flatTemplateNodes.length; i++) {
+                flatTemplateNodes[i].onChange(newData);
+            }
         }
         else if (!newData.isHeader) {
-            flatTemplateNodes.forEach((node) => node.onChange(newData));
+            for (let i = 0; i < flatTemplateNodes.length; i++) {
+                flatTemplateNodes[i].onChange(newData);
+            }
         }
         else {
-            groupTemplateNodes.forEach((node) => node.onChange(newData));
+            for (let i = 0; i < groupTemplateNodes.length; i++) {
+                groupTemplateNodes[i].onChange(newData);
+            }
         }
     }
     updateContextData(listElement, node, isHeader) {
@@ -3393,7 +3409,8 @@ class Virtualization {
             }
         }
         if (resultantOutput && resultantOutput.length) {
-            resultantOutput.forEach((classNameMatch) => {
+            for (let i = 0; i < resultantOutput.length; i++) {
+                let classNameMatch = resultantOutput[i];
                 let classFunction;
                 if (classNameMatch[1].indexOf('?') !== -1 && classNameMatch[1].indexOf(':') !== -1) {
                     // tslint:disable-next-line:no-function-constructor-with-string-args
@@ -3420,14 +3437,15 @@ class Virtualization {
                     }
                     subNode.bindedvalue = newCss;
                 };
-                classNameMatch[0].split(' ').forEach((className) => {
-                    element.classList.remove(className);
-                });
+                let className = classNameMatch[0].split(' ');
+                for (let i = 0; i < className.length; i++) {
+                    element.classList.remove(className[i]);
+                }
                 if (subNode.bindedvalue) {
                     addClass([element], subNode.bindedvalue.split(' ').filter((css) => css));
                 }
                 this.updateContextData(listElement, subNode, isHeader);
-            });
+            }
         }
     }
     attributeProperty(element, listElement, isHeader) {
@@ -3438,7 +3456,8 @@ class Virtualization {
         if (attributeNames.indexOf('class') !== -1) {
             attributeNames.splice(attributeNames.indexOf('class'), 1);
         }
-        attributeNames.forEach((attributeName) => {
+        for (let i = 0; i < attributeNames.length; i++) {
+            let attributeName = attributeNames[i];
             let attrNameMatch = new RegExp('\\${([^}]*)}', 'g').exec(attributeName) || [];
             let attrValueMatch = new RegExp('\\${([^}]*)}', 'g').exec(element.getAttribute(attributeName))
                 || [];
@@ -3485,7 +3504,7 @@ class Virtualization {
                 element.setAttribute(subNode.attrName, attributeValue);
                 this.updateContextData(listElement, subNode, isHeader);
             }
-        });
+        }
     }
     textProperty(element, listElement, isHeader) {
         let regex = new RegExp('\\${([^}]*)}', 'g');
@@ -3508,7 +3527,8 @@ class Virtualization {
             }
         });
         if (resultantOutput && resultantOutput.length && !isChildHasTextContent) {
-            resultantOutput.forEach((textPropertyMatch) => {
+            for (let i = 0; i < resultantOutput.length; i++) {
+                let textPropertyMatch = resultantOutput[i];
                 let subNode = {};
                 let textFunction;
                 if (textPropertyMatch[1].indexOf('?') !== -1 && textPropertyMatch[1].indexOf(':') !== -1) {
@@ -3531,7 +3551,7 @@ class Virtualization {
                 };
                 element.innerText = element.innerText.replace(textPropertyMatch[0], subNode.bindedvalue);
                 this.updateContextData(listElement, subNode, isHeader);
-            });
+            }
         }
     }
     reRenderUiVirtualization() {

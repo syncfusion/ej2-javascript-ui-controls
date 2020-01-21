@@ -730,8 +730,8 @@ export class Magnification {
                                 } else if (this.isMagnified) {
                                     let lowerValue: number = ((pageNumber - 2) === 0) ? 0 : (pageNumber - 2);
                                     // tslint:disable-next-line:max-line-length
-                                    let higherValue: number = ((pageNumber) === (this.pdfViewerBase.pageCount)) ? (this.pdfViewerBase.pageCount - 1) : pageNumber;
-                                    if ((lowerValue <= i) && (i <= higherValue) && ((this.pdfViewer.textSelectionModule.isTextSelection && isSelectionAvailable) || this.pdfViewerBase.textLayer.getTextSearchStatus())) {
+                                    let higherValue: number = ((pageNumber) === (this.pdfViewerBase.pageCount)) ? (this.pdfViewerBase.pageCount - 1) : (pageNumber + 1);
+                                    if ((lowerValue <= i) && (i <= higherValue) && ((this.pdfViewer.textSelectionModule.isTextSelection && isSelectionAvailable) || this.pdfViewerBase.textLayer.getTextSearchStatus() || this.pdfViewerBase.isInitialPageMode)) {
                                         this.pdfViewerBase.textLayer.resizeTextContentsOnZoom(i);
                                         if (this.pdfViewer.textSelectionModule.isTextSelection && isSelectionAvailable) {
                                             this.pdfViewer.textSelectionModule.applySelectionRangeOnScroll(i);

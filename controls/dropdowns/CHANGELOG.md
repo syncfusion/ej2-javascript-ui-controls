@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.44 (2021-01-21)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#260635` - Sorted datasource not updated properly in ListBox has been fixed.
+
 ## 17.4.43 (2020-01-14)
 
 ### ListBox

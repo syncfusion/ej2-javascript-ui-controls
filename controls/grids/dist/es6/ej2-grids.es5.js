@@ -19426,6 +19426,7 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
      */
     function CheckBoxFilter(parent, filterSettings, serviceLocator) {
         this.parent = parent;
+        this.isresetFocus = true;
         this.checkBoxBase = new CheckBoxFilterBase(parent);
         this.addEventListener();
     }
@@ -19445,7 +19446,9 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
     CheckBoxFilter.prototype.closeDialog = function () {
         this.removeEventListener();
         this.checkBoxBase.closeDialog();
-        this.parent.notify(restoreFocus, {});
+        if (this.isresetFocus) {
+            this.parent.notify(restoreFocus, {});
+        }
     };
     /**
      * For internal use only - Get the module name.
@@ -19511,6 +19514,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
     function ExcelFilter(parent, filterSettings, serviceLocator, customFltrOperators) {
         var _this = _super.call(this, parent, filterSettings, serviceLocator) || this;
         _this.parent = parent;
+        _this.isresetFocus = true;
         _this.excelFilterBase = new ExcelFilterBase(parent, customFltrOperators);
         return _this;
     }
@@ -19527,7 +19531,9 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
     };
     ExcelFilter.prototype.closeDialog = function () {
         this.excelFilterBase.closeDialog();
-        this.parent.notify(restoreFocus, {});
+        if (this.isresetFocus) {
+            this.parent.notify(restoreFocus, {});
+        }
     };
     /* tslint:disable-next-line:max-line-length */
     ExcelFilter.prototype.filterByColumn = function (fieldName, firstOperator, firstValue, predicate, matchCase, ignoreAccent, secondOperator, secondValue) {
@@ -19899,7 +19905,7 @@ var Filter = /** @__PURE__ @class */ (function () {
                     if (this.contentRefresh) {
                         this.parent.notify(modelChanged, {
                             currentFilterObject: this.currentFilterObject, currentFilteringColumn: this.column ?
-                                this.column.field : undefined,
+                                this.column.field : undefined, action: 'filter',
                             columns: this.filterSettings.columns, requestType: 'filtering', type: actionBegin, cancel: false
                         });
                         this.refreshFilterSettings();
@@ -20106,7 +20112,7 @@ var Filter = /** @__PURE__ @class */ (function () {
                 if (this.refresh) {
                     this.parent.notify(modelChanged, {
                         requestType: 'filtering', type: actionBegin, currentFilterObject: cloneActualPredicate,
-                        currentFilterColumn: column
+                        currentFilterColumn: column, action: 'clearFilter'
                     });
                 }
                 break;
@@ -20446,6 +20452,8 @@ var Filter = /** @__PURE__ @class */ (function () {
                 && (!closest(target, '.e-filter-item.e-menu-item'))) && !datepickerEle) {
                 if ((hasDialog && (!parentsUntil(target, 'e-filter-popup'))
                     && (!parentsUntil(target, 'e-popup-flmenu'))) || (!popupEle)) {
+                    this.filterModule.isresetFocus = parentsUntil(target, 'e-grid') &&
+                        parentsUntil(target, 'e-grid').id === this.parent.element.id;
                     this.filterModule.closeDialog(target);
                 }
             }
@@ -21778,10 +21786,8 @@ var RowDD = /** @__PURE__ @class */ (function () {
             var selectedRows = gObj.getSelectedRows();
             gObj.trigger(rowDragStartHelper, args);
             var cancel = 'cancel';
-            var cloneElement = 'cloneElement';
             if (args[cancel]) {
-                visualElement = args[cloneElement];
-                return visualElement;
+                return false;
             }
             removeElement(_this.startedRow, '.e-indentcell');
             removeElement(_this.startedRow, '.e-detailrowcollapse');
@@ -31298,61 +31304,63 @@ var PdfExport = /** @__PURE__ @class */ (function () {
         }
     };
     PdfExport.prototype.processGridHeaders = function (childLevels, pdfGrid, rows, gridColumn, border, headerFont, headerBrush, grid, allowHorizontalOverflow) {
+        var _this = this;
         var columnCount = gridColumn.length + childLevels;
-        // add columns
+        var depth = measureColumnDepth(grid.columns);
+        var cols = grid.columns;
         pdfGrid.columns.add(columnCount);
-        // add header
         pdfGrid.headers.add(rows.length);
-        // set cell values of each rows in the header
-        for (var i = 0; i < rows.length; i++) {
-            var gridHeader = pdfGrid.headers.getHeader(i);
+        var applyTextAndSpan = function (rowIdx, colIdx, col, rowSpan, colSpan) {
+            var gridHeader = pdfGrid.headers.getHeader(rowIdx);
+            var pdfCell = gridHeader.cells.getCell(colIdx);
+            var cell = rows[rowIdx].cells[colIdx];
+            if (!isNullOrUndefined(col.headerTextAlign)) {
+                pdfCell.style.stringFormat = _this.getHorizontalAlignment(col.headerTextAlign);
+            }
+            if (rowSpan > 0) {
+                pdfCell.rowSpan = rowSpan;
+                pdfCell.style.stringFormat = _this.getVerticalAlignment('Bottom', pdfCell.style.stringFormat, col.textAlign);
+            }
+            if (colSpan > 0) {
+                pdfCell.columnSpan = colSpan;
+            }
             gridHeader.style.setBorder(border);
             gridHeader.style.setFont(headerFont);
             gridHeader.style.setTextBrush(headerBrush);
-            var colSpan = 0;
-            var cellLength = rows[i].cells.length;
-            for (var j = 0; j < cellLength; j++) {
-                var cell = rows[i].cells[j];
-                var pdfCell = gridHeader.cells.getCell(j + colSpan);
-                switch (cell.cellType) {
-                    case CellType.HeaderIndent:
-                    case CellType.DetailHeader:
-                        pdfCell.value = '';
-                        pdfCell.width = 20;
-                        break;
-                    case CellType.Header:
-                    case CellType.StackedHeader:
-                        if (pdfCell.value !== null) {
-                            if (!isNullOrUndefined(cell.column.headerTextAlign)) {
-                                pdfCell.style.stringFormat = this.getHorizontalAlignment(cell.column.headerTextAlign);
-                            }
-                            if (!isNullOrUndefined(cell.rowSpan)) {
-                                pdfCell.rowSpan = cell.rowSpan;
-                                pdfCell.style.stringFormat = this.getVerticalAlignment('Bottom', pdfCell.style.stringFormat, cell.column.textAlign);
-                                for (var k = 1; k < rows[i].cells[j].rowSpan; k++) {
-                                    pdfGrid.headers.getHeader(i + k).cells.getCell(j).value = null;
-                                }
-                            }
-                            if (!isNullOrUndefined(cell.colSpan)) {
-                                pdfCell.columnSpan = cell.colSpan;
-                                colSpan += cell.colSpan - 1;
-                            }
-                            pdfCell.value = cell.column.headerText;
-                            var args = {
-                                cell: pdfCell,
-                                gridCell: cell,
-                                style: pdfCell.style
-                            };
-                            this.parent.trigger(pdfHeaderQueryCellInfo, args);
-                        }
-                        else {
-                            colSpan += pdfCell.columnSpan;
-                            j = j - 1;
-                        }
-                        break;
+            pdfCell.value = col.headerText;
+            if (!isNullOrUndefined(cell) && (cell.cellType === CellType.HeaderIndent || cell.cellType === CellType.DetailHeader)) {
+                pdfCell.value = '';
+                pdfCell.width = 20;
+            }
+            var args = {
+                cell: pdfCell,
+                gridCell: cell,
+                style: pdfCell.style
+            };
+            _this.parent.trigger(pdfHeaderQueryCellInfo, args);
+        };
+        var recuHeader = function (cols, depth, spanCnt, colIndex, rowIndex, isRoot) {
+            var cidx = 0;
+            for (var i = 0; i < cols.length; i++) {
+                if (isRoot) {
+                    cidx = cidx + spanCnt + (i === 0 ? 0 : -1);
+                    colIndex = cidx;
+                    spanCnt = 0;
+                }
+                if (cols[i].columns && cols[i].columns.length) {
+                    var newSpanCnt = recuHeader(cols[i].columns, depth - 1, 0, i + colIndex, rowIndex + 1, false);
+                    applyTextAndSpan(rowIndex, i + colIndex, cols[i], 0, newSpanCnt);
+                    spanCnt = spanCnt + newSpanCnt;
+                    colIndex = colIndex + newSpanCnt - 1;
+                }
+                else if (cols[i].visible) {
+                    spanCnt++;
+                    applyTextAndSpan(rowIndex, i + colIndex, cols[i], depth, 0);
                 }
             }
-        }
+            return spanCnt;
+        };
+        recuHeader(cols, depth, 0, 0, 0, true);
         if (pdfGrid.columns.count >= 6 && allowHorizontalOverflow) {
             pdfGrid.style.allowHorizontalOverflow = true;
         }
@@ -31651,7 +31659,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
                     /* tslint:disable-next-line:max-line-length */
                     if (!isNullOrUndefined(cell.column.footerTemplate) || !isNullOrUndefined(cell.column.groupCaptionTemplate) || !isNullOrUndefined(cell.column.groupFooterTemplate)) {
                         /* tslint:disable-next-line:no-any */
-                        var result = this.getTemplateFunction(templateFn, i, leastCaptionSummaryIndex, cell.column);
+                        var result = this.getTemplateFunction(templateFn, i, leastCaptionSummaryIndex, cell);
                         templateFn = result.templateFunction;
                         leastCaptionSummaryIndex = result.leastCaptionSummaryIndex;
                         /* tslint:disable-next-line:max-line-length */
@@ -31701,18 +31709,18 @@ var PdfExport = /** @__PURE__ @class */ (function () {
         }
     };
     /* tslint:disable-next-line:no-any */
-    PdfExport.prototype.getTemplateFunction = function (templateFn, index, leastCaptionSummaryIndex, column) {
-        if (!isNullOrUndefined(column.footerTemplate)) {
-            templateFn[getEnumValue(CellType, CellType.Summary)] = compile(column.footerTemplate);
+    PdfExport.prototype.getTemplateFunction = function (templateFn, index, leastCaptionSummaryIndex, cell) {
+        if (!isNullOrUndefined(cell.column.footerTemplate) && cell.cellType === CellType.Summary) {
+            templateFn[getEnumValue(CellType, CellType.Summary)] = compile(cell.column.footerTemplate);
         }
-        else if (!isNullOrUndefined(column.groupCaptionTemplate)) {
+        else if (!isNullOrUndefined(cell.column.groupCaptionTemplate)) {
             if (leastCaptionSummaryIndex === -1) {
                 leastCaptionSummaryIndex = index;
             }
-            templateFn[getEnumValue(CellType, CellType.CaptionSummary)] = compile(column.groupCaptionTemplate);
+            templateFn[getEnumValue(CellType, CellType.CaptionSummary)] = compile(cell.column.groupCaptionTemplate);
         }
         else {
-            templateFn[getEnumValue(CellType, CellType.GroupSummary)] = compile(column.groupFooterTemplate);
+            templateFn[getEnumValue(CellType, CellType.GroupSummary)] = compile(cell.column.groupFooterTemplate);
         }
         return { templateFunction: templateFn, leastCaptionSummaryIndex: leastCaptionSummaryIndex };
     };

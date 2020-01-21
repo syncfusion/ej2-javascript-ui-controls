@@ -355,8 +355,8 @@ export class CheckBoxSelection {
         if (!Browser.isIE) {
             target = !isNullOrUndefined(e) && <HTMLElement>e.relatedTarget;
         }
-        if (document.body.contains(this.parent.popupObj.element) && this.parent.popupObj.element.contains(target) && !Browser.isIE
-            && this.filterInput) {
+        if (this.parent.popupObj && document.body.contains(this.parent.popupObj.element) && this.parent.popupObj.element.contains(target)
+            && !Browser.isIE && this.filterInput) {
             this.filterInput.focus();
             return;
         }
@@ -366,19 +366,20 @@ export class CheckBoxSelection {
             this.parent.scrollFocusStatus = false;
             return;
         }
-        if (document.body.contains(this.parent.popupObj.element) && !this.parent.popupObj.element.classList.contains('e-popup-close')) {
+        if (this.parent.popupObj && document.body.contains(this.parent.popupObj.element)
+            && !this.parent.popupObj.element.classList.contains('e-popup-close')) {
             this.parent.inputFocus = false;
             this.parent.updateValueState(e, this.parent.value, this.parent.tempValues);
             this.parent.dispatchEvent(this.parent.hiddenElement as HTMLElement, 'change');
         }
-        if (document.body.contains(this.parent.popupObj.element) &&
+        if (this.parent.popupObj && document.body.contains(this.parent.popupObj.element) &&
             !this.parent.popupObj.element.classList.contains('e-popup-close')) {
             this.parent.inputFocus = false;
             this.parent.overAllWrapper.classList.remove(FOCUS);
             this.parent.trigger('blur');
             this.parent.focused = true;
         }
-        if (document.body.contains(this.parent.popupObj.element) &&
+        if (this.parent.popupObj && document.body.contains(this.parent.popupObj.element) &&
             !this.parent.popupObj.element.classList.contains('e-popup-close') && !Browser.isDevice) {
             this.parent.hidePopup();
         }

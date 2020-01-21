@@ -25183,7 +25183,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
             bottomLeft = { x: (width - 17), y: height };
             bottomRight = { x: width, y: height };
             bounds = Rect.toBounds([topLeft, topRight, bottomLeft, bottomRight]);
-            if (bounds.containsPoint({ x: x, y: y })) {
+            if (bounds.containsPoint({ x: x + diagramCanvas.scrollLeft, y: y + diagramCanvas.scrollTop })) {
                 return true;
             }
         }
@@ -25193,7 +25193,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
             bottomLeft = { x: 0, y: height };
             bottomRight = { x: width, y: height };
             bounds = Rect.toBounds([topLeft, topRight, bottomLeft, bottomRight]);
-            if (bounds.containsPoint({ x: x, y: y })) {
+            if (bounds.containsPoint({ x: x + diagramCanvas.scrollLeft, y: y + diagramCanvas.scrollTop })) {
                 return true;
             }
         }
@@ -30819,11 +30819,11 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             connector.visible = visibility;
             var oldValues = {
                 visible: target.visible,
-                style: { opacity: target.style.opacity }
+                style: { opacity: target.wrapper.style.opacity }
             };
             var newValues = {
                 visible: target.visible,
-                style: { opacity: target.style.opacity }
+                style: { opacity: target.wrapper.style.opacity }
             };
             if (value) {
                 if (target.isExpanded) {
@@ -35614,6 +35614,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             if (!propChange) {
                 this.protectPropertyChange(propChange);
             }
+        }
+        if (update && !this.diagramActions) {
+            this.updateDiagramElementQuad();
         }
         return ((this.blazorActions & BlazorAction.expandNode) ? layout : true);
     };
@@ -41208,7 +41211,7 @@ var PrintAndExport = /** @__PURE__ @class */ (function () {
             var ctx = canvas.getContext('2d');
             ctx.fillStyle = 'transparent';
             ctx.fillRect(0, 0, bounds.width + (margin.left + margin.right), bounds.height + (margin.top + margin.bottom));
-            ctx.drawImage(img, bounds.x, bounds.y, bounds.width, bounds.height, margin.left, margin.top, bounds.width, bounds.height);
+            ctx.drawImage(img, 0, 0, bounds.width, bounds.height, margin.left, margin.top, bounds.width, bounds.height);
             image = canvas.toDataURL();
             if (options.printOptions) {
                 context.printImages(image, options);
@@ -48571,7 +48574,7 @@ var HierarchicalTree = /** @__PURE__ @class */ (function () {
     HierarchicalTree.prototype.hasChild = function (layout, shape) {
         //Check whether the node has children            
         var shape1 = layout.graphNodes[shape.id];
-        return shape1.tree.children && shape1.tree.children.length;
+        return shape1 ? shape1.tree.children && shape1.tree.children.length : 0;
     };
     HierarchicalTree.prototype.updateHorizontalTree = function (layout, shape, prev, x, y, level) {
         //Get dimensions with respect to layout orientations  

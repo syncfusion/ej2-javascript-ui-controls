@@ -14,6 +14,7 @@ export class ExcelFilter extends CheckBoxFilter {
 
     protected parent: IGrid;
     public excelFilterBase: ExcelFilterBase;
+    public isresetFocus: boolean;
 
     /**
      * Constructor for excelbox filtering module
@@ -22,6 +23,7 @@ export class ExcelFilter extends CheckBoxFilter {
     constructor(parent?: IGrid, filterSettings?: FilterSettings, serviceLocator?: ServiceLocator, customFltrOperators?: Object) {
         super(parent, filterSettings, serviceLocator);
         this.parent = parent;
+        this.isresetFocus = true;
         this.excelFilterBase = new ExcelFilterBase(parent as IXLFilter, customFltrOperators);
     }
 
@@ -40,7 +42,9 @@ export class ExcelFilter extends CheckBoxFilter {
 
     public closeDialog(): void {
         this.excelFilterBase.closeDialog();
-        this.parent.notify(events.restoreFocus, {});
+        if (this.isresetFocus) {
+            this.parent.notify(events.restoreFocus, {});
+        }
     }
 
     /* tslint:disable-next-line:max-line-length */

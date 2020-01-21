@@ -5038,5 +5038,24 @@ describe('Splitter Control', () => {
          });
     });
 
-
+     describe('Icons Type', () => {
+        let splitterObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default' });
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', separatorSize: 10, width: '400px', paneSettings: [{ size: '50%', collapsible: true }] });
+            splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+            document.body.innerHTML = '';
+        });
+        it('Check Expand and Collapse Button type', () => {
+            expect((splitterObj.element.querySelector('.e-arrow-left') as any).type).toEqual('button');
+            expect((splitterObj.element.querySelector('.e-arrow-right') as any).type).toEqual('button');
+        });
+    });
  });

@@ -18029,6 +18029,10 @@ var executeGroup = {
         command: 'Images',
         subCommand: 'Image',
     },
+    'insertTable': {
+        command: 'Table',
+        subCommand: 'CreateTable'
+    },
     'insertBrOnReturn': {
         command: 'InsertHTML',
         subCommand: 'InsertHTML',
@@ -18783,6 +18787,10 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
                     else {
                         value = this.htmlEditorModule.sanitizeHelper(value.outerHTML);
                     }
+                    break;
+                case 'insertTable':
+                    value.width = { minWidth: this.tableSettings.minWidth,
+                        maxWidth: this.tableSettings.maxWidth, width: this.tableSettings.width };
                     break;
                 case 'insertImage':
                     var temp = this.createElement('img', {

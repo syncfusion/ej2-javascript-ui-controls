@@ -1614,7 +1614,12 @@ export class Drawing {
                 for (let i: number = 0; i < children.length; i++) {
                     if (children[i].textNodes) {
                         if (actualObject.shapeAnnotationType === "FreeText") {
-                            children[i].content = actualObject.dynamicText;
+                            if (node.dynamicText !== undefined) {
+                                children[i].content = node.dynamicText;
+                                actualObject.dynamicText = node.dynamicText;
+                            } else {
+                                children[i].content = actualObject.dynamicText;
+                            }
                             children[i].width = actualObject.bounds.width - 8;
                         } else if (actualObject.enableShapeLabel === true && actualObject.measureType) {
                             if (node.labelContent) {

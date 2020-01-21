@@ -2803,14 +2803,13 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             this.dragCollection[i].destroy();
         }
         this.removeAllPanel();
-        if (this.table) { this.table.remove(); }
         super.destroy();
     }
 
     private removeAllPanel(): void {
-        this.panelCollection.forEach((item: HTMLElement) => {
-            item.remove();
-        });
+        while (this.element.firstElementChild) {
+            detach(this.element.firstElementChild);
+        }
     }
 
     protected setEnableRtl(): void {
