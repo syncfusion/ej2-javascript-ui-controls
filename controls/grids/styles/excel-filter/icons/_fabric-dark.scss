@@ -1,0 +1,29 @@
+@include export-module('excel-filter-fabric-dark-icons') {
+  /*!component icons*/
+
+  .e-icon-check::before {
+    content: '\e7ff';
+  }
+
+  #{&}.e-excelfilter {
+    .e-icon-filter::before {
+      content: '\e21c';
+    }
+
+    .e-excl-filter-icon::before {
+      content: '\e250';
+    }
+
+    .e-excl-filter-icon.e-filtered::before {
+      content: '\e247';
+    }
+
+    .e-search-icon::before {
+      content: '\e97d';
+    }
+
+    .e-chkcancel-icon::before {
+      content: '\e7a7';
+    }
+  }
+}

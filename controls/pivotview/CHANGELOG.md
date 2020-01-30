@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 17.4.46 (2020-01-30)
+
+### Pivot Table
+
+#### New Features
+
+- `#258547` - The aggregation type "Distinct Count" is now supported in text type fields.
+- `#257794` - Included the event option to restrict the specific field dropped to a specific axis.
+
 ## 17.4.39 (2019-12-17)
 
 ### Pivot Table

@@ -2650,7 +2650,7 @@ export class Layout {
                     splittedWidget.index = tableRowWidget.index;
                     splittedWidget.rowFormat = tableRowWidget.rowFormat;
                     this.updateWidgetLocation(tableRowWidget, splittedWidget);
-                    splittedWidget.height = 0;
+                    // splittedWidget.height = 0;
                     rowCollection.push(splittedWidget);
                 }
                 let rowSpan: number = 1;
@@ -2659,6 +2659,11 @@ export class Layout {
                 if (rowIndex - splittedCell.rowIndex === rowSpan - 1
                     && splittedWidget.height < splittedCell.height + splittedCell.margin.top + splittedCell.margin.bottom) {
                     splittedWidget.height = splittedCell.height + splittedCell.margin.top + splittedCell.margin.bottom;
+                } else {
+                    if (tableRowWidget.rowFormat.heightType !== 'Auto') {
+                        //Sets the height for row widget if height type is exact or at least.
+                        splittedWidget.height = tableRowWidget.rowFormat.height;
+                    }
                 }
                 splittedWidget.childWidgets.push(splittedCell);
                 splittedCell.containerWidget = splittedWidget;

@@ -77,7 +77,7 @@ export class MonthAgenda extends Month {
                 if (!workCell.querySelector('.' + cls.APPOINTMENT_INDICATOR_CLASS)) {
                     workCell.appendChild(createElement('div', { className: cls.APPOINTMENT_INDICATOR_CLASS }));
                 }
-                if (date.getTime() === util.resetTime(new Date(this.parent.selectedDate.getTime())).getTime()) {
+                if (date.getTime() === util.resetTime(new Date(this.monthAgendaDate.getTime())).getTime()) {
                     this.onEventRender(filterData, date);
                 }
             }

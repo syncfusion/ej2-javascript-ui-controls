@@ -1,6 +1,6 @@
 import { Dialog, OffsetPosition, BeforeOpenEventArgs, Tooltip, ButtonPropsModel } from '@syncfusion/ej2-popups';
 import { Droppable, createElement, extend, remove, addClass, closest, getInstance, isBlazor } from '@syncfusion/ej2-base';
-import { prepend, append, KeyboardEvents, KeyboardEventArgs, removeClass } from '@syncfusion/ej2-base';
+import { prepend, append, KeyboardEvents, KeyboardEventArgs, removeClass, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IDataOptions, IFieldOptions, ICalculatedFields } from '../../base/engine';
 import { PivotView } from '../../pivotview/base/pivotview';
 import { Button, RadioButton, CheckBox, ChangeArgs } from '@syncfusion/ej2-buttons';
@@ -52,7 +52,7 @@ export class CalculatedField implements IAction {
     private treeObj: TreeView;
     private inputObj: MaskedTextBox;
     private droppable: Droppable;
-    private menuObj: Menu;
+    private menuObj: Menu[];
     private newFields: ICalculatedFields[];
     private curMenu: Element;
     private isFieldExist: boolean;
@@ -167,13 +167,16 @@ export class CalculatedField implements IAction {
      * @returns void
      */
     private displayMenu(node: HTMLElement): void {
-        if (this.parent.dataType === 'pivot' && document.querySelector('.' + this.parentID + 'calculatedmenu') !== null &&
+        if (this.parent.dataType === 'pivot' &&
+            document.querySelector('.' + this.parentID + 'calculatedmenu') !== null &&
             node.querySelector('.e-list-icon').classList.contains(cls.ICON) &&
             !node.querySelector('.e-list-icon').classList.contains(cls.CALC_EDITED) &&
             !node.querySelector('.e-list-icon').classList.contains(cls.CALC_EDIT) && node.tagName === 'LI') {
-            this.menuObj.close();
+            let fieldName: string = node.getAttribute('data-field');
+            let isStringField: number = this.parent.engineModule.fieldList[fieldName].type !== 'number' ? 1 : 0;
+            this.menuObj[isStringField].close();
             this.curMenu = (node.querySelector('.' + cls.LIST_TEXT_CLASS) as HTMLElement);
-            this.openContextMenu();
+            this.openContextMenu(isStringField);
         } else if (node.tagName === 'LI' && (node.querySelector('.e-list-icon').classList.contains(cls.CALC_EDIT) ||
             (this.parent.dataType === 'olap' && node.getAttribute('data-type') === CALC && node.classList.contains('e-active')))) {
             this.isEdit = true;
@@ -253,12 +256,13 @@ export class CalculatedField implements IAction {
      * To set position for context menu.
      * @returns void
      */
-    private openContextMenu(): void {
+    private openContextMenu(isStringField: number): void {
         let pos: OffsetPosition = this.curMenu.getBoundingClientRect();
+        let offset: number = isStringField ? (window.scrollY || document.documentElement.scrollTop) : 30;
         if (this.parent.enableRtl) {
-            this.menuObj.open(pos.top + 30, pos.left - 100);
+            this.menuObj[isStringField].open(pos.top + offset, pos.left - 100);
         } else {
-            this.menuObj.open(pos.top + 30, pos.left + 150);
+            this.menuObj[isStringField].open(pos.top + offset, pos.left + 150);
         }
     }
 
@@ -270,8 +274,8 @@ export class CalculatedField implements IAction {
     private selectContextMenu(menu: MenuEventArgs): void {
         if (menu.element.textContent !== null) {
             let field: string = closest(this.curMenu, '.e-list-item').getAttribute('data-caption');
-            closest(this.curMenu, '.e-list-item').setAttribute('data-type', menu.element.id.split(this.parent.element.id + '_')[1]);
-            this.curMenu.textContent = field + ' (' + menu.element.id.split(this.parent.element.id + '_')[1] + ')';
+            closest(this.curMenu, '.e-list-item').setAttribute('data-type', menu.element.id.split('_').pop());
+            this.curMenu.textContent = field + ' (' + menu.element.textContent + ')';
             addClass([this.curMenu.parentElement.parentElement], ['e-node-focus', 'e-hover']);
             this.curMenu.parentElement.parentElement.setAttribute('tabindex', '-1');
             this.curMenu.parentElement.parentElement.focus();
@@ -283,7 +287,8 @@ export class CalculatedField implements IAction {
      * @returns void
      */
     private createMenu(): void {
-        let menuItems: MenuItemModel[] = [
+        let menuItems: MenuItemModel[][] = [];
+        menuItems[0] = [
             { id: this.parent.element.id + '_Sum', text: this.parent.localeObj.getConstant('Sum') },
             { id: this.parent.element.id + '_Count', text: this.parent.localeObj.getConstant('Count') },
             { id: this.parent.element.id + '_DistinctCount', text: this.parent.localeObj.getConstant('DistinctCount') },
@@ -295,22 +300,27 @@ export class CalculatedField implements IAction {
             { id: this.parent.element.id + '_SampleVar', text: this.parent.localeObj.getConstant('SampleVar') },
             { id: this.parent.element.id + '_PopulationStDev', text: this.parent.localeObj.getConstant('PopulationStDev') },
             { id: this.parent.element.id + '_PopulationVar', text: this.parent.localeObj.getConstant('PopulationVar') }];
-        let menuOptions: ContextMenuModel = {
-            cssClass: this.parentID + 'calculatedmenu',
-            items: menuItems,
-            enableRtl: this.parent.enableRtl,
-            beforeOpen: this.beforeMenuOpen.bind(this),
-            select: this.selectContextMenu.bind(this)
-        };
-        let contextMenu: HTMLElement = createElement('ul', {
-            id: this.parentID + 'contextmenu'
-        });
-        this.parent.element.appendChild(contextMenu);
-        this.menuObj = new Menu(menuOptions);
-        this.menuObj.isStringTemplate = true;
-        this.menuObj.appendTo(contextMenu);
+        menuItems[1] =
+            [{ text: this.parent.localeObj.getConstant('Count'), id: this.parent.element.id + 'StringMenu_Count' },
+            { text: this.parent.localeObj.getConstant('DistinctCount'), id: this.parent.element.id + 'StringMenu_DistinctCount' }];
+        this.menuObj = [];
+        for (let i: number = 0, noOfItem: number = menuItems.length; i < noOfItem; i++) {
+            let menuOptions: ContextMenuModel = {
+                cssClass: this.parentID + 'calculatedmenu',
+                items: menuItems[i],
+                enableRtl: this.parent.enableRtl,
+                beforeOpen: this.beforeMenuOpen.bind(this),
+                select: this.selectContextMenu.bind(this)
+            };
+            let contextMenu: HTMLElement = createElement('ul', {
+                id: this.parentID + 'contextmenu' + (i ? '_StringMenu' : ''),
+            });
+            this.parent.element.appendChild(contextMenu);
+            this.menuObj[i] = new Menu(menuOptions);
+            this.menuObj[i].isStringTemplate = true;
+            this.menuObj[i].appendTo(contextMenu);
+        }
     }
-
     /* tslint:disable */
     /**
      * Triggers while click OK button.
@@ -327,12 +337,12 @@ export class CalculatedField implements IAction {
                 isExist = true;
             }
         } else {
-            Object.keys(currentObj.parent.engineModule.fieldList).forEach((key: string, index: number) => {
+            for (let key of Object.keys(currentObj.parent.engineModule.fieldList)) {
                 if (currentObj.inputObj.value && currentObj.inputObj.value === key &&
                     currentObj.parent.engineModule.fieldList[key].aggregateType !== 'CalculatedField') {
                     isExist = true;
                 }
-            });
+            }
         }
         if (isExist) {
             currentObj.parent.pivotCommon.errorDialog.createErrorDialog(
@@ -533,25 +543,28 @@ export class CalculatedField implements IAction {
                 }
             }
         } else {
-            Object.keys(parent.engineModule.fieldList).forEach((key: string) => {
+            for (let key of Object.keys(parent.engineModule.fieldList)) {
                 let type: string = null;
-                if (parent.engineModule.fieldList[key].type === 'string' || parent.engineModule.fieldList[key].type === 'include' ||
-                    parent.engineModule.fieldList[key].type === 'exclude') {
-                    type = COUNT;
+                let typeVal: string = null;
+                if ((parent.engineModule.fieldList[key].type !== 'number' || parent.engineModule.fieldList[key].type === 'include' ||
+                    parent.engineModule.fieldList[key].type === 'exclude') &&
+                    (parent.engineModule.fieldList[key].aggregateType !== 'DistinctCount')) {
+                    typeVal = COUNT;
                 } else {
-                    type = parent.engineModule.fieldList[key].aggregateType !== undefined ?
-                        parent.engineModule.fieldList[key].aggregateType : SUM;
+                    typeVal = parent.engineModule.fieldList[key].aggregateType !== undefined ?
+                        (parent.engineModule.fieldList[key].aggregateType) : SUM;
                 }
+                type = this.parent.localeObj.getConstant(typeVal);
                 fields.push({
                     index: parent.engineModule.fieldList[key].index,
                     name: parent.engineModule.fieldList[key].caption + ' (' + type + ')',
-                    type: type,
+                    type: typeVal,
                     icon: cls.FORMAT + ' ' + cls.ICON,
                     formula: parent.engineModule.fieldList[key].formula,
                     field: key,
                     caption: parent.engineModule.fieldList[key].caption ? parent.engineModule.fieldList[key].caption : key
                 });
-            });
+            }
         }
         return fields;
     }
@@ -635,6 +648,9 @@ export class CalculatedField implements IAction {
     private createDialog(): void {
         if (document.querySelector('#' + this.parentID + 'calculateddialog') !== null) {
             remove(document.querySelector('#' + this.parentID + 'calculateddialog'));
+            while (!isNullOrUndefined(document.querySelector('.' + this.parentID + 'calculatedmenu'))) {
+                remove(document.querySelector('.' + this.parentID + 'calculatedmenu'));
+            }
         }
         this.parent.element.appendChild(createElement('div', {
             id: this.parentID + 'calculateddialog',
@@ -712,9 +728,10 @@ export class CalculatedField implements IAction {
         this.dialog.destroy();
         this.newFields = null;
         remove(document.getElementById(this.parentID + 'calculateddialog'));
-        remove(document.querySelector('.' + this.parentID + 'calculatedmenu'));
+        while (!isNullOrUndefined(document.querySelector('.' + this.parentID + 'calculatedmenu'))) {
+            remove(document.querySelector('.' + this.parentID + 'calculatedmenu'));
+        }
     }
-
     /* tslint:disable */
     /**
      * To render dialog elements.
@@ -1128,12 +1145,12 @@ export class CalculatedField implements IAction {
             });
             prepend([dragElement], args.node.querySelector('.' + cls.TEXT_CONTENT_CLASS) as HTMLElement);
             append([args.node.querySelector('.' + cls.FORMAT)], args.node.querySelector('.' + cls.TEXT_CONTENT_CLASS) as HTMLElement);
-            if (this.parent.engineModule.fieldList[field].type !== 'number' &&
-                this.parent.engineModule.fieldList[field].aggregateType !== CALC) {
-                removeClass([args.node.querySelector('.' + cls.FORMAT)], cls.ICON);
-            } else {
-                args.node.querySelector('.' + cls.FORMAT).setAttribute('title', this.parent.localeObj.getConstant('format'));
-            }
+            // if (this.parent.engineModule.fieldList[field].type !== 'number' &&
+            //     this.parent.engineModule.fieldList[field].aggregateType !== CALC) {
+            //     removeClass([args.node.querySelector('.' + cls.FORMAT)], cls.ICON);
+            // } else {
+            args.node.querySelector('.' + cls.FORMAT).setAttribute('title', this.parent.localeObj.getConstant('format'));
+            // }
             if (this.parent.engineModule.fieldList[field].aggregateType === CALC) {
                 args.node.querySelector('.' + cls.FORMAT).setAttribute('title', this.parent.localeObj.getConstant('edit'));
                 addClass([args.node.querySelector('.' + cls.FORMAT)], cls.CALC_EDIT);
@@ -1149,11 +1166,12 @@ export class CalculatedField implements IAction {
      */
     private createTypeContainer(key: string): HTMLElement {
         let wrapDiv: HTMLElement = createElement('div', { id: this.parentID + 'control_wrapper', className: cls.TREEVIEWOUTER });
-        let type: string[] = [SUM, COUNT, AVG, MIN, MAX, DISTINCTCOUNT, PRODUCT, STDEV, STDEVP, VAR, VARP];
+        let type: string[] = this.parent.engineModule.fieldList[key].type !== 'number' ? [COUNT, DISTINCTCOUNT] :
+            [SUM, COUNT, AVG, MIN, MAX, DISTINCTCOUNT, PRODUCT, STDEV, STDEVP, VAR, VARP];
         for (let i: number = 0; i < type.length; i++) {
             let input: HTMLInputElement = createElement('input', {
-                id: this.parentID + 'radio' + type[i],
-                attrs: { 'type': 'radio', 'data-ftxt': key },
+                id: this.parentID + 'radio' + key + type[i],
+                attrs: { 'type': 'radio', 'data-ftxt': key, 'data-value': type[i] },
                 className: cls.CALCRADIO
             }) as HTMLInputElement;
             wrapDiv.appendChild(input);
@@ -1168,15 +1186,17 @@ export class CalculatedField implements IAction {
      */
     private getAccordionData(parent: PivotView | PivotFieldList): AccordionItemModel[] {
         let data: AccordionItemModel[] = [];
-        Object.keys(parent.engineModule.fieldList).forEach((key: string, index: number) => {
+        let keys: string[] = Object.keys(parent.engineModule.fieldList);
+        for (let index: number = 0, i: number = keys.length; index < i; index++) {
+            let key: string = keys[index];
             data.push({
                 header: '<input id=' + this.parentID + '_' + index + ' class=' + cls.CALCCHECK + ' type="checkbox" data-field=' +
                     key + ' data-caption=' + this.parent.engineModule.fieldList[key].caption + ' data-type=' +
                     this.parent.engineModule.fieldList[key].type + '/>',
-                content: parent.engineModule.fieldList[key].aggregateType === CALC ||
-                    this.parent.engineModule.fieldList[key].type !== 'number' ? '' : this.createTypeContainer(key).outerHTML
+                content: this.parent.engineModule.fieldList[key].aggregateType === CALC ? '' :
+                    this.createTypeContainer(key).outerHTML
             });
-        });
+        }
         return data;
     }
 
@@ -1248,7 +1268,7 @@ export class CalculatedField implements IAction {
                 });
                 accordion.isStringTemplate = true;
                 accordion.appendTo('#' + this.parentID + 'accordDiv');
-                Object.keys(this.parent.engineModule.fieldList).forEach(this.updateType.bind(this));
+                this.updateType();
             }
             if (addBtn.element) {
                 addBtn.element.onclick = this.addBtnClick.bind(this);
@@ -1258,52 +1278,63 @@ export class CalculatedField implements IAction {
 
     private accordionExpand(args: ExpandEventArgs): void {
         if (args.element.querySelectorAll('.e-radio-wrapper').length === 0) {
-            Object.keys(this.parent.engineModule.fieldList).forEach((key: string) => {
-                let type: string[] = [SUM, COUNT, AVG, MIN, MAX, DISTINCTCOUNT, PRODUCT, STDEV, STDEVP, VAR, VARP];
+            let keys: string[] = Object.keys(this.parent.engineModule.fieldList);
+            for (let index: number = 0, i: number = keys.length; index < i; index++) {
+                let key: string = keys[index];
+                let type: string[] = this.parent.engineModule.fieldList[key].type !== 'number' ? [COUNT, DISTINCTCOUNT] :
+                    [SUM, COUNT, AVG, MIN, MAX, DISTINCTCOUNT, PRODUCT, STDEV, STDEVP, VAR, VARP];
                 let radiobutton: RadioButton;
                 if (key === args.element.querySelector('[data-field').getAttribute('data-field')) {
                     for (let i: number = 0; i < type.length; i++) {
                         radiobutton = new RadioButton({
                             label: this.parent.localeObj.getConstant(type[i]),
                             name: AGRTYPE + key,
+                            checked: args.element.querySelector('[data-type').getAttribute('data-type') === type[i],
                             change: this.onChange.bind(this),
                         });
                         radiobutton.isStringTemplate = true;
-                        radiobutton.appendTo('#' + this.parentID + 'radio' + type[i]);
+                        radiobutton.appendTo('#' + this.parentID + 'radio' + key + type[i]);
                     }
                 }
-            });
+            }
         }
     }
 
     private onChange(args: ChangeArgs): void {
-        let type: string = (args.event.target as HTMLElement).id.split(this.parent.element.id + 'radio')[1];
+        let type: string =
+            ((args.event.target as HTMLElement).parentElement.querySelector('.e-label') as HTMLElement)
+                .innerText;
         let field: string = (args.event.target as HTMLElement).closest('.e-acrdn-item').
             querySelector('[data-field').getAttribute('data-caption');
         ((args.event.target as HTMLElement).
             closest('.e-acrdn-item').querySelector('.e-label') as HTMLElement).
             innerText = field + ' (' + type + ')';
         (args.event.target as HTMLElement).closest('.e-acrdn-item').
-            querySelector('[data-type').setAttribute('data-type', type);
+            querySelector('[data-type').setAttribute('data-type', (args.event.target as HTMLElement).getAttribute('data-value'));
     }
 
-    private updateType(key: string, index: number): void {
-        let type: string = null;
-        if (this.parent.engineModule.fieldList[key].type === 'string' ||
-            this.parent.engineModule.fieldList[key].type === 'include' ||
-            this.parent.engineModule.fieldList[key].type === 'exclude') {
-            type = COUNT;
-        } else {
-            type = this.parent.engineModule.fieldList[key].aggregateType !== undefined ?
-                this.parent.engineModule.fieldList[key].aggregateType : SUM;
+    private updateType(): void {
+        let keys: string[] = Object.keys(this.parent.engineModule.fieldList);
+        for (let index: number = 0, i: number = keys.length; index < i; index++) {
+            let key: string = keys[index];
+            let type: string = null;
+            if ((this.parent.engineModule.fieldList[key].type !== 'number' ||
+                this.parent.engineModule.fieldList[key].type === 'include' ||
+                this.parent.engineModule.fieldList[key].type === 'exclude') &&
+                (this.parent.engineModule.fieldList[key].aggregateType !== 'DistinctCount')) {
+                type = COUNT;
+            } else {
+                type = this.parent.engineModule.fieldList[key].aggregateType !== undefined ?
+                    this.parent.engineModule.fieldList[key].aggregateType : SUM;
+            }
+            let checkbox: CheckBox = new CheckBox({
+                label: this.parent.engineModule.fieldList[key].caption + ' (' + this.parent.localeObj.getConstant(type) + ')'
+            });
+            checkbox.isStringTemplate = true;
+            checkbox.appendTo('#' + this.parentID + '_' + index);
+            document.querySelector('#' + this.parentID + '_' + index).setAttribute('data-field', key);
+            document.querySelector('#' + this.parentID + '_' + index).setAttribute('data-type', type);
         }
-        let checkbox: CheckBox = new CheckBox({
-            label: this.parent.engineModule.fieldList[key].caption + ' (' + type + ')'
-        });
-        checkbox.isStringTemplate = true;
-        checkbox.appendTo('#' + this.parentID + '_' + index);
-        document.querySelector('#' + this.parentID + '_' + index).setAttribute('data-field', key);
-        document.querySelector('#' + this.parentID + '_' + index).setAttribute('data-type', type);
     }
 
     /**

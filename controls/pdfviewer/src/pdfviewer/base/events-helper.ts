@@ -1,6 +1,7 @@
 
 import { BaseEventArgs } from '@syncfusion/ej2-base';
 import { AnnotationType } from './index';
+import { ShapeLabelSettingsModel } from '../pdfviewer-model';
 /**
  * Exports types used by PDF viewer.
  */
@@ -203,6 +204,10 @@ export interface AnnotationAddEventArgs extends BaseEventArgs {
      * End index of text markup annotation in the page text content.
      */
     textMarkupEndIndex?: number;
+    /**
+     * End index of text markup annotation in the page text content.
+     */
+    labelSettings?: ShapeLabelSettingsModel;
 }
 
 /**
@@ -344,6 +349,10 @@ export interface AnnotationResizeEventArgs extends BaseEventArgs {
      * End index of text markup annotation in the page text content.
      */
     textMarkupEndIndex?: number;
+    /**
+     * End index of text markup annotation in the page text content.
+     */
+    labelSettings?: ShapeLabelSettingsModel;
 }
 
 /**

@@ -1,5 +1,5 @@
-import { Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, closest, compile, detach, extend, isNullOrUndefined, removeClass, resetBlazorTemplate, select, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
-import { DataManager, ODataV4Adaptor, Query, UrlAdaptor, WebApiAdaptor } from '@syncfusion/ej2-data';
+import { Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, closest, compile, detach, extend, getValue, isNullOrUndefined, removeClass, resetBlazorTemplate, select, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { DataManager, ODataV4Adaptor, Predicate, Query, UrlAdaptor, WebApiAdaptor } from '@syncfusion/ej2-data';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DatePicker, DateRangePicker, DateTimePicker, TimePicker } from '@syncfusion/ej2-calendars';
 import { ColorPicker, FormValidator, MaskedTextBox, NumericTextBox, Slider, TextBox } from '@syncfusion/ej2-inputs';
@@ -271,7 +271,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         this.updateAdaptor();
         this.appendValueElement();
         this.updateValue();
-        this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)));
+        this.renderInitialValue();
         this.wireEvents();
         this.setRtl(this.enableRtl);
         this.enableEditor(this.enableEditMode);
@@ -297,6 +297,67 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         this.valueWrap.appendChild(this.editIcon);
         this.element.appendChild(this.valueWrap);
     }
+    renderInitialValue() {
+        if (['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'].indexOf(this.type) > -1
+            && !isNullOrUndefined(this.value) && !this.isEmpty(this.value.toString()) && !isNullOrUndefined(this.model.fields)
+            && !isNullOrUndefined(this.model.dataSource)) {
+            this.renderValue(this.getLocale({ loadingText: 'Loading...' }, 'loadingText'));
+            this.valueWrap.classList.add(LOAD);
+            createSpinner({ target: this.valueWrap, width: 10 });
+            showSpinner(this.valueWrap);
+            this.getInitFieldMapValue();
+        }
+        else {
+            this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)));
+        }
+    }
+    getInitFieldMapValue() {
+        let model = this.model;
+        let mText = model.fields.text;
+        let mVal = model.fields.value;
+        let query = isNullOrUndefined(model.query) ? new Query() : model.query;
+        if (model.dataSource instanceof DataManager) {
+            model.dataSource.executeQuery(this.getInitQuery(model, query)).then((e) => {
+                this.updateInitValue(mText, mVal, e.result);
+            });
+        }
+        else {
+            this.updateInitValue(mText, mVal, new DataManager(model.dataSource).executeLocal(this.getInitQuery(model, query)));
+        }
+    }
+    getInitQuery(model, query) {
+        let predicate;
+        let mVal = model.fields.value;
+        let value = this.value;
+        if (this.type !== 'MultiSelect' || typeof (this.value) !== 'object') {
+            predicate = new Predicate(mVal, 'equal', this.value);
+        }
+        else {
+            let i = 0;
+            for (let val of value) {
+                predicate = ((i === 0) ? predicate = new Predicate(mVal, 'equal', val) : predicate.or(mVal, 'equal', val));
+                i++;
+            }
+        }
+        return query.where(predicate);
+    }
+    updateInitValue(mText, mVal, result) {
+        if (result.length <= 0) {
+            return;
+        }
+        if (result.length === 1) {
+            this.valueEle.innerHTML = this.checkValue(getValue((isNullOrUndefined(mText) ? mVal : mText), result[0]));
+        }
+        else {
+            let val = [];
+            for (let obj of result) {
+                val.push(getValue((isNullOrUndefined(mText) ? mVal : mText), obj));
+            }
+            this.valueEle.innerHTML = this.checkValue(val.toString());
+        }
+        hideSpinner(this.valueWrap);
+        this.valueWrap.classList.remove(LOAD);
+    }
     renderValue(val) {
         this.valueEle.innerHTML = val;
         if (this.type === 'Color') {
@@ -307,6 +368,12 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         }
     }
     renderEditor() {
+        this.prevValue = this.value;
+        this.beginEditArgs = { mode: this.mode, cancelFocus: false, cancel: false };
+        this.trigger('beginEdit', this.beginEditArgs);
+        if (this.beginEditArgs.cancel) {
+            return;
+        }
         let tipOptions = undefined;
         let target = select('.' + VALUE_WRAPPER, this.element);
         if (this.editableOn !== 'EditIconClick') {
@@ -350,7 +417,6 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         if (this.actionOnBlur !== 'Ignore') {
             this.wireDocEvent();
         }
-        this.initRender = false;
         addClass([this.valueWrap], [OPEN]);
         this.setProperties({ enableEditMode: true }, true);
     }
@@ -734,21 +800,30 @@ let InPlaceEditor = class InPlaceEditor extends Component {
     sendValue() {
         let eventArgs = { data: { name: this.name, primaryKey: this.primaryKey, value: this.getSendValue() } };
         this.trigger('actionBegin', eventArgs, (actionBeginArgs) => {
-            if (!this.isEmpty(this.url) && !this.isEmpty(this.primaryKey)) {
-                this.dataManager = new DataManager({ url: this.url, adaptor: this.dataAdaptor });
-                if (this.adaptor === 'UrlAdaptor') {
-                    this.dataManager.executeQuery(this.getQuery(actionBeginArgs.data), this.successHandler.bind(this), this.failureHandler.bind(this));
-                }
-                else {
-                    let crud = this.dataManager.insert(actionBeginArgs.data);
-                    crud.then((e) => this.successHandler(e)).catch((e) => this.failureHandler(e));
+            if (actionBeginArgs.cancel) {
+                this.removeSpinner('submit');
+                if (this.mode === 'Popup') {
+                    this.updateArrow();
                 }
             }
             else {
-                let eventArg = { data: {}, value: actionBeginArgs.data.value };
-                this.triggerSuccess(eventArg);
+                if (!this.isEmpty(this.url) && !this.isEmpty(this.primaryKey)
+                    && (this.initRender || (!this.initRender && this.prevValue !== this.value))) {
+                    this.dataManager = new DataManager({ url: this.url, adaptor: this.dataAdaptor });
+                    if (this.adaptor === 'UrlAdaptor') {
+                        this.dataManager.executeQuery(this.getQuery(actionBeginArgs.data), this.successHandler.bind(this), this.failureHandler.bind(this));
+                    }
+                    else {
+                        let crud = this.dataManager.insert(actionBeginArgs.data);
+                        crud.then((e) => this.successHandler(e)).catch((e) => this.failureHandler(e));
+                    }
+                }
+                else {
+                    let eventArg = { data: {}, value: actionBeginArgs.data.value };
+                    this.triggerSuccess(eventArg);
+                }
+                this.dataManager = undefined;
             }
-            this.dataManager = undefined;
         });
     }
     isEmpty(value) {
@@ -790,13 +865,14 @@ let InPlaceEditor = class InPlaceEditor extends Component {
                 helper: null
             };
             extend(item, item, beforeEvent);
-            this.trigger('beforeSanitizeHtml', item);
-            if (item.cancel && !isNullOrUndefined(item.helper)) {
-                value = item.helper(value);
-            }
-            else if (!item.cancel) {
-                value = SanitizeHtmlHelper.serializeValue(item, value);
-            }
+            this.trigger('beforeSanitizeHtml', item, (args) => {
+                if (item.cancel && !isNullOrUndefined(item.helper)) {
+                    value = item.helper(value);
+                }
+                else if (!item.cancel) {
+                    value = SanitizeHtmlHelper.serializeValue(item, value);
+                }
+            });
         }
         return value;
     }
@@ -894,7 +970,12 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         let val = args.value;
         this.trigger('actionSuccess', args, (actionArgs) => {
             this.removeSpinner('submit');
-            this.renderValue(this.checkValue((actionArgs.value !== val) ? actionArgs.value : this.getRenderValue()));
+            if (!actionArgs.cancel) {
+                this.renderValue(this.checkValue((actionArgs.value !== val) ? actionArgs.value : this.getRenderValue()));
+            }
+            if (actionArgs.cancel && this.mode === 'Inline') {
+                removeClass([this.valueWrap], [HIDE]);
+            }
             this.removeEditor();
         });
     }
@@ -1009,20 +1090,21 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             this.setAttribute(select('.e-slider-input', this.containerEle), ['name']);
         }
         let eventArgs = { mode: this.mode, cancelFocus: false };
-        this.trigger('beginEdit', eventArgs);
-        if (!eventArgs.cancelFocus) {
-            if (this.mode === 'Inline' && (['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'].indexOf(this.type) > -1)
-                && this.model.dataSource instanceof DataManager) {
-                this.showDropDownPopup();
+        this.trigger('beginEdit', eventArgs, (args) => {
+            if (!this.beginEditArgs.cancelFocus) {
+                if (this.mode === 'Inline' && (['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'].indexOf(this.type) > -1)
+                    && this.model.dataSource instanceof DataManager) {
+                    this.showDropDownPopup();
+                }
+                else {
+                    this.setFocus();
+                }
             }
-            else {
-                this.setFocus();
+            if (this.afterOpenEvent) {
+                this.tipObj.setProperties({ afterOpen: this.afterOpenEvent }, true);
+                this.tipObj.trigger('afterOpen', e);
             }
-        }
-        if (this.afterOpenEvent) {
-            this.tipObj.setProperties({ afterOpen: this.afterOpenEvent }, true);
-            this.tipObj.trigger('afterOpen', e);
-        }
+        });
     }
     popMouseDown(e) {
         let trgClass = e.target.classList;
@@ -1055,16 +1137,18 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         }
     }
     successHandler(e) {
+        this.initRender = false;
         let eventArgs = { data: e, value: this.getSendValue() };
         this.triggerSuccess(eventArgs);
     }
     failureHandler(e) {
         let eventArgs = { data: e, value: this.getSendValue() };
-        this.trigger('actionFailure', eventArgs);
-        this.removeSpinner('submit');
-        if (this.mode === 'Popup') {
-            this.updateArrow();
-        }
+        this.trigger('actionFailure', eventArgs, (args) => {
+            this.removeSpinner('submit');
+            if (this.mode === 'Popup') {
+                this.updateArrow();
+            }
+        });
     }
     enterKeyDownHandler(e) {
         if (!closest(e.target, '.' + INPUT + ' .e-richtexteditor')) {
@@ -1222,10 +1306,10 @@ let InPlaceEditor = class InPlaceEditor extends Component {
                     break;
                 case 'value':
                     this.updateValue();
-                    this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)));
+                    this.renderInitialValue();
                     break;
                 case 'emptyText':
-                    this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)));
+                    this.renderInitialValue();
                     break;
                 case 'template':
                     this.checkIsTemplate();

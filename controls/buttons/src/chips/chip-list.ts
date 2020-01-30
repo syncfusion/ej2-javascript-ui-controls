@@ -50,6 +50,7 @@ interface ChipFields {
     leadingIconCss: string;
     trailingIconCss: string;
     enabled: boolean;
+    value: string | number;
 }
 
 export interface SelectedItems {
@@ -121,6 +122,11 @@ export interface ClickEventArgs {
      * It denotes whether the clicked item is selected or not.
      */
     selected?: boolean;
+
+    /**
+     * It denotes whether the item can be clicked or not.
+     */
+    cancel: boolean;
 
     /**
      * It denotes the event.
@@ -261,7 +267,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      * @default []
      */
     @Property([])
-    public selectedChips: number[] | number;
+    public selectedChips: string[] | number[] | number;
 
     /**
      * This selection property enables chip selection type.
@@ -292,6 +298,14 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Event()
     public click: EmitType<ClickEventArgs>;
+
+    /**
+     * This click event will get triggered once the chip is before click.
+     * @event
+     * @blazorProperty 'OnBeforeClick'
+     */
+    @Event()
+    public beforeClick: EmitType<ClickEventArgs>;
 
     /**
      * This delete event will get triggered before removing the chip.
@@ -389,6 +403,9 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                 chipListArray = chipArray;
                 addClass([this.element], className);
                 this.element.setAttribute('aria-label', fieldsData.text);
+                if (fieldsData.value) {
+                    this.element.setAttribute('data-value', fieldsData.value.toString());
+                }
             } else {
                 let wrapper: HTMLElement = this.createElement('DIV', {
                     className: className.join(' '), attrs: {
@@ -396,6 +413,9 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                         'aria-label': fieldsData.text, 'aria-selected': 'false'
                     }
                 });
+                if (fieldsData.value) {
+                    wrapper.setAttribute('data-value', fieldsData.value.toString());
+                }
                 append(chipArray, wrapper);
                 chipListArray.push(wrapper);
             }
@@ -419,7 +439,8 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
             trailingIconCss: typeof data === 'object' ? (data.trailingIconCss ? data.trailingIconCss.toString() :
                 this.trailingIconCss.toString()) : (this.trailingIconCss.toString()),
             enabled: typeof data === 'object' ? (!isNullOrUndefined(data.enabled) ? (data.enabled.toString() === 'false' ? false : true) :
-                chipEnabled) : (chipEnabled)
+                chipEnabled) : (chipEnabled),
+            value: typeof data === 'object' ? ((data.value ? data.value.toString() : null)) : null
         };
         return fields;
     }
@@ -488,11 +509,11 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      * @param  {number | number[] | HTMLElement | HTMLElement[]} fields - We can pass number or array of number
      *  or chip element or array of chip element.
      */
-    public select(fields: number | number[] | HTMLElement | HTMLElement[]): void {
+    public select(fields: number | number[] | HTMLElement | HTMLElement[] | string[]): void {
         this.onSelect(fields, false);
     }
 
-    private onSelect(fields: number | number[] | HTMLElement | HTMLElement[], callFromProperty: boolean): void {
+    private onSelect(fields: number | number[] | HTMLElement | HTMLElement[] | string[], callFromProperty: boolean): void {
         if (this.type !== 'chip' && this.selection !== 'None') {
             if (callFromProperty) {
                 let chipElements: NodeListOf<Element> = this.element.querySelectorAll('.' + classNames.chip);
@@ -501,7 +522,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                     chipElements[i].classList.remove(classNames.active);
                 }
             }
-            let fieldData: number[] | HTMLElement[] = fields instanceof Array ? fields : <number[] | HTMLElement[]>[fields];
+            let fieldData: number[] | HTMLElement[] | string[] = fields instanceof Array ? fields : <number[] | HTMLElement[]>[fields];
             for (let i: number = 0; i < fieldData.length; i++) {
                 let chipElement: HTMLElement = fieldData[i] instanceof HTMLElement ? fieldData[i] as HTMLElement
                     : this.element.querySelectorAll('.' + classNames.chip)[fieldData[i] as number] as HTMLElement;
@@ -613,38 +634,59 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     private clickHandler(e: MouseEventArgs | KeyboardEventArgs, del: boolean = false): void {
         let chipWrapper: HTMLElement = <HTMLElement>closest((e.target as HTMLElement), '.' + classNames.chip);
         if (chipWrapper) {
+            let chipDataArgs: object;
             if (this.type !== 'chip') {
-                let chipData: ChipDataArgs = this.find(chipWrapper);
-                (chipData as ClickEventArgs).event = e;
-                let deleteElement: HTMLElement = (e.target as HTMLElement).classList.contains(classNames.delete) ?
-                    e.target as HTMLElement : (del ? chipWrapper.querySelector('.' + classNames.delete) : undefined);
-                if (deleteElement && this.enableDelete) {
-                    (chipData as DeleteEventArgs).cancel = false;
-                    let deletedItemArgs: DeleteEventArgs = chipData as DeleteEventArgs;
-                    this.trigger('delete', deletedItemArgs, (observedArgs: DeleteEventArgs) => {
-                        if (!observedArgs.cancel) {
-                            observedArgs.element = isBlazor() ? getElement(observedArgs.element) : observedArgs.element;
-                            this.deleteHandler(observedArgs.element, observedArgs.index);
-                        }
-                    });
-                } else if (this.selection !== 'None') {
-                    this.selectionHandler(chipWrapper);
-                    (chipData as ClickEventArgs).selected = chipWrapper.classList.contains(classNames.active);
-                    let selectedItemArgs: ClickEventArgs = chipData as ClickEventArgs;
-                    this.trigger('click', selectedItemArgs);
-                } else {
-                    this.focusInHandler(chipWrapper);
-                    let clickedItemArgs: ClickEventArgs = chipData as ClickEventArgs;
-                    this.trigger('click', clickedItemArgs);
+                chipDataArgs = this.find(chipWrapper);
+            } else {
+                let index: number = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.chip)).indexOf(chipWrapper);
+                chipDataArgs = {
+                    text: this.innerText ? this.innerText : this.text,
+                    element: chipWrapper, data: this.text, index: index
+                };
+            }
+            (chipDataArgs as ClickEventArgs).event = e;
+            (chipDataArgs as ClickEventArgs).cancel = false;
+            this.trigger('beforeClick', chipDataArgs as ClickEventArgs, (observedArgs: ClickEventArgs) => {
+                if (!(observedArgs as ClickEventArgs).cancel) {
+                    observedArgs.element = isBlazor() ? getElement(observedArgs.element) : observedArgs.element;
+                    this.clickEventHandler(observedArgs.element, e, del);
                 }
+            });
+        }
+    }
+
+    private clickEventHandler(chipWrapper: HTMLElement, e: MouseEventArgs | KeyboardEventArgs, del: boolean): void {
+        if (this.type !== 'chip') {
+            let chipData: ChipDataArgs = this.find(chipWrapper);
+            (chipData as ClickEventArgs).event = e;
+            let deleteElement: HTMLElement = (e.target as HTMLElement).classList.contains(classNames.delete) ?
+                e.target as HTMLElement : (del ? chipWrapper.querySelector('.' + classNames.delete) : undefined);
+            if (deleteElement && this.enableDelete) {
+                (chipData as DeleteEventArgs).cancel = false;
+                let deletedItemArgs: DeleteEventArgs = chipData as DeleteEventArgs;
+                this.trigger('delete', deletedItemArgs, (observedArgs: DeleteEventArgs) => {
+                    if (!observedArgs.cancel) {
+                        observedArgs.element = isBlazor() ? getElement(observedArgs.element) : observedArgs.element;
+                        this.deleteHandler(observedArgs.element, observedArgs.index);
+                    }
+                });
+            } else if (this.selection !== 'None') {
+                this.selectionHandler(chipWrapper);
+                (chipData as ClickEventArgs).selected = chipWrapper.classList.contains(classNames.active);
+                let selectedItemArgs: ClickEventArgs = chipData as ClickEventArgs;
+                this.trigger('click', selectedItemArgs);
             } else {
                 this.focusInHandler(chipWrapper);
-                let clickedItemArgs: ClickEventArgs = {
-                    text: this.innerText ? this.innerText : this.text,
-                    element: chipWrapper, data: this.text, event: e
-                };
+                let clickedItemArgs: ClickEventArgs = chipData as ClickEventArgs;
                 this.trigger('click', clickedItemArgs);
             }
+        } else {
+            this.focusInHandler(chipWrapper);
+            let clickedItemArgs: ClickEventArgs = {
+                text: this.innerText ? this.innerText : this.text,
+                element: chipWrapper, data: this.text, event: e
+            } as ClickEventArgs;
+            this.trigger('click', clickedItemArgs);
         }
     }
 
@@ -671,19 +713,31 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
 
     private updateSelectedChips(): void {
         let chipListEle : NodeListOf<Element> = this.element.querySelectorAll('.e-chip');
-        let chipColl : number[] = [];
-        let chip : number ;
+        let chipCollIndex : number[] = [];
+        let chipCollValue : string[] = [];
+        let chip : string | number = null;
+        let value: string;
         for (let i: number = 0; i < chipListEle.length; i++ ) {
-            if (this.element.querySelectorAll('.e-chip')[i].getAttribute('aria-selected') === 'true') {
-                if (this.selection === 'Single' && this.element.querySelectorAll('.e-chip')[i].classList.contains('e-active')) {
-                    chip = i;
+            let selectedEle : Element = this.element.querySelectorAll('.e-chip')[i];
+            if (selectedEle.getAttribute('aria-selected') === 'true') {
+                value = selectedEle.getAttribute('data-value');
+                if (this.selection === 'Single' && selectedEle.classList.contains('e-active')) {
+                    if (value) {
+                        chip = value;
+                    } else {
+                        chip = i;
+                    }
                     break;
                 } else {
-                    chipColl.push(i);
+                    if (value) {
+                        chipCollValue.push(value);
+                    } else {
+                        chipCollIndex.push(i);
+                    }
                 }
             }
         }
-        this.setProperties({ selectedChips: this.selection === 'Single' ? chip : chipColl }, true);
+        this.setProperties({ selectedChips: this.selection === 'Single' ? chip : value ? chipCollValue : chipCollIndex }, true);
     }
 
     private deleteHandler(chipWrapper: HTMLElement, index: number): void {

@@ -230,10 +230,10 @@ export class Legend extends BaseLegend {
     private changeSeriesVisiblity(series: Series, visibility: boolean): void {
         series.visible = !visibility;
         if (this.isSecondaryAxis(series.xAxis)) {
-            series.xAxis.visible = series.xAxis.series.some((value: Series) => (value.visible));
+            series.xAxis.internalVisibility = series.xAxis.series.some((value: Series) => (value.visible));
         }
         if (this.isSecondaryAxis(series.yAxis)) {
-            series.yAxis.visible = series.yAxis.series.some((value: Series) => (value.visible));
+            series.yAxis.internalVisibility = series.yAxis.series.some((value: Series) => (value.visible));
         }
     }
     private isSecondaryAxis(axis: Axis): boolean {

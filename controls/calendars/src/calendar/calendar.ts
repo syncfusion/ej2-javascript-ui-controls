@@ -330,13 +330,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      */
     @Property(null)
     public serverTimezoneOffset: number;
-    /**
-     * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
-     * @default 'en-US'
-     * @deprecated
-     */
-    @Property('en-US')
-    public locale: string;
     /** 
      * Triggers when Calendar is created.
      * @event

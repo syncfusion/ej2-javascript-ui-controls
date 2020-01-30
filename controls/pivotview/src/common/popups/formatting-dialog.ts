@@ -306,11 +306,11 @@ export class NumberFormatting implements IAction {
         if (this.valuesDropDown.value === this.parent.localeObj.getConstant('AllValues')) {
             let fieldList: IFieldListOptions = this.parent.dataType === 'olap' ?
                 this.parent.olapEngineModule.fieldList : this.parent.engineModule.fieldList;
-            Object.keys(fieldList).forEach((key: string) => {
+            for (let key of Object.keys(fieldList)) {
                 if (fieldList[key].type === 'number') {
                     this.insertFormat(key, text);
                 }
-            });
+            }
         } else {
             this.insertFormat(this.valuesDropDown.value.toString(), text);
         }

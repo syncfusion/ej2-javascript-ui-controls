@@ -1,14 +1,14 @@
-import { Component, Property, Event, Collection, L10n, Browser, EmitType, Complex, compile, createElement  } from '@syncfusion/ej2-base';
+import { Component, Property, Event, Collection, L10n, Browser, EmitType, Complex, compile, createElement } from '@syncfusion/ej2-base';
 import { addClass, removeClass, detach, attributes, prepend, setStyleAttribute } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty, isBlazor } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, formatUnit, append } from '@syncfusion/ej2-base';
-import { ButtonPropsModel, DialogModel, AnimationSettingsModel } from './dialog-model';
-import { EventHandler, updateBlazorTemplate, BlazorDragEventArgs } from '@syncfusion/ej2-base';
-import { Draggable, SanitizeHtmlHelper, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, formatUnit, append, EventHandler, Draggable, extend } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, BlazorDragEventArgs, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { Button, ButtonModel } from '@syncfusion/ej2-buttons';
 import { Popup, PositionData, getZindexPartial } from '../popup/popup';
 import { PositionDataModel } from '../popup/popup-model';
-import { Button, ButtonModel } from '@syncfusion/ej2-buttons';
+import { ButtonPropsModel, DialogModel, AnimationSettingsModel } from './dialog-model';
 import { createResize, removeResize, setMinHeight } from '../common/resize';
+
 export type ButtonType = 'Button' | 'Submit' | 'Reset';
 
 export interface SanitizeSelectors {
@@ -126,6 +126,7 @@ const MODAL_DLG: string = 'e-dlg-modal';
 const DLG_CONTENT: string = 'e-dlg-content';
 const DLG_CLOSE_ICON: string = 'e-icon-dlg-close';
 const DLG_OVERLAY: string = 'e-dlg-overlay';
+const DLG_TARGET: string = 'e-dlg-target';
 const DLG_CONTAINER: string = 'e-dlg-container';
 const SCROLL_DISABLED: string = 'e-scroll-disabled';
 const DLG_PRIMARY_BUTTON: string = 'e-primary';
@@ -629,7 +630,14 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     @Event()
     public resizeStop: EmitType<Object>;
     /**
-     * Constructor for creating the widget    
+     * Event triggers when the dialog is destroyed.
+     * @event
+     * @blazorProperty 'Destroyed'
+     */
+    @Event()
+    public destroyed: EmitType<Event>;
+    /**
+     * Constructor for creating the widget
      * @hidden
      */
     constructor(options?: DialogModel, element?: string | HTMLElement) {
@@ -665,16 +673,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         this.headerContent = null;
         this.allowMaxHeight = true;
         this.preventVisibility = true;
-        let classArray: string[] = [];
-        if (!(isBlazor() && this.isServerRendered)) {
-            for (let j: number = 0; j < this.element.classList.length; j++) {
-                if (!isNullOrUndefined(this.element.classList[j].match('e-control')) ||
-                    !isNullOrUndefined(this.element.classList[j].match(ROOT))) {
-                    classArray.push( this.element.classList[j]);
-                }
-            }
-            removeClass([this.element], classArray);
-        }
         this.clonedEle = <HTMLElement>this.element.cloneNode(true);
         this.closeIconClickEventHandler = (event: Event): void => {
             this.hide(event);
@@ -763,7 +761,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
 
     private setResize(): void {
         if (this.enableResize) {
-            if (isBlazor() && this.isServerRendered && !isNullOrUndefined(this.element.querySelector('.e-icons.e-resize-handle'))) {
+            if (this.isBlazorServerRender() && !isNullOrUndefined(this.element.querySelector('.e-icons.e-resize-handle'))) {
                 return;
             }
             this.element.classList.add(DLG_RESIZABLE);
@@ -853,11 +851,11 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.targetEle = ((typeof this.target) === 'string') ?
                 <HTMLElement>document.querySelector(<string>this.target) : <HTMLElement>this.target;
         }
-        if (!(isBlazor() && this.isServerRendered)) { addClass([this.element], ROOT); }
+        if (!this.isBlazorServerRender()) { addClass([this.element], ROOT); }
         if (Browser.isDevice) {
             addClass([this.element], DEVICE);
         }
-        if (!(isBlazor() && this.isServerRendered)) { this.setCSSClass(); }
+        if (!this.isBlazorServerRender()) { this.setCSSClass(); }
         this.setMaxHeight();
     }
     /**
@@ -866,15 +864,15 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      */
     private initRender(): void {
         this.initialRender = true;
-        if (!(isBlazor() && this.isServerRendered)) { attributes(this.element, { role: 'dialog' }); }
+        if (!this.isBlazorServerRender()) { attributes(this.element, { role: 'dialog' }); }
         if (this.zIndex === 1000) {
             this.setzIndex(this.element, false);
             this.calculatezIndex = true;
         } else { this.calculatezIndex = false; }
-        if (isBlazor() && this.isServerRendered && isNullOrUndefined(this.headerContent)) {
+        if (this.isBlazorServerRender() && isNullOrUndefined(this.headerContent)) {
             this.headerContent = this.element.getElementsByClassName('e-dlg-header-content')[0] as HTMLElement;
         }
-        if (!(isBlazor() && this.isServerRendered)) {
+        if (!this.isBlazorServerRender()) {
             this.setTargetContent();
             if (this.header !== '' && !isNullOrUndefined(this.header)) {
                 this.setHeader();
@@ -889,18 +887,18 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 this.setButton();
             }
         }
-        if (isBlazor() && this.isServerRendered) {
+        if (this.isBlazorServerRender()) {
             if (!isNullOrUndefined(this.buttons[0].buttonModel) && this.footerTemplate === '') { this.setButton(); } }
         if (this.allowDragging && (!isNullOrUndefined(this.headerContent))) {
             this.setAllowDragging();
         }
-        if (!(isBlazor() && this.isServerRendered)) {
+        if (!this.isBlazorServerRender()) {
             attributes(this.element, { 'aria-modal': (this.isModal ? 'true' : 'false') });
             if (this.isModal) {
                 this.setIsModal();
             }
         }
-        if (isBlazor() && this.isServerRendered && isNullOrUndefined(this.dlgContainer)) {
+        if (this.isBlazorServerRender() && isNullOrUndefined(this.dlgContainer)) {
             this.dlgContainer = this.element.parentElement;
             this.dlgOverlay = this.element.parentElement.getElementsByClassName('e-dlg-overlay')[0] as HTMLElement;
         }
@@ -913,6 +911,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             zIndex: this.zIndex,
             relateTo: this.target,
             actionOnScroll: 'none',
+            enableRtl: this.enableRtl,
             open: (event: Event) => {
                 let eventArgs: object = {
                     container: this.isModal ? this.dlgContainer : this.element,
@@ -949,7 +948,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         });
         this.positionChange();
         this.setEnableRTL();
-        if (!(isBlazor() && this.isServerRendered)) {
+        if (!this.isBlazorServerRender()) {
             addClass([this.element], DLG_HIDE);
             if (this.isModal) {
                 this.setOverlayZindex();
@@ -1035,7 +1034,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private setButton(): void {
-        if (!(isBlazor() && this.isServerRendered)) {
+        if (!this.isBlazorServerRender()) {
             this.buttonContent = [];
             this.btnObj = [];
             let primaryBtnFlag: boolean = true;
@@ -1046,13 +1045,16 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             }
             this.setFooterTemplate();
         }
+        let footerEle: HTMLElement = this.element.querySelector('.' + DLG_FOOTER_CONTENT);
+        let footerBtn: NodeListOf<Element> = !isNullOrUndefined(footerEle) &&
+            <NodeListOf<Element>>footerEle.querySelectorAll('button');
         for (let i: number = 0; i < this.buttons.length; i++) {
-            if (!(isBlazor() && this.isServerRendered)) { this.btnObj[i] = new Button(this.buttons[i].buttonModel); }
-            if (isBlazor() && this.isServerRendered) { this.ftrTemplateContent = this.element.querySelector('.e-footer-content'); }
-            if (typeof (this.buttons[i].click) === 'function') {
-                EventHandler.add(this.ftrTemplateContent.children[i], 'click', this.buttons[i].click, this);
+            if (!this.isBlazorServerRender()) { this.btnObj[i] = new Button(this.buttons[i].buttonModel); }
+            if (this.isBlazorServerRender()) { this.ftrTemplateContent = this.element.querySelector('.' + DLG_FOOTER_CONTENT); }
+            if (!isNullOrUndefined(this.ftrTemplateContent) && typeof (this.buttons[i].click) === 'function' && footerBtn.length > 0) {
+                EventHandler.add(footerBtn[i], 'click', this.buttons[i].click, this);
             }
-            if (!(isBlazor() && this.isServerRendered)) {
+            if (!this.isBlazorServerRender() && !isNullOrUndefined(this.ftrTemplateContent)) {
                 this.btnObj[i].appendTo(this.ftrTemplateContent.children[i] as HTMLElement);
                 this.btnObj[i].element.classList.add('e-flat');
                 this.primaryButtonEle = this.element.getElementsByClassName('e-primary')[0] as HTMLElement;
@@ -1161,7 +1163,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private setEnableRTL(): void {
-        if (!(isBlazor() && this.isServerRendered)) { this.enableRtl ? addClass([this.element], RTL) : removeClass([this.element], RTL); }
+        if (!this.isBlazorServerRender()) { this.enableRtl ? addClass([this.element], RTL) : removeClass([this.element], RTL); }
         if (!isNullOrUndefined(this.element.querySelector('.e-resize-handle'))) {
             removeResize();
             this.setResize();
@@ -1326,8 +1328,16 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         EventHandler.remove(element, 'keydown', this.keyDown);
     }
 
+    private updateSanitizeContent(): void {
+        if (!this.isBlazorServerRender()) { this.contentEle.innerHTML = this.sanitizeHelper(this.content as string); }
+    }
+
+    private isBlazorServerRender(): boolean {
+        return isBlazor() && this.isServerRendered;
+    }
+
     /**
-     * Module required function    
+     * Module required function
      * @private 
      */
     protected getModuleName(): string {
@@ -1343,16 +1353,17 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             switch (prop) {
                 case 'content':
                     if (!isNullOrUndefined(this.content) && this.content !== '') {
-                        if (isBlazor() && this.isServerRendered) {
+                        if (this.isBlazorServerRender()) {
                             this.contentEle = this.element.querySelector('.e-dlg-content'); }
                         if (!isNullOrUndefined(this.contentEle) && this.contentEle.getAttribute('role') !== 'dialog') {
-                            if (!(isBlazor() && this.isServerRendered)) { this.contentEle.innerHTML = ''; }
-                            typeof (this.content) === 'string' ? (isBlazor() && this.isServerRendered
+                            if (!this.isBlazorServerRender()) { this.contentEle.innerHTML = ''; }
+                            typeof (this.content) === 'string' ? (this.isBlazorServerRender()
                             && (this.contentEle.innerText === '')) ?
                                 this.contentEle.insertAdjacentHTML('beforeend', this.sanitizeHelper(this.content)) :
-                                this.contentEle.innerHTML = this.sanitizeHelper(this.content) : this.contentEle.appendChild(this.content);
+                                this.updateSanitizeContent() :
+                                this.contentEle.appendChild(this.content);
                             this.setMaxHeight();
-                        } else { if (!(isBlazor() && this.isServerRendered) ||
+                        } else { if (!this.isBlazorServerRender() ||
                             isNullOrUndefined(this.element.querySelector('.e-dlg-content'))) { this.setContent(); } }
                     } else if (!isNullOrUndefined(this.contentEle)) { detach(this.contentEle); this.contentEle = null; } break;
                 case 'header':
@@ -1362,7 +1373,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                             this.headerEle = null;
                         }
                     } else {
-                        if (!(isBlazor() && this.isServerRendered) ||
+                        if (!this.isBlazorServerRender() ||
                         isNullOrUndefined(this.element.querySelector('.e-dlg-header-content'))) { this.setHeader(); }
                     } break;
                 case 'footerTemplate':
@@ -1371,7 +1382,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                         detach(this.ftrTemplateContent); this.ftrTemplateContent = null;
                         this.buttons = [{}];
                     } else {
-                        if (!(isBlazor() && this.isServerRendered) ||
+                        if (!this.isBlazorServerRender() ||
                         isNullOrUndefined(this.element.querySelector('.e-footer-content'))) { this.setFooterTemplate(); }
                         this.buttons = [{}];
                     } break;
@@ -1380,8 +1391,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                         if (!this.showCloseIcon && (this.header === '' || isNullOrUndefined(this.header))) {
                             detach(this.headerContent); this.headerContent = null;
                         } else if (!this.showCloseIcon) { detach(this.closeIcon); } else {
-                            if (isBlazor() && this.isServerRendered) { this.wireEvents(); }}
-                    } else { if (!(isBlazor() && this.isServerRendered)) { this.renderCloseIcon(); } this.wireEvents(); } break;
+                            if (this.isBlazorServerRender()) { this.wireEvents(); }}
+                    } else { if (!this.isBlazorServerRender()) { this.renderCloseIcon(); } this.wireEvents(); } break;
                 case 'locale':
                     if (this.showCloseIcon) { this.closeIconTitle(); } break;
                 case 'visible':
@@ -1402,7 +1413,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     this.setCSSClass(oldProp.cssClass); break;
                 case 'buttons':
                     let buttonCount : number = this.buttons.length;
-                    if (!isNullOrUndefined(this.ftrTemplateContent)) {
+                    if (!isNullOrUndefined(this.ftrTemplateContent) && !this.isBlazorServerRender()) {
                         detach(this.ftrTemplateContent);
                         this.ftrTemplateContent = null;
                     }
@@ -1449,7 +1460,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             }
         } else {
             removeClass([this.element], MODAL_DLG);
-            removeClass([document.body], SCROLL_DISABLED);
+            removeClass([document.body], [DLG_TARGET , SCROLL_DISABLED ]);
             detach(this.dlgOverlay);
             while (this.dlgContainer.firstChild) {
                 this.dlgContainer.parentElement.insertBefore(this.dlgContainer.firstChild, this.dlgContainer);
@@ -1488,48 +1499,41 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * @memberof dialog
      */
     public destroy(): void {
-        if (this.element.classList.contains(ROOT)) {
-            this.unWireEvents();
-            super.destroy();
-            let classArray: string[] = [
-                ROOT, RTL, MODAL_DLG
-            ];
-            removeClass([this.element, this.element], classArray);
-            if (this.popupObj.element.classList.contains(POPUP_ROOT)) {
-                this.popupObj.destroy();
+        let classArray: string[] = [RTL, MODAL_DLG, DLG_RESIZABLE, DLG_RESTRICT_LEFT_VALUE];
+        let attrs: string[] = ['role', 'aria-modal', 'aria-labelledby', 'aria-describedby', 'aria-grabbed', 'tabindex', 'style'];
+        if (this.isModal) {
+            removeClass([(!isNullOrUndefined(this.targetEle) ? this.targetEle : document.body)], SCROLL_DISABLED);
+        }
+        this.unWireEvents();
+        if (!isNullOrUndefined(this.btnObj)) {
+            for (let i: number = 0; i < this.btnObj.length; i++) {
+                this.btnObj[i].destroy();
             }
-            /* istanbul ignore next */
-            if (!isNullOrUndefined(this.btnObj)) {
-                for (let i: number; i < this.btnObj.length; i++) {
-                    this.btnObj[i].destroy();
-                }
-            }
-            if (this.isModal && (!(isBlazor() && this.isServerRendered))) {
-                detach(this.dlgOverlay);
-                this.dlgContainer.parentNode.insertBefore(this.element, this.dlgContainer);
-                detach(this.dlgContainer);
-            }
-            if (!(isBlazor() && this.isServerRendered)) { this.element.innerHTML = ''; }
-            if (isBlazor() && this.isServerRendered) {
-                if (!isNullOrUndefined(this.element.children)) {
-                    for (let i: number = 0; i <= this.element.children.length; i++) {
-                        i = i - i;
-                        detach(this.element.children[i]);
-                    }
-                }
-            }
-            while (this.element.attributes.length > 0) {
-                this.element.removeAttribute(this.element.attributes[0].name);
-            }
-            for (let k: number = 0; k < this.clonedEle.attributes.length; k++) {
-                if (isBlazor() && this.isServerRendered && this.clonedEle.attributes[k].name === 'id') {
-                    this.element.setAttribute(this.clonedEle.attributes[k].name, this.clonedEle.attributes[k].value);
-                    return;
-                } else {
-                    this.element.setAttribute(this.clonedEle.attributes[k].name, this.clonedEle.attributes[k].value);
+        }
+        if (!isNullOrUndefined(this.dragObj)) { this.dragObj.destroy(); }
+        if (this.popupObj.element.classList.contains(POPUP_ROOT)) {
+            this.popupObj.destroy();
+        }
+        removeClass([this.element], classArray);
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') { removeClass([this.element], this.cssClass.split(' ')); }
+        if (this.isModal && !this.isBlazorServerRender()) {
+            detach(this.dlgOverlay);
+            this.dlgContainer.parentNode.insertBefore(this.element, this.dlgContainer);
+            detach(this.dlgContainer);
+        }
+        if (!this.isBlazorServerRender()) { this.element.innerHTML = this.clonedEle.innerHTML; }
+        if (this.isBlazorServerRender()) {
+            if (!isNullOrUndefined(this.element.children)) {
+                for (let i: number = 0; i <= this.element.children.length; i++) {
+                    i = i - i;
+                    detach(this.element.children[i]);
                 }
             }
         }
+        for (let i: number = 0; i < attrs.length; i++) {
+            this.element.removeAttribute(attrs[i]);
+        }
+        super.destroy();
     }
 
     /**
@@ -1537,7 +1541,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * @hidden
      */
     private wireEvents(): void {
-        if (isBlazor() && this.isServerRendered && this.showCloseIcon) {
+        if (this.isBlazorServerRender() && this.showCloseIcon) {
             this.closeIcon = this.element.getElementsByClassName('e-dlg-closeicon-btn')[0] as HTMLElement;
         }
         if (this.showCloseIcon) {
@@ -1559,19 +1563,10 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.isModal) {
             EventHandler.remove(this.dlgOverlay, 'click', this.dlgOverlayClickEventHandler);
         }
-
-        if (!isNullOrUndefined(this.buttons[0].buttonModel)) {
-            if (!(isBlazor() && this.isServerRendered)) {
-                for (let i: number = 0; i < this.buttons.length; i++) {
-                    if (typeof (this.buttons[i].click) === 'function') {
-                        EventHandler.remove(this.ftrTemplateContent.children[i], 'click', this.buttons[i].click);
-                    }
-                }
-            } else if (isBlazor() && this.isServerRendered && this.footerTemplate === '') {
-                for (let i: number = 0; i < this.buttons.length; i++) {
-                    if (typeof (this.buttons[i].click) === 'function') {
-                        EventHandler.remove(this.ftrTemplateContent.children[i], 'click', this.buttons[i].click);
-                    }
+        if (!isNullOrUndefined(this.buttons[0].buttonModel) && this.footerTemplate === '') {
+            for (let i: number = 0; i < this.buttons.length; i++) {
+                if (typeof (this.buttons[i].click) === 'function') {
+                    EventHandler.remove(this.ftrTemplateContent.children[i], 'click', this.buttons[i].click);
                 }
             }
         }
@@ -1626,9 +1621,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                             }
                             this.dlgOverlay.style.position = 'absolute';
                             this.element.style.position = 'relative';
-                            addClass([this.targetEle], SCROLL_DISABLED);
+                            addClass([this.targetEle], [DLG_TARGET , SCROLL_DISABLED ]);
                         } else {
-                            addClass([document.body], SCROLL_DISABLED);
+                            addClass([document.body], [DLG_TARGET , SCROLL_DISABLED ]);
                         }
                     }
                     let openAnimation: Object = {
@@ -1681,8 +1676,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.trigger('beforeClose', eventArgs, (beforeCloseArgs: BeforeCloseEventArgs) => {
                 if (!beforeCloseArgs.cancel) {
                     if (this.isModal) {
-                        !isNullOrUndefined(this.targetEle) ? removeClass([this.targetEle], SCROLL_DISABLED) :
-                            removeClass([document.body], SCROLL_DISABLED);
+                        !isNullOrUndefined(this.targetEle) ? removeClass([this.targetEle],  [DLG_TARGET , SCROLL_DISABLED]) :
+                            removeClass([document.body],  [DLG_TARGET , SCROLL_DISABLED]);
                     }
                     let closeAnimation: Object = {
                         name: this.animationSettings.effect + 'Out',
@@ -1714,13 +1709,13 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.element.style.maxHeight = (!isNullOrUndefined(this.target)) ?
                 (this.targetEle.offsetHeight) + 'px' : (window.innerHeight) + 'px';
             this.element.style.display = display;
-            addClass([document.body], SCROLL_DISABLED);
+            addClass([document.body], [DLG_TARGET , SCROLL_DISABLED ]);
             if (this.allowDragging && !isNullOrUndefined(this.dragObj)) {
                 this.dragObj.destroy();
             }
         } else {
             removeClass([this.element], FULLSCREEN);
-            removeClass([document.body], SCROLL_DISABLED);
+            removeClass([document.body], [DLG_TARGET , SCROLL_DISABLED ]);
             if (this.allowDragging && (!isNullOrUndefined(this.headerContent))) {
                 this.setAllowDragging();
             }

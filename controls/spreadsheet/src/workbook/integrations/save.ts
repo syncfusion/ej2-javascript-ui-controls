@@ -137,12 +137,16 @@ export class WorkbookSave extends SaveWorker {
      * @hidden
      */
     private save(saveSettings: SaveOptions): void {
-        if (this.isFullPost) {
-            this.initiateFullPostSave();
-        } else {
-            executeTaskAsync(
-                this, { 'workerTask': this.processSave },
-                this.updateSaveResult, [this.saveJSON, saveSettings, this.customParams], true);
+        let args: { cancel: boolean, jsonObject: object } = { cancel: false, jsonObject: this.saveJSON };
+        this.parent.notify(events.onSave, args);
+        if (!args.cancel) {
+            if (this.isFullPost) {
+                this.initiateFullPostSave();
+            } else {
+                executeTaskAsync(
+                    this, { 'workerTask': this.processSave },
+                    this.updateSaveResult, [this.saveJSON, saveSettings, this.customParams], true);
+            }
         }
         this.saveJSON = {};
     }

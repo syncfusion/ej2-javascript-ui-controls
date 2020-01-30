@@ -1,0 +1,487 @@
+@include export-module('kanban-layout') {
+  /*! kanban component layout */
+
+  #{&}.e-kanban {
+    display: block;
+    outline: medium none;
+    position: relative;
+    user-select: none;
+
+    .e-swimlane-header-toolbar {
+      background: $kanban-column-bg-color;
+      border-bottom: 0;
+      display: flex;
+      margin-bottom: 3px;
+      min-height: 42px;
+      padding: 10px;
+    }
+
+    .e-swimlane-header-toolbar {
+      .e-toolbar-swimlane-name {
+        font-size: 14px;
+        padding: 5px;
+      }
+
+      .e-toolbar-menu,
+      .e-toolbar-level-title {
+        padding-top: 6px;
+
+        .e-icon-menu {
+          font-size: 14px;
+          padding: 7px;
+          padding-left: 4px;
+        }
+      }
+    }
+
+    .e-swimlane-overlay {
+      position: absolute;
+
+      &.e-enable {
+        background-color: $kanban-popup-overlay-bg-color;
+        height: 100%;
+        opacity: .5;
+        width: 100%;
+      }
+    }
+
+    .e-swimlane-resource {
+      background: $kanban-bg-color;
+      height: 100%;
+      width: 225px;
+    }
+
+    .e-swimlane-tree {
+      height: 100%;
+      overflow-y: auto;
+    }
+
+    .e-swimlane-content {
+      position: absolute;
+      width: 100%;
+    }
+
+    .e-kanban-header {
+      > div {
+        overflow: hidden;
+      }
+    }
+
+    .e-kanban-content {
+      overflow: auto;
+    }
+
+    .e-kanban-table {
+      border: 0;
+      border-collapse: separate;
+      border-spacing: 10px 0;
+      table-layout: fixed;
+      width: 100%;
+
+      col.e-collapsed {
+        width: 50px;
+      }
+
+      .e-header-cells {
+        height: 50px;
+        overflow: hidden;
+        padding: 0 8px;
+        position: relative;
+        text-align: left;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        &.e-stacked-header-cell {
+          border-bottom: 1px solid $kanban-border-color;
+        }
+
+        &.e-toggle-header {
+          .e-header-wrap,
+          .e-column-expand,
+          .e-column-collapse {
+            display: inline-flex;
+          }
+
+          .e-column-expand {
+            cursor: pointer;
+            margin-right: 8px;
+            padding: 6px;
+            position: absolute;
+            right: 0;
+            text-align: center;
+          }
+
+          .e-column-collapse {
+            cursor: pointer;
+            font-size: 12px;
+            padding: 19px;
+          }
+        }
+
+        &.e-min-color {
+          background: $kanban-min-color;
+        }
+
+        &.e-max-color {
+          background: $kanban-max-color;
+        }
+
+        &.e-collapsed {
+          background-color: $kanban-column-bg-color;
+          padding-left: 0;
+          text-align: center;
+          width: 50px;
+
+          &.e-min-color {
+            background: $kanban-min-color;
+          }
+
+          &.e-max-color {
+            background: $kanban-max-color;
+          }
+
+          .e-header-wrap {
+            display: none;
+          }
+
+          .e-limits {
+            display: none;
+          }
+        }
+
+        .e-header-text {
+          display: inline-block;
+          font-size: 16px;
+          font-weight: 500;
+          line-height: 20px;
+          width: 100%;
+        }
+
+        .e-total-card {
+          display: inline-block;
+          font-size: 13px;
+          font-weight: 400;
+          line-height: 20px;
+          opacity: .57;
+        }
+
+        .e-limits {
+          display: flex;
+
+          .e-min-count,
+          .e-max-count {
+            font-size: 13px;
+            font-weight: 400;
+            opacity: .57;
+          }
+
+          .e-max-count {
+            padding-right: 8px;
+            position: absolute;
+            right: 0;
+          }
+
+          &.e-hide-limits {
+            display: none;
+          }
+        }
+      }
+
+      &.e-content-table {
+        col.e-collapsed {
+          width: 50px;
+        }
+
+        .e-content-row {
+          .e-content-cells {
+            .e-limits {
+              display: flex;
+              height: 26px;
+              position: relative;
+
+              .e-min-count,
+              .e-max-count {
+                font-size: 13px;
+                font-weight: 400;
+                opacity: .57;
+                padding: 4px 8px;
+              }
+
+              .e-max-count {
+                position: absolute;
+                right: 0;
+              }
+            }
+
+            &.e-min-color {
+              background: $kanban-min-color;
+            }
+
+            &.e-max-color {
+              background: $kanban-max-color;
+            }
+          }
+        }
+
+        .e-card {
+          &.e-selection {
+            @if $kanban-skin == 'fabric' or $kanban-skin == 'highcontrast' {
+              padding: 1px;
+            }
+          }
+
+          &.e-multi-clone-card {
+            display: none;
+          }
+        }
+
+        .e-target-multi-clone {
+          .e-column-key {
+            border-bottom: 1px dashed $kanban-border-color;
+            border-left: 1px dashed $kanban-border-color;
+            border-right: 1px dashed $kanban-border-color;
+
+            .e-text {
+              opacity: .5;
+              text-align: center;
+
+              @if $kanban-skin == 'highcontrast' {
+                color: $kanban-default-font;
+              }
+            }
+          }
+
+          .e-column-key:first-child {
+            border-top: 1px dashed $kanban-border-color;
+          }
+        }
+
+        .e-card {
+          &.e-kanban-dragged-card {
+            display: none;
+          }
+        }
+
+        .e-card-wrapper {
+          overflow: auto;
+
+          .e-multi-card-clone {
+            border: 1px solid $kanban-dragged-clone-border-color;
+            height: 34px;
+          }
+
+          .e-multi-card-text {
+            background: $kanban-bg-color;
+            display: table-cell;
+            padding-left: 8px;
+            text-align: center;
+          }
+        }
+
+        .e-target-dragged-clone,
+        .e-target-dropped-clone {
+          margin: 8px;
+        }
+
+        .e-target-dragged-clone {
+          border: 1px dashed $kanban-dragged-clone-border-color;
+        }
+
+        .e-target-dropped-clone {
+          background: $kanban-dropped-clone-bg-color;
+          border: 1px dashed $kanban-dropped-clone-border-color;
+        }
+
+        .e-content-row {
+          &.e-swimlane-row .e-content-cells {
+            height: 50px;
+            min-height: 50px;
+
+            .e-swimlane-text,
+            .e-swimlane-row-expand,
+            .e-swimlane-row-collapse,
+            .e-swimlane-item-count {
+              display: inline-block;
+            }
+
+            .e-swimlane-item-count {
+              font-size: 13px;
+              line-height: 20px;
+              opacity: .57;
+            }
+
+            .e-swimlane-text,
+            .e-swimlane-row-expand,
+            .e-swimlane-row-collapse {
+              margin-left: 8px;
+            }
+
+            .e-swimlane-row-expand,
+            .e-swimlane-row-collapse {
+              color: $kanban-icons-color;
+              cursor: pointer;
+              padding: 6px;
+            }
+          }
+
+          &.e-swimlane-row .e-swimlane-text {
+            font-size: 15px;
+            font-weight: 500;
+            line-height: 20px;
+          }
+
+          &:not(.e-swimlane-row) {
+            .e-content-cells {
+              height: 100px;
+              vertical-align: top;
+            }
+          }
+
+          &.e-collapsed:not(.e-swimlane-row) {
+            .e-content-cells {
+              border-bottom: 0;
+              height: 0;
+
+              > .e-collapse-header-text {
+                display: none;
+              }
+
+              .e-card-wrapper {
+                display: none;
+              }
+            }
+          }
+
+          .e-content-cells.e-collapsed {
+            overflow: hidden;
+            text-align: center;
+            width: 50px;
+
+            .e-limits {
+              &.e-hide-limits {
+                display: none;
+              }
+            }
+
+            .e-card-wrapper {
+              display: none;
+            }
+
+            .e-collapse-header-text {
+              color: $kanban-default-font;
+              font-size: 16px;
+              font-weight: 500;
+              transform: rotate(90deg) translate(30px);
+              white-space: nowrap;
+
+              .e-total-card {
+                display: inline-block;
+                font-size: 13px;
+                font-weight: 400;
+                opacity: .57;
+              }
+            }
+          }
+
+          .e-content-cells.e-dropping {
+            border: 1px dashed $kanban-border-color;
+          }
+        }
+
+        .e-card {
+          cursor: all-scroll;
+          display: block;
+          height: auto;
+          margin: 8px;
+          min-height: 70px;
+          width: auto;
+
+          &.duplicate {
+            position: absolute;
+            z-index: 1;
+          }
+
+          .e-card-header,
+          .e-card-content {
+            padding: 12px;
+
+            @if $kanban-skin == 'fabric' {
+              padding-top: 6px;
+            }
+          }
+
+          .e-card-header {
+            height: 25px;
+            padding-bottom: 0;
+          }
+
+          .e-card-header-caption {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .e-card-content {
+            font-size: 13px;
+            height: 100%;
+          }
+
+          .e-card-header ~ .e-card-content {
+            height: calc(100% - 45px);
+          }
+        }
+
+      }
+    }
+
+    &.e-rtl {
+      .e-kanban-table {
+        .e-header-cells {
+          text-align: right;
+
+          .e-header-text {
+            text-align: right;
+          }
+
+          .e-limits .e-max-count {
+            left: 0;
+            padding-left: 8px;
+            padding-right: 0;
+            right: auto;
+          }
+
+          &.e-toggle-header {
+            .e-column-expand {
+              left: 0;
+              right: auto;
+            }
+
+            .e-column-collapse {
+              text-align: center;
+            }
+          }
+
+          &.e-collapsed {
+            padding: 0;
+          }
+        }
+
+        &.e-content-table {
+          .e-content-row {
+            .e-content-cells {
+              .e-limits .e-max-count {
+                left: 0;
+                right: auto;
+              }
+
+              &.e-collapsed .e-collapse-header-text {
+                direction: initial;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+}

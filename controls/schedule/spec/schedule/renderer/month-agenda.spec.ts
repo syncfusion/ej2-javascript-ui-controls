@@ -688,6 +688,18 @@ describe('Month-agenda view rendering', () => {
             let emptyDiv: Element = schObj.element.querySelector('.e-appointment-wrap').children[0];
             expect(emptyDiv.className).toContain('e-no-event');
         });
+
+        it('events list issue', (done: DoneFn) => {
+            schObj.dataBound = () => {
+                expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(1);
+                done();
+            };
+            expect(schObj.element.querySelectorAll('.e-appointment').length).toEqual(0);
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[25] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[25] as HTMLElement, 'dblclick');
+            expect(schObj.eventWindow.dialogObject.visible).toEqual(true);
+            util.triggerMouseEvent(schObj.eventWindow.dialogObject.element.querySelector('.e-event-save'), 'click');
+        });
     });
 
     it('memory leak', () => {

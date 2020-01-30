@@ -5,8 +5,8 @@ import { SheetModel, getRangeIndexes, getCell, setCell, getSheet, CellModel, get
 import { CellStyleModel, getRangeAddress } from '../../workbook/index';
 import { RowModel, getFormattedCellObject, workbookFormulaOperation, applyCellFormat, checkIsFormula, Sheet } from '../../workbook/index';
 import { ExtendedSheet, Cell } from '../../workbook/index';
-import { ribbonClick, ICellRenderer, cut, copy, paste, PasteSpecialType, BeforePasteEventArgs} from '../common/index';
-import { enableRibbonItems, rowHeightChanged, completeAction, beginAction  } from '../common/index';
+import { ribbonClick, ICellRenderer, cut, copy, paste, PasteSpecialType, BeforePasteEventArgs, hasTemplate } from '../common/index';
+import { enableRibbonItems, rowHeightChanged, completeAction, beginAction } from '../common/index';
 import { clearCopy, locateElem, selectRange, dialog, contentLoaded, tabSwitch, cMenuBeforeOpen, locale } from '../common/index';
 import { Dialog } from '../services/index';
 import { Deferred } from '@syncfusion/ej2-data';
@@ -76,10 +76,8 @@ export class Clipboard {
         this.parent.element.focus();
     }
 
-    private tabSwitchHandler(args: { idx: number }): void {
-        if (args.idx === 1 && !this.copiedInfo) {
-            this.hidePaste();
-        }
+    private tabSwitchHandler(args: { activeTab: number }): void {
+        if (args.activeTab === 0 && !this.copiedInfo) { this.hidePaste(); }
     }
 
     private cMenuBeforeOpenHandler(e: { target: string }): void {
@@ -188,7 +186,9 @@ export class Clipboard {
                             }
                         }
                     } else {
-                        this.setCell(rowIdx, selIdx[1] + k, curSheet, cell, isExtend);
+                        if (!hasTemplate(this.parent, i, j, copiedIdx)) {
+                            this.setCell(rowIdx, selIdx[1] + k, curSheet, cell, isExtend);
+                        }
                     }
                     if (!isExternal && this.copiedInfo.isCut) {
                         this.setCell(i, j, prevSheet, getCell(i, j, prevSheet), false, true);

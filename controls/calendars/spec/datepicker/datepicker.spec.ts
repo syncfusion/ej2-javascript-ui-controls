@@ -3807,6 +3807,38 @@ describe('Datepicker', () => {
             expect(datePicker.popupWrapper === null).toBe(true);
         });
     });
+    describe('EJ2-35535- While pressing shift + tab key to move the previous item ', () => {
+        let keyEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            stopPropagation: ():void=>{/** NO Code */},
+            action: ''
+        };
+        let datepicker: any;
+        let datepicker1: any;
+        beforeEach(() => {
+            let ele: HTMLElement = createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+            datepicker = new DatePicker();
+            datepicker.appendTo('#date');
+            let ele1: HTMLElement = createElement('input', { id: 'date1' });
+            document.body.appendChild(ele1);
+            datepicker1 = new DatePicker();
+            datepicker1.appendTo('#date1');
+        });
+        afterEach(() => {
+            if (datepicker) {
+                datepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('popup will not closed.', () => {
+            datepicker1.focusIn();
+            datepicker1.show();
+            keyEventArgs.action = 'shiftTab';
+            datepicker1.inputKeyActionHandle(keyEventArgs);
+            expect(isNullOrUndefined(datepicker1.popupObj)).toBe(true);
+        });
+    });
     describe('Timezone offset', function (){
         let datePicker: any;
         beforeEach(function() {
@@ -3850,6 +3882,44 @@ describe('Datepicker', () => {
             datePicker.appendTo('#date');
             datePicker.element.parentElement.querySelectorAll('.e-clear-icon')[0].click();
             expect(datePicker.inputElement.value === "").toBe(true);
+        });
+    });
+    describe('EJ2-35061 - change event triggered twice with strict mode and format', function (){
+        let datePicker: any;
+        let onChange: jasmine.Spy;
+        let blurEvent: MouseEvent = document.createEvent('MouseEvents');
+        blurEvent.initEvent('blur', true, true);
+        beforeEach(function() {
+            let inputElement: HTMLElement = createElement('input', { id: 'datepicker'});
+            document.body.appendChild(inputElement);
+            onChange = jasmine.createSpy('change');
+        });
+        afterEach(function() {
+            if (datePicker) {
+                datePicker.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Checking whether the change is called after inputblur',function(done) {
+            datePicker = new DatePicker({
+                width: "250px",    
+                value: new Date('2019-12-26'),    
+                format: 'yyyy-MM-dd',    
+                strictMode: true, 
+                change: onChange
+            });
+            datePicker.appendTo('#datepicker');
+            (<HTMLInputElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
+            setTimeout(() => {
+                (<HTMLSpanElement>document.getElementsByClassName("e-month-hide")[0].nextElementSibling.querySelectorAll(".e-day")[4]).dispatchEvent(clickEvent);
+                setTimeout(() => {
+                    datePicker.inputBlurHandler(blurEvent);
+                    setTimeout(() => {                        
+                        expect(onChange).toHaveBeenCalledTimes(0);
+                        done();
+                    }, 110);
+                }, 110);
+            }, 110);
         });
     });
 });

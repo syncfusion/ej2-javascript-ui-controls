@@ -442,6 +442,8 @@ export class ScaleGroup {
             valueX = parseInt(valueBarElement.getAttribute('x'), 10);
             centerY = isValuePlot ? valueY : valueY + elementBarHeight;
             centerX = valueX;
+        } else {
+            return null;
         }
         valueBarElement.style.visibility = 'hidden';
         new Animation({}).animate(valueBarElement, {
@@ -485,6 +487,8 @@ export class ScaleGroup {
             x = parseFloat(targetBarelement.getAttribute('x1'));
             centerY = y;
             centerX = x;
+        } else {
+            return null;
         }
         targetBarelement.style.visibility = 'hidden';
         this.animateRect(targetBarelement, centerX, centerY, index + 1);

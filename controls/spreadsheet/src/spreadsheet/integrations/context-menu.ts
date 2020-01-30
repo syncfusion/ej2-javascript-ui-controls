@@ -3,7 +3,7 @@ import { ContextMenu as ContextMenuComponent, BeforeOpenCloseMenuEventArgs, Menu
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { closest, extend, detach, L10n } from '@syncfusion/ej2-base';
 import { MenuSelectArgs, addSheetTab, removeSheetTab, cMenuBeforeOpen, renameSheetTab, cut, copy, paste, locale } from '../common/index';
-import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, initiateCustomSort } from '../common/index';
+import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, initiateCustomSort, hideSheet } from '../common/index';
 import { openHyperlink, initiateHyperlink, editHyperlink } from '../common/index';
 import { filterByCellValue, reapplyFilter, clearFilter, getFilteredColumn, applySort } from '../common/index';
 import { getRangeIndexes, getColumnHeaderText, getCellIndexes } from '../../workbook/common/index';
@@ -86,6 +86,9 @@ export class ContextMenu {
                 case id + '_insert':
                     this.parent.notify(addSheetTab, { text: 'Insert' });
                     break;
+                case id + '_sheet_hide':
+                    this.parent.notify(hideSheet, null);
+                    break;
                 case id + '_ascending':
                     this.parent.notify(applySort, null);
                     break;
@@ -135,14 +138,16 @@ export class ContextMenu {
      * Before open event handler.
      */
     private beforeOpenHandler(args: BeforeOpenCloseMenuEventArgs): void {
-        let target: string = this.getTarget(args.event.target as Element);
+        let target: string = this.getTarget(args.event.target as Element); let items: MenuItemModel[];
         if (args.element.classList.contains('e-contextmenu')) {
-            let items: MenuItemModel[] = this.getDataSource(target);
+            items = this.getDataSource(target);
             this.contextMenuInstance.items = items;
             this.contextMenuInstance.dataBind();
+        } else {
+            items = args.items;
         }
         this.parent.trigger('contextMenuBeforeOpen', args);
-        this.parent.notify(cMenuBeforeOpen, extend(args, { target: target }));
+        this.parent.notify(cMenuBeforeOpen, extend(args, { target: target, items: items }));
     }
 
     /**
@@ -197,6 +202,9 @@ export class ContextMenu {
             });
             items.push({
                 text: l10n.getConstant('Rename'), id: id + '_rename'
+            });
+            items.push({
+                text: l10n.getConstant('Hide'), id: id + '_sheet_hide'
             });
         }
         return items;

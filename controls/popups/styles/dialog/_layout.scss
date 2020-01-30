@@ -215,6 +215,11 @@
     }
   }
 
+  // sass-lint:disable no-important
+  .e-dlg-target.e-scroll-disabled {
+    overflow: hidden !important;
+  }
+  // sass-lint:enable no-important
 
   .e-dlg-overlay {
     height: 100%;

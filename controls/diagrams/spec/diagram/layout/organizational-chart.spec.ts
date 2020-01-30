@@ -671,7 +671,7 @@ describe('Diagram Control', () => {
             diagram.layout.orientation = 'LeftToRight';
             diagram.dataBind();
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
-            expect(bounds.x == 405 && bounds.y == -135 && bounds.width == 540 && bounds.height == 850).toBe(true);
+            expect(bounds.x == 255 && bounds.y == -135 && bounds.width == 690 && bounds.height == 850).toBe(true);
             expect(diagram.nodes[0].offsetX == 330 && diagram.nodes[0].offsetY == 290).toBe(true);
             done();
         });
@@ -679,7 +679,7 @@ describe('Diagram Control', () => {
             diagram.layout.orientation = 'RightToLeft';
             diagram.dataBind();
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
-            expect(bounds.x == 255 && bounds.y == -135 && bounds.width == 540 && bounds.height == 850).toBe(true);
+            expect(bounds.x == 255 && bounds.y == -135 && bounds.width == 690 && bounds.height == 850).toBe(true);
             expect(diagram.nodes[0].offsetX == 870 && diagram.nodes[0].offsetY == 290).toBe(true);
             done();
         });
@@ -697,7 +697,7 @@ describe('Diagram Control', () => {
 
             diagram.dataBind();
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
-            expect(bounds.x == -195 && bounds.y == 155 && bounds.width == 1590 && bounds.height == 320).toBe(true);
+            expect(bounds.x == -195 && bounds.y == 105 && bounds.width == 1590 && bounds.height == 370).toBe(true);
             expect(diagram.nodes[0].offsetX == 600 && diagram.nodes[0].offsetY == 130).toBe(true);
             done();
         });

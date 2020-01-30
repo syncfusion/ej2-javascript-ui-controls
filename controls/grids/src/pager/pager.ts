@@ -526,10 +526,10 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     private addAriaLabel(): void {
         let classList: string[] = ['.e-mfirst', '.e-mprev', '.e-mnext', '.e-mlast'];
         if (!Browser.isDevice) {
-            classList.forEach((value: string) => {
-                let element: Element = this.element.querySelector(value);
+            for (let i: number = 0; i < classList.length; i++) {
+                let element: Element = this.element.querySelector(classList[i]);
                 element.setAttribute('aria-label', element.getAttribute('title'));
-            });
+            }
         }
     }
 

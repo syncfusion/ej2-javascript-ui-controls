@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 17.4.46 (2020-01-30)
+
+### Chart
+
+#### New Features
+
+- `#260004` - Provided support for polar and radar column spacing.
+- `#257784` - Provided support for smart rendering of X-axis rotated labels.
+- `#254646` - Provided Before export event support for export in chart.
+
+#### Bug Fixes
+
+- `#260205` - While using animate() method one series is not removed issue is fixed now.
+- `#255275` - Console error thrown when changing the trendline type from linear to exponential trendline or                 other types is fixed now.
+
 ## 17.4.41 (2020-01-07)
 
 ### Stock Chart

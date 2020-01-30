@@ -63,21 +63,114 @@
     <input id="enterSubmit" type="checkbox" checked /> SubmitOnEnter
     <div class="sample-separator"></div>
     <div class="sample-container">
-        <div id="element">
-        </div>
+        <table id="demo">
+            <tbody>
+                <tr>
+                    <th class="header" colspan="2">Without Fields - String</th>
+                </tr>
+                <tr>
+                    <th>Array of String</th>
+                    <td>
+                        <div id="element1"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="header" colspan="2">With Fields - String</th>
+                </tr>
+                <tr>
+                    <th>Local Data - Array of Object</th>
+                    <td>
+                        <div id="element2"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Local Data - Array of Complex Object</th>
+                    <td>
+                        <div id="element3"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Remote Data</th>
+                    <td>
+                        <div id="element4"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="header" colspan="2">Without Fields - Number</th>
+                </tr>
+                <tr>
+                    <th>Array of Number</th>
+                    <td>
+                        <div id="element5"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="header" colspan="2">With Fields - Number</th>
+                </tr>
+                <tr>
+                    <th>Local Data - Array of Object</th>
+                    <td>
+                        <div id="element6"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Local Data - Array of Complex Object</th>
+                    <td>
+                        <div id="element7"></div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
     <style>
         .sample-container {
             position: relative;
-            height: 350px;
-            margin: 5px auto;
             width: 900px;
+            margin-left: 150px;
+            margin-top: 50px;
+            margin-bottom: 200px;
+            margin-right: 100px;
         }
         .sample-separator {
             margin-top: 60px;
         }
-        #element {
-            margin-left: 400px;
+
+        .header {
+            padding: 20px;
+        }
+
+        #demo>tbody>tr>td {
+            width: 150px;
+            height: 50px;
+            vertical-align: middle;
+            padding: 4px 8px;
+        }
+
+        #demo {
+            border: 1px solid #dddddd;
+            width: 100%;
+        }
+
+        table {
+            background-color: transparent;
+            border-collapse: collapse;
+            border-spacing: 13px;
+        }
+
+        th {
+            width: 30%;
+        }
+
+        tr:nth-child(odd) th {
+            background: gainsboro;
+        }
+
+        tr:nth-child(even) th {
+            background: #f1f1f1;
+        }
+
+        #demo>tbody>tr>td {
+            border: 1px solid #dddddd;
         }
     </style>
 </body>

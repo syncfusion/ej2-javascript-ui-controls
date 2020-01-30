@@ -140,6 +140,16 @@ export class HelperMethods {
         }
         return color;
     }
+    public static getColor(color: string): string {
+        if (color.length > 0) {
+            if (color[0] === '#') {
+                if (color.length > 7) {
+                    return color.substr(0, 7);
+                }
+            }
+        }
+        return color;
+    }
     /**
      * Converts point to pixel.
      * @param {number} point 
@@ -249,13 +259,13 @@ export class HelperMethods {
     public static writeCharacterFormat(characterFormat: any, isInline: boolean, format: WCharacterFormat): void {
         characterFormat.bold = isInline ? format.bold : format.getValue('bold');
         characterFormat.italic = isInline ? format.italic : format.getValue('italic');
-        characterFormat.fontSize = isInline ? format.fontSize : format.getValue('fontSize');
-        characterFormat.fontFamily = isInline ? format.fontFamily : format.getValue('fontFamily');
+        characterFormat.fontSize = isInline ? this.toWriteInline(format, 'fontSize') : format.getValue('fontSize');
+        characterFormat.fontFamily = isInline ? this.toWriteInline(format, 'fontFamily') : format.getValue('fontFamily');
         characterFormat.underline = isInline ? format.underline : format.getValue('underline');
         characterFormat.strikethrough = isInline ? format.strikethrough : format.getValue('strikethrough');
         characterFormat.baselineAlignment = isInline ? format.baselineAlignment : format.getValue('baselineAlignment');
         characterFormat.highlightColor = isInline ? format.highlightColor : format.getValue('highlightColor');
-        characterFormat.fontColor = isInline ? format.fontColor : format.getValue('fontColor');
+        characterFormat.fontColor = isInline ? this.toWriteInline(format, 'fontColor') : format.getValue('fontColor');
         characterFormat.styleName = !isNullOrUndefined(format.baseCharStyle) ? format.baseCharStyle.name : undefined;
         characterFormat.bidi = isInline ? format.bidi : format.getValue('bidi');
         characterFormat.bdo = isInline ? format.bdo : format.getValue('bdo');
@@ -263,6 +273,13 @@ export class HelperMethods {
         characterFormat.italicBidi = isInline ? format.italicBidi : format.getValue('italicBidi');
         characterFormat.fontSizeBidi = isInline ? format.fontSizeBidi : format.getValue('fontSizeBidi');
         characterFormat.fontFamilyBidi = isInline ? format.fontFamilyBidi : format.getValue('fontFamilyBidi');
+    }
+    public static toWriteInline(format: WCharacterFormat, propertyName: string): any {
+        if (!isNullOrUndefined(format.ownerBase) && (format.ownerBase instanceof ElementBox)) {
+            return format.hasValue(propertyName) ? format[propertyName] : format.getValue(propertyName);
+        } else {
+            return format[propertyName];
+        }
     }
     /* tslint:enable:no-any */
     /**

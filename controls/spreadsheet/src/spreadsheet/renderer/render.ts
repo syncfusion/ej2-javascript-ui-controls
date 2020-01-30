@@ -19,6 +19,7 @@ export class Render {
     }
 
     public render(): void {
+        this.parent.setProperties({ 'activeSheetTab': this.parent.skipHiddenSheets(this.parent.activeSheetTab - 1) + 1 }, true);
         if (!this.parent.isMobileView()) {
             this.parent.notify(ribbon, null);
             this.parent.notify(formulaBar, null);

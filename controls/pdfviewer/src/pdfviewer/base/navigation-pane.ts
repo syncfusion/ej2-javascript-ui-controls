@@ -24,7 +24,6 @@ export class NavigationPane {
     private resizeIcon: HTMLElement;
     private isDown: boolean;
     private offset: number[];
-    private sideBarTitle: HTMLElement;
     private contentContainerScrollWidth: number = 33;
     private closeButtonLeft: number = 170;
     private previousX: number;
@@ -39,6 +38,10 @@ export class NavigationPane {
     private isCommentPanelShow: boolean = false;
     private commentPanelWidthMin: number = 300;
     private commentPanelResizeIcon: HTMLElement;
+    /**
+     * @private
+     */
+    public sideBarTitle: HTMLElement;
     /**
      * @private
      */
@@ -880,7 +883,10 @@ export class NavigationPane {
             proxy.pdfViewerBase.updateZoomValue();
         }
     }
-    private updateViewerContainerOnExpand(): void {
+    /**
+     * @private
+     */
+    public updateViewerContainerOnExpand(): void {
         let proxy: NavigationPane = this;
         if (proxy.sideBarContentContainer) {
             proxy.sideBarContentContainer.style.display = 'block';
@@ -983,8 +989,10 @@ export class NavigationPane {
             }
         }
     }
-
-    private setThumbnailSelectionIconTheme(): void {
+    /**
+     * @private
+     */
+    public setThumbnailSelectionIconTheme(): void {
         if (this.thumbnailButton) {
             this.thumbnailButton.children[0].classList.remove('e-pv-thumbnail-view-icon');
             this.thumbnailButton.children[0].classList.add('e-pv-thumbnail-view-selection-icon');

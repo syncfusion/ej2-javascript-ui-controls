@@ -1,6 +1,6 @@
 import { Component, Inject, ViewEncapsulation } from '@angular/core';
 import {
-    EventSettingsModel, GroupModel, ResourceDetails, TreeViewArgs
+    EventSettingsModel, GroupModel, ResourceDetails
 } from '@syncfusion/ej2-angular-schedule';
 import { generateEvents } from './assets/datasource';
 
@@ -33,20 +33,18 @@ export class HorizontalGroupComponent {
         }
     };
 
-    getAirlineName(value: ResourceDetails | TreeViewArgs): string {
-        return ((value as ResourceDetails).resourceData) ?
-            (value as ResourceDetails).resourceData[(value as ResourceDetails).resource.textField] as string
-            : (value as TreeViewArgs).resourceName;
+    getAirlineName(value: ResourceDetails): string {
+        return (value as ResourceDetails).resourceData[(value as ResourceDetails).resource.textField] as string;
     }
-    getAirlineImage(value: ResourceDetails | TreeViewArgs): string {
+    getAirlineImage(value: ResourceDetails): string {
         let airlineName: string = this.getAirlineName(value);
         return airlineName.replace(' ', '-').toLowerCase();
     }
-    getAirlineModel(value: ResourceDetails | TreeViewArgs): string {
+    getAirlineModel(value: ResourceDetails): string {
         let airlineName: string = this.getAirlineName(value);
         return (airlineName === 'Airways 1') ? 'CRJ 700' : (airlineName === 'Airways 2') ? 'Airbus A330' : 'ATR 72-600';
     }
-    getAirlineSeats(value: ResourceDetails | TreeViewArgs): number {
+    getAirlineSeats(value: ResourceDetails): number {
         let airlineName: string = this.getAirlineName(value);
         return (airlineName === 'Airways 1') ? 50 : (airlineName === 'Airways 2') ? 75 : 100;
     }

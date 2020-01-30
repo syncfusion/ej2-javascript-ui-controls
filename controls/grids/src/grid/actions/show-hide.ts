@@ -30,9 +30,9 @@ export class ShowHide {
         let columns: Column[] = this.getColumns(keys, showBy);
         this.parent.notify(events.tooltipDestroy, { module: 'edit' });
 
-        columns.forEach((value: Column) => {
-            value.visible = true;
-        });
+        for (let i: number = 0; i < columns.length; i++) {
+            columns[i].visible = true;
+        }
 
         this.setVisible(columns);
     }
@@ -48,9 +48,9 @@ export class ShowHide {
         let columns: Column[] = this.getColumns(keys, hideBy);
         this.parent.notify(events.tooltipDestroy, { module: 'edit' });
 
-        columns.forEach((value: Column) => {
-            value.visible = false;
-        });
+        for (let i: number = 0; i < columns.length; i++) {
+            columns[i].visible = false;
+        }
 
         this.setVisible(columns);
     }

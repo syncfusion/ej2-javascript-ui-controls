@@ -31,6 +31,28 @@ export interface Wheel {
     clientY: number;
 }
 let animationComplete: EmitType<IAnimationCompleteEventArgs>;
+let categoyData: any = [{
+    'name': "MTBF", 'dataSource': [{ 'x': "FEB 2018",'y': 12, "text": " 0 / 1595" },
+    { 'x': "MAR 2018",'y': 12, "text": " 0 / 1607" },
+    { 'x': "APR 2018",'y': 12, "text": " 0 / 1616" },
+    { 'x': "MAG 2018",'y': 12, "text": " 0 / 1620" },
+    { 'x': "GIU 2018",'y': 12, "text": " 0 / 1623" },
+    { 'x': "LUG 2018",'y': 12, "text": " 0 / 1628" },]
+}, {
+    "name": "MTBV", 'dataSource': [{ 'x': "FEB 2018",'y': 0, "text": " 0 / 1595" },
+    { 'x': "MAR 2018",'y': 0, "text": " 0 / 1607" },
+    { 'x': "APR 2018",'y': 0, "text": " 0 / 1616" },
+    { 'x': "MAG 2018",'y': 0, "text": " 0 / 1620" },
+    { 'x': "GIU 2018",'y': 0, "text": " 0 / 1623" },
+    { 'x': "LUG 2018",'y': 0, "text": " 0 / 1628" },]
+}, {
+    "name": "MTBC", 'dataSource': [{ 'x': "FEB 2018",'y': 0, "text": " 0 / 1595" },
+    { 'x': "MAR 2018",'y': 0, "text": " 0 / 1607" },
+    { 'x': "APR 2018",'y': 0, "text": " 0 / 1616" },
+    { 'x': "MAG 2018",'y': 0, "text": " 0 / 1620" },
+    { 'x': "GIU 2018",'y': 0, "text": " 0 / 1623" },
+    { 'x': "LUG 2018",'y': 0, "text": " 0 / 1628" },]
+}];
 let series1: any[] = [
     { x: 1, y: 10 }, { x: 2, y: 50 }, { x: 3, y: 80 }, { x: 4, y: 110 },
     { x: 5, y: 180 }, { x: 6, y: 220 }, { x: 7, y: 300 }, { x: 8, y: 370 }, { x: 9, y: 490 }, { x: 10, y: 500 }
@@ -319,6 +341,75 @@ describe('Chart', () => {
             };
             chartObj.loaded = loaded;
             chartObj.tooltip = { shared: true };
+            chartObj.refresh();
+        });
+    });
+    describe('Power Trendlines with category data', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let trigger: MouseEvents = new MouseEvents();
+        element = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: {
+                        title: 'Months',
+                        valueType: 'Category'
+                    },
+                    primaryYAxis: {
+                        title: 'Rupees against Dollars',
+                        interval: 5
+                    },
+                    height: '600px',
+                    width: '850px',
+                    series: [{
+                        type: 'Line',
+                        name: 'trend',
+                        fill: '#0066FF',
+                        xName: 'x',
+                        yName: 'y',
+                        dataSource: categoyData[0].dataSource,
+                        animation: { enable: false },
+                        trendlines: [{ type: 'Power',
+                        name: 'Power_trend', fill: 'red', enableTooltip: true, marker: { visible: true } }],
+                    },
+                    {
+                        name: 'MTBV',
+                        width: 2,
+                        type: 'Line',
+                        dataSource: categoyData[1].dataSource,
+                        xName: 'x',
+                        yName: 'y',
+                        marker: {
+                            visible: true,
+                            width: 10,
+                            height: 10
+                        },
+                        trendlines: [{ type: 'Power',
+                        name: 'Power_trend2', fill: 'red', enableTooltip: true, marker: { visible: true } }],
+                    }],
+                    title: 'Online trading'
+                });
+            chartObj.appendTo('#container');
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            document.getElementById('container').remove();
+        });
+
+        it('Power Trendlines with category values', (done: Function) => {
+            loaded = (args: Object): void => {
+                let svg: number = document.getElementById('containerSeriesGroup0').childNodes.length;
+                expect(svg == 2).toBe(true);
+                let xAxisLabelCollection: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(xAxisLabelCollection.childNodes.length == 6).toBe(true);
+                let yAxisLabelCollection: HTMLElement = document.getElementById('containerAxisLabels1');
+                expect(yAxisLabelCollection.childNodes.length == 4).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
             chartObj.refresh();
         });
     });

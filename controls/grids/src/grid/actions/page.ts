@@ -108,12 +108,12 @@ export class Page implements IAction {
             numericContainerNew.appendChild(frag);
             pagerContainer.replaceChild(numericContainerNew, numericContainer);
             let classList: string[] = ['.e-mfirst', '.e-mprev', '.e-first', '.e-prev', '.e-next', '.e-last', '.e-mnext', '.e-mlast'];
-            classList.forEach((value: string) => {
-                let element: Element = this.element.querySelector(value);
+            for (let j: number = 0; j < classList.length; j++) {
+                let element: Element = this.element.querySelector(classList[j]);
                 if (this.parent.getContentTable()) {
                     element.setAttribute('aria-owns', this.parent.getContentTable().id);
                 }
-            });
+            }
         }
     }
 

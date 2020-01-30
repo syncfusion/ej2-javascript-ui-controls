@@ -326,9 +326,18 @@ export class FocusStrategy {
         this.parent.on(event.headerRefreshed, this.refreshMatrix(), this);
         this.parent.on('close-edit', this.restoreFocus, this);
         this.parent.on('restore-Focus', this.restoreFocus, this);
-        ['start-edit', 'start-add'].forEach((evt: string) => this.parent.on(evt, this.clearIndicator, this));
-        ['sorting', 'filtering'].forEach((action: string) => this.parent.on(`${action}-complete`, this.restoreFocus, this));
-        ['grouping', 'ungrouping'].forEach((action: string) => this.parent.on(`${action}-complete`, this.restoreFocusWithAction, this));
+        let evts: string[] = ['start-edit', 'start-add'];
+        for (let i: number = 0; i < evts.length; i++) {
+            this.parent.on(evts[i], this.clearIndicator, this);
+        }
+        let actions: string[] = ['sorting', 'filtering'];
+        for (let j: number = 0; j < actions.length; j++) {
+            this.parent.on(`${actions[j]}-complete`, this.restoreFocus, this);
+        }
+        let actionsG: string[] = ['grouping', 'ungrouping'];
+        for (let k: number = 0; k < actionsG.length; k++) {
+            this.parent.on(`${actionsG[k]}-complete`, this.restoreFocusWithAction, this);
+        }
         this.parent.on(event.batchAdd, this.refMatrix, this);
         this.parent.on(event.batchCancel, this.refMatrix, this);
         this.parent.on(event.batchDelete, this.refMatrix, this);
@@ -350,9 +359,18 @@ export class FocusStrategy {
         this.parent.off(event.headerRefreshed, this.refreshMatrix());
         this.parent.off('close-edit', this.restoreFocus);
         this.parent.off('restore-focus', this.restoreFocus);
-        ['start-edit', 'start-add'].forEach((evt: string) => this.parent.off(evt, this.clearOutline));
-        ['sorting', 'filtering'].forEach((action: string) => this.parent.off(`${action}-complete`, this.restoreFocus));
-        ['grouping', 'ungrouping'].forEach((action: string) => this.parent.on(`${action}-complete`, this.restoreFocusWithAction));
+        let evts: string[] = ['start-edit', 'start-add'];
+        for (let i: number = 0; i < evts.length; i++) {
+            this.parent.off(evts[i], this.clearOutline);
+        }
+        let actions: string[] = ['sorting', 'filtering'];
+        for (let j: number = 0; j < actions.length; j++) {
+            this.parent.off(`${actions[j]}-complete`, this.restoreFocus);
+        }
+        let actionsG: string[] = ['grouping', 'ungrouping'];
+        for (let k: number = 0; k < actionsG.length; k++) {
+            this.parent.on(`${actionsG[k]}-complete`, this.restoreFocusWithAction);
+        }
         this.parent.off(event.batchAdd, this.refMatrix);
         this.parent.off(event.batchDelete, this.refMatrix);
         this.parent.off(event.batchCancel, this.refMatrix);
@@ -487,13 +505,13 @@ export class Matrix {
 
     public generate(rows: Row<Column>[], selector: Function, isRowTemplate?: boolean): number[][] {
         this.rows = rows.length - 1; this.matrix = [];
-        rows.forEach((row: Row<Column>, rIndex: number) => {
-            let cells: Cell<Column>[] = row.cells.filter((c: Cell<Column>) => c.isSpanned !== true);
+        for (let i: number = 0; i < rows.length; i++) {
+            let cells: Cell<Column>[] = rows[i].cells.filter((c: Cell<Column>) => c.isSpanned !== true);
             this.columns = Math.max(cells.length - 1, this.columns | 0);
-            cells.forEach((cell: Cell<Column>, cIndex: number) => {
-                this.set(rIndex, cIndex, selector(row, cell, isRowTemplate));
-            });
-        });
+            for (let j: number = 0; j < cells.length; j++) {
+                this.set(i, j, selector(rows[i], cells[j], isRowTemplate));
+            }
+        }
         return this.matrix;
     }
 
@@ -658,7 +676,8 @@ export class ContentFocus implements IFocus {
         }
         let isHeaderFocus: boolean = false;
         let row: Element = document.activeElement.parentElement;
-        if (this.parent.enableVirtualization && row.classList.contains('e-row')) {
+        if ((this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableCache)
+            && row.classList.contains('e-row')) {
             let rowIndex: number = parseInt(row.getAttribute('aria-rowindex'), 10);
             isHeaderFocus = rowIndex > 0;
         }
@@ -705,20 +724,22 @@ export class ContentFocus implements IFocus {
     public validator(): Function {
         let table: HTMLTableElement = this.getTable();
         return (rowIndex: number, cellIndex: number, action?: string) => {
-            let cell: HTMLElement;
-            if (table.rows[rowIndex].cells[0].classList.contains('e-editcell')) {
-                cell = table.rows[rowIndex].cells[0].querySelectorAll('td')[cellIndex];
-            } else {
-                cell = table.rows[rowIndex].cells[cellIndex];
-            }
-            let isCellWidth: boolean = cell.getBoundingClientRect().width !== 0;
-            if (action === 'enter' || action === 'shiftEnter') {
-                return isCellWidth && cell.classList.contains('e-rowcell');
-            }
-            if ((action === 'shiftUp' || action === 'shiftDown') && cell.classList.contains('e-rowcell')) {
-                return isCellWidth;
-            } else if (action !== 'shiftUp' && action !== 'shiftDown') {
-                return isCellWidth;
+            if (!isNullOrUndefined(table.rows[rowIndex])) {
+                let cell: HTMLElement;
+                if (table.rows[rowIndex].cells[0].classList.contains('e-editcell')) {
+                    cell = table.rows[rowIndex].cells[0].querySelectorAll('td')[cellIndex];
+                } else {
+                    cell = table.rows[rowIndex].cells[cellIndex];
+                }
+                let isCellWidth: boolean = cell.getBoundingClientRect().width !== 0;
+                if (action === 'enter' || action === 'shiftEnter') {
+                    return isCellWidth && cell.classList.contains('e-rowcell');
+                }
+                if ((action === 'shiftUp' || action === 'shiftDown') && cell.classList.contains('e-rowcell')) {
+                    return isCellWidth;
+                } else if (action !== 'shiftUp' && action !== 'shiftDown') {
+                    return isCellWidth;
+                }
             }
             return false;
         };
@@ -827,8 +848,10 @@ export class HeaderFocus extends ContentFocus implements IFocus {
         let length: number = this.matrix.matrix.length;
         if (this.parent.allowFiltering && this.parent.filterSettings.type === 'FilterBar') {
             this.matrix.rows = ++this.matrix.rows;
-            rows[0].cells.forEach((cell: Cell<Column>, cIndex: number) =>
-                this.matrix.set(length, cIndex, cell.visible && cell.column.allowFiltering !== false));
+            let cells: Cell<Column>[] = rows[0].cells;
+            for (let i: number = 0; i < cells.length; i++) {
+                this.matrix.set(length, i, cells[i].visible && cells[i].column.allowFiltering !== false);
+            }
         }
     }
 

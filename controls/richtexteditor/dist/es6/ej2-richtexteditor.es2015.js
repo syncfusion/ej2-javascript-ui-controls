@@ -18853,7 +18853,9 @@ let RichTextEditor = class RichTextEditor extends Component {
             detach(this.element);
             if (this.originalElement.innerHTML.trim() !== '') {
                 this.valueContainer.value = this.originalElement.innerHTML.trim();
-                this.setProperties({ value: (!isNullOrUndefined(this.initialValue) ? this.initialValue : null) }, true);
+                if (!isBlazor()) {
+                    this.setProperties({ value: (!isNullOrUndefined(this.initialValue) ? this.initialValue : null) }, true);
+                }
             }
             else {
                 this.valueContainer.value = !this.isBlazor() ? this.valueContainer.defaultValue : this.defaultResetValue;
@@ -18938,6 +18940,21 @@ let RichTextEditor = class RichTextEditor extends Component {
      */
     getText() {
         return this.contentModule.getText();
+    }
+    /**
+     * Returns the html value of the selected content as string.
+     * @return {string}
+     */
+    getSelectedHtml() {
+        let range;
+        let wrapperElm = this.createElement('div');
+        let selection = this.contentModule.getDocument().getSelection();
+        if (selection.rangeCount > 0) {
+            range = selection.getRangeAt(0);
+            let selectedHtml = range.cloneContents();
+            wrapperElm.appendChild(selectedHtml);
+        }
+        return wrapperElm.innerHTML;
     }
     /**
      * For internal use only - Get the module name.

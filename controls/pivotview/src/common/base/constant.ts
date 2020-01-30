@@ -12,6 +12,8 @@ export const enginePopulated: string = 'enginePopulated';
 /** @hidden */
 export const onFieldDropped: string = 'onFieldDropped';
 /** @hidden */
+export const fieldDrop: string = 'fieldDrop';
+/** @hidden */
 export const beforePivotTableRender: string = 'beforePivotTableRender';
 /** @hidden */
 export const afterPivotTableRender: string = 'afterPivotTableRender';

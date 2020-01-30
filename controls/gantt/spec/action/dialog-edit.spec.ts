@@ -6,6 +6,16 @@ import { Gantt, Edit, Toolbar, IGanttData } from '../../src/index';
 import { dialogEditData, resourcesData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { EJ2Instance } from '@syncfusion/ej2-navigations';
+import { DropDownList } from '@syncfusion/ej2-dropdowns';
+let dropDownElement: HTMLElement;
+let dropDownObj: DropDownList;
+let dropDownData = [
+    { "Id": 1, "Name": "Tracker 1" },
+    { "Id": 2, "Name": "Tracker 2" },
+    { "Id": 3, "Name": "Tracker 3" },
+    { "Id": 4, "Name": "Tracker 4" },
+    { "Id": 5, "Name": "Tracker 5" },
+];
 let ganttModel: Object = {
     dataSource: dialogEditData,
     taskFields: {
@@ -58,9 +68,32 @@ let ganttModel: Object = {
         { field: 'BaselineEndDate', editType: 'datetimepickeredit', width: 100 },
         { field: 'Resource', width: 100 },
         { field: 'Notes', width: 100 },
-        { field: 'Customcol1',editType: 'dropdownedit', headerText: 'Custom Column1', width: 100 },
-        { field: 'Customcol2',editType: 'maskededit', headerText: 'Custom Column2', width: 100 },
-        { field: 'Customcol3',editType: 'booleanedit', headerText: 'Custom Column3', width: 100 }
+        { field: 'Customcol1', editType: 'dropdownedit', headerText: 'Custom Column1', width: 100 },
+        { field: 'Customcol2', editType: 'maskededit', headerText: 'Custom Column2', width: 100 },
+        { field: 'Customcol3', editType: 'booleanedit', headerText: 'Custom Column3', width: 100 },
+        { field: 'Customcol4', edit: {
+                create: (args: Object) => {
+                    dropDownElement = document.createElement('input');
+                    return dropDownElement;
+                },
+                read: () => {
+                    return dropDownObj.value;
+                },
+                destroy: () => {
+                    dropDownObj.destroy();
+                },
+                write: function (args: any) {
+                    dropDownObj = new DropDownList({
+                        dataSource: dropDownData,
+                        fields: { text: 'Name' },
+                        value: args.rowData[args.column.field],
+                        placeholder: "DropDown Custom Column",
+                        floatLabelType: 'Auto'
+                    });
+                    dropDownObj.appendTo(dropDownElement);
+                }
+            }
+        }
     ],
     toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
     allowUnscheduledTasks: true,
@@ -349,6 +382,34 @@ describe('Gantt dialog module', () => {
                 triggerMouseEvent(checkbox, 'click');
                 let saveRecord: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
                 triggerMouseEvent(saveRecord, 'click');
+            }
+        });
+    });
+    describe('Custom tab', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(ganttModel, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach(() => {
+            ganttObj.openEditDialog(4);
+            let tab: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + '_Tab')).ej2_instances[0];
+            tab.selectedItem = 3;
+        });
+        it('Custom Editor for custom column', () => {
+            let customColumn: any = ganttObj.element.querySelector('#' + ganttObj.element.id + 'Customcol4') as HTMLInputElement;
+            if (customColumn) {
+                triggerMouseEvent(customColumn, 'click');
+                let customValue: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Customcol4')).ej2_instances[0];
+                customValue.value = 'Tracker 4';
+                customValue.dataBind();
+                let saveRecord: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+                triggerMouseEvent(saveRecord, 'click');
+                expect(getValue('Customcol4', ganttObj.flatData[3])).toBe('Tracker 4');
             }
         });
     });

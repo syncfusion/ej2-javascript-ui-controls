@@ -61,7 +61,7 @@ export interface ChipListModel extends ComponentModel{
      * This selectedChips property helps to select chip items.
      * @default []
      */
-    selectedChips?: number[] | number;
+    selectedChips?: string[] | number[] | number;
 
     /**
      * This selection property enables chip selection type.
@@ -88,6 +88,13 @@ export interface ChipListModel extends ComponentModel{
      * @blazorProperty 'OnClick'
      */
     click?: EmitType<ClickEventArgs>;
+
+    /**
+     * This click event will get triggered once the chip is before click.
+     * @event
+     * @blazorProperty 'OnBeforeClick'
+     */
+    beforeClick?: EmitType<ClickEventArgs>;
 
     /**
      * This delete event will get triggered before removing the chip.

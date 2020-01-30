@@ -1,6 +1,6 @@
 import {
     Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda,
-    MonthAgenda, ResourceDetails, TreeViewArgs, Resize, DragAndDrop
+    MonthAgenda, ResourceDetails, Resize, DragAndDrop
 } from '../../../src/schedule/index';
 import { resourceData } from '../../../spec/schedule/base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
@@ -10,7 +10,7 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
  */
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, Resize, DragAndDrop);
 
-(window as TemplateFunction).getResourceImage = (value: ResourceDetails | TreeViewArgs) => {
+(window as TemplateFunction).getResourceImage = (value: ResourceDetails) => {
     let imgSrc: string;
     let resourceName: string = (window as TemplateFunction).getResourceName(value);
     switch (resourceName) {
@@ -24,9 +24,8 @@ Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, Resize, DragAnd
     }
     return imgSrc;
 };
-(window as TemplateFunction).getResourceName = (value: ResourceDetails | TreeViewArgs) => {
-    return ((value as ResourceDetails).resourceData) ?
-        (value as ResourceDetails).resourceData[(value as ResourceDetails).resource.textField] : (value as TreeViewArgs).resourceName;
+(window as TemplateFunction).getResourceName = (value: ResourceDetails) => {
+    return (value as ResourceDetails).resourceData[(value as ResourceDetails).resource.textField];
 };
 interface TemplateFunction extends Window {
     getResourceImage?: Function;

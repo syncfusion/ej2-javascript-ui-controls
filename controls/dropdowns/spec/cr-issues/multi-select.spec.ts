@@ -1466,6 +1466,36 @@ describe('MultiSelect', () => {
         });
     });
 
+    describe('EJ2-34885 - add item ', () => {
+        let listObj: MultiSelect;
+        let originalTimeout: number;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                element.remove();
+            }
+        });
+        it('with empty datasource', () => {
+            listObj = new MultiSelect({
+                fields: { text: 'Game', value: 'Game' },
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            listObj.hidePopup();
+            listObj.addItem({ Id: 'Game1', Game: 'American Football' });
+            listObj.showPopup();
+            expect((<any>listObj).liCollections.length).toBe(1);
+            listObj.hidePopup();
+        });
+    });
+
     describe('BLAZ-888:change event is not triggered when clear the item', () => {
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdown' });
         let dropDowns: any;
@@ -1513,6 +1543,103 @@ describe('MultiSelect', () => {
             mouseEventArgs.target = document.body;
             dropDowns.onBlur(mouseEventArgs);
             expect(ischanged).toBe(true);
+        });
+    });
+
+    describe('EJ2-35417 - Filtering not working after select item ', () => {
+        let listObj: MultiSelect;
+        let originalTimeout: number;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
+        let sportsData: any[] =  [
+            { Id: 'Game1', Game: 'American Football' },
+            { Id: 'Game2', Game: 'Badminton' },
+            { Id: 'Game3', Game: 'Basketball' },
+            { Id: 'Game4', Game: 'Cricket' },
+            { Id: 'Game5', Game: 'Football' },
+            { Id: 'Game6', Game: 'Golf' },
+            { Id: 'Game7', Game: 'Hockey' },
+            { Id: 'Game8', Game: 'Rugby' },
+            { Id: 'Game9', Game: 'Snooker' },
+            { Id: 'Game10', Game: 'Tennis' }
+        ];
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                element.remove();
+            }
+        });
+        it('filtering and select item', () => {
+            listObj = new MultiSelect({
+                dataSource: sportsData,
+                fields: { text: 'Game', value: 'Game' },
+                allowFiltering: true
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            (<any>listObj).inputFocus = true;
+            (<any>listObj).inputElement.value = "a";
+            keyboardEventArgs.altKey = false;
+            keyboardEventArgs.keyCode = 65;
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).KeyUp(keyboardEventArgs);
+            expect((<any>listObj).liCollections.length).toBe(1);
+            expect((<any>listObj).value).toBe(null);
+            mouseEventArgs.target = (<any>listObj).liCollections[0];
+            mouseEventArgs.type = 'click';
+            (<any>listObj).onMouseClick(mouseEventArgs);
+            expect((<any>listObj).value && (<any>listObj).value.length).not.toBeNull();
+
+            (<any>listObj).inputFocus = true;
+            (<any>listObj).inputElement.value = "b";
+            keyboardEventArgs.altKey = false;
+            keyboardEventArgs.keyCode = 65;
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).KeyUp(keyboardEventArgs);
+            expect((<any>listObj).liCollections.length).toBe(2);
+        });
+    });
+
+    describe('EJ2-35010 - Maximum call stack size exceeded issue occurs when setting custom value with no datasource ', () => {
+        let listObj: MultiSelect;
+        let originalTimeout: number;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                element.remove();
+            }
+        });
+        it('with empty datasource', (done) => {
+            listObj = new MultiSelect({
+                allowCustomValue: true,
+            });
+            listObj.appendTo(element);
+            listObj.value = ['fkfnmfmnsdfmn'];
+            listObj.showPopup();
+            setTimeout(() => {
+                listObj.hidePopup();
+                listObj.clear();
+                listObj.showPopup();
+                setTimeout(() => {
+                    expect((<any>listObj).liCollections.length).toBe(1);
+                    listObj.hidePopup();
+                    done();
+                },110);
+            },110);
         });
     });
 

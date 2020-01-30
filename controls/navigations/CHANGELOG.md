@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.46 (2020-01-30)
+
+### Tab
+
+#### Bug Fixes
+
+- `#260479` - An issue with selected event is triggered unnecessarily after the refresh tab has been fixed.
+
 ## 17.4.44 (2021-01-21)
 
 ### Menu

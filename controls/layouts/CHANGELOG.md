@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 17.4.46 (2020-01-30)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- `#F150686` - The issue "Panels overlapping when you drag from top to bottom" has been resolved.
+
+### Splitter
+
+#### Bug Fixes
+
+- `#261757` - The issue, "cssClass not set into pane when you add the pane using the addPane method" has been resolved.
+
+- `#261829` - Keyboard interaction issue with input components has been resolved.
+
 ## 17.4.44 (2021-01-21)
 
 ### Dashboard Layout

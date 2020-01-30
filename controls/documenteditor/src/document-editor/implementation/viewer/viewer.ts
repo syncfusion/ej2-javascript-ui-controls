@@ -1045,6 +1045,11 @@ export abstract class LayoutViewer {
                 this.onTouchUpInternal(args);
             }
         }
+        if (this.scrollMoveTimer) {
+            this.isMouseEntered = true;
+            clearInterval(this.scrollMoveTimer);
+        }
+
     }
     // tslint:enable:no-any 
     private onKeyPressInternal = (event: KeyboardEvent): void => {
@@ -1273,6 +1278,9 @@ export abstract class LayoutViewer {
      */
     public onContextMenu = (event: MouseEvent): void => {
         if (this.owner.contextMenuModule) {
+            if (this.isMouseDown) {
+                this.isMouseDown = false;
+            }
             this.owner.contextMenuModule.onContextMenuInternal(event);
         }
     }

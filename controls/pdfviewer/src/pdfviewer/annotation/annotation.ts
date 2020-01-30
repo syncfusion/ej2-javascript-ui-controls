@@ -16,6 +16,7 @@ import { AnnotationPropertiesChangeEventArgs, ISize } from '../base';
 import { FreeTextAnnotation } from './free-text-annotation';
 import { InputElement } from './input-element';
 import { InPlaceEditor } from '@syncfusion/ej2-inplace-editor';
+import { ShapeLabelSettingsModel } from '../pdfviewer-model';
 
 /**
  * @hidden
@@ -148,7 +149,7 @@ export class Annotation {
     /**
      * @private
      */
-    public annotationPageIndex: number  = null;
+    public annotationPageIndex: number = null;
     private previousIndex: number = null;
 
     /**
@@ -574,12 +575,12 @@ export class Annotation {
      * @private
      */
     public selectAnnotationFromCodeBehind(): void {
-        if (this.isAnnotationSelected  && this.selectAnnotationId) {
+        if (this.isAnnotationSelected && this.selectAnnotationId) {
             // tslint:disable-next-line
             let annotation: any = this.getAnnotationsFromAnnotationCollections(this.selectAnnotationId);
-            let id : string = this.selectAnnotationId;
+            let id: string = this.selectAnnotationId;
             let pageIndex: number = annotation.pageNumber;
-            if (annotation && (this.annotationPageIndex  >= 0) && this.annotationPageIndex === pageIndex) {
+            if (annotation && (this.annotationPageIndex >= 0) && this.annotationPageIndex === pageIndex) {
                 if (this.previousIndex) {
                     this.pdfViewer.clearSelection(this.previousIndex);
                 }
@@ -2735,8 +2736,19 @@ export class Annotation {
             setting.lineHeadEndStyle = this.getArrowString(pdfAnnotationBase.taregetDecoraterShapes);
             setting.borderDashArray = pdfAnnotationBase.borderDashArray;
         }
-        // tslint:disable-next-line:max-line-length
-        this.pdfViewer.fireAnnotationAdd(pdfAnnotationBase.pageIndex, pdfAnnotationBase.annotName, type, bounds, setting);
+        let labelSettings: ShapeLabelSettingsModel;
+        if (this.pdfViewer.enableShapeLabel) {
+            labelSettings = {
+                // tslint:disable-next-line:max-line-length
+                fontColor: pdfAnnotationBase.fontColor, fontSize: pdfAnnotationBase.fontSize, fontFamily: pdfAnnotationBase.fontFamily,
+                opacity: pdfAnnotationBase.labelOpacity, labelContent: pdfAnnotationBase.labelContent, fillColor: pdfAnnotationBase.labelFillColor
+            };
+            // tslint:disable-next-line:max-line-length
+            this.pdfViewer.fireAnnotationAdd(pdfAnnotationBase.pageIndex, pdfAnnotationBase.annotName, type, bounds, setting, null, null, null, labelSettings);
+        } else {
+            // tslint:disable-next-line:max-line-length
+            this.pdfViewer.fireAnnotationAdd(pdfAnnotationBase.pageIndex, pdfAnnotationBase.annotName, type, bounds, setting);
+        }
     }
 
     /**
@@ -2758,7 +2770,19 @@ export class Annotation {
             setting.lineHeadEndStyle = this.getArrowString(pdfAnnotationBase.taregetDecoraterShapes);
             setting.borderDashArray = pdfAnnotationBase.borderDashArray;
         }
-        this.pdfViewer.fireAnnotationResize(pdfAnnotationBase.pageIndex, pdfAnnotationBase.annotName, type, bounds, setting);
+        let labelSettings: ShapeLabelSettingsModel;
+        if (this.pdfViewer.enableShapeLabel) {
+            labelSettings = {
+                // tslint:disable-next-line:max-line-length
+                fontColor: pdfAnnotationBase.fontColor, fontSize: pdfAnnotationBase.fontSize, fontFamily: pdfAnnotationBase.fontFamily,
+                opacity: pdfAnnotationBase.labelOpacity, labelContent: pdfAnnotationBase.labelContent, fillColor: pdfAnnotationBase.labelFillColor
+            };
+            // tslint:disable-next-line:max-line-length
+            this.pdfViewer.fireAnnotationResize(pdfAnnotationBase.pageIndex, pdfAnnotationBase.annotName, type, bounds, setting, null, null, null, labelSettings);
+        } else {
+            // tslint:disable-next-line:max-line-length
+            this.pdfViewer.fireAnnotationResize(pdfAnnotationBase.pageIndex, pdfAnnotationBase.annotName, type, bounds, setting);
+        }
     }
 
     /**
@@ -3245,13 +3269,13 @@ export class Annotation {
     // tslint:disable-next-line
     private setFreeTextFontStyle(fontStyle: number): any {
         if (fontStyle === 1) {
-            return { isBold: true};
+            return { isBold: true };
         } else if (fontStyle === 2) {
-            return { isItalic: true};
+            return { isItalic: true };
         } else if (fontStyle === 4) {
-            return { isUnderline: true};
+            return { isUnderline: true };
         } else if (fontStyle === 8) {
-            return { isStrikeout: true};
+            return { isStrikeout: true };
         }
     }
 

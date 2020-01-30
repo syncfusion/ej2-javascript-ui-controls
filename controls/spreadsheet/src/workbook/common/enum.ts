@@ -51,3 +51,14 @@ export type SortOrder =
  * Cell format type
  */
 export type FormatType = 'CellFormat' | 'NumberFormat';
+
+/**
+ * Sheet visibility state
+ */
+export type SheetState =
+    /** Defines the state of sheet as visible. */
+    'Visible' |
+    /** Defines the state of sheet as hidden. It can be unhidden later. */
+    'Hidden' |
+    /** Defines the state of sheet as hidden. Once set, it cannot be unhidden. */
+    'VeryHidden';

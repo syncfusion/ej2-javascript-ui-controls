@@ -6011,17 +6011,7 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
         var intCoord = this.getCoordinates(evt);
         this.initialPosition = { x: intCoord.pageX, y: intCoord.pageY };
         if (!this.clone) {
-            var leftPostion = void 0;
-            var topPostion = void 0;
-            if (!isBlazor()) {
-                var pos = this.element.getBoundingClientRect();
-                leftPostion = pos.left;
-                topPostion = pos.top;
-            }
-            else {
-                leftPostion = this.element.offsetLeft;
-                topPostion = this.element.offsetTop;
-            }
+            var pos = this.element.getBoundingClientRect();
             this.getScrollableValues();
             if (evt.clientX === evt.pageX) {
                 this.parentScrollX = 0;
@@ -6029,8 +6019,8 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
             if (evt.clientY === evt.pageY) {
                 this.parentScrollY = 0;
             }
-            this.relativeXPosition = intCoord.pageX - (leftPostion + this.parentScrollX);
-            this.relativeYPosition = intCoord.pageY - (topPostion + this.parentScrollY);
+            this.relativeXPosition = intCoord.pageX - (pos.left + this.parentScrollX);
+            this.relativeYPosition = intCoord.pageY - (pos.top + this.parentScrollY);
         }
         if (this.externalInitialize) {
             this.intDragStart(evt);
@@ -6040,7 +6030,7 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
             EventHandler.add(document, Browser.touchEndEvent, this.intDestroy, this);
         }
         this.toggleEvents(true);
-        //document.body.classList.add('e-prevent-select');
+        document.body.classList.add('e-prevent-select');
         this.externalInitialize = false;
         EventHandler.trigger(document.documentElement, Browser.touchStartEvent, evt);
     };

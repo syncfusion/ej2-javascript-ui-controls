@@ -160,6 +160,13 @@ var DropDownButton = /** @__PURE__ @class */ (function (_super) {
             buttonObserver.off('component-rendered', this.buttonRendered, this.element.id);
         }
     };
+    /**
+     * Adds a new item to the menu. By default, new item appends to the list as the last item,
+     * but you can insert based on the text parameter.
+     * @param  { ItemModel[] } items - Specifies an array of JSON data.
+     * @param { string } text - Specifies the text to insert the newly added item in the menu.
+     * @returns {void}.
+     */
     DropDownButton.prototype.addItems = function (items, text) {
         var newItem;
         var idx = this.items.length;
@@ -178,6 +185,11 @@ var DropDownButton = /** @__PURE__ @class */ (function (_super) {
             this.createItems();
         }
     };
+    /**
+     * Removes the items from the menu.
+     * @param  { string[] } items - Specifies an array of string to remove the items.
+     * @returns {void}.
+     */
     DropDownButton.prototype.removeItems = function (items) {
         for (var i = 0, len = items.length; i < len; i++) {
             for (var j = 0, len_1 = this.items.length; j < len_1; j++) {

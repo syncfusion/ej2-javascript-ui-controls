@@ -3341,6 +3341,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
+     * Adds the given diagram object to the group.
+     * @param Group defines where the diagram object to be added.
+     * @param Child defines the diagram object to be added to the group
+     * @blazorArgsType obj|DiagramNode
+     */
+    public addChildToGroup(group: NodeModel, child: string | NodeModel | ConnectorModel): void {
+        this.addChild(group, child) ;
+    }
+    /**
      * Will return the history stack values 
      * @param obj returns the history stack values
      */
@@ -4395,7 +4404,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.protectPropertyChange(propChange);
             }
         }
-        if (update && !this.diagramActions) {
+        if (update) {
             this.updateDiagramElementQuad();
         }
         return ((this.blazorActions & BlazorAction.expandNode) ? layout : true);
@@ -5402,6 +5411,12 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         let getDefaults: Function = getFunction(this.getNodeDefaults);
                         if (getDefaults) {
                             let defaults: NodeModel = getDefaults(obj, this);
+                            if (defaults && defaults.ports) {
+                                for (let i: number = 0; i < defaults.ports.length; i++) {
+                                    defaults.ports[i].inEdges = [];
+                                    defaults.ports[i].outEdges = [];
+                                }
+                            }
                             if (defaults && defaults !== obj) { extendObject(defaults, obj); }
                         }
                     }

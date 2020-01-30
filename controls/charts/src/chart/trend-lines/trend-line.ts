@@ -121,7 +121,7 @@ export class Trendlines {
                     break;
             }
         } else {
-            slope = ((points.length * xyAvg) - (xAvg * yAvg)) / ((points.length * xxAvg) - (xAvg * xAvg));
+            slope = Math.abs(((points.length * xyAvg) - (xAvg * yAvg)) / ((points.length * xxAvg) - (xAvg * xAvg)));
             if (type === 'Exponential' || type === 'Power') {
                 intercept = Math.exp((yAvg - (slope * xAvg)) / points.length);
             } else {
@@ -175,8 +175,9 @@ export class Trendlines {
         let slopeIntercept: SlopeIntercept;
         while (index < points.length) {
             let point: Points = points[index];
+            let yDataValue: number = point.yValue ? Math.log(point.yValue) : 0;
             xValue.push(point.xValue);
-            yValue.push(Math.log(point.yValue));
+            yValue.push(yDataValue);
             index++;
         }
         slopeIntercept = this.findSlopeIntercept(xValue, yValue, trendline, points);
@@ -194,8 +195,9 @@ export class Trendlines {
         let index: number = 0;
         while (index < points.length) {
             let point: Points = points[index];
+            let xDataValue: number = point.xValue ? Math.log(point.xValue) : 0;
             xPointsLgr.push(point.xValue);
-            xLogValue.push(Math.log(point.xValue));
+            xLogValue.push(xDataValue);
             yLogValue.push(point.yValue);
             index++;
         }
@@ -230,9 +232,11 @@ export class Trendlines {
         let index: number = 0;
         while (index < points.length) {
             let point: Points = points[index];
+            let xDataValue: number = point.xValue ? Math.log(point.xValue) : 0;
+            let yDataValue: number = point.yValue ? Math.log(point.yValue) : 0;
             powerPoints.push(point.xValue);
-            xValues.push(Math.log(point.xValue));
-            yValues.push(Math.log(point.yValue));
+            xValues.push(xDataValue);
+            yValues.push(yDataValue);
             index++;
         }
         slopeIntercept = this.findSlopeIntercept(xValues, yValues, trendline, points);
@@ -283,11 +287,14 @@ export class Trendlines {
         let midPoint: number = Math.round((points.length / 2));
         let pts: Points[] = [];
         let x1Log: number = xValues[0] - trendline.backwardForecast;
-        let y1Log: number = slopeInterceptLog.intercept + (slopeInterceptLog.slope * Math.log(x1Log));
+        let x1: number = x1Log ? Math.log(x1Log) : 0;
+        let y1Log: number = slopeInterceptLog.intercept + (slopeInterceptLog.slope * x1);
         let x2Log: number = xValues[midPoint - 1];
-        let y2Log: number = slopeInterceptLog.intercept + (slopeInterceptLog.slope * Math.log(x2Log));
+        let x2: number = x2Log ? Math.log(x2Log) : 0;
+        let y2Log: number = slopeInterceptLog.intercept + (slopeInterceptLog.slope *  x2);
         let x3Log: number = xValues[xValues.length - 1] + trendline.forwardForecast;
-        let y3Log: number = slopeInterceptLog.intercept + (slopeInterceptLog.slope * Math.log(x3Log));
+        let x3: number = x3Log ? Math.log(x3Log) : 0;
+        let y3Log: number = slopeInterceptLog.intercept + (slopeInterceptLog.slope *  x3);
         pts.push(
             this.getDataPoint(x1Log, y1Log, points[0], series, pts.length));
         pts.push(

@@ -23,7 +23,7 @@ Maps.Inject(Legend, MapsTooltip);
         },
         legendSettings: {
             visible: true,
-            position: 'Top'
+            position: 'Top',
         },
         layers: [
             {

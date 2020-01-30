@@ -40,10 +40,12 @@ export interface IButton {
 export interface ActionBeginEventArgs {
     /** Defines the name of the field */
     data: { [key: string]: string | number };
+    /** Prevent the submit action. */
+    cancel?: boolean;
 }
 
 export interface ActionEventArgs {
-    /** Defines the prevent action. */
+    /** Prevents the current value render in the editor. */
     cancel?: boolean;
     /** Defines the data manager action result. */
     data: Object;
@@ -65,6 +67,8 @@ export interface ValidateEventArgs extends ActionBeginEventArgs {
 }
 
 export interface BeginEditEventArgs {
+    /** Specifies whether to cancel the open action of the editor. */
+    cancel?: boolean;
     /** Specifies whether to cancel the focus action, before open a editor. */
     cancelFocus?: boolean;
     /** Defines the current editor mode. */

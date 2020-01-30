@@ -1,5 +1,5 @@
 import { KeyboardEventArgs, L10n, closest, addClass } from '@syncfusion/ej2-base';
-import { extend, getValue, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
+import { extend, getValue, resetBlazorTemplate, updateBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import { remove } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IGrid, IAction, NotifyArgs, IEdit } from '../base/interface';
@@ -74,18 +74,19 @@ export class Edit implements IAction {
     }
 
     private updateColTypeObj(): void {
-        (<{columnModel?: Column[]}>this.parent).columnModel.forEach((col: Column) => {
-            if (this.parent.editSettings.template || col.editTemplate) {
+        let cols: Column[] = (<{columnModel?: Column[]}>this.parent).columnModel;
+        for (let i: number = 0; i < cols.length; i++) {
+            if (this.parent.editSettings.template || cols[i].editTemplate) {
                 let templteCell: string = 'templateedit';
-                col.edit = extend(new Edit.editCellType[templteCell](this.parent), col.edit || {});
+                cols[i].edit = extend(new Edit.editCellType[templteCell](this.parent), cols[i].edit || {});
             } else {
-                col.edit = extend(
-                    new Edit.editCellType[col.editType && Edit.editCellType[col.editType] ?
-                        col.editType : 'defaultedit'](this.parent, this.serviceLocator),
-                    col.edit || {}
+                cols[i].edit = extend(
+                    new Edit.editCellType[cols[i].editType && Edit.editCellType[cols[i].editType] ?
+                        cols[i].editType : 'defaultedit'](this.parent, this.serviceLocator),
+                    cols[i].edit || {}
                 );
             }
-        });
+        }
         this.parent.log('primary_column_missing');
     }
 
@@ -516,48 +517,50 @@ export class Edit implements IAction {
     public getCurrentEditedData(form: Element, editedData: Object): Object {
         let gObj: IGrid = this.parent;
         if (gObj.editSettings.template) {
-            [].slice.call((<HTMLFormElement>form).elements).forEach((element: HTMLInputElement) => {
-                if (element.hasAttribute('name')) {
-                    let field: string = setComplexFieldID(element.getAttribute('name'));
-                    let column: Column = gObj.getColumnByField(field) || { field: field, type: element.getAttribute('type') } as Column;
+            let elements: HTMLInputElement[] = [].slice.call((<HTMLFormElement>form).elements);
+            for (let k: number = 0; k < elements.length; k++) {
+                if (elements[k].hasAttribute('name')) {
+                    let field: string = setComplexFieldID(elements[k].getAttribute('name'));
+                    let column: Column = gObj.getColumnByField(field) || { field: field, type: elements[k].getAttribute('type') } as Column;
                     let value: string | Date | boolean;
                     if (column.type === 'checkbox' || column.type === 'boolean') {
-                        value = element.checked;
-                    } else if (element.value) {
-                        value = element.value;
-                        if ((<EJ2Intance>(element as Element)).ej2_instances &&
-                            (<Object[]>(<EJ2Intance>(element as Element)).ej2_instances).length &&
-                            !isNullOrUndefined((<EJ2Intance>(element as Element)).ej2_instances[0].value)) {
-                            element.blur();
-                            value = ((<EJ2Intance>(element as Element)).ej2_instances[0] as { value?: string | boolean | Date }).value;
-                            if ((column.type === 'date' || column.type === 'dateTime') &&
-                            ((<EJ2Intance>(element as Element)).ej2_instances[0].isServerRendered)) {
-                                value = element.value;
+                        value = elements[k].checked;
+                    } else if (elements[k].value) {
+                        value = elements[k].value;
+                        if ((<EJ2Intance>(elements[k] as Element)).ej2_instances &&
+                            (<Object[]>(<EJ2Intance>(elements[k] as Element)).ej2_instances).length &&
+                            !isNullOrUndefined((<EJ2Intance>(elements[k] as Element)).ej2_instances[0].value)) {
+                            elements[k].blur();
+                            value = ((<EJ2Intance>(elements[k] as Element)).ej2_instances[0] as { value?: string | boolean | Date }).value;
+                            if ((column.type === 'date' || column.type === 'dateTime' || column.type === 'datetime') &&
+                            ((<EJ2Intance>(elements[k] as Element)).ej2_instances[0].isServerRendered)) {
+                                value = elements[k].value;
                             }
                         }
                     }
                     if (column.edit && typeof column.edit.read === 'string') {
-                        value = getValue(column.edit.read, window)(element, value);
+                        value = getValue(column.edit.read, window)(elements[k], value);
                     } else if (column.edit && column.edit.read) {
-                        value = (column.edit.read as Function)(element, value);
+                        value = (column.edit.read as Function)(elements[k], value);
                     }
                     value = gObj.editModule.getValueFromType(column, value) as string;
                     DataUtil.setValue(column.field, value, editedData);
                 }
-            });
+            }
             return editedData;
         }
 
-        (<{columnModel?: Column[]}>gObj).columnModel.filter((col: Column) => col.editTemplate).forEach((col: Column) => {
-            if (form[getComplexFieldID(col.field)]) {
-                let inputElements: HTMLInputElement[] = [].slice.call(form[getComplexFieldID(col.field)]);
-                inputElements = inputElements.length ? inputElements : [form[getComplexFieldID(col.field)]];
-                inputElements.forEach((input: HTMLInputElement) => {
-                    let value: number | string | Date | boolean  = this.getValue(col, input, editedData);
-                    DataUtil.setValue(col.field, value, editedData);
-                });
+        let col: Column[] = (<{columnModel?: Column[]}>gObj).columnModel.filter((col: Column) => col.editTemplate);
+        for (let j: number = 0; j < col.length; j++) {
+            if (form[getComplexFieldID(col[j].field)]) {
+                let inputElements: HTMLInputElement[] = [].slice.call(form[getComplexFieldID(col[j].field)]);
+                inputElements = inputElements.length ? inputElements : [form[getComplexFieldID(col[j].field)]];
+                for (let k: number = 0; k < inputElements.length; k++) {
+                    let value: number | string | Date | boolean  = this.getValue(col[j], inputElements[k], editedData);
+                    DataUtil.setValue(col[j].field, value, editedData);
+                }
             }
-        });
+        }
 
         let inputs: HTMLInputElement[] = [].slice.call(form.querySelectorAll('.e-field'));
         for (let i: number = 0, len: number = inputs.length; i < len; i++) {
@@ -618,6 +621,7 @@ export class Edit implements IAction {
             let temp: Function = col.edit.destroy as Function;
             if (isBlazor() && col.editTemplate) {
                 resetBlazorTemplate(this.parent.element.id + col.uid + 'editTemplate', 'EditTemplate');
+                updateBlazorTemplate(this.parent.element.id + col.uid + 'editTemplate', 'EditTemplate', col, false);
             }
             if (col.edit.destroy) {
                 if (typeof temp === 'string') {
@@ -628,15 +632,16 @@ export class Edit implements IAction {
                 }
             }
         }
-        [].slice.call((<HTMLFormElement>this.formObj.element).elements).forEach((element: HTMLInputElement) => {
-            if (element.hasAttribute('name')) {
-                if ((<EJ2Intance>(element as Element)).ej2_instances &&
-                    (<Object[]>(<EJ2Intance>(element as Element)).ej2_instances).length &&
-                    !(<EJ2Intance>(element as Element)).ej2_instances[0].isDestroyed) {
-                    (<EJ2Intance>(element as Element)).ej2_instances[0].destroy();
+        let elements: HTMLInputElement[] = [].slice.call((<HTMLFormElement>this.formObj.element).elements);
+        for (let i: number = 0; i < elements.length; i++) {
+            if (elements[i].hasAttribute('name')) {
+                if ((<EJ2Intance>(elements[i] as Element)).ej2_instances &&
+                    (<Object[]>(<EJ2Intance>(elements[i] as Element)).ej2_instances).length &&
+                    !(<EJ2Intance>(elements[i] as Element)).ej2_instances[0].isDestroyed) {
+                    (<EJ2Intance>(elements[i] as Element)).ej2_instances[0].destroy();
                 }
             }
-        });
+        }
     }
 
     /**
@@ -737,19 +742,19 @@ export class Edit implements IAction {
         let rules: Object = {};
         let mRules: Object = {};
         cols = cols ? cols : gObj.getColumns() as Column[];
-        cols.forEach((col: Column, index: number) => {
-            if (!col.visible) {
-                return;
+        for (let i: number = 0; i < cols.length; i++) {
+            if (!cols[i].visible) {
+                continue;
             }
-            if (isBlazor() && col.editTemplate) {
-                return;
+            if (isBlazor() && cols[i].editTemplate) {
+                continue;
             }
-            if (index < frzCols && col.validationRules) {
-                rules[getComplexFieldID(col.field)] = col.validationRules;
-            } else if (index >= frzCols && col.validationRules) {
-                mRules[getComplexFieldID(col.field)] = col.validationRules;
+            if (i < frzCols && cols[i].validationRules) {
+                rules[getComplexFieldID(cols[i].field)] = cols[i].validationRules;
+            } else if (i >= frzCols && cols[i].validationRules) {
+                mRules[getComplexFieldID(cols[i].field)] = cols[i].validationRules;
             }
-        });
+        }
         if (frzCols && this.parent.editSettings.mode !== 'Dialog') {
             this.parent.editModule.mFormObj = this.createFormObj(mForm, mRules);
         } else {

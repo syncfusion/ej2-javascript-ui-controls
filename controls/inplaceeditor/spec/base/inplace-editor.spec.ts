@@ -2198,7 +2198,7 @@ describe('InPlace-Editor Control', () => {
                 name: 'Game',
                 value: 'Syncfusion',
                 adaptor: 'UrlAdaptor',
-                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/UpdateData',
+                url: 'https://ej2services.syncfusion.com/production/web-services/api/Editor/UpdateData',
                 actionBegin: begin,
                 actionSuccess: success,
                 actionFailure: fail
@@ -2221,7 +2221,7 @@ describe('InPlace-Editor Control', () => {
                 name: 'Game',
                 value: 'Syncfusion',
                 adaptor: 'UrlAdaptor',
-                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/ModifyData',
+                url: 'https://ej2services.syncfusion.com/production/web-services/api/Editor/ModifyData',
                 actionBegin: begin,
                 actionSuccess: success,
                 actionFailure: fail
@@ -2268,7 +2268,7 @@ describe('InPlace-Editor Control', () => {
                 mode: 'Inline',
                 value: 'Syncfusion',
                 adaptor: 'UrlAdaptor',
-                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/Updates',
+                url: 'https://ej2services.syncfusion.com/production/web-services/api/Editor/Updates',
                 actionBegin: begin,
                 actionFailure: fail
             });
@@ -2290,7 +2290,7 @@ describe('InPlace-Editor Control', () => {
                 mode: 'Inline',
                 value: 'Syncfusion',
                 adaptor: 'WebApiAdaptor',
-                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/Updates',
+                url: 'https://ej2services.syncfusion.com/production/web-services/api/Editor/Updates',
                 actionBegin: begin,
                 actionFailure: fail
             });
@@ -2312,7 +2312,7 @@ describe('InPlace-Editor Control', () => {
                 mode: 'Inline',
                 value: 'Syncfusion',
                 adaptor: 'ODataV4Adaptor',
-                url: 'https://ej2services.syncfusion.com/development/web-services/odata/EditDatas',
+                url: 'https://ej2services.syncfusion.com/production/web-services/odata/EditDatas',
                 actionBegin: begin,
                 actionFailure: fail
             });
@@ -2334,7 +2334,7 @@ describe('InPlace-Editor Control', () => {
                 name: 'Game',
                 value: 'Syncfusion',
                 adaptor: 'UrlAdaptor',
-                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/CustomData',
+                url: 'https://ej2services.syncfusion.com/production/web-services/api/Editor/CustomData',
                 actionBegin: function(e: any): void {
                     e.data['custom'] = 'Syncfusion Custom Data';
                     beginArgs = e;
@@ -2360,7 +2360,7 @@ describe('InPlace-Editor Control', () => {
                 name: 'Game',
                 value: 'Syncfusion',
                 adaptor: 'WebApiAdaptor',
-                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/CustomData',
+                url: 'https://ej2services.syncfusion.com/production/web-services/api/Editor/CustomData',
                 actionBegin: function(e: any): void {
                     e.data['custom'] = 'Syncfusion Custom Data';
                     beginArgs = e;
@@ -2388,7 +2388,7 @@ describe('InPlace-Editor Control', () => {
                 value: date,
                 mode: 'Inline',
                 adaptor: 'UrlAdaptor',
-                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/DateData',
+                url: 'https://ej2services.syncfusion.com/production/web-services/api/Editor/DateData',
                 actionBegin: begin,
                 actionSuccess: success,
                 actionFailure: fail
@@ -2411,7 +2411,7 @@ describe('InPlace-Editor Control', () => {
                 mode: 'Inline',
                 value: 'Syncfusion',
                 adaptor: 'UrlAdaptor',
-                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/PrimaryKeyData',
+                url: 'https://ej2services.syncfusion.com/production/web-services/api/Editor/PrimaryKeyData',
                 actionBegin: begin,
                 actionSuccess: success,
                 actionFailure: fail
@@ -2434,7 +2434,7 @@ describe('InPlace-Editor Control', () => {
                 name: 'Game',
                 value: 'Syncfusion',
                 adaptor: 'UrlAdaptor',
-                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/Updates',
+                url: 'https://ej2services.syncfusion.com/production/web-services/api/Editor/Updates',
                 actionBegin: begin,
                 actionFailure: fail
             });
@@ -2456,7 +2456,7 @@ describe('InPlace-Editor Control', () => {
                 name: 'Game',
                 value: 'Syncfusion',
                 adaptor: 'UrlAdaptor',
-                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/UpdateData',
+                url: 'https://ej2services.syncfusion.com/production/web-services/api/Editor/UpdateData',
                 actionBegin: begin,
                 actionSuccess: success,
                 actionFailure: fail
@@ -2480,7 +2480,7 @@ describe('InPlace-Editor Control', () => {
                 name: 'Game',
                 value: 'Syncfusion',
                 adaptor: 'WebApiAdaptor',
-                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/UpdateData',
+                url: 'https://ej2services.syncfusion.com/production/web-services/api/Editor/UpdateData',
                 actionBegin: begin,
                 actionSuccess: success,
                 actionFailure: fail
@@ -2504,7 +2504,7 @@ describe('InPlace-Editor Control', () => {
                 name: 'Game',
                 value: 'Syncfusion',
                 adaptor: 'ODataV4Adaptor',
-                url: 'https://ej2services.syncfusion.com/development/web-services/odata/EditData',
+                url: 'https://ej2services.syncfusion.com/production/web-services/odata/EditData/ModifyData',
                 actionBegin: begin,
                 actionSuccess: success,
                 actionFailure: fail

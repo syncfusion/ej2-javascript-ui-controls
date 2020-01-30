@@ -348,7 +348,7 @@ export class ActionBase {
             this.monthEvent.applyResourceColor(appointmentElement, event, 'backgroundColor', groupOrder);
             setStyleAttribute(appointmentElement, { 'width': appWidth + 'px', 'border': '0px', 'pointer-events': 'none' });
             let cellTd: Element = workCells[day];
-            this.monthEvent.renderElement(cellTd, appointmentElement);
+            this.monthEvent.renderElement(cellTd, appointmentElement, true);
             this.actionObj.cloneElement.push(appointmentElement);
         }
     }

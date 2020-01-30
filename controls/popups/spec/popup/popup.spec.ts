@@ -1234,6 +1234,45 @@ describe ('EJ2-30263 Page scrolls slow when render more than 10 Rich Text Editor
     });
 });
 
+describe ('EJ2-34298 - Destroy method correction fix testing', () => {
+    let popObj: any;
+    let flexContainer:HTMLElement;
+    beforeEach(() => {
+        flexContainer = document.createElement("div");
+        flexContainer.style.overflow  = "scroll";
+        flexContainer.style.display ="flex";
+        flexContainer.style.height ="400px";
+        flexContainer.innerHTML = "<div id='targetWrapper' style='overflow:scroll;height:1000px'>" +
+        "<div id='targetContainer' style='height: 1000px; width: 400px; margin: 100px 0px 50px 165px; float: left;'>" +
+                    "<button id='target'>Hide Popup</button> " +
+                    "<div id='popup' style='position: absolute;background: rgba(201, 205, 206, 0.43); height: 200px; width: 150px;'>" +
+                        "<div style='margin: 20px 25px 65px 30px;font-weight: 200;font-size: 12px;'>Popup Content</div>"+
+                    "</div>"+
+                "</div></div>";
+        document.body.appendChild(flexContainer);
+    });
+    afterEach(() => {
+        document.body.innerHTML = '';
+    });
+    it('Classlist availability testing', () => {
+        let popupEle = document.getElementById("popup");
+        popObj = new Popup(popupEle,{actionOnScroll:"hide", relateTo: document.getElementById("target")});
+        popObj.show();
+        expect(popObj.element.classList.contains("e-popup-open")).toEqual(true);
+        popObj.hide();
+        expect(popObj.element.classList.contains("e-popup-close")).toEqual(true);
+        popObj.show();
+        popObj.scrollRefresh({target: document.getElementById('target')});
+        expect(popObj.element.classList.contains("e-popup-close")).toEqual(true);
+        popObj.destroy();
+        let targetEle: HTMLElement = document.querySelector('#popup') as HTMLElement;
+        expect(targetEle.classList.contains('e-popup-open')).toEqual(false);
+        expect(targetEle.classList.contains('e-popup-close')).toEqual(false);
+        expect(targetEle.classList.contains('e-popup')).toEqual(false);
+        expect(targetEle.classList.contains('e-rtl')).toEqual(false);
+    });
+});
+
 function getElem(selector: string): Element {
     return document.querySelector(selector);
 }

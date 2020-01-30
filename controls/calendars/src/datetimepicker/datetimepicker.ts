@@ -354,12 +354,6 @@ export class DateTimePicker extends DatePicker {
     @Property(null)
     public firstDayOfWeek: number;
     /**
-     * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
-     * @default 'en-US'
-     */
-    @Property('en-US')
-    public locale: string;
-    /**
      * Gets or sets the Calendar's Type like gregorian or islamic.
      * @default Gregorian
      */

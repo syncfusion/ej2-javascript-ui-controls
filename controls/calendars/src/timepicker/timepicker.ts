@@ -1956,7 +1956,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         append([this.listTag], this.listWrapper);
     }
     private documentClickHandler(event: MouseEvent): void {
-        if (event.type !== 'touchstart') {
+        if ((!isNullOrUndefined(this.popupObj) && this.inputWrapper.container.contains(<HTMLElement>event.target)) &&
+        event.type !== 'touchstart') {
             event.preventDefault();
         }
         let target: HTMLElement = <HTMLElement>event.target;
@@ -1971,7 +1972,10 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         } else if (target !== this.inputElement) {
             if (!Browser.isDevice) {
                 this.isPreventBlur = (Browser.isIE || Browser.info.name === 'edge') && (document.activeElement === this.inputElement);
-                event.preventDefault();
+                if ((!isNullOrUndefined(this.popupObj) && this.inputWrapper.container.contains(<HTMLElement>event.target)) &&
+                event.type !== 'touchstart') {
+                    event.preventDefault();
+                }
             }
         }
     }

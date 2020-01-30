@@ -1,4 +1,4 @@
-import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { PointModel, DecoratorShapes } from '@syncfusion/ej2-drawings';import { Point } from '@syncfusion/ej2-drawings';import { Size } from '@syncfusion/ej2-drawings';import { Container } from '@syncfusion/ej2-drawings';import { PdfAnnotationType } from './enum';import { ICommentsCollection, IReviewCollection } from '../pdfviewer';
+import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { PointModel, DecoratorShapes } from '@syncfusion/ej2-drawings';import { Point } from '@syncfusion/ej2-drawings';import { Size } from '@syncfusion/ej2-drawings';import { Container } from '@syncfusion/ej2-drawings';import { PdfAnnotationType } from './enum';import { ICommentsCollection, IReviewCollection, AnnotationSelectorSettingsModel } from '../pdfviewer';
 
 /**
  * Interface for a class PdfBounds
@@ -122,61 +122,61 @@ export interface PdfAnnotationBaseModel {
     measureType?: string;
 
     /**
-     * Represents the auther value of the annotation 
+     * Represents the auther value of the annotation
      * @default ''
      */
     author?: string;
 
     /**
-     * Represents the modified date of the annotation 
+     * Represents the modified date of the annotation
      * @default ''
      */
     modifiedDate?: string;
 
     /**
-     * Represents the subject of the annotation 
+     * Represents the subject of the annotation
      * @default ''
      */
     subject?: string;
 
     /**
-     * Represents the notes of the annotation 
+     * Represents the notes of the annotation
      * @default ''
      */
     notes?: string;
 
     /**
-     * Represents the stroke color of the annotation 
+     * Represents the stroke color of the annotation
      * @default 'black'
      */
     strokeColor?: string;
 
     /**
-     * Represents the fill color of the annotation 
+     * Represents the fill color of the annotation
      * @default 'tranparent'
      */
     fillColor?: string;
 
     /**
-     * Represents the fill color of the annotation 
+     * Represents the fill color of the annotation
      * @default 'tranparent'
      */
     stampFillColor?: string;
 
     /**
-     * Represents the stroke color of the annotation 
+     * Represents the stroke color of the annotation
      * @default 'black'
      */
     stampStrokeColor?: string;
 
     /**
-     * Represents the path data of the annotation 
+     * Represents the path data of the annotation
      * @default ''
      */
     data?: string;
 
     /**
-     * Represents the opecity value of the annotation 
+     * Represents the opecity value of the annotation
      * @default 1
      */
     opacity?: number;
@@ -309,25 +309,25 @@ export interface PdfAnnotationBaseModel {
     dynamicText?: string;
 
     /**
-     * Represents the unique annotName of the annotation 
+     * Represents the unique annotName of the annotation
      * @default ''
      */
     annotName?: string;
 
     /**
-     * Represents the review collection of the annotation 
+     * Represents the review collection of the annotation
      * @default ''
      */
     review?: IReviewCollection;
 
     /**
-     * Represents the comments collection of the annotation 
+     * Represents the comments collection of the annotation
      * @default []
      */
     comments?: ICommentsCollection[];
 
     /**
-     * Represents the comments collection of the annotation 
+     * Represents the comments collection of the annotation
      * @default '#000'
      */
     fontColor?: string;
@@ -369,10 +369,16 @@ export interface PdfAnnotationBaseModel {
     labelMaxLength?: number;
 
     /**
-     * Represents the opecity value of the annotation 
+     * Represents the opecity value of the annotation
      * @default 1
      */
     labelOpacity?: number;
+
+    /**
+     * Represents the selection settings of the annotation
+     * @default ''
+     */
+    annotationSelectorSettings?: AnnotationSelectorSettingsModel;
 
     /**
      * Represents the shape annotation label content border color

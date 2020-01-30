@@ -71,3 +71,8 @@ Maps.Inject(Legend, MapsTooltip);
         maps.legendSettings.shape= <LegendShape>value; 
         maps.refresh();
     }
+    document .getElementById('toggleLegend').onchange = () => {
+        let element: HTMLInputElement = <HTMLInputElement>(document.getElementById('toggleLegend'));
+        maps.legendSettings.toggleLegendSettings.enable = element.checked;
+        maps.refresh();
+    }

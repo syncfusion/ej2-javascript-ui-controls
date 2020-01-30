@@ -4074,3 +4074,51 @@ describe('Checkbox state when Selecting in batch edit while adding record => ', 
         destroy(gridObj);
     });
 });
+
+describe('isInteracted property in rowSelecting and rowSelected events testing', () => {
+    let gridObj: Grid;
+    let rowSelecting: (args: any) => void;
+    let rowSelected: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [{ field: 'OrderID' }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight' },
+                { field: 'ShipCity' }],
+                allowPaging: true,
+                pageSettings: { pageSize: 8, pageCount: 4, currentPage: 1 },
+                allowSelection: true,
+                selectionSettings: { type: 'Multiple', mode: 'Both' },
+            }, done);
+    });
+
+    it('isInteracted property testing - Click', () => {
+        rowSelecting = (args: any) => {
+            expect(args.isInteracted).toBeTruthy();
+        };
+        rowSelected = (args: any) => {
+            expect(args.isInteracted).toBeTruthy();
+        };
+        gridObj.rowSelecting = rowSelecting;
+        gridObj.rowSelected = rowSelected;
+        (gridObj.getRows()[1].querySelector('.e-rowcell') as HTMLElement).click();
+    });
+
+    it('isInteracted property testing - rowSelect method', () => {
+        rowSelecting = (args: any) => {
+            expect(args.isInteracted).toBeFalsy();
+        };
+        rowSelected = (args: any) => {
+            expect(args.isInteracted).toBeFalsy();
+        };
+        gridObj.rowSelecting = rowSelecting;
+        gridObj.rowSelected = rowSelected;
+        gridObj.selectRow(2);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = rowSelecting = null;
+        gridObj = rowSelected = null;
+    });
+});

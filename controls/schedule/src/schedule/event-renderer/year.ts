@@ -27,7 +27,7 @@ export class YearEvent extends TimelineEvent {
     public renderAppointments(): void {
         this.fields = this.parent.eventFields;
         let eventWrapper: NodeListOf<Element> = this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_WRAPPER_CLASS);
-        eventWrapper.forEach((node: Element) => remove(node));
+        [].slice.call(eventWrapper).forEach((node: Element) => remove(node));
         this.renderedEvents = [];
         if (this.parent.currentView !== 'TimelineYear') {
             this.yearViewEvents();

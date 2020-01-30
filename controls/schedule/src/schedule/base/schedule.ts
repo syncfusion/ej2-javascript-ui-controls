@@ -1427,11 +1427,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /** @hidden */
-    public getSelectedElements(): Element[] {
-        return [].slice.call(this.element.querySelectorAll('.' + cls.SELECTED_CELL_CLASS));
-    }
-
-    /** @hidden */
     public getAllDayRow(): Element {
         return this.element.querySelector('.' + cls.ALLDAY_ROW_CLASS);
     }
@@ -1924,6 +1919,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 case 'allowDeleting':
                     if (this.eventWindow) { this.eventWindow.refresh(); }
                     break;
+                case 'enableMaxHeight':
+                case 'enableIndicator':
+                    this.notify(events.dataReady, {
+                        processedData: this.eventBase.processData(this.eventsData as { [key: string]: Object }[])
+                    });
+                    break;
             }
         }
     }
@@ -2095,6 +2096,15 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
+     * Retrieves the selected cell elements.
+     * @method getSelectedElements
+     * @returns {Element[]} The elements of currently selected cells will be returned.
+     */
+    public getSelectedElements(): Element[] {
+        return [].slice.call(this.element.querySelectorAll('.' + cls.SELECTED_CELL_CLASS));
+    }
+
+    /**
      * To get the resource collection
      * @method getResourceCollections
      * @return {ResourcesModel[]}
@@ -2102,6 +2112,26 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     public getResourceCollections(): ResourcesModel[] {
         return this.resourceCollection;
+    }
+
+    /**
+     * Current View could be change based on the provided parameters.
+     * @method changeCurrentView
+     * @param {View} viewName Accept the view in the viewCollections.
+     * @param {number} viewIndex Accept the viewIndex in the viewCollections.
+     * @public 
+     */
+    public changeCurrentView(viewName: View, viewIndex?: number): void {
+        let index: number = this.getViewIndex(viewName);
+        let view: string = viewName.charAt(0).toLowerCase() + viewName.slice(1);
+        let viewOptions: ViewsData[] = this.viewOptions[view];
+        if (viewOptions) {
+            index = this.viewCollections.indexOf(viewOptions[viewIndex || 0]);
+        }
+        if (index === -1 || index === this.viewIndex) {
+            return;
+        }
+        this.changeView(viewName, null, null, index);
     }
 
     /**
@@ -2129,9 +2159,24 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @param {string} hour Accepts the time value in the skeleton format of 'Hm'.
      * @returns {void}
      */
-    public scrollTo(hour: string): void {
+    public scrollTo(hour: string, scrollDate?: Date): void {
         if (this.activeView.scrollToHour) {
-            this.activeView.scrollToHour(hour);
+            this.activeView.scrollToHour(hour, scrollDate);
+        }
+    }
+
+    /**
+     * This method allows scroll to the position of the any resources that available on the scheduler.
+     * This method is applicable for without Agenda and Month agenda views of the schedule.
+     * @method scrollToResource
+     * @param {string} resourceId Accepts the id in string type
+     * @param {number} resourceId Accepts the id in number type
+     * @param {string} groupName Accepts the name of the resource collection
+     * @returns {void}
+     */
+    public scrollToResource(resourceId: string | number, groupName?: string): void {
+        if (this.resourceBase && this.resourceBase.lastResourceLevel) {
+            this.resourceBase.resourceScroll(resourceId, groupName);
         }
     }
 

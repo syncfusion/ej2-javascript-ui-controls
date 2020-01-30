@@ -2,7 +2,7 @@ import { IGrid } from '../base/interface';
 import { Column } from '../models/column';
 import { isNullOrUndefined, addClass, extend, closest, updateBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
-import { appendChildren } from '../base/util';
+import { appendChildren, alignFrozenEditForm } from '../base/util';
 
 /**
  * Edit render module is used to render grid edit row.
@@ -125,7 +125,7 @@ export class InlineEditRender {
         }
     }
 
-    private refreshFreezeEdit(row: Element, args: {rowData?: Object, movableForm?: HTMLFormElement }): void {
+    private refreshFreezeEdit(row: Element, args: {rowData?: Object, form?: HTMLFormElement, movableForm?: HTMLFormElement }): void {
         let td: Element = row.firstChild as Element;
         let fCls: string;
         let cont: Element;
@@ -177,6 +177,7 @@ export class InlineEditRender {
                 fRows.appendChild(mTd);
                 fRows.classList.add('e-editedrow');
             }
+            alignFrozenEditForm(args.movableForm.querySelector('td:not(.e-hide)'), args.form.querySelector('td:not(.e-hide)'));
         }
     }
 
@@ -206,13 +207,12 @@ export class InlineEditRender {
         let gObj: IGrid = this.parent;
         let gLen: number = 0;
         let isDetail: number = !isNullOrUndefined(gObj.detailTemplate) || !isNullOrUndefined(gObj.childGrid) ? 1 : 0;
-        let isDragable: number = gObj.isRowDragable() ? 1 : 0;
         if (gObj.allowGrouping) {
             gLen = gObj.groupSettings.columns.length;
         }
         let td: HTMLTableCellElement = this.parent.createElement('td', {
             className: 'e-editcell e-normaledit',
-            attrs: { colspan: (gObj.getVisibleColumns().length - gObj.getVisibleFrozenColumns() + gLen + isDetail + isDragable).toString() }
+            attrs: { colspan: (gObj.getVisibleColumns().length - gObj.getVisibleFrozenColumns() + this.parent.getIndentCount()).toString() }
         }) as HTMLTableCellElement;
         let form: HTMLFormElement = (<{form: HTMLFormElement}>args).form =
         this.parent.createElement('form', { id: gObj.element.id + 'EditForm', className: 'e-gridform' }) as HTMLFormElement;
@@ -278,11 +278,12 @@ export class InlineEditRender {
         appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
         let setRules: Function = () => {
             let cols: Column[] = this.parent.getColumns();
-            cols.forEach((col: Column) => {
-                if (col.validationRules) {
-                    this.parent.editModule.formObj.rules[col.field] = col.validationRules as {[rule: string]: Object};
+            for (let i: number = 0; i < cols.length; i++) {
+                if ((cols[i] as Column).validationRules) {
+                    this.parent.editModule.formObj.rules[(cols[i] as Column).field] =
+                    (cols[i] as Column).validationRules as {[rule: string]: Object};
                 }
-            });
+            }
         };
         updateBlazorTemplate(editTemplateID, 'Template', this.parent.editSettings, true, setRules);
     }

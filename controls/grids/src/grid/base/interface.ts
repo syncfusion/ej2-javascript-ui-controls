@@ -6,7 +6,7 @@ import { ButtonModel, CheckBoxModel, SwitchModel } from '@syncfusion/ej2-buttons
 import { Column, ColumnModel } from '../models/column';
 import {
     SortSettingsModel, TextWrapSettingsModel, SelectionSettingsModel,
-    FilterSettingsModel, SearchSettingsModel
+    FilterSettingsModel, SearchSettingsModel, InfiniteScrollSettingsModel
 } from './grid-model';
 import { PageSettingsModel, AggregateRowModel } from '../models/models';
 import { RowDropSettingsModel, GroupSettingsModel, GridModel, EditSettingsModel } from './grid-model';
@@ -137,6 +137,12 @@ export interface IGrid extends Component<HTMLElement> {
      * @default []
      */
     sortSettings?: SortSettingsModel;
+
+    /**
+     * Specifies the infinite scroll settings for Grid.
+     * @default []
+     */
+    infiniteScrollSettings?: InfiniteScrollSettingsModel;
 
     /**
      * Specifies whether the Excel exporting is enable or not.
@@ -488,6 +494,7 @@ export interface IGrid extends Component<HTMLElement> {
     getColumnByIndex?(index: number): Column;
     getUidByColumnField?(field: string): string;
     getNormalizedColumnIndex?(uid: string): number;
+    getIndentCount?(): number;
     getColumnIndexesInView(): number[];
     setColumnIndexesInView(indexes?: number[]): void;
     getRows?(): Element[];
@@ -777,6 +784,14 @@ export interface NotifyArgs {
     rowObject?: Row<Column>;
     renderMovableContent?: boolean;
     promise?: Promise<Object>;
+}
+
+export interface InfiniteScrollArgs {
+    requestType?: string;
+    currentPage?: number;
+    prevPage?: number;
+    startIndex?: number;
+    direction?: string;
 }
 
 /**

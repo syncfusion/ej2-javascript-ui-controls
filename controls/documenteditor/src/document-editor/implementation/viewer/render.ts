@@ -75,20 +75,6 @@ export class Renderer {
         this.viewer = viewer;
     }
     /**
-     * Gets the color.
-     * @private
-     */
-    public getColor(color: string): string {
-        if (color.length > 0) {
-            if (color[0] === '#') {
-                if (color.length > 7) {
-                    return color.substr(0, 7);
-                }
-            }
-        }
-        return color;
-    }
-    /**
      * Renders widgets.
      * @param {Page} page 
      * @param {number} left 
@@ -101,7 +87,7 @@ export class Renderer {
         if (isNullOrUndefined(this.pageCanvas) || isNullOrUndefined(page)) {
             return;
         }
-        this.pageContext.fillStyle = this.getColor(this.viewer.backgroundColor);
+        this.pageContext.fillStyle = HelperMethods.getColor(this.viewer.backgroundColor);
         this.pageContext.beginPath();
         this.pageContext.fillRect(left, top, width, height);
         this.pageContext.closePath();
@@ -585,7 +571,7 @@ export class Renderer {
             if (highlightColor.substring(0, 1) !== '#') {
                 this.pageContext.fillStyle = HelperMethods.getHighlightColorCode(highlightColor);
             } else {
-                this.pageContext.fillStyle = this.getColor(highlightColor);
+                this.pageContext.fillStyle = HelperMethods.getColor(highlightColor);
             }
             // tslint:disable-next-line:max-line-length
             this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
@@ -602,7 +588,7 @@ export class Renderer {
             let index: number = text.indexOf('.');
             text = text.substr(index) + text.substring(0, index);
         }
-        this.pageContext.fillStyle = this.getColor(color);
+        this.pageContext.fillStyle = HelperMethods.getColor(color);
         // tslint:disable-next-line:max-line-length
         this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width));
 
@@ -638,7 +624,7 @@ export class Renderer {
             if (format.highlightColor.substring(0, 1) !== '#') {
                 this.pageContext.fillStyle = HelperMethods.getHighlightColorCode(format.highlightColor);
             } else {
-                this.pageContext.fillStyle = this.getColor(format.highlightColor);
+                this.pageContext.fillStyle = HelperMethods.getColor(format.highlightColor);
             }
             // tslint:disable-next-line:max-line-length
             this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
@@ -658,7 +644,7 @@ export class Renderer {
         }
         let baselineOffset: number = elementBox.baselineOffset;
         topMargin = (format.baselineAlignment === 'Normal') ? topMargin + baselineOffset : (topMargin + (baselineOffset / 1.5));
-        this.pageContext.fillStyle = this.getColor(color);
+        this.pageContext.fillStyle = HelperMethods.getColor(color);
 
         let scaledWidth: number = this.getScaledValue(elementBox.width);
         let text: string = elementBox.text;
@@ -1215,7 +1201,7 @@ export class Renderer {
         let width: number = cellWidget.width + leftMargin + lineWidth + cellWidget.margin.right;
         this.pageContext.beginPath();
         if (bgColor !== 'empty') {
-            this.pageContext.fillStyle = this.getColor(bgColor);
+            this.pageContext.fillStyle = HelperMethods.getColor(bgColor);
             // tslint:disable-next-line:max-line-length
             this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), this.getScaledValue(width), this.getScaledValue(height));
             this.pageContext.closePath();
@@ -1224,7 +1210,7 @@ export class Renderer {
         if (cellFormat.shading.hasValue('foregroundColor')) {
             this.pageContext.beginPath();
             if (cellFormat.shading.foregroundColor !== 'empty') {
-                this.pageContext.fillStyle = this.getColor(cellFormat.shading.foregroundColor);
+                this.pageContext.fillStyle = HelperMethods.getColor(cellFormat.shading.foregroundColor);
                 // tslint:disable-next-line:max-line-length
                 this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), this.getScaledValue(width), this.getScaledValue(height));
                 this.pageContext.closePath();

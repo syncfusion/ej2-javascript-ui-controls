@@ -2,7 +2,7 @@
  * Bubble sample
  */
 import { population, internetUsers } from './MapData/Populationdata';
-import { Maps, Bubble, IBubbleRenderingEventArgs, MapsTooltip, MapsTheme, ILoadEventArgs, Zoom, MapAjax } from  '../src/index';
+import { Maps, Bubble, IBubbleRenderingEventArgs, BubbleType, MapsTooltip, MapsTheme, ILoadEventArgs, Zoom, MapAjax } from  '../src/index';
 import { world_Map } from './MapData/worldMap';
 
 Maps.Inject(Bubble, MapsTooltip, Zoom);
@@ -56,3 +56,9 @@ export interface Data {
         ]
     });
     maps.appendTo('#container');
+
+    document.getElementById('bubble').onchange = () => {
+        let value: string = (<HTMLInputElement>document.getElementById('bubble')).value;
+        maps.layers[0].bubbleSettings[0].bubbleType = <BubbleType>value; 
+        maps.refresh();
+    };

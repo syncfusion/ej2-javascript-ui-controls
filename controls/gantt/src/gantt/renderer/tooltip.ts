@@ -34,7 +34,7 @@ export class Tooltip {
             '.e-gantt-parent-taskbar, .e-gantt-milestone, .e-gantt-unscheduled-taskbar' +
             '.e-event-markers, .e-baseline-bar, .e-event-markers,' +
             '.e-connector-line-container, .e-indicator-span, .e-notes-info,' +
-            '.e-taskbar-left-resizer, .e-taskbar-right-resizer';
+            '.e-taskbar-left-resizer, .e-taskbar-right-resizer, .e-baseline-gantt-milestone';
         this.toolTipObj.position = 'BottomCenter';
         this.toolTipObj.openDelay = 700;
         this.toolTipObj.enableHtmlSanitizer = false;
@@ -88,14 +88,16 @@ export class Tooltip {
                     argsData.content = this.toolTipObj.content = taskbarTemplateNode ? (taskbarTemplateNode[0] as HTMLElement) :
                         parent.tooltipModule.getTooltipContent(
                             (data.ganttProperties.isMilestone ? 'milestone' : 'taskbar'), data, parent, args);
-                } else if (args.target.classList.contains('e-baseline-bar')) {
+                } else if (args.target.classList.contains('e-baseline-bar') ||
+                           args.target.classList.contains('e-baseline-gantt-milestone')) {
                     let baseLineTemplateNode: NodeList;
                     if ((parent.tooltipSettings.baseline)) {
                         baseLineTemplateNode = parent.tooltipModule.templateCompiler(
                             parent.tooltipSettings.baseline, parent, data, 'TooltipBaselineTemplate');
                     }
                     argsData.content = this.toolTipObj.content = baseLineTemplateNode ? (baseLineTemplateNode[0] as HTMLElement) :
-                        parent.tooltipModule.getTooltipContent('baseline', data, parent, args);
+                        parent.tooltipModule.getTooltipContent(
+                            (data.ganttProperties.isMilestone ? 'milestone' : 'baseline'), data, parent, args);
                 } else if (args.target.classList.contains('e-event-markers')) {
                     argsData.content = this.toolTipObj.content = parent.tooltipModule.getTooltipContent('marker', data, parent, args);
                 } else if (args.target.classList.contains('e-connector-line-container')) {

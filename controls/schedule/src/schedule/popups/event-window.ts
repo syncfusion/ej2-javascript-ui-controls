@@ -240,8 +240,6 @@ export class EventWindow {
     }
 
     private onBeforeClose(args: BeforeCloseEventArgs): Deferred {
-        this.resetEditorTemplate();
-        this.updateEditorTemplate();
         if (args.isInteracted) {
             this.isCrudAction = false;
         }
@@ -270,6 +268,8 @@ export class EventWindow {
             }
             args.cancel = popupArgs.cancel;
             if (!popupArgs.cancel) {
+                this.resetEditorTemplate();
+                this.updateEditorTemplate();
                 if (this.isCrudAction) {
                     args.cancel = this.processCrudActions(popupArgs.data as { [key: string]: Object });
                     this.isCrudAction = args.cancel;

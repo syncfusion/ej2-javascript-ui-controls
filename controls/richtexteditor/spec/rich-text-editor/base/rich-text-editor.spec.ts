@@ -187,6 +187,16 @@ describe('RTE base module', () => {
             let str = rteObj.getSelection();
             expect(range.toString()).toBe(str);
         });
+        it('getSelectedHtml public method', () => {
+            rteObj.value = '<p>RTE</p><p>This is a sample content used in the RTE test cases</p><ol><li>list samples</li></ol>'
+            rteObj.dataBind();
+            let range: Range = rteObj.contentModule.getDocument().createRange();
+            range.setStart(rteObj.contentModule.getEditPanel(), 0);
+            range.setEnd(rteObj.contentModule.getEditPanel(), rteObj.contentModule.getEditPanel().childNodes.length);
+            rteObj.selectRange(range);
+            let str = rteObj.getSelectedHtml();
+            expect(rteObj.value === str).toBe(true);
+        });
         /*it('executeCommand', () => {
             rteObj.focus();
             var img = document.createElement('img');

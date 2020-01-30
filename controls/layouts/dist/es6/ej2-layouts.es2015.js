@@ -38,6 +38,7 @@ const COLLAPSE_PANE = 'e-collapsed';
 const PANE_HIDDEN = 'e-pane-hidden';
 const RESIZABLE_PANE = 'e-resizable';
 const LAST_BAR = 'e-last-bar';
+const BAR_SIZE_DEFAULT = 1;
 /**
  * Interface to configure pane properties such as its content, size, min, max, resizable, collapsed and collapsible.
  */
@@ -254,6 +255,7 @@ let Splitter = class Splitter extends Component {
     checkPaneSize(e) {
         let prePaneSize;
         let nextPaneSize;
+        let splitBarSize = isNullOrUndefined(this.separatorSize) ? BAR_SIZE_DEFAULT : this.separatorSize;
         prePaneSize = this.orientation === 'Horizontal' ? this.previousPane.offsetWidth : this.previousPane.offsetHeight;
         nextPaneSize = this.orientation === 'Horizontal' ? this.nextPane.offsetWidth : this.nextPane.offsetHeight;
         if ((this.previousPane.style.flexBasis.indexOf('%') > 0 || this.nextPane.style.flexBasis.indexOf('%') > 0)) {
@@ -278,15 +280,15 @@ let Splitter = class Splitter extends Component {
             if (e.type === 'keydown' && (!isNullOrUndefined(e.keyCode))) {
                 if ((e.keyCode === 39 || (e.keyCode === 40)) && nextPaneSize > 0) {
                     this.addStaticPaneClass();
-                    this.previousPane.style.flexBasis = (prePaneSize + this.separatorSize) + 'px';
-                    this.nextPane.style.flexBasis = (nextPaneSize < this.separatorSize) ? '0px' :
-                        (nextPaneSize - this.separatorSize) + 'px';
+                    this.previousPane.style.flexBasis = (prePaneSize + splitBarSize) + 'px';
+                    this.nextPane.style.flexBasis = (nextPaneSize < splitBarSize) ? '0px' :
+                        (nextPaneSize - splitBarSize) + 'px';
                 }
                 else if ((e.keyCode === 37 || (e.keyCode === 38)) && prePaneSize > 0) {
                     this.addStaticPaneClass();
-                    this.previousPane.style.flexBasis = (prePaneSize < this.separatorSize) ? '0px' :
-                        (prePaneSize - this.separatorSize) + 'px';
-                    this.nextPane.style.flexBasis = (nextPaneSize + this.separatorSize) + 'px';
+                    this.previousPane.style.flexBasis = (prePaneSize < splitBarSize) ? '0px' :
+                        (prePaneSize - splitBarSize) + 'px';
+                    this.nextPane.style.flexBasis = (nextPaneSize + splitBarSize) + 'px';
                 }
             }
         }
@@ -295,20 +297,22 @@ let Splitter = class Splitter extends Component {
         let index = this.getSeparatorIndex(this.currentSeparator);
         let isPrevpaneCollapsed = this.previousPane.classList.contains(COLLAPSE_PANE);
         let isPrevpaneExpanded = this.previousPane.classList.contains(EXPAND_PANE);
-        let isNextpaneExpanded = this.nextPane.classList.contains(EXPAND_PANE);
         let isNextpaneCollapsed = this.nextPane.classList.contains(COLLAPSE_PANE);
         if (((this.orientation !== 'Horizontal' && event.keyCode === 38) || (this.orientation === 'Horizontal' && event.keyCode === 39) ||
             (this.orientation === 'Horizontal' && event.keyCode === 37) || (this.orientation !== 'Horizontal' && event.keyCode === 40))
-            && (!isPrevpaneExpanded && !isNextpaneCollapsed && !isPrevpaneCollapsed || (isPrevpaneExpanded) && !isNextpaneCollapsed)) {
+            && (!isPrevpaneExpanded && !isNextpaneCollapsed && !isPrevpaneCollapsed || (isPrevpaneExpanded) && !isNextpaneCollapsed) &&
+            document.activeElement.classList.contains(SPLIT_BAR)) {
             this.checkPaneSize(event);
             this.triggerResizing(event);
         }
         else if (event.keyCode === 13 && this.paneSettings[index].collapsible) {
             if (!this.previousPane.classList.contains(COLLAPSE_PANE)) {
                 this.collapse(index);
+                addClass([this.currentSeparator], SPLIT_BAR_ACTIVE);
             }
             else {
                 this.expand(index);
+                addClass([this.currentSeparator], SPLIT_BAR_ACTIVE);
             }
         }
     }
@@ -392,7 +396,8 @@ let Splitter = class Splitter extends Component {
             content: '',
             resizable: true,
             collapsed: false,
-            collapsible: false
+            collapsible: false,
+            cssClass: ''
         };
         for (let i = 0; i < childCount; i++) {
             if (isNullOrUndefined(this.paneSettings[i])) {
@@ -699,12 +704,14 @@ let Splitter = class Splitter extends Component {
         separator.setAttribute('tabindex', '0');
         proxy = this;
         separator.addEventListener('focus', () => {
-            separator.classList.add(SPLIT_BAR_ACTIVE);
-            proxy.currentSeparator = separator;
+            if (document.activeElement.classList.contains('e-split-bar')) {
+                proxy.currentSeparator = document.activeElement;
+                proxy.currentSeparator.classList.add(SPLIT_BAR_ACTIVE);
+            }
             proxy.getPaneDetails();
         });
         separator.addEventListener('blur', () => {
-            separator.classList.remove(SPLIT_BAR_ACTIVE);
+            proxy.currentSeparator.classList.remove(SPLIT_BAR_ACTIVE);
         });
         return separator;
     }
@@ -1859,9 +1866,11 @@ let Splitter = class Splitter extends Component {
             content: isNullOrUndefined(paneProperties.content) ? '' : paneProperties.content,
             resizable: isNullOrUndefined(paneProperties.resizable) ? true : paneProperties.resizable,
             collapsible: isNullOrUndefined(paneProperties.collapsible) ? false : paneProperties.collapsible,
-            collapsed: isNullOrUndefined(paneProperties.collapsed) ? false : paneProperties.collapsed
+            collapsed: isNullOrUndefined(paneProperties.collapsed) ? false : paneProperties.collapsed,
+            cssClass: isNullOrUndefined(paneProperties.cssClass) ? '' : paneProperties.cssClass
         };
         this.paneSettings.splice(index, 0, paneDetails);
+        this.setProperties({ 'paneSettings': this.paneSettings }, true);
         if (this.orientation === 'Horizontal') {
             this.element.insertBefore(newPane, this.element.querySelectorAll('.' + SPLIT_H_PANE)[index]);
             this.removePaneOrders(SPLIT_H_PANE);
@@ -1873,6 +1882,7 @@ let Splitter = class Splitter extends Component {
         this.allPanes.splice(index, 0, newPane);
         this.updatePanes();
         this.setTemplate(this.paneSettings[index].content, newPane);
+        this.setCssClass(this.allPanes[index], paneProperties.cssClass);
         this.allPanes[this.allPanes.length - 1].classList.remove(STATIC_PANE);
     }
     /**
@@ -2059,6 +2069,7 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.minTop = 0;
         this.minLeft = 0;
         this.isBlazor = false;
+        this.isInlineRendering = false;
     }
     /**
      * Initialize the event handler
@@ -2115,6 +2126,11 @@ let DashboardLayout = class DashboardLayout extends Component {
         }
         this.updateDragArea();
         this.renderComplete();
+        if (isBlazor() && this.isInlineRendering) {
+            this.setProperties({ panels: this.panels }, true);
+            this.allowServerDataBinding = true;
+            this.serverDataBind();
+        }
     }
     initGridLines() {
         this.table = document.createElement('table');
@@ -2142,6 +2158,7 @@ let DashboardLayout = class DashboardLayout extends Component {
             && !(this.isBlazor && this.panels.length > 0)) {
             let panelElements = [];
             this.setProperties({ panels: [] }, true);
+            this.isInlineRendering = true;
             for (let i = 0; i < this.element.querySelectorAll('.e-panel').length; i++) {
                 panelElements.push((this.element.querySelectorAll('.e-panel')[i]));
             }
@@ -2913,6 +2930,15 @@ let DashboardLayout = class DashboardLayout extends Component {
         if (!this.isBlazor) {
             this.setXYAttributes(cellElement, panel);
         }
+        else {
+            let bodyElement = cellElement.querySelector('.e-panel-content');
+            if (bodyElement) {
+                let headerHeight = cellElement.querySelector('.e-panel-header') ?
+                    window.getComputedStyle(cellElement.querySelector('.e-panel-header')).height : '0px';
+                let contentHeightValue = 'calc( 100% - ' + headerHeight + ')';
+                setStyleAttribute(bodyElement, { height: contentHeightValue });
+            }
+        }
         this.setHeightAndWidth(cellElement, panel);
         return cellElement;
     }
@@ -3178,7 +3204,7 @@ let DashboardLayout = class DashboardLayout extends Component {
             }
             for (let rowValue = row; rowValue >= 0; rowValue--) {
                 let element = (this.getCellInstance(ele.id).sizeY > 1 && topCheck) ? this.checkingElement : ele;
-                if ((rowValue !== endRow) && (sizeY > 1 ? rowValue === endRow - sizeY - 1 : rowValue === endRow - sizeY) &&
+                if ((rowValue !== endRow) && (rowValue === endRow - sizeY) &&
                     this.collisions(rowValue, col, sizeX, sizeY, element).length === 0) {
                     topCheck = false;
                     this.topAdjustable = true;
@@ -3574,6 +3600,11 @@ let DashboardLayout = class DashboardLayout extends Component {
                         };
                         this.setAttributes(value, initialModel[i]);
                         this.panelPropertyChange(model, { col: this.spacedColumnValue, row: this.spacedRowValue });
+                        // updated the panel model array as inTopAdjustable case with floating enabled instead of dragging and extra row
+                        if (this.topAdjustable && this.allowFloating) {
+                            this.updatePanels();
+                            this.updateCloneArrayObject();
+                        }
                         this.spacedRowValue = null;
                         if (i < initialModel.length) {
                             continue;
@@ -4112,6 +4143,7 @@ let DashboardLayout = class DashboardLayout extends Component {
      * Allows to add a panel to the Dashboardlayout.
      * @param {panel: [`PanelModel`](./panelModel)} panel -  Defines the panel element.
      * @returns void
+     * @deprecated
      */
     addPanel(panel) {
         this.allowServerDataBinding = false;
@@ -4133,9 +4165,7 @@ let DashboardLayout = class DashboardLayout extends Component {
         if (this.maxColumnValue < panelProp.col || this.maxColumnValue < (panelProp.col + panelProp.sizeX)) {
             this.panelPropertyChange(panelProp, { col: this.maxColumnValue - panelProp.sizeX });
         }
-        this.isBlazor = false;
         let cell = this.renderCell(panelProp, true, null);
-        this.isBlazor = (isBlazor() && this.isServerRendered);
         this.oldRowCol[panelProp.id] = { row: panelProp.row, col: panelProp.col };
         this.cloneObject[panelProp.id] = { row: panelProp.row, col: panelProp.col };
         this.updateOldRowColumn();
@@ -4152,6 +4182,9 @@ let DashboardLayout = class DashboardLayout extends Component {
                 this.checkCollision = [];
             }
             this.setPanelPosition(cell, panelProp.row, panelProp.col);
+            if (this.isBlazor) {
+                cell.style.removeProperty('visibility');
+            }
             this.updatePanelLayout(cell, panelProp);
             this.addPanelCalled = false;
         }
@@ -4185,6 +4218,7 @@ let DashboardLayout = class DashboardLayout extends Component {
      * Allows to update a panel in the DashboardLayout.
      * @param {panel: [`panelModel`](./panelModel)} panel - Defines the panel element.
      * @returns void
+     * @deprecated
      */
     updatePanel(panel) {
         if (!panel.id) {

@@ -117,6 +117,8 @@ export class DataBind {
                                         });
                                     }
                                 });
+                            } else {
+                                flds = [];
                             }
                             args.sheet.usedRange.rowIndex =
                                 Math.max(sRowIdx + (count || e.count) + (range.showFieldAsHeader ? 1 : 0), args.sheet.usedRange.rowIndex);
@@ -145,13 +147,31 @@ export class DataBind {
             if ((<CellModel>prop).formula) {
                 data.formula = (<CellModel>prop).formula;
             } else if ((<CellModel>prop).value) {
-                data.value = (<CellModel>prop).value;
+                if (typeof ((<CellModel>prop).value) === 'string') {
+                    if ((<CellModel>prop).value.indexOf('http://') === 0 || (<CellModel>prop).value.indexOf('https://') === 0 ||
+                        (<CellModel>prop).value.indexOf('ftp://') === 0 || (<CellModel>prop).value.indexOf('www.') === 0) {
+                        data.hyperlink = (<CellModel>prop).value;
+                    } else {
+                        data.value = (<CellModel>prop).value;
+                    }
+                } else {
+                    data.value = (<CellModel>prop).value;
+                }
             }
         } else {
             if (checkIsFormula(<string>prop)) {
                 data.formula = <string>prop;
             } else {
-                data.value = <string>prop;
+                if (typeof ((<string>prop)) === 'string') {
+                    if ((<string>prop).indexOf('http://') === 0 || (<string>prop).indexOf('https://') === 0 ||
+                        (<string>prop).indexOf('ftp://') === 0 || (<string>prop).indexOf('www.') === 0) {
+                        data.hyperlink = <string>prop;
+                    } else {
+                        data.value = <string>prop;
+                    }
+                } else {
+                    data.value = <string>prop;
+                }
             }
         }
         return data;

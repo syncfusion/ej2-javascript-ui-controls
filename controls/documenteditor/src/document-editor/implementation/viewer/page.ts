@@ -1691,31 +1691,36 @@ export class TableWidget extends BlockWidget {
             // Clear the table widths and set the preferred width for cells.
             this.tableFormat.preferredWidth = 0;
             this.tableFormat.preferredWidthType = 'Auto';
-            this.childWidgets.forEach((row: TableRowWidget) => {
-                row.childWidgets.forEach((cell: TableCellWidget) => {
-                    cell.cellFormat.preferredWidthType = 'Point';
-                    cell.cellFormat.preferredWidth = cell.cellFormat.cellWidth;
-                });
-            });
+            for (let i: number = 0; i < this.childWidgets.length; i++) {
+                let rowWidget: TableRowWidget = this.childWidgets[i] as TableRowWidget;
+                for (let j: number = 0; j < rowWidget.childWidgets.length; j++) {
+                    let cellWidget: TableCellWidget = rowWidget.childWidgets[j] as TableCellWidget;
+                    cellWidget.cellFormat.preferredWidthType = 'Point';
+                    cellWidget.cellFormat.preferredWidth = cellWidget.cellFormat.cellWidth;
+                }
+            }
         } else if (autoFitBehavior === 'FitToWindow') {
             // Set the preferred width for table and cells in percentage.
             let tableWidth: number = this.tableHolder.getTotalWidth(0);
             this.tableFormat.leftIndent = 0;
             this.tableFormat.preferredWidth = 100;
             this.tableFormat.preferredWidthType = 'Percent';
-            this.childWidgets.forEach((row: TableRowWidget) => {
-                row.childWidgets.forEach((cell: TableCellWidget) => {
+            for (let i: number = 0; i < this.childWidgets.length; i++) {
+                let row: TableRowWidget = this.childWidgets[i] as TableRowWidget;
+                for (let z: number = 0; z < row.childWidgets.length; z++) {
+                    let cell: TableCellWidget = row.childWidgets[z] as TableCellWidget;
                     if (cell.cellFormat.preferredWidthType !== 'Percent') {
                         cell.cellFormat.preferredWidthType = 'Percent';
                         cell.cellFormat.preferredWidth = (cell.cellFormat.cellWidth / tableWidth) * 100;
                     }
-                });
-            });
+                }
+            }
         } else {
             // Clear the preferred width for table and cells.
             this.tableFormat.preferredWidth = 0;
             this.tableFormat.preferredWidthType = 'Auto';
-            this.childWidgets.forEach((row: TableRowWidget) => {
+            for (let i: number = 0; i < this.childWidgets.length; i++) {
+                let row: TableRowWidget = this.childWidgets[i] as TableRowWidget;
                 row.rowFormat.beforeWidth = 0;
                 row.rowFormat.gridBefore = 0;
                 row.rowFormat.gridBeforeWidth = 0;
@@ -1724,11 +1729,12 @@ export class TableWidget extends BlockWidget {
                 row.rowFormat.gridAfter = 0;
                 row.rowFormat.gridAfterWidth = 0;
                 row.rowFormat.gridAfterWidthType = 'Auto';
-                row.childWidgets.forEach((cell: TableCellWidget) => {
+                for (let j: number = 0; j < row.childWidgets.length; j++) {
+                    let cell: TableCellWidget = row.childWidgets[j] as TableCellWidget;
                     cell.cellFormat.preferredWidth = 0;
                     cell.cellFormat.preferredWidthType = 'Auto';
-                });
-            });
+                }
+            }
         }
     }
 
@@ -2701,12 +2707,12 @@ export class TableCellWidget extends BlockWidget {
                 this.sizeInfo.maximumWordWidth = size.maximumWordWidth + this.sizeInfo.minimumWidth;
                 // if minimum and maximum width values are equal, set value as zero.
                 // later, preferred width value is considered for all width values.
-                if (this.sizeInfo.minimumWidth === this.sizeInfo.minimumWordWidth
-                    && this.sizeInfo.minimumWordWidth === this.sizeInfo.maximumWordWidth) {
-                    this.sizeInfo.minimumWordWidth = 0;
-                    this.sizeInfo.maximumWordWidth = 0;
-                    this.sizeInfo.minimumWidth = 0;
-                }
+                // if (this.sizeInfo.minimumWidth === this.sizeInfo.minimumWordWidth
+                //     && this.sizeInfo.minimumWordWidth === this.sizeInfo.maximumWordWidth) {
+                //     this.sizeInfo.minimumWordWidth = 0;
+                //     this.sizeInfo.maximumWordWidth = 0;
+                //     this.sizeInfo.minimumWidth = 0;
+                // }
             }
         }
         let sizeInfo: ColumnSizeInfo = new ColumnSizeInfo();
@@ -6575,6 +6581,7 @@ export class WTableHolder {
                 // Try to fit minimum width for each column and allot remaining space to columns based on their minimum word width.
                 let totalMinimumWordWidth: number = this.getTotalWidth(1);
                 let totalMinWidth: number = this.getTotalWidth(3);
+                let totalPreferredWidth: number = this.getTotalWidth(0);
                 if (totalMinWidth > 2112) {
                     let cellWidth: number = 2112 / this.columns.length;
                     for (let i: number = 0; i < this.columns.length; i++) {
@@ -6595,8 +6602,8 @@ export class WTableHolder {
                             column.preferredWidth = column.minimumWidth + factor;
                         }
                         // table width exceeds container width
-                    } else if (totalMinWidth > containerWidth) {
-                        let factor: number = containerWidth / totalMinWidth;
+                    } else if (totalPreferredWidth > containerWidth) {
+                        let factor: number = containerWidth / totalPreferredWidth;
                         for (let i: number = 0; i < this.columns.length; i++) {
                             let column: WColumn = this.columns[i];
                             column.preferredWidth = column.preferredWidth * factor;

@@ -40,17 +40,18 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
             return result = this.parent.vcRows;
         }
         if (this.parent.enableColumnVirtualization) {
-            info.blockIndexes.forEach((value: number) => {
-                if (this.isBlockAvailable(value)) {
-                    this.cache[value] = this.rowModelGenerator.refreshRows(this.cache[value]);
+            for (let i: number = 0; i < info.blockIndexes.length; i++) {
+                if (this.isBlockAvailable(info.blockIndexes[i])) {
+                    this.cache[info.blockIndexes[i]] = this.rowModelGenerator.refreshRows(this.cache[info.blockIndexes[i]]);
                 }
-            });
+            }
         }
 
-        info.blockIndexes.forEach((value: number) => {
-            if (!this.isBlockAvailable(value)) {
+        let values: number[] = info.blockIndexes;
+        for (let i: number = 0; i < values.length; i++) {
+            if (!this.isBlockAvailable(values[i])) {
                 let rows: Row<Column>[] = this.rowModelGenerator.generateRows(data, {
-                    virtualInfo: info, startIndex: this.getStartIndex(value, data)
+                    virtualInfo: info, startIndex: this.getStartIndex(values[i], data)
                 });
                 if (isGroupAdaptive(this.parent) && !this.parent.vcRows.length) {
                     this.parent.vRows = rows;
@@ -75,14 +76,14 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                     }
                 }
             }
-            if (this.parent.groupSettings.columns.length && !xAxis && this.cache[value]) {
-                this.cache[value] = this.updateGroupRow(this.cache[value], value);
+            if (this.parent.groupSettings.columns.length && !xAxis && this.cache[values[i]]) {
+                this.cache[values[i]] = this.updateGroupRow(this.cache[values[i]], values[i]);
             }
-            result.push(...this.cache[value]);
-            if (this.isBlockAvailable(value)) {
-                loadedBlocks.push(value);
+            result.push(...this.cache[values[i]]);
+            if (this.isBlockAvailable(values[i])) {
+                loadedBlocks.push(values[i]);
             }
-        });
+        }
         info.blockIndexes = loadedBlocks;
         let grouping: string = 'records';
         if (this.parent.allowGrouping) {
@@ -155,21 +156,26 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
         let cLen: number = cols.length;
         let isVisible: Function = (column: Column) => column.visible &&
             (!this.parent.groupSettings.showGroupedColumn ? this.parent.groupSettings.columns.indexOf(column.field) < 0 : column.visible);
-        this.parent.groupSettings.columns.forEach((c: string, n: number) => this.cOffsets[n] = (this.cOffsets[n - 1] | 0) + 30);
-        Array.apply(null, Array(cLen)).map(() => col++).forEach((block: number, i: number) => {
-            block = block + gLen;
-            this.cOffsets[block] = (this.cOffsets[block - 1] | 0) + (isVisible(cols[i]) ? parseInt(<string>cols[i].width, 10) : 0);
-        });
+        let c: string[] = this.parent.groupSettings.columns;
+        for (let i: number = 0; i < c.length; i++) {
+            this.cOffsets[i] = (this.cOffsets[i - 1] | 0) + 30;
+        }
+        let blocks: number[] = Array.apply(null, Array(cLen)).map(() => col++);
+        for (let j: number = 0; j < blocks.length; j++) {
+            blocks[j] = blocks[j] + gLen;
+            this.cOffsets[blocks[j]] = (this.cOffsets[blocks[j] - 1] | 0) + (isVisible(cols[j]) ? parseInt(<string>cols[j].width, 10) : 0);
+        }
     }
 
     public updateGroupRow(current: Row<Column>[], block: number): Row<Column>[] {
         let currentFirst: Row<Column> = current[0];
         let rows: Row<Column>[] = [];
-        Object.keys(this.cache).forEach((key: string) => {
-            if (Number(key) < block) {
-                rows = [...rows, ...this.cache[key]];
+        let keys: string[] = Object.keys(this.cache);
+        for (let i: number = 0; i < keys.length; i++) {
+            if (Number(keys[i]) < block) {
+                rows = [...rows, ...this.cache[keys[i]]];
             }
-         });
+        }
         if ((currentFirst && currentFirst.isDataRow) || block % 2 === 0) {
             return current;
         }
@@ -198,7 +204,10 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
 
     public getRows(): Row<Column>[] {
         let rows: Row<Column>[] = [];
-        Object.keys(this.cache).forEach((key: string) => rows = [...rows, ...this.cache[key]]);
+        let keys: string[] = Object.keys(this.cache);
+        for ( let i: number = 0; i < keys.length; i++) {
+            rows = [...rows, ...this.cache[keys[i]]];
+        }
         return rows;
     }
 }

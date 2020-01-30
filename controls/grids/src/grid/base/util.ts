@@ -199,11 +199,12 @@ export function setStyleAndAttributes(node: Element, customAttributes: { [x: str
 export function extend(copied: Object, first: Object, second?: Object, exclude?: string[]): Object {
     let moved: Object = baseExtend(copied, first, second);
 
-    Object.keys(moved).forEach((value: string, index: number) => {
-        if (exclude && exclude.indexOf(value) !== -1) {
-            delete moved[value];
+    let values: string[] = Object.keys(moved);
+    for (let i: number = 0; i < values.length; i++) {
+        if (exclude && exclude.indexOf(values[i]) !== -1) {
+            delete moved[values[i]];
         }
-    });
+    }
 
     return moved;
 }
@@ -625,15 +626,16 @@ export function removeAddCboxClasses(elem: Element, checked: boolean): void {
  * @hidden
  */
 export function refreshForeignData(row: IRow<Column>, columns: Column[], data: Object): void {
-    columns.forEach((col: Column) => {
-        setValue(col.field, getForeignData(col, data), row.foreignKeyData);
-    });
+    for (let i: number = 0; i < columns.length; i++) {
+        setValue(columns[i].field, getForeignData(columns[i], data), row.foreignKeyData);
+    }
 
-    row.cells.forEach((cell: ICell<Column>) => {
-        if (cell.isForeignKey) {
-            setValue('foreignKeyData', getValue(cell.column.field, row.foreignKeyData), cell);
+    let cells: ICell<Column>[] = row.cells;
+    for (let i: number = 0; i < cells.length; i++) {
+        if (cells[i].isForeignKey) {
+            setValue('foreignKeyData', getValue(cells[i].column.field, row.foreignKeyData), cells[i]);
         }
-    });
+    }
 }
 
 /**
@@ -837,22 +839,22 @@ export function extendObjWithFn(copied: Object, first: Object, second?: Object, 
         let obj1: { [key: string]: Object } = arguments[i];
         let keys: string[] = Object.keys(Object.getPrototypeOf(obj1)).length ?
             Object.keys(obj1).concat(getPrototypesOfObj(obj1)) : Object.keys(obj1);
-        keys.forEach((key: string) => {
-            let source: Object = res[key];
-            let cpy: Object = obj1[key];
+        for (let i: number = 0; i < keys.length; i++) {
+            let source: Object = res[keys[i]];
+            let cpy: Object = obj1[keys[i]];
             let cln: Object;
             if (deep && (isObject(cpy) || Array.isArray(cpy))) {
                 if (isObject(cpy)) {
                     cln = source ? source : {};
-                    res[key] = baseExtend({}, cln, cpy, deep);
+                    res[keys[i]] = baseExtend({}, cln, cpy, deep);
                 } else {
                     cln = source ? source : [];
-                    res[key] = baseExtend([], cln, cpy, deep);
+                    res[keys[i]] = baseExtend([], cln, cpy, deep);
                 }
             } else {
-                res[key] = cpy;
+                res[keys[i]] = cpy;
             }
-        });
+        }
     }
     return res;
 }
@@ -931,5 +933,18 @@ export function getTransformValues(element: Element): { width: number, height: n
 export function applyBiggerTheme(rootElement: Element, element: Element): void {
     if (rootElement.classList.contains('e-bigger')) {
         element.classList.add('e-bigger');
+    }
+}
+
+/** @hidden */
+export function alignFrozenEditForm(mTD: HTMLElement, fTD: HTMLElement): void {
+    if (mTD && fTD) {
+        let mHeight: number = mTD.closest('.e-row').getBoundingClientRect().height;
+        let fHeight: number = fTD.closest('.e-row').getBoundingClientRect().height;
+        if (mHeight > fHeight) {
+            fTD.style.height = mHeight + 'px';
+        } else {
+            mTD.style.height = fHeight + 'px';
+        }
     }
 }

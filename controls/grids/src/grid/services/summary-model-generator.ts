@@ -28,15 +28,16 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
 
     public getData(): Object {
         let rows: AggregateRowModel[] = [];
-        this.parent.aggregates.slice().forEach((row: AggregateRowModel) => {
-            let columns: AggregateColumnModel[] = row.columns.filter((column: AggregateColumnModel) => {
+        let row: AggregateRowModel[] = this.parent.aggregates.slice();
+        for (let i: number = 0; i < row.length; i++) {
+            let columns: AggregateColumnModel[] = row[i].columns.filter((column: AggregateColumnModel) => {
                 return !(column.footerTemplate || column.groupFooterTemplate || column.groupCaptionTemplate)
                     || this.columnSelector(column);
             });
             if (columns.length) {
                 rows.push({ columns: columns });
             }
-        });
+        }
         return rows;
     }
 
@@ -47,7 +48,9 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
     public getColumns(start?: number, end?: number): Column[] {
         let columns: Column[] = [];
         if (this.parent.allowGrouping) {
-            this.parent.groupSettings.columns.forEach((value: string) => columns.push(new Column({})));
+            for (let i: number = 0; i < this.parent.groupSettings.columns.length; i++) {
+                columns.push(new Column({}));
+            }
         }
         if (this.parent.detailTemplate || !isNullOrUndefined(this.parent.childGrid) || this.parent.isRowDragable()) {
             columns.push(new Column({}));
@@ -60,9 +63,10 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
         if ((input as Object[]).length === 0) { return []; }
         let data: Object[] = this.buildSummaryData(input, <SummaryData>args);
         let rows: Row<AggregateColumnModel>[] = [];
-        (<AggregateRowModel[]>this.getData()).forEach((row: AggregateRowModel, index: number) => {
-            rows.push(this.getGeneratedRow(row, data[index], args ? (<SummaryData>args).level : undefined, start, end));
-        });
+        let row: AggregateRowModel[] = (<AggregateRowModel[]>this.getData());
+        for (let i: number = 0; i < row.length; i++) {
+            rows.push(this.getGeneratedRow(row[i], data[i], args ? (<SummaryData>args).level : undefined, start, end));
+        }
         return rows;
     }
 
@@ -71,21 +75,21 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
         let tmp: Cell<AggregateColumnModel>[] = [];
         let indents: string[] = this.getIndentByLevel(raw);
         let isDetailGridAlone: boolean = !isNullOrUndefined(this.parent.childGrid);
-        let indentLength: number = this.parent.groupSettings.columns.length + (this.parent.detailTemplate ||
-            !isNullOrUndefined(this.parent.childGrid) ? 1 : 0);
+        let indentLength: number = this.parent.getIndentCount();
         if (this.parent.isRowDragable()) {
-            indentLength++;
             indents = ['e-indentcelltop'];
         }
 
-        this.getColumns(start, end).forEach((value: Column, index: number) => tmp.push(
-            this.getGeneratedCell(
-                value,
-                summaryRow,
-                index >= indentLength ? this.getCellType() :
-                index < this.parent.groupSettings.columns.length ? CellType.Indent : CellType.DetailFooterIntent,
-                indents[index], isDetailGridAlone)
-        ));
+        let values: Column[] = this.getColumns(start, end);
+        for (let i: number = 0; i < values.length; i++) {
+            tmp.push(
+                this.getGeneratedCell(
+                    values[i],
+                    summaryRow,
+                    i >= indentLength ? this.getCellType() :
+                    i < this.parent.groupSettings.columns.length ? CellType.Indent : CellType.DetailFooterIntent,
+                    indents[i], isDetailGridAlone));
+        }
 
         let row: Row<AggregateColumnModel> = new Row<AggregateColumnModel>({ data: data, attributes: { class: 'e-summaryrow' } });
         row.cells = tmp;
@@ -132,13 +136,15 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
         let summaryRows: AggregateRowModel[] = <AggregateRowModel[]>this.getData();
         let single: Object = {};
         let key: string = '';
-        summaryRows.forEach((row: AggregateRowModel) => {
+        for (let i: number = 0; i < summaryRows.length; i++) {
             single = {};
-            row.columns.forEach((column: AggregateColumn) => {
-                single = this.setTemplate(column, (args && args.aggregates) ? <Object[]>args : <Object[]>data, single);
-            });
+            let column: AggregateColumn[] = (summaryRows[i].columns as AggregateColumn[]);
+            for (let j: number = 0; j < column.length; j++) {
+                single = this.setTemplate(
+                    (column[j] as AggregateColumn), (args && args.aggregates) ? <Object[]>args : <Object[]>data, single);
+            }
             dummy.push(single);
-        });
+        }
 
         return dummy;
     }
@@ -155,14 +161,14 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
         if (!(types instanceof Array)) {
             types = <AggregateType[]>[column.type];
         }
-        types.forEach((type: AggregateType) => {
-            let key: string = column.field + ' - ' + type.toLowerCase(); let disp: string = column.columnName;
-            let val: Object = type !== 'Custom' && group.aggregates && key in group.aggregates ? group.aggregates[key] :
-                calculateAggregate(type, group.aggregates ? group : <Object[]>data, column, this.parent);
+        for (let i: number = 0; i < types.length; i++) {
+            let key: string = column.field + ' - ' + types[i].toLowerCase(); let disp: string = column.columnName;
+            let val: Object = types[i] !== 'Custom' && group.aggregates && key in group.aggregates ? group.aggregates[key] :
+                calculateAggregate(types[i], group.aggregates ? group : <Object[]>data, column, this.parent);
             single[disp] = single[disp] || {}; single[disp][key] = val;
-            single[disp][type] = !isNullOrUndefined(val) ? formatFn(val) : ' ';
+            single[disp][types[i]] = !isNullOrUndefined(val) ? formatFn(val) : ' ';
             if (group.field) { (<Group>single[disp]).field = group.field; (<Group>single[disp]).key = group.key; }
-        });
+        }
         helper.format = column.getFormatter();
         column.setTemplate(helper);
         return single;

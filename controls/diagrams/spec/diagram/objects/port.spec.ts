@@ -335,4 +335,49 @@ describe('Diagram Control', () => {
             done();
         });
     });
+    describe('Port edges', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramPortEdgeIssue' });
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                width: 800, height: 800,
+                nodes: [{
+                    id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
+                },
+                {
+                    id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 100,
+                    shape: { type: 'Path', data: 'M540.3643,137.9336L546.7973,159.7016L570.3633,159.7296L550.7723,171.9366L558.9053,194.9966L540.3643,179.4996L521.8223,194.9966L529.9553,171.9366L510.3633,159.7296L533.9313,159.7016L540.3643,137.9336z' },
+                    annotations: [{ content: 'Path Element' }]
+                }],
+                connectors: [{ id: 'Conne', sourceID: "node1", targetID: "node2", sourcePortID: "port4", targetPortID: "port1" }],
+                getNodeDefaults: function (obj: NodeModel) {
+                    var defaults = {
+                        width: 150, height: 50, offsetX: 100, offsetY: 100,
+                        ports: [
+                            { id: 'port1', visibility: PortVisibility.Visible, shape: 'Circle', offset: { x: 0, y: 0 } },
+                            { id: 'port2', visibility: PortVisibility.Visible, shape: 'Circle', offset: { x: 1, y: 0 } },
+                            { id: 'port3', visibility: PortVisibility.Visible, shape: 'Circle', offset: { x: 0, y: 1 } },
+                            { id: 'port4', visibility: PortVisibility.Visible, shape: 'Circle', offset: { x: 1, y: 1 } }
+                        ]
+                    };
+                    return defaults;
+                },
+            });
+            diagram.appendTo('#diagramPortEdgeIssue');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking port inedges and out edges at runtime', (done: Function) => {
+            expect(diagram.nodes[0].ports[0].inEdges.length == 0 && diagram.nodes[0].ports[0].outEdges.length == 0).toBe(true);
+            expect(diagram.nodes[0].ports[3].outEdges[0] == diagram.connectors[0].id &&
+                diagram.nodes[1].ports[0].inEdges[0] == diagram.connectors[0].id).toBe(true);
+            done();
+        });
+    });
 });

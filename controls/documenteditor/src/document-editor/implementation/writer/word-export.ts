@@ -994,13 +994,25 @@ export class WordExport {
                 }
             }
         }
+        let sec: any = this.blockOwner;
+
+        //Need to write the Section Properties if the Paragraph is last item in the section
+        if (!isLastSection && sec.hasOwnProperty('sectionFormat')
+            && sec.blocks.indexOf(item) === sec.blocks.length - 1) {
+            writer.writeStartElement('w', 'p', this.wNamespace);
+            writer.writeStartElement(undefined, 'pPr', this.wNamespace);
+
+            this.serializeSectionProperties(writer, sec);
+            writer.writeEndElement();
+            writer.writeEndElement();
+        }
+
     }
     // Serialize the paragraph
     private serializeParagraph(writer: XmlWriter, paragraph: any, isLastSection: boolean): void {
         if (isNullOrUndefined(paragraph)) {
             throw new Error('Paragraph should not be undefined');
         }
-        let sec: any = this.blockOwner;
 
         // if (paragraph.ParagraphFormat.PageBreakAfter && !IsPageBreakNeedToBeSkipped(paragraph as Entity))
         //     paragraph.InsertBreak(BreakType.PageBreak);
@@ -1028,16 +1040,6 @@ export class WordExport {
         this.serializeParagraphItems(writer, paragraph.inlines);
         writer.writeEndElement(); //end of paragraph tag.
 
-        //Need to write the Section Properties if the Paragraph is last item in the section
-        if (!isLastSection && sec.hasOwnProperty('sectionFormat')
-            && sec.blocks.indexOf(paragraph) === sec.blocks.length - 1) {
-            writer.writeStartElement('w', 'p', this.wNamespace);
-            writer.writeStartElement(undefined, 'pPr', this.wNamespace);
-
-            this.serializeSectionProperties(writer, sec);
-            writer.writeEndElement();
-            writer.writeEndElement();
-        }
     }
     // Serialize the paragraph items
     private serializeParagraphItems(writer: XmlWriter, paraItems: any): void {
@@ -3243,7 +3245,7 @@ export class WordExport {
     }
     // Serialize the table grid columns.
     private serializeGridColumns(writer: XmlWriter, grid: number[]): void {
-        for (let i: number = 1, count: number = grid.length; i < count; i++) {
+        for (let i: number = 0, count: number = grid.length; i < count; i++) {
             let gridValue: number = Math.round(grid[i] * 20);
             writer.writeStartElement(undefined, 'gridCol', this.wNamespace);
             writer.writeAttributeString(undefined, 'w', this.wNamespace, gridValue.toString());

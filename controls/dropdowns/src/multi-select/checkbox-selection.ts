@@ -397,7 +397,7 @@ export class CheckBoxSelection {
                 this.parent.inputFocus = false;
                 this.parent.scrollFocusStatus = false;
                 this.parent.hidePopup();
-                this.parent.onBlur();
+                this.parent.onBlur(e);
                 this.parent.focused = true;
             }
         } else {
@@ -450,7 +450,7 @@ export class CheckBoxSelection {
             let compiledString: Function;
             this.selectAllSpan.textContent = '';
             compiledString = compile(template);
-            for (let item of compiledString({})) {
+            for (let item of compiledString({}, null, null, null, !this.parent.isStringTemplate)) {
                 this.selectAllSpan.textContent = item.textContent;
             }
         } else {

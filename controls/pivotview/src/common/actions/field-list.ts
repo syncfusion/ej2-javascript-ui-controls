@@ -67,7 +67,9 @@ export class FieldList implements IAction {
             aggregateCellInfo: this.parent.bindTriggerEvents.bind(this.parent),
             enginePopulating: this.parent.bindTriggerEvents.bind(this.parent),
             enginePopulated: this.parent.bindTriggerEvents.bind(this.parent),
-            onFieldDropped: this.parent.bindTriggerEvents.bind(this.parent)
+            onFieldDropped: this.parent.bindTriggerEvents.bind(this.parent),
+            fieldDrop: this.parent.bindTriggerEvents.bind(this.parent),
+
         });
         this.parent.pivotFieldListModule.appendTo('#' + this.element.id);
     }

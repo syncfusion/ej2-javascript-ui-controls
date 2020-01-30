@@ -500,7 +500,6 @@ describe('TextBox Control', () => {
         });
     });
 
-    
     describe('Model - value child property update testing', () => {
         let editorObj: any;
         let ele: HTMLElement;
@@ -542,6 +541,9 @@ describe('TextBox Control', () => {
 
     describe('beginEdit event testing', () => {
         let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
         afterEach((): void => {
             destroy(editorObj);
         });
@@ -554,8 +556,31 @@ describe('TextBox Control', () => {
                     e.cancelFocus = true
                 }
             });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            (<HTMLElement>select('.' + classes.VALUE, editorObj.element)).click();
             setTimeout(() => {
                 expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                done();
+            }, 400);
+        });
+        it('Inline - Focus as false testing', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'Text',
+                mode: 'Inline',
+                value: 'Badminton',
+                beginEdit: function(e: BeginEditEventArgs) {
+                    e.cancelFocus = false
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            setTimeout(() => {
+                expect(document.activeElement.tagName === 'INPUT').toEqual(true);
                 done();
             }, 400);
         });
@@ -568,8 +593,31 @@ describe('TextBox Control', () => {
                     e.cancelFocus = true
                 }
             });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            (<HTMLElement>select('.' + classes.VALUE, editorObj.element)).click();
             setTimeout(() => {
                 expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                done();
+            }, 400);
+        });
+        it('Popup - Focus as false testing', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'Text',
+                mode: 'Popup',
+                value: 'Badminton',
+                beginEdit: function(e: BeginEditEventArgs) {
+                    e.cancelFocus = false
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            setTimeout(() => {
+                expect(document.activeElement.tagName === 'INPUT').toEqual(true);
                 done();
             }, 400);
         });

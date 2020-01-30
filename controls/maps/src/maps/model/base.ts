@@ -584,6 +584,7 @@ export class NavigationLineSettings extends ChildProperty<NavigationLineSettings
 /**
  * Bubble settings model class
  */
+ /*tslint:disable-next-line:max-line-length*/
 export class BubbleSettings extends ChildProperty<BubbleSettings> {
     /**
      * Configures the bubble border
@@ -597,7 +598,10 @@ export class BubbleSettings extends ChildProperty<BubbleSettings> {
     @Property(false)
     public visible: boolean;
     /**
-     * Specifies the data source for bubble.
+     * * Specifies dataSource for the bubble.
+     * * The datasource must contain the size value of the bubble that can be bound to the bubble 
+     * of the Maps using the valuePath property in the bubbleSettings.
+     * * The datasource can contain data such as color, and the other information that can be bound to the color, and tooltip of the bubble.
      * @isdatamanager false
      * @isObservable true
      * @default []
@@ -748,6 +752,13 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
      */
     @Property(false)
     public enable: boolean;
+
+    /**
+     * Toggle the visibility of Panning
+     * @default true
+     */
+    @Property(true)
+    public enablePanning: boolean;
 
     /**
      * Configures tool bar orientation
@@ -1208,6 +1219,7 @@ export class ShapeSettings extends ChildProperty<ShapeSettings> {
 /**
  * To configure the marker settings for the maps.
  */
+
 export class MarkerBase extends ChildProperty<MarkerBase> {
 
     /**
@@ -1309,7 +1321,11 @@ export class MarkerBase extends ChildProperty<MarkerBase> {
     @Property(null)
     public template: string;
     /**
-     * To configure the dataSource of the marker.
+     * * Specifies datasource for the marker.
+     * * The datasource for the marker will contain latitude and longitude values to specify the location 
+     * of the marker.
+     * * The datasource can contain data such as color, shape, and other details that can be bound to the color, shape,
+     *  and tooltip of the marker.
      * @isdatamanager false
      * @isObservable true
      * @default []
@@ -1383,7 +1399,8 @@ export class LayerSettings extends ChildProperty<LayerSettings> {
     public shapeSettings: ShapeSettingsModel;
 
     /**
-     * Specifies the data source for the layer.
+     * * Specifies dataSource for the layer.
+     * * The datasource can contain data that can be bound to the tooltip, marker, and bubble.
      * @isdatamanager false
      * @isObservable true
      * @default []

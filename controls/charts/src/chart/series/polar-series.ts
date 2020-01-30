@@ -75,7 +75,8 @@ export class PolarSeries extends PolarRadarPanel {
                     endAngle = 2 * Math.PI; arcValue = '1';
                 } else { arcValue = '0'; }
                 pointStartAngle = startAngle; pointEndAngle = endAngle;
-                startAngle = (startAngle - 0.5 * Math.PI); endAngle = (endAngle - 0.5 * Math.PI) - 0.000001;
+                startAngle = (startAngle - 0.5 * Math.PI) + (series.columnSpacing / 2);
+                endAngle = ((endAngle - 0.5 * Math.PI) - 0.000001) - (series.columnSpacing / 2);
                 if (isStacking || isRangeColumn) {
                     startValue = isRangeColumn ? <number>point.low : series.stackedValues.startValues[point.index];
                     endValue = isRangeColumn ? <number>point.high : series.stackedValues.endValues[point.index];

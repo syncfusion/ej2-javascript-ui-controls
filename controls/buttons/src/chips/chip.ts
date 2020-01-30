@@ -45,6 +45,12 @@ export class Chip {
      * @blazorType bool?
      */
     public enabled: boolean;
+
+    /**
+     * This value property helps to store the Chip component value.
+     * @default ''
+     */
+    public value: string | number;
 }
 
 
@@ -54,6 +60,11 @@ export interface ChipModel {
      * @default ''
      */
     text?: string;
+    /**
+     * This value property helps to store the ChipList component values.
+     * @default ''
+     */
+    value?: string | number;
 
     /**
      * This avatarText property helps to customize avatar content.

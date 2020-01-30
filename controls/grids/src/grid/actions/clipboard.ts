@@ -43,6 +43,7 @@ export class Clipboard implements IAction {
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.off(events.keyPressed, this.keyDownHandler);
+        this.parent.off(events.contentReady, this.initialEnd);
         this.parent.off(events.click, this.clickHandler);
         EventHandler.remove(this.parent.element, 'keydown', this.pasteHandler);
     }

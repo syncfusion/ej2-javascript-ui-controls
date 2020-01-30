@@ -8,7 +8,15 @@
 
 ## [Unreleased]
 
-## 17.4.44 (2021-01-21)
+## 17.4.46 (2020-01-30)
+
+### Maps
+
+#### New Features
+
+- `#256121`  - Provided support to toggle the panning functionality in maps control by using the `enablePanning` property.
+
+## 17.4.43 (2020-01-14)
 
 ### Maps
 

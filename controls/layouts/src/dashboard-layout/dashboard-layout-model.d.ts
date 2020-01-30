@@ -20,12 +20,14 @@ export interface PanelModel {
     cssClass?: string;
 
     /**
-     * Defines the template value that should be displayed as the panel's header. 
+     * Defines the template value that should be displayed as the panel's header.
+     * @blazorType RenderFragment
      */
     header?: string | HTMLElement;
 
     /**
      * Defines the template value that should be displayed as the panel's content. 
+     * @blazorType RenderFragment
      */
     content?: string | HTMLElement;
 
@@ -55,6 +57,7 @@ export interface PanelModel {
      * Specifies the width of the panel in the layout in cells count.
      *
      * @default 1
+     * @blazorType int
      */
     sizeX?: number;
 
@@ -62,6 +65,7 @@ export interface PanelModel {
      * Specifies the height of the panel in the layout in cells count.
      *
      * @default 1
+     * @blazorType int
      */
     sizeY?: number;
 
@@ -69,6 +73,7 @@ export interface PanelModel {
      * Specifies the minimum height of the panel in cells count.
      * 
      * @default 1
+     * @blazorType int
      */
     minSizeY?: number;
 
@@ -76,6 +81,7 @@ export interface PanelModel {
      * Specifies the minimum width of the panel in cells count.
      * *
      * @default 1
+     * @blazorType int
      */
     minSizeX?: number;
 
@@ -84,7 +90,7 @@ export interface PanelModel {
      * *
      * @default null
      * @aspType int
-     * @blazorType int
+     * @blazorType int?
      *
      */
     maxSizeY?: number;
@@ -94,7 +100,7 @@ export interface PanelModel {
      * *
      * @default null
      * @aspType int
-     * @blazorType int
+     * @blazorType int?
      */
     maxSizeX?: number;
 
@@ -160,6 +166,7 @@ export interface DashboardLayoutModel extends ComponentModel{
     /**
      * Defines the number of columns to be created in the DashboardLayout. 
      * @default 1
+     * @blazorType int
      */
     columns?: number;
 

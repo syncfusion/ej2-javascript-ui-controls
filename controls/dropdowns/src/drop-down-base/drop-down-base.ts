@@ -129,6 +129,10 @@ export interface ActionBeginEventArgs {
      * Illustrates whether the current action needs to be prevented or not.
      */
     cancel?: boolean;
+    /**
+     *  
+     */
+    eventName?: string;
 }
 
 export interface ActionCompleteEventArgs {
@@ -1331,7 +1335,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             this.list.innerHTML = '';
             this.list.classList.remove(dropDownBaseClasses.noData);
             this.list.appendChild(this.ulElement);
+            this.liCollections = liCollections;
             append(liCollections, this.ulElement);
+            this.updateAddItemList(this.list, itemsCount);
         } else {
             if (this.getModuleName() === 'listbox' && itemsCount === 0) {
                 this.ulElement.innerHTML = '';
@@ -1389,6 +1395,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
 
     protected updateActionCompleteData(li: HTMLElement, item: { [key: string]: Object }): void {
         // this is for ComboBox custom value
+    }
+    protected updateAddItemList(list: HTMLElement, itemCount: number): void {
+        // this is for multiselect add item
     }
     protected updateDataList(): void {
         // this is for multiselect update list items

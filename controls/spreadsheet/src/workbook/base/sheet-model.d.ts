@@ -1,4 +1,4 @@
-import { Row } from './row';import { Column } from './column';import { Workbook } from './workbook';import { Query, DataManager } from '@syncfusion/ej2-data';import { Property, Collection, ChildProperty, Complex } from '@syncfusion/ej2-base';import { RowModel } from './row-model';import { ColumnModel } from './column-model';import { processIdx } from './data';
+import { Row } from './row';import { Column } from './column';import { Workbook } from './workbook';import { Query, DataManager } from '@syncfusion/ej2-data';import { Property, Collection, ChildProperty, Complex } from '@syncfusion/ej2-base';import { RowModel } from './row-model';import { ColumnModel } from './column-model';import { processIdx } from './data';import { SheetState } from '../common/index';
 
 /**
  * Interface for a class RangeSetting
@@ -29,6 +29,18 @@ export interface RangeSettingModel {
      * @default true
      */
     showFieldAsHeader?: boolean;
+
+    /**
+     * Template helps to compiles the given HTML String (or HTML Element ID) into HtML Element and append to the Cell.
+     *  @default ''
+     */
+    template?: string;
+
+    /**
+     * Specifies the range for updating the dataSource or template.
+     * @default 'A1'
+     */
+    range?: string;
 
 }
 
@@ -157,5 +169,11 @@ export interface SheetModel {
      * @default true
      */
     showGridLines?: boolean;
+
+    /**
+     * Specifies the sheet visibility state. There must be at least one visible sheet in Spreadsheet.
+     * @default 'Visible'
+     */
+    state?: SheetState;
 
 }

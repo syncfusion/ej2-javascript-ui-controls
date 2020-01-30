@@ -549,6 +549,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /** @public */
     public markerZoomFactor: number;
     /** @private */
+    public shouldZoomCurrentFactor: number;
+    /** @private */
+    public shouldZoomPreviousFactor: number;
+    /** @private */
     public markerNullCount: number = 0;
     /** @public */
     public previousProjection: String;
@@ -677,7 +681,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let length: number = this.layersCollection.length - 1;
         this.serverProcess = { request: 0, response: 0 }; let queryModule: Query;
         let localAjax: MapAjax; let ajaxModule: Ajax; let dataModule: DataManager;
-        this.layersCollection.forEach((layer: LayerSettings, layerIndex: number) => {
+        Array.prototype.forEach.call(this.layersCollection, (layer: LayerSettings, layerIndex: number) => {
             if (layer.shapeData instanceof DataManager) {
                 this.serverProcess['request']++;
                 dataModule = layer.shapeData;
@@ -982,7 +986,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let baseIndex: number = this.baseLayerIndex;
         let mainLayers: Object[] = []; let subLayers: Object[] = [];
         this.layersCollection = [];
-        this.layers.forEach((layer: LayerSettingsModel) => {
+        Array.prototype.forEach.call(this.layers, (layer: LayerSettingsModel) => {
             (layer.type === 'Layer') ? mainLayers.push(layer) : subLayers.push(layer);
         });
         for (let i: number = 0; i < mainLayers.length; i++) {
@@ -1533,19 +1537,32 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public zoomToCoordinates(minLatitude: number, minLongitude: number, maxLatitude: number, maxLongitude: number): void {
         let centerLatitude: number;
         let centerLongtitude: number;
+        let isTwoCoordinates: boolean = false;
+        if (isNullOrUndefined(maxLatitude) && isNullOrUndefined(maxLongitude)
+            || isNullOrUndefined(minLatitude) && isNullOrUndefined(minLongitude)) {
+            maxLatitude = isNullOrUndefined(maxLatitude) ? 0 : maxLatitude;
+            maxLongitude = isNullOrUndefined(maxLongitude) ? 0 : maxLongitude;
+            minLatitude = isNullOrUndefined(minLatitude) ? 0 : minLatitude;
+            minLongitude = isNullOrUndefined(minLatitude) ? 0 : minLongitude;
+            isTwoCoordinates = true;
+        }
         if (minLatitude > maxLatitude) {
             [minLatitude, maxLatitude] = [maxLatitude, minLatitude];
         }
         if (minLongitude > maxLongitude) {
             [minLongitude, maxLongitude] = [maxLongitude, minLongitude];
         }
-        centerLatitude = (minLatitude + maxLatitude) / 2;
-        centerLongtitude = (minLongitude + maxLongitude) / 2;
+        if (!isTwoCoordinates) {
+            centerLatitude = (minLatitude + maxLatitude) / 2;
+            centerLongtitude = (minLongitude + maxLongitude) / 2;
+        } else {
+            centerLatitude = (minLatitude + maxLatitude);
+            centerLongtitude = (minLongitude + maxLongitude);
+        }
         this.centerLatOfGivenLocation = centerLatitude;
         this.centerLongOfGivenLocation = centerLongtitude;
         this.scaleOfGivenLocation = calculateZoomLevel(minLatitude, maxLatitude, minLongitude, maxLongitude,
-                                                       this.mapAreaRect.width, this.mapAreaRect.height);
-        this.scaleOfGivenLocation = this.isTileMap ? Math.floor(this.scaleOfGivenLocation) : this.scaleOfGivenLocation;
+                                                       this.mapAreaRect.width, this.mapAreaRect.height, this);
         this.zoomNotApplied = true;
         this.refresh();
     }
@@ -1756,7 +1773,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     private isMarkersVisible(): boolean {
         let isVisible: boolean = false;
-        this.layers.forEach((layer: LayerSettings, layerIndex: number) => {
+        Array.prototype.forEach.call(this.layers, (layer: LayerSettings, layerIndex: number) => {
             for (let i: number = 0; i < layer.markerSettings.length; i++) {
                 if (layer.markerSettings[i].visible) {
                     isVisible = true;
@@ -1788,7 +1805,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     private isNavigationVisible(): boolean {
         let isVisible: boolean = false;
-        this.layers.forEach((layer: LayerSettings, layerIndex: number) => {
+        Array.prototype.forEach.call(this.layers, (layer: LayerSettings, layerIndex: number) => {
             for (let i: number = 0; i < layer.navigationLineSettings.length; i++) {
                 if (layer.navigationLineSettings[i].visible) {
                     isVisible = true;

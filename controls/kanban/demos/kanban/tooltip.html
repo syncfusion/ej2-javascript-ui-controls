@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Kanban Typescript Component</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="description" content="Typescript UI Controls" />
+    <meta name="author" content="Syncfusion" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="../css/material.css" />
+    <script data-main="tooltip" src="../../node_modules/requirejs/require.js"></script>
+    <script src="require.config.js"></script>
+    <script id="tooltipTemp" type="text/x-template">
+        <div class='e-kanbantooltiptemp'>
+            <table>
+                <tr>
+                    <td class="details">
+                        <table>
+                            <colgroup>
+                                <col style="width:30%">
+                                <col style="width:70%">
+                            </colgroup>
+                            <tbody>
+                                <tr>
+                                    <td class="CardHeader">Assignee:</td>
+                                    <td>${Assignee}</td>
+                                </tr>
+                                <tr>
+                                    <td class="CardHeader">Type:</td>
+                                    <td>${Type}</td>
+                                </tr>                                
+                                <tr>
+                                    <td class="CardHeader">Estimate:</td>
+                                    <td>${Estimate}</td>
+                                </tr>                                
+                                <tr>
+                                    <td class="CardHeader">Summary:</td>
+                                    <td>${Summary}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </script>
+    <style type="text/css">
+        .e-kanbantooltiptemp {
+            width: 250px;
+            padding: 3px;
+        }
+
+        .e-kanbantooltiptemp>table {
+            width: 100%;
+        }
+
+        .e-kanbantooltiptemp td {
+            vertical-align: top;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid" style="margin-top:15px;">
+        <div class="row">
+            <div class="col-md-9">
+                <div id="kanban"></div>
+            </div>
+            <div class="col-md-3">
+                <div class="prop-grid">
+                    <div class="row">
+                        <div class="col-md-10">
+                            <div class="form-check">
+                                <label class="form-check-label">
+                                    <input id="enableTooltip" checked="checked" class="form-check-input"
+                                        type="checkbox"> Enable Tooltip
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-10">
+                            <div class="form-check">
+                                <label class="form-check-label">
+                                    <input id="enableTooltipTemplate" class="form-check-input" type="checkbox"> Enable
+                                    Tooltip Template
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

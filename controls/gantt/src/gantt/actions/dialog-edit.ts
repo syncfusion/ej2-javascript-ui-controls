@@ -433,8 +433,16 @@ export class DialogEdit {
                 let fieldName: string = inputElement.id.replace(ganttObj.element.id, '');
                 /* tslint:disable-next-line:no-any */
                 let controlObj: any = <any>(<EJ2Instance>div.querySelector('#' + ganttObj.element.id + fieldName)).ej2_instances[0];
-                if (controlObj) {
-                    controlObj.destroy();
+                if (!isNullOrUndefined(controlObj)) {
+                    let column: GanttColumnModel = ganttObj.columnByField[fieldName];
+                    if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
+                        let destroy: Function = column.edit.destroy as Function;
+                        if (typeof destroy !== 'string') {
+                            (column.edit.destroy as Function)();
+                        }
+                    } else {
+                        controlObj.destroy();
+                    }
                 }
             }
         }
@@ -693,7 +701,7 @@ export class DialogEdit {
                 fieldsModel[column.field] = common;
                 break;
         }
-        if (!isNullOrUndefined(column.edit)) {
+        if (!isNullOrUndefined(column.edit) && !isNullOrUndefined(column.edit.params)) {
             extend(fieldsModel[column.field], column.edit.params);
         }
         return fieldsModel;
@@ -1207,8 +1215,23 @@ export class DialogEdit {
         let ganttId: string = this.parent.element.id;
         let ganttData: IGanttData = this.editedRecord;
         let divElement: HTMLElement = this.createDivElement('e-edit-form-column');
-        let inputElement: HTMLElement = this.createInputElement('', ganttId + '' + column.field, column.field);
-        divElement.appendChild(inputElement);
+        let inputElement: HTMLElement;
+        let editArgs: Object = { column: column, data: ganttData };
+        if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
+            let create: Function = column.edit.create as Function;
+            if (typeof create !== 'string') {
+                inputElement = (column.edit.create as Function)(editArgs);
+                inputElement.className = '';
+                inputElement.setAttribute('type', 'text');
+                inputElement.setAttribute('id', ganttId + '' + column.field);
+                inputElement.setAttribute('name', column.field);
+                inputElement.setAttribute('title', column.field);
+                divElement.appendChild(inputElement);
+            }
+        } else {
+            inputElement = this.createInputElement('', ganttId + '' + column.field, column.field);
+            divElement.appendChild(inputElement);
+        }
         inputModel.enabled = !this.isCheckIsDisabled(column);
         if (column.field === this.parent.taskFields.duration) {
             let ganttProp: ITaskData = ganttData.ganttProperties;
@@ -1216,8 +1239,15 @@ export class DialogEdit {
         } else {
             inputModel.value = ganttData[column.field];
         }
-        let inputObj: Inputs = new this.inputs[column.editType](inputModel);
-        inputObj.appendTo(inputElement);
+        if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
+            let write: Function = column.edit.write as Function;
+            if (typeof write !== 'string') {
+                (column.edit.write as Function)({ column: column, rowData: ganttData, element: inputElement });
+            }
+        } else {
+            let inputObj: Inputs = new this.inputs[column.editType](inputModel);
+            inputObj.appendTo(inputElement);
+        }
         return divElement;
     };
 
@@ -1365,7 +1395,15 @@ export class DialogEdit {
             if (inputElement) {
                 let fieldName: string = inputElement.id.replace(ganttObj.element.id, '');
                 let controlObj: CObject = <CObject>(<EJ2Instance>div.querySelector('#' + ganttObj.element.id + fieldName)).ej2_instances[0];
-                tasksData[fieldName] = controlObj.value;
+                let column: GanttColumnModel = ganttObj.columnByField[fieldName];
+                if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
+                    let read: Function = column.edit.read as Function;
+                    if (typeof read !== 'string') {
+                        tasksData[fieldName] = (column.edit.read as Function)(inputElement, controlObj.value);
+                    }
+                } else {
+                    tasksData[fieldName] = controlObj.value;
+                }
             }
         }
         if (this.isEdit) {

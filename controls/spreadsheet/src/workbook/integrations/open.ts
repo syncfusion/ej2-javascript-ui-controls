@@ -22,6 +22,12 @@ export class WorkbookOpen {
         if (!this.parent.allowOpen) {
             return;
         }
+        /* tslint:disable-next-line:no-any */
+        if ((options as any).jsonObject) {
+            /* tslint:disable-next-line:no-any */
+            this.fetchSuccess((options as any).jsonObject as string);
+            return;
+        }
         let formData: FormData = new FormData();
         if (options.file) {
             formData.append('file', options.file as string);
@@ -103,7 +109,7 @@ export class WorkbookOpen {
         this.parent.sheets.forEach((key: SheetModel) => {
             key.id = getMaxSheetId(this.parent.sheets);
         });
-        this.parent.notify(workbookFormulaOperation, { action: 'registerSheet' });
+        this.parent.notify(workbookFormulaOperation, { action: 'registerSheet', isImport: true });
         this.parent.notify(workbookFormulaOperation, { action: 'initiateDefinedNames' });
     }
 

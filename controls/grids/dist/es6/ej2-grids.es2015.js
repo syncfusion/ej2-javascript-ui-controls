@@ -716,6 +716,14 @@ const detailIndentCellInfo = 'detail-indentcell-info';
 const virtaulKeyHandler = 'virtaul-key-handler';
 /** @hidden */
 const virtaulCellFocus = 'virtaul-cell-focus';
+/** @hidden */
+const refreshInfiniteModeBlocks = 'refresh-infinite-mode-blocks';
+/** @hidden */
+const resetInfiniteBlocks = 'reset-infinite-blocks';
+/** @hidden */
+const shareInfiniteCache = 'share-infinite-cache';
+/** @hidden */
+const infiniteScrollListener = 'infinite-scroll-listener';
 
 /**
  * Defines types of Cell
@@ -804,6 +812,7 @@ class Data {
      */
     constructor(parent, serviceLocator) {
         this.dataState = { isPending: false, resolver: null, group: [] };
+        this.initialRender = true;
         this.parent = parent;
         this.serviceLocator = serviceLocator;
         this.initDataManager();
@@ -869,12 +878,17 @@ class Data {
         return query;
     }
     aggregateQuery(query, isForeign) {
-        this.parent.aggregates.forEach((row) => {
-            row.columns.forEach((column) => {
-                let types = column.type instanceof Array ? column.type : [column.type];
-                types.forEach((type) => query.aggregate(type.toLowerCase(), column.field));
-            });
-        });
+        let rows = this.parent.aggregates;
+        for (let i = 0; i < rows.length; i++) {
+            let row = rows[i];
+            for (let j = 0; j < row.columns.length; j++) {
+                let cols = row.columns[j];
+                let types = cols.type instanceof Array ? cols.type : [cols.type];
+                for (let k = 0; k < types.length; k++) {
+                    query.aggregate(types[k].toLowerCase(), cols.field);
+                }
+            }
+        }
         return query;
     }
     virtualGroupPageQuery(query) {
@@ -892,7 +906,7 @@ class Data {
     pageQuery(query, skipPage) {
         let gObj = this.parent;
         let fName = 'fn';
-        if ((gObj.allowPaging || gObj.enableVirtualization) && skipPage !== true) {
+        if ((gObj.allowPaging || gObj.enableVirtualization || gObj.infiniteScrollSettings.enableScroll) && skipPage !== true) {
             gObj.pageSettings.currentPage = Math.max(1, gObj.pageSettings.currentPage);
             if (gObj.pageSettings.pageCount <= 0) {
                 gObj.pageSettings.pageCount = 8;
@@ -907,7 +921,13 @@ class Data {
                     }
                 }
             }
-            query.page(gObj.pageSettings.currentPage, gObj.pageSettings.pageSize);
+            if (this.initialRender && gObj.infiniteScrollSettings.enableScroll) {
+                this.initialRender = false;
+                this.initalInfinitePageQuery(gObj, query);
+            }
+            else {
+                query.page(gObj.pageSettings.currentPage, gObj.pageSettings.pageSize);
+            }
         }
         return query;
     }
@@ -973,15 +993,15 @@ class Data {
             needForeignKeySearch = this.parent.getForeignKeyColumns().some((col) => fields.indexOf(col.field) > -1);
             if (needForeignKeySearch && !(this.dataManager.adaptor.getModulename &&
                 this.dataManager.adaptor.getModulename() === 'ODataV4Adaptor')) {
-                fields.forEach((columnName) => {
-                    let column = this.getColumnByField(columnName);
+                for (let i = 0; i < fields.length; i++) {
+                    let column = this.getColumnByField(fields[i]);
                     if (column.isForeignColumn()) {
                         predicateList = this.fGeneratePredicate(column, predicateList);
                     }
                     else {
                         predicateList.push(new Predicate(column.field, sSettings.operator, sSettings.key, sSettings.ignoreCase, sSettings.ignoreAccent));
                     }
-                });
+                }
                 query.where(Predicate.or(predicateList));
             }
             else {
@@ -1060,6 +1080,18 @@ class Data {
             }
         }
         return query;
+    }
+    initalInfinitePageQuery(gObj, query) {
+        if (gObj.pageSettings.pageSize < 100) {
+            gObj.pageSettings.pageSize = 100;
+        }
+        if (gObj.infiniteScrollSettings.enableCache
+            && gObj.infiniteScrollSettings.initialBlocks > gObj.infiniteScrollSettings.maxBlock) {
+            gObj.infiniteScrollSettings.initialBlocks = gObj.infiniteScrollSettings.maxBlock;
+        }
+        let pageSize = gObj.pageSettings.pageSize * gObj.infiniteScrollSettings.initialBlocks;
+        gObj.pageSettings.currentPage = gObj.infiniteScrollSettings.initialBlocks;
+        query.page(1, pageSize);
     }
     fGeneratePredicate(col, predicateList) {
         let fPredicate = {};
@@ -1677,7 +1709,8 @@ class RowModelGenerator {
     }
     generateRows(data, args) {
         let rows = [];
-        let startIndex = this.parent.enableVirtualization ? args.startIndex : 0;
+        let isInifiniteScroll = this.parent.infiniteScrollSettings.enableScroll && args.requestType === 'scroll';
+        let startIndex = this.parent.enableVirtualization || isInifiniteScroll ? args.startIndex : 0;
         for (let i = 0, len = Object.keys(data).length; i < len; i++, startIndex++) {
             rows[i] = this.generateRow(data[i], startIndex);
         }
@@ -1725,14 +1758,17 @@ class RowModelGenerator {
         return row;
     }
     refreshForeignKeyRow(options) {
-        this.parent.getForeignKeyColumns().forEach((col) => {
-            setValue(col.field, getForeignData(col, options.data), options.foreignKeyData);
-        });
+        let foreignKeyColumns = this.parent.getForeignKeyColumns();
+        for (let i = 0; i < foreignKeyColumns.length; i++) {
+            setValue(foreignKeyColumns[i].field, getForeignData(foreignKeyColumns[i], options.data), options.foreignKeyData);
+        }
     }
     generateCells(options) {
         let dummies = this.parent.getColumns();
         let tmp = [];
-        dummies.forEach((dummy, index) => tmp.push(this.generateCell(dummy, options.uid, isNullOrUndefined(dummy.commands) ? undefined : CellType.CommandColumn, null, index, options.foreignKeyData)));
+        for (let i = 0; i < dummies.length; i++) {
+            tmp.push(this.generateCell(dummies[i], options.uid, isNullOrUndefined(dummies[i].commands) ? undefined : CellType.CommandColumn, null, i, options.foreignKeyData));
+        }
         return tmp;
     }
     generateCell(column, rowId, cellType, colSpan, oIndex, foreignKeyData$$1) {
@@ -1754,10 +1790,10 @@ class RowModelGenerator {
         return new Cell(opt);
     }
     refreshRows(input) {
-        input.forEach((row) => {
-            this.refreshForeignKeyRow(row);
-            row.cells = this.generateCells(row);
-        });
+        for (let i = 0; i < input.length; i++) {
+            this.refreshForeignKeyRow(input[i]);
+            input[i].cells = this.generateCells(input[i]);
+        }
         return input;
     }
 }
@@ -1775,15 +1811,16 @@ class SummaryModelGenerator {
     }
     getData() {
         let rows = [];
-        this.parent.aggregates.slice().forEach((row) => {
-            let columns = row.columns.filter((column) => {
+        let row = this.parent.aggregates.slice();
+        for (let i = 0; i < row.length; i++) {
+            let columns = row[i].columns.filter((column) => {
                 return !(column.footerTemplate || column.groupFooterTemplate || column.groupCaptionTemplate)
                     || this.columnSelector(column);
             });
             if (columns.length) {
                 rows.push({ columns: columns });
             }
-        });
+        }
         return rows;
     }
     columnSelector(column) {
@@ -1792,7 +1829,9 @@ class SummaryModelGenerator {
     getColumns(start, end) {
         let columns = [];
         if (this.parent.allowGrouping) {
-            this.parent.groupSettings.columns.forEach((value) => columns.push(new Column({})));
+            for (let i = 0; i < this.parent.groupSettings.columns.length; i++) {
+                columns.push(new Column({}));
+            }
         }
         if (this.parent.detailTemplate || !isNullOrUndefined(this.parent.childGrid) || this.parent.isRowDragable()) {
             columns.push(new Column({}));
@@ -1806,23 +1845,25 @@ class SummaryModelGenerator {
         }
         let data = this.buildSummaryData(input, args);
         let rows = [];
-        this.getData().forEach((row, index) => {
-            rows.push(this.getGeneratedRow(row, data[index], args ? args.level : undefined, start, end));
-        });
+        let row = this.getData();
+        for (let i = 0; i < row.length; i++) {
+            rows.push(this.getGeneratedRow(row[i], data[i], args ? args.level : undefined, start, end));
+        }
         return rows;
     }
     getGeneratedRow(summaryRow, data, raw, start, end) {
         let tmp = [];
         let indents = this.getIndentByLevel(raw);
         let isDetailGridAlone = !isNullOrUndefined(this.parent.childGrid);
-        let indentLength = this.parent.groupSettings.columns.length + (this.parent.detailTemplate ||
-            !isNullOrUndefined(this.parent.childGrid) ? 1 : 0);
+        let indentLength = this.parent.getIndentCount();
         if (this.parent.isRowDragable()) {
-            indentLength++;
             indents = ['e-indentcelltop'];
         }
-        this.getColumns(start, end).forEach((value, index) => tmp.push(this.getGeneratedCell(value, summaryRow, index >= indentLength ? this.getCellType() :
-            index < this.parent.groupSettings.columns.length ? CellType.Indent : CellType.DetailFooterIntent, indents[index], isDetailGridAlone)));
+        let values = this.getColumns(start, end);
+        for (let i = 0; i < values.length; i++) {
+            tmp.push(this.getGeneratedCell(values[i], summaryRow, i >= indentLength ? this.getCellType() :
+                i < this.parent.groupSettings.columns.length ? CellType.Indent : CellType.DetailFooterIntent, indents[i], isDetailGridAlone));
+        }
         let row = new Row({ data: data, attributes: { class: 'e-summaryrow' } });
         row.cells = tmp;
         row.uid = getUid('grid-row');
@@ -1857,13 +1898,14 @@ class SummaryModelGenerator {
         let dummy = [];
         let summaryRows = this.getData();
         let single = {};
-        summaryRows.forEach((row) => {
+        for (let i = 0; i < summaryRows.length; i++) {
             single = {};
-            row.columns.forEach((column) => {
-                single = this.setTemplate(column, (args && args.aggregates) ? args : data, single);
-            });
+            let column = summaryRows[i].columns;
+            for (let j = 0; j < column.length; j++) {
+                single = this.setTemplate(column[j], (args && args.aggregates) ? args : data, single);
+            }
             dummy.push(single);
-        });
+        }
         return dummy;
     }
     getIndentByLevel(data) {
@@ -1877,19 +1919,19 @@ class SummaryModelGenerator {
         if (!(types instanceof Array)) {
             types = [column.type];
         }
-        types.forEach((type) => {
-            let key = column.field + ' - ' + type.toLowerCase();
+        for (let i = 0; i < types.length; i++) {
+            let key = column.field + ' - ' + types[i].toLowerCase();
             let disp = column.columnName;
-            let val = type !== 'Custom' && group.aggregates && key in group.aggregates ? group.aggregates[key] :
-                calculateAggregate(type, group.aggregates ? group : data, column, this.parent);
+            let val = types[i] !== 'Custom' && group.aggregates && key in group.aggregates ? group.aggregates[key] :
+                calculateAggregate(types[i], group.aggregates ? group : data, column, this.parent);
             single[disp] = single[disp] || {};
             single[disp][key] = val;
-            single[disp][type] = !isNullOrUndefined(val) ? formatFn(val) : ' ';
+            single[disp][types[i]] = !isNullOrUndefined(val) ? formatFn(val) : ' ';
             if (group.field) {
                 single[disp].field = group.field;
                 single[disp].key = group.key;
             }
-        });
+        }
         helper.format = column.getFormatter();
         column.setTemplate(helper);
         return single;
@@ -1945,8 +1987,9 @@ class GroupModelGenerator extends RowModelGenerator {
         if (this.parent.groupSettings.columns.length === 0) {
             return super.generateRows(data, args);
         }
+        let isInfiniteScroll = this.parent.infiniteScrollSettings.enableScroll && args.requestType === 'scroll';
         this.rows = [];
-        this.index = this.parent.enableVirtualization ? args.startIndex : 0;
+        this.index = this.parent.enableVirtualization || isInfiniteScroll ? args.startIndex : 0;
         for (let i = 0, len = data.length; i < len; i++) {
             this.getGroupedRecords(0, data[i], data.level, i, undefined, this.rows.length);
         }
@@ -2020,7 +2063,7 @@ class GroupModelGenerator extends RowModelGenerator {
         }
         let cols = (!this.parent.enableColumnVirtualization ? [column] : this.parent.getColumns());
         let wFlag = true;
-        cols.forEach((col, index) => {
+        for (let j = 0; j < cols.length; j++) {
             let tmpFlag = wFlag && indexes.indexOf(indent) !== -1;
             if (tmpFlag) {
                 wFlag = false;
@@ -2032,7 +2075,7 @@ class GroupModelGenerator extends RowModelGenerator {
                 indent++;
             }
             cells.push(this.generateCell(column, null, cellType, indent));
-        });
+        }
         cells.push(...visibles);
         return cells;
     }
@@ -2086,21 +2129,21 @@ class GroupModelGenerator extends RowModelGenerator {
     }
     refreshRows(input) {
         let indexes = this.parent.getColumnIndexesInView();
-        input.forEach((row) => {
-            if (row.isDataRow) {
-                row.cells = this.generateCells(row);
-                for (let j = 0; j < row.indent; j++) {
-                    if (this.parent.enableColumnVirtualization && indexes.indexOf(row.indent) === -1) {
+        for (let i = 0; i < input.length; i++) {
+            if (input[i].isDataRow) {
+                input[i].cells = this.generateCells(input[i]);
+                for (let j = 0; j < input[i].indent; j++) {
+                    if (this.parent.enableColumnVirtualization && indexes.indexOf(input[i].indent) === -1) {
                         continue;
                     }
-                    row.cells.unshift(this.generateIndentCell());
+                    input[i].cells.unshift(this.generateIndentCell());
                 }
             }
             else {
-                let cRow = this.generateCaptionRow(row.data, row.indent);
-                row.cells = cRow.cells;
+                let cRow = this.generateCaptionRow(input[i].data, input[i].indent);
+                input[i].cells = cRow.cells;
             }
-        });
+        }
         return input;
     }
 }
@@ -2124,6 +2167,10 @@ class ContentRender {
             this.parent.notify(columnDrop, { target: e.target, droppedElement: e.droppedElement });
             remove(e.droppedElement);
         };
+        this.infiniteCache = {};
+        this.isRemove = false;
+        this.visibleRows = [];
+        this.isAddRows = false;
         this.rafCallback = (args) => {
             let arg = args;
             return () => {
@@ -2177,6 +2224,17 @@ class ContentRender {
         }
         this.parent.on(colGroupRefresh, this.colGroupRefresh, this);
         this.parent.on(uiUpdate, this.enableAfterRender, this);
+        this.parent.on(refreshInfiniteModeBlocks, this.refreshContentRows, this);
+        this.parent.on(beforeCellFocused, this.beforeCellFocused, this);
+        this.parent.on(resetInfiniteBlocks, this.resetInfiniteBlocks, this);
+    }
+    beforeCellFocused(e) {
+        if (e.byKey && (e.keyArgs.action === 'upArrow' || e.keyArgs.action === 'downArrow')) {
+            this.pressedKey = e.keyArgs.action;
+        }
+        else {
+            this.pressedKey = undefined;
+        }
     }
     /**
      * The function is used to render grid content div
@@ -2273,8 +2331,12 @@ class ContentRender {
         let frzCols = gObj.getFrozenColumns();
         let trElement;
         let row = new RowRenderer(this.serviceLocator, null, this.parent);
-        this.rowElements = [];
-        this.rows = [];
+        let isInfiniteScroll = this.parent.infiniteScrollSettings.enableScroll
+            && args.requestType === 'scroll';
+        if (!isInfiniteScroll) {
+            this.rowElements = [];
+            this.rows = [];
+        }
         let fCont = this.getPanel().querySelector('.e-frozencontent');
         let mCont = this.getPanel().querySelector('.e-movablecontent');
         let cont = this.getPanel().querySelector('.e-content');
@@ -2344,7 +2406,27 @@ class ContentRender {
             modelData = this.parent.contentModule.generateRows(dataSource, args);
         }
         else {
-            modelData = this.generator.generateRows(dataSource, args);
+            this.isAddRows = isInfiniteScroll && !isNullOrUndefined(this.infiniteCache[this.parent.pageSettings.currentPage]);
+            if (this.isAddRows && this.parent.infiniteScrollSettings.enableCache) {
+                modelData = this.infiniteCache[this.parent.pageSettings.currentPage];
+                // this.isAddRows = true;
+            }
+            else {
+                this.isAddRows = false;
+                modelData = this.generator.generateRows(dataSource, args);
+            }
+        }
+        if (this.parent.infiniteScrollSettings.enableScroll && this.parent.infiniteScrollSettings.enableCache) {
+            if (!Object.keys(this.infiniteCache).length) {
+                this.setInitialCache(modelData);
+            }
+            if (isNullOrUndefined(this.infiniteCache[this.parent.pageSettings.currentPage])) {
+                this.infiniteCache[this.parent.pageSettings.currentPage] = modelData;
+            }
+            this.parent.notify(shareInfiniteCache, this.infiniteCache);
+        }
+        if (isInfiniteScroll && this.parent.infiniteScrollSettings.enableCache && !this.isRemove) {
+            this.isRemove = (this.parent.pageSettings.currentPage - 1) % this.parent.infiniteScrollSettings.maxBlock === 0;
         }
         if (isNullOrUndefined(modelData[0].cells[0])) {
             mCont.querySelector('tbody').innerHTML = '';
@@ -2423,7 +2505,12 @@ class ContentRender {
             args.virtualInfo.blockIndexes = bIndex;
         }
         for (let i = startIndex, len = modelData.length; i < len; i++) {
-            this.rows.push(modelData[i]);
+            if (!this.isAddRows) {
+                this.rows.push(modelData[i]);
+            }
+            if (!this.isRemove) {
+                this.visibleRows.push(modelData[i]);
+            }
             if (isGroupAdaptive(gObj) && this.rows.length >= (gObj.pageSettings.pageSize) && blockLoad) {
                 break;
             }
@@ -2496,7 +2583,7 @@ class ContentRender {
         getUpdateUsingRaf(() => {
             this.parent.notify(beforeFragAppend, args);
             let isVFTable = this.parent.enableVirtualization && this.parent.getFrozenColumns() !== 0;
-            if (!this.parent.enableVirtualization) {
+            if (!this.parent.enableVirtualization && !isInfiniteScroll) {
                 remove(this.tbody);
                 this.tbody = this.parent.createElement('tbody');
             }
@@ -2541,7 +2628,13 @@ class ContentRender {
                     }
                 }
                 else {
-                    this.appendContent(this.tbody, frag, args);
+                    if (this.parent.infiniteScrollSettings.enableScroll) {
+                        this.removeInfiniteCacheRows(args);
+                        this.appendInfiniteRows(this.tbody, frag, args);
+                    }
+                    else {
+                        this.appendContent(this.tbody, frag, args);
+                    }
                 }
             }
             if (frzCols && idx === 0) {
@@ -2556,6 +2649,104 @@ class ContentRender {
     appendContent(tbody, frag, args) {
         tbody.appendChild(frag);
         this.getTable().appendChild(tbody);
+    }
+    resetInfiniteBlocks(args) {
+        let isInfiniteScroll = this.parent.infiniteScrollSettings.enableScroll && args.requestType !== 'scroll';
+        if (isInfiniteScroll) {
+            this.parent.getContent().firstElementChild.scrollTop = 0;
+            this.parent.pageSettings.currentPage = 1;
+            this.infiniteCache = {};
+            this.parent.scrollModule.infiniteCache = {};
+            this.isRemove = false;
+        }
+    }
+    setInitialCache(data) {
+        for (let i = 1; i <= this.parent.pageSettings.currentPage; i++) {
+            let startIndex = (i - 1) * this.parent.pageSettings.pageSize;
+            let endIndex = i * this.parent.pageSettings.pageSize;
+            this.infiniteCache[i] = data.slice(startIndex, endIndex);
+        }
+    }
+    removeInfiniteCacheRows(args) {
+        let isInfiniteScroll = this.parent.infiniteScrollSettings.enableScroll && args.requestType === 'scroll';
+        if (isInfiniteScroll && this.parent.infiniteScrollSettings.enableCache && this.isRemove) {
+            let rows = [].slice.call(this.parent.getContent().querySelectorAll('.e-row'));
+            let scrollCnt = this.parent.getContent().firstElementChild;
+            let top;
+            if (args.direction === 'down') {
+                let value = this.parent.pageSettings.pageSize * (this.parent.infiniteScrollSettings.maxBlock - 1);
+                let currentViewRowCount = 0;
+                let i = 0;
+                while (currentViewRowCount < scrollCnt.clientHeight) {
+                    i++;
+                    currentViewRowCount = i * this.parent.getRowHeight();
+                }
+                i = i - 1;
+                top = (value - i) * this.parent.getRowHeight();
+                this.removeTopRows(rows, this.parent.pageSettings.pageSize - 1);
+                if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
+                    let captionRows = [].slice.call(this.parent.getContent().querySelectorAll('tr'));
+                    this.removeTopRows(captionRows, this.parent.pageSettings.pageSize - 1);
+                }
+            }
+            if (args.direction === 'up') {
+                top = this.parent.pageSettings.pageSize * this.parent.getRowHeight();
+                top = top + getScrollBarWidth();
+                this.removeBottomRows(rows, rows.length - 1, args);
+                if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
+                    let captionRows = [].slice.call(this.parent.getContent().querySelectorAll('tr'));
+                    this.removeBottomRows(captionRows, captionRows.length - 1, args);
+                }
+            }
+            this.parent.notify(infiniteScrollListener, { isScroll: false, top: top });
+            scrollCnt.scrollTop = top;
+        }
+    }
+    removeTopRows(rows, maxIndx) {
+        for (let i = 0; i <= maxIndx; i++) {
+            remove(rows[i]);
+        }
+    }
+    removeBottomRows(rows, maxIndx, args) {
+        let cnt = 0;
+        if (this.infiniteCache[args.prevPage].length < this.parent.pageSettings.pageSize) {
+            cnt = this.parent.pageSettings.pageSize - this.infiniteCache[args.prevPage].length;
+        }
+        for (let i = maxIndx; cnt < this.parent.pageSettings.pageSize; i--) {
+            cnt++;
+            remove(rows[i]);
+        }
+    }
+    appendInfiniteRows(tbody, frag, args) {
+        let target = document.activeElement;
+        let isInfiniteScroll = this.parent.infiniteScrollSettings.enableScroll && args.requestType === 'scroll';
+        if (isInfiniteScroll && args.direction === 'up') {
+            tbody.insertBefore(frag, tbody.firstElementChild);
+        }
+        else {
+            tbody.appendChild(frag);
+        }
+        this.getTable().appendChild(tbody);
+        if (isInfiniteScroll) {
+            if (this.parent.infiniteScrollSettings.enableCache && this.isRemove) {
+                if (args.direction === 'down') {
+                    let startIndex = (this.parent.pageSettings.currentPage -
+                        this.parent.infiniteScrollSettings.maxBlock) * this.parent.pageSettings.pageSize;
+                    this.visibleRows = this.rows.slice(startIndex, this.rows.length);
+                }
+                if (args.direction === 'up') {
+                    let startIndex = (this.parent.pageSettings.currentPage - 1) * this.parent.pageSettings.pageSize;
+                    let endIndex = ((this.parent.pageSettings.currentPage
+                        + this.parent.infiniteScrollSettings.maxBlock) - 1) * this.parent.pageSettings.pageSize;
+                    this.visibleRows = this.rows.slice(startIndex, endIndex);
+                }
+                this.rowElements = [].slice.call(this.parent.getContent().querySelectorAll('.e-row'));
+            }
+            if (this.pressedKey === 'downArrow' || (this.parent.infiniteScrollSettings.enableCache && this.pressedKey === 'upArrow')) {
+                this.pressedKey = undefined;
+                this.parent.focusModule.onClick({ target }, true);
+            }
+        }
     }
     /**
      * Get the content div element of grid
@@ -2680,6 +2871,7 @@ class ContentRender {
         for (let c = 0, clen = columns.length; c < clen; c++) {
             let column = columns[c];
             let idx = this.parent.getNormalizedColumnIndex(column.uid);
+            let colIdx = this.parent.getColumnIndexByUid(column.uid);
             let displayVal = column.visible === true ? '' : 'none';
             if (idx !== -1 && testRow && idx < testRow.cells.length) {
                 if (frzCols) {
@@ -2689,25 +2881,18 @@ class ContentRender {
                     }
                     else {
                         let mTable = gObj.getContent().querySelector('.e-movablecontent').querySelector('colgroup');
-                        idx = idx - frzCols;
+                        colIdx = idx = idx - frzCols;
                         setStyleAttribute(mTable.childNodes[idx], { 'display': displayVal });
                         tr = gObj.getMovableDataRows();
                         contentrows = this.movableRows;
                     }
                 }
                 else {
-                    if (gObj.isRowDragable()) {
-                        idx++;
-                    }
                     setStyleAttribute(this.getColGroup().childNodes[idx], { 'display': displayVal });
-                    if (gObj.isRowDragable()) {
-                        idx--;
-                    }
                 }
             }
-            idx = gObj.isDetail() ? idx - 1 : idx;
             if (!needFullRefresh) {
-                this.setDisplayNone(tr, idx, displayVal, contentrows);
+                this.setDisplayNone(tr, colIdx, displayVal, contentrows);
             }
             if (!this.parent.invokedFromMedia && column.hideAtMedia) {
                 this.parent.updateMediaColumns(column);
@@ -2731,15 +2916,16 @@ class ContentRender {
      * @hidden
      */
     setDisplayNone(tr, idx, displayVal, rows) {
-        Object.keys(tr).forEach((i) => {
-            if (tr[i].querySelectorAll('td.e-rowcell').length) {
-                setStyleAttribute(tr[i].querySelectorAll('td.e-rowcell')[idx], { 'display': displayVal });
-                if (tr[i].querySelectorAll('td.e-rowcell')[idx].classList.contains('e-hide')) {
-                    removeClass([tr[i].querySelectorAll('td.e-rowcell')[idx]], ['e-hide']);
+        let trs = Object.keys(tr);
+        for (let i = 0; i < trs.length; i++) {
+            if (tr[trs[i]].querySelectorAll('td.e-rowcell').length) {
+                setStyleAttribute(tr[trs[i]].querySelectorAll('td.e-rowcell')[idx], { 'display': displayVal });
+                if (tr[trs[i]].querySelectorAll('td.e-rowcell')[idx].classList.contains('e-hide')) {
+                    removeClass([tr[trs[i]].querySelectorAll('td.e-rowcell')[idx]], ['e-hide']);
                 }
-                rows[i].cells[idx].visible = displayVal === '' ? true : false;
+                rows[trs[i]].cells[idx].visible = displayVal === '' ? true : false;
             }
-        });
+        }
     }
     colGroupRefresh() {
         if (this.getColGroup()) {
@@ -2787,16 +2973,29 @@ class ContentRender {
     }
     setSelection(uid, set, clearAll) {
         if (this.parent.getFrozenColumns()) {
-            this.getMovableRows().filter((row) => clearAll || uid === row.uid).forEach((row) => row.isSelected = set);
+            let rows = this.getMovableRows().filter((row) => clearAll || uid === row.uid);
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].isSelected = set;
+            }
         }
-        this.getRows().filter((row) => clearAll || uid === row.uid)
-            .forEach((row) => {
-            row.isSelected = set;
-            row.cells.forEach((cell) => cell.isSelected = set);
-        });
+        let row = this.getRows().filter((row) => clearAll || uid === row.uid);
+        for (let j = 0; j < row.length; j++) {
+            row[j].isSelected = set;
+            let cells = row[j].cells;
+            for (let k = 0; k < cells.length; k++) {
+                cells[k].isSelected = set;
+            }
+        }
     }
     getRowByIndex(index) {
+        if (this.pressedKey !== 'upArrow' && this.pressedKey !== 'downArrow' && this.isRemove) {
+            index = this.getInfiniteRowIndex(index);
+        }
         return this.parent.getDataRows()[index];
+    }
+    getInfiniteRowIndex(index) {
+        let firstRowIndex = parseInt(this.parent.getRows()[0].getAttribute('aria-rowindex'), 10);
+        return index - firstRowIndex;
     }
     getVirtualRowIndex(index) {
         return index;
@@ -3339,13 +3538,10 @@ class HeaderRender {
                 }
             }
             else {
-                if (gObj.isRowDragable()) {
-                    idx++;
-                }
                 setStyleAttribute(this.getColGroup().children[idx], { 'display': displayVal });
             }
-            this.refreshUI();
         }
+        this.refreshUI();
     }
     colPosRefresh() {
         if (isBlazor() && this.parent.isServerRendered && this.parent.frozenRows && this.parent.getFrozenColumns()) {
@@ -3699,7 +3895,9 @@ class CellRenderer {
 class AriaService {
     setOptions(target, options) {
         let props = Object.keys(options);
-        props.forEach((name) => setStateAndProperties(target, config[name], options[name]));
+        for (let i = 0; i < props.length; i++) {
+            setStateAndProperties(target, config[props[i]], options[props[i]]);
+        }
     }
     setExpand(target, expand) {
         setStateAndProperties(target, config.expand, expand);
@@ -4321,7 +4519,7 @@ class Render {
                     return;
                 }
                 if (e.requestType === 'refresh') {
-                    this.parent.currentAction = e;
+                    this.parent.notify('updateaction', args);
                 }
                 if (args.requestType !== 'virtualscroll') {
                     this.parent.showSpinner();
@@ -4405,6 +4603,7 @@ class Render {
         if (args.requestType !== 'virtualscroll') {
             this.parent.showSpinner();
         }
+        this.parent.notify(resetInfiniteBlocks, args);
         this.emptyGrid = false;
         let dataManager;
         let isFActon = this.isNeedForeignAction();
@@ -4464,6 +4663,13 @@ class Render {
         if (isBlazor() && !this.parent.isJsComponent) {
             promise.then((e) => {
                 this.parent.notify('editsuccess', args);
+            }).catch((e) => {
+                let error = 'error';
+                let message = 'message';
+                if (!isNullOrUndefined(e[error]) && !isNullOrUndefined(e[error][message])) {
+                    e[error] = e[error][message];
+                }
+                this.parent.trigger(actionFailure, e);
             });
         }
         else {
@@ -4757,7 +4963,10 @@ class Render {
         let groupN = e.result[index];
         let predicate = [];
         let addWhere = (input) => {
-            [group0, groupN].forEach((group) => predicate.push(new Predicate('field', '==', group.field).and(this.getPredicate('key', 'equal', group.key))));
+            let groups = [group0, groupN];
+            for (let i = 0; i < groups.length; i++) {
+                predicate.push(new Predicate('field', '==', groups[i].field).and(this.getPredicate('key', 'equal', groups[i].key)));
+            }
             input.where(Predicate.or(predicate));
         };
         let query = new Query();
@@ -4767,7 +4976,10 @@ class Render {
         let newQuery = this.data.generateQuery(true);
         let rPredicate = [];
         if (this.data.isRemote() || isBlazor()) {
-            [group0, groupN].forEach((group) => rPredicate.push(this.getPredicate(group.field, 'equal', group.key)));
+            let groups = [group0, groupN];
+            for (let i = 0; i < groups.length; i++) {
+                rPredicate.push(this.getPredicate(groups[i].field, 'equal', groups[i].key));
+            }
             newQuery.where(Predicate.or(rPredicate));
         }
         else {
@@ -4788,32 +5000,39 @@ class Render {
     }
     updateGroupInfo(current, untouched) {
         let dm = new DataManager(untouched);
-        current.forEach((element, index, array) => {
+        let elements = current;
+        for (let i = 0; i < elements.length; i++) {
             let uGroup = dm.executeLocal(new Query()
-                .where(new Predicate('field', '==', element.field).and(this.getPredicate('key', 'equal', element.key))))[0];
-            element.count = uGroup.count;
-            let itemGroup = element.items;
+                .where(new Predicate('field', '==', elements[i].field).and(this.getPredicate('key', 'equal', elements[i].key))))[0];
+            elements[i].count = uGroup.count;
+            let itemGroup = elements[i].items;
             let uGroupItem = uGroup.items;
             if (itemGroup.GroupGuid) {
-                element.items = this.updateGroupInfo(element.items, uGroup.items);
+                elements[i].items = this.updateGroupInfo(elements[i].items, uGroup.items);
             }
-            this.parent.aggregates.forEach((row) => row.columns.forEach((column) => {
-                let types = column.type instanceof Array ? column.type : [column.type];
-                types.forEach((type) => {
-                    let key = column.field + ' - ' + type.toLowerCase();
-                    let data = itemGroup.level ? uGroupItem.records : uGroup.items;
-                    let context = this.parent;
-                    if (type === 'Custom') {
-                        let data = itemGroup.level ? uGroupItem : uGroup;
-                        element.aggregates[key] = column.customAggregate ?
-                            column.customAggregate.call(context, data, column) : '';
+            let rows = this.parent.aggregates;
+            for (let j = 0; j < rows.length; j++) {
+                let row = rows[j];
+                for (let k = 0; k < row.columns.length; k++) {
+                    let types = row.columns[k].type instanceof Array ? (row.columns[k].type) :
+                        [(row.columns[k].type)];
+                    for (let l = 0; l < types.length; l++) {
+                        let key = row.columns[k].field + ' - ' + types[l].toLowerCase();
+                        let data = itemGroup.level ? uGroupItem.records : uGroup.items;
+                        let context = this.parent;
+                        if (types[l] === 'Custom') {
+                            let data = itemGroup.level ? uGroupItem : uGroup;
+                            elements[i].aggregates[key] = row.columns[k].customAggregate ?
+                                row.columns[k].customAggregate
+                                    .call(context, data, row.columns[k]) : '';
+                        }
+                        else {
+                            elements[i].aggregates[key] = DataUtil.aggregates[types[l].toLowerCase()](data, row.columns[k].field);
+                        }
                     }
-                    else {
-                        element.aggregates[key] = DataUtil.aggregates[type.toLowerCase()](data, column.field);
-                    }
-                });
-            }));
-        });
+                }
+            }
+        }
         return current;
     }
 }
@@ -4919,9 +5138,10 @@ class ColumnWidthService {
             this.setColumnWidth(new Column({ width: '30px' }), i);
             i++;
         }
-        this.parent.getColumns().forEach((column, index) => {
-            this.setColumnWidth(column, wFlag && this.parent.enableColumnVirtualization ? undefined : index + i);
-        });
+        let columns = this.parent.getColumns();
+        for (let j = 0; j < columns.length; j++) {
+            this.setColumnWidth(columns[j], wFlag && this.parent.enableColumnVirtualization ? undefined : j + i);
+        }
         totalColumnsWidth = this.getTableWidth(this.parent.getColumns());
         if (this.parent.width !== 'auto' && this.parent.width.toString().indexOf('%') === -1) {
             this.setMinwidthBycalculation(totalColumnsWidth);
@@ -5499,9 +5719,18 @@ class FocusStrategy {
         this.parent.on(headerRefreshed, this.refreshMatrix(), this);
         this.parent.on('close-edit', this.restoreFocus, this);
         this.parent.on('restore-Focus', this.restoreFocus, this);
-        ['start-edit', 'start-add'].forEach((evt) => this.parent.on(evt, this.clearIndicator, this));
-        ['sorting', 'filtering'].forEach((action) => this.parent.on(`${action}-complete`, this.restoreFocus, this));
-        ['grouping', 'ungrouping'].forEach((action) => this.parent.on(`${action}-complete`, this.restoreFocusWithAction, this));
+        let evts = ['start-edit', 'start-add'];
+        for (let i = 0; i < evts.length; i++) {
+            this.parent.on(evts[i], this.clearIndicator, this);
+        }
+        let actions = ['sorting', 'filtering'];
+        for (let j = 0; j < actions.length; j++) {
+            this.parent.on(`${actions[j]}-complete`, this.restoreFocus, this);
+        }
+        let actionsG = ['grouping', 'ungrouping'];
+        for (let k = 0; k < actionsG.length; k++) {
+            this.parent.on(`${actionsG[k]}-complete`, this.restoreFocusWithAction, this);
+        }
         this.parent.on(batchAdd, this.refMatrix, this);
         this.parent.on(batchCancel, this.refMatrix, this);
         this.parent.on(batchDelete, this.refMatrix, this);
@@ -5524,9 +5753,18 @@ class FocusStrategy {
         this.parent.off(headerRefreshed, this.refreshMatrix());
         this.parent.off('close-edit', this.restoreFocus);
         this.parent.off('restore-focus', this.restoreFocus);
-        ['start-edit', 'start-add'].forEach((evt) => this.parent.off(evt, this.clearOutline));
-        ['sorting', 'filtering'].forEach((action) => this.parent.off(`${action}-complete`, this.restoreFocus));
-        ['grouping', 'ungrouping'].forEach((action) => this.parent.on(`${action}-complete`, this.restoreFocusWithAction));
+        let evts = ['start-edit', 'start-add'];
+        for (let i = 0; i < evts.length; i++) {
+            this.parent.off(evts[i], this.clearOutline);
+        }
+        let actions = ['sorting', 'filtering'];
+        for (let j = 0; j < actions.length; j++) {
+            this.parent.off(`${actions[j]}-complete`, this.restoreFocus);
+        }
+        let actionsG = ['grouping', 'ungrouping'];
+        for (let k = 0; k < actionsG.length; k++) {
+            this.parent.on(`${actionsG[k]}-complete`, this.restoreFocusWithAction);
+        }
         this.parent.off(batchAdd, this.refMatrix);
         this.parent.off(batchDelete, this.refMatrix);
         this.parent.off(batchCancel, this.refMatrix);
@@ -5656,13 +5894,13 @@ class Matrix {
     generate(rows, selector, isRowTemplate) {
         this.rows = rows.length - 1;
         this.matrix = [];
-        rows.forEach((row, rIndex) => {
-            let cells = row.cells.filter((c) => c.isSpanned !== true);
+        for (let i = 0; i < rows.length; i++) {
+            let cells = rows[i].cells.filter((c) => c.isSpanned !== true);
             this.columns = Math.max(cells.length - 1, this.columns | 0);
-            cells.forEach((cell, cIndex) => {
-                this.set(rIndex, cIndex, selector(row, cell, isRowTemplate));
-            });
-        });
+            for (let j = 0; j < cells.length; j++) {
+                this.set(i, j, selector(rows[i], cells[j], isRowTemplate));
+            }
+        }
         return this.matrix;
     }
     inValid(value) {
@@ -5825,7 +6063,8 @@ class ContentFocus {
         }
         let isHeaderFocus = false;
         let row = document.activeElement.parentElement;
-        if (this.parent.enableVirtualization && row.classList.contains('e-row')) {
+        if ((this.parent.enableVirtualization || this.parent.infiniteScrollSettings.enableCache)
+            && row.classList.contains('e-row')) {
             let rowIndex = parseInt(row.getAttribute('aria-rowindex'), 10);
             isHeaderFocus = rowIndex > 0;
         }
@@ -5870,22 +6109,24 @@ class ContentFocus {
     validator() {
         let table = this.getTable();
         return (rowIndex, cellIndex, action) => {
-            let cell;
-            if (table.rows[rowIndex].cells[0].classList.contains('e-editcell')) {
-                cell = table.rows[rowIndex].cells[0].querySelectorAll('td')[cellIndex];
-            }
-            else {
-                cell = table.rows[rowIndex].cells[cellIndex];
-            }
-            let isCellWidth = cell.getBoundingClientRect().width !== 0;
-            if (action === 'enter' || action === 'shiftEnter') {
-                return isCellWidth && cell.classList.contains('e-rowcell');
-            }
-            if ((action === 'shiftUp' || action === 'shiftDown') && cell.classList.contains('e-rowcell')) {
-                return isCellWidth;
-            }
-            else if (action !== 'shiftUp' && action !== 'shiftDown') {
-                return isCellWidth;
+            if (!isNullOrUndefined(table.rows[rowIndex])) {
+                let cell;
+                if (table.rows[rowIndex].cells[0].classList.contains('e-editcell')) {
+                    cell = table.rows[rowIndex].cells[0].querySelectorAll('td')[cellIndex];
+                }
+                else {
+                    cell = table.rows[rowIndex].cells[cellIndex];
+                }
+                let isCellWidth = cell.getBoundingClientRect().width !== 0;
+                if (action === 'enter' || action === 'shiftEnter') {
+                    return isCellWidth && cell.classList.contains('e-rowcell');
+                }
+                if ((action === 'shiftUp' || action === 'shiftDown') && cell.classList.contains('e-rowcell')) {
+                    return isCellWidth;
+                }
+                else if (action !== 'shiftUp' && action !== 'shiftDown') {
+                    return isCellWidth;
+                }
             }
             return false;
         };
@@ -5996,7 +6237,10 @@ class HeaderFocus extends ContentFocus {
         let length = this.matrix.matrix.length;
         if (this.parent.allowFiltering && this.parent.filterSettings.type === 'FilterBar') {
             this.matrix.rows = ++this.matrix.rows;
-            rows[0].cells.forEach((cell, cIndex) => this.matrix.set(length, cIndex, cell.visible && cell.column.allowFiltering !== false));
+            let cells = rows[0].cells;
+            for (let i = 0; i < cells.length; i++) {
+                this.matrix.set(length, i, cells[i].visible && cells[i].column.allowFiltering !== false);
+            }
         }
     }
     getInfo(e) {
@@ -6319,7 +6563,7 @@ class Selection {
                 data: selectData, rowIndex: index, isCtrlPressed: this.isMultiCtrlRequest,
                 isShiftPressed: this.isMultiShiftRequest, row: selectedRow,
                 previousRow: gObj.getRowByIndex(this.prevRowIndex),
-                previousRowIndex: this.prevRowIndex, target: this.actualTarget, cancel: false
+                previousRowIndex: this.prevRowIndex, target: this.actualTarget, cancel: false, isInteracted: this.isInteracted
             };
             args = this.addMovableArgs(args, selectedMovableRow);
             this.parent.trigger(rowSelecting, this.fDataUpdate(args), this.rowSelectingCallBack(args, isToggle, index, selectData, isRemoved, isRowSelected, can));
@@ -6374,11 +6618,12 @@ class Selection {
             args = {
                 data: selectData, rowIndex: index,
                 row: selectedRow, previousRow: gObj.getRowByIndex(this.prevRowIndex),
-                previousRowIndex: this.prevRowIndex, target: this.actualTarget
+                previousRowIndex: this.prevRowIndex, target: this.actualTarget, isInteracted: this.isInteracted
             };
             args = this.addMovableArgs(args, selectedMovableRow);
             this.onActionComplete(args, rowSelected);
         }
+        this.isInteracted = false;
         this.updateRowProps(index);
     }
     addMovableArgs(targetObj, mRow) {
@@ -6500,7 +6745,7 @@ class Selection {
                     data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this.actualTarget,
                     prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
                     isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
-                    foreignKeyData: rowObj.foreignKeyData
+                    foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted
                 };
                 args = this.addMovableArgs(args, selectedMovableRow);
                 this.parent.trigger(rowSelecting, this.fDataUpdate(args), (args) => {
@@ -6520,11 +6765,12 @@ class Selection {
                 args = {
                     data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this.actualTarget,
                     prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
-                    foreignKeyData: rowObj.foreignKeyData
+                    foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted
                 };
                 args = this.addMovableArgs(args, selectedMovableRow);
                 this.onActionComplete(args, rowSelected);
             }
+            this.isInteracted = false;
             this.updateRowProps(rowIndex);
             if (this.isSingleSel()) {
                 break;
@@ -6722,14 +6968,16 @@ class Selection {
                     }
                     return;
                 }
-                rows.filter((record) => record.hasAttribute('aria-selected')).forEach((ele) => {
+                let element = [].slice.call(rows.filter((record) => record.hasAttribute('aria-selected')));
+                for (let j = 0; j < element.length; j++) {
                     if (!this.disableUI || isBlazor()) {
-                        ele.removeAttribute('aria-selected');
-                        this.addRemoveClassesForRow(ele, false, true, 'e-selectionbackground', 'e-active');
+                        element[j].removeAttribute('aria-selected');
+                        this.addRemoveClassesForRow(element[j], false, true, 'e-selectionbackground', 'e-active');
                     }
-                    this.updatePersistCollection(ele, false);
-                    this.updateCheckBoxes(ele);
-                });
+                    // tslint:disable-next-line:align
+                    this.updatePersistCollection(element[j], false);
+                    this.updateCheckBoxes(element[j]);
+                }
                 for (let i = 0, len = this.selectedRowIndexes.length; i < len; i++) {
                     let movableRow = this.getSelectedMovableRow(this.selectedRowIndexes[i]);
                     if (movableRow) {
@@ -6745,7 +6993,6 @@ class Selection {
                 this.isRowSelected = false;
                 this.selectRowIndex(-1);
                 this.rowDeselect(rowDeselected, rowIndex, data, row, foreignKeyData$$1, target, mRow);
-                this.isInteracted = false;
                 if (this.clearRowCheck) {
                     this.clearRowCallBack();
                     this.clearRowCheck = false;
@@ -7751,7 +7998,8 @@ class Selection {
         EventHandler.add(document.body, 'mouseup', this.mouseUpHandler, this);
     }
     clearSelAfterRefresh(e) {
-        if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection) {
+        let isInfiniteScroll = this.parent.infiniteScrollSettings.enableScroll && e.requestType === 'scroll';
+        if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection && !isInfiniteScroll) {
             this.clearSelection();
         }
     }
@@ -8046,11 +8294,12 @@ class Selection {
             else {
                 records = this.getSelectedRecords();
             }
-            records.slice().forEach((data) => {
-                if (!isNullOrUndefined(data[this.primaryKey])) {
-                    this.updatePersistDelete(data[this.primaryKey]);
+            let data = records.slice();
+            for (let i = 0; i < data.length; i++) {
+                if (!isNullOrUndefined(data[i][this.primaryKey])) {
+                    this.updatePersistDelete(data[i][this.primaryKey]);
                 }
-            });
+            }
             this.setCheckAllState();
             this.totalRecordsCount = this.parent.pageSettings.totalRecordsCount;
         }
@@ -8682,7 +8931,8 @@ class Selection {
         }
     }
     dataReady(e) {
-        if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection) {
+        let isInfinitecroll = this.parent.infiniteScrollSettings.enableScroll && e.requestType === 'scroll';
+        if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection && !isInfinitecroll) {
             this.disableUI = true;
             this.clearSelection();
             this.setCheckAllState();
@@ -8838,9 +9088,9 @@ class ShowHide {
         let keys = this.getToggleFields(columnName);
         let columns = this.getColumns(keys, showBy);
         this.parent.notify(tooltipDestroy, { module: 'edit' });
-        columns.forEach((value) => {
-            value.visible = true;
-        });
+        for (let i = 0; i < columns.length; i++) {
+            columns[i].visible = true;
+        }
         this.setVisible(columns);
     }
     /**
@@ -8853,9 +9103,9 @@ class ShowHide {
         let keys = this.getToggleFields(columnName);
         let columns = this.getColumns(keys, hideBy);
         this.parent.notify(tooltipDestroy, { module: 'edit' });
-        columns.forEach((value) => {
-            value.visible = false;
-        });
+        for (let i = 0; i < columns.length; i++) {
+            columns[i].visible = false;
+        }
         this.setVisible(columns);
     }
     getToggleFields(key) {
@@ -8926,6 +9176,11 @@ class Scroll {
         //To maintain scroll state on grid actions.
         this.previousValues = { top: 0, left: 0 };
         this.oneTimeReady = true;
+        this.infiniteCache = {};
+        this.isDownScroll = false;
+        this.isUpScroll = false;
+        this.isScroll = true;
+        this.enableContinuousScroll = false;
         this.parent = parent;
         this.widthService = new ColumnWidthService(parent);
         this.addEventListener();
@@ -9025,6 +9280,9 @@ class Scroll {
         this.parent.on(uiUpdate, this.onPropertyChanged, this);
         this.parent.on(textWrapRefresh, this.wireEvents, this);
         this.parent.on(headerRefreshed, this.setScrollLeft, this);
+        this.parent.on(dataReady, this.onDataReady, this);
+        this.parent.on(shareInfiniteCache, this.setInfiniteCache, this);
+        this.parent.on(infiniteScrollListener, this.checkScroll, this);
     }
     /**
      * @hidden
@@ -9038,6 +9296,92 @@ class Scroll {
         this.parent.off(uiUpdate, this.onPropertyChanged);
         this.parent.off(textWrapRefresh, this.wireEvents);
         this.parent.off(headerRefreshed, this.setScrollLeft);
+        this.parent.off(dataReady, this.onDataReady);
+        this.parent.off(shareInfiniteCache, this.setInfiniteCache);
+        this.parent.off(infiniteScrollListener, this.checkScroll);
+    }
+    checkScroll(args) {
+        this.isScroll = args.isScroll;
+        this.top = args.top;
+    }
+    onDataReady(e) {
+        if (!isNullOrUndefined(e.count)) {
+            this.maxPage = Math.ceil(e.count / this.parent.pageSettings.pageSize);
+        }
+    }
+    setInfiniteCache(cache) {
+        this.infiniteCache = cache;
+    }
+    infiniteScrollHandler(e) {
+        if (e.target.classList.contains('e-content') && this.parent.infiniteScrollSettings.enableScroll) {
+            let rows = this.parent.getRows();
+            let index = parseInt(rows[rows.length - 1].getAttribute('aria-rowindex'), 10) + 1;
+            let prevPage = this.parent.pageSettings.currentPage;
+            let args;
+            let floor = Math.floor(e.target.scrollHeight - e.target.scrollTop);
+            let round = Math.round(e.target.scrollHeight - e.target.scrollTop);
+            let isBottom = (floor === e.target.clientHeight || round === e.target.clientHeight);
+            if (this.isScroll && isBottom && (this.parent.pageSettings.currentPage <= this.maxPage - 1 || this.enableContinuousScroll)) {
+                if (this.parent.infiniteScrollSettings.enableCache) {
+                    this.isUpScroll = false;
+                    this.isDownScroll = true;
+                    setTimeout(() => {
+                        this.isScroll = true;
+                    }, 600);
+                }
+                let rows = [].slice.call(this.parent.getContent()
+                    .querySelectorAll('.e-row'));
+                let row = rows[rows.length - 1];
+                let rowIndex = parseInt(row.getAttribute('aria-rowindex'), 10);
+                this.parent.pageSettings.currentPage = Math.ceil(rowIndex / this.parent.pageSettings.pageSize) + 1;
+                args = {
+                    requestType: 'scroll',
+                    currentPage: this.parent.pageSettings.currentPage,
+                    prevPage: prevPage,
+                    startIndex: index,
+                    direction: 'down'
+                };
+                this.makeRequest(args);
+            }
+            if (this.isScroll && this.parent.infiniteScrollSettings.enableCache && e.target.scrollTop === 0
+                && this.parent.pageSettings.currentPage !== 1) {
+                if (this.parent.infiniteScrollSettings.enableCache) {
+                    this.isDownScroll = false;
+                    this.isUpScroll = true;
+                    setTimeout(() => {
+                        this.isScroll = true;
+                    }, 600);
+                }
+                let row = [].slice.call(this.parent.getContent()
+                    .querySelectorAll('.e-row'))[this.parent.pageSettings.pageSize - 1];
+                let rowIndex = parseInt(row.getAttribute('aria-rowindex'), 10);
+                this.parent.pageSettings.currentPage = Math.ceil(rowIndex / this.parent.pageSettings.pageSize) - 1;
+                if (this.parent.pageSettings.currentPage) {
+                    args = {
+                        requestType: 'scroll',
+                        currentPage: this.parent.pageSettings.currentPage,
+                        prevPage: prevPage,
+                        direction: 'up'
+                    };
+                    this.makeRequest(args);
+                }
+            }
+            if (this.parent.infiniteScrollSettings.enableCache && !this.isScroll && isNullOrUndefined(args)) {
+                if (this.isDownScroll || this.isUpScroll) {
+                    this.parent.getContent().firstElementChild.scrollTop = this.top;
+                }
+            }
+        }
+    }
+    makeRequest(args) {
+        if (isNullOrUndefined(this.infiniteCache[args.currentPage]) && args.direction !== 'up') {
+            this.parent.notify('model-changed', args);
+        }
+        else {
+            setTimeout(() => {
+                this.parent.notify(refreshInfiniteModeBlocks, args);
+            }, 100);
+        }
     }
     setScrollLeft() {
         if (this.parent.frozenColumns) {
@@ -9051,6 +9395,7 @@ class Scroll {
             if (this.content.querySelector('tbody') === null || this.parent.isPreventScrollEvent) {
                 return;
             }
+            this.infiniteScrollHandler(e);
             let target = e.target;
             let left = target.scrollLeft;
             let sLimit = target.scrollWidth;
@@ -9417,6 +9762,7 @@ class Clipboard {
             return;
         }
         this.parent.off(keyPressed, this.keyDownHandler);
+        this.parent.off(contentReady, this.initialEnd);
         this.parent.off(click, this.clickHandler);
         EventHandler.remove(this.parent.element, 'keydown', this.pasteHandler);
     }
@@ -9710,6 +10056,7 @@ class BlazorAction {
         this.parent.on('editsuccess', this.editSuccess, this);
         this.parent.on('setvisibility', this.setColumnVisibility, this);
         this.parent.on('offset', this.setServerOffSet, this);
+        this.parent.on('updateaction', this.modelChanged, this);
         this.parent.on(modelChanged, this.modelChanged, this);
     }
     removeEventListener() {
@@ -9721,6 +10068,7 @@ class BlazorAction {
         this.parent.off('editsuccess', this.editSuccess);
         this.parent.off('setvisibility', this.setColumnVisibility);
         this.parent.off('offset', this.setServerOffSet);
+        this.parent.off('updateaction', this.modelChanged);
         this.parent.off(modelChanged, this.modelChanged);
     }
     getModuleName() { return 'blazor'; }
@@ -9739,6 +10087,13 @@ class BlazorAction {
             action: args[action]
         };
         args.promise.then((e) => this.editSuccess(editArgs)).catch((e) => {
+            if (isBlazor() && this.parent.isServerRendered) {
+                let error = 'error';
+                let message = 'message';
+                if (!isNullOrUndefined(e[error]) && !isNullOrUndefined(e[error][message])) {
+                    e[error] = e[error][message];
+                }
+            }
             this.parent.trigger(actionFailure, ((isBlazor() && e instanceof Array) ? e[0] : e));
             this.parent.hideSpinner();
             this.parent.log('actionfailure', { error: e });
@@ -9796,38 +10151,39 @@ class BlazorAction {
         let visible = {};
         let adaptor = 'interopAdaptor';
         let invokeMethodAsync = 'invokeMethodAsync';
-        columns.forEach((column) => {
-            visible[column.uid] = column.visible;
-        });
+        for (let i = 0; i < columns.length; i++) {
+            visible[columns[i].uid] = columns[i].visible;
+        }
         this.parent[adaptor][invokeMethodAsync]('setColumnVisibility', { visible: visible });
     }
     dataSuccess(args) {
         if (args.foreignColumnsData) {
             let columns = this.parent.getColumns();
-            columns.forEach((column) => {
-                if (args.foreignColumnsData[column.field]) {
-                    column.columnData = args.foreignColumnsData[column.field];
+            for (let i = 0; i < columns.length; i++) {
+                if (args.foreignColumnsData[columns[i].field]) {
+                    columns[i].columnData = args.foreignColumnsData[columns[i].field];
                 }
-            });
+            }
         }
         if (this.parent.allowGrouping && this.parent.groupSettings.columns) {
             let agg = [];
             let aggRows = this.parent.aggregates;
-            aggRows.forEach((row) => {
-                row.columns.forEach((col) => {
+            for (let i = 0; i < aggRows.length; i++) {
+                let aggRow = aggRows[i];
+                for (let j = 0; j < aggRow.columns.length; j++) {
                     let aggr = {};
-                    let type = col.type.toString();
-                    aggr = { type: type.toLowerCase(), field: col.field };
+                    let type = aggRow.columns[j].type.toString();
+                    aggr = { type: type.toLowerCase(), field: aggRow.columns[j].field };
                     agg.push(aggr);
-                });
-            });
+                }
+            }
             let data;
             let aggrds;
             let groupedCols = this.parent.groupSettings.columns;
-            groupedCols.forEach((field) => {
+            for (let k = 0; k < groupedCols.length; k++) {
                 aggrds = data ? data : args.result;
-                data = DataUtil.group(aggrds, field, agg, null, null);
-            });
+                data = DataUtil.group(aggrds, groupedCols[k], agg, null, null);
+            }
             args.result = data ? data : args.result;
         }
         let rowUid = 'rowUid';
@@ -9970,6 +10326,23 @@ __decorate$1([
 __decorate$1([
     Property()
 ], Predicate$1.prototype, "isForeignKey", void 0);
+/**
+ * Configures the infinite scroll behavior of Grid.
+ */
+class InfiniteScrollSettings extends ChildProperty {
+}
+__decorate$1([
+    Property(false)
+], InfiniteScrollSettings.prototype, "enableScroll", void 0);
+__decorate$1([
+    Property(false)
+], InfiniteScrollSettings.prototype, "enableCache", void 0);
+__decorate$1([
+    Property(3)
+], InfiniteScrollSettings.prototype, "maxBlock", void 0);
+__decorate$1([
+    Property(3)
+], InfiniteScrollSettings.prototype, "initialBlocks", void 0);
 /**
  * Configures the filtering behavior of the Grid.
  */
@@ -10148,8 +10521,7 @@ let Grid = Grid_1 = class Grid extends Component {
         this.isPreventScrollEvent = false;
         this.inViewIndexes = [];
         this.media = {};
-        /** @hidden */
-        this.freezeRefresh = Component.prototype.refresh;
+        this.componentRefresh = Component.prototype.refresh;
         /** @hidden */
         this.isVirtualAdaptive = false;
         /** @hidden */
@@ -10195,12 +10567,12 @@ let Grid = Grid_1 = class Grid extends Component {
             searchSettings: ['fields', 'operator', 'ignoreCase'],
             sortSettings: [], columns: [], selectedRowIndex: [], scrollPosition: []
         };
-        keyEntity.forEach((value) => {
-            let currentObject = this[value];
-            for (let val of ignoreOnPersist[value]) {
+        for (let i = 0; i < keyEntity.length; i++) {
+            let currentObject = this[keyEntity[i]];
+            for (let val of ignoreOnPersist[keyEntity[i]]) {
                 delete currentObject[val];
             }
-        });
+        }
         this.pageSettings.template = undefined;
         this.pageTemplateChange = !isNullOrUndefined(this.pagerTemplate);
         return this.addOnPersist(keyEntity);
@@ -10367,7 +10739,7 @@ let Grid = Grid_1 = class Grid extends Component {
         this.checkAllRows = 'None';
         this.isCheckBoxSelection = false;
         this.isPersistSelection = false;
-        this.freezeRefresh = Component.prototype.refresh;
+        this.componentRefresh = Component.prototype.refresh;
         this.filterOperators = {
             contains: 'contains', endsWith: 'endswith', equal: 'equal', greaterThan: 'greaterthan', greaterThanOrEqual: 'greaterthanorequal',
             lessThan: 'lessthan', lessThanOrEqual: 'lessthanorequal', notEqual: 'notequal', startsWith: 'startswith'
@@ -10939,9 +11311,10 @@ let Grid = Grid_1 = class Grid extends Component {
                 }
                 else if (pending.isPending) {
                     let gResult = !isNullOrUndefined(this.dataSource) ? this.dataSource.result : [];
-                    (pending.group || []).forEach((name) => {
-                        gResult = DataUtil.group(gResult, name, pending.aggregates || []);
-                    });
+                    let names = (pending.group || []);
+                    for (let i = 0; i < names.length; i++) {
+                        gResult = DataUtil.group(gResult, names[i], pending.aggregates || []);
+                    }
                     this.dataSource = {
                         result: gResult, count: this.dataSource.count,
                         aggregates: this.dataSource.aggregates
@@ -11638,13 +12011,22 @@ let Grid = Grid_1 = class Grid extends Component {
      */
     getNormalizedColumnIndex(uid) {
         let index = this.getColumnIndexByUid(uid);
+        return index + this.getIndentCount();
+    }
+    /**
+    * Gets indent cell count.
+    * @private
+    * @return {number}
+    */
+    getIndentCount() {
+        let index = 0;
         if (this.allowGrouping) {
             index += this.groupSettings.columns.length;
         }
         if (this.isDetail()) {
             index++;
         }
-        if (this.allowRowDragAndDrop && isNullOrUndefined(this.rowDropSettings.targetID) && this.allowResizing) {
+        if (this.allowRowDragAndDrop && isNullOrUndefined(this.rowDropSettings.targetID)) {
             index++;
         }
         /**
@@ -11898,9 +12280,9 @@ let Grid = Grid_1 = class Grid extends Component {
      * Clears all the filtered rows of the Grid.
      * @return {void}
      */
-    clearFiltering() {
+    clearFiltering(fields) {
         if (this.filterModule) {
-            this.filterModule.clearFiltering();
+            this.filterModule.clearFiltering(fields);
         }
     }
     /**
@@ -12318,9 +12700,9 @@ let Grid = Grid_1 = class Grid extends Component {
             }
         }
         if (!gCols.length) {
-            sCols.forEach((col) => {
-                this.sortedColumns.push(col.field);
-            });
+            for (let i = 0; i < sCols.length; i++) {
+                this.sortedColumns.push(sCols[i].field);
+            }
         }
         this.rowTemplateFn = templateCompiler(this.rowTemplate);
         this.detailTemplateFn = templateCompiler(this.detailTemplate);
@@ -12458,6 +12840,13 @@ let Grid = Grid_1 = class Grid extends Component {
     createTooltip() {
         this.toolTipObj = new Tooltip({ opensOn: 'custom', content: '' }, this.element);
     }
+    /** @hidden */
+    freezeRefresh() {
+        if (this.enableVirtualization) {
+            this.pageSettings.currentPage = 1;
+        }
+        this.componentRefresh();
+    }
     getTooltipStatus(element) {
         let width;
         let headerTable = this.getHeaderTable();
@@ -12505,13 +12894,18 @@ let Grid = Grid_1 = class Grid extends Component {
     }
     hoverFrozenRows(e) {
         if (this.getFrozenColumns()) {
-            let row = (parentsUntil(e.target, 'e-row'));
-            if (this.element.querySelectorAll('.e-frozenhover').length && e.type === 'mouseout') {
-                this.element.querySelectorAll('.e-frozenhover').forEach((row) => row.classList.remove('e-frozenhover'));
+            let row = parentsUntil(e.target, 'e-row');
+            if ([].slice.call(this.element.querySelectorAll('.e-frozenhover')).length && e.type === 'mouseout') {
+                let rows = [].slice.call(this.element.querySelectorAll('.e-frozenhover'));
+                for (let i = 0; i < rows.length; i++) {
+                    rows[i].classList.remove('e-frozenhover');
+                }
             }
             else if (row) {
-                this.element.querySelectorAll('tr[aria-rowindex="' +
-                    row.getAttribute('aria-rowindex') + '"]').forEach((row) => row.classList.add('e-frozenhover'));
+                let rows = [].slice.call(this.element.querySelectorAll('tr[aria-rowindex="' + row.getAttribute('aria-rowindex') + '"]'));
+                for (let i = 0; i < rows.length; i++) {
+                    rows[i].classList.add('e-frozenhover');
+                }
             }
         }
     }
@@ -12789,22 +13183,23 @@ let Grid = Grid_1 = class Grid extends Component {
         }
     }
     mergeColumns(storedColumn, columns) {
-        storedColumn.forEach((col, index, arr) => {
-            let localCol = columns.filter((tCol) => tCol.index === col.index)[0];
+        let storedColumns = storedColumn;
+        for (let i = 0; i < storedColumns.length; i++) {
+            let localCol = columns.filter((tCol) => tCol.index === storedColumns[i].index)[0];
             if (!isNullOrUndefined(localCol)) {
                 if (localCol.columns && localCol.columns.length) {
-                    this.mergeColumns(col.columns, localCol.columns);
-                    arr[index] = extend(localCol, col, true);
+                    this.mergeColumns(storedColumns[i].columns, localCol.columns);
+                    storedColumns[i] = extend(localCol, storedColumns[i], true);
                 }
                 else {
                     if (isBlazor()) {
                         let guid = 'guid';
-                        col[guid] = localCol[guid];
+                        storedColumns[i][guid] = localCol[guid];
                     }
-                    arr[index] = extend(localCol, col, true);
+                    storedColumns[i] = extend(localCol, storedColumns[i], true);
                 }
             }
-        });
+        }
     }
     /**
      * @hidden
@@ -13211,11 +13606,12 @@ let Grid = Grid_1 = class Grid extends Component {
         let column;
         this.columnModel = [];
         this.updateColumnModel(this.columns);
-        this.columnModel.forEach((gCol) => {
-            if (field === gCol.field) {
-                column = gCol;
+        let gCols = this.columnModel;
+        for (let i = 0; i < gCols.length; i++) {
+            if (field === gCols[i].field) {
+                column = gCols[i];
             }
-        });
+        }
         return column;
     }
     /**
@@ -13226,11 +13622,12 @@ let Grid = Grid_1 = class Grid extends Component {
         let column;
         this.columnModel = [];
         this.updateColumnModel(this.columns);
-        this.columnModel.forEach((gCol) => {
-            if (uid === gCol.uid) {
-                column = gCol;
+        let gCols = this.columnModel;
+        for (let i = 0; i < gCols.length; i++) {
+            if (uid === gCols[i].uid) {
+                column = gCols[i];
             }
-        });
+        }
         return column;
     }
     /**
@@ -13412,6 +13809,9 @@ __decorate$1([
 __decorate$1([
     Complex({}, SortSettings)
 ], Grid.prototype, "sortSettings", void 0);
+__decorate$1([
+    Complex({}, InfiniteScrollSettings)
+], Grid.prototype, "infiniteScrollSettings", void 0);
 __decorate$1([
     Property(true)
 ], Grid.prototype, "allowSelection", void 0);
@@ -14135,11 +14535,12 @@ function setStyleAndAttributes(node, customAttributes) {
 /** @hidden */
 function extend$1(copied, first, second, exclude) {
     let moved = extend(copied, first, second);
-    Object.keys(moved).forEach((value, index) => {
-        if (exclude && exclude.indexOf(value) !== -1) {
-            delete moved[value];
+    let values = Object.keys(moved);
+    for (let i = 0; i < values.length; i++) {
+        if (exclude && exclude.indexOf(values[i]) !== -1) {
+            delete moved[values[i]];
         }
-    });
+    }
     return moved;
 }
 /** @hidden */
@@ -14534,14 +14935,15 @@ function removeAddCboxClasses(elem, checked) {
  * @hidden
  */
 function refreshForeignData(row, columns, data) {
-    columns.forEach((col) => {
-        setValue(col.field, getForeignData(col, data), row.foreignKeyData);
-    });
-    row.cells.forEach((cell) => {
-        if (cell.isForeignKey) {
-            setValue('foreignKeyData', getValue(cell.column.field, row.foreignKeyData), cell);
+    for (let i = 0; i < columns.length; i++) {
+        setValue(columns[i].field, getForeignData(columns[i], data), row.foreignKeyData);
+    }
+    let cells = row.cells;
+    for (let i = 0; i < cells.length; i++) {
+        if (cells[i].isForeignKey) {
+            setValue('foreignKeyData', getValue(cells[i].column.field, row.foreignKeyData), cells[i]);
         }
-    });
+    }
 }
 /**
  * Get the foreign data for the corresponding cell value.
@@ -14745,24 +15147,24 @@ function extendObjWithFn(copied, first, second, deep) {
         let obj1 = arguments[i];
         let keys = Object.keys(Object.getPrototypeOf(obj1)).length ?
             Object.keys(obj1).concat(getPrototypesOfObj(obj1)) : Object.keys(obj1);
-        keys.forEach((key) => {
-            let source = res[key];
-            let cpy = obj1[key];
+        for (let i = 0; i < keys.length; i++) {
+            let source = res[keys[i]];
+            let cpy = obj1[keys[i]];
             let cln;
             if (deep && (isObject(cpy) || Array.isArray(cpy))) {
                 if (isObject(cpy)) {
                     cln = source ? source : {};
-                    res[key] = extend({}, cln, cpy, deep);
+                    res[keys[i]] = extend({}, cln, cpy, deep);
                 }
                 else {
                     cln = source ? source : [];
-                    res[key] = extend([], cln, cpy, deep);
+                    res[keys[i]] = extend([], cln, cpy, deep);
                 }
             }
             else {
-                res[key] = cpy;
+                res[keys[i]] = cpy;
             }
-        });
+        }
     }
     return res;
 }
@@ -14842,6 +15244,19 @@ function applyBiggerTheme(rootElement, element) {
         element.classList.add('e-bigger');
     }
 }
+/** @hidden */
+function alignFrozenEditForm(mTD, fTD) {
+    if (mTD && fTD) {
+        let mHeight = mTD.closest('.e-row').getBoundingClientRect().height;
+        let fHeight = fTD.closest('.e-row').getBoundingClientRect().height;
+        if (mHeight > fHeight) {
+            fTD.style.height = mHeight + 'px';
+        }
+        else {
+            mTD.style.height = fHeight + 'px';
+        }
+    }
+}
 
 /* tslint:disable-next-line:max-line-length */
 /**
@@ -14904,17 +15319,18 @@ class CheckBoxFilterBase {
             this.options.column.columnData = e.result;
             this.parent.notify(generateQuery, { predicate: fPredicate, column: this.options.column });
             args.ejpredicate = fPredicate.predicate.predicates;
-            fPredicate.predicate.predicates.forEach((fpred) => {
+            let fpred = fPredicate.predicate.predicates;
+            for (let i = 0; i < fpred.length; i++) {
                 filterCollection.push({
-                    field: fpred.field,
+                    field: fpred[i].field,
                     predicate: 'or',
-                    matchCase: fpred.ignoreCase,
-                    ignoreAccent: fpred.ignoreAccent,
-                    operator: fpred.operator,
-                    value: fpred.value,
+                    matchCase: fpred[i].ignoreCase,
+                    ignoreAccent: fpred[i].ignoreAccent,
+                    operator: fpred[i].operator,
+                    value: fpred[i].value,
                     type: this.options.type
                 });
-            });
+            }
             args.filterCollection = filterCollection.length ? filterCollection :
                 fColl.filter((col) => col.field = this.options.field);
             this.options.handler(args);
@@ -15414,9 +15830,9 @@ class CheckBoxFilterBase {
         runArray.push(this.dataSuccess.bind(this));
         let i = 0;
         Promise.all(allPromise).then((e) => {
-            e.forEach((data) => {
-                runArray[i++](data.result);
-            });
+            for (let j = 0; j < e.length; j++) {
+                runArray[i++](e[j].result);
+            }
         });
     }
     dataSuccess(e) {
@@ -15925,6 +16341,9 @@ class ExcelFilterBase extends CheckBoxFilterBase {
         this.createMenu(options.type, filterLength > 0, (filterLength === 1 || filterLength === 2));
         this.dlg.insertBefore(this.menu, this.dlg.firstChild);
         this.dlg.classList.add('e-excelfilter');
+        if (this.parent.enableRtl) {
+            this.dlg.classList.add('e-rtl');
+        }
         this.dlg.classList.remove('e-checkboxfilter');
         this.cmenu = this.parent.createElement('ul', { className: 'e-excel-menu' });
         this.wireExEvents();
@@ -16605,11 +17024,12 @@ class Sort {
     }
     refreshSortSettings() {
         this.sortedColumns.length = 0;
-        this.sortSettings.columns.forEach((e) => {
-            if (!e.isFromGroup) {
-                this.sortedColumns.push(e.field);
+        let sortColumns = this.sortSettings.columns;
+        for (let i = 0; i < sortColumns.length; i++) {
+            if (!sortColumns[i].isFromGroup) {
+                this.sortedColumns.push(sortColumns[i].field);
             }
-        });
+        }
     }
     /**
      * Clears all the sorted columns of the Grid.
@@ -17628,10 +18048,10 @@ let Pager = class Pager extends Component {
     addAriaLabel() {
         let classList$$1 = ['.e-mfirst', '.e-mprev', '.e-mnext', '.e-mlast'];
         if (!Browser.isDevice) {
-            classList$$1.forEach((value) => {
-                let element = this.element.querySelector(value);
+            for (let i = 0; i < classList$$1.length; i++) {
+                let element = this.element.querySelector(classList$$1[i]);
                 element.setAttribute('aria-label', element.getAttribute('title'));
-            });
+            }
         }
     }
 };
@@ -17934,12 +18354,12 @@ class Page {
             numericContainerNew.appendChild(frag);
             pagerContainer.replaceChild(numericContainerNew, numericContainer);
             let classList$$1 = ['.e-mfirst', '.e-mprev', '.e-first', '.e-prev', '.e-next', '.e-last', '.e-mnext', '.e-mlast'];
-            classList$$1.forEach((value) => {
-                let element = this.element.querySelector(value);
+            for (let j = 0; j < classList$$1.length; j++) {
+                let element = this.element.querySelector(classList$$1[j]);
                 if (this.parent.getContentTable()) {
                     element.setAttribute('aria-owns', this.parent.getContentTable().id);
                 }
-            });
+            }
         }
     }
     dataReady(e) {
@@ -18768,7 +19188,7 @@ class FilterMenuRenderer {
     clearBtnClick(column) {
         this.filterObj.removeFilteredColsByField(column.field);
         if (isBlazor() && !this.parent.isJsComponent) {
-            this.parent.filterSettings.columns = this.parent.filterSettings.columns;
+            this.parent.setProperties({ filterSettings: { columns: this.filterSettings.columns } }, true);
         }
         this.closeDialog();
         let iconClass = this.parent.showColumnMenu ? '.e-columnmenu' : '.e-icon-filter';
@@ -19096,10 +19516,10 @@ class Filter {
         this.isRemove = false;
     }
     wireEvents() {
-        EventHandler.add(this.parent.getHeaderContent(), 'keyup', this.keyUpHandler, this);
+        EventHandler.add(this.parent.getHeaderContent(), 'keyup', this.keyUpHandlerImmediate, this);
     }
     unWireEvents() {
-        EventHandler.remove(this.parent.getHeaderContent(), 'keyup', this.keyUpHandler);
+        EventHandler.remove(this.parent.getHeaderContent(), 'keyup', this.keyUpHandlerImmediate);
     }
     enableAfterRender(e) {
         if (e.module === this.getModuleName() && e.enable) {
@@ -19331,15 +19751,23 @@ class Filter {
      * Clears all the filtered rows of the Grid.
      * @return {void}
      */
-    clearFiltering() {
+    clearFiltering(fields) {
         let cols = getActualPropFromColl(this.filterSettings.columns);
+        if (!isNullOrUndefined(fields)) {
+            this.refresh = false;
+            fields.forEach((field) => { this.removeFilteredColsByField(field, false); });
+            this.parent.setProperties({ filterSettings: { columns: this.filterSettings.columns } }, true);
+            this.parent.renderModule.refresh();
+            this.refresh = true;
+            return;
+        }
         if (isActionPrevent(this.parent)) {
             this.parent.notify(preventBatch, { instance: this, handler: this.clearFiltering });
             return;
         }
-        cols.forEach((col) => {
-            col.uid = col.uid || this.parent.getColumnByField(col.field).uid;
-        });
+        for (let i = 0; i < cols.length; i++) {
+            cols[i].uid = cols[i].uid || this.parent.getColumnByField(cols[i].field).uid;
+        }
         let colUid = cols.map((f) => f.uid);
         let filteredcols = colUid.filter((item, pos) => colUid.indexOf(item) === pos);
         this.refresh = false;
@@ -19347,7 +19775,7 @@ class Filter {
             this.removeFilteredColsByField(this.parent.getColumnByUid(filteredcols[i]).field, false);
         }
         if (isBlazor() && !this.parent.isJsComponent) {
-            this.filterSettings.columns = this.filterSettings.columns;
+            this.parent.setProperties({ filterSettings: { columns: this.filterSettings.columns } }, true);
         }
         this.refresh = true;
         if (filteredcols.length) {
@@ -19472,6 +19900,11 @@ class Filter {
      */
     getModuleName() {
         return 'filter';
+    }
+    keyUpHandlerImmediate(e) {
+        if (e.keyCode !== 13) {
+            this.keyUpHandler(e);
+        }
     }
     keyUpHandler(e) {
         let gObj = this.parent;
@@ -19601,7 +20034,7 @@ class Filter {
         if (isNullOrUndefined(this.value) || this.value === '') {
             this.removeFilteredColsByField(this.column.field);
             if (isBlazor() && !this.parent.isJsComponent) {
-                this.filterSettings.columns = this.filterSettings.columns;
+                this.parent.setProperties({ filterSettings: { columns: this.filterSettings.columns } }, true);
             }
             return;
         }
@@ -19826,7 +20259,7 @@ class Filter {
             }
         }
         if (args.action === 'clear-filter' && isBlazor() && !this.parent.isJsComponent) {
-            this.filterSettings.columns = this.filterSettings.columns;
+            this.parent.setProperties({ filterSettings: { columns: this.filterSettings.columns } }, true);
         }
         if (this.values[args.field]) {
             delete this.values[args.field];
@@ -20020,11 +20453,12 @@ class Resize {
         this.widthService.setColumnWidth(gObj.getColumns()[index]);
         result = gObj.getColumns().some((x) => x.width === null || x.width === undefined || x.width.length <= 0);
         if (result === false) {
-            gObj.getColumns().forEach((element) => {
-                if (element.visible) {
-                    tWidth = tWidth + parseFloat(element.width);
+            let element = gObj.getColumns();
+            for (let i = 0; i < element.length; i++) {
+                if (element[i].visible) {
+                    tWidth = tWidth + parseFloat(element[i].width);
                 }
-            });
+            }
         }
         let calcTableWidth = tWidth + indentWidth;
         if (tWidth > 0 && !gObj.getFrozenColumns()) {
@@ -20073,13 +20507,13 @@ class Resize {
         return 'resize';
     }
     findColumn(fName) {
-        fName.forEach((element) => {
-            let fieldName = element;
+        for (let i = 0; i < fName.length; i++) {
+            let fieldName = fName[i];
             let columnIndex = this.parent.getColumnIndexByField(fieldName);
             if (this.parent.getColumns()[columnIndex].visible === true) {
                 this.resizeColumn(fieldName, columnIndex);
             }
-        });
+        }
     }
     /**
      * To create table for autofit
@@ -20096,12 +20530,12 @@ class Resize {
         myTable.classList.add('e-resizetable');
         myTable.style.cssText = 'table-layout: auto;width: auto';
         let myTr = this.parent.createElement('tr');
-        text.forEach((element) => {
+        for (let i = 0; i < text.length; i++) {
             let tr = myTr.cloneNode();
             tr.className = table.querySelector('tr').className;
-            tr.appendChild(element);
+            tr.appendChild(text[i]);
             myTable.appendChild(tr);
-        });
+        }
         mySubDiv.appendChild(myTable);
         myTableDiv.appendChild(mySubDiv);
         document.body.appendChild(myTableDiv);
@@ -20139,11 +20573,12 @@ class Resize {
         this.setHandlerHeight();
     }
     refreshHeight() {
-        this.getResizeHandlers().forEach((ele) => {
-            if (ele.parentElement.offsetHeight > 0) {
-                ele.style.height = ele.parentElement.offsetHeight + 'px';
+        let element = this.getResizeHandlers();
+        for (let i = 0; i < element.length; i++) {
+            if (element[i].parentElement.offsetHeight > 0) {
+                element[i].style.height = element[i].parentElement.offsetHeight + 'px';
             }
-        });
+        }
         this.setHandlerHeight();
     }
     wireEvents() {
@@ -20160,9 +20595,10 @@ class Resize {
             : [].slice.call(this.parent.getHeaderTable().querySelectorAll('.' + resizeClassList.root));
     }
     setHandlerHeight() {
-        [].slice.call(this.parent.getHeaderTable().querySelectorAll('.' + resizeClassList.suppress)).forEach((ele) => {
-            ele.style.height = ele.parentElement.offsetHeight + 'px';
-        });
+        let element = [].slice.call(this.parent.getHeaderTable().querySelectorAll('.' + resizeClassList.suppress));
+        for (let i = 0; i < element.length; i++) {
+            element[i].style.height = element[i].parentElement.offsetHeight + 'px';
+        }
     }
     callAutoFit(e) {
         if (e.target.classList.contains('e-rhandler')) {
@@ -20263,9 +20699,10 @@ class Resize {
         }
     }
     updateResizeEleHeight() {
-        this.parent.getHeaderContent().querySelectorAll('.e-rhandler').forEach((element) => {
-            element.style.height = this.element.parentElement.offsetHeight + 'px';
-        });
+        let elements = [].slice.call(this.parent.getHeaderContent().querySelectorAll('.e-rhandler'));
+        for (let i = 0; i < elements.length; i++) {
+            elements[i].style.height = this.element.parentElement.offsetHeight + 'px';
+        }
     }
     getColData(column, mousemove) {
         return {
@@ -20330,9 +20767,9 @@ class Resize {
         let finalColumns = [];
         for (const col of columns) {
             let totalWidth = 0;
-            columns.forEach((col) => {
-                totalWidth += parseFloat(col.width.toString());
-            });
+            for (let i = 0; i < columns.length; i++) {
+                totalWidth += parseFloat(columns[i].width.toString());
+            }
             let colData = this.getColData(col, (parseFloat(col.width)) * mousemove / totalWidth);
             let colWidth = this.getWidth(colData.width, colData.minWidth, colData.maxWidth);
             if ((colWidth !== parseFloat(col.width.toString()))) {
@@ -21294,10 +21731,10 @@ class RowDD {
                     let fromIdx = parseInt(this.startedRow.getAttribute('aria-rowindex'), 10);
                     let currentVdata = [];
                     let ind = 0;
-                    selectedIndexes.forEach((rec) => {
-                        currentVdata[ind] = this.parent.currentViewData[rec];
-                        ind++;
-                    });
+                    for (let i = 0; i < selectedIndexes.length; i++) {
+                        let currentV = 'currentViewData';
+                        currentVdata[ind] = this.parent[currentV][selectedIndexes[i]];
+                    }
                     if (!(this.parent.rowDropSettings.targetID && selectedIndexes.length)) {
                         currentVdata[ind] = this.parent.currentViewData[fromIdx];
                     }
@@ -21349,7 +21786,12 @@ class RowDD {
                 type: actionBegin, requestType: 'rowdraganddrop'
             });
         }).catch((e) => {
-            this.parent.trigger(actionFailure, { error: e });
+            let error = 'error';
+            let message = 'message';
+            if (!isNullOrUndefined(e[error]) && !isNullOrUndefined(e[error][message])) {
+                e[error] = e[error][message];
+            }
+            this.parent.trigger(actionFailure, e);
         });
     }
     reorderRows(fromIndexes, toIndex) {
@@ -21580,10 +22022,10 @@ class RowDD {
                 let currentVdata = [];
                 let ind = 0;
                 let selectedIndex = srcControl.getSelectedRowIndexes();
-                selectedIndex.forEach((rec) => {
-                    currentVdata[ind] = srcControl.currentViewData[rec];
+                for (let i = 0; i < selectedIndex.length; i++) {
+                    currentVdata[ind] = srcControl.currentViewData[selectedIndex[i]];
                     ind++;
-                });
+                }
                 records = currentVdata;
                 let changes = {
                     addedRecords: records,
@@ -21599,7 +22041,12 @@ class RowDD {
                         type: actionBegin, requestType: 'rowdraganddrop'
                     });
                 }).catch((e) => {
-                    gObj.trigger(actionFailure, { error: e });
+                    let message = 'message';
+                    let error = 'error';
+                    if (!isNullOrUndefined(e[error]) && !isNullOrUndefined(e[error][message])) {
+                        e[error] = e[error][message];
+                    }
+                    gObj.trigger(actionFailure, e);
                 });
                 changes.deletedRecords = records;
                 changes.addedRecords = [];
@@ -21609,7 +22056,12 @@ class RowDD {
                         type: actionBegin, requestType: 'rowdraganddrop'
                     });
                 }).catch((e) => {
-                    srcControl.trigger(actionFailure, { error: e });
+                    let error = 'error';
+                    let msg = 'message';
+                    if (!isNullOrUndefined(e[error]) && !isNullOrUndefined(e[error][msg])) {
+                        e[error] = e[error][msg];
+                    }
+                    srcControl.trigger(actionFailure, e);
                 });
             }
         }
@@ -22346,11 +22798,12 @@ class Group {
                             args = { requestType: 'ungrouping', type: actionBegin };
                         }
                         if (!this.groupSettings.showGroupedColumn) {
-                            e.oldProperties[prop].forEach((column) => {
-                                if (e.properties[prop].indexOf(column) === -1) {
-                                    this.parent.getColumnByField(column).visible = true;
+                            let columns = e.oldProperties[prop];
+                            for (let i = 0; i < columns.length; i++) {
+                                if (e.properties[prop].indexOf(columns[i]) === -1) {
+                                    this.parent.getColumnByField(columns[i]).visible = true;
                                 }
-                            });
+                            }
                         }
                         this.parent.notify(modelChanged, args);
                     }
@@ -22476,11 +22929,12 @@ class Group {
         let rowData = this.groupGenerator.generateRows(aggregates, {});
         let summaryRows = this.parent.getRowsObject().filter((row) => !row.isDataRow);
         let updateSummaryRows = rowData.filter((data) => !data.isDataRow);
-        updateSummaryRows.forEach((row, indx) => {
+        for (let i = 0; i < updateSummaryRows.length; i++) {
+            let row = updateSummaryRows[i];
             let cells = row.cells.filter((cell) => cell.isDataCell);
-            let args = { cells: cells, data: row.data, dataUid: summaryRows[indx] ? summaryRows[indx].uid : '' };
+            let args = { cells: cells, data: row.data, dataUid: summaryRows[i] ? summaryRows[i].uid : '' };
             this.parent.notify(refreshAggregateCell, args);
-        });
+        }
     }
     iterateGroupAggregates(editedData) {
         let updatedData = editedData instanceof Array ? editedData : [];
@@ -22506,28 +22960,29 @@ class Group {
         });
         let eData = editedData;
         if (!(eData.type && eData.type === 'cancel') && deletedCols.length > 0) {
-            deletedCols.forEach((row) => {
-                let index = mergeData.indexOf(row);
+            for (let i = 0; i < deletedCols.length; i++) {
+                let index = mergeData.indexOf(deletedCols[i]);
                 mergeData.splice(index, 1);
-            });
+            }
         }
         let aggregates = [];
         let aggregateRows = this.parent.aggregates;
-        aggregateRows.forEach((row) => {
-            row.columns.forEach((col) => {
+        for (let j = 0; j < aggregateRows.length; j++) {
+            let row = aggregateRows[j];
+            for (let k = 0; k < row.columns.length; k++) {
                 let aggr = {};
-                let type = col.type.toString();
-                aggr = { type: type.toLowerCase(), field: col.field };
+                let type = row.columns[k].type.toString();
+                aggr = { type: type.toLowerCase(), field: row.columns[k].field };
                 aggregates.push(aggr);
-            });
-        });
+            }
+        }
         let result;
         let aggrds;
         let groupedCols = this.parent.groupSettings.columns;
-        groupedCols.forEach((field) => {
+        for (let l = 0; l < groupedCols.length; l++) {
             aggrds = result ? result : mergeData;
-            result = DataUtil.group(aggrds, field, aggregates, null, null);
-        });
+            result = DataUtil.group(aggrds, groupedCols[l], aggregates, null, null);
+        }
         return result;
     }
 }
@@ -22807,9 +23262,9 @@ class DetailRow {
     refreshColSpan() {
         let detailrows = this.parent.contentModule.getTable().querySelectorAll('tr.e-detailrow');
         let colSpan = this.parent.getVisibleColumns().length;
-        detailrows.forEach((detailrow) => {
-            detailrow.querySelector('.e-detailcell').setAttribute('colspan', colSpan + '');
-        });
+        for (let i = 0; i < detailrows.length; i++) {
+            detailrows[i].querySelector('.e-detailcell').setAttribute('colspan', colSpan + '');
+        }
     }
     /**
      * For internal use only - Get the module name.
@@ -23374,15 +23829,15 @@ class FooterRenderer extends ContentRender {
         let aggregate = {};
         let agrVal;
         let aggregateRows = this.parent.aggregates;
-        aggregateRows.forEach((row) => {
-            row.columns.forEach((col) => {
+        for (let i = 0; i < aggregateRows.length; i++) {
+            for (let j = 0; j < aggregateRows[i].columns.length; j++) {
                 let data = [];
-                let type = col.type.toString();
+                let type = aggregateRows[i].columns[j].type.toString();
                 data = dataSource;
-                agrVal = calculateAggregate(type, data, col, this.parent);
-                aggregate[col.field + ' - ' + type.toLowerCase()] = agrVal;
-            });
-        });
+                agrVal = calculateAggregate(type, data, aggregateRows[i].columns[j], this.parent);
+                aggregate[aggregateRows[i].columns[j].field + ' - ' + type.toLowerCase()] = agrVal;
+            }
+        }
         let result = {
             result: dataSource,
             count: dataSource.length,
@@ -23462,7 +23917,10 @@ class Aggregate {
     initiateRender() {
         let cellFac = this.locator.getService('cellRendererFactory');
         let instance = new SummaryCellRenderer(this.parent, this.locator);
-        [CellType.Summary, CellType.CaptionSummary, CellType.GroupSummary].forEach((type) => cellFac.addCellRenderer(type, instance));
+        let type = [CellType.Summary, CellType.CaptionSummary, CellType.GroupSummary];
+        for (let i = 0; i < type.length; i++) {
+            cellFac.addCellRenderer(type[i], instance);
+        }
         this.footerRenderer = new FooterRenderer(this.parent, this.locator);
         this.footerRenderer.renderPanel();
         this.footerRenderer.renderTable();
@@ -23492,11 +23950,12 @@ class Aggregate {
         if (isBlazor() && this.parent.isServerRendered) {
             let bulkChanges = 'bulkChanges';
             let aggregates = 'aggregates';
-            Object.keys(this.parent[bulkChanges]).forEach((prop) => {
-                if (prop.startsWith(aggregates)) {
-                    delete this.parent[bulkChanges][prop];
+            let prop = Object.keys(this.parent[bulkChanges]);
+            for (let i = 0; i < prop.length; i++) {
+                if (prop[i].startsWith(aggregates)) {
+                    delete this.parent[bulkChanges][prop[i]];
                 }
-            });
+            }
         }
     }
     getFormatFromType(format, type) {
@@ -23566,11 +24025,11 @@ class Aggregate {
  * @private
  */
 function summaryIterator(aggregates, callback) {
-    aggregates.forEach((row) => {
-        row.columns.forEach((column) => {
-            callback(column, row);
-        });
-    });
+    for (let i = 0; i < aggregates.length; i++) {
+        for (let j = 0; j < aggregates[i].columns.length; j++) {
+            callback(aggregates[i].columns[j], aggregates[i]);
+        }
+    }
 }
 
 /**
@@ -23736,16 +24195,17 @@ class VirtualRowModelGenerator {
             return result = this.parent.vcRows;
         }
         if (this.parent.enableColumnVirtualization) {
-            info.blockIndexes.forEach((value) => {
-                if (this.isBlockAvailable(value)) {
-                    this.cache[value] = this.rowModelGenerator.refreshRows(this.cache[value]);
+            for (let i = 0; i < info.blockIndexes.length; i++) {
+                if (this.isBlockAvailable(info.blockIndexes[i])) {
+                    this.cache[info.blockIndexes[i]] = this.rowModelGenerator.refreshRows(this.cache[info.blockIndexes[i]]);
                 }
-            });
+            }
         }
-        info.blockIndexes.forEach((value) => {
-            if (!this.isBlockAvailable(value)) {
+        let values = info.blockIndexes;
+        for (let i = 0; i < values.length; i++) {
+            if (!this.isBlockAvailable(values[i])) {
                 let rows = this.rowModelGenerator.generateRows(data, {
-                    virtualInfo: info, startIndex: this.getStartIndex(value, data)
+                    virtualInfo: info, startIndex: this.getStartIndex(values[i], data)
                 });
                 if (isGroupAdaptive(this.parent) && !this.parent.vcRows.length) {
                     this.parent.vRows = rows;
@@ -23771,14 +24231,14 @@ class VirtualRowModelGenerator {
                     }
                 }
             }
-            if (this.parent.groupSettings.columns.length && !xAxis && this.cache[value]) {
-                this.cache[value] = this.updateGroupRow(this.cache[value], value);
+            if (this.parent.groupSettings.columns.length && !xAxis && this.cache[values[i]]) {
+                this.cache[values[i]] = this.updateGroupRow(this.cache[values[i]], values[i]);
             }
-            result.push(...this.cache[value]);
-            if (this.isBlockAvailable(value)) {
-                loadedBlocks.push(value);
+            result.push(...this.cache[values[i]]);
+            if (this.isBlockAvailable(values[i])) {
+                loadedBlocks.push(values[i]);
             }
-        });
+        }
         info.blockIndexes = loadedBlocks;
         let grouping = 'records';
         if (this.parent.allowGrouping) {
@@ -23852,20 +24312,25 @@ class VirtualRowModelGenerator {
         let cLen = cols.length;
         let isVisible = (column) => column.visible &&
             (!this.parent.groupSettings.showGroupedColumn ? this.parent.groupSettings.columns.indexOf(column.field) < 0 : column.visible);
-        this.parent.groupSettings.columns.forEach((c, n) => this.cOffsets[n] = (this.cOffsets[n - 1] | 0) + 30);
-        Array.apply(null, Array(cLen)).map(() => col++).forEach((block, i) => {
-            block = block + gLen;
-            this.cOffsets[block] = (this.cOffsets[block - 1] | 0) + (isVisible(cols[i]) ? parseInt(cols[i].width, 10) : 0);
-        });
+        let c = this.parent.groupSettings.columns;
+        for (let i = 0; i < c.length; i++) {
+            this.cOffsets[i] = (this.cOffsets[i - 1] | 0) + 30;
+        }
+        let blocks = Array.apply(null, Array(cLen)).map(() => col++);
+        for (let j = 0; j < blocks.length; j++) {
+            blocks[j] = blocks[j] + gLen;
+            this.cOffsets[blocks[j]] = (this.cOffsets[blocks[j] - 1] | 0) + (isVisible(cols[j]) ? parseInt(cols[j].width, 10) : 0);
+        }
     }
     updateGroupRow(current, block) {
         let currentFirst = current[0];
         let rows = [];
-        Object.keys(this.cache).forEach((key) => {
-            if (Number(key) < block) {
-                rows = [...rows, ...this.cache[key]];
+        let keys = Object.keys(this.cache);
+        for (let i = 0; i < keys.length; i++) {
+            if (Number(keys[i]) < block) {
+                rows = [...rows, ...this.cache[keys[i]]];
             }
-        });
+        }
         if ((currentFirst && currentFirst.isDataRow) || block % 2 === 0) {
             return current;
         }
@@ -23895,7 +24360,10 @@ class VirtualRowModelGenerator {
     }
     getRows() {
         let rows = [];
-        Object.keys(this.cache).forEach((key) => rows = [...rows, ...this.cache[key]]);
+        let keys = Object.keys(this.cache);
+        for (let i = 0; i < keys.length; i++) {
+            rows = [...rows, ...this.cache[keys[i]]];
+        }
         return rows;
     }
 }
@@ -24366,7 +24834,10 @@ class VirtualContentRenderer extends ContentRender {
         this.parent[action](virtaulKeyHandler, this.virtualKeyHandler, this);
         this.parent[action](keyPressed, this.virtualKeyHandler, this);
         this.parent[action](virtaulCellFocus, this.virtualCellFocus, this);
-        this.actions.forEach((event) => this.parent[action](`${event}-begin`, this.onActionBegin, this));
+        let event = this.actions;
+        for (let i = 0; i < event.length; i++) {
+            this.parent[action](`${event[i]}-begin`, this.onActionBegin, this);
+        }
         let fn = () => {
             this.observer.observe((scrollArgs) => this.scrollListener(scrollArgs), this.onEntered());
             let gObj = this.parent;
@@ -24481,17 +24952,18 @@ class VirtualContentRenderer extends ContentRender {
         this.maxBlock = total % 2 === 0 ? total - 2 : total - 1;
         this.offsets = {};
         //Row offset update
-        Array.apply(null, Array(total)).map(() => ++row)
-            .forEach((block) => {
-            let tmp = (this.vgenerator.cache[block] || []).length;
+        let blocks = Array.apply(null, Array(total)).map(() => ++row);
+        for (let i = 0; i < blocks.length; i++) {
+            let tmp = (this.vgenerator.cache[blocks[i]] || []).length;
             let rem = !isGroupAdaptive(this.parent) ? this.count % bSize : (gObj.vcRows.length % bSize);
-            let size = !isGroupAdaptive(this.parent) && block in this.vgenerator.cache ?
-                tmp * this.parent.getRowHeight() : rem && block === total ? rem * this.parent.getRowHeight() : this.getBlockHeight();
+            let size = !isGroupAdaptive(this.parent) && blocks[i] in this.vgenerator.cache ?
+                tmp * this.parent.getRowHeight() : rem && blocks[i] === total ? rem * this.parent.getRowHeight() :
+                this.getBlockHeight();
             // let size: number = this.parent.groupSettings.columns.length && block in this.vgenerator.cache ?
             // tmp * getRowHeight() : this.getBlockHeight();
-            this.offsets[block] = (this.offsets[block - 1] | 0) + size;
-            this.tmpOffsets[block] = this.offsets[block - 1] | 0;
-        });
+            this.offsets[blocks[i]] = (this.offsets[blocks[i] - 1] | 0) + size;
+            this.tmpOffsets[blocks[i]] = this.offsets[blocks[i] - 1] | 0;
+        }
         this.offsetKeys = Object.keys(this.offsets);
         if (isGroupAdaptive(this.parent)) {
             this.parent.vGroupOffsets = this.offsets;
@@ -24908,6 +25380,7 @@ class InlineEditRender {
                 fRows.appendChild(mTd);
                 fRows.classList.add('e-editedrow');
             }
+            alignFrozenEditForm(args.movableForm.querySelector('td:not(.e-hide)'), args.form.querySelector('td:not(.e-hide)'));
         }
     }
     updateFrozenCont(row, ele, mEle) {
@@ -24933,13 +25406,12 @@ class InlineEditRender {
         let gObj = this.parent;
         let gLen = 0;
         let isDetail = !isNullOrUndefined(gObj.detailTemplate) || !isNullOrUndefined(gObj.childGrid) ? 1 : 0;
-        let isDragable = gObj.isRowDragable() ? 1 : 0;
         if (gObj.allowGrouping) {
             gLen = gObj.groupSettings.columns.length;
         }
         let td = this.parent.createElement('td', {
             className: 'e-editcell e-normaledit',
-            attrs: { colspan: (gObj.getVisibleColumns().length - gObj.getVisibleFrozenColumns() + gLen + isDetail + isDragable).toString() }
+            attrs: { colspan: (gObj.getVisibleColumns().length - gObj.getVisibleFrozenColumns() + this.parent.getIndentCount()).toString() }
         });
         let form = args.form =
             this.parent.createElement('form', { id: gObj.element.id + 'EditForm', className: 'e-gridform' });
@@ -25002,11 +25474,12 @@ class InlineEditRender {
         appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
         let setRules = () => {
             let cols = this.parent.getColumns();
-            cols.forEach((col) => {
-                if (col.validationRules) {
-                    this.parent.editModule.formObj.rules[col.field] = col.validationRules;
+            for (let i = 0; i < cols.length; i++) {
+                if (cols[i].validationRules) {
+                    this.parent.editModule.formObj.rules[cols[i].field] =
+                        cols[i].validationRules;
                 }
-            });
+            }
         };
         updateBlazorTemplate(editTemplateID, 'Template', this.parent.editSettings, true, setRules);
     }
@@ -25155,11 +25628,12 @@ class DialogEditRender {
             appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
             let setRules = () => {
                 let columns = this.parent.getColumns();
-                columns.forEach((column) => {
-                    if (column.validationRules) {
-                        this.parent.editModule.formObj.rules[column.field] = column.validationRules;
+                for (let i = 0; i < columns.length; i++) {
+                    if (columns[i].validationRules) {
+                        this.parent.editModule.formObj.rules[columns[i].field] =
+                            columns[i].validationRules;
                     }
-                });
+                }
             };
             updateBlazorTemplate(editTemplateID, 'Template', this.parent.editSettings, true, setRules);
             div.appendChild(form);
@@ -25866,6 +26340,13 @@ class NormalEdit {
         this.editSuccess(e, args);
     }
     edFail(e) {
+        if (isBlazor() && this.parent.isServerRendered) {
+            let error = 'error';
+            let message = 'message';
+            if (!isNullOrUndefined(e[error]) && !isNullOrUndefined(e[error][message])) {
+                e[error] = e[error][message];
+            }
+        }
         this.editFailure(e);
     }
     updateCurrentViewData(data) {
@@ -26036,11 +26517,12 @@ class NormalEdit {
         }
         this.previousData = {};
         this.uid = '';
-        (gObj.columnModel).forEach((col) => {
-            if (col.field) {
-                DataUtil.setValue(col.field, col.defaultValue, this.previousData);
+        let cols = (gObj.columnModel);
+        for (let i = 0; i < cols.length; i++) {
+            if (cols[i].field) {
+                DataUtil.setValue(cols[i].field, cols[i].defaultValue, this.previousData);
             }
-        });
+        }
         let args = {
             cancel: false, foreignKeyData: {},
             requestType: 'add', data: this.previousData, type: actionBegin, index: index,
@@ -26200,6 +26682,8 @@ class BatchEdit {
         this.cellDetails = {};
         this.originalCell = {};
         this.cloneCell = {};
+        this.editNext = false;
+        this.preventSaveCell = false;
         this.parent = parent;
         this.serviceLocator = serviceLocator;
         this.renderer = renderer;
@@ -26452,9 +26936,10 @@ class BatchEdit {
     removeHideAndSelection(tr) {
         if (tr.classList.contains('e-hiddenrow')) {
             tr.removeAttribute('aria-selected');
-            tr.querySelectorAll('.e-selectionbackground').forEach((td) => {
-                removeClass([td], ['e-selectionbackground', 'e-active']);
-            });
+            let tdElements = [].slice.call(tr.querySelectorAll('.e-selectionbackground'));
+            for (let i = 0; i < tdElements.length; i++) {
+                removeClass([tdElements[i]], ['e-selectionbackground', 'e-active']);
+            }
         }
         classList(tr, [], ['e-hiddenrow', 'e-updatedtd']);
     }
@@ -26485,7 +26970,10 @@ class BatchEdit {
             removeClass(content.querySelectorAll('.e-updatedtd'), ['e-updatedtd']);
             if (content.querySelector('.e-insertedrow, .e-hiddenrow')) {
                 removeClass(content.querySelectorAll('.e-hiddenrow'), ['e-hiddenrow']);
-                content.querySelectorAll('.e-insertedrow').forEach((el) => el.remove());
+                let insertedRow = [].slice.call(content.querySelectorAll('.e-insertedrow'));
+                for (let i = 0; i < insertedRow.length; i++) {
+                    insertedRow[i].remove();
+                }
             }
             this.refreshRowIdx();
         }
@@ -26845,6 +27333,9 @@ class BatchEdit {
                 columnObject: col, columnIndex: index, primaryKey: beforeBatchAddArgs.primaryKey, cell: tr.cells[index]
             };
             gObj.trigger(batchAdd, args1);
+            if (gObj.getFrozenColumns()) {
+                alignFrozenEditForm(mTr.querySelector('td:not(.e-hide)'), tr.querySelector('td:not(.e-hide)'));
+            }
             if (isBlazor()) {
                 this.parent.notify(toolbarRefresh, {});
                 this.parent.notify('start-add', {});
@@ -26902,104 +27393,115 @@ class BatchEdit {
     editCell(index, field, isAdd) {
         let gObj = this.parent;
         let col = gObj.getColumnByField(field);
-        let keys = gObj.getPrimaryKeyFieldNames();
+        this.index = index;
+        this.field = field;
+        this.isAdd = isAdd;
+        let checkEdit = gObj.isEdit && !(this.cellDetails.column.field === field
+            && (this.cellDetails.rowIndex === index && this.parent.getDataRows().length - 1 !== index));
         this.parent.element.classList.add('e-editing');
         if (isBlazor() && col.template && !isAdd) {
             resetBlazorTemplate(this.parent.element.id + col.uid, 'Template', index);
         }
         if (gObj.editSettings.allowEditing && col.allowEditing) {
-            if (gObj.isEdit && !(this.cellDetails.column.field === field
-                && (this.cellDetails.rowIndex === index && this.parent.getDataRows().length - 1 !== index))) {
+            if (!checkEdit) {
+                this.editCellExtend(index, field, isAdd);
+            }
+            else if (checkEdit) {
+                this.editNext = true;
                 this.saveCell();
-                if (this.cellDetails.rowIndex === index && this.cellDetails.column.field === field) {
-                    return;
-                }
             }
-            if (gObj.isEdit) {
-                return;
-            }
-            let row;
-            let rowData;
-            let mRowData;
-            let colIdx = gObj.getColumnIndexByField(field);
-            let frzCols = gObj.getFrozenColumns();
-            if (frzCols && colIdx >= frzCols) {
-                row = gObj.getMovableDataRows()[index];
-                mRowData = this.parent.getRowObjectFromUID(this.parent.getMovableDataRows()[index].getAttribute('data-uid'));
-                rowData = mRowData.changes ? extend({}, {}, mRowData.changes, true) : extend({}, {}, this.getDataByIndex(index), true);
-            }
-            else {
-                row = gObj.getDataRows()[index];
-                rowData = extend({}, {}, this.getDataByIndex(index), true);
-            }
-            if ((keys[0] === col.field && !row.classList.contains('e-insertedrow')) || col.columns ||
-                (col.isPrimaryKey && col.isIdentity)) {
-                this.parent.isLastCellPrimaryKey = true;
-                return;
-            }
-            this.parent.isLastCellPrimaryKey = false;
-            let rowObj = gObj.getRowObjectFromUID(row.getAttribute('data-uid'));
-            let cells = [].slice.apply(row.cells);
-            let args = {
-                columnName: col.field, columnObject: col, isForeignKey: !isNullOrUndefined(col.foreignKeyValue),
-                primaryKey: keys, rowData: rowData,
-                validationRules: extend({}, col.validationRules ? col.validationRules : {}),
-                value: getObject(col.field, rowData),
-                type: !isAdd ? 'edit' : 'add', cancel: false,
-                foreignKeyData: rowObj && rowObj.foreignKeyData
-            };
-            if (!isBlazor() || this.parent.isJsComponent) {
-                args.cell = cells[this.getColIndex(cells, this.getCellIdx(col.uid))];
-                args.row = row;
-                if (!args.cell) {
-                    return;
-                }
-            }
-            gObj.trigger(cellEdit, args, (cellEditArgs) => {
-                if (cellEditArgs.cancel) {
-                    return;
-                }
-                cellEditArgs.cell = cellEditArgs.cell ? cellEditArgs.cell : cells[this.getColIndex(cells, this.getCellIdx(col.uid))];
-                cellEditArgs.row = cellEditArgs.row ? cellEditArgs.row : row;
-                this.cellDetails = {
-                    rowData: rowData, column: col, value: cellEditArgs.value, isForeignKey: cellEditArgs.isForeignKey, rowIndex: index,
-                    cellIndex: parseInt(cellEditArgs.cell.getAttribute('aria-colindex'), 10),
-                    foreignKeyData: cellEditArgs.foreignKeyData
-                };
-                if (cellEditArgs.cell.classList.contains('e-updatedtd')) {
-                    this.isColored = true;
-                    cellEditArgs.cell.classList.remove('e-updatedtd');
-                }
-                if (isBlazor() && gObj.isServerRendered) {
-                    let cell = 'cells';
-                    let cloneCell = 'cloneCell';
-                    let indent = cellEditArgs.row.querySelectorAll('.e-indentcell, .e-detailrowcollapse, .e-detailrowexpand, .e-rowdragdrop').length;
-                    this.cloneCell[`${this.cellDetails.rowIndex}${cellEditArgs.columnObject.index}`] =
-                        cellEditArgs[cloneCell] = cellEditArgs.cell.cloneNode(true);
-                    if ((parentsUntil(cellEditArgs.cell, 'e-movableheader') || parentsUntil(cellEditArgs.cell, 'e-movablecontent'))) {
-                        cellEditArgs.row.insertCell(cellEditArgs.columnObject.index - gObj.getFrozenColumns());
-                        cellEditArgs.row.replaceChild(cellEditArgs[cloneCell], cellEditArgs.row[cell][cellEditArgs.columnObject.index - gObj.getFrozenColumns()]);
-                    }
-                    else {
-                        cellEditArgs.row.insertCell(cellEditArgs.columnObject.index + indent);
-                        cellEditArgs.row.replaceChild(cellEditArgs[cloneCell], cellEditArgs.row[cell][cellEditArgs.columnObject.index + indent]);
-                    }
-                    this.originalCell[`${this.cellDetails.rowIndex}${cellEditArgs.columnObject.index}`] =
-                        cellEditArgs.cell.parentElement.removeChild(cellEditArgs.cell);
-                    removeClass([this.cloneCell[`${this.cellDetails.rowIndex}${cellEditArgs.columnObject.index}`]], ['e-focus', 'e-focused']);
-                }
-                gObj.isEdit = true;
-                gObj.clearSelection();
-                if (!gObj.isCheckBoxSelection || !gObj.isPersistSelection) {
-                    gObj.selectRow(this.cellDetails.rowIndex, true);
-                }
-                this.renderer.update(cellEditArgs);
-                this.parent.notify(batchEditFormRendered, cellEditArgs);
-                this.form = gObj.element.querySelector('#' + gObj.element.id + 'EditForm');
-                gObj.editModule.applyFormValidation([col]);
-                this.parent.element.querySelector('.e-gridpopup').style.display = 'none';
-            });
         }
+    }
+    editCellExtend(index, field, isAdd) {
+        let gObj = this.parent;
+        let col = gObj.getColumnByField(field);
+        let keys = gObj.getPrimaryKeyFieldNames();
+        if (gObj.isEdit) {
+            return;
+        }
+        let row;
+        let rowData;
+        let mRowData;
+        let colIdx = gObj.getColumnIndexByField(field);
+        let frzCols = gObj.getFrozenColumns();
+        if (frzCols && colIdx >= frzCols) {
+            row = gObj.getMovableDataRows()[index];
+            mRowData = this.parent.getRowObjectFromUID(this.parent.getMovableDataRows()[index].getAttribute('data-uid'));
+            rowData = mRowData.changes ? extend({}, {}, mRowData.changes, true) : extend({}, {}, this.getDataByIndex(index), true);
+        }
+        else {
+            row = gObj.getDataRows()[index];
+            rowData = extend({}, {}, this.getDataByIndex(index), true);
+        }
+        if ((keys[0] === col.field && !row.classList.contains('e-insertedrow')) || col.columns ||
+            (col.isPrimaryKey && col.isIdentity)) {
+            this.parent.isLastCellPrimaryKey = true;
+            return;
+        }
+        this.parent.isLastCellPrimaryKey = false;
+        let rowObj = gObj.getRowObjectFromUID(row.getAttribute('data-uid'));
+        let cells = [].slice.apply(row.cells);
+        let args = {
+            columnName: col.field, isForeignKey: !isNullOrUndefined(col.foreignKeyValue),
+            primaryKey: keys, rowData: rowData,
+            validationRules: extend({}, col.validationRules ? col.validationRules : {}),
+            value: getObject(col.field, rowData),
+            type: !isAdd ? 'edit' : 'add', cancel: false,
+            foreignKeyData: rowObj && rowObj.foreignKeyData
+        };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            args.cell = cells[this.getColIndex(cells, this.getCellIdx(col.uid))];
+            args.row = row;
+            args.columnObject = col;
+            if (!args.cell) {
+                return;
+            }
+        }
+        gObj.trigger(cellEdit, args, (cellEditArgs) => {
+            if (cellEditArgs.cancel) {
+                return;
+            }
+            cellEditArgs.cell = cellEditArgs.cell ? cellEditArgs.cell : cells[this.getColIndex(cells, this.getCellIdx(col.uid))];
+            cellEditArgs.row = cellEditArgs.row ? cellEditArgs.row : row;
+            cellEditArgs.columnObject = cellEditArgs.columnObject ? cellEditArgs.columnObject : col;
+            this.cellDetails = {
+                rowData: rowData, column: col, value: cellEditArgs.value, isForeignKey: cellEditArgs.isForeignKey, rowIndex: index,
+                cellIndex: parseInt(cellEditArgs.cell.getAttribute('aria-colindex'), 10),
+                foreignKeyData: cellEditArgs.foreignKeyData
+            };
+            if (cellEditArgs.cell.classList.contains('e-updatedtd')) {
+                this.isColored = true;
+                cellEditArgs.cell.classList.remove('e-updatedtd');
+            }
+            if (isBlazor() && gObj.isServerRendered) {
+                let cell = 'cells';
+                let cloneCell = 'cloneCell';
+                let indent = cellEditArgs.row.querySelectorAll('.e-indentcell, .e-detailrowcollapse, .e-detailrowexpand, .e-rowdragdrop').length;
+                this.cloneCell[`${this.cellDetails.rowIndex}${cellEditArgs.columnObject.index}`] =
+                    cellEditArgs[cloneCell] = cellEditArgs.cell.cloneNode(true);
+                if ((parentsUntil(cellEditArgs.cell, 'e-movableheader') || parentsUntil(cellEditArgs.cell, 'e-movablecontent'))) {
+                    cellEditArgs.row.insertCell(cellEditArgs.columnObject.index - gObj.getFrozenColumns());
+                    cellEditArgs.row.replaceChild(cellEditArgs[cloneCell], cellEditArgs.row[cell][cellEditArgs.columnObject.index - gObj.getFrozenColumns()]);
+                }
+                else {
+                    cellEditArgs.row.insertCell(cellEditArgs.columnObject.index + indent);
+                    cellEditArgs.row.replaceChild(cellEditArgs[cloneCell], cellEditArgs.row[cell][cellEditArgs.columnObject.index + indent]);
+                }
+                this.originalCell[`${this.cellDetails.rowIndex}${cellEditArgs.columnObject.index}`] =
+                    cellEditArgs.cell.parentElement.removeChild(cellEditArgs.cell);
+                removeClass([this.cloneCell[`${this.cellDetails.rowIndex}${cellEditArgs.columnObject.index}`]], ['e-focus', 'e-focused']);
+            }
+            gObj.isEdit = true;
+            gObj.clearSelection();
+            if (!gObj.isCheckBoxSelection || !gObj.isPersistSelection) {
+                gObj.selectRow(this.cellDetails.rowIndex, true);
+            }
+            this.renderer.update(cellEditArgs);
+            this.parent.notify(batchEditFormRendered, cellEditArgs);
+            this.form = gObj.element.querySelector('#' + gObj.element.id + 'EditForm');
+            gObj.editModule.applyFormValidation([col]);
+            this.parent.element.querySelector('.e-gridpopup').style.display = 'none';
+        });
     }
     updateCell(rowIndex, field, value) {
         let col = this.parent.getColumnByField(field);
@@ -27074,6 +27576,7 @@ class BatchEdit {
     refreshTD(td, column, rowObj, value) {
         let cell = new CellRenderer(this.parent, this.serviceLocator);
         let rowcell;
+        value = column.type === 'number' ? parseFloat(value) : value;
         this.setChanges(rowObj, column.field, value, td);
         let frzCols = this.parent.getFrozenColumns();
         refreshForeignData(rowObj, this.parent.getForeignKeyColumns(), rowObj.changes);
@@ -27126,10 +27629,14 @@ class BatchEdit {
         }
     }
     saveCell(isForceSave) {
+        if (this.preventSaveCell) {
+            return;
+        }
         let gObj = this.parent;
         if (!isForceSave && (!gObj.isEdit || this.validateFormObj())) {
             return;
         }
+        this.preventSaveCell = true;
         this.parent.element.classList.remove('e-editing');
         let tr = parentsUntil(this.form, 'e-row');
         let column = this.cellDetails.column;
@@ -27147,11 +27654,11 @@ class BatchEdit {
             value: getObject(column.field, editedData),
             rowData: this.cellDetails.rowData,
             previousValue: this.cellDetails.value,
-            columnObject: column,
             isForeignKey: this.cellDetails.isForeignKey, cancel: false
         };
         if (!isBlazor() || this.parent.isJsComponent) {
             args.cell = this.form.parentElement;
+            args.columnObject = column;
         }
         if (!isForceSave) {
             gObj.trigger(cellSave, args, this.successCallBack(args, tr, column));
@@ -27165,7 +27672,16 @@ class BatchEdit {
         return (cellSaveArgs) => {
             let gObj = this.parent;
             cellSaveArgs.cell = cellSaveArgs.cell ? cellSaveArgs.cell : this.form.parentElement;
+            cellSaveArgs.columnObject = cellSaveArgs.columnObject ? cellSaveArgs.columnObject : column;
             if (cellSaveArgs.cancel) {
+                this.preventSaveCell = false;
+                if (this.editNext) {
+                    this.editNext = false;
+                    if (this.cellDetails.rowIndex === this.index && this.cellDetails.column.field === this.field) {
+                        return;
+                    }
+                    this.editCellExtend(this.index, this.field, this.isAdd);
+                }
                 return;
             }
             gObj.editModule.destroyForm();
@@ -27213,6 +27729,14 @@ class BatchEdit {
                     this.parent.notify(groupAggregates, {});
                 }
             }
+            if (this.editNext) {
+                this.editNext = false;
+                if (this.cellDetails.rowIndex === this.index && this.cellDetails.column.field === this.field) {
+                    return;
+                }
+                this.editCellExtend(this.index, this.field, this.isAdd);
+            }
+            this.preventSaveCell = false;
         };
     }
     getDataByIndex(index) {
@@ -27387,16 +27911,17 @@ class Edit {
         this.createConfirmDlg();
     }
     updateColTypeObj() {
-        this.parent.columnModel.forEach((col) => {
-            if (this.parent.editSettings.template || col.editTemplate) {
+        let cols = this.parent.columnModel;
+        for (let i = 0; i < cols.length; i++) {
+            if (this.parent.editSettings.template || cols[i].editTemplate) {
                 let templteCell = 'templateedit';
-                col.edit = extend(new Edit.editCellType[templteCell](this.parent), col.edit || {});
+                cols[i].edit = extend(new Edit.editCellType[templteCell](this.parent), cols[i].edit || {});
             }
             else {
-                col.edit = extend(new Edit.editCellType[col.editType && Edit.editCellType[col.editType] ?
-                    col.editType : 'defaultedit'](this.parent, this.serviceLocator), col.edit || {});
+                cols[i].edit = extend(new Edit.editCellType[cols[i].editType && Edit.editCellType[cols[i].editType] ?
+                    cols[i].editType : 'defaultedit'](this.parent, this.serviceLocator), cols[i].edit || {});
             }
-        });
+        }
         this.parent.log('primary_column_missing');
     }
     /**
@@ -27793,49 +28318,51 @@ class Edit {
     getCurrentEditedData(form, editedData) {
         let gObj = this.parent;
         if (gObj.editSettings.template) {
-            [].slice.call(form.elements).forEach((element) => {
-                if (element.hasAttribute('name')) {
-                    let field = setComplexFieldID(element.getAttribute('name'));
-                    let column = gObj.getColumnByField(field) || { field: field, type: element.getAttribute('type') };
+            let elements = [].slice.call(form.elements);
+            for (let k = 0; k < elements.length; k++) {
+                if (elements[k].hasAttribute('name')) {
+                    let field = setComplexFieldID(elements[k].getAttribute('name'));
+                    let column = gObj.getColumnByField(field) || { field: field, type: elements[k].getAttribute('type') };
                     let value;
                     if (column.type === 'checkbox' || column.type === 'boolean') {
-                        value = element.checked;
+                        value = elements[k].checked;
                     }
-                    else if (element.value) {
-                        value = element.value;
-                        if (element.ej2_instances &&
-                            element.ej2_instances.length &&
-                            !isNullOrUndefined(element.ej2_instances[0].value)) {
-                            element.blur();
-                            value = element.ej2_instances[0].value;
-                            if ((column.type === 'date' || column.type === 'dateTime') &&
-                                (element.ej2_instances[0].isServerRendered)) {
-                                value = element.value;
+                    else if (elements[k].value) {
+                        value = elements[k].value;
+                        if (elements[k].ej2_instances &&
+                            elements[k].ej2_instances.length &&
+                            !isNullOrUndefined(elements[k].ej2_instances[0].value)) {
+                            elements[k].blur();
+                            value = elements[k].ej2_instances[0].value;
+                            if ((column.type === 'date' || column.type === 'dateTime' || column.type === 'datetime') &&
+                                (elements[k].ej2_instances[0].isServerRendered)) {
+                                value = elements[k].value;
                             }
                         }
                     }
                     if (column.edit && typeof column.edit.read === 'string') {
-                        value = getValue(column.edit.read, window)(element, value);
+                        value = getValue(column.edit.read, window)(elements[k], value);
                     }
                     else if (column.edit && column.edit.read) {
-                        value = column.edit.read(element, value);
+                        value = column.edit.read(elements[k], value);
                     }
                     value = gObj.editModule.getValueFromType(column, value);
                     DataUtil.setValue(column.field, value, editedData);
                 }
-            });
+            }
             return editedData;
         }
-        gObj.columnModel.filter((col) => col.editTemplate).forEach((col) => {
-            if (form[getComplexFieldID(col.field)]) {
-                let inputElements = [].slice.call(form[getComplexFieldID(col.field)]);
-                inputElements = inputElements.length ? inputElements : [form[getComplexFieldID(col.field)]];
-                inputElements.forEach((input) => {
-                    let value = this.getValue(col, input, editedData);
-                    DataUtil.setValue(col.field, value, editedData);
-                });
+        let col = gObj.columnModel.filter((col) => col.editTemplate);
+        for (let j = 0; j < col.length; j++) {
+            if (form[getComplexFieldID(col[j].field)]) {
+                let inputElements = [].slice.call(form[getComplexFieldID(col[j].field)]);
+                inputElements = inputElements.length ? inputElements : [form[getComplexFieldID(col[j].field)]];
+                for (let k = 0; k < inputElements.length; k++) {
+                    let value = this.getValue(col[j], inputElements[k], editedData);
+                    DataUtil.setValue(col[j].field, value, editedData);
+                }
             }
-        });
+        }
         let inputs = [].slice.call(form.querySelectorAll('.e-field'));
         for (let i = 0, len = inputs.length; i < len; i++) {
             let col = gObj.getColumnByUid(inputs[i].getAttribute('e-mappinguid'));
@@ -27893,6 +28420,7 @@ class Edit {
             let temp = col.edit.destroy;
             if (isBlazor() && col.editTemplate) {
                 resetBlazorTemplate(this.parent.element.id + col.uid + 'editTemplate', 'EditTemplate');
+                updateBlazorTemplate(this.parent.element.id + col.uid + 'editTemplate', 'EditTemplate', col, false);
             }
             if (col.edit.destroy) {
                 if (typeof temp === 'string') {
@@ -27904,15 +28432,16 @@ class Edit {
                 }
             }
         }
-        [].slice.call(this.formObj.element.elements).forEach((element) => {
-            if (element.hasAttribute('name')) {
-                if (element.ej2_instances &&
-                    element.ej2_instances.length &&
-                    !element.ej2_instances[0].isDestroyed) {
-                    element.ej2_instances[0].destroy();
+        let elements = [].slice.call(this.formObj.element.elements);
+        for (let i = 0; i < elements.length; i++) {
+            if (elements[i].hasAttribute('name')) {
+                if (elements[i].ej2_instances &&
+                    elements[i].ej2_instances.length &&
+                    !elements[i].ej2_instances[0].isDestroyed) {
+                    elements[i].ej2_instances[0].destroy();
                 }
             }
-        });
+        }
     }
     /**
      * @hidden
@@ -28007,20 +28536,20 @@ class Edit {
         let rules = {};
         let mRules = {};
         cols = cols ? cols : gObj.getColumns();
-        cols.forEach((col, index) => {
-            if (!col.visible) {
-                return;
+        for (let i = 0; i < cols.length; i++) {
+            if (!cols[i].visible) {
+                continue;
             }
-            if (isBlazor() && col.editTemplate) {
-                return;
+            if (isBlazor() && cols[i].editTemplate) {
+                continue;
             }
-            if (index < frzCols && col.validationRules) {
-                rules[getComplexFieldID(col.field)] = col.validationRules;
+            if (i < frzCols && cols[i].validationRules) {
+                rules[getComplexFieldID(cols[i].field)] = cols[i].validationRules;
             }
-            else if (index >= frzCols && col.validationRules) {
-                mRules[getComplexFieldID(col.field)] = col.validationRules;
+            else if (i >= frzCols && cols[i].validationRules) {
+                mRules[getComplexFieldID(cols[i].field)] = cols[i].validationRules;
             }
-        });
+        }
         if (frzCols && this.parent.editSettings.mode !== 'Dialog') {
             this.parent.editModule.mFormObj = this.createFormObj(mForm, mRules);
         }
@@ -28691,11 +29220,11 @@ class ColumnChooser {
             let columnUid = parentsUntil(elem, 'e-ccheck').getAttribute('uid');
             let column = this.parent.getColumns();
             if (columnUid === 'grid-selectAll') {
-                column.forEach((col) => {
-                    if (col.showInColumnChooser) {
-                        this.checkstatecolumn(checkstate, col.uid);
+                for (let i = 0; i < column.length; i++) {
+                    if (column[i].showInColumnChooser) {
+                        this.checkstatecolumn(checkstate, column[i].uid);
                     }
-                });
+                }
             }
             else {
                 this.checkstatecolumn(checkstate, columnUid);
@@ -28931,13 +29460,13 @@ class ExportHelper {
         let promise;
         let fColumns = gridObj.getForeignKeyColumns();
         if (fColumns.length) {
-            fColumns.forEach((col) => {
-                columnPromise.push(col.dataSource.executeQuery(new Query()));
-            });
+            for (let i = 0; i < fColumns.length; i++) {
+                columnPromise.push(fColumns[i].dataSource.executeQuery(new Query()));
+            }
             promise = Promise.all(columnPromise).then((e) => {
-                fColumns.forEach((col, index) => {
-                    this.foreignKeyData[col.field] = e[index].result;
-                });
+                for (let j = 0; j < fColumns.length; j++) {
+                    this.foreignKeyData[fColumns[j].field] = e[j].result;
+                }
                 // tslint:disable-next-line:no-any
             });
         }
@@ -29116,7 +29645,7 @@ class ExportValueFormatter {
         }
     }
     /* tslint:disable-next-line:no-any */
-    formatCellValue(args) {
+    formatCellValue(args, isServerBlaz) {
         if (args.isForeignKey) {
             args.value = getValue(args.column.foreignKeyValue, getForeignData(args.column, {}, args.value)[0]);
         }
@@ -29133,14 +29662,15 @@ class ExportValueFormatter {
             }
             if (typeof args.column.format === 'string') {
                 let format;
+                let cFormat = args.column.format;
                 if (args.column.type === 'date') {
-                    format = { type: 'date', skeleton: args.column.format };
+                    format = isServerBlaz ? { type: 'date', format: cFormat } : { type: 'date', skeleton: cFormat };
                 }
                 else if (args.column.type === 'time') {
-                    format = { type: 'time', skeleton: args.column.format };
+                    format = isServerBlaz ? { type: 'time', format: cFormat } : { type: 'time', skeleton: cFormat };
                 }
                 else {
-                    format = { type: 'dateTime', skeleton: args.column.format };
+                    format = isServerBlaz ? { type: 'dateTime', format: cFormat } : { type: 'dateTime', skeleton: cFormat };
                 }
                 return this.returnFormattedValue(args, format);
             }
@@ -29686,10 +30216,11 @@ class ExcelExport {
             }
             excelRow.childRows = this.processGridExport(childGridObj, excelExportProps, result);
             let intent = this.parent.groupSettings.columns.length;
-            excelRow.childRows.forEach((row) => {
-                row.grouping = { outlineLevel: intent + childGridObj.childGridLevel,
+            let rows = excelRow.childRows;
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].grouping = { outlineLevel: intent + childGridObj.childGridLevel,
                     isCollapsed: !gRow.isExpand, isHidden: !gRow.isExpand };
-            });
+            }
             childGridObj.destroy();
             detach(childGridObj.element);
             this.gridPool[childGridObj.id] = true;
@@ -30941,7 +31472,7 @@ class PdfExport {
                     colSpan: 1,
                     cell: cell
                 };
-                args.value = this.exportValueFormatter.formatCellValue(args);
+                args.value = this.exportValueFormatter.formatCellValue(args, gObj.isServerRendered);
                 this.parent.trigger(pdfQueryCellInfo, args);
                 cell.value = args.value;
                 if (!isNullOrUndefined(args.style)) {
@@ -31420,21 +31951,23 @@ class CommandColumn {
         let uid = target.getAttribute('data-uid');
         let commandColumn;
         let row = gObj.getRowObjectFromUID(closest(target, '.e-row').getAttribute('data-uid'));
-        this.parent.columnModel.forEach((col) => {
-            if (col.commands) {
-                col.commands.forEach((commandCol) => {
+        let cols = this.parent.columnModel;
+        for (let i = 0; i < cols.length; i++) {
+            if (cols[i].commands) {
+                let commandCols = cols[i].commands;
+                for (let j = 0; j < commandCols.length; j++) {
                     let idInString = 'uid';
                     let typeInString = 'type';
-                    if (isBlazor() && !gObj.isJsComponent && commandCol[idInString] === uid) {
-                        commandColumn = commandCol;
-                        type = commandCol[typeInString];
+                    if (isBlazor() && !gObj.isJsComponent && commandCols[j][idInString] === uid) {
+                        commandColumn = commandCols[j];
+                        type = commandCols[j][typeInString];
                     }
-                    else if (commandCol[idInString] === uid && commandCol[typeInString] === type) {
-                        commandColumn = commandCol;
+                    else if (commandCols[j][idInString] === uid && commandCols[j][typeInString] === type) {
+                        commandColumn = commandCols[j];
                     }
-                });
+                }
             }
-        });
+        }
         let args = {
             cancel: false,
             target: target,
@@ -31512,13 +32045,15 @@ class CommandColumn {
             return;
         }
         let uid = 'uid';
-        this.parent.columnModel.forEach((col, indexs) => {
-            if (col.commands) {
-                col.commands.forEach((commandCol) => {
-                    commandCol[uid] = getUid('gridcommand');
-                });
+        let col = this.parent.columnModel;
+        for (let i = 0; i < col.length; i++) {
+            if (col[i].commands) {
+                let commandCol = col[i].commands;
+                for (let j = 0; j < commandCol.length; j++) {
+                    commandCol[j][uid] = getUid('gridcommand');
+                }
             }
-        });
+        }
     }
 }
 
@@ -31918,12 +32453,13 @@ class ContextMenu$1 {
                     status = true;
                 }
                 else if (this.parent.ensureModuleInjected(Sort) && this.parent.sortSettings.columns.length > 0 && this.targetColumn) {
-                    this.parent.sortSettings.columns.forEach((element) => {
-                        if (element.field === this.targetColumn.field
-                            && element.direction.toLowerCase() === item.toLowerCase().replace('sort', '').toLocaleLowerCase()) {
+                    let sortColumns = this.parent.sortSettings.columns;
+                    for (let i = 0; i < sortColumns.length; i++) {
+                        if (sortColumns[i].field === this.targetColumn.field
+                            && sortColumns[i].direction.toLowerCase() === item.toLowerCase().replace('sort', '').toLocaleLowerCase()) {
                             status = true;
                         }
-                    });
+                    }
                 }
                 break;
             case 'FirstPage':
@@ -32355,9 +32891,10 @@ class FreezeRender extends HeaderRender {
         }
     }
     updateResizeHandler() {
-        [].slice.call(this.parent.getHeaderContent().querySelectorAll('.e-rhandler')).forEach((ele) => {
-            ele.style.height = ele.parentElement.offsetHeight + 'px';
-        });
+        let elements = [].slice.call(this.parent.getHeaderContent().querySelectorAll('.e-rhandler'));
+        for (let i = 0; i < elements.length; i++) {
+            elements[i].style.height = elements[i].parentElement.offsetHeight + 'px';
+        }
     }
     setWrapHeight(fRows, mRows, isModeChg, isContReset, isStackedHdr) {
         let fRowHgt;
@@ -32673,14 +33210,16 @@ class ColumnMenu {
         this.addEventListener();
     }
     wireEvents() {
-        this.getColumnMenuHandlers().forEach((ele) => {
-            EventHandler.add(ele, 'mousedown', this.columnMenuHandlerDown, this);
-        });
+        let elements = this.getColumnMenuHandlers();
+        for (let i = 0; i < elements.length; i++) {
+            EventHandler.add(elements[i], 'mousedown', this.columnMenuHandlerDown, this);
+        }
     }
     unwireEvents() {
-        this.getColumnMenuHandlers().forEach((ele) => {
-            EventHandler.remove(ele, 'mousedown', this.columnMenuHandlerDown);
-        });
+        let elements = this.getColumnMenuHandlers();
+        for (let i = 0; i < elements.length; i++) {
+            EventHandler.remove(elements[i], 'mousedown', this.columnMenuHandlerDown);
+        }
     }
     /**
      * To destroy the resize
@@ -32923,12 +33462,13 @@ class ColumnMenu {
             case 'SortAscending':
                 if (this.parent.allowSorting && this.parent.ensureModuleInjected(Sort)
                     && this.parent.sortSettings.columns.length > 0 && this.targetColumn && this.targetColumn.allowSorting) {
-                    this.parent.sortSettings.columns.forEach((ele) => {
-                        if (ele.field === this.targetColumn.field
-                            && ele.direction.toLocaleLowerCase() === item.toLocaleLowerCase().replace('sort', '')) {
+                    let sortColumns = this.parent.sortSettings.columns;
+                    for (let i = 0; i < sortColumns.length; i++) {
+                        if (sortColumns[i].field === this.targetColumn.field
+                            && sortColumns[i].direction.toLocaleLowerCase() === item.toLocaleLowerCase().replace('sort', '')) {
                             status = true;
                         }
-                    });
+                    }
                 }
                 else if (!this.parent.allowSorting || !this.parent.ensureModuleInjected(Sort) ||
                     this.parent.allowSorting && this.targetColumn && !this.targetColumn.allowSorting) {
@@ -33219,20 +33759,20 @@ class ForeignKey extends Data {
         this.parent.on(generateQuery, this.generateQueryFormData, this);
     }
     initForeignKeyColumns(columns) {
-        columns.forEach((column) => {
-            column.dataSource = (column.dataSource instanceof DataManager ? column.dataSource :
-                (isNullOrUndefined(column.dataSource) ? new DataManager() : new DataManager(column.dataSource)));
-        });
+        for (let i = 0; i < columns.length; i++) {
+            columns[i].dataSource = (columns[i].dataSource instanceof DataManager ? columns[i].dataSource :
+                (isNullOrUndefined(columns[i].dataSource) ? new DataManager() : new DataManager(columns[i].dataSource)));
+        }
     }
     getForeignKeyData(args) {
         let foreignColumns = args.column ? [args.column] : this.parent.getForeignKeyColumns();
         let allPromise = [];
-        foreignColumns.forEach((col) => {
+        for (let i = 0; i < foreignColumns.length; i++) {
             let promise;
-            let query = args.isComplex ? this.genarateColumnQuery(col) :
-                this.genarateQuery(col, args.result.result, false, true);
+            let query = args.isComplex ? this.genarateColumnQuery(foreignColumns[i]) :
+                this.genarateQuery(foreignColumns[i], args.result.result, false, true);
             query.params = this.parent.query.params;
-            let dataSource = col.dataSource;
+            let dataSource = foreignColumns[i].dataSource;
             if (!dataSource.ready || dataSource.dataSource.offline) {
                 promise = dataSource.executeQuery(query);
             }
@@ -33242,11 +33782,11 @@ class ForeignKey extends Data {
                 });
             }
             allPromise.push(promise);
-        });
+        }
         Promise.all(allPromise).then((responses) => {
-            responses.forEach((data, index) => {
-                foreignColumns[index].columnData = data.result;
-            });
+            for (let i = 0; i < responses.length; i++) {
+                foreignColumns[i].columnData = responses[i].result;
+            }
             args.promise.resolve(args.result);
         }).catch((e) => {
             this.parent.log(['actionfailure', 'foreign_key_failure']);
@@ -33270,14 +33810,14 @@ class ForeignKey extends Data {
                 e.records : e)).executeLocal(new Query().select(field));
             let filteredValue = DataUtil.distinct(e, field, false);
             field = fromData ? column.field : column.foreignKeyField;
-            filteredValue.forEach((obj) => {
-                if (obj && obj.getDay) {
-                    predicates.push(getDatePredicate({ field: field, operator: 'equal', value: obj, matchCase: false }));
+            for (let i = 0; i < filteredValue.length; i++) {
+                if (filteredValue[i] && filteredValue[i].getDay) {
+                    predicates.push(getDatePredicate({ field: field, operator: 'equal', value: filteredValue[i], matchCase: false }));
                 }
                 else {
-                    predicates.push(new Predicate(field, 'equal', obj, false));
+                    predicates.push(new Predicate(field, 'equal', filteredValue[i], false));
                 }
-            });
+            }
         }
         if (needQuery) {
             return predicates.length ? query.where(Predicate.or(predicates)) : query;
@@ -33343,13 +33883,14 @@ class Logger {
         if (!(types instanceof Array)) {
             types = [types];
         }
-        types.forEach((type) => {
-            let item = detailLists[type];
+        let type = types;
+        for (let i = 0; i < type.length; i++) {
+            let item = detailLists[type[i]];
             let cOp = item.check(args, this.parent);
             if (cOp.success) {
                 console[item.logType](item.generateMessage(args, this.parent, cOp.options));
             }
-        });
+        }
     }
     patchadaptor() {
         let adaptor = this.parent.getDataModule().dataManager.adaptor;
@@ -34055,5 +34596,5 @@ class MaskedTextBoxCellEdit {
  * Export Grid components
  */
 
-export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, getUpdateUsingRaf, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, virtaulKeyHandler, virtaulCellFocus, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
+export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, InfiniteScrollSettings, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, getUpdateUsingRaf, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, alignFrozenEditForm, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, virtaulKeyHandler, virtaulCellFocus, refreshInfiniteModeBlocks, resetInfiniteBlocks, shareInfiniteCache, infiniteScrollListener, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
 //# sourceMappingURL=ej2-grids.es2015.js.map

@@ -447,12 +447,13 @@ export class ContextMenu implements IAction {
                     (this.targetColumn && !this.targetColumn.field)) {
                         status = true;
                 } else if (this.parent.ensureModuleInjected(Sort) && this.parent.sortSettings.columns.length > 0 && this.targetColumn) {
-                    this.parent.sortSettings.columns.forEach((element: SortDescriptorModel) => {
-                        if (element.field === this.targetColumn.field
-                            && element.direction.toLowerCase() === item.toLowerCase().replace('sort', '').toLocaleLowerCase()) {
+                    let sortColumns: SortDescriptorModel[] = this.parent.sortSettings.columns;
+                    for (let i: number = 0; i < sortColumns.length; i++) {
+                        if (sortColumns[i].field === this.targetColumn.field
+                            && sortColumns[i].direction.toLowerCase() === item.toLowerCase().replace('sort', '').toLocaleLowerCase()) {
                             status = true;
                         }
-                    });
+                    }
                 }
                 break;
             case 'FirstPage':

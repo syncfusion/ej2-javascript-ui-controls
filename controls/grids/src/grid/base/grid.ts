@@ -45,6 +45,7 @@ import { AriaService } from '../services/aria-service';
 import { FocusStrategy } from '../services/focus-strategy';
 import { SortSettingsModel, SelectionSettingsModel, FilterSettingsModel, SearchSettingsModel, EditSettingsModel } from './grid-model';
 import { SortDescriptorModel, PredicateModel, RowDropSettingsModel, GroupSettingsModel, TextWrapSettingsModel } from './grid-model';
+import { InfiniteScrollSettingsModel } from './grid-model';
 import { PageSettingsModel, AggregateRowModel } from '../models/models';
 import { PageSettings } from '../models/page-settings';
 import { Sort } from '../actions/sort';
@@ -270,6 +271,39 @@ export class Predicate extends ChildProperty<Predicate> {
     @Property()
     public isForeignKey: boolean;
 
+}
+
+/** 
+ * Configures the infinite scroll behavior of Grid. 
+ */
+export class InfiniteScrollSettings extends ChildProperty<InfiniteScrollSettings> {
+    /**
+     * If `enableScroll` set to true, then the data will be loaded in Grid when the scrollbar reaches the end.
+     * @default false
+     */
+    @Property(false)
+    public enableScroll: boolean;
+
+    /**
+     * If `enableCache` is set to true, the Grid will cache the loaded data to be reused next time it is needed.
+     * @default false
+     */
+    @Property(false)
+    public enableCache: boolean;
+
+    /**
+     * Defines the number of blocks to be maintained in Grid while settings enableCache as true.
+     * @default 3
+     */
+    @Property(3)
+    public maxBlock: number;
+
+    /**
+     * Defines the number of blocks will render at the initial Grid rendering while enableCache is enabled.
+     * @default 3
+     */
+    @Property(3)
+    public initialBlocks: number;
 }
 
 /**  
@@ -704,8 +738,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** @hidden */
     public invokedFromMedia: boolean;
     private dataBoundFunction: Function;
-    /** @hidden */
-    public freezeRefresh: Function = Component.prototype.refresh;
+    private componentRefresh: Function = Component.prototype.refresh;
     /** @hidden */
     public recordsCount: number;
     /** @hidden */
@@ -1067,6 +1100,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     @Complex<SortSettingsModel>({}, SortSettings)
     public sortSettings: SortSettingsModel;
+
+    /**    
+     * Configures the infinite scroll settings.  
+     * @default { enableScroll: false, enableCache: false, maxBlock: 5, initialBlocks: 5 }    
+     */
+    @Complex<InfiniteScrollSettingsModel>({}, InfiniteScrollSettings)
+    public infiniteScrollSettings: InfiniteScrollSettingsModel;
 
     /**    
      * If `allowSelection` is set to true, it allows selection of (highlight row) Grid records by clicking it.  
@@ -2007,12 +2047,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         };
         let ignoreOnColumn: string[] = ['filter', 'edit', 'filterBarTemplate', 'headerTemplate', 'template',
             'commandTemplate', 'commands', 'dataSource', 'headerText'];
-        keyEntity.forEach((value: string) => {
-            let currentObject: Object = this[value];
-            for (let val of ignoreOnPersist[value]) {
+        for (let i: number = 0; i < keyEntity.length; i++) {
+            let currentObject: Object = this[keyEntity[i]];
+            for (let val of ignoreOnPersist[keyEntity[i]]) {
                 delete currentObject[val];
             }
-        });
+        }
         this.pageSettings.template = undefined;
         this.pageTemplateChange = !isNullOrUndefined(this.pagerTemplate);
         return this.addOnPersist(keyEntity);
@@ -2185,7 +2225,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.checkAllRows = 'None';
         this.isCheckBoxSelection = false;
         this.isPersistSelection = false;
-        this.freezeRefresh = Component.prototype.refresh;
+        this.componentRefresh = Component.prototype.refresh;
         this.filterOperators = {
             contains: 'contains', endsWith: 'endswith', equal: 'equal', greaterThan: 'greaterthan', greaterThanOrEqual: 'greaterthanorequal',
             lessThan: 'lessthan', lessThanOrEqual: 'lessthanorequal', notEqual: 'notequal', startsWith: 'startswith'
@@ -2726,9 +2766,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     }
                 } else if (pending.isPending) {
                     let gResult: Object = !isNullOrUndefined(this.dataSource) ? (<DataResult>this.dataSource).result : [];
-                    (pending.group || []).forEach((name: string) => {
-                        gResult = DataUtil.group(<Object[]>gResult, name, pending.aggregates || []);
-                    });
+                    let names: string[] = (pending.group || []);
+                    for (let i: number = 0; i < names.length; i++) {
+                        gResult = DataUtil.group(<Object[]>gResult, names[i], pending.aggregates || []);
+                    }
                     this.dataSource = {
                         result: gResult, count: (<DataResult>this.dataSource).count,
                         aggregates: (<DataResult>this.dataSource).aggregates
@@ -3491,16 +3532,24 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {number}
      */
     public getNormalizedColumnIndex(uid: string): number {
-        let index: number = this.getColumnIndexByUid(uid);
+        let index: number = this.getColumnIndexByUid(uid);        
+        return index + this.getIndentCount();
+    }
 
+     /**
+     * Gets indent cell count.
+     * @private
+     * @return {number}
+     */
+    public getIndentCount():number{
+        let index: number = 0;
         if (this.allowGrouping) {
             index += this.groupSettings.columns.length;
         }
-
         if (this.isDetail()) {
             index++;
         }
-        if (this.allowRowDragAndDrop && isNullOrUndefined(this.rowDropSettings.targetID) && this.allowResizing) {
+        if (this.allowRowDragAndDrop && isNullOrUndefined(this.rowDropSettings.targetID)) {
             index++;
         }
         /**
@@ -3509,7 +3558,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
          */
         return index;
     }
-
     /**
      * Gets the collection of column fields.     
      * @return {string[]}
@@ -3783,9 +3831,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Clears all the filtered rows of the Grid.
      * @return {void} 
      */
-    public clearFiltering(): void {
+    public clearFiltering(fields?: string[]): void {
         if (this.filterModule) {
-            this.filterModule.clearFiltering();
+            this.filterModule.clearFiltering(fields);
         }
     }
 
@@ -4232,9 +4280,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             }
         }
         if (!gCols.length) {
-            sCols.forEach((col: SortDescriptorModel) => {
-                this.sortedColumns.push(col.field);
-            });
+            for (let i: number = 0; i < sCols.length; i++) {
+                this.sortedColumns.push(sCols[i].field);
+            }
         }
         this.rowTemplateFn = templateCompiler(this.rowTemplate);
         this.detailTemplateFn = templateCompiler(this.detailTemplate);
@@ -4381,6 +4429,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.toolTipObj = new Tooltip({ opensOn: 'custom', content: '' }, this.element);
     }
 
+    /** @hidden */
+    public freezeRefresh(): void {
+        if (this.enableVirtualization) {
+            this.pageSettings.currentPage = 1;
+        }
+        this.componentRefresh();
+    }
+
     private getTooltipStatus(element: HTMLElement): boolean {
         let width: number;
         let headerTable: Element = this.getHeaderTable();
@@ -4431,12 +4487,17 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private hoverFrozenRows(e: MouseEvent): void {
         if (this.getFrozenColumns()) {
-            let row: Element = (parentsUntil(e.target as Element, 'e-row'));
-            if (this.element.querySelectorAll('.e-frozenhover').length && e.type === 'mouseout') {
-                this.element.querySelectorAll('.e-frozenhover').forEach((row: Element) => row.classList.remove('e-frozenhover'));
+            let row: Element = parentsUntil(e.target as Element, 'e-row');
+            if ([].slice.call(this.element.querySelectorAll('.e-frozenhover')).length && e.type === 'mouseout') {
+                let rows: Element[] = [].slice.call(this.element.querySelectorAll('.e-frozenhover'));
+                for (let i: number = 0; i < rows.length; i++) {
+                    rows[i].classList.remove('e-frozenhover');
+                }
             } else if (row) {
-                this.element.querySelectorAll('tr[aria-rowindex="' +
-                    row.getAttribute('aria-rowindex') + '"]').forEach((row: Element) => row.classList.add('e-frozenhover'));
+                let rows: Element[] = [].slice.call(this.element.querySelectorAll('tr[aria-rowindex="' + row.getAttribute('aria-rowindex') + '"]'));
+                for (let i: number = 0; i < rows.length; i++) {
+                    rows[i].classList.add('e-frozenhover');
+                }
             }
         }
     }
@@ -4727,21 +4788,22 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     private mergeColumns(storedColumn: Column[], columns: Column[]): void {
-        (<Column[]>storedColumn).forEach((col: Column, index: number, arr: Column[]) => {
-            let localCol = columns.filter((tCol: Column) => tCol.index === col.index)[0];
+        let storedColumns: Column[] = (<Column[]>storedColumn);
+        for (let i: number = 0; i < storedColumns.length; i++) {
+            let localCol = columns.filter((tCol: Column) => tCol.index === storedColumns[i].index)[0];
             if (!isNullOrUndefined(localCol)) {
                 if (localCol.columns && localCol.columns.length) {
-                    this.mergeColumns(<Column[]>col.columns, <Column[]>localCol.columns);
-                    arr[index] = <Column>extend(localCol, col, true);
+                    this.mergeColumns(<Column[]>storedColumns[i].columns, <Column[]>localCol.columns);
+                    storedColumns[i] = <Column>extend(localCol, storedColumns[i], true);
                 } else {
                     if (isBlazor()) {
                         let guid: string = 'guid';
-                        col[guid] = localCol[guid];
+                        storedColumns[i][guid] = localCol[guid];
                     }
-                    arr[index] = <Column>extend(localCol, col, true);
+                    storedColumns[i] = <Column>extend(localCol, storedColumns[i], true);
                 }
             }
-        });
+        }
     }
 
     /** 
@@ -5180,11 +5242,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let column: Column;
         this.columnModel = [];
         this.updateColumnModel(this.columns as Column[]);
-        this.columnModel.forEach((gCol: Column) => {
-            if (field === gCol.field) {
-                column = gCol;
+        let gCols: Column[] = this.columnModel;
+        for (let i: number = 0; i < gCols.length; i++) {
+            if (field === gCols[i].field) {
+                column = gCols[i];
             }
-        });
+        }
         return column;
     }
     /** 
@@ -5195,11 +5258,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let column: Column;
         this.columnModel = [];
         this.updateColumnModel(this.columns as Column[]);
-        this.columnModel.forEach((gCol: Column) => {
-            if (uid === gCol.uid) {
-                column = gCol;
+        let gCols: Column[] = this.columnModel;
+        for (let i: number = 0; i < gCols.length; i++) {
+            if (uid === gCols[i].uid) {
+                column = gCols[i];
             }
-        });
+        }
         return column;
     }
 

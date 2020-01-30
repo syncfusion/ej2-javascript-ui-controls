@@ -19,7 +19,7 @@ import { PdfCellRenderArgs, NewReportArgs, ChartSeriesCreatedEventArgs, Aggregat
 import { ResizeInfo, ScrollInfo, ColumnRenderEventArgs, PivotCellSelectedEventArgs, SaveReportArgs } from '../../common/base/interface';
 import { CellClickEventArgs, FieldDroppedEventArgs, HyperCellClickEventArgs, CellTemplateArgs } from '../../common/base/interface';
 import { BeforeExportEventArgs, EnginePopulatedEventArgs, BeginDrillThroughEventArgs, DrillArgs } from '../../common/base/interface';
-import { FieldListRefreshedEventArgs, MemberFilteringEventArgs } from '../../common/base/interface';
+import { FieldListRefreshedEventArgs, MemberFilteringEventArgs, FieldDropEventArgs } from '../../common/base/interface';
 import { Render } from '../renderer/render';
 import { PivotCommon } from '../../common/base/pivot-common';
 import { Common } from '../../common/actions/common';
@@ -956,6 +956,15 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     @Event()
     public onFieldDropped: EmitType<FieldDroppedEventArgs>;
 
+     /**
+     * Triggers when a field getting dropped into any axis.
+     * @event
+     * @blazorproperty 'fieldDrop'
+     */
+    @Event()
+    public fieldDrop: EmitType<FieldDropEventArgs>;
+
+    
     /** 
      * Triggers when data source is populated in the Pivot View.
      * @event
@@ -3173,31 +3182,19 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         if ((!e.shiftKey && !e.ctrlKey) || this.gridSettings.selectionSettings.type === 'Single') {
             if (this.gridSettings.selectionSettings.mode === 'Cell') {
                 if (ele.classList.contains(cls.COLUMNSHEADER)) {
-                    [].slice.call(this.element.querySelectorAll(('.' + cls.ROW_CELL_CLASS + '.') + cls.CELL_SELECTED_BGCOLOR)).forEach(function
-                        (ele: HTMLElement) {
-                        ele.classList.remove(cls.CELL_SELECTED_BGCOLOR);
-                    });
+                    removeClass(this.element.querySelectorAll(('.' + cls.ROW_CELL_CLASS + '.') + cls.CELL_SELECTED_BGCOLOR), cls.CELL_SELECTED_BGCOLOR);
                 } else {
-                    [].slice.call(this.element.querySelectorAll(('.' + cls.COLUMNSHEADER + '.') + cls.CELL_ACTIVE_BGCOLOR)).forEach(function
-                        (ele: HTMLElement) {
-                        ele.classList.remove(cls.CELL_ACTIVE_BGCOLOR);
-                        ele.classList.remove(cls.SELECTED_BGCOLOR);
-                    });
+                    removeClass(this.element.querySelectorAll(('.' + cls.COLUMNSHEADER + '.') + cls.CELL_ACTIVE_BGCOLOR), [cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR]);
                 }
             } else if (this.gridSettings.selectionSettings.mode === 'Both') {
                 if (ele.classList.contains(cls.ROW_CELL_CLASS)) {
-                    [].slice.call(this.element.querySelectorAll('.' + cls.SELECTED_BGCOLOR)).forEach(function
-                        (ele: HTMLElement) {
+                    for (let ele of [].slice.call(this.element.querySelectorAll('.' + cls.SELECTED_BGCOLOR))) {
                         if (Number((ele as HTMLElement).getAttribute('index')) !== rowIndex) {
-                            ele.classList.remove(cls.CELL_ACTIVE_BGCOLOR);
-                            ele.classList.remove(cls.SELECTED_BGCOLOR);
+                            removeClass([ele], [cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR]);
                         }
-                    })
+                    }
                 } else {
-                    [].slice.call(this.element.querySelectorAll('.' + cls.CELL_SELECTED_BGCOLOR)).forEach(function
-                        (ele: HTMLElement) {
-                        ele.classList.remove(cls.CELL_SELECTED_BGCOLOR);
-                    })
+                    removeClass(this.element.querySelectorAll('.' + cls.CELL_SELECTED_BGCOLOR), cls.CELL_SELECTED_BGCOLOR);
                 }
             }
         }
@@ -3251,15 +3248,14 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 activeColumns.push(cCnt.toString());
             }
             if (!isCtrl || type === 'Single') {
-                [].slice.call(this.element.querySelectorAll('.' + cls.CELL_ACTIVE_BGCOLOR)).forEach(function (ele: HTMLElement) {
-                    ele.classList.remove(cls.CELL_ACTIVE_BGCOLOR);
-                    ele.classList.remove(cls.SELECTED_BGCOLOR);
+                for (let ele of [].slice.call(this.element.querySelectorAll('.' + cls.CELL_ACTIVE_BGCOLOR))) {
+                    removeClass([ele], [cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR]);
                     if (activeColumns.indexOf(ele.getAttribute('aria-colindex')) === -1) {
                         isToggle = false;
                     }
                     let colIndex: number = Number(ele.getAttribute('aria-colindex'));
                     actColPos[colIndex] = colIndex;
-                });
+                }
                 /* tslint:disable-next-line:no-any */
                 activeColumns = Object.keys(actColPos).length > 0 ? Object.keys(actColPos).sort(function (a: any, b: any) {
                     return a - b
@@ -3280,10 +3276,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             }
             let rowSelectedList: string[] = [];
             if (e.ctrlKey && this.gridSettings.selectionSettings.mode === 'Both' && type === 'Multiple' && !target.classList.contains(cls.ROWSHEADER)) {
-                [].slice.call(this.element.querySelectorAll('.' + cls.ROWSHEADER + '.' + cls.CELL_SELECTED_BGCOLOR)).forEach(function
-                    (ele: HTMLElement) {
+                for (let ele of [].slice.call(this.element.querySelectorAll('.' + cls.ROWSHEADER + '.' + cls.CELL_SELECTED_BGCOLOR))) {
                     rowSelectedList.push(ele.getAttribute('index'));
-                })
+                }
             }
             let count: number = colStart;
             while (count <= colEnd) {
@@ -3294,17 +3289,15 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             if (!isToggle) {
                 rowStart = target.classList.contains('e-headercell') ? rowStart : (this.renderModule.rowStartPos - 1);
                 let isTargetSelected: boolean = target.classList.contains(cls.CELL_ACTIVE_BGCOLOR);
-                [].slice.call(this.element.querySelectorAll(queryStringArray.toString())).forEach(function (ele: HTMLElement) {
+                for (let ele of [].slice.call(this.element.querySelectorAll(queryStringArray.toString()))) {
                     if (Number(ele.getAttribute('index')) >= rowStart) {
                         if (isTargetSelected && isCtrl && (rowSelectedList.indexOf(ele.getAttribute('index')) === -1)) {
-                            ele.classList.remove(cls.CELL_ACTIVE_BGCOLOR);
-                            ele.classList.remove(cls.SELECTED_BGCOLOR);
+                            removeClass([ele], [cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR]);
                         } else {
-                            ele.classList.add(cls.CELL_ACTIVE_BGCOLOR);
-                            ele.classList.add(cls.SELECTED_BGCOLOR);
+                            addClass([ele], [cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR]);
                         }
                     }
-                });
+                }
             }
             this.renderModule.selected();
         }
@@ -3313,18 +3306,17 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     private getSelectedCellsPos(): void {
         let control: PivotView = this;
         control.savedSelectedCellsPos = [];
-        [].slice.call(this.element.querySelectorAll('.' + cls.SELECTED_BGCOLOR)).forEach(function (ele: HTMLElement) {
+        for (let ele of [].slice.call(this.element.querySelectorAll('.' + cls.SELECTED_BGCOLOR))) {
             control.savedSelectedCellsPos.push({ rowIndex: ele.getAttribute('index'), colIndex: ele.getAttribute('aria-colindex') });
-        })
+        }
     }
 
     private setSavedSelectedCells(): void {
         let control: PivotView = this;
-        [].slice.call(this.savedSelectedCellsPos).forEach(function (item: { rowIndex: string, colIndex: string }) {
+        for (let item of [].slice.call(this.savedSelectedCellsPos)) {
             let query: string = '[aria-colindex="' + item.colIndex + '"][index="' + item.rowIndex + '"]';
-            control.element.querySelector(query).classList.add(cls.CELL_ACTIVE_BGCOLOR);
-            control.element.querySelector(query).classList.add(cls.SELECTED_BGCOLOR);
-        });
+            addClass([control.element.querySelector(query)], [cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR]);
+        }
     }
     /* tslint:enable */
 

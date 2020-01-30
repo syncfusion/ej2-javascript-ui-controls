@@ -8,13 +8,6 @@ import {CalendarModel} from "../calendar/calendar-model";
 export interface DatePickerModel extends CalendarModel{
 
     /**
-     * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
-     * @default 'en-US'
-     * @deprecated
-     */
-    locale?: string;
-
-    /**
      * Specifies the width of the DatePicker component.
      * @default null
      */

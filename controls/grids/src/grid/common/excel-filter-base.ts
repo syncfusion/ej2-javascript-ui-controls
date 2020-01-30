@@ -248,6 +248,9 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
         this.createMenu(options.type, filterLength > 0, (filterLength === 1 || filterLength === 2));
         this.dlg.insertBefore(this.menu, this.dlg.firstChild);
         this.dlg.classList.add('e-excelfilter');
+        if (this.parent.enableRtl) {
+            this.dlg.classList.add('e-rtl');
+        }
         this.dlg.classList.remove('e-checkboxfilter');
         this.cmenu = this.parent.createElement('ul', { className: 'e-excel-menu' }) as HTMLUListElement;
         this.wireExEvents();

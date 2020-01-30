@@ -549,10 +549,11 @@ export class ExcelExport {
             }
             (<{childRows?: ExcelRow[] }>excelRow).childRows = this.processGridExport(childGridObj, excelExportProps, result);
             let intent: number = this.parent.groupSettings.columns.length;
-            (<{childRows?: ExcelRow[] }>excelRow).childRows.forEach((row: ExcelRow) => {
-                row.grouping = { outlineLevel: intent + (<{childGridLevel?: number}>childGridObj).childGridLevel,
+            let rows: ExcelRow[] = (<{childRows?: ExcelRow[] }>excelRow).childRows;
+            for (let i: number = 0; i < rows.length; i++) {
+                rows[i].grouping = { outlineLevel: intent + (<{childGridLevel?: number}>childGridObj).childGridLevel,
                 isCollapsed: !gRow.isExpand, isHidden: !gRow.isExpand};
-            });
+            }
             (<Grid>childGridObj).destroy();
             detach(childGridObj.element);
             this.gridPool[childGridObj.id] = true;

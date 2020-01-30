@@ -173,7 +173,7 @@ export class Edit {
       }
       let column: Column = this.parent.grid.getColumnByIndex(+target.closest('td.e-rowcell').getAttribute('aria-colindex'));
       if (this.parent.editSettings.mode === 'Cell' && !this.isOnBatch && column && !column.isPrimaryKey &&
-        column.allowEditing && !(target.classList.contains('e-treegridexpand') ||
+        column.allowEditing && this.parent.editSettings.allowEditing && !(target.classList.contains('e-treegridexpand') ||
           target.classList.contains('e-treegridcollapse')) && this.parent.editSettings.allowEditOnDblClick) {
         this.isOnBatch = true;
         this.parent.grid.setProperties({ selectedRowIndex: args.rowIndex }, true);

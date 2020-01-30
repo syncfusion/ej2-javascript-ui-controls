@@ -282,23 +282,23 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
             // expect(getCell(5, 10, instance.getActiveSheet()).format).toEqual('0.00');
         });
 
-        it('File Menu New testing', (done: Function) => {
-            setTimeout((): void => {
-                helper.click('.e-add-sheet-tab');
-                helper.click('.e-file-menu li');
-                setTimeout((): void => {
-                    expect(helper.getElement('.e-menu-popup.e-file-menu')).not.toBeNull();
-                    helper.click('.e-menu-popup.e-file-menu li[id="New"]');
-                    setTimeout((): void => {
-                        helper.click('.e-dialog.e-popup-open button.e-primary');
-                        setTimeout((): void => {
-                            expect(helper.getInstance().sheets.length).toBe(1);
-                            done();
-                        }, 10);
-                    }, 10);
-                }, 10);
-            }, 20);
-        });
+        // it('File Menu New testing', (done: Function) => {
+        //     setTimeout((): void => {
+        //         helper.click('.e-add-sheet-tab');
+        //         helper.click('.e-file-menu li');
+        //         setTimeout((): void => {
+        //             expect(helper.getElement('.e-menu-popup.e-file-menu')).not.toBeNull();
+        //             helper.click('.e-menu-popup.e-file-menu li[id="New"]');
+        //             setTimeout((): void => {
+        //                 helper.click('.e-dialog.e-popup-open button.e-primary');
+        //                 setTimeout((): void => {
+        //                     expect(helper.getInstance().sheets.length).toBe(1);
+        //                     done();
+        //                 }, 10);
+        //             }, 10);
+        //         }, 10);
+        //     }, 20);
+        // });
 
         //Checked for code coverage.
         it('File Menu Open testing', (done: Function) => {

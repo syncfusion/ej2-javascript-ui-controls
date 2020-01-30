@@ -1,6 +1,36 @@
-import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Event, EmitType, ChildProperty } from '@syncfusion/ej2-base';import { getComponent, closest, EventHandler } from '@syncfusion/ej2-base';import { Collection, Complex } from '@syncfusion/ej2-base';import { Tab, Toolbar, ItemModel, SelectingEventArgs, MenuItemModel, ClickEventArgs, TabItemModel } from '@syncfusion/ej2-navigations';import { Menu, MenuEventArgs, BeforeOpenCloseMenuEventArgs, HeaderModel, Header, Item, MenuItem } from '@syncfusion/ej2-navigations';import { SelectEventArgs } from '@syncfusion/ej2-dropdowns';
-import {RibbonItemType,ExpandCollapseEventArgs} from "./ribbon";
+import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Event, EmitType, ChildProperty } from '@syncfusion/ej2-base';import { getComponent, closest, EventHandler, getUniqueID } from '@syncfusion/ej2-base';import { Collection, Complex } from '@syncfusion/ej2-base';import { Tab, Toolbar, ItemModel, SelectingEventArgs, MenuItemModel, ClickEventArgs, TabItemModel } from '@syncfusion/ej2-navigations';import { Menu, MenuEventArgs, BeforeOpenCloseMenuEventArgs, Item, MenuItem } from '@syncfusion/ej2-navigations';import { SelectEventArgs as TabSelectEventArgs } from '@syncfusion/ej2-navigations';import { SelectEventArgs } from '@syncfusion/ej2-dropdowns';
+import {ExpandCollapseEventArgs} from "./ribbon";
 import {ComponentModel} from '@syncfusion/ej2-base';
+
+/**
+ * Interface for a class RibbonHeader
+ */
+export interface RibbonHeaderModel {
+
+    /**
+     * Specifies the display text of the Ribbon tab header.
+     * @default ''
+     */
+    text?: string;
+
+    /**
+     * Specifies the icon class that is used to render an icon in the Ribbon tab header.
+     * @default ''
+     */
+    iconCss?: string;
+
+    /**
+     * Options for positioning the icon in the Ribbon tab header. This property depends on `iconCss` property.
+     * The possible values are:
+     * - Left: Places the icon to the `left` of the item.
+     * - Top: Places the icon on the `top` of the item.
+     * - Right: Places the icon to the `right` end of the item.
+     * - Bottom: Places the icon at the `bottom` of the item.
+     * @default 'left'
+     */
+    iconPosition?: string;
+
+}
 
 /**
  * Interface for a class RibbonItem
@@ -11,7 +41,7 @@ export interface RibbonItemModel {
      * The object used for configuring the Tab item header properties.
      * @default {}
      */
-    header?: HeaderModel;
+    header?: RibbonHeaderModel;
 
     /**
      * Specifies the content of Tab item, that is displayed when concern item header is selected.
@@ -31,18 +61,6 @@ export interface RibbonItemModel {
      */
     disabled?: boolean;
 
-    /**
-     * Sets true to disable user interactions of the Tab item.
-     * @default 'Tab'
-     */
-    type?: RibbonItemType;
-
-    /**
-     * Specifies the sub menu items that is the array of MenuItem model.
-     * @default []
-     */
-    menuItems?: MenuItemModel[];
-
 }
 
 /**
@@ -57,7 +75,25 @@ export interface RibbonModel extends ComponentModel{
     cssClass?: string;
 
     /**
-     * An array of object that is used to configure the Tab component.
+     * Used the specify the ribbon menu type as `Menu` or `Sidebar`.
+     * @default true
+     */
+    menuType?: boolean;
+
+    /**
+     * An array of object that is used to configure the Ribbon menu.
+     * @default []
+     */
+    menuItems?: MenuItemModel[];
+
+    /**
+     * Specifies the index for activating the current Ribbon tab.
+     * @default 0
+     */
+    selectedTab?: number;
+
+    /**
+     * An array of object that is used to configure the Ribbon tab.
      * @default []
      */
     items?: RibbonItemModel[];

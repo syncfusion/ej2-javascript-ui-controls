@@ -827,6 +827,7 @@ describe('DateRangePicker module', () => {
                     e.cancelFocus = true
                 }
             });
+            (<HTMLElement>select('.' + classes.VALUE, editorObj.element)).click();
             setTimeout(() => {
                 expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
                 done();
@@ -841,6 +842,7 @@ describe('DateRangePicker module', () => {
                     e.cancelFocus = true
                 }
             });
+            (<HTMLElement>select('.' + classes.VALUE, editorObj.element)).click();
             setTimeout(() => {
                 expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
                 done();

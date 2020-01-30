@@ -293,7 +293,6 @@
   }
 
   .e-de-overlay {
-    filter: alpha(opacity=50);
     height: 100%;
     opacity: .5;
     pointer-events: none;
@@ -421,11 +420,11 @@
     .e-de-prop-font-colorpicker .e-split-btn-wrapper .e-btn:hover,
     .e-de-prop-font-colorpicker .e-split-btn-wrapper .e-btn:focus {
       background-color: $de-toggle-bg-color;
-      border-color: $de-toggle-btn-border;
+      box-shadow: $de-toggle-btn-border;
 
       .e-btn-icon {
         background-color: $de-toggle-bg-color;
-        border-color: $de-toggle-btn-border;
+        box-shadow: $de-toggle-btn-border;
         color: $de-toggle-btn-color;
       }
     }
@@ -433,7 +432,7 @@
     .e-de-border-size-button .e-btn-icon:focus,
     .e-de-border-size-button .e-btn-icon:hover {
       background-color: $de-toggle-bg-color;
-      border-color: $de-toggle-btn-border;
+      box-shadow: $de-toggle-btn-border;
       color: $de-toggle-btn-color;
     }
 
@@ -1425,7 +1424,6 @@
     }
 
     .e-de-overlay {
-      filter: alpha(opacity=50);
       height: 100%;
       opacity: .5;
       pointer-events: none;

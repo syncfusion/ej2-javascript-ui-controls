@@ -2,7 +2,7 @@
  * DOM util
  */
 
-import { createElement } from '@syncfusion/ej2-base';
+import { createElement, Browser } from '@syncfusion/ej2-base';
 import { Size } from '../primitives/size';
 import { BaseAttributes } from '../rendering/canvas-interface';
 
@@ -16,7 +16,19 @@ export function createHtmlElement(elementType: string, attribute?: Object): HTML
     return element;
 }
 export function getChildNode(node: SVGElement): SVGElement[] | HTMLCollection {
-    return node.children;
+    let child: SVGElement;
+    let collection: SVGElement[] | HTMLCollection = [];
+    if (Browser.info.name === 'msie' || Browser.info.name === 'edge') {
+        for (let i: number = 0; i < node.childNodes.length; i++) {
+            child = node.childNodes[i] as SVGElement;
+            if (child.nodeType === 1) {
+                collection.push(child);
+            }
+        }
+    } else {
+        collection = node.children;
+    }
+    return collection;
 }
 export function measureText(textContent: BaseAttributes): Size {
     let measureElement: string = 'barcodeMeasureElement';

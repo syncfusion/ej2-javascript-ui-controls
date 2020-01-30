@@ -87,7 +87,7 @@ export class LayerPanel {
         this.mapObject.baseMapRectBounds = null;
         this.mapObject.baseSize = null;
         let layerCount: number = layerCollection.length - 1;
-        layerCollection.forEach((layer: LayerSettings, index: number) => {
+        Array.prototype.forEach.call(layerCollection, (layer: LayerSettings, index: number) => {
             this.currentLayer = <LayerSettings>layer;
             this.processLayers(layer, index);
         });
@@ -147,9 +147,11 @@ export class LayerPanel {
         }));
         if (!this.mapObject.enablePersistence) {
             let itemName: string = this.mapObject.getModuleName() + this.mapObject.element.id;
-            if (!isNullOrUndefined(window.localStorage) && window.localStorage.getItem(itemName)) {
-                window.localStorage.removeItem(itemName);
-             }
+            if (navigator.userAgent.indexOf('Edge') === -1) {
+                if (!isNullOrUndefined(window.localStorage) && window.localStorage.getItem(itemName)) {
+                    window.localStorage.removeItem(itemName);
+                }
+            }
         }
         let eventArgs: ILayerRenderingEventArgs = {
             cancel: false, name: layerRendering, index: layerIndex,
@@ -256,8 +258,7 @@ export class LayerPanel {
         this.rectBounds = null;
         let shapeSettings: ShapeSettings = <ShapeSettings>this.currentLayer.shapeSettings;
         let bubbleSettings: BubbleSettings[] = <BubbleSettings[]>this.currentLayer.bubbleSettings;
-
-        renderData.forEach((geometryData: Object, index: number) => {
+        Array.prototype.forEach.call(renderData, (geometryData: Object, index: number) => {
             if (!isNullOrUndefined(geometryData['geometry']) || !isNullOrUndefined(geometryData['coordinates'])) {
                 let type: string = !isNullOrUndefined(geometryData['geometry']) ? geometryData['geometry']['type'] : geometryData['type'];
                 let coords: Object[] = !isNullOrUndefined(geometryData['geometry']) ? geometryData['geometry']['coordinates'] :
@@ -702,7 +703,7 @@ export class LayerPanel {
     }
 
     public calculateRectBounds(layerData: Object[]): void {
-        layerData.forEach((obj: Object, index: number) => {
+        Array.prototype.forEach.call(layerData, (obj: Object, index: number) => {
             if (!isNullOrUndefined(obj['geometry']) || !isNullOrUndefined(obj['coordinates'])) {
                 let type: string = !isNullOrUndefined(obj['geometry']) ? obj['geometry']['type'] : obj['type'];
                 let coordinates: Object[] = !isNullOrUndefined(obj['geometry']) ? obj['geometry']['coordinates'] : obj['coordinates'];
@@ -750,7 +751,7 @@ export class LayerPanel {
     }
 
     public calculateRectBox(coordinates: Object[]): void {
-        coordinates.forEach((currentCoords: Object) => {
+        Array.prototype.forEach.call(coordinates, (currentCoords: Object) => {
             if (isNullOrUndefined(this.mapObject.baseMapBounds)) {
                 this.mapObject.baseMapBounds = new GeoLocation(
                     { min: currentCoords[1], max: currentCoords[1] },

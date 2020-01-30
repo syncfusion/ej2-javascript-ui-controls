@@ -85,4 +85,17 @@ export interface EventSettingsModel {
      */
     allowDeleting?: boolean;
 
+    /**
+     * It enables the event to occupy the full height of the cell without the header of the cell.
+     * @default false
+     */
+    enableMaxHeight?: boolean;
+
+    /**
+     * This property enables the event to occupy the full height that remaining from the header and more indicator.
+     * More than one appointment are available on the cell the more indicator is created.
+     * @default false
+     */
+    enableIndicator?: boolean;
+
 }

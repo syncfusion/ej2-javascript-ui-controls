@@ -1,5 +1,5 @@
 import { Spreadsheet } from '../index';
-import { formulaOperation, keyUp, keyDown, click } from '../common/event';
+import { formulaOperation, keyUp, keyDown, click, refreshFormulaDatasource } from '../common/event';
 import { editOperation, formulaBarOperation } from '../common/event';
 import { workbookFormulaOperation } from '../../workbook/common/event';
 import { AutoComplete } from '@syncfusion/ej2-dropdowns';
@@ -77,6 +77,7 @@ export class Formula {
         this.parent.on(keyUp, this.keyUpHandler, this);
         this.parent.on(keyDown, this.keyDownHandler, this);
         this.parent.on(click, this.clickHandler, this);
+        this.parent.on(refreshFormulaDatasource, this.refreshFormulaDatasource, this);
     }
 
     private removeEventListener(): void {
@@ -85,6 +86,7 @@ export class Formula {
             this.parent.off(keyUp, this.keyUpHandler);
             this.parent.off(keyDown, this.keyDownHandler);
             this.parent.off(click, this.clickHandler);
+            this.parent.off(refreshFormulaDatasource, this.refreshFormulaDatasource);
         }
     }
 
@@ -204,6 +206,14 @@ export class Formula {
             args.cancel = true;
             this.hidePopUp();
         }
+    }
+    private refreshFormulaDatasource(): void {
+        let eventArgs: { action: string, formulaCollection: string[] } = {
+            action: 'getLibraryFormulas',
+            formulaCollection: []
+        };
+        this.parent.notify(workbookFormulaOperation, eventArgs);
+        this.autocompleteInstance.dataSource = eventArgs.formulaCollection;
     }
 
     private keyUpHandler(e: KeyboardEventArgs): void {

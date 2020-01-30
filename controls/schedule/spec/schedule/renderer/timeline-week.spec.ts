@@ -1047,6 +1047,29 @@ describe('Schedule Timeline Week view', () => {
         });
     });
 
+    describe('Scroll to workhour when currentDate set to selectedDate', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = {
+                height: '500px', selectedDate: new Date(2020, 0, 22, 10, 30, 30),
+                currentView: 'TimelineWeek', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                workHours: {
+                    highlight: true,
+                    start: '06:00',
+                },
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll((): void => {
+            util.destroy(schObj);
+        });
+
+        it('ScrollLeft', () => {
+            let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+            expect(contentArea.scrollLeft).toEqual(7800);
+        });
+    });
+
     describe('Public methods with resource rendering', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {

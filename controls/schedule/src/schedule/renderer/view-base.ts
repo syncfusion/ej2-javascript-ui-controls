@@ -445,7 +445,7 @@ export class ViewBase {
     public wireExpandCollapseIconEvents(): void {
         if (this.parent.resourceBase && this.parent.resourceBase.resourceCollection.length > 1) {
             let treeIcons: NodeListOf<Element> = this.element.querySelectorAll('.' + cls.RESOURCE_TREE_ICON_CLASS);
-            treeIcons.forEach((icon: Element) => {
+            [].slice.call(treeIcons).forEach((icon: Element) => {
                 EventHandler.clearEvents(icon);
                 EventHandler.add(icon, 'click', this.parent.resourceBase.onTreeIconClick, this.parent.resourceBase);
             });

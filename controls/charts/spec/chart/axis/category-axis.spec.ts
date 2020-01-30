@@ -9,7 +9,7 @@ import { ColumnSeries } from '../../../src/chart/series/column-series';
 import { DataLabel } from '../../../src/chart/series/data-label';
 import { Category } from '../../../src/chart/axis/category-axis';
 import { Crosshair } from '../../../src/chart/user-interaction/crosshair';
-import { categoryData, categoryData1 } from '../base/data.spec';
+import { categoryData, categoryData1, rotatedLabels } from '../base/data.spec';
 import { MouseEvents } from '../base/events.spec';
 import { unbindResizeEvents } from '../base/data.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
@@ -506,6 +506,147 @@ describe('Chart Control', () => {
             chart.primaryXAxis.labelRotation = 90;
             chart.refresh();
         });
+    });
+    describe('Checking rotated label intersection with category-axis-labels', () => {
+        let chart: Chart;
+        let ele: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: Element;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            chart = new Chart(
+                {
+                    primaryXAxis: {
+                        valueType: 'Category',
+                        interval: 1,
+                        majorGridLines: { width: 0 },
+                        labelIntersectAction: 'Hide',
+                        labelRotation: 0,
+                    },
+                    primaryYAxis: {
+                        labelStyle: { size: '0px' },
+                        majorTickLines: { width: 0 },
+                        majorGridLines: { width: 0 },
+                        lineStyle: { width: 0 },
+                    },
+                    chartArea: {
+                        border: {
+                            width: 0
+                        }
+                    },
+                    width: '800px',
+                    height: '450px',
+                    legendSettings: {
+                        visible: false
+                    },
+                    series: [
+                        {
+                            type: 'Column',
+                            xName: 'x',
+                            yName: 'y',
+                            dataSource: rotatedLabels
+                        }
+                    ],
+                }, '#container');
+
+        });
+
+        afterAll((): void => {
+
+            chart.destroy();
+            ele.remove();
+        });
+        it('Label count with 0 degree', (done: Function) => {
+            loaded = (args: Object): void => {
+                let labelGroup: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(labelGroup.childElementCount == 5).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('Label count with +45 degree', (done: Function) => {
+            loaded = (args: Object): void => {
+                let labelGroup: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(labelGroup.childElementCount == 21).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.labelRotation = 45;
+            chart.refresh();
+        });
+        it('Label count with +90 degree', (done: Function) => {
+            loaded = (args: Object): void => {
+                let labelGroup: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(labelGroup.childElementCount == 25).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.labelRotation = 90;
+            chart.refresh();
+        });
+        it('Label count with +185 degree', (done: Function) => {
+            loaded = (args: Object): void => {
+                let labelGroup: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(labelGroup.childElementCount == 5).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.labelRotation = 185;
+            chart.refresh();
+        });
+        it('Label count with +350 degree', (done: Function) => {
+            loaded = (args: Object): void => {
+                let labelGroup: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(labelGroup.childElementCount == 7).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.labelRotation = 350;
+            chart.refresh();
+        });
+        it('Label count with -10 degree', (done: Function) => {
+            loaded = (args: Object): void => {
+                let labelGroup: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(labelGroup.childElementCount == 7).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.labelRotation = -10;
+            chart.refresh();
+        });
+        it('Label count with -45 degree', (done: Function) => {
+            loaded = (args: Object): void => {
+                let labelGroup: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(labelGroup.childElementCount == 20 || labelGroup.childElementCount == 19).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.labelRotation = -45;
+            chart.refresh();
+        });
+        it('Label count with -90 degree', (done: Function) => {
+            loaded = (args: Object): void => {
+                let labelGroup: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(labelGroup.childElementCount == 25).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.labelRotation = -90;
+            chart.refresh();
+        });
+        it('Label count with -280 degree', (done: Function) => {
+            loaded = (args: Object): void => {
+                let labelGroup: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(labelGroup.childElementCount == 27 || labelGroup.childElementCount == 30).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.labelRotation = -280;
+            chart.refresh();
+        });
+
     });
     it('memory leak', () => {
         profile.sample();

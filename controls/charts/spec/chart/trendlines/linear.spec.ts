@@ -38,6 +38,28 @@ let yValue1: number[] = [7.66, 8.03, 8.41, 8.97, 8.77, 8.20, NaN, 7.89, 8.68, 9.
     41.33, 43.12, 45.00, 47.23, 48.62, 46.60, 45.28, 44.01, 45.17, 41.20, 43.41, NaN, 45.65, 46.61, 53.34, 58.53];
 let point1: Object;
 let point2: Object;
+let categoyData: any = [{
+    'name': "MTBF", 'dataSource': [{ 'x': "FEB 2018",'y': 12, "text": " 0 / 1595" },
+    { 'x': "MAR 2018",'y': 12, "text": " 0 / 1607" },
+    { 'x': "APR 2018",'y': 12, "text": " 0 / 1616" },
+    { 'x': "MAG 2018",'y': 12, "text": " 0 / 1620" },
+    { 'x': "GIU 2018",'y': 12, "text": " 0 / 1623" },
+    { 'x': "LUG 2018",'y': 12, "text": " 0 / 1628" },]
+}, {
+    "name": "MTBV", 'dataSource': [{ 'x': "FEB 2018",'y': 0, "text": " 0 / 1595" },
+    { 'x': "MAR 2018",'y': 0, "text": " 0 / 1607" },
+    { 'x': "APR 2018",'y': 0, "text": " 0 / 1616" },
+    { 'x': "MAG 2018",'y': 0, "text": " 0 / 1620" },
+    { 'x': "GIU 2018",'y': 0, "text": " 0 / 1623" },
+    { 'x': "LUG 2018",'y': 0, "text": " 0 / 1628" },]
+}, {
+    "name": "MTBC", 'dataSource': [{ 'x': "FEB 2018",'y': 0, "text": " 0 / 1595" },
+    { 'x': "MAR 2018",'y': 0, "text": " 0 / 1607" },
+    { 'x': "APR 2018",'y': 0, "text": " 0 / 1616" },
+    { 'x': "MAG 2018",'y': 0, "text": " 0 / 1620" },
+    { 'x': "GIU 2018",'y': 0, "text": " 0 / 1623" },
+    { 'x': "LUG 2018",'y': 0, "text": " 0 / 1628" },]
+}];
 let i: number; let j: number = 0;
 for (i = 1973; i <= 2013; i++) {
     point1 = { x: i, y: yValue[j] };
@@ -369,6 +391,60 @@ describe('Chart', () => {
             chartObj.refresh();
         });
     });
+    describe('Linear Trendlines with category data', () => {
+        let chartObj: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let trigger: MouseEvents = new MouseEvents();
+        element = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(element);
+            chartObj = new Chart(
+                {
+                    primaryXAxis: {
+                        title: 'Months',
+                        valueType: 'Category'
+                    },
+                    primaryYAxis: {
+                        title: 'Rupees against Dollars',
+                        interval: 5
+                    },
+                    height: '600px',
+                    width: '850px',
+                    series: [{
+                        type: 'Line',
+                        name: 'trend',
+                        fill: '#0066FF',
+                        xName: 'x',
+                        yName: 'y',
+                        dataSource: categoyData[0].dataSource,
+                        animation: { enable: false },
+                        trendlines: [{ type: 'Linear',
+                        name: 'Linear_trend', fill: 'red', enableTooltip: true, marker: { visible: true } }],
+                    }],
+                    title: 'Online trading'
+                });
+            chartObj.appendTo('#container');
+        });
+
+        afterAll((): void => {
+            chartObj.destroy();
+            document.getElementById('container').remove();
+        });
+
+        it('Linear Trendlines with category values', (done: Function) => {
+            loaded = (args: Object): void => {
+                let svg: number = document.getElementById('containerSeriesGroup0').childNodes.length;
+                expect(svg == 2).toBe(true);
+                let xAxisLabelCollection: HTMLElement = document.getElementById('containerAxisLabels0');
+                expect(xAxisLabelCollection.childNodes.length == 6).toBe(true);
+                let yAxisLabelCollection: HTMLElement = document.getElementById('containerAxisLabels1');
+                expect(yAxisLabelCollection.childNodes.length == 2).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
@@ -377,5 +453,5 @@ describe('Chart', () => {
         let memory: any = inMB(getMemoryProfile())
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-    })
+    });
 });

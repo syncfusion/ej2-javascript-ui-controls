@@ -46,7 +46,7 @@ describe('Paste Validation without history with multiple options', () => {
     });
     it('paste options with keep text only', () => {
         editor.editor.applyPasteOptions('KeepTextOnly');
-        expect(editor.selection.characterFormat.bold).toBe(true);
+        expect(editor.selection.characterFormat.bold).toBe(false);
     });
     it('paste options with Merge existing format', () => {
         editor.editor.applyPasteOptions('MergeWithExistingFormatting');
@@ -105,7 +105,7 @@ describe('Paste Validation with history with multiple options', () => {
     it('paste options with keep text only', () => {
         editor.editor.applyPasteOptions('KeepTextOnly');
 
-        expect(editor.selection.characterFormat.bold).toBe(true);
+        expect(editor.selection.characterFormat.bold).toBe(false);
 
     });
     it('paste options with Merge existing format', () => {

@@ -265,7 +265,7 @@ export class FilterMenuRenderer {
     private clearBtnClick(column: Column): void {
         this.filterObj.removeFilteredColsByField(column.field);
         if (isBlazor() && !this.parent.isJsComponent) {
-            this.parent.filterSettings.columns = this.parent.filterSettings.columns;
+            this.parent.setProperties({ filterSettings: { columns: this.filterSettings.columns } }, true);
         }
         this.closeDialog();
         let iconClass: string = this.parent.showColumnMenu ? '.e-columnmenu' : '.e-icon-filter';

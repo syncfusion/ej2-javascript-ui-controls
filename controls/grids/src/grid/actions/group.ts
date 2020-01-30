@@ -723,11 +723,12 @@ export class Group implements IAction {
                             args = { requestType: 'ungrouping', type: events.actionBegin };
                         }
                         if (!this.groupSettings.showGroupedColumn) {
-                            e.oldProperties[prop].forEach((column: string) => {
-                                if (e.properties[prop].indexOf(column) === -1) {
-                                    this.parent.getColumnByField(column).visible = true;
+                            let columns: string[] = e.oldProperties[prop];
+                            for (let i: number = 0; i < columns.length; i++) {
+                                if (e.properties[prop].indexOf(columns[i]) === -1) {
+                                    this.parent.getColumnByField(columns[i]).visible = true;
                                 }
-                            });
+                            }
                         }
                         this.parent.notify(events.modelChanged, args);
                     }
@@ -860,11 +861,12 @@ export class Group implements IAction {
         let rowData: Object[] = this.groupGenerator.generateRows(aggregates, {});
         let summaryRows: Row<Column>[] = this.parent.getRowsObject().filter((row: Row<Column>) => !row.isDataRow);
         let updateSummaryRows: Object[] = rowData.filter((data: Row<Column>) => !data.isDataRow);
-        updateSummaryRows.forEach((row: Row<Column>, indx: number) => {
+        for (let i: number = 0; i < updateSummaryRows.length; i++) {
+            let row: Row<Column> = updateSummaryRows[i] as Row<Column>;
             let cells: Object[] = row.cells.filter((cell: Cell<{}>) => cell.isDataCell);
-            let args: Object = { cells: cells, data: row.data, dataUid: summaryRows[indx] ? summaryRows[indx].uid : '' };
+            let args: Object = { cells: cells, data: row.data, dataUid: summaryRows[i] ? summaryRows[i].uid : '' };
             this.parent.notify(events.refreshAggregateCell, args);
-        });
+        }
     }
 
     private iterateGroupAggregates(editedData: Object[]): Object[] {
@@ -889,28 +891,29 @@ export class Group implements IAction {
         });
         let eData: Object = editedData;
         if (!((<{ type: string }>eData).type && (<{ type: string }>eData).type === 'cancel') && deletedCols.length > 0) {
-            deletedCols.forEach((row: Object) => {
-                let index: number = mergeData.indexOf(row);
+            for (let i: number = 0; i < deletedCols.length; i++) {
+                let index: number = mergeData.indexOf(deletedCols[i]);
                 mergeData.splice(index, 1);
-            });
+            }
         }
         let aggregates: Object[] = [];
         let aggregateRows: AggregateRow | Object[] = this.parent.aggregates;
-        aggregateRows.forEach((row: AggregateRow) => {
-            row.columns.forEach((col: AggregateColumn) => {
+        for (let j: number = 0; j < aggregateRows.length; j++) {
+            let row: AggregateRow = aggregateRows[j] as AggregateRow;
+            for (let k: number = 0; k < row.columns.length; k++) {
                 let aggr: Object = {};
-                let type: string | AggregateType[] = col.type.toString();
-                aggr = { type: type.toLowerCase(), field: col.field };
+                let type: string | AggregateType[] = row.columns[k].type.toString();
+                aggr = { type: type.toLowerCase(), field: row.columns[k].field };
                 aggregates.push(aggr);
-            });
-        });
+            }
+        }
         let result: Object[];
         let aggrds: Object[];
         let groupedCols: string[] = this.parent.groupSettings.columns;
-        groupedCols.forEach((field: string) => {
+        for (let l: number = 0; l < groupedCols.length; l++) {
             aggrds = result ? result : mergeData;
-            result = DataUtil.group(aggrds, field, aggregates, null, null);
-        });
+            result = DataUtil.group(aggrds, groupedCols[l], aggregates, null, null);
+        }
         return result;
     }
 }

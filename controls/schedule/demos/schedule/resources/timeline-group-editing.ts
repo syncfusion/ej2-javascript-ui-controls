@@ -1,5 +1,5 @@
 import { enableRipple, addClass, removeClass, Internationalization } from '@syncfusion/ej2-base';
-import { Schedule, ScheduleModel, View, TimelineViews, TimelineMonth, ResourceDetails, TreeViewArgs } from '../../../src/schedule/index';
+import { Schedule, ScheduleModel, View, TimelineViews, TimelineMonth, ResourceDetails } from '../../../src/schedule/index';
 import { DatePicker, TimePicker, ChangeEventArgs } from '@syncfusion/ej2-calendars';
 import { resourceGroupData } from '../../../spec/schedule/base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
@@ -11,16 +11,15 @@ import { DropDownList, ChangeEventArgs as DropDownChangeArgs } from '@syncfusion
 enableRipple(true);
 Schedule.Inject(TimelineViews, TimelineMonth);
 
-(window as TemplateFunction).getResourceImage = (value: ResourceDetails | TreeViewArgs) => {
+(window as TemplateFunction).getResourceImage = (value: ResourceDetails) => {
     if ((value as ResourceDetails).resourceData && (value as ResourceDetails).resourceData.ClassName === 'e-child-node') {
         return '<img src="../images/nancy.png"/>';
     } else {
         return '';
     }
 };
-(window as TemplateFunction).getResourceName = (value: ResourceDetails | TreeViewArgs) => {
-    return ((value as ResourceDetails).resourceData) ?
-        (value as ResourceDetails).resourceData[(value as ResourceDetails).resource.textField] : (value as TreeViewArgs).resourceName;
+(window as TemplateFunction).getResourceName = (value: ResourceDetails) => {
+    return (value as ResourceDetails).resourceData[(value as ResourceDetails).resource.textField];
 };
 interface TemplateFunction extends Window {
     getResourceImage?: Function;

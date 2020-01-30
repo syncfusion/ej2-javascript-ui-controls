@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 17.4.46 (2020-01-30)
+
+### Schedule
+
+#### New Features
+
+- Provided public method to scroll to the position of the any resources that available on the scheduler.
+- Provided public method to change the current view based on index.
+- Added option to render single event per cell using `enableMaxHeight` property.
+
+#### Bug Fixes
+
+- `#F145578` - An issue with `scrollTo()` method not working properly in Timeline Week View has been fixed.
+
 ## 17.4.43 (2020-01-14)
 
 - `#149393` - An issue with event rendering in Timeline mode with `timescale` property has been fixed.

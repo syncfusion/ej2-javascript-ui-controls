@@ -507,7 +507,7 @@ let Popup = class Popup extends Component {
      * To destroy the control.
      */
     destroy() {
-        this.element.classList.remove(CLASSNAMES.ROOT, CLASSNAMES.RTL);
+        this.element.classList.remove(CLASSNAMES.ROOT, CLASSNAMES.RTL, CLASSNAMES.OPEN, CLASSNAMES.CLOSE);
         this.unwireEvents();
         super.destroy();
     }
@@ -1555,6 +1555,7 @@ const MODAL_DLG = 'e-dlg-modal';
 const DLG_CONTENT = 'e-dlg-content';
 const DLG_CLOSE_ICON = 'e-icon-dlg-close';
 const DLG_OVERLAY = 'e-dlg-overlay';
+const DLG_TARGET = 'e-dlg-target';
 const DLG_CONTAINER = 'e-dlg-container';
 const SCROLL_DISABLED = 'e-scroll-disabled';
 const DLG_PRIMARY_BUTTON = 'e-primary';
@@ -1623,16 +1624,6 @@ let Dialog = class Dialog extends Component {
         this.headerContent = null;
         this.allowMaxHeight = true;
         this.preventVisibility = true;
-        let classArray = [];
-        if (!(isBlazor() && this.isServerRendered)) {
-            for (let j = 0; j < this.element.classList.length; j++) {
-                if (!isNullOrUndefined(this.element.classList[j].match('e-control')) ||
-                    !isNullOrUndefined(this.element.classList[j].match(ROOT))) {
-                    classArray.push(this.element.classList[j]);
-                }
-            }
-            removeClass([this.element], classArray);
-        }
         this.clonedEle = this.element.cloneNode(true);
         this.closeIconClickEventHandler = (event) => {
             this.hide(event);
@@ -1715,7 +1706,7 @@ let Dialog = class Dialog extends Component {
     }
     setResize() {
         if (this.enableResize) {
-            if (isBlazor() && this.isServerRendered && !isNullOrUndefined(this.element.querySelector('.e-icons.e-resize-handle'))) {
+            if (this.isBlazorServerRender() && !isNullOrUndefined(this.element.querySelector('.e-icons.e-resize-handle'))) {
                 return;
             }
             this.element.classList.add(DLG_RESIZABLE);
@@ -1807,13 +1798,13 @@ let Dialog = class Dialog extends Component {
             this.targetEle = ((typeof this.target) === 'string') ?
                 document.querySelector(this.target) : this.target;
         }
-        if (!(isBlazor() && this.isServerRendered)) {
+        if (!this.isBlazorServerRender()) {
             addClass([this.element], ROOT);
         }
         if (Browser.isDevice) {
             addClass([this.element], DEVICE);
         }
-        if (!(isBlazor() && this.isServerRendered)) {
+        if (!this.isBlazorServerRender()) {
             this.setCSSClass();
         }
         this.setMaxHeight();
@@ -1824,7 +1815,7 @@ let Dialog = class Dialog extends Component {
      */
     initRender() {
         this.initialRender = true;
-        if (!(isBlazor() && this.isServerRendered)) {
+        if (!this.isBlazorServerRender()) {
             attributes(this.element, { role: 'dialog' });
         }
         if (this.zIndex === 1000) {
@@ -1834,10 +1825,10 @@ let Dialog = class Dialog extends Component {
         else {
             this.calculatezIndex = false;
         }
-        if (isBlazor() && this.isServerRendered && isNullOrUndefined(this.headerContent)) {
+        if (this.isBlazorServerRender() && isNullOrUndefined(this.headerContent)) {
             this.headerContent = this.element.getElementsByClassName('e-dlg-header-content')[0];
         }
-        if (!(isBlazor() && this.isServerRendered)) {
+        if (!this.isBlazorServerRender()) {
             this.setTargetContent();
             if (this.header !== '' && !isNullOrUndefined(this.header)) {
                 this.setHeader();
@@ -1853,7 +1844,7 @@ let Dialog = class Dialog extends Component {
                 this.setButton();
             }
         }
-        if (isBlazor() && this.isServerRendered) {
+        if (this.isBlazorServerRender()) {
             if (!isNullOrUndefined(this.buttons[0].buttonModel) && this.footerTemplate === '') {
                 this.setButton();
             }
@@ -1861,13 +1852,13 @@ let Dialog = class Dialog extends Component {
         if (this.allowDragging && (!isNullOrUndefined(this.headerContent))) {
             this.setAllowDragging();
         }
-        if (!(isBlazor() && this.isServerRendered)) {
+        if (!this.isBlazorServerRender()) {
             attributes(this.element, { 'aria-modal': (this.isModal ? 'true' : 'false') });
             if (this.isModal) {
                 this.setIsModal();
             }
         }
-        if (isBlazor() && this.isServerRendered && isNullOrUndefined(this.dlgContainer)) {
+        if (this.isBlazorServerRender() && isNullOrUndefined(this.dlgContainer)) {
             this.dlgContainer = this.element.parentElement;
             this.dlgOverlay = this.element.parentElement.getElementsByClassName('e-dlg-overlay')[0];
         }
@@ -1880,6 +1871,7 @@ let Dialog = class Dialog extends Component {
             zIndex: this.zIndex,
             relateTo: this.target,
             actionOnScroll: 'none',
+            enableRtl: this.enableRtl,
             open: (event) => {
                 let eventArgs = {
                     container: this.isModal ? this.dlgContainer : this.element,
@@ -1916,7 +1908,7 @@ let Dialog = class Dialog extends Component {
         });
         this.positionChange();
         this.setEnableRTL();
-        if (!(isBlazor() && this.isServerRendered)) {
+        if (!this.isBlazorServerRender()) {
             addClass([this.element], DLG_HIDE);
             if (this.isModal) {
                 this.setOverlayZindex();
@@ -2002,7 +1994,7 @@ let Dialog = class Dialog extends Component {
         }
     }
     setButton() {
-        if (!(isBlazor() && this.isServerRendered)) {
+        if (!this.isBlazorServerRender()) {
             this.buttonContent = [];
             this.btnObj = [];
             for (let i = 0; i < this.buttons.length; i++) {
@@ -2012,17 +2004,20 @@ let Dialog = class Dialog extends Component {
             }
             this.setFooterTemplate();
         }
+        let footerEle = this.element.querySelector('.' + DLG_FOOTER_CONTENT);
+        let footerBtn = !isNullOrUndefined(footerEle) &&
+            footerEle.querySelectorAll('button');
         for (let i = 0; i < this.buttons.length; i++) {
-            if (!(isBlazor() && this.isServerRendered)) {
+            if (!this.isBlazorServerRender()) {
                 this.btnObj[i] = new Button(this.buttons[i].buttonModel);
             }
-            if (isBlazor() && this.isServerRendered) {
-                this.ftrTemplateContent = this.element.querySelector('.e-footer-content');
+            if (this.isBlazorServerRender()) {
+                this.ftrTemplateContent = this.element.querySelector('.' + DLG_FOOTER_CONTENT);
             }
-            if (typeof (this.buttons[i].click) === 'function') {
-                EventHandler.add(this.ftrTemplateContent.children[i], 'click', this.buttons[i].click, this);
+            if (!isNullOrUndefined(this.ftrTemplateContent) && typeof (this.buttons[i].click) === 'function' && footerBtn.length > 0) {
+                EventHandler.add(footerBtn[i], 'click', this.buttons[i].click, this);
             }
-            if (!(isBlazor() && this.isServerRendered)) {
+            if (!this.isBlazorServerRender() && !isNullOrUndefined(this.ftrTemplateContent)) {
                 this.btnObj[i].appendTo(this.ftrTemplateContent.children[i]);
                 this.btnObj[i].element.classList.add('e-flat');
                 this.primaryButtonEle = this.element.getElementsByClassName('e-primary')[0];
@@ -2138,7 +2133,7 @@ let Dialog = class Dialog extends Component {
         this.element.style.display = display;
     }
     setEnableRTL() {
-        if (!(isBlazor() && this.isServerRendered)) {
+        if (!this.isBlazorServerRender()) {
             this.enableRtl ? addClass([this.element], RTL) : removeClass([this.element], RTL);
         }
         if (!isNullOrUndefined(this.element.querySelector('.e-resize-handle'))) {
@@ -2297,6 +2292,14 @@ let Dialog = class Dialog extends Component {
     unBindEvent(element) {
         EventHandler.remove(element, 'keydown', this.keyDown);
     }
+    updateSanitizeContent() {
+        if (!this.isBlazorServerRender()) {
+            this.contentEle.innerHTML = this.sanitizeHelper(this.content);
+        }
+    }
+    isBlazorServerRender() {
+        return isBlazor() && this.isServerRendered;
+    }
     /**
      * Module required function
      * @private
@@ -2316,21 +2319,22 @@ let Dialog = class Dialog extends Component {
             switch (prop) {
                 case 'content':
                     if (!isNullOrUndefined(this.content) && this.content !== '') {
-                        if (isBlazor() && this.isServerRendered) {
+                        if (this.isBlazorServerRender()) {
                             this.contentEle = this.element.querySelector('.e-dlg-content');
                         }
                         if (!isNullOrUndefined(this.contentEle) && this.contentEle.getAttribute('role') !== 'dialog') {
-                            if (!(isBlazor() && this.isServerRendered)) {
+                            if (!this.isBlazorServerRender()) {
                                 this.contentEle.innerHTML = '';
                             }
-                            typeof (this.content) === 'string' ? (isBlazor() && this.isServerRendered
+                            typeof (this.content) === 'string' ? (this.isBlazorServerRender()
                                 && (this.contentEle.innerText === '')) ?
                                 this.contentEle.insertAdjacentHTML('beforeend', this.sanitizeHelper(this.content)) :
-                                this.contentEle.innerHTML = this.sanitizeHelper(this.content) : this.contentEle.appendChild(this.content);
+                                this.updateSanitizeContent() :
+                                this.contentEle.appendChild(this.content);
                             this.setMaxHeight();
                         }
                         else {
-                            if (!(isBlazor() && this.isServerRendered) ||
+                            if (!this.isBlazorServerRender() ||
                                 isNullOrUndefined(this.element.querySelector('.e-dlg-content'))) {
                                 this.setContent();
                             }
@@ -2349,7 +2353,7 @@ let Dialog = class Dialog extends Component {
                         }
                     }
                     else {
-                        if (!(isBlazor() && this.isServerRendered) ||
+                        if (!this.isBlazorServerRender() ||
                             isNullOrUndefined(this.element.querySelector('.e-dlg-header-content'))) {
                             this.setHeader();
                         }
@@ -2365,7 +2369,7 @@ let Dialog = class Dialog extends Component {
                         this.buttons = [{}];
                     }
                     else {
-                        if (!(isBlazor() && this.isServerRendered) ||
+                        if (!this.isBlazorServerRender() ||
                             isNullOrUndefined(this.element.querySelector('.e-footer-content'))) {
                             this.setFooterTemplate();
                         }
@@ -2382,13 +2386,13 @@ let Dialog = class Dialog extends Component {
                             detach(this.closeIcon);
                         }
                         else {
-                            if (isBlazor() && this.isServerRendered) {
+                            if (this.isBlazorServerRender()) {
                                 this.wireEvents();
                             }
                         }
                     }
                     else {
-                        if (!(isBlazor() && this.isServerRendered)) {
+                        if (!this.isBlazorServerRender()) {
                             this.renderCloseIcon();
                         }
                         this.wireEvents();
@@ -2425,7 +2429,7 @@ let Dialog = class Dialog extends Component {
                     break;
                 case 'buttons':
                     let buttonCount = this.buttons.length;
-                    if (!isNullOrUndefined(this.ftrTemplateContent)) {
+                    if (!isNullOrUndefined(this.ftrTemplateContent) && !this.isBlazorServerRender()) {
                         detach(this.ftrTemplateContent);
                         this.ftrTemplateContent = null;
                     }
@@ -2479,7 +2483,7 @@ let Dialog = class Dialog extends Component {
         }
         else {
             removeClass([this.element], MODAL_DLG);
-            removeClass([document.body], SCROLL_DISABLED);
+            removeClass([document.body], [DLG_TARGET, SCROLL_DISABLED]);
             detach(this.dlgOverlay);
             while (this.dlgContainer.firstChild) {
                 this.dlgContainer.parentElement.insertBefore(this.dlgContainer.firstChild, this.dlgContainer);
@@ -2517,58 +2521,54 @@ let Dialog = class Dialog extends Component {
      * @memberof dialog
      */
     destroy() {
-        if (this.element.classList.contains(ROOT)) {
-            this.unWireEvents();
-            super.destroy();
-            let classArray = [
-                ROOT, RTL, MODAL_DLG
-            ];
-            removeClass([this.element, this.element], classArray);
-            if (this.popupObj.element.classList.contains(POPUP_ROOT)) {
-                this.popupObj.destroy();
+        let classArray = [RTL, MODAL_DLG, DLG_RESIZABLE, DLG_RESTRICT_LEFT_VALUE];
+        let attrs = ['role', 'aria-modal', 'aria-labelledby', 'aria-describedby', 'aria-grabbed', 'tabindex', 'style'];
+        if (this.isModal) {
+            removeClass([(!isNullOrUndefined(this.targetEle) ? this.targetEle : document.body)], SCROLL_DISABLED);
+        }
+        this.unWireEvents();
+        if (!isNullOrUndefined(this.btnObj)) {
+            for (let i = 0; i < this.btnObj.length; i++) {
+                this.btnObj[i].destroy();
             }
-            /* istanbul ignore next */
-            if (!isNullOrUndefined(this.btnObj)) {
-                for (let i; i < this.btnObj.length; i++) {
-                    this.btnObj[i].destroy();
-                }
-            }
-            if (this.isModal && (!(isBlazor() && this.isServerRendered))) {
-                detach(this.dlgOverlay);
-                this.dlgContainer.parentNode.insertBefore(this.element, this.dlgContainer);
-                detach(this.dlgContainer);
-            }
-            if (!(isBlazor() && this.isServerRendered)) {
-                this.element.innerHTML = '';
-            }
-            if (isBlazor() && this.isServerRendered) {
-                if (!isNullOrUndefined(this.element.children)) {
-                    for (let i = 0; i <= this.element.children.length; i++) {
-                        i = i - i;
-                        detach(this.element.children[i]);
-                    }
-                }
-            }
-            while (this.element.attributes.length > 0) {
-                this.element.removeAttribute(this.element.attributes[0].name);
-            }
-            for (let k = 0; k < this.clonedEle.attributes.length; k++) {
-                if (isBlazor() && this.isServerRendered && this.clonedEle.attributes[k].name === 'id') {
-                    this.element.setAttribute(this.clonedEle.attributes[k].name, this.clonedEle.attributes[k].value);
-                    return;
-                }
-                else {
-                    this.element.setAttribute(this.clonedEle.attributes[k].name, this.clonedEle.attributes[k].value);
+        }
+        if (!isNullOrUndefined(this.dragObj)) {
+            this.dragObj.destroy();
+        }
+        if (this.popupObj.element.classList.contains(POPUP_ROOT)) {
+            this.popupObj.destroy();
+        }
+        removeClass([this.element], classArray);
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            removeClass([this.element], this.cssClass.split(' '));
+        }
+        if (this.isModal && !this.isBlazorServerRender()) {
+            detach(this.dlgOverlay);
+            this.dlgContainer.parentNode.insertBefore(this.element, this.dlgContainer);
+            detach(this.dlgContainer);
+        }
+        if (!this.isBlazorServerRender()) {
+            this.element.innerHTML = this.clonedEle.innerHTML;
+        }
+        if (this.isBlazorServerRender()) {
+            if (!isNullOrUndefined(this.element.children)) {
+                for (let i = 0; i <= this.element.children.length; i++) {
+                    i = i - i;
+                    detach(this.element.children[i]);
                 }
             }
         }
+        for (let i = 0; i < attrs.length; i++) {
+            this.element.removeAttribute(attrs[i]);
+        }
+        super.destroy();
     }
     /**
      * Binding event to the element while widget creation
      * @hidden
      */
     wireEvents() {
-        if (isBlazor() && this.isServerRendered && this.showCloseIcon) {
+        if (this.isBlazorServerRender() && this.showCloseIcon) {
             this.closeIcon = this.element.getElementsByClassName('e-dlg-closeicon-btn')[0];
         }
         if (this.showCloseIcon) {
@@ -2589,19 +2589,10 @@ let Dialog = class Dialog extends Component {
         if (this.isModal) {
             EventHandler.remove(this.dlgOverlay, 'click', this.dlgOverlayClickEventHandler);
         }
-        if (!isNullOrUndefined(this.buttons[0].buttonModel)) {
-            if (!(isBlazor() && this.isServerRendered)) {
-                for (let i = 0; i < this.buttons.length; i++) {
-                    if (typeof (this.buttons[i].click) === 'function') {
-                        EventHandler.remove(this.ftrTemplateContent.children[i], 'click', this.buttons[i].click);
-                    }
-                }
-            }
-            else if (isBlazor() && this.isServerRendered && this.footerTemplate === '') {
-                for (let i = 0; i < this.buttons.length; i++) {
-                    if (typeof (this.buttons[i].click) === 'function') {
-                        EventHandler.remove(this.ftrTemplateContent.children[i], 'click', this.buttons[i].click);
-                    }
+        if (!isNullOrUndefined(this.buttons[0].buttonModel) && this.footerTemplate === '') {
+            for (let i = 0; i < this.buttons.length; i++) {
+                if (typeof (this.buttons[i].click) === 'function') {
+                    EventHandler.remove(this.ftrTemplateContent.children[i], 'click', this.buttons[i].click);
                 }
             }
         }
@@ -2660,10 +2651,10 @@ let Dialog = class Dialog extends Component {
                             }
                             this.dlgOverlay.style.position = 'absolute';
                             this.element.style.position = 'relative';
-                            addClass([this.targetEle], SCROLL_DISABLED);
+                            addClass([this.targetEle], [DLG_TARGET, SCROLL_DISABLED]);
                         }
                         else {
-                            addClass([document.body], SCROLL_DISABLED);
+                            addClass([document.body], [DLG_TARGET, SCROLL_DISABLED]);
                         }
                     }
                     let openAnimation = {
@@ -2719,8 +2710,8 @@ let Dialog = class Dialog extends Component {
             this.trigger('beforeClose', eventArgs, (beforeCloseArgs) => {
                 if (!beforeCloseArgs.cancel) {
                     if (this.isModal) {
-                        !isNullOrUndefined(this.targetEle) ? removeClass([this.targetEle], SCROLL_DISABLED) :
-                            removeClass([document.body], SCROLL_DISABLED);
+                        !isNullOrUndefined(this.targetEle) ? removeClass([this.targetEle], [DLG_TARGET, SCROLL_DISABLED]) :
+                            removeClass([document.body], [DLG_TARGET, SCROLL_DISABLED]);
                     }
                     let closeAnimation = {
                         name: this.animationSettings.effect + 'Out',
@@ -2752,14 +2743,14 @@ let Dialog = class Dialog extends Component {
             this.element.style.maxHeight = (!isNullOrUndefined(this.target)) ?
                 (this.targetEle.offsetHeight) + 'px' : (window.innerHeight) + 'px';
             this.element.style.display = display;
-            addClass([document.body], SCROLL_DISABLED);
+            addClass([document.body], [DLG_TARGET, SCROLL_DISABLED]);
             if (this.allowDragging && !isNullOrUndefined(this.dragObj)) {
                 this.dragObj.destroy();
             }
         }
         else {
             removeClass([this.element], FULLSCREEN);
-            removeClass([document.body], SCROLL_DISABLED);
+            removeClass([document.body], [DLG_TARGET, SCROLL_DISABLED]);
             if (this.allowDragging && (!isNullOrUndefined(this.headerContent))) {
                 this.setAllowDragging();
             }
@@ -2875,6 +2866,9 @@ __decorate$1([
 __decorate$1([
     Event()
 ], Dialog.prototype, "resizeStop", void 0);
+__decorate$1([
+    Event()
+], Dialog.prototype, "destroyed", void 0);
 Dialog = __decorate$1([
     NotifyPropertyChanges
 ], Dialog);

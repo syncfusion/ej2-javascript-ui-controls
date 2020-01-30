@@ -149,7 +149,7 @@ export class Render {
                     return;
                 }
                 if (e.requestType === 'refresh') {
-                    this.parent.currentAction = e;
+                    this.parent.notify('updateaction', args);
                 }
                 if (args.requestType !== 'virtualscroll') {
                     this.parent.showSpinner();
@@ -233,6 +233,7 @@ export class Render {
         if (args.requestType !== 'virtualscroll') {
             this.parent.showSpinner();
         }
+        this.parent.notify(events.resetInfiniteBlocks, args);
         this.emptyGrid = false;
         let dataManager: Promise<Object>;
         let isFActon: boolean = this.isNeedForeignAction();
@@ -297,6 +298,13 @@ export class Render {
         if (isBlazor() && !this.parent.isJsComponent) {
             promise.then((e: ReturnType) => {
                 this.parent.notify('editsuccess', args);
+            }).catch((e: Error) => {
+                let error: string = 'error';
+                let message: string = 'message';
+                if (!isNullOrUndefined(e[error]) && !isNullOrUndefined(e[error][message])) {
+                    e[error] = e[error][message];
+                }
+                this.parent.trigger(events.actionFailure, e);
             });
         } else {
             let query: Query = this.data.generateQuery().requiresCount();
@@ -599,8 +607,10 @@ export class Render {
         let groupN: Group = <Group>e.result[index]; let predicate: Predicate[] = [];
         let addWhere: (query: Query) => void =
             (input: Query) => {
-                [group0, groupN].forEach((group: Group) =>
-                    predicate.push(new Predicate('field', '==', group.field).and(this.getPredicate('key', 'equal', group.key))));
+                let groups: Group[] = [group0, groupN];
+                for (let i: number = 0; i < groups.length; i++) {
+                    predicate.push(new Predicate('field', '==', groups[i].field).and(this.getPredicate('key', 'equal', groups[i].key)));
+                }
                 input.where(Predicate.or(predicate));
             };
         let query: Query = new Query(); addWhere(query);
@@ -608,8 +618,10 @@ export class Render {
         let curFilter: Object[] = <Object[]>curDm.executeLocal(query);
         let newQuery: Query = this.data.generateQuery(true); let rPredicate: Predicate[] = [];
         if (this.data.isRemote() || isBlazor()) {
-            [group0, groupN].forEach((group: Group) =>
-                rPredicate.push(this.getPredicate(group.field, 'equal', group.key)));
+            let groups: Group[] = [group0, groupN];
+            for (let i: number = 0; i < groups.length; i++) {
+                rPredicate.push(this.getPredicate((groups[i] as Group).field, 'equal', (groups[i] as Group).key));
+            }
             newQuery.where(Predicate.or(rPredicate));
         } else {
             addWhere(newQuery);
@@ -631,30 +643,38 @@ export class Render {
 
     private updateGroupInfo(current: Object[], untouched: Object[]): Object[] {
         let dm: DataManager = new DataManager(<JSON[]>untouched);
-        current.forEach((element: Group, index: number, array: Object[]) => {
+        let elements: Group[] = current;
+        for (let i: number = 0; i < elements.length; i++) {
             let uGroup: Group = dm.executeLocal(new Query()
-                .where(new Predicate('field', '==', element.field).and(this.getPredicate('key', 'equal', element.key))))[0];
-            element.count = uGroup.count; let itemGroup: Group = (<Group>element.items); let uGroupItem: Group = (<Group>uGroup.items);
+                .where(new Predicate('field', '==', elements[i].field).and(this.getPredicate('key', 'equal', elements[i].key))))[0];
+            elements[i].count = uGroup.count; let itemGroup: Group = (<Group>elements[i].items);
+            let uGroupItem: Group = (<Group>uGroup.items);
             if (itemGroup.GroupGuid) {
-                element.items = <Object[]>this.updateGroupInfo(element.items, uGroup.items);
+                elements[i].items = <Object[]>this.updateGroupInfo(elements[i].items, uGroup.items);
             }
-            this.parent.aggregates.forEach((row: AggregateRowModel) =>
-                row.columns.forEach((column: AggregateColumnModel) => {
-                    let types: string[] = column.type instanceof Array ? column.type : [column.type];
-                    types.forEach((type: string) => {
-                        let key: string = column.field + ' - ' + type.toLowerCase();
+            let rows: AggregateRowModel[] = this.parent.aggregates;
+            for (let j: number = 0; j < rows.length; j++) {
+                let row: AggregateRowModel = (rows as AggregateRowModel)[j];
+                for (let k: number = 0; k < row.columns.length; k++) {
+                    let types: string[] = row.columns[k].type instanceof Array ? (row.columns[k].type) as string[] :
+                    [(row.columns[k].type)] as string[];
+                    for (let l: number = 0; l < types.length; l++) {
+                        let key: string = (row.columns[k] as AggregateColumnModel).field + ' - ' + types[l].toLowerCase();
                         let data: Object[] = itemGroup.level ? uGroupItem.records : uGroup.items;
                         let context: Object = this.parent;
-                        if (type === 'Custom') {
+                        if (types[l] === 'Custom') {
                             let data: Group = itemGroup.level ? uGroupItem : uGroup;
-                            element.aggregates[key] = column.customAggregate ?
-                                (<Function>column.customAggregate).call(context, data, column) : '';
+                            elements[i].aggregates[key] = (row.columns[k] as AggregateColumnModel).customAggregate ?
+                                (<Function>(row.columns[k] as AggregateColumnModel).customAggregate)
+                                .call(context, data, (row.columns[k] as AggregateColumnModel)) : '';
                         } else {
-                            element.aggregates[key] = DataUtil.aggregates[type.toLowerCase()](data, column.field);
+                            elements[i].aggregates[key] = DataUtil.aggregates[types[l].toLowerCase()]
+                            (data, (row.columns[k] as AggregateColumnModel).field);
                         }
-                    });
-                }));
-        });
+                    }
+                }
+            }
+        }
         return current;
     }
 }

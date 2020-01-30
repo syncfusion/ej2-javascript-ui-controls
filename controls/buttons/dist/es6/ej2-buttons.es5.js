@@ -575,33 +575,26 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
     CheckBox.prototype.destroy = function () {
         var _this = this;
         var wrapper = this.getWrapper();
-        if (isBlazor() && this.isServerRendered) {
-            if (!this.disabled) {
-                this.unWireEvents();
+        _super.prototype.destroy.call(this);
+        if (!this.disabled) {
+            this.unWireEvents();
+        }
+        if (this.tagName === 'INPUT') {
+            wrapper.parentNode.insertBefore(this.element, wrapper);
+            detach(wrapper);
+            this.element.checked = false;
+            if (this.indeterminate) {
+                this.element.indeterminate = false;
             }
+            ['name', 'value', 'disabled'].forEach(function (key) {
+                _this.element.removeAttribute(key);
+            });
         }
         else {
-            _super.prototype.destroy.call(this);
-            if (!this.disabled) {
-                this.unWireEvents();
-            }
-            if (this.tagName === 'INPUT') {
-                wrapper.parentNode.insertBefore(this.element, wrapper);
-                detach(wrapper);
-                this.element.checked = false;
-                if (this.indeterminate) {
-                    this.element.indeterminate = false;
-                }
-                ['name', 'value', 'disabled'].forEach(function (key) {
-                    _this.element.removeAttribute(key);
-                });
-            }
-            else {
-                ['role', 'aria-checked', 'class'].forEach(function (key) {
-                    wrapper.removeAttribute(key);
-                });
-                wrapper.innerHTML = '';
-            }
+            ['role', 'aria-checked', 'class'].forEach(function (key) {
+                wrapper.removeAttribute(key);
+            });
+            wrapper.innerHTML = '';
         }
     };
     CheckBox.prototype.focusHandler = function () {
@@ -775,9 +768,6 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     CheckBox.prototype.preRender = function () {
-        if (isBlazor() && this.isServerRendered) {
-            return;
-        }
         var element = this.element;
         this.formElement = closest(this.element, 'form');
         this.tagName = this.element.tagName;
@@ -795,20 +785,12 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     CheckBox.prototype.render = function () {
-        if (isBlazor() && this.isServerRendered) {
-            if (isRippleEnabled) {
-                rippleEffect(this.getWrapper().getElementsByClassName(RIPPLE)[0], { duration: 400, isCenterRipple: true });
-            }
-        }
-        else {
-            this.initWrapper();
-            this.initialize();
-        }
+        this.initWrapper();
+        this.initialize();
         if (!this.disabled) {
             this.wireEvents();
         }
         this.updateHtmlAttributeToWrapper();
-        this.renderComplete();
     };
     CheckBox.prototype.setDisabled = function () {
         var wrapper = this.getWrapper();
@@ -1914,6 +1896,9 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
                 chipListArray = chipArray;
                 addClass([this.element], className);
                 this.element.setAttribute('aria-label', fieldsData.text);
+                if (fieldsData.value) {
+                    this.element.setAttribute('data-value', fieldsData.value.toString());
+                }
             }
             else {
                 var wrapper = this.createElement('DIV', {
@@ -1922,6 +1907,9 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
                         'aria-label': fieldsData.text, 'aria-selected': 'false'
                     }
                 });
+                if (fieldsData.value) {
+                    wrapper.setAttribute('data-value', fieldsData.value.toString());
+                }
                 append(chipArray, wrapper);
                 chipListArray.push(wrapper);
             }
@@ -1944,7 +1932,8 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
             trailingIconCss: typeof data === 'object' ? (data.trailingIconCss ? data.trailingIconCss.toString() :
                 this.trailingIconCss.toString()) : (this.trailingIconCss.toString()),
             enabled: typeof data === 'object' ? (!isNullOrUndefined(data.enabled) ? (data.enabled.toString() === 'false' ? false : true) :
-                chipEnabled) : (chipEnabled)
+                chipEnabled) : (chipEnabled),
+            value: typeof data === 'object' ? ((data.value ? data.value.toString() : null)) : null
         };
         return fields;
     };
@@ -2132,41 +2121,63 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
         if (del === void 0) { del = false; }
         var chipWrapper = closest(e.target, '.' + classNames.chip);
         if (chipWrapper) {
+            var chipDataArgs = void 0;
             if (this.type !== 'chip') {
-                var chipData = this.find(chipWrapper);
-                chipData.event = e;
-                var deleteElement = e.target.classList.contains(classNames.delete) ?
-                    e.target : (del ? chipWrapper.querySelector('.' + classNames.delete) : undefined);
-                if (deleteElement && this.enableDelete) {
-                    chipData.cancel = false;
-                    var deletedItemArgs = chipData;
-                    this.trigger('delete', deletedItemArgs, function (observedArgs) {
-                        if (!observedArgs.cancel) {
-                            observedArgs.element = isBlazor() ? getElement(observedArgs.element) : observedArgs.element;
-                            _this.deleteHandler(observedArgs.element, observedArgs.index);
-                        }
-                    });
+                chipDataArgs = this.find(chipWrapper);
+            }
+            else {
+                var index = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.chip)).indexOf(chipWrapper);
+                chipDataArgs = {
+                    text: this.innerText ? this.innerText : this.text,
+                    element: chipWrapper, data: this.text, index: index
+                };
+            }
+            chipDataArgs.event = e;
+            chipDataArgs.cancel = false;
+            this.trigger('beforeClick', chipDataArgs, function (observedArgs) {
+                if (!observedArgs.cancel) {
+                    observedArgs.element = isBlazor() ? getElement(observedArgs.element) : observedArgs.element;
+                    _this.clickEventHandler(observedArgs.element, e, del);
                 }
-                else if (this.selection !== 'None') {
-                    this.selectionHandler(chipWrapper);
-                    chipData.selected = chipWrapper.classList.contains(classNames.active);
-                    var selectedItemArgs = chipData;
-                    this.trigger('click', selectedItemArgs);
-                }
-                else {
-                    this.focusInHandler(chipWrapper);
-                    var clickedItemArgs = chipData;
-                    this.trigger('click', clickedItemArgs);
-                }
+            });
+        }
+    };
+    ChipList.prototype.clickEventHandler = function (chipWrapper, e, del) {
+        var _this = this;
+        if (this.type !== 'chip') {
+            var chipData = this.find(chipWrapper);
+            chipData.event = e;
+            var deleteElement = e.target.classList.contains(classNames.delete) ?
+                e.target : (del ? chipWrapper.querySelector('.' + classNames.delete) : undefined);
+            if (deleteElement && this.enableDelete) {
+                chipData.cancel = false;
+                var deletedItemArgs = chipData;
+                this.trigger('delete', deletedItemArgs, function (observedArgs) {
+                    if (!observedArgs.cancel) {
+                        observedArgs.element = isBlazor() ? getElement(observedArgs.element) : observedArgs.element;
+                        _this.deleteHandler(observedArgs.element, observedArgs.index);
+                    }
+                });
+            }
+            else if (this.selection !== 'None') {
+                this.selectionHandler(chipWrapper);
+                chipData.selected = chipWrapper.classList.contains(classNames.active);
+                var selectedItemArgs = chipData;
+                this.trigger('click', selectedItemArgs);
             }
             else {
                 this.focusInHandler(chipWrapper);
-                var clickedItemArgs = {
-                    text: this.innerText ? this.innerText : this.text,
-                    element: chipWrapper, data: this.text, event: e
-                };
+                var clickedItemArgs = chipData;
                 this.trigger('click', clickedItemArgs);
             }
+        }
+        else {
+            this.focusInHandler(chipWrapper);
+            var clickedItemArgs = {
+                text: this.innerText ? this.innerText : this.text,
+                element: chipWrapper, data: this.text, event: e
+            };
+            this.trigger('click', clickedItemArgs);
         }
     };
     ChipList.prototype.selectionHandler = function (chipWrapper) {
@@ -2193,20 +2204,34 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
     };
     ChipList.prototype.updateSelectedChips = function () {
         var chipListEle = this.element.querySelectorAll('.e-chip');
-        var chipColl = [];
-        var chip;
+        var chipCollIndex = [];
+        var chipCollValue = [];
+        var chip = null;
+        var value;
         for (var i = 0; i < chipListEle.length; i++) {
-            if (this.element.querySelectorAll('.e-chip')[i].getAttribute('aria-selected') === 'true') {
-                if (this.selection === 'Single' && this.element.querySelectorAll('.e-chip')[i].classList.contains('e-active')) {
-                    chip = i;
+            var selectedEle = this.element.querySelectorAll('.e-chip')[i];
+            if (selectedEle.getAttribute('aria-selected') === 'true') {
+                value = selectedEle.getAttribute('data-value');
+                if (this.selection === 'Single' && selectedEle.classList.contains('e-active')) {
+                    if (value) {
+                        chip = value;
+                    }
+                    else {
+                        chip = i;
+                    }
                     break;
                 }
                 else {
-                    chipColl.push(i);
+                    if (value) {
+                        chipCollValue.push(value);
+                    }
+                    else {
+                        chipCollIndex.push(i);
+                    }
                 }
             }
         }
-        this.setProperties({ selectedChips: this.selection === 'Single' ? chip : chipColl }, true);
+        this.setProperties({ selectedChips: this.selection === 'Single' ? chip : value ? chipCollValue : chipCollIndex }, true);
     };
     ChipList.prototype.deleteHandler = function (chipWrapper, index) {
         this.chips.splice(index, 1);
@@ -2329,6 +2354,9 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
     __decorate$4([
         Event()
     ], ChipList.prototype, "click", void 0);
+    __decorate$4([
+        Event()
+    ], ChipList.prototype, "beforeClick", void 0);
     __decorate$4([
         Event()
     ], ChipList.prototype, "delete", void 0);

@@ -1020,10 +1020,14 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         if (this.isVertical()) {
             let tbPos: string = (this.headerPlacement === 'Left') ? CLS_VLEFT : CLS_VRIGHT;
             addClass([this.hdrEle], [CLS_VERTICAL, tbPos]);
-            this.element.classList.add(CLS_VTAB);
+            if (!this.element.classList.contains(CLS_NEST)) {
+                addClass([this.element], [CLS_VTAB, tbPos]);
+            } else {
+                addClass([this.hdrEle], [CLS_VTAB, tbPos]);
+            }
         }
         if (this.headerPlacement === 'Bottom') {
-            this.hdrEle.classList.add(CLS_HBOTTOM);
+            addClass([this.hdrEle], [CLS_HBOTTOM]);
         }
     }
     private updatePopAnimationConfig(): void {
@@ -1070,6 +1074,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         if (place === 'Bottom' && (contentPos > headerPos)) {
             this.element.appendChild(ele);
         } else {
+            removeClass([ele], [CLS_HBOTTOM]);
             this.element.insertBefore(ele, select('.' + CLS_CONTENT, this.element));
         }
     }
@@ -1234,7 +1239,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         if (!this.initRender) {
             (<HTEle>curActItem.firstElementChild).focus();
         }
-        if (!this.initRender || this.selectedItem !== 0) {
+        if (!this.initRender) {
             let eventArg: SelectEventArgs = {
                 previousItem: this.prevItem,
                 previousIndex: this.prevIndex,
@@ -1713,7 +1718,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             isSwiped: this.isSwipeed,
             cancel: false
         };
-        if (!this.initRender || this.selectedItem !== 0) {
+        if (!this.initRender) {
             this.trigger('selecting', eventArg, (selectArgs: SelectingEventArgs) => {
                 if (!selectArgs.cancel) {
                     this.selectingContent(args);

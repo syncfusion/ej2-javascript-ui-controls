@@ -1056,7 +1056,9 @@ let DropDownBase = class DropDownBase extends Component {
             this.list.innerHTML = '';
             this.list.classList.remove(dropDownBaseClasses.noData);
             this.list.appendChild(this.ulElement);
+            this.liCollections = liCollections;
             append(liCollections, this.ulElement);
+            this.updateAddItemList(this.list, itemsCount);
         }
         else {
             if (this.getModuleName() === 'listbox' && itemsCount === 0) {
@@ -1117,6 +1119,9 @@ let DropDownBase = class DropDownBase extends Component {
     }
     updateActionCompleteData(li, item) {
         // this is for ComboBox custom value
+    }
+    updateAddItemList(list, itemCount) {
+        // this is for multiselect add item
     }
     updateDataList() {
         // this is for multiselect update list items
@@ -2026,7 +2031,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                 this.isDocumentClick = true;
                 let isActive = this.isRequested;
                 this.isInteracted = false;
-                this.hidePopup();
+                this.hidePopup(e);
                 if (!isActive) {
                     this.onFocusOut();
                     this.inputWrapper.container.classList.remove(dropDownListClasses.inputFocus);
@@ -3135,8 +3140,9 @@ let DropDownList = class DropDownList extends DropDownBase {
         });
     }
     destroyPopup() {
-        if (this.isServerBlazor && this.serverPopupEle) {
-            document.querySelector('#' + this.element.id + '_popup_holder').appendChild(this.serverPopupEle);
+        let popupHolderEle = document.querySelector('#' + this.element.id + '_popup_holder');
+        if (this.isServerBlazor && this.serverPopupEle && popupHolderEle) {
+            popupHolderEle.appendChild(this.serverPopupEle);
         }
         if (this.isServerBlazor) {
             // tslint:disable-next-line
@@ -3633,7 +3639,7 @@ let DropDownList = class DropDownList extends DropDownBase {
      * Hides the popup if it is in an open state.
      * @returns void.
      */
-    hidePopup() {
+    hidePopup(e) {
         let isHeader = (this.headerTemplate) ? true : false;
         let isFooter = (this.headerTemplate) ? true : false;
         this.DropDownBaseresetBlazorTemplates(false, false, false, false, false, isHeader, isFooter);
@@ -3724,9 +3730,9 @@ let DropDownList = class DropDownList extends DropDownBase {
                 'placeholder', 'aria-owns', 'aria-labelledby', 'aria-haspopup', 'aria-expanded',
                 'aria-activedescendant', 'autocomplete', 'aria-readonly', 'autocorrect',
                 'autocapitalize', 'spellcheck', 'aria-autocomplete', 'aria-live', 'aria-describedby', 'aria-label'];
-            attrArray.forEach((value) => {
-                this.inputElement.removeAttribute(value);
-            });
+            for (let i = 0; i < attrArray.length; i++) {
+                this.inputElement.removeAttribute(attrArray[i]);
+            }
             this.inputElement.setAttribute('tabindex', this.tabIndex);
             this.inputElement.classList.remove('e-input');
             Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
@@ -4273,7 +4279,7 @@ let ComboBox = class ComboBox extends DropDownList {
             this.clearAll(e);
         }
         else if (this.isTyped && !this.isSelected && isNullOrUndefined(li)) {
-            this.customValue();
+            this.customValue(e);
         }
         this.hidePopup();
     }
@@ -4298,7 +4304,7 @@ let ComboBox = class ComboBox extends DropDownList {
         }
         super.dropDownClick(e);
     }
-    customValue() {
+    customValue(e) {
         let value = this.getValueByText(this.inputElement.value);
         if (!this.allowCustom && this.inputElement.value !== '') {
             let previousValue = this.previousValue;
@@ -4319,7 +4325,7 @@ let ComboBox = class ComboBox extends DropDownList {
                 eventArgs = { text: value, item: {} };
                 if (!this.initial) {
                     this.trigger('customValueSpecifier', eventArgs, (eventArgs) => {
-                        this.updateCustomValueCallback(value, eventArgs, previousValue);
+                        this.updateCustomValueCallback(value, eventArgs, previousValue, e);
                     });
                 }
                 else {
@@ -4330,7 +4336,7 @@ let ComboBox = class ComboBox extends DropDownList {
                 this.isSelectCustom = false;
                 this.setProperties({ value: value });
                 if (previousValue !== this.value) {
-                    this.onChangeEvent(null);
+                    this.onChangeEvent(e);
                 }
             }
         }
@@ -4338,7 +4344,7 @@ let ComboBox = class ComboBox extends DropDownList {
             this.isSelectCustom = true;
         }
     }
-    updateCustomValueCallback(value, eventArgs, previousValue) {
+    updateCustomValueCallback(value, eventArgs, previousValue, e) {
         let fields = this.fields;
         let item = eventArgs.item;
         let dataItem = {};
@@ -4359,7 +4365,7 @@ let ComboBox = class ComboBox extends DropDownList {
         this.setSelection(null, null);
         this.isSelectCustom = true;
         if (previousValue !== this.value) {
-            this.onChangeEvent(null);
+            this.onChangeEvent(e);
         }
     }
     /**
@@ -4445,7 +4451,7 @@ let ComboBox = class ComboBox extends DropDownList {
      * Hides the popup if it is in open state.
      * @returns void.
      */
-    hidePopup() {
+    hidePopup(e) {
         let inputValue = this.inputElement.value === '' ? null : this.inputElement.value;
         if (!isNullOrUndefined(this.listData)) {
             let isEscape = this.isEscapeKey;
@@ -4482,7 +4488,7 @@ let ComboBox = class ComboBox extends DropDownList {
                 }
             }
             if (!this.isEscapeKey && this.isTyped && !this.isInteracted) {
-                this.customValue();
+                this.customValue(e);
             }
         }
         if (isNullOrUndefined(this.listData) && this.allowCustom && !isNullOrUndefined(inputValue) && inputValue !== this.value) {
@@ -5897,9 +5903,9 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         if (!this.list) {
             super.render();
         }
-        return this.ulElement ? (this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li).length > 0 &&
+        return this.ulElement && this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li).length > 0 ?
             this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li
-                + ':not(.' + HIDE_LIST + ')')) : null;
+                + ':not(.' + HIDE_LIST + ')') : [];
     }
     focusInHandler(e) {
         if (this.enabled) {
@@ -6898,18 +6904,20 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                                 let ulElement = this.list.querySelector('ul');
                                 if (ulElement) {
                                     if (this.itemTemplate && (this.mode === 'CheckBox') && isBlazor()) {
-                                        setTimeout(() => {
-                                            this.mainList = this.ulElement;
-                                        }, 0);
+                                        setTimeout(() => { this.mainList = this.ulElement; }, 0);
                                     }
                                     else {
-                                        this.mainList = ulElement.cloneNode ? ulElement.cloneNode(true) : ulElement;
+                                        if (!(this.mode !== 'CheckBox' && this.allowFiltering && this.targetElement().trim() !== '')) {
+                                            this.mainList = ulElement.cloneNode ? ulElement.cloneNode(true) : ulElement;
+                                        }
                                     }
                                 }
                                 this.isFirstClick = true;
                             }
                             this.popupObj.wireScrollEvents();
-                            this.loadTemplate();
+                            if (!(this.mode !== 'CheckBox' && this.allowFiltering && this.targetElement().trim() !== '')) {
+                                this.loadTemplate();
+                            }
                             this.setScrollPosition();
                             if (this.allowFiltering) {
                                 this.notify('inputFocus', {
@@ -7211,6 +7219,10 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         }
     }
     renderList(isEmptyData) {
+        if (!isEmptyData && this.allowCustomValue && this.list && (this.list.textContent === this.noRecordsTemplate
+            || this.list.querySelector('.e-ul') && this.list.querySelector('.e-ul').childElementCount === 0)) {
+            isEmptyData = true;
+        }
         super.render(isEmptyData);
         this.unwireListEvents();
         this.wireListEvents();
@@ -7278,6 +7290,15 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         if (this.value && this.value.indexOf(li.getAttribute('data-value')) > -1) {
             this.mainList = this.ulElement;
             addClass([li], HIDE_LIST);
+        }
+    }
+    updateAddItemList(list, itemCount) {
+        if (this.popupObj && this.popupObj.element && this.popupObj.element.querySelector('.' + dropDownBaseClasses.noData) && list) {
+            this.list = list;
+            this.mainList = this.ulElement = list.querySelector('ul');
+            remove(this.popupWrapper.querySelector('.e-content'));
+            this.popupObj = null;
+            this.renderPopup();
         }
     }
     updateDataList() {
@@ -9083,7 +9104,7 @@ class CheckBoxSelection {
                     this.parent.inputFocus = false;
                     this.parent.scrollFocusStatus = false;
                     this.parent.hidePopup();
-                    this.parent.onBlur();
+                    this.parent.onBlur(e);
                     this.parent.focused = true;
                 }
             }
@@ -9140,7 +9161,7 @@ class CheckBoxSelection {
             let compiledString;
             this.selectAllSpan.textContent = '';
             compiledString = compile(template);
-            for (let item of compiledString({})) {
+            for (let item of compiledString({}, null, null, null, !this.parent.isStringTemplate)) {
                 this.selectAllSpan.textContent = item.textContent;
             }
         }
@@ -9512,11 +9533,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
         else {
             args.items = this.getDataByValues([dragValue]);
         }
-        let callBackPromise = new Deferred();
-        this.trigger('beforeDrop', args, (observedArgs) => {
-            callBackPromise.resolve(observedArgs);
-        });
-        return callBackPromise;
+        this.trigger('beforeDrop', args);
     }
     // tslint:disable-next-line:max-func-body-length
     dragEnd(args) {
@@ -9588,14 +9605,18 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
             sortedData = [].slice.call(listObj.sortedData);
             selectedOptions = (this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 && this.allowDragAll)
                 ? this.value : [dropValue];
+            let fListData = [].slice.call(this.listData);
+            let fSortData = [].slice.call(this.sortedData);
             selectedOptions.forEach((value) => {
                 droppedData = this.getDataByValue(value);
                 let srcIdx = this.listData.indexOf(droppedData);
                 let jsonSrcIdx = this.jsonData.indexOf(droppedData);
                 let sortIdx = this.sortedData.indexOf(droppedData);
-                this.listData.splice(srcIdx, 1);
+                fListData.splice(srcIdx, 1);
                 this.jsonData.splice(jsonSrcIdx, 1);
-                this.sortedData.splice(sortIdx, 1);
+                fSortData.splice(sortIdx, 1);
+                this.listData = fListData;
+                this.sortedData = fSortData;
                 let rLi = fLiColl.splice(srcIdx, 1)[0];
                 let destIdx = value === dropValue ? args.currentIndex : currIdx;
                 listData.splice(destIdx, 0, droppedData);
@@ -9637,6 +9658,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
             listObj.liCollections = liColl;
             listObj.jsonData = extend([], [], jsonData, false);
             listObj.listData = extend([], [], listData, false);
+            listObj.sortedData = extend([], [], sortedData, false);
             if (this.listData.length === 0) {
                 this.l10nUpdate();
             }
@@ -9939,22 +9961,24 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
         this.triggerChange(this.getSelectedItems(), event);
     }
     updateMainList() {
-        let mainCount = this.mainList.querySelectorAll('.e-list-item').length;
-        let ulEleCount = this.ulElement.querySelectorAll('.e-list-item').length;
+        let mainList = this.mainList.querySelectorAll('.e-list-item');
+        let ulList = this.ulElement.querySelectorAll('.e-list-item');
+        let mainCount = mainList.length;
+        let ulEleCount = ulList.length;
         if (this.selectionSettings.showCheckbox || (document.querySelectorAll('ul').length > 1 || mainCount !== ulEleCount)) {
             let listindex = 0;
             let valueindex = 0;
             let count = 0;
-            for (listindex; listindex < this.mainList.querySelectorAll('.e-list-item').length;) {
+            for (listindex; listindex < mainCount;) {
                 if (this.value) {
                     for (valueindex; valueindex < this.value.length; valueindex++) {
-                        if (this.mainList.querySelectorAll('.e-list-item')[listindex].getAttribute('data-value') === this.value[valueindex]) {
+                        if (mainList[listindex].getAttribute('data-value') === this.value[valueindex]) {
                             count++;
                         }
                     }
                 }
                 if (!count && this.selectionSettings.showCheckbox) {
-                    this.mainList.querySelectorAll('.e-list-item')[listindex].getElementsByClassName('e-frame')[0].classList.remove('e-check');
+                    mainList[listindex].getElementsByClassName('e-frame')[0].classList.remove('e-check');
                 }
                 if (document.querySelectorAll('ul').length > 1 && count && mainCount !== ulEleCount) {
                     this.mainList.removeChild(this.mainList.getElementsByTagName('li')[listindex]);
@@ -10137,14 +10161,54 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
         }
     }
     triggerChange(selectedLis, event) {
-        this.trigger('change', { elements: selectedLis, items: this.getDataByElems(selectedLis), value: this.value, event: event });
+        this.trigger('change', { elements: selectedLis, items: this.getDataByElements(selectedLis), value: this.value, event: event });
     }
     getDataByElems(elems) {
         let data = [];
-        elems.forEach((ele) => {
-            data.push(this.getDataByValue(this.getFormattedValue(ele.getAttribute('data-value'))));
-        });
+        for (let i = 0, len = elems.length; i < len; i++) {
+            data.push(this.getDataByValue(this.getFormattedValue(elems[i].getAttribute('data-value'))));
+        }
         return data;
+    }
+    getDataByElements(elems) {
+        let data = [];
+        let value;
+        let sIdx = 0;
+        if (!isNullOrUndefined(this.listData)) {
+            let type = this.typeOfData(this.listData).typeof;
+            if (type === 'string' || type === 'number' || type === 'boolean') {
+                for (let item of this.listData) {
+                    for (let i = sIdx, len = elems.length; i < len; i++) {
+                        value = this.getFormattedValue(elems[i].getAttribute('data-value'));
+                        if (!isNullOrUndefined(item) && item === value) {
+                            sIdx = i;
+                            data.push(item);
+                            break;
+                        }
+                    }
+                    if (elems.length === data.length) {
+                        break;
+                    }
+                }
+            }
+            else {
+                for (let item of this.listData) {
+                    for (let i = sIdx, len = elems.length; i < len; i++) {
+                        value = this.getFormattedValue(elems[i].getAttribute('data-value'));
+                        if (!isNullOrUndefined(item) && getValue((this.fields.value ? this.fields.value : 'value'), item) === value) {
+                            sIdx = i;
+                            data.push(item);
+                            break;
+                        }
+                    }
+                    if (elems.length === data.length) {
+                        break;
+                    }
+                }
+            }
+            return data;
+        }
+        return null;
     }
     checkMaxSelection() {
         let limit = this.list.querySelectorAll('.e-list-item span.e-check').length;
@@ -10167,10 +10231,11 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
     toolbarClickHandler(e) {
         let btn = closest(e.target, 'button');
         if (btn) {
+            this.toolbarAction = btn.getAttribute('data-value');
             if (btn.disabled) {
                 return;
             }
-            switch (btn.getAttribute('data-value')) {
+            switch (this.toolbarAction) {
                 case 'moveUp':
                     this.moveUpDown(true);
                     break;
@@ -10194,11 +10259,18 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
     }
     moveUpDown(isUp, isKey, value) {
         let elems = this.getSelectedItems();
+        let tempItems;
         if (value) {
             elems = value;
         }
         if (((isUp && this.isSelected(this.ulElement.firstElementChild))
             || (!isUp && this.isSelected(this.ulElement.lastElementChild))) && !value) {
+            return;
+        }
+        tempItems = this.getDataByElems(elems);
+        let localDataArgs = { cancel: false, items: tempItems, eventName: this.toolbarAction };
+        this.trigger('actionBegin', localDataArgs);
+        if (localDataArgs.cancel) {
             return;
         }
         (isUp ? elems : elems.reverse()).forEach((ele) => {
@@ -10207,6 +10279,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
             moveTo(this.ulElement, this.ulElement, [idx], isUp ? idx - 1 : idx + 2);
             this.changeData(idx, isUp ? idx - 1 : idx + 1, isUp ? jsonToIdx - 1 : jsonToIdx + 1, ele);
         });
+        this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
         elems[0].focus();
         if (!isKey && this.toolbarSettings.items.length) {
             this.getToolElem().querySelector('[data-value=' + (isUp ? 'moveUp' : 'moveDown') + ']').focus();
@@ -10265,9 +10338,14 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
                 });
             }
             else {
-                jsonIdx.reverse().forEach((i) => {
+                jsonIdx.forEach((i) => {
                     tempItems.push(fListBox.jsonData[i]);
                 });
+            }
+            let localDataArgs = { cancel: false, items: tempItems, eventName: this.toolbarAction };
+            fListBox.trigger('actionBegin', localDataArgs);
+            if (localDataArgs.cancel) {
+                return;
             }
             let rLiCollection = [];
             dataLiIdx.sort((n1, n2) => n1 - n2).reverse().forEach((i) => {
@@ -10303,6 +10381,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
             }
             else {
                 moveTo(fListBox.ulElement, tListBox.ulElement, idx, index);
+                this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
             }
             if (tListBox.mainList.childElementCount !== tListBox.jsonData.length) {
                 tListBox.mainList = tListBox.ulElement;
@@ -10325,7 +10404,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
             fListBox.listData = listData;
             fListBox.sortedData = sortData;
             index = (index) ? index : tListData.length;
-            for (let i = 0; i < tempItems.length; i++) {
+            for (let i = tempItems.length - 1; i >= 0; i--) {
                 tListData.splice(index, 0, tempItems[i]);
                 tJsonData.splice(index, 0, tempItems[i]);
                 tSortData.splice(index, 0, tempItems[i]);
@@ -10358,6 +10437,12 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
         let isRefresh = tListBox.sortOrder !== 'None' ||
             (tListBox.selectionSettings.showCheckbox !== fListBox.selectionSettings.showCheckbox) || tListBox.fields.groupBy;
         this.removeSelected(fListBox, fListBox.getSelectedItems());
+        let tempItems = [].slice.call(fListBox.jsonData);
+        let localDataArgs = { cancel: false, items: tempItems, eventName: this.toolbarAction };
+        fListBox.trigger('actionBegin', localDataArgs);
+        if (localDataArgs.cancel) {
+            return;
+        }
         if (tListBox.listData.length === 0) {
             tListBox.ulElement.innerHTML = '';
         }
@@ -10366,6 +10451,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
         }
         else {
             moveTo(fListBox.ulElement, tListBox.ulElement, Array.apply(null, { length: fListBox.ulElement.childElementCount }).map(Number.call, Number), index);
+            this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
         }
         if (isKey) {
             this.list.focus();
@@ -10395,6 +10481,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
         fListBox.listData = fListBox.sortedData = fListBox.jsonData = [];
         if (isRefresh) {
             tListBox.ulElement.innerHTML = tListBox.renderItems(listData, tListBox.fields).innerHTML;
+            this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
         }
         else {
             tListBox.sortedData = listData;
@@ -10710,11 +10797,13 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
     }
     updateSelectTag() {
         let ele = this.getSelectTag();
+        let innerHTML = '';
         ele.innerHTML = '';
         if (this.value) {
-            Array.prototype.forEach.call(this.value, (value) => {
-                ele.innerHTML += '<option selected value="' + value + '"></option>';
-            });
+            for (let i = 0, len = this.value.length; i < len; i++) {
+                innerHTML += '<option selected value="' + this.value[i] + '"></option>';
+            }
+            ele.innerHTML += innerHTML;
         }
         this.checkSelectAll();
     }
@@ -11071,28 +11160,6 @@ __decorate$5([
 ListBox = ListBox_1 = __decorate$5([
     NotifyPropertyChanges
 ], ListBox);
-/**
- * Deferred is used to handle asynchronous operation.
- */
-class Deferred {
-    constructor() {
-        /**
-         * Promise is an object that represents a value that may not be available yet, but will be resolved at some point in the future.
-         */
-        this.promise = new Promise((resolve, reject) => {
-            this.resolve = resolve;
-            this.reject = reject;
-        });
-        /**
-         * Defines the callback function triggers when the Deferred object is resolved.
-         */
-        this.then = this.promise.then.bind(this.promise);
-        /**
-         * Defines the callback function triggers when the Deferred object is rejected.
-         */
-        this.catch = this.promise.catch.bind(this.promise);
-    }
-}
 
 /**
  * export all modules from current location

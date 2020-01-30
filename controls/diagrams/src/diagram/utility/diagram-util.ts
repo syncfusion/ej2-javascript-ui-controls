@@ -1896,10 +1896,11 @@ export function getDropEventArguements(args: MouseEventArgs, arg: IBlazorDropEve
     if (isBlazor()) {
         let connector: boolean = (getObjectType(args.source) === Connector);
         let object: NodeModel | ConnectorModel = cloneBlazorObject(args.source);
-        let target: NodeModel | ConnectorModel = cloneBlazorObject(this.currentTarget);
+        let target: NodeModel | ConnectorModel = cloneBlazorObject(args.target);
         arg = {
             element: connector ? { connector: object as ConnectorModel } : { node: object as NodeModel },
-            target: connector ? { connector: target } : { node: target }, position: this.currentPosition, cancel: false
+            target: connector ? { connector: target } : { node: target },
+            position: arg.position, cancel: arg.cancel
         } as IBlazorDropEventArgs;
     }
     return arg;

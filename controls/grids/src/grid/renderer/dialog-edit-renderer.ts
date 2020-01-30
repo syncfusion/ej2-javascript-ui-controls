@@ -124,11 +124,12 @@ export class DialogEditRender {
             appendChildren(form, this.parent.getEditTemplate()(dummyData, this.parent, 'editSettingsTemplate', editTemplateID));
             let setRules: Function = () => {
                 let columns: Column[] = this.parent.getColumns();
-                columns.forEach((column: Column) => {
-                    if (column.validationRules) {
-                        this.parent.editModule.formObj.rules[column.field] = column.validationRules as {[rule: string]: Object};
+                for (let i: number = 0; i < columns.length; i++) {
+                    if ((columns[i] as Column).validationRules) {
+                        this.parent.editModule.formObj.rules[(columns[i] as Column).field] =
+                        (columns[i] as Column).validationRules as {[rule: string]: Object};
                     }
-                });
+                }
             };
             updateBlazorTemplate(editTemplateID, 'Template', this.parent.editSettings, true, setRules);
             div.appendChild(form);

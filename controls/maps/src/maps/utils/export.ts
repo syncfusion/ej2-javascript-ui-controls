@@ -48,7 +48,7 @@ export class ExportUtils {
         let div: Element = createElement('div');
         if (elements) {
             if (elements instanceof Array) {
-                elements.forEach((value: string) => {
+                Array.prototype.forEach.call(elements, (value: string) => {
                     div.appendChild(getElement(value).cloneNode(true) as Element);
                 });
             } else if (elements instanceof Element) {

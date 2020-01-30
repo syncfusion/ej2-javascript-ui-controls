@@ -1,12 +1,13 @@
 import { Ribbon as RibbonComponent, RibbonItemModel, ExpandCollapseEventArgs } from '../../ribbon/index';
 import { Spreadsheet } from '../base/index';
-import { ribbon, MenuSelectArgs, selectionComplete, beforeRibbonCreate, dialog, reapplyFilter } from '../common/index';
-import { IRenderer, destroyComponent, performUndoRedo, beginAction, completeAction, applySort } from '../common/index';
+import { ribbon, MenuSelectArgs, selectionComplete, beforeRibbonCreate, dialog, reapplyFilter, enableFileMenuItems } from '../common/index';
+import { IRenderer, destroyComponent, performUndoRedo, beginAction, completeAction, applySort, hideRibbonTabs } from '../common/index';
 import { enableRibbonItems, ribbonClick, paste, locale, refreshSheetTabs, initiateCustomSort, getFilteredColumn } from '../common/index';
 import { tabSwitch, getUpdateUsingRaf, enableToolbar, updateToggleItem, initiateHyperlink, editHyperlink } from '../common/index';
+import { addRibbonTabs, addToolbarItems } from '../common/index';
 import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, ClickEventArgs, Toolbar, Menu, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { SelectingEventArgs } from '@syncfusion/ej2-navigations';
-import { extend, L10n, isNullOrUndefined, getComponent, closest, detach, select } from '@syncfusion/ej2-base';
+import { extend, L10n, isNullOrUndefined, getComponent, closest, detach, selectAll, select } from '@syncfusion/ej2-base';
 import { SheetModel, getCellIndexes, CellModel, getFormatFromType, getTypeFromFormat } from '../../workbook/index';
 import { DropDownButton, OpenCloseMenuEventArgs, SplitButton, ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { calculatePosition, OffsetPosition } from '@syncfusion/ej2-popups';
@@ -32,7 +33,6 @@ export class Ribbon {
     private sortingDdb: DropDownButton;
     private fontNameIndex: number = 5;
     private numPopupWidth: number = 0;
-    private activeTab: number = 1;
     constructor(parent: Spreadsheet) {
         this.parent = parent;
         this.addEventListener();
@@ -52,30 +52,29 @@ export class Ribbon {
             this.createRibbon(args);
         }
     }
+    private getRibbonMenuItems(): MenuItemModel[] {
+        let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        return [{
+                    text: this.parent.isMobileView() ? '' : l10n.getConstant('File'),
+                    iconCss: this.parent.isMobileView() ? 'e-icons e-file-menu-icon' : null,
+                    items: [
+                        { text: l10n.getConstant('New'), id: 'New', iconCss: 'e-new e-icons' },
+                        { text: l10n.getConstant('Open'), id: 'Open', iconCss: 'e-open e-icons' },
+                        {
+                            text: l10n.getConstant('SaveAs'),
+                            iconCss: 'e-save e-icons',
+                            items: [
+                                { text: l10n.getConstant('ExcelXlsx'), id: 'Xlsx', iconCss: 'e-xlsx e-icons' },
+                                { text: l10n.getConstant('ExcelXls'), id: 'Xls', iconCss: 'e-xls e-icons' },
+                                { text: l10n.getConstant('CSV'), id: 'Csv', iconCss: 'e-csv e-icons' }
+                            ]
+                        }]
+                }];
+    }
     private getRibbonItems(): RibbonItemModel[] {
         let id: string = this.parent.element.id;
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
         let items: RibbonItemModel[] = [
-            {
-                type: 'Menu',
-                menuItems: [
-                    {
-                        text: this.parent.isMobileView() ? '' : l10n.getConstant('File'),
-                        iconCss: this.parent.isMobileView() ? 'e-icons e-file-menu-icon' : null,
-                        items: [
-                            { text: l10n.getConstant('New'), id: 'New', iconCss: 'e-new e-icons' },
-                            { text: l10n.getConstant('Open'), id: 'Open', iconCss: 'e-open e-icons' },
-                            {
-                                text: l10n.getConstant('SaveAs'),
-                                iconCss: 'e-save e-icons',
-                                items: [
-                                    { text: l10n.getConstant('ExcelXlsx'), id: 'Xlsx', iconCss: 'e-xlsx e-icons' },
-                                    { text: l10n.getConstant('ExcelXls'), id: 'Xls', iconCss: 'e-xls e-icons' },
-                                    { text: l10n.getConstant('CSV'), id: 'Csv', iconCss: 'e-csv e-icons' }
-                                ]
-                            }]
-                    }]
-            },
             {
                 header: { text: l10n.getConstant('Home') },
                 content: [
@@ -111,7 +110,7 @@ export class Ribbon {
                 content: [{ prefixIcon: 'e-insert-function', text: l10n.getConstant('InsertFunction'), id: id + '_insert_function' }]
             },
             {
-                header: { text: 'View' },
+                header: { text: l10n.getConstant('View') },
                 content: [
                     { prefixIcon: 'e-hide-headers', text: this.getLocaleText('Headers'), id: id + '_headers' }, { type: 'Separator' },
                     { prefixIcon: 'e-hide-gridlines', text: this.getLocaleText('GridLines'), id: id + '_gridlines' }]
@@ -175,6 +174,8 @@ export class Ribbon {
     private createRibbon(args: { uiUpdate?: boolean }): void {
         let ribbonElement: HTMLElement = this.parent.createElement('div');
         this.ribbon = new RibbonComponent({
+            selectedTab: 0,
+            menuItems: this.getRibbonMenuItems(),
             items: this.getRibbonItems(),
             fileItemSelect: this.fileItemSelect.bind(this),
             beforeOpen: this.fileMenuBeforeOpen.bind(this),
@@ -196,10 +197,9 @@ export class Ribbon {
         this.ribbon.appendTo(ribbonElement);
     }
     private tabSelecting(args: SelectingEventArgs): void {
-        if (args.selectingIndex && args.selectingIndex !== this.activeTab) {
-            this.activeTab = args.selectingIndex;
-            this.refreshRibbonContent();
-            this.parent.notify(tabSwitch, { idx: args.selectingIndex });
+        if (args.selectingIndex !== this.ribbon.selectedTab) {
+            this.refreshRibbonContent(args.selectingIndex);
+            this.parent.notify(tabSwitch, { activeTab: args.selectingIndex });
         }
     }
 
@@ -557,22 +557,24 @@ export class Ribbon {
         args.element.appendChild(numElem);
     }
 
-    private refreshRibbonContent(): void {
-        switch (this.activeTab) {
-            case 1: this.refreshFirstTabContent(getCellIndexes(this.parent.getActiveSheet().activeCell));
+    private refreshRibbonContent(activeTab: number): void {
+        if (isNullOrUndefined(activeTab)) { activeTab = this.ribbon.selectedTab; }
+        let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        switch (this.ribbon.items[activeTab].header.text) {
+            case l10n.getConstant('Home'): this.refreshHomeTabContent(getCellIndexes(this.parent.getActiveSheet().activeCell));
                 break;
-            case 2:
+            case l10n.getConstant('Insert'):
                 // Second tab functionality comes here
                 break;
-            case 3:
+            case l10n.getConstant('Formulas'):
                 // Third tab functionality comes here
                 break;
-            case 4: this.refreshFourthTabContent();
+            case l10n.getConstant('View'): this.refreshViewTabContent(activeTab);
                 break;
         }
     }
 
-    private refreshFirstTabContent(indexes: number[]): void {
+    private refreshHomeTabContent(indexes: number[]): void {
         if (!isNullOrUndefined(document.getElementById(this.parent.element.id + '_number_format'))) {
             this.numFormatDDB = getComponent(document.getElementById(this.parent.element.id + '_number_format'), DropDownButton);
         }
@@ -699,13 +701,11 @@ export class Ribbon {
                     cancel: false
                 };
                 this.parent.notify(completeAction, { eventArgs: evtHArgs, action: 'headers' });
-                if (evtHArgs.cancel) {
-                    return;
-                }
+                if (evtHArgs.cancel) { return; }
                 sheet.showHeaders = !sheet.showHeaders;
                 this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
                 (this.parent.serviceLocator.getService('sheet') as IRenderer).showHideHeaders();
-                this.toggleRibbonItems({ props: 'Headers', pos: 0 });
+                this.toggleRibbonItems({ props: 'Headers', activeTab: this.ribbon.selectedTab });
                 this.parent.element.focus();
                 break;
             case parentId + '_gridlines':
@@ -715,12 +715,10 @@ export class Ribbon {
                     cancel: false
                 };
                 this.parent.notify(completeAction, { eventArgs: evtglArgs, action: 'gridLines' });
-                if (evtglArgs.cancel) {
-                    return;
-                }
+                if (evtglArgs.cancel) { return; }
                 sheet.showGridLines = !sheet.showGridLines;
                 this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
-                this.toggleRibbonItems({ props: 'GridLines', pos: 2 });
+                this.toggleRibbonItems({ props: 'GridLines', activeTab: this.ribbon.selectedTab });
                 this.parent.element.focus();
                 break;
             case parentId + '_undo':
@@ -733,10 +731,84 @@ export class Ribbon {
         this.parent.notify(ribbonClick, args);
     }
 
-    private toggleRibbonItems(args: { props: 'Headers' | 'GridLines', pos: number }): void {
-        let text: string = this.getLocaleText(args.props, true);
-        this.ribbon.items[4].content[args.pos].text = text;
-        if (this.activeTab === 4) { this.updateToggleText(args.props.toLowerCase(), text); }
+    private toggleRibbonItems(args: { props: 'Headers' | 'GridLines', activeTab: number}): void {
+        let tabHeader: string = (this.parent.serviceLocator.getService(locale) as L10n).getConstant('View');
+        if (isNullOrUndefined(args.activeTab)) {
+            for (let i: number = 0; i < this.ribbon.items.length; i++) {
+                if (this.ribbon.items[i].header.text === tabHeader) { args.activeTab = i; break; }
+            }
+        }
+        let text: string = this.getLocaleText(args.props, true); let id: string = `${this.parent.element.id}_${args.props.toLowerCase()}`;
+        for (let i: number; i < this.ribbon.items[args.activeTab].content.length; i++) {
+            if (this.ribbon.items[args.activeTab].content[i].type === 'Separator') { continue; }
+            if (this.ribbon.items[args.activeTab].content[i].id === id) {
+                this.ribbon.items[args.activeTab].content[i].text = text; this.ribbon.setProperties({ 'items': this.ribbon.items }, true);
+            }
+        }
+        if (this.ribbon.items[this.ribbon.selectedTab].header.text === tabHeader) { this.updateToggleText(args.props.toLowerCase(), text); }
+    }
+
+    private enableFileMenuItems(args: { items: string[], enable: boolean }): void {
+        this.ribbon.enableMenuItems(args.items, args.enable);
+    }
+
+    private hideRibbonTabs(args: { tabs: string[], hide: boolean }): void {
+        let isActiveTab: boolean; let idx: number;
+        let tabCollection: HTMLElement[] = selectAll('.e-ribbon .e-tab-header .e-toolbar-item:not(.e-menu-tab)', this.parent.element);
+        args.tabs.forEach((tab: string): void => {
+            for (let i: number = 0; i < this.ribbon.items.length; i++) {
+                if (tab === this.ribbon.items[i].header.text) { idx = i; break; }
+            }
+            if (idx !== undefined) {
+                if (args.hide) {
+                    tabCollection[idx].classList.add('e-hide');
+                    if (idx === this.ribbon.selectedTab) { isActiveTab = true; }
+                } else {
+                    if (tabCollection[idx].classList.contains('e-hide')) {
+                        if (isActiveTab === undefined) {
+                            isActiveTab = select(
+                                '.e-ribbon .e-tab-header .e-toolbar-item:not(.e-menu-tab):not(.e-hide)', this.parent.element) ? false :
+                                true;
+                        }
+                        tabCollection[idx].classList.remove('e-hide');
+                    }
+                }
+                idx = undefined;
+            }
+        });
+        let nextTab: HTMLElement;
+        if (isActiveTab) {
+            nextTab = <HTMLElement>select(
+                '.e-ribbon .e-tab-header .e-toolbar-item:not(.e-menu-tab):not(.e-hide)', this.parent.element);
+            if (nextTab) {
+                this.toggleCollapsed();
+                let activeIdx: number = [].slice.call(tabCollection).indexOf(nextTab);
+                this.ribbon.selectedTab = activeIdx; this.ribbon.dataBind();
+            } else {
+                this.toggleCollapsed();
+            }
+        }
+        this.parent.updateActiveBorder(tabCollection[this.ribbon.selectedTab]);
+    }
+
+    private toggleCollapsed(): void {
+        if (this.ribbon.element.classList.contains('e-collapsed')) {
+            this.ribbon.element.classList.remove('e-collapsed');
+            this.ribbon.element.querySelector('.e-drop-icon').classList.remove('e-disabled');
+        } else {
+            this.ribbon.element.classList.add('e-collapsed');
+            this.ribbon.element.querySelector('.e-drop-icon').classList.add('e-disabled');
+        }
+    }
+
+    private addRibbonTabs(args: { items: RibbonItemModel[], insertBefore: string }): void {
+        this.ribbon.addTabs(args.items, args.insertBefore);
+        let nextTab: HTMLElement = <HTMLElement>select(
+                '.e-ribbon .e-tab-header .e-toolbar-item:not(.e-menu-tab).e-hide', this.parent.element);
+        if (nextTab) {
+            this.parent.updateActiveBorder(selectAll(
+                '.e-ribbon .e-tab-header .e-toolbar-item:not(.e-menu-tab)', this.parent.element)[this.ribbon.selectedTab]);
+        }
     }
 
     private updateToggleText(item: string, text: string): void {
@@ -745,29 +817,45 @@ export class Ribbon {
         });
     }
 
-    private refreshFourthTabContent(): void {
-        let text: string; let idx: number; let sheet: SheetModel = this.parent.getActiveSheet();
-        let l10n: L10n = this.parent.serviceLocator.getService(locale); let itemPos: number[] = [0, 2];
-        ['Headers', 'GridLines'].forEach((item: string, index: number): void => {
-            idx = itemPos[index];
-            if (sheet['show' + item]) {
-                if (this.ribbon.items[4].content[idx].text === l10n.getConstant('Show' + item)) {
-                    this.updateShowHideBtn('Hide', item, idx);
-                }
-            } else {
-                if (this.ribbon.items[4].content[idx].text === l10n.getConstant('Hide' + item)) {
-                    this.updateShowHideBtn('Show', item, idx);
-                }
+    private refreshViewTabContent(activeTab: number): void {
+        let id: string = this.parent.element.id; let updated: boolean;
+        for (let i: number = 0; i < this.ribbon.items[activeTab].content.length; i++) {
+            if (this.ribbon.items[activeTab].content[i].type === 'Separator') { continue; }
+            if (this.ribbon.items[activeTab].content[i].id === `${id}_headers`) {
+                this.updateViewTabContent(activeTab, 'Headers', i);
+                if (updated) { break; } updated = true;
             }
-        });
+            if (this.ribbon.items[activeTab].content[i].id === `${id}_gridlines`) {
+                this.updateViewTabContent(activeTab, 'GridLines', i);
+                if (updated) { break; } updated = true;
+            }
+        }
     }
 
-    private updateShowHideBtn(showHideText: string, item: string, idx: number): void {
+    private updateViewTabContent(activeTab: number, item: string, idx: number): void {
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        if (sheet['show' + item]) {
+            if (this.ribbon.items[activeTab].content[idx].text === l10n.getConstant('Show' + item)) {
+                this.updateShowHideBtn('Hide', item, idx, activeTab);
+            }
+        } else {
+            if (this.ribbon.items[activeTab].content[idx].text === l10n.getConstant('Hide' + item)) {
+                this.updateShowHideBtn('Show', item, idx, activeTab);
+            }
+        }
+    }
+
+    private updateShowHideBtn(showHideText: string, item: string, idx: number, activeTab: number): void {
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
         let text: string = l10n.getConstant(showHideText + item);
-        this.ribbon.items[4].content[idx].text = text;
+        this.ribbon.items[activeTab].content[idx].text = text;
         this.ribbon.setProperties({ 'items': this.ribbon.items }, true);
         this.updateToggleText(item.toLowerCase(), text);
+    }
+
+    private addToolbarItems(args: { tab: string, items: ItemModel[], index: number }): void {
+        this.ribbon.addToolbarItems(args.tab, args.items, args.index);
     }
 
     private enableRibbonItems(args: { id: string, isEnable: boolean }[]): void {
@@ -803,7 +891,7 @@ export class Ribbon {
                         cssClass: 'e-mobile e-file-menu',
                         enableRtl: true,
                         showItemOnClick: true,
-                        items: this.ribbon.items[0].menuItems,
+                        items: this.getRibbonMenuItems(),
                         select: this.fileItemSelect.bind(this),
                         beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => {
                             args.element.parentElement.classList.remove('e-rtl');
@@ -829,12 +917,12 @@ export class Ribbon {
         this.parent.element.appendChild(toolbarPanel);
         let ddbObj: DropDownButton = new DropDownButton({
             cssClass: 'e-caret-hide',
-            content: this.ribbon.items[1].header.text as string,
+            content: this.ribbon.items[0].header.text as string,
             items: [
+                { text: this.ribbon.items[0].header.text as string },
                 { text: this.ribbon.items[1].header.text as string },
                 { text: this.ribbon.items[2].header.text as string },
-                { text: this.ribbon.items[3].header.text as string },
-                { text: this.ribbon.items[4].header.text as string }
+                { text: this.ribbon.items[3].header.text as string }
             ],
             select: (args: MenuEventArgs): void => {
                 if (args.item.text !== ddbObj.content) {
@@ -868,7 +956,7 @@ export class Ribbon {
         ddbObj.appendTo(ddb);
         let toolbarObj: Toolbar = new Toolbar({
             width: `calc(100% - ${ddb.getBoundingClientRect().width}px)`,
-            items: this.ribbon.items[1].content,
+            items: this.ribbon.items[0].content,
             clicked: this.toolbarClicked.bind(this)
         });
         toolbarObj.createElement = this.parent.createElement;
@@ -898,6 +986,10 @@ export class Ribbon {
         this.parent.on(activeCellChanged, this.refreshRibbonContent, this);
         this.parent.on(enableToolbar, this.enableToolbar, this);
         this.parent.on(updateToggleItem, this.toggleRibbonItems, this);
+        this.parent.on(enableFileMenuItems, this.enableFileMenuItems, this);
+        this.parent.on(hideRibbonTabs, this.hideRibbonTabs, this);
+        this.parent.on(addRibbonTabs, this.addRibbonTabs, this);
+        this.parent.on(addToolbarItems, this.addToolbarItems, this);
     }
     public destroy(): void {
         let parentElem: HTMLElement = this.parent.element;
@@ -924,6 +1016,10 @@ export class Ribbon {
             this.parent.off(activeCellChanged, this.refreshRibbonContent);
             this.parent.off(enableToolbar, this.enableToolbar);
             this.parent.off(updateToggleItem, this.toggleRibbonItems);
+            this.parent.off(enableFileMenuItems, this.enableFileMenuItems);
+            this.parent.off(hideRibbonTabs, this.hideRibbonTabs);
+            this.parent.off(addRibbonTabs, this.addRibbonTabs);
+            this.parent.off(addToolbarItems, this.addToolbarItems);
         }
     }
 }

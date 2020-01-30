@@ -1,6 +1,6 @@
-import { Base, Browser, ChildProperty, Collection, Complex, Component, Event as Event$1, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, attributes, closest, detach, enableRipple, extend, formatUnit, getComponent, getDefaultDateObject, getNumberDependable, getNumericObject, getUniqueID, getValue, isNullOrUndefined, isUndefined, merge, remove, removeClass, rippleEffect, setStyleAttribute } from '@syncfusion/ej2-base';
+import { Base, Browser, ChildProperty, Collection, Complex, Component, Event as Event$1, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, attributes, closest, compile, detach, enableRipple, extend, formatUnit, getComponent, getDefaultDateObject, getNumberDependable, getNumericObject, getUniqueID, getValue, isNullOrUndefined, isUndefined, merge, remove, removeClass, rippleEffect, select, selectAll, setStyleAttribute } from '@syncfusion/ej2-base';
 import { DataManager, DataUtil, Deferred, Predicate, Query } from '@syncfusion/ej2-data';
-import { ContextMenu, Header, Item, Menu, MenuItem, Tab, Toolbar, TreeView } from '@syncfusion/ej2-navigations';
+import { ContextMenu, Item, Menu, MenuItem, Tab, Toolbar, TreeView } from '@syncfusion/ej2-navigations';
 import { DropDownButton, SplitButton } from '@syncfusion/ej2-splitbuttons';
 import { Dialog, calculatePosition, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
@@ -407,6 +407,8 @@ const filterComplete = 'filterComplete';
 const filterRangeAlert = 'filterRangeAlert';
 /** @hidden */
 const clearAllFilter = 'clearAllFilter';
+/** @hidden */
+const onSave = 'onSave';
 
 /**
  * Specifies number format.
@@ -1048,6 +1050,9 @@ class DataBind {
                                 }
                             });
                         }
+                        else {
+                            flds = [];
+                        }
                         args.sheet.usedRange.rowIndex =
                             Math.max(sRowIdx + (count || e.count) + (range.showFieldAsHeader ? 1 : 0), args.sheet.usedRange.rowIndex);
                         args.sheet.usedRange.colIndex = Math.max(sColIdx + flds.length - 1, args.sheet.usedRange.colIndex);
@@ -1080,7 +1085,18 @@ class DataBind {
                 data.formula = prop.formula;
             }
             else if (prop.value) {
-                data.value = prop.value;
+                if (typeof (prop.value) === 'string') {
+                    if (prop.value.indexOf('http://') === 0 || prop.value.indexOf('https://') === 0 ||
+                        prop.value.indexOf('ftp://') === 0 || prop.value.indexOf('www.') === 0) {
+                        data.hyperlink = prop.value;
+                    }
+                    else {
+                        data.value = prop.value;
+                    }
+                }
+                else {
+                    data.value = prop.value;
+                }
             }
         }
         else {
@@ -1088,7 +1104,18 @@ class DataBind {
                 data.formula = prop;
             }
             else {
-                data.value = prop;
+                if (typeof (prop) === 'string') {
+                    if (prop.indexOf('http://') === 0 || prop.indexOf('https://') === 0 ||
+                        prop.indexOf('ftp://') === 0 || prop.indexOf('www.') === 0) {
+                        data.hyperlink = prop;
+                    }
+                    else {
+                        data.value = prop;
+                    }
+                }
+                else {
+                    data.value = prop;
+                }
             }
         }
         return data;
@@ -1286,6 +1313,14 @@ const removeContextMenuItems = 'removeContextMenuItems';
 /** @hidden */
 const enableContextMenuItems = 'enableContextMenuItems';
 /** @hidden */
+const enableFileMenuItems = 'enableFileMenuItems';
+/** @hidden */
+const hideRibbonTabs = 'hideRibbonTabs';
+/** @hidden */
+const addRibbonTabs = 'addRibbonTabs';
+/** @hidden */
+const addToolbarItems = 'addToolbarItems';
+/** @hidden */
 const beforeRibbonCreate = 'beforeRibbonCreate';
 /** @hidden */
 const rowHeightChanged = 'rowHeightChanged';
@@ -1330,6 +1365,8 @@ const createHyperlinkElement = 'createHyperlinkElement';
 /** @hidden */
 const sheetNameUpdate = 'sheetNameUpdate';
 /** @hidden */
+const hideSheet = 'hideSheet';
+/** @hidden */
 const performUndoRedo = 'performUndoRedo';
 /** @hidden */
 const updateUndoRedoCollection = 'updateUndoRedoCollection';
@@ -1359,6 +1396,10 @@ const beginAction = 'actionBegin';
 const filterCellKeyDown = 'filterCellKeyDown';
 /** @hidden */
 const getFilterRange = 'getFilterRange';
+/** @hidden */
+const setAutoFit = 'setAutoFit';
+/** @hidden */
+const refreshFormulaDatasource = 'refreshFormulaDatasource';
 
 /**
  * Open properties.
@@ -1374,6 +1415,12 @@ class WorkbookOpen {
      */
     open(options) {
         if (!this.parent.allowOpen) {
+            return;
+        }
+        /* tslint:disable-next-line:no-any */
+        if (options.jsonObject) {
+            /* tslint:disable-next-line:no-any */
+            this.fetchSuccess(options.jsonObject);
             return;
         }
         let formData = new FormData();
@@ -1453,7 +1500,7 @@ class WorkbookOpen {
         this.parent.sheets.forEach((key) => {
             key.id = getMaxSheetId(this.parent.sheets);
         });
-        this.parent.notify(workbookFormulaOperation, { action: 'registerSheet' });
+        this.parent.notify(workbookFormulaOperation, { action: 'registerSheet', isImport: true });
         this.parent.notify(workbookFormulaOperation, { action: 'initiateDefinedNames' });
     }
     /**
@@ -1693,11 +1740,15 @@ class WorkbookSave extends SaveWorker {
      * @hidden
      */
     save(saveSettings) {
-        if (this.isFullPost) {
-            this.initiateFullPostSave();
-        }
-        else {
-            executeTaskAsync(this, { 'workerTask': this.processSave }, this.updateSaveResult, [this.saveJSON, saveSettings, this.customParams], true);
+        let args = { cancel: false, jsonObject: this.saveJSON };
+        this.parent.notify(onSave, args);
+        if (!args.cancel) {
+            if (this.isFullPost) {
+                this.initiateFullPostSave();
+            }
+            else {
+                executeTaskAsync(this, { 'workerTask': this.processSave }, this.updateSaveResult, [this.saveJSON, saveSettings, this.customParams], true);
+            }
         }
         this.saveJSON = {};
     }
@@ -2157,6 +2208,14 @@ class BasicFormulas {
             },
             {
                 formulaName: 'RANDBETWEEN', category: 'Math & Trig', description: 'Returns an integer random number in a specified range.'
+            },
+            {
+                formulaName: 'SLOPE', category: 'Statistical',
+                description: 'Returns the slope of the line from linear regression of the data points.'
+            },
+            {
+                formulaName: 'INTERCEPT', category: 'Statistical',
+                description: 'Calculates the point of the Y-intercept line via linear regression.'
             }
         ];
         this.isConcat = false;
@@ -3255,6 +3314,95 @@ class BasicFormulas {
         else {
             return max - min === 1 ? Math.round((Math.random() * (max - min)) + min) : Math.floor(Math.random() * (max - (min - 1))) + min;
         }
+    }
+    /** @hidden */
+    ComputeSLOPE(...range) {
+        let argArr = range;
+        if (argArr.length !== 2 || argArr[0] === '') {
+            return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
+        }
+        let yPoints;
+        let xPoints;
+        let xPointsRange = this.parent.getCellCollection(argArr[1].split(this.parent.tic).join(''));
+        let yPointsRange = this.parent.getCellCollection(argArr[0].split(this.parent.tic).join(''));
+        if (yPointsRange.length !== xPointsRange.length) {
+            return this.parent.getErrorStrings()[CommonErrors.na];
+        }
+        yPoints = this.getDataCollection(yPointsRange);
+        xPoints = this.getDataCollection(xPointsRange);
+        if (xPoints.indexOf('#NAME?') > -1 || yPoints.indexOf('#NAME?') > -1) {
+            return this.parent.getErrorStrings()[CommonErrors.name];
+        }
+        let sumXY = 0;
+        let sumX2 = 0;
+        let sumX = 0;
+        let sumY = 0;
+        for (let i = 0, len = xPoints.length; i < len; ++i) {
+            if (Number(xPoints[i]).toString() !== 'NaN' && Number(yPoints[i]).toString() !== 'NaN') {
+                sumXY += Number(xPoints[i]) * Number(yPoints[i]);
+                sumX += Number(xPoints[i]);
+                sumY += Number(yPoints[i]);
+                sumX2 += Number(xPoints[i]) * Number(xPoints[i]);
+            }
+        }
+        if ((sumXY - sumX * sumY) === 0 || (sumX2 - sumX * sumX) === 0) {
+            this.parent.getErrorStrings()[CommonErrors.divzero];
+        }
+        let result = ((sumXY - sumX * sumY / xPoints.length) / (sumX2 - sumX * sumX / xPoints.length)).toString();
+        if (result === 'NaN') {
+            return this.parent.getErrorStrings()[CommonErrors.divzero];
+        }
+        return result;
+    }
+    /** @hidden */
+    ComputeINTERCEPT(...range) {
+        let argArr = range;
+        if (argArr[0] === '' || argArr.length !== 2) {
+            return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
+        }
+        let xValues;
+        let yValues;
+        let yValuesRange = this.parent.getCellCollection(argArr[0].split(this.parent.tic).join(''));
+        let xValuesRange = this.parent.getCellCollection(argArr[1].split(this.parent.tic).join(''));
+        if (yValuesRange.length !== xValuesRange.length) {
+            return this.parent.getErrorStrings()[CommonErrors.na];
+        }
+        xValues = this.getDataCollection(xValuesRange);
+        yValues = this.getDataCollection(yValuesRange);
+        if (xValues.indexOf('#NAME?') > -1 || yValues.indexOf('#NAME?') > -1) {
+            return this.parent.getErrorStrings()[CommonErrors.name];
+        }
+        let sumX = 0;
+        let sumY = 0;
+        for (let i = 0, len = xValues.length; i < len; ++i) {
+            sumX += Number(xValues[i]);
+            sumY += Number(yValues[i]);
+        }
+        sumX = sumX / xValues.length;
+        sumY = sumY / xValues.length;
+        let sumXY = 0;
+        let sumX2 = 0;
+        let diff;
+        for (let i = 0, len = xValues.length; i < len; ++i) {
+            diff = Number(xValues[i]) - sumX;
+            sumXY += diff * (Number(yValues[i]) - sumY);
+            sumX2 += diff * diff;
+        }
+        let result = (sumY - sumXY / sumX2 * sumX).toString();
+        if ((sumY - sumXY) === 0 || (sumX2 * sumX) === 0) {
+            this.parent.getErrorStrings()[CommonErrors.divzero];
+        }
+        if (result === 'NaN') {
+            return this.parent.getErrorStrings()[CommonErrors.divzero];
+        }
+        return result;
+    }
+    getDataCollection(cells) {
+        let cellsData = [];
+        for (let i = 0, len = cells.length; i < len; i++) {
+            cellsData.push(this.parent.getValueFromArg(cells[i]));
+        }
+        return cellsData;
     }
     getModuleName() {
         return 'basic-formulas';
@@ -5117,8 +5265,13 @@ let Calculate = Calculate_1 = class Calculate extends Base {
     }
     /** @hidden */
     getCellCollection(cellRange) {
-        if (cellRange.indexOf(':') < 0 && !this.isCellReference(cellRange)) {
-            return cellRange.split(this.getParseArgumentSeparator());
+        if (cellRange.indexOf(':') < 0) {
+            if (!this.isCellReference(cellRange)) {
+                return cellRange.split(this.getParseArgumentSeparator());
+            }
+            else {
+                cellRange = cellRange + ':' + cellRange;
+            }
         }
         let token = this.emptyString;
         let sheetTokenIndex = cellRange.indexOf(this.sheetToken);
@@ -7177,6 +7330,9 @@ class WorkbookFormula {
                 break;
             case 'registerSheet':
                 this.registerSheet(args.sheetIndex, args.sheetCount);
+                if (args.isImport) {
+                    this.updateSheetInfo();
+                }
                 break;
             case 'unRegisterSheet':
                 this.unRegisterSheet(args.sheetIndex, args.sheetCount);
@@ -7223,6 +7379,9 @@ class WorkbookFormula {
             case 'getAlpha':
                 args.col = getAlphalabel(args.col);
                 break;
+            case 'addCustomFunction':
+                this.addCustomFunction(args.functionHandler, args.functionName);
+                break;
         }
     }
     referenceError() {
@@ -7230,6 +7389,15 @@ class WorkbookFormula {
     }
     getSheetInfo() {
         return this.sheetInfo;
+    }
+    addCustomFunction(functionHandler, functionName) {
+        this.calculateInstance.defineFunction(functionName, functionHandler);
+    }
+    updateSheetInfo() {
+        this.sheetInfo = [];
+        this.parent.sheets.forEach((sheet, idx) => {
+            this.sheetInfo.push({ visibleName: sheet.name, sheet: sheet.name, index: idx });
+        });
     }
     sheetDeletion(delSheetName, sheetId, index) {
         let dependentCell = this.calculateInstance.getDependentCells();
@@ -7442,14 +7610,14 @@ class WorkbookFormula {
      */
     addDefinedName(definedName) {
         let isAdded = true;
-        let sheetIdx = null;
+        let sheetIdx;
         let name = definedName.name;
         let refersTo = definedName.refersTo.indexOf('!') > 0 ? definedName.refersTo :
             getSheetName(this.parent) + '!' + definedName.refersTo;
         if (definedName.scope) {
             sheetIdx = getSheetIndex(this.parent, definedName.scope);
-            if (sheetIdx) {
-                name = getSheetName(this.parent, sheetIdx - 1) + '!' + name;
+            if (sheetIdx > -1) {
+                name = getSheetName(this.parent, sheetIdx + 1) + '!' + name;
             }
         }
         else {
@@ -7843,7 +8011,7 @@ class WorkbookCellFormat {
         }
         this.parent.setUsedRange(indexes[2], indexes[3]);
         if (args.refreshRibbon) {
-            this.parent.notify(activeCellChanged, getRangeIndexes(sheet.activeCell));
+            this.parent.notify(activeCellChanged, null);
         }
         this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         if (triggerEvent) {
@@ -8853,6 +9021,12 @@ __decorate$1([
 __decorate$1([
     Property(true)
 ], RangeSetting.prototype, "showFieldAsHeader", void 0);
+__decorate$1([
+    Property('')
+], RangeSetting.prototype, "template", void 0);
+__decorate$1([
+    Property('A1')
+], RangeSetting.prototype, "range", void 0);
 /**
  * Used range which contains end row index and end column index of the last used cell in sheet .
  */
@@ -8911,6 +9085,9 @@ __decorate$1([
 __decorate$1([
     Property(true)
 ], Sheet.prototype, "showGridLines", void 0);
+__decorate$1([
+    Property('Visible')
+], Sheet.prototype, "state", void 0);
 /**
  * To get sheet index from address.
  * @hidden
@@ -9312,6 +9489,15 @@ let Workbook = Workbook_1 = class Workbook extends Component {
         this.notify(workbookOpen, options);
     }
     /**
+     * Opens the specified JSON object.
+     * @param options - Options for opening the JSON object.
+     */
+    openFromJson(options) {
+        this.isOpen = true;
+        let jsonObject = typeof options.file === 'object' ? JSON.stringify(options.file) : options.file;
+        this.notify(workbookOpen, { jsonObject: jsonObject });
+    }
+    /**
      * Saves the Spreadsheet data to Excel file.
      * @param {SaveOptions} saveOptions - Options for saving the excel file.
      */
@@ -9332,6 +9518,20 @@ let Workbook = Workbook_1 = class Workbook extends Component {
                 });
             }
         }
+    }
+    /**
+     * Saves the Spreadsheet data as JSON object.
+     */
+    saveAsJson() {
+        return new Promise((resolve) => {
+            this.on(onSave, (args) => {
+                args.cancel = true;
+                this.off(onSave);
+                resolve({ jsonObject: { Workbook: args.jsonObject } });
+                this.notify(saveCompleted, args);
+            });
+            this.save();
+        });
     }
     addHyperlink(hyperlink, cellAddress) {
         let args = { hyperlink: hyperlink, cell: cellAddress };
@@ -9430,6 +9630,21 @@ let Workbook = Workbook_1 = class Workbook extends Component {
      */
     clearFilter() {
         this.notify(clearAllFilter, null);
+    }
+    /**
+     * To add custom library function.
+     * @param {string} functionHandler - Custom function handler name
+     * @param {string} functionName - Custom function name
+     */
+    addCustomFunction(functionHandler, functionName) {
+        functionName = functionName ? functionName : typeof functionHandler === 'string' ? functionHandler :
+            functionHandler.name.replace('bound ', '');
+        let eventArgs = {
+            action: 'addCustomFunction',
+            functionHandler: functionHandler,
+            functionName: functionName
+        };
+        this.notify(workbookFormulaOperation, eventArgs);
     }
     /**
      * Gets the formatted text of the cell.
@@ -10374,6 +10589,23 @@ function updateAction(options, spreadsheet, isCutRedo) {
             break;
     }
 }
+/**
+ * @hidden
+ */
+function hasTemplate(workbook, rowIdx, colIdx, sheetIdx) {
+    let sheet = workbook.sheets[sheetIdx];
+    let rangeSettings = sheet.rangeSettings;
+    let range;
+    for (let i = 0, len = rangeSettings.length; i < len; i++) {
+        if (rangeSettings[i].template) {
+            range = getRangeIndexes(rangeSettings[i].range.length ? rangeSettings[i].range : rangeSettings[i].startCell);
+            if (range[0] <= rowIdx && range[1] <= colIdx && range[2] >= rowIdx && range[3] >= colIdx) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
 /**
  * Represents clipboard support for Spreadsheet.
@@ -10433,7 +10665,7 @@ class Clipboard {
         this.parent.element.focus();
     }
     tabSwitchHandler(args) {
-        if (args.idx === 1 && !this.copiedInfo) {
+        if (args.activeTab === 0 && !this.copiedInfo) {
             this.hidePaste();
         }
     }
@@ -10537,7 +10769,9 @@ class Clipboard {
                         }
                     }
                     else {
-                        this.setCell(rowIdx, selIdx[1] + k, curSheet, cell, isExtend);
+                        if (!hasTemplate(this.parent, i, j, copiedIdx)) {
+                            this.setCell(rowIdx, selIdx[1] + k, curSheet, cell, isExtend);
+                        }
                     }
                     if (!isExternal && this.copiedInfo.isCut) {
                         this.setCell(i, j, prevSheet, getCell(i, j, prevSheet), false, true);
@@ -11034,6 +11268,10 @@ class Edit {
         // }
     }
     startEdit(address, value, refreshCurPos = true) {
+        let range = getRangeIndexes(this.parent.getActiveSheet().activeCell);
+        if (hasTemplate(this.parent, range[0], range[1], this.parent.activeSheetTab - 1)) {
+            return;
+        }
         this.updateEditCellDetail(address, value);
         this.initiateEditor(refreshCurPos);
         this.positionEditor();
@@ -11636,7 +11874,7 @@ class Selection {
         sheet.activeCell = getCellAddress(rowIdx, colIdx);
         this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         locateElem(this.getActiveCell(), getRangeIndexes(sheet.activeCell), sheet, this.parent.enableRtl);
-        this.parent.notify(activeCellChanged, [rowIdx, colIdx]);
+        this.parent.notify(activeCellChanged, null);
     }
     getSelectionElement() {
         return this.parent.element.getElementsByClassName('e-selection')[0];
@@ -11653,10 +11891,10 @@ class Selection {
             let colHdr = [];
             let swapRange = getSwapRange(range);
             swapRange = this.getHdrIndexes(swapRange);
-            let selectAll = this.parent.element.getElementsByClassName('e-select-all-cell')[0];
+            let selectAll$$1 = this.parent.element.getElementsByClassName('e-select-all-cell')[0];
             removeClass(this.getSheetElement().querySelectorAll('.e-highlight'), 'e-highlight');
             removeClass(this.getSheetElement().querySelectorAll('.e-prev-highlight'), 'e-prev-highlight');
-            removeClass([selectAll], ['e-prev-highlight-right', 'e-prev-highlight-bottom']);
+            removeClass([selectAll$$1], ['e-prev-highlight-right', 'e-prev-highlight-bottom']);
             if (isRowRefresh) {
                 rowHdr = [].slice.call(this.parent.getRowHeaderContent().querySelectorAll('td')).slice(swapRange[0], swapRange[2] + 1);
             }
@@ -11674,10 +11912,10 @@ class Selection {
                 document.getElementById(`${this.parent.element.id}_select_all`).classList.add('e-highlight');
             }
             if (swapRange[0] === 0) {
-                selectAll.classList.add('e-prev-highlight-bottom');
+                selectAll$$1.classList.add('e-prev-highlight-bottom');
             }
             if (swapRange[1] === 0) {
-                selectAll.classList.add('e-prev-highlight-right');
+                selectAll$$1.classList.add('e-prev-highlight-right');
             }
         }
     }
@@ -12836,6 +13074,7 @@ class Resize {
         this.parent.on(contentLoaded, this.wireEvents, this);
         this.parent.on(beforeHeaderLoaded, this.wireEvents, this);
         this.parent.on(autoFit, this.autoFit, this);
+        this.parent.on(setAutoFit, this.setAutoFitHandler, this);
     }
     autoFit(args) {
         args.isRow = args.isRow ? false : true;
@@ -12878,6 +13117,7 @@ class Resize {
             this.parent.off(contentLoaded, this.wireEvents);
             this.parent.off(beforeHeaderLoaded, this.wireEvents);
             this.parent.off(autoFit, this.autoFit);
+            this.parent.off(setAutoFit, this.setAutoFitHandler);
         }
     }
     mouseMoveHandler(e) {
@@ -12939,7 +13179,7 @@ class Resize {
             let colIndx = parseInt(trgt.getAttribute('aria-colindex'), 10) - 1;
             let rowIndx = parseInt(this.trgtEle.parentElement.getAttribute('aria-rowindex'), 10) - 1;
             if (trgt.classList.contains('e-colresize')) {
-                let prevWdt = this.parent.getMainContent().getElementsByTagName('col')[colIndx].style.width;
+                let prevWdt = `${getColumnWidth(this.parent.getActiveSheet(), colIndx)}px`;
                 this.setAutofit(colIndx, true, prevWdt);
             }
             else if (trgt.classList.contains('e-rowresize')) {
@@ -13035,49 +13275,118 @@ class Resize {
             }
         }
     }
+    setAutoFitHandler(args) {
+        this.setAutofit(args.idx, args.isCol);
+    }
+    // tslint:disable-next-line:max-func-body-length
     setAutofit(idx, isCol, prevData) {
-        let index;
+        let index = 0;
         let oldIdx = idx;
-        if (this.parent.scrollSettings.enableVirtualization) {
-            idx = isCol ? idx - this.parent.viewport.leftIndex :
-                idx - this.parent.hiddenRowsCount(this.parent.viewport.topIndex, idx) - this.parent.viewport.topIndex;
-        }
         let sheet = this.parent.getActiveSheet();
         let mainContent = this.parent.getMainContent();
-        let oldValue = isCol ?
-            mainContent.getElementsByTagName('col')[idx].style.width : mainContent.getElementsByTagName('tr')[idx].style.height;
+        let oldValue;
+        if ((isCol && this.parent.viewport.leftIndex <= idx) && (!isCol && this.parent.viewport.topIndex <= idx)) {
+            if (this.parent.scrollSettings.enableVirtualization) {
+                idx = isCol ? idx - this.parent.viewport.leftIndex :
+                    idx - this.parent.hiddenRowsCount(this.parent.viewport.topIndex, idx) - this.parent.viewport.topIndex;
+            }
+            oldValue = isCol ?
+                mainContent.getElementsByTagName('col')[idx].style.width : mainContent.getElementsByTagName('tr')[idx].style.height;
+        }
+        else {
+            oldValue = isCol ? `${getColumnWidth(this.parent.getActiveSheet(), idx)}px` :
+                `${getRowHeight(this.parent.getActiveSheet(), idx)}px`;
+        }
         let headerTable = isCol ? this.parent.getColHeaderTable() : this.parent.getRowHeaderTable();
-        let contentRow = mainContent.getElementsByClassName('e-row');
         let contentClone = [];
         let contentTable = mainContent.getElementsByClassName('e-content-table')[0];
         let headerRow = headerTable.getElementsByTagName('tr');
-        let headerText;
         if (isCol) {
-            headerText = headerRow[0].getElementsByClassName('e-header-cell')[idx].cloneNode(true);
-            for (index = 0; index < contentRow.length; index++) {
-                contentClone[index] = contentRow[index].getElementsByTagName('td')[idx].cloneNode(true);
+            let rowLength = sheet.rows.length;
+            for (let rowIdx = 0; rowIdx < rowLength; rowIdx++) {
+                if (sheet.rows[rowIdx] && sheet.rows[rowIdx].cells[oldIdx]) {
+                    let td = this.parent.createElement('td', {
+                        className: 'e-cell',
+                        innerHTML: this.parent.getDisplayText(sheet.rows[rowIdx].cells[oldIdx])
+                    });
+                    if (sheet.rows[rowIdx].cells[oldIdx].style) {
+                        let style = sheet.rows[rowIdx].cells[oldIdx].style;
+                        if (style.fontFamily) {
+                            td.style.fontFamily = style.fontFamily;
+                        }
+                        if (style.fontSize) {
+                            td.style.fontSize = style.fontSize;
+                        }
+                    }
+                    contentClone[index] = td;
+                    index++;
+                }
             }
         }
         else {
-            headerText = headerRow[idx].getElementsByClassName('e-header-cell')[0].cloneNode(true);
-            for (index = 0; index < contentRow[idx].getElementsByTagName('td').length; index++) {
-                contentClone[index] = contentRow[idx].getElementsByTagName('td')[index].cloneNode(true);
+            let colLength = sheet.rows[oldIdx] && sheet.rows[oldIdx].cells ? sheet.rows[oldIdx].cells.length : 0;
+            for (let colIdx = 0; colIdx < colLength; colIdx++) {
+                if (sheet.rows[oldIdx] && sheet.rows[oldIdx].cells[colIdx]) {
+                    let style = sheet.rows[oldIdx].cells[colIdx].style;
+                    let td = this.parent.createElement('td', {
+                        innerHTML: this.parent.getDisplayText(sheet.rows[oldIdx].cells[colIdx])
+                    });
+                    if (sheet.rows[oldIdx].cells[colIdx].style) {
+                        let style = sheet.rows[oldIdx].cells[colIdx].style;
+                        if (style.fontFamily) {
+                            td.style.fontFamily = style.fontFamily;
+                        }
+                        if (style.fontSize) {
+                            td.style.fontSize = style.fontSize;
+                        }
+                    }
+                    contentClone[index] = td;
+                    index++;
+                }
             }
         }
-        let headerFit = findMaxValue(headerTable, [headerText], isCol, this.parent);
         let contentFit = findMaxValue(contentTable, contentClone, isCol, this.parent);
-        let autofitValue = headerFit < contentFit ? contentFit : headerFit;
+        let autofitValue = contentFit === 0 ? parseInt(oldValue, 10) : contentFit;
         let threshold = parseInt(oldValue, 10) > autofitValue ?
             -(parseInt(oldValue, 10) - autofitValue) : autofitValue - parseInt(oldValue, 10);
         if (isCol) {
-            getColumn(sheet, oldIdx).width = autofitValue > 0 ? autofitValue : 0;
-            this.parent.notify(colWidthChanged, { threshold, colIdx: oldIdx });
+            if (oldIdx >= this.parent.viewport.leftIndex && oldIdx <= this.parent.viewport.leftIndex + 62) {
+                getColumn(sheet, oldIdx).width = autofitValue > 0 ? autofitValue : 0;
+                this.parent.notify(colWidthChanged, { threshold, colIdx: oldIdx });
+                this.resizeStart(oldIdx, idx, autofitValue + 'px', isCol, true, prevData);
+            }
+            else {
+                let oldWidth = getColumnWidth(sheet, oldIdx);
+                let threshold;
+                if (autofitValue > 0) {
+                    threshold = -(oldWidth - autofitValue);
+                }
+                else {
+                    threshold = -oldWidth;
+                }
+                this.parent.notify(colWidthChanged, { threshold, colIdx: oldIdx });
+                getColumn(sheet, oldIdx).width = autofitValue > 0 ? autofitValue : 0;
+            }
         }
-        else {
-            setRowHeight(sheet, oldIdx, autofitValue > 0 ? autofitValue : 0);
-            this.parent.notify(rowHeightChanged, { threshold: threshold, rowIdx: oldIdx });
+        else if (!isCol) {
+            if (oldIdx >= this.parent.viewport.topIndex && oldIdx <= this.parent.viewport.bottomIndex) {
+                setRowHeight(sheet, oldIdx, autofitValue > 0 ? autofitValue : 0);
+                this.parent.notify(rowHeightChanged, { threshold: threshold, rowIdx: oldIdx });
+                this.resizeStart(oldIdx, idx, autofitValue + 'px', isCol, true, prevData);
+            }
+            else {
+                let oldHeight = getRowHeight(sheet, oldIdx);
+                let threshold;
+                if (autofitValue > 0) {
+                    threshold = -(oldHeight - autofitValue);
+                }
+                else {
+                    threshold = -oldHeight;
+                }
+                this.parent.notify(rowHeightChanged, { threshold, rowIdx: oldIdx });
+                setRowHeight(sheet, oldIdx, autofitValue > 0 ? autofitValue : 0);
+            }
         }
-        this.resizeStart(oldIdx, idx, autofitValue + 'px', isCol, true, prevData);
     }
     createResizeHandler(trgt, className) {
         let editor = this.parent.createElement('div', { className: className });
@@ -13233,6 +13542,16 @@ class Resize {
         }
     }
     resizeStart(idx, viewportIdx, value, isCol, isFit, prevData) {
+        if (!isCol) {
+            if (this.parent.scrollSettings.enableVirtualization && this.parent.viewport.topIndex < viewportIdx) {
+                viewportIdx = viewportIdx - this.parent.viewport.topIndex;
+            }
+        }
+        else {
+            if (this.parent.scrollSettings.enableVirtualization && this.parent.viewport.leftIndex < viewportIdx) {
+                viewportIdx = viewportIdx - this.parent.viewport.leftIndex;
+            }
+        }
         setResize(viewportIdx, value, isCol, this.parent);
         let action = isFit ? 'resizeToFit' : 'resize';
         let eventArgs;
@@ -14384,12 +14703,26 @@ var __decorate$7 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /**
+ * Objects used for configuring the Ribbon tab header properties.
+ */
+class RibbonHeader extends ChildProperty {
+}
+__decorate$7([
+    Property('')
+], RibbonHeader.prototype, "text", void 0);
+__decorate$7([
+    Property('')
+], RibbonHeader.prototype, "iconCss", void 0);
+__decorate$7([
+    Property('left')
+], RibbonHeader.prototype, "iconPosition", void 0);
+/**
  * An array of object that is used to configure the Tab.
  */
 class RibbonItem extends ChildProperty {
 }
 __decorate$7([
-    Complex({}, Header)
+    Complex({}, RibbonHeader)
 ], RibbonItem.prototype, "header", void 0);
 __decorate$7([
     Collection([], Item)
@@ -14400,12 +14733,6 @@ __decorate$7([
 __decorate$7([
     Property(false)
 ], RibbonItem.prototype, "disabled", void 0);
-__decorate$7([
-    Property('Tab')
-], RibbonItem.prototype, "type", void 0);
-__decorate$7([
-    Collection([], MenuItem)
-], RibbonItem.prototype, "menuItems", void 0);
 /**
  * Represents Ribbon component.
  */
@@ -14432,6 +14759,9 @@ let Ribbon$1 = class Ribbon extends Component {
      * @private
      */
     render() {
+        if (!this.element.id) {
+            this.element.id = getUniqueID('ribbon');
+        }
         this.renderRibbon();
     }
     /**
@@ -14440,37 +14770,41 @@ let Ribbon$1 = class Ribbon extends Component {
      * @return {void}
      */
     destroy() {
-        this.destroyComponent(this.element.querySelector('.e-file-menu'), Menu);
         let expandCollapseElem = this.tabObj.element.querySelector('.e-drop-icon');
         if (expandCollapseElem) {
             expandCollapseElem.removeEventListener('click', this.ribbonExpandCollapse.bind(this));
         }
+        if (this.menuItems.length) {
+            let fileMenu = document.getElementById(`${this.element.id}_menu_items`);
+            if (fileMenu) {
+                getComponent(fileMenu, 'menu').destroy();
+            }
+        }
         this.toolbarObj.destroy();
         this.tabObj.destroy();
+        this.toolbarObj = null;
+        this.tabObj = null;
         super.destroy();
     }
     getTabItems() {
         let tabItems = [];
+        if (this.menuItems.length) {
+            tabItems.push({
+                header: { text: this.initMenu(this.menuItems) },
+                content: this.toolbarObj.element,
+                cssClass: 'e-menu-tab'
+            });
+        }
         this.items.forEach((item) => {
-            switch (item.type) {
-                case 'Menu':
-                    tabItems.push({
-                        header: { text: this.initMenu(item.menuItems) },
-                        content: this.toolbarObj.element
-                    });
-                    break;
-                case 'Tab':
-                    tabItems.push({
-                        header: item.header,
-                        content: this.toolbarObj.element
-                    });
-                    break;
-            }
+            tabItems.push({
+                header: item.header,
+                content: this.toolbarObj.element
+            });
         });
         return tabItems;
     }
     initMenu(menuItems) {
-        let menu = this.createElement('ul');
+        let menu = this.createElement('ul', { id: `${this.element.id}_menu_items` });
         this.element.appendChild(menu);
         let menuObj = new Menu({
             cssClass: 'e-file-menu',
@@ -14507,30 +14841,39 @@ let Ribbon$1 = class Ribbon extends Component {
         let tabElement = this.createElement('div');
         let tBarElement = this.createElement('div');
         this.toolbarObj = new Toolbar({
-            clicked: (args) => {
-                this.trigger('clicked', args);
-            }
+            items: this.items[this.selectedTab].content,
+            clicked: (args) => this.trigger('clicked', args)
         });
         this.toolbarObj.createElement = this.createElement;
         this.toolbarObj.appendTo(tBarElement);
         this.tabObj = new Tab({
-            selectedItem: 1,
+            selectedItem: this.getIndex(this.selectedTab),
             animation: { next: { duration: 0 }, previous: { duration: 0 } },
             items: this.getTabItems(),
             selecting: (args) => {
-                if (this.items[args.selectingIndex].type === 'Menu') {
+                if (this.menuItems.length && args.selectingIndex === 0) {
                     args.cancel = true;
                 }
                 else {
-                    this.toolbarObj.items = this.items[args.selectingIndex].content;
+                    this.toolbarObj.items = this.items[this.getIndex(args.selectingIndex, true)].content;
                     this.toolbarObj.dataBind();
                     if (this.element.classList.contains('e-collapsed')) {
                         EventHandler.remove(args.selectedItem, 'click', this.ribbonExpandCollapse);
                     }
+                    let eventArgs;
+                    if (this.menuItems.length) {
+                        eventArgs = Object.assign({}, args);
+                        eventArgs.selectingIndex -= 1;
+                        eventArgs.selectedIndex -= 1;
+                    }
+                    else {
+                        eventArgs = args;
+                    }
+                    this.trigger('selecting', eventArgs);
                 }
-                this.trigger('selecting', args);
             },
-            selected: () => {
+            selected: (args) => {
+                this.setProperties({ 'selectedTab': this.getIndex(args.selectedIndex, true) }, true);
                 if (this.element.classList.contains('e-collapsed')) {
                     this.element.classList.remove('e-collapsed');
                     this.trigger('expandCollapse', { element: this.toolbarObj.element, expanded: true });
@@ -14566,6 +14909,9 @@ let Ribbon$1 = class Ribbon extends Component {
             this.trigger('expandCollapse', eventArgs);
         }
     }
+    getIndex(index, decrement) {
+        return this.menuItems.length ? (decrement ? index - 1 : index + 1) : index;
+    }
     /**
      * Enables or disables the specified Ribbon items or all ribbon items.
      * @param  {boolean} enable  - Boolean value that determines whether the command should be enabled or disabled.
@@ -14579,6 +14925,68 @@ let Ribbon$1 = class Ribbon extends Component {
         }
         else {
             this.toolbarObj.disable(!enable);
+        }
+    }
+    /**
+     * To enable / disable the ribbon menu items.
+     * @param {string[]} items - Items that needs to be enabled / disabled.
+     * @param {boolean} enable - Set `true` / `false` to enable / disable the menu items.
+     * @returns void.
+     */
+    enableMenuItems(items, enable = true) {
+        if (!this.menuItems.length) {
+            return;
+        }
+        getComponent(document.getElementById(`${this.element.id}_menu_items`), 'menu').enableItems(items, enable);
+    }
+    /**
+     * To add custom tabs.
+     * @param {RibbonItemModel[]} items - Specifies the Ribbon tab items to be inserted.
+     * @param {string} insertBefore? - specifies the existing Ribbon header text before which the new tabs will be inserted.
+     * If not specified, the new tabs will be inserted at the end.
+     */
+    addTabs(items, insertBefore) {
+        let idx = this.getTabIndex(insertBefore);
+        items.forEach((item) => {
+            item = new RibbonItem(this.items[0], 'items', item, true);
+            this.items.splice(idx, 0, item);
+            this.tabObj.addTab([{ header: item.header, content: this.toolbarObj.element }], this.getIndex(idx));
+            idx++;
+        });
+        this.setProperties({ 'selectedTab': this.getIndex(this.tabObj.selectedItem, true) }, true);
+    }
+    getTabIndex(headerText) {
+        let idx = this.items.length;
+        if (headerText) {
+            for (let i = 0; i < this.items.length; i++) {
+                if (this.items[i].header.text === headerText) {
+                    idx = i;
+                    break;
+                }
+            }
+        }
+        return idx;
+    }
+    /**
+     * To add the custom items in Ribbon toolbar.
+     * @param {string} tab - Specifies the ribbon tab header text under which the specified items will be inserted..
+     * @param {ItemModel[]} items - specifies the ribbon toolbar items that needs to be inserted.
+     * @param {number} index? - specifies the index text before which the new items will be inserted.
+     * If not specified, the new items will be inserted at the end of the toolbar.
+     */
+    addToolbarItems(tab, items, index) {
+        let tabIdx = this.getTabIndex(tab);
+        if (!index) {
+            index = this.items[tabIdx].content.length;
+        }
+        items.forEach((item) => {
+            item = new Item(this.items[tabIdx].content[0], 'content', item, true);
+            this.items[tabIdx].content.splice(index, 0, item);
+            index++;
+        });
+        if (tabIdx === this.selectedTab && items.length) {
+            this.toolbarObj.items = this.items[tabIdx].content;
+            this.toolbarObj.dataBind();
         }
     }
     /**
@@ -14605,13 +15013,12 @@ let Ribbon$1 = class Ribbon extends Component {
      * @private
      */
     onPropertyChanged(newProp, oldProp) {
-        /** code snippets */
-    }
-    destroyComponent(element, component) {
-        if (element) {
-            let compObj = getComponent(element, component);
-            if (compObj) {
-                compObj.destroy();
+        for (let prop of Object.keys(newProp)) {
+            switch (prop) {
+                case 'selectedTab':
+                    this.tabObj.selectedItem = this.getIndex(newProp.selectedTab);
+                    this.tabObj.dataBind();
+                    break;
             }
         }
     }
@@ -14619,6 +15026,15 @@ let Ribbon$1 = class Ribbon extends Component {
 __decorate$7([
     Property('')
 ], Ribbon$1.prototype, "cssClass", void 0);
+__decorate$7([
+    Property(true)
+], Ribbon$1.prototype, "menuType", void 0);
+__decorate$7([
+    Collection([], MenuItem)
+], Ribbon$1.prototype, "menuItems", void 0);
+__decorate$7([
+    Property(0)
+], Ribbon$1.prototype, "selectedTab", void 0);
 __decorate$7([
     Collection([], RibbonItem)
 ], Ribbon$1.prototype, "items", void 0);
@@ -14796,7 +15212,6 @@ class Ribbon$$1 {
     constructor(parent) {
         this.fontNameIndex = 5;
         this.numPopupWidth = 0;
-        this.activeTab = 1;
         this.parent = parent;
         this.addEventListener();
         new ColorPicker$1(parent);
@@ -14817,32 +15232,30 @@ class Ribbon$$1 {
             this.createRibbon(args);
         }
     }
+    getRibbonMenuItems() {
+        let l10n = this.parent.serviceLocator.getService(locale);
+        return [{
+                text: this.parent.isMobileView() ? '' : l10n.getConstant('File'),
+                iconCss: this.parent.isMobileView() ? 'e-icons e-file-menu-icon' : null,
+                items: [
+                    { text: l10n.getConstant('New'), id: 'New', iconCss: 'e-new e-icons' },
+                    { text: l10n.getConstant('Open'), id: 'Open', iconCss: 'e-open e-icons' },
+                    {
+                        text: l10n.getConstant('SaveAs'),
+                        iconCss: 'e-save e-icons',
+                        items: [
+                            { text: l10n.getConstant('ExcelXlsx'), id: 'Xlsx', iconCss: 'e-xlsx e-icons' },
+                            { text: l10n.getConstant('ExcelXls'), id: 'Xls', iconCss: 'e-xls e-icons' },
+                            { text: l10n.getConstant('CSV'), id: 'Csv', iconCss: 'e-csv e-icons' }
+                        ]
+                    }
+                ]
+            }];
+    }
     getRibbonItems() {
         let id = this.parent.element.id;
         let l10n = this.parent.serviceLocator.getService(locale);
         let items = [
-            {
-                type: 'Menu',
-                menuItems: [
-                    {
-                        text: this.parent.isMobileView() ? '' : l10n.getConstant('File'),
-                        iconCss: this.parent.isMobileView() ? 'e-icons e-file-menu-icon' : null,
-                        items: [
-                            { text: l10n.getConstant('New'), id: 'New', iconCss: 'e-new e-icons' },
-                            { text: l10n.getConstant('Open'), id: 'Open', iconCss: 'e-open e-icons' },
-                            {
-                                text: l10n.getConstant('SaveAs'),
-                                iconCss: 'e-save e-icons',
-                                items: [
-                                    { text: l10n.getConstant('ExcelXlsx'), id: 'Xlsx', iconCss: 'e-xlsx e-icons' },
-                                    { text: l10n.getConstant('ExcelXls'), id: 'Xls', iconCss: 'e-xls e-icons' },
-                                    { text: l10n.getConstant('CSV'), id: 'Csv', iconCss: 'e-csv e-icons' }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            },
             {
                 header: { text: l10n.getConstant('Home') },
                 content: [
@@ -14879,7 +15292,7 @@ class Ribbon$$1 {
                 content: [{ prefixIcon: 'e-insert-function', text: l10n.getConstant('InsertFunction'), id: id + '_insert_function' }]
             },
             {
-                header: { text: 'View' },
+                header: { text: l10n.getConstant('View') },
                 content: [
                     { prefixIcon: 'e-hide-headers', text: this.getLocaleText('Headers'), id: id + '_headers' }, { type: 'Separator' },
                     { prefixIcon: 'e-hide-gridlines', text: this.getLocaleText('GridLines'), id: id + '_gridlines' }
@@ -14946,6 +15359,8 @@ class Ribbon$$1 {
     createRibbon(args) {
         let ribbonElement = this.parent.createElement('div');
         this.ribbon = new Ribbon$1({
+            selectedTab: 0,
+            menuItems: this.getRibbonMenuItems(),
             items: this.getRibbonItems(),
             fileItemSelect: this.fileItemSelect.bind(this),
             beforeOpen: this.fileMenuBeforeOpen.bind(this),
@@ -14968,10 +15383,9 @@ class Ribbon$$1 {
         this.ribbon.appendTo(ribbonElement);
     }
     tabSelecting(args) {
-        if (args.selectingIndex && args.selectingIndex !== this.activeTab) {
-            this.activeTab = args.selectingIndex;
-            this.refreshRibbonContent();
-            this.parent.notify(tabSwitch, { idx: args.selectingIndex });
+        if (args.selectingIndex !== this.ribbon.selectedTab) {
+            this.refreshRibbonContent(args.selectingIndex);
+            this.parent.notify(tabSwitch, { activeTab: args.selectingIndex });
         }
     }
     beforeRenderHandler(args) {
@@ -15345,23 +15759,27 @@ class Ribbon$$1 {
         numElem.appendChild(previewElem);
         args.element.appendChild(numElem);
     }
-    refreshRibbonContent() {
-        switch (this.activeTab) {
-            case 1:
-                this.refreshFirstTabContent(getCellIndexes(this.parent.getActiveSheet().activeCell));
+    refreshRibbonContent(activeTab) {
+        if (isNullOrUndefined(activeTab)) {
+            activeTab = this.ribbon.selectedTab;
+        }
+        let l10n = this.parent.serviceLocator.getService(locale);
+        switch (this.ribbon.items[activeTab].header.text) {
+            case l10n.getConstant('Home'):
+                this.refreshHomeTabContent(getCellIndexes(this.parent.getActiveSheet().activeCell));
                 break;
-            case 2:
+            case l10n.getConstant('Insert'):
                 // Second tab functionality comes here
                 break;
-            case 3:
+            case l10n.getConstant('Formulas'):
                 // Third tab functionality comes here
                 break;
-            case 4:
-                this.refreshFourthTabContent();
+            case l10n.getConstant('View'):
+                this.refreshViewTabContent(activeTab);
                 break;
         }
     }
-    refreshFirstTabContent(indexes) {
+    refreshHomeTabContent(indexes) {
         if (!isNullOrUndefined(document.getElementById(this.parent.element.id + '_number_format'))) {
             this.numFormatDDB = getComponent(document.getElementById(this.parent.element.id + '_number_format'), DropDownButton);
         }
@@ -15502,7 +15920,7 @@ class Ribbon$$1 {
                 sheet.showHeaders = !sheet.showHeaders;
                 this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
                 this.parent.serviceLocator.getService('sheet').showHideHeaders();
-                this.toggleRibbonItems({ props: 'Headers', pos: 0 });
+                this.toggleRibbonItems({ props: 'Headers', activeTab: this.ribbon.selectedTab });
                 this.parent.element.focus();
                 break;
             case parentId + '_gridlines':
@@ -15517,7 +15935,7 @@ class Ribbon$$1 {
                 }
                 sheet.showGridLines = !sheet.showGridLines;
                 this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
-                this.toggleRibbonItems({ props: 'GridLines', pos: 2 });
+                this.toggleRibbonItems({ props: 'GridLines', activeTab: this.ribbon.selectedTab });
                 this.parent.element.focus();
                 break;
             case parentId + '_undo':
@@ -15530,10 +15948,93 @@ class Ribbon$$1 {
         this.parent.notify(ribbonClick, args);
     }
     toggleRibbonItems(args) {
+        let tabHeader = this.parent.serviceLocator.getService(locale).getConstant('View');
+        if (isNullOrUndefined(args.activeTab)) {
+            for (let i = 0; i < this.ribbon.items.length; i++) {
+                if (this.ribbon.items[i].header.text === tabHeader) {
+                    args.activeTab = i;
+                    break;
+                }
+            }
+        }
         let text = this.getLocaleText(args.props, true);
-        this.ribbon.items[4].content[args.pos].text = text;
-        if (this.activeTab === 4) {
+        let id = `${this.parent.element.id}_${args.props.toLowerCase()}`;
+        for (let i; i < this.ribbon.items[args.activeTab].content.length; i++) {
+            if (this.ribbon.items[args.activeTab].content[i].type === 'Separator') {
+                continue;
+            }
+            if (this.ribbon.items[args.activeTab].content[i].id === id) {
+                this.ribbon.items[args.activeTab].content[i].text = text;
+                this.ribbon.setProperties({ 'items': this.ribbon.items }, true);
+            }
+        }
+        if (this.ribbon.items[this.ribbon.selectedTab].header.text === tabHeader) {
             this.updateToggleText(args.props.toLowerCase(), text);
+        }
+    }
+    enableFileMenuItems(args) {
+        this.ribbon.enableMenuItems(args.items, args.enable);
+    }
+    hideRibbonTabs(args) {
+        let isActiveTab;
+        let idx;
+        let tabCollection = selectAll('.e-ribbon .e-tab-header .e-toolbar-item:not(.e-menu-tab)', this.parent.element);
+        args.tabs.forEach((tab) => {
+            for (let i = 0; i < this.ribbon.items.length; i++) {
+                if (tab === this.ribbon.items[i].header.text) {
+                    idx = i;
+                    break;
+                }
+            }
+            if (idx !== undefined) {
+                if (args.hide) {
+                    tabCollection[idx].classList.add('e-hide');
+                    if (idx === this.ribbon.selectedTab) {
+                        isActiveTab = true;
+                    }
+                }
+                else {
+                    if (tabCollection[idx].classList.contains('e-hide')) {
+                        if (isActiveTab === undefined) {
+                            isActiveTab = select('.e-ribbon .e-tab-header .e-toolbar-item:not(.e-menu-tab):not(.e-hide)', this.parent.element) ? false :
+                                true;
+                        }
+                        tabCollection[idx].classList.remove('e-hide');
+                    }
+                }
+                idx = undefined;
+            }
+        });
+        let nextTab;
+        if (isActiveTab) {
+            nextTab = select('.e-ribbon .e-tab-header .e-toolbar-item:not(.e-menu-tab):not(.e-hide)', this.parent.element);
+            if (nextTab) {
+                this.toggleCollapsed();
+                let activeIdx = [].slice.call(tabCollection).indexOf(nextTab);
+                this.ribbon.selectedTab = activeIdx;
+                this.ribbon.dataBind();
+            }
+            else {
+                this.toggleCollapsed();
+            }
+        }
+        this.parent.updateActiveBorder(tabCollection[this.ribbon.selectedTab]);
+    }
+    toggleCollapsed() {
+        if (this.ribbon.element.classList.contains('e-collapsed')) {
+            this.ribbon.element.classList.remove('e-collapsed');
+            this.ribbon.element.querySelector('.e-drop-icon').classList.remove('e-disabled');
+        }
+        else {
+            this.ribbon.element.classList.add('e-collapsed');
+            this.ribbon.element.querySelector('.e-drop-icon').classList.add('e-disabled');
+        }
+    }
+    addRibbonTabs(args) {
+        this.ribbon.addTabs(args.items, args.insertBefore);
+        let nextTab = select('.e-ribbon .e-tab-header .e-toolbar-item:not(.e-menu-tab).e-hide', this.parent.element);
+        if (nextTab) {
+            this.parent.updateActiveBorder(selectAll('.e-ribbon .e-tab-header .e-toolbar-item:not(.e-menu-tab)', this.parent.element)[this.ribbon.selectedTab]);
         }
     }
     updateToggleText(item, text) {
@@ -15541,31 +16042,52 @@ class Ribbon$$1 {
             this.ribbon.element.querySelector(`#${this.parent.element.id}_${item} .e-tbar-btn-text`).textContent = text;
         });
     }
-    refreshFourthTabContent() {
-        let idx;
+    refreshViewTabContent(activeTab) {
+        let id = this.parent.element.id;
+        let updated;
+        for (let i = 0; i < this.ribbon.items[activeTab].content.length; i++) {
+            if (this.ribbon.items[activeTab].content[i].type === 'Separator') {
+                continue;
+            }
+            if (this.ribbon.items[activeTab].content[i].id === `${id}_headers`) {
+                this.updateViewTabContent(activeTab, 'Headers', i);
+                if (updated) {
+                    break;
+                }
+                updated = true;
+            }
+            if (this.ribbon.items[activeTab].content[i].id === `${id}_gridlines`) {
+                this.updateViewTabContent(activeTab, 'GridLines', i);
+                if (updated) {
+                    break;
+                }
+                updated = true;
+            }
+        }
+    }
+    updateViewTabContent(activeTab, item, idx) {
         let sheet = this.parent.getActiveSheet();
         let l10n = this.parent.serviceLocator.getService(locale);
-        let itemPos = [0, 2];
-        ['Headers', 'GridLines'].forEach((item, index) => {
-            idx = itemPos[index];
-            if (sheet['show' + item]) {
-                if (this.ribbon.items[4].content[idx].text === l10n.getConstant('Show' + item)) {
-                    this.updateShowHideBtn('Hide', item, idx);
-                }
+        if (sheet['show' + item]) {
+            if (this.ribbon.items[activeTab].content[idx].text === l10n.getConstant('Show' + item)) {
+                this.updateShowHideBtn('Hide', item, idx, activeTab);
             }
-            else {
-                if (this.ribbon.items[4].content[idx].text === l10n.getConstant('Hide' + item)) {
-                    this.updateShowHideBtn('Show', item, idx);
-                }
+        }
+        else {
+            if (this.ribbon.items[activeTab].content[idx].text === l10n.getConstant('Hide' + item)) {
+                this.updateShowHideBtn('Show', item, idx, activeTab);
             }
-        });
+        }
     }
-    updateShowHideBtn(showHideText, item, idx) {
+    updateShowHideBtn(showHideText, item, idx, activeTab) {
         let l10n = this.parent.serviceLocator.getService(locale);
         let text = l10n.getConstant(showHideText + item);
-        this.ribbon.items[4].content[idx].text = text;
+        this.ribbon.items[activeTab].content[idx].text = text;
         this.ribbon.setProperties({ 'items': this.ribbon.items }, true);
         this.updateToggleText(item.toLowerCase(), text);
+    }
+    addToolbarItems(args) {
+        this.ribbon.addToolbarItems(args.tab, args.items, args.index);
     }
     enableRibbonItems(args) {
         for (let i = 0, len = args.length; i < len; i++) {
@@ -15598,7 +16120,7 @@ class Ribbon$$1 {
                     cssClass: 'e-mobile e-file-menu',
                     enableRtl: true,
                     showItemOnClick: true,
-                    items: this.ribbon.items[0].menuItems,
+                    items: this.getRibbonMenuItems(),
                     select: this.fileItemSelect.bind(this),
                     beforeOpen: (args) => {
                         args.element.parentElement.classList.remove('e-rtl');
@@ -15625,12 +16147,12 @@ class Ribbon$$1 {
         this.parent.element.appendChild(toolbarPanel);
         let ddbObj = new DropDownButton({
             cssClass: 'e-caret-hide',
-            content: this.ribbon.items[1].header.text,
+            content: this.ribbon.items[0].header.text,
             items: [
+                { text: this.ribbon.items[0].header.text },
                 { text: this.ribbon.items[1].header.text },
                 { text: this.ribbon.items[2].header.text },
-                { text: this.ribbon.items[3].header.text },
-                { text: this.ribbon.items[4].header.text }
+                { text: this.ribbon.items[3].header.text }
             ],
             select: (args) => {
                 if (args.item.text !== ddbObj.content) {
@@ -15664,7 +16186,7 @@ class Ribbon$$1 {
         ddbObj.appendTo(ddb);
         let toolbarObj = new Toolbar({
             width: `calc(100% - ${ddb.getBoundingClientRect().width}px)`,
-            items: this.ribbon.items[1].content,
+            items: this.ribbon.items[0].content,
             clicked: this.toolbarClicked.bind(this)
         });
         toolbarObj.createElement = this.parent.createElement;
@@ -15694,6 +16216,10 @@ class Ribbon$$1 {
         this.parent.on(activeCellChanged, this.refreshRibbonContent, this);
         this.parent.on(enableToolbar, this.enableToolbar, this);
         this.parent.on(updateToggleItem, this.toggleRibbonItems, this);
+        this.parent.on(enableFileMenuItems, this.enableFileMenuItems, this);
+        this.parent.on(hideRibbonTabs, this.hideRibbonTabs, this);
+        this.parent.on(addRibbonTabs, this.addRibbonTabs, this);
+        this.parent.on(addToolbarItems, this.addToolbarItems, this);
     }
     destroy() {
         let parentElem = this.parent.element;
@@ -15723,6 +16249,10 @@ class Ribbon$$1 {
             this.parent.off(activeCellChanged, this.refreshRibbonContent);
             this.parent.off(enableToolbar, this.enableToolbar);
             this.parent.off(updateToggleItem, this.toggleRibbonItems);
+            this.parent.off(enableFileMenuItems, this.enableFileMenuItems);
+            this.parent.off(hideRibbonTabs, this.hideRibbonTabs);
+            this.parent.off(addRibbonTabs, this.addRibbonTabs);
+            this.parent.off(addToolbarItems, this.addToolbarItems);
         }
     }
 }
@@ -16239,6 +16769,7 @@ class Formula {
         this.parent.on(keyUp, this.keyUpHandler, this);
         this.parent.on(keyDown, this.keyDownHandler, this);
         this.parent.on(click, this.clickHandler, this);
+        this.parent.on(refreshFormulaDatasource, this.refreshFormulaDatasource, this);
     }
     removeEventListener() {
         if (!this.parent.isDestroyed) {
@@ -16246,6 +16777,7 @@ class Formula {
             this.parent.off(keyUp, this.keyUpHandler);
             this.parent.off(keyDown, this.keyDownHandler);
             this.parent.off(click, this.clickHandler);
+            this.parent.off(refreshFormulaDatasource, this.refreshFormulaDatasource);
         }
     }
     performFormulaOperation(args) {
@@ -16356,6 +16888,14 @@ class Formula {
             args.cancel = true;
             this.hidePopUp();
         }
+    }
+    refreshFormulaDatasource() {
+        let eventArgs = {
+            action: 'getLibraryFormulas',
+            formulaCollection: []
+        };
+        this.parent.notify(workbookFormulaOperation, eventArgs);
+        this.autocompleteInstance.dataSource = eventArgs.formulaCollection;
     }
     keyUpHandler(e) {
         if (this.parent.isEdit) {
@@ -16594,6 +17134,15 @@ class SheetTabs {
         this.dropDownInstance = new DropDownButton({
             iconCss: 'e-icons',
             items: items.ddbItems,
+            beforeItemRender: (args) => {
+                let sheet = this.parent.sheets[this.dropDownInstance.items.indexOf(args.item)];
+                if (sheet.state === 'Hidden') {
+                    args.element.classList.add('e-hide');
+                }
+                else if (sheet.state === 'VeryHidden') {
+                    args.element.style.display = 'none';
+                }
+            },
             select: (args) => this.updateSheetTab({ idx: this.dropDownInstance.items.indexOf(args.item) }),
             beforeOpen: (args) => this.beforeOpenHandler(this.dropDownInstance, args.element),
             open: (args) => this.openHandler(this.dropDownInstance, args.element, 'left'),
@@ -16604,7 +17153,7 @@ class SheetTabs {
         this.dropDownInstance.appendTo(ddb);
         let sheetTab = this.parent.createElement('div', { className: 'e-sheet-tab' });
         this.tabInstance = new Tab({
-            selectedItem: 0,
+            selectedItem: this.parent.activeSheetTab - 1,
             overflowMode: 'Scrollable',
             items: items.tabItems,
             scrollStep: 250,
@@ -16676,7 +17225,7 @@ class SheetTabs {
         let sheetName;
         this.parent.sheets.forEach((sheet, index) => {
             sheetName = getSheetName(this.parent, index + 1);
-            tabItems.push({ header: { 'text': sheetName } });
+            tabItems.push({ header: { 'text': sheetName }, cssClass: sheet.state === 'Visible' ? '' : 'e-hide' });
             ddbItems.push({ text: sheetName, iconCss: index + 1 === this.parent.activeSheetTab ? 'e-selected-icon e-icons' : '' });
         });
         return { tabItems: tabItems, ddbItems: ddbItems };
@@ -16724,6 +17273,18 @@ class SheetTabs {
         }
     }
     updateSheetTab(args) {
+        if (args.name === 'activeSheetChanged') {
+            args.idx = this.parent.skipHiddenSheets(args.idx);
+        }
+        else {
+            if (this.parent.sheets[args.idx].state === 'Hidden') {
+                this.parent.sheets[args.idx].state = 'Visible';
+                this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
+                this.tabInstance.items[args.idx].cssClass = '';
+                this.tabInstance.items = this.tabInstance.items;
+                this.tabInstance.dataBind();
+            }
+        }
         this.tabInstance.selectedItem = args.idx;
         this.tabInstance.dataBind();
     }
@@ -16741,6 +17302,19 @@ class SheetTabs {
                 break;
             }
         }
+        if (args.element.classList.contains('e-contextmenu') && args.items[3] &&
+            args.items[3].id === `${this.parent.element.id}_cmenu_sheet_hide` && this.skipHiddenSheets() === 1) {
+            args.element.children[3].classList.add('e-disabled');
+        }
+    }
+    skipHiddenSheets() {
+        let count = this.parent.sheets.length;
+        this.parent.sheets.forEach((sheet) => {
+            if (sheet.state !== 'Visible') {
+                --count;
+            }
+        });
+        return count;
     }
     renameSheetTab() {
         let target = this.tabInstance.element.querySelector('.e-toolbar-item.e-active');
@@ -16837,6 +17411,15 @@ class SheetTabs {
             this.tabInstance.dataBind();
         }
     }
+    hideSheet() {
+        this.parent.getActiveSheet().state = 'Hidden';
+        this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
+        this.tabInstance.items[this.parent.activeSheetTab - 1].cssClass = 'e-hide';
+        this.tabInstance.items = this.tabInstance.items;
+        this.tabInstance.dataBind();
+        this.tabInstance.selectedItem = this.parent.skipHiddenSheets(this.parent.activeSheetTab === this.parent.sheets.length ? this.parent.activeSheetTab - 2 : this.parent.activeSheetTab);
+        this.tabInstance.dataBind();
+    }
     removeRenameInput(target) {
         let textEle = target.parentElement.querySelector('.e-tab-text');
         let sheetItems = closest(target, '.e-toolbar-items');
@@ -16867,7 +17450,7 @@ class SheetTabs {
             return;
         }
         let l10n = this.parent.serviceLocator.getService(locale);
-        if (this.parent.sheets.length > 1) {
+        if (this.skipHiddenSheets() > 1) {
             let sheet = args.sheetName ? getSheet(this.parent, getSheetIndex(this.parent, args.sheetName)) :
                 this.parent.getActiveSheet();
             let sheetIndex = args.index || getSheetIndex(this.parent, sheet.name);
@@ -16941,9 +17524,12 @@ class SheetTabs {
         this.dropDownInstance.items.splice(activeSheetIdx, 1);
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
         this.tabInstance.removeTab(activeSheetIdx);
-        this.parent.setProperties({ 'activeSheetTab': this.tabInstance.selectedItem + 1 }, true);
+        let activeIndex = this.parent.skipHiddenSheets(this.tabInstance.selectedItem);
+        this.parent.setProperties({ 'activeSheetTab': activeIndex + 1 }, true);
         this.parent.renderModule.refreshSheet();
-        this.updateDropDownItems(this.tabInstance.selectedItem);
+        this.tabInstance.selectedItem = activeIndex;
+        this.tabInstance.dataBind();
+        this.updateDropDownItems(activeIndex);
         this.parent.element.focus();
     }
     showAggregate() {
@@ -17019,6 +17605,7 @@ class SheetTabs {
         this.parent.on(onVerticalScroll, this.focusRenameInput, this);
         this.parent.on(onHorizontalScroll, this.focusRenameInput, this);
         this.parent.on(sheetNameUpdate, this.updateSheetName, this);
+        this.parent.on(hideSheet, this.hideSheet, this);
     }
     destroy() {
         this.removeEventListener();
@@ -17051,6 +17638,7 @@ class SheetTabs {
             this.parent.off(onVerticalScroll, this.focusRenameInput);
             this.parent.off(onHorizontalScroll, this.focusRenameInput);
             this.parent.off(sheetNameUpdate, this.updateSheetName);
+            this.parent.off(hideSheet, this.hideSheet);
         }
     }
 }
@@ -17281,6 +17869,9 @@ class ContextMenu$1 {
                 case id + '_insert':
                     this.parent.notify(addSheetTab, { text: 'Insert' });
                     break;
+                case id + '_sheet_hide':
+                    this.parent.notify(hideSheet, null);
+                    break;
                 case id + '_ascending':
                     this.parent.notify(applySort, null);
                     break;
@@ -17330,13 +17921,17 @@ class ContextMenu$1 {
      */
     beforeOpenHandler(args) {
         let target = this.getTarget(args.event.target);
+        let items;
         if (args.element.classList.contains('e-contextmenu')) {
-            let items = this.getDataSource(target);
+            items = this.getDataSource(target);
             this.contextMenuInstance.items = items;
             this.contextMenuInstance.dataBind();
         }
+        else {
+            items = args.items;
+        }
         this.parent.trigger('contextMenuBeforeOpen', args);
-        this.parent.notify(cMenuBeforeOpen, extend(args, { target: target }));
+        this.parent.notify(cMenuBeforeOpen, extend(args, { target: target, items: items }));
     }
     /**
      * To get target area based on right click.
@@ -17398,6 +17993,9 @@ class ContextMenu$1 {
             });
             items.push({
                 text: l10n.getConstant('Rename'), id: id + '_rename'
+            });
+            items.push({
+                text: l10n.getConstant('Hide'), id: id + '_sheet_hide'
             });
         }
         return items;
@@ -19624,6 +20222,7 @@ class CellRenderer {
         this.parent = parent;
         this.element = this.parent.createElement('td');
         this.th = this.parent.createElement('th', { className: 'e-header-cell' });
+        this.tableRow = parent.createElement('tr', { className: 'e-row' });
     }
     renderColHeader(index) {
         let headerCell = this.th.cloneNode();
@@ -19642,10 +20241,24 @@ class CellRenderer {
         let td = this.element.cloneNode();
         td.className = 'e-cell';
         attributes(td, { 'role': 'gridcell', 'aria-colindex': (args.colIdx + 1).toString(), 'tabindex': '-1' });
+        td.innerHTML = this.processTemplates(args.cell, args.rowIdx, args.colIdx);
         this.updateCell(args.rowIdx, args.colIdx, td, args.cell, args.lastCell, args.row, args.hRow, args.isHeightCheckNeeded);
-        this.parent.notify(renderFilterCell, { td: td, rowIndex: args.rowIdx, colIndex: args.colIdx });
-        this.parent.trigger('beforeCellRender', { cell: args.cell, element: td, address: args.address });
-        return td;
+        if (!hasTemplate(this.parent, args.rowIdx, args.colIdx, this.parent.activeSheetTab - 1)) {
+            this.parent.notify(renderFilterCell, { td: td, rowIndex: args.rowIdx, colIndex: args.colIdx });
+        }
+        let evtArgs = {
+            cell: args.cell, element: td, address: args.address
+        };
+        this.parent.trigger('beforeCellRender', evtArgs);
+        this.updateRowHeight({
+            rowIdx: args.rowIdx,
+            cell: evtArgs.element,
+            lastCell: args.lastCell,
+            rowHgt: 20,
+            row: args.row,
+            hRow: args.hRow
+        });
+        return evtArgs.element;
     }
     updateCell(rowIdx, colIdx, td, cell, lastCell, row, hRow, isHeightCheckNeeded, isRefresh) {
         if (cell && cell.formula && !cell.value) {
@@ -19667,8 +20280,7 @@ class CellRenderer {
         if (cell) {
             this.parent.notify(getFormattedCellObject, formatArgs);
         }
-        if (td) {
-            td.textContent = td ? formatArgs.formattedText : '';
+        if (!isNullOrUndefined(td)) {
             this.parent.refreshNode(td, {
                 type: formatArgs.type,
                 result: formatArgs.formattedText,
@@ -19694,7 +20306,8 @@ class CellRenderer {
             else {
                 this.parent.notify(applyCellFormat, {
                     style: extend({}, this.parent.commonCellStyle, style), rowIdx: rowIdx, colIdx: colIdx, cell: td,
-                    lastCell: lastCell, row: row, hRow: hRow, isHeightCheckNeeded: isHeightCheckNeeded, manualUpdate: false
+                    lastCell: lastCell, row: row, hRow: hRow,
+                    isHeightCheckNeeded: isHeightCheckNeeded, manualUpdate: false
                 });
             }
         }
@@ -19703,10 +20316,72 @@ class CellRenderer {
                 this.removeStyle(td);
             }
         }
-        if (cell && cell.hyperlink) {
-            let args = { cell: cell, td: td, rowIdx: rowIdx, colIdx: colIdx };
-            this.parent.notify(createHyperlinkElement, args);
+        if (cell && cell.hyperlink && !hasTemplate(this.parent, rowIdx, colIdx, this.parent.activeSheetTab - 1)) {
+            let hArgs = { cell: cell, td: td, rowIdx: rowIdx, colIdx: colIdx };
+            this.parent.notify(createHyperlinkElement, hArgs);
         }
+    }
+    processTemplates(cell, rowIdx, colIdx) {
+        let sheet = this.parent.getActiveSheet();
+        let rangeSettings = sheet.rangeSettings;
+        let range;
+        for (let j = 0, len = rangeSettings.length; j < len; j++) {
+            if (rangeSettings[j].template) {
+                range = getRangeIndexes(rangeSettings[j].range.length ? rangeSettings[j].range : rangeSettings[j].startCell);
+                if (range[0] <= rowIdx && range[1] <= colIdx && range[2] >= rowIdx && range[3] >= colIdx) {
+                    if (cell) {
+                        return this.compileCellTemplate(rangeSettings[j].template);
+                    }
+                    else {
+                        if (!getCell(rowIdx, colIdx, sheet, true)) {
+                            return this.compileCellTemplate(rangeSettings[j].template);
+                        }
+                    }
+                }
+            }
+        }
+        return '';
+    }
+    compileCellTemplate(template) {
+        let templateString;
+        if (template.trim().indexOf('#') === 0) {
+            templateString = document.querySelector(template).innerHTML.trim();
+        }
+        else {
+            templateString = template;
+        }
+        let compiledStr = compile(templateString);
+        return compiledStr({}, null, null, '', true)[0].outerHTML;
+    }
+    updateRowHeight(args) {
+        if (args.cell && args.cell.children.length) {
+            let clonedCell = args.cell.cloneNode(true);
+            this.tableRow.appendChild(clonedCell);
+        }
+        if (args.lastCell && this.tableRow.childElementCount) {
+            let sheet = this.parent.getActiveSheet();
+            let tableRow = args.row || this.parent.getRow(args.rowIdx);
+            let previouseHeight = getRowHeight(sheet, args.rowIdx);
+            let rowHeight = this.getRowHeightOnInit();
+            if (rowHeight > previouseHeight) {
+                tableRow.style.height = `${rowHeight}px`;
+                if (sheet.showHeaders) {
+                    (args.hRow || this.parent.getRow(args.rowIdx, this.parent.getRowHeaderTable())).style.height =
+                        `${rowHeight}px`;
+                }
+                setRowHeight(sheet, args.rowIdx, rowHeight);
+            }
+            this.tableRow.innerHTML = '';
+        }
+    }
+    getRowHeightOnInit() {
+        let tTable = this.parent.createElement('table', { className: 'e-table e-test-table' });
+        let tBody = tTable.appendChild(this.parent.createElement('tbody'));
+        tBody.appendChild(this.tableRow);
+        this.parent.element.appendChild(tTable);
+        let height = Math.round(this.tableRow.getBoundingClientRect().height);
+        this.parent.element.removeChild(tTable);
+        return height < 20 ? 20 : height;
     }
     removeStyle(element) {
         if (element.style.length) {
@@ -19748,6 +20423,7 @@ class Render {
         this.addEventListener();
     }
     render() {
+        this.parent.setProperties({ 'activeSheetTab': this.parent.skipHiddenSheets(this.parent.activeSheetTab - 1) + 1 }, true);
         if (!this.parent.isMobileView()) {
             this.parent.notify(ribbon, null);
             this.parent.notify(formulaBar, null);
@@ -20423,6 +21099,86 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
         }
     }
     /**
+     * This method is used to autofit the range of rows or columns
+     * @param {string} range - range that needs to be autofit.
+     *
+     * ```html
+     * <div id='Spreadsheet'></div>
+     * ```
+     * ```typescript
+     * let spreadsheet = new Spreadsheet({
+     *      allowResizing: true
+     * ...
+     * }, '#Spreadsheet');
+     * spreadsheet.autoFit('A:D'); // Auto fit from A to D columns
+     * Spreadsheet.autoFit('1:4'); // Auto fit from 1 to 4 rows
+     *
+     * ```
+     */
+    autoFit(range) {
+        let values = this.getIndexes(range);
+        let startIdx = values.startIdx;
+        let endIdx = values.endIdx;
+        let isCol = values.isCol;
+        let maximumColInx = isCol ? getColIndex('XFD') : 1048576;
+        if (startIdx <= maximumColInx) {
+            if (endIdx > maximumColInx) {
+                endIdx = maximumColInx;
+            }
+        }
+        else {
+            return;
+        }
+        for (startIdx; startIdx <= endIdx; startIdx++) {
+            this.notify(setAutoFit, { idx: startIdx, isCol });
+        }
+    }
+    getIndexes(range) {
+        let startIsCol;
+        let endIsCol;
+        let start;
+        let end;
+        let isCol;
+        if (range.indexOf(':') !== -1) {
+            let starttoend = range.split(':');
+            start = starttoend[0];
+            end = starttoend[1];
+        }
+        else {
+            start = range;
+            end = range;
+        }
+        if (!isNullOrUndefined(start)) {
+            let startValues = this.getAddress(start);
+            start = startValues.address;
+            startIsCol = startValues.isCol;
+        }
+        if (!isNullOrUndefined(end)) {
+            let endValues = this.getAddress(end);
+            end = endValues.address;
+            endIsCol = endValues.isCol;
+        }
+        isCol = startIsCol === true && endIsCol === true ? true : false;
+        let startIdx = isCol ? getColIndex(start.toUpperCase()) : parseInt(start, 10);
+        let endIdx = isCol ? getColIndex(end.toUpperCase()) : parseInt(end, 10);
+        return { startIdx: startIdx, endIdx: endIdx, isCol: isCol };
+    }
+    getAddress(address) {
+        let isCol;
+        if (address.substring(0, 1).match(/\D/g)) {
+            isCol = true;
+            address = address.replace(/[0-9]/g, '');
+            return { address: address, isCol: isCol };
+        }
+        else if (address.substring(0, 1).match(/[0-9]/g) && address.match(/\D/g)) {
+            return { address: '', isCol: false };
+        }
+        else {
+            address = (parseInt(address, 10) - 1).toString();
+            return { address: address, isCol: isCol };
+        }
+    }
+    /**
      * To add the hyperlink in the cell
      * @param {string | HyperlinkModel} hyperlink
      * @param {string} address
@@ -20622,7 +21378,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
         address = address || this.getActiveSheet().activeCell;
         super.updateCell(cell, address);
         this.serviceLocator.getService('cell').refreshRange(getIndexesFromAddress(address));
-        this.notify(activeCellChanged, {});
+        this.notify(activeCellChanged, null);
     }
     /**
      * Sorts the range of cells in the active sheet.
@@ -20718,6 +21474,35 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
             }
         }
         return [startIdx, endIdx];
+    }
+    /** @hidden */
+    updateActiveBorder(nextTab, selector = '.e-ribbon') {
+        let indicator = select(`${selector} .e-tab-header .e-indicator`, this.element);
+        indicator.style.display = 'none';
+        setStyleAttribute(indicator, { 'left': '', 'right': '' });
+        setStyleAttribute(indicator, { 'left': nextTab.offsetLeft + 'px', 'right': nextTab.parentElement.offsetWidth - (nextTab.offsetLeft + nextTab.offsetWidth) + 'px' });
+        indicator.style.display = '';
+    }
+    /** @hidden */
+    skipHiddenSheets(index, initIdx, hiddenCount = 0) {
+        if (this.sheets[index] && this.sheets[index].state !== 'Visible') {
+            if (initIdx === undefined) {
+                initIdx = index;
+            }
+            if (index && index + 1 === this.sheets.length) {
+                index = initIdx - 1;
+            }
+            else {
+                index < initIdx ? index-- : index++;
+            }
+            index = this.skipHiddenSheets(index, initIdx, ++hiddenCount);
+        }
+        if (hiddenCount === this.sheets.length) {
+            this.sheets[0].state = 'Visible';
+            this.setProperties({ 'sheets': this.sheets }, true);
+            return 0;
+        }
+        return index;
     }
     /**
      * To perform the undo operation in spreadsheet.
@@ -20831,6 +21616,42 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
         this.notify(enableContextMenuItems, { items: items, enable: enable, isUniqueId: isUniqueId });
     }
     /**
+     * To enable / disable file menu items.
+     * @param {string[]} items - Items that needs to be enabled / disabled.
+     * @param {boolean} enable - Set `true` / `false` to enable / disable the menu items.
+     * @param {boolean} isUniqueId - Set `true` if the given `text` is a unique id.
+     */
+    enableFileMenuItems(items, enable = true) {
+        this.notify(enableFileMenuItems, { items: items, enable: enable });
+    }
+    /**
+     * To show/hide the existing ribbon tabs.
+     * @param {string[]} tabs - Specifies the tab header text which is to be show/hide.
+     * @param {boolean} hide - Set `true` / `false` to hide / show the ribbon tabs.
+     */
+    hideRibbonTabs(tabs, hide = true) {
+        this.notify(hideRibbonTabs, { tabs: tabs, hide: hide });
+    }
+    /**
+     * To add custom ribbon tabs.
+     * @param {RibbonItemModel[]} items - Specifies the ribbon tab items to be inserted.
+     * @param {string} insertBefore? - specifies the existing ribbon header text before which the new tabs will be inserted.
+     * If not specified, the new tabs will be inserted at the end.
+     */
+    addRibbonTabs(items, insertBefore) {
+        this.notify(addRibbonTabs, { items: items, insertBefore: insertBefore });
+    }
+    /**
+     * To add the custom items in Spreadsheet ribbon toolbar.
+     * @param {string} tab - Specifies the ribbon tab header text under which the specified items will be inserted.
+     * @param {ItemModel[]} items - specifies the ribbon toolbar items that needs to be inserted.
+     * @param {number} index? - specifies the index text before which the new items will be inserted.
+     * If not specified, the new items will be inserted at the end of the toolbar.
+     */
+    addToolbarItems(tab, items, index) {
+        this.notify(addToolbarItems, { tab: tab, items: items, index: index });
+    }
+    /**
      * Selects the cell / range of cells with specified address.
      * @param {string} address - Specifies the range address.
      */
@@ -20923,6 +21744,10 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
                                 idx: sheetIdx
                             });
                         }
+                        if (newProp.sheets[sheetIdx].rangeSettings) {
+                            this.sheets[sheetIdx].rangeSettings = newProp.sheets[sheetIdx].rangeSettings;
+                            this.renderModule.refreshSheet();
+                        }
                     });
                     break;
                 case 'locale':
@@ -20972,6 +21797,15 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      */
     applyFilter(predicates, range) {
         this.notify(initiateFilterUI, { predicates: predicates, range: range });
+    }
+    /**
+     * To add custom library function.
+     * @param {string} functionHandler - Custom function handler name
+     * @param {string} functionName - Custom function name
+     */
+    addCustomFunction(functionHandler, functionName) {
+        super.addCustomFunction(functionHandler, functionName);
+        this.notify(refreshFormulaDatasource, null);
     }
 };
 __decorate$9([
@@ -21092,5 +21926,5 @@ Spreadsheet = Spreadsheet_1 = __decorate$9([
  * Export Spreadsheet modules
  */
 
-export { Workbook, RangeSetting, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, getCellPosition, skipDefaultValue, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, Hyperlink, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, checkIsFormula, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, addSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableRibbonItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, enableToolbar, initiateCustomSort, applySort, collaborativeUpdate, hideShowRow, hideShowCol, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, locale, dialog, actionEvents, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
+export { Workbook, RangeSetting, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, getCellPosition, skipDefaultValue, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, Hyperlink, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, onSave, checkIsFormula, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, addSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableRibbonItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideRibbonTabs, addRibbonTabs, addToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, enableToolbar, initiateCustomSort, applySort, collaborativeUpdate, hideShowRow, hideShowCol, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, locale, dialog, actionEvents, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
 //# sourceMappingURL=ej2-spreadsheet.es2015.js.map

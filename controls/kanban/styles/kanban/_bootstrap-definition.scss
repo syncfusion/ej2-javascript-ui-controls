@@ -1,0 +1,15 @@
+/*! Kanban component's bootstrap theme definitions and variables */
+$kanban-skin: 'bootstrap' !default;
+$kanban-column-bg-color: $grey-f9 !default;
+$kanban-primary-color: $brand-primary !default;
+$kanban-border-color: $grey-e6 !default;
+$kanban-default-font: $grey-light-font !default;
+$kanban-card-selection: $grey-lighter !default;
+$kanban-dropped-clone-bg-color: rgba($kanban-primary-color, .1) !default;
+$kanban-dropped-clone-border-color: $kanban-primary-color !default;
+$kanban-dragged-clone-border-color: $grey-dd !default;
+$kanban-icons-color: $gray-light !default;
+$kanban-bg-color: $grey-white !default;
+$kanban-popup-overlay-bg-color: #383838 !default;
+$kanban-min-color: #ffe0b2 !default;
+$kanban-max-color: #fcdbe4 !default;

@@ -1,0 +1,20 @@
+@include export-module('excel-filter-theme') {
+  /*! Excel-Filter theme */
+  #{&}.e-excelfilter {
+    .e-footer-content {
+      border-color: $grid-columnchooser-footer-border-color;
+      opacity: $grid-columnchooser-footer-border-opacity;
+    }
+  }
+
+  .e-xlsel {
+    background-color: $grid-autofill-color;
+    border-color: $grid-autofill-color;
+  }
+
+  .e-filtered {
+    ::before {
+      color: $grid-filtered-color;
+    }
+  }
+}

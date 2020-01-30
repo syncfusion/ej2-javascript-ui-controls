@@ -923,6 +923,7 @@ export class DateProcessor {
             ? this.getDateFromFormat(this.parent.cloneProjectEndDate) : this.getDateFromFormat(this.parent.projectEndDate);
         let minStartDate: Date = null; let maxEndDate: Date = null;
         let flatData: IGanttData[] = this.parent.flatData;
+        let currentViewData: IGanttData[] = this.parent.currentViewData;
         let taskRange: Date[] = [];
         let addDateToList: Function = (date: Date): void => {
             if (!isNullOrUndefined(date)) {
@@ -939,7 +940,15 @@ export class DateProcessor {
             }
         };
         if (((!projectStartDate || !projectEndDate) && flatData.length > 0) || editArgs || this.parent.timelineModule.isZoomToFit) {
-            flatData.forEach((data: IGanttData, index: number) => {
+            let viewData: IGanttData[];
+            if (currentViewData.length > 0 && this.parent.timelineModule.isZoomToFit &&
+                this.parent.treeGrid.filterModule &&
+                this.parent.treeGrid.filterModule.filteredResult.length > 0) {
+                viewData = currentViewData;
+            } else {
+                viewData = flatData;
+            }
+            viewData.forEach((data: IGanttData, index: number) => {
                 taskRange = [];
                 let task: ITaskData = data.ganttProperties;
                 let tempStartDate: Date = this.getValidStartDate(task);

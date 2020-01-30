@@ -3,11 +3,11 @@ import { DateFormatOptions, createElement, isNullOrUndefined } from '@syncfusion
 import { DataUtil } from '@syncfusion/ej2-data';
 import { Axis, Row, Column, VisibleRangeModel, VisibleLabels } from '../axis/axis';
 import { Orientation } from '../utils/enum';
-import { subtractThickness, valueToCoefficient, sum, redrawElement, isBreakLabel } from '../../common/utils/helper';
+import { subtractThickness, valueToCoefficient, sum, redrawElement, isBreakLabel, ChartLocation } from '../../common/utils/helper';
 import { subArray, inside, appendChildElement } from '../../common/utils/helper';
 import { Thickness, logBase, createZoomingLabels, getElement, rotateTextSize } from '../../common/utils/helper';
 import { Size, Rect, measureText, TextOption, PathOption } from '@syncfusion/ej2-svg-base';
-import { textElement, textTrim } from '../../common/utils/helper';
+import { textElement, textTrim, getRotatedRectangleCoordinates, isRotatedRectIntersect } from '../../common/utils/helper';
 import { BorderModel } from '../../common/model/base-model';
 import { MajorGridLinesModel, MinorGridLinesModel, MajorTickLinesModel, MinorTickLinesModel } from './axis-model';
 import { IThemeStyle } from '../model/chart-interface';
@@ -447,7 +447,7 @@ export class CartesianAxisLayoutPanel {
 
                 axis.updateCrossValue(chart);
 
-                if (axis.visible && axis.lineStyle.width > 0) {
+                if (axis.visible && axis.internalVisibility && axis.lineStyle.width > 0) {
                     this.drawAxisLine(
                         axis, i, axis.plotOffset, 0, isInside ? outsideElement : this.element, axis.updatedRect
                     );
@@ -457,7 +457,7 @@ export class CartesianAxisLayoutPanel {
                         axis, i, (isInside || axis.tickPosition === 'Inside') ? outsideElement : this.element, axis.updatedRect
                     );
                 }
-                if (axis.visible) {
+                if (axis.visible && axis.internalVisibility) {
                     this.drawXAxisLabels(
                         axis, i, (isInside || axis.labelPosition === 'Inside') ? outsideElement : this.element,
                         (axis.placeNextToAxisLine ? axis.updatedRect : axis.rect)
@@ -472,7 +472,7 @@ export class CartesianAxisLayoutPanel {
                 }
             } else {
                 axis.updateCrossValue(chart);
-                if (axis.visible && axis.lineStyle.width > 0) {
+                if (axis.visible && axis.internalVisibility && axis.lineStyle.width > 0) {
                     this.drawAxisLine(axis, i, 0, axis.plotOffset, isInside ? outsideElement : this.element, axis.updatedRect);
                 }
                 if (axis.majorGridLines.width > 0 || axis.majorTickLines.width > 0) {
@@ -481,7 +481,7 @@ export class CartesianAxisLayoutPanel {
                     );
                 }
 
-                if (axis.visible) {
+                if (axis.visible && axis.internalVisibility) {
                     this.drawYAxisLabels(
                         axis, i, (isInside || axis.labelPosition === 'Inside') ? outsideElement : this.element,
                         (axis.placeNextToAxisLine ? axis.updatedRect : axis.rect)
@@ -780,7 +780,7 @@ export class CartesianAxisLayoutPanel {
         if (!this.chart.enableCanvas) {
             if (!chart.delayRedraw) {
                 appendChildElement(chart.enableCanvas, parent, labelElement, chart.redraw);
-            } else if (axis.visible) {
+            } else if (axis.visible && axis.internalVisibility) {
                 this.createZoomingLabel(this.chart, labelElement, axis, index, rect);
             }
         }
@@ -1056,6 +1056,7 @@ export class CartesianAxisLayoutPanel {
      * @param rect
      * @private
      */
+    // tslint:disable-next-line:max-func-body-length
     public drawXAxisLabels(axis: Axis, index: number, parent: Element, rect: Rect): void {
         let chart: Chart = this.chart; let pointX: number = 0; let pointY: number = 0;
         let elementSize: Size; let labelPadding: number; let xValue: number = 0;
@@ -1071,6 +1072,7 @@ export class CartesianAxisLayoutPanel {
         let intervalLength: number; let label: VisibleLabels; let isAxisBreakLabel: boolean;
         let scrollBarHeight: number = axis.scrollbarSettings.enable || (!islabelInside && isNullOrUndefined(axis.crossesAt)
             && (axis.zoomFactor < 1 || axis.zoomPosition > 0)) ? axis.scrollBarHeight : 0;
+        let newPoints: ChartLocation[][] = []; let isRotatedLabelIntersect: boolean = false;
         for (let i: number = 0, len: number = length; i < len; i++) {
             label = axis.visibleLabels[i];
             isAxisBreakLabel = isBreakLabel(label.originalText);
@@ -1131,21 +1133,48 @@ export class CartesianAxisLayoutPanel {
                     + (pointY + yLocation) + ')';
                 options.y = isAxisBreakLabel ? options.y +
                     (isOpposed ? (4 * label.text.length) : -(4 * label.text.length)) : options.y + yLocation;
-
+                let height: number = (pointY + yLocation) - (options.y - ((label.size.height / 2) + 10));
+                let rect: Rect = new Rect(options.x, options.y - ((label.size.height / 2) - 5), label.size.width, height);
+                let rectCoordinates: ChartLocation[] = this.getRectanglePoints(rect);
+                let rectCenterX: number = pointX + width * 0.5 + anglePadding;
+                let rectCenterY: number = (pointY + yLocation) - (height / 2);
+                newPoints.push(getRotatedRectangleCoordinates(rectCoordinates, rectCenterX, rectCenterY, angle));
+                isRotatedLabelIntersect = false;
+                for (let index: number = i; index > 0; index--) {
+                    if (newPoints[i] && newPoints[index - 1] && isRotatedRectIntersect(newPoints[i], newPoints[index - 1])) {
+                        isRotatedLabelIntersect = true; newPoints[i] = null;
+                        break;
+                    }
+                }
             }
             textElement(
                 chart.renderer, options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel,
-                labelElement, (axis.opposedPosition !== (axis.labelPosition === 'Inside')), chart.redraw, true
+                labelElement, (axis.opposedPosition !== (axis.labelPosition === 'Inside')), chart.redraw, true,
+                null, null, null, label.size, isRotatedLabelIntersect
             );
         }
         if (!this.chart.enableCanvas) {
             if (!chart.delayRedraw) {
                 parent.appendChild(labelElement);
-            } else if (axis.visible) {
+            } else if (axis.visible && axis.internalVisibility) {
                 this.createZoomingLabel(this.chart, labelElement, axis, index, rect);
             }
         }
     }
+    /**
+     * Get rect coordinates
+     * @param label
+     * @param axis
+     * @param intervalLength
+     */
+    private getRectanglePoints(rect: Rect): ChartLocation[] {
+        let point1: ChartLocation = new ChartLocation(rect.x, rect.y);
+        let point2: ChartLocation = new ChartLocation(rect.x + rect.width, rect.y);
+        let point3: ChartLocation = new ChartLocation(rect.x + rect.width, rect.y + rect.height);
+        let point4: ChartLocation = new ChartLocation(rect.x, rect.y + rect.height);
+        return [point1, point2, point3, point4];
+    }
+
     /**
      * To get axis label text
      * @param breakLabels 
@@ -1313,7 +1342,7 @@ export class CartesianAxisLayoutPanel {
         let chart: Chart = this.chart;
         let direction: string;
         let element: Element;
-        if (gridModel.width > 0 && axis.visible && gridDirection) {
+        if (gridModel.width > 0 && axis.visible && axis.internalVisibility && gridDirection) {
             element = getElement(chart.element.id + gridId + index + '_' + gridIndex);
             direction = element ? element.getAttribute('d') : null;
             element = null;

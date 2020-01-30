@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 17.4.46 (2020-01-30)
+
+### In-place Editor
+
+#### New Features
+
+- `#258695` - Provided `cancel` argument in `beginEdit` event to prevent the open action of the editor.
+
+## 17.4.43 (2020-01-14)
+
+### In-place Editor
+
+#### New Features
+
+- `#255914` - Provided actual `text` field value display on initial load, when DropDown components are configured with the `fields` property.
+
 ## 17.4.40 (2019-12-24)
 
 ### In-place Editor

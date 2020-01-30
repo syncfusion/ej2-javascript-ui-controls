@@ -294,6 +294,169 @@ describe('Event Base Module', () => {
         });
     });
 
+    describe('Checking events fill the full height of the cell', () => {
+        let schObj: Schedule;
+        let eventData: Object[] = [{
+            Id: 1,
+            StartTime: new Date(2018, 8, 30, 0, 0),
+            EndTime: new Date(2018, 8, 30, 0, 30),
+            RecurrenceRule: 'FREQ=DAILY;BYDAY=SU,MO,TU,WE,TH,FR,SA;INTERVAL=1;COUNT=6;'
+        }, {
+            Id: 2,
+            StartTime: new Date(2018, 8, 30, 0, 0),
+            EndTime: new Date(2018, 8, 30, 0, 30),
+            RecurrenceRule: 'FREQ=DAILY;BYDAY=SU,SA;INTERVAL=1;COUNT=6;'
+        }, {
+            Id: 3,
+            StartTime: new Date(2018, 9, 12),
+            EndTime: new Date(2018, 9, 14),
+        }, {
+            Id: 4,
+            StartTime: new Date(2018, 9, 24),
+            EndTime: new Date(2018, 9, 30)
+        }, {
+            Id: 5,
+            StartTime: new Date(2018, 9, 16),
+            EndTime: new Date(2018, 9, 18)
+        }];
+        beforeAll((done: Function) => {
+            let options: ScheduleModel = {
+                height: '550px', selectedDate: new Date(2018, 9, 1),
+                views: ['Week', 'Month', 'TimelineMonth'],
+                currentView: 'Week',
+                eventSettings: {
+                    enableMaxHeight: true,
+                }
+            };
+            schObj = util.createSchedule(options, eventData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking event filled full height of the cell in the week view', () => {
+            let cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
+            let eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
+            expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight);
+        });
+        it('Checking event filled full height of the cell in the Month view', (done: Function) => {
+            schObj.dataBound = () => {
+                let cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
+                let eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
+                let headerHeight: number = 25;
+                expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight - headerHeight);
+                done();
+            };
+            schObj.currentView = 'Month';
+            schObj.dataBind();
+        });
+        it('Checking evnet filled full height of the cell in the Timeline month view', (done: Function) => {
+            schObj.dataBound = () => {
+                let cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
+                let eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
+                expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight - 2);
+                done();
+            };
+            schObj.currentView = 'TimelineMonth';
+            schObj.dataBind();
+        });
+        it('Checking fill and enable Rtl properties is set to true on timeline month view', (done: Function) => {
+            schObj.dataBound = () => {
+                let cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
+                let eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
+                expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight - 2);
+                done();
+            };
+            schObj.enableRtl = true;
+            schObj.dataBind();
+        });
+        it('Checking fill and enable Rtl properties is set to true on month view', (done: Function) => {
+            schObj.dataBound = () => {
+                let cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
+                let eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
+                let headerHeight: number = 25;
+                expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight - headerHeight);
+                done();
+            };
+            schObj.currentView = 'Month';
+            schObj.dataBind();
+        });
+    });
+
+    describe('Checking events fill the full height with more indicator of the cell', () => {
+        let schObj: Schedule;
+        let eventData: Object[] = [{
+            Id: 1,
+            StartTime: new Date(2018, 8, 30, 0, 0),
+            EndTime: new Date(2018, 8, 30, 0, 30),
+            RecurrenceRule: 'FREQ=DAILY;BYDAY=SU,MO,TU,WE,TH,FR,SA;INTERVAL=1;COUNT=6;'
+        }, {
+            Id: 2,
+            StartTime: new Date(2018, 8, 30, 0, 30),
+            EndTime: new Date(2018, 8, 30, 1, 0),
+            RecurrenceRule: 'FREQ=DAILY;BYDAY=SU,MO,TU,WE,TH,FR,SA;INTERVAL=1;COUNT=6;'
+        }, {
+            Id: 3,
+            StartTime: new Date(2018, 9, 12),
+            EndTime: new Date(2018, 9, 14),
+        }, {
+            Id: 4,
+            StartTime: new Date(2018, 9, 24),
+            EndTime: new Date(2018, 9, 30)
+        }];
+        beforeAll((done: Function) => {
+            let options: ScheduleModel = {
+                height: '550px', width: '100%', selectedDate: new Date(2018, 9, 1),
+                views: ['Month', 'TimelineMonth'],
+                currentView: 'Month',
+                eventSettings: {
+                    enableMaxHeight: true,
+                    enableIndicator: true
+                }
+            };
+            schObj = util.createSchedule(options, eventData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking event filled full height of the cell in the Month view', () => {
+            let cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
+            let eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
+            let headerHeight: number = 25;
+            expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight - 19 - headerHeight);
+        });
+        it('Checking evnet filled full height of the cell in the Timeline month view', (done: Function) => {
+            schObj.dataBound = () => {
+                let cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
+                let eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
+                expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight - 21);
+                done();
+            };
+            schObj.currentView = 'TimelineMonth';
+            schObj.dataBind();
+        });
+        it('Checking fill, indicator and enable Rtl properties is set to true on timeline month view', (done: Function) => {
+            schObj.dataBound = () => {
+                let cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
+                let eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
+                expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight - 21);
+                done();
+            };
+            schObj.enableRtl = true;
+            schObj.dataBind();
+        });
+        it('Checking fill, indicator and enable Rtl properties is set to true on month view', (done: Function) => {
+            schObj.dataBound = () => {
+                let cellElement: HTMLElement = (schObj.element.querySelector('.e-work-cells') as HTMLElement);
+                let eventElement: HTMLElement = (schObj.element.querySelector('.e-appointment') as HTMLElement);
+                let headerHeight: number = 25;
+                expect(eventElement.offsetHeight).toEqual(cellElement.offsetHeight - 19 - headerHeight);
+                done();
+            };
+            schObj.currentView = 'Month';
+            schObj.dataBind();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         // tslint:disable:no-any

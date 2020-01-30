@@ -1,6 +1,6 @@
 import { Tab, SelectingEventArgs, TabItemModel, SelectEventArgs } from '@syncfusion/ej2-navigations';
 import { Spreadsheet } from '../base/index';
-import { refreshSheetTabs, locale, addSheetTab, cMenuBeforeOpen, dialog, renameSheet, click, completeAction } from '../common/index';
+import { refreshSheetTabs, locale, addSheetTab, cMenuBeforeOpen, dialog, renameSheet, hideSheet, completeAction } from '../common/index';
 import { sheetNameUpdate, clearUndoRedoCollection } from '../common/index';
 import { sheetTabs, renameSheetTab, removeSheetTab, activeSheetChanged, onVerticalScroll, onHorizontalScroll } from '../common/index';
 import { getUpdateUsingRaf } from '../common/index';
@@ -54,6 +54,14 @@ export class SheetTabs {
         this.dropDownInstance = new DropDownButton({
             iconCss: 'e-icons',
             items: items.ddbItems,
+            beforeItemRender: (args: MenuEventArgs): void => {
+                let sheet: SheetModel = this.parent.sheets[this.dropDownInstance.items.indexOf(args.item)];
+                if (sheet.state === 'Hidden') {
+                    args.element.classList.add('e-hide');
+                } else if (sheet.state === 'VeryHidden') {
+                    args.element.style.display = 'none';
+                }
+            },
             select: (args: MenuEventArgs): void => this.updateSheetTab({ idx: this.dropDownInstance.items.indexOf(args.item) }),
             beforeOpen: (args: BeforeOpenCloseMenuEventArgs): void => this.beforeOpenHandler(this.dropDownInstance, args.element),
             open: (args: OpenCloseMenuEventArgs): void => this.openHandler(this.dropDownInstance, args.element, 'left'),
@@ -64,7 +72,7 @@ export class SheetTabs {
         this.dropDownInstance.appendTo(ddb);
         let sheetTab: HTMLElement = this.parent.createElement('div', { className: 'e-sheet-tab' });
         this.tabInstance = new Tab({
-            selectedItem: 0,
+            selectedItem: this.parent.activeSheetTab - 1,
             overflowMode: 'Scrollable',
             items: items.tabItems,
             scrollStep: 250,
@@ -132,7 +140,7 @@ export class SheetTabs {
         let tabItems: TabItemModel[] = []; let ddbItems: ItemModel[] = []; let sheetName: string;
         this.parent.sheets.forEach((sheet: SheetModel, index: number) => {
             sheetName = getSheetName(this.parent, index + 1);
-            tabItems.push({ header: { 'text': sheetName } });
+            tabItems.push({ header: { 'text': sheetName }, cssClass: sheet.state === 'Visible' ? '' : 'e-hide' });
             ddbItems.push({ text: sheetName, iconCss: index + 1 === this.parent.activeSheetTab ? 'e-selected-icon e-icons' : '' });
         });
         return { tabItems: tabItems, ddbItems: ddbItems };
@@ -180,7 +188,16 @@ export class SheetTabs {
         }
     }
 
-    private updateSheetTab(args: { idx: number }): void {
+    private updateSheetTab(args: { idx: number, name?: string }): void {
+        if (args.name === 'activeSheetChanged') {
+            args.idx = this.parent.skipHiddenSheets(args.idx);
+        } else {
+            if (this.parent.sheets[args.idx].state === 'Hidden') {
+                this.parent.sheets[args.idx].state = 'Visible'; this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
+                this.tabInstance.items[args.idx].cssClass = ''; this.tabInstance.items = this.tabInstance.items;
+                this.tabInstance.dataBind();
+            }
+        }
         this.tabInstance.selectedItem = args.idx; this.tabInstance.dataBind();
     }
 
@@ -196,6 +213,18 @@ export class SheetTabs {
                 break;
             }
         }
+        if (args.element.classList.contains('e-contextmenu') && args.items[3] &&
+            args.items[3].id === `${this.parent.element.id}_cmenu_sheet_hide` && this.skipHiddenSheets() === 1) {
+            args.element.children[3].classList.add('e-disabled');
+        }
+    }
+
+    private skipHiddenSheets(): number {
+        let count: number = this.parent.sheets.length;
+        this.parent.sheets.forEach((sheet: SheetModel): void => {
+            if (sheet.state !== 'Visible') { --count; }
+        });
+        return count;
     }
 
     private renameSheetTab(): void {
@@ -285,6 +314,17 @@ export class SheetTabs {
             this.tabInstance.items = this.tabInstance.items;
             this.tabInstance.dataBind();
         }
+
+    }
+
+    private hideSheet(): void {
+        this.parent.getActiveSheet().state = 'Hidden';
+        this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
+        this.tabInstance.items[this.parent.activeSheetTab - 1].cssClass = 'e-hide';
+        this.tabInstance.items = this.tabInstance.items; this.tabInstance.dataBind();
+        this.tabInstance.selectedItem = this.parent.skipHiddenSheets(
+            this.parent.activeSheetTab === this.parent.sheets.length ? this.parent.activeSheetTab - 2 : this.parent.activeSheetTab);
+        this.tabInstance.dataBind();
     }
 
     private removeRenameInput(target: HTMLInputElement): Element {
@@ -321,7 +361,7 @@ export class SheetTabs {
             return;
         }
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
-        if (this.parent.sheets.length > 1) {
+        if (this.skipHiddenSheets() > 1) {
             let sheet: SheetModel = args.sheetName ? getSheet(this.parent, getSheetIndex(this.parent, args.sheetName)) :
                 this.parent.getActiveSheet();
             let sheetIndex: number = args.index || getSheetIndex(this.parent, sheet.name);
@@ -394,9 +434,11 @@ export class SheetTabs {
         this.dropDownInstance.items.splice(activeSheetIdx, 1);
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
         this.tabInstance.removeTab(activeSheetIdx);
-        this.parent.setProperties({ 'activeSheetTab': this.tabInstance.selectedItem + 1 }, true);
+        let activeIndex: number = this.parent.skipHiddenSheets(this.tabInstance.selectedItem);
+        this.parent.setProperties({ 'activeSheetTab': activeIndex + 1 }, true);
         this.parent.renderModule.refreshSheet();
-        this.updateDropDownItems(this.tabInstance.selectedItem);
+        this.tabInstance.selectedItem = activeIndex; this.tabInstance.dataBind();
+        this.updateDropDownItems(activeIndex);
         this.parent.element.focus();
     }
 
@@ -470,6 +512,7 @@ export class SheetTabs {
         this.parent.on(onVerticalScroll, this.focusRenameInput, this);
         this.parent.on(onHorizontalScroll, this.focusRenameInput, this);
         this.parent.on(sheetNameUpdate, this.updateSheetName, this);
+        this.parent.on(hideSheet, this.hideSheet, this);
     }
 
     public destroy(): void {
@@ -502,6 +545,7 @@ export class SheetTabs {
             this.parent.off(onVerticalScroll, this.focusRenameInput);
             this.parent.off(onHorizontalScroll, this.focusRenameInput);
             this.parent.off(sheetNameUpdate, this.updateSheetName);
+            this.parent.off(hideSheet, this.hideSheet);
         }
     }
 }

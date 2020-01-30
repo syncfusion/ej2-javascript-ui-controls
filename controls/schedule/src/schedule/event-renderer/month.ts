@@ -23,6 +23,9 @@ export class MonthEvent extends EventBase {
     public cellHeight: number;
     public moreIndicatorHeight: number = 19;
     public renderType: string = 'day';
+    public maxHeight: boolean;
+    public withIndicator: boolean;
+    public maxOrIndicator: boolean;
 
     /**
      * Constructor for month events
@@ -31,6 +34,11 @@ export class MonthEvent extends EventBase {
         super(parent);
         this.element = this.parent.activeView.getPanel();
         this.fields = this.parent.eventFields;
+        this.maxHeight = this.parent.eventSettings.enableMaxHeight && !this.parent.eventSettings.enableIndicator
+            && !this.parent.rowAutoHeight;
+        this.withIndicator = this.parent.eventSettings.enableMaxHeight && this.parent.eventSettings.enableIndicator
+            && !this.parent.rowAutoHeight;
+        this.maxOrIndicator = (this.maxHeight || this.withIndicator);
         this.addEventListener();
     }
 
@@ -110,6 +118,13 @@ export class MonthEvent extends EventBase {
             }
             let splittedEvents: { [key: string]: Object }[] = this.splitEvent(event, filteredDates || this.dateRender);
             for (let event of splittedEvents) {
+                if (this.maxHeight) {
+                    let sDate: Date = this.parent.currentView === 'Month' ? event[this.fields.startTime] as Date :
+                        this.getStartTime(event, event.data as { [key: string]: Object });
+                    if (this.getIndex(sDate) > 0) {
+                        continue;
+                    }
+                }
                 this.updateIndicatorIcon(<{ [key: string]: Object }>event);
                 this.renderEvents(<{ [key: string]: Object }>event, resIndex, eventsList);
             }
@@ -390,7 +405,8 @@ export class MonthEvent extends EventBase {
             this.renderWrapperElement(cellTd as HTMLElement);
             let height: number =
                 this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;
-            if ((this.cellHeight > height) || this.parent.rowAutoHeight) {
+            let enableAppRender: boolean = this.maxOrIndicator ? overlapCount < 1 ? true : false : this.cellHeight > height;
+            if (this.parent.rowAutoHeight || enableAppRender) {
                 let appointmentElement: HTMLElement = this.createAppointmentElement(event, resIndex);
                 this.applyResourceColor(appointmentElement, event, 'backgroundColor', this.groupOrder);
                 this.wireAppointmentEvents(appointmentElement, event);
@@ -409,6 +425,7 @@ export class MonthEvent extends EventBase {
                         let groupIndex: string = cellTd.getAttribute('data-group-index');
                         let filterEvents: Object[] = this.getFilteredEvents(startDate, endDate, groupIndex);
                         let appArea: number = this.cellHeight - this.monthHeaderHeight - this.moreIndicatorHeight;
+                        appHeight = this.withIndicator ? appArea : appHeight;
                         let renderedAppCount: number = Math.floor(appArea / (appHeight + EVENT_GAP));
                         let count: number = (filterEvents.length - renderedAppCount) <= 0 ? 1 : (filterEvents.length - renderedAppCount);
                         let moreIndicatorElement: HTMLElement = this.getMoreIndicatorElement(count, startDate, endDate);
@@ -509,13 +526,14 @@ export class MonthEvent extends EventBase {
 
     public renderEventElement(event: { [key: string]: Object }, appointmentElement: HTMLElement, cellTd: Element): void {
         let eventType: string = appointmentElement.classList.contains(cls.BLOCK_APPOINTMENT_CLASS) ? 'blockEvent' : 'event';
+        let isAppointment: boolean = appointmentElement.classList.contains(cls.APPOINTMENT_CLASS);
         let eventObj: { [key: string]: Object } = this.getEventData(event);
         let args: EventRenderedArgs = { data: eventObj, element: appointmentElement, cancel: false, type: eventType };
         this.parent.trigger(events.eventRendered, args, (eventArgs: EventRenderedArgs) => {
             if (eventArgs.cancel) {
                 this.renderedEvents.pop();
             } else {
-                this.renderElement(cellTd, appointmentElement);
+                this.renderElement(cellTd, appointmentElement, isAppointment);
             }
         });
     }
@@ -527,7 +545,10 @@ export class MonthEvent extends EventBase {
         return eventObj;
     }
 
-    public renderElement(cellTd: HTMLElement | Element, element: HTMLElement): void {
+    public renderElement(cellTd: HTMLElement | Element, element: HTMLElement, isAppointment: boolean = false): void {
+        if (this.maxOrIndicator && isAppointment) {
+            this.setMaxEventHeight(element, cellTd as HTMLElement);
+        }
         if (cellTd.querySelector('.' + cls.APPOINTMENT_WRAPPER_CLASS)) {
             cellTd.querySelector('.' + cls.APPOINTMENT_WRAPPER_CLASS).appendChild(element);
         } else {
@@ -567,5 +588,11 @@ export class MonthEvent extends EventBase {
         for (let row of rows) {
             (row.firstElementChild as HTMLElement).style.height = '';
         }
+    }
+
+    public setMaxEventHeight(event: HTMLElement, cell: HTMLElement): void {
+        let headerHeight: number = util.getOuterHeight(cell.querySelector('.' + cls.DATE_HEADER_CLASS));
+        let height: number = (cell.offsetHeight - headerHeight) - (this.maxHeight ? 0 : this.moreIndicatorHeight);
+        setStyleAttribute(event, { 'height': height + 'px', 'align-items': 'center' });
     }
 }

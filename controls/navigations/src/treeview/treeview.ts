@@ -3559,6 +3559,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                             document.body.style.cursor = '';
                         }
                         this.dragStartAction = false;
+                        if( this.isBlazorPlatform) {
+                            this.dropAction(e, true );
+                        }
                     });
                 }
             }
@@ -3573,7 +3576,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 document.body.style.cursor = '';
             },
             drop: (e: DropEventArgs) => {
-                this.dropAction(e);
+                if(! this.isBlazorPlatform) {
+                    this.dropAction(e);
+                }
             }
         });
     }
@@ -3639,14 +3644,19 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             addClass([icon], eventArgs.dropIndicator);
         }
     }
-
-    private dropAction(e: DropEventArgs): void {
+    // tslint:disable
+    private dropAction(e: any,  isBlazorDrop ?: boolean): void {
         let offsetY: number = e.event.offsetY;
         let dropTarget: Element = <Element>e.target;
         let dragObj: TreeView;
         let level: number;
         let drop: boolean = false;
-        let dragInstance: EJ2Instance = <EJ2Instance>e.dragData.draggable;
+        let dragInstance: EJ2Instance;
+        if (!isBlazorDrop) {
+            dragInstance = <EJ2Instance>e.dragData.draggable;
+        } else {
+            dragInstance = <EJ2Instance>e.element;
+        }
         for (let i: number = 0; i < dragInstance.ej2_instances.length; i++) {
             if (dragInstance.ej2_instances[i] instanceof TreeView) {
                 dragObj = (dragInstance.ej2_instances[i] as TreeView);
@@ -3660,7 +3670,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (dropLi == null && dropTarget.classList.contains(ROOT)) {
             dropLi = dropTarget.firstElementChild;
         }
-        detach(e.droppedElement);
+        if (!isBlazorDrop) {
+            detach(e.droppedElement);
+        } else {
+            detach(e.helper);
+        }
         document.body.style.cursor = '';
         if (!dropLi || dropLi.isSameNode(dragLi) || this.isDescendant(dragLi, dropLi)) {
             if (this.fields.dataSource instanceof DataManager === false) {
@@ -3694,8 +3708,13 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (this.fields.dataSource instanceof DataManager === false) {
             this.preventExpand = false;
         }
-        this.trigger('nodeDropped', this.getDragEvent(e.event, dragObj, dropTarget, e.target, <HTMLLIElement>e.dragData.draggedElement,
-                                                      null, level, drop));
+        if (!isBlazorDrop) {
+            this.trigger('nodeDropped', this.getDragEvent(e.event, dragObj, dropTarget, e.target, <HTMLLIElement>e.dragData.draggedElement,
+                null, level, drop));
+        } else {
+            this.trigger('nodeDropped', this.getDragEvent(e.event, dragObj, dropTarget, e.target, <HTMLLIElement>e.element,
+                null, level, drop));
+        }
         this.triggerEvent();
     }
 

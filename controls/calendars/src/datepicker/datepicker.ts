@@ -88,13 +88,6 @@ export class DatePicker extends Calendar implements IInput {
     protected defaultKeyConfigs: { [key: string]: string };
     protected mobilePopupWrapper: HTMLElement;
     /**
-     * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
-     * @default 'en-US'
-     * @deprecated
-     */
-    @Property('en-US')
-    public locale: string;
-    /**
      * Specifies the width of the DatePicker component.
      * @default null
      */
@@ -925,7 +918,7 @@ export class DatePicker extends Calendar implements IInput {
         this.isPopupClicked = false;
     }
     private documentHandler(e: MouseEvent): void {
-        if (e.type !== 'touchstart') {
+        if ((!isNullOrUndefined(this.popupObj) && this.inputWrapper.container.contains(<HTMLElement>e.target)) && e.type !== 'touchstart') {
             e.preventDefault();
         }
         let target: HTMLElement = <HTMLElement>e.target;
@@ -1004,6 +997,7 @@ export class DatePicker extends Calendar implements IInput {
                 }
                 break;
             case 'tab':
+            case 'shiftTab':
                 if (!this.isBlazorServer) {
                     this.strictModeUpdate();
                     this.updateInput();
@@ -1109,6 +1103,10 @@ export class DatePicker extends Calendar implements IInput {
                     date.setFullYear(this.value.getFullYear());
                 }
             }
+        }
+        // EJ2-35061 - To prevent change event from triggering twice when using strictmode and format property
+        if ((this.getModuleName() === 'datepicker') && (this.value && !isNaN(+this.value)) && date) {
+            date.setHours(this.value.getHours(), this.value.getMinutes(), this.value.getSeconds(), this.value.getMilliseconds());
         }
         if (this.strictMode && date) {
             this.updateInputValue(this.globalize.formatDate(date, dateOptions));
@@ -1654,6 +1652,7 @@ export class DatePicker extends Calendar implements IInput {
             shiftPageDown: 'shift+pagedown',
             controlHome: 'ctrl+home',
             controlEnd: 'ctrl+end',
+            shiftTab: 'shift+tab',
             tab: 'tab'
         };
         return this.defaultKeyConfigs;

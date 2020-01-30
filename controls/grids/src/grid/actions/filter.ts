@@ -243,11 +243,11 @@ export class Filter implements IAction {
     }
 
     private wireEvents(): void {
-        EventHandler.add(this.parent.getHeaderContent(), 'keyup', this.keyUpHandler, this);
+        EventHandler.add(this.parent.getHeaderContent(), 'keyup', this.keyUpHandlerImmediate, this);
     }
 
     private unWireEvents(): void {
-        EventHandler.remove(this.parent.getHeaderContent(), 'keyup', this.keyUpHandler);
+        EventHandler.remove(this.parent.getHeaderContent(), 'keyup', this.keyUpHandlerImmediate);
     }
 
 
@@ -488,15 +488,23 @@ export class Filter implements IAction {
      * Clears all the filtered rows of the Grid.
      * @return {void}
      */
-    public clearFiltering(): void {
+    public clearFiltering(fields?: string[]): void {
         let cols: PredicateModel[] = getActualPropFromColl(this.filterSettings.columns);
+        if (!isNullOrUndefined(fields)) {
+            this.refresh = false;
+            fields.forEach((field: string) => { this.removeFilteredColsByField(field, false); });
+            this.parent.setProperties({ filterSettings: { columns: this.filterSettings.columns } }, true);
+            this.parent.renderModule.refresh();
+            this.refresh = true;
+            return;
+        }
         if (isActionPrevent(this.parent)) {
             this.parent.notify(events.preventBatch, { instance: this, handler: this.clearFiltering });
             return;
         }
-        cols.forEach((col: Column) => {
-            col.uid = col.uid || this.parent.getColumnByField(col.field).uid;
-        });
+        for (let i: number = 0; i < cols.length; i++) {
+            cols[i].uid = cols[i].uid || this.parent.getColumnByField(cols[i].field).uid;
+        }
         let colUid: string[] = cols.map((f: Column) => f.uid);
         let filteredcols: string[] = colUid.filter((item: string, pos: number) => colUid.indexOf(item) === pos);
         this.refresh = false;
@@ -504,7 +512,7 @@ export class Filter implements IAction {
             this.removeFilteredColsByField(this.parent.getColumnByUid(filteredcols[i]).field, false);
         }
         if (isBlazor() && !this.parent.isJsComponent) {
-            this.filterSettings.columns = this.filterSettings.columns;
+            this.parent.setProperties({ filterSettings: { columns: this.filterSettings.columns } }, true);
         }
         this.refresh = true;
         if (filteredcols.length) {
@@ -637,6 +645,11 @@ export class Filter implements IAction {
         return 'filter';
     }
 
+    private keyUpHandlerImmediate(e: KeyboardEventArgs): void {
+        if (e.keyCode !== 13) {
+            this.keyUpHandler(e);
+        }
+    }
 
     private keyUpHandler(e: KeyboardEventArgs): void {
         let gObj: IGrid = this.parent;
@@ -777,7 +790,7 @@ export class Filter implements IAction {
         if (isNullOrUndefined(this.value) || this.value === '') {
             this.removeFilteredColsByField(this.column.field);
             if (isBlazor() && !this.parent.isJsComponent) {
-                this.filterSettings.columns = this.filterSettings.columns;
+                this.parent.setProperties({ filterSettings: { columns: this.filterSettings.columns } }, true);
             }
             return;
         }
@@ -1017,7 +1030,7 @@ export class Filter implements IAction {
             }
         }
         if (args.action === 'clear-filter' && isBlazor() && !this.parent.isJsComponent) {
-            this.filterSettings.columns = this.filterSettings.columns;
+            this.parent.setProperties({ filterSettings: { columns: this.filterSettings.columns } }, true);
         }
         if (this.values[args.field]) {
             delete this.values[args.field];

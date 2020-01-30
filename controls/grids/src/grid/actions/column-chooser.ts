@@ -506,11 +506,11 @@ export class ColumnChooser implements IAction {
             let columnUid: string = parentsUntil(elem, 'e-ccheck').getAttribute('uid');
             let column: Column[] =  this.parent.getColumns();
             if (columnUid === 'grid-selectAll') {
-                column.forEach((col: Column ) => {
-                    if (col.showInColumnChooser) {
-                        this.checkstatecolumn(checkstate, col.uid);
+                for (let i: number = 0; i < column.length; i++) {
+                    if (column[i].showInColumnChooser) {
+                        this.checkstatecolumn(checkstate, column[i].uid);
                     }
-                });
+                }
             } else {
                 this.checkstatecolumn(checkstate, columnUid);
             }

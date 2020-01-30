@@ -27,12 +27,13 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
         this.captionModelGen = new CaptionSummaryModelGenerator(parent);
     }
 
-    public generateRows(data: { length: number }, args?: { startIndex?: number }): Row<Column>[] {
+    public generateRows(data: { length: number }, args?: { startIndex?: number, requestType?: string }): Row<Column>[] {
         if (this.parent.groupSettings.columns.length === 0) {
             return super.generateRows(data, args);
         }
+        let isInfiniteScroll: boolean = this.parent.infiniteScrollSettings.enableScroll && args.requestType === 'scroll';
         this.rows = [];
-        this.index = this.parent.enableVirtualization ? args.startIndex : 0;
+        this.index = this.parent.enableVirtualization || isInfiniteScroll ? args.startIndex : 0;
         for (let i: number = 0, len: number = data.length; i < len; i++) {
             this.getGroupedRecords(0, data[i], (<Group>data).level, i, undefined, this.rows.length);
         }
@@ -103,7 +104,7 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
         }
         let cols: Column[] = (!this.parent.enableColumnVirtualization ? [column] : this.parent.getColumns());
         let wFlag: boolean = true;
-        cols.forEach((col: Column, index: number) => {
+        for (let j: number = 0; j < cols.length; j++) {
             let tmpFlag: boolean = wFlag && indexes.indexOf(indent) !== -1;
             if (tmpFlag) { wFlag = false; }
             let cellType: CellType = !this.parent.enableColumnVirtualization || tmpFlag ?
@@ -113,7 +114,7 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
                 indent++;
             }
             cells.push(this.generateCell(column, null, cellType, indent));
-        });
+        }
         cells.push(...visibles);
 
         return cells;
@@ -176,18 +177,18 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
 
     public refreshRows(input?: Row<Column>[]): Row<Column>[] {
         let indexes: number[] = this.parent.getColumnIndexesInView();
-        input.forEach((row: Row<Column>) => {
-            if (row.isDataRow) {
-                row.cells = this.generateCells(row);
-                for (let j: number = 0; j < row.indent; j++) {
-                    if (this.parent.enableColumnVirtualization && indexes.indexOf(row.indent) === -1) { continue; }
-                    row.cells.unshift(this.generateIndentCell());
+        for (let i: number = 0; i < input.length; i++) {
+            if (input[i].isDataRow) {
+                input[i].cells = this.generateCells(input[i]);
+                for (let j: number = 0; j < input[i].indent; j++) {
+                    if (this.parent.enableColumnVirtualization && indexes.indexOf(input[i].indent) === -1) { continue; }
+                    input[i].cells.unshift(this.generateIndentCell());
                 }
             } else {
-                let cRow: Row<Column> = this.generateCaptionRow(row.data, row.indent);
-                row.cells = cRow.cells;
+                let cRow: Row<Column> = this.generateCaptionRow(input[i].data, input[i].indent);
+                input[i].cells = cRow.cells;
             }
-        });
+        }
         return input;
     }
 

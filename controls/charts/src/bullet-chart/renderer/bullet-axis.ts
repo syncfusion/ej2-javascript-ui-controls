@@ -298,10 +298,9 @@ export class BulletChartAxis {
         let transformText: string;
         let interval: number = bullet.interval;
         let localizedText: boolean = locale && this.bulletChart.enableGroupSeparator;
-        let strokeColor: string = bullet.labelStyle.color || bullet.themeStyle.labelFontColor;
         let format: string = this.getFormat(this.bulletChart);
-        let isCustomFormat: boolean = format.match('{value}') !== null;
-        let condition : boolean;
+        let strokeColor: string = bullet.labelStyle.color || bullet.themeStyle.labelFontColor;
+        let condition : boolean;  let isCustomFormat: boolean = format.match('{value}') !== null;
         this.format = this.bulletChart.intl.getNumberFormat({
             format: isCustomFormat ? '' : format, useGrouping: this.bulletChart.enableGroupSeparator
         });
@@ -363,11 +362,12 @@ export class BulletChartAxis {
         let format: string = this.getFormat(this.bulletChart);
         let isCustomFormat: boolean = format.match('{value}') !== null;
         let condition : boolean;
-        let labelWidth : number = 5;
         this.format = this.bulletChart.intl.getNumberFormat({
             format: isCustomFormat ? '' : format, useGrouping: this.bulletChart.enableGroupSeparator
         });
         let size : number = bulletChart.initialClipRect.y + ((!bulletChart.enableRtl) ? bulletChart.initialClipRect.height : 0);
+        let labelWidth : number = measureText(
+            this.formatValue(this, isCustomFormat, format, this.bulletChart.maximum), bulletChart.labelStyle).width / 2;
         let height : number = measureText(
             this.formatValue(this, isCustomFormat, format, this.bulletChart.maximum), bulletChart.labelStyle).height / 3;
         y +=  height;
@@ -396,7 +396,7 @@ export class BulletChartAxis {
      * @private
      */
 
-    protected getFormat(axis: BulletChart): string {
+    public getFormat(axis: BulletChart): string {
         if (axis.labelFormat) {
             return axis.labelFormat;
         }

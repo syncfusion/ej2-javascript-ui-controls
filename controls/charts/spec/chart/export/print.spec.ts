@@ -8,7 +8,7 @@ import { ColumnSeries } from '../../../src/chart/series/column-series';
 import { ChartAnnotation } from '../../../src/chart/annotation/annotation';
 import { DataLabel } from '../../../src/chart/series/data-label';
 import { unbindResizeEvents } from '../base/data.spec';
-import { IPrintEventArgs } from '../../../src/chart/model/chart-interface';
+import { IPrintEventArgs, IExportEventArgs } from '../../../src/chart/model/chart-interface';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { Export} from '../../../src/chart/print-export/export';
@@ -83,7 +83,7 @@ describe('Chart Control', () => {
             remove(document.getElementById('template1'));
         });
 
-        it('Checking annotation content', (done: Function) => {            
+        it('Checking annotation content', (done: Function) => {
             chartObj.beforePrint = (args: IPrintEventArgs): void => {
                 expect(args.htmlContent.outerHTML.indexOf('<div id="container_Annotation_0"') > -1).toBe(true);
                 done();
@@ -91,7 +91,7 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
 
-        it('Checking data label content', (done: Function) => {            
+        it('Checking data label content', (done: Function) => {
             chartObj.beforePrint = (args: IPrintEventArgs): void => {
                 expect(args.htmlContent.outerHTML.indexOf('<div id="container_Series_0_DataLabel_0"') > -1).toBe(true);
                 done();
@@ -101,7 +101,7 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
 
-        it('Checking legend content', (done: Function) => {            
+        it('Checking legend content', (done: Function) => {
             chartObj.beforePrint = (args: IPrintEventArgs): void => {
                 expect(args.htmlContent.outerHTML.indexOf('<g id="container_chart_legend_g">') > -1).toBe(true);
                 done();
@@ -109,7 +109,7 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
 
-        it('Checking argument cancel', (done: Function) => {            
+        it('Checking argument cancel', (done: Function) => {
             chartObj.beforePrint = (args: IPrintEventArgs): void => {
                 args.cancel = true;
                 expect(args.htmlContent.outerHTML.indexOf('<div id="container_Annotation_0"') > -1).toBe(true);
@@ -118,7 +118,7 @@ describe('Chart Control', () => {
             chartObj.refresh();
         });
 
-        it('Checking annotation style', (done: Function) => {            
+        it('Checking annotation style', (done: Function) => {
             chartObj.beforePrint = (args: IPrintEventArgs): void => {
                 expect(args.htmlContent.outerHTML.indexOf('style="background-color:#4472c4;border-radius: 3px;"') > -1).toBe(true);
                 done();
@@ -129,7 +129,7 @@ describe('Chart Control', () => {
         it('Checking to print in multiple element', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 chartObj.print(['container', 'tempElement']);
-            }       
+            }
             chartObj.beforePrint = (args: IPrintEventArgs): void => {
                 expect(args.htmlContent.outerHTML.indexOf('tempElement') > -1).toBe(true);
                 done();
@@ -140,7 +140,7 @@ describe('Chart Control', () => {
         it('Checking to print direct element', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 chartObj.print(document.getElementById('container'));
-            }       
+            }
             chartObj.beforePrint = (args: IPrintEventArgs): void => {
                 expect(args.htmlContent.outerHTML.indexOf('<div id="container_Annotation_0"') > -1).toBe(true);
                 done();
@@ -151,7 +151,7 @@ describe('Chart Control', () => {
         it('Checking to print single element', (done: Function) => {
             chartObj.loaded = (args: Object): void => {
                 chartObj.print('tempElement');
-            }       
+            }
             chartObj.beforePrint = (args: IPrintEventArgs): void => {
                 expect(args.htmlContent.outerHTML.indexOf('<div id="container_Annotation_0"') > -1).toBe(false);
                 expect(args.htmlContent.outerHTML.indexOf('<div id="tempElement"') > -1).toBe(true);
@@ -186,7 +186,7 @@ describe('Chart Control', () => {
                 expect('').toBe('');
                 done();
             }, 500);
-        });        
+        });
         it('Checking export - PDF - multi controls', (done: Function) => {
             chartObj.exportModule.export('PDF', 'chart', PdfPageOrientation.Portrait, [chartObj, chartObj], 500, 450);
             setTimeout(() => {
@@ -194,7 +194,7 @@ describe('Chart Control', () => {
                 done();
             }, 500);
         });
-        
+
         it('Checking export - PDF - multi controls in horizontal mode', (done: Function) => {
             chartObj.exportModule.export('PDF', 'chart', PdfPageOrientation.Portrait, [chartObj, chartObj], 500, 450, false);
             setTimeout(() => {
@@ -205,6 +205,39 @@ describe('Chart Control', () => {
 
         it('Checking export - PDF - multi controls width out size', (done: Function) => {
             chartObj.exportModule.export('PDF', 'chart', PdfPageOrientation.Portrait, [chartObj, chartObj]);
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+
+        it('Checking to export height', (done: Function) => {
+            chartObj.exportModule.export('JPEG', 'result');
+            chartObj.beforeExport = (args: IExportEventArgs): void => {
+                args.height = 500;
+            };
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+
+        it('Checking to export width', (done: Function) => {
+            chartObj.exportModule.export('JPEG', 'result');
+            chartObj.beforeExport = (args: IExportEventArgs): void => {
+                args.width = 800;
+            };
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+
+        it('Checking to export cancel', (done: Function) => {
+            chartObj.exportModule.export('JPEG', 'result');
+            chartObj.beforeExport = (args: IExportEventArgs): void => {
+                args.cancel = true;
+            };
             setTimeout(() => {
                 expect('').toBe('');
                 done();

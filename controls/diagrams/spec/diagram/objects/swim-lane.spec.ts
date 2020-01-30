@@ -6687,13 +6687,13 @@ describe('Diagram Control', () => {
                             phases: [
                                 {
                                     id: 'phase1', offset: 170,
-                                    style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
-                                    header: { content: { content: 'Phase' } }
+                                    style: { strokeColor: '#606060' },
+                                    header: { annotation: { content: 'Phase' } }
                                 },
                                 {
                                     id: 'phase2', offset: 450,
-                                    style: { strokeWidth: 1, strokeDashArray: '3,3', strokeColor: '#606060' },
-                                    header: { content: { content: 'Phase' } }
+                                    style: { strokeColor: '#606060' },
+                                    header: { annotation: { content: 'Phase' } }
                                 },
                             ],
                             phaseSize: 20,
@@ -6717,6 +6717,14 @@ describe('Diagram Control', () => {
             afterAll((): void => {
                 diagram.destroy();
                 ele.remove();
+            });
+
+            it('Header Style', function (done) {
+                let swimlane = diagram.nameTable["swimlane"];
+                expect(swimlane.shape.header.annotation.style.fill == "transparent" &&
+                swimlane.shape.phases[0].header.annotation.style.fill == "transparent" &&
+                swimlane.shape.lanes[0].header.annotation.style.fill == "transparent").toBe(true);
+                done();
             });
 
             it('DropBeyondSwimlane  - Order Node', function (done) {

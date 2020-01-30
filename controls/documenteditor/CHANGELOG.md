@@ -2,7 +2,36 @@
 
 ## [Unreleased]
 
-## 17.4.44 (2021-01-21)
+## 17.4.46 (2020-01-30)
+
+### Document Editor
+
+#### Breaking Changes
+
+- Default value of `enableLocalPaste` is set to false. So, by default, the content will be pasted from the system clipboard.
+
+#### Bug Fixes
+
+- `#252868` - Resolved script error when resize row to next page.
+- `#259972` - Formatting is now applied properly for keep text only option in paste.
+- `#258191` - Table cell width are now updated properly.
+- `#260133`, `#261809` - Page scrolling issue is resolved when right click in MAC machine.
+
+## 17.4.43 (2020-01-14)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#258087`, `#255070` - Grid columns are now preserved properly on export.
+- `#255070` - Page headers is now export properly when section break in table.
+- `#259583` - List level number for style paragraph is now export properly.
+- `#259153` - Table cell width and height is now copy properly.
+- `#258121` - Resolved warnings in bootstrap4 styles when run the application in Firefox.
+- `#249197` - Highlight colours are now exported properly.
+- `#260048`, `#256276` - Image files are now pasted properly.
+
+## 17.4.41 (2020-01-07)
 
 ### Document Editor
 
@@ -79,7 +108,7 @@
 
 #### Bug Fixes
 
-- `#255913` - Bookmark is now insert properly in splitted paragraph.
+- `#255913`, `#257879` - Bookmark is now insert properly in splitted paragraph.
 - `#255736` , `#256106` , `#257011` - Context menu is now open in Firefox, Edge and Safari.
 - `#254998` - Character format is now apply properly for selected bookmark.
 - `#254997`, `#256764`, `#257106` , `#256764` - Paragraph format is now export properly if document contains selection.

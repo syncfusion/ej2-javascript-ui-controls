@@ -1,4 +1,4 @@
-import { createElement, remove, extend, getInstance } from '@syncfusion/ej2-base';
+import { createElement, remove, extend, getInstance, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { MouseEventArgs } from '@syncfusion/ej2-base';
 import { PivotView } from '../../pivotview/base/pivotview';
 import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
@@ -20,7 +20,7 @@ import { PivotUtil } from '../../base/util';
 /** @hidden */
 export class AggregateMenu {
     public parent: PivotView | PivotFieldList;
-    private menuInfo: Menu;
+    private menuInfo: Menu[] = [];
     private parentElement: HTMLElement;
     private currentMenu: Element;
     private valueDialog: Dialog;
@@ -43,47 +43,62 @@ export class AggregateMenu {
         this.openContextMenu(args);
     }
     private openContextMenu(args: MouseEventArgs): void {
-        if (this.menuInfo === undefined) {
-            this.createContextMenu();
+        let fieldName: string = (args.target as HTMLElement).parentElement.id;
+        let isStringField: number = this.parent.engineModule.fieldList[fieldName].type !== 'number' ? 1 : 0;
+        if (isNullOrUndefined( this.menuInfo[isStringField])) {
+            this.createContextMenu(isStringField);
         }
         this.currentMenu = args.currentTarget as Element;
         let pos: OffsetPosition = this.currentMenu.getBoundingClientRect();
         if (this.parent.enableRtl) {
-            this.menuInfo.open(pos.top, pos.left - 105);
+            this.menuInfo[isStringField].open(pos.top + (isStringField ? window.scrollY || document.documentElement.scrollTop : 0),
+                                              pos.left - 105);
         } else {
-            this.menuInfo.open(pos.top, pos.left);
+            this.menuInfo[isStringField].open(pos.top + (isStringField ? window.scrollY || document.documentElement.scrollTop : 0),
+                                              pos.left);
         }
     }
-    private createContextMenu(): void {
-        let menuItems: MenuItemModel[] = [
-            { text: this.parent.localeObj.getConstant('Sum'), id: this.parent.element.id + '_Sum' },
-            { text: this.parent.localeObj.getConstant('Count'), id: this.parent.element.id + '_Count' },
-            { text: this.parent.localeObj.getConstant('DistinctCount'), id: this.parent.element.id + '_DistinctCount' },
-            { text: this.parent.localeObj.getConstant('Product'), id: this.parent.element.id + '_Product' },
-            { text: this.parent.localeObj.getConstant('Avg'), id: this.parent.element.id + '_Avg' },
-            { text: this.parent.localeObj.getConstant('Min'), id: this.parent.element.id + '_Min' },
-            { text: this.parent.localeObj.getConstant('Max'), id: this.parent.element.id + '_Max' },
-            { text: this.parent.localeObj.getConstant('MoreOption'), id: this.parent.element.id + '_MoreOption' }];
-        let menuOptions: ContextMenuModel = {
-            items: menuItems,
+    private createContextMenu(isStringField: number): void {
+        let menuItems: MenuItemModel[][] = [];
+        if (isStringField) {
+            menuItems[isStringField] = [
+                { text: this.parent.localeObj.getConstant('Count'), id: this.parent.element.id + 'StringMenu_Count' },
+                {text: this.parent.localeObj.getConstant('DistinctCount'),
+                id: this.parent.element.id + 'StringMenu_DistinctCount'
+                }];
+        } else {
+            menuItems[isStringField] = [
+                { text: this.parent.localeObj.getConstant('Sum'), id: this.parent.element.id + '_Sum' },
+                { text: this.parent.localeObj.getConstant('Count'), id: this.parent.element.id + '_Count' },
+                { text: this.parent.localeObj.getConstant('DistinctCount'), id: this.parent.element.id + '_DistinctCount' },
+                { text: this.parent.localeObj.getConstant('Product'), id: this.parent.element.id + '_Product' },
+                { text: this.parent.localeObj.getConstant('Avg'), id: this.parent.element.id + '_Avg' },
+                { text: this.parent.localeObj.getConstant('Min'), id: this.parent.element.id + '_Min' },
+                { text: this.parent.localeObj.getConstant('Max'), id: this.parent.element.id + '_Max' },
+                { text: this.parent.localeObj.getConstant('MoreOption'), id: this.parent.element.id + '_MoreOption' }];
+        }
+        let menuOptions: ContextMenuModel ;
+        menuOptions = {
+            items: menuItems[isStringField],
             enableRtl: this.parent.enableRtl,
-            beforeOpen: this.beforeMenuOpen.bind(this),
+            beforeOpen: this.beforeMenuOpen.bind(this, isStringField),
             select: this.selectOptionInContextMenu.bind(this)
         };
-        let removeContextMenu: HTMLElement = document.getElementById(this.parent.element.id + 'valueFieldContextMenu');
+        let removeContextMenu: HTMLElement =
+         document.getElementById(this.parent.element.id + isStringField ? 'valueFieldStringContextMenu' : 'valueFieldContextMenu');
         if (removeContextMenu !== null) {
             removeContextMenu.innerHTML = '';
         }
         let contextMenu: HTMLElement = createElement('ul', {
-            id: this.parent.element.id + 'valueFieldContextMenu'
+            id: this.parent.element.id + (isStringField ? 'valueFieldStringContextMenu' : 'valueFieldContextMenu')
         });
         this.parent.element.appendChild(contextMenu);
-        this.menuInfo = new Menu(menuOptions);
-        this.menuInfo.isStringTemplate = true;
-        this.menuInfo.appendTo(contextMenu);
+        this.menuInfo[isStringField] = new Menu(menuOptions);
+        this.menuInfo[isStringField].isStringTemplate = true;
+        this.menuInfo[isStringField].appendTo(contextMenu);
     }
-    private beforeMenuOpen(args: BeforeOpenCloseMenuEventArgs): void {
-        args.element.style.zIndex = (this.menuInfo.element.style.zIndex + 3).toString();
+    private beforeMenuOpen(isString: number, args: BeforeOpenCloseMenuEventArgs): void {
+        args.element.style.zIndex = (this.menuInfo[isString].element.style.zIndex + 3).toString();
         args.element.style.display = 'inline';
     }
     /** @hidden */
@@ -284,7 +299,7 @@ export class AggregateMenu {
     private selectOptionInContextMenu(menu: MenuEventArgs): void {
         if (menu.item.text !== null) {
             let buttonElement: HTMLElement = this.currentMenu.parentElement as HTMLElement;
-            let type: string = menu.item.id.split(this.parent.element.id + '_')[1];
+            let type: string = menu.item.id.split('_').pop();
             if (type === 'MoreOption') {
                 this.createValueSettingsDialog(buttonElement, this.parentElement);
             } else {
@@ -378,8 +393,9 @@ export class AggregateMenu {
      */
     public destroy(): void {
         if (this.parent.isDestroyed) { return; }
-        if (this.menuInfo && !this.menuInfo.isDestroyed) {
-            this.menuInfo.destroy();
+        if (this.menuInfo) {
+            if (this.menuInfo[1] !== undefined && !this.menuInfo[1].isDestroyed) { this.menuInfo[1].destroy(); }
+            if (this.menuInfo[0] !== undefined && !this.menuInfo[0].isDestroyed) { this.menuInfo[0].destroy(); }
         } else {
             return;
         }

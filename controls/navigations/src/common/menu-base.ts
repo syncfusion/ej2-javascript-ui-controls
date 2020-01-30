@@ -1207,6 +1207,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             moduleName: 'menu',
             fields: fields,
             template: this.template,
+            itemNavigable: true,
             itemCreating: (args: { curData: obj, fields: obj }): void => {
                 if (!args.curData[(<obj>args.fields)[fields.id] as string]) {
                     args.curData[(<obj>args.fields)[fields.id] as string] = getUniqueID('menuitem');
@@ -1296,7 +1297,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             if (!this.showItemOnClick) {
                 this.clickHandler(e);
             }
-        } else if (this.isMenu && this.showItemOnClick) {
+        } else if (this.isMenu && this.showItemOnClick && !isDifferentElem) {
             this.removeLIStateByClass([FOCUSED], [wrapper].concat(this.getPopups()));
         }
         if (this.isMenu) {
@@ -1307,7 +1308,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     this.isClosed = true;
                     this.closeMenu(null, e);
                 }
-            } else if (isDifferentElem) {
+            } else if (isDifferentElem && !this.showItemOnClick) {
                 if (this.navIdx.length) {
                     this.isClosed = true;
                     this.closeMenu(null, e);
@@ -1385,6 +1386,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             let cliWrapper: Element = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : null;
             let isInstLI: boolean = cli && cliWrapper && (this.isMenu ? this.getIndex(cli.id, true).length > 0
                 : wrapper.firstElementChild.id === cliWrapper.firstElementChild.id);
+            if (Browser.isDevice && this.isMenu) {
+                this.removeLIStateByClass([FOCUSED], [wrapper].concat(this.getPopups()));
+                this.mouseDownHandler(e);
+            }
             if (cli && cliWrapper && this.isMenu) {
                 let cliWrapperId: string = cliWrapper.id ? regex.exec(cliWrapper.id)[1] : cliWrapper.querySelector('.e-menu-parent').id;
                 if (this.element.id !== cliWrapperId) {

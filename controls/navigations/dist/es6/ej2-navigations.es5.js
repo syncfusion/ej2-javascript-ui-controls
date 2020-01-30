@@ -1945,6 +1945,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             moduleName: 'menu',
             fields: fields,
             template: this.template,
+            itemNavigable: true,
             itemCreating: function (args) {
                 if (!args.curData[args.fields[fields.id]]) {
                     args.curData[args.fields[fields.id]] = getUniqueID('menuitem');
@@ -2040,7 +2041,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 this.clickHandler(e);
             }
         }
-        else if (this.isMenu && this.showItemOnClick) {
+        else if (this.isMenu && this.showItemOnClick && !isDifferentElem) {
             this.removeLIStateByClass([FOCUSED], [wrapper].concat(this.getPopups()));
         }
         if (this.isMenu) {
@@ -2052,7 +2053,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                     this.closeMenu(null, e);
                 }
             }
-            else if (isDifferentElem) {
+            else if (isDifferentElem && !this.showItemOnClick) {
                 if (this.navIdx.length) {
                     this.isClosed = true;
                     this.closeMenu(null, e);
@@ -2130,6 +2131,10 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             var cliWrapper = cli ? closest(cli, '.e-' + this.getModuleName() + '-wrapper') : null;
             var isInstLI = cli && cliWrapper && (this.isMenu ? this.getIndex(cli.id, true).length > 0
                 : wrapper.firstElementChild.id === cliWrapper.firstElementChild.id);
+            if (Browser.isDevice && this.isMenu) {
+                this.removeLIStateByClass([FOCUSED], [wrapper].concat(this.getPopups()));
+                this.mouseDownHandler(e);
+            }
             if (cli && cliWrapper && this.isMenu) {
                 var cliWrapperId = cliWrapper.id ? regex.exec(cliWrapper.id)[1] : cliWrapper.querySelector('.e-menu-parent').id;
                 if (this.element.id !== cliWrapperId) {
@@ -2993,6 +2998,9 @@ var Item = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], Item.prototype, "showAlwaysInPopup", void 0);
     __decorate$3([
+        Property(false)
+    ], Item.prototype, "disabled", void 0);
+    __decorate$3([
         Property('')
     ], Item.prototype, "prefixIcon", void 0);
     __decorate$3([
@@ -3078,7 +3086,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             var subControls = this.element.querySelectorAll('.e-control');
-            subControls.forEach(function (node) {
+            [].slice.call(subControls).forEach(function (node) {
                 var instances = node.ej2_instances;
                 if (instances) {
                     var instance = instances[0];
@@ -4738,6 +4746,9 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         if (item.overflow !== 'Show' && item.showAlwaysInPopup && !innerEle.classList.contains(CLS_SEPARATOR)) {
             this.add(innerEle, CLS_POPPRI);
             this.popupPriCount++;
+        }
+        if (item.disabled) {
+            this.add(innerEle, CLS_DISABLE$2);
         }
         return innerEle;
     };
@@ -7510,10 +7521,15 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         if (this.isVertical()) {
             var tbPos = (this.headerPlacement === 'Left') ? CLS_VLEFT : CLS_VRIGHT;
             addClass([this.hdrEle], [CLS_VERTICAL$1, tbPos]);
-            this.element.classList.add(CLS_VTAB);
+            if (!this.element.classList.contains(CLS_NEST$1)) {
+                addClass([this.element], [CLS_VTAB, tbPos]);
+            }
+            else {
+                addClass([this.hdrEle], [CLS_VTAB, tbPos]);
+            }
         }
         if (this.headerPlacement === 'Bottom') {
-            this.hdrEle.classList.add(CLS_HBOTTOM);
+            addClass([this.hdrEle], [CLS_HBOTTOM]);
         }
     };
     Tab.prototype.updatePopAnimationConfig = function () {
@@ -7558,6 +7574,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             this.element.appendChild(ele);
         }
         else {
+            removeClass([ele], [CLS_HBOTTOM]);
             this.element.insertBefore(ele, select('.' + CLS_CONTENT$1, this.element));
         }
     };
@@ -7751,7 +7768,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         if (!this.initRender) {
             curActItem.firstElementChild.focus();
         }
-        if (!this.initRender || this.selectedItem !== 0) {
+        if (!this.initRender) {
             var eventArg = {
                 previousItem: this.prevItem,
                 previousIndex: this.prevIndex,
@@ -8311,7 +8328,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             isSwiped: this.isSwipeed,
             cancel: false
         };
-        if (!this.initRender || this.selectedItem !== 0) {
+        if (!this.initRender) {
             this.trigger('selecting', eventArg, function (selectArgs) {
                 if (!selectArgs.cancel) {
                     _this.selectingContent(args);
@@ -11377,6 +11394,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                             document.body.style.cursor = '';
                         }
                         _this.dragStartAction = false;
+                        if (_this.isBlazorPlatform) {
+                            _this.dropAction(e, true);
+                        }
                     });
                 }
             }
@@ -11391,7 +11411,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 document.body.style.cursor = '';
             },
             drop: function (e) {
-                _this.dropAction(e);
+                if (!_this.isBlazorPlatform) {
+                    _this.dropAction(e);
+                }
             }
         });
     };
@@ -11463,13 +11485,20 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             addClass([icon], eventArgs.dropIndicator);
         }
     };
-    TreeView.prototype.dropAction = function (e) {
+    // tslint:disable
+    TreeView.prototype.dropAction = function (e, isBlazorDrop) {
         var offsetY = e.event.offsetY;
         var dropTarget = e.target;
         var dragObj;
         var level;
         var drop = false;
-        var dragInstance = e.dragData.draggable;
+        var dragInstance;
+        if (!isBlazorDrop) {
+            dragInstance = e.dragData.draggable;
+        }
+        else {
+            dragInstance = e.element;
+        }
         for (var i = 0; i < dragInstance.ej2_instances.length; i++) {
             if (dragInstance.ej2_instances[i] instanceof TreeView_1) {
                 dragObj = dragInstance.ej2_instances[i];
@@ -11483,7 +11512,12 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             if (dropLi == null && dropTarget.classList.contains(ROOT)) {
                 dropLi = dropTarget.firstElementChild;
             }
-            detach(e.droppedElement);
+            if (!isBlazorDrop) {
+                detach(e.droppedElement);
+            }
+            else {
+                detach(e.helper);
+            }
             document.body.style.cursor = '';
             if (!dropLi || dropLi.isSameNode(dragLi) || this.isDescendant(dragLi, dropLi)) {
                 if (this.fields.dataSource instanceof DataManager === false) {
@@ -11519,7 +11553,12 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         if (this.fields.dataSource instanceof DataManager === false) {
             this.preventExpand = false;
         }
-        this.trigger('nodeDropped', this.getDragEvent(e.event, dragObj, dropTarget, e.target, e.dragData.draggedElement, null, level, drop));
+        if (!isBlazorDrop) {
+            this.trigger('nodeDropped', this.getDragEvent(e.event, dragObj, dropTarget, e.target, e.dragData.draggedElement, null, level, drop));
+        }
+        else {
+            this.trigger('nodeDropped', this.getDragEvent(e.event, dragObj, dropTarget, e.target, e.element, null, level, drop));
+        }
         this.triggerEvent();
     };
     TreeView.prototype.appendNode = function (dropTarget, dragLi, dropLi, e, dragObj, offsetY) {

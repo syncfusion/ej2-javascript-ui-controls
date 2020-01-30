@@ -112,13 +112,13 @@ let QueryBuilder = class QueryBuilder extends Component {
         this.isImportRules = false;
         let bodeElem = this.element.querySelector('.e-group-body');
         bodeElem.innerHTML = '';
-        this.element.querySelector('.e-btngroup-and').checked = true;
         if (this.enableNotCondition) {
             removeClass(this.element.querySelectorAll('.e-qb-toggle'), 'e-active-toggle');
         }
         bodeElem.appendChild(this.createElement('div', { attrs: { class: 'e-rule-list' } }));
         this.levelColl[this.element.id + '_group0'] = [0];
         this.rule = { condition: 'and', not: false, rules: [] };
+        this.disableRuleCondition(bodeElem.parentElement);
     }
     getWrapper() {
         return this.element;
@@ -411,6 +411,9 @@ let QueryBuilder = class QueryBuilder extends Component {
                     rules.rules.push({ 'field': '', 'type': '', 'label': '', 'operator': '', 'value': '' });
                 }
             }
+            if (!this.isImportRules) {
+                this.disableRuleCondition(target);
+            }
             if (Object.keys(rule).length) {
                 this.changeRule(rule, {
                     element: dropDownList.element,
@@ -676,10 +679,6 @@ let QueryBuilder = class QueryBuilder extends Component {
                 let tglBtn = new Button({ content: this.l10n.getConstant('NOT'), cssClass: 'e-btn e-small' });
                 tglBtn.appendTo(notElem);
                 groupElem.querySelector('.e-btngroup-and-lbl').classList.add('e-not');
-            }
-            groupElem.querySelector('.e-btngroup-and').setAttribute('checked', 'true');
-            if (condition === 'or') {
-                groupElem.querySelector('.e-btngroup-or').setAttribute('checked', 'true');
             }
             let groupBtn = groupElem.querySelector('.e-add-btn');
             let btnObj = new DropDownButton({
@@ -1420,9 +1419,16 @@ let QueryBuilder = class QueryBuilder extends Component {
                                     format = column.format;
                                 }
                                 if (format) {
+                                    let formatObj;
+                                    if (format && format.indexOf('/') > -1) {
+                                        formatObj = { type: 'dateTime', format: format };
+                                    }
+                                    else {
+                                        formatObj = { type: 'dateTime', skeleton: format || 'yMd' };
+                                    }
                                     datepick =
                                         new DatePicker({
-                                            value: selectedValue, placeholder: place, format: format, change: this.changeValue.bind(this, i)
+                                            value: selectedValue, placeholder: place, format: formatObj, change: this.changeValue.bind(this, i)
                                         });
                                 }
                                 else {
@@ -1892,6 +1898,13 @@ let QueryBuilder = class QueryBuilder extends Component {
                 rule.rules.push({ 'condition': 'and', rules: [] });
             }
         }
+        let andElem = groupElem.querySelector('.e-btngroup-and');
+        let orElem = groupElem.querySelector('.e-btngroup-or');
+        if (andElem.disabled) {
+            andElem.removeAttribute('disabled');
+            andElem.checked = true;
+            orElem.removeAttribute('disabled');
+        }
     }
     initWrapper() {
         this.isInitialLoad = true;
@@ -2336,8 +2349,10 @@ let QueryBuilder = class QueryBuilder extends Component {
             }
             rule.rules.splice(index, 1);
             delete this.levelColl[args.groupID];
+            let elem = groupElem.parentElement.parentElement.parentElement;
             detach(target);
             this.refreshLevelColl();
+            this.disableRuleCondition(elem);
             if (!this.isImportRules) {
                 this.trigger('change', args);
             }
@@ -2395,6 +2410,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 }
             }
             detach(clnruleElem);
+            this.disableRuleCondition(groupElem);
             if (!this.isImportRules) {
                 this.trigger('change', args);
             }
@@ -2410,6 +2426,22 @@ let QueryBuilder = class QueryBuilder extends Component {
         rule = this.getRuleCollection(this.rule, false);
         this.importRules(this.rule, this.element.querySelector('.e-group-container'), true);
         this.isImportRules = false;
+    }
+    disableRuleCondition(groupElem) {
+        let count = groupElem.querySelector('.e-rule-list').childElementCount;
+        let andElem = groupElem.querySelector('.e-btngroup-and');
+        let orElem = groupElem.querySelector('.e-btngroup-or');
+        if (count > 1) {
+            andElem.disabled = false;
+            andElem.checked = true;
+            orElem.disabled = false;
+        }
+        else {
+            andElem.checked = false;
+            andElem.disabled = true;
+            orElem.checked = false;
+            orElem.disabled = true;
+        }
     }
     /**
      * return the valid rule or rules collection.
@@ -2851,11 +2883,22 @@ let QueryBuilder = class QueryBuilder extends Component {
             parentElem = this.renderGroup(rule.condition, parentElem);
         }
         else {
-            if (rule.condition === 'or') {
-                parentElem.querySelector('.e-btngroup-or').checked = true;
+            if (rule.rules.length > 1) {
+                // enable/disable conditions when rule group is added
+                let orElem = parentElem.querySelector('.e-btngroup-or');
+                let andElem = parentElem.querySelector('.e-btngroup-and');
+                orElem.disabled = false;
+                andElem.disabled = false;
+                if (rule.condition === 'or') {
+                    orElem.checked = true;
+                }
+                else {
+                    andElem.checked = true;
+                }
             }
             else {
-                parentElem.querySelector('.e-btngroup-and').checked = true;
+                // enable/disable conditions when rule condition is added
+                this.disableRuleCondition(parentElem);
             }
             if (this.enableNotCondition) {
                 let tglBtnElem = parentElem.querySelector('.e-qb-toggle');

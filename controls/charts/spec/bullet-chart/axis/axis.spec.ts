@@ -22,7 +22,7 @@ describe('Bullet Chat Axis', () => {
             bullet = new BulletChart({
                 dataSource: [{ value: 4, target: 4 }],
                 valueField: 'value', targetField: 'target',
-                minimum: 0, maximum: 20, interval: 5,
+                minimum: 0, maximum: 20, 
                 animation: {enable: false}
             });
             bullet.appendTo('#container');
@@ -45,6 +45,7 @@ describe('Bullet Chat Axis', () => {
         it('checking with Minimum and Maximum', (done: Function) => {
             bullet.minimum = 0;
             bullet.maximum = 25;
+            bullet.interval = 5;
             bullet.dataBind();
 
             svg = document.getElementById('container_svg_AxisLabel_25');
@@ -101,7 +102,16 @@ describe('Bullet Chat Axis', () => {
             bullet.dataBind();
 
             svg = document.getElementById('container_BulletChartTitle');
-            expect(svg.getAttribute('x') === '15').toBe(true);
+            expect(svg.getAttribute('x')).toBe('15');
+            expect(svg.getAttribute('text-anchor') == 'start').toBe(true);
+            done();
+        });
+        it('checking with Title maximum width', (done: Function) => {
+            bullet.titleStyle.maximumTitleWidth = 12;
+            bullet.dataBind();
+
+            svg = document.getElementById('container_BulletChartTitle');
+            expect(svg.getAttribute('x')).toBe('15');
             expect(svg.getAttribute('text-anchor') == 'start').toBe(true);
             done();
         });
@@ -209,5 +219,239 @@ describe('Bullet Chat Axis', () => {
             expect(svg.getAttribute('text-anchor') == 'middle').toBe(true);
             done();
         });
-    })
+        it('checking with title position as left', (done: Function) => {
+            bullet.titlePosition = 'Left';
+            bullet.refresh();
+            svg = document.getElementById('container_BulletChartTitle');
+            expect(svg.getAttribute('text-anchor') == 'end').toBe(true);
+            done();
+        });
+        it('checking with title position as right', (done: Function) => {
+            bullet.titlePosition = 'Right';
+            bullet.refresh();
+            svg = document.getElementById('container_BulletChartTitle');
+            expect(svg.getAttribute('text-anchor') == 'start').toBe(true);
+            done();
+        });
+    });
+    describe('Vertical orientation', () => {
+        let bullet: BulletChart;
+        let svg: Element;
+        let bulletElement: Element = createElement('div', { id: 'container' });
+        beforeAll(() => {
+            document.body.appendChild(bulletElement);
+            bullet = new BulletChart({
+                dataSource: [{ value: 4, target: 4 }],
+                valueField: 'value', targetField: 'target',
+                animation: {enable: false},
+                interval: 10,
+                orientation: 'Vertical'
+            });
+            bullet.appendTo('#container');
+        });
+        afterAll((): void => {
+            bullet.destroy();
+            bulletElement.remove();
+        });
+        it('checking without Maximum', (done: Function) => {
+            bullet.minimum = 0;
+            bullet.dataBind();
+
+            svg = document.getElementById('container_svg_AxisLabel_25');
+            svg = document.getElementById('container_svg_axisLabelGroup');
+            expect(svg.lastElementChild.textContent).toEqual('10');
+            done();
+        });
+        it('checking without Minimum', (done: Function) => {
+            bullet.maximum = 25;
+            bullet.interval = 5;
+            bullet.dataBind();
+
+            svg = document.getElementById('container_svg_axisLabelGroup');
+            expect(svg.firstElementChild.textContent).toBe('0');
+            done();
+        });
+        it('checking with minimum and maximum', (done: Function) => {
+            bullet.minimum = 10;
+            bullet.maximum = 25;
+            bullet.interval = 5;
+            bullet.dataBind();
+
+            svg = document.getElementById('container_svg_AxisLabel_25');
+            svg = document.getElementById('container_svg_axisLabelGroup');
+            expect(svg.childNodes[3].lastChild.textContent).toEqual('25');
+            done();
+        });
+        it('checking with datalabel', (done: Function) => {
+            bullet.dataLabel = { enable: true };
+            bullet.dataSource = [{value: 15, target: 17 }];
+            bullet.dataBind();
+
+            svg = document.getElementById('container_svg_AxisLabel_25');
+            svg = document.getElementById('container_svg_axisLabelGroup');
+            expect(svg.childNodes[3].lastChild.textContent).toEqual('25');
+            done();
+        });
+        it('checking with label format', (done: Function) => {
+            bullet.labelFormat = '{value}%';
+            bullet.dataBind();
+
+            svg = document.getElementById('container_svg_AxisLabel_25');
+            svg = document.getElementById('container_svg_axisLabelGroup');
+            expect(svg.childNodes[3].lastChild.textContent).toEqual('25');
+            done();
+        });
+        it('checking with ranges in vertical mode', (done: Function) => {
+            bullet.ranges = [{end: 6, color: 'red'}, {end: 8, color: 'yellow'}, {end: 25, color: 'green'}];
+            bullet.dataSource = [{value: 15, target: 16}];
+            bullet.dataBind();
+
+            svg = document.getElementById('container_svg_range_0');
+            expect(svg != null).toBe(true);
+            done();
+        });
+        it('checking with title in vertical mode', (done: Function) => {
+            bullet.title = 'Vertical Orientation';
+            bullet.dataBind();
+
+            svg = document.getElementById('container_BulletChartTitle');
+            expect(svg.textContent).toEqual('Vertical Orientation');
+            done();
+        });
+        it('Title as Top', (done: Function) => {
+            bullet.titlePosition = 'Top';
+            bullet.dataBind();
+
+            svg = document.getElementById('container_BulletChartTitle');
+            expect(svg.getAttribute('y')).toBe('28.5');
+            done();
+        });
+        it('Title as Left', (done: Function) => {
+            bullet.titlePosition = 'Left';
+            bullet.dataBind();
+
+            svg = document.getElementById('container_BulletChartTitle');
+            expect(svg.getAttribute('x')).toEqual('20.666666666666668');
+            done();
+        });
+        it('Title as Bottom', (done: Function) => {
+            bullet.titlePosition = 'Bottom';
+            bullet.titleStyle.textAlignment = 'Far';
+            bullet.dataBind();
+
+            svg = document.getElementById('container_BulletChartTitle');
+            expect(svg.getAttribute('y')).toEqual('444.3333333333333');
+            done();
+        });
+        it('Title as Right', (done: Function) => {
+            bullet.titlePosition = 'Right';
+            bullet.dataBind();
+
+            svg = document.getElementById('container_BulletChartTitle');
+            let text: string = svg.getAttribute('transform');
+            let degree: string = text.split('')[7].concat(text.split('')[8]);
+            expect(degree).toBe('90');
+            done();
+        });
+        it('checking with title and subtitle', (done: Function) => {
+            bullet.subtitle = '(in px)';
+            bullet.titleStyle.textAlignment = 'Center';
+            bullet.dataBind();
+
+            svg = document.getElementById('container_BulletChartSubTitle');
+            expect(svg.textContent).toEqual('(in px)');
+            done();
+        });
+        it('checking subtitle position as Left', (done: Function) => {
+            bullet.titlePosition = 'Left';
+            bullet.dataBind();
+
+            svg = document.getElementById('container_BulletChartSubTitle');
+            expect(svg.textContent).toEqual('(in px)');
+            done();
+        });
+        it('checking subtitle position as Right', (done: Function) => {
+            bullet.titlePosition = 'Right';
+            bullet.dataBind();
+
+            svg = document.getElementById('container_BulletChartSubTitle');
+            expect(svg.textContent).toEqual('(in px)');
+            expect(svg.getAttribute('font-size')).toBe('13px');
+            done();
+        });
+        it('checking subtitle position as Top', (done: Function) => {
+            bullet.titlePosition = 'Top';
+            bullet.dataBind();
+
+            svg = document.getElementById('container_BulletChartSubTitle');
+            expect(svg.textContent).toEqual('(in px)');
+            expect(svg.getAttribute('font-size')).toBe('13px');
+            done();
+        });
+        it('checking subtitle position as Bottom', (done: Function) => {
+            bullet.titlePosition = 'Bottom';
+            bullet.dataBind();
+
+            svg = document.getElementById('container_BulletChartSubTitle');
+            expect(svg.textContent).toEqual('(in px)');
+            done();
+        });
+        it('checking with title and subtitleStyle', (done: Function) => {
+            bullet.subtitle = '(in px)';
+            bullet.subtitleStyle = {size: '20px', color: 'red'};
+            bullet.dataBind();
+
+            svg = document.getElementById('container_BulletChartSubTitle');
+            expect(svg.textContent).toEqual('(in px)');
+            expect(svg.getAttribute('font-size')).toBe('20px');
+            // tslint:disable-next-line:chai-vague-errors
+            expect(svg.getAttribute('fill')).toBe('red');
+            done();
+        });
+        it('checking with chart area border', (done: Function) => {
+            bullet.border = { width: 4, color: 'red'};
+            bullet.refresh();
+
+            svg = document.getElementById('container_ChartBorder');
+            expect(svg.getAttribute('stroke')).toEqual('red');
+            done();
+        });
+        it('checking with tick position and label position inside', (done: Function) => {
+            bullet.tickPosition = 'Inside';
+            bullet.labelPosition = 'Inside';
+            bullet.refresh();
+
+            svg = document.getElementById('container_svg_AxisLabel_10');
+            expect(svg.getAttribute('x')).toEqual('41');
+            done();
+        });
+        it('checking with Title maximum width', (done: Function) => {
+            bullet.titleStyle.maximumTitleWidth = 70;
+            bullet.refresh();
+
+            svg = document.getElementById('container_BulletChartSubTitle');
+            expect(svg.getAttribute('y')).toBe('437.3333333333333');
+            expect(svg.getAttribute('text-anchor') == 'middle').toBe(true);
+            done();
+        });
+        it('checking with rtl mode', (done: Function) => {
+            bullet.enableRtl = true;
+            bullet.refresh();
+
+            svg = document.getElementById('container_svg_range_0');
+            expect(svg.getAttribute('x')).toBe('20');
+            expect(svg.getAttribute('fill') == 'red').toBe(true);
+            done();
+        });
+        it('checking with opposed position', (done: Function) => {
+            bullet.opposedPosition = true;
+            bullet.refresh();
+
+            svg = document.getElementById('container_svg_AxisLabel_20');
+            expect(svg.textContent).toEqual('20%');
+            // tslint:disable-next-line:no-unused-expression
+            expect(svg.getAttribute('y') == '269.66666666666663' || svg.getAttribute('y') == '270').toBe(true);
+            done();
+        });
+    });
 });

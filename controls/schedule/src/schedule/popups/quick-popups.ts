@@ -980,6 +980,7 @@ export class QuickPopups {
             cancel: false, data: this.parent.activeEventData.event, element: this.quickDialog.element
         };
         this.parent.trigger(event.popupClose, args, (popupCloseArgs: PopupCloseEventArgs) => {
+            popupCloseArgs = this.serializingData(popupCloseArgs);
             if (!popupCloseArgs.cancel) {
                 this.parent.eventBase.focusElement();
             }
@@ -1178,20 +1179,7 @@ export class QuickPopups {
             target: (isCellPopup ? this.parent.activeCellsData.element : this.parent.activeEventData.element) as Element
         };
         this.parent.trigger(event.popupClose, args, (popupCloseArgs: PopupCloseEventArgs) => {
-            if (isBlazor()) {
-                let eventFields: EventFieldsMapping = this.parent.eventFields;
-                if (popupCloseArgs.data) {
-                    let eventObj: { [key: string]: Date } = popupCloseArgs.data as { [key: string]: Date };
-                    eventObj[eventFields.startTime] = this.parent.getDateTime(eventObj[eventFields.startTime]);
-                    eventObj[eventFields.endTime] = this.parent.getDateTime(eventObj[eventFields.endTime]);
-                }
-                if (popupCloseArgs.element) {
-                    popupCloseArgs.element = getElement(popupCloseArgs.element);
-                }
-                if (popupCloseArgs.target) {
-                    popupCloseArgs.target = getElement(popupCloseArgs.target);
-                }
-            }
+            popupCloseArgs = this.serializingData(popupCloseArgs);
             if (!popupCloseArgs.cancel) {
                 if (this.quickPopup.element.classList.contains('e-popup-open')) {
                     if (isCellPopup && this.isCrudAction) {
@@ -1211,6 +1199,24 @@ export class QuickPopups {
                 }
             }
         });
+    }
+
+    public serializingData(popupCloseArgs: PopupCloseEventArgs): PopupCloseEventArgs {
+        if (isBlazor()) {
+            let eventFields: EventFieldsMapping = this.parent.eventFields;
+            if (popupCloseArgs.data) {
+                let eventObj: { [key: string]: Date } = popupCloseArgs.data as { [key: string]: Date };
+                eventObj[eventFields.startTime] = this.parent.getDateTime(eventObj[eventFields.startTime]);
+                eventObj[eventFields.endTime] = this.parent.getDateTime(eventObj[eventFields.endTime]);
+            }
+            if (popupCloseArgs.element) {
+                popupCloseArgs.element = getElement(popupCloseArgs.element);
+            }
+            if (popupCloseArgs.target) {
+                popupCloseArgs.target = getElement(popupCloseArgs.target);
+            }
+        }
+        return popupCloseArgs;
     }
 
     private navigationClick(e: Event): void {

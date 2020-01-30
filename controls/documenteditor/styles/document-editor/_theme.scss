@@ -649,9 +649,9 @@
     background-color: $de-tooltip-bg-clr;
     box-shadow: $de-tooltip-shadow;
     cursor: text;
+    display: table;
     max-width: 200px;
     padding: 5px;
-    width: fit-content;
     word-wrap: break-word;
   }
 
@@ -697,17 +697,17 @@
 
         &:focus {
           background-color: $de-style-btn-bg-color;
-          border-color: $de-toggle-btn-border;
+          box-shadow: $de-toggle-btn-border;
         }
 
         &:active {
           background-color: $de-style-btn-bg-color;
-          border-color: $de-toggle-btn-border;
+          box-shadow: $de-toggle-btn-border;
         }
 
         &:hover {
           background-color: $de-style-btn-bg-color;
-          border-color: $de-toggle-btn-border;
+          box-shadow: $de-toggle-btn-border;
         }
       }
     }
@@ -759,7 +759,7 @@
     .e-de-style-paragraph-group-button .e-btn.e-active,
     .e-de-style-font-group-button .e-btn.e-active {
       background-color: $de-style-btn-bg-color;
-      border-color: $de-toggle-btn-border;
+       box-shadow: $de-toggle-btn-border;
       box-shadow: none;
       .e-btn-icon {
         color: $de-style-btn-color;
@@ -1864,7 +1864,7 @@
   }
 
   .e-tab .e-tab-header .e-toolbar-item .e-de-op-replace-tab-header {
-    padding-left: $de-op-tab-header-padding;
+    padding-left: $de-op-tab-header-padding-left;
     padding-right: $de-op-tab-header-padding;
   }
 

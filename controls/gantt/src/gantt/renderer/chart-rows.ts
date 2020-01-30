@@ -339,8 +339,7 @@ export class ChartRows {
             }
             let template: string = '<div class="' + cls.parentTaskBarInnerDiv + ' ' +
                 this.getExpandClass(data) + ' ' + cls.traceParentTaskBar + '"' +
-                ' style="width:' + ((!this.checkChildMileStone(data)) ? (data.ganttProperties.width) :
-                    (this.milestoneHeight)) + 'px;height:' + this.taskBarHeight + 'px;">' +
+                ' style="width:' + (data.ganttProperties.width) + 'px;height:' + this.taskBarHeight + 'px;">' +
                 '<div class="' + cls.parentProgressBarInnerDiv + ' ' + this.getExpandClass(data) + ' ' + cls.traceParentProgressBar + '"' +
                 ' style="border-style:' + (data.ganttProperties.progressWidth ? 'solid;' : 'none;') +
                 'width:' + data.ganttProperties.progressWidth + 'px;' +
@@ -349,7 +348,14 @@ export class ChartRows {
                 cls.taskLabel + '" style="line-height:' +
                 (this.taskBarHeight - 1) + 'px;height:' + this.taskBarHeight + 'px;">' +
                 labelString + '</span></div></div>';
-            parentTaskbarNode = this.createDivElement(template);
+            let milestoneTemplate: string = '<div class="' + cls.parentMilestone + '" style="position:absolute;">' +
+                '<div class="' + cls.parentMilestoneTop + '" style="border-right-width:' +
+                this.milesStoneRadius + 'px;border-left-width:' + this.milesStoneRadius + 'px;border-bottom-width:' +
+                this.milesStoneRadius + 'px;"></div>' +
+                '<div class="' + cls.parentMilestoneBottom + '" style="top:' +
+                (this.milesStoneRadius) + 'px;border-right-width:' + this.milesStoneRadius + 'px; border-left-width:' +
+                this.milesStoneRadius + 'px; border-top-width:' + this.milesStoneRadius + 'px;"></div></div>';
+            parentTaskbarNode = this.createDivElement(data.ganttProperties.isMilestone ? milestoneTemplate : template);
         }
         return parentTaskbarNode;
     }
@@ -497,8 +503,7 @@ export class ChartRows {
             ' tabindex="-1" style="' + ((data.ganttProperties.isMilestone) ? ('width:' + this.milestoneHeight + 'px;height:' +
                 this.milestoneHeight + 'px;margin-top:' + this.milestoneMarginTop + 'px;left:' + (data.ganttProperties.left -
                     (this.milestoneHeight / 2)) + 'px;') : ('width:' + data.ganttProperties.width + 'px;margin-top:' +
-                        this.taskBarMarginTop + 'px;left:' + (!this.checkChildMileStone(data) ? (data.ganttProperties.left) :
-                            (data.ganttProperties.left - (this.milestoneHeight / 2))) + 'px;height:' +
+                        this.taskBarMarginTop + 'px;left:' + (data.ganttProperties.left) + 'px;height:' +
                         this.taskBarHeight + 'px;')) + '"></div>';
         return this.createDivElement(template);
     }
@@ -528,7 +533,7 @@ export class ChartRows {
     private childTaskbarProgressResizer(): NodeList {
         let template: string = '<div class="' + cls.childProgressResizer + '"' +
             ' style="left:' + (this.templateData.ganttProperties.progressWidth - 6) + 'px;margin-top:' +
-            this.taskBarHeight + 'px;"><div class="' + cls.progressBarHandler + '"' +
+            (this.taskBarHeight - 4) + 'px;"><div class="' + cls.progressBarHandler + '"' +
             '><div class="' + cls.progressHandlerElement + '"></div>' +
             '<div class="' + cls.progressBarHandlerAfter + '"></div></div>';
         return this.createDivElement(template);
@@ -588,23 +593,6 @@ export class ChartRows {
             resultString = '';
         }
         return resultString;
-    }
-
-    /**
-     * To check presence of single milestone child.
-     * @return {boolean}
-     */
-    private checkChildMileStone(record: IGanttData): boolean {
-        let boolValue: boolean = false;
-        if (record.hasChildRecords && record.childRecords.length === 1) {
-            let childRecords: IGanttData[] = record.childRecords;
-            if (childRecords[0].hasChildRecords) {
-                boolValue = this.checkChildMileStone(childRecords[0]);
-            } else if (childRecords[0].ganttProperties.isMilestone) {
-                boolValue = true;
-            }
-        }
-        return boolValue;
     }
 
     private getExpandDisplayProp(data: IGanttData): string {

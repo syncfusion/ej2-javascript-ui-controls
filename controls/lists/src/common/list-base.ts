@@ -20,7 +20,8 @@ export let cssClass: ClassList = {
     collapsible: 'e-icon-collapsible',
     disabled: 'e-disabled',
     image: 'e-list-img',
-    iconWrapper: 'e-icon-wrapper'
+    iconWrapper: 'e-icon-wrapper',
+    anchorWrap: 'e-anchor-wrap'
 };
 
 export interface ClassList {
@@ -41,6 +42,7 @@ export interface ClassList {
     disabled: string;
     image: string;
     iconWrapper: string;
+    anchorWrap: string;
 }
 
 
@@ -103,7 +105,8 @@ export namespace ListBase {
         headerTemplate: null,
         expandIconClass: 'e-icon-collapsible',
         moduleName: 'list',
-        expandIconPosition: 'Right'
+        expandIconPosition: 'Right',
+        itemNavigable: false
     };
 
     /**
@@ -198,6 +201,7 @@ export namespace ListBase {
         let fields: FieldsMapping = extend({}, defaultMappedFields, curOpt.fields);
         let ariaAttributes: AriaAttributesMapping = extend({}, defaultAriaAttributes, curOpt.ariaAttributes);
         let id: string;
+        let checkboxElement: HTMLElement[] = [];
         if (level) {
             ariaAttributes.level = level;
         }
@@ -229,7 +233,11 @@ export namespace ListBase {
             }
             let innerEle: HTMLElement[] = [];
             if (curOpt.showCheckBox) {
-                innerEle.push(createElement('input', { className: cssClass.check, attrs: { type: 'checkbox' } }));
+                if (curOpt.itemNavigable && (fieldData[fields.url] || fieldData[fields.urlAttributes])) {
+                    checkboxElement.push(createElement('input', { className: cssClass.check, attrs: { type: 'checkbox' } }));
+                } else {
+                    innerEle.push(createElement('input', { className: cssClass.check, attrs: { type: 'checkbox' } }));
+                }
             }
             if (isSingleLevel === true) {
                 if (curOpt.showIcon && fieldData.hasOwnProperty(fields.iconCss) && !isNullOrUndefined(fieldData[fields.iconCss])) {
@@ -246,6 +254,9 @@ export namespace ListBase {
                         (curItem as { isHeader: Object } & { [key: string]: Object }).isHeader) ? true : false,
                     id,
                     i, options);
+                if (curOpt.itemNavigable && checkboxElement.length) {
+                    prepend(checkboxElement, li.firstElementChild);
+                }
             } else {
                 li = generateLI(createElement, curItem, fieldData, fields, curOpt.itemClass, options);
                 li.classList.add(cssClass.level + '-' + ariaAttributes.level);
@@ -277,6 +288,9 @@ export namespace ListBase {
                 if (innerEle.length) {
                     prepend(innerEle, li.firstElementChild);
                 }
+                if (curOpt.itemNavigable && checkboxElement.length) {
+                    prepend(checkboxElement, li.firstElementChild);
+                }
                 processSubChild(createElement, fieldData, fields, dataSource, curOpt, li, ariaAttributes.level);
             }
             if (curOpt.itemCreated && typeof curOpt.itemCreated === 'function') {
@@ -290,6 +304,7 @@ export namespace ListBase {
                 };
                 curOpt.itemCreated(curData);
             }
+            checkboxElement = [];
             child.push(li);
         }
         return child;
@@ -670,12 +685,13 @@ export namespace ListBase {
                 setAttribute(li, <{ [key: string]: string }>fieldData[fields.htmlAttributes]);
             }
 
-            if (innerElements.length) { append(innerElements, li); }
+            if (innerElements.length && !curOpt.itemNavigable) { append(innerElements, li); }
 
             if (dataSource && (fieldData[fields.url] || (fieldData[fields.urlAttributes] &&
                 (fieldData[fields.urlAttributes] as { [key: string]: Object }).href))) {
-                li.appendChild(anchorTag(createElement, dataSource, fields, text));
+                li.appendChild(anchorTag(createElement, dataSource, fields, text, innerElements, curOpt.itemNavigable));
             } else {
+                if (innerElements.length && curOpt.itemNavigable) { append(innerElements, li); }
                 li.appendChild(document.createTextNode(text));
             }
         }
@@ -701,13 +717,14 @@ export namespace ListBase {
             collapsible: 'e-icon-collapsible',
             disabled: 'e-disabled',
             image: `e-${moduleName}-img`,
-            iconWrapper: 'e-icon-wrapper'
+            iconWrapper: 'e-icon-wrapper',
+            anchorWrap: 'e-anchor-wrap'
         };
     }
 
     function anchorTag(
         createElement: createElementParams, dataSource: { [key: string]: object } | { [key: string]: string },
-        fields: FieldsMapping, text: string): HTMLElement {
+        fields: FieldsMapping, text: string, innerElements: HTMLElement[], isFullNavigation: boolean): HTMLElement {
         let fieldData: { [key: string]: Object } = <{ [key: string]: Object }>getFieldValues(dataSource, fields);
         let attr: { [key: string]: string } = { href: <string>fieldData[fields.url] };
         if (fieldData.hasOwnProperty(fields.urlAttributes) && fieldData[fields.urlAttributes]) {
@@ -715,7 +732,18 @@ export namespace ListBase {
             attr.href = <string>fieldData[fields.url] ? <string>fieldData[fields.url] :
                 (fieldData[fields.urlAttributes] as { [key: string]: Object }).href as string;
         }
-        let anchorTag: HTMLElement = createElement('a', { className: cssClass.text + ' ' + cssClass.url, innerHTML: text });
+        let anchorTag: HTMLElement;
+        if (!isFullNavigation) {
+            anchorTag = createElement('a', { className: cssClass.text + ' ' + cssClass.url, innerHTML: text });
+        } else {
+            anchorTag = createElement('a', { className: cssClass.text + ' ' + cssClass.url });
+            let anchorWrapper: HTMLElement = createElement('div', { className: cssClass.anchorWrap });
+            if (innerElements && innerElements.length) {
+                append(innerElements, anchorWrapper);
+            }
+            anchorWrapper.appendChild(document.createTextNode(text));
+            append([anchorWrapper], anchorTag);
+        }
         setAttribute(anchorTag, attr);
         return anchorTag;
     }
@@ -766,7 +794,7 @@ export namespace ListBase {
             });
             if (dataSource && (fieldData[fields.url] || (fieldData[fields.urlAttributes] &&
                 (fieldData[fields.urlAttributes] as { [key: string]: Object }).href))) {
-                innerDiv.appendChild(anchorTag(createElement, dataSource, fields, text));
+                innerDiv.appendChild(anchorTag(createElement, dataSource, fields, text, null, curOpt.itemNavigable));
             } else {
                 innerDiv.appendChild(createElement('span', {
                     className: cssClass.text, innerHTML: text,
@@ -963,6 +991,10 @@ export interface ListBaseOptions {
      * Defines whether to allow the cross scripting site or not.
      */
     enableHtmlSanitizer?: boolean;
+    /**
+     * If set true to this property then the entire list will be navigate-able instead of text element
+     */
+    itemNavigable?: boolean;
 }
 
 /**

@@ -273,12 +273,6 @@ export interface DateTimePickerModel extends DatePickerModel{
     firstDayOfWeek?: number;
 
     /**
-     * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
-     * @default 'en-US'
-     */
-    locale?: string;
-
-    /**
      * Gets or sets the Calendar's Type like gregorian or islamic.
      * @default Gregorian
      */

@@ -14,6 +14,13 @@
         color: $editor-overlay-icon-color;
       }
 
+      &.e-loading {
+
+        .e-editable-value {
+          border-bottom: 0;
+        }
+      }
+
       &:hover {
         background: $editor-value-hover-bg;
         border-radius: $editor-tip-content-bdr-radius;

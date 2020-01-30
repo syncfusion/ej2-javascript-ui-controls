@@ -161,11 +161,12 @@ export class Resize implements IAction {
         this.widthService.setColumnWidth(gObj.getColumns()[index] as Column);
         result = gObj.getColumns().some((x: Column) => x.width === null || x.width === undefined || (x.width as string).length <= 0);
         if (result === false) {
-            (gObj.getColumns() as Column[]).forEach((element: Column) => {
-                if (element.visible) {
-                    tWidth = tWidth + parseFloat(element.width as string);
+            let element: Column[] = (gObj.getColumns() as Column[]);
+            for (let i: number = 0; i < element.length; i++) {
+                if (element[i].visible) {
+                    tWidth = tWidth + parseFloat(element[i].width as string);
                 }
-            });
+            }
         }
         let calcTableWidth: number = tWidth + indentWidth;
         if (tWidth > 0 && !gObj.getFrozenColumns()) {
@@ -212,13 +213,13 @@ export class Resize implements IAction {
         return 'resize';
     }
     private findColumn(fName: string[]): void {
-        fName.forEach((element: string) => {
-            let fieldName: string = element as string;
+        for (let i: number = 0; i < fName.length; i++) {
+            let fieldName: string = fName[i] as string;
             let columnIndex: number = this.parent.getColumnIndexByField(fieldName);
             if (this.parent.getColumns()[columnIndex].visible === true) {
                 this.resizeColumn(fieldName, columnIndex);
             }
-        });
+        }
     }
     /**
      * To create table for autofit 
@@ -235,12 +236,12 @@ export class Resize implements IAction {
         myTable.classList.add('e-resizetable');
         myTable.style.cssText = 'table-layout: auto;width: auto';
         let myTr: HTMLTableRowElement = this.parent.createElement('tr') as HTMLTableRowElement;
-        text.forEach((element: Element) => {
+        for (let i: number = 0; i < text.length; i++) {
             let tr: HTMLTableRowElement = myTr.cloneNode() as HTMLTableRowElement;
             tr.className = table.querySelector('tr').className;
-            tr.appendChild(element);
+            tr.appendChild(text[i]);
             myTable.appendChild(tr);
-        });
+        }
         mySubDiv.appendChild(myTable);
         myTableDiv.appendChild(mySubDiv);
         document.body.appendChild(myTableDiv);
@@ -279,11 +280,12 @@ export class Resize implements IAction {
     }
 
     private refreshHeight(): void {
-        this.getResizeHandlers().forEach((ele: HTMLElement) => {
-            if (ele.parentElement.offsetHeight > 0) {
-                ele.style.height = ele.parentElement.offsetHeight + 'px';
+        let element: HTMLElement[] = this.getResizeHandlers();
+        for (let i: number = 0; i < element.length; i++) {
+            if (element[i].parentElement.offsetHeight > 0) {
+                element[i].style.height = element[i].parentElement.offsetHeight + 'px';
             }
-        });
+        }
         this.setHandlerHeight();
     }
 
@@ -304,9 +306,10 @@ export class Resize implements IAction {
     }
 
     private setHandlerHeight(): void {
-        [].slice.call(this.parent.getHeaderTable().querySelectorAll('.' + resizeClassList.suppress)).forEach((ele: HTMLElement) => {
-            ele.style.height = ele.parentElement.offsetHeight + 'px';
-        });
+        let element: HTMLElement[] = [].slice.call(this.parent.getHeaderTable().querySelectorAll('.' + resizeClassList.suppress));
+        for (let i: number = 0; i < element.length; i++) {
+            element[i].style.height = element[i].parentElement.offsetHeight + 'px';
+        }
     }
 
     private callAutoFit(e: PointerEvent | TouchEvent): void {
@@ -407,9 +410,10 @@ export class Resize implements IAction {
     }
 
     private updateResizeEleHeight(): void {
-        this.parent.getHeaderContent().querySelectorAll('.e-rhandler').forEach((element: HTMLElement) => {
-            element.style.height = this.element.parentElement.offsetHeight + 'px';
-        });
+        let elements: HTMLElement[] = [].slice.call(this.parent.getHeaderContent().querySelectorAll('.e-rhandler'));
+        for (let i: number = 0; i < elements.length; i++) {
+            elements[i].style.height = this.element.parentElement.offsetHeight + 'px';
+        }
     }
 
     private getColData(column: Column, mousemove: number): { [key: string]: number } {
@@ -477,9 +481,9 @@ export class Resize implements IAction {
         let finalColumns: Column[] = [];
         for (const col of columns) {
             let totalWidth: number = 0;
-            columns.forEach((col: Column) => {
-                totalWidth += parseFloat(col.width.toString());
-            });
+            for (let i: number = 0; i < columns.length; i++) {
+                totalWidth += parseFloat(columns[i].width.toString());
+            }
             let colData: { [key: string]: number } = this.getColData(col, (parseFloat(col.width as string)) * mousemove / totalWidth);
             let colWidth: number = this.getWidth(colData.width, colData.minWidth, colData.maxWidth);
             if ((colWidth !== parseFloat(col.width.toString()))) {

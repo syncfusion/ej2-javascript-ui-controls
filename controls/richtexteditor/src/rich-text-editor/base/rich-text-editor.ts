@@ -1604,7 +1604,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             detach(this.element);
             if (this.originalElement.innerHTML.trim() !== '') {
                 this.valueContainer.value = this.originalElement.innerHTML.trim();
-                this.setProperties({ value: (!isNOU(this.initialValue) ? this.initialValue : null) }, true);
+                if (!isBlazor()) { this.setProperties({ value: (!isNOU(this.initialValue) ? this.initialValue : null) }, true); }
             } else {
                 this.valueContainer.value = !this.isBlazor() ? this.valueContainer.defaultValue : this.defaultResetValue;
             }
@@ -1687,6 +1687,22 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     public getText(): string {
         return this.contentModule.getText();
+    }
+
+    /**
+     * Returns the html value of the selected content as string.
+     * @return {string} 
+     */
+    public getSelectedHtml(): string {
+        let range: Range;
+        let wrapperElm: HTMLElement = this.createElement('div');
+        let selection: Selection = this.contentModule.getDocument().getSelection();
+        if (selection.rangeCount > 0) {
+            range = selection.getRangeAt(0);
+            let selectedHtml: DocumentFragment = range.cloneContents();
+            wrapperElm.appendChild(selectedHtml);
+        }
+        return wrapperElm.innerHTML;
     }
 
     /**

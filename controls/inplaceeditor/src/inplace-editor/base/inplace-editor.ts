@@ -1,8 +1,8 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, Event, EmitType, select } from '@syncfusion/ej2-base';
 import { detach, addClass, removeClass, EventHandler, setStyleAttribute, Complex, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, closest, extend, L10n, compile, Browser, Touch, TapEventArgs } from '@syncfusion/ej2-base';
-import { updateBlazorTemplate, resetBlazorTemplate, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
-import { DataManager, UrlAdaptor, Query, WebApiAdaptor, ODataV4Adaptor, ReturnOption } from '@syncfusion/ej2-data';
+import { updateBlazorTemplate, resetBlazorTemplate, SanitizeHtmlHelper, getValue } from '@syncfusion/ej2-base';
+import { DataManager, UrlAdaptor, Query, WebApiAdaptor, ODataV4Adaptor, ReturnOption, Predicate } from '@syncfusion/ej2-data';
 import { Button, ButtonModel } from '@syncfusion/ej2-buttons';
 import { RichTextEditorModel } from '@syncfusion/ej2-richtexteditor';
 import { DatePicker, DatePickerModel, DateTimePicker, DateRange } from '@syncfusion/ej2-calendars';
@@ -84,6 +84,7 @@ export type AdaptorType = 'UrlAdaptor' | 'ODataV4Adaptor' | 'WebApiAdaptor';
 export type InputType = 'AutoComplete' | 'Color' | 'ComboBox' | 'Date' | 'DateRange' | 'DateTime' | 'DropDownList' |
     'Mask' | 'MultiSelect' | 'Numeric' | 'RTE' | 'Slider' | 'Text' | 'Time';
 type ComponentTypes = DatePicker | DateTimePicker | DropDownList | MaskedTextBox | NumericTextBox | TextBox;
+type DropDownTypes = AutoCompleteModel | ComboBoxModel | DropDownListModel | MultiSelectModel;
 
 /**
  * ```html
@@ -119,10 +120,12 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private submitBtn: Button = undefined;
     private cancelBtn: Button = undefined;
     private isClearTarget: boolean = false;
+    private beginEditArgs: BeginEditEventArgs;
     private btnElements: HTMLElement = undefined;
     private dataManager: DataManager = undefined;
     private componentRoot: HTMLElement | HTMLInputElement;
     private dataAdaptor: UrlAdaptor | ODataV4Adaptor | WebApiAdaptor;
+    private prevValue: string | number | Date | string[] | Date[] | number[];
     private divComponents: string[] = ['RTE', 'Slider'];
     private clearComponents: string[] = ['AutoComplete', 'Mask', 'Text'];
     private dateType: string[] = ['Date', 'DateTime', 'Time'];
@@ -411,7 +414,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.updateAdaptor();
         this.appendValueElement();
         this.updateValue();
-        this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)));
+        this.renderInitialValue();
         this.wireEvents();
         this.setRtl(this.enableRtl);
         this.enableEditor(this.enableEditMode);
@@ -445,6 +448,62 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.valueWrap.appendChild(this.editIcon);
         this.element.appendChild(this.valueWrap);
     }
+    private renderInitialValue(): void {
+        if (['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'].indexOf(this.type) > -1
+            && !isNOU(this.value) && !this.isEmpty(this.value.toString()) && !isNOU((this.model as DropDownTypes).fields)
+            && !isNOU((this.model as DropDownTypes).dataSource)) {
+            this.renderValue(this.getLocale({ loadingText: 'Loading...' }, 'loadingText'));
+            this.valueWrap.classList.add(classes.LOAD);
+            createSpinner({ target: this.valueWrap, width: 10 });
+            showSpinner(this.valueWrap);
+            this.getInitFieldMapValue();
+        } else {
+            this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)));
+        }
+    }
+    private getInitFieldMapValue(): void {
+        let model: DropDownTypes = this.model as DropDownTypes;
+        let mText: string = model.fields.text;
+        let mVal: string = model.fields.value;
+        let query: Query = isNOU(model.query) ? new Query() : model.query;
+        if (model.dataSource instanceof DataManager) {
+            (model.dataSource as DataManager).executeQuery(this.getInitQuery(model, query)).then((e: ReturnOption) => {
+                this.updateInitValue(mText, mVal, e.result as { [key: string]: Object }[]);
+            });
+        } else {
+            this.updateInitValue(mText, mVal, new DataManager(model.dataSource).executeLocal(
+                this.getInitQuery(model, query)) as { [key: string]: Object }[]);
+        }
+    }
+    private getInitQuery(model: DropDownTypes, query: Query): Query {
+        let predicate: Predicate;
+        let mVal: string = model.fields.value;
+        let value: string[] | number[] = this.value as string[] | number[];
+        if (this.type !== 'MultiSelect' || typeof(this.value) !== 'object') {
+            predicate = new Predicate(mVal, 'equal', this.value as string);
+        } else {
+            let i: number = 0;
+            for (let val of value) {
+                predicate = ((i === 0) ? predicate = new Predicate(mVal, 'equal', val) : predicate.or(mVal, 'equal', val));
+                i++;
+            }
+        }
+        return query.where(predicate);
+    }
+    private updateInitValue(mText: string, mVal: string, result: { [key: string]: Object }[]): void {
+        if (result.length <= 0) { return; }
+        if (result.length === 1) {
+            this.valueEle.innerHTML = this.checkValue(getValue((isNOU(mText) ? mVal : mText), result[0]));
+        } else {
+            let val: string[] = [];
+            for (let obj of result) {
+                val.push(getValue((isNOU(mText) ? mVal : mText), obj) as string);
+            }
+            this.valueEle.innerHTML = this.checkValue(val.toString());
+        }
+        hideSpinner(this.valueWrap);
+        this.valueWrap.classList.remove(classes.LOAD);
+    }
     private renderValue(val: string): void {
         this.valueEle.innerHTML = val;
         if (this.type === 'Color') { setStyleAttribute(this.valueEle, { 'color': val }); }
@@ -453,6 +512,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
     }
     private renderEditor(): void {
+        this.prevValue = this.value;
+        this.beginEditArgs = { mode: this.mode, cancelFocus: false, cancel: false };
+        this.trigger('beginEdit', this.beginEditArgs);
+        if (this.beginEditArgs.cancel) { return; }
         let tipOptions: Object = undefined;
         let target: HTMLElement = <HTMLElement>select('.' + classes.VALUE_WRAPPER, this.element);
         if (this.editableOn !== 'EditIconClick') {
@@ -492,7 +555,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         if (this.actionOnBlur !== 'Ignore') {
             this.wireDocEvent();
         }
-        this.initRender = false;
         addClass([this.valueWrap], [classes.OPEN]);
         this.setProperties({ enableEditMode: true }, true);
     }
@@ -845,21 +907,27 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private sendValue(): void {
         let eventArgs: ActionBeginEventArgs = { data: { name: this.name, primaryKey: this.primaryKey, value: this.getSendValue() } };
         this.trigger('actionBegin', eventArgs, (actionBeginArgs: ActionBeginEventArgs) => {
-            if (!this.isEmpty(this.url) && !this.isEmpty(this.primaryKey as string)) {
-                this.dataManager = new DataManager({ url: this.url, adaptor: this.dataAdaptor });
-                if (this.adaptor === 'UrlAdaptor') {
-                this.dataManager.executeQuery(
-                    this.getQuery(actionBeginArgs.data), this.successHandler.bind(this), this.failureHandler.bind(this)
-                );
-                } else {
-                    let crud: Promise<Object> = this.dataManager.insert(actionBeginArgs.data) as Promise<Object>;
-                    crud.then((e: ReturnOption) => this.successHandler(e)).catch((e: ReturnOption) => this.failureHandler(e));
-                }
+            if (actionBeginArgs.cancel) {
+                this.removeSpinner('submit');
+                if (this.mode === 'Popup') { this.updateArrow(); }
             } else {
-                let eventArg: ActionEventArgs = { data: {}, value: actionBeginArgs.data.value as string };
-                this.triggerSuccess(eventArg);
+                if (!this.isEmpty(this.url) && !this.isEmpty(this.primaryKey as string)
+                    && (this.initRender || (!this.initRender && this.prevValue !== this.value))) {
+                    this.dataManager = new DataManager({ url: this.url, adaptor: this.dataAdaptor });
+                    if (this.adaptor === 'UrlAdaptor') {
+                        this.dataManager.executeQuery(
+                            this.getQuery(actionBeginArgs.data), this.successHandler.bind(this), this.failureHandler.bind(this)
+                        );
+                    } else {
+                        let crud: Promise<Object> = this.dataManager.insert(actionBeginArgs.data) as Promise<Object>;
+                        crud.then((e: ReturnOption) => this.successHandler(e)).catch((e: ReturnOption) => this.failureHandler(e));
+                    }
+                } else {
+                    let eventArg: ActionEventArgs = { data: {}, value: actionBeginArgs.data.value as string };
+                    this.triggerSuccess(eventArg);
+                }
+                this.dataManager = undefined;
             }
-            this.dataManager = undefined;
         });
     }
     private isEmpty(value: string | string[]): boolean {
@@ -901,12 +969,13 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                 helper: null
             };
             extend(item, item, beforeEvent);
-            this.trigger('beforeSanitizeHtml', item);
-            if (item.cancel && !isNOU(item.helper)) {
-                value = item.helper(value);
-            } else if (!item.cancel) {
-                value = SanitizeHtmlHelper.serializeValue(item, value);
-            }
+            this.trigger('beforeSanitizeHtml', item, (args: BeforeSanitizeHtmlArgs) => {
+                if (item.cancel && !isNOU(item.helper)) {
+                    value = item.helper(value);
+                } else if (!item.cancel) {
+                    value = SanitizeHtmlHelper.serializeValue(item, value);
+                }
+            });
         }
         return value;
     }
@@ -997,7 +1066,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         let val: string = args.value;
         this.trigger('actionSuccess', args, (actionArgs: ActionEventArgs) => {
             this.removeSpinner('submit');
-            this.renderValue(this.checkValue((actionArgs.value !== val) ? actionArgs.value : this.getRenderValue()));
+            if (!actionArgs.cancel) {
+                this.renderValue(this.checkValue((actionArgs.value !== val) ? actionArgs.value : this.getRenderValue()));
+            }
+            if (actionArgs.cancel && this.mode === 'Inline') { removeClass([this.valueWrap], [classes.HIDE]); }
             this.removeEditor();
         });
     }
@@ -1103,20 +1175,21 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             this.setAttribute(<HTMLElement>select('.e-slider-input', this.containerEle), ['name']);
         }
         let eventArgs: BeginEditEventArgs = { mode: this.mode, cancelFocus: false };
-        this.trigger('beginEdit', eventArgs);
-        if (!eventArgs.cancelFocus) {
-            if (this.mode === 'Inline' && (['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'].indexOf(this.type) > -1)
-                && (this.model as AutoCompleteModel | ComboBoxModel | DropDownListModel
-                    | MultiSelectModel).dataSource instanceof DataManager) {
-                this.showDropDownPopup();
-            } else {
-                this.setFocus();
+        this.trigger('beginEdit', eventArgs, (args: BeginEditEventArgs) => {
+            if (!this.beginEditArgs.cancelFocus) {
+                if (this.mode === 'Inline' && (['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'].indexOf(this.type) > -1)
+                    && (this.model as AutoCompleteModel | ComboBoxModel | DropDownListModel
+                        | MultiSelectModel).dataSource instanceof DataManager) {
+                    this.showDropDownPopup();
+                } else {
+                    this.setFocus();
+                }
             }
-        }
-        if (this.afterOpenEvent) {
-            this.tipObj.setProperties({ afterOpen: this.afterOpenEvent }, true);
-            this.tipObj.trigger('afterOpen', e);
-        }
+            if (this.afterOpenEvent) {
+                this.tipObj.setProperties({ afterOpen: this.afterOpenEvent }, true);
+                this.tipObj.trigger('afterOpen', e);
+            }
+        });
     }
     private popMouseDown(e: MouseEvent): void {
         let trgClass: DOMTokenList = (<Element>e.target).classList;
@@ -1149,14 +1222,16 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
     }
     private successHandler(e: Object): void {
+        this.initRender = false;
         let eventArgs: ActionEventArgs = { data: e, value: this.getSendValue() };
         this.triggerSuccess(eventArgs);
     }
     private failureHandler(e: Object): void {
         let eventArgs: ActionEventArgs = { data: e, value: this.getSendValue() };
-        this.trigger('actionFailure', eventArgs);
-        this.removeSpinner('submit');
-        if (this.mode === 'Popup') { this.updateArrow(); }
+        this.trigger('actionFailure', eventArgs, (args: ActionEventArgs) => {
+            this.removeSpinner('submit');
+            if (this.mode === 'Popup') { this.updateArrow(); }
+        });
     }
     private enterKeyDownHandler(e: KeyboardEvent): void {
         if (!closest(e.target as Element, '.' + classes.INPUT + ' .e-richtexteditor')) {
@@ -1236,7 +1311,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         if ((errEle && !isNOU(this.validationRules)) || (errEle && calendarComp)) {
             return;
         }
-
         if (!this.isTemplate) {
             this.setValue();
         }
@@ -1308,10 +1382,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                     break;
                 case 'value':
                     this.updateValue();
-                    this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)));
+                    this.renderInitialValue();
                     break;
                 case 'emptyText':
-                    this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)));
+                    this.renderInitialValue();
                     break;
                 case 'template':
                     this.checkIsTemplate();

@@ -505,7 +505,10 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         this.parent[action](events.virtaulKeyHandler, this.virtualKeyHandler, this);
         this.parent[action](events.keyPressed, this.virtualKeyHandler, this);
         this.parent[action](events.virtaulCellFocus, this.virtualCellFocus, this);
-        this.actions.forEach((event: string) => this.parent[action](`${event}-begin`, this.onActionBegin, this));
+        let event: string[] = this.actions;
+        for (let i: number = 0; i < event.length; i++) {
+            this.parent[action](`${event[i]}-begin`, this.onActionBegin, this);
+        }
         let fn: Function = () => {
             this.observer.observe((scrollArgs: ScrollArg) => this.scrollListener(scrollArgs), this.onEntered());
             let gObj: IGrid = this.parent;
@@ -633,17 +636,18 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         let total: number = isGroupAdaptive(this.parent) ? this.getGroupedTotalBlocks() : this.getTotalBlocks();
         this.prevHeight = this.offsets[total]; this.maxBlock = total % 2 === 0 ? total - 2 : total - 1; this.offsets = {};
         //Row offset update
-        Array.apply(null, Array(total)).map(() => ++row)
-            .forEach((block: number) => {
-                let tmp: number = (this.vgenerator.cache[block] || []).length;
-                let rem: number = !isGroupAdaptive(this.parent) ? this.count % bSize : (gObj.vcRows.length % bSize);
-                let size: number = !isGroupAdaptive(this.parent) && block in this.vgenerator.cache ?
-                    tmp * this.parent.getRowHeight() : rem && block === total ? rem * this.parent.getRowHeight() : this.getBlockHeight();
+        let blocks: number[] = Array.apply(null, Array(total)).map(() => ++row);
+        for (let i: number = 0; i < blocks.length; i++) {
+            let tmp: number = (this.vgenerator.cache[blocks[i]] || []).length;
+            let rem: number = !isGroupAdaptive(this.parent) ? this.count % bSize : (gObj.vcRows.length % bSize);
+            let size: number = !isGroupAdaptive(this.parent) && blocks[i] in this.vgenerator.cache ?
+                tmp * this.parent.getRowHeight() : rem && blocks[i] === total ? rem * this.parent.getRowHeight() :
+                this.getBlockHeight();
                 // let size: number = this.parent.groupSettings.columns.length && block in this.vgenerator.cache ?
                 // tmp * getRowHeight() : this.getBlockHeight();
-                this.offsets[block] = (this.offsets[block - 1] | 0) + size;
-                this.tmpOffsets[block] = this.offsets[block - 1] | 0;
-            });
+            this.offsets[blocks[i]] = (this.offsets[blocks[i] - 1] | 0) + size;
+            this.tmpOffsets[blocks[i]] = this.offsets[blocks[i] - 1] | 0;
+        }
         this.offsetKeys = Object.keys(this.offsets);
         if (isGroupAdaptive(this.parent)) {
             this.parent.vGroupOffsets = this.offsets;

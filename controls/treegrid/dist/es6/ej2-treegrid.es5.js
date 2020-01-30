@@ -2498,6 +2498,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     TreeGrid.prototype.render = function () {
+        var _this = this;
         createSpinner({ target: this.element }, this.createElement);
         this.renderModule = new Render(this);
         this.dataModule = new DataManipulation(this);
@@ -2531,6 +2532,12 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             this.wireEvents();
         }
         this.renderComplete();
+        var destroyTemplate = 'destroyTemplate';
+        var destroyTemplateFn = this.grid[destroyTemplate];
+        this.grid[destroyTemplate] = function (args) {
+            destroyTemplateFn.apply(_this.grid);
+            _this.clearTemplate(args);
+        };
         if (isBlazor() && this.isServerRendered) {
             gridObserver.on('component-rendered', this.gridRendered, this);
         }
@@ -7731,7 +7738,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         }
         var column = this.parent.grid.getColumnByIndex(+target.closest('td.e-rowcell').getAttribute('aria-colindex'));
         if (this.parent.editSettings.mode === 'Cell' && !this.isOnBatch && column && !column.isPrimaryKey &&
-            column.allowEditing && !(target.classList.contains('e-treegridexpand') ||
+            column.allowEditing && this.parent.editSettings.allowEditing && !(target.classList.contains('e-treegridexpand') ||
             target.classList.contains('e-treegridcollapse')) && this.parent.editSettings.allowEditOnDblClick) {
             this.isOnBatch = true;
             this.parent.grid.setProperties({ selectedRowIndex: args.rowIndex }, true);

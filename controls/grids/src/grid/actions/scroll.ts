@@ -1,11 +1,16 @@
 import { Browser, EventHandler } from '@syncfusion/ej2-base';
 import { addClass, removeClass } from '@syncfusion/ej2-base';
 import { formatUnit, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { IGrid, IAction, NotifyArgs } from '../base/interface';
+import { IGrid, IAction, NotifyArgs, InfiniteScrollArgs } from '../base/interface';
 import { getScrollBarWidth, getUpdateUsingRaf } from '../base/util';
-import { scroll, contentReady, uiUpdate, onEmpty, headerRefreshed, textWrapRefresh } from '../base/constant';
+import {
+    scroll, contentReady, uiUpdate, onEmpty, headerRefreshed, textWrapRefresh, dataReady,
+    refreshInfiniteModeBlocks, shareInfiniteCache, infiniteScrollListener
+} from '../base/constant';
 import { ColumnWidthService } from '../services/width-controller';
 import { Grid } from '../base/grid';
+import { Column } from '../models/column';
+import { Row } from '../models/row';
 
 /**
  * The `Scroll` module is used to handle scrolling behaviour.
@@ -20,6 +25,13 @@ export class Scroll implements IAction {
     private header: HTMLDivElement;
     private widthService: ColumnWidthService;
     private pageXY: { x: number, y: number };
+    private maxPage: number;
+    public infiniteCache: { [x: number]: Row<Column>[] } = {};
+    private isDownScroll: boolean = false;
+    private isUpScroll: boolean = false;
+    private isScroll: boolean = true;
+    private top: number;
+    private enableContinuousScroll: boolean = false;
 
     /**
      * Constructor for the Grid scrolling.
@@ -126,6 +138,9 @@ export class Scroll implements IAction {
         this.parent.on(uiUpdate, this.onPropertyChanged, this);
         this.parent.on(textWrapRefresh, this.wireEvents, this);
         this.parent.on(headerRefreshed, this.setScrollLeft, this);
+        this.parent.on(dataReady, this.onDataReady, this);
+        this.parent.on(shareInfiniteCache, this.setInfiniteCache, this);
+        this.parent.on(infiniteScrollListener, this.checkScroll, this);
     }
     /**
      * @hidden
@@ -137,6 +152,103 @@ export class Scroll implements IAction {
         this.parent.off(uiUpdate, this.onPropertyChanged);
         this.parent.off(textWrapRefresh, this.wireEvents);
         this.parent.off(headerRefreshed, this.setScrollLeft);
+        this.parent.off(dataReady, this.onDataReady);
+        this.parent.off(shareInfiniteCache, this.setInfiniteCache);
+        this.parent.off(infiniteScrollListener, this.checkScroll);
+    }
+
+    private checkScroll(args: { isScroll: boolean, top: number }): void {
+        this.isScroll = args.isScroll;
+        this.top = args.top;
+    }
+
+    private onDataReady(e: NotifyArgs): void {
+        if (!isNullOrUndefined(e.count)) {
+            this.maxPage = Math.ceil(e.count / this.parent.pageSettings.pageSize);
+        }
+    }
+
+    private setInfiniteCache(cache: { [x: number]: Row<Column>[] }): void {
+        this.infiniteCache = cache;
+    }
+
+    private infiniteScrollHandler(e: Event): void {
+        if ((e.target as HTMLElement).classList.contains('e-content') && this.parent.infiniteScrollSettings.enableScroll) {
+            let rows: Element[] = this.parent.getRows();
+            let index: number = parseInt(rows[rows.length - 1].getAttribute('aria-rowindex'), 10) + 1;
+            let prevPage: number = this.parent.pageSettings.currentPage;
+            let args: InfiniteScrollArgs;
+            let floor: number = Math.floor((e.target as HTMLElement).scrollHeight - (e.target as HTMLElement).scrollTop);
+            let round: number = Math.round((e.target as HTMLElement).scrollHeight - (e.target as HTMLElement).scrollTop);
+            let isBottom: boolean = (floor === (e.target as HTMLElement).clientHeight || round === (e.target as HTMLElement).clientHeight);
+            if (this.isScroll && isBottom && (this.parent.pageSettings.currentPage <= this.maxPage - 1 || this.enableContinuousScroll)) {
+                if (this.parent.infiniteScrollSettings.enableCache) {
+                    this.isUpScroll = false;
+                    this.isDownScroll = true;
+                    setTimeout(
+                        () => {
+                            this.isScroll = true;
+                        },
+                        600);
+                }
+                let rows: Element[] = [].slice.call(this.parent.getContent()
+                    .querySelectorAll('.e-row'));
+                let row: Element = rows[rows.length - 1];
+                let rowIndex: number = parseInt(row.getAttribute('aria-rowindex'), 10);
+                this.parent.pageSettings.currentPage = Math.ceil(rowIndex / this.parent.pageSettings.pageSize) + 1;
+                args = {
+                    requestType: 'scroll',
+                    currentPage: this.parent.pageSettings.currentPage,
+                    prevPage: prevPage,
+                    startIndex: index,
+                    direction: 'down'
+                };
+                this.makeRequest(args);
+            }
+
+            if (this.isScroll && this.parent.infiniteScrollSettings.enableCache && (e.target as HTMLElement).scrollTop === 0
+                && this.parent.pageSettings.currentPage !== 1) {
+                if (this.parent.infiniteScrollSettings.enableCache) {
+                    this.isDownScroll = false;
+                    this.isUpScroll = true;
+                    setTimeout(
+                        () => {
+                            this.isScroll = true;
+                        },
+                        600);
+                }
+                let row: Element = [].slice.call(this.parent.getContent()
+                    .querySelectorAll('.e-row'))[this.parent.pageSettings.pageSize - 1];
+                let rowIndex: number = parseInt(row.getAttribute('aria-rowindex'), 10);
+                this.parent.pageSettings.currentPage = Math.ceil(rowIndex / this.parent.pageSettings.pageSize) - 1;
+                if (this.parent.pageSettings.currentPage) {
+                    args = {
+                        requestType: 'scroll',
+                        currentPage: this.parent.pageSettings.currentPage,
+                        prevPage: prevPage,
+                        direction: 'up'
+                    };
+                    this.makeRequest(args);
+                }
+            }
+            if (this.parent.infiniteScrollSettings.enableCache && !this.isScroll && isNullOrUndefined(args)) {
+                if (this.isDownScroll || this.isUpScroll) {
+                    this.parent.getContent().firstElementChild.scrollTop = this.top;
+                }
+            }
+        }
+    }
+
+    private makeRequest(args: InfiniteScrollArgs): void {
+        if (isNullOrUndefined(this.infiniteCache[args.currentPage]) && args.direction !== 'up') {
+            this.parent.notify('model-changed', args);
+        } else {
+            setTimeout(
+                () => {
+                    this.parent.notify(refreshInfiniteModeBlocks, args);
+                },
+                100);
+        }
     }
 
     private setScrollLeft(): void {
@@ -153,6 +265,7 @@ export class Scroll implements IAction {
                 return;
             }
 
+            this.infiniteScrollHandler(e);
             let target: HTMLElement = (<HTMLElement>e.target);
             let left: number = target.scrollLeft;
             let sLimit: number = target.scrollWidth;

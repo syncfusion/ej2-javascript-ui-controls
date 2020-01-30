@@ -636,6 +636,45 @@ describe('Schedule base module', () => {
         });
     });
 
+    describe('changeCurrentView', () => {
+        let schObj: Schedule;
+        beforeAll(() => {
+            let model: ScheduleModel = {
+                height: '600px',
+                views: [
+                    { option: 'Day', isSelected: true },
+                    { option: 'Day', interval: 2, displayName: '2 Days' },
+                    { option: 'Week' },
+                    { option: 'Week', interval: 2, displayName: '2 Weeks' },
+                    { option: 'WorkWeek' },
+                    { option: 'WorkWeek', interval: 2, displayName: '2 WorkWeeks' },
+                    { option: 'Month' },
+                    { option: 'Month', interval: 2, displayName: '2 Months' }
+                ]
+            };
+            schObj = util.createSchedule(model, []);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('checking views change', () => {
+            expect(schObj.viewCollections.length).toEqual(8);
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-day');
+            schObj.changeCurrentView('Month', 1);
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-month');
+            expect((schObj.element.querySelector('.e-active-view') as HTMLElement).innerText).toContain('2 Months');
+            schObj.changeCurrentView('WorkWeek');
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-work-week');
+            expect((schObj.element.querySelector('.e-active-view') as HTMLElement).innerText).toContain('WORK WEEK');
+            schObj.changeCurrentView('Week', 1);
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-week');
+            expect((schObj.element.querySelector('.e-active-view') as HTMLElement).innerText).toContain('2 WEEKS');
+        });
+    });
+
     describe('Event Settings', () => {
         let schObj: Schedule;
         let eventObj: Object[] = [{

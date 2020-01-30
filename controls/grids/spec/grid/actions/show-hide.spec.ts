@@ -13,8 +13,10 @@ import { Column } from '../../../src/grid/models/column';
 import { data } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { Resize } from '../../../src/grid/actions/resize';
+import { RowDD } from '../../../src/grid/actions/row-reorder';
 
-Grid.Inject(Filter, Freeze);
+Grid.Inject(Filter, Freeze, Resize, RowDD);
 
 describe('ShowHide module testing', () => {
 
@@ -653,6 +655,51 @@ describe('ShowHide module testing', () => {
 
         afterAll(() => {
             destroy(gridObj);
+        });
+    });
+    describe('EJ2-35609-Hide Column with resizing and row drag and drop', () => {
+        let grid: Grid;
+        let rows: HTMLTableRowElement;
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    allowReszing:true,
+                    allowRowDragAndDrop:true,
+                    columns: [
+                        {
+                            field: 'OrderID', headerText: 'Order ID', headerTextAlign: 'Right',
+                            textAlign: 'Right', visible: false
+                        },
+                        { field: 'Verified', displayAsCheckbox: true, type: 'boolean' },
+                        { field: 'Freight', format: 'C1' },
+                        { field: 'OrderDate', format: 'yMd' },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right' }
+                    ]
+                },
+                () => {
+                    grid.hideColumns(['OrderID'], 'field');
+                    done();
+                }
+            );
+        });
+        it('check TH/TD visiblity', () => {
+            rows = (grid.getHeaderTable() as any).tHead.rows[0] as HTMLTableRowElement;
+            expect(rows.cells[1].classList.contains('e-hide')).toBeTruthy();
+            rows = ((grid.getContentTable() as any).tBodies[0] as HTMLTableElement).rows[0] as HTMLTableRowElement;
+            expect(rows.cells[1].style.display).toBe('none');
+        });
+
+        it('check colgroup->col visiblity', () => {
+            let col: HTMLTableColElement = <HTMLTableColElement>(<HTMLTableElement>grid.getHeaderTable()).children[0].children[1];
+            expect(col.style.display).toBe('none');
+            col = <HTMLTableColElement>(<HTMLTableElement>grid.getContentTable()).children[0].children[1];
+            expect(col.style.display).toBe('none');
+        });
+
+
+        afterAll(() => {
+            destroy(grid);
+            rows = null;
         });
     });
 

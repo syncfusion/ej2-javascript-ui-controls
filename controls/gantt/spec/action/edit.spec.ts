@@ -344,5 +344,37 @@ describe('Gantt Edit support', () => {
             ganttObj.dataBind();
             expect(ganttObj.flatData.length).toBe(3);
         });
+        it('Rendering Parent milestone on load time', () => {
+            var datasource: object[] = [
+                {
+                    TaskID: 1,
+                    TaskName: 'Parent Task',                
+                    subtasks: [
+                        { TaskID: 2, TaskName: 'Child Task 1', StartDate: new Date('04/02/2019'), Duration: 0},
+                        { TaskID: 3, TaskName: 'Child Task 2', StartDate: new Date('04/02/2019'), Duration: 0 }
+                    ]
+                }
+            ];
+            ganttObj.dataSource = datasource;
+            ganttObj.dataBind();
+            expect(ganttObj.flatData[0].ganttProperties.isMilestone).toBe(true);
+        });
+        it('Rendering Parent milestone on editing', () => {
+            var datasource: object[] = [
+                {
+                    TaskID: 1,
+                    TaskName: 'Parent Task',                
+                    subtasks: [
+                        { TaskID: 2, TaskName: 'Child Task 1', StartDate: new Date('04/02/2019'), Duration: 1}
+                    ]
+                }
+            ];
+            ganttObj.dataSource = datasource;
+            ganttObj.dataBind();
+            expect(ganttObj.flatData[0].ganttProperties.isMilestone).toBe(false);
+            let data: object[] = [ { TaskID: 2, TaskName: 'Child Task 1', StartDate: new Date('04/02/2019'), Duration: 0}];
+            ganttObj.editModule.updateRecordByID(data[0]);
+            expect(ganttObj.flatData[0].ganttProperties.isMilestone).toBe(true);
+        });
     });
 });

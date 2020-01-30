@@ -122,9 +122,9 @@ export class VerticalView extends ViewBase implements IRenderer {
             }
         }
     }
-    public scrollToHour(hour: string): void {
+    public scrollToHour(hour: string, scrollDate?: Date): void {
         let date: Date = this.parent.getStartEndTime(hour);
-        if (isNullOrUndefined(date)) {
+        if (isNullOrUndefined(date) || !isNullOrUndefined(scrollDate)) {
             return;
         }
         this.getScrollableElement().scrollTop = this.getTopFromDateTime(date);

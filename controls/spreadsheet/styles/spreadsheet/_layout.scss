@@ -1,7 +1,7 @@
 @import '../ribbon/mixin.scss';
 @include export-module('spreadsheet-layout') {
   /*! spreadsheet layout */
-  .e-spreadsheet {
+  #{&}.e-spreadsheet {
     display: block;
     user-select: none;
 
@@ -175,10 +175,6 @@
       & .e-virtualtrack {
         position: relative;
       }
-
-      & .e-row.e-hide {
-        height: 0 !important; // sass-lint:disable-line no-important
-      }
     }
 
     & .e-table {
@@ -299,10 +295,6 @@
 
       &.e-hide-headers .e-main-panel {
         height: 100%;
-      }
-
-      & colgroup .e-hide {
-        width: 0 !important; // sass-lint:disable-line no-important
       }
     }
 
@@ -461,10 +453,6 @@
               }
             }
 
-            &:nth-child(2) {
-              border-left: $spreadsheet-border;
-            }
-
             @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
               &.e-active .e-text-wrap::before {
                 border-width: 0;
@@ -474,6 +462,10 @@
 
           & .e-indicator {
             z-index: 1;
+          }
+
+          & .e-toolbar-items {
+            border-left: $spreadsheet-border;
           }
         }
 
@@ -490,7 +482,7 @@
     }
 
     .e-hide {
-      display: none;
+      display: none !important; // sass-lint:disable-line no-important
     }
 
     .e-selection {

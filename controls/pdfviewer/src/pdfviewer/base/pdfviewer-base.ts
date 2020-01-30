@@ -757,6 +757,9 @@ export class PdfViewerBase {
             if (this.pdfViewer.toolbarModule) {
                 this.pdfViewer.annotationModule.stickyNotesAnnotationModule.initializeAcccordionContainer();
             }
+            if (this.pdfViewer.isCommandPanelOpen) {
+                this.pdfViewer.annotation.showCommentsPanel();
+            }
             this.pdfViewer.annotationModule.stickyNotesAnnotationModule.createRequestForComments();
         }
         // tslint:disable-next-line:max-line-length
@@ -3235,7 +3238,7 @@ export class PdfViewerBase {
             if (canvas1) {
                 let bounds: ClientRect = canvas1.getBoundingClientRect();
                 renderAdornerLayer(bounds, commonStyle, canvas1, pageIndex, this.pdfViewer);
-                this.pdfViewer.renderSelector(pageIndex);
+                this.pdfViewer.renderSelector(pageIndex, this.pdfViewer.annotationSelectorSettings);
             }
         }
         if (this.pdfViewer.annotationModule) {
@@ -3982,7 +3985,12 @@ export class PdfViewerBase {
                 tileCount = pageWidth / defaultWidth;
             }
             // tslint:disable-next-line:radix
-            return parseInt(tileCount.toFixed());
+            let tileValue: number = parseInt(tileCount.toFixed());
+            if (tileValue <= 0) {
+                return 1;
+            } else {
+                return tileValue;
+            }
         } else {
             return 1;
         }

@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 17.4.46 (2020-01-30)
+
+### Dialog
+
+#### New Features
+
+- `#256585` - Provided the new event `destroyed` that triggers when the component of the dialog is destroyed.
+
+#### Bug Fixes
+
+- `#150796` -  The issue with the parent element that is scrolled after reaching the end of the modal dialog has been resolved.
+
 ## 17.3.29 (2019-11-26)
 
 ### Dialog

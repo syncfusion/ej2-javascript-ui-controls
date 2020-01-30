@@ -101,6 +101,14 @@ export class BasicFormulas {
         },
         {
             formulaName: 'RANDBETWEEN', category: 'Math & Trig', description: 'Returns an integer random number in a specified range.'
+        },
+        {
+            formulaName: 'SLOPE', category: 'Statistical',
+            description: 'Returns the slope of the line from linear regression of the data points.'
+        },
+        {
+            formulaName: 'INTERCEPT', category: 'Statistical',
+            description: 'Calculates the point of the Y-intercept line via linear regression.'
         }
     ];
     private isConcat: boolean = false;
@@ -1202,6 +1210,98 @@ export class BasicFormulas {
         } else {
             return max - min === 1 ? Math.round((Math.random() * (max - min)) + min) : Math.floor(Math.random() * (max - (min - 1))) + min;
         }
+    }
+
+    /** @hidden */
+    public ComputeSLOPE(...range: string[]): string | number {
+        let argArr: string[] = range;
+        if (argArr.length !== 2 || argArr[0] === '') {
+            return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
+        }
+        let yPoints: string[];
+        let xPoints: string[];
+        let xPointsRange: string | string[] = this.parent.getCellCollection(argArr[1].split(this.parent.tic).join(''));
+        let yPointsRange: string | string[] = this.parent.getCellCollection(argArr[0].split(this.parent.tic).join(''));
+        if (yPointsRange.length !== xPointsRange.length) {
+            return this.parent.getErrorStrings()[CommonErrors.na];
+        }
+        yPoints = this.getDataCollection(yPointsRange);
+        xPoints = this.getDataCollection(xPointsRange);
+        if (xPoints.indexOf('#NAME?') > -1 || yPoints.indexOf('#NAME?') > -1) {
+            return this.parent.getErrorStrings()[CommonErrors.name];
+        }
+        let sumXY: number = 0;
+        let sumX2: number = 0;
+        let sumX: number = 0;
+        let sumY: number = 0;
+        for (let i: number = 0, len: number = xPoints.length; i < len; ++i) {
+            if (Number(xPoints[i]).toString() !== 'NaN' && Number(yPoints[i]).toString() !== 'NaN') {
+                sumXY += Number(xPoints[i]) * Number(yPoints[i]);
+                sumX += Number(xPoints[i]);
+                sumY += Number(yPoints[i]);
+                sumX2 += Number(xPoints[i]) * Number(xPoints[i]);
+            }
+        }
+        if ((sumXY - sumX * sumY) === 0 || (sumX2 - sumX * sumX) === 0) {
+            this.parent.getErrorStrings()[CommonErrors.divzero];
+        }
+        let result: string = ((sumXY - sumX * sumY / xPoints.length) / (sumX2 - sumX * sumX / xPoints.length)).toString();
+        if (result === 'NaN') {
+            return this.parent.getErrorStrings()[CommonErrors.divzero];
+        }
+        return result;
+    }
+
+    /** @hidden */
+    public ComputeINTERCEPT(...range: string[]): string | number {
+        let argArr: string[] = range;
+        if (argArr[0] === '' || argArr.length !== 2) {
+            return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
+        }
+        let xValues: string[];
+        let yValues: string[];
+        let yValuesRange: string | string[] = this.parent.getCellCollection(argArr[0].split(this.parent.tic).join(''));
+        let xValuesRange: string | string[] = this.parent.getCellCollection(argArr[1].split(this.parent.tic).join(''));
+        if (yValuesRange.length !== xValuesRange.length) {
+            return this.parent.getErrorStrings()[CommonErrors.na];
+        }
+        xValues = this.getDataCollection(xValuesRange);
+        yValues = this.getDataCollection(yValuesRange);
+        if (xValues.indexOf('#NAME?') > -1 || yValues.indexOf('#NAME?') > -1) {
+            return this.parent.getErrorStrings()[CommonErrors.name];
+        }
+        let sumX: number = 0;
+        let sumY: number = 0;
+        for (let i: number = 0, len: number = xValues.length; i < len; ++i) {
+            sumX += Number(xValues[i]);
+            sumY += Number(yValues[i]);
+        }
+        sumX = sumX / xValues.length;
+        sumY = sumY / xValues.length;
+        let sumXY: number = 0;
+        let sumX2: number = 0;
+        let diff: number;
+        for (let i: number = 0, len: number = xValues.length; i < len; ++i) {
+            diff = Number(xValues[i]) - sumX;
+            sumXY += diff * (Number(yValues[i]) - sumY);
+            sumX2 += diff * diff;
+        }
+        let result: string = (sumY - sumXY / sumX2 * sumX).toString();
+        if ((sumY - sumXY) === 0 || (sumX2 * sumX) === 0) {
+            this.parent.getErrorStrings()[CommonErrors.divzero];
+        }
+        if (result === 'NaN') {
+            return this.parent.getErrorStrings()[CommonErrors.divzero];
+        }
+        return result;
+    }
+
+    private getDataCollection(cells: string[] | string): string[] {
+        let cellsData: string[] = [];
+        for (let i: number = 0, len: number = cells.length; i < len; i++) {
+            cellsData.push(this.parent.getValueFromArg(cells[i]));
+        }
+        return cellsData;
     }
 
     protected getModuleName(): string {

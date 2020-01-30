@@ -1,15 +1,16 @@
 /// <reference path='../../workbook/base/workbook-model.d.ts'/>
-import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclaration, EventHandler, Event } from '@syncfusion/ej2-base';
-import { addClass, removeClass, EmitType, Complex, formatUnit, detach, L10n, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
-import { MenuItemModel, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
+import { Property, NotifyPropertyChanges, INotifyPropertyChanged, ModuleDeclaration, Event, setStyleAttribute } from '@syncfusion/ej2-base';
+import { addClass, removeClass, EmitType, Complex, formatUnit, L10n, isNullOrUndefined, Browser, EventHandler } from '@syncfusion/ej2-base';
+import { detach, select } from '@syncfusion/ej2-base';
+import { MenuItemModel, BeforeOpenCloseMenuEventArgs, ItemModel } from '@syncfusion/ej2-navigations';
 import { initialLoad, mouseDown, spreadsheetDestroyed, keyUp, BeforeOpenEventArgs, hideShowRow, performUndoRedo } from '../common/index';
-import { HideShowEventArgs, sheetNameUpdate, updateUndoRedoCollection, getUpdateUsingRaf } from '../common/index';
-import { actionEvents, collaborativeUpdate, CollaborativeEditArgs, keyDown } from '../common/index';
-import { getSiblingsHeight, ICellRenderer, colWidthChanged, rowHeightChanged } from '../common/index';
+import { HideShowEventArgs, sheetNameUpdate, updateUndoRedoCollection, getUpdateUsingRaf, setAutoFit } from '../common/index';
+import { actionEvents, collaborativeUpdate, CollaborativeEditArgs, keyDown, enableFileMenuItems } from '../common/index';
+import { getSiblingsHeight, ICellRenderer, colWidthChanged, rowHeightChanged, hideRibbonTabs } from '../common/index';
 import { defaultLocale, locale, setAriaOptions, setResize, updateToggleItem, initiateFilterUI, clearFilter } from '../common/index';
-import { CellEditEventArgs, CellSaveEventArgs, ribbon, formulaBar, sheetTabs, formulaOperation } from '../common/index';
-import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, selectRange } from '../common/index';
-import { cut, copy, paste, PasteSpecialType, dialog, editOperation, activeSheetChanged } from '../common/index';
+import { CellEditEventArgs, CellSaveEventArgs, ribbon, formulaBar, sheetTabs, formulaOperation, addRibbonTabs } from '../common/index';
+import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, selectRange, addToolbarItems } from '../common/index';
+import { cut, copy, paste, PasteSpecialType, dialog, editOperation, activeSheetChanged, refreshFormulaDatasource } from '../common/index';
 import { Render } from '../renderer/render';
 import { Scroll, VirtualScroll, Edit, CellFormat, Selection, KeyboardNavigation, KeyboardShortcut } from '../actions/index';
 import { Clipboard, ShowHide, UndoRedo, SpreadsheetHyperlink } from '../actions/index';
@@ -18,7 +19,7 @@ import { Dialog, ActionEvents } from '../services/index';
 import { ServiceLocator } from '../../workbook/services/index';
 import { SheetModel, getColumnsWidth, getSheetIndex, WorkbookHyperlink, HyperlinkModel, DefineNameModel } from './../../workbook/index';
 import { BeforeHyperlinkArgs, AfterHyperlinkArgs } from './../../workbook/common/interface';
-import { activeCellChanged, BeforeCellFormatArgs, afterHyperlinkCreate } from './../../workbook/index';
+import { activeCellChanged, BeforeCellFormatArgs, afterHyperlinkCreate, getColIndex } from './../../workbook/index';
 import { BeforeSaveEventArgs, SaveCompleteEventArgs } from './../../workbook/index';
 import { getSheetNameFromAddress, DataBind, CellModel, beforeHyperlinkCreate } from './../../workbook/index';
 import { BeforeSortEventArgs, SortOptions, sortComplete, SortEventArgs } from './../../workbook/index';
@@ -36,6 +37,7 @@ import { RefreshValueArgs, Ribbon, FormulaBar, SheetTabs, Open, ContextMenu, Sav
 import { Sort, Filter } from '../integrations/index';
 import { isNumber, getColumn, WorkbookFilter } from '../../workbook/index';
 import { PredicateModel } from '@syncfusion/ej2-grids';
+import { RibbonItemModel } from '../../ribbon/index';
 
 /**
  * Represents the Spreadsheet component. 
@@ -936,6 +938,85 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     }
 
     /**
+     * This method is used to autofit the range of rows or columns
+     * @param {string} range - range that needs to be autofit. 
+     * 
+     * ```html
+     * <div id='Spreadsheet'></div>
+     * ```
+     * ```typescript
+     * let spreadsheet = new Spreadsheet({
+     *      allowResizing: true
+     * ...
+     * }, '#Spreadsheet');
+     * spreadsheet.autoFit('A:D'); // Auto fit from A to D columns
+     * Spreadsheet.autoFit('1:4'); // Auto fit from 1 to 4 rows
+     * 
+     * ```
+     */
+    public autoFit(range: string): void {
+        let values: { startIdx: number, endIdx: number, isCol: boolean } = this.getIndexes(range);
+        let startIdx: number = values.startIdx;
+        let endIdx: number = values.endIdx;
+        let isCol: boolean = values.isCol;
+        let maximumColInx: number = isCol ? getColIndex('XFD') : 1048576;
+        if (startIdx <= maximumColInx) {
+            if (endIdx > maximumColInx) {
+                endIdx = maximumColInx;
+            }
+        } else {
+            return;
+        }
+        for (startIdx; startIdx <= endIdx; startIdx++) {
+            this.notify(setAutoFit, { idx: startIdx, isCol });
+        }
+    }
+
+    private getIndexes(range: string): { startIdx: number, endIdx: number, isCol: boolean } {
+        let startIsCol: boolean;
+        let endIsCol: boolean;
+        let start: string;
+        let end: string;
+        let isCol: boolean;
+        if (range.indexOf(':') !== -1) {
+            let starttoend: string[] = range.split(':');
+            start = starttoend[0];
+            end = starttoend[1];
+        } else {
+            start = range;
+            end = range;
+        }
+        if (!isNullOrUndefined(start)) {
+            let startValues: { address: string, isCol: boolean } = this.getAddress(start);
+            start = startValues.address;
+            startIsCol = startValues.isCol;
+        }
+        if (!isNullOrUndefined(end)) {
+            let endValues: { address: string, isCol: boolean } = this.getAddress(end);
+            end = endValues.address;
+            endIsCol = endValues.isCol;
+        }
+        isCol = startIsCol === true && endIsCol === true ? true : false;
+        let startIdx: number = isCol ? getColIndex(start.toUpperCase()) : parseInt(start, 10);
+        let endIdx: number = isCol ? getColIndex(end.toUpperCase()) : parseInt(end, 10);
+        return { startIdx: startIdx, endIdx: endIdx, isCol: isCol };
+    }
+
+    private getAddress(address: string): { address: string, isCol: boolean } {
+        let isCol: boolean;
+        if (address.substring(0, 1).match(/\D/g)) {
+            isCol = true;
+            address = address.replace(/[0-9]/g, '');
+            return { address: address, isCol: isCol };
+        } else if (address.substring(0, 1).match(/[0-9]/g) && address.match(/\D/g)) {
+            return { address: '', isCol: false };
+        } else {
+            address = (parseInt(address, 10) - 1).toString();
+            return { address: address, isCol: isCol };
+        }
+    }
+
+    /**
      * To add the hyperlink in the cell 
      * @param {string | HyperlinkModel} hyperlink
      * @param {string} address
@@ -971,7 +1052,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                     }
                     delete (cellMod.hyperlink);
                     if (sheet === this.getActiveSheet()) {
-                        let eleRowIdx: number ;
+                        let eleRowIdx: number;
                         let eleColIdx: number;
                         if (this.scrollSettings.enableVirtualization) {
                             eleRowIdx = rowIdx - this.viewport.topIndex;
@@ -1025,10 +1106,10 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                     value = hyperlink.address;
                 }
                 let mCell: CellModel = sheet.rows[cellIdx[0]].cells[cellIdx[1]];
-                if (displayText !== '' ) {
+                if (displayText !== '') {
                     mCell.value = displayText;
-                } else if (isNullOrUndefined(mCell.value) || mCell.value === '' ) {
-                  isEmpty = true;
+                } else if (isNullOrUndefined(mCell.value) || mCell.value === '') {
+                    isEmpty = true;
                 }
                 if (!isMethod) {
                     this.trigger(afterHyperlinkCreate, aftArgs);
@@ -1149,7 +1230,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         address = address || this.getActiveSheet().activeCell;
         super.updateCell(cell, address);
         this.serviceLocator.getService<ICellRenderer>('cell').refreshRange(getIndexesFromAddress(address));
-        this.notify(activeCellChanged, {});
+        this.notify(activeCellChanged, null);
     }
 
     /**
@@ -1244,6 +1325,34 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             }
         }
         return [startIdx, endIdx];
+    }
+
+    /** @hidden */
+    public updateActiveBorder(nextTab: HTMLElement, selector: string = '.e-ribbon'): void {
+        let indicator: HTMLElement = select(`${selector} .e-tab-header .e-indicator`, this.element) as HTMLElement;
+        indicator.style.display = 'none';
+        setStyleAttribute(indicator, { 'left': '', 'right': '' });
+        setStyleAttribute(indicator, { 'left': nextTab.offsetLeft + 'px', 'right':
+            nextTab.parentElement.offsetWidth - (nextTab.offsetLeft + nextTab.offsetWidth) + 'px' });
+        indicator.style.display = '';
+    }
+
+    /** @hidden */
+    public skipHiddenSheets(index: number, initIdx?: number, hiddenCount: number = 0): number {
+        if (this.sheets[index] && this.sheets[index].state !== 'Visible') {
+            if (initIdx === undefined) { initIdx = index; }
+            if (index && index + 1 === this.sheets.length) {
+                index =  initIdx - 1;
+            } else {
+                index < initIdx ? index-- : index++;
+            }
+            index = this.skipHiddenSheets(index, initIdx, ++hiddenCount);
+        }
+        if (hiddenCount === this.sheets.length) {
+            this.sheets[0].state = 'Visible'; this.setProperties({ 'sheets': this.sheets }, true);
+            return 0;
+        }
+        return index;
     }
 
     /**
@@ -1373,6 +1482,46 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     }
 
     /**
+     * To enable / disable file menu items.
+     * @param {string[]} items - Items that needs to be enabled / disabled.
+     * @param {boolean} enable - Set `true` / `false` to enable / disable the menu items.
+     * @param {boolean} isUniqueId - Set `true` if the given `text` is a unique id.
+     */
+    public enableFileMenuItems(items: string[], enable: boolean = true): void {
+        this.notify(enableFileMenuItems, { items: items, enable: enable });
+    }
+
+    /**
+     * To show/hide the existing ribbon tabs.
+     * @param {string[]} tabs - Specifies the tab header text which is to be show/hide.
+     * @param {boolean} hide - Set `true` / `false` to hide / show the ribbon tabs.
+     */
+    public hideRibbonTabs(tabs: string[], hide: boolean = true): void {
+        this.notify(hideRibbonTabs, { tabs: tabs, hide: hide });
+    }
+
+    /**
+     * To add custom ribbon tabs.
+     * @param {RibbonItemModel[]} items - Specifies the ribbon tab items to be inserted.
+     * @param {string} insertBefore? - specifies the existing ribbon header text before which the new tabs will be inserted.
+     * If not specified, the new tabs will be inserted at the end.
+     */
+    public addRibbonTabs(items: RibbonItemModel[], insertBefore?: string): void {
+        this.notify(addRibbonTabs, { items: items, insertBefore: insertBefore });
+    }
+
+    /**
+     * To add the custom items in Spreadsheet ribbon toolbar.
+     * @param {string} tab - Specifies the ribbon tab header text under which the specified items will be inserted.
+     * @param {ItemModel[]} items - specifies the ribbon toolbar items that needs to be inserted.
+     * @param {number} index? - specifies the index text before which the new items will be inserted.
+     * If not specified, the new items will be inserted at the end of the toolbar.
+     */
+    public addToolbarItems(tab: string, items: ItemModel[], index?: number): void {
+        this.notify(addToolbarItems, { tab: tab, items: items, index: index });
+    }
+
+    /**
      * Selects the cell / range of cells with specified address.
      * @param {string} address - Specifies the range address.
      */
@@ -1465,6 +1614,10 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
                                 idx: sheetIdx
                             });
                         }
+                        if (newProp.sheets[sheetIdx].rangeSettings) {
+                            this.sheets[sheetIdx].rangeSettings = newProp.sheets[sheetIdx].rangeSettings;
+                            this.renderModule.refreshSheet();
+                        }
                     });
                     break;
                 case 'locale':
@@ -1516,5 +1669,15 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      */
     public applyFilter(predicates?: PredicateModel[], range?: string): void {
         this.notify(initiateFilterUI, { predicates: predicates, range: range });
+    }
+
+    /**
+     * To add custom library function.
+     * @param {string} functionHandler - Custom function handler name
+     * @param {string} functionName - Custom function name
+     */
+    public addCustomFunction(functionHandler: string | Function, functionName?: string): void {
+        super.addCustomFunction(functionHandler, functionName);
+        this.notify(refreshFormulaDatasource, null);
     }
 }

@@ -3896,7 +3896,8 @@ class PivotEngine {
             !rows[rln].showSubTotals) || !this.showSubTotals || !this.showRowSubTotals));
         let formattedText = subTotal ?
             '' : (value === undefined) ? this.emptyCellTextContent :
-            aggregate === 'Count' ? value.toLocaleString() : this.getFormattedValue(value, field).formattedText;
+            (aggregate === 'Count' || aggregate === 'DistinctCount') ? value.toLocaleString() :
+                this.getFormattedValue(value, field).formattedText;
         if (!isNaN(value) && !isNullOrUndefined(value) &&
             (['PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal']).indexOf(aggregate) >= 0) {
             formattedText = this.globalize.formatNumber(value, { format: 'P', maximumFractionDigits: 2 });
@@ -4029,10 +4030,13 @@ class PivotEngine {
                 if (columnIndex[rowIndex[ri]] !== undefined) {
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
                     isValueExist = true;
-                    let currentVal = this.valueMatrix[rowIndex[ri]][value];
-                    if (!isNullOrUndefined(currentVal)) {
+                    let val = (this.data[rowIndex[ri]][this.fields[value]]);
+                    let currentVal;
+                    // let currentVal: number = this.valueMatrix[rowIndex[ri]][value];
+                    if (!isNullOrUndefined(val)) {
+                        currentVal = val.toString();
                         if (duplicateValues.length === 0 || (duplicateValues.length > 0 && duplicateValues.indexOf(currentVal) === -1)) {
-                            cellValue += this.allowDataCompression ? currentVal : 1;
+                            cellValue += (this.allowDataCompression && typeof val === 'number') ? val : 1;
                             duplicateValues.push(currentVal);
                         }
                     }
@@ -4313,6 +4317,8 @@ const enginePopulating = 'enginePopulating';
 const enginePopulated = 'enginePopulated';
 /** @hidden */
 const onFieldDropped = 'onFieldDropped';
+/** @hidden */
+const fieldDrop = 'fieldDrop';
 /** @hidden */
 const beforePivotTableRender = 'beforePivotTableRender';
 /** @hidden */
@@ -5074,6 +5080,7 @@ class AggregateMenu {
      * @hidden
      */
     constructor(parent) {
+        this.menuInfo = [];
         this.parent = parent;
     }
     /**
@@ -5086,49 +5093,63 @@ class AggregateMenu {
         this.openContextMenu(args);
     }
     openContextMenu(args) {
-        if (this.menuInfo === undefined) {
-            this.createContextMenu();
+        let fieldName = args.target.parentElement.id;
+        let isStringField = this.parent.engineModule.fieldList[fieldName].type !== 'number' ? 1 : 0;
+        if (isNullOrUndefined(this.menuInfo[isStringField])) {
+            this.createContextMenu(isStringField);
         }
         this.currentMenu = args.currentTarget;
         let pos = this.currentMenu.getBoundingClientRect();
         if (this.parent.enableRtl) {
-            this.menuInfo.open(pos.top, pos.left - 105);
+            this.menuInfo[isStringField].open(pos.top + (isStringField ? window.scrollY || document.documentElement.scrollTop : 0), pos.left - 105);
         }
         else {
-            this.menuInfo.open(pos.top, pos.left);
+            this.menuInfo[isStringField].open(pos.top + (isStringField ? window.scrollY || document.documentElement.scrollTop : 0), pos.left);
         }
     }
-    createContextMenu() {
-        let menuItems = [
-            { text: this.parent.localeObj.getConstant('Sum'), id: this.parent.element.id + '_Sum' },
-            { text: this.parent.localeObj.getConstant('Count'), id: this.parent.element.id + '_Count' },
-            { text: this.parent.localeObj.getConstant('DistinctCount'), id: this.parent.element.id + '_DistinctCount' },
-            { text: this.parent.localeObj.getConstant('Product'), id: this.parent.element.id + '_Product' },
-            { text: this.parent.localeObj.getConstant('Avg'), id: this.parent.element.id + '_Avg' },
-            { text: this.parent.localeObj.getConstant('Min'), id: this.parent.element.id + '_Min' },
-            { text: this.parent.localeObj.getConstant('Max'), id: this.parent.element.id + '_Max' },
-            { text: this.parent.localeObj.getConstant('MoreOption'), id: this.parent.element.id + '_MoreOption' }
-        ];
-        let menuOptions = {
-            items: menuItems,
+    createContextMenu(isStringField) {
+        let menuItems = [];
+        if (isStringField) {
+            menuItems[isStringField] = [
+                { text: this.parent.localeObj.getConstant('Count'), id: this.parent.element.id + 'StringMenu_Count' },
+                { text: this.parent.localeObj.getConstant('DistinctCount'),
+                    id: this.parent.element.id + 'StringMenu_DistinctCount'
+                }
+            ];
+        }
+        else {
+            menuItems[isStringField] = [
+                { text: this.parent.localeObj.getConstant('Sum'), id: this.parent.element.id + '_Sum' },
+                { text: this.parent.localeObj.getConstant('Count'), id: this.parent.element.id + '_Count' },
+                { text: this.parent.localeObj.getConstant('DistinctCount'), id: this.parent.element.id + '_DistinctCount' },
+                { text: this.parent.localeObj.getConstant('Product'), id: this.parent.element.id + '_Product' },
+                { text: this.parent.localeObj.getConstant('Avg'), id: this.parent.element.id + '_Avg' },
+                { text: this.parent.localeObj.getConstant('Min'), id: this.parent.element.id + '_Min' },
+                { text: this.parent.localeObj.getConstant('Max'), id: this.parent.element.id + '_Max' },
+                { text: this.parent.localeObj.getConstant('MoreOption'), id: this.parent.element.id + '_MoreOption' }
+            ];
+        }
+        let menuOptions;
+        menuOptions = {
+            items: menuItems[isStringField],
             enableRtl: this.parent.enableRtl,
-            beforeOpen: this.beforeMenuOpen.bind(this),
+            beforeOpen: this.beforeMenuOpen.bind(this, isStringField),
             select: this.selectOptionInContextMenu.bind(this)
         };
-        let removeContextMenu = document.getElementById(this.parent.element.id + 'valueFieldContextMenu');
+        let removeContextMenu = document.getElementById(this.parent.element.id + isStringField ? 'valueFieldStringContextMenu' : 'valueFieldContextMenu');
         if (removeContextMenu !== null) {
             removeContextMenu.innerHTML = '';
         }
         let contextMenu = createElement('ul', {
-            id: this.parent.element.id + 'valueFieldContextMenu'
+            id: this.parent.element.id + (isStringField ? 'valueFieldStringContextMenu' : 'valueFieldContextMenu')
         });
         this.parent.element.appendChild(contextMenu);
-        this.menuInfo = new ContextMenu$1(menuOptions);
-        this.menuInfo.isStringTemplate = true;
-        this.menuInfo.appendTo(contextMenu);
+        this.menuInfo[isStringField] = new ContextMenu$1(menuOptions);
+        this.menuInfo[isStringField].isStringTemplate = true;
+        this.menuInfo[isStringField].appendTo(contextMenu);
     }
-    beforeMenuOpen(args) {
-        args.element.style.zIndex = (this.menuInfo.element.style.zIndex + 3).toString();
+    beforeMenuOpen(isString, args) {
+        args.element.style.zIndex = (this.menuInfo[isString].element.style.zIndex + 3).toString();
         args.element.style.display = 'inline';
     }
     /** @hidden */
@@ -5328,7 +5349,7 @@ class AggregateMenu {
     selectOptionInContextMenu(menu) {
         if (menu.item.text !== null) {
             let buttonElement = this.currentMenu.parentElement;
-            let type = menu.item.id.split(this.parent.element.id + '_')[1];
+            let type = menu.item.id.split('_').pop();
             if (type === 'MoreOption') {
                 this.createValueSettingsDialog(buttonElement, this.parentElement);
             }
@@ -5427,8 +5448,13 @@ class AggregateMenu {
         if (this.parent.isDestroyed) {
             return;
         }
-        if (this.menuInfo && !this.menuInfo.isDestroyed) {
-            this.menuInfo.destroy();
+        if (this.menuInfo) {
+            if (this.menuInfo[1] !== undefined && !this.menuInfo[1].isDestroyed) {
+                this.menuInfo[1].destroy();
+            }
+            if (this.menuInfo[0] !== undefined && !this.menuInfo[0].isDestroyed) {
+                this.menuInfo[0].destroy();
+            }
         }
         else {
             return;
@@ -6144,10 +6170,7 @@ class Render {
         this.parent.fillGridColumns(this.parent.grid.columns);
     }
     clearColumnSelection() {
-        this.parent.element.querySelectorAll('.' + CELL_ACTIVE_BGCOLOR).forEach((ele) => {
-            ele.classList.remove(CELL_ACTIVE_BGCOLOR);
-            ele.classList.remove(SELECTED_BGCOLOR);
-        });
+        removeClass(this.parent.element.querySelectorAll('.' + CELL_ACTIVE_BGCOLOR), [CELL_ACTIVE_BGCOLOR, SELECTED_BGCOLOR]);
     }
     appendValueSortIcon(cell, tCell, rCnt, cCnt) {
         if (this.parent.enableValueSorting && this.parent.dataType === 'pivot') {
@@ -8268,11 +8291,7 @@ class KeyboardInteraction {
     clearSelection() {
         let control = this.parent;
         /* tslint:disable */
-        [].slice.call(control.element.querySelectorAll('.' + CELL_SELECTED_BGCOLOR + ',.' + SELECTED_BGCOLOR)).forEach(function (ele) {
-            ele.classList.remove(SELECTED_BGCOLOR);
-            ele.classList.remove(CELL_SELECTED_BGCOLOR);
-            ele.classList.remove(CELL_ACTIVE_BGCOLOR);
-        });
+        removeClass(control.element.querySelectorAll('.' + CELL_SELECTED_BGCOLOR + ',.' + SELECTED_BGCOLOR), [SELECTED_BGCOLOR, CELL_SELECTED_BGCOLOR, CELL_ACTIVE_BGCOLOR]);
         this.parent.renderModule.selected();
         /* tslint:enable */
     }
@@ -17617,30 +17636,22 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         if ((!e.shiftKey && !e.ctrlKey) || this.gridSettings.selectionSettings.type === 'Single') {
             if (this.gridSettings.selectionSettings.mode === 'Cell') {
                 if (ele.classList.contains(COLUMNSHEADER)) {
-                    [].slice.call(this.element.querySelectorAll(('.' + ROW_CELL_CLASS + '.') + CELL_SELECTED_BGCOLOR)).forEach(function (ele) {
-                        ele.classList.remove(CELL_SELECTED_BGCOLOR);
-                    });
+                    removeClass(this.element.querySelectorAll(('.' + ROW_CELL_CLASS + '.') + CELL_SELECTED_BGCOLOR), CELL_SELECTED_BGCOLOR);
                 }
                 else {
-                    [].slice.call(this.element.querySelectorAll(('.' + COLUMNSHEADER + '.') + CELL_ACTIVE_BGCOLOR)).forEach(function (ele) {
-                        ele.classList.remove(CELL_ACTIVE_BGCOLOR);
-                        ele.classList.remove(SELECTED_BGCOLOR);
-                    });
+                    removeClass(this.element.querySelectorAll(('.' + COLUMNSHEADER + '.') + CELL_ACTIVE_BGCOLOR), [CELL_ACTIVE_BGCOLOR, SELECTED_BGCOLOR]);
                 }
             }
             else if (this.gridSettings.selectionSettings.mode === 'Both') {
                 if (ele.classList.contains(ROW_CELL_CLASS)) {
-                    [].slice.call(this.element.querySelectorAll('.' + SELECTED_BGCOLOR)).forEach(function (ele) {
+                    for (let ele of [].slice.call(this.element.querySelectorAll('.' + SELECTED_BGCOLOR))) {
                         if (Number(ele.getAttribute('index')) !== rowIndex) {
-                            ele.classList.remove(CELL_ACTIVE_BGCOLOR);
-                            ele.classList.remove(SELECTED_BGCOLOR);
+                            removeClass([ele], [CELL_ACTIVE_BGCOLOR, SELECTED_BGCOLOR]);
                         }
-                    });
+                    }
                 }
                 else {
-                    [].slice.call(this.element.querySelectorAll('.' + CELL_SELECTED_BGCOLOR)).forEach(function (ele) {
-                        ele.classList.remove(CELL_SELECTED_BGCOLOR);
-                    });
+                    removeClass(this.element.querySelectorAll('.' + CELL_SELECTED_BGCOLOR), CELL_SELECTED_BGCOLOR);
                 }
             }
         }
@@ -17694,15 +17705,14 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 activeColumns.push(cCnt.toString());
             }
             if (!isCtrl || type === 'Single') {
-                [].slice.call(this.element.querySelectorAll('.' + CELL_ACTIVE_BGCOLOR)).forEach(function (ele) {
-                    ele.classList.remove(CELL_ACTIVE_BGCOLOR);
-                    ele.classList.remove(SELECTED_BGCOLOR);
+                for (let ele of [].slice.call(this.element.querySelectorAll('.' + CELL_ACTIVE_BGCOLOR))) {
+                    removeClass([ele], [CELL_ACTIVE_BGCOLOR, SELECTED_BGCOLOR]);
                     if (activeColumns.indexOf(ele.getAttribute('aria-colindex')) === -1) {
                         isToggle = false;
                     }
                     let colIndex = Number(ele.getAttribute('aria-colindex'));
                     actColPos[colIndex] = colIndex;
-                });
+                }
                 /* tslint:disable-next-line:no-any */
                 activeColumns = Object.keys(actColPos).length > 0 ? Object.keys(actColPos).sort(function (a, b) {
                     return a - b;
@@ -17726,9 +17736,9 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             }
             let rowSelectedList = [];
             if (e.ctrlKey && this.gridSettings.selectionSettings.mode === 'Both' && type === 'Multiple' && !target.classList.contains(ROWSHEADER)) {
-                [].slice.call(this.element.querySelectorAll('.' + ROWSHEADER + '.' + CELL_SELECTED_BGCOLOR)).forEach(function (ele) {
+                for (let ele of [].slice.call(this.element.querySelectorAll('.' + ROWSHEADER + '.' + CELL_SELECTED_BGCOLOR))) {
                     rowSelectedList.push(ele.getAttribute('index'));
-                });
+                }
             }
             let count = colStart;
             while (count <= colEnd) {
@@ -17739,18 +17749,16 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             if (!isToggle) {
                 rowStart = target.classList.contains('e-headercell') ? rowStart : (this.renderModule.rowStartPos - 1);
                 let isTargetSelected = target.classList.contains(CELL_ACTIVE_BGCOLOR);
-                [].slice.call(this.element.querySelectorAll(queryStringArray.toString())).forEach(function (ele) {
+                for (let ele of [].slice.call(this.element.querySelectorAll(queryStringArray.toString()))) {
                     if (Number(ele.getAttribute('index')) >= rowStart) {
                         if (isTargetSelected && isCtrl && (rowSelectedList.indexOf(ele.getAttribute('index')) === -1)) {
-                            ele.classList.remove(CELL_ACTIVE_BGCOLOR);
-                            ele.classList.remove(SELECTED_BGCOLOR);
+                            removeClass([ele], [CELL_ACTIVE_BGCOLOR, SELECTED_BGCOLOR]);
                         }
                         else {
-                            ele.classList.add(CELL_ACTIVE_BGCOLOR);
-                            ele.classList.add(SELECTED_BGCOLOR);
+                            addClass([ele], [CELL_ACTIVE_BGCOLOR, SELECTED_BGCOLOR]);
                         }
                     }
-                });
+                }
             }
             this.renderModule.selected();
         }
@@ -17758,17 +17766,16 @@ let PivotView = PivotView_1 = class PivotView extends Component {
     getSelectedCellsPos() {
         let control = this;
         control.savedSelectedCellsPos = [];
-        [].slice.call(this.element.querySelectorAll('.' + SELECTED_BGCOLOR)).forEach(function (ele) {
+        for (let ele of [].slice.call(this.element.querySelectorAll('.' + SELECTED_BGCOLOR))) {
             control.savedSelectedCellsPos.push({ rowIndex: ele.getAttribute('index'), colIndex: ele.getAttribute('aria-colindex') });
-        });
+        }
     }
     setSavedSelectedCells() {
         let control = this;
-        [].slice.call(this.savedSelectedCellsPos).forEach(function (item) {
+        for (let item of [].slice.call(this.savedSelectedCellsPos)) {
             let query = '[aria-colindex="' + item.colIndex + '"][index="' + item.rowIndex + '"]';
-            control.element.querySelector(query).classList.add(CELL_ACTIVE_BGCOLOR);
-            control.element.querySelector(query).classList.add(SELECTED_BGCOLOR);
-        });
+            addClass([control.element.querySelector(query)], [CELL_ACTIVE_BGCOLOR, SELECTED_BGCOLOR]);
+        }
     }
     /* tslint:enable */
     renderEmptyGrid() {
@@ -18608,6 +18615,9 @@ __decorate([
 ], PivotView.prototype, "onFieldDropped", void 0);
 __decorate([
     Event()
+], PivotView.prototype, "fieldDrop", void 0);
+__decorate([
+    Event()
 ], PivotView.prototype, "dataBound", void 0);
 __decorate([
     Event()
@@ -19433,95 +19443,122 @@ class DataSourceUpdate {
      */
     updateDataSource(fieldName, droppedClass, droppedPosition) {
         let dataSourceItem;
-        if (this.control && this.btnElement && this.btnElement.getAttribute('isvalue') === 'true') {
-            switch (droppedClass) {
-                case '':
-                    this.control.setProperties({ dataSourceSettings: { values: [] } }, true);
-                    break;
-                case 'rows':
-                    this.control.setProperties({ dataSourceSettings: { valueAxis: 'row' } }, true);
-                    break;
-                case 'columns':
-                    this.control.setProperties({ dataSourceSettings: { valueAxis: 'column' } }, true);
-                    break;
-            }
-        }
-        else {
-            dataSourceItem = this.removeFieldFromReport(fieldName.toString());
-            dataSourceItem = dataSourceItem ? dataSourceItem : this.getNewField(fieldName.toString());
-            if (dataSourceItem.type === 'CalculatedField' && droppedClass !== '') {
-                droppedClass = 'values';
-            }
-        }
-        if (this.parent.dataType === 'olap') {
-            dataSourceItem = this.removeFieldFromReport(fieldName.toString());
-            dataSourceItem = dataSourceItem ? dataSourceItem : this.getNewField(fieldName.toString());
-            if (this.parent.dataSourceSettings.values.length === 0) {
-                this.removeFieldFromReport('[measures]');
-            }
-            if (dataSourceItem.type === 'CalculatedField' && droppedClass !== '') {
-                droppedClass = 'values';
-            }
-        }
-        if (this.control) {
-            let eventArgs = {
-                'droppedField': dataSourceItem, 'dataSourceSettings': this.parent.dataSourceSettings, 'droppedAxis': droppedClass
-            };
-            /* tslint:disable */
-            let dataSourceUpdate = this;
-            this.control.trigger(onFieldDropped, eventArgs, (observedArgs) => {
-                eventArgs = observedArgs;
-                if (dataSourceItem) {
-                    dataSourceItem = observedArgs.droppedField;
-                    switch (droppedClass) {
-                        case 'filters':
-                            droppedPosition !== -1 ?
-                                (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.filters.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.filters.splice(droppedPosition, 0, dataSourceItem)) :
-                                (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.filters.push(dataSourceItem) : this.parent.dataSourceSettings.filters.push(dataSourceItem));
-                            break;
-                        case 'rows':
-                            droppedPosition !== -1 ?
-                                (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.rows.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.rows.splice(droppedPosition, 0, dataSourceItem)) :
-                                (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.rows.push(dataSourceItem) : this.parent.dataSourceSettings.rows.push(dataSourceItem));
-                            break;
-                        case 'columns':
-                            droppedPosition !== -1 ?
-                                (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.columns.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.columns.splice(droppedPosition, 0, dataSourceItem)) :
-                                (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.columns.push(dataSourceItem) : this.parent.dataSourceSettings.columns.push(dataSourceItem));
-                            break;
-                        case 'values':
-                            droppedPosition !== -1 ?
-                                (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.values.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.values.splice(droppedPosition, 0, dataSourceItem)) :
-                                (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.values.push(dataSourceItem) : this.parent.dataSourceSettings.values.push(dataSourceItem));
-                            if (isBlazor()) {
-                                if (dataSourceUpdate.parent.dataType === 'olap' && !dataSourceUpdate.parent.engineModule.isMeasureAvail) {
-                                    let measureField = {
-                                        name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined
-                                    };
-                                    let fieldAxis = dataSourceUpdate.parent.dataSourceSettings.valueAxis === 'row' ?
-                                        dataSourceUpdate.parent.dataSourceSettings.rows : dataSourceUpdate.parent.dataSourceSettings.columns;
-                                    fieldAxis.push(measureField);
-                                }
-                            }
-                            else {
-                                if (this.parent.dataType === 'olap' && !this.parent.engineModule.isMeasureAvail) {
-                                    let measureField = {
-                                        name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined
-                                    };
-                                    let fieldAxis = this.parent.dataSourceSettings.valueAxis === 'row' ?
-                                        this.parent.dataSourceSettings.rows : this.parent.dataSourceSettings.columns;
-                                    fieldAxis.push(measureField);
-                                }
-                            }
-                            break;
+        let draggedClass;
+        let row = this.parent.dataSourceSettings.rows;
+        let column = this.parent.dataSourceSettings.columns;
+        let value = this.parent.dataSourceSettings.values;
+        let filter = this.parent.dataSourceSettings.filters;
+        let field = [row, column, value, filter];
+        for (let len = 0, lnt = field.length; len < lnt; len++) {
+            if (field[len]) {
+                for (let i = 0, n = field[len].length; i < n; i++) {
+                    if (field[len][i].name === fieldName || (this.parent.dataType === 'olap' &&
+                        field[len][i].name.toLowerCase() === '[measures]' && field[len][i].name.toLowerCase() === fieldName)) {
+                        draggedClass = len === 0 ? 'rows' : len === 1 ? 'columns' : len === 2 ? 'values' : 'filters';
                     }
-                    if (isBlazor()) {
-                        dataSourceUpdate.parent.control.pivotButtonModule.updateDataSource();
-                        dataSourceUpdate.parent.control.axisFieldModule.render();
+                    if (!draggedClass) {
+                        draggedClass = 'fieldList';
                     }
                 }
-            });
+            }
         }
+        let eventdrop = {
+            'droppedField': this.parent.engineModule.fieldList[fieldName.toString()], 'dataSourceSettings': this.parent.dataSourceSettings,
+            'droppedAxis': droppedClass, 'draggedAxis': draggedClass, 'cancel': false
+        };
+        this.control.trigger(fieldDrop, eventdrop, (observedArgs) => {
+            if (!observedArgs.cancel) {
+                if (this.control && this.btnElement && this.btnElement.getAttribute('isvalue') === 'true') {
+                    switch (droppedClass) {
+                        case '':
+                            this.control.setProperties({ dataSourceSettings: { values: [] } }, true);
+                            break;
+                        case 'rows':
+                            this.control.setProperties({ dataSourceSettings: { valueAxis: 'row' } }, true);
+                            break;
+                        case 'columns':
+                            this.control.setProperties({ dataSourceSettings: { valueAxis: 'column' } }, true);
+                            break;
+                    }
+                }
+                else {
+                    dataSourceItem = this.removeFieldFromReport(fieldName.toString());
+                    dataSourceItem = dataSourceItem ? dataSourceItem : this.getNewField(fieldName.toString());
+                    if (dataSourceItem.type === 'CalculatedField' && droppedClass !== '') {
+                        droppedClass = 'values';
+                    }
+                }
+                if (this.parent.dataType === 'olap') {
+                    dataSourceItem = this.removeFieldFromReport(fieldName.toString());
+                    dataSourceItem = dataSourceItem ? dataSourceItem : this.getNewField(fieldName.toString());
+                    if (this.parent.dataSourceSettings.values.length === 0) {
+                        this.removeFieldFromReport('[measures]');
+                    }
+                    if (dataSourceItem.type === 'CalculatedField' && droppedClass !== '') {
+                        droppedClass = 'values';
+                    }
+                }
+                if (this.control) {
+                    let eventArgs = {
+                        'droppedField': dataSourceItem, 'dataSourceSettings': this.parent.dataSourceSettings, 'droppedAxis': droppedClass
+                    };
+                    /* tslint:disable */
+                    let dataSourceUpdate = this;
+                    this.control.trigger(onFieldDropped, eventArgs, (observedArgs) => {
+                        eventArgs = observedArgs;
+                        if (dataSourceItem) {
+                            dataSourceItem = observedArgs.droppedField;
+                            switch (droppedClass) {
+                                case 'filters':
+                                    droppedPosition !== -1 ?
+                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.filters.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.filters.splice(droppedPosition, 0, dataSourceItem)) :
+                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.filters.push(dataSourceItem) : this.parent.dataSourceSettings.filters.push(dataSourceItem));
+                                    break;
+                                case 'rows':
+                                    droppedPosition !== -1 ?
+                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.rows.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.rows.splice(droppedPosition, 0, dataSourceItem)) :
+                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.rows.push(dataSourceItem) : this.parent.dataSourceSettings.rows.push(dataSourceItem));
+                                    break;
+                                case 'columns':
+                                    droppedPosition !== -1 ?
+                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.columns.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.columns.splice(droppedPosition, 0, dataSourceItem)) :
+                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.columns.push(dataSourceItem) : this.parent.dataSourceSettings.columns.push(dataSourceItem));
+                                    break;
+                                case 'values':
+                                    droppedPosition !== -1 ?
+                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.values.splice(droppedPosition, 0, dataSourceItem) : this.parent.dataSourceSettings.values.splice(droppedPosition, 0, dataSourceItem)) :
+                                        (isBlazor() ? dataSourceUpdate.parent.dataSourceSettings.values.push(dataSourceItem) : this.parent.dataSourceSettings.values.push(dataSourceItem));
+                                    if (isBlazor()) {
+                                        if (dataSourceUpdate.parent.dataType === 'olap' && !dataSourceUpdate.parent.engineModule.isMeasureAvail) {
+                                            let measureField = {
+                                                name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined
+                                            };
+                                            let fieldAxis = dataSourceUpdate.parent.dataSourceSettings.valueAxis === 'row' ?
+                                                dataSourceUpdate.parent.dataSourceSettings.rows : dataSourceUpdate.parent.dataSourceSettings.columns;
+                                            fieldAxis.push(measureField);
+                                        }
+                                    }
+                                    else {
+                                        if (this.parent.dataType === 'olap' && !this.parent.engineModule.isMeasureAvail) {
+                                            let measureField = {
+                                                name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined
+                                            };
+                                            let fieldAxis = this.parent.dataSourceSettings.valueAxis === 'row' ?
+                                                this.parent.dataSourceSettings.rows : this.parent.dataSourceSettings.columns;
+                                            fieldAxis.push(measureField);
+                                        }
+                                    }
+                                    break;
+                            }
+                            if (isBlazor()) {
+                                dataSourceUpdate.parent.control.pivotButtonModule.updateDataSource();
+                                dataSourceUpdate.parent.control.axisFieldModule.render();
+                            }
+                        }
+                    });
+                }
+            }
+        });
     }
     /* tslint:enable */
     /**
@@ -21578,48 +21615,74 @@ class TreeViewRenderer {
             }
             let list = this.parent.pivotFieldList;
             let selectedNode = list[id];
-            if (args.action === 'check') {
-                addClass([node.querySelector('.' + LIST_TEXT_CLASS)], LIST_SELECT_CLASS);
-                this.updateSelectedNodes(li, args.action);
-                let addNode = this.parent.pivotCommon.dataSourceUpdate.getNewField(id);
-                if (selectedNode.type === 'number' || (selectedNode.type === 'CalculatedField' &&
-                    selectedNode.formula && selectedNode.formula.indexOf('Measure') > -1 &&
-                    this.parent.dataType === 'olap')) {
-                    this.parent.dataSourceSettings.values.push(addNode);
-                    if (this.parent.dataType === 'olap' && this.parent.olapEngineModule && !(this.parent.olapEngineModule).isMeasureAvail) {
-                        let measureField = {
-                            name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined,
-                        };
-                        let fieldAxis = this.parent.dataSourceSettings.valueAxis === 'row' ?
-                            this.parent.dataSourceSettings.rows : this.parent.dataSourceSettings.columns;
-                        fieldAxis.push(measureField);
+            let eventdrop = {
+                'droppedField': selectedNode, 'dataSourceSettings': this.parent.dataSourceSettings,
+                'droppedAxis': 'rows', 'draggedAxis': 'fieldlist', 'cancel': false
+            };
+            this.parent.trigger(fieldDrop, eventdrop, (observedArgs) => {
+                if (!observedArgs.cancel) {
+                    if (args.action === 'check') {
+                        addClass([node.querySelector('.' + LIST_TEXT_CLASS)], LIST_SELECT_CLASS);
+                        this.updateSelectedNodes(li, args.action);
+                        let addNode = this.parent.pivotCommon.dataSourceUpdate.getNewField(id);
+                        if (selectedNode.type === 'number' || (selectedNode.type === 'CalculatedField' &&
+                            selectedNode.formula && selectedNode.formula.indexOf('Measure') > -1 &&
+                            this.parent.dataType === 'olap')) {
+                            this.parent.dataSourceSettings.values.push(addNode);
+                            if (this.parent.dataType === 'olap' && this.parent.olapEngineModule &&
+                                !(this.parent.olapEngineModule).isMeasureAvail) {
+                                let measureField = {
+                                    name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined,
+                                };
+                                let fieldAxis = this.parent.dataSourceSettings.valueAxis === 'row' ?
+                                    this.parent.dataSourceSettings.rows : this.parent.dataSourceSettings.columns;
+                                fieldAxis.push(measureField);
+                            }
+                        }
+                        else {
+                            this.parent.dataSourceSettings.rows.push(addNode);
+                        }
                     }
+                    else {
+                        removeClass([node.querySelector('.' + LIST_TEXT_CLASS)], LIST_SELECT_CLASS);
+                        this.updateSelectedNodes(li, args.action);
+                        this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport(id);
+                        if (this.parent.dataType === 'olap' && this.parent.dataSourceSettings.values.length === 0) {
+                            this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport('[Measures]');
+                        }
+                    }
+                    if (!this.parent.allowDeferLayoutUpdate) {
+                        this.parent.updateDataSource(true);
+                    }
+                    else {
+                        selectedNode.isSelected = args.action === 'check';
+                        if (this.parent.dataType === 'olap') {
+                            this.parent.olapEngineModule.updateFieldlistData(id, args.action === 'check');
+                        }
+                        this.updateDataSource();
+                    }
+                    let parent = this.parent;
+                    setTimeout(() => {
+                        parent.axisFieldModule.render();
+                    });
                 }
                 else {
-                    this.parent.dataSourceSettings.rows.push(addNode);
+                    let chkState = this.parent.treeViewModule.treeViewElement.querySelectorAll('.e-checkbox-wrapper');
+                    let innerText = this.parent.treeViewModule.treeViewElement.querySelectorAll('.e-list-text');
+                    let checkClass = this.parent.treeViewModule.treeViewElement.querySelectorAll('.e-frame');
+                    for (let i = 0; i < chkState.length; i++) {
+                        if (observedArgs.droppedField.caption === innerText[i].textContent) {
+                            if (chkState[i].getAttribute('aria-checked') === 'false') {
+                                chkState[i].setAttribute('aria-checked', 'false');
+                                checkClass[i].classList.add(NODE_CHECK_CLASS);
+                            }
+                            else {
+                                chkState[i].setAttribute('aria-checked', 'true');
+                                checkClass[i].classList.remove(NODE_CHECK_CLASS);
+                            }
+                        }
+                    }
                 }
-            }
-            else {
-                removeClass([node.querySelector('.' + LIST_TEXT_CLASS)], LIST_SELECT_CLASS);
-                this.updateSelectedNodes(li, args.action);
-                this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport(id);
-                if (this.parent.dataType === 'olap' && this.parent.dataSourceSettings.values.length === 0) {
-                    this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport('[Measures]');
-                }
-            }
-            if (!this.parent.allowDeferLayoutUpdate) {
-                this.parent.updateDataSource(true);
-            }
-            else {
-                selectedNode.isSelected = args.action === 'check';
-                if (this.parent.dataType === 'olap') {
-                    this.parent.olapEngineModule.updateFieldlistData(id, args.action === 'check');
-                }
-                this.updateDataSource();
-            }
-            let parent = this.parent;
-            setTimeout(() => {
-                parent.axisFieldModule.render();
             });
         }
     }
@@ -22228,13 +22291,13 @@ class PivotButton {
         }
         if (engineModule.fieldList[field[i].name] !== undefined) {
             aggregation = engineModule.fieldList[field[i].name].aggregateType;
-            if (aggregation === undefined && (engineModule.fieldList[field[i].name].type === 'string' || engineModule.fieldList[field[i].name].type === 'include' ||
+            if ((aggregation !== 'DistinctCount') && (engineModule.fieldList[field[i].name].type !== 'number' || engineModule.fieldList[field[i].name].type === 'include' ||
                 engineModule.fieldList[field[i].name].type === 'exclude')) {
                 aggregation = 'Count';
             }
-            else if (aggregation === undefined) {
-                aggregation = engineModule.fieldList[field[i].name].aggregateType !== undefined ?
-                    engineModule.fieldList[field[i].name].aggregateType : 'Sum';
+            else {
+                aggregation = aggregation === undefined ? 'Sum' :
+                    engineModule.fieldList[field[i].name].aggregateType;
             }
         }
         let text = field[i].caption ? field[i].caption : field[i].name;
@@ -22265,8 +22328,7 @@ class PivotButton {
             engineModule = this.parent.engineModule;
         }
         let fieldListItem = engineModule.fieldList[field[i].name];
-        if (fieldListItem.aggregateType !== 'CalculatedField' &&
-            fieldListItem.type === 'number') {
+        if (fieldListItem.aggregateType !== 'CalculatedField') {
             this.createSummaryType(buttonElement, field[i].name);
         }
     }
@@ -24158,6 +24220,9 @@ __decorate$4([
 ], PivotFieldList.prototype, "onFieldDropped", void 0);
 __decorate$4([
     Event()
+], PivotFieldList.prototype, "fieldDrop", void 0);
+__decorate$4([
+    Event()
 ], PivotFieldList.prototype, "aggregateCellInfo", void 0);
 __decorate$4([
     Event()
@@ -24309,13 +24374,16 @@ class CalculatedField {
      * @returns void
      */
     displayMenu(node) {
-        if (this.parent.dataType === 'pivot' && document.querySelector('.' + this.parentID + 'calculatedmenu') !== null &&
+        if (this.parent.dataType === 'pivot' &&
+            document.querySelector('.' + this.parentID + 'calculatedmenu') !== null &&
             node.querySelector('.e-list-icon').classList.contains(ICON) &&
             !node.querySelector('.e-list-icon').classList.contains(CALC_EDITED) &&
             !node.querySelector('.e-list-icon').classList.contains(CALC_EDIT) && node.tagName === 'LI') {
-            this.menuObj.close();
+            let fieldName = node.getAttribute('data-field');
+            let isStringField = this.parent.engineModule.fieldList[fieldName].type !== 'number' ? 1 : 0;
+            this.menuObj[isStringField].close();
             this.curMenu = node.querySelector('.' + LIST_TEXT_CLASS);
-            this.openContextMenu();
+            this.openContextMenu(isStringField);
         }
         else if (node.tagName === 'LI' && (node.querySelector('.e-list-icon').classList.contains(CALC_EDIT) ||
             (this.parent.dataType === 'olap' && node.getAttribute('data-type') === CALC && node.classList.contains('e-active')))) {
@@ -24398,13 +24466,14 @@ class CalculatedField {
      * To set position for context menu.
      * @returns void
      */
-    openContextMenu() {
+    openContextMenu(isStringField) {
         let pos = this.curMenu.getBoundingClientRect();
+        let offset = isStringField ? (window.scrollY || document.documentElement.scrollTop) : 30;
         if (this.parent.enableRtl) {
-            this.menuObj.open(pos.top + 30, pos.left - 100);
+            this.menuObj[isStringField].open(pos.top + offset, pos.left - 100);
         }
         else {
-            this.menuObj.open(pos.top + 30, pos.left + 150);
+            this.menuObj[isStringField].open(pos.top + offset, pos.left + 150);
         }
     }
     /**
@@ -24415,8 +24484,8 @@ class CalculatedField {
     selectContextMenu(menu) {
         if (menu.element.textContent !== null) {
             let field = closest(this.curMenu, '.e-list-item').getAttribute('data-caption');
-            closest(this.curMenu, '.e-list-item').setAttribute('data-type', menu.element.id.split(this.parent.element.id + '_')[1]);
-            this.curMenu.textContent = field + ' (' + menu.element.id.split(this.parent.element.id + '_')[1] + ')';
+            closest(this.curMenu, '.e-list-item').setAttribute('data-type', menu.element.id.split('_').pop());
+            this.curMenu.textContent = field + ' (' + menu.element.textContent + ')';
             addClass([this.curMenu.parentElement.parentElement], ['e-node-focus', 'e-hover']);
             this.curMenu.parentElement.parentElement.setAttribute('tabindex', '-1');
             this.curMenu.parentElement.parentElement.focus();
@@ -24427,7 +24496,8 @@ class CalculatedField {
      * @returns void
      */
     createMenu() {
-        let menuItems = [
+        let menuItems = [];
+        menuItems[0] = [
             { id: this.parent.element.id + '_Sum', text: this.parent.localeObj.getConstant('Sum') },
             { id: this.parent.element.id + '_Count', text: this.parent.localeObj.getConstant('Count') },
             { id: this.parent.element.id + '_DistinctCount', text: this.parent.localeObj.getConstant('DistinctCount') },
@@ -24440,20 +24510,26 @@ class CalculatedField {
             { id: this.parent.element.id + '_PopulationStDev', text: this.parent.localeObj.getConstant('PopulationStDev') },
             { id: this.parent.element.id + '_PopulationVar', text: this.parent.localeObj.getConstant('PopulationVar') }
         ];
-        let menuOptions = {
-            cssClass: this.parentID + 'calculatedmenu',
-            items: menuItems,
-            enableRtl: this.parent.enableRtl,
-            beforeOpen: this.beforeMenuOpen.bind(this),
-            select: this.selectContextMenu.bind(this)
-        };
-        let contextMenu = createElement('ul', {
-            id: this.parentID + 'contextmenu'
-        });
-        this.parent.element.appendChild(contextMenu);
-        this.menuObj = new ContextMenu$1(menuOptions);
-        this.menuObj.isStringTemplate = true;
-        this.menuObj.appendTo(contextMenu);
+        menuItems[1] =
+            [{ text: this.parent.localeObj.getConstant('Count'), id: this.parent.element.id + 'StringMenu_Count' },
+                { text: this.parent.localeObj.getConstant('DistinctCount'), id: this.parent.element.id + 'StringMenu_DistinctCount' }];
+        this.menuObj = [];
+        for (let i = 0, noOfItem = menuItems.length; i < noOfItem; i++) {
+            let menuOptions = {
+                cssClass: this.parentID + 'calculatedmenu',
+                items: menuItems[i],
+                enableRtl: this.parent.enableRtl,
+                beforeOpen: this.beforeMenuOpen.bind(this),
+                select: this.selectContextMenu.bind(this)
+            };
+            let contextMenu = createElement('ul', {
+                id: this.parentID + 'contextmenu' + (i ? '_StringMenu' : ''),
+            });
+            this.parent.element.appendChild(contextMenu);
+            this.menuObj[i] = new ContextMenu$1(menuOptions);
+            this.menuObj[i].isStringTemplate = true;
+            this.menuObj[i].appendTo(contextMenu);
+        }
     }
     /* tslint:disable */
     /**
@@ -24472,12 +24548,12 @@ class CalculatedField {
             }
         }
         else {
-            Object.keys(currentObj.parent.engineModule.fieldList).forEach((key, index) => {
+            for (let key of Object.keys(currentObj.parent.engineModule.fieldList)) {
                 if (currentObj.inputObj.value && currentObj.inputObj.value === key &&
                     currentObj.parent.engineModule.fieldList[key].aggregateType !== 'CalculatedField') {
                     isExist = true;
                 }
-            });
+            }
         }
         if (isExist) {
             currentObj.parent.pivotCommon.errorDialog.createErrorDialog(currentObj.parent.localeObj.getConstant('error'), currentObj.parent.localeObj.getConstant('fieldExist'));
@@ -24677,26 +24753,29 @@ class CalculatedField {
             }
         }
         else {
-            Object.keys(parent.engineModule.fieldList).forEach((key) => {
+            for (let key of Object.keys(parent.engineModule.fieldList)) {
                 let type = null;
-                if (parent.engineModule.fieldList[key].type === 'string' || parent.engineModule.fieldList[key].type === 'include' ||
-                    parent.engineModule.fieldList[key].type === 'exclude') {
-                    type = COUNT;
+                let typeVal = null;
+                if ((parent.engineModule.fieldList[key].type !== 'number' || parent.engineModule.fieldList[key].type === 'include' ||
+                    parent.engineModule.fieldList[key].type === 'exclude') &&
+                    (parent.engineModule.fieldList[key].aggregateType !== 'DistinctCount')) {
+                    typeVal = COUNT;
                 }
                 else {
-                    type = parent.engineModule.fieldList[key].aggregateType !== undefined ?
-                        parent.engineModule.fieldList[key].aggregateType : SUM;
+                    typeVal = parent.engineModule.fieldList[key].aggregateType !== undefined ?
+                        (parent.engineModule.fieldList[key].aggregateType) : SUM;
                 }
+                type = this.parent.localeObj.getConstant(typeVal);
                 fields.push({
                     index: parent.engineModule.fieldList[key].index,
                     name: parent.engineModule.fieldList[key].caption + ' (' + type + ')',
-                    type: type,
+                    type: typeVal,
                     icon: FORMAT + ' ' + ICON,
                     formula: parent.engineModule.fieldList[key].formula,
                     field: key,
                     caption: parent.engineModule.fieldList[key].caption ? parent.engineModule.fieldList[key].caption : key
                 });
-            });
+            }
         }
         return fields;
     }
@@ -24784,6 +24863,9 @@ class CalculatedField {
     createDialog() {
         if (document.querySelector('#' + this.parentID + 'calculateddialog') !== null) {
             remove(document.querySelector('#' + this.parentID + 'calculateddialog'));
+            while (!isNullOrUndefined(document.querySelector('.' + this.parentID + 'calculatedmenu'))) {
+                remove(document.querySelector('.' + this.parentID + 'calculatedmenu'));
+            }
         }
         this.parent.element.appendChild(createElement('div', {
             id: this.parentID + 'calculateddialog',
@@ -24858,7 +24940,9 @@ class CalculatedField {
         this.dialog.destroy();
         this.newFields = null;
         remove(document.getElementById(this.parentID + 'calculateddialog'));
-        remove(document.querySelector('.' + this.parentID + 'calculatedmenu'));
+        while (!isNullOrUndefined(document.querySelector('.' + this.parentID + 'calculatedmenu'))) {
+            remove(document.querySelector('.' + this.parentID + 'calculatedmenu'));
+        }
     }
     /* tslint:disable */
     /**
@@ -25279,13 +25363,12 @@ class CalculatedField {
             });
             prepend([dragElement], args.node.querySelector('.' + TEXT_CONTENT_CLASS));
             append([args.node.querySelector('.' + FORMAT)], args.node.querySelector('.' + TEXT_CONTENT_CLASS));
-            if (this.parent.engineModule.fieldList[field].type !== 'number' &&
-                this.parent.engineModule.fieldList[field].aggregateType !== CALC) {
-                removeClass([args.node.querySelector('.' + FORMAT)], ICON);
-            }
-            else {
-                args.node.querySelector('.' + FORMAT).setAttribute('title', this.parent.localeObj.getConstant('format'));
-            }
+            // if (this.parent.engineModule.fieldList[field].type !== 'number' &&
+            //     this.parent.engineModule.fieldList[field].aggregateType !== CALC) {
+            //     removeClass([args.node.querySelector('.' + cls.FORMAT)], cls.ICON);
+            // } else {
+            args.node.querySelector('.' + FORMAT).setAttribute('title', this.parent.localeObj.getConstant('format'));
+            // }
             if (this.parent.engineModule.fieldList[field].aggregateType === CALC) {
                 args.node.querySelector('.' + FORMAT).setAttribute('title', this.parent.localeObj.getConstant('edit'));
                 addClass([args.node.querySelector('.' + FORMAT)], CALC_EDIT);
@@ -25300,11 +25383,12 @@ class CalculatedField {
      */
     createTypeContainer(key) {
         let wrapDiv = createElement('div', { id: this.parentID + 'control_wrapper', className: TREEVIEWOUTER });
-        let type = [SUM, COUNT, AVG, MIN, MAX, DISTINCTCOUNT, PRODUCT, STDEV, STDEVP, VAR, VARP];
+        let type = this.parent.engineModule.fieldList[key].type !== 'number' ? [COUNT, DISTINCTCOUNT] :
+            [SUM, COUNT, AVG, MIN, MAX, DISTINCTCOUNT, PRODUCT, STDEV, STDEVP, VAR, VARP];
         for (let i = 0; i < type.length; i++) {
             let input = createElement('input', {
-                id: this.parentID + 'radio' + type[i],
-                attrs: { 'type': 'radio', 'data-ftxt': key },
+                id: this.parentID + 'radio' + key + type[i],
+                attrs: { 'type': 'radio', 'data-ftxt': key, 'data-value': type[i] },
                 className: CALCRADIO
             });
             wrapDiv.appendChild(input);
@@ -25318,15 +25402,17 @@ class CalculatedField {
      */
     getAccordionData(parent) {
         let data = [];
-        Object.keys(parent.engineModule.fieldList).forEach((key, index) => {
+        let keys = Object.keys(parent.engineModule.fieldList);
+        for (let index = 0, i = keys.length; index < i; index++) {
+            let key = keys[index];
             data.push({
                 header: '<input id=' + this.parentID + '_' + index + ' class=' + CALCCHECK + ' type="checkbox" data-field=' +
                     key + ' data-caption=' + this.parent.engineModule.fieldList[key].caption + ' data-type=' +
                     this.parent.engineModule.fieldList[key].type + '/>',
-                content: parent.engineModule.fieldList[key].aggregateType === CALC ||
-                    this.parent.engineModule.fieldList[key].type !== 'number' ? '' : this.createTypeContainer(key).outerHTML
+                content: this.parent.engineModule.fieldList[key].aggregateType === CALC ? '' :
+                    this.createTypeContainer(key).outerHTML
             });
-        });
+        }
         return data;
     }
     /**
@@ -25399,7 +25485,7 @@ class CalculatedField {
                 });
                 accordion.isStringTemplate = true;
                 accordion.appendTo('#' + this.parentID + 'accordDiv');
-                Object.keys(this.parent.engineModule.fieldList).forEach(this.updateType.bind(this));
+                this.updateType();
             }
             if (addBtn.element) {
                 addBtn.element.onclick = this.addBtnClick.bind(this);
@@ -25408,51 +25494,61 @@ class CalculatedField {
     }
     accordionExpand(args) {
         if (args.element.querySelectorAll('.e-radio-wrapper').length === 0) {
-            Object.keys(this.parent.engineModule.fieldList).forEach((key) => {
-                let type = [SUM, COUNT, AVG, MIN, MAX, DISTINCTCOUNT, PRODUCT, STDEV, STDEVP, VAR, VARP];
+            let keys = Object.keys(this.parent.engineModule.fieldList);
+            for (let index = 0, i = keys.length; index < i; index++) {
+                let key = keys[index];
+                let type = this.parent.engineModule.fieldList[key].type !== 'number' ? [COUNT, DISTINCTCOUNT] :
+                    [SUM, COUNT, AVG, MIN, MAX, DISTINCTCOUNT, PRODUCT, STDEV, STDEVP, VAR, VARP];
                 let radiobutton;
                 if (key === args.element.querySelector('[data-field').getAttribute('data-field')) {
                     for (let i = 0; i < type.length; i++) {
                         radiobutton = new RadioButton({
                             label: this.parent.localeObj.getConstant(type[i]),
                             name: AGRTYPE + key,
+                            checked: args.element.querySelector('[data-type').getAttribute('data-type') === type[i],
                             change: this.onChange.bind(this),
                         });
                         radiobutton.isStringTemplate = true;
-                        radiobutton.appendTo('#' + this.parentID + 'radio' + type[i]);
+                        radiobutton.appendTo('#' + this.parentID + 'radio' + key + type[i]);
                     }
                 }
-            });
+            }
         }
     }
     onChange(args) {
-        let type = args.event.target.id.split(this.parent.element.id + 'radio')[1];
+        let type = args.event.target.parentElement.querySelector('.e-label')
+            .innerText;
         let field = args.event.target.closest('.e-acrdn-item').
             querySelector('[data-field').getAttribute('data-caption');
         args.event.target.
             closest('.e-acrdn-item').querySelector('.e-label').
             innerText = field + ' (' + type + ')';
         args.event.target.closest('.e-acrdn-item').
-            querySelector('[data-type').setAttribute('data-type', type);
+            querySelector('[data-type').setAttribute('data-type', args.event.target.getAttribute('data-value'));
     }
-    updateType(key, index) {
-        let type = null;
-        if (this.parent.engineModule.fieldList[key].type === 'string' ||
-            this.parent.engineModule.fieldList[key].type === 'include' ||
-            this.parent.engineModule.fieldList[key].type === 'exclude') {
-            type = COUNT;
+    updateType() {
+        let keys = Object.keys(this.parent.engineModule.fieldList);
+        for (let index = 0, i = keys.length; index < i; index++) {
+            let key = keys[index];
+            let type = null;
+            if ((this.parent.engineModule.fieldList[key].type !== 'number' ||
+                this.parent.engineModule.fieldList[key].type === 'include' ||
+                this.parent.engineModule.fieldList[key].type === 'exclude') &&
+                (this.parent.engineModule.fieldList[key].aggregateType !== 'DistinctCount')) {
+                type = COUNT;
+            }
+            else {
+                type = this.parent.engineModule.fieldList[key].aggregateType !== undefined ?
+                    this.parent.engineModule.fieldList[key].aggregateType : SUM;
+            }
+            let checkbox = new CheckBox({
+                label: this.parent.engineModule.fieldList[key].caption + ' (' + this.parent.localeObj.getConstant(type) + ')'
+            });
+            checkbox.isStringTemplate = true;
+            checkbox.appendTo('#' + this.parentID + '_' + index);
+            document.querySelector('#' + this.parentID + '_' + index).setAttribute('data-field', key);
+            document.querySelector('#' + this.parentID + '_' + index).setAttribute('data-type', type);
         }
-        else {
-            type = this.parent.engineModule.fieldList[key].aggregateType !== undefined ?
-                this.parent.engineModule.fieldList[key].aggregateType : SUM;
-        }
-        let checkbox = new CheckBox({
-            label: this.parent.engineModule.fieldList[key].caption + ' (' + type + ')'
-        });
-        checkbox.isStringTemplate = true;
-        checkbox.appendTo('#' + this.parentID + '_' + index);
-        document.querySelector('#' + this.parentID + '_' + index).setAttribute('data-field', key);
-        document.querySelector('#' + this.parentID + '_' + index).setAttribute('data-type', type);
     }
     /**
      * Trigger while click cancel button.
@@ -25710,7 +25806,8 @@ class FieldList {
             aggregateCellInfo: this.parent.bindTriggerEvents.bind(this.parent),
             enginePopulating: this.parent.bindTriggerEvents.bind(this.parent),
             enginePopulated: this.parent.bindTriggerEvents.bind(this.parent),
-            onFieldDropped: this.parent.bindTriggerEvents.bind(this.parent)
+            onFieldDropped: this.parent.bindTriggerEvents.bind(this.parent),
+            fieldDrop: this.parent.bindTriggerEvents.bind(this.parent),
         });
         this.parent.pivotFieldListModule.appendTo('#' + this.element.id);
     }
@@ -28260,11 +28357,11 @@ class NumberFormatting {
         if (this.valuesDropDown.value === this.parent.localeObj.getConstant('AllValues')) {
             let fieldList = this.parent.dataType === 'olap' ?
                 this.parent.olapEngineModule.fieldList : this.parent.engineModule.fieldList;
-            Object.keys(fieldList).forEach((key) => {
+            for (let key of Object.keys(fieldList)) {
                 if (fieldList[key].type === 'number') {
                     this.insertFormat(key, text);
                 }
-            });
+            }
         }
         else {
             this.insertFormat(this.valuesDropDown.value.toString(), text);
@@ -29164,5 +29261,5 @@ class Grouping {
  * Export PivotGrid components
  */
 
-export { GroupingBarSettings, CellEditSettings, ConditionalSettings, HyperlinkSettings, DisplayOption, PivotView, Render, ExcelExport$1 as ExcelExport, PDFExport, KeyboardInteraction, VirtualScroll$1 as VirtualScroll, DrillThrough, PivotChart, PivotFieldList, TreeViewRenderer, AxisFieldRenderer, AxisTableRenderer, DialogRenderer, EventBase, NodeStateModified, DataSourceUpdate, FieldList, CommonKeyboardInteraction, GroupingBar, CalculatedField, ConditionalFormatting, PivotCommon, load, enginePopulating, enginePopulated, onFieldDropped, beforePivotTableRender, afterPivotTableRender, beforeExport, excelHeaderQueryCellInfo, pdfHeaderQueryCellInfo, excelQueryCellInfo, pdfQueryCellInfo, onPdfCellRender, dataBound, queryCellInfo, headerCellInfo, hyperlinkCellClick, resizing, resizeStop, cellClick, drillThrough, beforeColumnsRender, selected, cellSelecting, drill, cellSelected, cellDeselected, rowSelected, rowDeselected, beginDrillThrough, saveReport, fetchReport, loadReport, renameReport, removeReport, newReport, toolbarRender, toolbarClick, chartTooltipRender, chartLoaded, chartLoad, chartResized, chartAxisLabelRender, chartSeriesCreated, aggregateCellInfo, contextMenuClick, contextMenuOpen, fieldListRefreshed, conditionalFormatting, beforePdfExport, beforeExcelExport, memberFiltering, initialLoad, uiUpdate, scroll, contentReady, dataReady, initSubComponent, treeViewUpdate, pivotButtonUpdate, initCalculatedField, click, initToolbar, initFormatting, initGrouping, Theme, ErrorDialog, FilterDialog, PivotContextMenu, AggregateMenu, Toolbar$2 as Toolbar, NumberFormatting, Grouping, PivotEngine, PivotUtil, OlapEngine, MDXQuery };
+export { GroupingBarSettings, CellEditSettings, ConditionalSettings, HyperlinkSettings, DisplayOption, PivotView, Render, ExcelExport$1 as ExcelExport, PDFExport, KeyboardInteraction, VirtualScroll$1 as VirtualScroll, DrillThrough, PivotChart, PivotFieldList, TreeViewRenderer, AxisFieldRenderer, AxisTableRenderer, DialogRenderer, EventBase, NodeStateModified, DataSourceUpdate, FieldList, CommonKeyboardInteraction, GroupingBar, CalculatedField, ConditionalFormatting, PivotCommon, load, enginePopulating, enginePopulated, onFieldDropped, fieldDrop, beforePivotTableRender, afterPivotTableRender, beforeExport, excelHeaderQueryCellInfo, pdfHeaderQueryCellInfo, excelQueryCellInfo, pdfQueryCellInfo, onPdfCellRender, dataBound, queryCellInfo, headerCellInfo, hyperlinkCellClick, resizing, resizeStop, cellClick, drillThrough, beforeColumnsRender, selected, cellSelecting, drill, cellSelected, cellDeselected, rowSelected, rowDeselected, beginDrillThrough, saveReport, fetchReport, loadReport, renameReport, removeReport, newReport, toolbarRender, toolbarClick, chartTooltipRender, chartLoaded, chartLoad, chartResized, chartAxisLabelRender, chartSeriesCreated, aggregateCellInfo, contextMenuClick, contextMenuOpen, fieldListRefreshed, conditionalFormatting, beforePdfExport, beforeExcelExport, memberFiltering, initialLoad, uiUpdate, scroll, contentReady, dataReady, initSubComponent, treeViewUpdate, pivotButtonUpdate, initCalculatedField, click, initToolbar, initFormatting, initGrouping, Theme, ErrorDialog, FilterDialog, PivotContextMenu, AggregateMenu, Toolbar$2 as Toolbar, NumberFormatting, Grouping, PivotEngine, PivotUtil, OlapEngine, MDXQuery };
 //# sourceMappingURL=ej2-pivotview.es2015.js.map

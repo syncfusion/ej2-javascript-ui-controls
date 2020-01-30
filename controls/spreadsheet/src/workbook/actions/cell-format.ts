@@ -46,7 +46,7 @@ export class WorkbookCellFormat {
             }
         }
         this.parent.setUsedRange(indexes[2], indexes[3]);
-        if (args.refreshRibbon) { this.parent.notify(activeCellChanged, getRangeIndexes(sheet.activeCell)); }
+        if (args.refreshRibbon) { this.parent.notify(activeCellChanged, null); }
         this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         if (triggerEvent) {
             eventArgs.range = sheet.name + '!' + <string>rng;

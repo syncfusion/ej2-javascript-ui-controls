@@ -268,6 +268,13 @@ export class NormalEdit {
     }
 
     private edFail(e: ReturnType): void {
+        if (isBlazor() && this.parent.isServerRendered) {
+            let error: string = 'error';
+            let message: string = 'message';
+            if (!isNullOrUndefined(e[error]) && !isNullOrUndefined(e[error][message])) {
+                e[error] = e[error][message];
+            }
+        }
         this.editFailure(e);
     }
 
@@ -444,11 +451,12 @@ export class NormalEdit {
         }
         this.previousData = {};
         this.uid = '';
-        ((<{ columnModel?: Column[] }>gObj).columnModel).forEach((col: Column) => {
-            if (col.field) {
-                DataUtil.setValue(col.field, col.defaultValue, this.previousData);
+        let cols: Column[] = ((<{ columnModel?: Column[] }>gObj).columnModel);
+        for (let i: number = 0; i < cols.length; i++) {
+            if (cols[i].field) {
+                DataUtil.setValue(cols[i].field, cols[i].defaultValue, this.previousData);
             }
-        });
+        }
         let args: AddEventArgs = {
             cancel: false, foreignKeyData: {}, //foreign key support
             requestType: 'add', data: this.previousData, type: events.actionBegin, index: index,

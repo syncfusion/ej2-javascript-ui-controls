@@ -2343,6 +2343,12 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             this.wireEvents();
         }
         this.renderComplete();
+        let destroyTemplate = 'destroyTemplate';
+        let destroyTemplateFn = this.grid[destroyTemplate];
+        this.grid[destroyTemplate] = (args) => {
+            destroyTemplateFn.apply(this.grid);
+            this.clearTemplate(args);
+        };
         if (isBlazor() && this.isServerRendered) {
             gridObserver.on('component-rendered', this.gridRendered, this);
         }
@@ -7453,7 +7459,7 @@ class Edit$1 {
         }
         let column = this.parent.grid.getColumnByIndex(+target.closest('td.e-rowcell').getAttribute('aria-colindex'));
         if (this.parent.editSettings.mode === 'Cell' && !this.isOnBatch && column && !column.isPrimaryKey &&
-            column.allowEditing && !(target.classList.contains('e-treegridexpand') ||
+            column.allowEditing && this.parent.editSettings.allowEditing && !(target.classList.contains('e-treegridexpand') ||
             target.classList.contains('e-treegridcollapse')) && this.parent.editSettings.allowEditOnDblClick) {
             this.isOnBatch = true;
             this.parent.grid.setProperties({ selectedRowIndex: args.rowIndex }, true);

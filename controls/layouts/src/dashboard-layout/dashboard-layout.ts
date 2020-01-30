@@ -48,13 +48,15 @@ export class Panel extends ChildProperty<Panel> {
     public cssClass: string;
 
     /** 
-     * Defines the template value that should be displayed as the panel's header. 
+     * Defines the template value that should be displayed as the panel's header.
+     * @blazorType RenderFragment
      */
     @Property('')
     public header: string | HTMLElement;
 
     /**
      * Defines the template value that should be displayed as the panel's content. 
+     * @blazorType RenderFragment
      */
     @Property('')
     public content: string | HTMLElement;
@@ -88,6 +90,7 @@ export class Panel extends ChildProperty<Panel> {
      * Specifies the width of the panel in the layout in cells count.
      *
      * @default 1
+     * @blazorType int
      */
     @Property(1)
     public sizeX: number;
@@ -96,6 +99,7 @@ export class Panel extends ChildProperty<Panel> {
      * Specifies the height of the panel in the layout in cells count.
      *
      * @default 1
+     * @blazorType int
      */
     @Property(1)
     public sizeY: number;
@@ -104,6 +108,7 @@ export class Panel extends ChildProperty<Panel> {
      * Specifies the minimum height of the panel in cells count.
      * 
      * @default 1
+     * @blazorType int
      */
     @Property(1)
     public minSizeY: number;
@@ -112,6 +117,7 @@ export class Panel extends ChildProperty<Panel> {
      * Specifies the minimum width of the panel in cells count.
      * *
      * @default 1
+     * @blazorType int
      */
     @Property(1)
     public minSizeX: number;
@@ -121,7 +127,7 @@ export class Panel extends ChildProperty<Panel> {
      * *
      * @default null
      * @aspType int
-     * @blazorType int
+     * @blazorType int?
      *
      */
     @Property(null)
@@ -132,7 +138,7 @@ export class Panel extends ChildProperty<Panel> {
      * *
      * @default null
      * @aspType int
-     * @blazorType int
+     * @blazorType int?
      */
     @Property(null)
     public maxSizeX: number;
@@ -267,6 +273,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     protected isMouseUpBound: boolean;
     protected contentTemplateChild: HTMLElement[];
     private isBlazor: boolean = false;
+    private isInlineRendering: boolean = false;
 
     /**
      * If allowDragging is set to true, then the DashboardLayout allows you to drag and reorder the panels.
@@ -320,6 +327,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     /** 
      * Defines the number of columns to be created in the DashboardLayout. 
      * @default 1
+     * @blazorType int
      */
     @Property(1)
     public columns: number;
@@ -499,6 +507,11 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         }
         this.updateDragArea();
         this.renderComplete();
+        if (isBlazor() && this.isInlineRendering) {
+            this.setProperties({ panels: this.panels }, true);
+            this.allowServerDataBinding = true;
+            this.serverDataBind();
+        }
     }
 
     private initGridLines(): void {
@@ -528,6 +541,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             && !(this.isBlazor && this.panels.length > 0)) {
             let panelElements: HTMLElement[] = [];
             this.setProperties({ panels: [] }, true);
+            this.isInlineRendering = true;
             for (let i: number = 0; i < this.element.querySelectorAll('.e-panel').length; i++) {
                 panelElements.push(<HTMLElement>(this.element.querySelectorAll('.e-panel')[i]));
             }
@@ -1297,6 +1311,14 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.panelCollection.push(dashBoardCell);
         if (!this.isBlazor) {
             this.setXYAttributes(cellElement, panel);
+        } else {
+            let bodyElement: HTMLElement = cellElement.querySelector('.e-panel-content');
+            if (bodyElement) {
+                let headerHeight: string = cellElement.querySelector('.e-panel-header') ?
+                    window.getComputedStyle(cellElement.querySelector('.e-panel-header')).height : '0px';
+                let contentHeightValue: string = 'calc( 100% - ' + headerHeight + ')';
+                setStyle(bodyElement, { height: contentHeightValue });
+            }
         }
         this.setHeightAndWidth(cellElement, panel);
         return cellElement;
@@ -1562,7 +1584,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             }
             for (let rowValue: number = row; rowValue >= 0; rowValue--) {
                 let element: HTMLElement = (this.getCellInstance(ele.id).sizeY > 1 && topCheck) ? this.checkingElement : ele;
-                if ((rowValue !== endRow) && (sizeY > 1 ? rowValue === endRow - sizeY - 1 : rowValue === endRow - sizeY) &&
+                if ((rowValue !== endRow) && (rowValue === endRow - sizeY) &&
                     this.collisions(rowValue, col, sizeX, sizeY, element).length === 0) {
                     topCheck = false;
                     this.topAdjustable = true;
@@ -1949,6 +1971,11 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                         };
                         this.setAttributes(value, initialModel[i]);
                         this.panelPropertyChange(model, { col: this.spacedColumnValue, row: this.spacedRowValue });
+                        // updated the panel model array as inTopAdjustable case with floating enabled instead of dragging and extra row
+                        if (this.topAdjustable && this.allowFloating) {
+                            this.updatePanels();
+                            this.updateCloneArrayObject();
+                        }
                         this.spacedRowValue = null;
                         if (i < initialModel.length) {
                             continue;
@@ -2491,6 +2518,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      * Allows to add a panel to the Dashboardlayout.
      * @param {panel: [`PanelModel`](./panelModel)} panel -  Defines the panel element.
      * @returns void
+     * @deprecated
      */
     public addPanel(panel: PanelModel): void {
         this.allowServerDataBinding = false;
@@ -2512,9 +2540,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         if (this.maxColumnValue < panelProp.col || this.maxColumnValue < (panelProp.col + panelProp.sizeX)) {
             this.panelPropertyChange(panelProp, { col: this.maxColumnValue - panelProp.sizeX });
         }
-        this.isBlazor = false;
         let cell: HTMLElement = this.renderCell(panelProp, true, null);
-        this.isBlazor = (isBlazor() && this.isServerRendered);
         this.oldRowCol[panelProp.id] = { row: panelProp.row, col: panelProp.col };
         this.cloneObject[panelProp.id] = { row: panelProp.row, col: panelProp.col };
         this.updateOldRowColumn();
@@ -2530,6 +2556,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                 this.checkCollision = [];
             }
             this.setPanelPosition(cell, panelProp.row, panelProp.col);
+            if (this.isBlazor) { cell.style.removeProperty('visibility'); }
             this.updatePanelLayout(cell, panelProp);
             this.addPanelCalled = false;
         }
@@ -2564,6 +2591,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      * Allows to update a panel in the DashboardLayout.
      * @param {panel: [`panelModel`](./panelModel)} panel - Defines the panel element.
      * @returns void
+     * @deprecated
      */
     public updatePanel(panel: PanelModel): void {
         if (!panel.id) {

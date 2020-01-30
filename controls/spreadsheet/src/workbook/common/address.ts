@@ -26,7 +26,7 @@ export function getCellIndexes(address: string): number[] {
  * To get column index from text.
  * @hidden
  */
-function getColIndex(text: string): number {
+export function getColIndex(text: string): number {
     let colIdx: number = 0;
     text = text.split('').reverse().join('');
     for (let i: number = text.length - 1; i >= 0; i--) {

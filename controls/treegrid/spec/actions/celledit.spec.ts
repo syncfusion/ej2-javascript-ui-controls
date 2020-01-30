@@ -666,7 +666,58 @@ describe('Cell Edit module', () => {
       destroy(gridObj);
     });
   });
-
+  describe('EJ2-35521 - Issue with allowEditing', () => {
+    let gridObj: TreeGrid;
+    let actionBegin: () => void;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, newRowPosition: 'Top' },
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+          columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+          { field: 'taskName', headerText: 'Task Name' },
+          { field: 'progress', headerText: 'Progress' },
+          { field: 'startDate', headerText: 'Start Date' }
+          ]
+        },
+        done
+      );
+    });
+    it('checking allowEditing property - set to false', () => {
+      gridObj.editSettings.allowEditing = false;
+      gridObj.dataBind();
+      let event: MouseEvent = new MouseEvent('dblclick', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+      gridObj.getCellFromIndex(1, 1).dispatchEvent(event);
+      expect(isNullOrUndefined(gridObj.element.getElementsByClassName("e-gridform")[0])).toBe(true);
+    });
+    it('checking allowEditing property - set to true', (done: Function) => {
+      gridObj.editSettings.allowEditing = true;
+      gridObj.dataBind();
+      let event: MouseEvent = new MouseEvent('dblclick', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+      gridObj.actionBegin = function(args){
+        if(args.type == "edit"){
+          expect(isNullOrUndefined(gridObj.element.getElementsByClassName("e-gridform")[0])).toBe(false);
+        }
+        done();
+      }
+      gridObj.getCellFromIndex(1, 1).dispatchEvent(event);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
 
 
 

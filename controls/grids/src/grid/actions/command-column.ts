@@ -45,20 +45,22 @@ export class CommandColumn {
         let uid: string = target.getAttribute('data-uid');
         let commandColumn: Object;
         let row: Row<Column> = gObj.getRowObjectFromUID(closest(target, '.e-row').getAttribute('data-uid'));
-        (<{ columnModel?: Column[] }>this.parent).columnModel.forEach((col: Column) => {
-            if (col.commands) {
-                col.commands.forEach((commandCol: Object) => {
+        let cols: Column[] = (<{ columnModel?: Column[] }>this.parent).columnModel;
+        for (let i: number = 0; i < cols.length; i++) {
+            if (cols[i].commands) {
+                let commandCols: Object[] = cols[i].commands;
+                for (let j: number = 0; j < commandCols.length; j++) {
                     let idInString: string = 'uid';
                     let typeInString: string = 'type';
-                    if (isBlazor() && !gObj.isJsComponent && commandCol[idInString] === uid) {
-                        commandColumn = commandCol;
-                        type = commandCol[typeInString];
-                    } else if (commandCol[idInString] === uid && commandCol[typeInString] === type) {
-                        commandColumn = commandCol;
+                    if (isBlazor() && !gObj.isJsComponent && commandCols[j][idInString] === uid) {
+                        commandColumn = commandCols[j];
+                        type = commandCols[j][typeInString];
+                    } else if (commandCols[j][idInString] === uid && commandCols[j][typeInString] === type) {
+                        commandColumn = commandCols[j];
                     }
-                });
+                }
             }
-        });
+        }
         let args: CommandClickEventArgs = {
             cancel: false,
             target: target,
@@ -133,12 +135,14 @@ export class CommandColumn {
     private load(): void {
         if (isBlazor() && !this.parent.isJsComponent) { return; }
         let uid: string = 'uid';
-        (<{ columnModel?: Column[] }>this.parent).columnModel.forEach((col: Column, indexs: number) => {
-            if (col.commands) {
-                col.commands.forEach((commandCol: Object) => {
-                    commandCol[uid] = getUid('gridcommand');
-                });
+        let col: Column[] = (<{ columnModel?: Column[] }>this.parent).columnModel;
+        for (let i: number = 0; i < col.length; i++) {
+            if (col[i].commands) {
+                let commandCol: Object[] = col[i].commands;
+                for (let j: number = 0; j < commandCol.length; j++) {
+                    commandCol[j][uid] = getUid('gridcommand');
+                }
             }
-        });
+        }
     }
 }

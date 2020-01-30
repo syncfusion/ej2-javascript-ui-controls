@@ -7,7 +7,7 @@ import { workbookEditOperation, getFormattedBarText, getFormattedCellObject } fr
 import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell } from '../../workbook/base/index';
 import { getSheetNameFromAddress, getCellPosition, getSheet } from '../../workbook/base/index';
 import { RefreshValueArgs } from '../integrations/index';
-import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer } from '../common/index';
+import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate } from '../common/index';
 import { getSwapRange } from '../../workbook/index';
 
 /**
@@ -243,6 +243,10 @@ export class Edit {
     }
 
     private startEdit(address?: string, value?: string, refreshCurPos: boolean = true): void {
+        let range: number[] = getRangeIndexes(this.parent.getActiveSheet().activeCell);
+        if (hasTemplate(this.parent, range[0], range[1], this.parent.activeSheetTab - 1)) {
+            return;
+        }
         this.updateEditCellDetail(address, value);
         this.initiateEditor(refreshCurPos);
         this.positionEditor();

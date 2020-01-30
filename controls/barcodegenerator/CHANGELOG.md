@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.46 (2020-01-30)
+
+### Barcode
+
+#### Bug Fixes
+
+- `F150725` - The issue "Barcode Control hasn't rendered in IE11 browser" has been fixed.
+
 ## 17.2.28-beta (2019-06-27)
 
 ### Barcode

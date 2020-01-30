@@ -768,55 +768,62 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                         this.viewer.showComments(model.showComments);
                     }
                     break;
+                case 'enableRtl':
+                    this.localizeDialogs(model.enableRtl);
+                    break;
             }
         }
     }
-    private localizeDialogs(): void {
+    private localizeDialogs(enableRtl?: boolean): void {
         if (this.locale !== '') {
             let l10n: L10n = new L10n('documenteditor', this.defaultLocale);
             l10n.setLocale(this.locale);
+            if (!isNullOrUndefined(enableRtl)) {
+                this.viewer.dialog.enableRtl = enableRtl;
+                this.viewer.dialog2.enableRtl = enableRtl;
+            }
             if (this.optionsPaneModule) {
-                this.optionsPaneModule.initOptionsPane(l10n);
+                this.optionsPaneModule.initOptionsPane(l10n, enableRtl);
             }
             if (this.paragraphDialogModule) {
                 this.paragraphDialogModule.initParagraphDialog(l10n);
             }
             if (this.pageSetupDialogModule) {
-                this.pageSetupDialogModule.initPageSetupDialog(l10n);
+                this.pageSetupDialogModule.initPageSetupDialog(l10n, enableRtl);
             }
             if (this.fontDialogModule) {
-                this.fontDialogModule.initFontDialog(l10n);
+                this.fontDialogModule.initFontDialog(l10n, enableRtl);
             }
             if (this.hyperlinkDialogModule) {
-                this.hyperlinkDialogModule.initHyperlinkDialog(l10n);
+                this.hyperlinkDialogModule.initHyperlinkDialog(l10n, enableRtl);
             }
             if (this.contextMenuModule) {
                 this.contextMenuModule.contextMenuInstance.destroy();
-                this.contextMenuModule.initContextMenu(l10n);
+                this.contextMenuModule.initContextMenu(l10n, enableRtl);
             }
             if (this.listDialogModule) {
-                this.listDialogModule.initListDialog(l10n);
+                this.listDialogModule.initListDialog(l10n, enableRtl);
             }
             if (this.tablePropertiesDialogModule) {
-                this.tablePropertiesDialogModule.initTablePropertyDialog(l10n);
+                this.tablePropertiesDialogModule.initTablePropertyDialog(l10n, enableRtl);
             }
             if (this.bordersAndShadingDialogModule) {
-                this.bordersAndShadingDialogModule.initBordersAndShadingsDialog(l10n);
+                this.bordersAndShadingDialogModule.initBordersAndShadingsDialog(l10n, enableRtl);
             }
             if (this.cellOptionsDialogModule) {
-                this.cellOptionsDialogModule.initCellMarginsDialog(l10n);
+                this.cellOptionsDialogModule.initCellMarginsDialog(l10n, enableRtl);
             }
             if (this.tableOptionsDialogModule) {
-                this.tableOptionsDialogModule.initTableOptionsDialog(l10n);
+                this.tableOptionsDialogModule.initTableOptionsDialog(l10n, enableRtl);
             }
             if (this.tableDialogModule) {
                 this.tableDialogModule.initTableDialog(l10n);
             }
             if (this.styleDialogModule) {
-                this.styleDialogModule.initStyleDialog(l10n);
+                this.styleDialogModule.initStyleDialog(l10n, enableRtl);
             }
             if (this.tableOfContentsDialogModule) {
-                this.tableOfContentsDialogModule.initTableOfContentDialog(l10n);
+                this.tableOfContentsDialogModule.initTableOfContentDialog(l10n, enableRtl);
             }
             if (this.commentReviewPane && this.commentReviewPane.reviewPane) {
                 if (this.enableRtl) {
@@ -1500,7 +1507,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         'Previous Comment': 'Previous Comment',
         'Un-posted comments': 'Un-posted comments',
         // tslint:disable-next-line:max-line-length
-        'Discard Comment': 'Added comments not posted. If you continue, that comment will be discarded.'
+        'Discard Comment': 'Added comments not posted. If you continue, that comment will be discarded.',
+        'No Headings': 'No Heading Found!',
+        'Add Headings': 'This document has no headings. Please add headings and try again.'
     };
     // Public Implementation Starts
     /**
@@ -1796,10 +1805,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public destroy(): void {
         super.destroy();
         this.destroyDependentModules();
-        if (!isNullOrUndefined(this.viewer)) {
-            this.viewer.destroy();
+        if (!this.refreshing) {
+            if (!isNullOrUndefined(this.viewer)) {
+                this.viewer.destroy();
+            }
+            this.viewer = undefined;
         }
-        this.viewer = undefined;
         if (!isNullOrUndefined(this.element)) {
             this.element.classList.remove('e-documenteditor');
             this.element.innerHTML = '';

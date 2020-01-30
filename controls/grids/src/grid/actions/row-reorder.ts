@@ -1,4 +1,4 @@
-import { MouseEventArgs, Draggable, isBlazor } from '@syncfusion/ej2-base';
+import { MouseEventArgs, Draggable, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { removeClass } from '@syncfusion/ej2-base';
 import { remove, closest as closestElement, classList, BlazorDragEventArgs  } from '@syncfusion/ej2-base';
 import { IGrid, NotifyArgs, EJ2Intance, IPosition, RowDragEventArgs } from '../base/interface';
@@ -247,10 +247,10 @@ export class RowDD {
                 let fromIdx: number = parseInt(this.startedRow.getAttribute('aria-rowindex'), 10);
                 let currentVdata: object[] = [];
                 let ind: number = 0;
-                selectedIndexes.forEach((rec : number) => {
-                    currentVdata[ind] = this.parent.currentViewData[rec];
-                    ind++;
-                });
+                for (let i: number = 0; i < selectedIndexes.length; i++) {
+                    let currentV: string = 'currentViewData';
+                    currentVdata[ind] = this.parent[currentV][selectedIndexes[i]];
+                }
                 if (!(this.parent.rowDropSettings.targetID && selectedIndexes.length)) {
                     currentVdata[ind] = this.parent.currentViewData[fromIdx];
                 }
@@ -286,7 +286,12 @@ export class RowDD {
                     type: events.actionBegin, requestType: 'rowdraganddrop'
                 });
             }).catch((e: Error) => {
-                this.parent.trigger(events.actionFailure, { error: e });
+                let error: string = 'error';
+                let message: string = 'message';
+                if (!isNullOrUndefined(e[error]) && !isNullOrUndefined(e[error][message])) {
+                    e[error] = e[error][message];
+                }
+                this.parent.trigger(events.actionFailure, e);
             });
     }
 
@@ -557,10 +562,10 @@ export class RowDD {
                 let currentVdata: object[] = [];
                 let ind: number = 0;
                 let selectedIndex: number[] = srcControl.getSelectedRowIndexes();
-                selectedIndex.forEach((rec: number) => {
-                    currentVdata[ind] = srcControl.currentViewData[rec];
+                for (let i: number = 0; i < selectedIndex.length; i++) {
+                    currentVdata[ind] = srcControl.currentViewData[selectedIndex[i]];
                     ind++;
-                });
+                }
                 records =  currentVdata;
                 let changes: { addedRecords: Object[], deletedRecords: Object[], changedRecords: Object[] } = {
                     addedRecords: records,
@@ -576,7 +581,12 @@ export class RowDD {
                                 type: events.actionBegin, requestType: 'rowdraganddrop'
                             });
                         }).catch((e: Error) => {
-                            gObj.trigger(events.actionFailure, { error: e });
+                            let message: string = 'message';
+                            let error: string = 'error';
+                            if (!isNullOrUndefined(e[error]) && !isNullOrUndefined(e[error][message])) {
+                                e[error] = e[error][message];
+                            }
+                            gObj.trigger(events.actionFailure, e);
                         });
                 changes.deletedRecords = records;
                 changes.addedRecords = [];
@@ -586,7 +596,12 @@ export class RowDD {
                         type: events.actionBegin, requestType: 'rowdraganddrop'
                     });
                 }).catch((e: Error) => {
-                    srcControl.trigger(events.actionFailure, { error: e });
+                    let error: string = 'error';
+                    let msg: string = 'message';
+                    if (!isNullOrUndefined(e[error]) && !isNullOrUndefined(e[error][msg])) {
+                        e[error] = e[error][msg];
+                    }
+                    srcControl.trigger(events.actionFailure, e);
                 });
             }
         }

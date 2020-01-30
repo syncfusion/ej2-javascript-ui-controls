@@ -559,7 +559,10 @@ export interface BubbleSettingsModel {
     visible?: boolean;
 
     /**
-     * Specifies the data source for bubble.
+     * * Specifies dataSource for the bubble.
+     * * The datasource must contain the size value of the bubble that can be bound to the bubble 
+     * of the Maps using the valuePath property in the bubbleSettings.
+     * * The datasource can contain data such as color, and the other information that can be bound to the color, and tooltip of the bubble.
      * @isdatamanager false
      * @isObservable true
      * @default []
@@ -713,6 +716,12 @@ export interface ZoomSettingsModel {
      * @default false
      */
     enable?: boolean;
+
+    /**
+     * Toggle the visibility of Panning
+     * @default true
+     */
+    enablePanning?: boolean;
 
     /**
      * Configures tool bar orientation
@@ -1238,7 +1247,11 @@ export interface MarkerBaseModel {
     template?: string;
 
     /**
-     * To configure the dataSource of the marker.
+     * * Specifies datasource for the marker.
+     * * The datasource for the marker will contain latitude and longitude values to specify the location 
+     * of the marker.
+     * * The datasource can contain data such as color, shape, and other details that can be bound to the color, shape,
+     *  and tooltip of the marker.
      * @isdatamanager false
      * @isObservable true
      * @default []
@@ -1306,7 +1319,8 @@ export interface LayerSettingsModel {
     shapeSettings?: ShapeSettingsModel;
 
     /**
-     * Specifies the data source for the layer.
+     * * Specifies dataSource for the layer.
+     * * The datasource can contain data that can be bound to the tooltip, marker, and bubble.
      * @isdatamanager false
      * @isObservable true
      * @default []

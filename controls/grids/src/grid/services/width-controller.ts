@@ -33,9 +33,10 @@ export class ColumnWidthService {
             this.setColumnWidth(new Column({ width: '30px' }), i);
             i++;
         }
-        (<Column[]>this.parent.getColumns()).forEach((column: Column, index: number) => {
-            this.setColumnWidth(column, wFlag && this.parent.enableColumnVirtualization ? undefined : index + i);
-        });
+        let columns: Column[] = (<Column[]>this.parent.getColumns());
+        for (let j: number = 0; j < columns.length; j++) {
+            this.setColumnWidth(columns[j], wFlag && this.parent.enableColumnVirtualization ? undefined : j + i);
+        }
         totalColumnsWidth = this.getTableWidth(this.parent.getColumns());
         if (this.parent.width !== 'auto' && this.parent.width.toString().indexOf('%') === -1) {
             this.setMinwidthBycalculation(totalColumnsWidth);

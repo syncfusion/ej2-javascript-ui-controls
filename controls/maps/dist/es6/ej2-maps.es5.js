@@ -57,6 +57,7 @@ function calculateSize(maps) {
     var parentHeight = maps.element.parentElement.clientHeight;
     var parentWidth = maps.element.parentElement.clientWidth;
     if (maps.isBlazor) {
+        parentHeight = (maps.element.parentElement.style.height) ? maps.element.parentElement.clientHeight : 450;
         containerHeight = parentHeight !== 0 ? parentHeight : containerHeight !== 0 ?
             containerHeight : 450;
         containerWidth = parentWidth !== 0 ?
@@ -1261,7 +1262,7 @@ function findMidPointOfPolygon(points, type) {
 function isCustomPath(layerData) {
     var customPath = false;
     if (Object.prototype.toString.call(layerData) === '[object Array]') {
-        layerData.forEach(function (layer, index) {
+        Array.prototype.forEach.call(layerData, function (layer, index) {
             if (!isNullOrUndefined(layer['geometry']) && layer['geometry']['type'] === 'Path') {
                 customPath = true;
             }
@@ -1616,7 +1617,7 @@ function getElementsByClassName(className) {
 /**
  * Function to get elements using querySelectorAll
  */
-// export function querySelectorAll(args: string, element: Element): NodeListOf<Element> {
+// export function querySelectorAll(args: string, element: Element): ArrayOf<Element> {
 //     return element.querySelectorAll('.' + args);
 // }
 /**
@@ -2157,9 +2158,26 @@ function smoothTranslate(element, delay, duration, point) {
     });
 }
 /**
+ * To find compare should zoom factor with previous factor and current factor
+ */
+function compareZoomFactor(scaleFactor, maps) {
+    if (!isNullOrUndefined(maps.shouldZoomCurrentFactor)) {
+        maps.shouldZoomCurrentFactor = null;
+        maps.shouldZoomPreviousFactor = null;
+    }
+    else if (!isNullOrUndefined(maps.shouldZoomPreviousFactor)
+        && isNullOrUndefined(maps.shouldZoomCurrentFactor)
+        && maps.shouldZoomPreviousFactor !== scaleFactor) {
+        maps.shouldZoomCurrentFactor = scaleFactor;
+    }
+    else {
+        maps.shouldZoomPreviousFactor = scaleFactor;
+    }
+}
+/**
  * To find zoom level for the min and max latitude values
  */
-function calculateZoomLevel(minLat, maxLat, minLong, maxLong, mapWidth, mapHeight) {
+function calculateZoomLevel(minLat, maxLat, minLong, maxLong, mapWidth, mapHeight, maps) {
     var latRatio;
     var lngRatio;
     var scaleFactor;
@@ -2178,10 +2196,13 @@ function calculateZoomLevel(minLat, maxLat, minLong, maxLong, mapWidth, mapHeigh
     lngRatio = ((lngDiff < 0) ? (lngDiff + 360) : lngDiff) / 360;
     var WORLD_PX_HEIGHT = 256;
     var WORLD_PX_WIDTH = 256;
-    latZoom = Math.log(mapHeight / WORLD_PX_HEIGHT / latRatio) / Math.LN2;
-    lngZoom = Math.log(mapWidth / WORLD_PX_WIDTH / lngRatio) / Math.LN2;
+    latZoom = Math.floor(Math.log(mapHeight / WORLD_PX_HEIGHT / latRatio) / Math.LN2);
+    lngZoom = Math.floor(Math.log(mapWidth / WORLD_PX_WIDTH / lngRatio) / Math.LN2);
     result = Math.min(latZoom, lngZoom);
     scaleFactor = Math.min(result, maxZoomFact - 1);
+    if (!maps.isTileMap) {
+        this.compareZoomFactor(scaleFactor, maps);
+    }
     return scaleFactor;
 }
 
@@ -2939,6 +2960,7 @@ var NavigationLineSettings = /** @__PURE__ @class */ (function (_super) {
 /**
  * Bubble settings model class
  */
+/*tslint:disable-next-line:max-line-length*/
 var BubbleSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$2(BubbleSettings, _super);
     function BubbleSettings() {
@@ -3056,6 +3078,9 @@ var ZoomSettings = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property(false)
     ], ZoomSettings.prototype, "enable", void 0);
+    __decorate$1([
+        Property(true)
+    ], ZoomSettings.prototype, "enablePanning", void 0);
     __decorate$1([
         Property('Horizontal')
     ], ZoomSettings.prototype, "toolBarOrientation", void 0);
@@ -3557,7 +3582,7 @@ var Marker = /** @__PURE__ @class */ (function () {
         //tslint:disable
         currentLayer.markerSettings.map(function (markerSettings, markerIndex) {
             var markerData = markerSettings.dataSource;
-            markerData.forEach(function (data, dataIndex) {
+            Array.prototype.forEach.call(markerData, function (data, dataIndex) {
                 _this.maps.markerNullCount = markerIndex > 0 && dataIndex === 0 ? 0 : _this.maps.markerNullCount;
                 var eventArgs = {
                     cancel: false, name: markerRendering, fill: markerSettings.fill, height: markerSettings.height,
@@ -3656,6 +3681,9 @@ var Marker = /** @__PURE__ @class */ (function () {
         lngZoom = (lngZoom > maxZoomFact) ? maxZoomFact : lngZoom;
         result = Math.min(latZoom, lngZoom);
         scaleFactor = Math.min(result, maxZoomFact - 1);
+        if (!this.maps.isTileMap) {
+            compareZoomFactor(scaleFactor, this.maps);
+        }
         return scaleFactor;
     };
     /**
@@ -3673,12 +3701,12 @@ var Marker = /** @__PURE__ @class */ (function () {
             var maxZoomFact = 10;
             var mapWidth = this.maps.mapAreaRect.width;
             var mapHeight = this.maps.mapAreaRect.height;
-            layersCollection.forEach(function (currentLayer, layerIndex) {
+            Array.prototype.forEach.call(layersCollection, function (currentLayer, layerIndex) {
                 var isMarker = currentLayer.markerSettings.length !== 0;
                 if (isMarker) {
-                    currentLayer.markerSettings.forEach(function (markerSetting, markerIndex) {
+                    Array.prototype.forEach.call(currentLayer.markerSettings, function (markerSetting, markerIndex) {
                         var markerData = markerSetting.dataSource;
-                        markerData.forEach(function (data, dataIndex) {
+                        Array.prototype.forEach.call(markerData, function (data, dataIndex) {
                             var latitude = parseFloat(data['latitude']);
                             var longitude = parseFloat(data['longitude']);
                             minLong_1 = isNullOrUndefined(minLong_1) && dataIndex === 0 ?
@@ -3714,9 +3742,8 @@ var Marker = /** @__PURE__ @class */ (function () {
                 this.maps.centerPosition.longitude = centerLong;
                 var markerFactor = void 0;
                 if (this.maps.isTileMap || this.maps.baseMapRectBounds['min']['x'] === 0) {
-                    zoomLevel = calculateZoomLevel(minLat_1, maxLat_1, minLong_1, maxLong_1, mapWidth, mapHeight);
+                    zoomLevel = calculateZoomLevel(minLat_1, maxLat_1, minLong_1, maxLong_1, mapWidth, mapHeight, this.maps);
                     if (this.maps.isTileMap) {
-                        zoomLevel = Math.floor(zoomLevel);
                         markerFactor = isNullOrUndefined(this.maps.markerZoomFactor) ?
                             zoomLevel : isNullOrUndefined(this.maps.mapScaleValue) ?
                             zoomLevel : this.maps.mapScaleValue > 1 && this.maps.markerZoomFactor !== 1 ?
@@ -3726,6 +3753,8 @@ var Marker = /** @__PURE__ @class */ (function () {
                         markerFactor = isNullOrUndefined(this.maps.mapScaleValue) ? zoomLevel :
                             (Math.floor(this.maps.scale) !== 1 &&
                                 this.maps.mapScaleValue !== zoomLevel)
+                                &&
+                                    (isNullOrUndefined(this.maps.shouldZoomCurrentFactor))
                                 ? this.maps.mapScaleValue : zoomLevel;
                         if (((markerFactor === this.maps.mapScaleValue &&
                             (this.maps.markerZoomFactor === 1 || this.maps.mapScaleValue === 1))
@@ -3839,7 +3868,7 @@ var Marker = /** @__PURE__ @class */ (function () {
                 data = marker$$1.dataSource[dataIndex];
                 var collection_1 = [];
                 if (!marker$$1.template && (target.indexOf('_cluster_') > -1) && (this.maps.layers[index].markerClusterSettings.allowClusterExpand)) {
-                    marker$$1.dataSource.forEach(function (location, index) {
+                    Array.prototype.forEach.call(marker$$1.dataSource, function (location, index) {
                         if (location['latitude'] === data['latitude'] && location['longitude'] === data['longitude']) {
                             collection_1.push({ data: data, index: index });
                         }
@@ -4401,7 +4430,7 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
         this.mapObject.baseMapRectBounds = null;
         this.mapObject.baseSize = null;
         var layerCount = layerCollection.length - 1;
-        layerCollection.forEach(function (layer, index) {
+        Array.prototype.forEach.call(layerCollection, function (layer, index) {
             _this.currentLayer = layer;
             _this.processLayers(layer, index);
         });
@@ -4457,8 +4486,10 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
         }));
         if (!this.mapObject.enablePersistence) {
             var itemName = this.mapObject.getModuleName() + this.mapObject.element.id;
-            if (!isNullOrUndefined(window.localStorage) && window.localStorage.getItem(itemName)) {
-                window.localStorage.removeItem(itemName);
+            if (navigator.userAgent.indexOf('Edge') === -1) {
+                if (!isNullOrUndefined(window.localStorage) && window.localStorage.getItem(itemName)) {
+                    window.localStorage.removeItem(itemName);
+                }
             }
         }
         var eventArgs = {
@@ -4569,7 +4600,7 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
         this.rectBounds = null;
         var shapeSettings = this.currentLayer.shapeSettings;
         var bubbleSettings = this.currentLayer.bubbleSettings;
-        renderData.forEach(function (geometryData, index) {
+        Array.prototype.forEach.call(renderData, function (geometryData, index) {
             if (!isNullOrUndefined(geometryData['geometry']) || !isNullOrUndefined(geometryData['coordinates'])) {
                 var type = !isNullOrUndefined(geometryData['geometry']) ? geometryData['geometry']['type'] : geometryData['type'];
                 var coords = !isNullOrUndefined(geometryData['geometry']) ? geometryData['geometry']['coordinates'] :
@@ -5003,7 +5034,7 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
     };
     LayerPanel.prototype.calculateRectBounds = function (layerData) {
         var _this = this;
-        layerData.forEach(function (obj, index) {
+        Array.prototype.forEach.call(layerData, function (obj, index) {
             if (!isNullOrUndefined(obj['geometry']) || !isNullOrUndefined(obj['coordinates'])) {
                 var type = !isNullOrUndefined(obj['geometry']) ? obj['geometry']['type'] : obj['type'];
                 var coordinates = !isNullOrUndefined(obj['geometry']) ? obj['geometry']['coordinates'] : obj['coordinates'];
@@ -5050,7 +5081,7 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
     };
     LayerPanel.prototype.calculateRectBox = function (coordinates) {
         var _this = this;
-        coordinates.forEach(function (currentCoords) {
+        Array.prototype.forEach.call(coordinates, function (currentCoords) {
             if (isNullOrUndefined(_this.mapObject.baseMapBounds)) {
                 _this.mapObject.baseMapBounds = new GeoLocation({ min: currentCoords[1], max: currentCoords[1] }, { min: currentCoords[0], max: currentCoords[0] });
             }
@@ -5385,7 +5416,7 @@ var ExportUtils = /** @__PURE__ @class */ (function () {
         var div = createElement('div');
         if (elements) {
             if (elements instanceof Array) {
-                elements.forEach(function (value) {
+                Array.prototype.forEach.call(elements, function (value) {
                     div.appendChild(getElement(value).cloneNode(true));
                 });
             }
@@ -5621,7 +5652,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         this.serverProcess = { request: 0, response: 0 };
         var queryModule;
         var dataModule;
-        this.layersCollection.forEach(function (layer, layerIndex) {
+        Array.prototype.forEach.call(this.layersCollection, function (layer, layerIndex) {
             if (layer.shapeData instanceof DataManager) {
                 _this.serverProcess['request']++;
                 dataModule = layer.shapeData;
@@ -5900,7 +5931,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         var mainLayers = [];
         var subLayers = [];
         this.layersCollection = [];
-        this.layers.forEach(function (layer) {
+        Array.prototype.forEach.call(this.layers, function (layer) {
             (layer.type === 'Layer') ? mainLayers.push(layer) : subLayers.push(layer);
         });
         for (var i = 0; i < mainLayers.length; i++) {
@@ -6419,18 +6450,32 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         var _a, _b;
         var centerLatitude;
         var centerLongtitude;
+        var isTwoCoordinates = false;
+        if (isNullOrUndefined(maxLatitude) && isNullOrUndefined(maxLongitude)
+            || isNullOrUndefined(minLatitude) && isNullOrUndefined(minLongitude)) {
+            maxLatitude = isNullOrUndefined(maxLatitude) ? 0 : maxLatitude;
+            maxLongitude = isNullOrUndefined(maxLongitude) ? 0 : maxLongitude;
+            minLatitude = isNullOrUndefined(minLatitude) ? 0 : minLatitude;
+            minLongitude = isNullOrUndefined(minLatitude) ? 0 : minLongitude;
+            isTwoCoordinates = true;
+        }
         if (minLatitude > maxLatitude) {
             _a = [maxLatitude, minLatitude], minLatitude = _a[0], maxLatitude = _a[1];
         }
         if (minLongitude > maxLongitude) {
             _b = [maxLongitude, minLongitude], minLongitude = _b[0], maxLongitude = _b[1];
         }
-        centerLatitude = (minLatitude + maxLatitude) / 2;
-        centerLongtitude = (minLongitude + maxLongitude) / 2;
+        if (!isTwoCoordinates) {
+            centerLatitude = (minLatitude + maxLatitude) / 2;
+            centerLongtitude = (minLongitude + maxLongitude) / 2;
+        }
+        else {
+            centerLatitude = (minLatitude + maxLatitude);
+            centerLongtitude = (minLongitude + maxLongitude);
+        }
         this.centerLatOfGivenLocation = centerLatitude;
         this.centerLongOfGivenLocation = centerLongtitude;
-        this.scaleOfGivenLocation = calculateZoomLevel(minLatitude, maxLatitude, minLongitude, maxLongitude, this.mapAreaRect.width, this.mapAreaRect.height);
-        this.scaleOfGivenLocation = this.isTileMap ? Math.floor(this.scaleOfGivenLocation) : this.scaleOfGivenLocation;
+        this.scaleOfGivenLocation = calculateZoomLevel(minLatitude, maxLatitude, minLongitude, maxLongitude, this.mapAreaRect.width, this.mapAreaRect.height, this);
         this.zoomNotApplied = true;
         this.refresh();
     };
@@ -6632,7 +6677,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
      */
     Maps.prototype.isMarkersVisible = function () {
         var isVisible = false;
-        this.layers.forEach(function (layer, layerIndex) {
+        Array.prototype.forEach.call(this.layers, function (layer, layerIndex) {
             for (var i = 0; i < layer.markerSettings.length; i++) {
                 if (layer.markerSettings[i].visible) {
                     isVisible = true;
@@ -6660,7 +6705,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
      */
     Maps.prototype.isNavigationVisible = function () {
         var isVisible = false;
-        this.layers.forEach(function (layer, layerIndex) {
+        Array.prototype.forEach.call(this.layers, function (layer, layerIndex) {
             for (var i = 0; i < layer.navigationLineSettings.length; i++) {
                 if (layer.navigationLineSettings[i].visible) {
                     isVisible = true;
@@ -7793,7 +7838,7 @@ var Legend = /** @__PURE__ @class */ (function () {
         var leftPadding = 10;
         var topPadding = map.mapAreaRect.y;
         this.legendRenderingCollections = [];
-        map.layersCollection.forEach(function (layer, layerIndex) {
+        Array.prototype.forEach.call(map.layersCollection, function (layer, layerIndex) {
             if (!isNullOrUndefined(layer.shapeData)) {
                 var layerData = layer.shapeData['features'];
                 var dataPath = layer.shapeDataPath;
@@ -8039,7 +8084,7 @@ var Legend = /** @__PURE__ @class */ (function () {
                     j++;
                 }
                 var collection = this.totalPages[0]['Collection'];
-                collection.forEach(function (legendObj, index) {
+                Array.prototype.forEach.call(collection, function (legendObj, index) {
                     var legendRect = new Rect(legendObj['Rect']['x'], legendObj['Rect']['y'], legendObj['Rect']['width'], legendObj['Rect']['height']);
                     if (index === 0) {
                         legendItemStartX_1 = legendRect.x;
@@ -8854,12 +8899,12 @@ var Legend = /** @__PURE__ @class */ (function () {
     };
     Legend.prototype.getMarkersLegendCollections = function (layerIndex, markers) {
         var _this = this;
-        markers.forEach(function (marker$$1, markerIndex) {
+        Array.prototype.forEach.call(markers, function (marker$$1, markerIndex) {
             var dataSource = marker$$1.dataSource;
             var field = marker$$1.legendText;
             var templateFn;
             var isDuplicate;
-            dataSource.forEach(function (data, dataIndex) {
+            Array.prototype.forEach.call(dataSource, function (data, dataIndex) {
                 var imageSrc = null;
                 var showLegend = isNullOrUndefined(data[_this.maps.legendSettings.showLegendPath]) ? true :
                     data[_this.maps.legendSettings.showLegendPath];
@@ -8895,7 +8940,7 @@ var Legend = /** @__PURE__ @class */ (function () {
                 legendText = !isNullOrUndefined(colorMap.label) ? colorMap.label : colorMap.from + ' - ' + colorMap.to;
                 rangeData = [];
                 var colorMapProcess_1 = false;
-                dataSource.forEach(function (data, dataIndex) {
+                Array.prototype.forEach.call(dataSource, function (data, dataIndex) {
                     var colorValue = parseFloat(data[colorValuePath]);
                     if (colorValue >= colorMap.from && colorValue <= colorMap.to) {
                         colorMapProcess_1 = true;
@@ -8973,7 +9018,7 @@ var Legend = /** @__PURE__ @class */ (function () {
                 legendText = !isNullOrUndefined(colorMap.label) ? colorMap.label : colorMap.value;
                 equalData = [];
                 var eqaulColorProcess_1 = false;
-                dataSource.forEach(function (data, dataIndex) {
+                Array.prototype.forEach.call(dataSource, function (data, dataIndex) {
                     var equalValue = data[colorValuePath];
                     if (equalValue === colorMap.value) {
                         eqaulColorProcess_1 = true;
@@ -9008,7 +9053,7 @@ var Legend = /** @__PURE__ @class */ (function () {
             }
             else if (isNullOrUndefined(colorMap.minOpacity) && isNullOrUndefined(colorMap.maxOpacity) && isNullOrUndefined(colorMap.value)
                 && isNullOrUndefined(colorMap.from) && isNullOrUndefined(colorMap.to) && !isNullOrUndefined(colorMap.color)) {
-                dataSource.forEach(function (data, dataIndex) {
+                Array.prototype.forEach.call(dataSource, function (data, dataIndex) {
                     var equalValue = data[colorValuePath];
                     for (var k = 0; k < outOfRangeValues.length; k++) {
                         if (equalValue === outOfRangeValues[k]) {
@@ -9018,7 +9063,7 @@ var Legend = /** @__PURE__ @class */ (function () {
                 });
                 if (outOfRangeValues.length === 0) {
                     var range_1 = false;
-                    dataSource.forEach(function (data, dataIndex) {
+                    Array.prototype.forEach.call(dataSource, function (data, dataIndex) {
                         range_1 = false;
                         var rangeValue = data[colorValuePath];
                         for (var z = 0; z < colorMapping.length; z++) {
@@ -9055,7 +9100,7 @@ var Legend = /** @__PURE__ @class */ (function () {
         var fill = this.maps.legendSettings.fill;
         var valuePath = this.maps.legendSettings.valuePath;
         if (!isNullOrUndefined(colorValuePath) && !isNullOrUndefined(dataSource)) {
-            dataSource.forEach(function (data, dataIndex) {
+            Array.prototype.forEach.call(dataSource, function (data, dataIndex) {
                 var showLegend = isNullOrUndefined(_this.maps.legendSettings.showLegendPath) ?
                     true : isNullOrUndefined(data[_this.maps.legendSettings.showLegendPath]) ?
                     false : data[_this.maps.legendSettings.showLegendPath];
@@ -10702,7 +10747,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
         var currentLayers = this.maps.layersCollection[layerIndex];
         currentLayers.markerSettings.map(function (markerSettings, markerIndex) {
             var markerDatas = markerSettings.dataSource;
-            markerDatas.forEach(function (data, dataIndex) {
+            Array.prototype.forEach.call(markerDatas, function (data, dataIndex) {
                 _this.maps.markerNullCount = markerIndex > 0 && dataIndex === 0 ? 0 : _this.maps.markerNullCount;
                 var eventArgs = {
                     template: markerSettings.template, data: data, maps: _this.maps, marker: markerSettings,
@@ -11141,10 +11186,20 @@ var Zoom = /** @__PURE__ @class */ (function () {
             var direction = '';
             switch (toolbar_1.toLowerCase()) {
                 case 'zoom':
+                    var fillColor_1 = void 0;
+                    var strokeColor = void 0;
                     direction = 'M0.001,14.629L1.372,16l4.571-4.571v-0.685l0.228-0.274c1.051,0.868,2.423,1.417,3.885,1.417c3.291,0,';
                     direction += '5.943-2.651,5.943-5.943S13.395,0,10.103,0S4.16,2.651,4.16,5.943c0,1.508,0.503,2.834,1.417,3.885l-0.274,0.228H4.571';
                     direction = direction + 'L0.001,14.629L0.001,14.629z M5.943,5.943c0-2.285,1.828-4.114,4.114-4.114s4.114,1.828,4.114,';
-                    this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(map.element.id + '_Zooming_ToolBar_' + toolbar_1, fill, 1, this.maps.themeStyle.zoomFillColor, 1, null, direction + '4.114s-1.828,4.114-4.114,4.114S5.943,8.229,5.943,5.943z')));
+                    if (this.maps.zoomSettings.enablePanning) {
+                        fillColor_1 = fill;
+                        strokeColor = this.maps.themeStyle.zoomFillColor;
+                    }
+                    else {
+                        fillColor_1 = this.selectionColor;
+                        strokeColor = this.selectionColor;
+                    }
+                    this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(map.element.id + '_Zooming_ToolBar_' + toolbar_1, fillColor_1, 1, strokeColor, 1, null, direction + '4.114s-1.828,4.114-4.114,4.114S5.943,8.229,5.943,5.943z')));
                     this.zoomElements = this.currentToolbarEle;
                     this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
                     break;
@@ -11161,10 +11216,18 @@ var Zoom = /** @__PURE__ @class */ (function () {
                     this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
                     break;
                 case 'pan':
+                    var color = void 0;
                     direction = 'M5,3h2.3L7.275,5.875h1.4L8.65,3H11L8,0L5,3z M3,11V8.7l2.875,0.025v-1.4L3,7.35V5L0,8L3,';
                     direction += '11z M11,13H8.7l0.025-2.875h-1.4L7.35,13H5l3,3L11,13z M13,5v2.3l-2.875-0.025v1.4L13,8.65V11l3-3L13,5z';
-                    this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(map.element.id + '_Zooming_ToolBar_' + toolbar_1, this.selectionColor, 1, this.selectionColor, 1, null, direction)));
-                    this.panColor = this.selectionColor;
+                    if (!this.maps.zoomSettings.enablePanning) {
+                        color = "#737373";
+                        this.currentToolbarEle.setAttribute('class', '');
+                    }
+                    else {
+                        color = this.selectionColor;
+                    }
+                    this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(map.element.id + '_Zooming_ToolBar_' + toolbar_1, color, 1, color, 1, null, direction)));
+                    this.panColor = color;
                     this.panElements = this.currentToolbarEle;
                     this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
                     break;
@@ -11213,10 +11276,21 @@ var Zoom = /** @__PURE__ @class */ (function () {
                 this.applySelection(this.panElements, this.fillColor);
                 break;
             case 'pan':
-                this.panColor = this.selectionColor;
+                if (!this.maps.zoomSettings.enablePanning) {
+                    this.panColor = '#737373';
+                }
+                else {
+                    this.panColor = this.selectionColor;
+                }
                 this.zoomColor = this.fillColor;
-                this.applySelection(this.zoomElements, this.fillColor);
-                this.applySelection(this.panElements, this.selectionColor);
+                if (!this.maps.zoomSettings.enablePanning) {
+                    this.applySelection(this.zoomElements, this.selectionColor);
+                    this.applySelection(this.panElements, this.panColor);
+                }
+                else {
+                    this.applySelection(this.zoomElements, this.fillColor);
+                    this.applySelection(this.panElements, this.panColor);
+                }
                 break;
             case 'zoomin':
                 map.staticMapZoom = map.tileZoomLevel;
@@ -11236,8 +11310,14 @@ var Zoom = /** @__PURE__ @class */ (function () {
                 map.centerPosition.latitude = null;
                 map.centerPosition.longitude = null;
                 this.toolBarZooming(1, 'ZoomOut');
-                this.applySelection(this.zoomElements, this.fillColor);
-                this.applySelection(this.panElements, this.selectionColor);
+                if (!this.maps.zoomSettings.enablePanning) {
+                    this.applySelection(this.zoomElements, this.selectionColor);
+                    this.applySelection(this.panElements, '#737373');
+                }
+                else {
+                    this.applySelection(this.zoomElements, this.fillColor);
+                    this.applySelection(this.panElements, this.selectionColor);
+                }
         }
         this.panningStyle(type.toLowerCase());
     };
@@ -11405,7 +11485,14 @@ var Zoom = /** @__PURE__ @class */ (function () {
             pageY = e.pageY;
             target = e.target;
         }
-        this.isPanning = this.panColor === this.selectionColor ? true : this.zoomColor !== this.selectionColor;
+        if (!this.maps.zoomSettings.enablePanning) {
+            this.isPanning = this.panColor !== this.selectionColor ? this.maps.zoomSettings.enablePanning
+                : this.zoomColor === this.selectionColor;
+        }
+        else {
+            this.isPanning = this.panColor === this.selectionColor ? this.maps.zoomSettings.enablePanning
+                : this.zoomColor !== this.selectionColor;
+        }
         this.mouseDownLatLong = { x: pageX, y: pageY };
         this.rectZoomingStart = ((!this.isPanning) && this.maps.zoomSettings.enable);
         this.mouseDownPoints = this.getMousePosition(pageX, pageY);
@@ -11438,9 +11525,21 @@ var Zoom = /** @__PURE__ @class */ (function () {
         if (getElementByID(map.element.id + '_Zooming_KitCollection')) {
             if (target.id.indexOf('_Zooming_') > -1) {
                 getElementByID(map.element.id + '_Zooming_KitCollection').setAttribute('opacity', '1');
+                if (document.getElementById(map.element.id + '_Zooming_ToolBar_Pan_Group')) {
+                    if (!this.maps.zoomSettings.enablePanning) {
+                        if (target.id.indexOf('_Zooming_ToolBar') > -1 || target.id.indexOf('_Zooming_Rect') > -1) {
+                            getElementByID(map.element.id + '_Zooming_ToolBar_Pan_Rect').setAttribute('opacity', '0.3');
+                            getElementByID(map.element.id + '_Zooming_ToolBar_Pan').setAttribute('opacity', '0.3');
+                        }
+                    }
+                }
             }
             else {
                 getElementByID(map.element.id + '_Zooming_KitCollection').setAttribute('opacity', '0.3');
+                if (!this.maps.zoomSettings.enablePanning && document.getElementById(map.element.id + '_Zooming_ToolBar_Pan_Group')) {
+                    getElementByID(map.element.id + '_Zooming_ToolBar_Pan_Rect').setAttribute('opacity', '1');
+                    getElementByID(map.element.id + '_Zooming_ToolBar_Pan').setAttribute('opacity', '1');
+                }
             }
         }
         if (this.isTouch) {
@@ -11467,7 +11566,9 @@ var Zoom = /** @__PURE__ @class */ (function () {
             this.maps.element.style.cursor = 'pointer';
             this.mouseMoveLatLong = { x: pageX, y: pageY };
             if ((this.mouseDownLatLong['x'] !== this.mouseMoveLatLong['x']) && (this.mouseDownLatLong['y'] !== this.mouseMoveLatLong['y'])) {
-                this.panning('None', null, null);
+                if (this.maps.zoomSettings.enablePanning) {
+                    this.panning('None', null, null);
+                }
                 this.mouseDownLatLong['x'] = pageX;
                 this.mouseDownLatLong['y'] = pageY;
             }
@@ -11597,5 +11698,5 @@ var Zoom = /** @__PURE__ @class */ (function () {
  * exporting all modules from maps index
  */
 
-export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClusterRendering, markerClick, markerClusterClick, markerMouseMove, markerClusterMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, ConnectorLineSettings, MarkerClusterSettings, MarkerClusterData, ColorMappingSettings, InitialShapeSelectionSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, ToggleLegendSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, drawSymbols, markerColorChoose, markerShapeChoose, clusterTemplate, mergeSeparateCluster, clusterSeparate, marker, markerTemplate, maintainSelection, maintainStyleClass, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, getRatioOfBubble, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, getTranslate, getZoomTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, triggerItemSelectionEvent, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, calculateZoomLevel, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
+export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClusterRendering, markerClick, markerClusterClick, markerMouseMove, markerClusterMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, ConnectorLineSettings, MarkerClusterSettings, MarkerClusterData, ColorMappingSettings, InitialShapeSelectionSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, ToggleLegendSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, drawSymbols, markerColorChoose, markerShapeChoose, clusterTemplate, mergeSeparateCluster, clusterSeparate, marker, markerTemplate, maintainSelection, maintainStyleClass, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, getRatioOfBubble, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, getTranslate, getZoomTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, triggerItemSelectionEvent, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, compareZoomFactor, calculateZoomLevel, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
 //# sourceMappingURL=ej2-maps.es5.js.map

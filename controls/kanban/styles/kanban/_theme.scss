@@ -1,0 +1,65 @@
+@include export-module('kanban-theme') {
+  /*! kanban component theme */
+  .e-kanban .e-kanban-table {
+    .e-header-cells {
+      .e-header-text {
+        color: $kanban-default-font;
+      }
+
+      &.e-toggle-header {
+
+        .e-column-expand,
+        .e-column-collapse {
+          color: $kanban-icons-color;
+        }
+
+      }
+    }
+
+    &.e-content-table {
+      .e-content-row:not(.e-swimlane-row) td {
+        background-color: $kanban-column-bg-color;
+      }
+
+      .e-content-row {
+
+        &.e-swimlane-row {
+          .e-swimlane-text {
+            color: $kanban-default-font;
+          }
+        }
+
+      }
+
+      .e-card {
+        &.e-selection {
+          background-color: $kanban-card-selection;
+
+          @if $kanban-skin == 'fabric' {
+            border: 1px solid $kanban-column-bg-color;
+          }
+
+          @if $kanban-skin == 'highcontrast' {
+            border: 1px solid $kanban-primary-color;
+          }
+          @if $kanban-skin == 'bootstrap4' or $kanban-skin == 'bootstrap' {
+            border: 1px solid $kanban-dragged-clone-border-color;
+          }
+        }
+      }
+
+      .e-target-multi-clone {
+        .e-column-key {
+          &.e-multi-active {
+            background: $kanban-dropped-clone-bg-color;
+            border-color: $kanban-dropped-clone-border-color;
+          }
+
+          &.e-multi-bottom-border {
+            border-bottom-color: $kanban-dropped-clone-border-color;
+          }
+        }
+      }
+    }
+  }
+}

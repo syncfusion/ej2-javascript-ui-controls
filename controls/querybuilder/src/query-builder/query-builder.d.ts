@@ -379,6 +379,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private deleteRule;
     private deleteRuleSuccessCallBack;
     private setGroupRules;
+    private disableRuleCondition;
     /**
      * return the valid rule or rules collection.
      * @returns RuleModel.

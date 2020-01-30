@@ -116,7 +116,8 @@ export class TimelineEvent extends MonthEvent {
             appLeft = (this.parent.enableRtl) ? 0 : position;
             appRight = (this.parent.enableRtl) ? position : 0;
             let height: number = ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;
-            if ((this.cellHeight > height) || this.parent.rowAutoHeight) {
+            let renderApp: boolean = this.maxOrIndicator ? overlapCount < 1 ? true : false : this.cellHeight > height;
+            if (this.parent.rowAutoHeight || renderApp) {
                 let appointmentElement: HTMLElement = this.createAppointmentElement(event, resIndex);
                 this.applyResourceColor(appointmentElement, event, 'backgroundColor', this.groupOrder);
                 setStyleAttribute(appointmentElement, {
@@ -149,6 +150,7 @@ export class TimelineEvent extends MonthEvent {
                         let filterEvents: Object[] =
                             this.getFilterEvents(startDate, endDate, slotStartTime, slotEndTime, groupIndex, appointmentsList);
                         let appArea: number = this.cellHeight - this.moreIndicatorHeight;
+                        appHeight = this.withIndicator ? appArea - EVENT_GAP : appHeight;
                         let renderedAppCount: number = Math.floor(appArea / (appHeight + EVENT_GAP));
                         let count: number = (filterEvents.length - renderedAppCount) <= 0 ? 1 : (filterEvents.length - renderedAppCount);
                         let moreIndicatorElement: HTMLElement;
@@ -381,5 +383,9 @@ export class TimelineEvent extends MonthEvent {
             blockIndicator.style.top = this.getRowTop(resIndex) + this.cellHeight - BLOCK_INDICATOR_HEIGHT + 'px';
             this.renderElement(cellTd, blockIndicator);
         }
+    }
+
+    public setMaxEventHeight(event: HTMLElement, cell: HTMLElement): void {
+        setStyleAttribute(event, { 'height': (this.cellHeight - EVENT_GAP - (this.maxHeight ? 0 : this.moreIndicatorHeight)) + 'px' });
     }
 }

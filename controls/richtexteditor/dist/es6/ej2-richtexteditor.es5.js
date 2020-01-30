@@ -19113,7 +19113,9 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             detach(this.element);
             if (this.originalElement.innerHTML.trim() !== '') {
                 this.valueContainer.value = this.originalElement.innerHTML.trim();
-                this.setProperties({ value: (!isNullOrUndefined(this.initialValue) ? this.initialValue : null) }, true);
+                if (!isBlazor()) {
+                    this.setProperties({ value: (!isNullOrUndefined(this.initialValue) ? this.initialValue : null) }, true);
+                }
             }
             else {
                 this.valueContainer.value = !this.isBlazor() ? this.valueContainer.defaultValue : this.defaultResetValue;
@@ -19198,6 +19200,21 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
      */
     RichTextEditor.prototype.getText = function () {
         return this.contentModule.getText();
+    };
+    /**
+     * Returns the html value of the selected content as string.
+     * @return {string}
+     */
+    RichTextEditor.prototype.getSelectedHtml = function () {
+        var range;
+        var wrapperElm = this.createElement('div');
+        var selection = this.contentModule.getDocument().getSelection();
+        if (selection.rangeCount > 0) {
+            range = selection.getRangeAt(0);
+            var selectedHtml = range.cloneContents();
+            wrapperElm.appendChild(selectedHtml);
+        }
+        return wrapperElm.innerHTML;
     };
     /**
      * For internal use only - Get the module name.

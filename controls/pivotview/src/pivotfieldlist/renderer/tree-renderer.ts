@@ -3,7 +3,7 @@ import { MouseEventArgs, TouchEventArgs, closest } from '@syncfusion/ej2-base';
 import { PivotFieldList } from '../base/field-list';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
-import { IAction } from '../../common/base/interface';
+import { IAction, FieldDropEventArgs } from '../../common/base/interface';
 import { TreeView, NodeCheckEventArgs, DragAndDropEventArgs, DrawNodeEventArgs, NodeExpandEventArgs } from '@syncfusion/ej2-navigations';
 import { IFieldOptions, IField, IDataOptions } from '../../base/engine';
 import { Dialog } from '@syncfusion/ej2-popups';
@@ -408,48 +408,73 @@ export class TreeViewRenderer implements IAction {
             }
             let list: { [key: string]: Object } = this.parent.pivotFieldList;
             let selectedNode: { [key: string]: Object } = list[id] as { [key: string]: Object };
-            if (args.action === 'check') {
-                addClass([node.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
-                this.updateSelectedNodes(li, args.action);
-                let addNode: IFieldOptions = this.parent.pivotCommon.dataSourceUpdate.getNewField(id);
-                if (selectedNode.type === 'number' || (selectedNode.type === 'CalculatedField' &&
-                    selectedNode.formula && (selectedNode.formula as string).indexOf('Measure') > -1 &&
-                    this.parent.dataType === 'olap')) {
-                    this.parent.dataSourceSettings.values.push(addNode);
-                    if (this.parent.dataType === 'olap' && this.parent.olapEngineModule && !(this.parent.olapEngineModule).isMeasureAvail) {
-                        let measureField: IFieldOptions = {
-                            name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined,
-                        };
-                        let fieldAxis: IFieldOptions[] = this.parent.dataSourceSettings.valueAxis === 'row' ?
-                            this.parent.dataSourceSettings.rows : this.parent.dataSourceSettings.columns;
-                        fieldAxis.push(measureField);
+            let eventdrop: FieldDropEventArgs = {
+                'droppedField': selectedNode, 'dataSourceSettings': this.parent.dataSourceSettings,
+                'droppedAxis': 'rows', 'draggedAxis': 'fieldlist', 'cancel': false
+            };
+            this.parent.trigger(events.fieldDrop, eventdrop, (observedArgs: FieldDropEventArgs) => {
+                if (!observedArgs.cancel) {
+                    if (args.action === 'check') {
+                        addClass([node.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
+                        this.updateSelectedNodes(li, args.action);
+                        let addNode: IFieldOptions = this.parent.pivotCommon.dataSourceUpdate.getNewField(id);
+                        if (selectedNode.type === 'number' || (selectedNode.type === 'CalculatedField' &&
+                            selectedNode.formula && (selectedNode.formula as string).indexOf('Measure') > -1 &&
+                            this.parent.dataType === 'olap')) {
+                            this.parent.dataSourceSettings.values.push(addNode);
+                            if (this.parent.dataType === 'olap' && this.parent.olapEngineModule &&
+                             !(this.parent.olapEngineModule).isMeasureAvail) {
+                                let measureField: IFieldOptions = {
+                                    name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined,
+                                };
+                                let fieldAxis: IFieldOptions[] = this.parent.dataSourceSettings.valueAxis === 'row' ?
+                                    this.parent.dataSourceSettings.rows : this.parent.dataSourceSettings.columns;
+                                fieldAxis.push(measureField);
+                            }
+                        } else {
+                            this.parent.dataSourceSettings.rows.push(addNode);
+                        }
+                    } else {
+                        removeClass([node.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
+                        this.updateSelectedNodes(li, args.action);
+                        this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport(id);
+                        if (this.parent.dataType === 'olap' && this.parent.dataSourceSettings.values.length === 0) {
+                            this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport('[Measures]');
+                        }
                     }
+                    if (!this.parent.allowDeferLayoutUpdate) {
+                        this.parent.updateDataSource(true);
+                    } else {
+                        selectedNode.isSelected = args.action === 'check';
+                        if (this.parent.dataType === 'olap') {
+                            this.parent.olapEngineModule.updateFieldlistData(id, args.action === 'check');
+                        }
+                        this.updateDataSource();
+                    }
+                    let parent: PivotFieldList = this.parent;
+                    setTimeout(() => {
+                        parent.axisFieldModule.render();
+                    });
                 } else {
-                    this.parent.dataSourceSettings.rows.push(addNode);
+                    let chkState: NodeListOf<Element> = this.parent.treeViewModule.treeViewElement.querySelectorAll('.e-checkbox-wrapper');
+                    let innerText: NodeListOf<Element>  = this.parent.treeViewModule.treeViewElement.querySelectorAll('.e-list-text');
+                    let checkClass: NodeListOf<Element>  = this.parent.treeViewModule.treeViewElement.querySelectorAll('.e-frame');
+                    for (let i : number = 0; i < chkState.length; i++) {
+                        if (observedArgs.droppedField.caption === innerText[i].textContent) {
+                            if (chkState[i].getAttribute('aria-checked') === 'false') {
+                                chkState[i].setAttribute('aria-checked', 'false');
+                                checkClass[i].classList.add(cls.NODE_CHECK_CLASS);
+                            } else {
+                                chkState[i].setAttribute('aria-checked', 'true');
+                                checkClass[i].classList.remove(cls.NODE_CHECK_CLASS);
+                            }
+                        }
+                    }
                 }
-            } else {
-                removeClass([node.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.LIST_SELECT_CLASS);
-                this.updateSelectedNodes(li, args.action);
-                this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport(id);
-                if (this.parent.dataType === 'olap' && this.parent.dataSourceSettings.values.length === 0) {
-                    this.parent.pivotCommon.dataSourceUpdate.removeFieldFromReport('[Measures]');
-                }
-            }
-            if (!this.parent.allowDeferLayoutUpdate) {
-                this.parent.updateDataSource(true);
-            } else {
-                selectedNode.isSelected = args.action === 'check';
-                if (this.parent.dataType === 'olap') {
-                    this.parent.olapEngineModule.updateFieldlistData(id, args.action === 'check');
-                }
-                this.updateDataSource();
-            }
-            let parent: PivotFieldList = this.parent;
-            setTimeout(() => {
-                parent.axisFieldModule.render();
             });
         }
     }
+
     private updateSelectedNodes(li: HTMLElement, state: string): void {
         if (li && li.querySelector('ul')) {
             for (let element of [].slice.call(li.querySelectorAll('li'))) {

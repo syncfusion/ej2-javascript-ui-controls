@@ -292,9 +292,9 @@ export class DetailRow {
     private refreshColSpan(): void {
         let detailrows: NodeListOf<Element> = (<Grid>this.parent).contentModule.getTable().querySelectorAll('tr.e-detailrow');
         let colSpan: number = (<Grid>this.parent).getVisibleColumns().length;
-        detailrows.forEach((detailrow: Node) => {
-            (<HTMLElement>detailrow).querySelector('.e-detailcell').setAttribute('colspan', colSpan + '');
-        });
+        for (let i: number = 0; i < detailrows.length; i++) {
+            (<HTMLElement>detailrows[i]).querySelector('.e-detailcell').setAttribute('colspan', colSpan + '');
+        }
     }
 
     /**

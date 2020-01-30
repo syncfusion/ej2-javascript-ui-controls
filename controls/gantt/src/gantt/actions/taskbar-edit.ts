@@ -1,4 +1,4 @@
-import { isNullOrUndefined, createElement, extend, addClass, remove, removeClass, closest, Browser } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, createElement, extend, addClass, remove, removeClass, closest, Browser, merge } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { parentsUntil } from '../base/utils';
 import { IGanttData, ITaskData, ITaskbarEditedEventArgs, IDependencyEventArgs, MousePoint, IPredecessor } from '../base/interface';
@@ -81,7 +81,7 @@ export class TaskbarEdit {
         this.roundOffDuration = true;
         this.dragMouseLeave = false;
         this.isMouseDragged = false;
-        this.previousItemProperty = ['left', 'progress', 'duration', 'startDate', 'endDate', 'width', 'progressWidth'];
+        this.previousItemProperty = ['left', 'progress', 'duration', 'isMilestone', 'startDate', 'endDate', 'width', 'progressWidth'];
         this.tapPointOnFocus = false;
         this.touchEdit = false;
     }
@@ -426,35 +426,35 @@ export class TaskbarEdit {
             args.taskBarEditAction = this.taskBarEditAction;
             args.roundOffDuration = this.roundOffDuration;
             args.cancel = false;
+            args.previousData = this.previousItem;
+            this.roundOffDuration = args.roundOffDuration;
+            this.updateMouseMoveProperties(e);
+            if (this.taskBarEditAction === 'ProgressResizing') {
+                this.performProgressResize(e);
+            } else if (this.taskBarEditAction === 'LeftResizing') {
+                this.enableLeftResizing(e);
+            } else if (this.taskBarEditAction === 'RightResizing') {
+                this.enableRightResizing(e);
+            } else if (this.taskBarEditAction === 'ParentDrag' || this.taskBarEditAction === 'ChildDrag' ||
+                this.taskBarEditAction === 'MilestoneDrag') {
+                this.enableDragging(e);
+            } else if (this.taskBarEditAction === 'ConnectorPointLeftDrag' ||
+                this.taskBarEditAction === 'ConnectorPointRightDrag') {
+                this.triggerDependencyEvent(e);
+                if (!this.parent.isAdaptive) {
+                    this.drawFalseLine();
+                }
+            }
+            this.setItemPosition();
+            this.updateEditedItem();
+            this.editTooltip.updateTooltip();
+            if (isMouseClick) {
+                this.taskBarEditedAction(e);
+            }
             this.parent.trigger('taskbarEditing', args, (args: ITaskbarEditedEventArgs) => {
-                if (!args.cancel && this.taskBarEditRecord !== null) {
-                    this.roundOffDuration = args.roundOffDuration;
-                    this.updateMouseMoveProperties(e);
-                    if (this.taskBarEditAction === 'ProgressResizing') {
-                        this.performProgressResize(e);
-                    } else if (this.taskBarEditAction === 'LeftResizing') {
-                        this.enableLeftResizing(e);
-                    } else if (this.taskBarEditAction === 'RightResizing') {
-                        this.enableRightResizing(e);
-                    } else if (this.taskBarEditAction === 'ParentDrag' || this.taskBarEditAction === 'ChildDrag' ||
-                        this.taskBarEditAction === 'MilestoneDrag') {
-                        this.enableDragging(e);
-                    } else if (this.taskBarEditAction === 'ConnectorPointLeftDrag' ||
-                        this.taskBarEditAction === 'ConnectorPointRightDrag') {
-                        this.triggerDependencyEvent(e);
-                        if (!this.parent.isAdaptive) {
-                            this.drawFalseLine();
-                        }
-                    }
-                    this.setItemPosition();
-                    this.updateEditedItem();
-                    this.editTooltip.updateTooltip();
-                    if (isMouseClick) {
-                        this.taskBarEditedAction(e);
-                    }
-                } else {
+                if (args.cancel && this.taskBarEditRecord !== null) {
                     this.tapPointOnFocus = false;
-                    this.editTooltip.showHideTaskbarEditTooltip(false);
+                    merge(this.taskBarEditRecord.ganttProperties, args.previousData);
                 }
 
             });
@@ -738,6 +738,9 @@ export class TaskbarEdit {
                     && isNullOrUndefined(item.isMilestone) && item.isMilestone === false && item.duration === 0) {
                     this.parent.setRecordValue('duration', 1, item, true);
                 }
+                if (item.isMilestone) {
+                    this.parent.setRecordValue('endDate', new Date(startDate.getTime()), item, true);
+                }
                 this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
                 break;
             case 'RightResizing':
@@ -747,7 +750,9 @@ export class TaskbarEdit {
                     startDate = this.parent.dateValidationModule.getValidStartDate(item);
                     this.parent.setRecordValue('startDate', startDate, item, true);
                 }
-                endDate = this.parent.dateValidationModule.checkEndDate(tempEndDate, this.taskBarEditRecord.ganttProperties);
+                let tempdate: Date = isNullOrUndefined(item.startDate) ? startDate : item.startDate;
+                endDate = item.isMilestone ? tempdate :
+                 this.parent.dateValidationModule.checkEndDate(tempEndDate, this.taskBarEditRecord.ganttProperties);
                 this.parent.setRecordValue('endDate', new Date(endDate.getTime()), item, true);
                 this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
                 break;

@@ -892,7 +892,7 @@ export class PdfExport {
                     colSpan: 1,
                     cell: cell
                 };
-                args.value = this.exportValueFormatter.formatCellValue(args);
+                args.value = this.exportValueFormatter.formatCellValue(args, gObj.isServerRendered);
                 this.parent.trigger(events.pdfQueryCellInfo, args);
                 cell.value = args.value;
                 if (!isNullOrUndefined(args.style)) {

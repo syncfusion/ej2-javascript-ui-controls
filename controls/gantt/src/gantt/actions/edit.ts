@@ -371,7 +371,7 @@ export class Edit {
                 //..
             } else if ([tasks.progress, tasks.notes, tasks.durationUnit, tasks.expandState,
             tasks.milestone, tasks.name, tasks.baselineStartDate,
-            tasks.baselineEndDate, tasks.indicators, tasks.id].indexOf(key) !== -1) {
+            tasks.baselineEndDate, tasks.id].indexOf(key) !== -1) {
                 let column: ColumnModel = ganttObj.columnByField[key];
                 /* tslint:disable-next-line */
                 let value: any = data[key];
@@ -400,12 +400,19 @@ export class Edit {
                 }
                 ganttObj.setRecordValue('taskData.' + key, value, ganttData);
                 ganttObj.setRecordValue(key, value, ganttData);
+            } else if (tasks.indicators === key) {
+                let value: Object[] = data[key];
+                ganttObj.setRecordValue('indicators', value, ganttData.ganttProperties, true);
+                ganttObj.setRecordValue('taskData.' + key, value, ganttData);
+                ganttObj.setRecordValue(key, value, ganttData);
             } else if (ganttObj.customColumns.indexOf(key) !== -1) {
                 let column: ColumnModel = ganttObj.columnByField[key];
                 /* tslint:disable-next-line */
                 let value: any = data[key];
-                if (column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit') {
-                    value = ganttObj.dataOperation.getDateFromFormat(value);
+                if (isNullOrUndefined(column.edit)) {
+                    if (column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit') {
+                        value = ganttObj.dataOperation.getDateFromFormat(value);
+                    }
                 }
                 ganttObj.setRecordValue('taskData.' + key, value, ganttData);
                 ganttObj.setRecordValue(key, value, ganttData);

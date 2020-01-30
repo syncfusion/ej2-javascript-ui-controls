@@ -142,6 +142,12 @@ export class Item extends ChildProperty<Item>  {
     @Property(false)
     public showAlwaysInPopup: boolean;
     /**
+     * Specifies whether an item should be disabled or not.
+     * @default false
+     */
+    @Property(false)
+    public disabled: boolean;
+    /**
      * Defines single/multiple classes separated by space used to specify an icon for the button.
      * The icon will be positioned before the text content if text is available, otherwise the icon alone will be rendered.
      * @default ""
@@ -385,7 +391,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             this.resetServerItems();
         } else {
             let subControls: NodeListOf<Element> = this.element.querySelectorAll('.e-control');
-            subControls.forEach((node: HTMLElement): void => {
+            [].slice.call(subControls).forEach((node: HTMLElement): void => {
                 let instances: object[] = (node as EJ2Instance).ej2_instances;
                 if (instances) {
                     let instance: Toolbar = instances[0] as Toolbar;
@@ -667,12 +673,15 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         value ? rootEle.classList.add(CLS_DISABLE) : rootEle.classList.remove(CLS_DISABLE);
         rootEle.setAttribute('tabindex', !value ? '0' : '-1');
         if (this.activeEle) {
-          this.activeEle.setAttribute('tabindex', !value ? '0' : '-1'); }
+            this.activeEle.setAttribute('tabindex', !value ? '0' : '-1');
+        }
         if (this.scrollModule) {
-          this.scrollModule.disable(value); }
+            this.scrollModule.disable(value);
+        }
         if (this.popObj) {
             if (isVisible(this.popObj.element) && this.overflowMode !== 'Extended') {
-                this.popObj.hide(); }
+                this.popObj.hide();
+            }
             rootEle.querySelector('#' + rootEle.id + '_nav').setAttribute('tabindex', !value ? '0' : '-1');
         }
     }
@@ -880,7 +889,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             ele.classList.remove(CLS_VERTICAL);
             this.isVertical = false;
             if (this.height === 'auto' || this.height === '100%') {
-                ele.style.height = this.height; }
+                ele.style.height = this.height;
+            }
             ele.setAttribute('aria-orientation', 'horizontal');
         } else {
             ele.classList.add(CLS_VERTICAL);
@@ -935,9 +945,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         let scrollNav: HTEle = <HTEle>element.querySelector('.' + CLS_TBARSCRLNAV);
         let navEleWidth: number = 0;
         if (popNav) {
-          navEleWidth = this.isVertical ? popNav.offsetHeight : popNav.offsetWidth;
-         } else if (scrollNav) {
-           navEleWidth = this.isVertical ? (scrollNav.offsetHeight * (2)) : (scrollNav.offsetWidth * 2);
+            navEleWidth = this.isVertical ? popNav.offsetHeight : popNav.offsetWidth;
+        } else if (scrollNav) {
+            navEleWidth = this.isVertical ? (scrollNav.offsetHeight * (2)) : (scrollNav.offsetWidth * 2);
         }
         if (itemWidth > eleWidth - navEleWidth) {
             return true;
@@ -1052,7 +1062,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         setStyle(this.element, { direction: 'initial' });
         this.checkPriority(ele, innerEle, eleWidth, true);
         if (this.enableRtl) {
-            this.element.classList.add('e-rtl'); }
+            this.element.classList.add('e-rtl');
+        }
         this.element.style.removeProperty('direction');
         this.createPopup();
     }
@@ -1146,7 +1157,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             popup.appendTo(ele);
             if (this.overflowMode === 'Extended') {
                 popup.width = parseFloat(eleStyles.width) + ((parseFloat(eleStyles.borderRightWidth)) * 2);
-                popup.offsetX = 0; }
+                popup.offsetX = 0;
+            }
             EventHandler.add(document, 'scroll', this.docEvent.bind(this));
             EventHandler.add(document, 'click ', this.docEvent.bind(this));
             popup.element.style.maxHeight = popup.element.offsetHeight + 'px';
@@ -1169,7 +1181,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private tbarPopupHandler(isOpen: boolean): void {
         if (this.overflowMode === 'Extended') {
-          isOpen ? this.add(this.element, CLS_EXTENDEDPOPOPEN) : this.remove(this.element, CLS_EXTENDEDPOPOPEN);
+            isOpen ? this.add(this.element, CLS_EXTENDEDPOPOPEN) : this.remove(this.element, CLS_EXTENDEDPOPOPEN);
         }
     }
     private popupOpen(e: Event): void {
@@ -1250,13 +1262,15 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 if (this.isVertical) {
                     setStyle(inEle[i], { display: 'none', minHeight: eleWid + 'px' });
                 } else {
-                    setStyle(inEle[i], { display: 'none', minWidth: eleWid + 'px' }); }
+                    setStyle(inEle[i], { display: 'none', minWidth: eleWid + 'px' });
+                }
                 itemPopCount++;
             }
             if (this.isVertical) {
                 checkoffset = (inEle[i].offsetTop + inEle[i].offsetHeight + mrgn) > eleWidth;
             } else {
-                checkoffset = (inEle[i].offsetLeft + inEle[i].offsetWidth + mrgn) > eleWidth; }
+                checkoffset = (inEle[i].offsetLeft + inEle[i].offsetWidth + mrgn) > eleWidth;
+            }
             if (checkoffset) {
                 if (inEle[i].classList.contains(CLS_SEPARATOR)) {
                     if (this.overflowMode === 'Extended') {
@@ -1281,7 +1295,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                     itemCount++;
                 }
                 if (inEle[i].classList.contains(CLS_TBAROVERFLOW) && pre) {
-                    eleWidth -= (( this.isVertical ? inEle[i].offsetHeight : inEle[i].offsetWidth) + (mrgn));
+                    eleWidth -= ((this.isVertical ? inEle[i].offsetHeight : inEle[i].offsetWidth) + (mrgn));
                 } else if (!checkClass(inEle[i], [CLS_SEPARATOR, CLS_TBARIGNORE])) {
                     inEle[i].classList.add(CLS_POPUP);
                     if (this.isVertical) {
@@ -1291,7 +1305,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                     }
                     itemPopCount++;
                 } else {
-                    eleWidth -= (( this.isVertical ? inEle[i].offsetHeight : inEle[i].offsetWidth) + (mrgn));
+                    eleWidth -= ((this.isVertical ? inEle[i].offsetHeight : inEle[i].offsetWidth) + (mrgn));
                 }
             }
         }
@@ -1363,15 +1377,18 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         popupEle.style.display = 'block';
         let dimension: number;
         if (isVer) {
-          dimension = ele.offsetHeight - (popNav.offsetHeight + innerEle.offsetHeight);
+            dimension = ele.offsetHeight - (popNav.offsetHeight + innerEle.offsetHeight);
         } else {
-            dimension = ele.offsetWidth - (popNav.offsetWidth + innerEle.offsetWidth); }
+            dimension = ele.offsetWidth - (popNav.offsetWidth + innerEle.offsetWidth);
+        }
         let popupEleWidth: number = 0;
         [].slice.call(popupEle.children).forEach((el: HTMLElement): void => {
-          popupEleWidth += this.popupEleWidth(el);
-          setStyle(el, {'position': ''});  });
-        if ((dimension + (isVer ? popNav.offsetHeight : popNav.offsetWidth)) > (popupEleWidth) && this.popupPriCount === 0 ) {
-          destroy = true; }
+            popupEleWidth += this.popupEleWidth(el);
+            setStyle(el, { 'position': '' });
+        });
+        if ((dimension + (isVer ? popNav.offsetHeight : popNav.offsetWidth)) > (popupEleWidth) && this.popupPriCount === 0) {
+            destroy = true;
+        }
         this.popupEleRefresh(dimension, popupEle, destroy);
         popupEle.style.display = '';
         if (popupEle.children.length === 0 && popNav && this.popObj) {
@@ -1423,7 +1440,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 btnText.style.display = 'block';
             }
             btn.style.minWidth = '0%';
-            elWidth = parseFloat( !this.isVertical ? el.style.minWidth : el.style.minHeight);
+            elWidth = parseFloat(!this.isVertical ? el.style.minWidth : el.style.minHeight);
             btn.style.minWidth = '';
             btn.style.minHeight = '';
             if (!isNOU(btnText)) {
@@ -1461,15 +1478,16 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 }
                 let sepBeforePri: number = 0;
                 if (this.overflowMode !== 'Extended') {
-                eleSplice.slice(0, index).forEach((el: HTEle) => {
-                    if (el.classList.contains(CLS_TBAROVERFLOW) || el.classList.contains(CLS_SEPARATOR)) {
-                        if (el.classList.contains(CLS_SEPARATOR)) {
-                            el.style.display = '';
-                            width -= el.offsetWidth;
+                    eleSplice.slice(0, index).forEach((el: HTEle) => {
+                        if (el.classList.contains(CLS_TBAROVERFLOW) || el.classList.contains(CLS_SEPARATOR)) {
+                            if (el.classList.contains(CLS_SEPARATOR)) {
+                                el.style.display = '';
+                                width -= el.offsetWidth;
+                            }
+                            sepBeforePri++;
                         }
-                        sepBeforePri++;
-                    }
-                }); }
+                    });
+                }
                 ignoreCount = this.ignoreEleFetch(index, innerEle);
                 if (el.classList.contains(CLS_TBAROVERFLOW)) {
                     this.tbarPriRef(innerEle, index, sepBeforePri, el, destroy, elWidth, width, ignoreCount);
@@ -1518,18 +1536,20 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             innerItem = [].slice.call(item.childNodes);
         }
         if (this.isVertical) {
-          margin = innerItem[0].offsetHeight + innerItem[2].offsetHeight;
+            margin = innerItem[0].offsetHeight + innerItem[2].offsetHeight;
         } else {
-           margin = innerItem[0].offsetWidth + innerItem[2].offsetWidth; }
+            margin = innerItem[0].offsetWidth + innerItem[2].offsetWidth;
+        }
         let tbarWid: number = this.isVertical ? this.element.offsetHeight : this.element.offsetWidth;
         if (popupNav) {
             tbarWid -= (this.isVertical ? popupNav.offsetHeight : popupNav.offsetWidth);
             let popWid: string = (this.isVertical ? popupNav.offsetHeight : popupNav.offsetWidth) + 'px';
             innerItem[2].removeAttribute('style');
             if (this.isVertical) {
-              this.enableRtl ? innerItem[2].style.top = popWid : innerItem[2].style.bottom = popWid;
+                this.enableRtl ? innerItem[2].style.top = popWid : innerItem[2].style.bottom = popWid;
             } else {
-                this.enableRtl ? innerItem[2].style.left = popWid : innerItem[2].style.right = popWid; }
+                this.enableRtl ? innerItem[2].style.left = popWid : innerItem[2].style.right = popWid;
+            }
         }
         if (tbarWid <= margin) { return; }
         let value: number = (((tbarWid - margin)) - (!this.isVertical ? innerItem[1].offsetWidth : innerItem[1].offsetHeight)) / 2;
@@ -1538,7 +1558,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.isVertical) {
             this.enableRtl ? innerItem[1].style.marginBottom = mrgn : innerItem[1].style.marginTop = mrgn;
         } else {
-        this.enableRtl ? innerItem[1].style.marginRight = mrgn : innerItem[1].style.marginLeft = mrgn; }
+            this.enableRtl ? innerItem[1].style.marginRight = mrgn : innerItem[1].style.marginLeft = mrgn;
+        }
     }
     private tbarItemAlign(item: ItemModel, itemEle: HTEle, pos: number): void {
         if (item.showAlwaysInPopup && item.overflow !== 'Show') { return; }
@@ -1695,7 +1716,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             innerEle = this.renderSubComponent(item, index);
             if (this.tbarEle.length >= index && innerItems.length >= 0) {
                 if (isNOU(this.scrollModule)) {
-                this.destroyMode(); }
+                    this.destroyMode();
+                }
                 let algIndex: number = item.align[0] === 'L' ? 0 : item.align[0] === 'C' ? 1 : 2;
                 let ele: Element;
                 if (!this.tbarAlign && itemAgn !== 'Left') {
@@ -1706,15 +1728,16 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                     this.tbarAlgEle[(item.align + 's').toLowerCase() as ItmAlign].push(innerEle);
                     this.refreshPositioning();
                 } else if (this.tbarAlign) {
-                 ele = closest(innerItems[0] , '.' + CLS_ITEMS).children[algIndex];
-                 ele.insertBefore(innerEle, ele.children[index]);
-                 this.tbarAlgEle[(item.align + 's').toLowerCase() as ItmAlign].splice(index, 0, innerEle);
-                 this.refreshPositioning();
+                    ele = closest(innerItems[0], '.' + CLS_ITEMS).children[algIndex];
+                    ele.insertBefore(innerEle, ele.children[index]);
+                    this.tbarAlgEle[(item.align + 's').toLowerCase() as ItmAlign].splice(index, 0, innerEle);
+                    this.refreshPositioning();
                 } else if (innerItems.length === 0) {
                     innerItems = selectAll('.' + CLS_ITEMS, this.element);
                     innerItems[0].appendChild(innerEle);
                 } else {
-                innerItems[0].parentNode.insertBefore(innerEle, innerItems[index]); }
+                    innerItems[0].parentNode.insertBefore(innerEle, innerItems[index]);
+                }
                 this.items.splice(index, 0, item);
                 this.tbarEle.splice(index, 0, innerEle);
                 index++;
@@ -1787,7 +1810,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                     innerEle.appendChild(ele);
                     (<HTMLElement>ele).style.display = '';
                     if (!isNOU(tempStr)) {
-                      this.tempId.push(val);
+                        this.tempId.push(val);
                     }
                 }
             } catch (e) {
@@ -1841,7 +1864,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
         let btnObj: Button = new Button({ iconCss: iconCss, iconPosition: <IconPosition>iconPos });
         btnObj.createElement = this.createElement;
-        btnObj.appendTo( dom as HTMLButtonElement);
+        btnObj.appendTo(dom as HTMLButtonElement);
         if (item.width) {
             setStyle(dom, { 'width': formatUnit(item.width) });
         }
@@ -1852,7 +1875,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         let dom: HTEle;
         innerEle = this.createElement('div', { className: CLS_ITEM });
         innerEle.setAttribute('aria-disabled', 'false');
-        let tempDom: HTEle = this.createElement('div', {innerHTML: SanitizeHtmlHelper.sanitize(item.tooltipText)});
+        let tempDom: HTEle = this.createElement('div', { innerHTML: SanitizeHtmlHelper.sanitize(item.tooltipText) });
         if (!this.tbarEle) {
             this.tbarEle = [];
         }
@@ -1860,7 +1883,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             this.setAttr(item.htmlAttributes, innerEle);
         }
         if (item.tooltipText) {
-            innerEle.setAttribute('title', tempDom.textContent );
+            innerEle.setAttribute('title', tempDom.textContent);
         }
         if (item.cssClass) {
             innerEle.className = innerEle.className + ' ' + item.cssClass;
@@ -1903,6 +1926,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         if (item.overflow !== 'Show' && item.showAlwaysInPopup && !innerEle.classList.contains(CLS_SEPARATOR)) {
             this.add(innerEle, CLS_POPPRI);
             this.popupPriCount++;
+        }
+        if (item.disabled) {
+            this.add(innerEle, CLS_DISABLE);
         }
         return innerEle;
     }
@@ -1968,7 +1994,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.popObj) {
             if (this.overflowMode === 'Extended') {
                 let eleStyles: CSSStyleDeclaration = window.getComputedStyle(this.element);
-                this.popObj.width = parseFloat(eleStyles.width) + ((parseFloat(eleStyles.borderRightWidth)) * 2); }
+                this.popObj.width = parseFloat(eleStyles.width) + ((parseFloat(eleStyles.borderRightWidth)) * 2);
+            }
             if (this.tbarAlign) { this.removePositioning(); }
             this.popupRefresh(this.popObj.element, false);
             if (this.tbarAlign) { this.refreshPositioning(); }
@@ -2015,7 +2042,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                                 --this.popupPriCount;
                             }
                             if (isNOU(this.scrollModule)) {
-                              this.destroyMode(); }
+                                this.destroyMode();
+                            }
                             let itemCol: HTEle[] = [].slice.call(selectAll('.' + CLS_ITEMS + ' .' + CLS_ITEM, tEle));
                             detach(itemCol[index]);
                             this.tbarEle.splice(index, 1);
@@ -2084,7 +2112,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
      * @param  {boolean} value - Based on this Boolean value, item will be hide (true) or show (false). By default, value is false.
      * @returns void.
      */
-    public hideItem(index: number| HTMLElement | Element, value?: boolean): void {
+    public hideItem(index: number | HTMLElement | Element, value?: boolean): void {
         let isElement: boolean = (typeof (index) === 'object') ? true : false;
         let eleIndex: number = index as number;
         let initIndex: number;
@@ -2097,48 +2125,49 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             ele = innerItems[eleIndex];
         }
         if (ele) {
-        value ? ele.classList.add(CLS_HIDDEN) : ele.classList.remove(CLS_HIDDEN);
-        if (value && isNOU(this.element.getAttribute('tabindex')) && !ele.classList.contains(CLS_SEPARATOR)) {
-            if (isNOU(ele.firstElementChild.getAttribute('tabindex'))) {
-                ele.firstElementChild.setAttribute('tabindex', '-1');
-                let innerItems: HTEle[] = [].slice.call(selectAll('.' + CLS_ITEM, this.element));
-                if (isElement) {
-                    eleIndex = innerItems.indexOf(ele);
-                }
-                let nextEle: HTEle = innerItems[++eleIndex];
-                while (nextEle) {
-                    let skipEle: string | boolean = this.eleContains(nextEle);
-                    if (!skipEle) {
-                        nextEle.firstElementChild.removeAttribute('tabindex');
-                        break;
+            value ? ele.classList.add(CLS_HIDDEN) : ele.classList.remove(CLS_HIDDEN);
+            if (value && isNOU(this.element.getAttribute('tabindex')) && !ele.classList.contains(CLS_SEPARATOR)) {
+                if (isNOU(ele.firstElementChild.getAttribute('tabindex'))) {
+                    ele.firstElementChild.setAttribute('tabindex', '-1');
+                    let innerItems: HTEle[] = [].slice.call(selectAll('.' + CLS_ITEM, this.element));
+                    if (isElement) {
+                        eleIndex = innerItems.indexOf(ele);
                     }
-                    nextEle = innerItems[++eleIndex];
-                }
-            }
-        } else if (isNOU(this.element.getAttribute('tabindex')) && !ele.classList.contains(CLS_SEPARATOR)) {
-            initIndex = 0;
-            let setFlag: boolean = false;
-            let removeFlag: boolean = false;
-            let initELe: HTEle = innerItems[initIndex];
-            while (initELe) {
-                if (!initELe.classList.contains(CLS_SEPARATOR)) {
-                    if (isNOU(initELe.firstElementChild.getAttribute('tabindex'))) {
-                        initELe.firstElementChild.setAttribute('tabindex', '-1');
-                        setFlag = true;
-                    } else {
-                        if (setFlag && removeFlag) { break; }
-                        let skipEle: string | boolean = this.eleContains(initELe);
+                    let nextEle: HTEle = innerItems[++eleIndex];
+                    while (nextEle) {
+                        let skipEle: string | boolean = this.eleContains(nextEle);
                         if (!skipEle) {
-                            initELe.firstElementChild.removeAttribute('tabindex');
-                            removeFlag = true;
+                            nextEle.firstElementChild.removeAttribute('tabindex');
+                            break;
                         }
+                        nextEle = innerItems[++eleIndex];
+                    }
+                }
+            } else if (isNOU(this.element.getAttribute('tabindex')) && !ele.classList.contains(CLS_SEPARATOR)) {
+                initIndex = 0;
+                let setFlag: boolean = false;
+                let removeFlag: boolean = false;
+                let initELe: HTEle = innerItems[initIndex];
+                while (initELe) {
+                    if (!initELe.classList.contains(CLS_SEPARATOR)) {
+                        if (isNOU(initELe.firstElementChild.getAttribute('tabindex'))) {
+                            initELe.firstElementChild.setAttribute('tabindex', '-1');
+                            setFlag = true;
+                        } else {
+                            if (setFlag && removeFlag) { break; }
+                            let skipEle: string | boolean = this.eleContains(initELe);
+                            if (!skipEle) {
+                                initELe.firstElementChild.removeAttribute('tabindex');
+                                removeFlag = true;
+                            }
+                            initELe = innerItems[++initIndex];
+                        }
+                    } else {
                         initELe = innerItems[++initIndex];
                     }
-                } else {
-                    initELe = innerItems[++initIndex];
                 }
             }
+            this.refreshOverflow();
         }
-        this.refreshOverflow(); }
     }
 }

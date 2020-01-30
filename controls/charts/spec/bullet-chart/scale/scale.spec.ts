@@ -168,6 +168,7 @@ describe('Bullet Chart Scale', () => {
             { end: 20, opacity: 1, color: 'blue' }
             ];
             bullet.enableRtl = true;
+            bullet.minimum = -20;
             bullet.maximum = 20;
             bullet.majorTickLines.useRangeColor = true;
             bullet.minorTickLines.useRangeColor = true;
@@ -278,7 +279,87 @@ describe('Bullet Chart Scale', () => {
             expect(svg.getAttribute('stroke-width') == '12').toBe(true);
             done();
         });
+        it('Checking theme as Material', (done: Function) => {
+            bullet.theme = 'Material';
+            bullet.refresh();
+            svg = document.getElementById('container_svg_FeatureMeasure_0');
+            expect(svg.getAttribute('fill') == 'blue').toBe(true);
+            expect(svg.getAttribute('stroke-width') == '1').toBe(true);
+            done();
+        });
+        it('Checking theme as BootstrapDark', (done: Function) => {
+            bullet.theme = 'BootstrapDark';
+            bullet.refresh();
+            svg = document.getElementById('container_ChartBorder');
+            expect(svg.getAttribute('fill') == '#000000').toBe(true);
+            expect(svg.getAttribute('stroke') == 'transparent').toBe(true);
+            done();
+        });
+        it('Checking theme as MaterialDark', (done: Function) => {
+            bullet.theme = 'MaterialDark';
+            bullet.refresh();
+            svg = document.getElementById('container_ChartBorder');
+            expect(svg.getAttribute('fill') == '#000000').toBe(true);
+            expect(svg.getAttribute('stroke') == 'transparent').toBe(true);
+            done();
+        });
+        it('Checking theme as FabricDark', (done: Function) => {
+            bullet.theme = 'FabricDark';
+            bullet.refresh();
+            svg = document.getElementById('container_ChartBorder');
+            expect(svg.getAttribute('fill') == '#000000').toBe(true);
+            expect(svg.getAttribute('stroke') == 'transparent').toBe(true);
+            done();
+        });
+        it('Checking theme as Bootstrap', (done: Function) => {
+            bullet.theme = 'Bootstrap';
+            bullet.refresh();
+            svg = document.getElementById('container_ChartBorder');
+            expect(svg.getAttribute('fill') == '#FFFFFF').toBe(true);
+            expect(svg.getAttribute('stroke-width') == '0').toBe(true);
+            done();
+        });
+        it('Checking theme as Bootstrap4', (done: Function) => {
+            bullet.theme = 'Bootstrap4';
+            bullet.refresh();
+            svg = document.getElementById('container_ChartBorder');
+            expect(svg.getAttribute('fill') == '#FFFFFF').toBe(true);
+            expect(svg.getAttribute('stroke-width') == '0').toBe(true);
+            done();
+        });
+        it('Checking theme as HighContrast', (done: Function) => {
+            bullet.theme = 'HighContrast';
+            bullet.refresh();
+            svg = document.getElementById('container_ChartBorder');
+            expect(svg.getAttribute('fill') == '#000000').toBe(true);
+            expect(svg.getAttribute('stroke') == 'transparent').toBe(true);
+            done();
+        });
+        it('Checking theme as Fabric', (done: Function) => {
+            bullet.theme = 'Fabric';
+            bullet.refresh();
+            svg = document.getElementById('container_BulletChartTitle');
+            expect(svg.getAttribute('fill') == '#333333').toBe(true);
+            done();
+        });
+        it('Customization of comaparative bar type as Circle', (done: Function) => {
+            bullet.targetTypes = ['Circle'];
+            bullet.refresh();
+            svg = document.getElementById('container_svg_ComparativeMeasure_0');
+            expect(svg.getAttribute('stroke') == 'violet').toBe(true);
+            expect(svg.getAttribute('r') == '12').toBe(true);
+            done();
+        });
+        it('Customization of comaparative bar type as Cross', (done: Function) => {
+            bullet.targetTypes = ['Cross'];
+            bullet.targetColor = 'red';
+            bullet.refresh();
+            svg = document.getElementById('container_svg_ComparativeMeasure_0');
+            expect(svg.getAttribute('stroke') == 'red').toBe(true);
+            done();
+        });
         it('checking with scale in rtl mode', (done: Function) => {
+            bullet.targetTypes = ['Rect'];
             bullet.enableRtl = true;
             bullet.refresh();
             range1 = document.getElementById('container_svg_range_0');
@@ -293,6 +374,15 @@ describe('Bullet Chart Scale', () => {
             svg = document.getElementById('container_svg_MajorTickLine_0');
             expect(svg.getAttribute('stroke') == '#424242').toBe(true);
             expect(svg.getAttribute('stroke-width') == '2').toBe(true);
+            done();
+        });
+        it('category label in vertical mode', (done: Function) => {
+            bullet.orientation = 'Vertical';
+            bullet.animation.enable = false;
+            bullet.refresh();
+            svg = document.getElementById('container_svg_ComparativeMeasure_0');
+            expect(svg.getAttribute('stroke') == 'red').toBe(true);
+            expect(svg.getAttribute('stroke-width') == '12').toBe(true);
             done();
         });
     })

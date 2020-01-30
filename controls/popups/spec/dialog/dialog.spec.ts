@@ -670,7 +670,8 @@ describe('Dialog Control', () => {
             let dialog = new Dialog({
                 content: dlgcontent,
                 animationSettings: { effect: 'None' },
-                created: created, open: open, beforeOpen: beforeOpen, close: close, beforeClose: beforeClose
+                created: created, open: open, beforeOpen: beforeOpen, close: close, beforeClose: beforeClose,
+                destroyed: onDestroy
             }, '#dialog');
             dialog.hide();
             function created() {
@@ -688,6 +689,9 @@ describe('Dialog Control', () => {
             function beforeClose() {
                 addClass([document.getElementById('dialog')], 'beforeclose');
             }
+            function onDestroy() {
+                addClass([document.getElementById('dialog')], 'dlg-destroy');
+            }
             expect(document.getElementById('dialog').classList.contains("created")).toEqual(true);
             setTimeout(() => {
                 expect(document.getElementById('dialog').classList.contains("open")).toEqual(true);
@@ -697,6 +701,8 @@ describe('Dialog Control', () => {
             expect(document.getElementById('dialog').classList.contains("close")).toEqual(true);
             expect(document.getElementById('dialog').classList.contains("beforeclose")).toEqual(true);
             expect(dialog.visible).toEqual(false);
+            dialog.destroy();
+            expect(document.getElementById('dialog').classList.contains("dlg-destroy")).toEqual(true);
         });
 
         it('dialog isInteracted event testing', () => {
@@ -2876,6 +2882,155 @@ describe('Testing resizing option', () => {
         });
         it('check aria-attribute', () => {
             expect(document.querySelectorAll(".e-dlg-closeicon-btn")[0].getAttribute("aria-label")).toEqual("Close");
+        });
+    });
+
+    describe('EJ2-34298 - Destroy method correction testing', () => {
+        let dialog: Dialog;
+        beforeEach((): void => {
+            let ele: HTMLElement = createElement('div', { id: 'dialog' });
+            document.body.appendChild(ele);
+        });
+ 
+        afterEach((): void => {
+            document.body.innerHTML = '';
+        });
+        it('Modal Dialog - After destroy classlist availability testing', () => {
+            dialog = undefined;
+            dialog = new Dialog({
+                header:'Demo',
+                content:'dialog content',
+                showCloseIcon: true,
+                isModal: true,
+                allowDragging: true,
+                enableResize: true,
+                enableRtl: true,
+                cssClass: 'testClass'
+            });            
+            dialog.appendTo('#dialog');
+            dialog.destroy();
+            let targetEle: HTMLElement = document.querySelector('#dialog') as HTMLElement;
+            expect(targetEle.innerHTML).toEqual('');
+            expect(targetEle.classList.contains('e-dialog')).toEqual(false);
+            expect(targetEle.classList.contains('e-rtl')).toEqual(false);
+            expect(targetEle.classList.contains('e-dlg-resizable')).toEqual(false);
+            expect(targetEle.classList.contains('e-restrict-left')).toEqual(false);
+            expect(targetEle.classList.contains('e-dlg-modal')).toEqual(false);
+            expect(targetEle.classList.contains('testClass')).toEqual(false);
+            expect(document.body.classList.contains('e-scroll-disabled')).toEqual(false);
+            expect(targetEle.getAttribute('role')).toEqual(null);
+            expect(targetEle.getAttribute('aria-modal')).toEqual(null);
+            expect(targetEle.getAttribute('aria-labelledby')).toEqual(null);
+            expect(targetEle.getAttribute('aria-describedby')).toEqual(null);
+            expect(targetEle.getAttribute('aria-grabbed')).toEqual(null);
+            expect(targetEle.getAttribute('tabindex')).toEqual(null);
+            expect(targetEle.getAttribute('style')).toEqual(null);
+            expect(document.querySelectorAll('.e-dlg-container').length > 0).toEqual(false);
+            expect(document.querySelectorAll('.e-dlg-overlay').length > 0).toEqual(false);
+        });
+        it('Normal Dialog - After destroy classlist availability testing', () => {
+            dialog = undefined;
+            dialog = new Dialog({
+                header:'Demo',
+                content:'dialog content',
+                showCloseIcon: true,
+                allowDragging: true,
+                enableResize: true,
+                enableRtl: true,
+                cssClass: 'testClass'
+            });            
+            dialog.appendTo('#dialog');
+            dialog.destroy();
+            let targetEle: HTMLElement = document.querySelector('#dialog') as HTMLElement;
+            expect(targetEle.innerHTML).toEqual('');
+            expect(targetEle.classList.contains('e-dialog')).toEqual(false);
+            expect(targetEle.classList.contains('e-rtl')).toEqual(false);
+            expect(targetEle.classList.contains('e-dlg-resizable')).toEqual(false);
+            expect(targetEle.classList.contains('e-restrict-left')).toEqual(false);
+            expect(targetEle.classList.contains('e-dlg-modal')).toEqual(false);
+            expect(targetEle.classList.contains('testClass')).toEqual(false);
+            expect(document.body.classList.contains('e-scroll-disabled')).toEqual(false);
+            expect(targetEle.getAttribute('role')).toEqual(null);
+            expect(targetEle.getAttribute('aria-modal')).toEqual(null);
+            expect(targetEle.getAttribute('aria-labelledby')).toEqual(null);
+            expect(targetEle.getAttribute('aria-describedby')).toEqual(null);
+            expect(targetEle.getAttribute('aria-grabbed')).toEqual(null);
+            expect(targetEle.getAttribute('tabindex')).toEqual(null);
+            expect(targetEle.getAttribute('style')).toEqual(null);
+        });
+    });
+
+    describe('EJ2-34298 - Template - Destroy method correction testing', () => {
+        let dialog: Dialog;
+        beforeEach((): void => {
+            let ele: HTMLElement = createElement('div', { id: 'dialog' });
+            ele.innerHTML = 'testing';
+            document.body.appendChild(ele);
+        });
+ 
+        afterEach((): void => {
+            document.body.innerHTML = '';
+        });
+        it('Modal Dialog - After destroy classlist, attribute availability testing', () => {
+            dialog = undefined;
+            dialog = new Dialog({
+                header:'Demo',
+                showCloseIcon: true,
+                isModal: true,
+                allowDragging: true,
+                enableResize: true,
+                enableRtl: true,
+                cssClass: 'testClass'
+            });            
+            dialog.appendTo('#dialog');
+            dialog.destroy();
+            let targetEle: HTMLElement = document.querySelector('#dialog') as HTMLElement;
+            expect(targetEle.innerHTML).toEqual('testing');
+            expect(targetEle.classList.contains('e-dialog')).toEqual(false);
+            expect(targetEle.classList.contains('e-rtl')).toEqual(false);
+            expect(targetEle.classList.contains('e-dlg-resizable')).toEqual(false);
+            expect(targetEle.classList.contains('e-restrict-left')).toEqual(false);
+            expect(targetEle.classList.contains('e-dlg-modal')).toEqual(false);
+            expect(targetEle.classList.contains('testClass')).toEqual(false);
+            expect(document.body.classList.contains('e-scroll-disabled')).toEqual(false);
+            expect(targetEle.getAttribute('role')).toEqual(null);
+            expect(targetEle.getAttribute('aria-modal')).toEqual(null);
+            expect(targetEle.getAttribute('aria-labelledby')).toEqual(null);
+            expect(targetEle.getAttribute('aria-describedby')).toEqual(null);
+            expect(targetEle.getAttribute('aria-grabbed')).toEqual(null);
+            expect(targetEle.getAttribute('tabindex')).toEqual(null);
+            expect(targetEle.getAttribute('style')).toEqual(null);
+            expect(document.querySelectorAll('.e-dlg-container').length > 0).toEqual(false);
+            expect(document.querySelectorAll('.e-dlg-overlay').length > 0).toEqual(false);
+        });
+        it('Normal Dialog - After destroy classlist, attribute availability testing', () => {
+            dialog = undefined;
+            dialog = new Dialog({
+                header:'Demo',
+                showCloseIcon: true,
+                allowDragging: true,
+                enableResize: true,
+                enableRtl: true,
+                cssClass: 'testClass'
+            });            
+            dialog.appendTo('#dialog');
+            dialog.destroy();
+            let targetEle: HTMLElement = document.querySelector('#dialog') as HTMLElement;
+            expect(targetEle.innerHTML).toEqual('testing');
+            expect(targetEle.classList.contains('e-dialog')).toEqual(false);
+            expect(targetEle.classList.contains('e-rtl')).toEqual(false);
+            expect(targetEle.classList.contains('e-dlg-resizable')).toEqual(false);
+            expect(targetEle.classList.contains('e-restrict-left')).toEqual(false);
+            expect(targetEle.classList.contains('e-dlg-modal')).toEqual(false);
+            expect(targetEle.classList.contains('testClass')).toEqual(false);
+            expect(document.body.classList.contains('e-scroll-disabled')).toEqual(false);
+            expect(targetEle.getAttribute('role')).toEqual(null);
+            expect(targetEle.getAttribute('aria-modal')).toEqual(null);
+            expect(targetEle.getAttribute('aria-labelledby')).toEqual(null);
+            expect(targetEle.getAttribute('aria-describedby')).toEqual(null);
+            expect(targetEle.getAttribute('aria-grabbed')).toEqual(null);
+            expect(targetEle.getAttribute('tabindex')).toEqual(null);
+            expect(targetEle.getAttribute('style')).toEqual(null);
         });
     });
 });

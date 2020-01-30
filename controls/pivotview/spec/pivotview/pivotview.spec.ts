@@ -1,4 +1,5 @@
 import { IDataOptions, IDataSet, IAxisSet } from '../../src/base/engine';
+import { PivotFieldList } from '../../src/pivotfieldlist/base/field-list';
 import { pivot_dataset, pivot_nodata, pivot_smalldata } from '../base/datasource.spec';
 import { PivotView } from '../../src/pivotview/base/pivotview';
 import { createElement, isNullOrUndefined, remove, EmitType, EventHandler, extend, getInstance } from '@syncfusion/ej2-base';
@@ -1609,7 +1610,7 @@ describe('PivotView spec', () => {
                 //     cf.menuObj.clickHandler(mouseEventArgs);
                 //     done();
                 // }, 1000); 
-                let menuObj: any = cf.menuObj;
+                let menuObj: any = cf.menuObj[0];
                 let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>menuObj.element.querySelectorAll('li');
                 let menu: any = {
                     element: li[0]
@@ -1787,7 +1788,7 @@ describe('PivotView spec', () => {
                 expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
             });
             it('Context menu click', () => {
-                let menuObj: any = cf.menuObj;
+                let menuObj: any = cf.menuObj[0];
                 let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>menuObj.element.querySelectorAll('li');
                 let menu: any = {
                     element: li[0]
@@ -2364,7 +2365,7 @@ describe('PivotView spec', () => {
                     pivotGridObj.dataSourceSettings = {
                         dataSource: pivot_dataset as IDataSet[],
                         expandAll: true,
-                        rows: [{ name: 'company'}],
+                        rows: [{ name: 'company' }],
                         columns: [{ name: 'gender', caption: 'Population' }],
                         values: [{ name: 'balance' }, { name: 'quantity' }],
                         conditionalFormatSettings: [
@@ -13839,9 +13840,546 @@ describe('PivotView spec', () => {
         it('find height of chart for percentage with tool bar', (done: Function) => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
-                expect(pivotGridObj.chart.height === "458").toBeTruthy();
+                expect(pivotGridObj.chart.height === "384").toBeTruthy();
                 done();
             }, 1000);
+        });
+    });
+  describe('Testing Aggregation menu for String fields in fieldList,calculated field setting', () => {
+        let pivotGridObj: any;
+        let cf: any;
+        let mouseEvent: any;
+        let tapEvent: any;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll(() => {
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            PivotView.Inject(GroupingBar, FieldList, CalculatedField);
+            pivotGridObj = new PivotView({
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    expandAll: false,
+                    formatSettings: [{ name: 'balance', format: 'C' }],
+                    rows: [{ name: 'eyeColor' }],
+                    columns: [{ name: 'isActive' }],
+                    values: [{ name: 'product' }, { name: 'balance' }]
+                },
+                showFieldList: true,
+                allowCalculatedField: true,
+                showGroupingBar: true,
+
+                width: 1000,
+                height: 500
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        it('check dropdown icon', () => {
+            var valueField: HTMLElement = pivotGridObj.element.querySelector('.e-group-values');
+            var pivotButtons: HTMLElement[] = [].slice.call(valueField.querySelectorAll('.e-pivot-button'));
+            expect(pivotButtons.length).toBeGreaterThan(0);
+            (pivotButtons[0].querySelector('.e-dropdown-icon') as HTMLElement).click()
+            expect(document.getElementById("#PivotViewvalueFieldContextMenu1")).toBeTruthy;
+        });
+        it('select context Menu', (done: Function) => {
+            var valueField: HTMLElement = pivotGridObj.element.querySelector('.e-group-values');
+            var pivotButtons: HTMLElement[] = [].slice.call(valueField.querySelectorAll('.e-pivot-button'));
+            (pivotButtons[0].querySelector('.e-dropdown-icon') as HTMLElement).click()
+            let menuObj: any = (pivotGridObj.pivotButtonModule.menuOption as any).menuInfo[1];
+            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>menuObj.element.querySelectorAll('li');
+            let menu: any = {
+                element: li[1],
+                item: menuObj.items[1]
+            };
+            menuObj.select(menu as MenuEventArgs);
+            //expect(pivotButtons.length).toBeGreaterThan(0);
+            let buttonText: HTMLElement = ((pivotButtons[0]).querySelector('.e-content') as HTMLElement);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                menuObj.close();
+                expect(buttonText.innerHTML).toEqual('Distinct Count of product');
+                done();
+            }, 1000);
+        });
+        it('check pivot grid aggregation', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                let target: HTMLElement = pivotGridObj.element.querySelector('td[aria-colindex="1"]');
+                expect(target.querySelector(".e-cellvalue").innerHTML).toEqual('6');
+                done();
+            }, 1000);
+        });
+        it('check pivot grid aggregation', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                let target: HTMLElement = pivotGridObj.element.querySelector('td[aria-colindex="3"]');
+                expect(target.querySelector(".e-cellvalue").innerHTML).toEqual('6');
+                done();
+            }, 1000);
+        });
+        it('Check aggregation in fieldlist', (done: Function) => {
+            //pivotGridObj.refresh();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect((pivotGridObj.element.querySelector('.e-toggle-field-list') as HTMLElement).click()).toBeTruthy;
+                done();
+            }, 1000);
+        });
+        it('check dropdown icon', () => {
+            //var valueField: HTMLElement = pivotGridObj.element.querySelector('.e-group-values');
+            var valueField: HTMLElement = pivotGridObj.pivotFieldListModule.axisTableModule.axisTable.querySelector('.e-field-list-values');
+            var pivotButtons: HTMLElement[] = [].slice.call(valueField.querySelectorAll('.e-pivot-button'));
+            //expect(pivotButtons.length).toBeGreaterThan(0);
+            (pivotButtons[0].querySelector('.e-dropdown-icon') as HTMLElement).click()
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            expect(document.getElementById("#PivotView_PivotFieldListvalueFieldContextMenu1")).toBeTruthy;
+        });
+        it('select context Menu', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            var valueField: HTMLElement = pivotGridObj.pivotFieldListModule.axisTableModule.axisTable.querySelector('.e-field-list-values');
+            var pivotButtons: HTMLElement[] = [].slice.call(valueField.querySelectorAll('.e-pivot-button'));
+            (pivotButtons[0].querySelector('.e-dropdown-icon') as HTMLElement).click();
+            let menuObj: any = (pivotGridObj.pivotFieldListModule.pivotButtonModule.menuOption as any).menuInfo[1];
+            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>menuObj.element.querySelectorAll('li');
+            let menu: any = {
+                element: li[1],
+                item: menuObj.items[1]
+            };
+            menuObj.select(menu as MenuEventArgs);
+            var valueField: HTMLElement = pivotGridObj.pivotFieldListModule.axisTableModule.axisTable.querySelector('.e-field-list-values');
+            var pivotButtons: HTMLElement[] = [].slice.call(valueField.querySelectorAll('.e-pivot-button'));
+            expect(pivotButtons.length).toBeGreaterThan(0);
+            let buttonText: HTMLElement = ((pivotButtons[0]).querySelector('.e-content') as HTMLElement);
+            expect(buttonText.innerHTML === 'Avg of balance').toBeTruthy;
+            done();
+        });
+
+        it('check pivot grid aggregation', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                let target: HTMLElement = pivotGridObj.element.querySelector('td[aria-colindex="1"]');
+                expect(target.querySelector(".e-cellvalue").innerHTML).toEqual('6');
+                done();
+            }, 1000);
+        });
+        it('destroy aggregate menu', () => {
+            let menuOption: any = pivotGridObj.pivotButtonModule.menuOption;
+            menuOption.destroy();
+            expect((pivotGridObj.pivotButtonModule.menuOption as any).menuInfo[1]).toBeUndefined;
+            expect((pivotGridObj.pivotButtonModule.menuOption as any).valueDialog).toBeUndefined;
+        });
+
+        it('Open calculated field dialog', (done: Function) => {
+            cf = new CalculatedField(pivotGridObj);
+            cf.createCalculatedFieldDialog(pivotGridObj);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            pivotGridObj.engineModule.enableSort = false;
+            setTimeout(() => {
+                expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+                done();
+            }, 2000);
+        });
+        it('nodeExpanding event is triggered', () => {
+            mouseEvent = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false
+            };
+            tapEvent = {
+                originalEvent: mouseEvent,
+                tapCount: 1
+            };
+            let li: Element[] = <Element[] & NodeListOf<Element>>cf.treeObj.element.querySelectorAll('li');
+            mouseEvent.target = li[2].querySelector('.e-icons');
+            cf.treeObj.touchClickObj.tap(tapEvent);
+            expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+        });
+        it('treeview click', () => {
+            let treeObj: any = cf.treeObj;
+            let liTreeObj: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            mouseEvent.target = liTreeObj[0].querySelector('.e-format');
+            tapEvent.originalEvent = mouseEvent;
+            treeObj.touchClickObj.tap(tapEvent);
+            expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
+        });
+        it('Context menu click', () => {
+            let menuObj: any = cf.menuObj[1];
+            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>menuObj.element.querySelectorAll('li');
+            let menu: any = {
+                element: li[1]
+            };
+            cf.selectContextMenu(menu as MenuEventArgs);
+            menuObj.element.style.display = 'none';
+            let liTreeObj: Element[] = <Element[] & NodeListOf<Element>>cf.treeObj.element.querySelectorAll('li');
+            expect((liTreeObj[0].querySelector('.e-text-content') as HTMLElement).innerText).toBe('_id (Distinct Count)');
+        });
+
+        it('drag and drop Amount(Count) node to drop field', () => {
+            let treeObj: any = cf.treeObj;
+            let filterAxiscontent: HTMLElement = document.getElementById(cf.parentID + 'droppable');
+            let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>treeObj.element.querySelectorAll('li');
+            let mousedown: any =
+                getEventObject('MouseEvents', 'mousedown', treeObj.element, li[0].querySelector('.e-drag'), 15, 10);
+            EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
+            let mousemove: any =
+                getEventObject('MouseEvents', 'mousemove', treeObj.element, li[0].querySelector('.e-drag'), 15, 70);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = filterAxiscontent;
+            mousemove = setMouseCordinates(mousemove, 150, 400);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, filterAxiscontent);
+            mouseup.type = 'mouseup';
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+            expect((document.querySelector('.e-pivot-formula') as HTMLTextAreaElement).value).toBe('"DistinctCount(_id)"');
+        });
+        it('close the fieldlist dialog', (done: Function) => {
+            let fieldListWrapper = document.getElementById('PivotGrid_PivotFieldList_Wrapper');
+            cf.closeDialog({});
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect((fieldListWrapper.querySelector('.e-cancel-btn') as HTMLElement).click()).toBeTruthy;
+                done();
+            }, 1000);
+        });
+    });   
+    describe('Calculated Field string field Aggregation', () => {
+        let fieldListObj: PivotFieldList;
+        let elem: HTMLElement = createElement('div', { id: 'PivotFieldList', styles: 'height:400px;width:100%' });
+        afterAll(() => {
+            if (fieldListObj) {
+                fieldListObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            let dataBound: EmitType<Object> = () => { done(); };
+            fieldListObj = new PivotFieldList({
+                dataSourceSettings: {
+                    dataSource: pivot_dataset as IDataSet[],
+                    expandAll: false,
+                    enableSorting: true,
+                    sortSettings: [{ name: 'company', order: 'Descending' }],
+                    filterSettings: [{ name: 'name', type: 'Include', items: ['Knight Wooten'] },
+                    { name: 'company', type: 'Exclude', items: ['NIPAZ'] },
+                    { name: 'gender', type: 'Include', items: ['male'] }],
+                    rows: [{ name: 'company' }, { name: 'state' }],
+                    columns: [{ name: 'name' }],
+                    values: [{ name: 'balance' }, { name: 'quantity' }], filters: [{ name: 'gender' }]
+                },
+                allowCalculatedField: true,
+                dataBound: dataBound,
+                renderMode: 'Fixed',
+                load: (args: LoadEventArgs) => {
+                    fieldListObj.isAdaptive = true;
+                }
+            });
+            fieldListObj.appendTo('#PivotFieldList');
+            fieldListObj.calculatedFieldModule = new CalculatedField(fieldListObj);
+        });
+        let persistdata: string;
+        it('check on axis view change to calculated field', (done: Function) => {
+            let element: HTMLElement = fieldListObj.element.querySelector('.e-adaptive-container');
+            expect([].slice.call(element.querySelectorAll('.e-toolbar-item')).length).toEqual(5);
+            let headerElement: HTMLElement[] = [].slice.call(element.querySelectorAll('.e-toolbar-item'));
+            expect(headerElement[1].classList.contains('e-active')).toBeTruthy;
+            headerElement[4].click();
+            setTimeout(() => {
+                expect(headerElement[4].textContent).toBe('Create Calculated Field');
+                expect(headerElement[4].classList.contains('e-active')).toBeTruthy;
+                let addButton: HTMLElement = element.querySelector('.e-field-list-footer').querySelector('.e-calculated-field-btn');
+                expect(addButton.classList.contains('e-disable')).not.toBeTruthy;
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                done();
+            }, 100);
+        });
+        it('check on calculated field add button', (done: Function) => {
+            (document.querySelector('.e-calculated-field-btn') as any).click();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-pivot-accord').length > 0).toBeTruthy;
+                (document.querySelector('.e-pivot-cancel-button') as any).click();
+                done();
+            }, 1000);
+        });
+        it('check on calculated field add field', (done: Function) => {
+            (document.querySelector('.e-calculated-field-btn') as any).click();
+            (document.querySelector('.e-icons.e-frame') as any).click();
+            (document.querySelector('.e-tgl-collapse-icon') as any).click();
+            (document.querySelectorAll('.e-pivot-calc-radio')[1] as any).click();
+            (document.querySelectorAll('.e-icons.e-frame')[12] as any).click();
+            (document.querySelector('.e-pivot-add-button') as any).click();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            expect((document.querySelector('.e-pivot-formula') as any).
+                value).toBe('"DistinctCount(pno)""Sum(advance)"');
+            (document.querySelector('.e-pivot-calc-input') as any).value = 'New';
+            let calc: any = fieldListObj.calculatedFieldModule;
+            calc.inputObj.value = 'New';
+            (document.querySelector('.e-pivot-ok-button') as any).click();
+            done();
+        });
+    });
+     describe('Drag and drop restriction event support', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+        let gridFilterElement: string;
+        beforeAll(() => {
+            document.body.appendChild(elem);
+            PivotView.Inject(GroupingBar, FieldList);
+            pivotGridObj = new PivotView(
+                {
+                    dataSourceSettings: {
+                        dataSource: pivot_nodata as IDataSet[],
+                        enableSorting: true,
+                        expandAll: true,
+                        rows: [{ name: 'Country' }, { name: 'Date' }],
+                        columns: [{ name: 'Product' }],
+                        values: [{ name: 'Amount' }],
+                        filters: [{ name: 'State' }],
+                        filterSettings: [
+                            { name: 'Country', type: 'Include', items: ['France'] },
+                            { name: 'Product', type: 'Exclude', items: ['Van'] }
+                        ],
+                    },
+                    showFieldList: true,
+                    showGroupingBar: true,
+                    width: 600,
+                    height: 300,
+                    fieldDrop: function (args) {
+                        if (args.draggedAxis != args.droppedAxis)
+                            args.cancel = true;
+                    }  
+                });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 1000);
+        });
+
+        let mouseup: MouseEvent = new MouseEvent('mouseup', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+        });
+        let mousedown: MouseEvent = new MouseEvent('mousedown', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+        });
+        let click: MouseEvent = new MouseEvent('click', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+        });
+        it('Drag value axis field to row axis field in grouping bar', (done: Function) => {
+            let rowAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-rows');
+            let valueAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-values');
+            let pivotButton: HTMLElement[] = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
+            let dragElement: HTMLElement = pivotButton[0].querySelector('.e-draggable');
+            let draggedElement : string = pivotButton[0].querySelector('.e-content').textContent;
+            let mousedown: any =
+                getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+            EventHandler.trigger(dragElement, 'mousedown', mousedown);
+            let mousemove: any =
+                getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove = setMouseCordinates(mousemove, 15, 75);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
+            mouseUp.type = 'mouseup';
+            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                pivotButton = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
+                expect(draggedElement == pivotButton[0].innerText).toEqual(true);
+                done();
+            }, 1000);
+        });
+        it('Drag row axis field to row axis field in grouping bar', (done: Function) => {
+            let rowAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-rows');
+            let pivotButton: HTMLElement[] = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+            let dragElement: HTMLElement = pivotButton[0].querySelector('.e-draggable');
+            let draggedElement : string = pivotButton[0].querySelector('.e-content').textContent;
+            let axisLength :number = pivotButton.length;
+            let mousedown: any =
+                getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+            EventHandler.trigger(dragElement, 'mousedown', mousedown);
+            let mousemove: any =
+                getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove = setMouseCordinates(mousemove, 15, 75);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
+            mouseUp.type = 'mouseup';
+            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+                expect(draggedElement == pivotButton[axisLength - 1].innerText).toEqual(true);
+                done();
+            }, 1000);
+        });
+        it('open field list popup', () => {
+            (pivotGridObj.pivotFieldListModule.element.querySelector('.e-toggle-field-list') as HTMLElement).click();
+            expect(true).toBe(true);
+        });
+        it('Drag filter axis field to row axis field in field list', (done: Function) => {
+            let rowAxiscontent: HTMLElement = document.getElementById('PivotGrid_PivotFieldList_Wrapper').querySelector('.e-left-axis-fields .e-field-list-rows');
+            let filterAxiscontent: HTMLElement = document.getElementById('PivotGrid_PivotFieldList_Wrapper').querySelector('.e-left-axis-fields .e-field-list-filters');
+            let pivotButton: HTMLElement[] = [].slice.call((filterAxiscontent).querySelectorAll('.e-pivot-button'));
+            let dragElement: HTMLElement = pivotButton[0].querySelector('.e-draggable');
+            let draggedElement : string = pivotButton[0].querySelector('.e-content').textContent;
+            let mousedown: any =
+                getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+            EventHandler.trigger(dragElement, 'mousedown', mousedown);
+            let mousemove: any =
+                getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove = setMouseCordinates(mousemove, 15, 75);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
+            mouseUp.type = 'mouseup';
+            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                pivotButton = [].slice.call((filterAxiscontent).querySelectorAll('.e-pivot-button'));
+                expect(draggedElement == pivotButton[0].innerText).toEqual(true);
+                done();
+            }, 1000);
+        });
+        it('Drag row axis field to row axis field in field list', (done: Function) => {
+            let rowAxiscontent: HTMLElement = document.getElementById('PivotGrid_PivotFieldList_Wrapper').querySelector('.e-left-axis-fields .e-field-list-rows');
+            let pivotButton: HTMLElement[] = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+            let dragElement: HTMLElement = pivotButton[0].querySelector('.e-draggable');
+            let draggedElement : string = pivotButton[0].querySelector('.e-content').textContent;
+            let axisLength :number = pivotButton.length;
+            let mousedown: any =
+                getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+            EventHandler.trigger(dragElement, 'mousedown', mousedown);
+            let mousemove: any =
+                getEventObject('MouseEvents', 'mousemove', dragElement, rowAxiscontent, 15, 70);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = rowAxiscontent;
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove = setMouseCordinates(mousemove, 15, 75);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, rowAxiscontent);
+            mouseUp.type = 'mouseup';
+            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+                expect(draggedElement == pivotButton[axisLength - 2].innerText).toEqual(true);
+                done();
+            }, 1000);
+        });
+        it('drag value axis field to row axis field in grouping bar & check filter state', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+            let rowAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-rows');
+            let valueAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-values');
+            let pivotButton: HTMLElement[] = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+            let dragElement: HTMLElement = pivotButton[0].querySelector('.e-draggable');
+            gridFilterElement = pivotGridObj.element.querySelectorAll('td')[2].innerText;
+            let mousedown: any =
+                getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+            EventHandler.trigger(dragElement, 'mousedown', mousedown);
+            let mousemove: any =
+                getEventObject('MouseEvents', 'mousemove', dragElement, valueAxiscontent, 15, 70);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = valueAxiscontent;
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove = setMouseCordinates(mousemove, 15, 75);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, valueAxiscontent);
+            mouseUp.type = 'mouseup';
+            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = valueAxiscontent;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+            done();
+            }, 2000);
+        });
+        it('expect filter state icon', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect(pivotGridObj.element.querySelectorAll('td')[2].innerText == gridFilterElement).toEqual(true);
+                expect(pivotGridObj.element.querySelectorAll('.e-rows .e-pivot-button .e-btn-filter')[1].classList.contains('e-pv-filtered')).toBe(true);
+                done();
+            }, 2000);
+        });
+        it('Country -> descending _using grouping bar sort icon', (done: Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                document.querySelectorAll('.e-group-rows .e-sort')[0].dispatchEvent(click);
+                done();
+            }, 2000);
+        });
+        it('expect sort state icon after drag row axis field to value axis field', (done: Function) => {
+            let valueAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-values');
+            let rowAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-rows');
+            let pivotButton: HTMLElement[] = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+            let dragElement: HTMLElement = pivotButton[0].querySelector('.e-draggable');
+            let sortElement: string = pivotGridObj.element.querySelectorAll('td')[2].innerText;
+            let mousedown: any =
+                getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+            EventHandler.trigger(dragElement, 'mousedown', mousedown);
+            let mousemove: any =
+                getEventObject('MouseEvents', 'mousemove', dragElement, valueAxiscontent, 15, 70);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = valueAxiscontent;
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove = setMouseCordinates(mousemove, 15, 75);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, valueAxiscontent);
+            mouseUp.type = 'mouseup';
+            mouseUp.srcElement = mouseUp.target = mouseUp.toElement = valueAxiscontent;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent == sortElement).toBe(true);
+                expect(document.querySelectorAll('.e-group-rows .e-sort')[0].classList.contains('e-descend')).toBe(true);
+                done();
+            }, 1000);
+        });
+        it('open field list popup', () => {
+            (pivotGridObj.pivotFieldListModule.element.querySelector('.e-toggle-field-list') as HTMLElement).click();
+            expect(true).toBe(true);
+        });
+        it('uncheck country field', () => {
+            document.querySelectorAll('.e-treeview li')[4].querySelector('.e-frame').dispatchEvent(click);
+            expect(true).toBe(true);
+        });
+        it('expect country field check state', () => {
+             expect(document.querySelectorAll('.e-treeview li')[4].querySelector('.e-frame').classList.contains('e-check') === true).toBe(true);
+        });
+        it('check country field', () => {
+            document.querySelectorAll('.e-treeview li')[1].querySelector('.e-frame').dispatchEvent(click);
+            expect(true).toBe(true);
+        });
+        it('expect quantity field check state', () => {
+             expect(document.querySelectorAll('.e-treeview li')[1].querySelector('.e-frame').classList.contains('e-check') === false).toBe(true);
+        });
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
         });
     });
 

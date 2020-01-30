@@ -258,6 +258,11 @@ export interface IPrintEventArgs extends IChartEventArgs {
     htmlContent: Element;
 }
 
+export interface IExportEventArgs extends IChartEventArgs {
+    width: number;
+    height: number;
+}
+
 /** @private */
 export interface IBoxPlotQuartile {
     minimum: number;

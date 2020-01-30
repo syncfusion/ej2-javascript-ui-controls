@@ -1,0 +1,15 @@
+/*! Kanban component's highcontrast theme definitions and variables */
+$kanban-skin: 'highcontrast' !default;
+$kanban-column-bg-color: $bg-base-10 !default;
+$kanban-primary-color: $selection-border !default;
+$kanban-border-color: $border-default !default;
+$kanban-default-font: $content-font !default;
+$kanban-card-selection: $selection-font !default;
+$kanban-dropped-clone-bg-color: rgba($kanban-primary-color, .5) !default;
+$kanban-dropped-clone-border-color: $kanban-primary-color !default;
+$kanban-dragged-clone-border-color: $border-default !default;
+$kanban-icons-color: rgba($content-font, .54) !default;
+$kanban-bg-color: $border-fg !default;
+$kanban-popup-overlay-bg-color: #383838 !default;
+$kanban-min-color: #ffe0b2 !default;
+$kanban-max-color: #fcdbe4 !default;

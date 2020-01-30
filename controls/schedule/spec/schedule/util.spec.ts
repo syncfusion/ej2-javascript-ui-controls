@@ -1,6 +1,6 @@
 import { Internationalization, createElement, remove, extend, EventHandler, Ajax, loadCldr } from '@syncfusion/ej2-base';
 import { Dialog, Popup, Tooltip } from '@syncfusion/ej2-popups';
-import { ResourceDetails, TreeViewArgs, Schedule, ScheduleModel, EJ2Instance, ActionEventArgs } from '../../src/schedule/index';
+import { ResourceDetails, Schedule, ScheduleModel, EJ2Instance, ActionEventArgs } from '../../src/schedule/index';
 import { cloneDataSource } from './base/datasource.spec';
 import * as cls from '../../src/schedule/base/css-constant';
 import { RecurrenceEditor, RecurrenceEditorModel } from '../../src/recurrence-editor/index';
@@ -23,10 +23,10 @@ let instance: Internationalization = new Internationalization();
 (window as TemplateFunction).getShortDateTime = (value: Date) => {
     return instance.formatDate(value, { type: 'dateTime', skeleton: 'short' });
 };
-(window as TemplateFunction).getResourceName = (value: ResourceDetails | TreeViewArgs) => {
+(window as TemplateFunction).getResourceName = (value: ResourceDetails) => {
     return ((value as ResourceDetails).resourceData) ?
         (value as ResourceDetails).resourceData[(value as ResourceDetails).resource.textField]
-        : (value as TreeViewArgs).resourceName;
+        : (value as ResourceDetails).resourceName;
 };
 
 export interface TemplateFunction extends Window {

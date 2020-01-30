@@ -5,6 +5,8 @@ import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { ExportType } from '../../common/utils/enum';
 import { ExportUtils } from '../../common/utils/export';
 import { StockChart } from '../../stock-chart';
+import { beforeExport } from '../../common/model/constants';
+import { IExportEventArgs } from '../model/chart-interface';
 
 /**
  * `ExportModule` module is used to print and export the rendered chart.
@@ -34,10 +36,16 @@ export class Export {
     ): void {
         let exportChart: ExportUtils = new ExportUtils(this.chart);
         controls = controls ? controls : [this.chart];
-        exportChart.export(
-            type, fileName, orientation,
-            controls, width, height, isVertical
-        );
+        let argsData: IExportEventArgs = {
+            cancel: false, name: beforeExport, width: width, height: height
+        };
+        this.chart.trigger(beforeExport, argsData);
+        if (!argsData.cancel) {
+            exportChart.export(
+                type, fileName, orientation, controls, width = argsData.width,
+                height = argsData.height, isVertical
+            );
+        }
     }
     /**
      * Get module name.

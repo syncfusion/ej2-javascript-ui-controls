@@ -2,6 +2,7 @@ import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent } fro
 import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions } from './interface';
 import { Spreadsheet } from '../base/index';
 import { SheetModel, getCellPosition, getRowsHeight, getColumnsWidth, getSwapRange, CellModel } from '../../workbook/index';
+import { RangeSettingModel, getRangeIndexes, Workbook } from '../../workbook/index';
 import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress } from '../../workbook/index';
 import { addSheetTab, removeSheetTab } from './event';
 
@@ -658,4 +659,22 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
             });
             break;
     }
+}
+
+/**
+ * @hidden
+ */
+export function hasTemplate(workbook: Workbook, rowIdx: number, colIdx: number, sheetIdx: number): boolean {
+    let sheet: SheetModel = workbook.sheets[sheetIdx];
+    let rangeSettings: RangeSettingModel[] = sheet.rangeSettings;
+    let range: number[];
+    for (let i: number = 0, len: number = rangeSettings.length; i < len; i++) {
+        if (rangeSettings[i].template) {
+            range = getRangeIndexes(rangeSettings[i].range.length ? rangeSettings[i].range : rangeSettings[i].startCell);
+            if (range[0] <= rowIdx && range[1] <= colIdx && range[2] >= rowIdx && range[3] >= colIdx) {
+                return true;
+            }
+        }
+    }
+    return false;
 }

@@ -178,6 +178,11 @@ export class VerticalEvent extends EventBase {
                         if (this.isAllDayAppointment(<{ [key: string]: Object }>event)) {
                             this.allDayEvents.push(extend({}, event, null, true));
                         } else {
+                            if (this.parent.eventSettings.enableMaxHeight) {
+                                if (this.getOverlapIndex(<{ [key: string]: Object }>event, day, false, resource) > 0) {
+                                    continue;
+                                }
+                            }
                             this.renderNormalEvents(<{ [key: string]: Object }>event, day, resource, dateCount);
                         }
                     }
@@ -472,7 +477,10 @@ export class VerticalEvent extends EventBase {
             }
             this.renderedEvents[resource].push(extend({}, record, null, true));
             let appointmentElement: HTMLElement = this.createAppointmentElement(eventObj, false, record.isSpanned, resource);
-            setStyleAttribute(appointmentElement, { 'width': tempData.appWidth, 'height': appHeight + 'px', 'top': topValue + 'px' });
+            setStyleAttribute(appointmentElement, {
+                'width': (this.parent.eventSettings.enableMaxHeight ? '100%' : tempData.appWidth),
+                'height': appHeight + 'px', 'top': topValue + 'px'
+            });
             let iconHeight: number = appointmentElement.querySelectorAll('.' + cls.EVENT_INDICATOR_CLASS).length * 15;
             let maxHeight: number = appHeight - 40 - iconHeight;
             let subjectElement: HTMLElement = appointmentElement.querySelector('.' + cls.SUBJECT_CLASS) as HTMLElement;

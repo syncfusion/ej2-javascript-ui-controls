@@ -114,17 +114,18 @@ export class CheckBoxFilterBase {
                 this.options.column.columnData = e.result;
                 this.parent.notify(events.generateQuery, { predicate: fPredicate, column: this.options.column });
                 (<{ ejpredicate: Predicate[] }>args).ejpredicate = fPredicate.predicate.predicates;
-                fPredicate.predicate.predicates.forEach((fpred: Predicate) => {
+                let fpred: Predicate[] = fPredicate.predicate.predicates;
+                for (let i: number = 0; i < fpred.length; i++) {
                     filterCollection.push({
-                        field: fpred.field,
+                        field: fpred[i].field,
                         predicate: 'or',
-                        matchCase: fpred.ignoreCase,
-                        ignoreAccent: fpred.ignoreAccent,
-                        operator: fpred.operator,
-                        value: <string>fpred.value,
+                        matchCase: fpred[i].ignoreCase,
+                        ignoreAccent: fpred[i].ignoreAccent,
+                        operator: fpred[i].operator,
+                        value: <string>fpred[i].value,
                         type: this.options.type
                     });
-                });
+                }
                 (<{ filterCollection: PredicateModel[] }>args).filterCollection = filterCollection.length ? filterCollection :
                     fColl.filter((col: PredicateModel) => col.field = this.options.field);
                 this.options.handler(args);
@@ -660,9 +661,9 @@ export class CheckBoxFilterBase {
         runArray.push(this.dataSuccess.bind(this));
         let i: number = 0;
         Promise.all(allPromise).then((e: ReturnType[]) => {
-            e.forEach((data: ReturnType) => {
-                runArray[i++](data.result);
-            });
+            for (let j: number = 0; j < e.length; j++) {
+                runArray[i++](e[j].result);
+            }
         });
     }
     private dataSuccess(e: Object[]): void {

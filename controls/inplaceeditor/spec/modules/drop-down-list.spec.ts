@@ -1,7 +1,8 @@
 /**
  * DropDownList module spec document
  */
-import { select, selectAll } from '@syncfusion/ej2-base';
+import { select, selectAll, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
+import { DataManager, Query, ODataV4Adaptor } from '@syncfusion/ej2-data';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy } from './../render.spec';
 import { profile, inMB, getMemoryProfile } from './../common.spec';
@@ -427,7 +428,7 @@ describe('DropDownList Control', () => {
             editorObj.value = 'game1';
             editorObj.dataBind();
             expect(editorObj.value).toEqual('game1');
-            expect(valueEle.innerHTML).toEqual('game1');
+            expect(valueEle.innerHTML).toEqual('Badminton');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-dropdownlist', document.body).length === 1).toEqual(true);
@@ -483,7 +484,7 @@ describe('DropDownList Control', () => {
             editorObj.value = 'game1';
             editorObj.dataBind();
             expect(editorObj.value).toEqual('game1');
-            expect(valueEle.innerHTML).toEqual('game1');
+            expect(valueEle.innerHTML).toEqual('Badminton');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-dropdownlist', document.body).length === 1).toEqual(true);
@@ -539,7 +540,7 @@ describe('DropDownList Control', () => {
             editorObj.value = 'game1';
             editorObj.dataBind();
             expect(editorObj.value).toEqual('game1');
-            expect(valueEle.innerHTML).toEqual('game1');
+            expect(valueEle.innerHTML).toEqual('Badminton');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-dropdownlist', document.body).length === 1).toEqual(true);
@@ -595,7 +596,7 @@ describe('DropDownList Control', () => {
             editorObj.value = 'game1';
             editorObj.dataBind();
             expect(editorObj.value).toEqual('game1');
-            expect(valueEle.innerHTML).toEqual('game1');
+            expect(valueEle.innerHTML).toEqual('Badminton');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-dropdownlist', document.body).length === 1).toEqual(true);
@@ -634,11 +635,11 @@ describe('DropDownList Control', () => {
             valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
             valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
             expect(editorObj.value).toEqual('game1');
-            expect(valueEle.innerHTML).toEqual('game1');
+            expect(valueEle.innerHTML).toEqual('Badminton');
             editorObj.emptyText = 'Enter some text';
             editorObj.dataBind();
             expect(editorObj.value).toEqual('game1');
-            expect(valueEle.innerHTML).toEqual('game1');
+            expect(valueEle.innerHTML).toEqual('Badminton');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-dropdownlist', document.body).length === 1).toEqual(true);
@@ -664,7 +665,7 @@ describe('DropDownList Control', () => {
             editorObj.value = 'game2';
             editorObj.dataBind();
             expect(editorObj.value).toEqual('game2');
-            expect(valueEle.innerHTML).toEqual('game2');
+            expect(valueEle.innerHTML).toEqual('Basketball');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-dropdownlist', document.body).length === 1).toEqual(true);
@@ -738,6 +739,7 @@ describe('DropDownList Control', () => {
                     e.cancelFocus = true
                 }
             });
+            (<HTMLElement>select('.' + classes.VALUE, editorObj.element)).click();
             setTimeout(() => {
                 expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
                 done();
@@ -755,8 +757,262 @@ describe('DropDownList Control', () => {
                     e.cancelFocus = true
                 }
             });
+            (<HTMLElement>select('.' + classes.VALUE, editorObj.element)).click();
             setTimeout(() => {
                 expect(document.activeElement.tagName === 'INPUT').not.toEqual(true);
+                done();
+            }, 400);
+        });
+    });
+
+    describe('EJ2-34562 - DropDownList initial value render testing', () => {
+        let editorObj: any;
+        let stringData1: string[] = ['Badminton', 'Basketball', 'Cricket', 'Football', 'Golf'];
+        let stringData2: { [key: string]: Object }[] = [
+            { Id: 'game1', Game: 'Badminton' },
+            { Id: 'game2', Game: 'Basketball' },
+            { Id: 'game3', Game: 'Cricket' },
+            { Id: 'game4', Game: 'Football' },
+        ];
+        let stringData3: { [key: string]: Object }[] = [
+            { Country: { Name: 'Australia' }, Code: { Id: 'AU' } },
+            { Country: { Name: 'Bermuda' }, Code: { Id: 'BM' } },
+            { Country: { Name: 'Canada' }, Code: { Id: 'CA' } },
+            { Country: { Name: 'Cameroon' }, Code: { Id: 'CM' } },
+            { Country: { Name: 'Denmark' }, Code: { Id: 'DK' } }
+        ];
+
+        let numberData1: number[] = [11, 12, 13, 14, 15];
+        let numberData2: { [key: string]: Object }[] = [
+            { Id: 1, Game: 12345 },
+            { Id: 2, Game: 23456 },
+            { Id: 3, Game: 34567 },
+            { Id: 4, Game: 45678 },
+        ];
+        let numberData3: { [key: string]: Object }[] = [
+            { Country: { Population: 11000 }, Code: { Id: 11 } },
+            { Country: { Population: 12000 }, Code: { Id: 12 } },
+            { Country: { Population: 13000 }, Code: { Id: 13 } },
+            { Country: { Population: 14000 }, Code: { Id: 14 } },
+            { Country: { Population: 15000 }, Code: { Id: 15 } }
+        ];
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Without Fields - String', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'DropDownList',
+                mode: 'Inline',
+                value: 'Badminton',
+                model: {
+                    dataSource: stringData1
+                }
+            });
+            setTimeout(() => {
+                expect((select('.' + classes.VALUE_WRAPPER + ' .' + classes.VALUE, editorObj.element) as HTMLElement).innerText).toEqual('Badminton');
+                done();
+            }, 400);
+        });
+        it('With Fields and value API has "" testing', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'DropDownList',
+                mode: 'Inline',
+                value: "",
+                model: {
+                    dataSource: stringData2,
+                    fields: { text: 'Game', value: 'Id' },
+                }
+            });
+            setTimeout(() => {
+                expect((select('.' + classes.VALUE_WRAPPER + ' .' + classes.VALUE, editorObj.element) as HTMLElement).innerText).toEqual('Empty');
+                done();
+            }, 400);
+        });
+        it('With Fields and without value API config testing', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'DropDownList',
+                mode: 'Inline',
+                model: {
+                    dataSource: stringData2,
+                    fields: { text: 'Game', value: 'Id' },
+                }
+            });
+            setTimeout(() => {
+                expect((select('.' + classes.VALUE_WRAPPER + ' .' + classes.VALUE, editorObj.element) as HTMLElement).innerText).toEqual('Empty');
+                done();
+            }, 400);
+        });
+        it('With Fields and value API then without dataSource config testing', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'DropDownList',
+                mode: 'Inline',
+                model: {
+                    fields: { text: 'Game', value: 'Id' },
+                }
+            });
+            setTimeout(() => {
+                expect((select('.' + classes.VALUE_WRAPPER + ' .' + classes.VALUE, editorObj.element) as HTMLElement).innerText).toEqual('Empty');
+                done();
+            }, 400);
+        });
+        it('With Fields - String - Local Data - Array of Object', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'DropDownList',
+                mode: 'Inline',
+                value: 'game3',
+                model: {
+                    dataSource: stringData2,
+                    fields: { text: 'Game', value: 'Id' },
+                }
+            });
+            setTimeout(() => {
+                expect((select('.' + classes.VALUE_WRAPPER + ' .' + classes.VALUE, editorObj.element) as HTMLElement).innerText).toEqual('Cricket');
+                done();
+            }, 400);
+        });
+        it('With Fields - String - Local Data - Array of Object - value field alone', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'DropDownList',
+                mode: 'Inline',
+                value: 'Cricket',
+                model: {
+                    dataSource: stringData2,
+                    fields: { value: 'Game' },
+                }
+            });
+            setTimeout(() => {
+                expect((select('.' + classes.VALUE_WRAPPER + ' .' + classes.VALUE, editorObj.element) as HTMLElement).innerText).toEqual('Cricket');
+                done();
+            }, 400);
+        });
+        it('With Fields - String - Local Data - Array of Complex Object', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'DropDownList',
+                mode: 'Inline',
+                value: 'DK',
+                model: {
+                    dataSource: stringData3,
+                    fields: { value: 'Code.Id', text: 'Country.Name' },
+                }
+            });
+            setTimeout(() => {
+                expect((select('.' + classes.VALUE_WRAPPER + ' .' + classes.VALUE, editorObj.element) as HTMLElement).innerText).toEqual('Denmark');
+                done();
+            }, 400);
+        });
+        it('With Fields - String - Remote Data', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'DropDownList',
+                mode: 'Inline',
+                value: 'ALFKI',
+                model: {
+                    dataSource: new DataManager({
+                        url: 'https://services.odata.org/V4/Northwind/Northwind.svc/',
+                        adaptor: new ODataV4Adaptor,
+                        crossDomain: true
+                    }),
+                    query: new Query().from('Customers').select(['ContactName', 'CustomerID']).take(6),
+                    fields: { value: 'CustomerID', text: 'ContactName' }
+                }
+            });
+            expect((select('.' + classes.VALUE_WRAPPER, editorObj.element) as HTMLElement).classList.contains(classes.LOAD)).toEqual(true);
+            expect(isNullOrUndefined(select('.' + classes.VALUE_WRAPPER + ' .e-spinner-pane', editorObj.element))).toEqual(false);
+            setTimeout(() => {
+                expect((select('.' + classes.VALUE_WRAPPER + ' .' + classes.VALUE, editorObj.element) as HTMLElement).innerText).toEqual('Maria Anders');
+                expect((select('.' + classes.VALUE_WRAPPER, editorObj.element) as HTMLElement).classList.contains(classes.LOAD)).toEqual(false);
+                expect(select('.' + classes.VALUE_WRAPPER + ' .e-spinner-pane', editorObj.element).classList.contains('e-spin-hide')).toEqual(true);
+                done();
+            }, 2000);
+        });
+        it('With Fields - String - Remote Data with loadingText locale value testing', (done: Function) => {
+            L10n.load({
+                'fr-BE': {
+                    'inplace-editor': {
+                        'loadingText': 'chargement'
+                    }
+                }
+            });
+            editorObj = renderEditor({
+                type: 'DropDownList',
+                mode: 'Inline',
+                value: 'ALFKI',
+                locale: 'fr-BE',
+                model: {
+                    dataSource: new DataManager({
+                        url: 'https://services.odata.org/V4/Northwind/Northwind.svc/',
+                        adaptor: new ODataV4Adaptor,
+                        crossDomain: true
+                    }),
+                    query: new Query().from('Customers').select(['ContactName', 'CustomerID']).take(6),
+                    fields: { value: 'CustomerID', text: 'ContactName' }
+                }
+            });
+            expect((select('.' + classes.VALUE_WRAPPER, editorObj.element) as HTMLElement).classList.contains(classes.LOAD)).toEqual(true);
+            expect((select('.' + classes.VALUE_WRAPPER + ' .' + classes.VALUE, editorObj.element) as HTMLElement).innerText).toEqual('chargement');
+            expect(isNullOrUndefined(select('.' + classes.VALUE_WRAPPER + ' .e-spinner-pane', editorObj.element))).toEqual(false);
+            setTimeout(() => {
+                expect((select('.' + classes.VALUE_WRAPPER + ' .' + classes.VALUE, editorObj.element) as HTMLElement).innerText).toEqual('Maria Anders');
+                expect((select('.' + classes.VALUE_WRAPPER, editorObj.element) as HTMLElement).classList.contains(classes.LOAD)).toEqual(false);
+                expect(select('.' + classes.VALUE_WRAPPER + ' .e-spinner-pane', editorObj.element).classList.contains('e-spin-hide')).toEqual(true);
+                done();
+            }, 2000);
+        });
+        it('Without Fields - Number', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'DropDownList',
+                mode: 'Inline',
+                value: 12,
+                model: {
+                    dataSource: numberData1
+                }
+            });
+            setTimeout(() => {
+                expect((select('.' + classes.VALUE_WRAPPER + ' .' + classes.VALUE, editorObj.element) as HTMLElement).innerText).toEqual('12');
+                done();
+            }, 400);
+        });
+        it('With Fields - Number - Local Data - Array of Object', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'DropDownList',
+                mode: 'Inline',
+                value: 2,
+                model: {
+                    dataSource: numberData2,
+                    fields: { text: 'Game', value: 'Id' },
+                }
+            });
+            setTimeout(() => {
+                expect((select('.' + classes.VALUE_WRAPPER + ' .' + classes.VALUE, editorObj.element) as HTMLElement).innerText).toEqual('23456');
+                done();
+            }, 400);
+        });
+        it('With Fields - Number - Local Data - Array of Object - value alone', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'DropDownList',
+                mode: 'Inline',
+                value: 23456,
+                model: {
+                    dataSource: numberData2,
+                    fields: { value: 'Game' },
+                }
+            });
+            setTimeout(() => {
+                expect((select('.' + classes.VALUE_WRAPPER + ' .' + classes.VALUE, editorObj.element) as HTMLElement).innerText).toEqual('23456');
+                done();
+            }, 400);
+        });
+        it('With Fields - Number - Local Data - Array of Complex Object', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'DropDownList',
+                mode: 'Inline',
+                value: 12,
+                model: {
+                    dataSource: numberData3,
+                    fields: { value: 'Code.Id', text: 'Country.Population' },
+                }
+            });
+            setTimeout(() => {
+                expect((select('.' + classes.VALUE_WRAPPER + ' .' + classes.VALUE, editorObj.element) as HTMLElement).innerText).toEqual('12000');
                 done();
             }, 400);
         });

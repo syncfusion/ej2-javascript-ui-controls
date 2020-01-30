@@ -1055,6 +1055,7 @@ class DateProcessor {
         let minStartDate = null;
         let maxEndDate = null;
         let flatData = this.parent.flatData;
+        let currentViewData = this.parent.currentViewData;
         let taskRange = [];
         let addDateToList = (date) => {
             if (!isNullOrUndefined(date)) {
@@ -1071,7 +1072,16 @@ class DateProcessor {
             }
         };
         if (((!projectStartDate || !projectEndDate) && flatData.length > 0) || editArgs || this.parent.timelineModule.isZoomToFit) {
-            flatData.forEach((data, index) => {
+            let viewData;
+            if (currentViewData.length > 0 && this.parent.timelineModule.isZoomToFit &&
+                this.parent.treeGrid.filterModule &&
+                this.parent.treeGrid.filterModule.filteredResult.length > 0) {
+                viewData = currentViewData;
+            }
+            else {
+                viewData = flatData;
+            }
+            viewData.forEach((data, index) => {
                 taskRange = [];
                 let task = data.ganttProperties;
                 let tempStartDate = this.getValidStartDate(task);
@@ -1652,6 +1662,9 @@ class TaskProcessor extends DateProcessor {
             if (this.getSecondsInDecimal(eDate) === this.parent.defaultEndTime) {
                 eDate.setHours(24);
             }
+            if (this.getSecondsInDecimal(eDate) === this.parent.defaultStartTime) {
+                eDate.setHours(0, 0, 0, 0);
+            }
         }
         return ((this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
     }
@@ -2067,8 +2080,11 @@ class TaskProcessor extends DateProcessor {
                     taskCount = childLength - milestoneCount;
                 }
                 let parentProgress = (taskCount > 0 && totalDuration > 0) ? (totalProgress / totalDuration) : 0;
-                this.calculateDuration(parentData);
                 let parentProp = parentData.ganttProperties;
+                let milestone = (taskCount === 0) && minStartDate && maxEndDate &&
+                    minStartDate.getTime() === maxEndDate.getTime() ? true : false;
+                this.parent.setRecordValue('isMilestone', milestone, parentProp, true);
+                this.calculateDuration(parentData);
                 this.parent.setRecordValue('progress', Math.floor(parentProgress), parentProp, true);
                 this.parent.setRecordValue('totalProgress', totalProgress, parentProp, true);
                 this.parent.setRecordValue('totalDuration', totalDuration, parentProp, true);
@@ -2149,6 +2165,9 @@ const progressHandlerElement = 'e-progressbar-handler-element';
 const progressBarHandlerAfter = 'e-progressbar-handler-after';
 const icon = 'e-icon';
 const traceMilestone = 'e-gantt-milestone';
+const parentMilestone = 'e-gantt-parent-milestone';
+const parentMilestoneTop = 'e-parent-milestone-top';
+const parentMilestoneBottom = 'e-parent-milestone-bottom';
 const traceChildTaskBar = 'e-gantt-child-taskbar';
 const traceChildProgressBar = 'e-gantt-child-progressbar';
 const traceParentTaskBar = 'e-gantt-parent-taskbar';
@@ -5638,8 +5657,7 @@ class ChartRows {
             }
             let template = '<div class="' + parentTaskBarInnerDiv + ' ' +
                 this.getExpandClass(data) + ' ' + traceParentTaskBar + '"' +
-                ' style="width:' + ((!this.checkChildMileStone(data)) ? (data.ganttProperties.width) :
-                (this.milestoneHeight)) + 'px;height:' + this.taskBarHeight + 'px;">' +
+                ' style="width:' + (data.ganttProperties.width) + 'px;height:' + this.taskBarHeight + 'px;">' +
                 '<div class="' + parentProgressBarInnerDiv + ' ' + this.getExpandClass(data) + ' ' + traceParentProgressBar + '"' +
                 ' style="border-style:' + (data.ganttProperties.progressWidth ? 'solid;' : 'none;') +
                 'width:' + data.ganttProperties.progressWidth + 'px;' +
@@ -5648,7 +5666,14 @@ class ChartRows {
                 taskLabel + '" style="line-height:' +
                 (this.taskBarHeight - 1) + 'px;height:' + this.taskBarHeight + 'px;">' +
                 labelString + '</span></div></div>';
-            parentTaskbarNode = this.createDivElement(template);
+            let milestoneTemplate = '<div class="' + parentMilestone + '" style="position:absolute;">' +
+                '<div class="' + parentMilestoneTop + '" style="border-right-width:' +
+                this.milesStoneRadius + 'px;border-left-width:' + this.milesStoneRadius + 'px;border-bottom-width:' +
+                this.milesStoneRadius + 'px;"></div>' +
+                '<div class="' + parentMilestoneBottom + '" style="top:' +
+                (this.milesStoneRadius) + 'px;border-right-width:' + this.milesStoneRadius + 'px; border-left-width:' +
+                this.milesStoneRadius + 'px; border-top-width:' + this.milesStoneRadius + 'px;"></div></div>';
+            parentTaskbarNode = this.createDivElement(data.ganttProperties.isMilestone ? milestoneTemplate : template);
         }
         return parentTaskbarNode;
     }
@@ -5795,8 +5820,7 @@ class ChartRows {
             ' tabindex="-1" style="' + ((data.ganttProperties.isMilestone) ? ('width:' + this.milestoneHeight + 'px;height:' +
             this.milestoneHeight + 'px;margin-top:' + this.milestoneMarginTop + 'px;left:' + (data.ganttProperties.left -
             (this.milestoneHeight / 2)) + 'px;') : ('width:' + data.ganttProperties.width + 'px;margin-top:' +
-            this.taskBarMarginTop + 'px;left:' + (!this.checkChildMileStone(data) ? (data.ganttProperties.left) :
-            (data.ganttProperties.left - (this.milestoneHeight / 2))) + 'px;height:' +
+            this.taskBarMarginTop + 'px;left:' + (data.ganttProperties.left) + 'px;height:' +
             this.taskBarHeight + 'px;')) + '"></div>';
         return this.createDivElement(template);
     }
@@ -5822,7 +5846,7 @@ class ChartRows {
     childTaskbarProgressResizer() {
         let template = '<div class="' + childProgressResizer + '"' +
             ' style="left:' + (this.templateData.ganttProperties.progressWidth - 6) + 'px;margin-top:' +
-            this.taskBarHeight + 'px;"><div class="' + progressBarHandler + '"' +
+            (this.taskBarHeight - 4) + 'px;"><div class="' + progressBarHandler + '"' +
             '><div class="' + progressHandlerElement + '"></div>' +
             '<div class="' + progressBarHandlerAfter + '"></div></div>';
         return this.createDivElement(template);
@@ -5881,23 +5905,6 @@ class ChartRows {
             resultString = '';
         }
         return resultString;
-    }
-    /**
-     * To check presence of single milestone child.
-     * @return {boolean}
-     */
-    checkChildMileStone(record) {
-        let boolValue = false;
-        if (record.hasChildRecords && record.childRecords.length === 1) {
-            let childRecords = record.childRecords;
-            if (childRecords[0].hasChildRecords) {
-                boolValue = this.checkChildMileStone(childRecords[0]);
-            }
-            else if (childRecords[0].ganttProperties.isMilestone) {
-                boolValue = true;
-            }
-        }
-        return boolValue;
     }
     getExpandDisplayProp(data) {
         data = this.templateData;
@@ -8006,7 +8013,7 @@ class Tooltip$1 {
             '.e-gantt-parent-taskbar, .e-gantt-milestone, .e-gantt-unscheduled-taskbar' +
             '.e-event-markers, .e-baseline-bar, .e-event-markers,' +
             '.e-connector-line-container, .e-indicator-span, .e-notes-info,' +
-            '.e-taskbar-left-resizer, .e-taskbar-right-resizer';
+            '.e-taskbar-left-resizer, .e-taskbar-right-resizer, .e-baseline-gantt-milestone';
         this.toolTipObj.position = 'BottomCenter';
         this.toolTipObj.openDelay = 700;
         this.toolTipObj.enableHtmlSanitizer = false;
@@ -8059,13 +8066,14 @@ class Tooltip$1 {
                     argsData.content = this.toolTipObj.content = taskbarTemplateNode ? taskbarTemplateNode[0] :
                         parent.tooltipModule.getTooltipContent((data.ganttProperties.isMilestone ? 'milestone' : 'taskbar'), data, parent, args);
                 }
-                else if (args.target.classList.contains('e-baseline-bar')) {
+                else if (args.target.classList.contains('e-baseline-bar') ||
+                    args.target.classList.contains('e-baseline-gantt-milestone')) {
                     let baseLineTemplateNode;
                     if ((parent.tooltipSettings.baseline)) {
                         baseLineTemplateNode = parent.tooltipModule.templateCompiler(parent.tooltipSettings.baseline, parent, data, 'TooltipBaselineTemplate');
                     }
                     argsData.content = this.toolTipObj.content = baseLineTemplateNode ? baseLineTemplateNode[0] :
-                        parent.tooltipModule.getTooltipContent('baseline', data, parent, args);
+                        parent.tooltipModule.getTooltipContent((data.ganttProperties.isMilestone ? 'milestone' : 'baseline'), data, parent, args);
                 }
                 else if (args.target.classList.contains('e-event-markers')) {
                     argsData.content = this.toolTipObj.content = parent.tooltipModule.getTooltipContent('marker', data, parent, args);
@@ -11461,7 +11469,7 @@ class TaskbarEdit {
         this.roundOffDuration = true;
         this.dragMouseLeave = false;
         this.isMouseDragged = false;
-        this.previousItemProperty = ['left', 'progress', 'duration', 'startDate', 'endDate', 'width', 'progressWidth'];
+        this.previousItemProperty = ['left', 'progress', 'duration', 'isMilestone', 'startDate', 'endDate', 'width', 'progressWidth'];
         this.tapPointOnFocus = false;
         this.touchEdit = false;
     }
@@ -11806,40 +11814,39 @@ class TaskbarEdit {
             args.taskBarEditAction = this.taskBarEditAction;
             args.roundOffDuration = this.roundOffDuration;
             args.cancel = false;
-            this.parent.trigger('taskbarEditing', args, (args) => {
-                if (!args.cancel && this.taskBarEditRecord !== null) {
-                    this.roundOffDuration = args.roundOffDuration;
-                    this.updateMouseMoveProperties(e);
-                    if (this.taskBarEditAction === 'ProgressResizing') {
-                        this.performProgressResize(e);
-                    }
-                    else if (this.taskBarEditAction === 'LeftResizing') {
-                        this.enableLeftResizing(e);
-                    }
-                    else if (this.taskBarEditAction === 'RightResizing') {
-                        this.enableRightResizing(e);
-                    }
-                    else if (this.taskBarEditAction === 'ParentDrag' || this.taskBarEditAction === 'ChildDrag' ||
-                        this.taskBarEditAction === 'MilestoneDrag') {
-                        this.enableDragging(e);
-                    }
-                    else if (this.taskBarEditAction === 'ConnectorPointLeftDrag' ||
-                        this.taskBarEditAction === 'ConnectorPointRightDrag') {
-                        this.triggerDependencyEvent(e);
-                        if (!this.parent.isAdaptive) {
-                            this.drawFalseLine();
-                        }
-                    }
-                    this.setItemPosition();
-                    this.updateEditedItem();
-                    this.editTooltip.updateTooltip();
-                    if (isMouseClick) {
-                        this.taskBarEditedAction(e);
-                    }
+            args.previousData = this.previousItem;
+            this.roundOffDuration = args.roundOffDuration;
+            this.updateMouseMoveProperties(e);
+            if (this.taskBarEditAction === 'ProgressResizing') {
+                this.performProgressResize(e);
+            }
+            else if (this.taskBarEditAction === 'LeftResizing') {
+                this.enableLeftResizing(e);
+            }
+            else if (this.taskBarEditAction === 'RightResizing') {
+                this.enableRightResizing(e);
+            }
+            else if (this.taskBarEditAction === 'ParentDrag' || this.taskBarEditAction === 'ChildDrag' ||
+                this.taskBarEditAction === 'MilestoneDrag') {
+                this.enableDragging(e);
+            }
+            else if (this.taskBarEditAction === 'ConnectorPointLeftDrag' ||
+                this.taskBarEditAction === 'ConnectorPointRightDrag') {
+                this.triggerDependencyEvent(e);
+                if (!this.parent.isAdaptive) {
+                    this.drawFalseLine();
                 }
-                else {
+            }
+            this.setItemPosition();
+            this.updateEditedItem();
+            this.editTooltip.updateTooltip();
+            if (isMouseClick) {
+                this.taskBarEditedAction(e);
+            }
+            this.parent.trigger('taskbarEditing', args, (args) => {
+                if (args.cancel && this.taskBarEditRecord !== null) {
                     this.tapPointOnFocus = false;
-                    this.editTooltip.showHideTaskbarEditTooltip(false);
+                    merge(this.taskBarEditRecord.ganttProperties, args.previousData);
                 }
             });
         }
@@ -12124,6 +12131,9 @@ class TaskbarEdit {
                     && isNullOrUndefined(item.isMilestone) && item.isMilestone === false && item.duration === 0) {
                     this.parent.setRecordValue('duration', 1, item, true);
                 }
+                if (item.isMilestone) {
+                    this.parent.setRecordValue('endDate', new Date(startDate.getTime()), item, true);
+                }
                 this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
                 break;
             case 'RightResizing':
@@ -12133,7 +12143,9 @@ class TaskbarEdit {
                     startDate = this.parent.dateValidationModule.getValidStartDate(item);
                     this.parent.setRecordValue('startDate', startDate, item, true);
                 }
-                endDate = this.parent.dateValidationModule.checkEndDate(tempEndDate, this.taskBarEditRecord.ganttProperties);
+                let tempdate = isNullOrUndefined(item.startDate) ? startDate : item.startDate;
+                endDate = item.isMilestone ? tempdate :
+                    this.parent.dateValidationModule.checkEndDate(tempEndDate, this.taskBarEditRecord.ganttProperties);
                 this.parent.setRecordValue('endDate', new Date(endDate.getTime()), item, true);
                 this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
                 break;
@@ -13060,8 +13072,17 @@ class DialogEdit {
                 let fieldName = inputElement.id.replace(ganttObj.element.id, '');
                 /* tslint:disable-next-line:no-any */
                 let controlObj = div.querySelector('#' + ganttObj.element.id + fieldName).ej2_instances[0];
-                if (controlObj) {
-                    controlObj.destroy();
+                if (!isNullOrUndefined(controlObj)) {
+                    let column = ganttObj.columnByField[fieldName];
+                    if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
+                        let destroy = column.edit.destroy;
+                        if (typeof destroy !== 'string') {
+                            column.edit.destroy();
+                        }
+                    }
+                    else {
+                        controlObj.destroy();
+                    }
                 }
             }
         }
@@ -13323,7 +13344,7 @@ class DialogEdit {
                 fieldsModel[column.field] = common;
                 break;
         }
-        if (!isNullOrUndefined(column.edit)) {
+        if (!isNullOrUndefined(column.edit) && !isNullOrUndefined(column.edit.params)) {
             extend(fieldsModel[column.field], column.edit.params);
         }
         return fieldsModel;
@@ -13860,8 +13881,24 @@ class DialogEdit {
         let ganttId = this.parent.element.id;
         let ganttData = this.editedRecord;
         let divElement = this.createDivElement('e-edit-form-column');
-        let inputElement = this.createInputElement('', ganttId + '' + column.field, column.field);
-        divElement.appendChild(inputElement);
+        let inputElement;
+        let editArgs = { column: column, data: ganttData };
+        if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
+            let create = column.edit.create;
+            if (typeof create !== 'string') {
+                inputElement = column.edit.create(editArgs);
+                inputElement.className = '';
+                inputElement.setAttribute('type', 'text');
+                inputElement.setAttribute('id', ganttId + '' + column.field);
+                inputElement.setAttribute('name', column.field);
+                inputElement.setAttribute('title', column.field);
+                divElement.appendChild(inputElement);
+            }
+        }
+        else {
+            inputElement = this.createInputElement('', ganttId + '' + column.field, column.field);
+            divElement.appendChild(inputElement);
+        }
         inputModel.enabled = !this.isCheckIsDisabled(column);
         if (column.field === this.parent.taskFields.duration) {
             let ganttProp = ganttData.ganttProperties;
@@ -13870,8 +13907,16 @@ class DialogEdit {
         else {
             inputModel.value = ganttData[column.field];
         }
-        let inputObj = new this.inputs[column.editType](inputModel);
-        inputObj.appendTo(inputElement);
+        if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
+            let write = column.edit.write;
+            if (typeof write !== 'string') {
+                column.edit.write({ column: column, rowData: ganttData, element: inputElement });
+            }
+        }
+        else {
+            let inputObj = new this.inputs[column.editType](inputModel);
+            inputObj.appendTo(inputElement);
+        }
         return divElement;
     }
     ;
@@ -14022,7 +14067,16 @@ class DialogEdit {
             if (inputElement) {
                 let fieldName = inputElement.id.replace(ganttObj.element.id, '');
                 let controlObj = div.querySelector('#' + ganttObj.element.id + fieldName).ej2_instances[0];
-                tasksData[fieldName] = controlObj.value;
+                let column = ganttObj.columnByField[fieldName];
+                if (!isNullOrUndefined(column.edit) && isNullOrUndefined(column.edit.params)) {
+                    let read = column.edit.read;
+                    if (typeof read !== 'string') {
+                        tasksData[fieldName] = column.edit.read(inputElement, controlObj.value);
+                    }
+                }
+                else {
+                    tasksData[fieldName] = controlObj.value;
+                }
             }
         }
         if (this.isEdit) {
@@ -15283,7 +15337,7 @@ class Edit$2 {
             }
             else if ([tasks.progress, tasks.notes, tasks.durationUnit, tasks.expandState,
                 tasks.milestone, tasks.name, tasks.baselineStartDate,
-                tasks.baselineEndDate, tasks.indicators, tasks.id].indexOf(key) !== -1) {
+                tasks.baselineEndDate, tasks.id].indexOf(key) !== -1) {
                 let column = ganttObj.columnByField[key];
                 /* tslint:disable-next-line */
                 let value = data[key];
@@ -15308,12 +15362,20 @@ class Edit$2 {
                 ganttObj.setRecordValue('taskData.' + key, value, ganttData);
                 ganttObj.setRecordValue(key, value, ganttData);
             }
+            else if (tasks.indicators === key) {
+                let value = data[key];
+                ganttObj.setRecordValue('indicators', value, ganttData.ganttProperties, true);
+                ganttObj.setRecordValue('taskData.' + key, value, ganttData);
+                ganttObj.setRecordValue(key, value, ganttData);
+            }
             else if (ganttObj.customColumns.indexOf(key) !== -1) {
                 let column = ganttObj.columnByField[key];
                 /* tslint:disable-next-line */
                 let value = data[key];
-                if (column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit') {
-                    value = ganttObj.dataOperation.getDateFromFormat(value);
+                if (isNullOrUndefined(column.edit)) {
+                    if (column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit') {
+                        value = ganttObj.dataOperation.getDateFromFormat(value);
+                    }
                 }
                 ganttObj.setRecordValue('taskData.' + key, value, ganttData);
                 ganttObj.setRecordValue(key, value, ganttData);

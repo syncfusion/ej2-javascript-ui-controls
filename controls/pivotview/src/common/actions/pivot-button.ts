@@ -220,12 +220,12 @@ export class PivotButton implements IAction {
         }
         if (engineModule.fieldList[field[i].name] !== undefined) {
             aggregation = engineModule.fieldList[field[i].name].aggregateType;
-            if (aggregation === undefined && (engineModule.fieldList[field[i].name].type === 'string' || engineModule.fieldList[field[i].name].type === 'include' ||
-                engineModule.fieldList[field[i].name].type === 'exclude')) {
+            if ((aggregation!=='DistinctCount') && (engineModule.fieldList[field[i].name].type !== 'number' || engineModule.fieldList[field[i].name].type === 'include' ||
+                 engineModule.fieldList[field[i].name].type === 'exclude')) {
                 aggregation = 'Count';
-            } else if (aggregation === undefined) {
-                aggregation = engineModule.fieldList[field[i].name].aggregateType !== undefined ?
-                    engineModule.fieldList[field[i].name].aggregateType : 'Sum';
+            } else {
+                aggregation = aggregation === undefined ? 'Sum' :
+                    engineModule.fieldList[field[i].name].aggregateType;
             }
         }
         let text: string = field[i].caption ? field[i].caption : field[i].name;
@@ -255,8 +255,7 @@ export class PivotButton implements IAction {
             engineModule = this.parent.engineModule;
         }
         let fieldListItem: IField = engineModule.fieldList[field[i].name];
-        if (fieldListItem.aggregateType !== 'CalculatedField' &&
-            fieldListItem.type === 'number') {
+        if (fieldListItem.aggregateType !== 'CalculatedField') {
             this.createSummaryType(buttonElement, field[i].name);
         }
     }

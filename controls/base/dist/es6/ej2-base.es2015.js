@@ -5786,17 +5786,7 @@ let Draggable = Draggable_1 = class Draggable extends Base {
         let intCoord = this.getCoordinates(evt);
         this.initialPosition = { x: intCoord.pageX, y: intCoord.pageY };
         if (!this.clone) {
-            let leftPostion;
-            let topPostion;
-            if (!isBlazor()) {
-                let pos = this.element.getBoundingClientRect();
-                leftPostion = pos.left;
-                topPostion = pos.top;
-            }
-            else {
-                leftPostion = this.element.offsetLeft;
-                topPostion = this.element.offsetTop;
-            }
+            let pos = this.element.getBoundingClientRect();
             this.getScrollableValues();
             if (evt.clientX === evt.pageX) {
                 this.parentScrollX = 0;
@@ -5804,8 +5794,8 @@ let Draggable = Draggable_1 = class Draggable extends Base {
             if (evt.clientY === evt.pageY) {
                 this.parentScrollY = 0;
             }
-            this.relativeXPosition = intCoord.pageX - (leftPostion + this.parentScrollX);
-            this.relativeYPosition = intCoord.pageY - (topPostion + this.parentScrollY);
+            this.relativeXPosition = intCoord.pageX - (pos.left + this.parentScrollX);
+            this.relativeYPosition = intCoord.pageY - (pos.top + this.parentScrollY);
         }
         if (this.externalInitialize) {
             this.intDragStart(evt);
@@ -5815,7 +5805,7 @@ let Draggable = Draggable_1 = class Draggable extends Base {
             EventHandler.add(document, Browser.touchEndEvent, this.intDestroy, this);
         }
         this.toggleEvents(true);
-        //document.body.classList.add('e-prevent-select');
+        document.body.classList.add('e-prevent-select');
         this.externalInitialize = false;
         EventHandler.trigger(document.documentElement, Browser.touchStartEvent, evt);
     }

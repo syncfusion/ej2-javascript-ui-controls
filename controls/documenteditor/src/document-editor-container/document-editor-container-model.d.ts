@@ -32,7 +32,7 @@ export interface DocumentEditorContainerModel extends ComponentModel{
 
     /**
      * Enable local paste
-     * @default true
+     * @default false
      */
     enableLocalPaste?: boolean;
 

@@ -69,7 +69,7 @@ export class Legend {
         let spacing: number = 10;
         let leftPadding: number = 10; let topPadding: number = map.mapAreaRect.y;
         this.legendRenderingCollections = [];
-        map.layersCollection.forEach((layer: LayerSettings, layerIndex: number) => {
+        Array.prototype.forEach.call(map.layersCollection, (layer: LayerSettings, layerIndex: number) => {
             if (!isNullOrUndefined(layer.shapeData)) {
                 let layerData: Object[] = layer.shapeData['features'];
                 let dataPath: string = layer.shapeDataPath;
@@ -293,7 +293,7 @@ export class Legend {
                     j++;
                 }
                 let collection: Object[] = (<Object[]>this.totalPages[0]['Collection']);
-                collection.forEach((legendObj: Object, index: number) => {
+                Array.prototype.forEach.call(collection, (legendObj: Object, index: number) => {
                     let legendRect: Rect = new Rect(
                         legendObj['Rect']['x'], legendObj['Rect']['y'],
                         legendObj['Rect']['width'], legendObj['Rect']['height']
@@ -1171,12 +1171,12 @@ export class Legend {
     }
 
     private getMarkersLegendCollections(layerIndex: number, markers: MarkerSettingsModel[]): void {
-        markers.forEach((marker: MarkerSettings, markerIndex: number) => {
+        Array.prototype.forEach.call(markers, (marker: MarkerSettings, markerIndex: number) => {
             let dataSource: Object[] = marker.dataSource;
             let field: string = marker.legendText;
             let templateFn: Function;
             let isDuplicate: boolean;
-            dataSource.forEach((data: Object, dataIndex: number) => {
+            Array.prototype.forEach.call(dataSource, (data: Object, dataIndex: number) => {
                 let imageSrc: string = null;
                 let showLegend: boolean = isNullOrUndefined(data[this.maps.legendSettings.showLegendPath]) ? true :
                     data[this.maps.legendSettings.showLegendPath];
@@ -1198,7 +1198,7 @@ export class Legend {
                         });
                     }
                 }
-            });
+            });            
         });
     }
 
@@ -1213,7 +1213,7 @@ export class Legend {
                 legendText = !isNullOrUndefined(colorMap.label) ? colorMap.label : colorMap.from + ' - ' + colorMap.to;
                 rangeData = [];
                 let colorMapProcess: boolean = false;
-                dataSource.forEach((data: Object, dataIndex: number) => {
+                Array.prototype.forEach.call(dataSource, (data: Object, dataIndex: number) => {
                     let colorValue: number = parseFloat(data[colorValuePath]);
                     if (colorValue >= colorMap.from && colorValue <= colorMap.to) {
                         colorMapProcess = true;
@@ -1286,7 +1286,7 @@ export class Legend {
                 legendText = !isNullOrUndefined(colorMap.label) ? colorMap.label : colorMap.value;
                 equalData = [];
                 let eqaulColorProcess: boolean = false;
-                dataSource.forEach((data: Object, dataIndex: number) => {
+                Array.prototype.forEach.call(dataSource, (data: Object, dataIndex: number) => {
                     let equalValue: string = data[colorValuePath];
                     if (equalValue === colorMap.value) {
                         eqaulColorProcess = true;
@@ -1320,18 +1320,18 @@ export class Legend {
                 this.getOverallLegendItemsCollection(legendText, legendFill, equalData, colorMap.showLegend);
             } else if (isNullOrUndefined(colorMap.minOpacity) && isNullOrUndefined(colorMap.maxOpacity) && isNullOrUndefined(colorMap.value)
                 && isNullOrUndefined(colorMap.from) && isNullOrUndefined(colorMap.to) && !isNullOrUndefined(colorMap.color)) {
-                dataSource.forEach((data: Object, dataIndex: number) => {
-                    let equalValue: string = data[colorValuePath];
-                    for (let k: number = 0; k < outOfRangeValues.length; k++) {
-                        if (equalValue === outOfRangeValues[k]) {
-                            outOfRange.push(
-                                this.getLegendData(layerIndex, dataIndex, data, dataPath, layerData, propertyPath, equalValue));
+                    Array.prototype.forEach.call(dataSource, (data: Object, dataIndex: number) => {
+                        let equalValue: string = data[colorValuePath];
+                        for (let k: number = 0; k < outOfRangeValues.length; k++) {
+                            if (equalValue === outOfRangeValues[k]) {
+                                outOfRange.push(
+                                    this.getLegendData(layerIndex, dataIndex, data, dataPath, layerData, propertyPath, equalValue));
+                            }
                         }
-                    }
-                });
+                    });
                 if (outOfRangeValues.length === 0) {
                     let range: boolean = false; let outRange: Object[] = [];
-                    dataSource.forEach((data: Object, dataIndex: number) => {
+                    Array.prototype.forEach.call(dataSource, (data: Object, dataIndex: number) => {
                         range = false;
                         let rangeValue: number = data[colorValuePath];
                         for (let z: number = 0; z < colorMapping.length; z++) {
@@ -1366,7 +1366,7 @@ export class Legend {
         let fill: string = this.maps.legendSettings.fill;
         let valuePath: string = this.maps.legendSettings.valuePath;
         if (!isNullOrUndefined(colorValuePath) && !isNullOrUndefined(dataSource)) {
-            dataSource.forEach((data: Object, dataIndex: number) => {
+            Array.prototype.forEach.call(dataSource, (data: Object, dataIndex: number) => {
                 let showLegend: boolean = isNullOrUndefined(this.maps.legendSettings.showLegendPath) ?
                     true : isNullOrUndefined(data[this.maps.legendSettings.showLegendPath]) ?
                         false : data[this.maps.legendSettings.showLegendPath];
@@ -1379,7 +1379,6 @@ export class Legend {
                 }
                 this.getOverallLegendItemsCollection(legendText, legendFill, newData, showLegend);
             });
-
         }
     }
 

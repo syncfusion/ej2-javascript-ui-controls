@@ -83,6 +83,7 @@ describe('Waterfall Series', () => {
                 {
                     primaryXAxis: { title: 'PrimaryXAxis' },
                     primaryYAxis: { title: 'PrimaryYAxis', rangePadding: 'Normal' },
+                    axes: [{}],
                     series: [{
                         animation: { enable: false }, name: 'ChartSeriesNameGold', dataSource: [],
                         type: 'Waterfall', fill: '#93C952',

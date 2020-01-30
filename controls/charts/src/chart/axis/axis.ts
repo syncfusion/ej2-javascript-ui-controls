@@ -64,7 +64,7 @@ export class Row extends ChildProperty<Row> {
     public computeSize(axis: Axis, clipRect: Rect, scrollBarHeight: number): void {
         let width: number = 0;
         let innerPadding: number = 5;
-        if (axis.visible) {
+        if (axis.visible && axis.internalVisibility) {
             width += (axis.findTickSize(axis.crossInAxis) + scrollBarHeight +
                 axis.findLabelSize(axis.crossInAxis, innerPadding) + axis.lineStyle.width * 0.5);
         }
@@ -120,7 +120,7 @@ export class Column extends ChildProperty<Column> {
     public computeSize(axis: Axis, clipRect: Rect, scrollBarHeight: number ): void {
         let height: number = 0;
         let innerPadding: number = 5;
-        if (axis.visible) {
+        if (axis.visible && axis.internalVisibility) {
             height += (axis.findTickSize(axis.crossInAxis) + scrollBarHeight +
                 axis.findLabelSize(axis.crossInAxis, innerPadding) + axis.lineStyle.width * 0.5);
         }
@@ -867,6 +867,12 @@ export class Axis extends ChildProperty<Axis> {
     public isChart: boolean = true;
     /** @private */
     public maxPointLength: number;
+    /**
+     * @private
+     * Task: BLAZ-2044
+     * This property used to hide the axis when series hide from legend click
+     */
+    public internalVisibility: boolean = true;
 
     // tslint:disable-next-line:no-any
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {

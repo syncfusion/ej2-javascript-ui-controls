@@ -262,6 +262,9 @@ export class TableResizer {
         this.owner.viewer.layout.reLayoutTable(table);
         this.owner.editorModule.reLayout(this.owner.selection);
         this.currentResizingTable = row.ownerTable;
+        if (table.childWidgets[this.resizerPosition] === undefined) {
+            this.resizerPosition = -1;
+        }
     }
 
     /**

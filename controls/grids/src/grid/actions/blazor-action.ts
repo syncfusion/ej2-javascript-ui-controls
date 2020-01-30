@@ -1,5 +1,5 @@
 import { IGrid, ActionArgs, NotifyArgs } from '../base/interface';
-import { Observer, isBlazor } from '@syncfusion/ej2-base';
+import { Observer, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
 import { Column } from '../models/column';
 import { Row } from '../models/row';
@@ -7,7 +7,7 @@ import { AriaService } from '../services/aria-service';
 import { Cell } from '../models/cell';
 import { CellType, AggregateType } from '../base/enum';
 import { ReturnType } from '../base/type';
-import { AggregateColumn, AggregateRow } from '../models/aggregate';
+import { AggregateRow } from '../models/aggregate';
 import { DataUtil } from '@syncfusion/ej2-data';
 
 export const gridObserver: Observer = new Observer();
@@ -36,6 +36,7 @@ export class BlazorAction {
         this.parent.on('editsuccess', this.editSuccess, this);
         this.parent.on('setvisibility', this.setColumnVisibility, this);
         this.parent.on('offset', this.setServerOffSet, this);
+        this.parent.on('updateaction', this.modelChanged, this);
         this.parent.on(events.modelChanged, this.modelChanged, this);
      }
 
@@ -48,6 +49,7 @@ export class BlazorAction {
         this.parent.off('editsuccess', this.editSuccess);
         this.parent.off('setvisibility', this.setColumnVisibility);
         this.parent.off('offset', this.setServerOffSet);
+        this.parent.off('updateaction', this.modelChanged);
         this.parent.off(events.modelChanged, this.modelChanged);
      }
 
@@ -70,6 +72,13 @@ export class BlazorAction {
         };
         args.promise.then((e: ReturnType) => this.editSuccess(editArgs)
         ).catch((e: Error) => {
+            if (isBlazor() && this.parent.isServerRendered) {
+                let error: string = 'error';
+                let message: string = 'message';
+                if (!isNullOrUndefined(e[error]) && !isNullOrUndefined(e[error][message])) {
+                    e[error] = e[error][message];
+                }
+            }
             this.parent.trigger(events.actionFailure, ((isBlazor() && e instanceof Array) ? e[0] : e));
             this.parent.hideSpinner();
             this.parent.log('actionfailure', { error: e });
@@ -127,39 +136,40 @@ export class BlazorAction {
         let visible: Object = {};
         let adaptor: string = 'interopAdaptor';
         let invokeMethodAsync: string = 'invokeMethodAsync';
-        columns.forEach((column: Column) => {
-            visible[column.uid] = column.visible;
-        });
+        for (let i: number = 0; i < columns.length; i++) {
+            visible[columns[i].uid] = columns[i].visible;
+        }
         this.parent[adaptor][invokeMethodAsync]('setColumnVisibility', {visible: visible});
     }
 
     public dataSuccess(args: ReturnType): void {
         if (args.foreignColumnsData) {
             let columns: Column[] = this.parent.getColumns();
-            columns.forEach((column: Column) => {
-                if (args.foreignColumnsData[column.field]) {
-                    column.columnData = args.foreignColumnsData[column.field];
+            for (let i: number = 0; i < columns.length; i++) {
+                if (args.foreignColumnsData[columns[i].field]) {
+                    columns[i].columnData = args.foreignColumnsData[columns[i].field];
                 }
-            });
+            }
         }
         if (this.parent.allowGrouping && this.parent.groupSettings.columns) {
             let agg: Object[] = [];
             let aggRows: AggregateRow | Object[] = this.parent.aggregates;
-            aggRows.forEach((row: AggregateRow) => {
-                row.columns.forEach((col: AggregateColumn) => {
+            for (let i: number = 0; i < aggRows.length; i++) {
+                let aggRow: AggregateRow = aggRows[i] as AggregateRow;
+                for ( let j: number = 0; j < aggRow.columns.length; j++) {
                     let aggr: Object = {};
-                    let type: string | AggregateType[] = col.type.toString();
-                    aggr = { type: type.toLowerCase(), field: col.field };
+                    let type: string | AggregateType[] = aggRow.columns[j].type.toString();
+                    aggr = { type: type.toLowerCase(), field: aggRow.columns[j].field };
                     agg.push(aggr);
-                });
-            });
+                }
+            }
             let data: Object[];
             let aggrds: Object[];
             let groupedCols: string[] = this.parent.groupSettings.columns;
-            groupedCols.forEach((field: string) => {
+            for ( let k: number = 0; k < groupedCols.length; k++) {
                 aggrds = data ? data : args.result;
-                data = DataUtil.group(aggrds, field, agg, null, null);
-            });
+                data = DataUtil.group(aggrds, groupedCols[k], agg, null, null);
+            }
             args.result = data ? data : args.result;
         }
         let rowUid: string = 'rowUid';

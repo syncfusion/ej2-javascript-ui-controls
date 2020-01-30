@@ -78,13 +78,13 @@ export class ExportHelper {
         let promise: Promise<Object>;
         let fColumns: Column[] = gridObj.getForeignKeyColumns();
         if (fColumns.length) {
-            fColumns.forEach((col: Column) => {
-                columnPromise.push((<DataManager>col.dataSource).executeQuery(new Query()));
-            });
+            for (let i: number = 0; i < fColumns.length; i++) {
+                columnPromise.push((<DataManager>fColumns[i].dataSource).executeQuery(new Query()));
+            }
             promise = Promise.all(columnPromise).then((e: ReturnType[]) => {
-                fColumns.forEach((col: Column, index: number) => {
-                    this.foreignKeyData[col.field] = e[index].result;
-                });
+                for (let j: number = 0; j < fColumns.length; j++) {
+                    this.foreignKeyData[fColumns[j].field] = e[j].result;
+                }
                 // tslint:disable-next-line:no-any
             }) as any;
         }
@@ -277,7 +277,7 @@ export class ExportValueFormatter {
 
 
     /* tslint:disable-next-line:no-any */
-    public formatCellValue(args: any): string {
+    public formatCellValue(args: any, isServerBlaz?: boolean): string {
         if (args.isForeignKey) {
             args.value = getValue(args.column.foreignKeyValue, getForeignData(args.column, {}, args.value)[0]);
         }
@@ -292,12 +292,13 @@ export class ExportValueFormatter {
             }
             if (typeof args.column.format === 'string') {
                 let format: DateFormatOptions;
+                let cFormat: string = args.column.format;
                 if (args.column.type === 'date') {
-                    format = { type: 'date', skeleton: args.column.format };
+                    format = isServerBlaz ? { type: 'date', format: cFormat } : { type: 'date', skeleton: cFormat };
                 } else if (args.column.type === 'time') {
-                    format = { type: 'time', skeleton: args.column.format };
+                    format = isServerBlaz ? { type: 'time', format: cFormat } : { type: 'time', skeleton: cFormat };
                 } else {
-                    format = { type: 'dateTime', skeleton: args.column.format };
+                    format = isServerBlaz ? { type: 'dateTime', format: cFormat } : { type: 'dateTime', skeleton: cFormat };
                 }
                 return this.returnFormattedValue(args, format);
             } else {

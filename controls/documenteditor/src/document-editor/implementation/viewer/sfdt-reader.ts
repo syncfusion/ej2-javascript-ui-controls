@@ -384,6 +384,14 @@ export class SfdtReader {
     private parseTextBody(data: any, section: Widget, isSectionBreak?: boolean): void {
         this.parseBody(data, section.childWidgets as BlockWidget[], section, isSectionBreak);
     }
+    public addCustomStyles(data: any): void {
+        for (let i: number = 0; i < data.styles.length; i++) {
+            let style: any = this.viewer.styles.findByName(data.styles[i].name);
+            if (style === undefined) {
+                this.parseStyle(data, data.styles[i], this.viewer.styles);
+            }
+        }
+    }
     public parseBody(data: any, blocks: BlockWidget[], container?: Widget, isSectionBreak?: boolean): void {
         if (!isNullOrUndefined(data)) {
             for (let i: number = 0; i < data.length; i++) {

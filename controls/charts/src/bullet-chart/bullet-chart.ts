@@ -552,6 +552,17 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
                 this.maximum = this.maximum > this.ranges[i].end ? this.maximum : this.ranges[i].end;
             }
         }
+        if (this.maximum === null) {
+            for (let i: number = 0; i < Object.keys(this.dataSource).length; i++) {
+            if (this.dataSource[i][this.targetField] > this.dataSource[i][this.valueField]) {
+                this.maximum = this.maximum > this.dataSource[i][this.targetField] ? this.maximum + this.interval :
+                 this.dataSource[i][this.targetField] + this.interval;
+            } else {
+                this.maximum = this.maximum > this.dataSource[i][this.valueField] ? this.maximum + this.interval :
+                this.dataSource[i][this.valueField] + this.interval;
+            }
+        }
+        }
         if (!this.interval) {
            this.interval = this.calculateNumericNiceInterval(this.maximum - this.minimum);
         }
@@ -797,6 +808,14 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
         let leftCategory: number = 0;
         let rightCategory: number = 0;
         let title : number = maxTitlteWidth;
+        let format: string = this.bulletAxis.getFormat(this);
+        let isCustomFormat: boolean = format.match('{value}') !== null;
+        let condition : boolean;
+        this.bulletAxis.format = this.intl.getNumberFormat({
+            format: isCustomFormat ? '' : format, useGrouping: this.enableGroupSeparator
+        });
+        let formatted: number =  measureText(
+            this.bulletAxis.formatValue(this.bulletAxis, isCustomFormat, format, this.maximum), this.labelStyle).width;
         let categoryLabelSize : number;
         if (this.orientation === 'Horizontal') {
             categoryLabelSize = this.maxLabelSize.width;
@@ -810,10 +829,10 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
             categoryLabelSize = this.maxLabelSize.height;
             rightAxisLabel = (this.opposedPosition) ? tickSize + labelSpace : 0;
             rightAxisLabel += (this.opposedPosition && this.labelPosition !== 'Inside') ?
-            (measureText(this.maximum.toString(), this.labelStyle).width) : 0;
+            formatted : 0;
             leftAxisLabel = (!this.opposedPosition) ? tickSize + labelSpace : 0;
             leftAxisLabel += (!this.opposedPosition && this.labelPosition !== 'Inside') ?
-            (measureText(this.maximum.toString(), this.labelStyle).width) : 0;
+            formatted : 0;
             topCategory = ((categoryLabelSize && enableRtl) ? (categoryLabelSize + padding) : 0);
             bottomCategory = ((categoryLabelSize && !enableRtl) ? (categoryLabelSize + padding) : 0);
         }

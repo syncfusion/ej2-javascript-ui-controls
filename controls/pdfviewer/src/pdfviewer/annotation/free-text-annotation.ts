@@ -6,6 +6,8 @@ import { ColorPicker } from '@syncfusion/ej2-inputs';
 import { PointModel } from '@syncfusion/ej2-drawings';
 import { PdfAnnotationBase } from '../../diagram/pdf-annotation';
 import { PdfAnnotationBaseModel } from '../../diagram/pdf-annotation-model';
+import { AnnotationSelectorSettings } from '../pdfviewer';
+import { AnnotationSelectorSettingsModel } from '../pdfviewer-model';
 
 /**
  * @hidden
@@ -38,6 +40,7 @@ export interface IFreeTextAnnotation {
     font: any;
     comments: ICommentsCollection[];
     review: IReviewCollection;
+    annotationSelectorSettings: AnnotationSelectorSettingsModel;
 }
 
 /**
@@ -281,7 +284,8 @@ export class FreeTextAnnotation {
                             comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author),
                             review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
                             // tslint:disable-next-line:max-line-length
-                            font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline }
+                            font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline },
+                            annotationSelectorSettings: this.getSettings(annotation)
                         };
                         if (isImportAction) {
                             annot.id = annotation.AnnotName;
@@ -296,7 +300,19 @@ export class FreeTextAnnotation {
             }
         }
     }
-
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public getSettings(annotation : any) : any {
+        let selector: AnnotationSelectorSettingsModel;
+        if ( annotation.AnnotationSelectorSettings === null) {
+            selector = this.pdfViewer.freeTextSettings.annotationSelectorSettings;
+        } else {
+            selector = annotation.AnnotationSelectorSettings;
+        }
+        return selector;
+    }
     /**
      * @private
      */
@@ -552,7 +568,8 @@ export class FreeTextAnnotation {
                     fontFamily: this.fontFamily, opacity: this.opacity, comments: [], textAlign: 'Left',
                     // tslint:disable-next-line:max-line-length
                     font: { isBold: this.isBold, isItalic: this.isItalic, isStrikeout: this.isStrikethrough, isUnderline: this.isUnderline },
-                    review: { state: 'Unmarked', stateModel: 'None', modifiedDate: currentDateString, author: this.author }
+                    review: { state: 'Unmarked', stateModel: 'None', modifiedDate: currentDateString, author: this.author },
+                    annotationSelectorSettings: this.pdfViewer.freeTextSettings.annotationSelectorSettings
                 };
                 let annotation: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
                 // tslint:disable-next-line
@@ -599,7 +616,7 @@ export class FreeTextAnnotation {
                         commentsDiv.childNodes[0].childNodes[1].ej2_instances[0].value = inputValue;
                     }
                 }
-                this.pdfViewer.renderSelector(this.selectedAnnotation.pageIndex);
+                this.pdfViewer.renderSelector(this.selectedAnnotation.pageIndex, this.selectedAnnotation.annotationSelectorSettings);
             }
             this.isNewFreeTextAnnot = false;
             if (this.inputBoxElement.parentElement) {
@@ -646,7 +663,7 @@ export class FreeTextAnnotation {
                         inuptEleObj.selectedAnnotation.bounds.height = inputEleHeight;
                         // tslint:disable-next-line
                         inuptEleObj.pdfViewer.nodePropertyChange(inuptEleObj.selectedAnnotation, { bounds: { width: inuptEleObj.selectedAnnotation.bounds.width, height: inuptEleObj.selectedAnnotation.bounds.height, y: y } });
-                        inuptEleObj.pdfViewer.renderSelector(inuptEleObj.selectedAnnotation.pageIndex);
+                        inuptEleObj.pdfViewer.renderSelector(inuptEleObj.selectedAnnotation.pageIndex,  this.selectedAnnotation.annotationSelectorSettings);
                     }
                 }
             }
@@ -862,7 +879,8 @@ export class FreeTextAnnotation {
                 fontFamily: annotation.FontFamily, notes: annotation.MarkupText, textAlign: annotation.TextAlign,
                 // tslint:disable-next-line
                 comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
-                font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline }
+                font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline },
+                annotationSelectorSettings: this.getSettings(annotation)
             };
             this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annot, '_annotations_freetext');
         }

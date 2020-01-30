@@ -39,6 +39,12 @@ export interface ItemModel {
     showAlwaysInPopup?: boolean;
 
     /**
+     * Specifies whether an item should be disabled or not.
+     * @default false
+     */
+    disabled?: boolean;
+
+    /**
      * Defines single/multiple classes separated by space used to specify an icon for the button.
      * The icon will be positioned before the text content if text is available, otherwise the icon alone will be rendered.
      * @default ""

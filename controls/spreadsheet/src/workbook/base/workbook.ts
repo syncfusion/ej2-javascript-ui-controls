@@ -592,6 +592,16 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
+     * Opens the specified JSON object.
+     * @param options - Options for opening the JSON object.
+     */
+    public openFromJson(options: { file: string | object }): void {
+        this.isOpen = true;
+        let jsonObject: string = typeof options.file === 'object' ? JSON.stringify(options.file) : options.file;
+        this.notify(events.workbookOpen, { jsonObject: jsonObject });
+    }
+
+    /**
      * Saves the Spreadsheet data to Excel file.
      * @param {SaveOptions} saveOptions - Options for saving the excel file.
      */
@@ -622,9 +632,24 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
+    /**
+     * Saves the Spreadsheet data as JSON object.
+     */
+    public saveAsJson(): Promise<object> {
+        return new Promise<object>((resolve: Function) => {
+            this.on(events.onSave, (args: { cancel: boolean, jsonObject: object }) => {
+                args.cancel = true;
+                this.off(events.onSave);
+                resolve({ jsonObject: { Workbook: args.jsonObject } });
+                this.notify(events.saveCompleted, args);
+            });
+            this.save();
+        });
+    }
+
     public addHyperlink(hyperlink: string | HyperlinkModel, cellAddress: string): void {
-        let args: object = {  hyperlink: hyperlink, cell: cellAddress};
-        this.notify( setLinkModel, args );
+        let args: object = { hyperlink: hyperlink, cell: cellAddress };
+        this.notify(setLinkModel, args);
     }
 
     /**
@@ -661,7 +686,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
                     action: 'updateCellValue', address: range, value: cell.value,
                     sheetIndex: sheetIdx
                 });
-    }
+        }
     }
 
     /**
@@ -725,6 +750,22 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     public clearFilter(): void {
         this.notify(events.clearAllFilter, null);
+    }
+
+    /**
+     * To add custom library function.
+     * @param {string} functionHandler - Custom function handler name
+     * @param {string} functionName - Custom function name
+     */
+    public addCustomFunction(functionHandler: string | Function, functionName?: string): void {
+        functionName = functionName ? functionName : typeof functionHandler === 'string' ? functionHandler :
+            functionHandler.name.replace('bound ', '');
+        let eventArgs: { [key: string]: Object } = {
+            action: 'addCustomFunction',
+            functionHandler: functionHandler,
+            functionName: functionName
+        };
+        this.notify(events.workbookFormulaOperation, eventArgs);
     }
 
     /**

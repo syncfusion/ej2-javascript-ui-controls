@@ -1,4 +1,4 @@
-import { Component, Property, Event, Collection, L10n, Browser, EmitType, Complex, compile, createElement  } from '@syncfusion/ej2-base';import { addClass, removeClass, detach, attributes, prepend, setStyleAttribute } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty, isBlazor } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, append } from '@syncfusion/ej2-base';import { EventHandler, updateBlazorTemplate, BlazorDragEventArgs } from '@syncfusion/ej2-base';import { Draggable, SanitizeHtmlHelper, extend } from '@syncfusion/ej2-base';import { Popup, PositionData, getZindexPartial } from '../popup/popup';import { PositionDataModel } from '../popup/popup-model';import { Button, ButtonModel } from '@syncfusion/ej2-buttons';import { createResize, removeResize, setMinHeight } from '../common/resize';
+import { Component, Property, Event, Collection, L10n, Browser, EmitType, Complex, compile, createElement } from '@syncfusion/ej2-base';import { addClass, removeClass, detach, attributes, prepend, setStyleAttribute } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty, isBlazor } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, append, EventHandler, Draggable, extend } from '@syncfusion/ej2-base';import { updateBlazorTemplate, BlazorDragEventArgs, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Button, ButtonModel } from '@syncfusion/ej2-buttons';import { Popup, PositionData, getZindexPartial } from '../popup/popup';import { PositionDataModel } from '../popup/popup-model';import { createResize, removeResize, setMinHeight } from '../common/resize';
 import {ButtonType,DialogEffect,BeforeSanitizeHtmlArgs,BeforeOpenEventArgs,OpenEventArgs,BeforeCloseEventArgs,CloseEventArgs} from "./dialog";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -340,5 +340,12 @@ export interface DialogModel extends ComponentModel{
      * @blazorProperty 'OnResizeStop'
      */
     resizeStop?: EmitType<Object>;
+
+    /**
+     * Event triggers when the dialog is destroyed.
+     * @event
+     * @blazorProperty 'Destroyed'
+     */
+    destroyed?: EmitType<Event>;
 
 }

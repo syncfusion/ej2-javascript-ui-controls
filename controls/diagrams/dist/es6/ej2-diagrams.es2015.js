@@ -13958,10 +13958,11 @@ function getDropEventArguements(args, arg) {
     if (isBlazor()) {
         let connector = (getObjectType(args.source) === Connector);
         let object = cloneBlazorObject(args.source);
-        let target = cloneBlazorObject(this.currentTarget);
+        let target = cloneBlazorObject(args.target);
         arg = {
             element: connector ? { connector: object } : { node: object },
-            target: connector ? { connector: target } : { node: target }, position: this.currentPosition, cancel: false
+            target: connector ? { connector: target } : { node: target },
+            position: arg.position, cancel: arg.cancel
         };
     }
     return arg;
@@ -16003,7 +16004,7 @@ __decorate$2([
     Property('')
 ], Header.prototype, "id", void 0);
 __decorate$2([
-    Complex({ style: { fill: '#111111' } }, Annotation)
+    Complex({}, Annotation)
 ], Header.prototype, "annotation", void 0);
 __decorate$2([
     Complex({ fill: '#E7F4FF', strokeColor: '#CCCCCC' }, ShapeStyle)
@@ -19318,6 +19319,7 @@ class DiagramRenderer {
                     options.alignment = element.imageAlign;
                     options.source = obj.source;
                     options.scale = element.imageScale;
+                    options.visible = obj.visible;
                     options.description = obj.name || 'User handle';
                     options.id = obj.name + '_';
                     this.renderer.drawImage(canvas, options, this.adornerSvgLayer, false);
@@ -33185,6 +33187,15 @@ class Diagram extends Component {
         return this.add(obj, group);
     }
     /**
+     * Adds the given diagram object to the group.
+     * @param Group defines where the diagram object to be added.
+     * @param Child defines the diagram object to be added to the group
+     * @blazorArgsType obj|DiagramNode
+     */
+    addChildToGroup(group, child) {
+        this.addChild(group, child);
+    }
+    /**
      * Will return the history stack values
      * @param obj returns the history stack values
      */
@@ -34247,7 +34258,7 @@ class Diagram extends Component {
                 this.protectPropertyChange(propChange);
             }
         }
-        if (update && !this.diagramActions) {
+        if (update) {
             this.updateDiagramElementQuad();
         }
         return ((this.blazorActions & BlazorAction.expandNode) ? layout : true);
@@ -35206,6 +35217,12 @@ class Diagram extends Component {
                         let getDefaults = getFunction(this.getNodeDefaults);
                         if (getDefaults) {
                             let defaults = getDefaults(obj, this);
+                            if (defaults && defaults.ports) {
+                                for (let i = 0; i < defaults.ports.length; i++) {
+                                    defaults.ports[i].inEdges = [];
+                                    defaults.ports[i].outEdges = [];
+                                }
+                            }
                             if (defaults && defaults !== obj) {
                                 extendObject(defaults, obj);
                             }
@@ -45889,6 +45906,7 @@ class LineRouting {
         this.startArray = [];
         this.targetGridCollection = [];
         this.sourceGridCollection = [];
+        this.considerWalkable = [];
         //constructs the line routing module
     }
     /** @private */
@@ -45907,10 +45925,14 @@ class LineRouting {
     /** @private */
     renderVirtualRegion(diagram, isUpdate) {
         /* tslint:disable */
-        let right = diagram.spatialSearch['pageRight'] + this.size;
-        let bottom = diagram.spatialSearch['pageBottom'] + this.size;
-        let left = diagram.spatialSearch['pageLeft'] - this.size;
-        let top = diagram.spatialSearch['pageTop'] - this.size;
+        let extraBounds = this.size;
+        if (diagram.spatialSearch['pageTop'] < 0 || diagram.spatialSearch['pageLeft'] < 0) {
+            extraBounds = this.size + (this.size / 2);
+        }
+        let right = diagram.spatialSearch['pageRight'] + extraBounds;
+        let bottom = diagram.spatialSearch['pageBottom'] + extraBounds;
+        let left = diagram.spatialSearch['pageLeft'] - extraBounds;
+        let top = diagram.spatialSearch['pageTop'] - extraBounds;
         left = left < 0 ? left - 20 : 0;
         top = top < 0 ? top - 20 : 0;
         /* tslint:enable */
@@ -46491,8 +46513,7 @@ class LineRouting {
                 }
                 else {
                     let grid = this.gridCollection[x][y];
-                    grid.nodeId = [];
-                    grid.walkable = true;
+                    this.considerWalkable.push(grid);
                 }
             }
             if (x > 0 && y > 0) {
@@ -46508,7 +46529,8 @@ class LineRouting {
         if (x >= 0 && x < this.noOfRows && y >= 0 && y < this.noOfCols) {
             let grid = this.gridCollection[x][y];
             if (grid && (grid.walkable || (grid.nodeId.length === 1 &&
-                (this.sourceGridCollection.indexOf(grid) !== -1 || this.targetGridCollection.indexOf(grid) !== -1)))) {
+                (this.sourceGridCollection.indexOf(grid) !== -1 || this.targetGridCollection.indexOf(grid) !== -1 ||
+                    this.considerWalkable.indexOf(grid) !== -1)))) {
                 if ((isparent && !grid.parent) || !isparent) {
                     return true;
                 }

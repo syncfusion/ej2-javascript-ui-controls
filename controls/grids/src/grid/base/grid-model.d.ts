@@ -182,6 +182,37 @@ export interface PredicateModel {
 }
 
 /**
+ * Interface for a class InfiniteScrollSettings
+ */
+export interface InfiniteScrollSettingsModel {
+
+    /**
+     * If `enableScroll` set to true, then the data will be loaded in Grid when the scrollbar reaches the end.
+     * @default false
+     */
+    enableScroll?: boolean;
+
+    /**
+     * If `enableCache` is set to true, the Grid will cache the loaded data to be reused next time it is needed.
+     * @default false
+     */
+    enableCache?: boolean;
+
+    /**
+     * Defines the number of blocks to be maintained in Grid while settings enableCache as true.
+     * @default 3
+     */
+    maxBlock?: number;
+
+    /**
+     * Defines the number of blocks will render at the initial Grid rendering while enableCache is enabled.
+     * @default 3
+     */
+    initialBlocks?: number;
+
+}
+
+/**
  * Interface for a class FilterSettings
  */
 export interface FilterSettingsModel {
@@ -681,6 +712,12 @@ export interface GridModel extends ComponentModel{
      * @default {columns:[]}    
      */
     sortSettings?: SortSettingsModel;
+
+    /**
+     * Configures the infinite scroll settings.  
+     * @default { enableScroll: false, enableCache: false, maxBlock: 5, initialBlocks: 5 }    
+     */
+    infiniteScrollSettings?: InfiniteScrollSettingsModel;
 
     /**
      * If `allowSelection` is set to true, it allows selection of (highlight row) Grid records by clicking it.  

@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 17.4.46 (2020-01-30)
+
+### Grid
+
+#### Bug Fixes
+
+- `#260390` - Misalignment while editing with frozen column issue has been fixed.
+- `#260090` - `isInteracted` property is added to the row selecting events.
+- `#150452` - Misalignment while hiding columns with row drag and drop has been fixed.
+
 ## 17.4.44 (2021-01-21)
 
 ### Grid
@@ -12,6 +22,8 @@
 - `#258341` - `action` parameter has been added for filter events.
 - `#150314` - Footer template issue with Pdf export has been fixed.
 - `#260453` - `rowDragStartHelper's`action can be cancelled using the `args.cancel` parameter.
+- `#255626` - Grid data not properly loaded on dynamically changing culture issue has been fixed.
+- `#251481` - Provided the pdf export support for Grid stacked header feature.
 
 ## 17.4.43 (2020-01-14)
 

@@ -62,7 +62,7 @@ describe('Gantt taskbar editing', () => {
             ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
                 expect(args['name']).toBe('taskbarEditing');
                 expect(args.taskBarEditAction).toBe('LeftResizing');
-                expect(ganttObj.getFormatedDate(args.data.ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('10/23/2017 08:00');
+                expect(ganttObj.getFormatedDate(args.data['StartDate'], 'MM/dd/yyyy HH:mm')).toBe('10/23/2017 08:00');
             };
             ganttObj.dataBind();
             ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
@@ -94,7 +94,7 @@ describe('Gantt taskbar editing', () => {
 
         it('Left resizing -  edited cancel', () => {
             ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
-                expect(ganttObj.getFormatedDate(args.data.ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('10/20/2017 08:00');
+                expect(ganttObj.getFormatedDate(args.data['StartDate'], 'MM/dd/yyyy HH:mm')).toBe('10/20/2017 08:00');
             };
             ganttObj.dataBind();
             ganttObj.actionBegin = (args: object) => {
@@ -114,7 +114,7 @@ describe('Gantt taskbar editing', () => {
             ganttObj.actionBegin = (args: object) => { };
             ganttObj.dataBind();
             ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
-                expect(args.data.ganttProperties.progress).toBe(80);
+                expect(args.data['Progress']).toBe(80);
                 args['cancel'] = true;
             };
             ganttObj.dataBind();
@@ -130,7 +130,7 @@ describe('Gantt taskbar editing', () => {
 
         it('progress with 0% - edited cancel', () => {
             ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
-                expect(args.data.ganttProperties.progress).toBe(80);
+                expect(args.data['Progress']).toBe(80);
             };
             ganttObj.dataBind();
             ganttObj.actionBegin = (args: object) => {
@@ -150,9 +150,9 @@ describe('Gantt taskbar editing', () => {
             ganttObj.actionBegin = (args: object) => { };
             ganttObj.dataBind();
             ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
-                expect(args.data.ganttProperties.progress).toBe(80);
+                expect(args.data['Progress']).toBe(80);
                 expect(args.taskBarEditAction).toBe('ProgressResizing');
-                expect(args.editingFields.progress).toBe(80);
+                expect(args.editingFields.progress).toBe(0);
             };
             ganttObj.dataBind();
             ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
@@ -185,7 +185,7 @@ describe('Gantt taskbar editing', () => {
 
         it('Milestone drag action', () => {
             ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
-                expect(ganttObj.getFormatedDate(args.data.ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('10/24/2017 08:00');
+                expect(ganttObj.getFormatedDate(args.data['StartDate'], 'MM/dd/yyyy HH:mm')).toBe('10/24/2017 08:00');
                 expect(args.taskBarEditAction).toBe('MilestoneDrag');
             };
             ganttObj.dataBind();
@@ -202,7 +202,7 @@ describe('Gantt taskbar editing', () => {
 
         it('Parent drag action', () => {
             ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
-                expect(ganttObj.getFormatedDate(args.data.ganttProperties.startDate, 'MM/dd/yyyy HH:mm')).toBe('10/20/2017 08:00');
+                expect(ganttObj.getFormatedDate(args.data['StartDate'], 'MM/dd/yyyy HH:mm')).toBe('10/20/2017 08:00');
                 expect(args.taskBarEditAction).toBe('ParentDrag');
             };
             ganttObj.dataBind();
@@ -259,12 +259,12 @@ describe('Gantt taskbar editing', () => {
             ganttObj.actionBegin = (args: object) => { };
             ganttObj.dataBind();
             ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => {
-                expect(ganttObj.getFormatedDate(args.data.ganttProperties.endDate, 'MM/dd/yyyy HH:mm')).toBe('10/30/2017 17:00');
+                expect(ganttObj.getFormatedDate(args.data['EndDate'], 'MM/dd/yyyy HH:mm')).toBe('10/30/2017 17:00');
                 expect(args.taskBarEditAction).toBe('RightResizing');
             };
             ganttObj.dataBind();
             ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => {
-                expect(ganttObj.getFormatedDate(args.data.ganttProperties.endDate, 'MM/dd/yyyy HH:mm')).toBe('10/24/2017 17:00');
+                expect(ganttObj.getFormatedDate(args.data.ganttProperties.endDate, 'MM/dd/yyyy HH:mm')).toBe('10/24/2017 08:00');
                 expect(args.taskBarEditAction).toBe('RightResizing');
             };
             ganttObj.dataBind();

@@ -1,7 +1,7 @@
 /**
  * Marker sample
  */
-import { Maps, Marker, MapsTooltip, ILoadEventArgs, MapsTheme, MapAjax } from '../src/index';
+import { Maps, Marker, MapsTooltip, ILoadEventArgs, MapsTheme, MapAjax, MarkerType } from '../src/index';
 import { topPopulation } from './MapData/MarkerLocation';
 import { world_Map } from './MapData/worldMap';
 Maps.Inject(Marker, MapsTooltip);
@@ -32,7 +32,7 @@ Maps.Inject(Marker, MapsTooltip);
                         animationDuration: 0,
                         shape: 'Circle',
                         fill: 'white',
-                        width: 3,
+                        width: 10,
                         border: { width: 2, color: '#285255' },
                         tooltipSettings: {
                             template: '#template',
@@ -45,3 +45,24 @@ Maps.Inject(Marker, MapsTooltip);
         ]
     });
     maps.appendTo('#container');
+
+    document.getElementById("shape").onchange = () => {
+        var element: HTMLInputElement = <HTMLInputElement>(document.getElementById('shape'));
+        if (element.checked) {
+            maps.layers[0].markerSettings[0].shapeValuePath = 'shape';
+        } else {
+            maps.layers[0].markerSettings[0].shapeValuePath = null;
+        }
+        maps.refresh();
+    };
+    document.getElementById("color").onchange = () => {
+        var element: HTMLInputElement = <HTMLInputElement>(document.getElementById('color'));
+        if (element.checked) {
+            maps.layers[0].markerSettings[0].colorValuePath = 'color';
+        } else {
+            maps.layers[0].markerSettings[0].colorValuePath = null;
+        }
+        maps.refresh();
+    };
+
+

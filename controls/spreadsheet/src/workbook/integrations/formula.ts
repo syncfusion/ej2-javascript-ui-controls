@@ -104,6 +104,9 @@ export class WorkbookFormula {
                 break;
             case 'registerSheet':
                 this.registerSheet(<number>args.sheetIndex, <number>args.sheetCount);
+                if (args.isImport) {
+                    this.updateSheetInfo();
+                }
                 break;
             case 'unRegisterSheet':
                 this.unRegisterSheet(<number>args.sheetIndex, <number>args.sheetCount);
@@ -155,6 +158,10 @@ export class WorkbookFormula {
             case 'getAlpha':
                 args.col = getAlphalabel(<number>args.col);
                 break;
+            case 'addCustomFunction':
+                this.addCustomFunction(<string | Function>args.functionHandler, <string>args.functionName);
+                break;
+
         }
     }
     private referenceError(): string {
@@ -162,6 +169,16 @@ export class WorkbookFormula {
     }
     private getSheetInfo(): { visibleName: string, sheet: string }[] {
         return this.sheetInfo;
+    }
+    private addCustomFunction(functionHandler: string | Function, functionName: string): void {
+        this.calculateInstance.defineFunction(functionName, functionHandler);
+    }
+
+    private updateSheetInfo(): void {
+        this.sheetInfo = [];
+        this.parent.sheets.forEach((sheet: SheetModel, idx: number) => {
+            this.sheetInfo.push({ visibleName: sheet.name, sheet: sheet.name, index: idx });
+        });
     }
 
     private sheetDeletion(delSheetName: string, sheetId: number, index: number): void {
@@ -384,14 +401,14 @@ export class WorkbookFormula {
      */
     private addDefinedName(definedName: DefineNameModel): boolean {
         let isAdded: boolean = true;
-        let sheetIdx: number = null;
+        let sheetIdx: number;
         let name: string = definedName.name;
         let refersTo: string = definedName.refersTo.indexOf('!') > 0 ? definedName.refersTo :
             getSheetName(this.parent) + '!' + definedName.refersTo;
         if (definedName.scope) {
             sheetIdx = getSheetIndex(this.parent, definedName.scope);
-            if (sheetIdx) {
-                name = getSheetName(this.parent, sheetIdx - 1) + '!' + name;
+            if (sheetIdx > -1) {
+                name = getSheetName(this.parent, sheetIdx + 1) + '!' + name;
             }
         } else {
             definedName.scope = '';

@@ -1,5 +1,5 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';
-import { EmitType, Event, EventHandler, KeyboardEvents, isNullOrUndefined, isBlazor, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { EmitType, Event, EventHandler, KeyboardEvents, isNullOrUndefined, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { addClass, detach, getUniqueID, isRippleEnabled, removeClass, rippleEffect, closest } from '@syncfusion/ej2-base';
 import { CheckBoxModel } from './check-box-model';
 import { wrapperInitialize, rippleMouseHandler, ChangeEventArgs, setHiddenInput } from './../common/common';
@@ -204,31 +204,25 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
      */
     public destroy(): void {
         let wrapper: Element = this.getWrapper();
-        if (isBlazor() && this.isServerRendered) {
-            if (!this.disabled) {
-                this.unWireEvents();
+        super.destroy();
+        if (!this.disabled) {
+            this.unWireEvents();
+        }
+        if (this.tagName === 'INPUT') {
+            wrapper.parentNode.insertBefore(this.element, wrapper);
+            detach(wrapper);
+            this.element.checked = false;
+            if (this.indeterminate) {
+                this.element.indeterminate = false;
             }
+            ['name', 'value', 'disabled'].forEach((key: string) => {
+                this.element.removeAttribute(key);
+            });
         } else {
-            super.destroy();
-            if (!this.disabled) {
-                this.unWireEvents();
-            }
-            if (this.tagName === 'INPUT') {
-                wrapper.parentNode.insertBefore(this.element, wrapper);
-                detach(wrapper);
-                this.element.checked = false;
-                if (this.indeterminate) {
-                    this.element.indeterminate = false;
-                }
-                ['name', 'value', 'disabled'].forEach((key: string) => {
-                    this.element.removeAttribute(key);
-                });
-            } else {
-                ['role', 'aria-checked', 'class'].forEach((key: string) => {
-                    wrapper.removeAttribute(key);
-                });
-                wrapper.innerHTML = '';
-            }
+            ['role', 'aria-checked', 'class'].forEach((key: string) => {
+                wrapper.removeAttribute(key);
+            });
+            wrapper.innerHTML = '';
         }
     }
 
@@ -408,9 +402,6 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
      * @private
      */
     protected preRender(): void {
-        if (isBlazor() && this.isServerRendered) {
-            return;
-        }
         let element: HTMLInputElement = this.element;
         this.formElement = <HTMLFormElement>closest(this.element, 'form');
         this.tagName = this.element.tagName;
@@ -429,19 +420,12 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
      * @private
      */
     protected render(): void {
-        if (isBlazor() && this.isServerRendered) {
-            if (isRippleEnabled) {
-                rippleEffect(this.getWrapper().getElementsByClassName(RIPPLE)[0] as HTMLElement, { duration: 400, isCenterRipple: true });
-            }
-        } else {
-            this.initWrapper();
-            this.initialize();
-        }
+        this.initWrapper();
+        this.initialize();
         if (!this.disabled) {
             this.wireEvents();
         }
         this.updateHtmlAttributeToWrapper();
-        this.renderComplete();
     }
 
     private setDisabled(): void {
@@ -538,14 +522,14 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
      */
     public click(): void {
         this.element.click();
-   }
+    }
 
-   /**
-    * Sets the focus to CheckBox
-    * its native method
-    * @public
-    */
-   public focusIn(): void {
-       this.element.focus();
-  }
+    /**
+     * Sets the focus to CheckBox
+     * its native method
+     * @public
+     */
+    public focusIn(): void {
+        this.element.focus();
+    }
 }

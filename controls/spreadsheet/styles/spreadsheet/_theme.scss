@@ -1,6 +1,6 @@
 @include export-module('spreadsheet-theme') {
   /*! spreadsheet theme */
-  .e-spreadsheet {
+  #{&}.e-spreadsheet {
     & .e-sheet-tab-panel {
       background: $sheet-tab-panel-bg-color;
 
@@ -451,5 +451,10 @@
       color: $sort-error-font-color;
     }
   }
+
+  .e-dropdown-popup.e-sheets-list .e-item {
+    &.e-hide {
+      opacity: .45;
+    }
+  }
 }
-  

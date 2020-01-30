@@ -19,7 +19,8 @@ var cssClass = {
     collapsible: 'e-icon-collapsible',
     disabled: 'e-disabled',
     image: 'e-list-img',
-    iconWrapper: 'e-icon-wrapper'
+    iconWrapper: 'e-icon-wrapper',
+    anchorWrap: 'e-anchor-wrap'
 };
 /**
  * Base List Generator
@@ -73,7 +74,8 @@ var ListBase;
         headerTemplate: null,
         expandIconClass: 'e-icon-collapsible',
         moduleName: 'list',
-        expandIconPosition: 'Right'
+        expandIconPosition: 'Right',
+        itemNavigable: false
     };
     /**
      * Function helps to created and return the UL Li element based on your data.
@@ -157,6 +159,7 @@ var ListBase;
         var fields = extend({}, ListBase.defaultMappedFields, curOpt.fields);
         var ariaAttributes = extend({}, defaultAriaAttributes, curOpt.ariaAttributes);
         var id;
+        var checkboxElement = [];
         if (level) {
             ariaAttributes.level = level;
         }
@@ -190,7 +193,12 @@ var ListBase;
             }
             var innerEle = [];
             if (curOpt.showCheckBox) {
-                innerEle.push(createElement('input', { className: cssClass.check, attrs: { type: 'checkbox' } }));
+                if (curOpt.itemNavigable && (fieldData[fields.url] || fieldData[fields.urlAttributes])) {
+                    checkboxElement.push(createElement('input', { className: cssClass.check, attrs: { type: 'checkbox' } }));
+                }
+                else {
+                    innerEle.push(createElement('input', { className: cssClass.check, attrs: { type: 'checkbox' } }));
+                }
             }
             if (isSingleLevel === true) {
                 if (curOpt.showIcon && fieldData.hasOwnProperty(fields.iconCss) && !isNullOrUndefined(fieldData[fields.iconCss])) {
@@ -198,6 +206,9 @@ var ListBase;
                 }
                 li = generateSingleLevelLI(createElement, curItem, fieldData, fields, curOpt.itemClass, innerEle, (curItem.hasOwnProperty('isHeader') &&
                     curItem.isHeader) ? true : false, id, i, options);
+                if (curOpt.itemNavigable && checkboxElement.length) {
+                    prepend(checkboxElement, li.firstElementChild);
+                }
             }
             else {
                 li = generateLI(createElement, curItem, fieldData, fields, curOpt.itemClass, options);
@@ -228,6 +239,9 @@ var ListBase;
                 if (innerEle.length) {
                     prepend(innerEle, li.firstElementChild);
                 }
+                if (curOpt.itemNavigable && checkboxElement.length) {
+                    prepend(checkboxElement, li.firstElementChild);
+                }
                 processSubChild(createElement, fieldData, fields, dataSource, curOpt, li, ariaAttributes.level);
             }
             if (curOpt.itemCreated && typeof curOpt.itemCreated === 'function') {
@@ -241,6 +255,7 @@ var ListBase;
                 };
                 curOpt.itemCreated(curData);
             }
+            checkboxElement = [];
             child.push(li);
         }
         return child;
@@ -593,14 +608,17 @@ var ListBase;
             if (dataSource && fieldData.hasOwnProperty(fields.htmlAttributes) && fieldData[fields.htmlAttributes]) {
                 setAttribute(li, fieldData[fields.htmlAttributes]);
             }
-            if (innerElements.length) {
+            if (innerElements.length && !curOpt.itemNavigable) {
                 append(innerElements, li);
             }
             if (dataSource && (fieldData[fields.url] || (fieldData[fields.urlAttributes] &&
                 fieldData[fields.urlAttributes].href))) {
-                li.appendChild(anchorTag(createElement, dataSource, fields, text));
+                li.appendChild(anchorTag(createElement, dataSource, fields, text, innerElements, curOpt.itemNavigable));
             }
             else {
+                if (innerElements.length && curOpt.itemNavigable) {
+                    append(innerElements, li);
+                }
                 li.appendChild(document.createTextNode(text));
             }
         }
@@ -625,10 +643,11 @@ var ListBase;
             collapsible: 'e-icon-collapsible',
             disabled: 'e-disabled',
             image: "e-" + moduleName + "-img",
-            iconWrapper: 'e-icon-wrapper'
+            iconWrapper: 'e-icon-wrapper',
+            anchorWrap: 'e-anchor-wrap'
         };
     }
-    function anchorTag(createElement, dataSource, fields, text) {
+    function anchorTag(createElement, dataSource, fields, text, innerElements, isFullNavigation) {
         var fieldData = getFieldValues(dataSource, fields);
         var attr = { href: fieldData[fields.url] };
         if (fieldData.hasOwnProperty(fields.urlAttributes) && fieldData[fields.urlAttributes]) {
@@ -636,7 +655,19 @@ var ListBase;
             attr.href = fieldData[fields.url] ? fieldData[fields.url] :
                 fieldData[fields.urlAttributes].href;
         }
-        var anchorTag = createElement('a', { className: cssClass.text + ' ' + cssClass.url, innerHTML: text });
+        var anchorTag;
+        if (!isFullNavigation) {
+            anchorTag = createElement('a', { className: cssClass.text + ' ' + cssClass.url, innerHTML: text });
+        }
+        else {
+            anchorTag = createElement('a', { className: cssClass.text + ' ' + cssClass.url });
+            var anchorWrapper = createElement('div', { className: cssClass.anchorWrap });
+            if (innerElements && innerElements.length) {
+                append(innerElements, anchorWrapper);
+            }
+            anchorWrapper.appendChild(document.createTextNode(text));
+            append([anchorWrapper], anchorTag);
+        }
         setAttribute(anchorTag, attr);
         return anchorTag;
     }
@@ -685,7 +716,7 @@ var ListBase;
             });
             if (dataSource && (fieldData[fields.url] || (fieldData[fields.urlAttributes] &&
                 fieldData[fields.urlAttributes].href))) {
-                innerDiv.appendChild(anchorTag(createElement, dataSource, fields, text));
+                innerDiv.appendChild(anchorTag(createElement, dataSource, fields, text, null, curOpt.itemNavigable));
             }
             else {
                 innerDiv.appendChild(createElement('span', {

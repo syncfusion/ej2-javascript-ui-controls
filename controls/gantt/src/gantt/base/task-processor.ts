@@ -523,6 +523,9 @@ export class TaskProcessor extends DateProcessor {
             if (this.getSecondsInDecimal(eDate) === this.parent.defaultEndTime) {
                 eDate.setHours(24);
             }
+            if (this.getSecondsInDecimal(eDate) === this.parent.defaultStartTime) {
+                eDate.setHours(0, 0, 0, 0);
+            }
         }
         return ((this.getTimeDifference(sDate, eDate) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth);
     }
@@ -939,8 +942,11 @@ export class TaskProcessor extends DateProcessor {
                     taskCount = childLength - milestoneCount;
                 }
                 let parentProgress: number = (taskCount > 0 && totalDuration > 0) ? (totalProgress / totalDuration) : 0;
-                this.calculateDuration(parentData);
                 let parentProp: ITaskData = parentData.ganttProperties;
+                let milestone: boolean = (taskCount === 0) && minStartDate && maxEndDate &&
+                 minStartDate.getTime() === maxEndDate.getTime() ? true : false;
+                this.parent.setRecordValue('isMilestone', milestone, parentProp, true);
+                this.calculateDuration(parentData);
                 this.parent.setRecordValue('progress', Math.floor(parentProgress), parentProp, true);
                 this.parent.setRecordValue('totalProgress', totalProgress, parentProp, true);
                 this.parent.setRecordValue('totalDuration', totalDuration, parentProp, true);

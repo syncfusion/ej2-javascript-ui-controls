@@ -162,6 +162,11 @@ export interface StrikethroughSettingsModel {
      */
     modifiedDate?: string;
 
+    /**
+     * specifies the annotation selector settings of the annotation.
+     */
+    annotationSelectorSettings?: AnnotationSelectorSettingsModel;
+
 }
 
 /**
@@ -194,6 +199,11 @@ export interface UnderlineSettingsModel {
      */
     modifiedDate?: string;
 
+    /**
+     * specifies the annotation selector settings of the annotation.
+     */
+    annotationSelectorSettings?: AnnotationSelectorSettingsModel;
+
 }
 
 /**
@@ -225,6 +235,11 @@ export interface HighlightSettingsModel {
      * specifies the modified date of the annotation.
      */
     modifiedDate?: string;
+
+    /**
+     * specifies the annotation selector settings of the annotation.
+     */
+    annotationSelectorSettings?: AnnotationSelectorSettingsModel;
 
 }
 
@@ -283,6 +298,11 @@ export interface LineSettingsModel {
      */
     borderDashArray?: number;
 
+    /**
+     * specifies the annotation selector settings of the annotation.
+     */
+    annotationSelectorSettings?: AnnotationSelectorSettingsModel;
+
 }
 
 /**
@@ -340,6 +360,11 @@ export interface ArrowSettingsModel {
      */
     borderDashArray?: number;
 
+    /**
+     * specifies the annotation selector settings of the annotation.
+     */
+    annotationSelectorSettings?: AnnotationSelectorSettingsModel;
+
 }
 
 /**
@@ -382,6 +407,11 @@ export interface RectangleSettingsModel {
      */
     thickness?: number;
 
+    /**
+     * specifies the annotation selector settings of the annotation.
+     */
+    annotationSelectorSettings?: AnnotationSelectorSettingsModel;
+
 }
 
 /**
@@ -423,6 +453,11 @@ export interface CircleSettingsModel {
      * specified the thickness of the annotation.
      */
     thickness?: number;
+
+    /**
+     * specifies the annotation selector settings of the annotation.
+     */
+    annotationSelectorSettings?: AnnotationSelectorSettingsModel;
 
 }
 
@@ -503,6 +538,11 @@ export interface PolygonSettingsModel {
      */
     thickness?: number;
 
+    /**
+     * specifies the annotation selector settings of the annotation.
+     */
+    annotationSelectorSettings?: AnnotationSelectorSettingsModel;
+
 }
 
 /**
@@ -524,6 +564,11 @@ export interface StampSettingsModel {
      * specifies the modified date of the annotation.
      */
     modifiedDate?: string;
+
+    /**
+     * specifies the annotation selector settings of the annotation.
+     */
+    annotationSelectorSettings?: AnnotationSelectorSettingsModel;
 
 }
 
@@ -628,6 +673,11 @@ export interface DistanceSettingsModel {
      * specifies the border dash array  of the annotation.
      */
     borderDashArray?: number;
+
+    /**
+     * specifies the annotation selector settings of the annotation.
+     */
+    annotationSelectorSettings?: AnnotationSelectorSettingsModel;
 
 }
 
@@ -770,6 +820,11 @@ export interface RadiusSettingsModel {
      */
     thickness?: number;
 
+    /**
+     * specifies the annotation selector settings of the annotation.
+     */
+    annotationSelectorSettings?: AnnotationSelectorSettingsModel;
+
 }
 
 /**
@@ -838,6 +893,11 @@ export interface StickyNotesSettingsModel {
      * specifies the opacity of the annotation.
      */
     opacity?: number;
+
+    /**
+     * specifies the annotation selector settings of the annotation.
+     */
+    annotationSelectorSettings?: AnnotationSelectorSettingsModel;
 
 }
 
@@ -958,6 +1018,11 @@ export interface FreeTextSettingsModel {
      */
     allowTextOnly?: boolean;
 
+    /**
+     * specifies the annotation selector settings of the annotation.
+     */
+    annotationSelectorSettings?: AnnotationSelectorSettingsModel;
+
 }
 
 /**
@@ -1056,6 +1121,11 @@ export interface HandWrittenSignatureSettingsModel {
      * specified the height of the annotation.
      */
     height?: number;
+
+    /**
+     * specifies the annotation selector settings of the annotation.
+     */
+    annotationSelectorSettings?: AnnotationSelectorSettingsModel;
 
 }
 
@@ -1157,6 +1227,12 @@ export interface PdfViewerModel extends ComponentModel{
     enableCommentPanel?: boolean;
 
     /**
+     * If it set as true, then the command panel show at initial document loading in the PDF viewer
+     * @default false
+     */
+    isCommandPanelOpen?: boolean;
+
+    /**
      * Enable or disable the text markup resizer to modify the bounds in UI.
      * @default false
      */
@@ -1179,6 +1255,12 @@ export interface PdfViewerModel extends ComponentModel{
      * @default true
      */
     enableThumbnail?: boolean;
+
+    /**
+     * If it set as true, then the thumbnail view show at initial document loading in the PDF viewer
+     * @default false
+     */
+    isThumbnailViewOpen?: boolean;
 
     /**
      * Enables or disable saving Hand Written signature as editable in the PDF.
@@ -1364,16 +1446,19 @@ export interface PdfViewerModel extends ComponentModel{
     /**
      * Defines the settings of highlight annotation.
      */
+    // tslint:disable-next-line:max-line-length
     highlightSettings?: HighlightSettingsModel;
 
     /**
      * Defines the settings of strikethrough annotation.
      */
+    // tslint:disable-next-line:max-line-length
     strikethroughSettings?: StrikethroughSettingsModel;
 
     /**
      * Defines the settings of underline annotation.
      */
+    // tslint:disable-next-line:max-line-length
     underlineSettings?: UnderlineSettingsModel;
 
     /**
@@ -1457,6 +1542,7 @@ export interface PdfViewerModel extends ComponentModel{
     /**
      * Defines the settings of stickyNotes annotation.
      */
+    // tslint:disable-next-line:max-line-length
     stickyNotesSettings?: StickyNotesSettingsModel;
 
     /**
@@ -1484,6 +1570,7 @@ export interface PdfViewerModel extends ComponentModel{
     /**
      * Defines the settings of handWrittenSignature.
      */
+    // tslint:disable-next-line:max-line-length
     handWrittenSignatureSettings?: HandWrittenSignatureSettingsModel;
 
     /**

@@ -995,6 +995,41 @@ describe('Toolbar Control', () => {
         });
     });
 
+    describe('Disabled property testing for toolbar item', () => {
+        let toolbar: Toolbar;
+        beforeEach((): void => {
+            toolbar = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Toolbar' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (toolbar) {
+                toolbar.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('when disabled property is set to true', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                items: [{
+                    type: 'Button', text: 'Underline', disabled: true
+                }],
+            }); toolbar.appendTo('#ej2Toolbar');
+            expect(toolbar.items[0].disabled).toBe(true);
+            expect(element.querySelector('.e-toolbar-item').classList.contains('e-overlay')).toEqual(true);
+        });
+        it('when disabled property is set to false', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                items: [{
+                    type: 'Button', text: 'Underline', disabled: false
+                }],
+            }); toolbar.appendTo('#ej2Toolbar');
+            expect(toolbar.items[0].disabled).toBe(false);
+            expect(element.querySelector('.e-toolbar-item').classList.contains('e-overlay')).toEqual(false);
+        });
+    });
+
     //Id property testing in toolbar item
     describe('Id  property testing in items main property', () => {
         let toolbar: Toolbar;

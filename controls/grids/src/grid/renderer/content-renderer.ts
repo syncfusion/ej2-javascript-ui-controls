@@ -3,7 +3,7 @@ import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { setStyleAttribute, remove, updateBlazorTemplate, removeClass } from '@syncfusion/ej2-base';
 import { getUpdateUsingRaf, appendChildren } from '../base/util';
 import * as events from '../base/constant';
-import { IRenderer, IGrid, NotifyArgs, IModelGenerator, RowDataBoundEventArgs } from '../base/interface';
+import { IRenderer, IGrid, NotifyArgs, IModelGenerator, RowDataBoundEventArgs, CellFocusArgs, InfiniteScrollArgs } from '../base/interface';
 import { Column } from '../models/column';
 import { Row } from '../models/row';
 import { Cell } from '../models/cell';
@@ -40,6 +40,11 @@ export class ContentRender implements IRenderer {
         remove(e.droppedElement);
     }
     private args: NotifyArgs;
+    public infiniteCache: { [x: number]: Row<Column>[] } = {};
+    private isRemove: boolean = false;
+    private pressedKey: string;
+    private visibleRows: Row<Column>[] = [];
+    private isAddRows: boolean = false;
     private rafCallback: Function = (args: NotifyArgs) => {
         let arg: NotifyArgs = args;
         return () => {
@@ -99,6 +104,17 @@ export class ContentRender implements IRenderer {
         }
         this.parent.on(events.colGroupRefresh, this.colGroupRefresh, this);
         this.parent.on(events.uiUpdate, this.enableAfterRender, this);
+        this.parent.on(events.refreshInfiniteModeBlocks, this.refreshContentRows, this);
+        this.parent.on(events.beforeCellFocused, this.beforeCellFocused, this);
+        this.parent.on(events.resetInfiniteBlocks, this.resetInfiniteBlocks, this);
+    }
+
+    private beforeCellFocused(e: CellFocusArgs): void {
+        if (e.byKey && (e.keyArgs.action === 'upArrow' || e.keyArgs.action === 'downArrow')) {
+            this.pressedKey = e.keyArgs.action;
+        } else {
+            this.pressedKey = undefined;
+        }
     }
 
     /**
@@ -193,7 +209,12 @@ export class ContentRender implements IRenderer {
         let tr: Element; let hdrTbody: HTMLElement; let frzCols: number = gObj.getFrozenColumns();
         let trElement: Element;
         let row: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
-        this.rowElements = []; this.rows = [];
+        let isInfiniteScroll: boolean = this.parent.infiniteScrollSettings.enableScroll
+            && (args as InfiniteScrollArgs).requestType === 'scroll';
+        if (!isInfiniteScroll) {
+            this.rowElements = [];
+            this.rows = [];
+        }
         let fCont: Element = this.getPanel().querySelector('.e-frozencontent');
         let mCont: HTMLElement = this.getPanel().querySelector('.e-movablecontent') as HTMLElement;
         let cont: HTMLElement = this.getPanel().querySelector('.e-content') as HTMLElement;
@@ -261,7 +282,26 @@ export class ContentRender implements IRenderer {
             }
             modelData = (<{ generateRows?: Function }>(<Grid>this.parent).contentModule).generateRows(dataSource as Object[], args);
         } else {
-            modelData = this.generator.generateRows(dataSource, args);
+            this.isAddRows = isInfiniteScroll && !isNullOrUndefined(this.infiniteCache[this.parent.pageSettings.currentPage]);
+            if (this.isAddRows && this.parent.infiniteScrollSettings.enableCache) {
+                modelData = this.infiniteCache[this.parent.pageSettings.currentPage];
+                // this.isAddRows = true;
+            } else {
+                this.isAddRows = false;
+                modelData = this.generator.generateRows(dataSource, args);
+            }
+        }
+        if (this.parent.infiniteScrollSettings.enableScroll && this.parent.infiniteScrollSettings.enableCache) {
+            if (!Object.keys(this.infiniteCache).length) {
+                this.setInitialCache(modelData);
+            }
+            if (isNullOrUndefined(this.infiniteCache[this.parent.pageSettings.currentPage])) {
+                this.infiniteCache[this.parent.pageSettings.currentPage] = modelData;
+            }
+            this.parent.notify(events.shareInfiniteCache, this.infiniteCache);
+        }
+        if (isInfiniteScroll && this.parent.infiniteScrollSettings.enableCache && !this.isRemove) {
+            this.isRemove = (this.parent.pageSettings.currentPage - 1) % this.parent.infiniteScrollSettings.maxBlock === 0;
         }
         if (isNullOrUndefined(modelData[0].cells[0])) {
             mCont.querySelector('tbody').innerHTML = '';
@@ -338,7 +378,12 @@ export class ContentRender implements IRenderer {
             args.virtualInfo.blockIndexes = bIndex;
         }
         for (let i: number = startIndex, len: number = modelData.length; i < len; i++) {
-            this.rows.push(modelData[i]);
+            if (!this.isAddRows) {
+                this.rows.push(modelData[i]);
+            }
+            if (!this.isRemove) {
+                this.visibleRows.push(modelData[i]);
+            }
             if (isGroupAdaptive(gObj) && this.rows.length >= (gObj.pageSettings.pageSize) && blockLoad) {
                 break;
             }
@@ -408,7 +453,7 @@ export class ContentRender implements IRenderer {
             () => {
                 this.parent.notify(events.beforeFragAppend, args);
                 let isVFTable: boolean = this.parent.enableVirtualization && this.parent.getFrozenColumns() !== 0;
-                if (!this.parent.enableVirtualization) {
+                if (!this.parent.enableVirtualization && !isInfiniteScroll) {
                     remove(this.tbody);
                     this.tbody = this.parent.createElement('tbody');
                 }
@@ -449,7 +494,12 @@ export class ContentRender implements IRenderer {
                             args.renderMovableContent = false;
                         }
                     } else {
-                        this.appendContent(this.tbody, frag, args);
+                        if (this.parent.infiniteScrollSettings.enableScroll) {
+                            this.removeInfiniteCacheRows(args);
+                            this.appendInfiniteRows(this.tbody, frag, args);
+                        } else {
+                            this.appendContent(this.tbody, frag, args);
+                        }
                     }
                 }
                 if (frzCols && idx === 0) {
@@ -465,6 +515,109 @@ export class ContentRender implements IRenderer {
     public appendContent(tbody: Element, frag: DocumentFragment, args: NotifyArgs): void {
         tbody.appendChild(frag);
         this.getTable().appendChild(tbody);
+    }
+
+    private resetInfiniteBlocks(args: InfiniteScrollArgs): void {
+        let isInfiniteScroll: boolean = this.parent.infiniteScrollSettings.enableScroll && args.requestType !== 'scroll';
+        if (isInfiniteScroll) {
+            this.parent.getContent().firstElementChild.scrollTop = 0;
+            this.parent.pageSettings.currentPage = 1;
+            this.infiniteCache = {};
+            (this.parent as Grid).scrollModule.infiniteCache = {};
+            this.isRemove = false;
+        }
+    }
+
+    private setInitialCache(data: Row<Column>[]): void {
+        for (let i: number = 1; i <= this.parent.pageSettings.currentPage; i++) {
+            let startIndex: number = (i - 1) * this.parent.pageSettings.pageSize;
+            let endIndex: number = i * this.parent.pageSettings.pageSize;
+            this.infiniteCache[i] = data.slice(startIndex, endIndex);
+        }
+    }
+
+    private removeInfiniteCacheRows(args: InfiniteScrollArgs): void {
+        let isInfiniteScroll: boolean = this.parent.infiniteScrollSettings.enableScroll && args.requestType === 'scroll';
+        if (isInfiniteScroll && this.parent.infiniteScrollSettings.enableCache && this.isRemove) {
+            let rows: Element[] = [].slice.call(this.parent.getContent().querySelectorAll('.e-row'));
+            let scrollCnt: Element = this.parent.getContent().firstElementChild;
+            let top: number;
+            if (args.direction === 'down') {
+                let value: number = this.parent.pageSettings.pageSize * (this.parent.infiniteScrollSettings.maxBlock - 1);
+                let currentViewRowCount: number = 0;
+                let i: number = 0;
+                while (currentViewRowCount < scrollCnt.clientHeight) {
+                    i++;
+                    currentViewRowCount = i * this.parent.getRowHeight();
+                }
+                i = i - 1;
+                top = (value - i) * this.parent.getRowHeight();
+                this.removeTopRows(rows, this.parent.pageSettings.pageSize - 1);
+                if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
+                    let captionRows: Element[] = [].slice.call(this.parent.getContent().querySelectorAll('tr'));
+                    this.removeTopRows(captionRows, this.parent.pageSettings.pageSize - 1);
+                }
+            }
+            if (args.direction === 'up') {
+                top = this.parent.pageSettings.pageSize * this.parent.getRowHeight();
+                top = top + getScrollBarWidth();
+                this.removeBottomRows(rows, rows.length - 1, args);
+                if (this.parent.allowGrouping && this.parent.groupSettings.columns.length) {
+                    let captionRows: Element[] = [].slice.call(this.parent.getContent().querySelectorAll('tr'));
+                    this.removeBottomRows(captionRows, captionRows.length - 1, args);
+                }
+            }
+            this.parent.notify(events.infiniteScrollListener, { isScroll: false, top: top });
+            scrollCnt.scrollTop = top;
+        }
+    }
+
+    private removeTopRows(rows: Element[], maxIndx: number): void {
+        for (let i: number = 0; i <= maxIndx; i++) {
+            remove(rows[i]);
+        }
+    }
+
+    private removeBottomRows(rows: Element[], maxIndx: number, args: InfiniteScrollArgs): void {
+        let cnt: number = 0;
+        if (this.infiniteCache[args.prevPage].length < this.parent.pageSettings.pageSize) {
+            cnt = this.parent.pageSettings.pageSize - this.infiniteCache[args.prevPage].length;
+        }
+        for (let i: number = maxIndx; cnt < this.parent.pageSettings.pageSize; i--) {
+            cnt++;
+            remove(rows[i]);
+        }
+    }
+
+    private appendInfiniteRows(tbody: Element, frag: DocumentFragment, args: InfiniteScrollArgs): void {
+        let target: Element = document.activeElement;
+        let isInfiniteScroll: boolean = this.parent.infiniteScrollSettings.enableScroll && args.requestType === 'scroll';
+        if (isInfiniteScroll && args.direction === 'up') {
+            tbody.insertBefore(frag, tbody.firstElementChild);
+        } else {
+            tbody.appendChild(frag);
+        }
+        this.getTable().appendChild(tbody);
+        if (isInfiniteScroll) {
+            if (this.parent.infiniteScrollSettings.enableCache && this.isRemove) {
+                if (args.direction === 'down') {
+                    let startIndex: number = (this.parent.pageSettings.currentPage -
+                        this.parent.infiniteScrollSettings.maxBlock) * this.parent.pageSettings.pageSize;
+                    this.visibleRows = this.rows.slice(startIndex, this.rows.length);
+                }
+                if (args.direction === 'up') {
+                    let startIndex: number = (this.parent.pageSettings.currentPage - 1) * this.parent.pageSettings.pageSize;
+                    let endIndex: number = ((this.parent.pageSettings.currentPage
+                        + this.parent.infiniteScrollSettings.maxBlock) - 1) * this.parent.pageSettings.pageSize;
+                    this.visibleRows = this.rows.slice(startIndex, endIndex);
+                }
+                this.rowElements = [].slice.call(this.parent.getContent().querySelectorAll('.e-row'));
+            }
+            if (this.pressedKey === 'downArrow' || (this.parent.infiniteScrollSettings.enableCache && this.pressedKey === 'upArrow')) {
+                this.pressedKey = undefined;
+                this.parent.focusModule.onClick({ target }, true);
+            }
+        }
     }
 
     /**
@@ -600,6 +753,7 @@ export class ContentRender implements IRenderer {
         for (let c: number = 0, clen: number = columns.length; c < clen; c++) {
             let column: Column = columns[c];
             let idx: number = this.parent.getNormalizedColumnIndex(column.uid);
+            let colIdx: number = this.parent.getColumnIndexByUid(column.uid);
             let displayVal: string = column.visible === true ? '' : 'none';
             if (idx !== -1 && testRow && idx < testRow.cells.length) {
                 if (frzCols) {
@@ -608,20 +762,17 @@ export class ContentRender implements IRenderer {
                         contentrows = this.freezeRows;
                     } else {
                         let mTable: Element = gObj.getContent().querySelector('.e-movablecontent').querySelector('colgroup');
-                        idx = idx - frzCols;
+                        colIdx = idx = idx - frzCols;
                         setStyleAttribute(<HTMLElement>mTable.childNodes[idx], { 'display': displayVal });
                         tr = (<Grid>gObj).getMovableDataRows();
                         contentrows = this.movableRows;
                     }
                 } else {
-                    if (gObj.isRowDragable()) { idx++; }
                     setStyleAttribute(<HTMLElement>this.getColGroup().childNodes[idx], { 'display': displayVal });
-                    if (gObj.isRowDragable()) { idx--; }
                 }
             }
-            idx = gObj.isDetail() ? idx - 1 : idx;
             if (!needFullRefresh) {
-                this.setDisplayNone(tr, idx, displayVal, contentrows);
+                this.setDisplayNone(tr, colIdx, displayVal, contentrows);
             }
             if (!this.parent.invokedFromMedia && column.hideAtMedia) {
                 this.parent.updateMediaColumns(column);
@@ -644,15 +795,16 @@ export class ContentRender implements IRenderer {
      * @hidden
      */
     public setDisplayNone(tr: Object, idx: number, displayVal: string, rows: Row<Column>[]): void {
-        Object.keys(tr).forEach((i: string) => {
-            if (tr[i].querySelectorAll('td.e-rowcell').length) {
-                setStyleAttribute(<HTMLElement>tr[i].querySelectorAll('td.e-rowcell')[idx], { 'display': displayVal });
-                if (tr[i].querySelectorAll('td.e-rowcell')[idx].classList.contains('e-hide')) {
-                    removeClass([tr[i].querySelectorAll('td.e-rowcell')[idx]], ['e-hide']);
+        let trs: string[] = Object.keys(tr);
+        for (let i: number = 0; i < trs.length; i++) {
+            if (tr[trs[i]].querySelectorAll('td.e-rowcell').length) {
+                setStyleAttribute(<HTMLElement>tr[trs[i]].querySelectorAll('td.e-rowcell')[idx], { 'display': displayVal });
+                if (tr[trs[i]].querySelectorAll('td.e-rowcell')[idx].classList.contains('e-hide')) {
+                    removeClass([tr[trs[i]].querySelectorAll('td.e-rowcell')[idx]], ['e-hide']);
                 }
-                rows[i].cells[idx].visible = displayVal === '' ? true : false;
+                rows[trs[i]].cells[idx].visible = displayVal === '' ? true : false;
             }
-        });
+        }
     }
 
     private colGroupRefresh(): void {
@@ -704,18 +856,31 @@ export class ContentRender implements IRenderer {
 
     public setSelection(uid: string, set: boolean, clearAll?: boolean): void {
         if (this.parent.getFrozenColumns()) {
-            (<Row<Column>[]>this.getMovableRows()).filter(
-                (row: Row<Column>) => clearAll || uid === row.uid).forEach((row: Row<Column>) => row.isSelected = set);
+            let rows: Row<Column>[] = (<Row<Column>[]>this.getMovableRows()).filter((row: Row<Column>) => clearAll || uid === row.uid);
+            for (let i: number = 0; i < rows.length; i++) {
+                rows[i].isSelected = set;
+            }
         }
-        (<Row<Column>[]>this.getRows()).filter((row: Row<Column>) => clearAll || uid === row.uid)
-            .forEach((row: Row<Column>) => {
-                row.isSelected = set;
-                row.cells.forEach((cell: Cell<Column>) => cell.isSelected = set);
-            });
+        let row: Row<Column>[] = (<Row<Column>[]>this.getRows()).filter((row: Row<Column>) => clearAll || uid === row.uid);
+        for (let j: number = 0; j < row.length; j++) {
+            row[j].isSelected = set;
+            let cells: Cell<Column>[] = row[j].cells;
+            for (let k: number = 0; k < cells.length; k++) {
+                cells[k].isSelected = set;
+            }
+        }
     }
 
     public getRowByIndex(index: number): Element {
+        if (this.pressedKey !== 'upArrow' && this.pressedKey !== 'downArrow' && this.isRemove) {
+            index = this.getInfiniteRowIndex(index);
+        }
         return this.parent.getDataRows()[index];
+    }
+
+    private getInfiniteRowIndex(index: number): number {
+        let firstRowIndex: number = parseInt(this.parent.getRows()[0].getAttribute('aria-rowindex'), 10);
+        return index - firstRowIndex;
     }
 
     public getVirtualRowIndex(index: number): number {

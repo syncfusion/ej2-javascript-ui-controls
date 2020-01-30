@@ -746,10 +746,7 @@ export class Render {
     }
 
     private clearColumnSelection(): void {
-        this.parent.element.querySelectorAll('.' + cls.CELL_ACTIVE_BGCOLOR).forEach((ele: HTMLElement) => {
-            ele.classList.remove(cls.CELL_ACTIVE_BGCOLOR);
-            ele.classList.remove(cls.SELECTED_BGCOLOR);
-        });
+        removeClass(this.parent.element.querySelectorAll('.' + cls.CELL_ACTIVE_BGCOLOR), [cls.CELL_ACTIVE_BGCOLOR, cls.SELECTED_BGCOLOR]);
     }
 
     private appendValueSortIcon(cell: IAxisSet, tCell: HTMLElement, rCnt: number, cCnt: number): HTMLElement {

@@ -30,10 +30,10 @@ export class ForeignKey extends Data {
     }
 
     private initForeignKeyColumns(columns: Column[]): void {
-        columns.forEach((column: Column) => {
-            column.dataSource = (column.dataSource instanceof DataManager ? <DataManager>column.dataSource :
-                (isNullOrUndefined(column.dataSource) ? new DataManager() : new DataManager(column.dataSource)));
-        });
+        for (let i: number = 0; i < columns.length; i++) {
+            columns[i].dataSource = (columns[i].dataSource instanceof DataManager ? <DataManager>columns[i].dataSource :
+                (isNullOrUndefined(columns[i].dataSource) ? new DataManager() : new DataManager(columns[i].dataSource)));
+        }
     }
 
     private getForeignKeyData(args: {
@@ -42,12 +42,12 @@ export class ForeignKey extends Data {
     }): void {
         let foreignColumns: Column[] = args.column ? [args.column] : this.parent.getForeignKeyColumns();
         let allPromise: Promise<Object>[] = [];
-        foreignColumns.forEach((col: Column) => {
+        for (let i: number = 0; i < foreignColumns.length; i++) {
             let promise: Promise<Object>;
-            let query: Query = args.isComplex ? this.genarateColumnQuery(col) :
-                <Query>this.genarateQuery(col, <{ records?: Object[] }>args.result.result, false, true);
+            let query: Query = args.isComplex ? this.genarateColumnQuery(foreignColumns[i]) :
+                <Query>this.genarateQuery(foreignColumns[i], <{ records?: Object[] }>args.result.result, false, true);
             query.params = this.parent.query.params;
-            let dataSource: DataManager = <DataManager>col.dataSource;
+            let dataSource: DataManager = <DataManager>foreignColumns[i].dataSource;
             if (!dataSource.ready || dataSource.dataSource.offline) {
                 promise = dataSource.executeQuery(query);
             } else {
@@ -56,11 +56,11 @@ export class ForeignKey extends Data {
                 });
             }
             allPromise.push(promise);
-        });
+        }
         <Promise<Object>>Promise.all(allPromise).then((responses: ReturnType[]) => {
-            responses.forEach((data: ReturnType, index: number) => {
-                foreignColumns[index].columnData = data.result;
-            });
+            for (let i: number = 0; i < responses.length; i++) {
+                foreignColumns[i].columnData = responses[i].result;
+            }
             args.promise.resolve(args.result);
         }).catch((e: Object) => {
             this.parent.log(['actionfailure', 'foreign_key_failure']);
@@ -86,14 +86,14 @@ export class ForeignKey extends Data {
                 e.records : e) as JSON[]).executeLocal(new Query().select(field));
             let filteredValue: Object[] = DataUtil.distinct(<Object[]>e, field, false);
             field = fromData ? column.field : column.foreignKeyField;
-            filteredValue.forEach((obj: Object) => {
-                if (obj && (<Date>obj).getDay) {
+            for (let i: number = 0; i < filteredValue.length; i++) {
+                if (filteredValue[i] && (<Date>filteredValue[i]).getDay) {
                     predicates.push(getDatePredicate
-                        ({ field: field, operator: 'equal', value: <string>obj, matchCase: false }));
+                        ({ field: field, operator: 'equal', value: <string>filteredValue[i], matchCase: false }));
                 } else {
-                    predicates.push(new Predicate(field, 'equal', <string>obj, false));
+                    predicates.push(new Predicate(field, 'equal', <string>filteredValue[i], false));
                 }
-            });
+            }
         }
         if (needQuery) {
             return predicates.length ? query.where(Predicate.or(predicates)) : query;

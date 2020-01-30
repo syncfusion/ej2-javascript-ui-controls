@@ -357,6 +357,84 @@ describe('Group', () => {
             done();
         });
     });
+    describe('Add child to the group', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let scroller: DiagramScroller;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let group: NodeModel = { id: 'group2', children: ['node3', 'node4'] };
+        let node6: NodeModel = {
+            width: 100, height: 100, offsetX: 950,
+            offsetY: 100
+        };
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let connector: ConnectorModel = {
+                id: 'connector1', sourceID: 'node1', targetID: 'node2'
+            };
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1', width: 100, height: 100, offsetX: 100,
+                    offsetY: 200,
+                }, {
+                    id: 'node2', width: 200, height: 100, offsetX: 400,
+                    offsetY: 400
+                },
+                {
+                    id: 'node3', width: 100, height: 100, offsetX: 700,
+                    offsetY: 400
+                },
+                {
+                    id: 'node4', width: 100, height: 100, offsetX: 950,
+                    offsetY: 300
+                },
+                {
+                    id: 'node5', width: 100, height: 100, offsetX: 950,
+                    offsetY: 600
+                },
+            ];
+
+            diagram = new Diagram({
+                width: '1500px', height: '600px', nodes: nodes,
+                connectors: [connector],
+                snapSettings: { constraints: 0 }, contextMenuSettings: { show: true }
+            });
+            diagram.appendTo('#diagram');
+            diagram.add(group);
+
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Add Child as string to the  group', (done: Function) => {
+            diagram.addChildToGroup(group, 'node5');
+            for (let i: number = 0; i < diagram.nodes.length; i++) {
+                if (diagram.nodes[i].id === 'group') {
+                    expect(diagram.nodes[i].children.length).toBe(3);
+                }
+            }
+            done();
+        });
+        it('Add Child as Object to the  group', (done: Function) => {
+            diagram.addChildToGroup(group, node6);
+            for (let i: number = 0; i < diagram.nodes.length; i++) {
+                if (diagram.nodes[i].id === 'group') {
+                    expect(diagram.nodes[i].children.length).toBe(4);
+                }
+            }
+            done();
+        });
+    });
     describe('Diagram with element pass as parameter', () => {
         let diagram: Diagram;
         let ele: HTMLElement;

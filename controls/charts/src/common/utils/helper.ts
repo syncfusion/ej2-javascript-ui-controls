@@ -200,6 +200,96 @@ export function degreeToLocation(degree: number, radius: number, center: ChartLo
     let radian: number = (degree * Math.PI) / 180;
     return new ChartLocation(Math.cos(radian) * radius + center.x, Math.sin(radian) * radius + center.y);
 }
+
+/** @private */
+export function degreeToRadian(degree: number): number {
+    return degree * (Math.PI / 180);
+}
+
+/** @private */
+export function getRotatedRectangleCoordinates(
+    actualPoints: ChartLocation[], centerX: number, centerY: number, angle: number
+): ChartLocation[] {
+    let coordinatesAfterRotation: ChartLocation[] = [];
+    for (let i: number = 0; i < 4; i++) {
+        let point: ChartLocation = actualPoints[i];
+        // translate point to origin
+        let tempX: number = point.x - centerX;
+        let tempY: number = point.y - centerY;
+        // now apply rotation
+        let rotatedX: number = tempX * Math.cos(degreeToRadian(angle)) - tempY * Math.sin(degreeToRadian(angle));
+        let rotatedY: number = tempX * Math.sin(degreeToRadian(angle)) + tempY * Math.cos(degreeToRadian(angle));
+        // translate back
+        point.x = rotatedX + centerX;
+        point.y = rotatedY + centerY;
+        coordinatesAfterRotation.push(new ChartLocation(point.x, point.y));
+    }
+    return coordinatesAfterRotation;
+}
+
+/**
+ * Helper function to determine whether there is an intersection between the two polygons described
+ * by the lists of vertices. Uses the Separating Axis Theorem
+ *
+ * @param a an array of connected points [{x:, y:}, {x:, y:},...] that form a closed polygon
+ * @param b an array of connected points [{x:, y:}, {x:, y:},...] that form a closed polygon
+ * @return true if there is any intersection between the 2 polygons, false otherwise
+ */
+export function isRotatedRectIntersect(a: ChartLocation[], b: ChartLocation[]): boolean {
+    let polygons: ChartLocation[][] = [a, b];
+    let minA: number; let maxA: number; let projected: number; let i: number;
+    let i1: number; let j: number; let minB: number; let maxB: number;
+
+    for (i = 0; i < polygons.length; i++) {
+
+        // for each polygon, look at each edge of the polygon, and determine if it separates
+        // the two shapes
+        let polygon: ChartLocation[] = polygons[i];
+        for (i1 = 0; i1 < polygon.length; i1++) {
+
+            // grab 2 vertices to create an edge
+            let i2: number = (i1 + 1) % polygon.length;
+            let p1: ChartLocation = polygon[i1];
+            let p2: ChartLocation = polygon[i2];
+
+            // find the line perpendicular to this edge
+            let normal: ChartLocation = new ChartLocation(p2.y - p1.y, p1.x - p2.x);
+
+            minA = maxA = undefined;
+            // for each vertex in the first shape, project it onto the line perpendicular to the edge
+            // and keep track of the min and max of these values
+            for (j = 0; j < a.length; j++) {
+                projected = normal.x * a[j].x + normal.y * a[j].y;
+                if (isNullOrUndefined(minA) || projected < minA) {
+                    minA = projected;
+                }
+                if (isNullOrUndefined(maxA) || projected > maxA) {
+                    maxA = projected;
+                }
+            }
+
+            // for each vertex in the second shape, project it onto the line perpendicular to the edge
+            // and keep track of the min and max of these values
+            minB = maxB = undefined;
+            for (j = 0; j < b.length; j++) {
+                projected = normal.x * b[j].x + normal.y * b[j].y;
+                if (isNullOrUndefined(minB) || projected < minB) {
+                    minB = projected;
+                }
+                if (isNullOrUndefined(maxB) || projected > maxB) {
+                    maxB = projected;
+                }
+            }
+            // if there is no overlap between the projects, the edge we are looking at separates the two
+            // polygons, and we know there is no overlap
+            if (maxA < minB || maxB < minA) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 function getAccumulationLegend(locX: number, locY: number, r: number, height: number, width: number, mode: string): string {
     let cartesianlarge: ChartLocation = degreeToLocation(270, r, new ChartLocation(locX, locY));
     let cartesiansmall: ChartLocation = degreeToLocation(270, r, new ChartLocation(locX + (width / 10), locY));
@@ -1405,7 +1495,8 @@ export function animateRedrawElement(
 export function textElement(
     renderer: SvgRenderer | CanvasRenderer, option: TextOption, font: FontModel, color: string,
     parent: HTMLElement | Element, isMinus: boolean = false, redraw?: boolean, isAnimate?: boolean,
-    forceAnimate: boolean = false, animateDuration ?: number, seriesClipRect ?: Rect
+    forceAnimate: boolean = false, animateDuration?: number, seriesClipRect?: Rect,
+    labelSize?: Size, isRotatedLabelIntersect?: boolean
 ): Element {
     let renderOptions: Object = {};
     let htmlObject: Element;
@@ -1443,8 +1534,12 @@ export function textElement(
             htmlObject.appendChild(tspanElement);
         }
     }
-    appendChildElement(renderer instanceof CanvasRenderer, parent, htmlObject, redraw, isAnimate, 'x', 'y', null, null,
-                       forceAnimate, false, null, animateDuration);
+    if (!isRotatedLabelIntersect) {
+        appendChildElement(
+            renderer instanceof CanvasRenderer, parent, htmlObject, redraw, isAnimate, 'x', 'y', null, null,
+            forceAnimate, false, null, animateDuration
+        );
+    }
     return htmlObject;
 }
 

@@ -82,7 +82,7 @@ import { TechnicalIndicatorModel } from './technical-indicators/technical-indica
 import { ILegendRenderEventArgs, IAxisLabelRenderEventArgs, ITextRenderEventArgs, IResizeEventArgs } from '../chart/model/chart-interface';
 import { IAnnotationRenderEventArgs, IAxisMultiLabelRenderEventArgs, IThemeStyle, IScrollEventArgs } from '../chart/model/chart-interface';
 import { IPointRenderEventArgs, ISeriesRenderEventArgs, ISelectionCompleteEventArgs } from '../chart/model/chart-interface';
-import { IDragCompleteEventArgs, ITooltipRenderEventArgs } from '../chart/model/chart-interface';
+import { IDragCompleteEventArgs, ITooltipRenderEventArgs, IExportEventArgs } from '../chart/model/chart-interface';
 import { IZoomCompleteEventArgs, ILoadedEventArgs } from '../chart/model/chart-interface';
 import { IMultiLevelLabelClickEventArgs, ILegendClickEventArgs } from '../chart/model/chart-interface';
 import { IAnimationCompleteEventArgs, IMouseEventArgs, IPointEventArgs } from '../chart/model/chart-interface';
@@ -833,6 +833,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     @Event()
     public beforePrint: EmitType<IPrintEventArgs>;
+
+    /**
+     * Triggers before the export gets started.
+     * @event
+     */
+    @Event()
+    public beforeExport: EmitType<IExportEventArgs>;
 
     /**
      * Triggers after chart load.
@@ -2132,6 +2139,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * @return {void}
      */
     public removeSeries(index: number): void {
+        this.redraw = false; //fix for remove svg not working when use animatemethod.
         this.series.splice(index, 1);
         this.refresh();
     }

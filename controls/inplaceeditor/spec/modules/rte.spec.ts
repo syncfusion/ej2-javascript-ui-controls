@@ -513,6 +513,7 @@ describe('Rte module', () => {
                     e.cancelFocus = true
                 }
             });
+            (<HTMLElement>select('.' + classes.VALUE, editorObj.element)).click();
             setTimeout(() => {
                 expect(document.activeElement.tagName === 'DIV').not.toEqual(true);
                 done();
@@ -527,6 +528,7 @@ describe('Rte module', () => {
                     e.cancelFocus = true
                 }
             });
+            (<HTMLElement>select('.' + classes.VALUE, editorObj.element)).click();
             setTimeout(() => {
                 expect(document.activeElement.tagName === 'DIV').not.toEqual(true);
                 done();

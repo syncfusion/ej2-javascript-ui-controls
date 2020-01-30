@@ -1,0 +1,15 @@
+/*! Kanban component's fabric theme definitions and variables */
+$kanban-skin: 'fabric' !default;
+$kanban-column-bg-color: $neutral-lighter-alt !default;
+$kanban-default-font: $theme-light-font !default;
+$kanban-border-color: $neutral-quintenaryalt !default;
+$kanban-card-selection: $neutral-light !default;
+$kanban-primary-color: $theme-primary !default;
+$kanban-dropped-clone-bg-color: rgba($kanban-primary-color, .1) !default;
+$kanban-dropped-clone-border-color: $kanban-primary-color !default;
+$kanban-dragged-clone-border-color: $neutral-quintenaryalt !default;
+$kanban-icons-color: rgba($theme-light-font, .54) !default;
+$kanban-bg-color: $neutral-white !default;
+$kanban-popup-overlay-bg-color: #383838 !default;
+$kanban-min-color: #ffe0b2 !default;
+$kanban-max-color: #fcdbe4 !default;

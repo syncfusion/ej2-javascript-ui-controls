@@ -1106,7 +1106,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.isDocumentClick = true;
                 let isActive: boolean = this.isRequested;
                 this.isInteracted = false;
-                this.hidePopup();
+                this.hidePopup(e);
                 if (!isActive) {
                     this.onFocusOut();
                     this.inputWrapper.container.classList.remove(dropDownListClasses.inputFocus);
@@ -2205,8 +2205,9 @@ export class DropDownList extends DropDownBase implements IInput {
     }
 
     private destroyPopup(): void {
-        if (this.isServerBlazor && this.serverPopupEle) {
-            document.querySelector('#' + this.element.id + '_popup_holder').appendChild(this.serverPopupEle);
+        let popupHolderEle: HTMLElement = document.querySelector('#' + this.element.id + '_popup_holder');
+        if (this.isServerBlazor && this.serverPopupEle && popupHolderEle) {
+            popupHolderEle.appendChild(this.serverPopupEle);
         }
         if (this.isServerBlazor) {
             // tslint:disable-next-line
@@ -2656,7 +2657,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * Hides the popup if it is in an open state.
      * @returns void.
      */
-    public hidePopup(): void {
+    public hidePopup(e?: MouseEvent | KeyboardEventArgs): void {
         let isHeader: boolean = (this.headerTemplate) ? true : false;
         let isFooter: boolean = (this.headerTemplate) ? true : false;
         this.DropDownBaseresetBlazorTemplates(false, false, false, false, false, isHeader, isFooter);
@@ -2744,9 +2745,9 @@ export class DropDownList extends DropDownBase implements IInput {
                 'placeholder', 'aria-owns', 'aria-labelledby', 'aria-haspopup', 'aria-expanded',
                 'aria-activedescendant', 'autocomplete', 'aria-readonly', 'autocorrect',
                 'autocapitalize', 'spellcheck', 'aria-autocomplete', 'aria-live', 'aria-describedby', 'aria-label'];
-            attrArray.forEach((value: string): void => {
-                this.inputElement.removeAttribute(value);
-            });
+            for (let i: number = 0; i < attrArray.length; i++) {
+                this.inputElement.removeAttribute(attrArray[i]);
+            }
             this.inputElement.setAttribute('tabindex', this.tabIndex);
             this.inputElement.classList.remove('e-input');
             Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);

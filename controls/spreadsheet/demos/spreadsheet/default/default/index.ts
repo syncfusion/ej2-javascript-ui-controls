@@ -1,7 +1,7 @@
 /**
  * Spreadsheet default sample
  */
-import { Spreadsheet, SheetModel, ColumnModel, SortEventArgs, CellSaveEventArgs, SaveCompleteEventArgs, CollaborativeEditArgs, BeforeCellFormatArgs } from './../../../../src/index';
+import { Spreadsheet, SheetModel, ColumnModel, SortEventArgs, CellSaveEventArgs, SaveCompleteEventArgs, CollaborativeEditArgs, BeforeCellFormatArgs, CellModel } from './../../../../src/index';
 import { enableRipple } from '@syncfusion/ej2-base';
 import { switchTheme } from '../../../common/switch-theme';
 import { defaultData as dataSource } from './../../../common/data-source';
@@ -56,6 +56,10 @@ let spreadsheet: Spreadsheet = new Spreadsheet({
     },
     openComplete: (args: Object) => {
         console.log(args);
+    },
+    created:() => {
+       // spreadsheet.addCustomFunction('customFunc', 'fn')
+       //console.log('called');
     }
     
 });
@@ -63,7 +67,21 @@ let spreadsheet: Spreadsheet = new Spreadsheet({
 spreadsheet.appendTo('#spreadsheet');
 
 window.addEventListener('resize', onResize);
-
+(window as any).fn = async () => {
+    let arr :String[] = [];
+    let val: number =0 ;
+    let values = await spreadsheet.getData("PriceDetails!D2:D5").then((values: Map<string, CellModel>)=>{
+        debugger;
+        (values as Map<string, CellModel>).forEach((cell: CellModel, key: string): void => {
+            arr.push(cell.value);
+            val = val + parseInt(cell.value);
+        })
+       return val;
+    });
+    console.log(values);
+    
+    //console.log('custom fun');
+}
 function onResize(): void {
     wrapper.style.height = `${document.documentElement.clientHeight - 70}px`;
     spreadsheet.resize();

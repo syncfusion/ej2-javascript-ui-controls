@@ -1,6 +1,6 @@
 import {
     PdfViewer, PdfViewerBase, IRectangle, IPageAnnotations, IPoint, ICommentsCollection, IReviewCollection,
-    AnnotationType as AnnotType, LineHeadStyle
+    AnnotationType as AnnotType, LineHeadStyle, ShapeLabelSettingsModel
 } from '../../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ColorPicker } from '@syncfusion/ej2-inputs';
@@ -8,6 +8,8 @@ import { PointModel } from '@syncfusion/ej2-drawings';
 import { PdfAnnotationBase } from '../../diagram/pdf-annotation';
 import { PdfAnnotationBaseModel } from '../../diagram/pdf-annotation-model';
 import { PdfAnnotationType } from '../../diagram/enum';
+import {AnnotationSelectorSettingsModel} from '../pdfviewer-model';
+import { AnnotationSelectorSettings } from '../pdfviewer';
 
 /**
  * @hidden
@@ -45,6 +47,8 @@ export interface IShapeAnnotation {
     fontColor: string;
     fontSize: number;
     labelBounds: IRectangle;
+    annotationSelectorSettings: AnnotationSelectorSettingsModel;
+    labelSettings?: ShapeLabelSettingsModel;
 }
 
 /**
@@ -229,6 +233,8 @@ export class ShapeAnnotation {
                             annotation.FontColor = annotation.FontColor ? annotation.FontColor : annotation.StrokeColor;
                             annotation.LabelFillColor = annotation.LabelFillColor ? annotation.LabelFillColor : annotation.FillColor;
                             annotation.FontSize = annotation.FontSize ? annotation.FontSize : 16;
+                            // tslint:disable-next-line:max-line-length
+                            annotation.LabelSettings = annotation.LabelSettings ? annotation.LabelSettings : this.pdfViewer.shapeLabelSettings;
                         }
                         // tslint:disable-next-line:max-line-length
                         annotationObject = {
@@ -242,7 +248,8 @@ export class ShapeAnnotation {
                             // tslint:disable-next-line:max-line-length
                             labelContent: annotation.LabelContent, enableShapeLabel: annotation.EnableShapeLabel, labelFillColor: annotation.LabelFillColor,
                             fontColor: annotation.FontColor, labelBorderColor: annotation.LabelBorderColor, fontSize: annotation.FontSize,
-                            labelBounds: annotation.LabelBounds
+                            // tslint:disable-next-line:max-line-length
+                            labelBounds: annotation.LabelBounds,  annotationSelectorSettings: this.getSettings(annotation), labelSettings: annotation.LabelSettings
                         };
                         let annot: PdfAnnotationBaseModel;
                         // tslint:disable-next-line
@@ -263,7 +270,7 @@ export class ShapeAnnotation {
                             // tslint:disable-next-line:max-line-length
                             labelContent: annotation.LabelContent, enableShapeLabel: annotation.EnableShapeLabel, labelFillColor: annotation.LabelFillColor,
                             fontColor: annotation.FontColor, labelBorderColor: annotation.LabelBorderColor, fontSize: annotation.FontSize,
-                            labelBounds: annotation.LabelBounds
+                            labelBounds: annotation.LabelBounds, annotationSelectorSettings: annotation.AnnotationSelectorSettings
                         };
                         let addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
                         if (addedAnnot.shapeAnnotationType === 'Polygon') {
@@ -280,7 +287,19 @@ export class ShapeAnnotation {
             }
         }
     }
-
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public getSettings(annotation : any) : any {
+        let selector: AnnotationSelectorSettingsModel;
+        if ( annotation.AnnotationSelectorSettings === null) {
+            selector = this.getSelector(annotation.ShapeAnnotationType, annotation.Subject);
+        } else {
+            selector = annotation.AnnotationSelectorSettings;
+        }
+        return selector;
+    }
     /**
      * @private
      */
@@ -482,7 +501,7 @@ export class ShapeAnnotation {
                                 // tslint:disable-next-line:max-line-length
                                 labelTop = (annotationBase.wrapper.bounds.top + (annotationBase.wrapper.bounds.height / 2) - 12.3 );
                             }
-                            // tslint:disable-next-line:max-line-length             
+                            // tslint:disable-next-line:max-line-length
                             pageAnnotations[i].labelBounds = { left: labelLeft, top: labelTop, width: labelWidth, height: labelHeight, right: 0, bottom: 0 };
                         }
                         let date: Date = new Date();
@@ -673,8 +692,25 @@ export class ShapeAnnotation {
             // tslint:disable-next-line:max-line-length
             labelContent: annotationModel.labelContent, enableShapeLabel: annotationModel.enableShapeLabel, labelFillColor: annotationModel.labelFillColor,
             fontColor: annotationModel.fontColor, labelBorderColor: annotationModel.labelBorderColor, fontSize: annotationModel.fontSize,
-            labelBounds: labelBound
+            // tslint:disable-next-line:max-line-length
+            labelBounds: labelBound, annotationSelectorSettings: this.getSelector(annotationModel.shapeAnnotationType, annotationModel.subject ), labelSettings: this.pdfViewer.shapeLabelSettings
         };
+    }
+
+    private getSelector(type: string, subject: string): AnnotationSelectorSettingsModel {
+        let selector: AnnotationSelectorSettingsModel;
+        if (type === 'Line' && subject !== 'Arrow') {
+                selector = this.pdfViewer.lineSettings.annotationSelectorSettings;
+         } else if (type === 'LineWidthArrowHead' || subject === 'Arrow') {
+                selector = this.pdfViewer.arrowSettings.annotationSelectorSettings;
+         } else if (type === 'Rectangle' || type === 'Square') {
+               selector = this.pdfViewer.rectangleSettings.annotationSelectorSettings;
+        } else if (type === 'Ellipse' || type === 'Circle') {
+               selector = this.pdfViewer.circleSettings.annotationSelectorSettings;
+        } else if (type === 'Polygon') {
+               selector = this.pdfViewer.polygonSettings.annotationSelectorSettings;
+        }
+        return selector;
     }
 
     // tslint:disable-next-line
@@ -742,6 +778,7 @@ export class ShapeAnnotation {
             annotation.FontColor = annotation.FontColor ? annotation.FontColor : annotation.StrokeColor;
             annotation.LabelFillColor = annotation.LabelFillColor ? annotation.LabelFillColor : annotation.FillColor;
             annotation.FontSize = annotation.FontSize ? annotation.FontSize : 16;
+            annotation.LabelSettings = annotation.LabelSettings ? annotation.LabelSettings : this.pdfViewer.shapeLabelSettings;
         }
         // tslint:disable-next-line:max-line-length
         annotationObject = {
@@ -754,7 +791,8 @@ export class ShapeAnnotation {
             bounds: { left: annotation.Bounds.X, top: annotation.Bounds.Y, width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom },
             labelContent: annotation.LabelContent, enableShapeLabel: annotation.EnableShapeLabel, labelFillColor: annotation.LabelFillColor,
             labelBorderColor: annotation.LabelBorderColor, fontColor: annotation.FontColor, fontSize: annotation.FontSize,
-            labelBounds: annotation.LabelBounds
+            // tslint:disable-next-line:max-line-length
+            labelBounds: annotation.LabelBounds, annotationSelectorSettings: this.getSettings(annotation), labelSettings: annotation.LabelSettings
         };
         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape');
     }
@@ -782,6 +820,7 @@ export class ShapeAnnotation {
             annotation.FontColor = annotation.FontColor ? annotation.FontColor : annotation.StrokeColor;
             annotation.LabelFillColor = annotation.LabelFillColor ? annotation.LabelFillColor : annotation.FillColor;
             annotation.FontSize = annotation.FontSize ? annotation.FontSize : 16;
+            annotation.LabelSettings = annotation.LabelSettings ? annotation.LabelSettings : this.pdfViewer.shapeLabelSettings;
         }
         // tslint:disable-next-line:max-line-length
         annotationObject = {
@@ -794,7 +833,7 @@ export class ShapeAnnotation {
             bounds: { left: annotation.Bounds.X, top: annotation.Bounds.Y, width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom },
             labelContent: annotation.LabelContent, enableShapeLabel: annotation.EnableShapeLabel, labelFillColor: annotation.LabelFillColor,
             labelBorderColor: annotation.LabelBorderColor, fontColor: annotation.FontColor, fontSize: annotation.FontSize,
-            labelBounds: annotation.LabelBounds, pageNumber: pageNumber
+            labelBounds: annotation.LabelBounds, pageNumber: pageNumber, labelSettings: annotation.LabelSettings
         };
         return annotationObject;
     }

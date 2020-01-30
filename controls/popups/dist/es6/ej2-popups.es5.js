@@ -532,7 +532,7 @@ var Popup = /** @__PURE__ @class */ (function (_super) {
      * To destroy the control.
      */
     Popup.prototype.destroy = function () {
-        this.element.classList.remove(CLASSNAMES.ROOT, CLASSNAMES.RTL);
+        this.element.classList.remove(CLASSNAMES.ROOT, CLASSNAMES.RTL, CLASSNAMES.OPEN, CLASSNAMES.CLOSE);
         this.unwireEvents();
         _super.prototype.destroy.call(this);
     };
@@ -1610,6 +1610,7 @@ var MODAL_DLG = 'e-dlg-modal';
 var DLG_CONTENT = 'e-dlg-content';
 var DLG_CLOSE_ICON = 'e-icon-dlg-close';
 var DLG_OVERLAY = 'e-dlg-overlay';
+var DLG_TARGET = 'e-dlg-target';
 var DLG_CONTAINER = 'e-dlg-container';
 var SCROLL_DISABLED = 'e-scroll-disabled';
 var DLG_PRIMARY_BUTTON = 'e-primary';
@@ -1680,16 +1681,6 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         this.headerContent = null;
         this.allowMaxHeight = true;
         this.preventVisibility = true;
-        var classArray = [];
-        if (!(isBlazor() && this.isServerRendered)) {
-            for (var j = 0; j < this.element.classList.length; j++) {
-                if (!isNullOrUndefined(this.element.classList[j].match('e-control')) ||
-                    !isNullOrUndefined(this.element.classList[j].match(ROOT))) {
-                    classArray.push(this.element.classList[j]);
-                }
-            }
-            removeClass([this.element], classArray);
-        }
         this.clonedEle = this.element.cloneNode(true);
         this.closeIconClickEventHandler = function (event) {
             _this.hide(event);
@@ -1772,7 +1763,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
     };
     Dialog.prototype.setResize = function () {
         if (this.enableResize) {
-            if (isBlazor() && this.isServerRendered && !isNullOrUndefined(this.element.querySelector('.e-icons.e-resize-handle'))) {
+            if (this.isBlazorServerRender() && !isNullOrUndefined(this.element.querySelector('.e-icons.e-resize-handle'))) {
                 return;
             }
             this.element.classList.add(DLG_RESIZABLE);
@@ -1865,13 +1856,13 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             this.targetEle = ((typeof this.target) === 'string') ?
                 document.querySelector(this.target) : this.target;
         }
-        if (!(isBlazor() && this.isServerRendered)) {
+        if (!this.isBlazorServerRender()) {
             addClass([this.element], ROOT);
         }
         if (Browser.isDevice) {
             addClass([this.element], DEVICE);
         }
-        if (!(isBlazor() && this.isServerRendered)) {
+        if (!this.isBlazorServerRender()) {
             this.setCSSClass();
         }
         this.setMaxHeight();
@@ -1883,7 +1874,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
     Dialog.prototype.initRender = function () {
         var _this = this;
         this.initialRender = true;
-        if (!(isBlazor() && this.isServerRendered)) {
+        if (!this.isBlazorServerRender()) {
             attributes(this.element, { role: 'dialog' });
         }
         if (this.zIndex === 1000) {
@@ -1893,10 +1884,10 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         else {
             this.calculatezIndex = false;
         }
-        if (isBlazor() && this.isServerRendered && isNullOrUndefined(this.headerContent)) {
+        if (this.isBlazorServerRender() && isNullOrUndefined(this.headerContent)) {
             this.headerContent = this.element.getElementsByClassName('e-dlg-header-content')[0];
         }
-        if (!(isBlazor() && this.isServerRendered)) {
+        if (!this.isBlazorServerRender()) {
             this.setTargetContent();
             if (this.header !== '' && !isNullOrUndefined(this.header)) {
                 this.setHeader();
@@ -1912,7 +1903,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                 this.setButton();
             }
         }
-        if (isBlazor() && this.isServerRendered) {
+        if (this.isBlazorServerRender()) {
             if (!isNullOrUndefined(this.buttons[0].buttonModel) && this.footerTemplate === '') {
                 this.setButton();
             }
@@ -1920,13 +1911,13 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         if (this.allowDragging && (!isNullOrUndefined(this.headerContent))) {
             this.setAllowDragging();
         }
-        if (!(isBlazor() && this.isServerRendered)) {
+        if (!this.isBlazorServerRender()) {
             attributes(this.element, { 'aria-modal': (this.isModal ? 'true' : 'false') });
             if (this.isModal) {
                 this.setIsModal();
             }
         }
-        if (isBlazor() && this.isServerRendered && isNullOrUndefined(this.dlgContainer)) {
+        if (this.isBlazorServerRender() && isNullOrUndefined(this.dlgContainer)) {
             this.dlgContainer = this.element.parentElement;
             this.dlgOverlay = this.element.parentElement.getElementsByClassName('e-dlg-overlay')[0];
         }
@@ -1939,6 +1930,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             zIndex: this.zIndex,
             relateTo: this.target,
             actionOnScroll: 'none',
+            enableRtl: this.enableRtl,
             open: function (event) {
                 var eventArgs = {
                     container: _this.isModal ? _this.dlgContainer : _this.element,
@@ -1975,7 +1967,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         });
         this.positionChange();
         this.setEnableRTL();
-        if (!(isBlazor() && this.isServerRendered)) {
+        if (!this.isBlazorServerRender()) {
             addClass([this.element], DLG_HIDE);
             if (this.isModal) {
                 this.setOverlayZindex();
@@ -2062,7 +2054,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Dialog.prototype.setButton = function () {
-        if (!(isBlazor() && this.isServerRendered)) {
+        if (!this.isBlazorServerRender()) {
             this.buttonContent = [];
             this.btnObj = [];
             for (var i = 0; i < this.buttons.length; i++) {
@@ -2072,17 +2064,20 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             }
             this.setFooterTemplate();
         }
+        var footerEle = this.element.querySelector('.' + DLG_FOOTER_CONTENT);
+        var footerBtn = !isNullOrUndefined(footerEle) &&
+            footerEle.querySelectorAll('button');
         for (var i = 0; i < this.buttons.length; i++) {
-            if (!(isBlazor() && this.isServerRendered)) {
+            if (!this.isBlazorServerRender()) {
                 this.btnObj[i] = new Button(this.buttons[i].buttonModel);
             }
-            if (isBlazor() && this.isServerRendered) {
-                this.ftrTemplateContent = this.element.querySelector('.e-footer-content');
+            if (this.isBlazorServerRender()) {
+                this.ftrTemplateContent = this.element.querySelector('.' + DLG_FOOTER_CONTENT);
             }
-            if (typeof (this.buttons[i].click) === 'function') {
-                EventHandler.add(this.ftrTemplateContent.children[i], 'click', this.buttons[i].click, this);
+            if (!isNullOrUndefined(this.ftrTemplateContent) && typeof (this.buttons[i].click) === 'function' && footerBtn.length > 0) {
+                EventHandler.add(footerBtn[i], 'click', this.buttons[i].click, this);
             }
-            if (!(isBlazor() && this.isServerRendered)) {
+            if (!this.isBlazorServerRender() && !isNullOrUndefined(this.ftrTemplateContent)) {
                 this.btnObj[i].appendTo(this.ftrTemplateContent.children[i]);
                 this.btnObj[i].element.classList.add('e-flat');
                 this.primaryButtonEle = this.element.getElementsByClassName('e-primary')[0];
@@ -2199,7 +2194,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         this.element.style.display = display;
     };
     Dialog.prototype.setEnableRTL = function () {
-        if (!(isBlazor() && this.isServerRendered)) {
+        if (!this.isBlazorServerRender()) {
             this.enableRtl ? addClass([this.element], RTL) : removeClass([this.element], RTL);
         }
         if (!isNullOrUndefined(this.element.querySelector('.e-resize-handle'))) {
@@ -2359,6 +2354,14 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
     Dialog.prototype.unBindEvent = function (element) {
         EventHandler.remove(element, 'keydown', this.keyDown);
     };
+    Dialog.prototype.updateSanitizeContent = function () {
+        if (!this.isBlazorServerRender()) {
+            this.contentEle.innerHTML = this.sanitizeHelper(this.content);
+        }
+    };
+    Dialog.prototype.isBlazorServerRender = function () {
+        return isBlazor() && this.isServerRendered;
+    };
     /**
      * Module required function
      * @private
@@ -2379,21 +2382,22 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             switch (prop) {
                 case 'content':
                     if (!isNullOrUndefined(this.content) && this.content !== '') {
-                        if (isBlazor() && this.isServerRendered) {
+                        if (this.isBlazorServerRender()) {
                             this.contentEle = this.element.querySelector('.e-dlg-content');
                         }
                         if (!isNullOrUndefined(this.contentEle) && this.contentEle.getAttribute('role') !== 'dialog') {
-                            if (!(isBlazor() && this.isServerRendered)) {
+                            if (!this.isBlazorServerRender()) {
                                 this.contentEle.innerHTML = '';
                             }
-                            typeof (this.content) === 'string' ? (isBlazor() && this.isServerRendered
+                            typeof (this.content) === 'string' ? (this.isBlazorServerRender()
                                 && (this.contentEle.innerText === '')) ?
                                 this.contentEle.insertAdjacentHTML('beforeend', this.sanitizeHelper(this.content)) :
-                                this.contentEle.innerHTML = this.sanitizeHelper(this.content) : this.contentEle.appendChild(this.content);
+                                this.updateSanitizeContent() :
+                                this.contentEle.appendChild(this.content);
                             this.setMaxHeight();
                         }
                         else {
-                            if (!(isBlazor() && this.isServerRendered) ||
+                            if (!this.isBlazorServerRender() ||
                                 isNullOrUndefined(this.element.querySelector('.e-dlg-content'))) {
                                 this.setContent();
                             }
@@ -2412,7 +2416,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                         }
                     }
                     else {
-                        if (!(isBlazor() && this.isServerRendered) ||
+                        if (!this.isBlazorServerRender() ||
                             isNullOrUndefined(this.element.querySelector('.e-dlg-header-content'))) {
                             this.setHeader();
                         }
@@ -2428,7 +2432,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                         this.buttons = [{}];
                     }
                     else {
-                        if (!(isBlazor() && this.isServerRendered) ||
+                        if (!this.isBlazorServerRender() ||
                             isNullOrUndefined(this.element.querySelector('.e-footer-content'))) {
                             this.setFooterTemplate();
                         }
@@ -2445,13 +2449,13 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                             detach(this.closeIcon);
                         }
                         else {
-                            if (isBlazor() && this.isServerRendered) {
+                            if (this.isBlazorServerRender()) {
                                 this.wireEvents();
                             }
                         }
                     }
                     else {
-                        if (!(isBlazor() && this.isServerRendered)) {
+                        if (!this.isBlazorServerRender()) {
                             this.renderCloseIcon();
                         }
                         this.wireEvents();
@@ -2488,7 +2492,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'buttons':
                     var buttonCount = this.buttons.length;
-                    if (!isNullOrUndefined(this.ftrTemplateContent)) {
+                    if (!isNullOrUndefined(this.ftrTemplateContent) && !this.isBlazorServerRender()) {
                         detach(this.ftrTemplateContent);
                         this.ftrTemplateContent = null;
                     }
@@ -2542,7 +2546,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             removeClass([this.element], MODAL_DLG);
-            removeClass([document.body], SCROLL_DISABLED);
+            removeClass([document.body], [DLG_TARGET, SCROLL_DISABLED]);
             detach(this.dlgOverlay);
             while (this.dlgContainer.firstChild) {
                 this.dlgContainer.parentElement.insertBefore(this.dlgContainer.firstChild, this.dlgContainer);
@@ -2580,58 +2584,54 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
      * @memberof dialog
      */
     Dialog.prototype.destroy = function () {
-        if (this.element.classList.contains(ROOT)) {
-            this.unWireEvents();
-            _super.prototype.destroy.call(this);
-            var classArray = [
-                ROOT, RTL, MODAL_DLG
-            ];
-            removeClass([this.element, this.element], classArray);
-            if (this.popupObj.element.classList.contains(POPUP_ROOT)) {
-                this.popupObj.destroy();
+        var classArray = [RTL, MODAL_DLG, DLG_RESIZABLE, DLG_RESTRICT_LEFT_VALUE];
+        var attrs = ['role', 'aria-modal', 'aria-labelledby', 'aria-describedby', 'aria-grabbed', 'tabindex', 'style'];
+        if (this.isModal) {
+            removeClass([(!isNullOrUndefined(this.targetEle) ? this.targetEle : document.body)], SCROLL_DISABLED);
+        }
+        this.unWireEvents();
+        if (!isNullOrUndefined(this.btnObj)) {
+            for (var i = 0; i < this.btnObj.length; i++) {
+                this.btnObj[i].destroy();
             }
-            /* istanbul ignore next */
-            if (!isNullOrUndefined(this.btnObj)) {
-                for (var i = void 0; i < this.btnObj.length; i++) {
-                    this.btnObj[i].destroy();
-                }
-            }
-            if (this.isModal && (!(isBlazor() && this.isServerRendered))) {
-                detach(this.dlgOverlay);
-                this.dlgContainer.parentNode.insertBefore(this.element, this.dlgContainer);
-                detach(this.dlgContainer);
-            }
-            if (!(isBlazor() && this.isServerRendered)) {
-                this.element.innerHTML = '';
-            }
-            if (isBlazor() && this.isServerRendered) {
-                if (!isNullOrUndefined(this.element.children)) {
-                    for (var i = 0; i <= this.element.children.length; i++) {
-                        i = i - i;
-                        detach(this.element.children[i]);
-                    }
-                }
-            }
-            while (this.element.attributes.length > 0) {
-                this.element.removeAttribute(this.element.attributes[0].name);
-            }
-            for (var k = 0; k < this.clonedEle.attributes.length; k++) {
-                if (isBlazor() && this.isServerRendered && this.clonedEle.attributes[k].name === 'id') {
-                    this.element.setAttribute(this.clonedEle.attributes[k].name, this.clonedEle.attributes[k].value);
-                    return;
-                }
-                else {
-                    this.element.setAttribute(this.clonedEle.attributes[k].name, this.clonedEle.attributes[k].value);
+        }
+        if (!isNullOrUndefined(this.dragObj)) {
+            this.dragObj.destroy();
+        }
+        if (this.popupObj.element.classList.contains(POPUP_ROOT)) {
+            this.popupObj.destroy();
+        }
+        removeClass([this.element], classArray);
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            removeClass([this.element], this.cssClass.split(' '));
+        }
+        if (this.isModal && !this.isBlazorServerRender()) {
+            detach(this.dlgOverlay);
+            this.dlgContainer.parentNode.insertBefore(this.element, this.dlgContainer);
+            detach(this.dlgContainer);
+        }
+        if (!this.isBlazorServerRender()) {
+            this.element.innerHTML = this.clonedEle.innerHTML;
+        }
+        if (this.isBlazorServerRender()) {
+            if (!isNullOrUndefined(this.element.children)) {
+                for (var i = 0; i <= this.element.children.length; i++) {
+                    i = i - i;
+                    detach(this.element.children[i]);
                 }
             }
         }
+        for (var i = 0; i < attrs.length; i++) {
+            this.element.removeAttribute(attrs[i]);
+        }
+        _super.prototype.destroy.call(this);
     };
     /**
      * Binding event to the element while widget creation
      * @hidden
      */
     Dialog.prototype.wireEvents = function () {
-        if (isBlazor() && this.isServerRendered && this.showCloseIcon) {
+        if (this.isBlazorServerRender() && this.showCloseIcon) {
             this.closeIcon = this.element.getElementsByClassName('e-dlg-closeicon-btn')[0];
         }
         if (this.showCloseIcon) {
@@ -2652,19 +2652,10 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         if (this.isModal) {
             EventHandler.remove(this.dlgOverlay, 'click', this.dlgOverlayClickEventHandler);
         }
-        if (!isNullOrUndefined(this.buttons[0].buttonModel)) {
-            if (!(isBlazor() && this.isServerRendered)) {
-                for (var i = 0; i < this.buttons.length; i++) {
-                    if (typeof (this.buttons[i].click) === 'function') {
-                        EventHandler.remove(this.ftrTemplateContent.children[i], 'click', this.buttons[i].click);
-                    }
-                }
-            }
-            else if (isBlazor() && this.isServerRendered && this.footerTemplate === '') {
-                for (var i = 0; i < this.buttons.length; i++) {
-                    if (typeof (this.buttons[i].click) === 'function') {
-                        EventHandler.remove(this.ftrTemplateContent.children[i], 'click', this.buttons[i].click);
-                    }
+        if (!isNullOrUndefined(this.buttons[0].buttonModel) && this.footerTemplate === '') {
+            for (var i = 0; i < this.buttons.length; i++) {
+                if (typeof (this.buttons[i].click) === 'function') {
+                    EventHandler.remove(this.ftrTemplateContent.children[i], 'click', this.buttons[i].click);
                 }
             }
         }
@@ -2724,10 +2715,10 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                             }
                             _this.dlgOverlay.style.position = 'absolute';
                             _this.element.style.position = 'relative';
-                            addClass([_this.targetEle], SCROLL_DISABLED);
+                            addClass([_this.targetEle], [DLG_TARGET, SCROLL_DISABLED]);
                         }
                         else {
-                            addClass([document.body], SCROLL_DISABLED);
+                            addClass([document.body], [DLG_TARGET, SCROLL_DISABLED]);
                         }
                     }
                     var openAnimation = {
@@ -2784,8 +2775,8 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             this.trigger('beforeClose', eventArgs, function (beforeCloseArgs) {
                 if (!beforeCloseArgs.cancel) {
                     if (_this.isModal) {
-                        !isNullOrUndefined(_this.targetEle) ? removeClass([_this.targetEle], SCROLL_DISABLED) :
-                            removeClass([document.body], SCROLL_DISABLED);
+                        !isNullOrUndefined(_this.targetEle) ? removeClass([_this.targetEle], [DLG_TARGET, SCROLL_DISABLED]) :
+                            removeClass([document.body], [DLG_TARGET, SCROLL_DISABLED]);
                     }
                     var closeAnimation = {
                         name: _this.animationSettings.effect + 'Out',
@@ -2817,14 +2808,14 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             this.element.style.maxHeight = (!isNullOrUndefined(this.target)) ?
                 (this.targetEle.offsetHeight) + 'px' : (window.innerHeight) + 'px';
             this.element.style.display = display;
-            addClass([document.body], SCROLL_DISABLED);
+            addClass([document.body], [DLG_TARGET, SCROLL_DISABLED]);
             if (this.allowDragging && !isNullOrUndefined(this.dragObj)) {
                 this.dragObj.destroy();
             }
         }
         else {
             removeClass([this.element], FULLSCREEN);
-            removeClass([document.body], SCROLL_DISABLED);
+            removeClass([document.body], [DLG_TARGET, SCROLL_DISABLED]);
             if (this.allowDragging && (!isNullOrUndefined(this.headerContent))) {
                 this.setAllowDragging();
             }
@@ -2939,6 +2930,9 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Event()
     ], Dialog.prototype, "resizeStop", void 0);
+    __decorate$1([
+        Event()
+    ], Dialog.prototype, "destroyed", void 0);
     Dialog = __decorate$1([
         NotifyPropertyChanges
     ], Dialog);

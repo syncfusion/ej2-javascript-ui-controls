@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.46 (2020-01-30)
+
+### RichTextEditor
+
+#### New Features
+
+- `#F149481` - Provided the support to get the selected HTML content using the `getSelectedHtml` public method.
+
 ## 17.4.44 (2021-01-21)
 
 ### RichTextEditor

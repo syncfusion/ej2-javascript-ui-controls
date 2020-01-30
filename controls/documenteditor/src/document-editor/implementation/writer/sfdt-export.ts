@@ -689,13 +689,13 @@ export class SfdtExport {
         let listIdValue: Object = format.getValue('listId');
         if (!isNullOrUndefined(listIdValue)) {
             listFormat.listId = listIdValue;
-            let listLevelNumber: Object = format.getValue('listLevelNumber');
-            if (!isNullOrUndefined(listLevelNumber)) {
-                listFormat.listLevelNumber = listLevelNumber;
-            }
             if (this.lists.indexOf(format.listId) < 0) {
                 this.lists.push(format.listId);
             }
+        }
+        let listLevelNumber: Object = format.getValue('listLevelNumber');
+        if (!isNullOrUndefined(listLevelNumber)) {
+            listFormat.listLevelNumber = listLevelNumber;
         }
         return listFormat;
     }

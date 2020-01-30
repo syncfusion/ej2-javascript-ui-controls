@@ -1172,8 +1172,6 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.sortModule.removeSortColumn(field);
   }
 
-
-
  /**
   * Searches TreeGrid records using the given key.
   * You can customize the default search option by using the
@@ -1504,6 +1502,12 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       this.wireEvents();
     }
     this.renderComplete();
+    let destroyTemplate: string = 'destroyTemplate';
+    let destroyTemplateFn: Function = this.grid[destroyTemplate] as Function;
+    this.grid[destroyTemplate] = (args: string[]) => {
+        destroyTemplateFn.apply(this.grid);
+        this.clearTemplate(args);
+    };
     if (isBlazor() && this.isServerRendered) {
       let fn: Function = (args: { grid: Grid, id: string }) => this.gridRendered(args, fn);
       gridObserver.on('component-rendered', this.gridRendered, this);

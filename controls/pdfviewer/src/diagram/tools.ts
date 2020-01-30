@@ -8,7 +8,8 @@ import { TextElement } from '@syncfusion/ej2-drawings';
 import { Selector } from './selector';
 import { DrawingElement } from '@syncfusion/ej2-drawings';
 import { findActiveElement } from './action';
-import { PdfViewer, PdfViewerBase, MeasureAnnotation } from '../pdfviewer';
+// tslint:disable-next-line:max-line-length
+import { PdfViewer, PdfViewerBase, MeasureAnnotation, AnnotationSelectorSettingsModel } from '../pdfviewer';
 import { PdfAnnotationBaseModel } from './pdf-annotation-model';
 import { PdfAnnotationBase } from './pdf-annotation';
 import { cloneObject, isLineShapes } from './drawing-util';
@@ -349,6 +350,13 @@ export class SelectTool extends ToolBase {
     private mouseEventHelper(args: MouseEventArgs): void {
         // tslint:disable-next-line
         let object: IElement = findActiveElement(args as any, this.pdfViewerBase, this.commandHandler);
+        // tslint:disable-next-line
+        let currentSelctor: any;
+        if ((args.source as PdfAnnotationBaseModel) && (args as PdfAnnotationBaseModel).annotationSelectorSettings !== null) {
+        currentSelctor = (args.source as PdfAnnotationBaseModel).annotationSelectorSettings;
+        } else {
+            currentSelctor = '';
+        }
         if (this.commandHandler) {
             let selectedObject: SelectorModel = this.commandHandler.selectedItems;
             let currentSource: PdfAnnotationBaseModel = args.source as PdfAnnotationBaseModel;
@@ -361,7 +369,7 @@ export class SelectTool extends ToolBase {
                 this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
             }
             if (object) {
-                this.commandHandler.select([(object as PdfAnnotationBaseModel).id]);
+                this.commandHandler.select([(object as PdfAnnotationBaseModel).id], currentSelctor);
                 this.commandHandler.viewerBase.isAnnotationMouseDown = true;
             }
         }
@@ -450,10 +458,11 @@ export class MoveTool extends ToolBase {
             } else {
                 this.commandHandler.viewerBase.isAnnotationMouseMove = false;
             }
+            let currentSelctor:AnnotationSelectorSettingsModel=(args.source as PdfAnnotationBaseModel).annotationSelectorSettings;
             this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
-            this.commandHandler.select([(args.source as PdfAnnotationBaseModel).id]);
-            this.commandHandler.dragSelectedObjects(this.calculateMouseActionXDiff(args), this.calculateMouseActionYDiff(args), this.pdfViewerBase.activeElements.activePageID, null);
-            this.commandHandler.renderSelector(this.pdfViewerBase.activeElements.activePageID);
+            this.commandHandler.select([(args.source as PdfAnnotationBaseModel).id], currentSelctor);
+            this.commandHandler.dragSelectedObjects(this.calculateMouseActionXDiff(args), this.calculateMouseActionYDiff(args), this.pdfViewerBase.activeElements.activePageID, currentSelctor , null);
+            this.commandHandler.renderSelector(this.pdfViewerBase.activeElements.activePageID, currentSelctor);
             this.commandHandler.viewerBase.isAnnotationMouseMove = false;
             // tslint:disable-next-line
             let newShapeObject: any = {
@@ -522,6 +531,7 @@ export class MoveTool extends ToolBase {
         if (this.inAction) {
             this.currentPosition = args.position;
             this.currentTarget = args.target;
+            let currentSelctor:AnnotationSelectorSettingsModel=(args.source as PdfAnnotationBaseModel).annotationSelectorSettings;
             let x: number = this.calculateMouseXDiff() / this.commandHandler.viewerBase.getZoomFactor();
             let y: number = this.calculateMouseYDiff() / this.commandHandler.viewerBase.getZoomFactor();
             let requiredX: number = this.offset.x + x;
@@ -574,7 +584,7 @@ export class MoveTool extends ToolBase {
             }
             // tslint:disable-next-line:max-line-length
             if (this.commandHandler.checkBoundaryConstraints(diffX, diffY, this.pdfViewerBase.activeElements.activePageID, this.helper.wrapper.bounds, isStamp)) {
-                this.commandHandler.dragSelectedObjects(diffX, diffY, this.pdfViewerBase.activeElements.activePageID, this.helper);
+                this.commandHandler.dragSelectedObjects(diffX, diffY, this.pdfViewerBase.activeElements.activePageID, currentSelctor, this.helper);
                 this.prevNode = this.helper;
                 this.prevPosition = this.currentPosition;
             } else {
@@ -587,12 +597,13 @@ export class MoveTool extends ToolBase {
     /**   @private  */
     public mouseLeave(args: MouseEventArgs): void {
         let object: SelectorModel;
+        let currentSelctor: AnnotationSelectorSettingsModel = (args.source as PdfAnnotationBaseModel).annotationSelectorSettings;
         let requiredX: number = this.offset.x + this.calculateMouseXDiff();
         let requiredY: number = this.offset.y + this.calculateMouseYDiff();
         let diffX: number = requiredX - args.source.wrapper.offsetX;
         let diffY: number = requiredY - args.source.wrapper.offsetY;
-        this.commandHandler.dragSelectedObjects(diffX, diffY, this.prevPageId, null);
-        this.commandHandler.renderSelector(this.prevPageId);
+        this.commandHandler.dragSelectedObjects(diffX, diffY, this.prevPageId, currentSelctor, null);
+        this.commandHandler.renderSelector(this.prevPageId, currentSelctor);
         super.mouseLeave(args);
     }
     /**   @private  */
@@ -635,8 +646,9 @@ export class StampTool extends MoveTool {
             this.startPosition = args.position;
             this.commandHandler.select([newObject.id]);
         }
+        let currentSelctor: AnnotationSelectorSettingsModel = (args.source as PdfAnnotationBaseModel).annotationSelectorSettings;
         super.mouseMove.call(this, args, true);
-        this.commandHandler.renderSelector((args.source as PdfAnnotationBaseModel).pageIndex);
+        this.commandHandler.renderSelector((args.source as PdfAnnotationBaseModel).pageIndex, currentSelctor);
         return this.inAction;
     }
 }
@@ -728,9 +740,10 @@ export class ConnectTool extends ToolBase {
                     // tslint:disable-next-line:max-line-length
                     this.commandHandler.nodePropertyChange(this.prevSource, { vertexPoints: node.vertexPoints, leaderHeight: node.leaderHeight });
                 }
+                let currentSelctor: AnnotationSelectorSettingsModel = (args.source as PdfAnnotationBaseModel).annotationSelectorSettings;
                 this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
-                this.commandHandler.select([this.prevSource.id]);
-                this.commandHandler.renderSelector(this.pdfViewerBase.activeElements.activePageID);
+                this.commandHandler.select([this.prevSource.id], currentSelctor);
+                this.commandHandler.renderSelector(this.pdfViewerBase.activeElements.activePageID, currentSelctor);
                 // tslint:disable-next-line
                 let newShapeElementObject: any = {
                     bounds: {
@@ -790,9 +803,10 @@ export class ConnectTool extends ToolBase {
                     this.helper = cloneShapebject = this.commandHandler.add(cloneShapebject as PdfAnnotationBase);
                     this.commandHandler.selectedItems.annotations = [cloneShapebject];
                 }
+                let currentSelctor: AnnotationSelectorSettingsModel = (args.source as PdfAnnotationBaseModel).annotationSelectorSettings;
                 this.blocked = !this.commandHandler.dragConnectorEnds(
-                    this.endPoint, this.helper as IElement, this.currentPosition, this.selectedSegment, args.target);
-                this.commandHandler.renderSelector(this.pdfViewerBase.activeElements.activePageID);
+                    this.endPoint, this.helper as IElement, this.currentPosition, this.selectedSegment, args.target, null, currentSelctor);
+                this.commandHandler.renderSelector(this.pdfViewerBase.activeElements.activePageID, currentSelctor);
             }
         }
         this.prevPosition = this.currentPosition;
@@ -880,13 +894,13 @@ export class ResizeTool extends ToolBase {
         if (this.commandHandler) {
             this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
             this.commandHandler.viewerBase.isAnnotationSelect = true;
-            this.commandHandler.select([this.prevSource.id]);
+            this.commandHandler.select([this.prevSource.id], this.prevSource.annotationSelectorSettings);
             // tslint:disable-next-line:max-line-length
             let deltaValues: Rect = this.updateSize(this.prevSource, this.currentPosition, this.initialPosition, this.corner, this.initialBounds, null, true);
             this.blocked = this.scaleObjects(
                 deltaValues.width, deltaValues.height, this.corner, this.currentPosition, this.initialPosition, this.prevSource);
 
-            this.commandHandler.renderSelector(this.prevPageId);
+            this.commandHandler.renderSelector(this.prevPageId, this.prevSource.annotationSelectorSettings);
             if (this.commandHandler.annotation && args.source.wrapper) {
                 // tslint:disable-next-line
                 let newObject: any = {
@@ -1146,7 +1160,7 @@ export class NodeDrawingTool extends ToolBase {
     public mouseUp(args: MouseEventArgs): void {
         if (this.drawingObject && this.dragging) {
             this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
-            this.commandHandler.select([this.drawingObject.id]);
+            this.commandHandler.select([this.drawingObject.id], this.commandHandler.annotationSelectorSettings);
             this.commandHandler.annotation.updateCalibrateValues(this.drawingObject);
             if (this.commandHandler) {
                 // tslint:disable-next-line
@@ -1295,6 +1309,11 @@ export class PolygonDrawingTool extends ToolBase {
     /**   @private  */
     public mouseUp(args: MouseEventArgs, isDoubleClineck?: boolean, isMouseLeave?: boolean): void {
         super.mouseMove(args);
+        // tslint:disable-next-line
+        let currentSelector: any;
+        if ((args.source as PdfAnnotationBaseModel) && (args as PdfAnnotationBaseModel).annotationSelectorSettings !== null) {
+        currentSelector = (args.source as PdfAnnotationBaseModel).annotationSelectorSettings;
+        }
         if (this.drawingObject) {
             // tslint:disable-next-line:max-line-length
             let bounds: Rect = new Rect(this.drawingObject.vertexPoints[this.drawingObject.vertexPoints.length - 1].x - 20, this.drawingObject.vertexPoints[this.drawingObject.vertexPoints.length - 1].y - 20, 40, 40);
@@ -1325,7 +1344,7 @@ export class PolygonDrawingTool extends ToolBase {
                             cobject.bounds.y = this.drawingObject.wrapper.bounds.y;
                             this.commandHandler.add(cobject);
                             this.commandHandler.remove(this.drawingObject);
-                            this.commandHandler.select([cobject.id]);
+                            this.commandHandler.select([cobject.id], currentSelector);
                             let drawingObject: PdfAnnotationBaseModel = this.commandHandler.selectedItems.annotations[0];
                             // tslint:disable-next-line:max-line-length
                             if (this.commandHandler.enableShapeAnnotation && (isNullOrUndefined(drawingObject.measureType) || drawingObject.measureType === '')) {
@@ -1361,7 +1380,7 @@ export class PolygonDrawingTool extends ToolBase {
                                 vertexPoints: this.drawingObject.vertexPoints, sourceDecoraterShapes: this.commandHandler.drawingObject.sourceDecoraterShapes,
                                 taregetDecoraterShapes: this.commandHandler.drawingObject.taregetDecoraterShapes
                             });
-                            this.commandHandler.select([this.drawingObject.id]);
+                            this.commandHandler.select([this.drawingObject.id], currentSelector);
                             if (this.commandHandler.enableMeasureAnnotation && this.drawingObject.measureType === 'Perimeter') {
                                 this.commandHandler.renderDrawing(null, this.drawingObject.pageIndex);
                                 // tslint:disable-next-line:max-line-length
@@ -1502,11 +1521,17 @@ export class LineTool extends ToolBase {
         if (this.dragging) {
             super.mouseMove(args);
             if (this.commandHandler) {
+                // tslint:disable-next-line
+                let currentSelector: any;
+                if ((args.source as PdfAnnotationBaseModel) && (args as PdfAnnotationBaseModel).annotationSelectorSettings !== null) {
+                currentSelector = (args.source as PdfAnnotationBaseModel).annotationSelectorSettings;
+                } else {currentSelector = '';
+                }
                 let node: PdfAnnotationBaseModel = this.drawingObject;
                 this.commandHandler.nodePropertyChange(node, { vertexPoints: node.vertexPoints, leaderHeight: node.leaderHeight });
                 this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
-                this.commandHandler.select([node.id]);
-                this.commandHandler.renderSelector(this.pdfViewerBase.activeElements.activePageID);
+                this.commandHandler.select([node.id], currentSelector);
+                this.commandHandler.renderSelector(this.pdfViewerBase.activeElements.activePageID, currentSelector);
             }
             if (this.endPoint && this.endPoint.indexOf('ConnectorSegmentPoint') > -1 && this.dragging) {
                 this.commandHandler.annotation.updateCalibrateValues(this.drawingObject);
@@ -1539,11 +1564,18 @@ export class LineTool extends ToolBase {
                 let newValue: PointModel; let oldValue: PointModel;
                 connector = this.drawingObject;
                 let targetPortId: string; let targetPdfAnnotationBaseModelId: string;
+                 // tslint:disable-next-line
+                 let currentSelector: any;
+                 if ((args.source as PdfAnnotationBaseModel) && (args as PdfAnnotationBaseModel).annotationSelectorSettings !== null) {
+                  currentSelector = (args.source as PdfAnnotationBaseModel).annotationSelectorSettings;
+                 } else { currentSelector = '';
+                 }
                 // tslint:disable-next-line:max-line-length
                 if (this.inAction && this.commandHandler && this.drawingObject && this.endPoint !== undefined && diffX !== 0 || diffY !== 0) {
+                    // tslint:disable-next-line:max-line-length
                     this.blocked = !this.commandHandler.dragConnectorEnds(
-                        this.endPoint, this.drawingObject as IElement, this.currentPosition, this.selectedSegment, args.target);
-                    this.commandHandler.renderSelector(this.pdfViewerBase.activeElements.activePageID);
+                        this.endPoint, this.drawingObject as IElement, this.currentPosition, this.selectedSegment, args.target, null, currentSelector);
+                    this.commandHandler.renderSelector(this.pdfViewerBase.activeElements.activePageID, currentSelector);
                 }
             }
             this.prevPosition = this.currentPosition;
@@ -1589,7 +1621,9 @@ export class RotateTool extends ToolBase {
             let oldValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
             let obj: SelectorModel;
             obj = cloneObject(args.source);
-            this.commandHandler.renderSelector(this.pdfViewerBase.activeElements.activePageID);
+             // tslint:disable-next-line
+             let currentSelector : any = (args.source as Selector).annotations[0].annotationSelectorSettings;
+            this.commandHandler.renderSelector(this.pdfViewerBase.activeElements.activePageID, currentSelector);
         }
         this.commandHandler.annotation.stampAnnotationModule.updateSessionStorage(args.source, null, 'Rotate');
         super.mouseUp(args);
@@ -1600,6 +1634,8 @@ export class RotateTool extends ToolBase {
         super.mouseMove(args);
         let object: PdfAnnotationBaseModel | SelectorModel;
         object = args.source as PdfAnnotationBaseModel | Selector;
+        // tslint:disable-next-line
+        let currentSelector :any = (args.source as Selector).annotations[0].annotationSelectorSettings;
         this.currentPosition = args.position;
         if (object.wrapper) {
             let refPoint: PointModel = { x: object.wrapper.offsetX, y: object.wrapper.offsetY };
@@ -1607,7 +1643,7 @@ export class RotateTool extends ToolBase {
             angle = (angle + 360) % 360;
             let oldValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
             let newValue: SelectorModel = { rotateAngle: angle };
-            this.blocked = !(this.commandHandler.rotate(angle - object.wrapper.rotateAngle));
+            this.blocked = !(this.commandHandler.rotate(angle - object.wrapper.rotateAngle, currentSelector));
         }
         return !this.blocked;
     }

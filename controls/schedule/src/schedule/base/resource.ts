@@ -7,7 +7,7 @@ import { Popup } from '@syncfusion/ej2-popups';
 import { Data } from '../actions/data';
 import { Schedule } from '../base/schedule';
 import { ReturnType } from '../base/type';
-import { TdData, TreeViewArgs, NotifyEventArgs, ActionEventArgs, RenderCellEventArgs } from '../base/interface';
+import { TdData, ResourceDetails, NotifyEventArgs, ActionEventArgs, RenderCellEventArgs } from '../base/interface';
 import { ResourcesModel } from '../models/resources-model';
 import * as cls from '../base/css-constant';
 import * as events from '../base/constant';
@@ -346,7 +346,7 @@ export class ResourceBase {
             cssClass: this.parent.cssClass,
             enableRtl: this.parent.enableRtl,
             fields: {
-                dataSource: this.generateTreeData() as { [key: string]: Object }[],
+                dataSource: [].slice.call(this.generateTreeData()) as { [key: string]: Object }[],
                 id: 'resourceId',
                 text: 'resourceName',
                 child: 'resourceChild'
@@ -369,19 +369,21 @@ export class ResourceBase {
         this.parent.on(events.documentClick, this.documentClick, this);
     }
 
-    private generateTreeData(isTimeLine?: boolean): TreeViewArgs[] | TdData[] {
-        let treeCollection: TreeViewArgs[] = [];
+    private generateTreeData(isTimeLine?: boolean): ResourceDetails[] | TdData[] {
+        let treeCollection: ResourceDetails[] = [];
         let resTreeColl: TdData[] = [];
         let groupIndex: number = 0;
         this.resourceTreeLevel.forEach((resTree: TreeSlotData, index: number) => {
-            let treeHandler: Function = (treeLevel: TreeSlotData, index: number, levelId: string): TreeViewArgs => {
+            let treeHandler: Function = (treeLevel: TreeSlotData, index: number, levelId: string): ResourceDetails => {
                 let resource: ResourcesModel = this.resourceCollection[index];
-                let treeArgs: TreeViewArgs;
+                let treeArgs: ResourceDetails;
                 let resObj: TdData;
                 if (!isTimeLine) {
                     treeArgs = {
                         resourceId: levelId,
-                        resourceName: treeLevel.resourceData[resource.textField] as string
+                        resourceName: treeLevel.resourceData[resource.textField] as string,
+                        resource: treeLevel.resource,
+                        resourceData: treeLevel.resourceData
                     };
                 } else {
                     resObj = {
@@ -839,6 +841,36 @@ export class ResourceBase {
             }
         }
         this.refreshLayout(true);
+    }
+
+    public resourceScroll(id: string | number, name: string): void {
+        if (this.parent.isAdaptive || ['Agenda', 'MonthAgenda'].indexOf(this.parent.currentView) > -1) {
+            return;
+        }
+        let levelName: string = name || this.parent.resourceCollection.slice(-1)[0].name;
+        let levelIndex: number = this.parent.resourceCollection.length - 1;
+        let resource: ResourcesModel = this.parent.resourceCollection.filter((e: ResourcesModel, index: number) => {
+            if (e.name === levelName) {
+                levelIndex = index;
+                return e;
+            }
+            return null;
+        })[0];
+        let scrollElement: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+        if (this.parent.activeView.isTimelineView()) {
+            let resourceData: { [key: string]: Object } = (resource.dataSource as Object[]).filter((e: { [key: string]: Object }) =>
+                e[resource.idField] === id)[0] as { [key: string]: Object };
+            let index: number = this.lastResourceLevel.map((e: TdData) => e.resourceData).indexOf(resourceData);
+            let td: HTMLElement = this.parent.element.querySelector(`.${cls.WORK_CELLS_CLASS}[data-group-index="${index}"]`) as HTMLElement;
+            if (td && !td.parentElement.classList.contains(cls.HIDDEN_CLASS)) {
+                scrollElement.scrollTop = td.offsetTop;
+            }
+        } else {
+            let index: number = (resource.dataSource as Object[]).map((e: { [key: string]: Object }) => e[resource.idField]).indexOf(id);
+            let offsetTarget: Element = this.parent.element.querySelector(`.${cls.HEADER_ROW_CLASS}:nth-child(${levelIndex + 1})`);
+            let offset: number[] = [].slice.call(offsetTarget.children).map((node: HTMLElement) => node.offsetLeft);
+            scrollElement.scrollLeft = offset[index];
+        }
     }
 
     public destroy(): void {

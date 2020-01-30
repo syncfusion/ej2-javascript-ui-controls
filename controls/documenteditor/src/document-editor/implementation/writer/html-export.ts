@@ -94,7 +94,7 @@ export class HtmlExport {
         } else {
             this.prevListLevel = undefined;
             this.isOrdered = undefined;
-            blockStyle += this.createAttributesTag('p', tagAttributes);
+            blockStyle += this.createAttributesTag(this.getStyleName(paragraph.paragraphFormat.styleName), tagAttributes);
         }
         if (paragraph.inlines.length === 0) {
             //Handled to preserve non breaking space for empty paragraphs similar to MS Word behavior.
@@ -110,7 +110,7 @@ export class HtmlExport {
                 this.isOrdered = true;
             }
         } else {
-            blockStyle += this.endTag('p');
+            blockStyle += this.endTag(this.getStyleName(paragraph.paragraphFormat.styleName));
         }
 
         return blockStyle;
@@ -303,6 +303,25 @@ export class HtmlExport {
         return spanClass.toString();
     }
 
+    /**
+     * @private
+     */
+    public getStyleName(style: string): string {
+        switch (style) {
+            case 'Heading 1':
+                return 'h1';
+            case 'Heading 2':
+                return 'h2';
+            case 'Heading 3':
+                return 'h3';
+            case 'Heading 4':
+                return 'h4';
+            case 'Heading 5':
+                return 'h5';
+            default:
+                return 'p';
+        }
+    }
     //Serialize Image
     /**
      * @private
@@ -336,7 +355,9 @@ export class HtmlExport {
         tagAttributes = [];
         if (!isNullOrUndefined(cell.cellFormat)) {
             //if (cell.cellFormat.shading.backgroundColor !== Color.FromArgb(0, 0, 0, 0)) {
-            tagAttributes.push('bgcolor="' + cell.cellFormat.shading.backgroundColor + '"');
+            if (!isNullOrUndefined(cell.cellFormat.shading.backgroundColor)) {
+                tagAttributes.push('bgcolor="' + HelperMethods.getColor(cell.cellFormat.shading.backgroundColor) + '"');
+            }
             // }
             if (!isNullOrUndefined(cell.cellFormat.columnSpan) && cell.cellFormat.columnSpan > 1) {
                 tagAttributes.push('colspan="' + cell.cellFormat.columnSpan.toString() + '"');
@@ -345,11 +366,12 @@ export class HtmlExport {
                 tagAttributes.push('rowspan="' + cell.cellFormat.rowSpan.toString() + '"');
             }
             if (!isNullOrUndefined(cell.cellFormat.cellWidth) && cell.cellFormat.cellWidth !== 0) {
-                tagAttributes.push('width="' + cell.cellFormat.cellWidth.toString() + '"');
+                let cellWidth: number = HelperMethods.convertPointToPixel(cell.cellFormat.cellWidth);
+                tagAttributes.push('width="' + cellWidth.toString() + '"');
             }
-            if (!isNullOrUndefined(cell.cellFormat.verticalAlignment) && cell.cellFormat.verticalAlignment !== 'Top') {
-                tagAttributes.push('valign="' + cell.cellFormat.verticalAlignment.toString().toLowerCase() + '"');
-            }
+            let cellAlignment: string = isNullOrUndefined(cell.cellFormat.verticalAlignment) ? 'top' :
+                cell.cellFormat.verticalAlignment.toString().toLowerCase();
+            tagAttributes.push('valign="' + cellAlignment + '"');
             if (!isNullOrUndefined(cell.cellFormat.leftMargin) && cell.cellFormat.leftMargin !== 0) {
                 cellHtml += ('padding-left:' + cell.cellFormat.leftMargin.toString() + 'pt;');
             }
@@ -439,8 +461,8 @@ export class HtmlExport {
             borderStyle += ('border-left-width:' + borders.left.lineWidth.toString() + 'pt');
             borderStyle += ';';
         }
-        if (borders.left.color) {
-            borderStyle += ('border-left-color:' + borders.left.color);
+        if (!isNullOrUndefined(borders.left.color)) {
+            borderStyle += ('border-left-color:' + HelperMethods.getColor(borders.left.color));
             borderStyle += ';';
         }
         if (!isNullOrUndefined(borders.right.lineStyle)) {
@@ -452,8 +474,7 @@ export class HtmlExport {
             borderStyle += ';';
         }
         if (!isNullOrUndefined(borders.right.color)) {
-
-            borderStyle += ('border-right-color:' + borders.right.color);
+            borderStyle += ('border-right-color:' + HelperMethods.getColor(borders.right.color));
             borderStyle += ';';
         }
         if (!isNullOrUndefined(borders.top.lineStyle)) {
@@ -466,7 +487,7 @@ export class HtmlExport {
         }
         if (!isNullOrUndefined(borders.top.color)) {
 
-            borderStyle += ('border-top-color:' + borders.top.color);
+            borderStyle += ('border-top-color:' + HelperMethods.getColor(borders.bottom.color));
             borderStyle += ';';
         }
         if (!isNullOrUndefined(borders.bottom.lineStyle)) {
@@ -478,8 +499,7 @@ export class HtmlExport {
             borderStyle += ';';
         }
         if (!isNullOrUndefined(borders.bottom.color)) {
-
-            borderStyle += ('border-bottom-color:' + borders.bottom.color);
+            borderStyle += ('border-bottom-color:' + HelperMethods.getColor(borders.bottom.color));
             borderStyle += ';';
         }
         return borderStyle;
@@ -491,6 +511,28 @@ export class HtmlExport {
         let borderStyle: string = '';
 
         borderStyle = 'border:solid 1px;';
+        // if (borders.left.color) {
+        //     borderStyle += ('border-left-color:' + HelperMethods.getColor(borders.left.color));
+        //     borderStyle += ';';
+        // }
+        // borderStyle += this.serializeBorderStyle(borders.left, 'left');
+        // if (!isNullOrUndefined(borders.right.color)) {
+
+        //     borderStyle += ('border-right-color:' + HelperMethods.getColor(borders.right.color));
+        //     borderStyle += ';';
+        // }
+        // borderStyle += this.serializeBorderStyle(borders.right, 'right');
+        // if (!isNullOrUndefined(borders.top.color)) {
+
+        //     borderStyle += ('border-top-color:' + HelperMethods.getColor(borders.top.color));
+        //     borderStyle += ';';
+        // }
+        // borderStyle += this.serializeBorderStyle(borders.top, 'top');
+        // if (!isNullOrUndefined(borders.bottom.color)) {
+        //     borderStyle += ('border-bottom-color:' + HelperMethods.getColor(borders.bottom.color));
+        //     borderStyle += ';';
+        // }
+        // borderStyle += this.serializeBorderStyle(borders.bottom, 'bottom');
 
         // Todo: handle
         // let border: WBorder = undefined;
@@ -535,7 +577,9 @@ export class HtmlExport {
             borderStyle += ('border-' + borderPosition + '-width:' + border.lineWidth.toString() + 'pt;');
         }
         //if (border.color !== Color.FromArgb(0, 0, 0, 0))
-        borderStyle += ('border-' + borderPosition + '-color:' + border.color + ';');
+        if (!isNullOrUndefined(border.color)) {
+            borderStyle += ('border-' + borderPosition + '-color:' + HelperMethods.getColor(border.color) + ';');
+        }
         return borderStyle;
     }
     /**
@@ -595,12 +639,10 @@ export class HtmlExport {
         }
         let propertyValue: any;
         let charStyle: string = '';
-        if (characterFormat.bold) {
-            charStyle += 'font-weight';
-            charStyle += ':';
-            charStyle += 'bold';
-            charStyle += ';';
-        }
+        charStyle += 'font-weight';
+        charStyle += ':';
+        charStyle += characterFormat.bold ? 'bold' : 'normal';
+        charStyle += ';';
         charStyle += 'font-style';
         charStyle += ':';
         if (characterFormat.italic) {
@@ -626,10 +668,10 @@ export class HtmlExport {
 
         }
         //Text Foreground and Background Color 
-        if (!isNullOrUndefined(characterFormat.highlightColor)) {
+        if (!isNullOrUndefined(characterFormat.highlightColor) && characterFormat.highlightColor !== 'NoColor') {
             charStyle += 'background-color';
             charStyle += ':';
-            charStyle += characterFormat.highlightColor.toString();
+            charStyle += HelperMethods.getColor(characterFormat.highlightColor.toString());
             charStyle += ';';
         }
         //Font Color
@@ -637,7 +679,7 @@ export class HtmlExport {
         if (!isNullOrUndefined(propertyValue)) {
             charStyle += 'color';
             charStyle += ':';
-            charStyle += propertyValue;
+            charStyle += HelperMethods.getColor(propertyValue);
             charStyle += ';';
         }
         if (!isNullOrUndefined(characterFormat.underline) && characterFormat.underline !== 'None') {
@@ -715,7 +757,7 @@ export class HtmlExport {
         propertyValue = paragraphFormat.lineSpacing;
         if (!isNullOrUndefined(propertyValue)) {
             if (paragraphFormat.lineSpacingType === 'Multiple') {
-                propertyValue = (propertyValue * 100).toString() + '%;';
+                propertyValue = Math.round(propertyValue * 10) / 10;
             } else {
                 propertyValue = propertyValue.toString() + 'pt;';
             }
@@ -771,7 +813,7 @@ export class HtmlExport {
         if (!isNullOrUndefined(table.tableFormat)) {
             //if (table.tableFormat.shading.backgroundColor !== Color.FromArgb(0, 0, 0, 0)) {
             if (!isNullOrUndefined(table.tableFormat.shading) && !isNullOrUndefined(table.tableFormat.shading.backgroundColor)) {
-                tagAttributes.push('bgcolor="' + table.tableFormat.shading.backgroundColor + '"');
+                tagAttributes.push('bgcolor="' + HelperMethods.getColor(table.tableFormat.shading.backgroundColor) + '"');
             }
             //}
             if (!isNullOrUndefined(table.tableFormat.leftIndent) && table.tableFormat.leftIndent !== 0) {
@@ -810,7 +852,8 @@ export class HtmlExport {
             blockStyle += (this.createTag('thead'));
         }
         if (!isNullOrUndefined(row.rowFormat.height) && row.rowFormat.height > 0) {
-            tagAttributes.push('height="' + row.rowFormat.height + '"');
+            let height: number = HelperMethods.convertPointToPixel(row.rowFormat.height);
+            tagAttributes.push('height="' + height + '"');
         }
         return blockStyle + this.createAttributesTag('tr', tagAttributes);
     }

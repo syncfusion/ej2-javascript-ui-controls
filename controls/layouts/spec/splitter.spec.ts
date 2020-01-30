@@ -4197,14 +4197,17 @@ describe('Splitter Control', () => {
         });
         it('on right arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(rightarrow);
         });
         it('on left arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(leftarrow);
         });
         it('on enter key pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(enterKey);
         });
     });
@@ -4229,14 +4232,17 @@ describe('Splitter Control', () => {
         });
          it('on up arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(uparrow);
         });
         it('on down arrow key pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(downarrow);
         });
         it('on enter key pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(enterKey);
         });
     });
@@ -4258,6 +4264,7 @@ describe('Splitter Control', () => {
         });
         it('on enter key pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(enterKey);
         });
     });
@@ -4279,6 +4286,7 @@ describe('Splitter Control', () => {
         });
         it('on enter key pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(enterKey);
         });
     });
@@ -4303,14 +4311,17 @@ describe('Splitter Control', () => {
         });
         it('on right arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(rightarrow);
         });
         it('on left arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(leftarrow);
         });
         it('on enter key pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(enterKey);
         });
     });
@@ -4334,14 +4345,17 @@ describe('Splitter Control', () => {
         });
         it('on up arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(uparrow);
         });
         it('on down arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(downarrow);
         });
         it('on enter key pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(enterKey);
         });
     });
@@ -4366,14 +4380,17 @@ describe('Splitter Control', () => {
         });
         it('on up arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(uparrow);
         });
         it('on down arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(downarrow);
         });
         it('on enter key pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(enterKey);
         });
     });
@@ -4398,14 +4415,17 @@ describe('Splitter Control', () => {
         });
         it('on up arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(leftarrow);
         });
         it('on down arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(rightarrow);
         });
         it('on enter key pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(enterKey);
         });
     });
@@ -4430,14 +4450,17 @@ describe('Splitter Control', () => {
         });
         it('on up arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(leftarrow);
         });
         it('on down arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(rightarrow);
         });
         it('on enter key pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(enterKey);
         });
     });
@@ -5056,6 +5079,75 @@ describe('Splitter Control', () => {
         it('Check Expand and Collapse Button type', () => {
             expect((splitterObj.element.querySelector('.e-arrow-left') as any).type).toEqual('button');
             expect((splitterObj.element.querySelector('.e-arrow-right') as any).type).toEqual('button');
+        });
+    });
+
+    describe('addPane with cssClass', () => {
+        let splitterObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default' });
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+        });
+        afterAll((): void => {
+            document.body.innerHTML = '';
+        });
+        it('Check cssClass in addpane array', () => {
+            splitterObj = new Splitter({ paneSettings: [{ size: '30%', content: 'First Pane', collapsible: true }, { size: '40%', content: 'Middle Pane', collapsible: true }, { size: '30%', content: 'Last Pane', collapsible: true }] });
+            splitterObj.appendTo(document.getElementById('default'));
+            var paneDetails = {
+                size: '190px',
+                content: '<div class="content">New Pane</div>',
+                min: '30px',
+                max: '250px',
+                cssClass:'split-color'
+            };
+            splitterObj.addPane(paneDetails, 1);
+            expect(splitterObj.allPanes[1].classList.contains('split-color')).toBe(true);
+            splitterObj.destroy();
+        });
+        it('Set cssClass dynamically for newly added pane', () => {
+            splitterObj = new Splitter({ paneSettings: [{ size: '30%', content: 'First Pane', collapsible: true }, { size: '40%', content: 'Middle Pane', collapsible: true }, { size: '30%', content: 'Last Pane', collapsible: true }] });
+            splitterObj.appendTo(document.getElementById('default'));
+            splitterObj.paneSettings[0].cssClass='bg-color';
+            splitterObj.dataBind();
+            expect(splitterObj.allPanes[0].classList.contains('bg-color')).toBe(true);
+            splitterObj.destroy();
+        });
+    });
+     // keyboard accessibility CR
+
+     describe('EJ2-35884 Keyboasrd navigation', () => {
+        let splitterObj: any;
+        let rightarrow: any = { callBack: () => { }, type: 'keydown', which: 39, keyCode: 39, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 39 } };
+        let leftarrow: any = { callBack: () => { }, type: 'keydown', which: 37, keyCode: 37, event: { action: null, preventDefault: () => { }, shiftKey: false, which: 37 } };
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default' });
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let inputEle: HTMLElement = createElement('input');
+            child1.appendChild(inputEle);
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', separatorSize: 10, width: '400px', paneSettings: [{ size: '50%', collapsible: true }] });
+            splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+            document.body.innerHTML = '';
+        });
+        it('on right arrow pressing', () => {
+            splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.onMove(rightarrow);
+            expect(splitterObj.element.querySelectorAll('.e-pane')[0].style.flexBasis).toEqual('50%');
+        });
+        it('on left arrow pressing', () => {
+            splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.onMove(leftarrow);
+            expect(splitterObj.element.querySelectorAll('.e-pane')[0].style.flexBasis).toEqual('50%');
         });
     });
  });

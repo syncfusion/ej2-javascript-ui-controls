@@ -49,6 +49,7 @@ export function calculateSize(maps: Maps): void {
     let parentHeight: number = maps.element.parentElement.clientHeight;
     let parentWidth: number = maps.element.parentElement.clientWidth;
     if (maps.isBlazor) {
+        parentHeight = (maps.element.parentElement.style.height) ? maps.element.parentElement.clientHeight : 450;
         containerHeight = parentHeight !== 0 ? parentHeight : containerHeight !== 0 ?
             containerHeight : 450;
         containerWidth = parentWidth !== 0 ?
@@ -1343,7 +1344,7 @@ export function findMidPointOfPolygon(points: MapLocation[], type: string): obje
 export function isCustomPath(layerData: Object[]): boolean {
     let customPath: boolean = false;
     if (Object.prototype.toString.call(layerData) === '[object Array]') {
-        layerData.forEach((layer: LayerSettings, index: number) => {
+        Array.prototype.forEach.call(layerData, (layer: LayerSettings, index: number) => {
             if (!isNullOrUndefined(layer['geometry']) && layer['geometry']['type'] === 'Path') {
                 customPath = true;
             }
@@ -1689,7 +1690,7 @@ export function getElementsByClassName(className: string): HTMLCollectionOf<Elem
 /**
  * Function to get elements using querySelectorAll
  */
-// export function querySelectorAll(args: string, element: Element): NodeListOf<Element> {
+// export function querySelectorAll(args: string, element: Element): ArrayOf<Element> {
 //     return element.querySelectorAll('.' + args);
 // }
 /**
@@ -2277,12 +2278,26 @@ export function smoothTranslate(element: Element, delay: number, duration: numbe
         }
     );
 }
-
+/**
+ * To find compare should zoom factor with previous factor and current factor
+ */
+export function compareZoomFactor(scaleFactor : number, maps : Maps) {
+    if (!isNullOrUndefined(maps.shouldZoomCurrentFactor)) {
+        maps.shouldZoomCurrentFactor = null;
+        maps.shouldZoomPreviousFactor = null;
+    } else if (!isNullOrUndefined(maps.shouldZoomPreviousFactor)
+        && isNullOrUndefined(maps.shouldZoomCurrentFactor)
+        && maps.shouldZoomPreviousFactor !== scaleFactor) {
+        maps.shouldZoomCurrentFactor = scaleFactor;
+    } else {
+        maps.shouldZoomPreviousFactor = scaleFactor;
+    }
+}
 /**
  * To find zoom level for the min and max latitude values
  */ 
 export function calculateZoomLevel(minLat : number , maxLat : number, minLong : number, maxLong : number,
-    mapWidth : number, mapHeight : number): number {
+    mapWidth : number, mapHeight : number, maps: Maps): number {
     let latRatio: number; let lngRatio: number; let scaleFactor: number;
     let maxZoomFact = 10;
     let latZoom: number; let lngZoom : number; let result: number;
@@ -2297,10 +2312,13 @@ export function calculateZoomLevel(minLat : number , maxLat : number, minLong : 
     lngRatio = ((lngDiff < 0) ? (lngDiff + 360) : lngDiff) / 360;
     let WORLD_PX_HEIGHT: number = 256;
     let WORLD_PX_WIDTH: number = 256;
-    latZoom = Math.log(mapHeight / WORLD_PX_HEIGHT / latRatio) / Math.LN2;
-    lngZoom = Math.log(mapWidth / WORLD_PX_WIDTH / lngRatio) / Math.LN2;
+    latZoom = Math.floor(Math.log(mapHeight / WORLD_PX_HEIGHT / latRatio) / Math.LN2);
+    lngZoom = Math.floor(Math.log(mapWidth / WORLD_PX_WIDTH / lngRatio) / Math.LN2);
     result = Math.min(latZoom, lngZoom);
     scaleFactor = Math.min(result, maxZoomFact - 1);
+    if (!maps.isTileMap) {
+        this.compareZoomFactor(scaleFactor, maps);
+    }
     return scaleFactor;
 }
 

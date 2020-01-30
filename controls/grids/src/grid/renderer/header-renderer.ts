@@ -577,12 +577,10 @@ export class HeaderRender implements IRenderer {
                     }
                 }
             } else {
-                if (gObj.isRowDragable()) { idx++; }
                 setStyleAttribute(<HTMLElement>this.getColGroup().children[idx], { 'display': displayVal });
             }
-
-            this.refreshUI();
         }
+        this.refreshUI();
     }
 
 

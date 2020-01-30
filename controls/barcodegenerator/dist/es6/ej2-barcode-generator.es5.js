@@ -1,4 +1,4 @@
-import { ChildProperty, Complex, Component, Event, L10n, Property, createElement } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Complex, Component, Event, L10n, Property, createElement } from '@syncfusion/ej2-base';
 
 /**
  * Enum
@@ -450,7 +450,20 @@ function createHtmlElement(elementType, attribute) {
     return element;
 }
 function getChildNode(node) {
-    return node.children;
+    var child;
+    var collection = [];
+    if (Browser.info.name === 'msie' || Browser.info.name === 'edge') {
+        for (var i = 0; i < node.childNodes.length; i++) {
+            child = node.childNodes[i];
+            if (child.nodeType === 1) {
+                collection.push(child);
+            }
+        }
+    }
+    else {
+        collection = node.children;
+    }
+    return collection;
 }
 function measureText(textContent) {
     var measureElement = 'barcodeMeasureElement';

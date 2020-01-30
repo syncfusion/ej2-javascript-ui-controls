@@ -1,4 +1,4 @@
-import { KeyboardEvents, KeyboardEventArgs, closest, addClass, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { KeyboardEvents, KeyboardEventArgs, closest, addClass, isNullOrUndefined, removeClass } from '@syncfusion/ej2-base';
 import { PivotView } from '../base/pivotview';
 import * as cls from '../../common/base/css-constant';
 import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-strategy';
@@ -134,12 +134,7 @@ export class KeyboardInteraction {
     private clearSelection(): void {
         let control: PivotView = this.parent as PivotView;
         /* tslint:disable */
-        [].slice.call(control.element.querySelectorAll('.' + cls.CELL_SELECTED_BGCOLOR + ',.' + cls.SELECTED_BGCOLOR)).forEach(function
-            (ele: HTMLElement) {
-            ele.classList.remove(cls.SELECTED_BGCOLOR);
-            ele.classList.remove(cls.CELL_SELECTED_BGCOLOR);
-            ele.classList.remove(cls.CELL_ACTIVE_BGCOLOR);
-        });
+        removeClass(control.element.querySelectorAll('.' + cls.CELL_SELECTED_BGCOLOR + ',.' + cls.SELECTED_BGCOLOR), [cls.SELECTED_BGCOLOR, cls.CELL_SELECTED_BGCOLOR, cls.CELL_ACTIVE_BGCOLOR]);
         this.parent.renderModule.selected();
         /* tslint:enable */
     }

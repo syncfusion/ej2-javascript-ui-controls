@@ -12,7 +12,7 @@ import { isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
 import { Point, getTranslate, convertGeoToPoint, clusterTemplate, marker, markerTemplate, getZoomTranslate } from '../utils/helper';
 import {
     getElementByID, mergeSeparateCluster, clusterSeparate, removeElement, getElement,
-    markerColorChoose, markerShapeChoose, calculateZoomLevel
+    markerColorChoose, markerShapeChoose, calculateZoomLevel, compareZoomFactor
 } from '../utils/helper';
 
 /**
@@ -56,7 +56,7 @@ export class Marker {
         //tslint:disable
         currentLayer.markerSettings.map((markerSettings: MarkerSettings, markerIndex: number) => {
             let markerData: Object[] = <Object[]>markerSettings.dataSource;
-            markerData.forEach((data: Object, dataIndex: number) => {
+            Array.prototype.forEach.call(markerData, (data: Object, dataIndex: number) => {
                 this.maps.markerNullCount = markerIndex > 0 && dataIndex === 0 ? 0 : this.maps.markerNullCount;
                 let eventArgs: IMarkerRenderingEventArgs = {
                     cancel: false, name: markerRendering, fill: markerSettings.fill, height: markerSettings.height,
@@ -158,6 +158,9 @@ export class Marker {
         lngZoom = (lngZoom > maxZoomFact) ? maxZoomFact : lngZoom;
         result = Math.min(latZoom, lngZoom);
         scaleFactor = Math.min(result, maxZoomFact - 1);
+        if (!this.maps.isTileMap) {
+            compareZoomFactor(scaleFactor, this.maps);
+        }
         return scaleFactor;
     }
     /**
@@ -171,12 +174,12 @@ export class Marker {
             let mapWidth: number = this.maps.mapAreaRect.width;
             let mapHeight: number = this.maps.mapAreaRect.height; 
             let scaleFactor : number;
-            layersCollection.forEach((currentLayer: LayerSettings, layerIndex: number) => {
+            Array.prototype.forEach.call(layersCollection, (currentLayer: LayerSettings, layerIndex: number) => {
                 let isMarker: boolean = currentLayer.markerSettings.length !== 0;
                 if (isMarker) {
-                    currentLayer.markerSettings.forEach((markerSetting: MarkerSettingsModel, markerIndex: number) => {
+                    Array.prototype.forEach.call(currentLayer.markerSettings, (markerSetting: MarkerSettingsModel, markerIndex: number) => {
                         let markerData: Object[] = <Object[]>markerSetting.dataSource;
-                        markerData.forEach((data: Object, dataIndex: number) => {
+                        Array.prototype.forEach.call(markerData, (data: Object, dataIndex: number) => {
                             let latitude: number = parseFloat(data['latitude']);
                             let longitude: number = parseFloat(data['longitude']);
                             minLong = isNullOrUndefined(minLong) && dataIndex === 0 ?
@@ -200,7 +203,7 @@ export class Marker {
                                 maxLat = latitude;
                             }
                         });
-                    });
+                    });                    
                 }
             });
             if (!isNullOrUndefined(minLat) && !isNullOrUndefined(minLong) &&
@@ -212,9 +215,8 @@ export class Marker {
                 this.maps.centerPosition.longitude = centerLong;
                 let markerFactor: number;
                 if (this.maps.isTileMap || this.maps.baseMapRectBounds['min']['x'] === 0) {
-                    zoomLevel = calculateZoomLevel(minLat, maxLat, minLong, maxLong, mapWidth, mapHeight);
+                    zoomLevel = calculateZoomLevel(minLat, maxLat, minLong, maxLong, mapWidth, mapHeight, this.maps);
                     if(this.maps.isTileMap) {
-                        zoomLevel = Math.floor(zoomLevel);
                         markerFactor = isNullOrUndefined(this.maps.markerZoomFactor) ?
                         zoomLevel : isNullOrUndefined(this.maps.mapScaleValue) ?
                         zoomLevel : this.maps.mapScaleValue > 1 && this.maps.markerZoomFactor !== 1? 
@@ -222,7 +224,9 @@ export class Marker {
                     } else {
                         markerFactor = isNullOrUndefined(this.maps.mapScaleValue) ?  zoomLevel :
                         (Math.floor(this.maps.scale) !== 1 &&
-                            this.maps.mapScaleValue !==  zoomLevel)
+                            this.maps.mapScaleValue !==  zoomLevel) 
+                            && 
+                            (isNullOrUndefined(this.maps.shouldZoomCurrentFactor))
                             ? this.maps.mapScaleValue :  zoomLevel;
                         if(((markerFactor === this.maps.mapScaleValue &&
                                 (this.maps.markerZoomFactor === 1 || this.maps.mapScaleValue === 1))
@@ -334,7 +338,7 @@ export class Marker {
                 data = marker.dataSource[dataIndex];
                 let collection: Object[] = [];
                 if (!marker.template && (target.indexOf('_cluster_') > -1) && (this.maps.layers[index].markerClusterSettings.allowClusterExpand)) {
-                    marker.dataSource.forEach((location, index) => {
+                    Array.prototype.forEach.call(marker.dataSource, (location, index) => {
                         if (location['latitude'] === data['latitude'] && location['longitude'] === data['longitude']) {
                             collection.push({ data: data, index: index });
                         }

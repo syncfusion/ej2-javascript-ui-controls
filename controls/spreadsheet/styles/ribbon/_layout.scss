@@ -87,6 +87,11 @@
       @if $skin-name != 'bootstrap4' {
         font-size: 10px;
       }
+
+      &.e-disabled {
+        cursor: default;
+        pointer-events: none;
+      }
     }
 
     &.e-collapsed {

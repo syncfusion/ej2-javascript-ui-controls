@@ -1,5 +1,5 @@
 import { IPivotValues, IDataOptions, PivotEngine, IFieldListOptions, IFieldOptions, IAxisSet, IDataSet } from '../../base/engine';
-import { IDrilledItem, IStringIndex } from '../../base/engine';
+import { IDrilledItem, IStringIndex, IField } from '../../base/engine';
 import { Mode, SelectionMode, PdfBorderStyle } from '../base/enum';
 import { L10n } from '@syncfusion/ej2-base';
 import { Grid, ExcelStyle, CellSelectionMode, SelectionType, CheckboxSelectionType, PdfExportProperties } from '@syncfusion/ej2-grids';
@@ -87,6 +87,19 @@ export interface FieldDroppedEventArgs {
     dataSourceSettings?: IDataOptions;
     /** Defines dropped axis */
     droppedAxis?: string;
+}
+
+export interface FieldDropEventArgs {
+    /** Defines dropped field item */
+    droppedField?: IField;
+    /** Defines current report */
+    dataSourceSettings?: IDataOptions;
+    /** Defines dropped field axis */
+    droppedAxis?: string;
+    /** Defines dragged field axis */
+    draggedAxis?: string;
+    /** Defines an option to restrict the field dropped operation */
+    cancel?: boolean;
 }
 
 export interface BeforeExportEventArgs {

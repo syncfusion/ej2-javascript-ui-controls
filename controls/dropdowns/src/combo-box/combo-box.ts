@@ -693,7 +693,7 @@ export class ComboBox extends DropDownList {
         if (e.action === 'enter' && this.inputElement.value.trim() === '') {
             this.clearAll(e);
         } else if (this.isTyped && !this.isSelected && isNullOrUndefined(li)) {
-            this.customValue();
+            this.customValue(e);
         }
         this.hidePopup();
     }
@@ -718,7 +718,7 @@ export class ComboBox extends DropDownList {
         }
         super.dropDownClick(e);
     }
-    private customValue(): void {
+    private customValue(e?: MouseEvent | KeyboardEventArgs): void {
         let value: string | number | boolean = this.getValueByText(this.inputElement.value);
         if (!this.allowCustom && this.inputElement.value !== '') {
             let previousValue: string | number | boolean = this.previousValue;
@@ -738,7 +738,7 @@ export class ComboBox extends DropDownList {
                 eventArgs = <{ [key: string]: Object | string | number }>{ text: value, item: {} };
                 if (!this.initial) {
                     this.trigger('customValueSpecifier', eventArgs, (eventArgs: { [key: string]: Object | string | number }) => {
-                        this.updateCustomValueCallback(value, eventArgs, previousValue);
+                        this.updateCustomValueCallback(value, eventArgs, previousValue, e);
                     });
                 } else {
                     this.updateCustomValueCallback(value, eventArgs, previousValue);
@@ -747,7 +747,7 @@ export class ComboBox extends DropDownList {
                 this.isSelectCustom = false;
                 this.setProperties({ value: value });
                 if (previousValue !== this.value) {
-                    this.onChangeEvent(null);
+                    this.onChangeEvent(e);
                 }
             }
         } else if (this.allowCustom) {
@@ -757,7 +757,8 @@ export class ComboBox extends DropDownList {
     private updateCustomValueCallback(
         value: string | Object,
         eventArgs: { [key: string]: Object | string | number },
-        previousValue: string | number | boolean): void {
+        previousValue: string | number | boolean,
+        e?: MouseEvent| KeyboardEventArgs): void {
         let fields: FieldSettingsModel = this.fields;
         let item: { [key: string]: string | Object } = <{ [key: string]: string | Object }>eventArgs.item;
         let dataItem: { [key: string]: string | Object } = {};
@@ -777,7 +778,7 @@ export class ComboBox extends DropDownList {
         this.setSelection(null, null);
         this.isSelectCustom = true;
         if (previousValue !== this.value) {
-            this.onChangeEvent(null);
+            this.onChangeEvent(e);
         }
     }
     /**
@@ -865,7 +866,7 @@ export class ComboBox extends DropDownList {
      * Hides the popup if it is in open state.
      * @returns void.
      */
-    public hidePopup(): void {
+    public hidePopup(e?: MouseEvent | KeyboardEventArgs): void {
         let inputValue: string | Object = this.inputElement.value === '' ? null : this.inputElement.value;
         if (!isNullOrUndefined(this.listData)) {
             let isEscape: boolean = this.isEscapeKey;
@@ -901,7 +902,7 @@ export class ComboBox extends DropDownList {
                 }
             }
             if (!this.isEscapeKey && this.isTyped && !this.isInteracted) {
-                this.customValue();
+                this.customValue(e);
             }
         }
         if (isNullOrUndefined(this.listData) && this.allowCustom && !isNullOrUndefined(inputValue) && inputValue !== this.value) {

@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 17.4.44 (2021-01-21)
+## 17.4.46 (2020-01-30)
+
+### Chips
+
+#### New Features
+
+- `#256381` - Now, the `beforeClick` event triggers while clicking the chips.
+- `#256381` - Now, the `selectedChips` property maintains the value field that is provided to the chip.
+
+## 17.4.43 (2020-01-14)
 
 ### Button
 

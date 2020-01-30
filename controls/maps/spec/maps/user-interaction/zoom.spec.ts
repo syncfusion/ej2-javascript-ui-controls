@@ -162,12 +162,19 @@ describe('Zoom feature tesing for map control', () => {
             };
             map.refresh();
         });
-        it('Checking with Zoom using public methode', () => {
+        it('Checking with Zoom using public method', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                let element: Element = document.getElementById("container_LayerIndex_0_Polygon_Group");
-               expect(element.getAttribute("transform")).toBe("scale( 3.5401749953507036 ) translate( -235.4806354357185 -124.03396322064374 ) ");
+               expect(element.getAttribute("transform")).toBe("scale( 3 ) translate( -222.9687258049999 -111.52205358992512 ) ");
             };
             map.zoomToCoordinates( 19.1555762, 13.4107368,  52.4643089, 72.8849595);
+        });
+        it('Checking with Zoom using public method', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+               let element: Element = document.getElementById("container_LayerIndex_0_Polygon_Group");
+               expect(element.getAttribute("transform")).toBe("scale( 3 ) translate( -263.6094446499999 -137.31892683177944 ) ");
+            };
+            map.zoomToCoordinates(19.1555762, 72.8849595, null, null);
         });
         it('Checking with reset button with persistence', () => {
             map.loaded = (args: ILoadedEventArgs) => {
@@ -2008,10 +2015,10 @@ describe('Zoom feature tesing for map control', () => {
             remove(ele);
             map.destroy();
         });
-        it('Checking with Zoom using public methode', () => {
+        it('Checking with Zoom using public method', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                let element: Element = document.getElementById("container_LayerIndex_0_Polygon_Group");
-               expect(element.getAttribute("transform")).toBe("scale( 3.5401749953507036 ) translate( -235.4806354357185 -124.03396322064374 ) ");
+               expect(element.getAttribute("transform")).toBe("scale( 3 ) translate( -222.9687258049999 -111.52205358992512 ) ");
             };
             map.zoomToCoordinates( 19.1555762, 13.4107368,  52.4643089, 72.8849595);
         }); 

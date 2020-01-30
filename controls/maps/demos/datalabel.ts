@@ -13,7 +13,7 @@ Maps.Inject(MapsTooltip, DataLabel);
                 dataLabelSettings: {
                     visible: true,
                     labelPath: 'name',
-                    smartLabelMode: 'Trim'
+                    smartLabelMode: 'None'
                 },
                 shapeData: usa,
                 shapeSettings: {

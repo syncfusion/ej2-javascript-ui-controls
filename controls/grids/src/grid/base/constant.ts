@@ -382,3 +382,11 @@ export const detailIndentCellInfo: string = 'detail-indentcell-info';
 export const virtaulKeyHandler: string = 'virtaul-key-handler';
 /** @hidden */
 export const virtaulCellFocus: string = 'virtaul-cell-focus';
+/** @hidden */
+export const refreshInfiniteModeBlocks: string = 'refresh-infinite-mode-blocks';
+/** @hidden */
+export const resetInfiniteBlocks: string = 'reset-infinite-blocks';
+/** @hidden */
+export const shareInfiniteCache: string = 'share-infinite-cache';
+/** @hidden */
+export const infiniteScrollListener: string = 'infinite-scroll-listener';

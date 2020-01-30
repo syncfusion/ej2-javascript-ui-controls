@@ -298,7 +298,10 @@ L10n.load({
             "Contextual Spacing": 'عدم إضافة مسافة بين فقرات نفس الأنماط',
             'Keep source formatting': 'الاحتفاظ بتنسيق المصدر',
             'Match destination formatting': 'مطابقه تنسيق الوجهة',
-            'Text only': 'النص فقط'
+            'Text only': 'النص فقط',
+            'No Headings': 'لم يتم العثور على عنوان!',
+            'Add Headings': 'لا تحتوي هذه الوثيقة على عناوين. الرجاء إضافة العناوين والمحاولة مرة أخرى.'
+
             /* tslint:enable */
         },
         'documenteditorcontainer': {

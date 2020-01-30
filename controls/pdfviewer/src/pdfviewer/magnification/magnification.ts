@@ -759,7 +759,7 @@ export class Magnification {
                             }
                             adornerSvg.style.width = width + 'px';
                             adornerSvg.style.height = height + 'px';
-                            this.pdfViewer.renderSelector(i);
+                            this.pdfViewer.renderSelector(i, this.pdfViewer.annotationSelectorSettings);
                         }
                     }
                 }

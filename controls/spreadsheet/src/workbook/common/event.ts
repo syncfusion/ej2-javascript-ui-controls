@@ -79,3 +79,5 @@ export const filterComplete: string = 'filterComplete';
 export const filterRangeAlert: string = 'filterRangeAlert';
 /** @hidden */
 export const clearAllFilter: string = 'clearAllFilter';
+/** @hidden */
+export const onSave: string = 'onSave';

@@ -1383,6 +1383,62 @@ describe('Grouping module => ', () => {
             gridObj = null;
         });
     });
+
+    describe('Group with disable pageWise aggregate', () => {
+        let grid: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    allowGrouping: true,
+                    groupSettings: { disablePageWiseAggregates: true },
+                    columns: [
+                        {
+                            field: 'OrderID', headerText: 'Order ID', headerTextAlign: 'Right',
+                            textAlign: 'Right'
+                        },
+                        { field: 'Verified', displayAsCheckBox: true, type: 'boolean' },
+                        { field: 'Freight', format: 'C1' },
+                        { field: 'OrderDate', format: 'yMd', type: 'datetime' },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right' }
+                    ],
+                    aggregates: [{
+                        columns: [{
+                            type: 'Average',
+                            field: 'Freight',
+                            groupFooterTemplate: '${Average}'
+                        }]
+                    },
+                    {
+                        columns: [{
+                            type: ['Max'],
+                            field: 'OrderDate',
+                            format: 'yMd',
+                            groupCaptionTemplate: '${Max}'
+                        }]
+                    }],
+                    actionComplete: actionComplete
+                },
+                done
+            );
+        });
+        
+        it('checking aggreagates with grouping', (done: Function) => {
+            let actionComplete: any =  function (args: any) {
+                if (args.requestType === 'grouping') {
+                    expect(grid.groupSettings.columns.length).toBe(1);
+                done();
+                }
+            };
+            grid.groupModule.groupColumn('Verified');
+            grid.actionComplete = actionComplete;
+        });
+
+        afterAll(() => {
+            destroy(grid);
+            grid = actionComplete = null;
+        });
+    });
     //focus strategy script error
     // describe('expand and collapse on enter => ', () => {
     //     let gridObj: Grid;

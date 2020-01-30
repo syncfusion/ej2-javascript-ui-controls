@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 17.4.44 (2021-01-21)
+
+### PDF Viewer
+
+#### New Features
+
+- `#257519` - Provided Support to edit the free Text annotation value in code behind.
+
+#### Bug Fixes
+
+- `#259848` – Now, the deleted annotations are removed properly from the PDF document.
+- `#259734` - Custom Stamp annotations are drawn properly while importing the annotations.
+- `#260512` - Errors will no longer occur while importing the annotations in the documentLoad event.
+- `#260575` - The download file name is now set properly if we provide during the control initialization.
+
 ## 17.4.43 (2020-01-14)
 
 ### PDF Viewer

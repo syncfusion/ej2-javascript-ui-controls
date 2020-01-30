@@ -2605,10 +2605,16 @@ export class Editor {
                 result = result.replace(/<!--StartFragment-->/gi, '');
                 result = result.replace(/<!--EndFragment-->/gi, '');
                 this.pasteAjax(result, '.html');
-            } else if (textContent !== '') {
+            } else if (textContent !== null && textContent !== '') {
                 this.pasteContents(textContent);
                 this.applyPasteOptions(this.currentPasteOptions);
                 this.viewer.editableDiv.innerHTML = '';
+            } else if (Browser.info.name !== 'msie' && clipbordData.items !== undefined && clipbordData.items.length !== 0 &&
+                clipbordData.items[0].type === 'image/png') {
+                this.pasteImage(clipbordData.items[0].getAsFile());
+            } else if (Browser.info.name === 'msie' && clipbordData.files !== undefined && clipbordData.files.length !== 0 &&
+                clipbordData.files[0].type === 'image/png') {
+                this.pasteImage(clipbordData.files[0] as File);
             }
             // if (textContent !== '') {
             //     this.pasteContents(textContent);
@@ -2617,6 +2623,26 @@ export class Editor {
         }
         this.viewer.updateFocus();
     }
+
+    private pasteImage(imgFile: File): void {
+        let fileReader: FileReader = new FileReader();
+        fileReader.onload = (): void => {
+            this.onPasteImage(fileReader.result as string);
+        };
+        fileReader.readAsDataURL(imgFile);
+    }
+    /**
+     * @private
+     */
+    public onPasteImage(data: string): void {
+        let image: HTMLImageElement = document.createElement('img');
+        let editor: Editor = this;
+        image.addEventListener('load', function (): void {
+            editor.insertImage(data, this.width, this.height);
+        });
+        image.src = data;
+    }
+
     /**
      * @private
      */
@@ -2639,8 +2665,10 @@ export class Editor {
         this.pasteRequestHandler.onFailure = this.onPasteFailure.bind(this);
         this.pasteRequestHandler.onError = this.onPasteFailure.bind(this);
     }
-
-    private pasteFormattedContent(result: any): void {
+    /**
+     * @private
+     */
+    public pasteFormattedContent(result: any): void {
         if (this.isPasteListUpdated) {
             this.isPasteListUpdated = false;
         }
@@ -2697,23 +2725,27 @@ export class Editor {
     }
     private getBlocksToUpdate(blocks: any): any[] {
         let blcks: any[] = [];
-        blocks.forEach((obj: any) => {
+        for (let i: number = 0; i < blocks.length; i++) {
+            let obj: any = blocks[i];
             if (obj.paragraphFormat && obj.paragraphFormat.listFormat
                 && Object.keys(obj.paragraphFormat.listFormat).length > 0) {
                 blcks.push(obj);
             } else if (obj.rows) {
-                obj.rows.forEach((row: any) => {
-                    row.cells.forEach((cell: any) => {
+                for (let j: number = 0; j < obj.rows.length; j++) {
+                    let currentRow: any = obj.rows[j];
+                    for (let k: number = 0; k < currentRow.cells.length; k++) {
+                        let cell: any = currentRow.cells[k];
                         blcks = blcks.concat(this.getBlocksToUpdate(cell.blocks));
-                    });
-                });
+                    }
+                }
             }
-        });
+        }
         return blcks;
     }
     private updateListIdForBlocks(blocks: any, abstractList: any, list: WList, id: number, idToUpdate: number): boolean {
         let update: boolean = false;
-        blocks.forEach((obj: any) => {
+        for (let i: number = 0; i < blocks.length; i++) {
+            let obj: any = blocks[i];
             if (obj.paragraphFormat && obj.paragraphFormat.listFormat
                 && Object.keys(obj.paragraphFormat.listFormat).length > 0) {
                 let format: any = obj.paragraphFormat.listFormat;
@@ -2734,16 +2766,19 @@ export class Editor {
                     }
                 }
             } else if (obj.rows) {
-                obj.rows.forEach((row: any) => {
-                    row.cells.forEach((cell: any) => {
+                for (let j: number = 0; j < obj.rows.length; j++) {
+                    let row: any = obj.rows[j];
+                    for (let k: number = 0; k < row.cells.length; k++) {
+                        let cell: any = row.cells[k];
                         let toUpdate: boolean = this.updateListIdForBlocks(cell.blocks, abstractList, list, id, idToUpdate);
                         if (!update) {
                             update = toUpdate;
                         }
-                    });
-                });
+                    }
+                }
             }
-        });
+        }
+
         return update;
     }
     private updatePasteContent(pasteContent: any, sectionId: number): void {
@@ -2785,9 +2820,11 @@ export class Editor {
                 k--;
             }
         }
-        this.getBlocksToUpdate(pasteContent.sections[sectionId].blocks).forEach((blck: any) => {
+        let blocks: any[] = this.getBlocksToUpdate(pasteContent.sections[sectionId].blocks);
+        for (let i: number = 0; i < blocks.length; i++) {
+            let blck: any = blocks[i];
             delete blck.paragraphFormat.listFormat.isUpdated;
-        });
+        }
     }
     private getBlocks(pasteContent: any): BlockWidget[] {
         let widgets: BlockWidget[] = [];
@@ -2803,8 +2840,11 @@ export class Editor {
             for (let i: number = 0; i < arr.length; i++) {
                 let currentInline: ElementInfo = this.selection.start.currentWidget.getInline(this.selection.start.offset, 0);
                 let element: ElementBox = this.selection.getPreviousValidElement(currentInline.element);
-                let insertFormat: WCharacterFormat = element ? element.characterFormat :
-                    this.copyInsertFormat(startParagraph.characterFormat, false);
+                if (element !== currentInline.element) {
+                    element = this.selection.getNextValidElement(currentInline.element);
+                }
+                let insertFormat: WCharacterFormat = element && element === currentInline.element ? startParagraph.characterFormat :
+                    element ? element.characterFormat : this.copyInsertFormat(startParagraph.characterFormat, false);
                 let insertParaFormat: WParagraphFormat = this.viewer.selection.copySelectionParagraphFormat();
                 let paragraph: ParagraphWidget = new ParagraphWidget();
                 paragraph.paragraphFormat.copyFormat(insertParaFormat);
@@ -2820,6 +2860,7 @@ export class Editor {
                 widgets.push(paragraph);
             }
         } else {
+            this.viewer.owner.parser.addCustomStyles(pasteContent);
             for (let i: number = 0; i < pasteContent.sections.length; i++) {
                 let parser: SfdtReader = this.viewer.owner.parser;
                 if (!this.isPasteListUpdated && !isNullOrUndefined(pasteContent.lists)) {
@@ -10821,6 +10862,17 @@ export class Editor {
             this.appendEndField(fieldBegin, tocLastLine);
             widgets.push(tocLastPara);
             this.appendEmptyPara(widgets);
+        } else {
+            let localizeValue: L10n = new L10n('documenteditor', this.owner.defaultLocale);
+            localizeValue.setLocale(this.owner.locale);
+            DialogUtility.alert({
+                title: localizeValue.getConstant('No Headings'),
+                content: localizeValue.getConstant('Add Headings'),
+                showCloseIcon: true,
+                closeOnEscape: true,
+                position: { X: 'center', Y: 'center' },
+                animationSettings: { effect: 'Zoom' }
+            });
         }
 
         this.setPositionForCurrentIndex(this.selection.start, initialStart);
@@ -10830,6 +10882,10 @@ export class Editor {
         this.updatePageRef();
         if (this.editorHistory) {
             this.editorHistory.updateComplexHistoryInternal();
+        }
+        if (widgets.length === 0) {
+            this.owner.editorHistory.undo();
+            this.owner.editorHistory.redoStack.pop();
         }
     }
 

@@ -20,6 +20,10 @@
           font-size: $editor-big-overlay-icon-size;
         }
       }
+
+      .e-spinner-pane .e-spinner-inner {
+        right: $editor-big-value-container-spin-padding;
+      }
     }
 
     .e-editable-action-buttons {
@@ -44,6 +48,11 @@
         .e-editable-overlay-icon {
           left: $editor-big-overlay-icon-left-right;
           right: auto;
+        }
+
+        .e-spinner-pane,
+        .e-spinner-pane .e-spinner-inner {
+          left: $editor-big-value-container-spin-padding;
         }
       }
 
@@ -108,6 +117,15 @@
         user-select: none;
       }
 
+      &.e-loading {
+        pointer-events: none;
+      }
+
+      .e-spinner-pane .e-spinner-inner {
+        left: unset;
+        right: $editor-nrml-value-container-spin-padding;
+      }
+
       &:hover {
 
         .e-editable-overlay-icon {
@@ -145,6 +163,15 @@
         .e-editable-overlay-icon {
           left: $editor-nrml-overlay-icon-left-right;
           right: auto;
+        }
+
+        .e-spinner-pane {
+          right: unset;
+        }
+
+        .e-spinner-pane,
+        .e-spinner-pane .e-spinner-inner {
+          left: $editor-nrml-value-container-spin-padding;
         }
       }
 

@@ -24,6 +24,7 @@ export class Data implements IDataProcessor {
     protected parent: IGrid;
     protected serviceLocator: ServiceLocator;
     protected dataState: PendingState = { isPending: false, resolver: null, group: [] };
+    private initialRender: boolean = true;
 
     /**
      * Constructor for data module.
@@ -105,12 +106,17 @@ export class Data implements IDataProcessor {
     }
 
     protected aggregateQuery(query: Query, isForeign?: boolean): Query {
-        this.parent.aggregates.forEach((row: AggregateRowModel) => {
-            row.columns.forEach((column: AggregateColumnModel) => {
-                let types: string[] = column.type instanceof Array ? column.type : [column.type];
-                types.forEach((type: string) => query.aggregate(type.toLowerCase(), column.field));
-            });
-        });
+        let rows: AggregateRowModel[] = this.parent.aggregates;
+        for (let i: number = 0; i < rows.length; i++) {
+            let row: AggregateRowModel = rows[i];
+            for (let j: number = 0; j < row.columns.length; j++) {
+                let cols: AggregateColumnModel = row.columns[j];
+                let types: string[] = cols.type instanceof Array ? cols.type : [cols.type];
+                for (let k: number = 0; k < types.length; k++) {
+                    query.aggregate(types[k].toLowerCase(), cols.field);
+                }
+            }
+        }
         return query;
     }
 
@@ -130,7 +136,7 @@ export class Data implements IDataProcessor {
     protected pageQuery(query: Query, skipPage?: boolean): Query {
         let gObj: IGrid = this.parent;
         let fName: string = 'fn';
-        if ((gObj.allowPaging || gObj.enableVirtualization) && skipPage !== true) {
+        if ((gObj.allowPaging || gObj.enableVirtualization || gObj.infiniteScrollSettings.enableScroll) && skipPage !== true) {
             gObj.pageSettings.currentPage = Math.max(1, gObj.pageSettings.currentPage);
             if (gObj.pageSettings.pageCount <= 0) {
                 gObj.pageSettings.pageCount = 8;
@@ -145,7 +151,12 @@ export class Data implements IDataProcessor {
                     }
                 }
             }
-            query.page(gObj.pageSettings.currentPage, gObj.pageSettings.pageSize);
+            if (this.initialRender && gObj.infiniteScrollSettings.enableScroll) {
+                this.initialRender = false;
+                this.initalInfinitePageQuery(gObj, query);
+            } else {
+                query.page(gObj.pageSettings.currentPage, gObj.pageSettings.pageSize);
+            }
         }
         return query;
     }
@@ -211,8 +222,8 @@ export class Data implements IDataProcessor {
             needForeignKeySearch = this.parent.getForeignKeyColumns().some((col: Column) => fields.indexOf(col.field) > -1);
             if (needForeignKeySearch && !((<{getModulename?: Function}>this.dataManager.adaptor).getModulename &&
             (<{getModulename?: Function}>this.dataManager.adaptor).getModulename() === 'ODataV4Adaptor')) {
-                fields.forEach((columnName: string) => {
-                    let column: Column = this.getColumnByField(columnName);
+                for (let i: number = 0; i < fields.length; i++) {
+                    let column: Column = this.getColumnByField(fields[i]);
                     if (column.isForeignColumn()) {
                         predicateList = this.fGeneratePredicate(column, predicateList);
                     } else {
@@ -220,7 +231,7 @@ export class Data implements IDataProcessor {
                             column.field, sSettings.operator, sSettings.key, sSettings.ignoreCase, sSettings.ignoreAccent
                         ));
                     }
-                });
+                }
                 query.where(Predicate.or(predicateList));
             } else {
                 query.search(sSettings.key, fields, sSettings.operator, sSettings.ignoreCase, sSettings.ignoreAccent);
@@ -298,6 +309,20 @@ export class Data implements IDataProcessor {
         }
         return query;
     }
+
+    private initalInfinitePageQuery(gObj: IGrid, query: Query): void {
+        if (gObj.pageSettings.pageSize < 100) {
+            gObj.pageSettings.pageSize = 100;
+        }
+        if (gObj.infiniteScrollSettings.enableCache
+            && gObj.infiniteScrollSettings.initialBlocks > gObj.infiniteScrollSettings.maxBlock) {
+            gObj.infiniteScrollSettings.initialBlocks = gObj.infiniteScrollSettings.maxBlock;
+        }
+        let pageSize: number = gObj.pageSettings.pageSize * gObj.infiniteScrollSettings.initialBlocks;
+        gObj.pageSettings.currentPage = gObj.infiniteScrollSettings.initialBlocks;
+        query.page(1, pageSize);
+    }
+
     private fGeneratePredicate(col: Column, predicateList: Predicate[]): Predicate[] {
         let fPredicate: { predicate?: Predicate } = {};
         if (col) {

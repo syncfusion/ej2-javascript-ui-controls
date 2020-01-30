@@ -464,7 +464,7 @@ export class Zoom {
             let currentLayers: LayerSettings = <LayerSettings>this.maps.layersCollection[layerIndex];
             currentLayers.markerSettings.map((markerSettings: MarkerSettings, markerIndex: number) => {
                 let markerDatas: Object[] = <Object[]>markerSettings.dataSource;
-                markerDatas.forEach((data: Object, dataIndex: number) => {
+                Array.prototype.forEach.call(markerDatas, (data: Object, dataIndex: number) => {
                     this.maps.markerNullCount = markerIndex > 0 && dataIndex === 0 ? 0 : this.maps.markerNullCount;
                     let eventArgs: IMarkerRenderingEventArgs = {
                         template: markerSettings.template, data: data, maps: this.maps, marker: markerSettings,
@@ -898,11 +898,20 @@ export class Zoom {
             let direction: string = ''; let polygonDirection: string = '';
             switch (toolbar.toLowerCase()) {
                 case 'zoom':
+                    let fillColor: string;
+                    let strokeColor: string;
                     direction = 'M0.001,14.629L1.372,16l4.571-4.571v-0.685l0.228-0.274c1.051,0.868,2.423,1.417,3.885,1.417c3.291,0,';
                     direction += '5.943-2.651,5.943-5.943S13.395,0,10.103,0S4.16,2.651,4.16,5.943c0,1.508,0.503,2.834,1.417,3.885l-0.274,0.228H4.571';
                     direction = direction + 'L0.001,14.629L0.001,14.629z M5.943,5.943c0-2.285,1.828-4.114,4.114-4.114s4.114,1.828,4.114,';
+                    if (this.maps.zoomSettings.enablePanning) {
+                        fillColor = fill;
+                        strokeColor = this.maps.themeStyle.zoomFillColor;
+                    } else {
+                        fillColor = this.selectionColor;
+                        strokeColor = this.selectionColor;                       
+                    }
                     this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(
-                        map.element.id + '_Zooming_ToolBar_' + toolbar, fill, 1, this.maps.themeStyle.zoomFillColor, 1, null,
+                        map.element.id + '_Zooming_ToolBar_' + toolbar, fillColor, 1, strokeColor, 1, null,
                         direction + '4.114s-1.828,4.114-4.114,4.114S5.943,8.229,5.943,5.943z')
                     ) as SVGPathElement);
                     this.zoomElements = this.currentToolbarEle;
@@ -925,13 +934,20 @@ export class Zoom {
                     this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
                     break;
                 case 'pan':
+                    let color: string;
                     direction = 'M5,3h2.3L7.275,5.875h1.4L8.65,3H11L8,0L5,3z M3,11V8.7l2.875,0.025v-1.4L3,7.35V5L0,8L3,';
                     direction += '11z M11,13H8.7l0.025-2.875h-1.4L7.35,13H5l3,3L11,13z M13,5v2.3l-2.875-0.025v1.4L13,8.65V11l3-3L13,5z';
+                    if (!this.maps.zoomSettings.enablePanning) {
+                        color = "#737373";
+                        this.currentToolbarEle.setAttribute('class', '');
+                    } else {
+                        color = this.selectionColor;
+                    }
                     this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(
-                        map.element.id + '_Zooming_ToolBar_' + toolbar, this.selectionColor, 1, this.selectionColor, 1, null,
+                        map.element.id + '_Zooming_ToolBar_' + toolbar, color, 1, color, 1, null,
                         direction)
                     ) as SVGPathElement);
-                    this.panColor = this.selectionColor;
+                    this.panColor = color;
                     this.panElements = this.currentToolbarEle;
                     this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
                     break;
@@ -985,10 +1001,21 @@ export class Zoom {
                 this.applySelection(this.panElements, this.fillColor);
                 break;
             case 'pan':
-                this.panColor = this.selectionColor;
+                if (!this.maps.zoomSettings.enablePanning) {
+                    this.panColor = '#737373';
+                }
+                else {
+                    this.panColor = this.selectionColor;
+                }
                 this.zoomColor = this.fillColor;
-                this.applySelection(this.zoomElements, this.fillColor);
-                this.applySelection(this.panElements, this.selectionColor);
+                if (!this.maps.zoomSettings.enablePanning) {
+                    this.applySelection(this.zoomElements, this.selectionColor);
+                    this.applySelection(this.panElements, this.panColor);
+                }
+                else {
+                    this.applySelection(this.zoomElements, this.fillColor);
+                    this.applySelection(this.panElements, this.panColor);
+                }
                 break;
             case 'zoomin':
                 map.staticMapZoom = map.tileZoomLevel
@@ -1008,8 +1035,13 @@ export class Zoom {
                 map.centerPosition.latitude = null;
                 map.centerPosition.longitude = null;
                 this.toolBarZooming(1, 'ZoomOut');
-                this.applySelection(this.zoomElements, this.fillColor);
-                this.applySelection(this.panElements, this.selectionColor);
+                if (!this.maps.zoomSettings.enablePanning) {
+                    this.applySelection(this.zoomElements, this.selectionColor);
+                    this.applySelection(this.panElements, '#737373');
+                } else {
+                    this.applySelection(this.zoomElements, this.fillColor);
+                    this.applySelection(this.panElements, this.selectionColor);
+                }
         }
         this.panningStyle(type.toLowerCase());
     }
@@ -1180,7 +1212,13 @@ export class Zoom {
             pageY = (<PointerEvent>e).pageY;
             target = <Element>e.target;
         }
-        this.isPanning = this.panColor === this.selectionColor ? true : this.zoomColor !== this.selectionColor;
+        if (!this.maps.zoomSettings.enablePanning) {
+            this.isPanning = this.panColor !== this.selectionColor ? this.maps.zoomSettings.enablePanning 
+                : this.zoomColor === this.selectionColor;
+        } else {
+            this.isPanning = this.panColor === this.selectionColor ? this.maps.zoomSettings.enablePanning 
+                : this.zoomColor !== this.selectionColor;
+        }
         this.mouseDownLatLong = { x: pageX, y: pageY };
         this.rectZoomingStart = ((!this.isPanning) && this.maps.zoomSettings.enable);
         this.mouseDownPoints = this.getMousePosition(pageX, pageY);
@@ -1214,8 +1252,21 @@ export class Zoom {
         if (getElementByID(map.element.id + '_Zooming_KitCollection')) {
             if (target.id.indexOf('_Zooming_') > -1) {
                 getElementByID(map.element.id + '_Zooming_KitCollection').setAttribute('opacity', '1');
-            } else {
+                if (document.getElementById(map.element.id + '_Zooming_ToolBar_Pan_Group')) {
+                    if (!this.maps.zoomSettings.enablePanning) {
+                        if (target.id.indexOf('_Zooming_ToolBar') > -1 || target.id.indexOf('_Zooming_Rect') > -1) {
+                            getElementByID(map.element.id + '_Zooming_ToolBar_Pan_Rect').setAttribute('opacity', '0.3');
+                            getElementByID(map.element.id + '_Zooming_ToolBar_Pan').setAttribute('opacity', '0.3');
+                        }
+                    }
+                }                   
+            }
+            else {
                 getElementByID(map.element.id + '_Zooming_KitCollection').setAttribute('opacity', '0.3');
+                if (!this.maps.zoomSettings.enablePanning && document.getElementById(map.element.id + '_Zooming_ToolBar_Pan_Group')) {
+                    getElementByID(map.element.id + '_Zooming_ToolBar_Pan_Rect').setAttribute('opacity', '1');
+                    getElementByID(map.element.id + '_Zooming_ToolBar_Pan').setAttribute('opacity', '1');
+                }                    
             }
         }
         if (this.isTouch) {
@@ -1241,7 +1292,9 @@ export class Zoom {
             this.maps.element.style.cursor = 'pointer';
             this.mouseMoveLatLong = { x: pageX, y: pageY };
             if ((this.mouseDownLatLong['x'] !== this.mouseMoveLatLong['x']) && (this.mouseDownLatLong['y'] !== this.mouseMoveLatLong['y'])) {
-                this.panning('None', null, null);
+                if (this.maps.zoomSettings.enablePanning) {
+                    this.panning('None', null, null);
+                }
                 this.mouseDownLatLong['x'] = pageX;
                 this.mouseDownLatLong['y'] = pageY;
             }

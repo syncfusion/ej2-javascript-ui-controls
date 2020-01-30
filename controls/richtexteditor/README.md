@@ -1,3 +1,5 @@
+[![coverage](http://ej2.syncfusion.com/badges/ej2-richtexteditor/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-richtexteditor)
+
 # ej2-richtexteditor
 
 The rich text editor component is a HTML and markdown editor that provides best user experience for creating and updating the content.

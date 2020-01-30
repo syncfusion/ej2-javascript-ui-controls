@@ -895,7 +895,7 @@ export class Selection {
     // tslint:disable-next-line:max-line-length
     private renderDashLine(ctx: CanvasRenderingContext2D, page: Page, widget: LineWidget, left: number, top: number, width: number, height: number): void {
         let fontColor: string = this.characterFormat.fontColor;
-        let fillColor: string = fontColor ? this.viewer.render.getColor(fontColor) : '#000000';
+        let fillColor: string = fontColor ? HelperMethods.getColor(fontColor) : '#000000';
         ctx.globalAlpha = 1;
         // Get character format copied from selection format
         let format: WCharacterFormat = this.owner.editor.copyInsertFormat(new WCharacterFormat(), false);

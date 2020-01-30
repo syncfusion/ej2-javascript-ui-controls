@@ -33,8 +33,10 @@ export class Aggregate implements IAction {
     private initiateRender(): void {
         let cellFac: CellRendererFactory = this.locator.getService<CellRendererFactory>('cellRendererFactory');
         let instance: ICellRenderer<{}> = new SummaryCellRenderer(this.parent, this.locator);
-        [CellType.Summary, CellType.CaptionSummary, CellType.GroupSummary].forEach((type: CellType) =>
-            cellFac.addCellRenderer(type, instance));
+        let type: CellType[] = [CellType.Summary, CellType.CaptionSummary, CellType.GroupSummary];
+        for (let i: number = 0; i < type.length; i++) {
+            cellFac.addCellRenderer(type[i], instance);
+        }
         this.footerRenderer = new FooterRenderer(this.parent, this.locator);
         this.footerRenderer.renderPanel();
         this.footerRenderer.renderTable();
@@ -66,11 +68,12 @@ export class Aggregate implements IAction {
         if (isBlazor() && this.parent.isServerRendered) {
             let bulkChanges: string = 'bulkChanges';
             let aggregates: string = 'aggregates';
-            Object.keys(this.parent[bulkChanges]).forEach((prop: string) => {
-                if (prop.startsWith(aggregates)) {
-                    delete this.parent[bulkChanges][prop];
+            let prop: string[] = Object.keys(this.parent[bulkChanges]);
+            for (let i: number = 0; i < prop.length; i++) {
+                if (prop[i].startsWith(aggregates)) {
+                    delete this.parent[bulkChanges][prop[i]];
                 }
-            });
+            }
         }
     }
 
@@ -146,9 +149,9 @@ export class Aggregate implements IAction {
  * @private
  */
 export function summaryIterator(aggregates: AggregateRowModel[], callback: Function): void {
-    aggregates.forEach((row: AggregateRowModel) => {
-        row.columns.forEach((column: AggregateColumn) => {
-            callback(column, row);
-        });
-    });
+    for (let i: number = 0; i < aggregates.length; i++) {
+        for (let j: number = 0; j < aggregates[i].columns.length; j++) {
+            callback(aggregates[i].columns[j], aggregates[i]);
+        }
+    }
 }

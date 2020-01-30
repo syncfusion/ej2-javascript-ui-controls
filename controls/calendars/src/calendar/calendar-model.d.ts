@@ -240,13 +240,6 @@ export interface CalendarBaseModel extends ComponentModel{
     serverTimezoneOffset?: number;
 
     /**
-     * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
-     * @default 'en-US'
-     * @deprecated
-     */
-    locale?: string;
-
-    /**
      * Triggers when Calendar is created.
      * @event
      * @blazorProperty 'Created'

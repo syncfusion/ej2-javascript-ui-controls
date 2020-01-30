@@ -8,7 +8,9 @@ export class AriaService {
 
     public setOptions(target: HTMLElement, options: IAriaOptions<boolean>): void {
         let props: string[] = Object.keys(options);
-        props.forEach((name: string) => setStateAndProperties(target, config[name], options[name]));
+        for (let i: number = 0; i < props.length; i++) {
+            setStateAndProperties(target, config[props[i]], options[props[i]]);
+        }
     }
 
     public setExpand(target: HTMLElement, expand: boolean): void {

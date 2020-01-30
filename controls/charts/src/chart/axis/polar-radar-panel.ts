@@ -169,7 +169,7 @@ export class PolarRadarPanel extends LineBase {
                     this.drawXAxisGridLine(axis, i);
                 }
 
-                if (axis.visible) {
+                if (axis.visible && axis.internalVisibility) {
                     this.drawXAxisLabels(axis, i);
                 }
 
@@ -178,7 +178,7 @@ export class PolarRadarPanel extends LineBase {
                 if (axis.lineStyle.width > 0) {
                     this.drawYAxisLine(axis, i, axis.plotOffset, 0);
                 }
-                if (axis.visible) {
+                if (axis.visible && axis.internalVisibility) {
                     this.drawYAxisLabels(axis, i);
                 }
             }

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.46 (2020-01-30)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#261574` - Now, `isInteracted` argument updated properly in the change event while focusout.
+
 ## 17.4.44 (2021-01-21)
 
 ### ListBox

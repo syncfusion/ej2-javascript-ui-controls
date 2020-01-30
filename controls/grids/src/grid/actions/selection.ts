@@ -278,7 +278,7 @@ export class Selection implements IAction {
                 data: selectData, rowIndex: index, isCtrlPressed: this.isMultiCtrlRequest,
                 isShiftPressed: this.isMultiShiftRequest, row: selectedRow,
                 previousRow: gObj.getRowByIndex(this.prevRowIndex),
-                previousRowIndex: this.prevRowIndex, target: this.actualTarget, cancel: false
+                previousRowIndex: this.prevRowIndex, target: this.actualTarget, cancel: false, isInteracted: this.isInteracted
             };
             args = this.addMovableArgs(args, selectedMovableRow);
             this.parent.trigger(events.rowSelecting, this.fDataUpdate(args),
@@ -330,11 +330,12 @@ export class Selection implements IAction {
             args = {
                 data: selectData, rowIndex: index,
                 row: selectedRow, previousRow: gObj.getRowByIndex(this.prevRowIndex),
-                previousRowIndex: this.prevRowIndex, target: this.actualTarget
+                previousRowIndex: this.prevRowIndex, target: this.actualTarget, isInteracted: this.isInteracted
             };
             args = this.addMovableArgs(args, selectedMovableRow);
             this.onActionComplete(args, events.rowSelected);
         }
+        this.isInteracted = false;
         this.updateRowProps(index);
     }
 
@@ -455,7 +456,7 @@ export class Selection implements IAction {
                     data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this.actualTarget,
                     prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
                     isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
-                    foreignKeyData: rowObj.foreignKeyData
+                    foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted
                 };
                 args = this.addMovableArgs(args, selectedMovableRow);
                 this.parent.trigger(events.rowSelecting, this.fDataUpdate(args), (args: Object) => {
@@ -473,11 +474,12 @@ export class Selection implements IAction {
                 args = {
                     data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this.actualTarget,
                     prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
-                    foreignKeyData: rowObj.foreignKeyData
+                    foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted
                 };
                 args = this.addMovableArgs(args, selectedMovableRow);
                 this.onActionComplete(args, events.rowSelected);
             }
+            this.isInteracted = false;
             this.updateRowProps(rowIndex);
             if (this.isSingleSel()) {
                 break;
@@ -681,14 +683,16 @@ export class Selection implements IAction {
                     }
                     return;
                 }
-                rows.filter((record: HTMLElement) => record.hasAttribute('aria-selected')).forEach((ele: HTMLElement) => {
+                let element: HTMLElement[] = [].slice.call(rows.filter((record: HTMLElement) => record.hasAttribute('aria-selected')));
+                for (let j: number = 0; j < element.length; j++) {
                     if (!this.disableUI || isBlazor()) {
-                            ele.removeAttribute('aria-selected');
-                            this.addRemoveClassesForRow(ele, false, true, 'e-selectionbackground', 'e-active');
-                    }
-                    this.updatePersistCollection(ele, false);
-                    this.updateCheckBoxes(ele);
-                });
+                        element[j].removeAttribute('aria-selected');
+                        this.addRemoveClassesForRow(element[j], false, true, 'e-selectionbackground', 'e-active');
+                }
+                // tslint:disable-next-line:align
+                this.updatePersistCollection(element[j], false);
+                this.updateCheckBoxes(element[j]);
+                }
                 for (let i: number = 0, len: number = this.selectedRowIndexes.length; i < len; i++) {
                     let movableRow: Element = this.getSelectedMovableRow(this.selectedRowIndexes[i]);
                     if (movableRow) {
@@ -704,7 +708,6 @@ export class Selection implements IAction {
                 this.isRowSelected = false;
                 this.selectRowIndex(-1);
                 this.rowDeselect(events.rowDeselected, rowIndex, data, row, foreignKeyData, target, mRow);
-                this.isInteracted = false;
                 if (this.clearRowCheck) {
                     this.clearRowCallBack();
                     this.clearRowCheck = false;
@@ -1779,7 +1782,8 @@ export class Selection implements IAction {
     }
 
     private clearSelAfterRefresh(e: { requestType: string }): void {
-        if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection) {
+        let isInfiniteScroll: boolean = this.parent.infiniteScrollSettings.enableScroll && e.requestType === 'scroll';
+        if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection && !isInfiniteScroll) {
             this.clearSelection();
         }
     }
@@ -2083,11 +2087,12 @@ export class Selection implements IAction {
             } else {
                 records = this.getSelectedRecords();
             }
-            records.slice().forEach((data: Object) => {
-                if (!isNullOrUndefined(data[this.primaryKey])) {
-                    this.updatePersistDelete(data[this.primaryKey]);
+            let data: Object[] = records.slice();
+            for (let i: number = 0; i < data.length; i++) {
+                if (!isNullOrUndefined(data[i][this.primaryKey])) {
+                    this.updatePersistDelete(data[i][this.primaryKey]);
                 }
-            });
+            }
             this.setCheckAllState();
             this.totalRecordsCount = this.parent.pageSettings.totalRecordsCount;
         }
@@ -2721,7 +2726,8 @@ export class Selection implements IAction {
     }
 
     public dataReady(e: { requestType: string }): void {
-        if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection) {
+        let isInfinitecroll: boolean = this.parent.infiniteScrollSettings.enableScroll && e.requestType === 'scroll';
+        if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection && !isInfinitecroll) {
             this.disableUI = true;
             this.clearSelection();
             this.setCheckAllState();

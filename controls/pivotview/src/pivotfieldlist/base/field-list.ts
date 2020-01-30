@@ -8,7 +8,7 @@ import { PivotFieldListModel } from './field-list-model';
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
 import { LoadEventArgs, EnginePopulatingEventArgs, EnginePopulatedEventArgs, AggregateEventArgs } from '../../common/base/interface';
-import { FieldDroppedEventArgs, FieldListRefreshedEventArgs } from '../../common/base/interface';
+import { FieldDroppedEventArgs, FieldListRefreshedEventArgs, FieldDropEventArgs } from '../../common/base/interface';
 import { Mode } from '../../common/base/enum';
 import { PivotCommon } from '../../common/base/pivot-common';
 import { CommonArgs, MemberFilteringEventArgs } from '../../common/base/interface';
@@ -217,6 +217,14 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      */
     @Event()
     public onFieldDropped: EmitType<FieldDroppedEventArgs>;
+
+    /**
+     * Triggers when a field getting dropped into any axis.
+     * @event
+     * @blazorproperty 'fieldDrop'
+     */
+    @Event()
+    public fieldDrop: EmitType<FieldDropEventArgs>;
 
     /**
      * This allows to change the cell value.

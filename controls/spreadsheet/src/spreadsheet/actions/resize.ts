@@ -1,9 +1,9 @@
 import { Spreadsheet } from '../index';
 import { closest, EventHandler, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { colWidthChanged, rowHeightChanged, beforeHeaderLoaded, contentLoaded, hideShowRow } from '../common/index';
-import { findMaxValue, setResize, autoFit, HideShowEventArgs, completeAction } from '../common/index';
-import { setRowHeight, isHiddenRow, SheetModel, getColumn, setRow, getRowHeight } from '../../workbook/base/index';
-import { getRangeIndexes, getSwapRange } from '../../workbook/common/index';
+import { findMaxValue, setResize, autoFit, HideShowEventArgs, completeAction, setAutoFit } from '../common/index';
+import { setRowHeight, isHiddenRow, SheetModel, getColumn, setRow, getRowHeight, getColumnWidth } from '../../workbook/base/index';
+import { getRangeIndexes, getSwapRange, CellStyleModel } from '../../workbook/common/index';
 
 /**
  * The `Resize` module is used to handle the resizing functionalities in Spreadsheet.
@@ -27,6 +27,7 @@ export class Resize {
         this.parent.on(contentLoaded, this.wireEvents, this);
         this.parent.on(beforeHeaderLoaded, this.wireEvents, this);
         this.parent.on(autoFit, this.autoFit, this);
+        this.parent.on(setAutoFit, this.setAutoFitHandler, this);
     }
 
     private autoFit(args: { isRow: boolean, startIndex: number, endIndex: number }): void {
@@ -74,6 +75,7 @@ export class Resize {
             this.parent.off(contentLoaded, this.wireEvents);
             this.parent.off(beforeHeaderLoaded, this.wireEvents);
             this.parent.off(autoFit, this.autoFit);
+            this.parent.off(setAutoFit, this.setAutoFitHandler);
         }
     }
 
@@ -137,7 +139,7 @@ export class Resize {
             let colIndx: number = parseInt(trgt.getAttribute('aria-colindex'), 10) - 1;
             let rowIndx: number = parseInt(this.trgtEle.parentElement.getAttribute('aria-rowindex'), 10) - 1;
             if (trgt.classList.contains('e-colresize')) {
-                let prevWdt: string = this.parent.getMainContent().getElementsByTagName('col')[colIndx].style.width;
+                let prevWdt: string = `${getColumnWidth(this.parent.getActiveSheet(), colIndx)}px`;
                 this.setAutofit(colIndx, true, prevWdt);
             } else if (trgt.classList.contains('e-rowresize')) {
                 let prevHgt: string = `${getRowHeight(this.parent.getActiveSheet(), rowIndx)}px`;
@@ -216,20 +218,29 @@ export class Resize {
         }
     }
 
+    private setAutoFitHandler(args: { idx: number, isCol: boolean }): void {
+        this.setAutofit(args.idx, args.isCol);
+    }
+
+    // tslint:disable-next-line:max-func-body-length
     private setAutofit(idx: number, isCol?: boolean, prevData?: string): void {
-        let index: number;
+        let index: number = 0;
         let oldIdx: number = idx;
-        if (this.parent.scrollSettings.enableVirtualization) {
-            idx = isCol ? idx - this.parent.viewport.leftIndex :
-            idx - this.parent.hiddenRowsCount(this.parent.viewport.topIndex, idx) - this.parent.viewport.topIndex;
-        }
         let sheet: SheetModel = this.parent.getActiveSheet();
         let mainContent: Element = this.parent.getMainContent();
-        let oldValue: string = isCol ?
-            mainContent.getElementsByTagName('col')[idx].style.width : mainContent.getElementsByTagName('tr')[idx].style.height;
+        let oldValue: string;
+        if ((isCol && this.parent.viewport.leftIndex <= idx) && (!isCol && this.parent.viewport.topIndex <= idx)) {
+            if (this.parent.scrollSettings.enableVirtualization) {
+                idx = isCol ? idx - this.parent.viewport.leftIndex :
+                    idx - this.parent.hiddenRowsCount(this.parent.viewport.topIndex, idx) - this.parent.viewport.topIndex;
+            }
+            oldValue = isCol ?
+                mainContent.getElementsByTagName('col')[idx].style.width : mainContent.getElementsByTagName('tr')[idx].style.height;
+        } else {
+            oldValue = isCol ? `${getColumnWidth(this.parent.getActiveSheet(), idx)}px` :
+                `${getRowHeight(this.parent.getActiveSheet(), idx)}px`;
+        }
         let headerTable: HTMLElement = isCol ? this.parent.getColHeaderTable() : this.parent.getRowHeaderTable();
-        let contentRow: HTMLCollectionOf<HTMLTableRowElement> =
-            mainContent.getElementsByClassName('e-row') as HTMLCollectionOf<HTMLTableRowElement>;
         let contentClone: HTMLElement[] = [];
         let contentTable: HTMLElement =
             mainContent.getElementsByClassName('e-content-table')[0] as HTMLElement;
@@ -237,29 +248,85 @@ export class Resize {
             headerTable.getElementsByTagName('tr') as HTMLCollectionOf<HTMLTableRowElement>;
         let headerText: HTMLElement;
         if (isCol) {
-            headerText = (<HTMLElement>headerRow[0].getElementsByClassName('e-header-cell')[idx].cloneNode(true));
-            for (index = 0; index < contentRow.length; index++) {
-                contentClone[index] = contentRow[index].getElementsByTagName('td')[idx].cloneNode(true) as HTMLElement;
+            let rowLength: number = sheet.rows.length;
+            for (let rowIdx: number = 0; rowIdx < rowLength; rowIdx++) {
+                if (sheet.rows[rowIdx] && sheet.rows[rowIdx].cells[oldIdx]) {
+                    let td: HTMLElement = this.parent.createElement('td', {
+                        className: 'e-cell',
+                        innerHTML: this.parent.getDisplayText(sheet.rows[rowIdx].cells[oldIdx])
+                    });
+                    if (sheet.rows[rowIdx].cells[oldIdx].style) {
+                        let style: CellStyleModel = sheet.rows[rowIdx].cells[oldIdx].style;
+                        if (style.fontFamily) {
+                            td.style.fontFamily = style.fontFamily;
+                        }
+                        if (style.fontSize) {
+                            td.style.fontSize = style.fontSize;
+                        }
+                    }
+                    contentClone[index] = td;
+                    index++;
+                }
             }
         } else {
-            headerText = (<HTMLElement>headerRow[idx].getElementsByClassName('e-header-cell')[0].cloneNode(true));
-            for (index = 0; index < contentRow[idx].getElementsByTagName('td').length; index++) {
-                contentClone[index] = contentRow[idx].getElementsByTagName('td')[index].cloneNode(true) as HTMLElement;
+            let colLength: number = sheet.rows[oldIdx] && sheet.rows[oldIdx].cells ? sheet.rows[oldIdx].cells.length : 0;
+            for (let colIdx: number = 0; colIdx < colLength; colIdx++) {
+                if (sheet.rows[oldIdx] && sheet.rows[oldIdx].cells[colIdx]) {
+                    let style: CellStyleModel = sheet.rows[oldIdx].cells[colIdx].style;
+                    let td: HTMLElement = this.parent.createElement('td', {
+                        innerHTML: this.parent.getDisplayText(sheet.rows[oldIdx].cells[colIdx])
+                    });
+                    if (sheet.rows[oldIdx].cells[colIdx].style) {
+                        let style: CellStyleModel = sheet.rows[oldIdx].cells[colIdx].style;
+                        if (style.fontFamily) {
+                            td.style.fontFamily = style.fontFamily;
+                        }
+                        if (style.fontSize) {
+                            td.style.fontSize = style.fontSize;
+                        }
+                    }
+                    contentClone[index] = td;
+                    index++;
+                }
             }
         }
-        let headerFit: number = findMaxValue(headerTable, [headerText], isCol, this.parent);
         let contentFit: number = findMaxValue(contentTable, contentClone, isCol, this.parent);
-        let autofitValue: number = headerFit < contentFit ? contentFit : headerFit;
+        let autofitValue: number = contentFit === 0 ? parseInt(oldValue, 10) : contentFit;
         let threshold: number = parseInt(oldValue, 10) > autofitValue ?
             -(parseInt(oldValue, 10) - autofitValue) : autofitValue - parseInt(oldValue, 10);
         if (isCol) {
-            getColumn(sheet, oldIdx).width = autofitValue > 0 ? autofitValue : 0;
-            this.parent.notify(colWidthChanged, { threshold, colIdx: oldIdx });
-        } else {
-            setRowHeight(sheet, oldIdx, autofitValue > 0 ? autofitValue : 0);
-            this.parent.notify(rowHeightChanged, { threshold: threshold, rowIdx: oldIdx });
+            if (oldIdx >= this.parent.viewport.leftIndex && oldIdx <= this.parent.viewport.leftIndex + 62) {
+                getColumn(sheet, oldIdx).width = autofitValue > 0 ? autofitValue : 0;
+                this.parent.notify(colWidthChanged, { threshold, colIdx: oldIdx });
+                this.resizeStart(oldIdx, idx, autofitValue + 'px', isCol, true, prevData);
+            } else {
+                let oldWidth: number = getColumnWidth(sheet, oldIdx);
+                let threshold: number;
+                if (autofitValue > 0) {
+                    threshold = -(oldWidth - autofitValue);
+                } else {
+                    threshold = -oldWidth;
+                }
+                this.parent.notify(colWidthChanged, { threshold, colIdx: oldIdx });
+                getColumn(sheet, oldIdx).width = autofitValue > 0 ? autofitValue : 0;
+            }
+        } else if (!isCol) {
+            if (oldIdx >= this.parent.viewport.topIndex && oldIdx <= this.parent.viewport.bottomIndex) {
+                setRowHeight(sheet, oldIdx, autofitValue > 0 ? autofitValue : 0);
+                this.parent.notify(rowHeightChanged, { threshold: threshold, rowIdx: oldIdx });
+                this.resizeStart(oldIdx, idx, autofitValue + 'px', isCol, true, prevData);
+            } else {
+                let oldHeight: number = getRowHeight(sheet, oldIdx);
+                let threshold: number;
+                if (autofitValue > 0) {
+                    threshold = -(oldHeight - autofitValue);
+                } else {
+                    threshold = -oldHeight;
+                }
+                this.parent.notify(rowHeightChanged, { threshold, rowIdx: oldIdx });
+                setRowHeight(sheet, oldIdx, autofitValue > 0 ? autofitValue : 0);
+            }
         }
-        this.resizeStart(oldIdx, idx, autofitValue + 'px', isCol, true, prevData);
     }
 
     private createResizeHandler(trgt: HTMLElement, className: string): void {
@@ -404,6 +471,15 @@ export class Resize {
     }
 
     private resizeStart(idx: number, viewportIdx: number, value: string, isCol?: boolean, isFit?: boolean, prevData?: string): void {
+        if (!isCol) {
+            if (this.parent.scrollSettings.enableVirtualization && this.parent.viewport.topIndex < viewportIdx) {
+                viewportIdx = viewportIdx - this.parent.viewport.topIndex;
+            }
+        } else {
+            if (this.parent.scrollSettings.enableVirtualization && this.parent.viewport.leftIndex < viewportIdx) {
+                viewportIdx = viewportIdx - this.parent.viewport.leftIndex;
+            }
+        }
         setResize(viewportIdx, value, isCol, this.parent);
         let action: string = isFit ? 'resizeToFit' : 'resize';
         let eventArgs: object;

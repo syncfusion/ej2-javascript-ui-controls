@@ -5,7 +5,7 @@ import { Size } from '@syncfusion/ej2-drawings';
 import { PdfBoundsModel, PdfAnnotationBaseModel, PdfFontModel } from './pdf-annotation-model';
 import { Container } from '@syncfusion/ej2-drawings';
 import { PdfAnnotationType } from './enum';
-import { ICommentsCollection, IReviewCollection } from '../pdfviewer';
+import { ICommentsCollection, IReviewCollection, AnnotationSelectorSettingsModel } from '../pdfviewer';
 /**
  * The `PdfBounds` is base for annotation bounds.
  * @hidden
@@ -146,69 +146,69 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
     public measureType: string;
 
     /**
-     * Represents the auther value of the annotation 
+     * Represents the auther value of the annotation
      * @default ''
      */
     @Property('')
     public author: string;
 
     /**
-     * Represents the modified date of the annotation 
+     * Represents the modified date of the annotation
      * @default ''
      */
     @Property('')
     public modifiedDate: string;
 
     /**
-     * Represents the subject of the annotation 
+     * Represents the subject of the annotation
      * @default ''
      */
     @Property('')
     public subject: string;
 
     /**
-     * Represents the notes of the annotation 
+     * Represents the notes of the annotation
      * @default ''
      */
     @Property('')
     public notes: string;
 
     /**
-     * Represents the stroke color of the annotation 
+     * Represents the stroke color of the annotation
      * @default 'black'
      */
     @Property('black')
     public strokeColor: string;
 
     /**
-     * Represents the fill color of the annotation 
+     * Represents the fill color of the annotation
      * @default 'tranparent'
      */
     @Property('#ffffff00')
     public fillColor: string;
 
     /**
-     * Represents the fill color of the annotation 
+     * Represents the fill color of the annotation
      * @default 'tranparent'
      */
     @Property('#ffffff00')
     public stampFillColor: string;
 
     /**
-     * Represents the stroke color of the annotation 
+     * Represents the stroke color of the annotation
      * @default 'black'
      */
     @Property('black')
     public stampStrokeColor: string;
 
     /**
-     * Represents the path data of the annotation 
+     * Represents the path data of the annotation
      * @default ''
      */
     @Property('')
     public data: string;
     /**
-     * Represents the opecity value of the annotation 
+     * Represents the opecity value of the annotation
      * @default 1
      */
     @Property(1)
@@ -363,28 +363,28 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
     public dynamicText: string;
 
     /**
-     * Represents the unique annotName of the annotation 
+     * Represents the unique annotName of the annotation
      * @default ''
      */
     @Property('')
     public annotName: string;
 
     /**
-     * Represents the review collection of the annotation 
+     * Represents the review collection of the annotation
      * @default ''
      */
     @Property({})
     public review: IReviewCollection;
 
     /**
-     * Represents the comments collection of the annotation 
+     * Represents the comments collection of the annotation
      * @default []
      */
     @Property([])
     public comments: ICommentsCollection[];
 
     /**
-     * Represents the comments collection of the annotation 
+     * Represents the comments collection of the annotation
      * @default '#000'
      */
     @Property('#000')
@@ -432,11 +432,18 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
     public labelMaxLength: number;
 
     /**
-     * Represents the opecity value of the annotation 
+     * Represents the opecity value of the annotation
      * @default 1
      */
     @Property(1)
     public labelOpacity: number;
+
+    /**
+     * Represents the selection settings of the annotation
+     * @default ''
+     */
+    @Property('')
+    public annotationSelectorSettings: AnnotationSelectorSettingsModel;
 
     /**
      * Represents the shape annotation label content border color

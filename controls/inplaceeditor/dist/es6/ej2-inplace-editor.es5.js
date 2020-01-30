@@ -1,5 +1,5 @@
-import { Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, closest, compile, detach, extend, isNullOrUndefined, removeClass, resetBlazorTemplate, select, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
-import { DataManager, ODataV4Adaptor, Query, UrlAdaptor, WebApiAdaptor } from '@syncfusion/ej2-data';
+import { Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, closest, compile, detach, extend, getValue, isNullOrUndefined, removeClass, resetBlazorTemplate, select, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { DataManager, ODataV4Adaptor, Predicate, Query, UrlAdaptor, WebApiAdaptor } from '@syncfusion/ej2-data';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DatePicker, DateRangePicker, DateTimePicker, TimePicker } from '@syncfusion/ej2-calendars';
 import { ColorPicker, FormValidator, MaskedTextBox, NumericTextBox, Slider, TextBox } from '@syncfusion/ej2-inputs';
@@ -304,7 +304,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         this.updateAdaptor();
         this.appendValueElement();
         this.updateValue();
-        this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)));
+        this.renderInitialValue();
         this.wireEvents();
         this.setRtl(this.enableRtl);
         this.enableEditor(this.enableEditMode);
@@ -330,6 +330,70 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         this.valueWrap.appendChild(this.editIcon);
         this.element.appendChild(this.valueWrap);
     };
+    InPlaceEditor.prototype.renderInitialValue = function () {
+        if (['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'].indexOf(this.type) > -1
+            && !isNullOrUndefined(this.value) && !this.isEmpty(this.value.toString()) && !isNullOrUndefined(this.model.fields)
+            && !isNullOrUndefined(this.model.dataSource)) {
+            this.renderValue(this.getLocale({ loadingText: 'Loading...' }, 'loadingText'));
+            this.valueWrap.classList.add(LOAD);
+            createSpinner({ target: this.valueWrap, width: 10 });
+            showSpinner(this.valueWrap);
+            this.getInitFieldMapValue();
+        }
+        else {
+            this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)));
+        }
+    };
+    InPlaceEditor.prototype.getInitFieldMapValue = function () {
+        var _this = this;
+        var model = this.model;
+        var mText = model.fields.text;
+        var mVal = model.fields.value;
+        var query = isNullOrUndefined(model.query) ? new Query() : model.query;
+        if (model.dataSource instanceof DataManager) {
+            model.dataSource.executeQuery(this.getInitQuery(model, query)).then(function (e) {
+                _this.updateInitValue(mText, mVal, e.result);
+            });
+        }
+        else {
+            this.updateInitValue(mText, mVal, new DataManager(model.dataSource).executeLocal(this.getInitQuery(model, query)));
+        }
+    };
+    InPlaceEditor.prototype.getInitQuery = function (model, query) {
+        var predicate;
+        var mVal = model.fields.value;
+        var value = this.value;
+        if (this.type !== 'MultiSelect' || typeof (this.value) !== 'object') {
+            predicate = new Predicate(mVal, 'equal', this.value);
+        }
+        else {
+            var i = 0;
+            for (var _i = 0, value_1 = value; _i < value_1.length; _i++) {
+                var val = value_1[_i];
+                predicate = ((i === 0) ? predicate = new Predicate(mVal, 'equal', val) : predicate.or(mVal, 'equal', val));
+                i++;
+            }
+        }
+        return query.where(predicate);
+    };
+    InPlaceEditor.prototype.updateInitValue = function (mText, mVal, result) {
+        if (result.length <= 0) {
+            return;
+        }
+        if (result.length === 1) {
+            this.valueEle.innerHTML = this.checkValue(getValue((isNullOrUndefined(mText) ? mVal : mText), result[0]));
+        }
+        else {
+            var val = [];
+            for (var _i = 0, result_1 = result; _i < result_1.length; _i++) {
+                var obj = result_1[_i];
+                val.push(getValue((isNullOrUndefined(mText) ? mVal : mText), obj));
+            }
+            this.valueEle.innerHTML = this.checkValue(val.toString());
+        }
+        hideSpinner(this.valueWrap);
+        this.valueWrap.classList.remove(LOAD);
+    };
     InPlaceEditor.prototype.renderValue = function (val) {
         this.valueEle.innerHTML = val;
         if (this.type === 'Color') {
@@ -340,6 +404,12 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         }
     };
     InPlaceEditor.prototype.renderEditor = function () {
+        this.prevValue = this.value;
+        this.beginEditArgs = { mode: this.mode, cancelFocus: false, cancel: false };
+        this.trigger('beginEdit', this.beginEditArgs);
+        if (this.beginEditArgs.cancel) {
+            return;
+        }
         var tipOptions = undefined;
         var target = select('.' + VALUE_WRAPPER, this.element);
         if (this.editableOn !== 'EditIconClick') {
@@ -383,7 +453,6 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         if (this.actionOnBlur !== 'Ignore') {
             this.wireDocEvent();
         }
-        this.initRender = false;
         addClass([this.valueWrap], [OPEN]);
         this.setProperties({ enableEditMode: true }, true);
     };
@@ -769,21 +838,30 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         var eventArgs = { data: { name: this.name, primaryKey: this.primaryKey, value: this.getSendValue() } };
         this.trigger('actionBegin', eventArgs, function (actionBeginArgs) {
-            if (!_this.isEmpty(_this.url) && !_this.isEmpty(_this.primaryKey)) {
-                _this.dataManager = new DataManager({ url: _this.url, adaptor: _this.dataAdaptor });
-                if (_this.adaptor === 'UrlAdaptor') {
-                    _this.dataManager.executeQuery(_this.getQuery(actionBeginArgs.data), _this.successHandler.bind(_this), _this.failureHandler.bind(_this));
-                }
-                else {
-                    var crud = _this.dataManager.insert(actionBeginArgs.data);
-                    crud.then(function (e) { return _this.successHandler(e); }).catch(function (e) { return _this.failureHandler(e); });
+            if (actionBeginArgs.cancel) {
+                _this.removeSpinner('submit');
+                if (_this.mode === 'Popup') {
+                    _this.updateArrow();
                 }
             }
             else {
-                var eventArg = { data: {}, value: actionBeginArgs.data.value };
-                _this.triggerSuccess(eventArg);
+                if (!_this.isEmpty(_this.url) && !_this.isEmpty(_this.primaryKey)
+                    && (_this.initRender || (!_this.initRender && _this.prevValue !== _this.value))) {
+                    _this.dataManager = new DataManager({ url: _this.url, adaptor: _this.dataAdaptor });
+                    if (_this.adaptor === 'UrlAdaptor') {
+                        _this.dataManager.executeQuery(_this.getQuery(actionBeginArgs.data), _this.successHandler.bind(_this), _this.failureHandler.bind(_this));
+                    }
+                    else {
+                        var crud = _this.dataManager.insert(actionBeginArgs.data);
+                        crud.then(function (e) { return _this.successHandler(e); }).catch(function (e) { return _this.failureHandler(e); });
+                    }
+                }
+                else {
+                    var eventArg = { data: {}, value: actionBeginArgs.data.value };
+                    _this.triggerSuccess(eventArg);
+                }
+                _this.dataManager = undefined;
             }
-            _this.dataManager = undefined;
         });
     };
     InPlaceEditor.prototype.isEmpty = function (value) {
@@ -819,19 +897,20 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
      */
     InPlaceEditor.prototype.sanitizeHelper = function (value) {
         if (this.enableHtmlSanitizer) {
-            var item = SanitizeHtmlHelper.beforeSanitize();
+            var item_1 = SanitizeHtmlHelper.beforeSanitize();
             var beforeEvent = {
                 cancel: false,
                 helper: null
             };
-            extend(item, item, beforeEvent);
-            this.trigger('beforeSanitizeHtml', item);
-            if (item.cancel && !isNullOrUndefined(item.helper)) {
-                value = item.helper(value);
-            }
-            else if (!item.cancel) {
-                value = SanitizeHtmlHelper.serializeValue(item, value);
-            }
+            extend(item_1, item_1, beforeEvent);
+            this.trigger('beforeSanitizeHtml', item_1, function (args) {
+                if (item_1.cancel && !isNullOrUndefined(item_1.helper)) {
+                    value = item_1.helper(value);
+                }
+                else if (!item_1.cancel) {
+                    value = SanitizeHtmlHelper.serializeValue(item_1, value);
+                }
+            });
         }
         return value;
     };
@@ -931,7 +1010,12 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         var val = args.value;
         this.trigger('actionSuccess', args, function (actionArgs) {
             _this.removeSpinner('submit');
-            _this.renderValue(_this.checkValue((actionArgs.value !== val) ? actionArgs.value : _this.getRenderValue()));
+            if (!actionArgs.cancel) {
+                _this.renderValue(_this.checkValue((actionArgs.value !== val) ? actionArgs.value : _this.getRenderValue()));
+            }
+            if (actionArgs.cancel && _this.mode === 'Inline') {
+                removeClass([_this.valueWrap], [HIDE]);
+            }
             _this.removeEditor();
         });
     };
@@ -1030,6 +1114,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         }
     };
     InPlaceEditor.prototype.afterOpenHandler = function (e) {
+        var _this = this;
         if (this.mode === 'Popup' && this.type === 'MultiSelect') {
             EventHandler.add(this.containerEle, 'mousedown', this.popMouseDown, this);
             EventHandler.add(this.containerEle, 'click', this.popClickHandler, this);
@@ -1046,20 +1131,21 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
             this.setAttribute(select('.e-slider-input', this.containerEle), ['name']);
         }
         var eventArgs = { mode: this.mode, cancelFocus: false };
-        this.trigger('beginEdit', eventArgs);
-        if (!eventArgs.cancelFocus) {
-            if (this.mode === 'Inline' && (['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'].indexOf(this.type) > -1)
-                && this.model.dataSource instanceof DataManager) {
-                this.showDropDownPopup();
+        this.trigger('beginEdit', eventArgs, function (args) {
+            if (!_this.beginEditArgs.cancelFocus) {
+                if (_this.mode === 'Inline' && (['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'].indexOf(_this.type) > -1)
+                    && _this.model.dataSource instanceof DataManager) {
+                    _this.showDropDownPopup();
+                }
+                else {
+                    _this.setFocus();
+                }
             }
-            else {
-                this.setFocus();
+            if (_this.afterOpenEvent) {
+                _this.tipObj.setProperties({ afterOpen: _this.afterOpenEvent }, true);
+                _this.tipObj.trigger('afterOpen', e);
             }
-        }
-        if (this.afterOpenEvent) {
-            this.tipObj.setProperties({ afterOpen: this.afterOpenEvent }, true);
-            this.tipObj.trigger('afterOpen', e);
-        }
+        });
     };
     InPlaceEditor.prototype.popMouseDown = function (e) {
         var trgClass = e.target.classList;
@@ -1092,16 +1178,19 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         }
     };
     InPlaceEditor.prototype.successHandler = function (e) {
+        this.initRender = false;
         var eventArgs = { data: e, value: this.getSendValue() };
         this.triggerSuccess(eventArgs);
     };
     InPlaceEditor.prototype.failureHandler = function (e) {
+        var _this = this;
         var eventArgs = { data: e, value: this.getSendValue() };
-        this.trigger('actionFailure', eventArgs);
-        this.removeSpinner('submit');
-        if (this.mode === 'Popup') {
-            this.updateArrow();
-        }
+        this.trigger('actionFailure', eventArgs, function (args) {
+            _this.removeSpinner('submit');
+            if (_this.mode === 'Popup') {
+                _this.updateArrow();
+            }
+        });
     };
     InPlaceEditor.prototype.enterKeyDownHandler = function (e) {
         if (!closest(e.target, '.' + INPUT + ' .e-richtexteditor')) {
@@ -1261,10 +1350,10 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'value':
                     this.updateValue();
-                    this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)));
+                    this.renderInitialValue();
                     break;
                 case 'emptyText':
-                    this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)));
+                    this.renderInitialValue();
                     break;
                 case 'template':
                     this.checkIsTemplate();

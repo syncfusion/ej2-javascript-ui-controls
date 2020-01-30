@@ -11,7 +11,7 @@ import { RowRenderer } from './row-renderer';
 import { ServiceLocator } from '../services/service-locator';
 import { SummaryModelGenerator } from '../services/summary-model-generator';
 import { renderMovable, calculateAggregate, iterateExtend } from '../base/util';
-import { AggregateColumn, AggregateRow } from '../models/aggregate';
+import { AggregateRow } from '../models/aggregate';
 import { DataUtil } from '@syncfusion/ej2-data';
 
 /**
@@ -269,15 +269,15 @@ export class FooterRenderer extends ContentRender implements IRenderer {
         let aggregate: Object = {};
         let agrVal: Object;
         let aggregateRows: AggregateRow | Object[] = this.parent.aggregates;
-        aggregateRows.forEach((row: AggregateRow) => {
-            row.columns.forEach((col: AggregateColumn) => {
+        for (let i: number = 0; i < aggregateRows.length; i++) {
+            for (let j: number = 0; j < (aggregateRows[i] as AggregateRow).columns.length; j++) {
                 let data: Object[] = [];
-                let type: string = col.type.toString();
+                let type: string = (aggregateRows[i] as AggregateRow).columns[j].type.toString();
                 data = dataSource;
-                agrVal = calculateAggregate(type, data, col, this.parent);
-                aggregate[col.field + ' - ' + type.toLowerCase()] = agrVal;
-            });
-        });
+                agrVal = calculateAggregate(type, data, (aggregateRows[i] as AggregateRow).columns[j], this.parent);
+                aggregate[(aggregateRows[i] as AggregateRow).columns[j].field + ' - ' + type.toLowerCase()] = agrVal;
+            }
+        }
         let result: Object = {
             result: dataSource,
             count: dataSource.length,

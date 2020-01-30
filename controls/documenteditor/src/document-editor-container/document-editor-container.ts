@@ -47,9 +47,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public enableSpellCheck: boolean;
     /**
      * Enable local paste
-     * @default true
+     * @default false
      */
-    @Property(true)
+    @Property(false)
     public enableLocalPaste: boolean;
     /**
      * Sfdt service URL.
@@ -427,6 +427,10 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                     if (this.documentEditor) {
                         this.documentEditor.headers = newModel.headers;
                     }
+                    break;
+                case 'locale':
+                case 'enableRtl':
+                    this.refresh();
                     break;
             }
         }

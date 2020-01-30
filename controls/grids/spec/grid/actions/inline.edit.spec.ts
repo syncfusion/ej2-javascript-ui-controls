@@ -2172,6 +2172,73 @@ describe('Inline Editing module', () => {
             gridObj = actionComplete = null;
         });
     });
+    describe('EJ2-35482-Inline edit template editing with Freeze => ', () => {
+        let gridObj: any;
+        let actionBegin: () => void;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: dataSource(),
+                    allowFiltering: true,
+                    frozenColumns: 2,
+                    frozenRows: 2,
+                    allowGrouping: true,
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal', showConfirmDialog: false, showDeleteConfirmDialog: false },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    allowPaging: false,
+                    columns: [
+                        { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: true, width: 75 },
+                        { field: 'CustomerID', type: 'string', width: 75 },
+                        { field: 'ShipCity', template:'<div style="height:70px">${ShipCity}</div>', type: 'string', width: 75 },
+                        { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit', width: 75 },
+                        { field: 'Verified', type: 'boolean', editType: 'booleanedit', width: 75 },
+                    ],
+                    actionBegin: actionBegin,
+                    actionComplete: actionComplete
+                }, done);
+        });
 
+        it('Edit start', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'beginEdit') {
+                    expect(gridObj.element.querySelectorAll('.e-editedrow').length).toBe(2);
+                    expect(gridObj.element.querySelectorAll('.e-editedrow')[0].offsetHeight).toBe(gridObj.element.querySelectorAll('.e-editedrow')[1].offsetHeight);
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.clearSelection();
+            gridObj.selectRow(0, true);
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_edit' } });
+        });
+
+        it('Edit complete', (done: Function) => {
+            actionComplete = (args?: any): void => {               
+                if (args.requestType === 'save') {
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.editModule as any).editModule.endEdit();
+        });
+
+        it('adding record with freeze column template', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'add') {
+                    expect(gridObj.element.querySelectorAll('.e-addedrow')[0].offsetHeight).toBe(gridObj.element.querySelectorAll('.e-addedrow')[1].offsetHeight);
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.editModule as any).editModule.addRecord();           
+        });
+
+       afterAll(() => {
+            gridObj.notify('tooltip-destroy', {});
+            destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
+        });
+    });
 
 });

@@ -343,7 +343,7 @@ export class Selection {
         sheet.activeCell = getCellAddress(rowIdx, colIdx);
         this.parent.setProperties({ 'sheets': this.parent.sheets }, true);
         locateElem(this.getActiveCell(), getRangeIndexes(sheet.activeCell), sheet, this.parent.enableRtl);
-        this.parent.notify(activeCellChanged, [rowIdx, colIdx]);
+        this.parent.notify(activeCellChanged, null);
     }
 
     private getSelectionElement(): HTMLElement {

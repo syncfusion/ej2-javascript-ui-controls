@@ -699,8 +699,12 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
 
     /** @hidden */
     public getCellCollection(cellRange: string): string[] | string {
-        if (cellRange.indexOf(':') < 0 && !this.isCellReference(cellRange)) {
-            return cellRange.split(this.getParseArgumentSeparator());
+        if (cellRange.indexOf(':') < 0) {
+            if (!this.isCellReference(cellRange)) {
+                return cellRange.split(this.getParseArgumentSeparator());
+            } else {
+                cellRange = cellRange + ':' + cellRange;
+            }
         }
         let token: string = this.emptyString;
         let sheetTokenIndex: number = cellRange.indexOf(this.sheetToken);

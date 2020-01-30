@@ -397,7 +397,8 @@
       .e-gantt-parent-taskbar,
       .e-gantt-child-progressbar,
       .e-gantt-parent-progressbar,
-      .e-gantt-milestone {
+      .e-gantt-milestone,
+      .e-gantt-parent-milestone {
         display: inline-block;
         width: 100%;
       }
@@ -492,18 +493,22 @@
         z-index: 3;
       }
 
-      .e-milestone-top {
+      .e-milestone-top,
+      .e-parent-milestone-top {
         border-style: none solid solid;
         border-top: 0;
       }
 
       .e-milestone-top,
-      .e-milestone-bottom {
+      .e-milestone-bottom,
+      .e-parent-milestone-top,
+      .e-parent-milestone-bottom {
         border-left-color: transparent;
         border-right-color: transparent;
       }
 
-      .e-milestone-bottom {
+      .e-milestone-bottom,
+      .e-parent-milestone-bottom {
         border-bottom: 0;
         border-style: solid solid none;
       }

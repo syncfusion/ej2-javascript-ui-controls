@@ -1082,7 +1082,9 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
             this.list.innerHTML = '';
             this.list.classList.remove(dropDownBaseClasses.noData);
             this.list.appendChild(this.ulElement);
+            this.liCollections = liCollections;
             append(liCollections, this.ulElement);
+            this.updateAddItemList(this.list, itemsCount);
         }
         else {
             if (this.getModuleName() === 'listbox' && itemsCount === 0) {
@@ -1143,6 +1145,9 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
     };
     DropDownBase.prototype.updateActionCompleteData = function (li, item) {
         // this is for ComboBox custom value
+    };
+    DropDownBase.prototype.updateAddItemList = function (list, itemCount) {
+        // this is for multiselect add item
     };
     DropDownBase.prototype.updateDataList = function () {
         // this is for multiselect update list items
@@ -2072,7 +2077,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                 this.isDocumentClick = true;
                 var isActive = this.isRequested;
                 this.isInteracted = false;
-                this.hidePopup();
+                this.hidePopup(e);
                 if (!isActive) {
                     this.onFocusOut();
                     this.inputWrapper.container.classList.remove(dropDownListClasses.inputFocus);
@@ -3191,8 +3196,9 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         });
     };
     DropDownList.prototype.destroyPopup = function () {
-        if (this.isServerBlazor && this.serverPopupEle) {
-            document.querySelector('#' + this.element.id + '_popup_holder').appendChild(this.serverPopupEle);
+        var popupHolderEle = document.querySelector('#' + this.element.id + '_popup_holder');
+        if (this.isServerBlazor && this.serverPopupEle && popupHolderEle) {
+            popupHolderEle.appendChild(this.serverPopupEle);
         }
         if (this.isServerBlazor) {
             // tslint:disable-next-line
@@ -3693,7 +3699,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
      * Hides the popup if it is in an open state.
      * @returns void.
      */
-    DropDownList.prototype.hidePopup = function () {
+    DropDownList.prototype.hidePopup = function (e) {
         var isHeader = (this.headerTemplate) ? true : false;
         var isFooter = (this.headerTemplate) ? true : false;
         this.DropDownBaseresetBlazorTemplates(false, false, false, false, false, isHeader, isFooter);
@@ -3765,7 +3771,6 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
      * @return {void}.
      */
     DropDownList.prototype.destroy = function () {
-        var _this = this;
         this.isActive = false;
         this.hidePopup();
         this.unWireEvent();
@@ -3785,9 +3790,9 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                 'placeholder', 'aria-owns', 'aria-labelledby', 'aria-haspopup', 'aria-expanded',
                 'aria-activedescendant', 'autocomplete', 'aria-readonly', 'autocorrect',
                 'autocapitalize', 'spellcheck', 'aria-autocomplete', 'aria-live', 'aria-describedby', 'aria-label'];
-            attrArray.forEach(function (value) {
-                _this.inputElement.removeAttribute(value);
-            });
+            for (var i = 0; i < attrArray.length; i++) {
+                this.inputElement.removeAttribute(attrArray[i]);
+            }
             this.inputElement.setAttribute('tabindex', this.tabIndex);
             this.inputElement.classList.remove('e-input');
             Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
@@ -4349,7 +4354,7 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
             this.clearAll(e);
         }
         else if (this.isTyped && !this.isSelected && isNullOrUndefined(li)) {
-            this.customValue();
+            this.customValue(e);
         }
         this.hidePopup();
     };
@@ -4374,7 +4379,7 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
         }
         _super.prototype.dropDownClick.call(this, e);
     };
-    ComboBox.prototype.customValue = function () {
+    ComboBox.prototype.customValue = function (e) {
         var _this = this;
         var value = this.getValueByText(this.inputElement.value);
         if (!this.allowCustom && this.inputElement.value !== '') {
@@ -4396,7 +4401,7 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
                 eventArgs = { text: value_1, item: {} };
                 if (!this.initial) {
                     this.trigger('customValueSpecifier', eventArgs, function (eventArgs) {
-                        _this.updateCustomValueCallback(value_1, eventArgs, previousValue_1);
+                        _this.updateCustomValueCallback(value_1, eventArgs, previousValue_1, e);
                     });
                 }
                 else {
@@ -4407,7 +4412,7 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
                 this.isSelectCustom = false;
                 this.setProperties({ value: value });
                 if (previousValue_1 !== this.value) {
-                    this.onChangeEvent(null);
+                    this.onChangeEvent(e);
                 }
             }
         }
@@ -4415,7 +4420,7 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
             this.isSelectCustom = true;
         }
     };
-    ComboBox.prototype.updateCustomValueCallback = function (value, eventArgs, previousValue) {
+    ComboBox.prototype.updateCustomValueCallback = function (value, eventArgs, previousValue, e) {
         var fields = this.fields;
         var item = eventArgs.item;
         var dataItem = {};
@@ -4436,7 +4441,7 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
         this.setSelection(null, null);
         this.isSelectCustom = true;
         if (previousValue !== this.value) {
-            this.onChangeEvent(null);
+            this.onChangeEvent(e);
         }
     };
     /**
@@ -4523,7 +4528,7 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
      * Hides the popup if it is in open state.
      * @returns void.
      */
-    ComboBox.prototype.hidePopup = function () {
+    ComboBox.prototype.hidePopup = function (e) {
         var inputValue = this.inputElement.value === '' ? null : this.inputElement.value;
         if (!isNullOrUndefined(this.listData)) {
             var isEscape = this.isEscapeKey;
@@ -4560,7 +4565,7 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             if (!this.isEscapeKey && this.isTyped && !this.isInteracted) {
-                this.customValue();
+                this.customValue(e);
             }
         }
         if (isNullOrUndefined(this.listData) && this.allowCustom && !isNullOrUndefined(inputValue) && inputValue !== this.value) {
@@ -6012,9 +6017,9 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         if (!this.list) {
             _super.prototype.render.call(this);
         }
-        return this.ulElement ? (this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li).length > 0 &&
+        return this.ulElement && this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li).length > 0 ?
             this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li
-                + ':not(.' + HIDE_LIST + ')')) : null;
+                + ':not(.' + HIDE_LIST + ')') : [];
     };
     MultiSelect.prototype.focusInHandler = function (e) {
         if (this.enabled) {
@@ -7018,18 +7023,20 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                                 var ulElement = _this.list.querySelector('ul');
                                 if (ulElement) {
                                     if (_this.itemTemplate && (_this.mode === 'CheckBox') && isBlazor()) {
-                                        setTimeout(function () {
-                                            _this.mainList = _this.ulElement;
-                                        }, 0);
+                                        setTimeout(function () { _this.mainList = _this.ulElement; }, 0);
                                     }
                                     else {
-                                        _this.mainList = ulElement.cloneNode ? ulElement.cloneNode(true) : ulElement;
+                                        if (!(_this.mode !== 'CheckBox' && _this.allowFiltering && _this.targetElement().trim() !== '')) {
+                                            _this.mainList = ulElement.cloneNode ? ulElement.cloneNode(true) : ulElement;
+                                        }
                                     }
                                 }
                                 _this.isFirstClick = true;
                             }
                             _this.popupObj.wireScrollEvents();
-                            _this.loadTemplate();
+                            if (!(_this.mode !== 'CheckBox' && _this.allowFiltering && _this.targetElement().trim() !== '')) {
+                                _this.loadTemplate();
+                            }
                             _this.setScrollPosition();
                             if (_this.allowFiltering) {
                                 _this.notify('inputFocus', {
@@ -7332,6 +7339,10 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         }
     };
     MultiSelect.prototype.renderList = function (isEmptyData) {
+        if (!isEmptyData && this.allowCustomValue && this.list && (this.list.textContent === this.noRecordsTemplate
+            || this.list.querySelector('.e-ul') && this.list.querySelector('.e-ul').childElementCount === 0)) {
+            isEmptyData = true;
+        }
         _super.prototype.render.call(this, isEmptyData);
         this.unwireListEvents();
         this.wireListEvents();
@@ -7399,6 +7410,15 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         if (this.value && this.value.indexOf(li.getAttribute('data-value')) > -1) {
             this.mainList = this.ulElement;
             addClass([li], HIDE_LIST);
+        }
+    };
+    MultiSelect.prototype.updateAddItemList = function (list, itemCount) {
+        if (this.popupObj && this.popupObj.element && this.popupObj.element.querySelector('.' + dropDownBaseClasses.noData) && list) {
+            this.list = list;
+            this.mainList = this.ulElement = list.querySelector('ul');
+            remove(this.popupWrapper.querySelector('.e-content'));
+            this.popupObj = null;
+            this.renderPopup();
         }
     };
     MultiSelect.prototype.updateDataList = function () {
@@ -9212,7 +9232,7 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
                     this.parent.inputFocus = false;
                     this.parent.scrollFocusStatus = false;
                     this.parent.hidePopup();
-                    this.parent.onBlur();
+                    this.parent.onBlur(e);
                     this.parent.focused = true;
                 }
             }
@@ -9269,7 +9289,7 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
             var compiledString = void 0;
             this.selectAllSpan.textContent = '';
             compiledString = compile(template);
-            for (var _i = 0, _a = compiledString({}); _i < _a.length; _i++) {
+            for (var _i = 0, _a = compiledString({}, null, null, null, !this.parent.isStringTemplate); _i < _a.length; _i++) {
                 var item = _a[_i];
                 this.selectAllSpan.textContent = item.textContent;
             }
@@ -9671,11 +9691,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         else {
             args.items = this.getDataByValues([dragValue]);
         }
-        var callBackPromise = new Deferred();
-        this.trigger('beforeDrop', args, function (observedArgs) {
-            callBackPromise.resolve(observedArgs);
-        });
-        return callBackPromise;
+        this.trigger('beforeDrop', args);
     };
     // tslint:disable-next-line:max-func-body-length
     ListBox.prototype.dragEnd = function (args) {
@@ -9748,14 +9764,18 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             sortedData = [].slice.call(listObj.sortedData);
             selectedOptions = (this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 && this.allowDragAll)
                 ? this.value : [dropValue];
+            var fListData_1 = [].slice.call(this.listData);
+            var fSortData_1 = [].slice.call(this.sortedData);
             selectedOptions.forEach(function (value) {
                 droppedData = _this.getDataByValue(value);
                 var srcIdx = _this.listData.indexOf(droppedData);
                 var jsonSrcIdx = _this.jsonData.indexOf(droppedData);
                 var sortIdx = _this.sortedData.indexOf(droppedData);
-                _this.listData.splice(srcIdx, 1);
+                fListData_1.splice(srcIdx, 1);
                 _this.jsonData.splice(jsonSrcIdx, 1);
-                _this.sortedData.splice(sortIdx, 1);
+                fSortData_1.splice(sortIdx, 1);
+                _this.listData = fListData_1;
+                _this.sortedData = fSortData_1;
                 var rLi = fLiColl_1.splice(srcIdx, 1)[0];
                 var destIdx = value === dropValue ? args.currentIndex : currIdx_1;
                 listData.splice(destIdx, 0, droppedData);
@@ -9797,6 +9817,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             listObj.liCollections = liColl;
             listObj.jsonData = extend([], [], jsonData, false);
             listObj.listData = extend([], [], listData, false);
+            listObj.sortedData = extend([], [], sortedData, false);
             if (this.listData.length === 0) {
                 this.l10nUpdate();
             }
@@ -10112,22 +10133,24 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         this.triggerChange(this.getSelectedItems(), event);
     };
     ListBox.prototype.updateMainList = function () {
-        var mainCount = this.mainList.querySelectorAll('.e-list-item').length;
-        var ulEleCount = this.ulElement.querySelectorAll('.e-list-item').length;
+        var mainList = this.mainList.querySelectorAll('.e-list-item');
+        var ulList = this.ulElement.querySelectorAll('.e-list-item');
+        var mainCount = mainList.length;
+        var ulEleCount = ulList.length;
         if (this.selectionSettings.showCheckbox || (document.querySelectorAll('ul').length > 1 || mainCount !== ulEleCount)) {
             var listindex = 0;
             var valueindex = 0;
             var count = 0;
-            for (listindex; listindex < this.mainList.querySelectorAll('.e-list-item').length;) {
+            for (listindex; listindex < mainCount;) {
                 if (this.value) {
                     for (valueindex; valueindex < this.value.length; valueindex++) {
-                        if (this.mainList.querySelectorAll('.e-list-item')[listindex].getAttribute('data-value') === this.value[valueindex]) {
+                        if (mainList[listindex].getAttribute('data-value') === this.value[valueindex]) {
                             count++;
                         }
                     }
                 }
                 if (!count && this.selectionSettings.showCheckbox) {
-                    this.mainList.querySelectorAll('.e-list-item')[listindex].getElementsByClassName('e-frame')[0].classList.remove('e-check');
+                    mainList[listindex].getElementsByClassName('e-frame')[0].classList.remove('e-check');
                 }
                 if (document.querySelectorAll('ul').length > 1 && count && mainCount !== ulEleCount) {
                     this.mainList.removeChild(this.mainList.getElementsByTagName('li')[listindex]);
@@ -10312,15 +10335,56 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         }
     };
     ListBox.prototype.triggerChange = function (selectedLis, event) {
-        this.trigger('change', { elements: selectedLis, items: this.getDataByElems(selectedLis), value: this.value, event: event });
+        this.trigger('change', { elements: selectedLis, items: this.getDataByElements(selectedLis), value: this.value, event: event });
     };
     ListBox.prototype.getDataByElems = function (elems) {
-        var _this = this;
         var data = [];
-        elems.forEach(function (ele) {
-            data.push(_this.getDataByValue(_this.getFormattedValue(ele.getAttribute('data-value'))));
-        });
+        for (var i = 0, len = elems.length; i < len; i++) {
+            data.push(this.getDataByValue(this.getFormattedValue(elems[i].getAttribute('data-value'))));
+        }
         return data;
+    };
+    ListBox.prototype.getDataByElements = function (elems) {
+        var data = [];
+        var value;
+        var sIdx = 0;
+        if (!isNullOrUndefined(this.listData)) {
+            var type = this.typeOfData(this.listData).typeof;
+            if (type === 'string' || type === 'number' || type === 'boolean') {
+                for (var _i = 0, _a = this.listData; _i < _a.length; _i++) {
+                    var item = _a[_i];
+                    for (var i = sIdx, len = elems.length; i < len; i++) {
+                        value = this.getFormattedValue(elems[i].getAttribute('data-value'));
+                        if (!isNullOrUndefined(item) && item === value) {
+                            sIdx = i;
+                            data.push(item);
+                            break;
+                        }
+                    }
+                    if (elems.length === data.length) {
+                        break;
+                    }
+                }
+            }
+            else {
+                for (var _b = 0, _c = this.listData; _b < _c.length; _b++) {
+                    var item = _c[_b];
+                    for (var i = sIdx, len = elems.length; i < len; i++) {
+                        value = this.getFormattedValue(elems[i].getAttribute('data-value'));
+                        if (!isNullOrUndefined(item) && getValue((this.fields.value ? this.fields.value : 'value'), item) === value) {
+                            sIdx = i;
+                            data.push(item);
+                            break;
+                        }
+                    }
+                    if (elems.length === data.length) {
+                        break;
+                    }
+                }
+            }
+            return data;
+        }
+        return null;
     };
     ListBox.prototype.checkMaxSelection = function () {
         var limit = this.list.querySelectorAll('.e-list-item span.e-check').length;
@@ -10343,10 +10407,11 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     ListBox.prototype.toolbarClickHandler = function (e) {
         var btn = closest(e.target, 'button');
         if (btn) {
+            this.toolbarAction = btn.getAttribute('data-value');
             if (btn.disabled) {
                 return;
             }
-            switch (btn.getAttribute('data-value')) {
+            switch (this.toolbarAction) {
                 case 'moveUp':
                     this.moveUpDown(true);
                     break;
@@ -10371,11 +10436,18 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     ListBox.prototype.moveUpDown = function (isUp, isKey, value) {
         var _this = this;
         var elems = this.getSelectedItems();
+        var tempItems;
         if (value) {
             elems = value;
         }
         if (((isUp && this.isSelected(this.ulElement.firstElementChild))
             || (!isUp && this.isSelected(this.ulElement.lastElementChild))) && !value) {
+            return;
+        }
+        tempItems = this.getDataByElems(elems);
+        var localDataArgs = { cancel: false, items: tempItems, eventName: this.toolbarAction };
+        this.trigger('actionBegin', localDataArgs);
+        if (localDataArgs.cancel) {
             return;
         }
         (isUp ? elems : elems.reverse()).forEach(function (ele) {
@@ -10384,6 +10456,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             moveTo(_this.ulElement, _this.ulElement, [idx], isUp ? idx - 1 : idx + 2);
             _this.changeData(idx, isUp ? idx - 1 : idx + 1, isUp ? jsonToIdx - 1 : jsonToIdx + 1, ele);
         });
+        this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
         elems[0].focus();
         if (!isKey && this.toolbarSettings.items.length) {
             this.getToolElem().querySelector('[data-value=' + (isUp ? 'moveUp' : 'moveDown') + ']').focus();
@@ -10442,9 +10515,14 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                 });
             }
             else {
-                jsonIdx.reverse().forEach(function (i) {
+                jsonIdx.forEach(function (i) {
                     tempItems.push(fListBox.jsonData[i]);
                 });
+            }
+            var localDataArgs = { cancel: false, items: tempItems, eventName: this.toolbarAction };
+            fListBox.trigger('actionBegin', localDataArgs);
+            if (localDataArgs.cancel) {
+                return;
             }
             var rLiCollection_1 = [];
             dataLiIdx.sort(function (n1, n2) { return n1 - n2; }).reverse().forEach(function (i) {
@@ -10480,6 +10558,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 moveTo(fListBox.ulElement, tListBox.ulElement, idx, index);
+                this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
             }
             if (tListBox.mainList.childElementCount !== tListBox.jsonData.length) {
                 tListBox.mainList = tListBox.ulElement;
@@ -10502,7 +10581,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             fListBox.listData = listData;
             fListBox.sortedData = sortData;
             index = (index) ? index : tListData.length;
-            for (var i = 0; i < tempItems.length; i++) {
+            for (var i = tempItems.length - 1; i >= 0; i--) {
                 tListData.splice(index, 0, tempItems[i]);
                 tJsonData.splice(index, 0, tempItems[i]);
                 tSortData.splice(index, 0, tempItems[i]);
@@ -10535,6 +10614,12 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         var isRefresh = tListBox.sortOrder !== 'None' ||
             (tListBox.selectionSettings.showCheckbox !== fListBox.selectionSettings.showCheckbox) || tListBox.fields.groupBy;
         this.removeSelected(fListBox, fListBox.getSelectedItems());
+        var tempItems = [].slice.call(fListBox.jsonData);
+        var localDataArgs = { cancel: false, items: tempItems, eventName: this.toolbarAction };
+        fListBox.trigger('actionBegin', localDataArgs);
+        if (localDataArgs.cancel) {
+            return;
+        }
         if (tListBox.listData.length === 0) {
             tListBox.ulElement.innerHTML = '';
         }
@@ -10543,6 +10628,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             moveTo(fListBox.ulElement, tListBox.ulElement, Array.apply(null, { length: fListBox.ulElement.childElementCount }).map(Number.call, Number), index);
+            this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
         }
         if (isKey) {
             this.list.focus();
@@ -10572,6 +10658,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         fListBox.listData = fListBox.sortedData = fListBox.jsonData = [];
         if (isRefresh) {
             tListBox.ulElement.innerHTML = tListBox.renderItems(listData, tListBox.fields).innerHTML;
+            this.trigger('actionComplete', { items: tempItems, eventName: this.toolbarAction });
         }
         else {
             tListBox.sortedData = listData;
@@ -10896,11 +10983,13 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     };
     ListBox.prototype.updateSelectTag = function () {
         var ele = this.getSelectTag();
+        var innerHTML = '';
         ele.innerHTML = '';
         if (this.value) {
-            Array.prototype.forEach.call(this.value, function (value) {
-                ele.innerHTML += '<option selected value="' + value + '"></option>';
-            });
+            for (var i = 0, len = this.value.length; i < len; i++) {
+                innerHTML += '<option selected value="' + this.value[i] + '"></option>';
+            }
+            ele.innerHTML += innerHTML;
         }
         this.checkSelectAll();
     };
@@ -11261,30 +11350,6 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     ], ListBox);
     return ListBox;
 }(DropDownBase));
-/**
- * Deferred is used to handle asynchronous operation.
- */
-var Deferred = /** @__PURE__ @class */ (function () {
-    function Deferred() {
-        var _this = this;
-        /**
-         * Promise is an object that represents a value that may not be available yet, but will be resolved at some point in the future.
-         */
-        this.promise = new Promise(function (resolve, reject) {
-            _this.resolve = resolve;
-            _this.reject = reject;
-        });
-        /**
-         * Defines the callback function triggers when the Deferred object is resolved.
-         */
-        this.then = this.promise.then.bind(this.promise);
-        /**
-         * Defines the callback function triggers when the Deferred object is rejected.
-         */
-        this.catch = this.promise.catch.bind(this.promise);
-    }
-    return Deferred;
-}());
 
 /**
  * export all modules from current location

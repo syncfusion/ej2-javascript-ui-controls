@@ -78,3 +78,5 @@ export const dragEnd: string = 'dragEnd';
 export const regSub: RegExp = /~\d+~/g;
 /*** @private*/
 export const regSup: RegExp = /\^\d+\^/g;
+/** @private */
+export const beforeExport : string = 'beforeExport';

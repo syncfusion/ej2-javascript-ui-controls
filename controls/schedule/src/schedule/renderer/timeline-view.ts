@@ -26,7 +26,7 @@ export class TimelineViews extends VerticalView {
     public scrollToWorkHour(): void {
         let start: Date = this.parent.getStartEndTime(this.parent.workHours.start);
         let currDateTime: number = this.isWorkDay(this.parent.selectedDate) && this.parent.workHours.highlight &&
-            !isNullOrUndefined(start) ? new Date(+this.parent.selectedDate).setHours(start.getHours(), start.getMinutes())
+            !isNullOrUndefined(start) ? new Date(+this.parent.selectedDate).setHours(start.getHours(), start.getMinutes(), 0, 0)
             : new Date(+this.parent.selectedDate).setHours(0, 0, 0, 0);
         let queryString: string = '[data-date="' + this.parent.getMsFromDate(new Date(currDateTime)) + '"]';
         let firstWorkHourCell: HTMLElement = this.element.querySelector(queryString) as HTMLElement;
@@ -34,12 +34,24 @@ export class TimelineViews extends VerticalView {
             this.getScrollableElement().scrollLeft = firstWorkHourCell.offsetLeft;
         }
     }
-    public scrollToHour(hour: string): void {
-        let date: Date = this.parent.getStartEndTime(hour);
+    public scrollToHour(hour: string, scrollDate: Date): void {
+        let date: Date;
+        let index: number;
+        if (scrollDate) {
+            index = this.parent.getIndexOfDate(this.renderDates, util.resetTime(scrollDate));
+            if (index >= 0) {
+                let timeString: string[] = hour.split(':');
+                if (timeString.length === 2) {
+                    date = new Date(scrollDate.setHours(parseInt(timeString[0], 10), parseInt(timeString[1], 10), 0));
+                }
+            }
+        }
+        date = isNullOrUndefined(scrollDate) ? this.parent.getStartEndTime(hour) : date;
         if (isNullOrUndefined(date)) {
             return;
         }
-        this.getScrollableElement().scrollLeft = this.getLeftFromDateTime(null, date);
+        this.getScrollableElement().scrollLeft =
+            isNullOrUndefined(scrollDate) ? this.getLeftFromDateTime(null, date) : this.getLeftFromDateTime([index], date);
     }
     public generateColumnLevels(): TdData[][] {
         let levels: TdData[][] = [];

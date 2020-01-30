@@ -32,6 +32,7 @@ export class LineRouting {
     private startArray: VirtualBoundaries[] = [];
     private targetGridCollection: VirtualBoundaries[] = [];
     private sourceGridCollection: VirtualBoundaries[] = [];
+    private considerWalkable: VirtualBoundaries[] = [];
 
     /** @private */
     public lineRouting(diagram: Diagram): void {
@@ -50,10 +51,14 @@ export class LineRouting {
     /** @private */
     public renderVirtualRegion(diagram: Diagram, isUpdate?: boolean): void {
         /* tslint:disable */
-        let right: number = diagram.spatialSearch['pageRight'] + this.size;
-        let bottom: number = diagram.spatialSearch['pageBottom'] + this.size;
-        let left: number = diagram.spatialSearch['pageLeft'] - this.size;
-        let top: number = diagram.spatialSearch['pageTop'] - this.size;
+        let extraBounds: number = this.size;
+        if (diagram.spatialSearch['pageTop'] < 0 || diagram.spatialSearch['pageLeft'] < 0) {
+            extraBounds = this.size + (this.size / 2);
+        }
+        let right: number = diagram.spatialSearch['pageRight'] + extraBounds;
+        let bottom: number = diagram.spatialSearch['pageBottom'] + extraBounds;
+        let left: number = diagram.spatialSearch['pageLeft'] - extraBounds;
+        let top: number = diagram.spatialSearch['pageTop'] - extraBounds;
         left = left < 0 ? left - 20 : 0;
         top = top < 0 ? top - 20 : 0;
         /* tslint:enable */
@@ -574,8 +579,7 @@ export class LineRouting {
                     break;
                 } else {
                     let grid: VirtualBoundaries = this.gridCollection[x][y];
-                    grid.nodeId = [];
-                    grid.walkable = true;
+                    this.considerWalkable.push(grid);
                 }
             }
             if (x > 0 && y > 0) {
@@ -591,7 +595,8 @@ export class LineRouting {
         if (x >= 0 && x < this.noOfRows && y >= 0 && y < this.noOfCols) {
             let grid: VirtualBoundaries = this.gridCollection[x][y];
             if (grid && (grid.walkable || (grid.nodeId.length === 1 &&
-                (this.sourceGridCollection.indexOf(grid) !== -1 || this.targetGridCollection.indexOf(grid) !== -1)))) {
+                (this.sourceGridCollection.indexOf(grid) !== -1 || this.targetGridCollection.indexOf(grid) !== -1 ||
+                    this.considerWalkable.indexOf(grid) !== -1)))) {
                 if ((isparent && !grid.parent) || !isparent) {
                     return true;
                 }

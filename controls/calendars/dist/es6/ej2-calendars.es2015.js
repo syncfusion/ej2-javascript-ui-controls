@@ -1866,9 +1866,6 @@ __decorate([
     Property(null)
 ], CalendarBase.prototype, "serverTimezoneOffset", void 0);
 __decorate([
-    Property('en-US')
-], CalendarBase.prototype, "locale", void 0);
-__decorate([
     Event()
 ], CalendarBase.prototype, "created", void 0);
 __decorate([
@@ -3448,7 +3445,7 @@ let DatePicker = class DatePicker extends Calendar {
         this.isPopupClicked = false;
     }
     documentHandler(e) {
-        if (e.type !== 'touchstart') {
+        if ((!isNullOrUndefined(this.popupObj) && this.inputWrapper.container.contains(e.target)) && e.type !== 'touchstart') {
             e.preventDefault();
         }
         let target = e.target;
@@ -3531,6 +3528,7 @@ let DatePicker = class DatePicker extends Calendar {
                 }
                 break;
             case 'tab':
+            case 'shiftTab':
                 if (!this.isBlazorServer) {
                     this.strictModeUpdate();
                     this.updateInput();
@@ -3645,6 +3643,10 @@ let DatePicker = class DatePicker extends Calendar {
                     date.setFullYear(this.value.getFullYear());
                 }
             }
+        }
+        // EJ2-35061 - To prevent change event from triggering twice when using strictmode and format property
+        if ((this.getModuleName() === 'datepicker') && (this.value && !isNaN(+this.value)) && date) {
+            date.setHours(this.value.getHours(), this.value.getMinutes(), this.value.getSeconds(), this.value.getMilliseconds());
         }
         if (this.strictMode && date) {
             this.updateInputValue(this.globalize.formatDate(date, dateOptions));
@@ -4216,6 +4218,7 @@ let DatePicker = class DatePicker extends Calendar {
             shiftPageDown: 'shift+pagedown',
             controlHome: 'ctrl+home',
             controlEnd: 'ctrl+end',
+            shiftTab: 'shift+tab',
             tab: 'tab'
         };
         return this.defaultKeyConfigs;
@@ -4573,9 +4576,6 @@ let DatePicker = class DatePicker extends Calendar {
         }
     }
 };
-__decorate$1([
-    Property('en-US')
-], DatePicker.prototype, "locale", void 0);
 __decorate$1([
     Property(null)
 ], DatePicker.prototype, "width", void 0);
@@ -10568,7 +10568,8 @@ let TimePicker = class TimePicker extends Component {
         append([this.listTag], this.listWrapper);
     }
     documentClickHandler(event) {
-        if (event.type !== 'touchstart') {
+        if ((!isNullOrUndefined(this.popupObj) && this.inputWrapper.container.contains(event.target)) &&
+            event.type !== 'touchstart') {
             event.preventDefault();
         }
         let target = event.target;
@@ -10584,7 +10585,10 @@ let TimePicker = class TimePicker extends Component {
         else if (target !== this.inputElement) {
             if (!Browser.isDevice) {
                 this.isPreventBlur = (Browser.isIE || Browser.info.name === 'edge') && (document.activeElement === this.inputElement);
-                event.preventDefault();
+                if ((!isNullOrUndefined(this.popupObj) && this.inputWrapper.container.contains(event.target)) &&
+                    event.type !== 'touchstart') {
+                    event.preventDefault();
+                }
             }
         }
     }
@@ -12469,9 +12473,6 @@ __decorate$4([
 __decorate$4([
     Property(null)
 ], DateTimePicker.prototype, "firstDayOfWeek", void 0);
-__decorate$4([
-    Property('en-US')
-], DateTimePicker.prototype, "locale", void 0);
 __decorate$4([
     Property('Gregorian')
 ], DateTimePicker.prototype, "calendarMode", void 0);

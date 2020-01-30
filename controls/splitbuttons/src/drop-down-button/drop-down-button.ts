@@ -217,7 +217,13 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             buttonObserver.off('component-rendered', this.buttonRendered, this.element.id);
         }
     }
-
+    /**
+     * Adds a new item to the menu. By default, new item appends to the list as the last item,
+     * but you can insert based on the text parameter.
+     * @param  { ItemModel[] } items - Specifies an array of JSON data.
+     * @param { string } text - Specifies the text to insert the newly added item in the menu.
+     * @returns {void}.
+     */
     public addItems(items: ItemModel[], text?: string): void {
         let newItem: ItemModel;
         let idx: number = this.items.length;
@@ -234,7 +240,11 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         }
         if (!this.canOpen()) { this.createItems(); }
     }
-
+    /**
+     * Removes the items from the menu.
+     * @param  { string[] } items - Specifies an array of string to remove the items.
+     * @returns {void}.
+     */
     public removeItems(items: string[]): void {
             for (let i: number = 0, len: number = items.length; i < len; i++) {
                 for (let j: number = 0, len: number = this.items.length; j < len; j++) {

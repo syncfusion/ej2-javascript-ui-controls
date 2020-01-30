@@ -30,7 +30,9 @@ let pivotGridObj: PivotView = new PivotView({
     height: 300,
     dataBound: () => {
         if (onInit) {
-            pivotGridObj.dataSourceSettings.values.forEach(function (value: IFieldOptions) { measureList[value.name] = value.caption || value.name });
+            for (let value of pivotGridObj.dataSourceSettings.values) {
+                measureList[value.name] = value.caption || value.name;
+            }
             chartSeries = frameChartSeries();
             chartUpdate();
         }

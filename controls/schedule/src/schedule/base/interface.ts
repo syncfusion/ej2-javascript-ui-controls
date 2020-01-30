@@ -352,6 +352,12 @@ export interface ResourceDetails {
     resourceData: { [key: string]: Object };
     /** Returns the respective resource fields data. */
     groupData?: { [key: string]: Object };
+    /** It returns the child level resources in compact mode. */
+    resourceChild?: ResourceDetails[];
+    /** It returns the Id of current resource in compact mode. */
+    resourceId?: string;
+    /** It returns the Name of current resource in compact mode. */
+    resourceName?: string;
 }
 
 /** @hidden */
@@ -369,7 +375,7 @@ export interface IRenderer {
     isCurrentDate(date: Date): boolean;
     startDate(): Date;
     endDate(): Date;
-    scrollToHour?(hour: string): void;
+    scrollToHour?(hour: string, scrollDate?: Date): void;
     highlightCurrentTime?(): void;
     getStartHour(): Date;
     getEndHour(): Date;
@@ -484,7 +490,11 @@ export interface UIStateArgs {
     isBlock?: boolean;
 }
 
-/** @hidden */
+/**
+ *  @hidden
+ *  Use ResourceDetails instead of TreeViewArgs
+ *  @deprecated
+ */
 export interface TreeViewArgs {
     resourceChild?: TreeViewArgs[];
     resourceId?: string;

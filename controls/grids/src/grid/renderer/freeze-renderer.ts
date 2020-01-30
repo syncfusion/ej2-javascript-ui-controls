@@ -257,9 +257,10 @@ export class FreezeRender extends HeaderRender implements IRenderer {
     }
 
     private updateResizeHandler(): void {
-        [].slice.call(this.parent.getHeaderContent().querySelectorAll('.e-rhandler')).forEach((ele: HTMLElement) => {
-            ele.style.height = ele.parentElement.offsetHeight + 'px';
-        });
+        let elements: HTMLElement[] = [].slice.call(this.parent.getHeaderContent().querySelectorAll('.e-rhandler'));
+        for (let i: number = 0; i < elements.length; i++) {
+            elements[i].style.height = elements[i].parentElement.offsetHeight + 'px';
+        }
     }
 
     private setWrapHeight(

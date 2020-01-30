@@ -270,7 +270,7 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
      * To destroy the control.
      */
     public destroy(): void {
-        this.element.classList.remove(CLASSNAMES.ROOT, CLASSNAMES.RTL);
+        this.element.classList.remove(CLASSNAMES.ROOT, CLASSNAMES.RTL, CLASSNAMES.OPEN, CLASSNAMES.CLOSE);
         this.unwireEvents();
         super.destroy();
     }

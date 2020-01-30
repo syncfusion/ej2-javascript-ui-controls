@@ -2506,6 +2506,22 @@ describe('TreeView control', () => {
                 expect(i).toEqual(2);
                 expect(li[7].classList.contains('e-active')).toBe(false);
             });
+            it('nodeSelecting event is cancelled', () => {
+                let i:number=0, nodeData:any;
+                treeObj = new TreeView({
+                    fields: { dataSource: hierarchicalData3, id: "nodeId", text: "nodeText", child:"nodeChild" },
+                    nodeSelecting: (args:NodeSelectEventArgs) => {
+                      i++;
+                     args.cancel = true;
+                    }
+                },'#tree1');
+                expect(i).toEqual(0);
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                mouseEventArgs.target = li[0].querySelector('.e-list-text');
+                treeObj.touchClickObj.tap(tapEvent);
+                expect(i).toEqual(1);
+                expect(li[0].classList.contains('e-active')).toBe(false);
+            });
             it('nodeSelected event is triggered', () => {
                  let i:number=0, nodeData:any;
                 treeObj = new TreeView({
@@ -2824,6 +2840,7 @@ describe('TreeView control', () => {
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
                 EventHandler.trigger(<any>(document), 'mouseup', mouseup);
             });
+            
             it('nodeChecking event is triggered', () => {
                 var j = true;
                 treeObj = new TreeView({
@@ -6997,6 +7014,51 @@ describe('TreeView control', () => {
                 expect(li[1].childElementCount).toBe(3);
                 expect(li[1].children[2].childElementCount).toBe(3);
             });
+            it('nodeDragStop event is cancelled', () => {
+                treeObj = new TreeView({
+                    fields: { dataSource: localData1, id: 'nodeId', text: 'nodeText', parentID: 'nodePid', hasChildren: 'hasChild' },
+                    nodeDragStop: (args: DragAndDropEventArgs) => {
+                        j++;
+                        if (args.droppedNodeData['text'] == "Videos") {
+                            args.cancel = true;
+                        }
+                    },
+                    allowDragAndDrop: true,
+                },'#tree1');
+               
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                let mousedown: any = getEventObject('MouseEvents', 'mousedown', treeObj.element, li[2].querySelector('.e-list-text'), 15, 10);
+                EventHandler.trigger(treeObj.element, 'mousedown', mousedown);                
+                let mousemove: any = getEventObject('MouseEvents', 'mousemove', treeObj.element, li[2].querySelector('.e-list-text'), 15, 70);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                mousemove.srcElement = mousemove.target = mousemove.toElement = li[1].querySelector('.e-list-text');
+                mousemove = setMouseCordinates(mousemove, 15, 75);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, li[1].querySelector('.e-list-text'));
+                mouseup.type = 'mouseup';
+                EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+            });
+            it('drag and drop with multiple nodes', () => {
+                treeObj = new TreeView({
+                    fields: { dataSource: localData1, id: 'nodeId', text: 'nodeText', parentID: 'nodePid', hasChildren: 'hasChild' },
+                    allowDragAndDrop: true,
+                    allowMultiSelection: true,
+                },'#tree1');
+               
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                treeObj.selectedNodes = ['02', '03'];
+                treeObj.dataBind();
+                let mousedown: any = getEventObject('MouseEvents', 'mousedown', treeObj.element, li[2].querySelector('.e-list-text'), 15, 10);
+                EventHandler.trigger(treeObj.element, 'mousedown', mousedown);                
+                let mousemove: any = getEventObject('MouseEvents', 'mousemove', treeObj.element, li[2].querySelector('.e-list-text'), 15, 70);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                mousemove.srcElement = mousemove.target = mousemove.toElement = li[1].querySelector('.e-list-text');
+                mousemove = setMouseCordinates(mousemove, 15, 75);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, li[1].querySelector('.e-list-text'));
+                mouseup.type = 'mouseup';
+                EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+            });
             it('destroyed event is triggered', () => {
                 treeObj = new TreeView({
                     fields: { dataSource: localData1, id: 'nodeId', text: 'nodeText', parentID: 'nodePid', hasChildren: 'hasChild' },
@@ -7535,6 +7597,26 @@ describe('TreeView control', () => {
                 ];
                 treeObj.refreshNode('04', data);
                 treeObj.expandedNodes = ['04'];
+                treeObj.dataBind();
+                expect(li[3].querySelector('.e-list-icon').classList.contains('folder')).toBe(true);
+                expect(li[3].getAttribute('title')).toBe("This is refreshed node");
+                expect(li[3].querySelector('.e-list-url').href.indexOf('https://ej2.syncfusion.com/home/')).not.toBe(-1);
+                expect(treeObj.getTreeData('04')[0].nodeText).toBe("RefreshedNode");
+                treeObj.expandedNodes = ['04','10-10'];
+                treeObj.dataBind();
+                var refreshedChild = li[3].querySelector('ul li');
+                expect(refreshedChild.querySelector('ul li').getAttribute("data-uid")).toBe("10-11");
+                expect(refreshedChild.querySelector(".e-list-text").textContent).toBe("Refreshed child Node");
+            });
+            it('refreshNode parent and child nodes together rendered in DOM with parent in collapsed state', function () {
+                var li = treeObj.element.querySelectorAll('li');
+                var data = [{ nodeText: 'RefreshedNode', iconCss: 'folder', navigateUrl: 'https://ej2.syncfusion.com/home/', tooltip: 'This is refreshed node', hasChild: true },
+                { nodeId: '10-10', nodePid: '04', nodeText: 'Refreshed child Node', icons: 'file', hasChild: true, },
+                { nodeId: '10-11', nodePid: '10-10', nodeText: 'Refreshed  nested child Node', }
+                ];
+                treeObj.expandedNodes = ['04'];
+                treeObj.dataBind();
+                treeObj.refreshNode('04', data);
                 treeObj.dataBind();
                 expect(li[3].querySelector('.e-list-icon').classList.contains('folder')).toBe(true);
                 expect(li[3].getAttribute('title')).toBe("This is refreshed node");

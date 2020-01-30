@@ -40,13 +40,14 @@ export class Logger implements ILogger {
 
     public log(types: string | string[], args: Object): void {
         if (!(types instanceof Array)) { types = [types]; }
-        (<string[]>types).forEach((type: string) => {
-            let item: ItemDetails = detailLists[type];
+        let type: string[] = (<string[]>types);
+        for (let i: number = 0; i < type.length; i++) {
+            let item: ItemDetails = detailLists[type[i]];
             let cOp: CheckOptions = item.check(args, this.parent);
             if (cOp.success) {
                 console[item.logType](item.generateMessage(args, this.parent, cOp.options));
             }
-        });
+        }
     }
     public patchadaptor(): void {
         let adaptor: AdaptorOptions = this.parent.getDataModule().dataManager.adaptor;

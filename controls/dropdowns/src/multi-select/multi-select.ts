@@ -1403,10 +1403,10 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (!this.list) {
             super.render();
         }
-        return this.ulElement ? ((<HTMLElement[] & NodeListOf<Element>>
-            this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li)).length > 0 &&
+        return this.ulElement && (<HTMLElement[] & NodeListOf<Element>>
+            this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li)).length > 0 ?
             <HTMLElement[] & NodeListOf<Element>>this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li
-                + ':not(.' + HIDE_LIST + ')')) : null;
+                + ':not(.' + HIDE_LIST + ')') : [];
 
     }
     private focusInHandler(e?: FocusEvent | MouseEvent | KeyboardEvent | TouchEvent): boolean {
@@ -2366,20 +2366,19 @@ export class MultiSelect extends DropDownBase implements IInput {
                                 let ulElement: HTMLElement = this.list.querySelector('ul');
                                 if (ulElement) {
                                     if (this.itemTemplate && (this.mode === 'CheckBox') && isBlazor()) {
-                                        setTimeout(
-                                            (): void => {
-                                                this.mainList = this.ulElement;
-                                            },
-                                            0
-                                        );
+                                        setTimeout((): void => { this.mainList = this.ulElement; }, 0);
                                     } else {
-                                        this.mainList = ulElement.cloneNode ? (ulElement.cloneNode(true) as HTMLElement) : ulElement;
+                                        if (!(this.mode !== 'CheckBox' && this.allowFiltering && this.targetElement().trim() !== '')) {
+                                            this.mainList = ulElement.cloneNode ? (ulElement.cloneNode(true) as HTMLElement) : ulElement;
+                                        }
                                     }
                                 }
                                 this.isFirstClick = true;
                             }
                             this.popupObj.wireScrollEvents();
-                            this.loadTemplate();
+                            if (!(this.mode !== 'CheckBox' && this.allowFiltering && this.targetElement().trim() !== '')) {
+                                this.loadTemplate();
+                            }
                             this.setScrollPosition();
                             if (this.allowFiltering) {
                                 this.notify(
@@ -2671,6 +2670,10 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
     protected renderList(isEmptyData?: boolean): void {
+        if (!isEmptyData && this.allowCustomValue && this.list && (this.list.textContent === this.noRecordsTemplate
+            || this.list.querySelector('.e-ul') && this.list.querySelector('.e-ul').childElementCount === 0)) {
+            isEmptyData = true;
+        }
         super.render(isEmptyData);
         this.unwireListEvents();
         this.wireListEvents();
@@ -2735,6 +2738,15 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.value && (this.value as string[]).indexOf(li.getAttribute('data-value')) > -1) {
             this.mainList = this.ulElement;
             addClass([li], HIDE_LIST);
+        }
+    }
+    protected updateAddItemList(list: HTMLElement, itemCount: number): void {
+        if (this.popupObj && this.popupObj.element && this.popupObj.element.querySelector('.' + dropDownBaseClasses.noData) && list) {
+            this.list = list;
+            this.mainList = this.ulElement = list.querySelector('ul');
+            remove(this.popupWrapper.querySelector('.e-content'));
+            this.popupObj = null;
+            this.renderPopup();
         }
     }
     protected updateDataList(): void {

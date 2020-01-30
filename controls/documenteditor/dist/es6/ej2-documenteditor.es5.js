@@ -2886,6 +2886,16 @@ var HelperMethods = /** @__PURE__ @class */ (function () {
         }
         return color;
     };
+    HelperMethods.getColor = function (color) {
+        if (color.length > 0) {
+            if (color[0] === '#') {
+                if (color.length > 7) {
+                    return color.substr(0, 7);
+                }
+            }
+        }
+        return color;
+    };
     /**
      * Converts point to pixel.
      * @param {number} point
@@ -2997,13 +3007,13 @@ var HelperMethods = /** @__PURE__ @class */ (function () {
     HelperMethods.writeCharacterFormat = function (characterFormat, isInline, format) {
         characterFormat.bold = isInline ? format.bold : format.getValue('bold');
         characterFormat.italic = isInline ? format.italic : format.getValue('italic');
-        characterFormat.fontSize = isInline ? format.fontSize : format.getValue('fontSize');
-        characterFormat.fontFamily = isInline ? format.fontFamily : format.getValue('fontFamily');
+        characterFormat.fontSize = isInline ? this.toWriteInline(format, 'fontSize') : format.getValue('fontSize');
+        characterFormat.fontFamily = isInline ? this.toWriteInline(format, 'fontFamily') : format.getValue('fontFamily');
         characterFormat.underline = isInline ? format.underline : format.getValue('underline');
         characterFormat.strikethrough = isInline ? format.strikethrough : format.getValue('strikethrough');
         characterFormat.baselineAlignment = isInline ? format.baselineAlignment : format.getValue('baselineAlignment');
         characterFormat.highlightColor = isInline ? format.highlightColor : format.getValue('highlightColor');
-        characterFormat.fontColor = isInline ? format.fontColor : format.getValue('fontColor');
+        characterFormat.fontColor = isInline ? this.toWriteInline(format, 'fontColor') : format.getValue('fontColor');
         characterFormat.styleName = !isNullOrUndefined(format.baseCharStyle) ? format.baseCharStyle.name : undefined;
         characterFormat.bidi = isInline ? format.bidi : format.getValue('bidi');
         characterFormat.bdo = isInline ? format.bdo : format.getValue('bdo');
@@ -3011,6 +3021,14 @@ var HelperMethods = /** @__PURE__ @class */ (function () {
         characterFormat.italicBidi = isInline ? format.italicBidi : format.getValue('italicBidi');
         characterFormat.fontSizeBidi = isInline ? format.fontSizeBidi : format.getValue('fontSizeBidi');
         characterFormat.fontFamilyBidi = isInline ? format.fontFamilyBidi : format.getValue('fontFamilyBidi');
+    };
+    HelperMethods.toWriteInline = function (format, propertyName) {
+        if (!isNullOrUndefined(format.ownerBase) && (format.ownerBase instanceof ElementBox)) {
+            return format.hasValue(propertyName) ? format[propertyName] : format.getValue(propertyName);
+        }
+        else {
+            return format[propertyName];
+        }
     };
     /* tslint:enable:no-any */
     /**
@@ -6968,33 +6986,38 @@ var TableWidget = /** @__PURE__ @class */ (function (_super) {
             // Clear the table widths and set the preferred width for cells.
             this.tableFormat.preferredWidth = 0;
             this.tableFormat.preferredWidthType = 'Auto';
-            this.childWidgets.forEach(function (row) {
-                row.childWidgets.forEach(function (cell) {
-                    cell.cellFormat.preferredWidthType = 'Point';
-                    cell.cellFormat.preferredWidth = cell.cellFormat.cellWidth;
-                });
-            });
+            for (var i = 0; i < this.childWidgets.length; i++) {
+                var rowWidget = this.childWidgets[i];
+                for (var j = 0; j < rowWidget.childWidgets.length; j++) {
+                    var cellWidget = rowWidget.childWidgets[j];
+                    cellWidget.cellFormat.preferredWidthType = 'Point';
+                    cellWidget.cellFormat.preferredWidth = cellWidget.cellFormat.cellWidth;
+                }
+            }
         }
         else if (autoFitBehavior === 'FitToWindow') {
             // Set the preferred width for table and cells in percentage.
-            var tableWidth_1 = this.tableHolder.getTotalWidth(0);
+            var tableWidth = this.tableHolder.getTotalWidth(0);
             this.tableFormat.leftIndent = 0;
             this.tableFormat.preferredWidth = 100;
             this.tableFormat.preferredWidthType = 'Percent';
-            this.childWidgets.forEach(function (row) {
-                row.childWidgets.forEach(function (cell) {
+            for (var i = 0; i < this.childWidgets.length; i++) {
+                var row = this.childWidgets[i];
+                for (var z = 0; z < row.childWidgets.length; z++) {
+                    var cell = row.childWidgets[z];
                     if (cell.cellFormat.preferredWidthType !== 'Percent') {
                         cell.cellFormat.preferredWidthType = 'Percent';
-                        cell.cellFormat.preferredWidth = (cell.cellFormat.cellWidth / tableWidth_1) * 100;
+                        cell.cellFormat.preferredWidth = (cell.cellFormat.cellWidth / tableWidth) * 100;
                     }
-                });
-            });
+                }
+            }
         }
         else {
             // Clear the preferred width for table and cells.
             this.tableFormat.preferredWidth = 0;
             this.tableFormat.preferredWidthType = 'Auto';
-            this.childWidgets.forEach(function (row) {
+            for (var i = 0; i < this.childWidgets.length; i++) {
+                var row = this.childWidgets[i];
                 row.rowFormat.beforeWidth = 0;
                 row.rowFormat.gridBefore = 0;
                 row.rowFormat.gridBeforeWidth = 0;
@@ -7003,11 +7026,12 @@ var TableWidget = /** @__PURE__ @class */ (function (_super) {
                 row.rowFormat.gridAfter = 0;
                 row.rowFormat.gridAfterWidth = 0;
                 row.rowFormat.gridAfterWidthType = 'Auto';
-                row.childWidgets.forEach(function (cell) {
+                for (var j = 0; j < row.childWidgets.length; j++) {
+                    var cell = row.childWidgets[j];
                     cell.cellFormat.preferredWidth = 0;
                     cell.cellFormat.preferredWidthType = 'Auto';
-                });
-            });
+                }
+            }
         }
     };
     /**
@@ -8034,12 +8058,12 @@ var TableCellWidget = /** @__PURE__ @class */ (function (_super) {
                 this.sizeInfo.maximumWordWidth = size.maximumWordWidth + this.sizeInfo.minimumWidth;
                 // if minimum and maximum width values are equal, set value as zero.
                 // later, preferred width value is considered for all width values.
-                if (this.sizeInfo.minimumWidth === this.sizeInfo.minimumWordWidth
-                    && this.sizeInfo.minimumWordWidth === this.sizeInfo.maximumWordWidth) {
-                    this.sizeInfo.minimumWordWidth = 0;
-                    this.sizeInfo.maximumWordWidth = 0;
-                    this.sizeInfo.minimumWidth = 0;
-                }
+                // if (this.sizeInfo.minimumWidth === this.sizeInfo.minimumWordWidth
+                //     && this.sizeInfo.minimumWordWidth === this.sizeInfo.maximumWordWidth) {
+                //     this.sizeInfo.minimumWordWidth = 0;
+                //     this.sizeInfo.maximumWordWidth = 0;
+                //     this.sizeInfo.minimumWidth = 0;
+                // }
             }
         }
         var sizeInfo = new ColumnSizeInfo();
@@ -12051,6 +12075,7 @@ var WTableHolder = /** @__PURE__ @class */ (function () {
                 // Try to fit minimum width for each column and allot remaining space to columns based on their minimum word width.
                 var totalMinimumWordWidth = this.getTotalWidth(1);
                 var totalMinWidth = this.getTotalWidth(3);
+                var totalPreferredWidth = this.getTotalWidth(0);
                 if (totalMinWidth > 2112) {
                     var cellWidth = 2112 / this.columns.length;
                     for (var i = 0; i < this.columns.length; i++) {
@@ -12073,8 +12098,8 @@ var WTableHolder = /** @__PURE__ @class */ (function () {
                         }
                         // table width exceeds container width
                     }
-                    else if (totalMinWidth > containerWidth) {
-                        var factor = containerWidth / totalMinWidth;
+                    else if (totalPreferredWidth > containerWidth) {
+                        var factor = containerWidth / totalPreferredWidth;
                         for (var i = 0; i < this.columns.length; i++) {
                             var column = this.columns[i];
                             column.preferredWidth = column.preferredWidth * factor;
@@ -14114,7 +14139,9 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
             'Previous Comment': 'Previous Comment',
             'Un-posted comments': 'Un-posted comments',
             // tslint:disable-next-line:max-line-length
-            'Discard Comment': 'Added comments not posted. If you continue, that comment will be discarded.'
+            'Discard Comment': 'Added comments not posted. If you continue, that comment will be discarded.',
+            'No Headings': 'No Heading Found!',
+            'Add Headings': 'This document has no headings. Please add headings and try again.'
         };
         _this.viewer = new PageLayoutViewer(_this);
         _this.parser = new SfdtReader(_this.viewer);
@@ -14393,55 +14420,62 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
                         this.viewer.showComments(model.showComments);
                     }
                     break;
+                case 'enableRtl':
+                    this.localizeDialogs(model.enableRtl);
+                    break;
             }
         }
     };
-    DocumentEditor.prototype.localizeDialogs = function () {
+    DocumentEditor.prototype.localizeDialogs = function (enableRtl) {
         if (this.locale !== '') {
             var l10n = new L10n('documenteditor', this.defaultLocale);
             l10n.setLocale(this.locale);
+            if (!isNullOrUndefined(enableRtl)) {
+                this.viewer.dialog.enableRtl = enableRtl;
+                this.viewer.dialog2.enableRtl = enableRtl;
+            }
             if (this.optionsPaneModule) {
-                this.optionsPaneModule.initOptionsPane(l10n);
+                this.optionsPaneModule.initOptionsPane(l10n, enableRtl);
             }
             if (this.paragraphDialogModule) {
                 this.paragraphDialogModule.initParagraphDialog(l10n);
             }
             if (this.pageSetupDialogModule) {
-                this.pageSetupDialogModule.initPageSetupDialog(l10n);
+                this.pageSetupDialogModule.initPageSetupDialog(l10n, enableRtl);
             }
             if (this.fontDialogModule) {
-                this.fontDialogModule.initFontDialog(l10n);
+                this.fontDialogModule.initFontDialog(l10n, enableRtl);
             }
             if (this.hyperlinkDialogModule) {
-                this.hyperlinkDialogModule.initHyperlinkDialog(l10n);
+                this.hyperlinkDialogModule.initHyperlinkDialog(l10n, enableRtl);
             }
             if (this.contextMenuModule) {
                 this.contextMenuModule.contextMenuInstance.destroy();
-                this.contextMenuModule.initContextMenu(l10n);
+                this.contextMenuModule.initContextMenu(l10n, enableRtl);
             }
             if (this.listDialogModule) {
-                this.listDialogModule.initListDialog(l10n);
+                this.listDialogModule.initListDialog(l10n, enableRtl);
             }
             if (this.tablePropertiesDialogModule) {
-                this.tablePropertiesDialogModule.initTablePropertyDialog(l10n);
+                this.tablePropertiesDialogModule.initTablePropertyDialog(l10n, enableRtl);
             }
             if (this.bordersAndShadingDialogModule) {
-                this.bordersAndShadingDialogModule.initBordersAndShadingsDialog(l10n);
+                this.bordersAndShadingDialogModule.initBordersAndShadingsDialog(l10n, enableRtl);
             }
             if (this.cellOptionsDialogModule) {
-                this.cellOptionsDialogModule.initCellMarginsDialog(l10n);
+                this.cellOptionsDialogModule.initCellMarginsDialog(l10n, enableRtl);
             }
             if (this.tableOptionsDialogModule) {
-                this.tableOptionsDialogModule.initTableOptionsDialog(l10n);
+                this.tableOptionsDialogModule.initTableOptionsDialog(l10n, enableRtl);
             }
             if (this.tableDialogModule) {
                 this.tableDialogModule.initTableDialog(l10n);
             }
             if (this.styleDialogModule) {
-                this.styleDialogModule.initStyleDialog(l10n);
+                this.styleDialogModule.initStyleDialog(l10n, enableRtl);
             }
             if (this.tableOfContentsDialogModule) {
-                this.tableOfContentsDialogModule.initTableOfContentDialog(l10n);
+                this.tableOfContentsDialogModule.initTableOfContentDialog(l10n, enableRtl);
             }
             if (this.commentReviewPane && this.commentReviewPane.reviewPane) {
                 if (this.enableRtl) {
@@ -15119,10 +15153,12 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
     DocumentEditor.prototype.destroy = function () {
         _super.prototype.destroy.call(this);
         this.destroyDependentModules();
-        if (!isNullOrUndefined(this.viewer)) {
-            this.viewer.destroy();
+        if (!this.refreshing) {
+            if (!isNullOrUndefined(this.viewer)) {
+                this.viewer.destroy();
+            }
+            this.viewer = undefined;
         }
-        this.viewer = undefined;
         if (!isNullOrUndefined(this.element)) {
             this.element.classList.remove('e-documenteditor');
             this.element.innerHTML = '';
@@ -19269,7 +19305,7 @@ var Layout = /** @__PURE__ @class */ (function () {
                     splittedWidget.index = tableRowWidget.index;
                     splittedWidget.rowFormat = tableRowWidget.rowFormat;
                     this.updateWidgetLocation(tableRowWidget, splittedWidget);
-                    splittedWidget.height = 0;
+                    // splittedWidget.height = 0;
                     rowCollection.push(splittedWidget);
                 }
                 var rowSpan = 1;
@@ -19278,6 +19314,12 @@ var Layout = /** @__PURE__ @class */ (function () {
                 if (rowIndex - splittedCell.rowIndex === rowSpan - 1
                     && splittedWidget.height < splittedCell.height + splittedCell.margin.top + splittedCell.margin.bottom) {
                     splittedWidget.height = splittedCell.height + splittedCell.margin.top + splittedCell.margin.bottom;
+                }
+                else {
+                    if (tableRowWidget.rowFormat.heightType !== 'Auto') {
+                        //Sets the height for row widget if height type is exact or at least.
+                        splittedWidget.height = tableRowWidget.rowFormat.height;
+                    }
                 }
                 splittedWidget.childWidgets.push(splittedCell);
                 splittedCell.containerWidget = splittedWidget;
@@ -21939,20 +21981,6 @@ var Renderer = /** @__PURE__ @class */ (function () {
         configurable: true
     });
     /**
-     * Gets the color.
-     * @private
-     */
-    Renderer.prototype.getColor = function (color) {
-        if (color.length > 0) {
-            if (color[0] === '#') {
-                if (color.length > 7) {
-                    return color.substr(0, 7);
-                }
-            }
-        }
-        return color;
-    };
-    /**
      * Renders widgets.
      * @param {Page} page
      * @param {number} left
@@ -21965,7 +21993,7 @@ var Renderer = /** @__PURE__ @class */ (function () {
         if (isNullOrUndefined(this.pageCanvas) || isNullOrUndefined(page)) {
             return;
         }
-        this.pageContext.fillStyle = this.getColor(this.viewer.backgroundColor);
+        this.pageContext.fillStyle = HelperMethods.getColor(this.viewer.backgroundColor);
         this.pageContext.beginPath();
         this.pageContext.fillRect(left, top, width, height);
         this.pageContext.closePath();
@@ -22450,7 +22478,7 @@ var Renderer = /** @__PURE__ @class */ (function () {
                 this.pageContext.fillStyle = HelperMethods.getHighlightColorCode(highlightColor);
             }
             else {
-                this.pageContext.fillStyle = this.getColor(highlightColor);
+                this.pageContext.fillStyle = HelperMethods.getColor(highlightColor);
             }
             // tslint:disable-next-line:max-line-length
             this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
@@ -22467,7 +22495,7 @@ var Renderer = /** @__PURE__ @class */ (function () {
             var index = text.indexOf('.');
             text = text.substr(index) + text.substring(0, index);
         }
-        this.pageContext.fillStyle = this.getColor(color);
+        this.pageContext.fillStyle = HelperMethods.getColor(color);
         // tslint:disable-next-line:max-line-length
         this.pageContext.fillText(text, this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width));
         if (format.underline !== 'None' && !isNullOrUndefined(format.underline)) {
@@ -22503,7 +22531,7 @@ var Renderer = /** @__PURE__ @class */ (function () {
                 this.pageContext.fillStyle = HelperMethods.getHighlightColorCode(format.highlightColor);
             }
             else {
-                this.pageContext.fillStyle = this.getColor(format.highlightColor);
+                this.pageContext.fillStyle = HelperMethods.getColor(format.highlightColor);
             }
             // tslint:disable-next-line:max-line-length
             this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
@@ -22523,7 +22551,7 @@ var Renderer = /** @__PURE__ @class */ (function () {
         }
         var baselineOffset = elementBox.baselineOffset;
         topMargin = (format.baselineAlignment === 'Normal') ? topMargin + baselineOffset : (topMargin + (baselineOffset / 1.5));
-        this.pageContext.fillStyle = this.getColor(color);
+        this.pageContext.fillStyle = HelperMethods.getColor(color);
         var scaledWidth = this.getScaledValue(elementBox.width);
         var text = elementBox.text;
         if (elementBox instanceof TabElementBox) {
@@ -23082,7 +23110,7 @@ var Renderer = /** @__PURE__ @class */ (function () {
         var width = cellWidget.width + leftMargin + lineWidth + cellWidget.margin.right;
         this.pageContext.beginPath();
         if (bgColor !== 'empty') {
-            this.pageContext.fillStyle = this.getColor(bgColor);
+            this.pageContext.fillStyle = HelperMethods.getColor(bgColor);
             // tslint:disable-next-line:max-line-length
             this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), this.getScaledValue(width), this.getScaledValue(height));
             this.pageContext.closePath();
@@ -23091,7 +23119,7 @@ var Renderer = /** @__PURE__ @class */ (function () {
         if (cellFormat.shading.hasValue('foregroundColor')) {
             this.pageContext.beginPath();
             if (cellFormat.shading.foregroundColor !== 'empty') {
-                this.pageContext.fillStyle = this.getColor(cellFormat.shading.foregroundColor);
+                this.pageContext.fillStyle = HelperMethods.getColor(cellFormat.shading.foregroundColor);
                 // tslint:disable-next-line:max-line-length
                 this.pageContext.fillRect(this.getScaledValue(left, 1), this.getScaledValue(top, 2), this.getScaledValue(width), this.getScaledValue(height));
                 this.pageContext.closePath();
@@ -24491,6 +24519,10 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
                     _this.onTouchUpInternal(args);
                 }
             }
+            if (_this.scrollMoveTimer) {
+                _this.isMouseEntered = true;
+                clearInterval(_this.scrollMoveTimer);
+            }
         };
         // tslint:enable:no-any 
         this.onKeyPressInternal = function (event) {
@@ -24624,6 +24656,9 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
          */
         this.onContextMenu = function (event) {
             if (_this.owner.contextMenuModule) {
+                if (_this.isMouseDown) {
+                    _this.isMouseDown = false;
+                }
                 _this.owner.contextMenuModule.onContextMenuInternal(event);
             }
         };
@@ -27770,6 +27805,14 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
     };
     SfdtReader.prototype.parseTextBody = function (data, section, isSectionBreak) {
         this.parseBody(data, section.childWidgets, section, isSectionBreak);
+    };
+    SfdtReader.prototype.addCustomStyles = function (data) {
+        for (var i = 0; i < data.styles.length; i++) {
+            var style = this.viewer.styles.findByName(data.styles[i].name);
+            if (style === undefined) {
+                this.parseStyle(data, data.styles[i], this.viewer.styles);
+            }
+        }
     };
     SfdtReader.prototype.parseBody = function (data, blocks, container, isSectionBreak) {
         if (!isNullOrUndefined(data)) {
@@ -31248,7 +31291,7 @@ var HtmlExport = /** @__PURE__ @class */ (function () {
         else {
             this.prevListLevel = undefined;
             this.isOrdered = undefined;
-            blockStyle += this.createAttributesTag('p', tagAttributes);
+            blockStyle += this.createAttributesTag(this.getStyleName(paragraph.paragraphFormat.styleName), tagAttributes);
         }
         if (paragraph.inlines.length === 0) {
             //Handled to preserve non breaking space for empty paragraphs similar to MS Word behavior.
@@ -31267,7 +31310,7 @@ var HtmlExport = /** @__PURE__ @class */ (function () {
             }
         }
         else {
-            blockStyle += this.endTag('p');
+            blockStyle += this.endTag(this.getStyleName(paragraph.paragraphFormat.styleName));
         }
         return blockStyle;
     };
@@ -31443,6 +31486,25 @@ var HtmlExport = /** @__PURE__ @class */ (function () {
         spanClass += this.endTag('span');
         return spanClass.toString();
     };
+    /**
+     * @private
+     */
+    HtmlExport.prototype.getStyleName = function (style) {
+        switch (style) {
+            case 'Heading 1':
+                return 'h1';
+            case 'Heading 2':
+                return 'h2';
+            case 'Heading 3':
+                return 'h3';
+            case 'Heading 4':
+                return 'h4';
+            case 'Heading 5':
+                return 'h5';
+            default:
+                return 'p';
+        }
+    };
     //Serialize Image
     /**
      * @private
@@ -31475,7 +31537,9 @@ var HtmlExport = /** @__PURE__ @class */ (function () {
         tagAttributes = [];
         if (!isNullOrUndefined(cell.cellFormat)) {
             //if (cell.cellFormat.shading.backgroundColor !== Color.FromArgb(0, 0, 0, 0)) {
-            tagAttributes.push('bgcolor="' + cell.cellFormat.shading.backgroundColor + '"');
+            if (!isNullOrUndefined(cell.cellFormat.shading.backgroundColor)) {
+                tagAttributes.push('bgcolor="' + HelperMethods.getColor(cell.cellFormat.shading.backgroundColor) + '"');
+            }
             // }
             if (!isNullOrUndefined(cell.cellFormat.columnSpan) && cell.cellFormat.columnSpan > 1) {
                 tagAttributes.push('colspan="' + cell.cellFormat.columnSpan.toString() + '"');
@@ -31484,11 +31548,12 @@ var HtmlExport = /** @__PURE__ @class */ (function () {
                 tagAttributes.push('rowspan="' + cell.cellFormat.rowSpan.toString() + '"');
             }
             if (!isNullOrUndefined(cell.cellFormat.cellWidth) && cell.cellFormat.cellWidth !== 0) {
-                tagAttributes.push('width="' + cell.cellFormat.cellWidth.toString() + '"');
+                var cellWidth = HelperMethods.convertPointToPixel(cell.cellFormat.cellWidth);
+                tagAttributes.push('width="' + cellWidth.toString() + '"');
             }
-            if (!isNullOrUndefined(cell.cellFormat.verticalAlignment) && cell.cellFormat.verticalAlignment !== 'Top') {
-                tagAttributes.push('valign="' + cell.cellFormat.verticalAlignment.toString().toLowerCase() + '"');
-            }
+            var cellAlignment = isNullOrUndefined(cell.cellFormat.verticalAlignment) ? 'top' :
+                cell.cellFormat.verticalAlignment.toString().toLowerCase();
+            tagAttributes.push('valign="' + cellAlignment + '"');
             if (!isNullOrUndefined(cell.cellFormat.leftMargin) && cell.cellFormat.leftMargin !== 0) {
                 cellHtml += ('padding-left:' + cell.cellFormat.leftMargin.toString() + 'pt;');
             }
@@ -31575,8 +31640,8 @@ var HtmlExport = /** @__PURE__ @class */ (function () {
             borderStyle += ('border-left-width:' + borders.left.lineWidth.toString() + 'pt');
             borderStyle += ';';
         }
-        if (borders.left.color) {
-            borderStyle += ('border-left-color:' + borders.left.color);
+        if (!isNullOrUndefined(borders.left.color)) {
+            borderStyle += ('border-left-color:' + HelperMethods.getColor(borders.left.color));
             borderStyle += ';';
         }
         if (!isNullOrUndefined(borders.right.lineStyle)) {
@@ -31588,7 +31653,7 @@ var HtmlExport = /** @__PURE__ @class */ (function () {
             borderStyle += ';';
         }
         if (!isNullOrUndefined(borders.right.color)) {
-            borderStyle += ('border-right-color:' + borders.right.color);
+            borderStyle += ('border-right-color:' + HelperMethods.getColor(borders.right.color));
             borderStyle += ';';
         }
         if (!isNullOrUndefined(borders.top.lineStyle)) {
@@ -31600,7 +31665,7 @@ var HtmlExport = /** @__PURE__ @class */ (function () {
             borderStyle += ';';
         }
         if (!isNullOrUndefined(borders.top.color)) {
-            borderStyle += ('border-top-color:' + borders.top.color);
+            borderStyle += ('border-top-color:' + HelperMethods.getColor(borders.bottom.color));
             borderStyle += ';';
         }
         if (!isNullOrUndefined(borders.bottom.lineStyle)) {
@@ -31612,7 +31677,7 @@ var HtmlExport = /** @__PURE__ @class */ (function () {
             borderStyle += ';';
         }
         if (!isNullOrUndefined(borders.bottom.color)) {
-            borderStyle += ('border-bottom-color:' + borders.bottom.color);
+            borderStyle += ('border-bottom-color:' + HelperMethods.getColor(borders.bottom.color));
             borderStyle += ';';
         }
         return borderStyle;
@@ -31623,6 +31688,26 @@ var HtmlExport = /** @__PURE__ @class */ (function () {
     HtmlExport.prototype.serializeCellBordersStyle = function (borders) {
         var borderStyle = '';
         borderStyle = 'border:solid 1px;';
+        // if (borders.left.color) {
+        //     borderStyle += ('border-left-color:' + HelperMethods.getColor(borders.left.color));
+        //     borderStyle += ';';
+        // }
+        // borderStyle += this.serializeBorderStyle(borders.left, 'left');
+        // if (!isNullOrUndefined(borders.right.color)) {
+        //     borderStyle += ('border-right-color:' + HelperMethods.getColor(borders.right.color));
+        //     borderStyle += ';';
+        // }
+        // borderStyle += this.serializeBorderStyle(borders.right, 'right');
+        // if (!isNullOrUndefined(borders.top.color)) {
+        //     borderStyle += ('border-top-color:' + HelperMethods.getColor(borders.top.color));
+        //     borderStyle += ';';
+        // }
+        // borderStyle += this.serializeBorderStyle(borders.top, 'top');
+        // if (!isNullOrUndefined(borders.bottom.color)) {
+        //     borderStyle += ('border-bottom-color:' + HelperMethods.getColor(borders.bottom.color));
+        //     borderStyle += ';';
+        // }
+        // borderStyle += this.serializeBorderStyle(borders.bottom, 'bottom');
         // Todo: handle
         // let border: WBorder = undefined;
         // //LeftBorder
@@ -31666,7 +31751,9 @@ var HtmlExport = /** @__PURE__ @class */ (function () {
             borderStyle += ('border-' + borderPosition + '-width:' + border.lineWidth.toString() + 'pt;');
         }
         //if (border.color !== Color.FromArgb(0, 0, 0, 0))
-        borderStyle += ('border-' + borderPosition + '-color:' + border.color + ';');
+        if (!isNullOrUndefined(border.color)) {
+            borderStyle += ('border-' + borderPosition + '-color:' + HelperMethods.getColor(border.color) + ';');
+        }
         return borderStyle;
     };
     /**
@@ -31725,12 +31812,10 @@ var HtmlExport = /** @__PURE__ @class */ (function () {
         }
         var propertyValue;
         var charStyle = '';
-        if (characterFormat.bold) {
-            charStyle += 'font-weight';
-            charStyle += ':';
-            charStyle += 'bold';
-            charStyle += ';';
-        }
+        charStyle += 'font-weight';
+        charStyle += ':';
+        charStyle += characterFormat.bold ? 'bold' : 'normal';
+        charStyle += ';';
         charStyle += 'font-style';
         charStyle += ':';
         if (characterFormat.italic) {
@@ -31756,10 +31841,10 @@ var HtmlExport = /** @__PURE__ @class */ (function () {
             charStyle += ';';
         }
         //Text Foreground and Background Color 
-        if (!isNullOrUndefined(characterFormat.highlightColor)) {
+        if (!isNullOrUndefined(characterFormat.highlightColor) && characterFormat.highlightColor !== 'NoColor') {
             charStyle += 'background-color';
             charStyle += ':';
-            charStyle += characterFormat.highlightColor.toString();
+            charStyle += HelperMethods.getColor(characterFormat.highlightColor.toString());
             charStyle += ';';
         }
         //Font Color
@@ -31767,7 +31852,7 @@ var HtmlExport = /** @__PURE__ @class */ (function () {
         if (!isNullOrUndefined(propertyValue)) {
             charStyle += 'color';
             charStyle += ':';
-            charStyle += propertyValue;
+            charStyle += HelperMethods.getColor(propertyValue);
             charStyle += ';';
         }
         if (!isNullOrUndefined(characterFormat.underline) && characterFormat.underline !== 'None') {
@@ -31845,7 +31930,7 @@ var HtmlExport = /** @__PURE__ @class */ (function () {
         propertyValue = paragraphFormat.lineSpacing;
         if (!isNullOrUndefined(propertyValue)) {
             if (paragraphFormat.lineSpacingType === 'Multiple') {
-                propertyValue = (propertyValue * 100).toString() + '%;';
+                propertyValue = Math.round(propertyValue * 10) / 10;
             }
             else {
                 propertyValue = propertyValue.toString() + 'pt;';
@@ -31902,7 +31987,7 @@ var HtmlExport = /** @__PURE__ @class */ (function () {
         if (!isNullOrUndefined(table.tableFormat)) {
             //if (table.tableFormat.shading.backgroundColor !== Color.FromArgb(0, 0, 0, 0)) {
             if (!isNullOrUndefined(table.tableFormat.shading) && !isNullOrUndefined(table.tableFormat.shading.backgroundColor)) {
-                tagAttributes.push('bgcolor="' + table.tableFormat.shading.backgroundColor + '"');
+                tagAttributes.push('bgcolor="' + HelperMethods.getColor(table.tableFormat.shading.backgroundColor) + '"');
             }
             //}
             if (!isNullOrUndefined(table.tableFormat.leftIndent) && table.tableFormat.leftIndent !== 0) {
@@ -31942,7 +32027,8 @@ var HtmlExport = /** @__PURE__ @class */ (function () {
             blockStyle += (this.createTag('thead'));
         }
         if (!isNullOrUndefined(row.rowFormat.height) && row.rowFormat.height > 0) {
-            tagAttributes.push('height="' + row.rowFormat.height + '"');
+            var height = HelperMethods.convertPointToPixel(row.rowFormat.height);
+            tagAttributes.push('height="' + height + '"');
         }
         return blockStyle + this.createAttributesTag('tr', tagAttributes);
     };
@@ -35240,7 +35326,7 @@ var Selection = /** @__PURE__ @class */ (function () {
     // tslint:disable-next-line:max-line-length
     Selection.prototype.renderDashLine = function (ctx, page, widget, left, top, width, height) {
         var fontColor = this.characterFormat.fontColor;
-        var fillColor = fontColor ? this.viewer.render.getColor(fontColor) : '#000000';
+        var fillColor = fontColor ? HelperMethods.getColor(fontColor) : '#000000';
         ctx.globalAlpha = 1;
         // Get character format copied from selection format
         var format = this.owner.editor.copyInsertFormat(new WCharacterFormat(), false);
@@ -45336,6 +45422,9 @@ var TableResizer = /** @__PURE__ @class */ (function () {
         this.owner.viewer.layout.reLayoutTable(table);
         this.owner.editorModule.reLayout(this.owner.selection);
         this.currentResizingTable = row.ownerTable;
+        if (table.childWidgets[this.resizerPosition] === undefined) {
+            this.resizerPosition = -1;
+        }
     };
     /**
      * Gets the table widget from given cursor point
@@ -48652,10 +48741,18 @@ var Editor = /** @__PURE__ @class */ (function () {
                 result = result.replace(/<!--EndFragment-->/gi, '');
                 this.pasteAjax(result, '.html');
             }
-            else if (textContent !== '') {
+            else if (textContent !== null && textContent !== '') {
                 this.pasteContents(textContent);
                 this.applyPasteOptions(this.currentPasteOptions);
                 this.viewer.editableDiv.innerHTML = '';
+            }
+            else if (Browser.info.name !== 'msie' && clipbordData.items !== undefined && clipbordData.items.length !== 0 &&
+                clipbordData.items[0].type === 'image/png') {
+                this.pasteImage(clipbordData.items[0].getAsFile());
+            }
+            else if (Browser.info.name === 'msie' && clipbordData.files !== undefined && clipbordData.files.length !== 0 &&
+                clipbordData.files[0].type === 'image/png') {
+                this.pasteImage(clipbordData.files[0]);
             }
             // if (textContent !== '') {
             //     this.pasteContents(textContent);
@@ -48663,6 +48760,25 @@ var Editor = /** @__PURE__ @class */ (function () {
             // }
         }
         this.viewer.updateFocus();
+    };
+    Editor.prototype.pasteImage = function (imgFile) {
+        var _this = this;
+        var fileReader = new FileReader();
+        fileReader.onload = function () {
+            _this.onPasteImage(fileReader.result);
+        };
+        fileReader.readAsDataURL(imgFile);
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.onPasteImage = function (data) {
+        var image = document.createElement('img');
+        var editor = this;
+        image.addEventListener('load', function () {
+            editor.insertImage(data, this.width, this.height);
+        });
+        image.src = data;
     };
     /**
      * @private
@@ -48685,6 +48801,9 @@ var Editor = /** @__PURE__ @class */ (function () {
         this.pasteRequestHandler.onFailure = this.onPasteFailure.bind(this);
         this.pasteRequestHandler.onError = this.onPasteFailure.bind(this);
     };
+    /**
+     * @private
+     */
     Editor.prototype.pasteFormattedContent = function (result) {
         if (this.isPasteListUpdated) {
             this.isPasteListUpdated = false;
@@ -48741,40 +48860,42 @@ var Editor = /** @__PURE__ @class */ (function () {
         })[0];
     };
     Editor.prototype.getBlocksToUpdate = function (blocks) {
-        var _this = this;
         var blcks = [];
-        blocks.forEach(function (obj) {
+        for (var i = 0; i < blocks.length; i++) {
+            var obj = blocks[i];
             if (obj.paragraphFormat && obj.paragraphFormat.listFormat
                 && Object.keys(obj.paragraphFormat.listFormat).length > 0) {
                 blcks.push(obj);
             }
             else if (obj.rows) {
-                obj.rows.forEach(function (row) {
-                    row.cells.forEach(function (cell) {
-                        blcks = blcks.concat(_this.getBlocksToUpdate(cell.blocks));
-                    });
-                });
+                for (var j = 0; j < obj.rows.length; j++) {
+                    var currentRow = obj.rows[j];
+                    for (var k = 0; k < currentRow.cells.length; k++) {
+                        var cell = currentRow.cells[k];
+                        blcks = blcks.concat(this.getBlocksToUpdate(cell.blocks));
+                    }
+                }
             }
-        });
+        }
         return blcks;
     };
     Editor.prototype.updateListIdForBlocks = function (blocks, abstractList, list, id, idToUpdate) {
-        var _this = this;
         var update = false;
-        blocks.forEach(function (obj) {
+        for (var i = 0; i < blocks.length; i++) {
+            var obj = blocks[i];
             if (obj.paragraphFormat && obj.paragraphFormat.listFormat
                 && Object.keys(obj.paragraphFormat.listFormat).length > 0) {
                 var format = obj.paragraphFormat.listFormat;
                 // tslint:disable-next-line:max-line-length
-                var existingList = _this.listLevelPatternInCollection(format.listLevelNumber, abstractList.levels[format.listLevelNumber].listLevelPattern, abstractList.levels[format.listLevelNumber].numberFormat);
+                var existingList = this.listLevelPatternInCollection(format.listLevelNumber, abstractList.levels[format.listLevelNumber].listLevelPattern, abstractList.levels[format.listLevelNumber].numberFormat);
                 if (format.listId === id) {
                     if (isNullOrUndefined(existingList) && (!list || (list
-                        && !_this.checkSameLevelFormat(format.listLevelNumber, abstractList, list)))) {
+                        && !this.checkSameLevelFormat(format.listLevelNumber, abstractList, list)))) {
                         update = true;
                         format.listId = idToUpdate;
                     }
                     else if (!isNullOrUndefined(existingList)
-                        && _this.checkSameLevelFormat(format.listLevelNumber, abstractList, existingList)) {
+                        && this.checkSameLevelFormat(format.listLevelNumber, abstractList, existingList)) {
                         if (!format.isUpdated) {
                             format.listId = existingList.listId;
                             format.isUpdated = true;
@@ -48784,16 +48905,18 @@ var Editor = /** @__PURE__ @class */ (function () {
                 }
             }
             else if (obj.rows) {
-                obj.rows.forEach(function (row) {
-                    row.cells.forEach(function (cell) {
-                        var toUpdate = _this.updateListIdForBlocks(cell.blocks, abstractList, list, id, idToUpdate);
+                for (var j = 0; j < obj.rows.length; j++) {
+                    var row = obj.rows[j];
+                    for (var k = 0; k < row.cells.length; k++) {
+                        var cell = row.cells[k];
+                        var toUpdate = this.updateListIdForBlocks(cell.blocks, abstractList, list, id, idToUpdate);
                         if (!update) {
                             update = toUpdate;
                         }
-                    });
-                });
+                    }
+                }
             }
-        });
+        }
         return update;
     };
     Editor.prototype.updatePasteContent = function (pasteContent, sectionId) {
@@ -48842,9 +48965,11 @@ var Editor = /** @__PURE__ @class */ (function () {
             _loop_1(k);
             k = out_k_1;
         }
-        this.getBlocksToUpdate(pasteContent.sections[sectionId].blocks).forEach(function (blck) {
+        var blocks = this.getBlocksToUpdate(pasteContent.sections[sectionId].blocks);
+        for (var i = 0; i < blocks.length; i++) {
+            var blck = blocks[i];
             delete blck.paragraphFormat.listFormat.isUpdated;
-        });
+        }
     };
     Editor.prototype.getBlocks = function (pasteContent) {
         var widgets = [];
@@ -48860,8 +48985,11 @@ var Editor = /** @__PURE__ @class */ (function () {
             for (var i = 0; i < arr.length; i++) {
                 var currentInline = this.selection.start.currentWidget.getInline(this.selection.start.offset, 0);
                 var element = this.selection.getPreviousValidElement(currentInline.element);
-                var insertFormat = element ? element.characterFormat :
-                    this.copyInsertFormat(startParagraph.characterFormat, false);
+                if (element !== currentInline.element) {
+                    element = this.selection.getNextValidElement(currentInline.element);
+                }
+                var insertFormat = element && element === currentInline.element ? startParagraph.characterFormat :
+                    element ? element.characterFormat : this.copyInsertFormat(startParagraph.characterFormat, false);
                 var insertParaFormat = this.viewer.selection.copySelectionParagraphFormat();
                 var paragraph = new ParagraphWidget();
                 paragraph.paragraphFormat.copyFormat(insertParaFormat);
@@ -48878,6 +49006,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             }
         }
         else {
+            this.viewer.owner.parser.addCustomStyles(pasteContent);
             for (var i = 0; i < pasteContent.sections.length; i++) {
                 var parser = this.viewer.owner.parser;
                 if (!this.isPasteListUpdated && !isNullOrUndefined(pasteContent.lists)) {
@@ -57131,6 +57260,18 @@ var Editor = /** @__PURE__ @class */ (function () {
             widgets.push(tocLastPara);
             this.appendEmptyPara(widgets);
         }
+        else {
+            var localizeValue = new L10n('documenteditor', this.owner.defaultLocale);
+            localizeValue.setLocale(this.owner.locale);
+            DialogUtility.alert({
+                title: localizeValue.getConstant('No Headings'),
+                content: localizeValue.getConstant('Add Headings'),
+                showCloseIcon: true,
+                closeOnEscape: true,
+                position: { X: 'center', Y: 'center' },
+                animationSettings: { effect: 'Zoom' }
+            });
+        }
         this.setPositionForCurrentIndex(this.selection.start, initialStart);
         this.selection.end.setPositionInternal(this.selection.start);
         this.pasteContentsInternal(widgets);
@@ -57138,6 +57279,10 @@ var Editor = /** @__PURE__ @class */ (function () {
         this.updatePageRef();
         if (this.editorHistory) {
             this.editorHistory.updateComplexHistoryInternal();
+        }
+        if (widgets.length === 0) {
+            this.owner.editorHistory.undo();
+            this.owner.editorHistory.redoStack.pop();
         }
     };
     Editor.prototype.appendEmptyPara = function (widgets) {
@@ -62150,13 +62295,22 @@ var WordExport = /** @__PURE__ @class */ (function () {
                 }
             }
         }
+        var sec = this.blockOwner;
+        //Need to write the Section Properties if the Paragraph is last item in the section
+        if (!isLastSection && sec.hasOwnProperty('sectionFormat')
+            && sec.blocks.indexOf(item) === sec.blocks.length - 1) {
+            writer.writeStartElement('w', 'p', this.wNamespace);
+            writer.writeStartElement(undefined, 'pPr', this.wNamespace);
+            this.serializeSectionProperties(writer, sec);
+            writer.writeEndElement();
+            writer.writeEndElement();
+        }
     };
     // Serialize the paragraph
     WordExport.prototype.serializeParagraph = function (writer, paragraph, isLastSection) {
         if (isNullOrUndefined(paragraph)) {
             throw new Error('Paragraph should not be undefined');
         }
-        var sec = this.blockOwner;
         // if (paragraph.ParagraphFormat.PageBreakAfter && !IsPageBreakNeedToBeSkipped(paragraph as Entity))
         //     paragraph.InsertBreak(BreakType.PageBreak);
         // if (paragraph.ParagraphFormat.ColumnBreakAfter && !IsPageBreakNeedToBeSkipped(paragraph as Entity))
@@ -62179,15 +62333,6 @@ var WordExport = /** @__PURE__ @class */ (function () {
         // EnsureWatermark(paragraph);
         this.serializeParagraphItems(writer, paragraph.inlines);
         writer.writeEndElement(); //end of paragraph tag.
-        //Need to write the Section Properties if the Paragraph is last item in the section
-        if (!isLastSection && sec.hasOwnProperty('sectionFormat')
-            && sec.blocks.indexOf(paragraph) === sec.blocks.length - 1) {
-            writer.writeStartElement('w', 'p', this.wNamespace);
-            writer.writeStartElement(undefined, 'pPr', this.wNamespace);
-            this.serializeSectionProperties(writer, sec);
-            writer.writeEndElement();
-            writer.writeEndElement();
-        }
     };
     // Serialize the paragraph items
     WordExport.prototype.serializeParagraphItems = function (writer, paraItems) {
@@ -64393,7 +64538,7 @@ var WordExport = /** @__PURE__ @class */ (function () {
     };
     // Serialize the table grid columns.
     WordExport.prototype.serializeGridColumns = function (writer, grid) {
-        for (var i = 1, count = grid.length; i < count; i++) {
+        for (var i = 0, count = grid.length; i < count; i++) {
             var gridValue = Math.round(grid[i] * 20);
             writer.writeStartElement(undefined, 'gridCol', this.wNamespace);
             writer.writeAttributeString(undefined, 'w', this.wNamespace, gridValue.toString());
@@ -67098,13 +67243,13 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
         var listIdValue = format.getValue('listId');
         if (!isNullOrUndefined(listIdValue)) {
             listFormat.listId = listIdValue;
-            var listLevelNumber = format.getValue('listLevelNumber');
-            if (!isNullOrUndefined(listLevelNumber)) {
-                listFormat.listLevelNumber = listLevelNumber;
-            }
             if (this.lists.indexOf(format.listId) < 0) {
                 this.lists.push(format.listId);
             }
+        }
+        var listLevelNumber = format.getValue('listLevelNumber');
+        if (!isNullOrUndefined(listLevelNumber)) {
+            listFormat.listLevelNumber = listLevelNumber;
         }
         return listFormat;
     };
@@ -80749,6 +80894,10 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
                         this.documentEditor.headers = newModel.headers;
                     }
                     break;
+                case 'locale':
+                case 'enableRtl':
+                    this.refresh();
+                    break;
             }
         }
     };
@@ -81166,7 +81315,7 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], DocumentEditorContainer.prototype, "enableSpellCheck", void 0);
     __decorate$1([
-        Property(true)
+        Property(false)
     ], DocumentEditorContainer.prototype, "enableLocalPaste", void 0);
     __decorate$1([
         Property()

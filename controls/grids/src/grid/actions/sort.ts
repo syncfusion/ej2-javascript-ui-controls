@@ -198,11 +198,12 @@ export class Sort implements IAction {
 
     private refreshSortSettings(): void {
         this.sortedColumns.length = 0;
-        this.sortSettings.columns.forEach((e: SortDescriptorModel) => {
-            if (!e.isFromGroup) {
-                this.sortedColumns.push(e.field);
+        let sortColumns: SortDescriptorModel[] = this.sortSettings.columns;
+        for (let i: number = 0; i < sortColumns.length; i++) {
+            if (!sortColumns[i].isFromGroup) {
+                this.sortedColumns.push(sortColumns[i].field);
             }
-        });
+        }
     }
 
     /**  

@@ -405,6 +405,14 @@
         border-top-color: $gantt-milestone-border-color;
       }
 
+      .e-parent-milestone-top {
+        border-bottom-color: $gantt-parent-milestone-border-color;
+      }
+
+      .e-parent-milestone-bottom {
+        border-top-color: $gantt-parent-milestone-border-color;
+      }
+
       .e-label {
         color: $gantt-label-font-color;
         font-size: $gantt-label-font-size;

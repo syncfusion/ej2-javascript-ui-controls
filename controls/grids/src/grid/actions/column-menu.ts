@@ -53,15 +53,17 @@ export class ColumnMenu implements IAction {
     }
 
     private wireEvents(): void {
-        this.getColumnMenuHandlers().forEach((ele: HTMLElement) => {
-            EventHandler.add(ele, 'mousedown', this.columnMenuHandlerDown, this);
-        });
+        let elements: HTMLElement[] = this.getColumnMenuHandlers();
+        for (let i: number = 0; i < elements.length; i++) {
+            EventHandler.add(elements[i], 'mousedown', this.columnMenuHandlerDown, this);
+        }
     }
 
     private unwireEvents(): void {
-        this.getColumnMenuHandlers().forEach((ele: HTMLElement) => {
-            EventHandler.remove(ele, 'mousedown', this.columnMenuHandlerDown);
-        });
+        let elements: HTMLElement[] = this.getColumnMenuHandlers();
+        for (let i: number = 0; i < elements.length; i++) {
+            EventHandler.remove(elements[i], 'mousedown', this.columnMenuHandlerDown);
+        }
     }
 
     /**
@@ -311,12 +313,13 @@ export class ColumnMenu implements IAction {
             case 'SortAscending':
                 if (this.parent.allowSorting && this.parent.ensureModuleInjected(Sort)
                     && this.parent.sortSettings.columns.length > 0 && this.targetColumn && this.targetColumn.allowSorting) {
-                    this.parent.sortSettings.columns.forEach((ele: SortDescriptorModel) => {
-                        if (ele.field === this.targetColumn.field
-                            && ele.direction.toLocaleLowerCase() === item.toLocaleLowerCase().replace('sort', '')) {
+                    let sortColumns: SortDescriptorModel[] = this.parent.sortSettings.columns;
+                    for (let i: number = 0; i < sortColumns.length; i++) {
+                        if (sortColumns[i].field === this.targetColumn.field
+                            && sortColumns[i].direction.toLocaleLowerCase() === item.toLocaleLowerCase().replace('sort', '')) {
                             status = true;
                         }
-                    });
+                    }
                 } else if (!this.parent.allowSorting || !this.parent.ensureModuleInjected(Sort) ||
                     this.parent.allowSorting && this.targetColumn && !this.targetColumn.allowSorting) {
                     status = true;

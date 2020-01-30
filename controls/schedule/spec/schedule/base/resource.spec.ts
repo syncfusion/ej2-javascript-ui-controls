@@ -929,6 +929,69 @@ describe('Schedule Resources', () => {
         });
     });
 
+    describe('Checking scroll to resource public method', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = {
+                width: '480px', height: '360px',
+                views: ['Week', 'Month', 'TimelineMonth'],
+                selectedDate: new Date(2017, 10, 1),
+                group: {
+                    resources: ['Projects', 'Categories']
+                },
+                resources: [
+                    {
+                        field: 'ProjectId', title: 'Choose Project', name: 'Projects',
+                        dataSource: [
+                            { text: 'PROJECT 1', id: '1', color: '#cb6bb2' },
+                            { text: 'PROJECT 2', id: '2', color: '#56ca85' },
+                            { text: 'PROJECT 3', id: '3', color: '#df5286' }
+                        ],
+                        textField: 'text', idField: 'id', colorField: 'color'
+                    }, {
+                        field: 'TaskId', title: 'Category',
+                        name: 'Categories', allowMultiple: true,
+                        dataSource: [
+                            { text: 'Nancy', id: 1, groupId: '1', color: '#df5286' },
+                            { text: 'Steven', id: 2, groupId: '1', color: '#7fa900' },
+                            { text: 'Robert', id: 3, groupId: '2', color: '#ea7a57' },
+                            { text: 'Smith', id: 4, groupId: '2', color: '#5978ee' },
+                            { text: 'Micheal', id: 5, groupId: '3', color: '#df5286' },
+                            { text: 'Root', id: 6, groupId: '3', color: '#00bdae' }
+                        ],
+                        textField: 'text', idField: 'id', groupIDField: 'groupId', colorField: 'color'
+                    }
+                ],
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        beforeEach((done: DoneFn) => done());
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking scroll to resource method on Week view', () => {
+            schObj.scrollToResource(3);
+            expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollLeft).toEqual(504);
+            schObj.scrollToResource(1, 'Categories');
+            expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollLeft).toEqual(0);
+            schObj.scrollToResource('2', 'Projects');
+            expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollLeft).toEqual(504);
+            schObj.currentView = 'TimelineMonth';
+            schObj.dataBind();
+        });
+        it('Checking scroll to resource method on Timeline month view', () => {
+            schObj.scrollToResource(3);
+            expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollTop).toEqual(240);
+            schObj.scrollToResource(1, 'Categories');
+            expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollTop).toEqual(60);
+            schObj.scrollToResource('2', 'Projects');
+            expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollTop).toEqual(180);
+            (schObj.element.querySelector('.e-resource-tree-icon.e-resource-collapse') as HTMLElement).click();
+            schObj.scrollToResource(1, 'Categories');
+            expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollTop).toEqual(60);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         // tslint:disable:no-any

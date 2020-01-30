@@ -90,6 +90,14 @@ export const removeContextMenuItems: string = 'removeContextMenuItems';
 /** @hidden */
 export const enableContextMenuItems: string = 'enableContextMenuItems';
 /** @hidden */
+export const enableFileMenuItems: string = 'enableFileMenuItems';
+/** @hidden */
+export const hideRibbonTabs: string = 'hideRibbonTabs';
+/** @hidden */
+export const addRibbonTabs: string = 'addRibbonTabs';
+/** @hidden */
+export const addToolbarItems: string = 'addToolbarItems';
+/** @hidden */
 export const beforeRibbonCreate: string = 'beforeRibbonCreate';
 /** @hidden */
 export const rowHeightChanged: string = 'rowHeightChanged';
@@ -134,6 +142,8 @@ export const createHyperlinkElement: string = 'createHyperlinkElement';
 /** @hidden */
 export const sheetNameUpdate: string = 'sheetNameUpdate';
 /** @hidden */
+export const hideSheet: string = 'hideSheet';
+/** @hidden */
 export const performUndoRedo: string = 'performUndoRedo';
 /** @hidden */
 export const updateUndoRedoCollection: string = 'updateUndoRedoCollection';
@@ -163,3 +173,8 @@ export const beginAction: string = 'actionBegin';
 export const filterCellKeyDown: string = 'filterCellKeyDown';
 /** @hidden */
 export const getFilterRange: string = 'getFilterRange';
+/** @hidden */
+export const setAutoFit: string = 'setAutoFit';
+/** @hidden */
+export const refreshFormulaDatasource: string = 'refreshFormulaDatasource';
+

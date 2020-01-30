@@ -2,7 +2,7 @@
  * InPlace-Editor CR Issue spec document
  */
 import { select, selectAll, createElement, Browser } from '@syncfusion/ej2-base';
-import { InPlaceEditor } from '../../src/inplace-editor/base/index';
+import { InPlaceEditor, BeginEditEventArgs, ActionBeginEventArgs } from '../../src/inplace-editor/base/index';
 import * as classes from '../../src/inplace-editor/base/classes';
 import { renderEditor, destroy, ieUA } from './../render.spec';
 import { DataManager, WebApiAdaptor, Query } from '@syncfusion/ej2-data';
@@ -380,6 +380,351 @@ describe('CR ISSUE InPlace-Editor Control', () => {
                 expect(document.querySelector('.e-ddl.e-input-group').classList.contains('e-input-focus')).toEqual(true);
                 done()
             },1500);
+        });
+    });
+
+    describe('EJ2-35418 - I258695: Preventing the editable action for inplace-editor', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        beforeAll((done: Function): void => {
+            editorObj = renderEditor({
+                mode: 'Inline',
+                beginEdit: function(e: BeginEditEventArgs) {
+                    e.cancel = true
+                }
+            });
+            ele = editorObj.element;
+            done();
+        });
+        afterAll((): void => {
+            destroy(editorObj);
+        });
+        it('Check ', (done) => {
+            expect(editorObj.mode).toEqual('Inline');
+            valueEle = <HTMLElement>select('.' + classes.VALUE, ele);
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle.click();
+            setTimeout(() => {
+                expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(false);
+                expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
+                expect(document.querySelectorAll('.' + classes.INLINE).length > 0).toEqual(false);
+                done()
+            },1500);
+        });
+    });
+
+    describe('EJ2-33001 - Value submit testing', () => {
+        let ele: HTMLElement
+        let valueEle: HTMLElement;
+        let editorObj: InPlaceEditor;
+        let valueWrapper: HTMLElement;
+        let beginArgs: any = {};
+        let successArgs: any = {};
+        function begin(e: any): void {
+            beginArgs = e;
+        }
+        function success(e: any): void {
+            successArgs = e;
+        }
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('actionSuccess eventArgs cancel as true testing', (done: Function) => {
+            editorObj = renderEditor({
+                primaryKey: 'text',
+                mode: 'Inline',
+                name: 'Game',
+                emptyText: 'Empty',
+                adaptor: 'UrlAdaptor',
+                url: 'https://ej2services.syncfusion.com/production/web-services/api/Editor/UpdateData',
+                model: {
+                    value: 'Syncfusion'
+                },
+                actionBegin: begin,
+                actionSuccess: function(e: any) {
+                    e.cancel = true;
+                    successArgs = e;
+                }
+            });
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(valueEle.innerText).toEqual('Empty');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(true);
+            editorObj.save();
+            setTimeout(() => {
+                expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 'text', value: 'Syncfusion' }, name: "actionBegin" });
+                expect(successArgs['name']).toEqual('actionSuccess');
+                expect(successArgs['value']).toEqual('Syncfusion');
+                expect(valueEle.innerText).toEqual('Empty');
+                expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(false);
+                done();
+            }, 4000);
+        });
+        it('actionSuccess eventArgs cancel as false testing', (done: Function) => {
+            editorObj = renderEditor({
+                primaryKey: 'text',
+                mode: 'Inline',
+                name: 'Game',
+                emptyText: 'Empty',
+                adaptor: 'UrlAdaptor',
+                url: 'https://ej2services.syncfusion.com/production/web-services/api/Editor/UpdateData',
+                model: {
+                    value: 'Syncfusion'
+                },
+                actionBegin: begin,
+                actionSuccess: function(e: any) {
+                    e.cancel = false;
+                    successArgs = e;
+                }
+            });
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(valueEle.innerText).toEqual('Empty');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(true);
+            editorObj.save();
+            setTimeout(() => {
+                expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 'text', value: 'Syncfusion' }, name: "actionBegin" });
+                expect(successArgs['name']).toEqual('actionSuccess');
+                expect(successArgs['value']).toEqual('Syncfusion');
+                expect(valueEle.innerText).toEqual('Syncfusion');
+                expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(false);
+                done();
+            }, 4000);
+        });
+        it('actionSuccess eventArgs cancel not configured with testing', (done: Function) => {
+            editorObj = renderEditor({
+                primaryKey: 'text',
+                mode: 'Inline',
+                name: 'Game',
+                emptyText: 'Empty',
+                adaptor: 'UrlAdaptor',
+                url: 'https://ej2services.syncfusion.com/production/web-services/api/Editor/UpdateData',
+                model: {
+                    value: 'Syncfusion'
+                },
+                actionBegin: begin,
+                actionSuccess: function(e: any) {
+                    successArgs = e;
+                }
+            });
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(valueEle.innerText).toEqual('Empty');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(true);
+            editorObj.save();
+            setTimeout(() => {
+                expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 'text', value: 'Syncfusion' }, name: "actionBegin" });
+                expect(successArgs['name']).toEqual('actionSuccess');
+                expect(successArgs['value']).toEqual('Syncfusion');
+                expect(valueEle.innerText).toEqual('Syncfusion');
+                expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(false);
+                done();
+            }, 4000);
+        });
+        it('actionBegin eventArgs cancel as true testing', (done: Function) => {
+            editorObj = renderEditor({
+                primaryKey: 'text',
+                mode: 'Inline',
+                name: 'Game',
+                emptyText: 'Empty',
+                adaptor: 'UrlAdaptor',
+                url: 'https://ej2services.syncfusion.com/production/web-services/api/Editor/UpdateData',
+                model: {
+                    value: 'Syncfusion'
+                },
+                actionBegin: function(e: ActionBeginEventArgs) {
+                    e.cancel = true;
+                    beginArgs = e;
+                }
+            });
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(valueEle.innerText).toEqual('Empty');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(true);
+            editorObj.save();
+            setTimeout(() => {
+                expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 'text', value: 'Syncfusion' }, name: "actionBegin", cancel: true });
+                expect(valueEle.innerText).toEqual('Empty');
+                expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(true);
+                expect(editorObj.element.querySelectorAll('.' + classes.INPUT).length > 0).toEqual(true);
+                done();
+            }, 4000);
+        });
+        it('actionBegin eventArgs cancel as true with popup mode testing', (done: Function) => {
+            editorObj = renderEditor({
+                primaryKey: 'text',
+                mode: 'Popup',
+                name: 'Game',
+                emptyText: 'Empty',
+                adaptor: 'UrlAdaptor',
+                url: 'https://ej2services.syncfusion.com/production/web-services/api/Editor/UpdateData',
+                model: {
+                    value: 'Syncfusion'
+                },
+                actionBegin: function(e: ActionBeginEventArgs) {
+                    e.cancel = true;
+                    beginArgs = e;
+                }
+            });
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(valueEle.innerText).toEqual('Empty');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(false);
+            editorObj.save();
+            setTimeout(() => {
+                expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 'text', value: 'Syncfusion' }, name: "actionBegin", cancel: true });
+                expect(valueEle.innerText).toEqual('Empty');
+                expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(false);
+                expect(document.querySelectorAll('.' + classes.ROOT_TIP).length > 0).toEqual(true);
+                done();
+            }, 4000);
+        });
+        it('actionBegin eventArgs cancel as false testing', (done: Function) => {
+            editorObj = renderEditor({
+                primaryKey: 'text',
+                mode: 'Inline',
+                name: 'Game',
+                emptyText: 'Empty',
+                adaptor: 'UrlAdaptor',
+                url: 'https://ej2services.syncfusion.com/production/web-services/api/Editor/UpdateData',
+                model: {
+                    value: 'Syncfusion'
+                },
+                actionBegin: function(e: ActionBeginEventArgs) {
+                    e.cancel = false;
+                    beginArgs = e;
+                },
+                actionSuccess: success
+            });
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(valueEle.innerText).toEqual('Empty');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(true);
+            editorObj.save();
+            setTimeout(() => {
+                expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 'text', value: 'Syncfusion' }, name: "actionBegin", cancel: false });
+                expect(successArgs['name']).toEqual('actionSuccess');
+                expect(successArgs['value']).toEqual('Syncfusion');
+                expect(valueEle.innerText).toEqual('Syncfusion');
+                expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(false);
+                done();
+            }, 4000);
+        });
+        it('actionBegin eventArgs cancel not configured with testing', (done: Function) => {
+            editorObj = renderEditor({
+                primaryKey: 'text',
+                mode: 'Inline',
+                name: 'Game',
+                emptyText: 'Empty',
+                adaptor: 'UrlAdaptor',
+                url: 'https://ej2services.syncfusion.com/production/web-services/api/Editor/UpdateData',
+                model: {
+                    value: 'Syncfusion'
+                },
+                actionBegin: begin,
+                actionSuccess: success
+            });
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(valueEle.innerText).toEqual('Empty');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(true);
+            editorObj.save();
+            setTimeout(() => {
+                expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 'text', value: 'Syncfusion' }, name: "actionBegin" });
+                expect(successArgs['name']).toEqual('actionSuccess');
+                expect(successArgs['value']).toEqual('Syncfusion');
+                expect(valueEle.innerText).toEqual('Syncfusion');
+                expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(false);
+                done();
+            }, 4000);
+        });
+    });
+    describe('EJ2-33001 - Without change value to submit prevent testing ', () => {
+        let editorObj: any;
+        let ele: HTMLElement
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        let beginArgs: any = {};
+        let successArgs: any = {};
+        function begin(e: any): void {
+            beginArgs = e;
+        }
+        function success(e: any): void {
+            successArgs = e;
+        }
+        beforeAll((done: Function): void => {
+            editorObj = renderEditor({
+                primaryKey: 'text',
+                mode: 'Inline',
+                name: 'Game',
+                adaptor: 'UrlAdaptor',
+                url: 'https://ej2services.syncfusion.com/production/web-services/api/Editor/UpdateData',
+                value: 'Syncfusion',
+                actionBegin: begin,
+                actionSuccess: success
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            done();
+        });
+        afterAll((): void => {
+            destroy(editorObj);
+        });
+        it('Initial value submit testing', (done: Function) => {
+            expect(valueEle.innerText).toEqual('Syncfusion');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(true);
+            editorObj.save();
+            setTimeout(() => {
+                expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 'text', value: 'Syncfusion' }, name: "actionBegin" });
+                expect(successArgs['name']).toEqual('actionSuccess');
+                expect(successArgs['value']).toEqual('Syncfusion');
+                expect(valueEle.innerText).toEqual('Syncfusion');
+                expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(false);
+                done();
+            }, 4000);
+        });
+        it('Without change value to submit testing', (done: Function) => {
+            successArgs = {};
+            expect(valueEle.innerText).toEqual('Syncfusion');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(true);
+            editorObj.save();
+            setTimeout(() => {
+                expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 'text', value: 'Syncfusion' }, name: "actionBegin" });
+                expect(successArgs['name']).toEqual('actionSuccess');
+                expect(successArgs['data']).toEqual({});
+                expect(valueEle.innerText).toEqual('Syncfusion');
+                expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(false);
+                done();
+            }, 4000);
+        });
+        it('Without change value to submit testing', (done: Function) => {
+            successArgs = {};
+            expect(valueEle.innerText).toEqual('Syncfusion');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(true);
+            editorObj.componentObj.value = 'Syncfusion1';
+            editorObj.componentObj.dataBind();
+            editorObj.save();
+            setTimeout(() => {
+                expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 'text', value: 'Syncfusion1' }, name: "actionBegin" });
+                expect(successArgs['name']).toEqual('actionSuccess');
+                expect(successArgs['value']).toEqual('Syncfusion1');
+                expect(valueEle.innerText).toEqual('Syncfusion1');
+                expect(valueWrapper.classList.contains(classes.HIDE)).toEqual(false);
+                done();
+            }, 4000);
         });
     });
 })

@@ -7038,6 +7038,141 @@ describe('GridLayout', () => {
         detach(ele);
     });
 
+    it('Pushing the panes with spacing in topAdjustable in allowFlating case', () => {
+        let ele: HTMLElement = createElement('div', { id: 'gridlayout' });
+        let parentEle: HTMLElement = createElement('div', { id: 'container' });
+        parentEle.style.width = '1264px';
+        parentEle.appendChild(ele);
+        document.body.appendChild(parentEle);
+        let gridLayOut = new DashboardLayout({
+            allowFloating: false,
+            allowResizing: true,
+            cellAspectRatio: 100 / 30,
+            columns: 6,
+            cellSpacing: [5, 5],
+            panels: [
+                { 'id':"one" , 'sizeX': 6, 'sizeY': 2, 'row': 0, 'col': 0 },
+                { 'id':"two" ,'sizeX': 4, 'sizeY': 3, 'row': 2, 'col': 4 },
+                { 'id':"three" ,'sizeX': 2, 'sizeY': 3, 'row': 2, 'col': 4 },
+                { 'id':"four" ,'sizeX': 4, 'sizeY': 3, 'row': 5, 'col': 4 },
+                { 'id':"five" ,'sizeX': 2, 'sizeY': 3, 'row': 5, 'col': 4 },
+            ]
+        });
+        gridLayOut.appendTo('#gridlayout');
+        let CellElements: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>gridLayOut.element.querySelectorAll('.e-panel');
+        setCss(CellElements);
+        let movingElemnt: HTMLElement = document.getElementById('one');
+        let targetElemnt: HTMLElement = document.getElementById('two');
+        let mousedown: any = getEventObject('MouseEvents', 'mousedown', movingElemnt, targetElemnt, 20, 100);
+        EventHandler.trigger(<HTMLElement>movingElemnt, 'mousedown', mousedown);
+        let mousemove: any = getEventObject('MouseEvents', 'mousemove', movingElemnt, targetElemnt, 24, 110);
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        mousemove.srcElement = mousemove.target = mousemove.toElement = targetElemnt;
+        mousemove = setMouseCordinates(mousemove, 20, 150);
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        mousemove = setMouseCordinates(mousemove, 25, 250);
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        mousemove = setMouseCordinates(mousemove, 55, 260);
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        mousemove = setMouseCordinates(mousemove, 50, 300);
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        mousemove = setMouseCordinates(mousemove, 55, 320);
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
+        mouseup.type = 'mouseup';
+        mouseup.currentTarget = document;
+        EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+        expect((<any>gridLayOut).getCellInstance('one').row == 3).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('one').col == 0).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('two').row == 0).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('two').col == 0).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('three').row == 0).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('three').col == 4).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('four').row == 5).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('four').col == 0).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('five').row == 5).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('five').col == 4).toBe(true);
+        gridLayOut.destroy();
+        detach(ele);
+    });
+
+
+    it('Continious Pushing the panes with spacing in topAdjustable in allowFlating case', () => {
+        let ele: HTMLElement = createElement('div', { id: 'gridlayout' });
+        let parentEle: HTMLElement = createElement('div', { id: 'container' });
+        parentEle.style.width = '1264px';
+        parentEle.appendChild(ele);
+        document.body.appendChild(parentEle);
+        let gridLayOut = new DashboardLayout({
+            allowFloating: true,
+            allowResizing: true,
+            cellAspectRatio: 100 / 30,
+            columns: 6,
+            cellSpacing: [5, 5],
+            panels: [
+                { 'id':"one" , 'sizeX': 6, 'sizeY': 2, 'row': 0, 'col': 0 },
+                { 'id':"two" ,'sizeX': 4, 'sizeY': 3, 'row': 2, 'col': 4 },
+                { 'id':"three" ,'sizeX': 2, 'sizeY': 3, 'row': 2, 'col': 4 },
+                { 'id':"four" ,'sizeX': 4, 'sizeY': 3, 'row': 5, 'col': 4 },
+                { 'id':"five" ,'sizeX': 2, 'sizeY': 3, 'row': 5, 'col': 4 },
+            ]
+        });
+        gridLayOut.appendTo('#gridlayout');
+        let CellElements: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>gridLayOut.element.querySelectorAll('.e-panel');
+        setCss(CellElements);
+        let movingElemnt: HTMLElement = document.getElementById('one');
+        let targetElemnt: HTMLElement = document.getElementById('two');
+        let mousedown: any = getEventObject('MouseEvents', 'mousedown', movingElemnt, targetElemnt, 20, 100);
+        EventHandler.trigger(<HTMLElement>movingElemnt, 'mousedown', mousedown);
+        let mousemove: any = getEventObject('MouseEvents', 'mousemove', movingElemnt, targetElemnt, 24, 110);
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        mousemove.srcElement = mousemove.target = mousemove.toElement = targetElemnt;
+        mousemove = setMouseCordinates(mousemove, 20, 150);
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        mousemove = setMouseCordinates(mousemove, 25, 250);
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        mousemove = setMouseCordinates(mousemove, 55, 260);
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        mousemove = setMouseCordinates(mousemove, 50, 300);
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        mousemove = setMouseCordinates(mousemove, 55, 320);
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);        
+        expect((<any>gridLayOut).getCellInstance('one').row == 3).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('one').col == 0).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('two').row == 0).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('two').col == 0).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('three').row == 0).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('three').col == 4).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('four').row == 5).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('four').col == 0).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('five').row == 5).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('five').col == 4).toBe(true);
+        mousemove = setMouseCordinates(mousemove, 50, 350);
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        mousemove = setMouseCordinates(mousemove, 55, 400);
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        mousemove = setMouseCordinates(mousemove, 50, 480);
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        mousemove = setMouseCordinates(mousemove, 54, 450);
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
+        mouseup.type = 'mouseup';
+        mouseup.currentTarget = document;
+        EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+        expect((<any>gridLayOut).getCellInstance('one').row == 6).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('one').col == 0).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('two').row == 0).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('two').col == 0).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('three').row == 0).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('three').col == 4).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('four').row == 3).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('four').col == 0).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('five').row == 3).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('five').col == 4).toBe(true);
+        gridLayOut.destroy();
+        detach(ele);
+    });
+
     it('restricting swapping of panles above due to inbetween blockage and allowPushing', () => {
         let ele: HTMLElement = createElement('div', { id: 'gridlayout' });
         let parentEle: HTMLElement = createElement('div', { id: 'container' });
@@ -7277,6 +7412,44 @@ describe('Blazor dashboard layout testing', () => {
         gridLayOut.appendTo('#gridlayout');
         gridLayOut.isServerRendered = false;
         expect(gridLayOut.element.childElementCount === 1).toBe(true);
+    });
+    it('for heigth and width property', () => {
+        ele.innerHTML = "<div id='layout_0' class='e-panel e-panel-transition custom e-rtl' style='z-index: 1000;' data-col='0' data-row='0' data-sizex='1' data-sizey='2' data-minsizex='1' data-minsizey='1'><div id='layout_0_content' class='e-panel-container'><div id='layout_0template' class='e-panel-header' style='height: 20px;'></div><div id='layout_0_body' class='e-panel-content'></div></div></div>";
+        gridLayOut = new DashboardLayout({
+            allowResizing: true,
+            panels: [
+                { "sizeX": 2, "sizeY": 2, "row": 0, "col": 0 },
+            ]
+        });
+        gridLayOut.isServerRendered = true;
+        gridLayOut.appendTo('#gridlayout');
+        gridLayOut.isServerRendered = false;
+        expect(document.getElementById("layout_0_body").style.height == "calc(100% - 20px)").toBe(true);
+    });
+    it('checking panel length in inline rendering', () => {
+        ele.innerHTML = "<div id='layout_0' class='e-panel e-panel-transition custom e-rtl' style='z-index: 1000;' data-col='0' data-row='0' data-sizex='1' data-sizey='2' data-minsizex='1' data-minsizey='1'><div id='layout_0_content' class='e-panel-container'><div id='layout_0template' class='e-panel-header' style='height: 20px;'></div><div id='layout_0_body' class='e-panel-content'></div></div></div>";
+        gridLayOut = new DashboardLayout({
+            allowResizing: true
+        });
+        gridLayOut.isServerRendered = true;
+        gridLayOut.isInlineRendering = true;
+        gridLayOut.appendTo('#gridlayout');
+        gridLayOut.isServerRendered = false;
+        expect(gridLayOut.panels.length == 1).toBe(true);
+    });
+    it('for heigth and width property without body element', () => {
+        ele.innerHTML = "<div id='layout_0' class='e-panel e-panel-transition custom e-rtl' style='z-index: 1000;' data-col='0' data-row='0' data-sizex='1' data-sizey='2' data-minsizex='1' data-minsizey='1'><div id='layout_0_content' class='e-panel-container'><div id='layout_0template' class='e-panel-header' style='height: 20px;'></div></div></div>";
+        gridLayOut = new DashboardLayout({
+            allowResizing: true,
+            panels: [
+                { "sizeX": 2, "sizeY": 2, "row": 0, "col": 0 },
+            ]
+        });
+        gridLayOut.isServerRendered = true;
+        gridLayOut.appendTo('#gridlayout');
+        gridLayOut.isServerRendered = false;
+        expect(document.getElementById("layout_0").querySelector(".e-panel-header") == null).toBe(false);
+        expect(document.getElementById("layout_0").querySelector(".e-panel-content") == null).toBe(true);
     });
     it('for panel property with Id', () => {
         ele.innerHTML = "<div id='1' class='e-panel e-panel-transition custom e-rtl' style='z-index: 1000;' data-col='0' data-row='0' data-sizex='1' data-sizey='2' data-minsizex='1' data-minsizey='1'><div id='layout_0_content' class='e-panel-container'><div id='layout_0template' class='e-panel-header'></div><div id='layout_0_body' class='e-panel-content'></div></div></div>";

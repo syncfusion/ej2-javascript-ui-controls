@@ -3483,7 +3483,9 @@ export class PivotEngine {
             !rows[rln].showSubTotals) || !this.showSubTotals || !this.showRowSubTotals));
         let formattedText: string = subTotal ?
             '' : (value === undefined) ? this.emptyCellTextContent :
-                aggregate === 'Count' ? value.toLocaleString() : this.getFormattedValue(value, field).formattedText;
+            (aggregate === 'Count' || aggregate === 'DistinctCount') ? value.toLocaleString() :
+            this.getFormattedValue(value, field).formattedText;
+
         if (!isNaN(value) && !isNullOrUndefined(value) &&
             (['PercentageOfGrandTotal', 'PercentageOfColumnTotal', 'PercentageOfRowTotal']).indexOf(aggregate) >= 0) {
             formattedText = this.globalize.formatNumber(value, { format: 'P', maximumFractionDigits: 2 });
@@ -3606,15 +3608,18 @@ export class PivotEngine {
                 ri++;
             }
         } else if (type && type.toLowerCase() === 'distinctcount') {
-            let duplicateValues: number[] = [];
+            let duplicateValues: string[] = [];
             while (rowIndex[ri] !== undefined) {
                 if (columnIndex[rowIndex[ri]] !== undefined) {
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
                     isValueExist = true;
-                    let currentVal: number = this.valueMatrix[rowIndex[ri]][value];
-                    if (!isNullOrUndefined(currentVal)) {
+                    let val :string|number|Date= (this.data[rowIndex[ri]][this.fields[value]]);
+                    let currentVal: string;
+                    // let currentVal: number = this.valueMatrix[rowIndex[ri]][value];
+                    if (!isNullOrUndefined(val)) {
+                        currentVal = val.toString();
                         if (duplicateValues.length === 0 || (duplicateValues.length > 0 && duplicateValues.indexOf(currentVal) === -1)) {
-                            cellValue += this.allowDataCompression ? currentVal : 1;
+                            cellValue += (this.allowDataCompression && typeof val === 'number')  ? val : 1;
                             duplicateValues.push(currentVal);
                         }
                     }

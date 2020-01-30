@@ -1,9 +1,11 @@
 import { Spreadsheet } from '../base/index';
-import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, CellStyleExtendedModel, renderFilterCell } from '../common/index';
-import { createHyperlinkElement } from '../common/index';
-import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getCellAddress } from '../../workbook/common/index';
-import { CellModel, SheetModel, getCell, skipDefaultValue, isHiddenRow } from '../../workbook/base/index';
-import { addClass, attributes, getNumberDependable, extend } from '@syncfusion/ej2-base';
+import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs } from '../common/index';
+import { CellStyleExtendedModel, hasTemplate, createHyperlinkElement } from '../common/index';
+import { renderFilterCell } from '../common/index';
+import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getCellAddress, getRangeIndexes } from '../../workbook/common/index';
+import { CellModel, SheetModel, getCell, skipDefaultValue, isHiddenRow, RangeSettingModel } from '../../workbook/base/index';
+import { getRowHeight, setRowHeight } from '../../workbook/base/index';
+import { addClass, attributes, getNumberDependable, extend, compile, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { getFormattedCellObject, applyCellFormat, workbookFormulaOperation, setCellFormat } from '../../workbook/common/event';
 import { getTypeFromFormat } from '../../workbook/index';
 import { checkIsFormula } from '../../workbook/common/util';
@@ -15,10 +17,12 @@ export class CellRenderer implements ICellRenderer {
     private parent: Spreadsheet;
     private element: HTMLTableCellElement;
     private th: HTMLTableHeaderCellElement;
+    private tableRow: HTMLElement;
     constructor(parent?: Spreadsheet) {
         this.parent = parent;
         this.element = this.parent.createElement('td') as HTMLTableCellElement;
         this.th = this.parent.createElement('th', { className: 'e-header-cell' }) as HTMLTableHeaderCellElement;
+        this.tableRow = parent.createElement('tr', { className: 'e-row' });
     }
     public renderColHeader(index: number): Element {
         let headerCell: Element = this.th.cloneNode() as Element;
@@ -37,10 +41,24 @@ export class CellRenderer implements ICellRenderer {
         let td: HTMLElement = this.element.cloneNode() as HTMLElement;
         td.className = 'e-cell';
         attributes(td, { 'role': 'gridcell', 'aria-colindex': (args.colIdx + 1).toString(), 'tabindex': '-1' });
+        td.innerHTML = this.processTemplates(args.cell, args.rowIdx, args.colIdx);
         this.updateCell(args.rowIdx, args.colIdx, td, args.cell, args.lastCell, args.row, args.hRow, args.isHeightCheckNeeded);
-        this.parent.notify(renderFilterCell, { td: td, rowIndex: args.rowIdx, colIndex: args.colIdx });
-        this.parent.trigger('beforeCellRender', <CellRenderEventArgs>{ cell: args.cell, element: td, address: args.address });
-        return td;
+        if (!hasTemplate(this.parent, args.rowIdx, args.colIdx, this.parent.activeSheetTab - 1)) {
+            this.parent.notify(renderFilterCell, { td: td, rowIndex: args.rowIdx, colIndex: args.colIdx });
+        }
+        let evtArgs: CellRenderEventArgs = {
+            cell: args.cell, element: td, address: args.address
+        };
+        this.parent.trigger('beforeCellRender', evtArgs);
+        this.updateRowHeight({
+            rowIdx: args.rowIdx as number,
+            cell: evtArgs.element as HTMLElement,
+            lastCell: args.lastCell,
+            rowHgt: 20,
+            row: args.row,
+            hRow: args.hRow
+        });
+        return evtArgs.element;
     }
     private updateCell(
         rowIdx: number, colIdx: number, td: HTMLElement, cell: CellModel,
@@ -64,8 +82,7 @@ export class CellRenderer implements ICellRenderer {
         if (cell) {
             this.parent.notify(getFormattedCellObject, formatArgs);
         }
-        if (td) {
-            td.textContent = td ? <string>formatArgs.formattedText : '';
+        if (!isNullOrUndefined(td)) {
             this.parent.refreshNode(td, {
                 type: formatArgs.type as string,
                 result: formatArgs.formattedText as string,
@@ -89,17 +106,85 @@ export class CellRenderer implements ICellRenderer {
             } else {
                 this.parent.notify(applyCellFormat, <CellFormatArgs>{
                     style: extend({}, this.parent.commonCellStyle, style), rowIdx: rowIdx, colIdx: colIdx, cell: td,
-                    lastCell: lastCell, row: row, hRow: hRow, isHeightCheckNeeded: isHeightCheckNeeded, manualUpdate: false
+                    lastCell: lastCell, row: row, hRow: hRow,
+                    isHeightCheckNeeded: isHeightCheckNeeded, manualUpdate: false
                 });
             }
         } else {
             if (isRefresh) { this.removeStyle(td); }
         }
-        if (cell && cell.hyperlink) {
-            let args: object = { cell: cell, td: td, rowIdx: rowIdx, colIdx: colIdx };
-            this.parent.notify(createHyperlinkElement, args);
+        if (cell && cell.hyperlink && !hasTemplate(this.parent, rowIdx, colIdx, this.parent.activeSheetTab - 1)) {
+            let hArgs: object = { cell: cell, td: td, rowIdx: rowIdx, colIdx: colIdx };
+            this.parent.notify(createHyperlinkElement, hArgs);
         }
     }
+
+    private processTemplates(cell: CellModel, rowIdx: number, colIdx: number): string {
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        let rangeSettings: RangeSettingModel[] = sheet.rangeSettings;
+        let range: number[];
+        for (let j: number = 0, len: number = rangeSettings.length; j < len; j++) {
+            if (rangeSettings[j].template) {
+                range = getRangeIndexes(rangeSettings[j].range.length ? rangeSettings[j].range : rangeSettings[j].startCell);
+                if (range[0] <= rowIdx && range[1] <= colIdx && range[2] >= rowIdx && range[3] >= colIdx) {
+                    if (cell) {
+                        return this.compileCellTemplate(rangeSettings[j].template);
+                    } else {
+                        if (!getCell(rowIdx, colIdx, sheet, true)) {
+                            return this.compileCellTemplate(rangeSettings[j].template);
+                        }
+                    }
+                }
+            }
+        }
+        return '';
+    }
+
+    private compileCellTemplate(template: string): string {
+        let templateString: string;
+        if (template.trim().indexOf('#') === 0) {
+            templateString = document.querySelector(template).innerHTML.trim();
+        } else {
+            templateString = template;
+        }
+        let compiledStr: Function = compile(templateString);
+        return (compiledStr({}, null, null, '', true)[0] as HTMLElement).outerHTML;
+    }
+
+    private updateRowHeight(args: {
+        row: HTMLElement, rowIdx: number, hRow: HTMLElement, cell: HTMLElement, rowHgt: number, lastCell: boolean
+    }): void {
+        if (args.cell && args.cell.children.length) {
+            let clonedCell: HTMLElement = args.cell.cloneNode(true) as HTMLElement;
+            this.tableRow.appendChild(clonedCell);
+        }
+        if (args.lastCell && this.tableRow.childElementCount) {
+            let sheet: SheetModel = this.parent.getActiveSheet();
+            let tableRow: HTMLElement = args.row || this.parent.getRow(args.rowIdx);
+            let previouseHeight: number = getRowHeight(sheet, args.rowIdx);
+            let rowHeight: number = this.getRowHeightOnInit();
+            if (rowHeight > previouseHeight) {
+                tableRow.style.height = `${rowHeight}px`;
+                if (sheet.showHeaders) {
+                    (args.hRow || this.parent.getRow(args.rowIdx, this.parent.getRowHeaderTable())).style.height =
+                        `${rowHeight}px`;
+                }
+                setRowHeight(sheet, args.rowIdx, rowHeight);
+            }
+            this.tableRow.innerHTML = '';
+        }
+    }
+
+    private getRowHeightOnInit(): number {
+        let tTable: HTMLElement = this.parent.createElement('table', { className: 'e-table e-test-table' });
+        let tBody: HTMLElement = tTable.appendChild(this.parent.createElement('tbody'));
+        tBody.appendChild(this.tableRow);
+        this.parent.element.appendChild(tTable);
+        let height: number = Math.round(this.tableRow.getBoundingClientRect().height);
+        this.parent.element.removeChild(tTable);
+        return height < 20 ? 20 : height;
+    }
+
     private removeStyle(element: HTMLElement): void {
         if (element.style.length) { element.removeAttribute('style'); }
     }

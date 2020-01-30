@@ -7,6 +7,7 @@ import { RangeSettingModel, SheetModel, UsedRangeModel } from './sheet-model';
 import { RowModel } from './row-model';
 import { ColumnModel } from './column-model';
 import { processIdx } from './data';
+import { SheetState } from '../common/index';
 
 /**
  * Configures the Range settings for the spreadsheet.
@@ -57,6 +58,22 @@ export class RangeSetting extends ChildProperty<Sheet> {
      */
     @Property(true)
     public showFieldAsHeader: boolean;
+
+    /**
+     * Template helps to compiles the given HTML String (or HTML Element ID) into HtML Element and append to the Cell.
+     *  @default ''
+     */
+    @Property('')
+    public template: string;
+
+    /**
+     * Specifies the range for updating the dataSource or template.
+     * @default 'A1'
+     */
+    @Property('A1')
+    public range: string;
+
+
 }
 
 /**
@@ -197,6 +214,13 @@ export class Sheet extends ChildProperty<Workbook> {
      */
     @Property(true)
     public showGridLines: boolean;
+
+    /**
+     * Specifies the sheet visibility state. There must be at least one visible sheet in Spreadsheet.
+     * @default 'Visible'
+     */
+    @Property('Visible')
+    public state: SheetState;
 }
 
 /**
