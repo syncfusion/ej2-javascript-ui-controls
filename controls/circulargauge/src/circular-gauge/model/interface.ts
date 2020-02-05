@@ -23,6 +23,13 @@ export interface ICircularGaugeEventArgs {
 }
 
 /**
+ * specifies Print Events
+ */
+export interface IPrintEventArgs extends ICircularGaugeEventArgs {
+    htmlContent: Element;
+}
+
+/**
  * Specifies Loaded event arguments for circular gauge.
  */
 export interface ILoadedEventArgs extends ICircularGaugeEventArgs {

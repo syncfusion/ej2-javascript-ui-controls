@@ -1,13 +1,9 @@
-import { Toolbar, HtmlEditor, RichTextEditor, Count, Link, Image, QuickToolbar } from './../../../../src/index';
-import { renderRTE, destroy, dispatchEvent, setCursorPoint } from './../../render.spec';
-import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
-
-RichTextEditor.Inject(HtmlEditor);
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(Link);
-RichTextEditor.Inject(Count);
-RichTextEditor.Inject(Image);
-RichTextEditor.Inject(QuickToolbar);
+/**
+ * BackgroundColor spec
+ */
+import { isNullOrUndefined, detach } from '@syncfusion/ej2-base';
+import { RichTextEditor } from './../../../../src/index';
+import { renderRTE, destroy, dispatchEvent } from './../../render.spec';
 
 describe('RTE SELECTION BASED - backgroundColor - ', () => {
 
@@ -46,7 +42,6 @@ describe('RTE SELECTION BASED - backgroundColor - ', () => {
         describe(' toolbarSettings property - ', () => {
             let rteObj: RichTextEditor;
             let controlId: string;
-            let toolbar: HTMLElement;
             beforeAll((done: Function) => {
                 rteObj = renderRTE({
                     value: '<p id="rte">RTE</p>',
@@ -60,7 +55,6 @@ describe('RTE SELECTION BASED - backgroundColor - ', () => {
                     }
                 });
                 controlId = rteObj.element.id;
-                toolbar = rteObj.element.querySelector('.e-rte-toolbar');
                 done();
             });
             afterAll((done: Function) => {
@@ -85,7 +79,6 @@ describe('RTE SELECTION BASED - backgroundColor - ', () => {
         describe(' change the backgroundColor.colorCode - ', () => {
             let rteObj: RichTextEditor;
             let controlId: string;
-            let toolbar: HTMLElement;
             beforeAll((done: Function) => {
                 rteObj = renderRTE({
                     value: '<p id="rte">RTE</p>',
@@ -100,7 +93,6 @@ describe('RTE SELECTION BASED - backgroundColor - ', () => {
                 };
                 rteObj.dataBind();
                 controlId = rteObj.element.id;
-                toolbar = rteObj.element.querySelector('.e-rte-toolbar');
                 done();
             });
             afterAll((done: Function) => {
@@ -169,7 +161,6 @@ describe('RTE SELECTION BASED - backgroundColor - ', () => {
                         items: ['BackgroundColor']
                     },
                 });
-
                 controlId = rteObj.element.id;
                 done();
             });
@@ -198,7 +189,6 @@ describe('RTE SELECTION BASED - backgroundColor - ', () => {
                         items: ['BackgroundColor']
                     },
                 });
-
                 controlId = rteObj.element.id;
                 done();
             });
@@ -233,7 +223,6 @@ describe('RTE SELECTION BASED - backgroundColor - ', () => {
                         items: ['BackgroundColor']
                     },
                 });
-
                 controlId = rteObj.element.id;
                 done();
             });
@@ -257,7 +246,6 @@ describe('RTE SELECTION BASED - backgroundColor - ', () => {
         describe(' getHtml and getText method - ', () => {
             let rteObj: RichTextEditor;
             let controlId: string;
-            let toolbar: HTMLElement;
             beforeAll((done: Function) => {
                 rteObj = renderRTE({
                     value: '<p id="rte">RTE</p>',
@@ -271,7 +259,6 @@ describe('RTE SELECTION BASED - backgroundColor - ', () => {
                     }
                 });
                 controlId = rteObj.element.id;
-                toolbar = rteObj.element.querySelector('.e-rte-toolbar');
                 done();
             });
             afterAll((done: Function) => {
@@ -302,7 +289,6 @@ describe('RTE SELECTION BASED - backgroundColor - ', () => {
         describe(' showSourceCode - ', () => {
             let rteObj: RichTextEditor;
             let controlId: string;
-            let toolbar: HTMLElement;
             beforeAll((done: Function) => {
                 rteObj = renderRTE({
                     value: '<p id="rte">RTE</p>',
@@ -316,7 +302,6 @@ describe('RTE SELECTION BASED - backgroundColor - ', () => {
                     }
                 });
                 controlId = rteObj.element.id;
-                toolbar = rteObj.element.querySelector('.e-rte-toolbar');
                 done();
             });
             afterAll((done: Function) => {
@@ -339,7 +324,6 @@ describe('RTE SELECTION BASED - backgroundColor - ', () => {
         describe(' destroy - ', () => {
             let rteObj: RichTextEditor;
             let controlId: string;
-            let element: HTMLElement;
 
             beforeAll((done: Function) => {
                 rteObj = renderRTE({
@@ -354,11 +338,10 @@ describe('RTE SELECTION BASED - backgroundColor - ', () => {
                     }
                 });
                 controlId = rteObj.element.id;
-                element = rteObj.element;
                 done();
             });
             afterAll((done: Function) => {
-                detach(element);
+                detach(rteObj.element);
                 done();
             })
             it(' Test the colorPicker element after destroy the component ', () => {
@@ -370,7 +353,6 @@ describe('RTE SELECTION BASED - backgroundColor - ', () => {
         describe(' refresh - ', () => {
             let rteObj: RichTextEditor;
             let controlId: string;
-            let element: HTMLElement;
 
             beforeAll((done: Function) => {
                 rteObj = renderRTE({
@@ -385,11 +367,10 @@ describe('RTE SELECTION BASED - backgroundColor - ', () => {
                     }
                 });
                 controlId = rteObj.element.id;
-                element = rteObj.element;
                 done();
             });
             afterAll((done: Function) => {
-                detach(element);
+                destroy(rteObj);
                 done();
             })
             it(' Test the colorPicker element after refresh the component ', () => {

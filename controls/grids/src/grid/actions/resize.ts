@@ -95,6 +95,7 @@ export class Resize implements IAction {
         let headerTextClone: Element;
         let contentTextClone: NodeListOf<Element>;
         let footerTextClone: NodeListOf<Element>;
+        let columnIndexByField: number = this.parent.getColumnIndexByField(fName);
         let frzCols: number = gObj.getFrozenColumns();
         if (!isNullOrUndefined(gObj.getFooterContent())) {
             footerTable = gObj.getFooterContentTable();
@@ -155,10 +156,10 @@ export class Resize implements IAction {
         if (footerText.length) {
             wFooter = this.createTable(footerTable, footerText, footerDivTag);
         }
-        let columnbyindex: Column = gObj.getColumns()[index];
+        let columnbyindex: Column = gObj.getColumns()[columnIndexByField];
         let result: Boolean;
         let width: string = columnbyindex.width = formatUnit(Math.max(wHeader, wContent, wFooter));
-        this.widthService.setColumnWidth(gObj.getColumns()[index] as Column);
+        this.widthService.setColumnWidth(gObj.getColumns()[columnIndexByField] as Column);
         result = gObj.getColumns().some((x: Column) => x.width === null || x.width === undefined || (x.width as string).length <= 0);
         if (result === false) {
             let element: Column[] = (gObj.getColumns() as Column[]);

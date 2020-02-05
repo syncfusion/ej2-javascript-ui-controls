@@ -1702,33 +1702,23 @@ describe('DDList', () => {
         /**
          * Tab Key
          */
-        it("Tab key ", (done) => {
+        it("Tab key ", () => {
             list.showPopup();
-            setTimeout(() => {
-                keyEventArgs.action = 'tab';
-                list.keyActionHandler(keyEventArgs);
-                setTimeout(() => {
-                    expect(list.isPopupOpen).toBe(false);
-                    expect(list.popupObj.element.classList.contains("e-popup-close")).toEqual(true);
-                    done();
-                }, 300);
-            }, 450);
+            keyEventArgs.action = 'tab';
+            list.keyActionHandler(keyEventArgs);
+            expect(list.isPopupOpen).toBe(false);
+            expect(list.popupObj.element.classList.contains("e-popup-close")).toEqual(true);
         });
         /**
          * Shift+Tab Key
          */
-        it("Shift+Tab key ", (done) => {
+        it("Shift+Tab key ", () => {
             list.showPopup();
-            setTimeout(() => {
-                expect(list.isPopupOpen).toBe(true);
-                keyEventArgs.action = 'close';
-                list.keyActionHandler(keyEventArgs);
-                setTimeout(() => {
-                    expect(list.isPopupOpen).toBe(false);
-                    expect(list.popupObj.element.classList.contains("e-popup-close")).toEqual(true);
-                    done();
-                }, 300);
-            }, 450)
+            expect(list.isPopupOpen).toBe(true);
+            keyEventArgs.action = 'close';
+            list.keyActionHandler(keyEventArgs);
+            expect(list.isPopupOpen).toBe(false);
+            expect(list.popupObj.element.classList.contains("e-popup-close")).toEqual(true);
         });
         /**
          * DownKey
@@ -5146,19 +5136,14 @@ describe('DDList', () => {
                 ele.remove();
             }
         })
-        it("Enter key ", (done) => {
+        it("Enter key ", () => {
             listObj.value = 'J';
             listObj.dataBind();
             listObj.showPopup();
-            setTimeout(() => {
-                keyEventArgs.action = 'enter';
-                listObj.mobileKeyActionHandler(keyEventArgs);
-                setTimeout(() => {
-                    expect(listObj.isPopupOpen).toBe(false);
-                    expect(listObj.popupObj.element.classList.contains("e-popup-close")).toEqual(true);
-                    done();
-                }, 300);
-            }, 450);
+            keyEventArgs.action = 'enter';
+            listObj.mobileKeyActionHandler(keyEventArgs);
+            expect(listObj.isPopupOpen).toBe(false);
+            expect(listObj.popupObj.element.classList.contains("e-popup-close")).toEqual(true);
         });
     });
     describe('EJ2-33412', () => {

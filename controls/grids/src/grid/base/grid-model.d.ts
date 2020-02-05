@@ -716,6 +716,7 @@ export interface GridModel extends ComponentModel{
     /**
      * Configures the infinite scroll settings.  
      * @default { enableScroll: false, enableCache: false, maxBlock: 5, initialBlocks: 5 }    
+     * @deprecated
      */
     infiniteScrollSettings?: InfiniteScrollSettingsModel;
 

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Circular Gauge Pointer Image sample testing</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Typescript UI Controls" />
+    <meta name="author" content="Syncfusion" />
+    <script src="../../node_modules/requirejs/require.js" data-main="speedometer"></script>
+    <script src="../require-packages.js"></script>
+    <link href="../../styles/material.css" rel="stylesheet" />
+    <link href="../css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+    <div>
+        <div class="col-md-8 control-section">
+            <div class="content-wrapper">
+                <div id="container"></div>
+                </div>
+            </div>
+        </div>
+    <!-- property panel -->
+        <div class="col-lg-3 property-section">
+            <table id="property" title="Properties" style="width: 100%">
+                <tbody>
+                    <tr >
+                        <td style="width: 40%">
+                            <div class="property-text"> Show text labels</div>
+                        </td>
+                        <td style="width: 40%;">
+                            <div>
+                            <input type="checkbox" id="showText" >
+                            </div>
+                        </td>
+                    </tr>
+                    <tr >
+                        <td style="width: 40%">
+                            <div class="property-text"> Combine ranges</div>
+                        </td>
+                        <td style="width: 40%;">
+                            <div>
+                            <input type="checkbox" id="combineRange" >
+                            </div>
+                        </td>
+                        </tr>
+                        <tr >
+                            <td style="width: 40%">
+                                <div class="property-text"> Gap between ranges</div>
+                            </td>
+                            <td style="width: 40%;">
+                                <div>
+                                <input type="checkbox" id="range" >
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+                <script id='pointerValue' type="text/x-template">
+                    <div id='templateWrap'>
+                        <div class='des'>
+                            <div id='pointerannotation'
+                            style="width:90px;text-align:center;font-size:20px;font-family:Roboto">${pointers[0].value} km/h</div>
+                        </div>
+                    </div>
+                </script>
+            <svg style="height:0px;width:0px">
+                <defs>
+                <lineargradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:#82b944;stop-opacity:1" />
+                    <stop offset="50%" style="stop-color:rgb(255,255,0);stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:red;stop-opacity:1" />
+                </lineargradient>
+                </defs>
+            </svg>
+</body>
+</html>

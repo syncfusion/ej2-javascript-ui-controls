@@ -1447,6 +1447,15 @@ var WLevelOverride = /** @__PURE__ @class */ (function () {
         this.startAt = undefined;
         this.overrideListLevel = undefined;
     };
+    WLevelOverride.prototype.clone = function () {
+        var levelOverride = new WLevelOverride();
+        levelOverride.startAt = this.startAt;
+        levelOverride.levelNumber = this.levelNumber;
+        if (!isNullOrUndefined(this.overrideListLevel)) {
+            levelOverride.overrideListLevel = this.overrideListLevel.clone(levelOverride);
+        }
+        return levelOverride;
+    };
     return WLevelOverride;
 }());
 
@@ -1505,6 +1514,13 @@ var WList = /** @__PURE__ @class */ (function () {
         if (!isNullOrUndefined(this.levelOverrides) && this.levelOverrides.length !== 0) {
             this.levelOverrides = list.levelOverrides;
         }
+    };
+    WList.prototype.clone = function () {
+        var list = new WList();
+        for (var i = 0; i < this.levelOverrides.length; i++) {
+            list.levelOverrides.push(this.levelOverrides[i].clone());
+        }
+        return list;
     };
     return WList;
 }());
@@ -14423,6 +14439,13 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
                 case 'enableRtl':
                     this.localizeDialogs(model.enableRtl);
                     break;
+                case 'enableComment':
+                    if (this.viewer && this.showComments) {
+                        this.showComments = this.showComments ? this.enableComment : false;
+                        this.viewer.showComments(model.enableComment);
+                    }
+                    this.viewer.updateScrollBars();
+                    break;
             }
         }
     };
@@ -15153,12 +15176,10 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
     DocumentEditor.prototype.destroy = function () {
         _super.prototype.destroy.call(this);
         this.destroyDependentModules();
-        if (!this.refreshing) {
-            if (!isNullOrUndefined(this.viewer)) {
-                this.viewer.destroy();
-            }
-            this.viewer = undefined;
+        if (!isNullOrUndefined(this.viewer)) {
+            this.viewer.destroy();
         }
+        this.viewer = undefined;
         if (!isNullOrUndefined(this.element)) {
             this.element.classList.remove('e-documenteditor');
             this.element.innerHTML = '';
@@ -15377,6 +15398,9 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(false)
     ], DocumentEditor.prototype, "enableSpellCheck", void 0);
+    __decorate([
+        Property(false)
+    ], DocumentEditor.prototype, "enableComment", void 0);
     __decorate([
         Property(false)
     ], DocumentEditor.prototype, "acceptTab", void 0);
@@ -16286,9 +16310,11 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         var isSelectionEmpty = selection.isEmpty;
         classList(cut, isSelectionEmpty ? ['e-disabled'] : [], !isSelectionEmpty ? ['e-disabled'] : []);
         classList(copy, isSelectionEmpty ? ['e-disabled'] : [], !isSelectionEmpty ? ['e-disabled'] : []);
-        addComment.style.display = this.viewer.owner.isReadOnlyMode ? 'none' : 'block';
-        addComment.previousSibling.style.display = this.viewer.owner.isReadOnlyMode ? 'none' : 'block';
-        addComment.nextSibling.style.display = this.viewer.owner.isReadOnlyMode ? 'none' : 'block';
+        // tslint:disable-next-line:max-line-length
+        var isHideComment = this.viewer.owner.isReadOnlyMode || this.viewer.owner.enableHeaderAndFooter || !this.viewer.owner.enableComment;
+        addComment.style.display = isHideComment ? 'none' : 'block';
+        addComment.previousSibling.style.display = isHideComment ? 'none' : 'block';
+        addComment.nextSibling.style.display = isHideComment ? 'none' : 'block';
         if (owner.isReadOnlyMode) {
             return true;
         }
@@ -16428,6 +16454,13 @@ var WAbstractList = /** @__PURE__ @class */ (function () {
             this.levels = [];
         }
         this.levels = undefined;
+    };
+    WAbstractList.prototype.clone = function () {
+        var absList = new WAbstractList();
+        for (var i = 0; i < this.levels.length; i++) {
+            absList.levels.push(this.levels[i].clone(absList));
+        }
+        return absList;
     };
     return WAbstractList;
 }());
@@ -16582,6 +16615,16 @@ var WListLevel = /** @__PURE__ @class */ (function () {
     };
     WListLevel.clear = function () {
         this.uniqueListLevels.clear();
+    };
+    WListLevel.prototype.clone = function (node) {
+        var listLevel = new WListLevel(node);
+        listLevel.paragraphFormat = this.paragraphFormat.cloneFormat();
+        listLevel.characterFormat = this.characterFormat.cloneFormat();
+        if (this.uniqueListLevel) {
+            listLevel.uniqueListLevel = this.uniqueListLevel;
+            listLevel.uniqueListLevel.referenceCount++;
+        }
+        return listLevel;
     };
     WListLevel.dotBullet = '\uf0b7';
     WListLevel.squareBullet = '\uf0a7'; //Symbol font \u25aa.
@@ -18340,17 +18383,17 @@ var Layout = /** @__PURE__ @class */ (function () {
         var levelOverride = !isNullOrUndefined(list.levelOverrides) ? list.levelOverrides[levelNumber] : undefined;
         // If LevelOverride exists and have either override list level or StartAtOverride, then only list numbering will be restarted.
         // tslint:disable-next-line:max-line-length
-        // if (!isNullOrUndefined(levelOverride) && !(document.renderedLevelOverrides.indexOf(levelOverride) > -1) && isNullOrUndefined(levelOverride.overrideListLevel)) {
-        //     //Add List Override style
-        //     document.renderedLevelOverrides.push(list.levelOverrides.getItem(levelNumber) as WLevelOverride);
-        //     if (document.renderedLists.containsKey((list.wordDocument as WordDocument).getAbstractListById(list.abstractListId))) {
-        // tslint:disable-next-line:max-line-length
-        //         let levels: Dictionary<number, number> = document.renderedLists.get((list.wordDocument as WordDocument).getAbstractListById(list.abstractListId));
-        //         if (levels.containsKey(levelNumber)) {
-        //             levels.remove(levelNumber);
-        //         }
-        //     }
-        // }
+        if (!isNullOrUndefined(levelOverride) && this.viewer.renderedLevelOverrides.indexOf(levelOverride) === -1 && isNullOrUndefined(levelOverride.overrideListLevel)) {
+            //Add List Override style
+            this.viewer.renderedLevelOverrides.push(levelOverride);
+            if (this.viewer.renderedLists.containsKey(this.viewer.getAbstractListById(list.abstractListId))) {
+                // tslint:disable-next-line:max-line-length
+                var levels = this.viewer.renderedLists.get(this.viewer.getAbstractListById(list.abstractListId));
+                if (levels.containsKey(levelNumber)) {
+                    levels.remove(levelNumber);
+                }
+            }
+        }
         if (isNullOrUndefined(isAutoList)) {
             this.updateListValues(list, levelNumber);
         }
@@ -22353,7 +22396,7 @@ var Renderer = /** @__PURE__ @class */ (function () {
             var elementBox = lineWidget.children[i];
             if (elementBox instanceof CommentCharacterElementBox &&
                 elementBox.commentType === 0 && this.viewer.owner.selectionModule) {
-                if (!isCommentMark) {
+                if (this.viewer.owner.enableComment && !isCommentMark) {
                     isCommentMark = true;
                     elementBox.renderCommentMark();
                     var pageGap = 0;
@@ -25201,6 +25244,7 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
         this.characterFormat = new WCharacterFormat(this);
         this.paragraphFormat = new WParagraphFormat(this);
         this.renderedLists = new Dictionary();
+        this.renderedLevelOverrides = [];
         this.headersFooters = [];
         this.styles = new WStyles();
         this.preDefinedStyles = new Dictionary();
@@ -25601,11 +25645,11 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
      * @private
      */
     LayoutViewer.prototype.showComments = function (show) {
-        if (this.owner && show) {
+        if (this.owner && show && this.owner.enableComment) {
             var eventArgs = { type: 'Comment' };
             this.owner.trigger('beforePaneSwitch', eventArgs);
         }
-        this.owner.commentReviewPane.showHidePane(show);
+        this.owner.commentReviewPane.showHidePane(show && this.owner.enableComment);
     };
     /**
      * Initializes components.
@@ -25847,6 +25891,9 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
         this.pages = [];
         if (!isNullOrUndefined(this.renderedLists)) {
             this.renderedLists.clear();
+        }
+        if (!isNullOrUndefined(this.renderedLevelOverrides)) {
+            this.renderedLevelOverrides = [];
         }
         if (!isNullOrUndefined(this.owner.editorHistory)) {
             this.owner.editorHistory.destroy();
@@ -29720,6 +29767,7 @@ var SelectionParagraphFormat = /** @__PURE__ @class */ (function () {
             }
             this.selection.owner.isLayoutEnabled = true;
             this.viewer.renderedLists.clear();
+            this.viewer.renderedLevelOverrides = [];
             // this.viewer.pages = [];
             this.viewer.owner.editorModule.layoutWholeDocument();
             this.viewer.owner.editorModule.updateSelectionTextPosition(false);
@@ -45410,7 +45458,9 @@ var TableResizer = /** @__PURE__ @class */ (function () {
         var row = undefined;
         if (this.resizerPosition > -1) {
             row = table.childWidgets[this.resizerPosition];
-            this.updateRowHeight(row, dragValue);
+            if (row) {
+                this.updateRowHeight(row, dragValue);
+            }
             selection.selectPosition(selection.start, selection.end);
         }
         if (table.isInsideTable) {
@@ -45421,8 +45471,11 @@ var TableResizer = /** @__PURE__ @class */ (function () {
         this.startingPoint.y += HelperMethods.convertPointToPixel(dragValue);
         this.owner.viewer.layout.reLayoutTable(table);
         this.owner.editorModule.reLayout(this.owner.selection);
-        this.currentResizingTable = row.ownerTable;
-        if (table.childWidgets[this.resizerPosition] === undefined) {
+        if (row) {
+            this.currentResizingTable = row.ownerTable;
+        }
+        if (this.currentResizingTable.childWidgets === undefined
+            || this.currentResizingTable.childWidgets[this.resizerPosition] === undefined) {
             this.resizerPosition = -1;
         }
     };
@@ -46504,7 +46557,8 @@ var Editor = /** @__PURE__ @class */ (function () {
      */
     // Comment implementation starts
     Editor.prototype.insertComment = function (text) {
-        if (isNullOrUndefined(this.selection.start) || this.owner.isReadOnlyMode) {
+        if (isNullOrUndefined(this.selection.start) || this.owner.isReadOnlyMode || this.viewer.owner.enableHeaderAndFooter
+            || !this.viewer.owner.enableComment) {
             return;
         }
         if (isNullOrUndefined(text)) {
@@ -46603,7 +46657,8 @@ var Editor = /** @__PURE__ @class */ (function () {
      */
     Editor.prototype.deleteComment = function () {
         if (this.owner.isReadOnlyMode || isNullOrUndefined(this.owner) || isNullOrUndefined(this.owner.viewer)
-            || isNullOrUndefined(this.owner.viewer.currentSelectedComment)) {
+            || isNullOrUndefined(this.owner.viewer.currentSelectedComment) || this.owner.enableHeaderAndFooter
+            || !this.viewer.owner.enableComment) {
             return;
         }
         this.deleteCommentInternal(this.owner.viewer.currentSelectedComment);
@@ -48851,12 +48906,15 @@ var Editor = /** @__PURE__ @class */ (function () {
     };
     Editor.prototype.checkSameLevelFormat = function (lstLevelNo, abstractList, list) {
         return abstractList.levels[lstLevelNo].listLevelPattern === list.abstractList.levels[lstLevelNo].listLevelPattern
-            && abstractList.levels[lstLevelNo].numberFormat === list.abstractList.levels[lstLevelNo].numberFormat;
+            && abstractList.levels[lstLevelNo].numberFormat === list.abstractList.levels[lstLevelNo].numberFormat
+            && (abstractList.levels[lstLevelNo].listLevelPattern === 'Bullet'
+                || abstractList.levels[lstLevelNo].startAt === list.abstractList.levels[lstLevelNo].startAt);
     };
-    Editor.prototype.listLevelPatternInCollection = function (lstLevelNo, listLevelPattern, numberFormat) {
+    Editor.prototype.listLevelPatternInCollection = function (lstLevelNo, listLevel) {
         return this.viewer.lists.filter(function (list) {
-            return list.abstractList.levels[lstLevelNo].listLevelPattern === listLevelPattern
-                && list.abstractList.levels[lstLevelNo].numberFormat === numberFormat;
+            return list.abstractList.levels[lstLevelNo].listLevelPattern === listLevel.listLevelPattern
+                && list.abstractList.levels[lstLevelNo].numberFormat === listLevel.numberFormat
+                && (listLevel.listLevelPattern === 'Bullet' || list.abstractList.levels[lstLevelNo].startAt === listLevel.startAt);
         })[0];
     };
     Editor.prototype.getBlocksToUpdate = function (blocks) {
@@ -48887,7 +48945,7 @@ var Editor = /** @__PURE__ @class */ (function () {
                 && Object.keys(obj.paragraphFormat.listFormat).length > 0) {
                 var format = obj.paragraphFormat.listFormat;
                 // tslint:disable-next-line:max-line-length
-                var existingList = this.listLevelPatternInCollection(format.listLevelNumber, abstractList.levels[format.listLevelNumber].listLevelPattern, abstractList.levels[format.listLevelNumber].numberFormat);
+                var existingList = this.listLevelPatternInCollection(format.listLevelNumber, abstractList.levels[format.listLevelNumber]);
                 if (format.listId === id) {
                     if (isNullOrUndefined(existingList) && (!list || (list
                         && !this.checkSameLevelFormat(format.listLevelNumber, abstractList, list)))) {
@@ -50820,6 +50878,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             }
             if (this.viewer.blockToShift) {
                 this.viewer.renderedLists.clear();
+                this.viewer.renderedLevelOverrides = [];
                 this.viewer.layout.shiftLayoutedItems();
             }
             while (section) {
@@ -52394,16 +52453,15 @@ var Editor = /** @__PURE__ @class */ (function () {
      * @private
      */
     Editor.prototype.restartListAt = function (selection) {
-        var currentListLevel = this.getListLevel(selection.start.paragraph);
-        var list = new WList();
+        var currentList = selection.paragraphFormat.getList();
+        var list = currentList.clone();
         list.listId = this.viewer.lists[(this.viewer.lists.length - 1)].listId + 1;
-        var abstractList = new WAbstractList();
+        this.viewer.lists.push(list);
+        var abstractList = currentList.abstractList.clone();
         abstractList.abstractListId = this.viewer.abstractLists[(this.viewer.abstractLists.length - 1)].abstractListId + 1;
         list.abstractListId = abstractList.abstractListId;
         list.abstractList = abstractList;
         this.viewer.abstractLists.push(abstractList);
-        this.createListLevels(abstractList, currentListLevel, list);
-        this.viewer.lists.push(list);
         this.restartListAtInternal(selection, list.listId);
     };
     /**
@@ -52430,6 +52488,9 @@ var Editor = /** @__PURE__ @class */ (function () {
                     }
                 }
                 block.paragraphFormat.listFormat.listId = listId;
+                if (this.refListNumber === undefined && this.incrementListNumber === -1) {
+                    this.incrementListNumber = block.paragraphFormat.listFormat.listLevelNumber - 1;
+                }
                 if (this.refListNumber !== block.paragraphFormat.listFormat.listLevelNumber) {
                     this.incrementListNumber += 1;
                     this.refListNumber = block.paragraphFormat.listFormat.listLevelNumber;
@@ -52439,40 +52500,6 @@ var Editor = /** @__PURE__ @class */ (function () {
             }
         }
         return this.changeRestartNumbering(list, block.nextRenderedWidget, listId);
-    };
-    Editor.prototype.createListLevels = function (abstractList, currentListLevel, list) {
-        var levelPattern = currentListLevel.listLevelPattern;
-        var levelPatterns = [];
-        var currentAbstractList = currentListLevel.ownerBase;
-        for (var i = 0; i < 3; i++) {
-            var listLevel = currentAbstractList.levels[i];
-            if (!isNullOrUndefined(listLevel)) {
-                levelPatterns.push(listLevel.listLevelPattern);
-            }
-        }
-        var indexOfLevelPattern = levelPatterns.indexOf(levelPattern) === -1 ? 0 : levelPatterns.indexOf(levelPattern);
-        var numberFormat = currentListLevel.numberFormat.charAt(currentListLevel.numberFormat.length - 1);
-        for (var i = 0; i < currentAbstractList.levels.length; i++) {
-            var listLevel = new WListLevel(abstractList);
-            if (i === 0) {
-                listLevel.listLevelPattern = levelPattern;
-            }
-            else {
-                if (indexOfLevelPattern === 0 || indexOfLevelPattern < levelPatterns.length - 1) {
-                    indexOfLevelPattern++;
-                }
-                else {
-                    indexOfLevelPattern = 0;
-                }
-                listLevel.listLevelPattern = levelPatterns[indexOfLevelPattern];
-            }
-            listLevel.numberFormat = '%' + (i + 1) + numberFormat;
-            listLevel.startAt = 1;
-            listLevel.characterFormat.copyFormat(currentListLevel.characterFormat);
-            listLevel.paragraphFormat.copyFormat(currentListLevel.paragraphFormat);
-            listLevel.restartLevel = i;
-            abstractList.levels.push(listLevel);
-        }
     };
     // tslint:disable-next-line:max-line-length
     Editor.prototype.applyParaFormat = function (paragraph, start, end, property, value, update) {
@@ -52914,6 +52941,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         var startIndex = this.selection.getHierarchicalIndex(startInfo.paragraph, startInfo.offset.toString());
         var endIndex = this.selection.getHierarchicalIndex(endInfo.paragraph, endInfo.offset.toString());
         this.viewer.renderedLists.clear();
+        this.viewer.renderedLevelOverrides = [];
         // this.viewer.owner.isLayoutEnabled = true;
         var sections = this.combineSection();
         this.viewer.clearContent();
@@ -55818,6 +55846,7 @@ var Editor = /** @__PURE__ @class */ (function () {
      */
     Editor.prototype.updateWholeListItems = function (block) {
         this.viewer.renderedLists.clear();
+        this.viewer.renderedLevelOverrides = [];
         var sectionIndex = block.bodyWidget.index;
         var currentBlock;
         for (var j = 0; j < this.viewer.pages.length; j++) {
@@ -61249,6 +61278,7 @@ var EditorHistory = /** @__PURE__ @class */ (function () {
         this.revertListChanges();
         this.viewer.owner.isLayoutEnabled = true;
         this.viewer.renderedLists.clear();
+        this.viewer.renderedLevelOverrides = [];
         this.viewer.pages = [];
         this.viewer.layout.layout();
         var selection = this.viewer.selection;
@@ -67499,7 +67529,9 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
     SfdtExport.prototype.writeList = function (wList) {
         var list = {};
         list.abstractListId = wList.abstractListId;
-        //list.levelOverrides = wList.levelOverrides;
+        if (wList.levelOverrides.length > 0) {
+            list.levelOverrides = wList.levelOverrides;
+        }
         list.listId = wList.listId;
         return list;
     };
@@ -77359,7 +77391,12 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         var id = this.container.element.id + TOOLBAR_ID;
         var commentId = id + COMMENT_ID;
         var element = document.getElementById(commentId);
-        this.toolbar.enableItems(element.parentElement, enable);
+        if (!this.container.enableComment && element) {
+            this.toolbar.removeItems(element.parentElement);
+        }
+        else if (element) {
+            this.toolbar.enableItems(element.parentElement, enable);
+        }
     };
     /**
      * @private
@@ -80898,6 +80935,14 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
                 case 'enableRtl':
                     this.refresh();
                     break;
+                case 'enableComment':
+                    if (this.documentEditor) {
+                        this.documentEditor.enableComment = newModel.enableComment;
+                    }
+                    if (this.toolbarModule) {
+                        this.toolbarModule.enableDisableInsertComment(newModel.enableComment);
+                    }
+                    break;
             }
         }
     };
@@ -80915,6 +80960,7 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
     DocumentEditorContainer.prototype.render = function () {
         if (this.toolbarModule) {
             this.toolbarModule.initToolBar();
+            this.toolbarModule.enableDisableInsertComment(this.enableComment);
         }
         if (this.element.getBoundingClientRect().height < 320) {
             this.element.style.height = '320px';
@@ -81026,6 +81072,7 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
             acceptTab: true,
             zIndex: this.zIndex,
             enableLocalPaste: this.enableLocalPaste,
+            enableComment: this.enableComment,
             pageOutline: '#E0E0E0'
         });
         this.documentEditor.enableAllModules();
@@ -81041,7 +81088,7 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
     };
     DocumentEditorContainer.prototype.onCommentEnd = function () {
         if (this.toolbarModule) {
-            this.toolbarModule.enableDisableInsertComment(true);
+            this.toolbarModule.enableDisableInsertComment(true && this.enableComment);
         }
     };
     DocumentEditorContainer.prototype.onBeforePaneSwitch = function (args) {
@@ -81201,6 +81248,9 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
             }
         }
         this.previousContext = this.documentEditor.selection.contextType;
+        if (this.toolbarModule.toolbar) {
+            this.toolbarModule.enableDisableInsertComment(!this.documentEditor.enableHeaderAndFooter && this.enableComment);
+        }
     };
     /**
      * @private
@@ -81326,6 +81376,9 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property(false)
     ], DocumentEditorContainer.prototype, "enableCsp", void 0);
+    __decorate$1([
+        Property(false)
+    ], DocumentEditorContainer.prototype, "enableComment", void 0);
     __decorate$1([
         Event()
     ], DocumentEditorContainer.prototype, "created", void 0);

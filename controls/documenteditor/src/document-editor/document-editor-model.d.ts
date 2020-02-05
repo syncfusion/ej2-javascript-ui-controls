@@ -206,6 +206,12 @@ export interface DocumentEditorModel extends ComponentModel{
     enableSpellCheck?: boolean;
 
     /**
+     * Gets or set a value indicating whether comment is enabled or not
+     * @default false
+     */
+    enableComment?: boolean;
+
+    /**
      * Gets or Sets a value indicating whether tab key can be accepted as input or not.
      * @default false
      */

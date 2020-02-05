@@ -10,7 +10,7 @@
 
         &.e-selected {
           @if $skin-name == 'bootstrap4' {
-            border-color: none;
+            border-color: transparent;
           }
           border-color: $cpicker-tile-active-border-color;
         }
@@ -60,7 +60,7 @@
           background-color: transparent;
           color: $btn-disabled-color;
           outline: none;
-          outline-offset: none;
+          outline-offset: unset;
         }
 
         &:active {

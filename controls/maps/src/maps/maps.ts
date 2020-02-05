@@ -549,6 +549,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /** @public */
     public markerZoomFactor: number;
     /** @private */
+    public markerCenterLatitude: number;
+    /** @private */
+    public markerCenterLongitude: number;
+    /** @private */
     public shouldZoomCurrentFactor: number;
     /** @private */
     public shouldZoomPreviousFactor: number;
@@ -1643,6 +1647,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 case 'width':
                 case 'layers':
                 case 'projectionType':
+                case 'centerPosition':
                 case 'legendSettings':
                 case 'zoomSettings':
                 case 'baseLayerIndex':

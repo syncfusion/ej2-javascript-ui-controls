@@ -3,7 +3,7 @@ import { VisibleLabels, Size, VisibleRange, Rect, Align } from '../utils/helper'
 import { Font, Border } from '../model/base';
 import { FontModel, BorderModel } from '../model/base-model';
 import { RangeModel, PointerModel, LabelModel, TickModel, LineModel } from './axis-model';
-import { Point, Placement, MarkerType, Position } from '../utils/enum';
+import { Point, Placement, MarkerType, Position, ExtraPosition } from '../utils/enum';
 
 
 /** Options for customizing the axis line. */
@@ -79,6 +79,13 @@ export class Label extends ChildProperty<Label> {
     @Property(0)
     public offset: number;
 
+    /**
+     * Specifies to position the axis label.
+     * @default Auto
+     */
+    @Property('Auto')
+    public position: ExtraPosition;
+
 }
 
 /**
@@ -130,10 +137,10 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Specifies to move the axis range.
-     * @default 0
+     * @default '0'
      */
     @Property(0)
-    public offset: number;
+    public offset: number | string;
 
     /**
      * Specifies the border of axis range.
@@ -149,6 +156,9 @@ export class Range extends ChildProperty<Range> {
 
     /** @private */
     public interior: string;
+
+    /** @private */
+    public currentOffset: number;
 
 }
 
@@ -190,6 +200,13 @@ export class Tick extends ChildProperty<Tick> {
      */
     @Property(null)
     public offset: number;
+
+    /**
+     * Specifies to position the axis tick.
+     * @default Auto
+     */
+    @Property('Auto')
+    public position: ExtraPosition;
 
 }
 
@@ -292,10 +309,17 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /**
      * Specifies to move the pointer.
-     * @default 0
+     * @default '0'
      */
     @Property(0)
-    public offset: number;
+    public offset: number | string;
+
+    /**
+     * Specifies to position the pointer.
+     * @default Auto
+     */
+    @Property('Auto')
+    public position: ExtraPosition;
 
     /**
      * Description of the pointer.
@@ -315,6 +339,9 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /** @private */
     public currentValue: number = null;
+
+     /** @private */
+     public currentOffset: number;
 
 }
 
@@ -345,6 +372,13 @@ export class Axis extends ChildProperty<Axis> {
 
     @Property(false)
     public isInversed: boolean;
+
+    /**
+     * Specifies the last label to be shown
+     */
+
+    @Property(false)
+    public showLastLabel: boolean;
 
     /**
      * Specifies the axis rendering position.

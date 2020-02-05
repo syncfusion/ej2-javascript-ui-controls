@@ -130,7 +130,7 @@ export class PivotChart {
                 let fieldPos: number = -1;
                 let currrentLevel: number = firstRowCell.level;
                 if (this.parent.dataType === 'olap') {
-                    fieldPos = tupInfo.uNameCollection.split('::').length - 1;
+                    fieldPos = tupInfo.uNameCollection.split('::[').length - 1;
                     if (firstRowCell.memberType !== 3 && (tupInfo.measureName ?
                         tupInfo.measureName === this.dataSourceSettings.values[0].name : true)) {
                         firstLevelUName = firstLevelUName === undefined ? firstRowCell.levelUniqueName : firstLevelUName;

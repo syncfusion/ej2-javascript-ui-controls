@@ -956,7 +956,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     @Event()
     public onFieldDropped: EmitType<FieldDroppedEventArgs>;
 
-     /**
+    /**
      * Triggers when a field getting dropped into any axis.
      * @event
      * @blazorproperty 'fieldDrop'
@@ -964,7 +964,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     @Event()
     public fieldDrop: EmitType<FieldDropEventArgs>;
 
-    
+
     /** 
      * Triggers when data source is populated in the Pivot View.
      * @event
@@ -2463,7 +2463,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         let fieldPos: number = tupInfo.drillInfo.map((item: IDrillInfo) => { return item.hierarchy; }).indexOf(currentCell.hierarchy.toString());
         if (drillInfo && drillInfo.action === 'down') {
             this.olapEngineModule.drilledSets[currentCell.actualText] = tupInfo.members[fieldPos] as HTMLElement;
-            let fields: string[] = drillInfo.memberName.split('::');
+            let fields: string[] = drillInfo.memberName.split('::[').map((item: string) => {
+                return item[0] === '[' ? item : ('[' + item);
+            });
             let member: string = '';
             for (let pos: number = 0; pos <= fieldPos; pos++) {
                 let field: string = fields[pos];

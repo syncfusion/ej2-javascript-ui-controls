@@ -245,11 +245,12 @@ export namespace Input {
     }
 
     function getParentNode(element: HTMLInputElement | HTMLElement): HTMLElement {
-      let parentNode: HTMLElement = <HTMLElement>element.parentNode;
-      if (parentNode.classList.contains('e-input-in-wrap')) {
-        parentNode = <HTMLElement>parentNode.parentNode;
-      }
-      return parentNode;
+        let parentNode: HTMLElement = isNullOrUndefined(<HTMLElement>element.parentNode) ? <HTMLElement>element
+            : <HTMLElement>element.parentNode;
+        if (parentNode && parentNode.classList.contains('e-input-in-wrap')) {
+            parentNode = <HTMLElement>parentNode.parentNode;
+        }
+        return parentNode;
     }
 
    /**

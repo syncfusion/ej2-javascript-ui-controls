@@ -1156,6 +1156,132 @@ describe('Circular-Gauge Control', () => {
             gauge.refresh();
         });
     });
+
+    describe('Gauge axis pointer behavior - with position', () => {
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            gauge = new CircularGauge({
+                axes: [{
+                    pointers: [{
+                        offset: '0%',
+                        value: 20
+                    },
+                    {
+                        value: 30,
+                        type: "Marker",
+                        offset: '0%',
+                        markerShape: "Rectangle",
+                    },
+                    {
+                        value: 40,
+                        type: "RangeBar",
+                        offset: '0%'
+                    },
+                ]
+                }]
+            });
+            gauge.appendTo('#container');
+        });
+        afterAll((): void => {
+            gauge.destroy();
+            ele.remove();
+        });
+        it('Checking default pointer positions', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Pointer_Needle_0');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[4] == '550' || value[4] == '556.5').toBe(true);
+                svg = document.getElementById('container_Axis_0_Pointer_Marker_1');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[1] == '547.5' || value[1] == '554').toBe(true);
+                svg = document.getElementById('container_Axis_0_Pointer_RangeBar_2');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[1] == '325.672535347985' || value[1] == '320.51455549131066').toBe(true);
+                done();
+            };
+            gauge.refresh();
+        });
+        it('Checking pointer outside position', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let svgRect: ClientRect | DOMRect  = document.getElementById('container_Axis_0_Pointer_Needle_0').getBoundingClientRect();
+                svg = document.getElementById('container_Axis_0_Pointer_Needle_0');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[4] == '597.5' || value[4] == '592').toBe(true);
+                svg = document.getElementById('container_Axis_0_Pointer_Marker_1');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[1] == '592.5' || value[1] == '587').toBe(true);
+                svg = document.getElementById('container_Axis_0_Pointer_RangeBar_2');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[1] == '311.64970947163255' || value[1] == '306.14970947163255').toBe(true);
+                done();
+            };
+            gauge.axes[0].pointers[0].position = 'Inside';
+            gauge.axes[0].pointers[1].position = 'Inside';
+            gauge.axes[0].pointers[2].position = 'Inside';
+            gauge.refresh();
+        });
+        it('Checking pointer negative point value', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Pointer_Needle_0');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[4] == '598.5' || value[4] == '593').toBe(true);
+                svg = document.getElementById('container_Axis_0_Pointer_Marker_1');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[1] == '596' || value[1] == '590.5').toBe(true);
+                svg = document.getElementById('container_Axis_0_Pointer_RangeBar_2');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[1] == '307.8874878950502' || value[1] == '302.3874878950502').toBe(true);
+                done();
+            };
+            gauge.axes[0].pointers[0].position = 'Cross';
+            gauge.axes[0].pointers[1].position = 'Cross';
+            gauge.axes[0].pointers[2].position = 'Cross';
+            gauge.refresh();
+        });
+
+        it('Checking pointer with offset in percentage', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Pointer_Needle_0');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[4] == '555.7' || value[4] == '550.2').toBe(true);
+                svg = document.getElementById('container_Axis_0_Pointer_Marker_1');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[1] == '553.2' || value[1] == '547.7').toBe(true);
+                svg = document.getElementById('container_Axis_0_Pointer_RangeBar_2');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[1] == '322.5259500293888' || value[1] == '317.0259500293888').toBe(true);
+                done();
+            };
+            gauge.axes[0].pointers[0].offset = '20%';
+            gauge.axes[0].pointers[1].offset = '20%';
+            gauge.axes[0].pointers[2].offset = '20%';
+            gauge.refresh();
+        });
+
+        it('Checking pointer with offset in percentage', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Pointer_Needle_0');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[4] == '619.5' || value[4] == '614').toBe(true);
+                svg = document.getElementById('container_Axis_0_Pointer_Marker_1');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[1] == '619.5' || value[1] == '614').toBe(true);
+                svg = document.getElementById('container_Axis_0_Pointer_RangeBar_2');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[1] == '297.2848634519545' || value[1] == '291.7848634519545').toBe(true);
+                done();
+            };
+            gauge.axes[0].pointers[0].offset = 20;
+            gauge.axes[0].pointers[1].offset = 20;
+            gauge.axes[0].pointers[2].offset = 20;
+            gauge.axes[0].pointers[0].position = 'Outside';
+            gauge.axes[0].pointers[1].position = 'Outside';
+            gauge.axes[0].pointers[2].position = 'Outside';
+            gauge.refresh();
+        });
+    });
+
     it('memory leak', () => {     
         profile.sample();
         let average: any = inMB(profile.averageChange)

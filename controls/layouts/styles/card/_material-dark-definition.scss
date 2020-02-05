@@ -2,7 +2,7 @@
 $skin-name: 'material' !default;
 $card-img-brdr-radious: 50% !default;
 $card-brdr-radious: $border-radius !default;
-$card-box-shadow: $shadow-color !default;
+$card-box-shadow: 0 2px 3px 0 $shadow-color !default;
 $card-action-btn-txt-transform: none !default;
 $card-focus-brdr-color: $default-border-color !default;
 $card-hover-brdr-color: $default-border-color !default;

@@ -1,3 +1,7 @@
+/**
+ * Selection case spec
+ */
+import { detach } from '@syncfusion/ej2-base';
 import { NodeSelection } from '../../src/selection/selection'
 
 describe('Selection Possible Cases', () => {
@@ -85,8 +89,8 @@ describe('Selection Possible Cases', () => {
     });
 
     afterAll(() => {
-        document.body.contentEditable = 'false';
-        document.body.innerHTML = '';
+        document.body.removeAttribute('contenteditable');
+        detach(divElement);
     });
 
     describe('setSelectionText', () => {
@@ -317,7 +321,6 @@ describe('Selection Possible Cases', () => {
         });
 
         // cursor
-
         it('Check setSelectionText - Cursor Position with middle position', () => {
             domSelection.Clear(document);
             let node: Node = document.getElementById('p-node-2').childNodes[0];
@@ -703,5 +706,4 @@ describe('Selection Possible Cases', () => {
             domSelection.Clear(document);
         });
     });
-
- });
+});

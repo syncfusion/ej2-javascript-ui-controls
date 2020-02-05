@@ -1,13 +1,8 @@
-import { Toolbar, HtmlEditor, RichTextEditor, Count, Link, Image, QuickToolbar, HTMLFormatter } from  './../../../../src/index';
-import { renderRTE, destroy, dispatchEvent, setCursorPoint } from './../../render.spec';
-import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
-
-RichTextEditor.Inject(HtmlEditor);
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(Link);
-RichTextEditor.Inject(Count);
-RichTextEditor.Inject(Image);
-RichTextEditor.Inject(QuickToolbar);
+/**
+ * HTML - Focus Blur event spec
+ */
+import { RichTextEditor } from  './../../../../src/index';
+import { renderRTE, destroy } from './../../render.spec';
 
 describe('RTE FOCUS and BLUR EVENTS - ', () => {
 
@@ -51,6 +46,4 @@ describe('RTE FOCUS and BLUR EVENTS - ', () => {
             expect(blurSpy).toHaveBeenCalled();
         });
     });
-
-
 });

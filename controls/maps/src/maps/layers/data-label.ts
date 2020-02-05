@@ -185,7 +185,9 @@ export class DataLabel {
                 }
                 let border: Object = { color: 'yellow' };
                 let position: MapLocation[] = [];
-                let width: number = location['rightMax']['x'] - location['leftMax']['x'];
+                let width: number = zoomLabelsPosition && scaleZoomValue > 1
+                    ? this.maps.zoomShapeCollection[index]['width'] :
+                    location['rightMax']['x'] - location['leftMax']['x'];
                 if(!isNullOrUndefined(this.maps.dataLabelShape)){
                     shapeWidth = firstLevelMapLocation['rightMax']['x'] - firstLevelMapLocation['leftMax']['x'];
                     this.maps.dataLabelShape.push(shapeWidth);

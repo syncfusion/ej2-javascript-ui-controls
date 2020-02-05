@@ -258,7 +258,8 @@ export class Toolkit {
         let argsData: IZoomCompleteEventArgs;
         this.removeTooltip();
         chart.svgObject.setAttribute('cursor', 'auto');
-        chart.axisCollections.forEach((axis: Axis) => {
+        for (let i: number = 0; i < chart.axisCollections.length; i++) {
+            let axis: Axis = chart.axisCollections[i];
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: 1, currentZoomPosition: 0
@@ -273,7 +274,7 @@ export class Toolkit {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
             }
-        });
+        }
         chart.disableTrackTooltip = false;
         chart.zoomModule.isZoomed = chart.zoomModule.isPanning = chart.isChartDrag = chart.delayRedraw = false;
         chart.zoomModule.touchMoveList = chart.zoomModule.touchStartList = [];
@@ -337,7 +338,8 @@ export class Toolkit {
             chart.disableTrackTooltip = true;
             chart.delayRedraw = true;
             let argsData: IZoomCompleteEventArgs;
-            axes.forEach((axis: Axis) => {
+            for (let i = 0; i < axes.length; i++) {
+                let axis: Axis = axes[i] as Axis;
                 argsData = {
                     cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
                     previousZoomPosition: axis.zoomPosition, currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -358,7 +360,7 @@ export class Toolkit {
                         axis.zoomPosition = argsData.currentZoomPosition;
                     }
                 }
-            });
+            }
         }
     }
 

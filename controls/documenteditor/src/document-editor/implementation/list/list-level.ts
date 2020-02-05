@@ -146,4 +146,14 @@ export class WListLevel {
     public static clear(): void {
         this.uniqueListLevels.clear();
     }
+    public clone(node: WAbstractList | WLevelOverride): WListLevel {
+        let listLevel: WListLevel = new WListLevel(node);
+        listLevel.paragraphFormat = this.paragraphFormat.cloneFormat();
+        listLevel.characterFormat = this.characterFormat.cloneFormat();
+        if (this.uniqueListLevel) {
+            listLevel.uniqueListLevel = this.uniqueListLevel;
+            listLevel.uniqueListLevel.referenceCount++;
+        }
+        return listLevel;
+    }
 }

@@ -2,22 +2,16 @@
  * Paste CleanUp spec
  */
 import { EditorManager } from '../../../src/editor-manager/index';
-import { RichTextEditor } from '../../../src/rich-text-editor/base/rich-text-editor';
-import { PasteCleanup } from '../../../src/rich-text-editor/actions/paste-clean-up';
-import { renderRTE, setCursorPoint } from '../../rich-text-editor/render.spec';
+import { RichTextEditor } from '../../../src/rich-text-editor/index';
+import { renderRTE, setCursorPoint, destroy } from '../../rich-text-editor/render.spec';
 import {
   CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_REMOVE_FORMAT, CLS_RTE_PASTE_OK,
 } from '../../../src/rich-text-editor/base/classes';
 import { createElement } from '@syncfusion/ej2-base';
-RichTextEditor.Inject(PasteCleanup);
 
 describe('MSWord Content Paste testing', () => {
   let editorObj: EditorManager;
   let rteObj: RichTextEditor;
-  let pasteCleanUp: PasteCleanup;
-  let rteEle: HTMLElement;
-  let element: HTMLElement;
-  let keepFormatButton: HTMLElement;
   let keyBoardEvent: any = {
     preventDefault: () => { },
     type: 'keydown',
@@ -35,7 +29,6 @@ describe('MSWord Content Paste testing', () => {
         prompt: true
       }
     });
-    rteEle = rteObj.element;
     done();
   });
 
@@ -652,6 +645,369 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
       let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll('*');
       let expected: boolean = true;
       let expectedElem: string = `<ul level="1" style="list-style: disc;"><li>One Node-10</li></ul><h2></h2><ul level="1" style="list-style: disc;"><li>Two Node-10</li><li>Three Node-10</li></ul>`;
+      if (allElem[0].parentElement.innerHTML.trim().replace(/>\s+</g, '><') !== expectedElem) {
+        expected = false;
+      }
+      expect(expected).toBe(true);
+      done();
+    }, 100);
+  });
+
+  it('MSWord content with list inside table', (done) => {
+    let localElem: string = `<html>    
+    <head>    
+    <style>
+    <!--
+     /* Font Definitions */
+     @font-face
+      {font-family:"Cambria Math";
+      panose-1:2 4 5 3 5 4 6 3 2 4;
+      mso-font-charset:0;
+      mso-generic-font-family:roman;
+      mso-font-pitch:variable;
+      mso-font-signature:3 0 0 0 1 0;}
+    @font-face
+      {font-family:Calibri;
+      panose-1:2 15 5 2 2 2 4 3 2 4;
+      mso-font-charset:0;
+      mso-generic-font-family:swiss;
+      mso-font-pitch:variable;
+      mso-font-signature:-536858881 -1073732485 9 0 511 0;}
+     /* Style Definitions */
+     p.MsoNormal, li.MsoNormal, div.MsoNormal
+      {mso-style-unhide:no;
+      mso-style-qformat:yes;
+      mso-style-parent:"";
+      margin-top:0in;
+      margin-right:0in;
+      margin-bottom:8.0pt;
+      margin-left:0in;
+      line-height:107%;
+      mso-pagination:widow-orphan;
+      font-size:11.0pt;
+      font-family:"Calibri",sans-serif;
+      mso-ascii-font-family:Calibri;
+      mso-ascii-theme-font:minor-latin;
+      mso-fareast-font-family:Calibri;
+      mso-fareast-theme-font:minor-latin;
+      mso-hansi-font-family:Calibri;
+      mso-hansi-theme-font:minor-latin;
+      mso-bidi-font-family:"Times New Roman";
+      mso-bidi-theme-font:minor-bidi;}
+    p.MsoListParagraph, li.MsoListParagraph, div.MsoListParagraph
+      {mso-style-priority:34;
+      mso-style-unhide:no;
+      mso-style-qformat:yes;
+      margin-top:0in;
+      margin-right:0in;
+      margin-bottom:8.0pt;
+      margin-left:.5in;
+      mso-add-space:auto;
+      line-height:107%;
+      mso-pagination:widow-orphan;
+      font-size:11.0pt;
+      font-family:"Calibri",sans-serif;
+      mso-ascii-font-family:Calibri;
+      mso-ascii-theme-font:minor-latin;
+      mso-fareast-font-family:Calibri;
+      mso-fareast-theme-font:minor-latin;
+      mso-hansi-font-family:Calibri;
+      mso-hansi-theme-font:minor-latin;
+      mso-bidi-font-family:"Times New Roman";
+      mso-bidi-theme-font:minor-bidi;}
+    p.MsoListParagraphCxSpFirst, li.MsoListParagraphCxSpFirst, div.MsoListParagraphCxSpFirst
+      {mso-style-priority:34;
+      mso-style-unhide:no;
+      mso-style-qformat:yes;
+      mso-style-type:export-only;
+      margin-top:0in;
+      margin-right:0in;
+      margin-bottom:0in;
+      margin-left:.5in;
+      margin-bottom:.0001pt;
+      mso-add-space:auto;
+      line-height:107%;
+      mso-pagination:widow-orphan;
+      font-size:11.0pt;
+      font-family:"Calibri",sans-serif;
+      mso-ascii-font-family:Calibri;
+      mso-ascii-theme-font:minor-latin;
+      mso-fareast-font-family:Calibri;
+      mso-fareast-theme-font:minor-latin;
+      mso-hansi-font-family:Calibri;
+      mso-hansi-theme-font:minor-latin;
+      mso-bidi-font-family:"Times New Roman";
+      mso-bidi-theme-font:minor-bidi;}
+    p.MsoListParagraphCxSpMiddle, li.MsoListParagraphCxSpMiddle, div.MsoListParagraphCxSpMiddle
+      {mso-style-priority:34;
+      mso-style-unhide:no;
+      mso-style-qformat:yes;
+      mso-style-type:export-only;
+      margin-top:0in;
+      margin-right:0in;
+      margin-bottom:0in;
+      margin-left:.5in;
+      margin-bottom:.0001pt;
+      mso-add-space:auto;
+      line-height:107%;
+      mso-pagination:widow-orphan;
+      font-size:11.0pt;
+      font-family:"Calibri",sans-serif;
+      mso-ascii-font-family:Calibri;
+      mso-ascii-theme-font:minor-latin;
+      mso-fareast-font-family:Calibri;
+      mso-fareast-theme-font:minor-latin;
+      mso-hansi-font-family:Calibri;
+      mso-hansi-theme-font:minor-latin;
+      mso-bidi-font-family:"Times New Roman";
+      mso-bidi-theme-font:minor-bidi;}
+    p.MsoListParagraphCxSpLast, li.MsoListParagraphCxSpLast, div.MsoListParagraphCxSpLast
+      {mso-style-priority:34;
+      mso-style-unhide:no;
+      mso-style-qformat:yes;
+      mso-style-type:export-only;
+      margin-top:0in;
+      margin-right:0in;
+      margin-bottom:8.0pt;
+      margin-left:.5in;
+      mso-add-space:auto;
+      line-height:107%;
+      mso-pagination:widow-orphan;
+      font-size:11.0pt;
+      font-family:"Calibri",sans-serif;
+      mso-ascii-font-family:Calibri;
+      mso-ascii-theme-font:minor-latin;
+      mso-fareast-font-family:Calibri;
+      mso-fareast-theme-font:minor-latin;
+      mso-hansi-font-family:Calibri;
+      mso-hansi-theme-font:minor-latin;
+      mso-bidi-font-family:"Times New Roman";
+      mso-bidi-theme-font:minor-bidi;}
+    .MsoChpDefault
+      {mso-style-type:export-only;
+      mso-default-props:yes;
+      font-family:"Calibri",sans-serif;
+      mso-ascii-font-family:Calibri;
+      mso-ascii-theme-font:minor-latin;
+      mso-fareast-font-family:Calibri;
+      mso-fareast-theme-font:minor-latin;
+      mso-hansi-font-family:Calibri;
+      mso-hansi-theme-font:minor-latin;
+      mso-bidi-font-family:"Times New Roman";
+      mso-bidi-theme-font:minor-bidi;}
+    .MsoPapDefault
+      {mso-style-type:export-only;
+      margin-bottom:8.0pt;
+      line-height:107%;}
+    @page WordSection1
+      {size:8.5in 11.0in;
+      margin:1.0in 1.0in 1.0in 1.0in;
+      mso-header-margin:.5in;
+      mso-footer-margin:.5in;
+      mso-paper-source:0;}
+    div.WordSection1
+      {page:WordSection1;}
+     /* List Definitions */
+     @list l0
+      {mso-list-id:1271623225;
+      mso-list-type:hybrid;
+      mso-list-template-ids:-1412529100 67698703 67698713 67698715 67698703 67698713 67698715 67698703 67698713 67698715;}
+    @list l0:level1
+      {mso-level-tab-stop:none;
+      mso-level-number-position:left;
+      text-indent:-.25in;}
+    @list l0:level2
+      {mso-level-number-format:alpha-lower;
+      mso-level-tab-stop:none;
+      mso-level-number-position:left;
+      text-indent:-.25in;}
+    @list l0:level3
+      {mso-level-number-format:roman-lower;
+      mso-level-tab-stop:none;
+      mso-level-number-position:right;
+      text-indent:-9.0pt;}
+    @list l0:level4
+      {mso-level-tab-stop:none;
+      mso-level-number-position:left;
+      text-indent:-.25in;}
+    @list l0:level5
+      {mso-level-number-format:alpha-lower;
+      mso-level-tab-stop:none;
+      mso-level-number-position:left;
+      text-indent:-.25in;}
+    @list l0:level6
+      {mso-level-number-format:roman-lower;
+      mso-level-tab-stop:none;
+      mso-level-number-position:right;
+      text-indent:-9.0pt;}
+    @list l0:level7
+      {mso-level-tab-stop:none;
+      mso-level-number-position:left;
+      text-indent:-.25in;}
+    @list l0:level8
+      {mso-level-number-format:alpha-lower;
+      mso-level-tab-stop:none;
+      mso-level-number-position:left;
+      text-indent:-.25in;}
+    @list l0:level9
+      {mso-level-number-format:roman-lower;
+      mso-level-tab-stop:none;
+      mso-level-number-position:right;
+      text-indent:-9.0pt;}
+    ol
+      {margin-bottom:0in;}
+    ul
+      {margin-bottom:0in;}
+    -->
+    </style>
+    <!--[if gte mso 10]>
+    <style>
+     /* Style Definitions */
+     table.MsoNormalTable
+      {mso-style-name:"Table Normal";
+      mso-tstyle-rowband-size:0;
+      mso-tstyle-colband-size:0;
+      mso-style-noshow:yes;
+      mso-style-priority:99;
+      mso-style-parent:"";
+      mso-padding-alt:0in 5.4pt 0in 5.4pt;
+      mso-para-margin-top:0in;
+      mso-para-margin-right:0in;
+      mso-para-margin-bottom:8.0pt;
+      mso-para-margin-left:0in;
+      line-height:107%;
+      mso-pagination:widow-orphan;
+      font-size:11.0pt;
+      font-family:"Calibri",sans-serif;
+      mso-ascii-font-family:Calibri;
+      mso-ascii-theme-font:minor-latin;
+      mso-hansi-font-family:Calibri;
+      mso-hansi-theme-font:minor-latin;
+      mso-bidi-font-family:"Times New Roman";
+      mso-bidi-theme-font:minor-bidi;}
+    table.MsoTableGrid
+      {mso-style-name:"Table Grid";
+      mso-tstyle-rowband-size:0;
+      mso-tstyle-colband-size:0;
+      mso-style-priority:39;
+      mso-style-unhide:no;
+      border:solid windowtext 1.0pt;
+      mso-border-alt:solid windowtext .5pt;
+      mso-padding-alt:0in 5.4pt 0in 5.4pt;
+      mso-border-insideh:.5pt solid windowtext;
+      mso-border-insidev:.5pt solid windowtext;
+      mso-para-margin:0in;
+      mso-para-margin-bottom:.0001pt;
+      mso-pagination:widow-orphan;
+      font-size:11.0pt;
+      font-family:"Calibri",sans-serif;
+      mso-ascii-font-family:Calibri;
+      mso-ascii-theme-font:minor-latin;
+      mso-hansi-font-family:Calibri;
+      mso-hansi-theme-font:minor-latin;
+      mso-bidi-font-family:"Times New Roman";
+      mso-bidi-theme-font:minor-bidi;}
+    </style>
+    <![endif]-->
+    </head>    
+    <body lang=EN-US style='tab-interval:.5in'>
+    <!--StartFragment-->    
+    <table class=MsoTableGrid border=1 cellspacing=0 cellpadding=0
+     style='border-collapse:collapse;border:none;mso-border-alt:solid windowtext .5pt;
+     mso-yfti-tbllook:1184;mso-padding-alt:0in 5.4pt 0in 5.4pt'>
+     <tr style='mso-yfti-irow:0;mso-yfti-firstrow:yes'>
+      <td width=54 valign=top style='width:40.25pt;border:solid windowtext 1.0pt;
+      mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+      <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
+      normal'><b><span style='font-size:14.0pt'>No.<o:p></o:p></span></b></p>
+      </td>
+      <td width=186 valign=top style='width:139.5pt;border:solid windowtext 1.0pt;
+      border-left:none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:
+      solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+      <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
+      normal'><b><span style='font-size:14.0pt'>Present form<o:p></o:p></span></b></p>
+      </td>
+      <td width=174 valign=top style='width:130.5pt;border:solid windowtext 1.0pt;
+      border-left:none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:
+      solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+      <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
+      normal'><b><span style='font-size:14.0pt'>Past form<o:p></o:p></span></b></p>
+      </td>
+      <td width=210 valign=top style='width:157.25pt;border:solid windowtext 1.0pt;
+      border-left:none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:
+      solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+      <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
+      normal'><b><span style='font-size:14.0pt'>Past participle form<o:p></o:p></span></b></p>
+      </td>
+     </tr>
+     <tr style='mso-yfti-irow:1;mso-yfti-lastrow:yes'>
+      <td width=54 valign=top style='width:40.25pt;border:solid windowtext 1.0pt;
+      border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+      padding:0in 5.4pt 0in 5.4pt'>
+      <p class=MsoListParagraph style='margin-bottom:0in;margin-bottom:.0001pt;
+      mso-add-space:auto;text-indent:-.25in;line-height:normal;mso-list:l0 level1 lfo1'><![if !supportLists]><span
+      style='font-size:14.0pt;mso-bidi-font-family:Calibri;mso-bidi-theme-font:
+      minor-latin'><span style='mso-list:Ignore'>1.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
+      </span></span></span><![endif]><span style='font-size:14.0pt'><o:p>&nbsp;</o:p></span></p>
+      </td>
+      <td width=186 valign=top style='width:139.5pt;border-top:none;border-left:
+      none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+      mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+      mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+      <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
+      normal'><span style='font-size:14.0pt'>Bring<o:p></o:p></span></p>
+      </td>
+      <td width=174 valign=top style='width:130.5pt;border-top:none;border-left:
+      none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+      mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+      mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+      <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
+      normal'><b><span style='font-size:14.0pt'><o:p>&nbsp;</o:p></span></b></p>
+      </td>
+      <td width=210 valign=top style='width:157.25pt;border-top:none;border-left:
+      none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+      mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+      mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt'>
+      <p class=MsoNormal style='margin-bottom:0in;margin-bottom:.0001pt;line-height:
+      normal'><b><span style='font-size:14.0pt'><o:p>&nbsp;</o:p></span></b></p>
+      </td>
+     </tr>
+    </table>    
+    <!--EndFragment-->
+    </body>    
+    </html>`;
+    keyBoardEvent.clipboardData = {
+      getData: () => {
+        return localElem;
+      },
+      items: []
+    };
+    (rteObj as any).inputElement.focus();
+    setCursorPoint((rteObj as any).inputElement, 0);
+    rteObj.onPaste(keyBoardEvent);
+    setTimeout(() => {
+      if (rteObj.pasteCleanupSettings.prompt) {
+        let keepFormat: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_KEEP_FORMAT);
+        keepFormat[0].click();
+        let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+        pasteOK[0].click();
+      }
+      let allElem: any = (rteObj as any).inputElement.firstElementChild.querySelectorAll('*');
+      let expected: boolean = true;
+      let expectedElem: string = `<table border="1" cellspacing="0" cellpadding="0" style="border:none;"><tbody><tr><td width="54" valign="top" style="width:40.25pt;border:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
+      normal;"><b><span style="font-size:14.0pt;">No.</span></b></p></td><td width="186" valign="top" style="width:139.5pt;border:solid windowtext 1.0pt;
+      border-left:none;padding:0in 5.4pt 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
+      normal;"><b><span style="font-size:14.0pt;">Present form</span></b></p></td><td width="174" valign="top" style="width:130.5pt;border:solid windowtext 1.0pt;
+      border-left:none;padding:0in 5.4pt 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
+      normal;"><b><span style="font-size:14.0pt;">Past form</span></b></p></td><td width="210" valign="top" style="width:157.25pt;border:solid windowtext 1.0pt;
+      border-left:none;padding:0in 5.4pt 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
+      normal;"><b><span style="font-size:14.0pt;">Past participle form</span></b></p></td></tr><tr><td width="54" valign="top" style="width:40.25pt;border:solid windowtext 1.0pt;
+      border-top:none;
+      padding:0in 5.4pt 0in 5.4pt;"><ol level="1"><li><p><span style="font-size:14.0pt;">&nbsp;</span></p></li></ol></td><td width="186" valign="top" style="width:139.5pt;border-top:none;border-left:
+      none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
+      normal;"><span style="font-size:14.0pt;">Bring</span></p></td><td width="174" valign="top" style="width:130.5pt;border-top:none;border-left:
+      none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;"><br></td><td width="210" valign="top" style="width:157.25pt;border-top:none;border-left:
+      none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;"><br></td></tr></tbody></table>`;
       if (allElem[0].parentElement.innerHTML.trim().replace(/>\s+</g, '><') !== expectedElem) {
         expected = false;
       }
@@ -5834,6 +6190,6 @@ ffffffffffffffffffffffffffffffff52006f006f007400200045006e0074007200790000000000
   });
 
   afterAll(() => {
-    rteObj.destroy();
+    destroy(rteObj);
   });
 });

@@ -1,11 +1,9 @@
-import { Toolbar, MarkdownEditor, RichTextEditor, Link, Image } from './../../../../src/index';
-import { renderRTE, destroy, dispatchEvent } from './../../render.spec';
+/**
+ * Markdown - readonly spec
+ */
 import { detach } from "@syncfusion/ej2-base";
-
-RichTextEditor.Inject(MarkdownEditor);
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(Link);
-RichTextEditor.Inject(Image);
+import { RichTextEditor } from './../../../../src/index';
+import { renderRTE, destroy } from './../../render.spec';
 
 describe('RTE Markdown BASIC PROPERTIES - readonly - ', () => {
 
@@ -21,7 +19,6 @@ describe('RTE Markdown BASIC PROPERTIES - readonly - ', () => {
             });
             expect(rteObj.readonly).toBe(false);
         });
-
     });
     describe(' PROPERTIES - ', () => {
         describe(' Enabled the readonly - ', () => {
@@ -113,7 +110,6 @@ describe('RTE Markdown BASIC PROPERTIES - readonly - ', () => {
                 });
                 rteObj.readonly = true;
                 rteObj.dataBind();
-                let ele: HTMLElement = rteObj.element;
                 rteObj.destroy();
                 expect(rteObj.element.classList.contains('e-rte-readonly')).toBe(false);
             });

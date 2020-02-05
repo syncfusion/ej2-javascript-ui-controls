@@ -1,11 +1,9 @@
 /**
- * dialog spec document
+ * Dialog spec document
  */
-import { createElement, addClass, EmitType } from '@syncfusion/ej2-base'
-import { Dialog, DialogUtility, BeforeCloseEventArgs, BeforeSanitizeHtmlArgs } from '../../src/dialog/dialog';
+import { createElement, addClass, detach, EventHandler, L10n, Browser, isNullOrUndefined } from '@syncfusion/ej2-base'
 import '../../node_modules/es6-promise/dist/es6-promise';
-import { EventHandler, L10n } from '@syncfusion/ej2-base';
-import { Touch, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Dialog, DialogUtility, BeforeCloseEventArgs, BeforeSanitizeHtmlArgs } from '../../src/dialog/dialog';
 
 function copyObject(source: any, destination: any): Object {
     for (let prop in source) {
@@ -30,263 +28,287 @@ export function getEventObject(eventType: string, eventName: string): Object {
     return returnObject;
 }
 
+function destroyDialog(dialogObj: Dialog): void {
+    if (dialogObj) {
+        dialogObj.destroy();
+        detach(dialogObj.element);
+    }
+}
+
 // utility dialog spec
 describe('create alert utility dialog with button click as typeof function', () => {
+    let dialogObj: Dialog;
     beforeAll(() => {
-        DialogUtility.alert({
-            okButton: {click: function(event: Event) {
-                // your code here!
-            } }
-         });
-});
-it('alert utility dialog footer button click',() => {
-    let clickEvent: any = document.createEvent("MouseEvents");
-    clickEvent.initEvent("click", false, true);
-    expect(document.getElementsByClassName('e-btn')[0].textContent == 'OK').toBe(true);
-    (<HTMLElement>document.getElementsByClassName('e-btn')[0]).dispatchEvent(clickEvent);
-})
-afterAll(() => {
-    document.body.innerHTML = '';
-});
+        document.body.removeAttribute('style');
+        dialogObj = DialogUtility.alert({
+            okButton: {
+                click: function (event: Event) {}
+            }
+        });
+    });
+    it('alert utility dialog footer button click', () => {
+        let clickEvent: any = document.createEvent("MouseEvents");
+        clickEvent.initEvent("click", false, true);
+        expect(document.getElementsByClassName('e-btn')[0].textContent == 'OK').toBe(true);
+        (<HTMLElement>document.getElementsByClassName('e-btn')[0]).dispatchEvent(clickEvent);
+    })
+    afterAll(() => {
+        destroyDialog(dialogObj);
+    });
 });
 
 // utility dialog specification
 describe('create alert utility dialog with modal', () => {
+    let dialogObj: Dialog;
     beforeAll(() => {
-        DialogUtility.alert({
+        dialogObj = DialogUtility.alert({
             isModal: true,
-            okButton: {text: 'new button', cssClass: 'syncfusion'}
-         });
-});
-it('alert utility dialog to test modal behavior and destroy functionality',()=>{
-    let clickEvent: any = document.createEvent("MouseEvents");
-    clickEvent.initEvent("click", false, true);
-    expect(document.getElementsByClassName('e-btn')[0].textContent == 'new button').toBe(true);
-    expect(document.getElementsByClassName('e-btn')[0].classList.contains('syncfusion')).toBe(true);
-    (<HTMLElement>document.getElementsByClassName('e-btn')[0]).dispatchEvent(clickEvent);
-})
-afterAll(() => {
-    document.body.innerHTML = '';
-});
+            okButton: { text: 'new button', cssClass: 'syncfusion' }
+        });
+    });
+    it('alert utility dialog to test modal behavior and destroy functionality', () => {
+        let clickEvent: any = document.createEvent("MouseEvents");
+        clickEvent.initEvent("click", false, true);
+        expect(document.getElementsByClassName('e-btn')[0].textContent == 'new button').toBe(true);
+        expect(document.getElementsByClassName('e-btn')[0].classList.contains('syncfusion')).toBe(true);
+        (<HTMLElement>document.getElementsByClassName('e-btn')[0]).dispatchEvent(clickEvent);
+    })
+    afterAll(() => {
+        destroyDialog(dialogObj);
+    });
 });
 
 // utility dialog without modal
 describe('default alert utility dialog without modal', () => {
+    let dialogObj: Dialog;
     beforeAll(() => {
-        DialogUtility.alert({
+        dialogObj = DialogUtility.alert({
             isModal: false
-         });
-});
-it('to test alert dialog with modal and default button interaction ',()=>{
-    let clickEvent: any = document.createEvent("MouseEvents");
-    clickEvent.initEvent("click", false, true);
-    expect(document.getElementsByClassName('e-btn')[0].textContent == 'OK').toBe(true);
-    (<HTMLElement>document.getElementsByClassName('e-btn')[0]).dispatchEvent(clickEvent);
-})
-afterAll(() => {
-    document.body.innerHTML = '';
-});
+        });
+    });
+    it('to test alert dialog with modal and default button interaction ', () => {
+        let clickEvent: any = document.createEvent("MouseEvents");
+        clickEvent.initEvent("click", false, true);
+        expect(document.getElementsByClassName('e-btn')[0].textContent == 'OK').toBe(true);
+        (<HTMLElement>document.getElementsByClassName('e-btn')[0]).dispatchEvent(clickEvent);
+    })
+    afterAll(() => {
+        destroyDialog(dialogObj);
+    });
 });
 
 // utility dialog without modal
 describe('alert utility dialog with closeICon and custom footer button', () => {
+    let dialogObj: Dialog;
     beforeAll(() => {
-        DialogUtility.alert({
+        dialogObj = DialogUtility.alert({
             isModal: false,
             showCloseIcon: true,
-            okButton: {text: 'Ok btn', click: footerbtnClick},
-            animationSettings: { effect: 'Zoom'}
-         });
-         function footerbtnClick(){
-             // your code here
+            okButton: { text: 'Ok btn', click: footerbtnClick },
+            animationSettings: { effect: 'Zoom' }
+        });
+        function footerbtnClick() {
+            // your code here
         };
-});
-it('alert dialog should remove from DOM',()=>{
-    let clickEvent: any = document.createEvent("MouseEvents");
-    clickEvent.initEvent("click", false, true);
-    (<HTMLElement>document.getElementsByClassName('e-btn')[0]).dispatchEvent(clickEvent);
-    expect(isNullOrUndefined(document.getElementsByClassName('e-btn')[0])).toBe(false);
-})
-afterAll(() => {
-    document.body.innerHTML = '';
-});
+    });
+    it('alert dialog should remove from DOM', () => {
+        let clickEvent: any = document.createEvent("MouseEvents");
+        clickEvent.initEvent("click", false, true);
+        (<HTMLElement>document.getElementsByClassName('e-btn')[0]).dispatchEvent(clickEvent);
+        expect(isNullOrUndefined(document.getElementsByClassName('e-btn')[0])).toBe(false);
+    })
+    afterAll(() => {
+        destroyDialog(dialogObj);
+    });
 });
 
-// confirm
-// utility dialog without modal
+// confirm utility dialog without modal
 describe('create confirm utility dialog without modal', () => {
+    let dialogObj: Dialog;
     beforeAll(() => {
-        DialogUtility.confirm({
+        dialogObj = DialogUtility.confirm({
             isModal: false
-         });
-});
-it('non-modal dialog with default button functionalities',()=>{
-    let clickEvent: any = document.createEvent("MouseEvents");
-    clickEvent.initEvent("click", false, true);
-    (<HTMLElement>document.getElementsByClassName('e-btn')[0]).dispatchEvent(clickEvent);
-})
-afterAll(() => {
-    document.body.innerHTML = '';
-});
+        });
+    });
+    it('non-modal dialog with default button functionalities', () => {
+        let clickEvent: any = document.createEvent("MouseEvents");
+        clickEvent.initEvent("click", false, true);
+        (<HTMLElement>document.getElementsByClassName('e-btn')[0]).dispatchEvent(clickEvent);
+    })
+    afterAll(() => {
+        destroyDialog(dialogObj);
+    });
 });
 
 // utility dialog without modal and default button actions
 describe('confirm utility dialog without modal and default button actions', () => {
+    let dialogObj: Dialog;
     beforeAll(() => {
-        DialogUtility.confirm({
+        dialogObj = DialogUtility.confirm({
             isModal: false,
             showCloseIcon: false,
-            okButton: {text: 'Ok btn', click: footerbtnClick},
-            animationSettings: { effect: 'Zoom'},
-            cancelButton: {text: 'cancel button', click: function() {
-                // test dialog
-            }}
-         });
-         function footerbtnClick(){
-             // your code here
+            okButton: { text: 'Ok btn', click: footerbtnClick },
+            animationSettings: { effect: 'Zoom' },
+            cancelButton: {
+                text: 'cancel button', click: function () {
+                    // test dialog
+                }
+            }
+        });
+        function footerbtnClick() {
+            // your code here
         };
-});
-it('close event will trigger on closeicon click',()=>{
-    let clickEvent: any = document.createEvent("MouseEvents");
-    clickEvent.initEvent("click", false, true);
-    (<HTMLElement>document.getElementsByClassName('e-btn')[0]).dispatchEvent(clickEvent);
-    (<HTMLElement>document.getElementsByClassName('e-btn')[1]).dispatchEvent(clickEvent);
-})
-afterAll(() => {
-    document.body.innerHTML = '';
-});
+    });
+    it('close event will trigger on closeicon click', () => {
+        let clickEvent: any = document.createEvent("MouseEvents");
+        clickEvent.initEvent("click", false, true);
+        (<HTMLElement>document.getElementsByClassName('e-btn')[0]).dispatchEvent(clickEvent);
+        (<HTMLElement>document.getElementsByClassName('e-btn')[1]).dispatchEvent(clickEvent);
+    })
+    afterAll(() => {
+        destroyDialog(dialogObj);
+    });
 });
 
 // utility dialog without modal
 describe('create alert utility dialog', () => {
+    let dialogObj: Dialog;
     beforeAll(() => {
-        DialogUtility.confirm({
+        dialogObj = DialogUtility.confirm({
             isModal: false,
             showCloseIcon: true,
-            okButton: {text: 'Ok btn', click: footerbtnClick},
-            cancelButton: {text: 'cancel button', click: function() {
-                // test dialog
-            }}
-         });
-         function footerbtnClick(){
-             // your code here
+            okButton: { text: 'Ok btn', click: footerbtnClick },
+            cancelButton: {
+                text: 'cancel button', click: function () {
+                    // test dialog
+                }
+            }
+        });
+        function footerbtnClick() {
+            // your code here
         };
+    });
+    it('close event will trigger on clik closeicon', () => {
+        let clickEvent: any = document.createEvent("MouseEvents");
+        clickEvent.initEvent("click", false, true);
+        (<HTMLElement>document.getElementsByClassName('e-btn')[0]).dispatchEvent(clickEvent);
+        (<HTMLElement>document.getElementsByClassName('e-btn')[1]).dispatchEvent(clickEvent);
+        (<HTMLElement>document.getElementsByClassName('e-btn')[2]).dispatchEvent(clickEvent);
+    })
+    afterAll(() => {
+        destroyDialog(dialogObj);
+    });
 });
-it('close event will trigger on clik closeicon',()=>{
-    let clickEvent: any = document.createEvent("MouseEvents");
-    clickEvent.initEvent("click", false, true);
-    (<HTMLElement>document.getElementsByClassName('e-btn')[0]).dispatchEvent(clickEvent);
-    (<HTMLElement>document.getElementsByClassName('e-btn')[1]).dispatchEvent(clickEvent);
-    (<HTMLElement>document.getElementsByClassName('e-btn')[2]).dispatchEvent(clickEvent);
-})
-afterAll(() => {
-    document.body.innerHTML = '';
-});
-});
-
 
 // utility dialog without modal
 describe('create alert utility dialog', () => {
+    let dialogObj: Dialog;
     beforeAll(() => {
-        DialogUtility.confirm({
+        dialogObj = DialogUtility.confirm({
             isModal: true,
             showCloseIcon: true,
-            okButton: {text: 'Ok btn', click: footerbtnClick},
-            cancelButton: {text: 'cancel button'}
-         });
-         function footerbtnClick(){
-             // your code here
+            okButton: { text: 'Ok btn', click: footerbtnClick },
+            cancelButton: { text: 'cancel button' }
+        });
+        function footerbtnClick() {
+            // your code here
         };
-});
-it('close event will trigger on clik closeicon',()=>{
-    let clickEvent: any = document.createEvent("MouseEvents");
-    clickEvent.initEvent("click", false, true);
-    (<HTMLElement>document.getElementsByClassName('e-btn')[2]).dispatchEvent(clickEvent);
-})
-afterAll(() => {
-    document.body.innerHTML = '';
-});
+    });
+    it('close event will trigger on clik closeicon', () => {
+        let clickEvent: any = document.createEvent("MouseEvents");
+        clickEvent.initEvent("click", false, true);
+        (<HTMLElement>document.getElementsByClassName('e-btn')[2]).dispatchEvent(clickEvent);
+    })
+    afterAll(() => {
+        destroyDialog(dialogObj);
+    });
 });
 
 // utility dialog without modal
 describe('create alert utility dialog', () => {
+    let dialogObj: Dialog;
     beforeAll(() => {
-        DialogUtility.confirm({
+        dialogObj = DialogUtility.confirm({
             isModal: false,
             showCloseIcon: true,
-            okButton: {text: 'Ok btn', click: footerbtnClick},
-            cancelButton: {text: 'cancel button'}
-         });
-         function footerbtnClick(){
-             // your code here
+            okButton: { text: 'Ok btn', click: footerbtnClick },
+            cancelButton: { text: 'cancel button' }
+        });
+        function footerbtnClick() {
+            // your code here
         };
-});
-it('close event will trigger on clik closeicon',()=>{
-    let clickEvent: any = document.createEvent("MouseEvents");
-    clickEvent.initEvent("click", false, true);
-    (<HTMLElement>document.getElementsByClassName('e-btn')[2]).dispatchEvent(clickEvent);
-})
-afterAll(() => {
-    document.body.innerHTML = '';
-});
+    });
+    it('close event will trigger on clik closeicon', () => {
+        let clickEvent: any = document.createEvent("MouseEvents");
+        clickEvent.initEvent("click", false, true);
+        (<HTMLElement>document.getElementsByClassName('e-btn')[2]).dispatchEvent(clickEvent);
+    })
+    afterAll(() => {
+        destroyDialog(dialogObj);
+    });
 });
 
 // default rendering confirm dialog
 describe('create confirm utility dialog', () => {
+    let dialogObj: Dialog;
     beforeAll(() => {
-        DialogUtility.confirm({});
+        dialogObj = DialogUtility.confirm({});
     });
     it('Dialog utility confirm dialog default rendering', () => {
         expect(document.getElementsByClassName('e-confirm-dialog')[0].classList.contains('e-confirm-dialog')).toBe(true);
     });
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialogObj);
     });
 });
+
 // alert utility dialog with options
 describe('create alert utility dialog', () => {
+    let dialogObj: Dialog;
     beforeAll(() => {
-        DialogUtility.alert({
-        title: 'dialog Header!',
-        showCloseIcon: false,
-        isModal: true,
-        content: "dialog content Updated!!!",
-        okButton: { text: 'Okbtn' }});
+        dialogObj = DialogUtility.alert({
+            title: 'dialog Header!',
+            showCloseIcon: false,
+            isModal: true,
+            content: "dialog content Updated!!!",
+            okButton: { text: 'Okbtn' }
+        });
     });
     it('alert utility dialog with api default rendering', () => {
         expect(document.getElementsByClassName('e-alert-dialog')[0].classList.contains('e-popup-open')).toBe(false);
     });
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialogObj);
     });
 });
 
 // create confirm dialog utility with options
 describe('create alert utility dialog', () => {
+    let dialogObj: Dialog;
     beforeAll(() => {
-        DialogUtility.confirm({
-        title: 'dialog Header!',
-        showCloseIcon: false,
-        isModal: true,
-        content: "dialog content Updated!!!",
-        okButton: { text: 'Okbtn' },
-        cancelButton: {text: 'cancel btn'}
-    });
+        dialogObj = DialogUtility.confirm({
+            title: 'dialog Header!',
+            showCloseIcon: false,
+            isModal: true,
+            content: "dialog content Updated!!!",
+            okButton: { text: 'Okbtn' },
+            cancelButton: { text: 'cancel btn' }
+        });
     });
     it('alert utility dialog with api default rendering', () => {
         expect(document.getElementsByClassName('e-confirm-dialog')[0].classList.contains('e-popup-close')).toBe(true);
     });
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialogObj);
     });
 });
 
 describe('closeOnEscape property', () => {
     let events: any;
-    let ele: HTMLElement = createElement('div', { id: 'dialog1' });
-    document.body.appendChild(ele);
     let eventArgs: any;
     beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'dialog1' });
+        document.body.appendChild(ele);
         events = new Dialog({header:'Demo', content:'First demo content', animationSettings: { effect: 'None' }, closeOnEscape: true });
         events.appendTo(ele);
         spyOn(events, 'hide');
@@ -298,23 +320,23 @@ describe('closeOnEscape property', () => {
         eventArgs = { keyCode: 0, altKey: false, ctrlKey: false, shiftKey: false };
         events.keyDown(eventArgs);
         expect(document.getElementById("dialog1").classList.contains('e-popup-open')).toEqual(true);
-        events.destroy()
-        document.body.innerHTML = '';
+    });
+    afterAll(() => {
+        destroyDialog(events);
     });
 });
 
 describe('closeOnEscape property', () => {
     let events: any;
-    let ele: HTMLElement = createElement('div', { id: 'dialog2' });
-    let inputField: HTMLElement = createElement('input', {id : 'dialogInput'});
-    ele.appendChild(inputField);
-    inputField.onblur = function() {
-        expect(document.activeElement).not.toEqual(inputField);
-    }
-    document.body.appendChild(ele);
-
     let eventArgs: any;
     beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'dialog2' });
+        let inputField: HTMLElement = createElement('input', {id : 'dialogInput'});
+        ele.appendChild(inputField);
+        inputField.onblur = function() {
+            expect(document.activeElement).not.toEqual(inputField);
+        }
+        document.body.appendChild(ele);
         events = new Dialog({header:'Demo', zIndex: 1200, content:'First demo content', animationSettings: { effect: 'None' }, closeOnEscape: true });
         // spyOn(events, 'hide');
         events.appendTo(ele);
@@ -325,11 +347,11 @@ describe('closeOnEscape property', () => {
         eventArgs = { keyCode: 27, altKey: false, ctrlKey: false, shiftKey: false };
         events.keyDown(eventArgs);
         expect(document.getElementById("dialog2").classList.contains('e-popup-close')).toEqual(true);
-        events.destroy()
-        document.body.innerHTML = '';
+    });
+    afterAll(() => {
+        destroyDialog(events);
     });
 });
-
 
 describe('Dialog Control', () => {
     describe('Dom Dialog element', () => {
@@ -340,10 +362,7 @@ describe('Dialog Control', () => {
             document.body.appendChild(ele);
         });
         afterEach((): void => {
-            if (dialog) {
-                dialog.destroy();
-            }
-            document.body.innerHTML = '';
+            destroyDialog(dialog);
         });
         it('Control class testing', () => {
             dialog = new Dialog({ header: 'Dialog' });
@@ -359,8 +378,7 @@ describe('Dialog Control', () => {
             expect(document.getElementById('dialog').classList.contains('e-dialog')).toEqual(true);
         });
         it("Destroy Method testing", () => {
-            function buttonClick() {
-            }
+            function buttonClick() { }
             dialog = new Dialog({ header: "Dialog", buttons: [{ buttonModel: { content: "Ok" }, click: buttonClick },{ buttonModel: { content: "Cancel" }, click: buttonClick }], content: "Your information is updated successfully" }, '#dialog');
             dialog.destroy();
             expect(document.getElementById("dialog").classList.contains("e-dialog")).toEqual(false);
@@ -368,20 +386,21 @@ describe('Dialog Control', () => {
             expect(document.getElementById("dialog").classList.contains("e-popup-open")).toEqual(false);
             dialog.hide();
             expect(document.getElementById("dialog").classList.contains("e-popup-close")).toEqual(false);
-        })
+        });
+
         it("Show Method and visible: propery value testing", () => {
             dialog = new Dialog({ animationSettings: { effect: 'None', duration: 0, delay: 0 }, header: "Dialog", visible: false, content: "Your information is updated successfully" }, '#dialog');
             dialog.show();
             expect(document.getElementById("dialog").classList.contains('e-popup-open')).toEqual(true);
             expect(dialog.visible).toEqual(true);
-        })
+        });
 
         it("Modal dialog Show Method testing", () => {
             dialog = new Dialog({ target: document.body, isModal: true, animationSettings: { effect: 'None', duration: 0, delay: 0 }, header: "Dialog", visible: false, content: "Your information is updated successfully" }, '#dialog');
             dialog.show();
             dialog.refreshPosition();
             expect(document.getElementById("dialog").classList.contains('e-popup-open')).toEqual(true);
-        })
+        });
 
         it("Full screen:true/false Method Testing", () => {
             dialog = new Dialog({ header: "Dialog", width: "200px", animationSettings: { effect: 'None' }, content: "Your information is updated successfully" }, '#dialog');
@@ -389,7 +408,7 @@ describe('Dialog Control', () => {
             expect(document.getElementById('dialog').classList.contains("e-dlg-fullscreen")).toEqual(true);
             dialog.show(false);
             expect(document.getElementById('dialog').classList.contains("e-dlg-fullscreen")).toEqual(false);
-        })
+        });
 
         it("Full screen:true/false method testing with allowDragging true", () => {
             dialog = new Dialog({ header: "Dialog", animationSettings: { effect: 'None' }, allowDragging: true, width: "200px", content: "Your information is updated successfully" }, '#dialog');
@@ -397,34 +416,34 @@ describe('Dialog Control', () => {
             expect(document.getElementById('dialog').classList.contains("e-draggable")).toEqual(false);
             dialog.show(false);
             expect(document.getElementById('dialog').classList.contains("e-draggable")).toEqual(true);
-        })
+        });
 
         it("visible property:true testing", () => {
             dialog = new Dialog({ header: "Dialog", animationSettings: { effect: 'None' }, content: "Your information is updated successfully" }, '#dialog');
             expect(document.getElementById("dialog").classList.contains('e-popup-open')).toEqual(true);
-        })
+        });
 
         it('cssClass testing', () => {
             dialog = new Dialog({ header: "Dialog", cssClass: "class1 class2" }, '#dialog');
             expect(document.getElementById('dialog').classList.contains('class1')).toEqual(true);
             expect(document.getElementById('dialog').classList.contains('class2')).toEqual(true);
-        })
+        });
 
         it('showCloseIcon testing', () => {
             dialog = new Dialog({ header: "Dialog", showCloseIcon: true }, '#dialog');
             expect(document.getElementById('dialog').querySelectorAll('.e-icon-dlg-close').length).toBe(1);
-        })
+        });
 
         it('showCloseIcon without header testing', () => {
             dialog = new Dialog({ showCloseIcon: true }, '#dialog');
             expect(document.getElementById('dialog').querySelectorAll('.e-icon-dlg-close').length).toBe(1);
-        })
+        });
 
         it('showCloseIcon with header given as Template testing', () => {
             let headerTemplateContent = "<div>Template content</div>";
             dialog = new Dialog({ showCloseIcon: true, header: headerTemplateContent }, '#dialog');
             expect(document.getElementById('dialog').querySelectorAll('.e-icon-dlg-close').length).toBe(1);
-        })
+        });
 
         it('showCloseIcon with header given as Template notify property testing', () => {
             let headerTemplateContent = "<div>Template content</div>";
@@ -444,23 +463,19 @@ describe('Dialog Control', () => {
         });
 
         it('showCloseIcon notify property changes testing if header and content is given to empty', () => {
-            let ele: HTMLElement = createElement('div', { id: 'dialogCtrl11' });
-            document.body.appendChild(ele);
-            dialog = new Dialog({ showCloseIcon: false }, '#dialogCtrl11');
-            let element: HTMLElement = document.getElementById('dialogCtrl11');
+            dialog = new Dialog({ showCloseIcon: false }, '#dialog');
             dialog.header = '';
             dialog.content = null;
             dialog.dataBind();
-            expect(document.getElementById('dialogCtrl11').querySelectorAll(".e-dlg-header").length).toBe(0);
-            expect(document.getElementById('dialogCtrl11').querySelectorAll(".e-dlg-content").length).toBe(0);
+            expect(document.getElementById('dialog').querySelectorAll(".e-dlg-header").length).toBe(0);
+            expect(document.getElementById('dialog').querySelectorAll(".e-dlg-content").length).toBe(0);
             dialog.showCloseIcon = true;
             dialog.dataBind();
-            expect(document.getElementById('dialogCtrl11').querySelectorAll(".e-icon-dlg-close").length).toBe(1);
-            dialog.destroy();
-            document.body.innerHTML = '';
+            expect(document.getElementById('dialog').querySelectorAll(".e-icon-dlg-close").length).toBe(1);
         });
 
         it('getZindexPartial testing', () => {
+            detach(document.querySelector('#dialog'));
             let wrapper: HTMLElement = createElement('div', { id: 'wrapper' });
             wrapper.style.zIndex = "10000";
             wrapper.style.position = "absolute";
@@ -468,11 +483,11 @@ describe('Dialog Control', () => {
             wrapper.appendChild(ele);
             document.body.appendChild(wrapper);
             dialog = new Dialog({ showCloseIcon: false }, '#dialogCtrl12');
-            let element: HTMLElement = document.getElementById('dialogCtrl12');
             dialog.header = 'Dialog header';
             expect(document.getElementById('dialogCtrl12').style.zIndex).toEqual("10001");
-            dialog.destroy();
-            document.body.innerHTML = '';
+            destroyDialog(dialog);
+            dialog = undefined;
+            detach(wrapper);
         });
 
         it('Width and Height- property testing', () => {
@@ -556,6 +571,7 @@ describe('Dialog Control', () => {
             dialog = new Dialog({ content: "Your information is updated successfully", header: headerTemplateContent }, '#dialog');
             expect(document.getElementById('dialog').querySelectorAll('.e-dlg-header').length).toBe(1);
         });
+
         it('dialog footertemplate testing', () => {
             let footerTemplateContent = "<div>Footer Template content</div>";
             dialog = new Dialog({ content: "Your information is updated successfully", footerTemplate: footerTemplateContent }, '#dialog');
@@ -574,21 +590,17 @@ describe('Dialog Control', () => {
         });
 
         it('header given at notify property change testing', () => {
-            let ele: HTMLElement = createElement('div', { id: 'dialogCtrl13' });
-            document.body.appendChild(ele);
-            dialog = new Dialog({}, '#dialogCtrl13');
-            let element: HTMLElement = document.getElementById('dialogCtrl13');
+            dialog = new Dialog({}, '#dialog');
             dialog.header = 'New Dialog';
             dialog.dataBind();
-            expect(document.getElementById('dialogCtrl13').querySelectorAll(".e-dlg-header").length).toBe(1);
-            dialog.destroy();
-            document.body.innerHTML = '';
+            expect(document.getElementById('dialog').querySelectorAll(".e-dlg-header").length).toBe(1);
         });
 
         it('dialog content testing', () => {
             dialog = new Dialog({ header: "Dialog", content: "Your information is updated successfully" }, '#dialog');
             expect(document.getElementById('dialog').querySelectorAll('.e-dlg-content').length).toBe(1);
         });
+
         it('dialog content as element testing', () => {
             let dlgcontent: HTMLElement = createElement("div");
             dlgcontent.className = "samplecontent";
@@ -612,15 +624,17 @@ describe('Dialog Control', () => {
             dialog = new Dialog({ content: dlgcontent, allowDragging: true }, '#dialog');
             expect(document.getElementById('dialog').classList.contains("e-draggable")).toEqual(false);
         });
-        
+
         it('allowdragging:false notify property with modal dialog and aria attribute testing', () => {
             let dlgcontent: HTMLElement = createElement("div");
-            dialog = new Dialog({ content: dlgcontent, height: '200px',
-            width: '300px',
-            header: 'Dialog Header',
-            isModal: true,
-            visible : true,
-            allowDragging: false });
+            dialog = new Dialog({
+                content: dlgcontent, height: '200px',
+                width: '300px',
+                header: 'Dialog Header',
+                isModal: true,
+                visible: true,
+                allowDragging: false
+            });
             dialog.appendTo('#dialog');
             expect(document.getElementById('dialog').getAttribute('aria-modal')).toEqual('true');
             expect(document.getElementById('dialog').classList.contains("e-draggable")).toEqual(false);
@@ -630,12 +644,14 @@ describe('Dialog Control', () => {
 
         it('allowdragging:true notify property with modal dialog and aria attribute testing', () => {
             let dlgcontent: HTMLElement = createElement("div");
-            dialog = new Dialog({ content: dlgcontent, height: '200px',
-            width: '300px',
-            header: 'Dialog Header',
-            isModal: true,
-            visible : true,
-            allowDragging: true });
+            dialog = new Dialog({
+                content: dlgcontent, height: '200px',
+                width: '300px',
+                header: 'Dialog Header',
+                isModal: true,
+                visible: true,
+                allowDragging: true
+            });
             dialog.appendTo('#dialog');
             expect(document.getElementById('dialog').getAttribute('aria-modal')).toEqual('true');
             expect(document.getElementById('dialog').classList.contains("e-draggable")).toEqual(true);
@@ -663,6 +679,9 @@ describe('Dialog Control', () => {
             expect(document.getElementById("block").children[0].classList.contains('e-dlg-right-top')).toEqual(true);
             expect(document.getElementById("block").children[0].classList.contains('e-dlg-container')).toEqual(true);
             expect((dialog.element as HTMLElement).style.position = "relative" );
+            destroyDialog(dialog);
+            dialog = undefined;
+            detach(target);
         });
 
         it('dialog events testing', (done) => {
@@ -693,19 +712,18 @@ describe('Dialog Control', () => {
                 addClass([document.getElementById('dialog')], 'dlg-destroy');
             }
             expect(document.getElementById('dialog').classList.contains("created")).toEqual(true);
-            setTimeout(() => {
-                expect(document.getElementById('dialog').classList.contains("open")).toEqual(true);
-                done();
-            });
+            expect(document.getElementById('dialog').classList.contains("open")).toEqual(true);
             expect(document.getElementById('dialog').classList.contains("beforeopen")).toEqual(true);
             expect(document.getElementById('dialog').classList.contains("close")).toEqual(true);
             expect(document.getElementById('dialog').classList.contains("beforeclose")).toEqual(true);
             expect(dialog.visible).toEqual(false);
             dialog.destroy();
             expect(document.getElementById('dialog').classList.contains("dlg-destroy")).toEqual(true);
+            detach(dialog.element);
+            done();
         });
 
-        it('dialog isInteracted event testing', () => {
+        it('dialog isInteracted event testing', (done: Function) => {
             let dlgcontent: HTMLElement = createElement("div");
             let dialog = new Dialog({
                 content: dlgcontent,
@@ -716,6 +734,9 @@ describe('Dialog Control', () => {
             function beforeClose(args: BeforeCloseEventArgs) {
                 expect(args.isInteracted).toEqual(false);
             }
+            destroyDialog(dialog);
+            dialog = undefined;
+            done();
         });
 
         it('dialog allowdragging with target testing', () => {
@@ -724,6 +745,9 @@ describe('Dialog Control', () => {
             let dlgcontent: HTMLElement = createElement("div");
             dialog = new Dialog({ header: "Dialog", content: dlgcontent, target: target, allowDragging: true }, '#dialog');
             expect(document.getElementById('dialog').classList.contains("e-draggable")).toEqual(true);
+            destroyDialog(dialog);
+            dialog = undefined;
+            detach(target);
         });
 
         it('dialog target declared as string testing', () => {
@@ -732,6 +756,9 @@ describe('Dialog Control', () => {
             let dlgcontent: HTMLElement = createElement("div");
             dialog = new Dialog({ header: "Dialog", content: dlgcontent, target: "#block", allowDragging: true }, '#dialog');
             expect(document.getElementById('dialog').classList.contains("e-draggable")).toEqual(true);
+            destroyDialog(dialog);
+            dialog = undefined;
+            detach(target);
         });
 
         it('dialog without target testing', () => {
@@ -740,6 +767,9 @@ describe('Dialog Control', () => {
             let dlgcontent: HTMLElement = createElement("div");
             dialog = new Dialog({ header: "Dialog", content: dlgcontent, allowDragging: true }, '#dialog');
             expect(dialog.target).not.toEqual(null);
+            destroyDialog(dialog);
+            dialog = undefined;
+            detach(target);
         });
 
         it('dialog allowdragging with header given as Template testing', () => {
@@ -769,69 +799,62 @@ describe('Dialog Control', () => {
         });
 
         it('dialog buttons testing', () => {
-            let dialog1: any;
             let dlgcontent1: HTMLElement = createElement("div");
             dlgcontent1.className = "samplecontent";
-            dialog1 = new Dialog({ header: "Dialog", content: dlgcontent1, buttons: [{ buttonModel: { content: "left" } }, { buttonModel: { content: "right" } }], }, '#dialog');
+            dialog = new Dialog({ header: "Dialog", content: dlgcontent1, buttons: [{ buttonModel: { content: "left" } }, { buttonModel: { content: "right" } }], }, '#dialog');
             expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(2);
-            expect(dialog1.btnObj.length).toBe(2);
+            expect((dialog as any).btnObj.length).toBe(2);
         });
         it('EJ2-22770-clear dialog buttons with empty object testing', () => {
-            let dialog1: any;
             let dlgcontent1: HTMLElement = createElement("div");
             dlgcontent1.className = "samplecontent";
-            dialog1 = new Dialog({ header: "Dialog", content: dlgcontent1, buttons: [{ buttonModel: { content: "left" } }, { buttonModel: { content: "right" } }], }, '#dialog');
+            dialog = new Dialog({ header: "Dialog", content: dlgcontent1, buttons: [{ buttonModel: { content: "left" } }, { buttonModel: { content: "right" } }], }, '#dialog');
             expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(2);
-            dialog1.buttons=[{}];
-            dialog1.dataBind();
+            dialog.buttons=[{}];
+            dialog.dataBind();
             expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(0);
         });
         it('EJ2-22770-clear dialog buttons  with empty array testing', () => {
-            let dialog1: any;
             let dlgcontent1: HTMLElement = createElement("div");
             dlgcontent1.className = "samplecontent";
-            dialog1 = new Dialog({ header: "Dialog", content: dlgcontent1, buttons: [{ buttonModel: { content: "left" } }, { buttonModel: { content: "right" } }], }, '#dialog');
+            dialog = new Dialog({ header: "Dialog", content: dlgcontent1, buttons: [{ buttonModel: { content: "left" } }, { buttonModel: { content: "right" } }], }, '#dialog');
             expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(2);
-            dialog1.buttons=[];
-            dialog1.dataBind();
+            dialog.buttons=[];
+            dialog.dataBind();
             expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(0);
         });
         it('EJ2-22770-dynamic dialog buttons testing', () => {
-            let dialog1: any;
             let dlgcontent1: HTMLElement = createElement("div");
             dlgcontent1.className = "samplecontent";
-            dialog1 = new Dialog({ header: "Dialog", content: dlgcontent1, }, '#dialog');
+            dialog = new Dialog({ header: "Dialog", content: dlgcontent1, }, '#dialog');
             expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(0);
-            dialog1.buttons=[{ buttonModel: { content: "left" } }, { buttonModel: { content: "right" } }]
-            dialog1.dataBind();
+            dialog.buttons=[{ buttonModel: { content: "left" } }, { buttonModel: { content: "right" } }]
+            dialog.dataBind();
             expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(2);
-            expect(dialog1.btnObj.length).toBe(2);
+            expect((dialog as any).btnObj.length).toBe(2);
         });
         it('dialog getButtons testing', () => {
-            let dialog1: any;
             let dlgcontent1: HTMLElement = createElement("div");
             dlgcontent1.className = "samplecontent";
-            dialog1 = new Dialog({ header: "Dialog", content: dlgcontent1, buttons: [{ buttonModel: { content: "left" } }, { buttonModel: { content: "right" } }], }, '#dialog');
-            expect(dialog1.getButtons().length).toBe(2);
-            expect(dialog1.getButtons(0).element.type).toEqual('button');
-            expect(dialog1.getButtons(1).element.type).toEqual('button');
+            dialog = new Dialog({ header: "Dialog", content: dlgcontent1, buttons: [{ buttonModel: { content: "left" } }, { buttonModel: { content: "right" } }], }, '#dialog');
+            expect((dialog as any).getButtons().length).toBe(2);
+            expect((dialog as any).getButtons(0).element.type).toEqual('button');
+            expect((dialog as any).getButtons(1).element.type).toEqual('button');
         });
 
         it('dialog button type testing', () => {
-            let dialog1: any;
             let dlgcontent1: HTMLElement = createElement("div");
             dlgcontent1.className = "samplecontent";
-            dialog1 = new Dialog({ header: "Dialog", content: dlgcontent1, buttons: [{ buttonModel: { content: "left" }, type:'Submit' }, { buttonModel: { content: "right" } }], }, '#dialog');
-            expect(dialog1.getButtons(0).element.type).toEqual('submit');
-            expect(dialog1.getButtons(1).element.type).toEqual('button');
+            dialog = new Dialog({ header: "Dialog", content: dlgcontent1, buttons: [{ buttonModel: { content: "left" }, type:'Submit' }, { buttonModel: { content: "right" } }], }, '#dialog');
+            expect((dialog as any).getButtons(0).element.type).toEqual('submit');
+            expect((dialog as any).getButtons(1).element.type).toEqual('button');
         });
 
         it('dialog getButtons testing', () => {
-            let dialog1: any;
             let dlgcontent1: HTMLElement = createElement("div");
             dlgcontent1.className = "samplecontent";
-            dialog1 = new Dialog({ header: "Dialog", content: dlgcontent1, buttons: [{ buttonModel: { content: "left" } }, { buttonModel: { content: "right" } }], }, '#dialog');
-            expect(dialog1.getButtons(0).content).toEqual('left');
+            dialog = new Dialog({ header: "Dialog", content: dlgcontent1, buttons: [{ buttonModel: { content: "left" } }, { buttonModel: { content: "right" } }], }, '#dialog');
+            expect((dialog as any).getButtons(0).content).toEqual('left');
         });
 
         it('dialog Button Model property testing', () => {
@@ -889,158 +912,106 @@ describe('Dialog Control', () => {
         });
 
         it('Header with initial rendering and notify property property testing', () => {
-            let ele: HTMLElement = createElement('div', { id: 'dialogCtrl9' });
-            document.body.appendChild(ele);
             let headerTemplateContent = "<div class='templateclass'>Template content</div>";
-            dialog = new Dialog({ header: 'Dialog' }, '#dialogCtrl9');
-            let element: HTMLElement = document.getElementById('dialogCtrl9');
+            dialog = new Dialog({ header: 'Dialog' }, '#dialog');
             dialog.header = headerTemplateContent;
             dialog.dataBind();
-            expect(document.getElementById('dialogCtrl9').querySelectorAll('.e-dlg-header .templateclass').length).toBe(1);
-            dialog.destroy();
-            document.body.innerHTML = '';
+            expect(document.getElementById('dialog').querySelectorAll('.e-dlg-header .templateclass').length).toBe(1);
         });
 
         it('notify property change testing combination of header-content-footerTemplate', () => {
-            let ele: HTMLElement = createElement('div', { id: 'dialogCtrl8' });
-            document.body.appendChild(ele);
             let footerTemplateContent = "<div>Footer Template content</div>";
-            dialog = new Dialog({}, '#dialogCtrl8');
-            let element: HTMLElement = document.getElementById('dialogCtrl8');
+            dialog = new Dialog({}, '#dialog');
             dialog.header = 'New Dialog';
             dialog.content = 'New content updated successfully';
             dialog.footerTemplate = footerTemplateContent;
             dialog.dataBind();
-            expect(document.getElementById('dialogCtrl8').querySelectorAll('.e-dlg-content').length).toBe(1);
-            expect(document.getElementById('dialogCtrl8').querySelectorAll('.e-dlg-header').length).toBe(1);
-            expect(document.getElementById('dialogCtrl8').querySelectorAll('.e-footer-content').length).toBe(1);
-            expect(document.getElementById('dialogCtrl8').querySelectorAll('.e-icon-dlg-close').length).toBe(0);
-            dialog.destroy();
-            document.body.innerHTML = '';
+            expect(document.getElementById('dialog').querySelectorAll('.e-dlg-content').length).toBe(1);
+            expect(document.getElementById('dialog').querySelectorAll('.e-dlg-header').length).toBe(1);
+            expect(document.getElementById('dialog').querySelectorAll('.e-footer-content').length).toBe(1);
+            expect(document.getElementById('dialog').querySelectorAll('.e-icon-dlg-close').length).toBe(0);
         });
 
         it('Property change testing for footerTemplate as HTML element and string', () => {
-            let ele: HTMLElement = createElement('div', { id: 'dialogFooter' });
-            document.body.appendChild(ele);
             let footerTemplateContent: HTMLElement = createElement('div', {id: 'test'});
             footerTemplateContent.innerHTML = 'Footer Template content';
             document.body.appendChild(footerTemplateContent);
-            dialog = new Dialog({ header: "New Dialog",content: "New content updated successfully" }, '#dialogFooter');
-            let element: HTMLElement = document.getElementById('dialogFooter');
+            dialog = new Dialog({ header: "New Dialog",content: "New content updated successfully" }, '#dialog');
             dialog.footerTemplate = document.getElementById('test');
             dialog.dataBind();
-            expect(document.getElementById('dialogFooter').querySelectorAll('.e-footer-content').length).toBe(1);
+            expect(document.getElementById('dialog').querySelectorAll('.e-footer-content').length).toBe(1);
             dialog.footerTemplate = "Footer template content";
             dialog.dataBind();
-            expect(document.getElementById('dialogFooter').querySelectorAll('.e-footer-content').length).toBe(1);
-            dialog.destroy();
-            document.body.innerHTML = '';
+            expect(document.getElementById('dialog').querySelectorAll('.e-footer-content').length).toBe(1);
         });
 
         it('Property change testing for header as HTML element and string', () => {
-            let ele: HTMLElement = createElement('div', { id: 'dialogHeader' });
-            document.body.appendChild(ele);
             let headerTemplateContent: HTMLElement = createElement('div', {id: 'test'});
             headerTemplateContent.innerHTML = 'Header Template content';
             document.body.appendChild(headerTemplateContent);
-            dialog = new Dialog({ header: "New Dialog",content: "New content updated successfully" }, '#dialogHeader');
+            dialog = new Dialog({ header: "New Dialog",content: "New content updated successfully" }, '#dialog');
             dialog.header = document.getElementById('test');
             dialog.dataBind();
-            expect(document.getElementById('dialogHeader').querySelectorAll('.e-dlg-header-content').length).toBe(1);
+            expect(document.getElementById('dialog').querySelectorAll('.e-dlg-header-content').length).toBe(1);
             dialog.header = "Header template content";
             dialog.dataBind();
-            expect(document.getElementById('dialogHeader').querySelectorAll('.e-dlg-header-content').length).toBe(1);
-            dialog.destroy();
-            document.body.innerHTML = '';
+            expect(document.getElementById('dialog').querySelectorAll('.e-dlg-header-content').length).toBe(1);
         });
 
         it('notify property changes testing combination of showCloseIcon and cssClass property', () => {
-            let ele: HTMLElement = createElement('div', { id: 'dialogCtrl7' });
-            document.body.appendChild(ele);
-            dialog = new Dialog({ header: "Dialog", showCloseIcon: false }, '#dialogCtrl7');
-            let element: HTMLElement = document.getElementById('dialogCtrl7');
+            dialog = new Dialog({ header: "Dialog", showCloseIcon: false }, '#dialog');
             dialog.showCloseIcon = true;
             dialog.cssClass = "css-classname";
             dialog.dataBind();
-            expect(document.getElementById('dialogCtrl7').querySelectorAll(".e-dlg-header").length).toBe(1);
-            expect(document.getElementById('dialogCtrl7').classList.contains('css-classname')).toEqual(true);
-            dialog.destroy();
-            document.body.innerHTML = '';
+            expect(document.getElementById('dialog').querySelectorAll(".e-dlg-header").length).toBe(1);
+            expect(document.getElementById('dialog').classList.contains('css-classname')).toEqual(true);
         });
 
         it('notify property testing-showCloseIcon:true if header is not given,cssClass and dialog buttons Testing', () => {
-            let ele: HTMLElement = createElement('div', { id: 'dialogCtrl6' });
-            document.body.appendChild(ele);
-            dialog = new Dialog({ header: "Dialog", buttons: [{ buttonModel: { content: 'Confirm' } }, { buttonModel: { content: 'Cancel' } }], showCloseIcon: true, cssClass: "oldCssClass" }, '#dialogCtrl6');
-            let element: HTMLElement = document.getElementById('dialogCtrl6');
+            dialog = new Dialog({ header: "Dialog", buttons: [{ buttonModel: { content: 'Confirm' } }, { buttonModel: { content: 'Cancel' } }], showCloseIcon: true, cssClass: "oldCssClass" }, '#dialog');
             dialog.header = '';
             dialog.cssClass = 'newCssClass css-classname';
             dialog.buttons = [{ buttonModel: { content: "left" } }, { buttonModel: { content: "right" } }],
-                dialog.dataBind();
-            expect(document.getElementById('dialogCtrl6').querySelectorAll(".e-dlg-header").length).toBe(0);
-            expect(document.getElementById('dialogCtrl6').querySelectorAll('.e-footer-content .e-btn').length).toBe(2);
-            expect(document.getElementById('dialogCtrl6').classList.contains('newCssClass')).toEqual(true);
-            dialog.destroy();
-            document.body.innerHTML = '';
+            dialog.dataBind();
+            expect(document.getElementById('dialog').querySelectorAll(".e-dlg-header").length).toBe(0);
+            expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(2);
+            expect(document.getElementById('dialog').classList.contains('newCssClass')).toEqual(true);
         });
 
         it('header given as Template testing and content property given as string-notify property changes', () => {
-            let ele: HTMLElement = createElement('div', { id: 'dialogCtrl5' });
-            document.body.appendChild(ele);
             let headerTemplateContent = "<div>Template content</div>";
             let newheaderTemplateContent = "<div class='newhdrtemplate'>New Template content</div>";
-            dialog = new Dialog({ showCloseIcon: false, header: headerTemplateContent }, '#dialogCtrl5');
-            let element: HTMLElement = document.getElementById('dialogCtrl5');
+            dialog = new Dialog({ showCloseIcon: false, header: headerTemplateContent }, '#dialog');
             dialog.header = newheaderTemplateContent;
             dialog.content = "New content";
             dialog.dataBind();
-            expect(document.getElementById('dialogCtrl5').querySelectorAll(".e-dlg-content").length).toBe(1);
-            expect(document.getElementById('dialogCtrl5').querySelectorAll('.e-dlg-header .newhdrtemplate').length).toBe(1);
-            dialog.destroy();
-            document.body.innerHTML = '';
+            expect(document.getElementById('dialog').querySelectorAll(".e-dlg-content").length).toBe(1);
+            expect(document.getElementById('dialog').querySelectorAll('.e-dlg-header .newhdrtemplate').length).toBe(1);
         });
 
         it('Content notify property changes ', () => {
-            let ele: HTMLElement = createElement('div', { id: 'dialogCtrl4' });
-            document.body.appendChild(ele);
-            dialog = new Dialog({ header: "Dialog", content: "Dialog content", showCloseIcon: false }, '#dialogCtrl4');
-            let element: HTMLElement = document.getElementById('dialogCtrl4');
+            dialog = new Dialog({ header: "Dialog", content: "Dialog content", showCloseIcon: false }, '#dialog');
             dialog.content = "New content";
             dialog.dataBind();
-            expect(document.getElementById('dialogCtrl4').querySelectorAll(".e-dlg-content")[0].innerHTML).toEqual("New content");
-            dialog.destroy();
-            document.body.innerHTML = '';
+            expect(document.getElementById('dialog').querySelectorAll(".e-dlg-content")[0].innerHTML).toEqual("New content");
         });
 
         it('Content notify property initialization ', () => {
-            let ele: HTMLElement = createElement('div', { id: 'dialogCtrl3' });
-            document.body.appendChild(ele);
-            dialog = new Dialog({ header: "Dialog", showCloseIcon: false }, '#dialogCtrl3');
-            let element: HTMLElement = document.getElementById('dialogCtrl3');
+            dialog = new Dialog({ header: "Dialog", showCloseIcon: false }, '#dialog');
             dialog.content = "New content";
             dialog.dataBind();
-            expect(document.getElementById('dialogCtrl3').querySelectorAll(".e-dlg-content")[0].innerHTML).toEqual("New content");
-            dialog.destroy();
-            document.body.innerHTML = '';
+            expect(document.getElementById('dialog').querySelectorAll(".e-dlg-content")[0].innerHTML).toEqual("New content");
         });
 
         it('Content as null in notify property changes', () => {
-            let ele: HTMLElement = createElement('div', { id: 'dialog' });
-            document.body.appendChild(ele);
             dialog = new Dialog({ header: "Dialog", content: "Dialog content", showCloseIcon: false }, '#dialog');
-            let element: HTMLElement = document.getElementById('dialog');
             dialog.content = null;
             dialog.dataBind();
             expect(document.getElementById('dialog').querySelectorAll(".e-dlg-content").length).toBe(0);
-            dialog.destroy();
-            document.body.innerHTML = '';
         });
 
         it('Modal dialog:true notify property and aria attr testing', () => {
-            let ele: HTMLElement = createElement('div', { id: 'dialogCtrl2' });
-            document.body.appendChild(ele);
-            let clickFn: Function = jasmine.createSpy('click');
-            dialog = new Dialog({}, '#dialogCtrl2');
+            dialog = new Dialog({}, '#dialog');
             dialog.overlayClick = function () {
                 dialog.hide();
             }
@@ -1048,43 +1019,35 @@ describe('Dialog Control', () => {
             dialog.dataBind();
             dialog.zIndex = 3000;
             dialog.dataBind();
-            expect(document.getElementById('dialogCtrl2').classList.contains("e-dlg-modal")).toBe(true);
-            expect(document.getElementById('dialogCtrl2').getAttribute('aria-modal')).toEqual('true');
+            expect(document.getElementById('dialog').classList.contains("e-dlg-modal")).toBe(true);
+            expect(document.getElementById('dialog').getAttribute('aria-modal')).toEqual('true');
             expect((<any>document.getElementsByClassName('e-dlg-container')[0]).style.display).not.toEqual('none');
             expect(dialog.element.parentElement.style.zIndex).toEqual("3000");
         });
 
         it('Modal dialog:false notify property and aria attr testing', () => {
-            let ele: HTMLElement = createElement('div', { id: 'dialogCtrl1' });
-            document.body.appendChild(ele);
-            dialog = new Dialog({ showCloseIcon: true, animationSettings: { effect: 'None' }, isModal: true }, '#dialogCtrl1');
+            dialog = new Dialog({ showCloseIcon: true, animationSettings: { effect: 'None' }, isModal: true }, '#dialog');
             dialog.isModal = false;
             dialog.dataBind();
-            expect(document.getElementById("dialogCtrl1").classList.contains('e-popup-open')).toEqual(true);
+            expect(document.getElementById("dialog").classList.contains('e-popup-open')).toEqual(true);
             expect(document.getElementsByClassName('e-dlg-overlay').length).toEqual(0);
-            expect(document.getElementById('dialogCtrl1').getAttribute('aria-modal')).toEqual('false');
+            expect(document.getElementById('dialog').getAttribute('aria-modal')).toEqual('false');
         });
 
         it('Modal dialog:true body scroll disabled testing', () => {
-            let ele: HTMLElement = createElement('div', { id: 'dialog' });
-            document.body.appendChild(ele);
             dialog = new Dialog({ showCloseIcon: true, animationSettings: { effect: 'None' }, isModal: true }, '#dialog');
             dialog.dataBind();
             expect(document.body.classList.contains('e-scroll-disabled')).toBe(true);
         });
 
         it('Header notify property testing with Draggable', () => {
-            let ele: HTMLElement = createElement('div', { id: 'dialogCtrl' });
-            document.body.appendChild(ele);
-            dialog = new Dialog({ showCloseIcon: true, isModal: false, allowDragging: true }, '#dialogCtrl');
+            dialog = new Dialog({ showCloseIcon: true, isModal: false, allowDragging: true }, '#dialog');
             dialog.header = "Draggable Dialog";
             dialog.dataBind();
-            expect(document.getElementById('dialogCtrl').classList.contains("e-draggable")).toEqual(true);
+            expect(document.getElementById('dialog').classList.contains("e-draggable")).toEqual(true);
         });
 
         it('showCloseIcon notify property testing when header is given to empty', () => {
-            let ele: HTMLElement = createElement('div', { id: 'dialog' });
-            document.body.appendChild(ele);
             dialog = new Dialog({ showCloseIcon: true, isModal: false }, '#dialog');
             dialog.showCloseIcon = false;
             dialog.dataBind();
@@ -1092,19 +1055,18 @@ describe('Dialog Control', () => {
         });
 
         it('Modal dialog:false with target-notify  property testing', () => {
-            let ele: HTMLElement = createElement('div', { id: 'dialog' });
-            document.body.appendChild(ele);
             let target: HTMLElement = createElement('div', { id: 'block' });
             document.body.appendChild(target);
             dialog = new Dialog({ showCloseIcon: true, isModal: true, animationSettings: { effect: 'None' }, target: target }, '#dialog');
             dialog.isModal = false;
             dialog.dataBind();
-            expect(document.getElementById("block").children[0].classList.contains('e-dialog')).toEqual(true);;
+            expect(document.getElementById("block").children[0].classList.contains('e-dialog')).toEqual(true);
+            destroyDialog(dialog);
+            dialog = undefined;
+            detach(target);
         });
 
         it('Modal dialog:true and position with target-notify property testing', () => {
-            let ele: HTMLElement = createElement('div', { id: 'dialog' });
-            document.body.appendChild(ele);
             let target: HTMLElement = createElement('div', { id: 'block' });
             document.body.appendChild(target);
             dialog = new Dialog({ showCloseIcon: true, animationSettings: { effect: 'None' }, target: target }, '#dialog');
@@ -1115,12 +1077,13 @@ describe('Dialog Control', () => {
             expect(document.getElementById("block").children[0].classList.contains('e-dlg-container')).toEqual(true);;
             dialog.target = document.body;
             dialog.dataBind();
-            expect((dialog as any).popupObj.relateTo === document.body).toEqual(true);;
+            expect((dialog as any).popupObj.relateTo === document.body).toEqual(true);
+            destroyDialog(dialog);
+            dialog = undefined;
+            detach(target);
         });
 
         it('Modal dialog:false and position for enum type with target-notify property testing', () => {
-            let ele: HTMLElement = createElement('div', { id: 'dialogpos' });
-            document.body.appendChild(ele);
             let target: HTMLElement = createElement('div', { id: 'block' });
             document.body.appendChild(target);
             dialog = new Dialog({ showCloseIcon: true, animationSettings: { effect: 'None' }, target: target }, '#dialog');
@@ -1133,11 +1096,12 @@ describe('Dialog Control', () => {
             dialog.dataBind();
             expect(document.getElementById("dialog").style.left).toEqual("8px");
             expect(document.getElementById("dialog").style.top).toEqual("100px");
+            destroyDialog(dialog);
+            dialog = undefined;
+            detach(target);
         });
 
         it('Modal dialog:true and position for enum type with target-notify property testing', () => {
-            let ele: HTMLElement = createElement('div', { id: 'dialogpos' });
-            document.body.appendChild(ele);
             let target: HTMLElement = createElement('div', { id: 'block' });
             document.body.appendChild(target);
             dialog = new Dialog({ showCloseIcon: true, animationSettings: { effect: 'None' }, target: target }, '#dialog');
@@ -1150,79 +1114,82 @@ describe('Dialog Control', () => {
             dialog.dataBind();
             expect(document.getElementById("dialog").style.left).toEqual("100px");
             expect(document.getElementById("dialog").style.top).toEqual("8px");
+            destroyDialog(dialog);
+            dialog = undefined;
+            detach(target);
         });
 
         it('Modal dialog with target property- testing', () => {
-            let ele: HTMLElement = createElement('div', { id: 'dialog' });
-            document.body.appendChild(ele);
             let target: HTMLElement = createElement('div', { id: 'block' });
             document.body.appendChild(target);
             dialog = new Dialog({ showCloseIcon: true, animationSettings: { effect: 'None' }, isModal: true, target: target }, '#dialog');
             expect(document.getElementById("block").children[0].classList.contains('e-dlg-container')).toEqual(true);;
-        });
-
-        describe("getZindexPartial-", function () {
-            beforeEach(() => {
-                document.body.innerHTML = '';
-                let wrapper: HTMLElement = createElement('div', { id: 'wrapper' });
-                wrapper.style.zIndex = "10000";
-                wrapper.style.position = "absolute";
-                let ele: HTMLElement = createElement('div', { id: 'dialog' });
-                wrapper.appendChild(ele);
-                document.body.appendChild(wrapper);
-                dialog = new Dialog({ showCloseIcon: false }, '#dialog');
-                let element: HTMLElement = document.getElementById('dialog');
-                dialog.header = 'Dialog header';
-            });
-            it('getZindexPartial upto body element testing', () => {
-                expect(document.getElementById('dialog').style.zIndex).toEqual("10001");
-            });
-        });
-
-        describe('Drag related events testing', () => {
-            let dragEle: HTMLElement;
-            let mousemove: any;
-            let instance: any;
-            let mouseUp: any;
-            beforeEach(() => {
-                dragEle = createElement('div', { id: 'dialog' });
-                document.body.appendChild(dragEle);
-                dialog = new Dialog({
-                    allowDragging: true,
-                    header: "Draggable dialog",
-                    animationSettings: { effect: 'None' }
-                }, '#dialog');
-
-                mousemove = getEventObject('MouseEvents', 'mousemove');
-                mousemove = setMouseCoordinates(mousemove, 17, 14);
-                let mousedown: any = getEventObject('MouseEvents', 'mousedown');
-                mousedown = setMouseCoordinates(mousedown, 5, 5);
-                mousedown.target = mousedown.currentTarget = document.getElementsByClassName("e-dlg-header-content")[0];
-                EventHandler.trigger(document.getElementsByClassName("e-dlg-header-content")[0] as HTMLElement, 'mousedown', mousedown);
-                mousemove.srcElement = mousemove.target = mousemove.toElement = document.getElementsByClassName("e-dlg-header-content");
-                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-                mousemove = setMouseCoordinates(mousemove, 5, 5);
-                mouseUp = getEventObject('MouseEvents', 'mouseup');
-                mouseUp.srcElement = mouseUp.target = mouseUp.toElement = document.getElementsByClassName("e-dlg-header-content")[0];
-            });
-            it('drag,dragStart and dragEnd events testing', () => {
-                dialog = new Dialog({
-                    allowDragging: true,
-                    header: "Draggable dialog",
-                    animationSettings: { effect: 'None' }
-                }, '#dialog');
-                mousemove = setMouseCoordinates(mousemove, 5, 5);
-                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-                EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
-                expect((dialog.element as HTMLElement).style.left).toBe('8px');
-                expect((dialog.element as HTMLElement).style.top).toBe('8px');
-            });
-            afterEach(() => {
-                document.body.innerHTML = '';
-            });
+            destroyDialog(dialog);
+            dialog = undefined;
+            detach(target);
         });
     });
-})
+});
+
+describe("getZindexPartial-", function () {
+    let dialog: Dialog;
+    let wrapper: HTMLElement;
+    beforeEach(() => {
+        wrapper = createElement('div', { id: 'wrapper' });
+        wrapper.style.zIndex = "10000";
+        wrapper.style.position = "absolute";
+        let ele: HTMLElement = createElement('div', { id: 'dialog' });
+        wrapper.appendChild(ele);
+        document.body.appendChild(wrapper);
+        dialog = new Dialog({ showCloseIcon: false }, '#dialog');
+        dialog.header = 'Dialog header';
+    });
+    it('getZindexPartial upto body element testing', () => {
+        expect(document.getElementById('dialog').style.zIndex).toEqual("10001");
+    });
+    afterEach(() => {
+        destroyDialog(dialog);
+        detach(wrapper);
+    });
+});
+
+describe('Drag related events testing', () => {
+    let dragEle: HTMLElement;
+    let dialog: Dialog;
+    let mousemove: any;
+    let mouseUp: any;
+    beforeEach(() => {
+        dragEle = createElement('div', { id: 'dialog' });
+        document.body.appendChild(dragEle);
+        dialog = new Dialog({
+            allowDragging: true,
+            header: "Draggable dialog",
+            animationSettings: { effect: 'None' }
+        }, '#dialog');
+
+        mousemove = getEventObject('MouseEvents', 'mousemove');
+        mousemove = setMouseCoordinates(mousemove, 17, 14);
+        let mousedown: any = getEventObject('MouseEvents', 'mousedown');
+        mousedown = setMouseCoordinates(mousedown, 5, 5);
+        mousedown.target = mousedown.currentTarget = document.getElementsByClassName("e-dlg-header-content")[0];
+        EventHandler.trigger(document.getElementsByClassName("e-dlg-header-content")[0] as HTMLElement, 'mousedown', mousedown);
+        mousemove.srcElement = mousemove.target = mousemove.toElement = document.getElementsByClassName("e-dlg-header-content");
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        mousemove = setMouseCoordinates(mousemove, 5, 5);
+        mouseUp = getEventObject('MouseEvents', 'mouseup');
+        mouseUp.srcElement = mouseUp.target = mouseUp.toElement = document.getElementsByClassName("e-dlg-header-content")[0];
+    });
+    it('drag,dragStart and dragEnd events testing', () => {
+        mousemove = setMouseCoordinates(mousemove, 5, 5);
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+        expect((dialog.element as HTMLElement).style.left).toBe('8px');
+        expect((dialog.element as HTMLElement).style.top).toBe('8px');
+    });
+    afterEach(() => {
+        destroyDialog(dialog);
+    });
+});
 
 describe('Position property testing using string type', () => {
     let dialog: Dialog;
@@ -1232,10 +1199,7 @@ describe('Position property testing using string type', () => {
         document.body.appendChild(ele);
     });
     afterEach((): void => {
-        if (dialog) {
-            dialog.destroy();
-        }
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
     });
     it('Initial and dynamic change on position property using custom values', () => {
         dialog = new Dialog({ header: "Dialog", position: { X: "100", Y: "200" } }, '#dialog');
@@ -1283,7 +1247,7 @@ describe('Position property testing using string type', () => {
         dialog.dataBind();
         expect(document.getElementById("dialog").parentElement.classList.contains('e-dlg-center-top')).toEqual(true);
     });
-})
+});
 
 describe('Dialog max-height testing', () => {
     let dialog: Dialog;
@@ -1293,14 +1257,11 @@ describe('Dialog max-height testing', () => {
         document.body.appendChild(ele);
     });
     afterEach((): void => {
-        if (dialog) {
-            dialog.destroy();
-        }
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
     });
     it('If the Max-height is empty', () => {
         let dlgcontent: HTMLElement = createElement("div");
-        let dialog = new Dialog({
+        dialog = new Dialog({
             content: dlgcontent,
             beforeOpen: onBeforeOpen
         }, '#dialog');
@@ -1312,7 +1273,7 @@ describe('Dialog max-height testing', () => {
     });
     it('If the Max-height is set', () => {
         let dlgcontent: HTMLElement = createElement("div");
-        let dialog = new Dialog({
+        dialog = new Dialog({
             content: dlgcontent,
             beforeOpen: onBeforeOpen
         }, '#dialog');
@@ -1324,7 +1285,7 @@ describe('Dialog max-height testing', () => {
     });
     it('If the Max-height is empty in modal dialog', () => {
         let dlgcontent: HTMLElement = createElement("div");
-        let dialog = new Dialog({
+        dialog = new Dialog({
             content: dlgcontent, isModal: true,
             beforeOpen: onBeforeOpen
         }, '#dialog');
@@ -1336,7 +1297,7 @@ describe('Dialog max-height testing', () => {
     });
     it('If the Max-height is set in modal dialog', () => {
         let dlgcontent: HTMLElement = createElement("div");
-        let dialog = new Dialog({
+        dialog = new Dialog({
             content: dlgcontent, isModal: true,
             beforeOpen: onBeforeOpen
         }, '#dialog');
@@ -1356,14 +1317,11 @@ describe('Dialog focus testing', () => {
         document.body.appendChild(ele);
     });
     afterEach((): void => {
-        if (dialog) {
-            dialog.destroy();
-        }
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
     });
     it('If the Dialog is normal dialog with buttons', () => {
         let dlgcontent: HTMLElement = createElement("div");
-        let dialog = new Dialog({
+        dialog = new Dialog({
             content: dlgcontent,
             open: onOpen, 
             buttons: [{
@@ -1379,7 +1337,7 @@ describe('Dialog focus testing', () => {
     });
     it('If the Dialog is modal dialog with buttons', () => {
         let dlgcontent: HTMLElement = createElement("div");
-        let dialog = new Dialog({
+        dialog = new Dialog({
             content: dlgcontent, isModal: true,
             open: onOpen,
             buttons: [{
@@ -1395,7 +1353,7 @@ describe('Dialog focus testing', () => {
     });
     it('If the Dialog is modal dialog', () => {
         let dlgcontent: HTMLElement = createElement("div");
-        let dialog = new Dialog({
+        dialog = new Dialog({
             content: dlgcontent,
             open: onOpen, showCloseIcon: true
         }, '#dialog');
@@ -1407,7 +1365,7 @@ describe('Dialog focus testing', () => {
     });
     it('If the Dialog is modal dialog', () => {
         let dlgcontent: HTMLElement = createElement("div");
-        let dialog = new Dialog({
+        dialog = new Dialog({
             content: dlgcontent, isModal: true,
             open: onOpen, showCloseIcon: true
         }, '#dialog');
@@ -1416,7 +1374,7 @@ describe('Dialog focus testing', () => {
         }
         dialog.show();
         expect(document.activeElement).toEqual(document.body);
-    });            
+    });
 });
 
 describe('Dialog min height testing', () => {
@@ -1427,14 +1385,11 @@ describe('Dialog min height testing', () => {
         document.body.appendChild(ele);
     });
     afterEach((): void => {
-        if (dialog) {
-            dialog.destroy();
-        }
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
     });
     it('Min - height testing', () => {
         let dlgcontent: HTMLElement = createElement("div");
-        let dialog = new Dialog({
+        dialog = new Dialog({
             content: dlgcontent,
             minHeight: '200px',
             buttons: [{
@@ -1444,7 +1399,7 @@ describe('Dialog min height testing', () => {
         }, '#dialog');
         dialog.show();
         expect(document.getElementById("dialog").style.minHeight === '200px').toBe(true);
-    });          
+    });
 });
 
 describe('Isprimary Button Action while focus on form element', () => {
@@ -1503,16 +1458,12 @@ describe('Isprimary Button Action while focus on form element', () => {
             });
         });
         afterAll((): void => {
-            if (events) {
-                events.destroy();
-            }
-            document.body.innerHTML = '';
+            destroyDialog(events);
         });
     });
 
     describe('Set the primary Button to second button element', () => {
         let events: any;
-        let eventArgs: any;
         beforeAll(() => {
             let ele: HTMLElement = createElement('div', { id: 'dialog' });
             document.body.appendChild(ele);
@@ -1536,17 +1487,13 @@ describe('Isprimary Button Action while focus on form element', () => {
         });
 
         afterAll((): void => {
-            if (events) {
-                events.destroy();
-            }
-            document.body.innerHTML = '';
+            destroyDialog(events);
         });
     });
 
     describe('Ensure the focus element after tab key press', () => {
         let events: any;
         let eventArgs: any;
-        let document1: any;
         beforeAll(() => {
             let ele: HTMLElement = createElement('div', { id: 'dialog' });
             document.body.appendChild(ele);
@@ -1577,10 +1524,7 @@ describe('Isprimary Button Action while focus on form element', () => {
         });
 
         afterAll((): void => {
-            if (events) {
-                events.destroy();
-            }
-            document.body.innerHTML = '';
+            destroyDialog(events);
         });
 
         /**
@@ -1595,7 +1539,6 @@ describe('Isprimary Button Action while focus on form element', () => {
             });
         });
     });
-
 
     describe('Autofocus attribute to focus an element', () => {
         let events: any;
@@ -1685,13 +1628,10 @@ describe('Isprimary Button Action while focus on form element', () => {
             });
         });
         afterAll((): void => {
-            if (events) {
-                events.destroy();
-            }
-            document.body.innerHTML = '';
+            destroyDialog(events);
         });
     });
-    
+
     describe('focus action', () => {
         let events: any;
         let eventArgs: any;
@@ -1788,16 +1728,12 @@ describe('Isprimary Button Action while focus on form element', () => {
         });
 
         afterAll((): void => {
-            if (events) {
-                events.destroy();
-            }
-            document.body.innerHTML = '';
+            destroyDialog(events);
         });
     });
 
     describe('focus action innerHTML', () => {
         let events: any;
-        let eventArgs: any;
         beforeAll(() => {
             let ele: HTMLElement = createElement('div', { id: 'dialog', innerHTML: '<input type="text" class="text"/>' });
             document.body.appendChild(ele);
@@ -1818,18 +1754,13 @@ describe('Isprimary Button Action while focus on form element', () => {
         });
 
         afterAll((): void => {
-            if (events) {
-                events.destroy();
-            }
-            document.body.innerHTML = '';
+            destroyDialog(events);
         });
     });
 
     describe('focus action in modal dialog overlayclick', () => {
         let events: any;
-        let eventArgs: any;
         beforeAll(() => {
-            let clickFn: Function = jasmine.createSpy('click');
             let ele: HTMLElement = createElement('div', { id: 'dialog', innerHTML: 'This is a dialog content' });
             document.body.appendChild(ele);
             events = new Dialog({
@@ -1842,7 +1773,7 @@ describe('Isprimary Button Action while focus on form element', () => {
                 }],
                 isModal: true
             });
-            events.appendTo(ele);                        
+            events.appendTo(ele);
         });
 
         it('Focus the primary button if overlayclicked', () => {
@@ -1852,39 +1783,30 @@ describe('Isprimary Button Action while focus on form element', () => {
         });
 
         afterAll((): void => {
-            if (events) {
-                events.destroy();
-            }
-            document.body.innerHTML = '';
+            destroyDialog(events);
         });
     });
 });
 
-
 describe('visible:false Property ', () => {
-    let ele: HTMLElement;
-    beforeAll((done: Function) => {
-        ele = createElement('div', { id: 'dialogctrl' });
-        document.body.appendChild(ele);
-        let footerTemplateContent = "<div>Footer Template content</div>";
-        let dialog: Dialog = new Dialog({ header: "Dialog", animationSettings: { effect: 'None' }, visible: false, content: "Dialog content", footerTemplate: footerTemplateContent, showCloseIcon: true }, '#dialog');
-        let element: HTMLElement = document.getElementById('dialogctrl');
-        setTimeout(() => { done(); }, 500);
+    let dialog: Dialog;
+    beforeEach(() => {
+        dialog = undefined;
     });
-    afterAll(() => {
-        document.body.innerHTML = '';
+    afterEach(() => {
+        destroyDialog(dialog);
     });
     it('visible property:false testing', () => {
         let ele: HTMLElement = createElement('div', { id: 'dialogctrl15' });
         document.body.appendChild(ele);
-        let dialog: Dialog = new Dialog({ visible: false }, '#dialogctrl15');
+        dialog = new Dialog({ visible: false }, '#dialogctrl15');
         expect(document.getElementById("dialogctrl15").classList.contains('e-popup-close')).toEqual(true);
         expect(dialog.visible).toEqual(false);
     });
     it('visible property:false on dynamic change testing', () => {
         let ele: HTMLElement = createElement('div', { id: 'dialogctrl25' });
         document.body.appendChild(ele);
-        let dialog: Dialog = new Dialog({ visible: true }, '#dialogctrl25');
+        dialog = new Dialog({ visible: true }, '#dialogctrl25');
         expect(dialog.visible).toEqual(true);
         dialog.visible = false;
         dialog.dataBind();
@@ -1894,7 +1816,7 @@ describe('visible:false Property ', () => {
     it('visible property:false with modal enabled testing', () => {
         let ele: HTMLElement = createElement('div', { id: 'dialogctrl14' });
         document.body.appendChild(ele);
-        let dialog: Dialog = new Dialog({ visible: false, isModal: true }, '#dialogctrl14');
+        dialog = new Dialog({ visible: false, isModal: true }, '#dialogctrl14');
         expect((document.getElementsByClassName("e-dlg-overlay")[0] as HTMLElement).style.display).toEqual('none');
         expect(document.getElementById("dialogctrl14").classList.contains('e-popup-close')).toEqual(true);
         expect(dialog.visible).toEqual(false);
@@ -1906,7 +1828,7 @@ describe('visible:false Property ', () => {
     it('visible property:false with modal enabled testing', () => {
         let ele: HTMLElement = createElement('div', { id: 'dialogctrl31' });
         document.body.appendChild(ele);
-        let dialog: Dialog = new Dialog({ visible: false, target: document.body, isModal: true  }, '#dialogctrl31');
+        dialog = new Dialog({ visible: false, target: document.body, isModal: true  }, '#dialogctrl31');
         dialog.isModal = false;
         dialog.dataBind();
         expect(document.getElementById("dialogctrl31").classList.contains('e-popup-close')).toEqual(true);
@@ -1916,42 +1838,35 @@ describe('visible:false Property ', () => {
 });
 
 describe('visible:false:notify Property ', () => {
-    let ele: HTMLElement;
-    beforeAll((done: Function) => {
-        ele = createElement('div', { id: 'dialogctrl' });
-        document.body.appendChild(ele);
-        let footerTemplateContent = "<div>Footer Template content</div>";
-        let dialog: Dialog = new Dialog({ header: "Dialog", animationSettings: { effect: 'None' }, content: "Dialog content", footerTemplate: footerTemplateContent, showCloseIcon: true }, '#dialog');
-        let element: HTMLElement = document.getElementById('dialogctrl');
-        dialog.visible = false;
-        dialog.dataBind();
-        setTimeout(() => { done(); }, 500);
+    let dialog: Dialog;
+    beforeAll(() => {
+        dialog = undefined;
     });
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
     });
     it('visible notify property testing', () => {
         let ele: HTMLElement = createElement('div', { id: 'dialog' });
         document.body.appendChild(ele);
-        let dialog: Dialog = new Dialog({ visible: false }, '#dialog');
+        dialog = new Dialog({ visible: false }, '#dialog');
         expect(document.getElementById("dialog").classList.contains('e-popup-close')).toEqual(true);
     });
 });
 
 describe('visible:true:notify Property ', () => {
     let ele: HTMLElement;
+    let dialog: Dialog;
     beforeAll((done: Function) => {
         ele = createElement('div', { id: 'dialogctrl' });
         document.body.appendChild(ele);
         let footerTemplateContent = "<div>Footer Template content</div>";
-        let dialog: Dialog = new Dialog({ header: "Dialog", visible: false, animationSettings: { effect: 'None' }, content: "Dialog content", footerTemplate: footerTemplateContent, showCloseIcon: true }, '#dialogctrl');
-        let element: HTMLElement = document.getElementById('dialogctrl');
+        dialog = new Dialog({ header: "Dialog", visible: false, animationSettings: { effect: 'None' }, content: "Dialog content", footerTemplate: footerTemplateContent, showCloseIcon: true }, '#dialogctrl');
         dialog.visible = true;
         dialog.dataBind();
         setTimeout(() => { done(); }, 500);
     });
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
     });
     it('visible:true notify property testing', () => {
         expect(document.getElementById("dialogctrl").classList.contains('e-popup-open')).toEqual(true);
@@ -1960,33 +1875,32 @@ describe('visible:true:notify Property ', () => {
 
 describe('Close icon ', () => {
     let ele: HTMLElement;
+    let dialog: Dialog;
     beforeAll((done: Function) => {
         ele = createElement('div', { id: 'dialog' });
         document.body.appendChild(ele);
         let footerTemplateContent = "<div>Footer Template content</div>";
-        let clickFn: Function = jasmine.createSpy('click');
-        let dialog: Dialog = new Dialog({ header: "Dialog", animationSettings: { effect: 'None' }, content: "Dialog content", footerTemplate: footerTemplateContent, showCloseIcon: true }, '#dialog');
+        dialog = new Dialog({ header: "Dialog", animationSettings: { effect: 'None' }, content: "Dialog content", footerTemplate: footerTemplateContent, showCloseIcon: true }, '#dialog');
         dialog.dataBind();
         let ele1: HTMLElement = (<HTMLScriptElement[]><any>document.getElementsByClassName('e-icon-dlg-close'))[0];
         ele1.click();
         setTimeout(() => { done(); }, 500);
     });
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
     });
     it('click event testing', () => {
         expect(document.getElementById("dialog").classList.contains('e-popup-close')).toEqual(true);
     });
 });
 
-
 describe('Modal Dialog Testing ', () => {
     let ele: HTMLElement;
+    let dialog: Dialog;
     beforeAll((done: Function) => {
         ele = createElement('div', { id: 'dialog' });
         document.body.appendChild(ele);
-        let clickFn: Function = jasmine.createSpy('click');
-        let dialog: Dialog = new Dialog({ animationSettings: { effect: 'None' }, showCloseIcon: true, isModal: true }, '#dialog');
+        dialog = new Dialog({ animationSettings: { effect: 'None' }, showCloseIcon: true, isModal: true }, '#dialog');
         dialog.overlayClick = function () {
             dialog.hide();
         }
@@ -1996,23 +1910,21 @@ describe('Modal Dialog Testing ', () => {
         setTimeout(() => { done(); }, 500);
     });
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
     });
     it('Overlay click event testing', () => {
         expect(document.getElementById("dialog").classList.contains('e-popup-close')).toEqual(true);
     });
 });
 
-
 describe('Dialog Modal', () => {
     let ele: HTMLElement;
+    let dialog: Dialog;
     beforeAll((done: Function) => {
         ele = createElement('div', { id: 'dialog' });
         document.body.appendChild(ele);
-        let clickFn: Function = jasmine.createSpy('click');
-        function buttonClick() {
-        }
-        let dialog: Dialog = new Dialog({ animationSettings: { effect: 'None' }, buttons: [{ buttonModel: { content: "Confirm" }, click: buttonClick }, { buttonModel: { content: "close" } }], showCloseIcon: true, isModal: true }, '#dialog');
+        function buttonClick() { }
+        dialog = new Dialog({ animationSettings: { effect: 'None' }, buttons: [{ buttonModel: { content: "Confirm" }, click: buttonClick }, { buttonModel: { content: "close" } }], showCloseIcon: true, isModal: true }, '#dialog');
         dialog.dataBind();
         let ele1: HTMLElement = (<HTMLScriptElement[]><any>document.getElementsByClassName('e-btn'))[0];
         ele1.click();
@@ -2020,7 +1932,7 @@ describe('Dialog Modal', () => {
         setTimeout(() => { done(); }, 500);
     });
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
     });
     it('Left Button click event testing', () => {
         expect(document.getElementById("dialog").classList.contains('e-popup-close')).toEqual(true);
@@ -2029,7 +1941,8 @@ describe('Dialog Modal', () => {
 
 describe('Dialog', () => {
     let ele: HTMLElement;
-    beforeAll((done: Function) => {
+    let dialog: Dialog;
+    beforeEach((done: Function) => {
         ele = createElement('div', { id: 'dialog' });
         document.body.appendChild(ele);
         L10n.load({
@@ -2041,11 +1954,11 @@ describe('Dialog', () => {
         });
         setTimeout(() => { done(); }, 500);
     });
-    afterAll(() => {
-        document.body.innerHTML = '';
+    afterEach(() => {
+        destroyDialog(dialog);
     });
     it("locale property testing", () => {
-        let dialog: Dialog = new Dialog({ header: "Dialog", locale: 'en-US', showCloseIcon: true, animationSettings: { effect: 'None' }, content: "Your information is updated successfully" }, '#dialog');
+        dialog = new Dialog({ header: "Dialog", locale: 'en-US', showCloseIcon: true, animationSettings: { effect: 'None' }, content: "Your information is updated successfully" }, '#dialog');
         dialog.locale = 'de-DE';
         dialog.dataBind();
         expect(document.getElementsByClassName('e-dlg-closeicon-btn')[0].getAttribute('title')).toEqual("schlieen");
@@ -2055,22 +1968,21 @@ describe('Dialog', () => {
         let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
             'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
         Browser.userAgent = androidUserAgent;
-        let dialog = new Dialog({ content: "Your information is updated successfully" }, '#dialog');
+        dialog = new Dialog({ content: "Your information is updated successfully" }, '#dialog');
         expect(document.getElementById('dialog').classList.contains('e-device')).toBe(true);
     });
-
-
 });
 
 describe('Dialog Modal', () => {
     let ele: HTMLElement;
+    let dialog: Dialog;
+    let target: HTMLElement;
     beforeAll((done: Function) => {
         ele = createElement('div', { id: 'dialog' });
         document.body.appendChild(ele);
-        let target: HTMLElement = createElement('div', { id: 'block' });
+        target = createElement('div', { id: 'block' });
         document.body.appendChild(target);
-        let clickFn: Function = jasmine.createSpy('click');
-        let dialog: Dialog = new Dialog({ animationSettings: { effect: 'None' }, target: target, showCloseIcon: true, isModal: true }, '#dialog');
+        dialog = new Dialog({ animationSettings: { effect: 'None' }, target: target, showCloseIcon: true, isModal: true }, '#dialog');
         dialog.overlayClick = function () {
             dialog.hide();
         }
@@ -2080,7 +1992,8 @@ describe('Dialog Modal', () => {
         setTimeout(() => { done(); }, 500);
     });
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
+        detach(target);
     });
     it('with target testing', () => {
         expect(document.getElementById("dialog").classList.contains('e-popup-close')).toEqual(true);
@@ -2089,16 +2002,16 @@ describe('Dialog Modal', () => {
 
 describe('Dialog', () => {
     let ele: HTMLElement;
+    let dialog: Dialog;
     beforeAll((done: Function) => {
         ele = createElement('div', { id: 'dialog' });
         document.body.appendChild(ele);
-        let clickFn: Function = jasmine.createSpy('click');
-        let dialog: Dialog = new Dialog({ showCloseIcon: true, content: 'Dialog content', position: { X: 'center', Y: 'center' } }, '#dialog');
+        dialog = new Dialog({ showCloseIcon: true, content: 'Dialog content', position: { X: 'center', Y: 'center' } }, '#dialog');
         dialog.dataBind();
         setTimeout(() => { done(); }, 10);
     });
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
     });
     it('with Position testing', () => {
         expect(document.getElementById("dialog").style.left).toEqual("8px");
@@ -2111,15 +2024,14 @@ describe('Dynamically change', () => {
     beforeAll((done: Function) => {
         ele = createElement('div', { id: 'dialog' });
         document.body.appendChild(ele);
-        let clickFn: Function = jasmine.createSpy('click');
         dialog = new Dialog({ showCloseIcon: true, content: 'Dialog content' }, '#dialog');
         dialog.dataBind();
         setTimeout(() => { done(); }, 10);
     });
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
     });
-   
+
     it('dialog content', () => {
         dialog.content = '';
         dialog.dataBind();
@@ -2154,15 +2066,14 @@ describe('Position for modal dialog', () => {
     beforeAll((done: Function) => {
         ele = createElement('div', { id: 'dialog' });
         document.body.appendChild(ele);
-        let clickFn: Function = jasmine.createSpy('click');
         dialog = new Dialog({ showCloseIcon: true, content: 'Dialog content',  position: { X: 200, Y: 300 }, isModal: true }, '#dialog');
         dialog.dataBind();
         setTimeout(() => { done(); }, 10);
     });
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
     });
-   
+
     it('On Initial rendering', () => {
         expect(document.getElementById("dialog").style.top).toEqual("300px");
         expect(document.getElementById("dialog").style.left).toEqual("200px");
@@ -2182,7 +2093,6 @@ describe('Cancel', () => {
     beforeAll((done: Function) => {
         ele = createElement('div', { id: 'dialog' });
         document.body.appendChild(ele);
-        let clickFn: Function = jasmine.createSpy('click');
         function cancelEvents(args: any) {
             args.cancel = true;
         }
@@ -2191,9 +2101,9 @@ describe('Cancel', () => {
         setTimeout(() => { done(); }, 10);
     });
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
     });
-   
+
     it('On before Open event', () => {
         dialog.show();
         expect(document.getElementById('dialog').classList.contains('e-popup-open')).toBe(false)
@@ -2205,14 +2115,12 @@ describe('Cancel', () => {
     });
 });
 
-
 describe('Hide() method', () => {
     let ele: HTMLElement;
     let dialog: Dialog;
     beforeAll((done: Function) => {
         ele = createElement('div', { id: 'dialog' });
         document.body.appendChild(ele);
-        let clickFn: Function = jasmine.createSpy('click');
         function closeEvents(args: any) {
             expect((document.getElementsByClassName("e-dlg-overlay")[0] as HTMLElement).style.display).toEqual('block');
             expect((document.getElementsByClassName("e-dlg-container")[0] as HTMLElement).style.display).toEqual('none');
@@ -2223,84 +2131,80 @@ describe('Hide() method', () => {
         setTimeout(() => { done(); }, 10);
     });
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
     });
 });
 
 describe("Dialog with animation", function () {
-    let value: number;
-
+    let dialog: Dialog;
     beforeEach(function (done) {
-        setTimeout(function () {
-            let footerTemplateContent = "<div>Footer Template content</div>";
-            let ele: HTMLElement = createElement('div', { id: 'dialog' });
-            document.body.appendChild(ele);
-            let dialog: Dialog = new Dialog({ header: "Dialog", animationSettings: { effect: 'Fade', delay: 0, duration: 0 }, content: "Dialog content", footerTemplate: footerTemplateContent, showCloseIcon: true }, '#dialog');
-            dialog.hide();
-            value = 0;
-            done();
-        }, 1);
+        let footerTemplateContent = "<div>Footer Template content</div>";
+        let ele: HTMLElement = createElement('div', { id: 'dialog' });
+        document.body.appendChild(ele);
+        dialog = new Dialog({ header: "Dialog", animationSettings: { effect: 'Fade', delay: 0, duration: 0 }, content: "Dialog content", footerTemplate: footerTemplateContent, showCloseIcon: true }, '#dialog');
+        dialog.hide();
+        done();
     });
-    describe("", function () {
-        let originalTimeout: number;
-        beforeEach(function () {
-            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 200;
-        });
-
-        it("Fade-In and Out animation", function (done) {
-            expect(document.getElementById("dialog").classList.contains('e-popup-close')).toEqual(true);
-            setTimeout(function () {
-                done();
-            }, 100);
-        });
-
-        it(' Dialog control notify property testig-All properties combination', (done) => {
-            let ele1: HTMLElement = createElement('div', { id: 'dialog1' });
-            document.body.appendChild(ele1);
-            let footerTemplateContent1 = "<div>Footer Template content</div>";
-            let newfooterTemplateContent1 = "<div class='newftrtemplate'>Footer Template content</div>";
-            let dialog1 = new Dialog({ header: "Dialog", animationSettings: { effect: 'None' }, content: "Dialog content", footerTemplate: footerTemplateContent1, showCloseIcon: true }, '#dialog1');
-            let element: HTMLElement = document.getElementById('dialog');
-            dialog1.header = 'New Dialog';
-            dialog1.footerTemplate = newfooterTemplateContent1;
-            dialog1.showCloseIcon = false;
-            dialog1.height = "400px";
-            dialog1.width = "300px";
-            dialog1.zIndex = 2000;
-            dialog1.enableRtl = true;
-            dialog1.animationSettings = { duration: 2000 };
-            dialog1.position = { X: "center", Y: "center" };
-            let dlgcontent1: HTMLElement = createElement("div");
-            dlgcontent1.className = "samplecontent";
-            dialog1.content = dlgcontent1;
-            dialog1.dataBind();
-            setTimeout(() => {
-                expect(document.getElementById('dialog1').style.height).toEqual("400px");
-                expect(document.getElementById('dialog1').style.width).toEqual("300px");
-                done();
-            });
-            expect(document.getElementById('dialog1').classList.contains("e-rtl")).toEqual(true);
-            expect(document.getElementById('dialog1').querySelectorAll(".e-dlg-header").length).toBe(1);
-            expect(document.getElementById('dialog1').querySelectorAll('.e-footer-content .newftrtemplate').length).toBe(1);
-            expect(document.getElementById('dialog1').querySelectorAll('.e-icon-dlg-close').length).toBe(0);
-            dialog1.showCloseIcon = true;
-            dialog1.dataBind();
-            expect(document.getElementById('dialog1').querySelectorAll('.e-icon-dlg-close').length).toBe(1);
-        });
-
-        afterEach(function () {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
-            document.body.innerHTML = '';
-        });
+    afterAll((): void => {
+        destroyDialog(dialog);
+    });
+    it("Fade-In and Out animation", function () {
+        expect(document.getElementById("dialog").classList.contains('e-popup-close')).toEqual(true);
     });
 });
 
+describe("notify property testig-All properties combination", function () {
+    let originalTimeout: number;
+    let dialog1: Dialog;
+    beforeEach(function () {
+        originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 200;
+    });
+
+    it(' Dialog control notify property testig-All properties combination', (done) => {
+        let ele1: HTMLElement = createElement('div', { id: 'dialog1' });
+        document.body.appendChild(ele1);
+        let footerTemplateContent1 = "<div>Footer Template content</div>";
+        let newfooterTemplateContent1 = "<div class='newftrtemplate'>Footer Template content</div>";
+        dialog1 = new Dialog({ header: "Dialog", animationSettings: { effect: 'None' }, content: "Dialog content", footerTemplate: footerTemplateContent1, showCloseIcon: true }, '#dialog1');
+        dialog1.header = 'New Dialog';
+        dialog1.footerTemplate = newfooterTemplateContent1;
+        dialog1.showCloseIcon = false;
+        dialog1.height = "400px";
+        dialog1.width = "300px";
+        dialog1.zIndex = 2000;
+        dialog1.enableRtl = true;
+        dialog1.animationSettings = { duration: 2000 };
+        dialog1.position = { X: "center", Y: "center" };
+        let dlgcontent1: HTMLElement = createElement("div");
+        dlgcontent1.className = "samplecontent";
+        dialog1.content = dlgcontent1;
+        dialog1.dataBind();
+        setTimeout(() => {
+            expect(document.getElementById('dialog1').style.height).toEqual("400px");
+            expect(document.getElementById('dialog1').style.width).toEqual("300px");
+            done();
+        });
+        expect(document.getElementById('dialog1').classList.contains("e-rtl")).toEqual(true);
+        expect(document.getElementById('dialog1').querySelectorAll(".e-dlg-header").length).toBe(1);
+        expect(document.getElementById('dialog1').querySelectorAll('.e-footer-content .newftrtemplate').length).toBe(1);
+        expect(document.getElementById('dialog1').querySelectorAll('.e-icon-dlg-close').length).toBe(0);
+        dialog1.showCloseIcon = true;
+        dialog1.dataBind();
+        expect(document.getElementById('dialog1').querySelectorAll('.e-icon-dlg-close').length).toBe(1);
+    });
+
+    afterEach(function () {
+        destroyDialog(dialog1);
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+    });
+});
 
 describe('Maximum Zindex value testing for modal dialog', () => {
     let dialog: any;
+    let mazIndexElement: any;
     beforeAll(() => {
-        let mazIndexElement = createElement('div', { id: 'dialog' });
+        mazIndexElement = createElement('div', { id: 'dialog' });
         document.body.appendChild(mazIndexElement);
         mazIndexElement.style.zIndex = '2147483647';
         mazIndexElement.style.position = 'relative';
@@ -2311,7 +2215,8 @@ describe('Maximum Zindex value testing for modal dialog', () => {
     });
 
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
+        detach(mazIndexElement);
     });
     it('dialog Zindex', () => {
         expect(dialog.zIndex).toEqual(2147483647);
@@ -2320,12 +2225,11 @@ describe('Maximum Zindex value testing for modal dialog', () => {
     });
 });
 
-
 describe('Maximum Zindex value testing for non modal dialog', () => {
     let dialog: any;
-    
+    let mazIndexElement: any;
     beforeAll(() => {
-        let mazIndexElement = createElement('div', { id: 'dialog' });
+        mazIndexElement = createElement('div', { id: 'dialog' });
         document.body.appendChild(mazIndexElement);
         mazIndexElement.style.zIndex = '2147483647';
         mazIndexElement.style.position = 'relative';
@@ -2336,7 +2240,8 @@ describe('Maximum Zindex value testing for non modal dialog', () => {
     });
 
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
+        detach(mazIndexElement);
     });
     it('dialog Zindex', () => {
         expect(dialog.zIndex).toEqual(2147483647);
@@ -2346,7 +2251,6 @@ describe('Maximum Zindex value testing for non modal dialog', () => {
 
 describe('Testing resizing option with target body', () => {
     let dialog: any;
-    
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'dialog1' });
         document.body.appendChild(ele);
@@ -2355,7 +2259,7 @@ describe('Testing resizing option with target body', () => {
     });
 
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
     });
     it('Checking handlers', () => {
         expect(!isNullOrUndefined(document.querySelector('.e-south-east'))).toBe(true);
@@ -2372,14 +2276,13 @@ describe('Testing resizing option with target body', () => {
     });
 });
 
-
 describe('Testing resizing option with selected target', () => {
     let dialog: any;
-    
+    let resizeTarget: any;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'dialog1' });
         document.body.appendChild(ele);
-        let resizeTarget = createElement('div', { id: 'resizeTarget' });
+        resizeTarget = createElement('div', { id: 'resizeTarget' });
         document.body.appendChild(resizeTarget);
         resizeTarget.style.width = '500px';
         resizeTarget.style.height = '500px';
@@ -2389,7 +2292,8 @@ describe('Testing resizing option with selected target', () => {
     });
 
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
+        detach(resizeTarget);
     });
     it('Checking handlers', () => {
         expect(!isNullOrUndefined(document.querySelector('.e-south-east'))).toBe(true);
@@ -2414,7 +2318,6 @@ describe('Testing resizing option with selected target', () => {
 
 describe('Testing resizing option without animation effects', () => {
     let dialog: any;
-    
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'dialog1' });
         document.body.appendChild(ele);
@@ -2430,20 +2333,18 @@ describe('Testing resizing option without animation effects', () => {
     });
 
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
     });
     it('check handler element in DOM', (done) => {
         setTimeout(() => {
             expect(isNullOrUndefined(document.querySelector('.e-south-east'))).toBe(false);
             done()
         }, 100);
-        
     });
 });
 
 describe('Testing resizing option with animation effects', () => {
     let dialog: any;
-    
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'dialog1' });
         document.body.appendChild(ele);
@@ -2459,18 +2360,17 @@ describe('Testing resizing option with animation effects', () => {
     });
 
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
     });
 });
 
-
 describe('Testing resizing option with RTL mode', () => {
     let dialog: any;
-    
+    let resizeTarget: any;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'dialog1' });
         document.body.appendChild(ele);
-        let resizeTarget = createElement('div', { id: 'resizeTarget' });
+        resizeTarget = createElement('div', { id: 'resizeTarget' });
         document.body.appendChild(resizeTarget);
         resizeTarget.style.width = '500px';
         resizeTarget.style.height = '500px';
@@ -2478,9 +2378,9 @@ describe('Testing resizing option with RTL mode', () => {
         dialog = new Dialog({header:'Demo', target: document.body, isModal: true, content:'First demo content', enableResize: true });
         dialog.appendTo('#dialog1');
     });
-
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
+        detach(resizeTarget);
     });
     it('RTL Mode', (done) => {
         expect(!isNullOrUndefined(dialog.element.classList.contains('e-viewport'))).toBe(true);
@@ -2491,18 +2391,16 @@ describe('Testing resizing option with RTL mode', () => {
         dialog.dataBind();
         expect(!isNullOrUndefined(dialog.element.classList.contains('e-viewport'))).toBe(true);
         done();
-
     });
 });
 
-
 describe('Testing resize Events', () => {
     let dialog: any;
-    
+    let resizeTarget: any;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'dialog1' });
         document.body.appendChild(ele);
-        let resizeTarget = createElement('div', { id: 'resizeTarget' });
+        resizeTarget = createElement('div', { id: 'resizeTarget' });
         document.body.appendChild(resizeTarget);
         resizeTarget.style.width = '500px';
         resizeTarget.style.height = '500px';
@@ -2521,13 +2419,13 @@ describe('Testing resize Events', () => {
             resizeStop : function () {
                 expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(false)
             }
-
          });
         dialog.appendTo('#dialog1');
     });
 
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
+        detach(resizeTarget);
     });
     it('Mouse events', (done) => {
         let mouseEvent = document.createEvent ('MouseEvents');
@@ -2540,12 +2438,14 @@ describe('Testing resize Events', () => {
         done()
     });
 });
+
 describe('Testing args.cancel', () => {
-    let dialog: any; 
+    let dialog: any;
+    let resizeTarget: any;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'dialog1' });
         document.body.appendChild(ele);
-        let resizeTarget = createElement('div', { id: 'resizeTarget' });
+        resizeTarget = createElement('div', { id: 'resizeTarget' });
         document.body.appendChild(resizeTarget);
         resizeTarget.style.width = '500px';
         resizeTarget.style.height = '500px';
@@ -2561,9 +2461,9 @@ describe('Testing args.cancel', () => {
          });
         dialog.appendTo('#dialog1');
     });
-
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
+        detach(resizeTarget);
     });
     it('Check args.cancel', (done) => {
         let mouseEvent = document.createEvent ('MouseEvents');
@@ -2577,10 +2477,11 @@ describe('Testing resizing option', () => {
     let dialog: any;
     let computedHeaderHeight: string;
     let headerHeight: number;
+    let resizeTarget: any;
     beforeAll(() => {
         let ele: HTMLElement = createElement('div', { id: 'dialog1' });
         document.body.appendChild(ele);
-        let resizeTarget = createElement('div', { id: 'resizeTarget' });
+        resizeTarget = createElement('div', { id: 'resizeTarget' });
         document.body.appendChild(resizeTarget);
         resizeTarget.style.width = '500px';
         resizeTarget.style.height = '500px';
@@ -2601,7 +2502,8 @@ describe('Testing resizing option', () => {
     });
 
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
+        detach(resizeTarget);
     });
     it('Check the minHeight issue', () => {
         dialog.hide();
@@ -2612,425 +2514,650 @@ describe('Testing resizing option', () => {
         expect(isNullOrUndefined(headerHeight)).toBe(false);
         expect(isNaN(headerHeight)).toBe(false);
     });
-    describe('confirm utility dialog without modal and default button actions', () => {
-        beforeAll(() => {
-            DialogUtility.confirm({
-                isModal: false,
-                showCloseIcon: false,
-               cssClass: 'sample',
-               zIndex : 250 ,
-               open :  function() {
-                addClass([document.getElementById('dialog')], 'open');
-               }  ,
-               close : function() {
-                addClass([document.getElementById('dialog')], 'close');
-               }               
-             });
+});
+
+describe('confirm utility dialog without modal and default button actions', () => {
+    let dialog: Dialog;
+    beforeAll(() => {
+        dialog = DialogUtility.confirm({
+            isModal: false,
+            showCloseIcon: false,
+            cssClass: 'sample',
+            zIndex: 250,
+            open: function () {
+                addClass([document.querySelector('.e-confirm-dialog')], 'open');
+            },
+            close: function () {
+                addClass([document.querySelector('.e-confirm-dialog')], 'close');
+            }
+        });
     });
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
     });
-    it('confirm utility - cssClass Checking',()=>{
+    it('confirm utility - cssClass Checking', (done: Function) => {
         expect(document.getElementsByClassName('e-confirm-dialog')[0].classList.contains('sample')).toBe(true);
-        (<HTMLElement>document.getElementsByClassName('e-confirm-dialog')[0]).style.zIndex==='250';
+        (<HTMLElement>document.getElementsByClassName('e-confirm-dialog')[0]).style.zIndex === '250';
         setTimeout(() => {
-            expect(document.getElementById('dialog').classList.contains("open")).toEqual(true);
-            expect(document.getElementById('dialog').classList.contains("close")).toEqual(true);
-            }, 500);
-    })
+            expect(document.querySelector('.e-confirm-dialog').classList.contains("open")).toEqual(true);
+            expect(document.querySelector('.e-confirm-dialog').classList.contains("close")).toEqual(false);
+            done();
+        }, 500);
     });
-    describe('alert utility dialog without model', () => {
-        beforeAll(() => {
-            DialogUtility.alert({
-                isModal: false,
-                showCloseIcon: false,
-               cssClass: 'sample',
-               zIndex : 250 ,
-               open :  function() {
-                addClass([document.getElementById('dialog')], 'open');
-               }  ,
-               close : function() {
-                addClass([document.getElementById('dialog')], 'close');
-               }             
-             });
+});
+
+describe('alert utility dialog without model', () => {
+    let dialog: Dialog;
+    beforeAll(() => {
+        dialog = DialogUtility.alert({
+            isModal: false,
+            showCloseIcon: false,
+            cssClass: 'sample',
+            zIndex: 250,
+            open: function () {
+                addClass([document.querySelector('.e-alert-dialog')], 'open');
+            },
+            close: function () {
+                addClass([document.querySelector('.e-alert-dialog')], 'close');
+            }
+        });
     });
     afterAll(() => {
-        document.body.innerHTML = '';
+        destroyDialog(dialog);
     });
-    it('alert utility - cssClass Checking',()=>{
+    it('alert utility - cssClass Checking', (done: Function) => {
         expect(document.getElementsByClassName('e-alert-dialog')[0].classList.contains('sample')).toBe(true);
-        (<HTMLElement>document.getElementsByClassName('e-alert-dialog')[0]).style.zIndex==='250';
+        (<HTMLElement>document.getElementsByClassName('e-alert-dialog')[0]).style.zIndex === '250';
         setTimeout(() => {
-            expect(document.getElementById('dialog').classList.contains("open")).toEqual(true);
-            expect(document.getElementById('dialog').classList.contains("close")).toEqual(true);
-            }, 500);
-    })
-    });
-    describe('F144624 - Issue with resizing when renders Grid inside the Dialog', () => {
-        let dialog: any;
-        beforeAll(() => {
-            let ele: HTMLElement = createElement('div', { id: 'dialog1' });
-            document.body.appendChild(ele);
-            let resizeTarget = createElement('div', { id: 'resizeTarget' });
-            document.body.appendChild(resizeTarget);
-            resizeTarget.style.width = '500px';
-            resizeTarget.style.height = '500px';
-            resizeTarget.style.position = 'relative';
-        });
-        afterAll(() => {
-            document.body.innerHTML = '';
-        });
-        afterEach(() => {
-            dialog.destroy();
-        });
-        it('Without footer element to getMinHeight testing', (done: Function) => {
-            dialog = new Dialog({
-                header: 'Delete Multiple Items',
-                showCloseIcon: true,
-                content: 'Test',
-                enableResize: true,
-                height: '400px',
-                width: '300px',
-                resizeStart: function () {
-                    expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(true)
-                }, 
-                resizing: function () {
-                    expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(true)
-                },
-                resizeStop : function () {
-                    expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(false)
-                }
-             });
-            dialog.appendTo('#dialog1');
-            let mouseEvent = document.createEvent ('MouseEvents');
-            mouseEvent.initEvent ('mousedown', true, true);
-            (document.querySelector('.e-south-east') as HTMLElement).dispatchEvent (mouseEvent);
-            mouseEvent.initEvent ('mousemove', true, true);
-            (document.querySelector('.e-south-east') as HTMLElement).dispatchEvent(mouseEvent);
-            mouseEvent.initEvent ('mouseup', true, true);
-            document.dispatchEvent(mouseEvent);
+            expect(document.querySelector('.e-alert-dialog').classList.contains("open")).toEqual(true);
+            expect(document.querySelector('.e-alert-dialog').classList.contains("close")).toEqual(false);
             done();
+        }, 500);
+    });
+});
+
+describe('F144624 - Issue with resizing when renders Grid inside the Dialog', () => {
+    let dialog: any;
+    let resizeTarget: any;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'dialog1' });
+        document.body.appendChild(ele);
+        resizeTarget = createElement('div', { id: 'resizeTarget' });
+        document.body.appendChild(resizeTarget);
+        resizeTarget.style.width = '500px';
+        resizeTarget.style.height = '500px';
+        resizeTarget.style.position = 'relative';
+    });
+    afterAll(() => {
+        destroyDialog(dialog);
+        detach(resizeTarget);
+    });
+    afterEach(() => {
+        dialog.destroy();
+    });
+    it('Without footer element to getMinHeight testing', (done: Function) => {
+        dialog = new Dialog({
+            header: 'Delete Multiple Items',
+            showCloseIcon: true,
+            content: 'Test',
+            enableResize: true,
+            height: '400px',
+            width: '300px',
+            resizeStart: function () {
+                expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(true)
+            },
+            resizing: function () {
+                expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(true)
+            },
+            resizeStop: function () {
+                expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(false)
+            }
         });
-        it('With footer element to getMinHeight testing', (done: Function) => {
-            dialog = new Dialog({
-                header: 'Delete Multiple Items',
-                showCloseIcon: true,
-                content: 'Test',
-                enableResize: true,
-                height: '400px',
-                width: '300px',
-                buttons: [{ buttonModel: { content: "Ok" } }],
-                resizeStart: function () {
-                    expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(true)
-                }, 
-                resizing: function () {
-                    expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(true)
-                },
-                resizeStop : function () {
-                    expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(false)
+        dialog.appendTo('#dialog1');
+        let mouseEvent = document.createEvent('MouseEvents');
+        mouseEvent.initEvent('mousedown', true, true);
+        (document.querySelector('.e-south-east') as HTMLElement).dispatchEvent(mouseEvent);
+        mouseEvent.initEvent('mousemove', true, true);
+        (document.querySelector('.e-south-east') as HTMLElement).dispatchEvent(mouseEvent);
+        mouseEvent.initEvent('mouseup', true, true);
+        document.dispatchEvent(mouseEvent);
+        done();
+    });
+    it('With footer element to getMinHeight testing', (done: Function) => {
+        dialog = new Dialog({
+            header: 'Delete Multiple Items',
+            showCloseIcon: true,
+            content: 'Test',
+            enableResize: true,
+            height: '400px',
+            width: '300px',
+            buttons: [{ buttonModel: { content: "Ok" } }],
+            resizeStart: function () {
+                expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(true)
+            },
+            resizing: function () {
+                expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(true)
+            },
+            resizeStop: function () {
+                expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(false)
+            }
+        });
+        dialog.appendTo('#dialog1');
+        let mouseEvent = document.createEvent('MouseEvents');
+        mouseEvent.initEvent('mousedown', true, true);
+        (document.querySelector('.e-south-east') as HTMLElement).dispatchEvent(mouseEvent);
+        mouseEvent.initEvent('mousemove', true, true);
+        (document.querySelector('.e-south-east') as HTMLElement).dispatchEvent(mouseEvent);
+        mouseEvent.initEvent('mouseup', true, true);
+        document.dispatchEvent(mouseEvent);
+        done();
+    });
+});
+
+describe('EJ2-33264 - Contents are overflowed outside of Dialog element in IE browser', () => {
+    let dialog: Dialog;
+    beforeEach((): void => {
+        dialog = undefined;
+        let ele: HTMLElement = createElement('div', { id: 'dialog' });
+        document.body.appendChild(ele);
+    });
+    afterEach((): void => {
+        destroyDialog(dialog);
+    });
+    it('IE Height issue coverage', () => {
+        (window as any).browserDetails['isIE'] = true;
+        dialog = new Dialog({ header: "Dialog", width: "250px" }, '#dialog');
+        expect(document.getElementById("dialog").style.width).toEqual("250px");
+        (window as any).browserDetails['isIE'] = false;
+    });
+});
+
+describe('EJ2-33526 XSS attack prevention', () => {
+    let dialog: Dialog;
+    beforeEach((): void => {
+        dialog = undefined;
+        let ele: HTMLElement = createElement('div', { id: 'dialog' });
+        document.body.appendChild(ele);
+        dialog = new Dialog({
+            header: 'Demo', content: '<script>alert("1")</script>',
+            beforeSanitizeHtml: (args: BeforeSanitizeHtmlArgs) => {
+                args.cancel = true;
+                args.helper = (value: string) => {
+                    return value;
                 }
-             });
-            dialog.appendTo('#dialog1');
-            let mouseEvent = document.createEvent ('MouseEvents');
-            mouseEvent.initEvent ('mousedown', true, true);
-            (document.querySelector('.e-south-east') as HTMLElement).dispatchEvent (mouseEvent);
-            mouseEvent.initEvent ('mousemove', true, true);
-            (document.querySelector('.e-south-east') as HTMLElement).dispatchEvent(mouseEvent);
-            mouseEvent.initEvent ('mouseup', true, true);
-            document.dispatchEvent(mouseEvent);
-            done();
-        });
-    });
-    
-    describe('EJ2-33264 - Contents are overflowed outside of Dialog element in IE browser', () => {
-        let dialog: Dialog;
-        beforeEach((): void => {
-            dialog = undefined;
-            let ele: HTMLElement = createElement('div', { id: 'dialog' });
-            document.body.appendChild(ele);
-        });
-        afterEach((): void => {
-            if (dialog) {
-                dialog.destroy();
             }
-            document.body.innerHTML = '';
         });
-        it('IE Height issue coverage', () => {
-            (window as any).browserDetails['isIE'] = true;
-            dialog = new Dialog({ header: "Dialog", width: "250px" }, '#dialog');
-            expect(document.getElementById("dialog").style.width).toEqual("250px");
-            (window as any).browserDetails['isIE'] = false;
-        });
+        dialog.appendTo('#dialog');
     });
-    describe('EJ2-33526 XSS attack prevention', () => {
-        let dialog: Dialog;
-        beforeEach((): void => {
-            dialog = undefined;
-            let ele: HTMLElement = createElement('div', { id: 'dialog' });
-            document.body.appendChild(ele);
-            dialog = new Dialog({
-                header:'Demo', content:'<script>alert("1")</script>',
-                beforeSanitizeHtml: (args: BeforeSanitizeHtmlArgs) => {
-                    args.cancel = true;
-                    args.helper = (value: string) => {
-                        return value;
-                    }
-                }
-            });      
-            dialog.appendTo('#dialog');
-        });
-        afterEach((): void => {
-            if (dialog) {
-                dialog.destroy();
-            }
-            document.body.innerHTML = '';
-        });
-        it('check the script element', () => {
-            expect(((<any>dialog).contentEle.querySelectorAll('script')).length).toBeGreaterThan(0);
-        });
+    afterEach((): void => {
+        destroyDialog(dialog);
     });
-    describe('EJ2-33526 XSS attack prevention', () => {
-        let dialog: Dialog;
-        beforeEach((): void => {
-            dialog = undefined;
-            let ele: HTMLElement = createElement('div', { id: 'dialog' });
-            document.body.appendChild(ele);
-            dialog = new Dialog({
-                header:'Demo', content:'<style>bod{width:100px;}</style>',                
-                beforeSanitizeHtml: (args: BeforeSanitizeHtmlArgs) => {
-                    args.selectors.tags.push('style');
-                }
-            });            
-            dialog.appendTo('#dialog');
-        });
- 
-        afterEach((): void => {
-            if (dialog) {
-                dialog.destroy();
+    it('check the script element', () => {
+        expect(((<any>dialog).contentEle.querySelectorAll('script')).length).toBeGreaterThan(0);
+    });
+});
+
+describe('EJ2-33526 XSS attack prevention', () => {
+    let dialog: Dialog;
+    beforeEach((): void => {
+        dialog = undefined;
+        let ele: HTMLElement = createElement('div', { id: 'dialog' });
+        document.body.appendChild(ele);
+        dialog = new Dialog({
+            header: 'Demo', content: '<style>bod{width:100px;}</style>',
+            beforeSanitizeHtml: (args: BeforeSanitizeHtmlArgs) => {
+                args.selectors.tags.push('style');
             }
-            document.body.innerHTML = '';
         });
-        it('check the style element', () => {
-            expect(((<any>dialog).contentEle.querySelectorAll('style')).length).toBe(0);
-        });
+        dialog.appendTo('#dialog');
     });
 
-    describe('EJ2-33526 prevent xss at initial render', () => {
-        let dialog: Dialog;
-        beforeEach((): void => {
-            dialog = undefined;
-            let ele: HTMLElement = createElement('div', { id: 'dialog' });
-            document.body.appendChild(ele);
-            dialog = new Dialog({
-                header:'Demo', content:'<style>bod{width:100px;}</style>'
-            });            
-            dialog.appendTo('#dialog');
-        });
- 
-        afterEach((): void => {
-            if (dialog) {
-                dialog.destroy();
-            }
-            document.body.innerHTML = '';
-        });
-        it('check the style element', () => {
-            expect(((<any>dialog).contentEle.querySelectorAll('style')).length).toBe(0);
-        });
+    afterEach((): void => {
+        destroyDialog(dialog);
     });
-    describe('EJ2-33526 enableHtmlSanitizer as false', () => {
-        let dialog: Dialog;
-        beforeEach((): void => {
-            dialog = undefined;
-            let ele: HTMLElement = createElement('div', { id: 'dialog' });
-            document.body.appendChild(ele);
-            dialog = new Dialog({
-                header:'Demo', content:'<style>bod{width:100px;}</style>',
-                enableHtmlSanitizer: false
-            });            
-            dialog.appendTo('#dialog');
+    it('check the style element', () => {
+        expect(((<any>dialog).contentEle.querySelectorAll('style')).length).toBe(0);
+    });
+});
+
+describe('EJ2-33526 prevent xss at initial render', () => {
+    let dialog: Dialog;
+    beforeEach((): void => {
+        dialog = undefined;
+        let ele: HTMLElement = createElement('div', { id: 'dialog' });
+        document.body.appendChild(ele);
+        dialog = new Dialog({
+            header: 'Demo', content: '<style>bod{width:100px;}</style>'
         });
- 
-        afterEach((): void => {
-            if (dialog) {
-                dialog.destroy();
-            }
-            document.body.innerHTML = '';
-        });
-        it('check the style element', () => {
-            expect(((<any>dialog).contentEle.querySelectorAll('style')).length).toBe(1);
-        });
+        dialog.appendTo('#dialog');
     });
 
-    describe('EJ2-34370- web accessebility issue', () => {
-        let dialog: Dialog;
-        beforeEach((): void => {
-            dialog = undefined;
-            let ele: HTMLElement = createElement('div', { id: 'dialog' });
-            document.body.appendChild(ele);
-            dialog = new Dialog({
-                header:'Demo', content:'dialog content',
-                showCloseIcon: true
-            });            
-            dialog.appendTo('#dialog');
+    afterEach((): void => {
+        destroyDialog(dialog);
+    });
+    it('check the style element', () => {
+        expect(((<any>dialog).contentEle.querySelectorAll('style')).length).toBe(0);
+    });
+});
+
+describe('EJ2-33526 enableHtmlSanitizer as false', () => {
+    let dialog: Dialog;
+    beforeEach((): void => {
+        dialog = undefined;
+        let ele: HTMLElement = createElement('div', { id: 'dialog' });
+        document.body.appendChild(ele);
+        dialog = new Dialog({
+            header: 'Demo', content: '<style>bod{width:100px;}</style>',
+            enableHtmlSanitizer: false
         });
- 
-        afterEach((): void => {
-            if (dialog) {
-                dialog.destroy();
-            }
-            document.body.innerHTML = '';
-        });
-        it('check aria-attribute', () => {
-            expect(document.querySelectorAll(".e-dlg-closeicon-btn")[0].getAttribute("aria-label")).toEqual("Close");
-        });
+        dialog.appendTo('#dialog');
     });
 
-    describe('EJ2-34298 - Destroy method correction testing', () => {
-        let dialog: Dialog;
-        beforeEach((): void => {
-            let ele: HTMLElement = createElement('div', { id: 'dialog' });
-            document.body.appendChild(ele);
+    afterEach((): void => {
+        destroyDialog(dialog);
+    });
+    it('check the style element', () => {
+        expect(((<any>dialog).contentEle.querySelectorAll('style')).length).toBe(1);
+    });
+});
+
+describe('EJ2-34370- web accessebility issue', () => {
+    let dialog: Dialog;
+    beforeEach((): void => {
+        dialog = undefined;
+        let ele: HTMLElement = createElement('div', { id: 'dialog' });
+        document.body.appendChild(ele);
+        dialog = new Dialog({
+            header: 'Demo', content: 'dialog content',
+            showCloseIcon: true
         });
- 
-        afterEach((): void => {
-            document.body.innerHTML = '';
-        });
-        it('Modal Dialog - After destroy classlist availability testing', () => {
-            dialog = undefined;
-            dialog = new Dialog({
-                header:'Demo',
-                content:'dialog content',
-                showCloseIcon: true,
-                isModal: true,
-                allowDragging: true,
-                enableResize: true,
-                enableRtl: true,
-                cssClass: 'testClass'
-            });            
-            dialog.appendTo('#dialog');
-            dialog.destroy();
-            let targetEle: HTMLElement = document.querySelector('#dialog') as HTMLElement;
-            expect(targetEle.innerHTML).toEqual('');
-            expect(targetEle.classList.contains('e-dialog')).toEqual(false);
-            expect(targetEle.classList.contains('e-rtl')).toEqual(false);
-            expect(targetEle.classList.contains('e-dlg-resizable')).toEqual(false);
-            expect(targetEle.classList.contains('e-restrict-left')).toEqual(false);
-            expect(targetEle.classList.contains('e-dlg-modal')).toEqual(false);
-            expect(targetEle.classList.contains('testClass')).toEqual(false);
-            expect(document.body.classList.contains('e-scroll-disabled')).toEqual(false);
-            expect(targetEle.getAttribute('role')).toEqual(null);
-            expect(targetEle.getAttribute('aria-modal')).toEqual(null);
-            expect(targetEle.getAttribute('aria-labelledby')).toEqual(null);
-            expect(targetEle.getAttribute('aria-describedby')).toEqual(null);
-            expect(targetEle.getAttribute('aria-grabbed')).toEqual(null);
-            expect(targetEle.getAttribute('tabindex')).toEqual(null);
-            expect(targetEle.getAttribute('style')).toEqual(null);
-            expect(document.querySelectorAll('.e-dlg-container').length > 0).toEqual(false);
-            expect(document.querySelectorAll('.e-dlg-overlay').length > 0).toEqual(false);
-        });
-        it('Normal Dialog - After destroy classlist availability testing', () => {
-            dialog = undefined;
-            dialog = new Dialog({
-                header:'Demo',
-                content:'dialog content',
-                showCloseIcon: true,
-                allowDragging: true,
-                enableResize: true,
-                enableRtl: true,
-                cssClass: 'testClass'
-            });            
-            dialog.appendTo('#dialog');
-            dialog.destroy();
-            let targetEle: HTMLElement = document.querySelector('#dialog') as HTMLElement;
-            expect(targetEle.innerHTML).toEqual('');
-            expect(targetEle.classList.contains('e-dialog')).toEqual(false);
-            expect(targetEle.classList.contains('e-rtl')).toEqual(false);
-            expect(targetEle.classList.contains('e-dlg-resizable')).toEqual(false);
-            expect(targetEle.classList.contains('e-restrict-left')).toEqual(false);
-            expect(targetEle.classList.contains('e-dlg-modal')).toEqual(false);
-            expect(targetEle.classList.contains('testClass')).toEqual(false);
-            expect(document.body.classList.contains('e-scroll-disabled')).toEqual(false);
-            expect(targetEle.getAttribute('role')).toEqual(null);
-            expect(targetEle.getAttribute('aria-modal')).toEqual(null);
-            expect(targetEle.getAttribute('aria-labelledby')).toEqual(null);
-            expect(targetEle.getAttribute('aria-describedby')).toEqual(null);
-            expect(targetEle.getAttribute('aria-grabbed')).toEqual(null);
-            expect(targetEle.getAttribute('tabindex')).toEqual(null);
-            expect(targetEle.getAttribute('style')).toEqual(null);
-        });
+        dialog.appendTo('#dialog');
     });
 
-    describe('EJ2-34298 - Template - Destroy method correction testing', () => {
-        let dialog: Dialog;
-        beforeEach((): void => {
-            let ele: HTMLElement = createElement('div', { id: 'dialog' });
-            ele.innerHTML = 'testing';
-            document.body.appendChild(ele);
+    afterEach((): void => {
+        destroyDialog(dialog);
+    });
+    it('check aria-attribute', () => {
+        expect(document.querySelectorAll(".e-dlg-closeicon-btn")[0].getAttribute("aria-label")).toEqual("Close");
+    });
+});
+
+describe('EJ2-34298 - Destroy method correction testing', () => {
+    let dialog: Dialog;
+    beforeEach((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'dialog' });
+        document.body.appendChild(ele);
+    });
+    it('Modal Dialog - After destroy classlist availability testing', () => {
+        dialog = undefined;
+        dialog = new Dialog({
+            header: 'Demo',
+            content: 'dialog content',
+            showCloseIcon: true,
+            isModal: true,
+            allowDragging: true,
+            enableResize: true,
+            enableRtl: true,
+            cssClass: 'testClass'
         });
- 
-        afterEach((): void => {
-            document.body.innerHTML = '';
+        dialog.appendTo('#dialog');
+        dialog.destroy();
+        let targetEle: HTMLElement = document.querySelector('#dialog') as HTMLElement;
+        expect(targetEle.innerHTML).toEqual('');
+        expect(targetEle.classList.contains('e-dialog')).toEqual(false);
+        expect(targetEle.classList.contains('e-rtl')).toEqual(false);
+        expect(targetEle.classList.contains('e-dlg-resizable')).toEqual(false);
+        expect(targetEle.classList.contains('e-restrict-left')).toEqual(false);
+        expect(targetEle.classList.contains('e-dlg-modal')).toEqual(false);
+        expect(targetEle.classList.contains('testClass')).toEqual(false);
+        expect(document.body.classList.contains('e-scroll-disabled')).toEqual(false);
+        expect(targetEle.getAttribute('role')).toEqual(null);
+        expect(targetEle.getAttribute('aria-modal')).toEqual(null);
+        expect(targetEle.getAttribute('aria-labelledby')).toEqual(null);
+        expect(targetEle.getAttribute('aria-describedby')).toEqual(null);
+        expect(targetEle.getAttribute('aria-grabbed')).toEqual(null);
+        expect(targetEle.getAttribute('tabindex')).toEqual(null);
+        expect(targetEle.getAttribute('style')).toEqual(null);
+        expect(document.querySelectorAll('.e-dlg-container').length > 0).toEqual(false);
+        expect(document.querySelectorAll('.e-dlg-overlay').length > 0).toEqual(false);
+        detach(dialog.element);
+    });
+    it('Normal Dialog - After destroy classlist availability testing', () => {
+        dialog = undefined;
+        dialog = new Dialog({
+            header: 'Demo',
+            content: 'dialog content',
+            showCloseIcon: true,
+            allowDragging: true,
+            enableResize: true,
+            enableRtl: true,
+            cssClass: 'testClass'
         });
-        it('Modal Dialog - After destroy classlist, attribute availability testing', () => {
-            dialog = undefined;
-            dialog = new Dialog({
-                header:'Demo',
-                showCloseIcon: true,
-                isModal: true,
-                allowDragging: true,
-                enableResize: true,
-                enableRtl: true,
-                cssClass: 'testClass'
-            });            
-            dialog.appendTo('#dialog');
-            dialog.destroy();
-            let targetEle: HTMLElement = document.querySelector('#dialog') as HTMLElement;
-            expect(targetEle.innerHTML).toEqual('testing');
-            expect(targetEle.classList.contains('e-dialog')).toEqual(false);
-            expect(targetEle.classList.contains('e-rtl')).toEqual(false);
-            expect(targetEle.classList.contains('e-dlg-resizable')).toEqual(false);
-            expect(targetEle.classList.contains('e-restrict-left')).toEqual(false);
-            expect(targetEle.classList.contains('e-dlg-modal')).toEqual(false);
-            expect(targetEle.classList.contains('testClass')).toEqual(false);
-            expect(document.body.classList.contains('e-scroll-disabled')).toEqual(false);
-            expect(targetEle.getAttribute('role')).toEqual(null);
-            expect(targetEle.getAttribute('aria-modal')).toEqual(null);
-            expect(targetEle.getAttribute('aria-labelledby')).toEqual(null);
-            expect(targetEle.getAttribute('aria-describedby')).toEqual(null);
-            expect(targetEle.getAttribute('aria-grabbed')).toEqual(null);
-            expect(targetEle.getAttribute('tabindex')).toEqual(null);
-            expect(targetEle.getAttribute('style')).toEqual(null);
-            expect(document.querySelectorAll('.e-dlg-container').length > 0).toEqual(false);
-            expect(document.querySelectorAll('.e-dlg-overlay').length > 0).toEqual(false);
+        dialog.appendTo('#dialog');
+        dialog.destroy();
+        let targetEle: HTMLElement = document.querySelector('#dialog') as HTMLElement;
+        expect(targetEle.innerHTML).toEqual('');
+        expect(targetEle.classList.contains('e-dialog')).toEqual(false);
+        expect(targetEle.classList.contains('e-rtl')).toEqual(false);
+        expect(targetEle.classList.contains('e-dlg-resizable')).toEqual(false);
+        expect(targetEle.classList.contains('e-restrict-left')).toEqual(false);
+        expect(targetEle.classList.contains('e-dlg-modal')).toEqual(false);
+        expect(targetEle.classList.contains('testClass')).toEqual(false);
+        expect(document.body.classList.contains('e-scroll-disabled')).toEqual(false);
+        expect(targetEle.getAttribute('role')).toEqual(null);
+        expect(targetEle.getAttribute('aria-modal')).toEqual(null);
+        expect(targetEle.getAttribute('aria-labelledby')).toEqual(null);
+        expect(targetEle.getAttribute('aria-describedby')).toEqual(null);
+        expect(targetEle.getAttribute('aria-grabbed')).toEqual(null);
+        expect(targetEle.getAttribute('tabindex')).toEqual(null);
+        expect(targetEle.getAttribute('style')).toEqual(null);
+        detach(dialog.element);
+    });
+});
+
+describe('EJ2-34298 - Template - Destroy method correction testing', () => {
+    let dialog: Dialog;
+    beforeEach((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'dialog' });
+        ele.innerHTML = 'testing';
+        document.body.appendChild(ele);
+    });
+    it('Modal Dialog - After destroy classlist, attribute availability testing', () => {
+        dialog = undefined;
+        dialog = new Dialog({
+            header: 'Demo',
+            showCloseIcon: true,
+            isModal: true,
+            allowDragging: true,
+            enableResize: true,
+            enableRtl: true,
+            cssClass: 'testClass'
         });
-        it('Normal Dialog - After destroy classlist, attribute availability testing', () => {
-            dialog = undefined;
-            dialog = new Dialog({
-                header:'Demo',
-                showCloseIcon: true,
-                allowDragging: true,
-                enableResize: true,
-                enableRtl: true,
-                cssClass: 'testClass'
-            });            
-            dialog.appendTo('#dialog');
-            dialog.destroy();
-            let targetEle: HTMLElement = document.querySelector('#dialog') as HTMLElement;
-            expect(targetEle.innerHTML).toEqual('testing');
-            expect(targetEle.classList.contains('e-dialog')).toEqual(false);
-            expect(targetEle.classList.contains('e-rtl')).toEqual(false);
-            expect(targetEle.classList.contains('e-dlg-resizable')).toEqual(false);
-            expect(targetEle.classList.contains('e-restrict-left')).toEqual(false);
-            expect(targetEle.classList.contains('e-dlg-modal')).toEqual(false);
-            expect(targetEle.classList.contains('testClass')).toEqual(false);
-            expect(document.body.classList.contains('e-scroll-disabled')).toEqual(false);
-            expect(targetEle.getAttribute('role')).toEqual(null);
-            expect(targetEle.getAttribute('aria-modal')).toEqual(null);
-            expect(targetEle.getAttribute('aria-labelledby')).toEqual(null);
-            expect(targetEle.getAttribute('aria-describedby')).toEqual(null);
-            expect(targetEle.getAttribute('aria-grabbed')).toEqual(null);
-            expect(targetEle.getAttribute('tabindex')).toEqual(null);
-            expect(targetEle.getAttribute('style')).toEqual(null);
+        dialog.appendTo('#dialog');
+        dialog.destroy();
+        let targetEle: HTMLElement = document.querySelector('#dialog') as HTMLElement;
+        expect(targetEle.innerHTML).toEqual('testing');
+        expect(targetEle.classList.contains('e-dialog')).toEqual(false);
+        expect(targetEle.classList.contains('e-rtl')).toEqual(false);
+        expect(targetEle.classList.contains('e-dlg-resizable')).toEqual(false);
+        expect(targetEle.classList.contains('e-restrict-left')).toEqual(false);
+        expect(targetEle.classList.contains('e-dlg-modal')).toEqual(false);
+        expect(targetEle.classList.contains('testClass')).toEqual(false);
+        expect(document.body.classList.contains('e-scroll-disabled')).toEqual(false);
+        expect(targetEle.getAttribute('role')).toEqual(null);
+        expect(targetEle.getAttribute('aria-modal')).toEqual(null);
+        expect(targetEle.getAttribute('aria-labelledby')).toEqual(null);
+        expect(targetEle.getAttribute('aria-describedby')).toEqual(null);
+        expect(targetEle.getAttribute('aria-grabbed')).toEqual(null);
+        expect(targetEle.getAttribute('tabindex')).toEqual(null);
+        expect(targetEle.getAttribute('style')).toEqual(null);
+        expect(document.querySelectorAll('.e-dlg-container').length > 0).toEqual(false);
+        expect(document.querySelectorAll('.e-dlg-overlay').length > 0).toEqual(false);
+        detach(dialog.element);
+    });
+    it('Normal Dialog - After destroy classlist, attribute availability testing', () => {
+        dialog = undefined;
+        dialog = new Dialog({
+            header: 'Demo',
+            showCloseIcon: true,
+            allowDragging: true,
+            enableResize: true,
+            enableRtl: true,
+            cssClass: 'testClass'
         });
+        dialog.appendTo('#dialog');
+        dialog.destroy();
+        let targetEle: HTMLElement = document.querySelector('#dialog') as HTMLElement;
+        expect(targetEle.innerHTML).toEqual('testing');
+        expect(targetEle.classList.contains('e-dialog')).toEqual(false);
+        expect(targetEle.classList.contains('e-rtl')).toEqual(false);
+        expect(targetEle.classList.contains('e-dlg-resizable')).toEqual(false);
+        expect(targetEle.classList.contains('e-restrict-left')).toEqual(false);
+        expect(targetEle.classList.contains('e-dlg-modal')).toEqual(false);
+        expect(targetEle.classList.contains('testClass')).toEqual(false);
+        expect(document.body.classList.contains('e-scroll-disabled')).toEqual(false);
+        expect(targetEle.getAttribute('role')).toEqual(null);
+        expect(targetEle.getAttribute('aria-modal')).toEqual(null);
+        expect(targetEle.getAttribute('aria-labelledby')).toEqual(null);
+        expect(targetEle.getAttribute('aria-describedby')).toEqual(null);
+        expect(targetEle.getAttribute('aria-grabbed')).toEqual(null);
+        expect(targetEle.getAttribute('tabindex')).toEqual(null);
+        expect(targetEle.getAttribute('style')).toEqual(null);
+        detach(dialog.element);
+    });
+});
+
+describe('EJ2-34298 - Ref element testing', () => {
+    let dialog: Dialog;
+    let rootEle: HTMLElement;
+    beforeEach((): void => {
+        dialog = undefined;
+        rootEle = createElement('div', { id: 'dialogRoot' });
+        let dlgWrap: HTMLElement = createElement('div', { id: 'dialogWrapper' });
+        let dlgEle: HTMLElement = createElement('div', { id: 'dialog' });
+        dlgWrap.appendChild(dlgEle);
+        rootEle.appendChild(dlgWrap);
+        document.body.appendChild(rootEle);
+    });
+    afterEach((): void => {
+        destroyDialog(dialog);
+        detach(rootEle);
+    });
+    it('Default target with Ref element availability testing', () => {
+        dialog = new Dialog({});
+        dialog.appendTo('#dialog');
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dlg-ref-element').parentElement.id).toEqual('dialogWrapper');
+        expect(document.querySelector('.e-dialog').parentElement.tagName).toEqual('BODY');
+        dialog.destroy();
+        dialog = undefined;
+        expect(document.querySelectorAll('.e-dlg-ref-element').length > 0).toEqual(false);
+        expect(document.querySelector('#dialog').parentElement.tagName).toEqual('DIV');
+        expect(document.querySelector('#dialog').parentElement.id).toEqual('dialogWrapper');
+    });
+    it('Target as `document.body` with Ref element availability testing', () => {
+        dialog = new Dialog({
+            target: document.body
+        });
+        dialog.appendTo('#dialog');
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dlg-ref-element').parentElement.id).toEqual('dialogWrapper');
+        expect(document.querySelector('.e-dialog').parentElement.tagName).toEqual('BODY');
+        dialog.destroy();
+        dialog = undefined;
+        expect(document.querySelectorAll('.e-dlg-ref-element').length > 0).toEqual(false);
+        expect(document.querySelector('#dialog').parentElement.tagName).toEqual('DIV');
+        expect(document.querySelector('#dialog').parentElement.id).toEqual('dialogWrapper');
+    });
+    it('Target as `dialogRoot` with Ref element availability testing', () => {
+        dialog = new Dialog({
+            target: '#dialogRoot'
+        });
+        dialog.appendTo('#dialog');
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dlg-ref-element').parentElement.id).toEqual('dialogWrapper');
+        expect(document.querySelector('.e-dialog').parentElement.id).toEqual('dialogRoot');
+        dialog.destroy();
+        dialog = undefined;
+        expect(document.querySelectorAll('.e-dlg-ref-element').length > 0).toEqual(false);
+        expect(document.querySelector('#dialog').parentElement.tagName).toEqual('DIV');
+        expect(document.querySelector('#dialog').parentElement.id).toEqual('dialogWrapper');
+    });
+    it('`isModal: true` - Default target with Ref element availability testing', () => {
+        dialog = new Dialog({ isModal: true });
+        dialog.appendTo('#dialog');
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dlg-ref-element').parentElement.id).toEqual('dialogWrapper');
+        expect(document.querySelector('.e-dlg-container').parentElement.tagName).toEqual('BODY');
+        expect(document.querySelectorAll('.e-dlg-overlay').length > 0).toEqual(true);
+        dialog.destroy();
+        dialog = undefined;
+        expect(document.querySelectorAll('.e-dlg-ref-element').length > 0).toEqual(false);
+        expect(document.querySelectorAll('.e-dlg-container').length > 0).toEqual(false);
+        expect(document.querySelectorAll('.e-dlg-overlay').length > 0).toEqual(false);
+        expect(document.querySelector('#dialog').parentElement.tagName).toEqual('DIV');
+        expect(document.querySelector('#dialog').parentElement.id).toEqual('dialogWrapper');
+    });
+    it('`isModal: true` - Target as `document.body` with Ref element availability testing', () => {
+        dialog = new Dialog({
+            isModal: true,
+            target: document.body
+        });
+        dialog.appendTo('#dialog');
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dlg-ref-element').parentElement.id).toEqual('dialogWrapper');
+        expect(document.querySelector('.e-dlg-container').parentElement.tagName).toEqual('BODY');
+        expect(document.querySelectorAll('.e-dlg-overlay').length > 0).toEqual(true);
+        dialog.destroy();
+        dialog = undefined;
+        expect(document.querySelectorAll('.e-dlg-ref-element').length > 0).toEqual(false);
+        expect(document.querySelectorAll('.e-dlg-container').length > 0).toEqual(false);
+        expect(document.querySelectorAll('.e-dlg-overlay').length > 0).toEqual(false);
+        expect(document.querySelector('#dialog').parentElement.tagName).toEqual('DIV');
+        expect(document.querySelector('#dialog').parentElement.id).toEqual('dialogWrapper');
+    });
+    it('`isModal: true` - Target as `dialogRoot` with Ref element availability testing', () => {
+        dialog = new Dialog({
+            isModal: true,
+            target: '#dialogRoot'
+        });
+        dialog.appendTo('#dialog');
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dlg-ref-element').parentElement.id).toEqual('dialogWrapper');
+        expect(document.querySelector('.e-dlg-container').parentElement.id).toEqual('dialogRoot');
+        expect(document.querySelectorAll('.e-dlg-overlay').length > 0).toEqual(true);
+        dialog.destroy();
+        dialog = undefined;
+        expect(document.querySelectorAll('.e-dlg-ref-element').length > 0).toEqual(false);
+        expect(document.querySelectorAll('.e-dlg-container').length > 0).toEqual(false);
+        expect(document.querySelectorAll('.e-dlg-overlay').length > 0).toEqual(false);
+        expect(document.querySelector('#dialog').parentElement.tagName).toEqual('DIV');
+        expect(document.querySelector('#dialog').parentElement.id).toEqual('dialogWrapper');
+    });
+    it('Default target with Ref element availability testing', () => {
+        dialog = new Dialog({});
+        dialog.appendTo('#dialog');
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dlg-ref-element').parentElement.id).toEqual('dialogWrapper');
+        expect(document.querySelector('.e-dialog').parentElement.tagName).toEqual('BODY');
+        dialog.isModal = true;
+        dialog.dataBind();
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dlg-ref-element').parentElement.id).toEqual('dialogWrapper');
+        expect(document.querySelector('.e-dlg-container').parentElement.tagName).toEqual('BODY');
+        expect(document.querySelectorAll('.e-dlg-overlay').length > 0).toEqual(true);
+        dialog.destroy();
+        dialog = undefined;
+        expect(document.querySelectorAll('.e-dlg-ref-element').length > 0).toEqual(false);
+        expect(document.querySelectorAll('.e-dlg-container').length > 0).toEqual(false);
+        expect(document.querySelectorAll('.e-dlg-overlay').length > 0).toEqual(false);
+        expect(document.querySelector('#dialog').parentElement.tagName).toEqual('DIV');
+        expect(document.querySelector('#dialog').parentElement.id).toEqual('dialogWrapper');
+    });
+    it('Target as `document.body` with Ref element availability testing', () => {
+        dialog = new Dialog({
+            target: document.body
+        });
+        dialog.appendTo('#dialog');
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dlg-ref-element').parentElement.id).toEqual('dialogWrapper');
+        expect(document.querySelector('.e-dialog').parentElement.tagName).toEqual('BODY');
+        dialog.isModal = true;
+        dialog.dataBind();
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dlg-ref-element').parentElement.id).toEqual('dialogWrapper');
+        expect(document.querySelector('.e-dlg-container').parentElement.tagName).toEqual('BODY');
+        expect(document.querySelectorAll('.e-dlg-overlay').length > 0).toEqual(true);
+        dialog.destroy();
+        dialog = undefined;
+        expect(document.querySelectorAll('.e-dlg-ref-element').length > 0).toEqual(false);
+        expect(document.querySelectorAll('.e-dlg-container').length > 0).toEqual(false);
+        expect(document.querySelectorAll('.e-dlg-overlay').length > 0).toEqual(false);
+        expect(document.querySelector('#dialog').parentElement.tagName).toEqual('DIV');
+        expect(document.querySelector('#dialog').parentElement.id).toEqual('dialogWrapper');
+    });
+    it('Target as `dialogRoot` with Ref element availability testing', () => {
+        dialog = new Dialog({
+            target: '#dialogRoot'
+        });
+        dialog.appendTo('#dialog');
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dlg-ref-element').parentElement.id).toEqual('dialogWrapper');
+        expect(document.querySelector('.e-dialog').parentElement.id).toEqual('dialogRoot');
+        dialog.isModal = true;
+        dialog.dataBind();
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dlg-ref-element').parentElement.id).toEqual('dialogWrapper');
+        expect(document.querySelector('.e-dlg-container').parentElement.tagName).toEqual('DIV');
+        expect(document.querySelector('.e-dlg-container').parentElement.id).toEqual('dialogRoot');
+        expect(document.querySelectorAll('.e-dlg-overlay').length > 0).toEqual(true);
+        dialog.destroy();
+        dialog = undefined;
+        expect(document.querySelectorAll('.e-dlg-ref-element').length > 0).toEqual(false);
+        expect(document.querySelectorAll('.e-dlg-container').length > 0).toEqual(false);
+        expect(document.querySelectorAll('.e-dlg-overlay').length > 0).toEqual(false);
+        expect(document.querySelector('#dialog').parentElement.tagName).toEqual('DIV');
+        expect(document.querySelector('#dialog').parentElement.id).toEqual('dialogWrapper');
+    });
+    it('`isModal: true` - Default target with Ref element availability testing', () => {
+        dialog = new Dialog({ isModal: true });
+        dialog.appendTo('#dialog');
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dlg-ref-element').parentElement.id).toEqual('dialogWrapper');
+        expect(document.querySelector('.e-dlg-container').parentElement.tagName).toEqual('BODY');
+        expect(document.querySelectorAll('.e-dlg-overlay').length > 0).toEqual(true);
+        dialog.isModal = false;
+        dialog.dataBind();
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dlg-ref-element').parentElement.id).toEqual('dialogWrapper');
+        expect(document.querySelector('.e-dialog').parentElement.tagName).toEqual('BODY');
+        dialog.destroy();
+        dialog = undefined;
+        expect(document.querySelectorAll('.e-dlg-ref-element').length > 0).toEqual(false);
+        expect(document.querySelector('#dialog').parentElement.tagName).toEqual('DIV');
+        expect(document.querySelector('#dialog').parentElement.id).toEqual('dialogWrapper');
+    });
+    it('`isModal: true` - Target as `document.body` with Ref element availability testing', () => {
+        dialog = new Dialog({
+            isModal: true,
+            target: document.body
+        });
+        dialog.appendTo('#dialog');
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dlg-ref-element').parentElement.id).toEqual('dialogWrapper');
+        expect(document.querySelector('.e-dlg-container').parentElement.tagName).toEqual('BODY');
+        expect(document.querySelectorAll('.e-dlg-overlay').length > 0).toEqual(true);
+        dialog.isModal = false;
+        dialog.dataBind();
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dlg-ref-element').parentElement.id).toEqual('dialogWrapper');
+        expect(document.querySelector('.e-dialog').parentElement.tagName).toEqual('BODY');
+        dialog.destroy();
+        dialog = undefined;
+        expect(document.querySelectorAll('.e-dlg-ref-element').length > 0).toEqual(false);
+        expect(document.querySelector('#dialog').parentElement.tagName).toEqual('DIV');
+        expect(document.querySelector('#dialog').parentElement.id).toEqual('dialogWrapper');
+    });
+    it('`isModal: true` - Target as `dialogRoot` with Ref element availability testing', () => {
+        dialog = new Dialog({
+            isModal: true,
+            target: '#dialogRoot'
+        });
+        dialog.appendTo('#dialog');
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dlg-ref-element').parentElement.id).toEqual('dialogWrapper');
+        expect(document.querySelector('.e-dlg-container').parentElement.id).toEqual('dialogRoot');
+        expect(document.querySelectorAll('.e-dlg-overlay').length > 0).toEqual(true);
+        dialog.isModal = false;
+        dialog.dataBind();
+        expect(document.querySelectorAll('.e-dlg-ref-element').length === 1).toEqual(true);
+        expect(document.querySelector('.e-dlg-ref-element').parentElement.id).toEqual('dialogWrapper');
+        expect(document.querySelector('.e-dialog').parentElement.tagName).toEqual('DIV');
+        expect(document.querySelector('.e-dialog').parentElement.id).toEqual('dialogRoot');
+        dialog.destroy();
+        dialog = undefined;
+        expect(document.querySelectorAll('.e-dlg-ref-element').length > 0).toEqual(false);
+        expect(document.querySelector('#dialog').parentElement.tagName).toEqual('DIV');
+        expect(document.querySelector('#dialog').parentElement.id).toEqual('dialogWrapper');
     });
 });

@@ -41,7 +41,7 @@ describe('Linear gauge control', () => {
             gauge.refresh();
         });
 
-        it('checking with axis opposed position', (): void => {
+        it('Checking with axis opposed position', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_Axis_Group_0');
                 expect(svg.childElementCount > 0).toBe(true);
@@ -366,13 +366,13 @@ describe('Linear gauge control', () => {
                 opposedPosition: true
             }, {}];
             gauge.refresh();
-            gauge.axes = [{}];
         });
         it('checking with axis opposed position', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_Normal_Layout');
                 expect(svg !== null).toBe(true);
             };
+            gauge.axes = [{}];
             gauge.container.height = 400;
             gauge.container.width = 30;
             gauge.container.border.width = 5;
@@ -548,5 +548,314 @@ describe('Linear gauge control', () => {
             };
             gauge.refresh();
         });
+    });
+    describe('Axis Label behaviour', () => {
+        let gauge: LinearGauge;
+        let ele: HTMLElement;
+        let direction: string;
+        let boundingRect: ClientRect;
+        let boundingRect1: ClientRect;
+        let svg: HTMLElement;
+        let value: string[] | string | number;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'gauge' });
+            document.body.appendChild(ele);
+            gauge = new LinearGauge({
+                axes: [{                       
+                    showLastLabel: false,
+                    majorTicks: {
+                        width: 2,
+                        interval: 8
+                    },
+                        minorTicks: {
+                        width: 1
+                    },
+                    labelStyle: {
+                        font: {
+                            color: 'green',
+                            fontFamily: 'Roboto',
+                            size: '12px',
+                            fontWeight: 'Regular'
+                        },
+                        offset: -5
+                    },
+                    pointers: [{
+                        value: 60,
+                        color: '#757575'
+                    }]
+
+                }]
+            },
+                '#gauge'
+        );
+    });
+        afterAll((): void => {
+            gauge.destroy();
+            ele.remove();
+        });
+        it('Checking last label', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_Axis_Collections');
+                expect(svg.childElementCount == 1).toBe(true);
+                svg = document.getElementById('gauge_AxisLabel_12');
+                expect(svg.textContent == '96').toBe(true);
+                let svg1 = parseFloat(svg.textContent);
+                svg = document.getElementById('gauge_AxisLabel_13');
+                expect(svg.textContent == '100').toBe(true);
+                let svg2 = parseFloat(svg.textContent);
+                expect(svg1 != svg2).toBe(true);
+                expect(gauge.axes[0].labelStyle.format != null).toBe(true);
+                done();
+            };
+            gauge.axes[0].showLastLabel = true;
+            gauge.refresh();
+        });
+
+        it('Checking label format', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_AxisLabel_13');
+                expect(gauge.axes[0].labelStyle.format == "{value}").toBe(true);
+                done();
+            };
+            gauge.axes[0].labelStyle.format = "{value}";
+            gauge.refresh();
+        });
+    });
+    describe('Axis Label and ticks position based on position property', () => {
+        let gauge: LinearGauge;
+        let ele: HTMLElement;
+        let direction: string;
+        let boundingRect: ClientRect;
+        let boundingRect1: ClientRect;
+        let svg: HTMLElement;
+        let value: string[] | string | number;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'gauge' });
+            document.body.appendChild(ele);
+            gauge = new LinearGauge({
+                orientation : "Horizontal",
+                axes: [{    
+                    majorTicks: {
+                        width: 2, offset: 10,
+                        interval: 8,
+                    },
+                        minorTicks: {
+                        width: 1, offset: 10,
+                    },
+                    labelStyle: {
+                        offset: 10
+                    },
+                }]
+            },
+                '#gauge'
+        );
+    });
+        afterAll((): void => {
+            gauge.destroy();
+            ele.remove();
+        });
+        it('Checking defualt position of label and ticks', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_AxisLabel_0');
+                expect(svg.getAttribute('y')).toBe('219');
+                done();
+            };
+            gauge.refresh();
+        });
+        it('Checking Inside position of label and ticks', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_AxisLabel_0');
+                expect(svg.getAttribute('y')).toBe('179');
+                done();
+            };
+            gauge.axes[0].minorTicks.position = 'Inside';
+            gauge.axes[0].majorTicks.position = 'Inside';
+            gauge.axes[0].labelStyle.position = 'Inside';
+            gauge.refresh();
+        });
+        it('Checking Inside position of label and ticks with opposed', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_AxisLabel_0');
+                expect(svg.getAttribute('y') == '278.5' || svg.getAttribute('y') == '279').toBe(true);
+                done();
+            };
+            gauge.axes[0].opposedPosition = true;
+            gauge.refresh();
+        });
+        it('Checking Outside position of label and ticks', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_AxisLabel_0');
+                expect(svg.getAttribute('y') == '278.5' || svg.getAttribute('y') == '279').toBe(true);
+                done();
+            };
+            gauge.axes[0].opposedPosition = false;
+            gauge.axes[0].minorTicks.position = 'Outside';
+            gauge.axes[0].majorTicks.position = 'Outside';
+            gauge.axes[0].labelStyle.position = 'Outside';
+            gauge.refresh();
+        });
+        it('Checking Outside position of label and ticks with opposed', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_AxisLabel_0');
+                expect(svg.getAttribute('y')).toBe('179');
+                done();
+            };
+            gauge.axes[0].opposedPosition = true;
+            gauge.refresh();
+        });
+        it('Checking Cross position of label and ticks', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_AxisLabel_0');
+                expect(svg.getAttribute('y') == '218.75' || svg.getAttribute('y') == '219').toBe(true);
+                done();
+            };
+            gauge.axes[0].opposedPosition = false;
+            gauge.axes[0].minorTicks.position = 'Cross';
+            gauge.axes[0].majorTicks.position = 'Cross';
+            gauge.axes[0].labelStyle.position = 'Cross';
+            gauge.refresh();
+        });
+        it('Checking cross label position with inside outside position of ticks', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_AxisLabel_0');
+                expect(svg.getAttribute('y') == '218.75' || svg.getAttribute('y') == '219').toBe(true);
+                done();
+            };
+            gauge.axes[0].minorTicks.position = 'Inside';
+            gauge.axes[0].majorTicks.position = 'Outside';
+            gauge.axes[0].labelStyle.position = 'Cross';
+            gauge.refresh();
+        });
+        it('Checking inside label position with cross position of ticks', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_AxisLabel_0');
+                expect(svg.getAttribute('y')).toBe('188');
+                done();
+            };
+            gauge.axes[0].minorTicks.position = 'Cross';
+            gauge.axes[0].majorTicks.position = 'Cross';
+            gauge.axes[0].labelStyle.position = 'Inside';
+            gauge.refresh();
+        });
+        it('Checking label inside position with oppsed inside and outside position of ticks', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_AxisLabel_0');
+                expect(svg.getAttribute('y')).toBe('189');
+                done();
+            };
+            gauge.axes[0].minorTicks.position = 'Inside';
+            gauge.axes[0].majorTicks.position = 'Outside';
+            gauge.axes[0].labelStyle.position = 'Inside';
+            gauge.refresh();
+        });
+        it('Checking label inside position with oppesed inside and outside position of ticks and orientation', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_AxisLabel_0');
+                expect(svg.getAttribute('y') == '268.5' || svg.getAttribute('y') == '269').toBe(true);
+                done();
+            };
+            gauge.axes[0].opposedPosition = true;
+            gauge.refresh();
+        });
+
+
+        it('Checking Inside position of label and ticks with vertical orientation', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_AxisLabel_0');
+                expect(svg.getAttribute('x') == '326.5' || svg.getAttribute('x') == '320').toBe(true);
+                done();
+            };
+            gauge.orientation = "Vertical";
+            gauge.axes[0].opposedPosition = false;
+            gauge.axes[0].minorTicks.position = 'Inside';
+            gauge.axes[0].majorTicks.position = 'Inside';
+            gauge.axes[0].labelStyle.position = 'Inside';
+            gauge.refresh();
+        });
+        it('Checking Inside position of label and ticks with vertical orientation', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_AxisLabel_0');
+                expect(svg.getAttribute('x') == '430.5' || svg.getAttribute('x') == '425').toBe(true);
+                done();
+            };
+            gauge.axes[0].opposedPosition = true;
+            gauge.refresh();
+        });
+        it('Checking Outside position of label and ticks with vertical orientation', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_AxisLabel_0');
+                expect(svg.getAttribute('x') == '430.5' || svg.getAttribute('x') == '425').toBe(true);
+                done();
+            };
+            gauge.axes[0].opposedPosition = false;
+            gauge.axes[0].minorTicks.position = 'Outside';
+            gauge.axes[0].majorTicks.position = 'Outside';
+            gauge.axes[0].labelStyle.position = 'Outside';
+            gauge.refresh();
+        });
+        it('Checking Outside position of label and ticks with oppsed and vertical orientation', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_AxisLabel_0');
+                expect(svg.getAttribute('x') == '326.5' || svg.getAttribute('x') == '320').toBe(true);
+                done();
+            };
+            gauge.axes[0].opposedPosition = true;
+            gauge.refresh();
+        });
+        it('Checking Cross position of label and ticks with vertical orientation', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_AxisLabel_0');
+                expect(svg.getAttribute('x') == '371.5' || svg.getAttribute('x') == '365.75').toBe(true);
+                done();
+            };
+            gauge.axes[0].opposedPosition = false;
+            gauge.axes[0].minorTicks.position = 'Cross';
+            gauge.axes[0].majorTicks.position = 'Cross';
+            gauge.axes[0].labelStyle.position = 'Cross';
+            gauge.refresh();
+        });
+        it('Checking cross label position with inside outside position of ticks with vertical orientation', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_AxisLabel_0');
+                expect(svg.getAttribute('x') == '371.5' || svg.getAttribute('x') == '365.75').toBe(true);
+                done();
+            };
+            gauge.axes[0].minorTicks.position = 'Inside';
+            gauge.axes[0].majorTicks.position = 'Outside';
+            gauge.axes[0].labelStyle.position = 'Cross';
+            gauge.refresh();
+        });
+        it('Checking inside label position with cross position of ticks with vertical orientation', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_AxisLabel_0');
+                expect(svg.getAttribute('x') == '335.5' || svg.getAttribute('x') == '329').toBe(true);
+                done();
+            };
+            gauge.axes[0].minorTicks.position = 'Cross';
+            gauge.axes[0].majorTicks.position = 'Cross';
+            gauge.axes[0].labelStyle.position = 'Inside';
+            gauge.refresh();
+        });
+        it('Checking label inside position with opposed inside and outside position of ticks, vertical orientation', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_AxisLabel_0');
+                expect(svg.getAttribute('x') == '336.5' || svg.getAttribute('x') == '330').toBe(true);
+                done();
+            };
+            gauge.axes[0].minorTicks.position = 'Inside';
+            gauge.axes[0].majorTicks.position = 'Outside';
+            gauge.axes[0].labelStyle.position = 'Inside';
+            gauge.refresh();
+        });
+        it('Checking label inside position with oppesed inside and outside position of ticks, vertical orientation', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_AxisLabel_0');
+                expect(svg.getAttribute('x') == '420.5' || svg.getAttribute('x') == '415').toBe(true);
+                done();
+            };
+            gauge.axes[0].opposedPosition = true;
+            gauge.refresh();
+        });
+
     });
 });

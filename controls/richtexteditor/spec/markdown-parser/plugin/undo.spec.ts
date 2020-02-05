@@ -1,9 +1,8 @@
 /**
- * Content renderer spec
+ * Undo Redo spec
  */
 import { createElement, detach } from '@syncfusion/ej2-base';
-import { MarkdownSelection, MarkdownParser } from '../../../src/markdown-parser/index';
-
+import { MarkdownParser } from '../../../src/markdown-parser/index';
 
 let keyboardEventArgs = {
     preventDefault: function () { },
@@ -90,5 +89,4 @@ describe('Undo and Redo module', () => {
             detach(textArea);
         });
     });
-
 });

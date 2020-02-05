@@ -819,9 +819,9 @@
     }
   }
 
-  .e-input-group.e-small:not(.e-disabled):not(.e-float-input):not(.e-bigger.e-float-icon-left) .e-input-group-icon:not(:last-child):hover,
+  .e-input-group.e-small:not(.e-disabled):not(.e-float-input):not(.e-bigger):not(.e-float-icon-left) .e-input-group-icon:not(:last-child):hover,
   .e-input-group.e-float-icon-left .e-input-group-icon:not(:last-child):hover,
-  .e-input-group.e-control-wrapper.e-small:not(.e-disabled):not(.e-float-input):not(.e-bigger.e-float-icon-left) .e-input-group-icon:not(:last-child):hover,
+  .e-input-group.e-control-wrapper.e-small:not(.e-disabled):not(.e-float-input):not(.e-bigger):not(.e-float-icon-left) .e-input-group-icon:not(:last-child):hover,
   .e-input-group.e-control-wrapper.e-float-icon-left .e-input-group-icon:not(:last-child):hover {
     @if $input-skin-name == 'highcontrast' {
       -moz-box-sizing: border-box;
@@ -901,7 +901,7 @@
   label.e-float-text,
   .e-float-input label.e-float-text,
   .e-float-input.e-control-wrapper  label.e-float-text,
-  .e-float-input:not:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-float-input:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-float-input.e-control-wrapper:not(.e-input-focus) input:not(:focus):valid ~ label.e-float-text.e-label-bottom {
     top: -11px;
   }
@@ -3635,8 +3635,8 @@
     }
   }
 
-  .e-float-input.e-input-group.e-small:not(.e-float-icon-left):not(.e-input-group.e-disabled) .e-input-group-icon:last-child:hover,
-  .e-float-input.e-control-wrapper.e-input-group.e-small:not(.e-float-icon-left):not(.e-input-group.e-disabled) .e-input-group-icon:last-child:hover {
+  .e-float-input.e-input-group.e-small:not(.e-float-icon-left):not(.e-input-group):not(.e-disabled) .e-input-group-icon:last-child:hover,
+  .e-float-input.e-control-wrapper.e-input-group.e-small:not(.e-float-icon-left):not(.e-input-group):not(.e-disabled) .e-input-group-icon:last-child:hover {
     @if $input-skin-name == 'highcontrast' {
       -moz-box-sizing: border-box;
       -webkit-box-sizing: border-box;
@@ -3862,7 +3862,7 @@
       top: -8px;
     }
     @else if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' {
-      top: 18 px;
+      top: 18px;
     }
   }
 

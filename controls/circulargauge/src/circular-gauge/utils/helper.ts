@@ -1,10 +1,10 @@
 /**
  * Specifies Circular-Gauge Helper methods
  */
-import { compile as templateComplier } from '@syncfusion/ej2-base';
+import { compile as templateComplier, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { CircularGauge } from '../circular-gauge';
 import { FontModel, BorderModel } from '../model/base-model';
-import { Range } from '../axes/axis';
+import { Range, Axis } from '../axes/axis';
 import { IVisiblePointer } from '../model/interface';
 import { merge } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
@@ -251,20 +251,30 @@ export function getLocationFromAngle(degree: number, radius: number, center: Gau
  */
 export function getPathArc(
     center: GaugeLocation, start: number, end: number, radius: number,
-    startWidth?: number, endWidth?: number
+    startWidth?: number, endWidth?: number, range?: Range, axis?: Axis
 ): string {
     end -= isCompleteAngle(start, end) ? 0.0001 : 0;
     let degree: number = getDegree(start, end);
-    let startRadius: number = radius - startWidth;
-    let endRadius: number = radius - endWidth;
-    let arcRadius: number = radius - ((startWidth + endWidth) / 2);
+    let startRadius: number = !isNullOrUndefined(range) ? (range.position === 'Outside' ? radius + startWidth : range.position === 'Cross'
+        && axis.direction === 'AntiClockWise' ? radius - (endWidth + startWidth) / 2 : radius - startWidth) : radius - startWidth;
+    let endRadius: number = !isNullOrUndefined(range) ? (range.position === 'Outside' ? radius + endWidth : range.position === 'Cross' &&
+        axis.direction === 'ClockWise' ? radius - (endWidth + startWidth) / 2 : radius - endWidth) : radius - endWidth;
+    let arcRadius: number = !isNullOrUndefined(range) ? (range.position === 'Outside' ? radius + ((startWidth + endWidth) / 2) :
+        range.position === 'Cross' ? (radius - ((startWidth + endWidth) / 4) - (axis.direction === 'ClockWise' ? startWidth : endWidth)
+        / 2) : radius - ((startWidth + endWidth) / 2)) : radius - ((startWidth + endWidth) / 2);
+    let insideArcRadius: number = !isNullOrUndefined(range) && range.position === 'Cross' ?
+        radius + ((startWidth + endWidth) / 4) - (axis.direction === 'ClockWise' ? startWidth : endWidth) / 2 : radius;
+    let insideEndRadius: number = !isNullOrUndefined(range) && range.position === 'Cross' && axis.direction === 'ClockWise' ?
+        radius - ((startWidth - endWidth) / 2) : radius;
+    let insideStartRadius: number = !isNullOrUndefined(range) && range.position === 'Cross' && axis.direction === 'AntiClockWise' ?
+        radius + ((startWidth - endWidth) / 2) : radius;
     if (startWidth !== undefined && endWidth !== undefined) {
         return getRangePath(
-            getLocationFromAngle(start, radius, center),
-            getLocationFromAngle(end, radius, center),
+            getLocationFromAngle(start, insideStartRadius, center),
+            getLocationFromAngle(end, insideEndRadius, center),
             getLocationFromAngle(start, startRadius, center),
             getLocationFromAngle(end, endRadius, center),
-            radius, arcRadius, arcRadius,
+            insideArcRadius, arcRadius, arcRadius,
             (degree < 180) ? 0 : 1
         );
     } else {
@@ -724,7 +734,7 @@ export function textTrim(maxWidth: number, text: string, font: FontModel): strin
     return label;
 }
 /** @private */
-export function showTooltip(text: string, x: number, y: number, areaWidth: number, id: string, element: Element ): void {
+export function showTooltip(text: string, x: number, y: number, areaWidth: number, id: string, element: Element): void {
     //let id1: string = 'EJ2_legend_tooltip';
     let tooltip: HTMLElement = document.getElementById(id);
     let width: number = measureText(text, {

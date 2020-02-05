@@ -322,6 +322,60 @@ describe('Tooltip checking for the pie series', () => {
         accumulation.refresh();
     });
 });
+    describe('Checking tooltip text with useGroupSeparator is true', () => {
+        let ele: HTMLElement;
+        let id: string = 'container';
+        let sliceid: string = id + '_Series_0' + '_Point_';
+        let accumulation: AccumulationChart; let points: AccPoints[];
+        let trigger: MouseEvents = new MouseEvents();
+        let segement: Element;
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: id });
+            document.body.appendChild(ele);
+            accumulation = new AccumulationChart({
+                useGroupingSeparator: true,
+                series: [
+                    {
+                        dataSource: [
+                            { x: 'Cases', y: 177507, text: '37%' }, { x: 'Layers', y: 137507, text: '17%' },
+                            { x: 'Palletes', y: 1377507, text: '19%' }
+                        ],
+                        dataLabel: {
+                            visible: true, position: 'Inside', name: 'x', font: { fontWeight: '600' }
+                        },
+                        radius: '70%', xName: 'x', yName: 'y', startAngle: 0, endAngle: 360, innerRadius: '0%',
+                        explode: true, explodeOffset: '10%', explodeIndex: 0, name: 'Browser', animation: { enable: false }
+                    }
+                ],
+                center: { x: '50%', y: '50%' },
+                enableSmartLabels: true,
+                enableAnimation: false,
+                legendSettings: { visible: false },
+                // Initialize tht tooltip
+                tooltip: { enable: true, header: '' },
+                title: 'Mobile Browser Statistics',
+                width: '400px', height: '400px'
+
+            });
+            accumulation.appendTo('#' + id);
+        });
+        afterAll((): void => {
+            accumulation.destroy();
+            ele.remove();
+        });
+        it('Checking point value with group separator', (done: Function) => {
+            accumulation.loaded = (args: IAccLoadedEventArgs) => {
+                segement = getElement(sliceid + 2);
+                trigger.mousemoveEvent(segement, 0, 0, 200, 250);
+                let tooltip: HTMLElement = document.getElementById('container_tooltip_text');
+                expect(tooltip.children[0].innerHTML).toEqual("Palletes ");
+                expect(tooltip.children[3].innerHTML).toEqual("1,377,507");
+                done();
+            };
+            accumulation.refresh();
+        });
+    });
 it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

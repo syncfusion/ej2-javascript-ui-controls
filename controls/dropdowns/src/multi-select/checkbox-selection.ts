@@ -179,7 +179,8 @@ export class CheckBoxSelection {
                     args.e.target : args.li.querySelector('.e-checkbox-wrapper').childNodes[1]
                 : args.li.querySelector('.e-checkbox-wrapper').childNodes[1];
         } else {
-            target = args.li.lastElementChild.childNodes[1];
+            let checkboxWrapper: Element = args.li.querySelector('.e-checkbox-wrapper');
+            target = checkboxWrapper ? checkboxWrapper.childNodes[1] : args.li.lastElementChild.childNodes[1];
         }
         if (this.parent.itemTemplate || this.parent.enableGroupCheckBox ) {
             target = args.li.firstElementChild.childNodes[1];

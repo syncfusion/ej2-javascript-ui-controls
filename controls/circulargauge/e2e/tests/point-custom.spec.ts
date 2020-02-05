@@ -4,7 +4,7 @@ import { WebElement } from "selenium-webdriver";
 if(browser.isDesktop===true){
     browser.driver.manage().window().setSize(1900, 1200);
 }
-fdescribe('CircularGuage Pointer samples', () => {
+describe('CircularGuage Pointer samples', () => {
     it('Pointer types sample', (done: Function) => {
          browser.load("/demos/pointer/pointer-customization.html");
          browser.compareScreen(element(By.id('container1')), 'Pointer_custom_1');
@@ -13,5 +13,6 @@ fdescribe('CircularGuage Pointer samples', () => {
          browser.compareScreen(element(By.id('container4')), 'Pointer_custom_4');
          browser.compareScreen(element(By.id('container5')), 'Pointer_custom_5');
          browser.compareScreen(element(By.id('container6')), 'Pointer_custom_6');
+		 done();
         });
 });

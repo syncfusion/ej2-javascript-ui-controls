@@ -1,14 +1,8 @@
-import { Toolbar, MarkdownEditor, Count, RichTextEditor, Link, Image, QuickToolbar } from './../../../../src/index';
+/**
+ * Markdown - Focus Blur event spec
+ */
+import { RichTextEditor } from './../../../../src/index';
 import { renderRTE, destroy } from './../../render.spec';
-import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
-
-RichTextEditor.Inject(MarkdownEditor);
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(Link);
-RichTextEditor.Inject(Count);
-RichTextEditor.Inject(Image);
-
-
 
 describe('RTE Markdown FOCUS and BLUR EVENTS - ', () => {
 

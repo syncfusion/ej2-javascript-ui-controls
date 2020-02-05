@@ -110,7 +110,7 @@ $de-page-setup-margin-dia-common-margin-top: 8px !default;
 $de-page-setup-common-margin-top: 12px !default;
 $de-page-setup-sub-container-height-style: 40px !default;
 $de-page-setup-dlg-sub-label-font-size: 13px !default;
-$de-page-setup-dlg-sub-label-font-weight: 450 !default;
+$de-page-setup-dlg-sub-label-font-weight: 500 !default;
 $de-page-setup-dlg-orientation-prop-margin-top: 13px !default;
 $de-page-setup-sub-size-container-height: 65px !default;
 $de-page-setup-sub-size-container-bottom: 20px !default;
@@ -137,8 +137,8 @@ $de-options-buttons-left: 415px !default;
 $de-op-btn-icon-hover-clr: rgba(0, 0, 0, .54) !default;
 $de-tooltip-bg-clr: #fff !default;
 $de-tooltip-shadow: 0 3px 8px 0 rgba(0, 0, 0, .26) !default;
-$de-op-btn-icon-bg: none !default;
-$de-op-btn-icon-border: none !default;
+$de-op-btn-icon-bg: transparent !default;
+$de-op-btn-icon-border: transparent !default;
 $de-op-btn-icon-active-clr: rgba(0, 0, 0, .54) !default;
 $de-input-color: #000 !default;
 $de-dlg-btn-height: 36px !default;
@@ -158,7 +158,6 @@ $de-dlg-close-icon-left: 6px !default;
 $de-dlg-clr-pkr-top: 159px !default;
 $de-op-result-container-margin-top: 12px !default;
 $de-op-bg-color: #fff !default;
-$de-op-tab-header-padding: 0 24px !default;
 $de-op-tab-header-margin-bottom: 20px !default;
 $de-op-tab-header-margin-top: 1px !default;
 $de-font-color-border: 1px #ddd !default;
@@ -474,7 +473,7 @@ $de-page-setup-margin-dia-common-margin-top: 3px !default;
 $de-page-setup-common-margin-top: 12px !default;
 $de-page-setup-sub-container-height-style: 55px !default;
 $de-page-setup-dlg-sub-label-font-size: 13px !default;
-$de-page-setup-dlg-sub-label-font-weight: 450 !default;
+$de-page-setup-dlg-sub-label-font-weight: 500 !default;
 $de-page-setup-dlg-orientation-prop-margin-top: 13px !default;
 $de-page-setup-sub-size-container-height: 70px !default;
 $de-page-setup-sub-size-container-bottom: 20px !default;
@@ -521,7 +520,7 @@ $de-dlg-close-icon-left: 12px !default;
 $de-dlg-clr-pkr-top: 166px !default;
 $de-op-result-container-margin-top: 12px !default;
 $de-op-bg-color: $bg-base-0 !default;
-$de-op-tab-header-padding: 0 25px 0 0 !default;
+$de-op-tab-header-padding: 25px !default;
 $de-op-tab-header-margin-bottom: 28px !default;
 $de-op-tab-header-margin-top: 1px !default;
 $de-font-color-border: 1px #fff !default;
@@ -1317,7 +1316,7 @@ $de-reply-footer-margin-top: 8px !default;
 
   .e-de-search-tab-content .e-input-group .e-de-op-search-close-icon:focus {
     border: 1px solid $search-icon-bdr-clr;
-    border-right-width: none;
+    border-right-width: 0;
   }
 
   .e-de-op-search-close-icon:hover {
@@ -1326,7 +1325,7 @@ $de-reply-footer-margin-top: 8px !default;
 
   .e-spin-down:focus {
     border: 1px solid $spin-down-bdr-clr;
-    border-right-width: none;
+    border-right-width: 0;
   }
 
   .e-spin-down:hover {
@@ -1335,7 +1334,7 @@ $de-reply-footer-margin-top: 8px !default;
 
   .e-spin-up:focus {
     border: 1px solid $spin-up-bdr-clr;
-    border-right-width: none;
+    border-right-width: 0;
   }
 
   .e-spin-up:hover {

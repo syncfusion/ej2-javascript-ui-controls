@@ -679,10 +679,11 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     }
 
     private storeDataSource(): void {
-        this.series.forEach((series: StockSeries) => {
+        for (let i: number = 0; i < this.series.length; i++) {
+            let series: StockSeries = this.series[i] as StockSeries;
             this.tempSeriesType.push(series.type);
             series.localData = undefined;
-        });
+        }
         this.initialRender = true;
         this.rangeFound = false;
         this.resizeTo = null;
@@ -1038,8 +1039,10 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
             pageX = e.clientX; pageY = e.clientY;
         }
         this.trigger('stockChartMouseMove', { target: (e.target as Element).id, x: this.mouseX, y: this.mouseY });
-        this.setMouseXY(pageX, pageY);
-        this.chartOnMouseMove(e);
+        if (getElement(this.element.id + '_stockChart_chart')) {
+            this.setMouseXY(pageX, pageY);
+            this.chartOnMouseMove(e);
+        }
         return false;
     }
 

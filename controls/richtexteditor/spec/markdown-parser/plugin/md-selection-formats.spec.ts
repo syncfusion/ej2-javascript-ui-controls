@@ -1,9 +1,8 @@
 /**
- * Formats plugin spec
+ * Markdown Selection Formats plugin spec
  */
 import { createElement, detach } from '@syncfusion/ej2-base';
-import { MarkdownSelection, MarkdownParser } from '../../../src/markdown-parser/index';
-
+import { MarkdownParser } from '../../../src/markdown-parser/index';
 
 describe('Markdown - selection command plugin', () => {
     let innerValue: string =
@@ -286,7 +285,6 @@ Tabs and shift-tabs work too`;
     });
 
     describe('RTE - uncommand', () => {
-        let elem: HTMLElement;
         let editorObj: MarkdownParser;
         let innerHTML: string = `Lists are a piece of cake
 They even auto continue as you type
@@ -343,9 +341,7 @@ Tabs and shift-tabs work too`;
     });
 
     describe('EJ2-23207 RTE - The UpperCase command is not working properly in Markdown editor ', () => {
-        let elem: HTMLElement;
         let editorObj: MarkdownParser;
-        let length: number;
         let innerHTML: string = `Lists are a piece of cake
 They even auto continue as you type
 A double enter will end them
@@ -386,7 +382,6 @@ Tabs and **shift-tabs** work too`;
         });
     });
     describe('EJ2-23972 RTE - Markdown strikethrough style apply not working properly', () => {
-        let elem: HTMLElement;
         let editorObj: MarkdownParser;
         let length: number;
         let innerHTML: string = `Lists are a piece of cake

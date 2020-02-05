@@ -778,7 +778,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     }
                     if (this.isMenu && trgtpopUp && popupId.length) {
                         trgtliId = new RegExp('(.*)-ej2menu-' + this.element.id + '-popup').exec(popupId)[1];
-                        closedLi = trgtpopUp.querySelector('#' + trgtliId); trgtLi = (liElem && trgtpopUp.querySelector('#' + liElem.id));
+                        closedLi = trgtpopUp.querySelector('[id="' + trgtliId + '"]');
+                        trgtLi = (liElem && trgtpopUp.querySelector('[id="' + liElem.id + '"]'));
                     }
                     if (isOpen && this.hamburgerMode && ulIndex) {
                         this.afterCloseMenu(e as MouseEvent);

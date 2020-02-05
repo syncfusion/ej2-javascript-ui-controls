@@ -25,4 +25,11 @@ export class WAbstractList {
         }
         this.levels = undefined;
     }
+    public clone(): WAbstractList {
+        let absList: WAbstractList = new WAbstractList();
+        for (let i: number = 0; i < this.levels.length; i++) {
+            absList.levels.push(this.levels[i].clone(absList));
+        }
+        return absList;
+    }
 }

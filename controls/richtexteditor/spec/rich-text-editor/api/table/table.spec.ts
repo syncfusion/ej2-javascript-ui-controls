@@ -1,14 +1,8 @@
-import { Toolbar, HtmlEditor, Table, RichTextEditor, Count, Link, Image, QuickToolbar, HTMLFormatter } from './../../../../src/index';
+/**
+ * Table spec
+ */
+import { RichTextEditor } from './../../../../src/index';
 import { renderRTE, destroy, dispatchEvent, setCursorPoint } from './../../render.spec';
-import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
-
-RichTextEditor.Inject(HtmlEditor);
-RichTextEditor.Inject(Table);
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(Link);
-RichTextEditor.Inject(Count);
-RichTextEditor.Inject(Image);
-RichTextEditor.Inject(QuickToolbar);
 
 describe('RTE Table - ', () => {
 

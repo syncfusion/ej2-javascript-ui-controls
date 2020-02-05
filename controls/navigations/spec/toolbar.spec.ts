@@ -91,6 +91,7 @@ describe('Toolbar Control', () => {
             expect(toolbar.items[0].tooltipText).toEqual('');
             expect(toolbar.items[0].align).toEqual('Left');
             expect(toolbar.items[0].showAlwaysInPopup).toBe(false);
+            expect(toolbar.items[0].visible).toBe(true);
         });
     });
 
@@ -1654,6 +1655,43 @@ describe('Toolbar Control', () => {
             }); toolbar.appendTo('#ej2Toolbar');
             let ele: HTMLElement = <HTMLElement>element.getElementsByClassName('e-toolbar-item')[0];
             expect(element.querySelector('.e-toolbar-item button').children[0].innerHTML).toEqual('Bold');
+        });
+    });
+
+    describe('Visible property testing in toolbar item', () => {
+        let toolbar: Toolbar;
+        beforeEach((): void => {
+            toolbar = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Toolbar' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (toolbar) {
+                toolbar.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('when visibility property is set to true', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                items: [{
+                    type: 'Button', text: 'Underline', visible: true
+                }],
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            expect(toolbar.items[0].visible).toBe(true);
+            expect(element.querySelector('.e-toolbar-item').classList.contains('e-hidden')).toEqual(false);
+        });
+        it('when visibility property is set to false', () => {
+            let element: HTMLElement = document.getElementById('ej2Toolbar');
+            toolbar = new Toolbar({
+                items: [{
+                    type: 'Button', text: 'Underline', visible: false
+                }],
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            expect(toolbar.items[0].visible).toBe(false);
+            expect(element.querySelector('.e-toolbar-item').classList.contains('e-hidden')).toEqual(true);
         });
     });
 

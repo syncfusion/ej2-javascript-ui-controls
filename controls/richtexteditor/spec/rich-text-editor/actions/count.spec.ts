@@ -1,16 +1,9 @@
 /**
  * RTE - Count action spec
  */
-import { RichTextEditor, Count, Toolbar } from "../../../src/rich-text-editor/index";
+import { RichTextEditor } from "../../../src/rich-text-editor/index";
 import { renderRTE, destroy } from "./../render.spec";
-import { QuickToolbar, MarkdownEditor, HtmlEditor } from "../../../src/rich-text-editor/index";
-
-
-RichTextEditor.Inject(MarkdownEditor);
-RichTextEditor.Inject(HtmlEditor);
-
-RichTextEditor.Inject(Count, Toolbar);
-RichTextEditor.Inject(QuickToolbar);
+import { detach } from "@syncfusion/ej2-base";
 
 describe('Count module', () => {
     describe('showCharCount property and maxLenth default testing', () => {
@@ -227,5 +220,61 @@ describe('Count module', () => {
             expect(flag).toBe(true);
         });
     });
+    describe('Dynamic showCharCount property value change as true/false', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Undo', 'Redo']
+                },
+                value: '<p>Rich Text Editor</p>',
+                showCharCount: true
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('default character count', () => {
+            let len: number = (rteObj.contentModule.getEditPanel() as HTMLElement).textContent.trim().length;
+            let charLen: string = (rteObj.element.querySelectorAll('.e-rte-character-count')[0] as HTMLElement).textContent;
+            expect(len).toBe(parseInt(charLen));
+            expect(charLen.indexOf('/') < 0).toBe(true);
+        });
+        it('showCharCount as false', () => {
+            rteObj.showCharCount = false;
+            rteObj.dataBind();
+            expect(rteObj.element.querySelectorAll('.e-rte-character-count').length === 0).toBe(true);
+        });
+        it('showCharCount as true', () => {
+            rteObj.showCharCount = true;
+            rteObj.dataBind();
+            let len: number = (rteObj.contentModule.getEditPanel() as HTMLElement).textContent.trim().length;
+            let charLen: string = (rteObj.element.querySelectorAll('.e-rte-character-count')[0] as HTMLElement).textContent;
+            expect(len).toBe(parseInt(charLen));
+            expect(charLen.indexOf('/') < 0).toBe(true);
+        });
+    });
 
+    describe('showCharCount as false without element testing', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    items: ['Undo', 'Redo']
+                },
+                value: '<p>Rich Text Editor</p>',
+                showCharCount: true
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('detach char count element', () => {
+            detach(rteObj.element.querySelector('.e-rte-character-count'));
+            expect(rteObj.element.querySelectorAll('.e-rte-character-count').length === 0).toBe(true);
+            rteObj.showCharCount = false;
+            rteObj.dataBind();
+            expect(rteObj.element.querySelectorAll('.e-rte-character-count').length === 0).toBe(true);
+        });
+    });
 });

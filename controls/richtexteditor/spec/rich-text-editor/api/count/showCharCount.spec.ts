@@ -1,14 +1,9 @@
-import { Toolbar, HtmlEditor, Count, RichTextEditor, Link, Image, QuickToolbar } from './../../../../src/index';
-import { renderRTE, destroy } from './../../render.spec';
+/**
+ * showCharCount spec
+ */
 import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
-
-
-RichTextEditor.Inject(HtmlEditor);
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(Link);
-RichTextEditor.Inject(Count);
-RichTextEditor.Inject(Image);
-RichTextEditor.Inject(QuickToolbar);
+import { RichTextEditor } from './../../../../src/index';
+import { renderRTE, destroy } from './../../render.spec';
 
 describe('RTE COUNT - showCharCount and maxLength - ', () => {
 
@@ -48,7 +43,7 @@ describe('RTE COUNT - showCharCount and maxLength - ', () => {
             afterEach((done: Function) => {
                 destroy(rteObj);
                 done();
-            })
+            });
 
             it(' Test the count value ', () => {
                 rteObj = renderRTE({
@@ -109,7 +104,7 @@ describe('RTE COUNT - showCharCount and maxLength - ', () => {
             afterEach((done: Function) => {
                 destroy(rteObj);
                 done();
-            })
+            });
 
             it(' Test the count value ', () => {
                 rteObj = renderRTE({
@@ -136,14 +131,12 @@ describe('RTE COUNT - showCharCount and maxLength - ', () => {
     describe(' PUBLIC METHODS - ', () => {
         describe(' refresh method - ', () => {
             let rteObj: RichTextEditor;
-            let controlId: string;
             beforeEach((done: Function) => {
                 rteObj = renderRTE({
                     value: '<p>RichTextEditor</p>',
                     showCharCount: true,
                     maxLength: 50
                 });
-                controlId = rteObj.element.id;
                 done();
             });
             afterEach((done: Function) => {
@@ -163,14 +156,12 @@ describe('RTE COUNT - showCharCount and maxLength - ', () => {
 
         describe(' destroy method - ', () => {
             let rteObj: RichTextEditor;
-            let controlId: string;
             beforeEach((done: Function) => {
                 rteObj = renderRTE({
                     value: '<p>RichTextEditor</p>',
                     showCharCount: true,
                     maxLength: 50
                 });
-                controlId = rteObj.element.id;
                 done();
             });
             afterEach((done: Function) => {

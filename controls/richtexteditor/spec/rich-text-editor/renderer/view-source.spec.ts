@@ -1,14 +1,9 @@
+/**
+ * View source spec
+ */
 import { Browser } from "@syncfusion/ej2-base";
-import { Toolbar } from '../../../src/rich-text-editor/index';
-import { RichTextEditor } from '../../../src/rich-text-editor/base/rich-text-editor';
-import { renderRTE, destroy, dispatchKeyEvent } from './../render.spec';
-import { QuickToolbar, MarkdownEditor, HtmlEditor } from "../../../src/rich-text-editor/index";
-
-RichTextEditor.Inject(MarkdownEditor);
-RichTextEditor.Inject(HtmlEditor);
-
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(QuickToolbar);
+import { RichTextEditor } from "../../../src/rich-text-editor/index";
+import { renderRTE, destroy } from './../render.spec';
 
 describe('Toolbar - view html', () => {
     describe('div content source code', () => {
@@ -270,7 +265,6 @@ describe('Toolbar - view html', () => {
 
     describe('RTE value with HTML tag string', () => {
         let rteObj: RichTextEditor;
-        let elem: HTMLElement;
         let innerHTML: string = "<p>Provides &lt;IFRAME&gt; and &lt;DIV&gt; modes</p>";
         beforeAll((done: Function) => {
             rteObj = renderRTE({
@@ -279,7 +273,6 @@ describe('Toolbar - view html', () => {
                     items: ['SourceCode']
                 }
             });
-            elem = rteObj.element;
             done();
         });
 
@@ -353,13 +346,11 @@ describe('Toolbar - view html', () => {
     });
     describe('Checking the placeholder for Iframe mode', () => {
         let rteObj: RichTextEditor;
-        let controlId: string;
         beforeEach((done: Function) => {
             rteObj = renderRTE({
                 placeholder: 'Type something',
                 iframeSettings: { enable: true }
             });
-            controlId = rteObj.element.id;
             done();
         });
         afterEach((done: Function) => {
@@ -373,5 +364,4 @@ describe('Toolbar - view html', () => {
             expect((rteObj as any).element.querySelector("rte-placeholder")).toBe(null);
         });
     });
-
 });

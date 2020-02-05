@@ -63,11 +63,13 @@
         &:hover {
           background: $hscroll-hover-bg;
           border: $hscroll-hover-border;
-          border-color: $hscroll-hover-border-color;
           color: $hscroll-hover-font;
 
-          @if $hscroll-skin == 'highcontrast' {
+          @if $hscroll-skin == 'material' {
+            border-color: $hscroll-hover-border-color;
+          }
 
+          @if $hscroll-skin == 'highcontrast' {
             &:active {
               background: $hscroll-press-bg;
             }
@@ -103,8 +105,11 @@
         &:focus {
           background: $hscroll-hover-bg;
           border: $hscroll-focus-border;
-          border-color: $hscroll-hover-border-color;
           color: $hscroll-hover-font;
+
+          @if $hscroll-skin == 'material' {
+            border-color: $hscroll-hover-border-color;
+          }
 
           @if $hscroll-skin == 'bootstrap4' {
             .e-icons {

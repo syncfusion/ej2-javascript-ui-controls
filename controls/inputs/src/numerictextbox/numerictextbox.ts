@@ -677,6 +677,14 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     private clear(event: MouseEvent): void {
         this.setProperties({ value: null }, true);
         this.setElementValue('');
+        this.hiddenInput.value = '';
+        let formElement: Element = closest(this.element, 'form');
+        if (formElement) {
+            let element: Element = this.element.nextElementSibling;
+            let keyupEvent: KeyboardEvent = document.createEvent('KeyboardEvent');
+            keyupEvent.initEvent('keyup', false, true);
+            element.dispatchEvent(keyupEvent);
+        }
     }
 
     protected resetFormHandler(): void {
@@ -1264,9 +1272,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                 'autocorrect', 'aria-disabled', 'aria-placeholder', 'autocapitalize',
                 'spellcheck', 'aria-autocomplete', 'tabindex', 'aria-valuemin',
                 'aria-valuemax', 'aria-live', 'aria-valuenow', 'aria-invalid'];
-            attrArray.forEach((value: string): void => {
-                this.element.removeAttribute(value);
-            });
+            for (let i: number = 0; i < attrArray.length; i++) {
+                this.element.removeAttribute(attrArray[i]);
+            }
             this.element.classList.remove('e-input');
             this.container.insertAdjacentElement('afterend', this.element);
             detach(this.container);

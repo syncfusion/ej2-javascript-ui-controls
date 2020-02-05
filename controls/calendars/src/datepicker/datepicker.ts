@@ -918,7 +918,8 @@ export class DatePicker extends Calendar implements IInput {
         this.isPopupClicked = false;
     }
     private documentHandler(e: MouseEvent): void {
-        if ((!isNullOrUndefined(this.popupObj) && this.inputWrapper.container.contains(<HTMLElement>e.target)) && e.type !== 'touchstart') {
+        if ((!isNullOrUndefined(this.popupObj) && (this.inputWrapper.container.contains(<HTMLElement>e.target) ||
+            (this.popupObj.element && this.popupObj.element.contains(<HTMLElement>e.target)))) && e.type !== 'touchstart') {
             e.preventDefault();
         }
         let target: HTMLElement = <HTMLElement>e.target;

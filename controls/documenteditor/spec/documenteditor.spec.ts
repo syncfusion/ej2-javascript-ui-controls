@@ -1498,3 +1498,43 @@ describe('Header Ajax value checking', () => {
         expect(() => { httpRequest.send(formObject); }).not.toThrowError();
     })
 });
+
+
+describe('Enable comment checking in docmenteitor', () => {
+    let editor: DocumentEditor;
+    let pagecontainer: Element;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ isReadOnly: false, enableComment: true });
+        editor.enableAllModules();
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo("#container");
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Insert comment', () => {
+        editor.editor.insertComment();
+        expect(editor.showComments).toBe(true);
+        editor.enableComment = false;
+    });
+    it('set enable comment as false', () => {
+        editor.enableComment = false;
+        expect(editor.showComments).toBe(false);
+    });
+    it('insert comment after enable comment as false', () => {
+        editor.openBlank();
+        editor.editor.insertComment();
+        expect(editor.viewer.comments.length).toBe(0);
+    })
+
+});

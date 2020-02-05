@@ -2,9 +2,7 @@
  * Lists plugin spec
  */
 import { createElement, detach, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { EditorManager, Indents } from '../../../src/editor-manager/index';
-import { NodeSelection, } from '../../../src/selection/index';
-import { destroy, Switch } from '@syncfusion/ej2-buttons';
+import { EditorManager } from '../../../src/editor-manager/index';
 
 function setCursorPoint(element: Element, point: number) {
     let range: Range = document.createRange();
@@ -109,10 +107,8 @@ let revertListHTML: string = `<div style="color:red;" id="content-edit" contente
 describe ('left indent testing', () => {
     let editorObj: EditorManager;
     let editNode: HTMLElement;
-    let firstNode: HTMLElement;
     let startNode: HTMLElement;
     let endNode: HTMLElement;
-    let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9 } };
     let elem: HTMLElement;
 
     beforeEach(() => {
@@ -141,7 +137,6 @@ describe ('left indent testing', () => {
         startNode = editNode.querySelector('.ol-first-node').querySelector('ol');
         expect(startNode).toBeNull();
         editorObj.nodeSelection.Clear(document);
-        
     });
 
     it (' apply the left indent to the first LI element with next sibling is within the same parent OL',function() {
@@ -297,14 +292,11 @@ describe ('left indent testing', () => {
     });
 });
 
-
     describe ('right indent testing', () => {
         let editorObj: EditorManager;
         let editNode: HTMLElement;
-        let firstNode: HTMLElement;
         let startNode: HTMLElement;
         let endNode: HTMLElement;
-        let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9 } };
         let elem: HTMLElement;
     
         beforeEach(() => {
@@ -500,7 +492,6 @@ describe ('left indent testing', () => {
             expect(startNode.childNodes.length == 1).toBe(true);
             expect((startNode.childNodes[0] as HTMLElement).tagName === 'LI').toBe(true);
             editorObj.nodeSelection.Clear(document);
-            
         });
 
         it (' apply the right indent to multiple LI element with one li having the Ol element as child with previous Element as OL ',function() {
@@ -582,7 +573,6 @@ describe ('left indent testing', () => {
             detach(elem);
         });
     });
-    
 
     describe(' OL testing', () => {
         let editorObj: EditorManager;
@@ -756,7 +746,6 @@ describe ('left indent testing', () => {
                 editNode.focus();
                 editorObj.execCommand("Lists", 'OL', null);
 
-
                 expect((editorObj.listObj as any).saveSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
                 expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
 
@@ -816,7 +805,6 @@ describe ('left indent testing', () => {
                 expect(startNode).toBeNull();
                 editorObj.nodeSelection.Clear(document);
             });
-            
 
             it(' without tab key navigation from second li and first point', () => {
                 startNode = editNode.querySelector('.ol-third-node');
@@ -987,7 +975,6 @@ describe ('left indent testing', () => {
                 editorObj.nodeSelection.Clear(document);
             });
 
-
             afterAll(() => {
                 detach(elem);
             });
@@ -1041,7 +1028,6 @@ describe ('left indent testing', () => {
                 expect(startNode).toBeNull();
                 editorObj.nodeSelection.Clear(document);
             });
-
 
             it(' without tab key navigation from second li and first point', () => {
                 startNode = editNode.querySelector('.ul-third-node');
@@ -1256,7 +1242,6 @@ describe ('left indent testing', () => {
                 detach(elem);
             });
         });
-
     });
 
     describe(' UL testing', () => {
@@ -1360,8 +1345,6 @@ describe ('left indent testing', () => {
             });
         });
 
-        
-
         describe(' UL to OL ', () => {
             let elem: HTMLElement = createElement('div', {
                 id: 'dom-node', innerHTML: ulHTML.trim()
@@ -1405,8 +1388,7 @@ describe ('left indent testing', () => {
                 detach(elem);
             });
         });
-        
-        
+
         describe('Space key press testing', () => {
             let elem: HTMLElement;
             let innerValue: string = `<div id="content-edit"><p>one node</p><p class='space-two-node'>1.two node</p><p><br></p>
@@ -1511,7 +1493,7 @@ describe ('left indent testing', () => {
             });
         });
     });
-    
+
     describe(' EJ2-29800 - Reactive form validation not working properly', () => {
         let editorObj: EditorManager;
         let editNode: HTMLElement;
@@ -1548,5 +1530,4 @@ describe ('left indent testing', () => {
             detach(elem);
         });
     });
-
 });

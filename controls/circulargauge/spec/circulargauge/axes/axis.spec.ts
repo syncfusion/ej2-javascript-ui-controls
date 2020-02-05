@@ -324,7 +324,7 @@ describe('Circular-Gauge Control', () => {
         let boundingRect: ClientRect;
         let boundingRect1: ClientRect;
         let svg: HTMLElement;
-        let value: string | number;
+        let value: string[] | string | number;
         beforeAll((): void => {
             ele = createElement('div', { id: 'container' });
             document.body.appendChild(ele);
@@ -803,6 +803,51 @@ describe('Circular-Gauge Control', () => {
             };
             gauge.axes[0].labelStyle.hiddenLabel = 'Last';
             gauge.axes[0].majorTicks.interval = 3;
+            gauge.refresh();
+        });
+        it('Checking tick, label position as cross', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Label_0');
+                expect(svg.getAttribute('x') == '583.5' || svg.getAttribute('x') == '575').toBe(true);
+                expect(svg.getAttribute('y')).toBe('225');
+                svg = document.getElementById('container_Axis_Major_TickLine_0_0');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[1] == '589.5' || value[1] == '596.5').toBe(true);
+                svg = document.getElementById('container_Axis_Minor_TickLine_0_4');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[1] == '210.72455052316764' || value[1] == '215.01102564713278').toBe(true);
+                done();
+            };
+            gauge.axes[0].majorTicks.height = 10;
+            gauge.axes[0].minorTicks.height = 5;
+            gauge.axes[0].minorTicks.width = 2;
+            gauge.axes[0].minorTicks.interval = 1;
+            gauge.axes[0].labelStyle.position = 'Cross';
+            gauge.axes[0].labelStyle.autoAngle = true;
+            gauge.axes[0].majorTicks.position = 'Cross';
+            gauge.axes[0].minorTicks.position = 'Cross';
+            gauge.refresh();
+        });
+        it('Checking ticks position as cross and label position as Outside', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Label_0');
+                expect(svg.getAttribute('x') == '579' || svg.getAttribute('x') == '587.5').toBe(true);
+                expect(svg.getAttribute('y')).toBe('225');
+                done();
+            };
+         
+            gauge.axes[0].labelStyle.position = 'Outside';
+            gauge.refresh();
+        });
+        it('Checking ticks position as outside and label position as cross', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Label_0');
+                expect(svg.getAttribute('x') == '579' || svg.getAttribute('x') == '587.5').toBe(true);
+                expect(svg.getAttribute('y')).toBe('225');
+                done();
+            };
+            gauge.axes[0].labelStyle.position = 'Outside';
+            gauge.axes[0].majorTicks.position = 'Inside';
             gauge.refresh();
         });
     });

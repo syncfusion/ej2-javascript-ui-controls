@@ -268,14 +268,14 @@ export class BatchEdit {
                             classList(ftr, [], ['e-hiddenrow', 'e-updatedtd']);
                             rowRenderer.refresh(rows[i], gObj.getColumns() as Column[], false);
                         }
-                        if (this.parent.aggregates.length > 0) {
-                            let type: string = 'type';
-                            let editType: Object[] = [];
-                            editType[type] = 'cancel';
-                            this.parent.notify(events.refreshFooterRenderer, editType);
-                            if (this.parent.groupSettings.columns.length > 0) {
-                                this.parent.notify(events.groupAggregates, editType);
-                            }
+                    }
+                    if (this.parent.aggregates.length > 0) {
+                        let type: string = 'type';
+                        let editType: Object[] = [];
+                        editType[type] = 'cancel';
+                        this.parent.notify(events.refreshFooterRenderer, editType);
+                        if (this.parent.groupSettings.columns.length > 0) {
+                            this.parent.notify(events.groupAggregates, editType);
                         }
                     }
                 }
@@ -498,6 +498,7 @@ export class BatchEdit {
             if (beforeBatchDeleteArgs.cancel) {
                 return;
             }
+            gObj.clearSelection();
             beforeBatchDeleteArgs.row = beforeBatchDeleteArgs.row ?
                 beforeBatchDeleteArgs.row : data ? gObj.getRows()[index] : selectedRows[0];
             if (this.parent.getFrozenColumns()) {
@@ -570,10 +571,7 @@ export class BatchEdit {
                     index = parseInt(gObj.getSelectedRows()[0].getAttribute('aria-rowindex'), 10);
                 }
             }
-            if (gObj.getSelectedRows().length) {
-                gObj.clearSelection();
-                gObj.selectRow(index);
-            }
+            gObj.selectRow(index);
             gObj.trigger(events.batchDelete, beforeBatchDeleteArgs);
             gObj.notify(events.batchDelete, { rows: this.parent.getRowsObject() });
             gObj.notify(events.toolbarRefresh, {});
@@ -702,7 +700,7 @@ export class BatchEdit {
                 this.parent.editSettings.newRowPosition === 'Top' ? this.editCell(0, col.field, true) :
                     this.editCell(this.parent.getCurrentViewRecords().length + changes[addedRecords].length - 1, col.field, true);
             }
-            if (this.parent.aggregates.length > 0 && data) {
+            if (this.parent.aggregates.length > 0 && (data || changes[addedRecords].length)) {
                 this.parent.notify(events.refreshFooterRenderer, {});
             }
             let args1: BatchAddArgs = {

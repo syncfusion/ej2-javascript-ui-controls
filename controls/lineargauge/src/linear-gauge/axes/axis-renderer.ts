@@ -6,6 +6,7 @@ import { AxisModel } from './axis-model';
 import { Animations } from './animation';
 import { Size, Rect, valueToCoefficient, PathOption, textElement, getElement } from '../utils/helper';
 import { TextOption, RectOption, calculateShapes, getBox, getPathToRect, getRangeColor, VisibleRange } from '../utils/helper';
+import { MarkerType } from '../utils/enum';
 
 /**
  * @private
@@ -94,7 +95,7 @@ export class AxisRenderer extends Animations {
         let options: PathOption;
         let rect: Rect = axis.lineBounds;
         let path: string = '';
-        let color: string =  axis.line.color || this.gauge.themeStyle.lineColor;
+        let color: string = axis.line.color || this.gauge.themeStyle.lineColor;
         if (axis.line.width > 0) {
             path = 'M' + rect.x + ' ' + rect.y + ' L ' + (this.gauge.orientation === 'Vertical' ? rect.x : rect.x + rect.width) +
                 ' ' + (this.gauge.orientation === 'Vertical' ? rect.y + rect.height : rect.y) + 'z';
@@ -115,15 +116,17 @@ export class AxisRenderer extends Animations {
         let minorTickColor: string = axis.minorTicks.color || this.gauge.themeStyle.minorTickColor;
         let tickColor: string = (tickID === 'MajorTicks') ? majorTickColor : minorTickColor;
         let interval: number = ((tickID === 'MajorTicks') ? axis.majorInterval : axis.minorInterval);
+        // let position: string = (tickID === 'MajorTicks') ? axis.majorTicks.position : axis.minorTicks.position;
         for (let i: number = range.min; (i <= range.max && interval > 0); i += interval) {
-            if ((tickID === 'MajorTicks') || (tickID === 'MinorTicks' && i !== range.min && i !== range.max
-                && (i % axis.majorInterval) !== 0)) {
+            if ((tickID === 'MajorTicks') || (tickID === 'MinorTicks')) {
                 if (this.gauge.orientation === 'Vertical') {
+                    // pointX =  position === "Inside" ? tickBounds.x : tickBounds.x + ticks.height;
                     pointX = tickBounds.x;
                     pointY = (valueToCoefficient(i, axis, this.gauge.orientation, range) * line.height) + line.y;
                     tickPath = tickPath.concat('M' + pointX + ' ' + pointY + ' ' + 'L' + (pointX + ticks.height) + ' ' + pointY + ' ');
                 } else {
                     pointX = (valueToCoefficient(i, axis, this.gauge.orientation, range) * line.width) + line.x;
+                    // pointY = position === "Inside" ? tickBounds.y : (tickBounds.y + ticks.height);
                     pointY = tickBounds.y;
                     tickPath = tickPath.concat('M' + pointX + ' ' + pointY + ' ' + 'L' + pointX + ' ' + (pointY + ticks.height) + ' ');
                 }
@@ -141,6 +144,8 @@ export class AxisRenderer extends Animations {
         let rect: Rect = axis.lineBounds;
         let bounds: Rect = axis.labelBounds;
         let tick: Rect = axis.majorTickBounds;
+        // let tick: Rect = axis.labelStyle.position === axis.minorTicks.position && axis.minorTicks.position !== axis.majorTicks.position ?
+        //     axis.minorTickBounds : axis.majorTickBounds;
         let labelSize: Size;
         let range: VisibleRange = axis.visibleRange;
         let anchor: string; let baseline: string;
@@ -157,7 +162,8 @@ export class AxisRenderer extends Animations {
             if (this.gauge.orientation === 'Vertical') {
                 pointY = (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) *
                     rect.height) + rect.y;
-                pointX = (!axis.opposedPosition ? (tick.x - labelSize.width - padding) + offset : bounds.x);
+                pointX = axis.labelStyle.position === 'Auto' ?
+                    (!axis.opposedPosition ? (tick.x - labelSize.width - padding) + offset : bounds.x) : bounds.x;
                 pointY += (labelSize.height / 4);
             } else {
                 pointX = (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) *
@@ -209,11 +215,20 @@ export class AxisRenderer extends Animations {
             remove(getElement(pointerID));
         }
         let pointerColor: string = pointer.color || this.gauge.themeStyle.pointerColor;
+        let shapeBasedOnPosition: MarkerType = pointer.markerType;
+        if (!isNullOrUndefined(pointer.position) && (pointer.markerType === 'InvertedTriangle' ||
+            pointer.markerType === 'Triangle')) {
+            shapeBasedOnPosition = (((pointer.position === 'Outside' && !axis.opposedPosition) ||
+                (pointer.position === 'Inside' && axis.opposedPosition) || pointer.position === 'Cross')
+                && pointer.markerType === 'Triangle' ? 'InvertedTriangle' as MarkerType :
+                (((pointer.position === 'Inside' && !axis.opposedPosition) || (pointer.position === 'Outside' && axis.opposedPosition)) &&
+                    pointer.markerType === 'InvertedTriangle' ? 'Triangle' as MarkerType : pointer.markerType));
+        }
         options = new PathOption(
             pointerID, pointerColor,
             pointer.border.width, pointer.border.color, pointer.opacity, null, null, transform);
         options = calculateShapes(
-            pointer.bounds, pointer.markerType, new Size(pointer.width, pointer.height),
+            pointer.bounds, shapeBasedOnPosition, new Size(pointer.width, pointer.height),
             pointer.imageUrl, options, this.gauge.orientation, axis, pointer);
         pointerElement = ((pointer.markerType === 'Circle' ? this.gauge.renderer.drawCircle(options) as SVGAElement
             : (pointer.markerType === 'Image') ? this.gauge.renderer.drawImage(options) :

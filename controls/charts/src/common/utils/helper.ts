@@ -544,7 +544,8 @@ export function getMinPointsDelta(axis: Axis, seriesCollection: Series[]): numbe
     let xValues: Object[];
     let minVal: number;
     let seriesMin: number;
-    seriesCollection.forEach((series: Series, index: number) => {
+    for (let index: number = 0; index < seriesCollection.length; index++) {
+        let series: Series = seriesCollection[index];
         xValues = [];
         if (series.visible &&
             (axis.name === series.xAxisName || (axis.name === 'primaryXAxis' && series.xAxisName === null)
@@ -561,17 +562,18 @@ export function getMinPointsDelta(axis: Axis, seriesCollection: Series[]): numbe
                     minDelta = Math.min(minDelta, minVal);
                 }
             } else {
-                xValues.forEach((value: Object, index: number, xValues: Object[]) => {
+                for (let index: number = 0; index < xValues.length; index++) {
+                    let value: Object = xValues[index];
                     if (index > 0 && value) {
                         minVal = <number>value - <number>xValues[index - 1];
                         if (minVal !== 0) {
                             minDelta = Math.min(minDelta, minVal);
                         }
                     }
-                });
+                }
             }
         }
-    });
+    }
     if (minDelta === Number.MAX_VALUE) {
         minDelta = 1;
     }

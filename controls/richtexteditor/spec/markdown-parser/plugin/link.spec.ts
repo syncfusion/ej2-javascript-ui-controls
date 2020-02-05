@@ -1,9 +1,8 @@
 /**
- * Formats plugin spec
+ * Link plugin spec
  */
 import { createElement, detach } from '@syncfusion/ej2-base';
 import { MarkdownParser } from '../../../src/markdown-parser/index';
-
 
 describe('Markdown - Link and Image plugin', () => {
     let innerValue: string =

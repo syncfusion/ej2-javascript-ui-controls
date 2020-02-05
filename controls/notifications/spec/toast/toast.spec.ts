@@ -480,6 +480,42 @@ describe("Toast Testing", () => {
             expect(ele.children[1].childElementCount).toBe(3);
         });
     });
+    describe("Toast ShowCloseButton property tabindex and key down testing", () => {
+        let toast: Toast;
+        beforeEach((): void => {
+            let ele: HTMLElement = document.createElement("div");
+            ele.id = "toast";
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (toast) {
+                toast.destroy();
+            }
+            document.body.innerHTML = "";
+        });
+        it("Toast ShowCloseButton property keydown testing",  () => {
+            let ele: HTMLElement = document.getElementById("toast");
+            toast = new Toast({
+                showCloseButton: true,
+                timeOut: 0,
+                newestOnTop: false,
+            }, ele);
+            toast.show();
+            expect(ele.firstElementChild.lastElementChild.classList.contains(CLOSEBTN)).toBe(true);
+            expect(ele.firstElementChild.lastElementChild.classList.contains('e-icons')).toBe(true);
+            expect(ele.firstElementChild.lastElementChild.getAttribute('tabindex')).toBe('0');
+            let keyboardEventArgs : any = {
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: true,
+                code: 'Enter',
+                keyCode: 13
+            };
+            keyboardEventArgs.target = ele.firstElementChild.lastElementChild;
+            (toast as any).keyDownHandler(keyboardEventArgs)
+        });
+    });
     describe("Toast ProgressBar property testing", () => {
         let toast: Toast;
         beforeEach((): void => {

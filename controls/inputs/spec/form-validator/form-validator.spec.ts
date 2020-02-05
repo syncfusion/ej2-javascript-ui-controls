@@ -761,6 +761,26 @@ describe('FormValidator # ', () => {
             expect(formObj.validate('input1')).toEqual(false);
         });
 
+        it('testing email - pattern 1 # ', () => {
+            setInputValue(formObj, 'input1', 'fabio@disapproved.solutions');
+            expect(formObj.validate('input1')).toEqual(true);
+        });
+
+        it('testing email - pattern 2 # ', () => {
+            setInputValue(formObj, 'input1', 'john@server.department.company.com');
+            expect(formObj.validate('input1')).toEqual(true);
+        });
+
+        it('testing email - pattern 3 # ', () => {
+            setInputValue(formObj, 'input1', 'john@aol...com');
+            expect(formObj.validate('input1')).toEqual(true);
+        });
+
+        it('testing email - pattern other language ', () => {
+            setInputValue(formObj, 'input1', 'asd@ทีเอชนิค.ไทย');
+            expect(formObj.validate('input1')).toEqual(false);
+        });
+
         it('testing correct email # ', () => {
             setInputValue(formObj, 'input1', 'abc@sample.com');
             expect(formObj.validate('input1')).toEqual(true);

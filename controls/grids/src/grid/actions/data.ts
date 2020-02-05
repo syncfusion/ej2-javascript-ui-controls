@@ -19,6 +19,8 @@ import { SortDirection } from '../base/enum';
 export class Data implements IDataProcessor {
     //Internal variables   
     public dataManager: DataManager;
+    /** @hidden */
+    public isQueryInvokedFromData: boolean;
 
     //Module declarations    
     protected parent: IGrid;
@@ -62,7 +64,8 @@ export class Data implements IDataProcessor {
         let gObj: IGrid = this.parent;
         this.dataManager = gObj.dataSource instanceof DataManager ? <DataManager>gObj.dataSource :
             (isNullOrUndefined(gObj.dataSource) ? new DataManager() : new DataManager(gObj.dataSource));
-        gObj.setProperties({ query: gObj.query instanceof Query ? gObj.query : new Query()}, true);
+        this.isQueryInvokedFromData = true;
+        gObj.query = gObj.query instanceof Query ? gObj.query : new Query();
     }
 
     /**

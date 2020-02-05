@@ -1,26 +1,12 @@
 /**
- * Content renderer spec
+ * Markdown toolbar status spec
  */
-import { detach, createElement } from '@syncfusion/ej2-base';
-import { RichTextEditor, Toolbar } from './../../../src/index';
-import { dispatchEvent } from './../../../src/rich-text-editor/base/util';
-import { QuickToolbar, MarkdownEditor, HtmlEditor, MarkdownFormatter } from "../../../src/rich-text-editor/index";
-
-RichTextEditor.Inject(MarkdownEditor);
-RichTextEditor.Inject(HtmlEditor);
-
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(QuickToolbar);
-
+import { RichTextEditor, MarkdownFormatter, dispatchEvent } from "../../../src/rich-text-editor/index";
 import { renderRTE, destroy, setCursorPoint } from "./../render.spec";
-
 
 describe(' Markdown editor update toolbar ', () => {
     let rteObj: RichTextEditor;
-    let curDocument: Document;
-    let mouseEventArgs: { [key: string]: HTMLElement };
     let editNode: HTMLTextAreaElement;
-    let rteEle: Element;
     let innerValue: string =
         `1. Lists are a piece of cake
 They even auto continue as you type
@@ -65,11 +51,9 @@ A double enter will end them
             function oncreate(args: any): void {
                 eleValue = this.contentModule.getEditPanel().value;
             }
-            rteEle = rteObj.element;
             editNode = rteObj.contentModule.getEditPanel() as HTMLTextAreaElement;
             editNode.style.width = "200px;";
             editNode.style.height = "200px";
-            curDocument = rteObj.contentModule.getDocument();
             rteObj.cssClass = 'custom-class';
             rteObj.dataBind();
         });
@@ -184,10 +168,8 @@ A double enter will end them
             rteObj.formatter.editorManager.markdownSelection.restore(editNode);
             (rteObj as any).mouseUp({ target: editNode });
             expect((rteObj.markdownEditorModule as any).toolbarUpdate.toolbarStatus.formats).toBe('pre');
-    
         });
         afterAll(() => {
-            detach(rteEle);
             destroy(rteObj);
         });
     });
@@ -203,11 +185,9 @@ A double enter will end them
                 },
                 value: 'RichTextEditor'
             });
-            rteEle = rteObj.element;
             editNode = rteObj.contentModule.getEditPanel() as HTMLTextAreaElement;
             editNode.style.width = "200px;";
             editNode.style.height = "200px";
-            curDocument = rteObj.contentModule.getDocument();
             controlId = rteObj.element.id;
         });
         it(' Remove the active state of Bold toolbar item while click on document ', () => {
@@ -222,7 +202,6 @@ A double enter will end them
             expect((rteObj.markdownEditorModule as any).toolbarUpdate.toolbarStatus.bold).toEqual(false);
         });
         afterAll(() => {
-            detach(rteEle);
             destroy(rteObj);
         });
     });

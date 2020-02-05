@@ -7,6 +7,7 @@ import {
 } from '../utils/helper';
 import { TickModel } from './axis-model';
 import { getRangePalette } from '../model/theme';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Specifies the Axis rendering for circular gauge
@@ -71,6 +72,8 @@ export class AxisRenderer {
      * @return {void}
      * @private
      */
+    /* tslint:disable:no-string-literal */
+    /* tslint:disable:max-func-body-length */
     public drawAxisLabels(axis: Axis, index: number, element: Element, gauge: CircularGauge): void {
         let labelElement: Element = gauge.renderer.createGroup({
             id: gauge.element.id + '_Axis_Labels_' + index
@@ -86,10 +89,19 @@ export class AxisRenderer {
         let lastLabelAngle: number; let lastLabelAnchor: string;
         let lastTextWidth: number; let lastTextHeight: number;
         let style: Label = <Label>axis.labelStyle; let anchor: string; let angle: number;
-        let label: VisibleLabels; let radius: number = axis.currentRadius; let labelPadding: number = 10;
+        let label: VisibleLabels; let radius: number = axis.currentRadius;
+        let checkLabelOpposed: number = 0;
+        checkLabelOpposed = (style.position === 'Inside' && axis.majorTicks.position === 'Outside' &&
+                            axis.minorTicks.position === 'Outside') || (style.position === 'Outside' &&
+                            axis.minorTicks.position === 'Inside' && axis.majorTicks.position === 'Inside') ?
+                            axis.lineStyle.width + axis.currentRadius / 20 :
+                            (style.position === axis.majorTicks.position ? axis.currentRadius / 20 : axis.currentRadius / 40);
+        let labelPadding: number = axis.labelStyle.shouldMaintainPadding ? 10 : checkLabelOpposed;
         let color: string = style.font.color || this.gauge.themeStyle.labelColor;
         if (style.position === 'Outside') {
             radius += (axis.nearSize - (axis.maxLabelSize.height + axis.lineStyle.width / 2)) + (labelPadding / 2);
+        } else if (style.position === 'Cross') {
+            radius = radius - (axis.maxLabelSize.height / 2) - axis.labelStyle.offset;
         } else {
             radius -= (axis.farSize - (axis.maxLabelSize.height + axis.lineStyle.width / 2) + (style.autoAngle ? labelPadding : 0));
         }
@@ -97,17 +109,17 @@ export class AxisRenderer {
         if (axis.hideIntersectingLabel) {
             lastLabelAngle = Math.round(getAngleFromValue(labelCollection[labelCollection.length - 1].value, max,
                                                           min, axis.startAngle, axis.endAngle, axis.direction === 'ClockWise'));
-            lastLabelLocation =  getLocationFromAngle(lastLabelAngle, radius, gauge.midPoint);
+            lastLabelLocation = getLocationFromAngle(lastLabelAngle, radius, gauge.midPoint);
             lastLabelAnchor = this.findAnchor(lastLabelLocation, style, lastLabelAngle, labelCollection[labelCollection.length - 1]);
             lastTextWidth = (!axis.showLastLabel && (isCompleteAngle(axis.startAngle, axis.endAngle)) && (style.hiddenLabel !== 'First')) ?
-            labelCollection[0].size.width : labelCollection[labelCollection.length - 1].size.width;
+                labelCollection[0].size.width : labelCollection[labelCollection.length - 1].size.width;
             lastTextHeight = (!axis.showLastLabel && (isCompleteAngle(axis.startAngle, axis.endAngle)) && (style.hiddenLabel !== 'First')) ?
-            (!style.autoAngle ? labelCollection[0].size.height : labelCollection[0].size.width) :
-            (!style.autoAngle ? labelCollection[labelCollection.length - 1].size.height :
-            labelCollection[labelCollection.length - 1].size.width);
+                (!style.autoAngle ? labelCollection[0].size.height : labelCollection[0].size.width) :
+                (!style.autoAngle ? labelCollection[labelCollection.length - 1].size.height :
+                    labelCollection[labelCollection.length - 1].size.width);
             lastTextHeight = lastTextHeight - this.offsetAxisLabelsize(lastLabelAngle, lastTextHeight);
-            lastLabelLocation = this.getAxisLabelStartPosition( lastLabelLocation, lastTextWidth, style, lastTextHeight, lastLabelAnchor,
-                                                                lastLabelAngle);
+            lastLabelLocation = this.getAxisLabelStartPosition(lastLabelLocation, lastTextWidth, style, lastTextHeight, lastLabelAnchor,
+                                                               lastLabelAngle);
         }
         for (let i: number = 0, length: number = labelCollection.length; i < length; i++) {
             label = labelCollection[i];
@@ -134,24 +146,24 @@ export class AxisRenderer {
                 continue;
             }
             style.font.fontFamily = this.gauge.themeStyle.labelFontFamily || style.font.fontFamily;
-            if ( axis.hideIntersectingLabel && (i !== 0)) {
+            if (axis.hideIntersectingLabel && (i !== 0)) {
                 //To remove the labels which is intersecting with last label.
                 let lastlabel: boolean = ((i !== (labelCollection.length - 1)) && ((isCompleteAngle(axis.startAngle, axis.endAngle) ||
-                axis.showLastLabel))) ? this.FindAxisLabelCollision(lastLabelLocation, lastTextWidth, lastTextHeight, currentLocation,
-                                                                    currentTextWidth, currentTextHeight) : true;
+                    axis.showLastLabel))) ? this.FindAxisLabelCollision(lastLabelLocation, lastTextWidth, lastTextHeight, currentLocation,
+                                                                        currentTextWidth, currentTextHeight) : true;
                 //Checking wether the axis label is intersecting with previous label or not.
                 labelsVisible = (this.FindAxisLabelCollision(previousLocation, textWidth, textHeight, currentLocation, currentTextWidth,
-                                                             currentTextHeight) && lastlabel );
+                                                             currentTextHeight) && lastlabel);
             } else {
                 labelsVisible = true;
             }
             if (labelsVisible || (i === labelCollection.length - 1)) {
                 //To hide first and last label based on requirement
                 label.text = (!axis.showLastLabel && ((isCompleteAngle(axis.startAngle, axis.endAngle) && style.hiddenLabel !== 'First') ||
-                                                      !labelsVisible )
-                && axis.hideIntersectingLabel && (i === (length - 1))) ? '' : label.text;
+                    !labelsVisible)
+                    && axis.hideIntersectingLabel && (i === (length - 1))) ? '' : label.text;
                 label.text = (axis.showLastLabel && axis.hideIntersectingLabel && isCompleteAngle(axis.startAngle, axis.endAngle)
-                && (i === 0)) ? '' : label.text;
+                    && (i === 0)) ? '' : label.text;
                 textElement(
                     new TextOption(
                         gauge.element.id + '_Axis_' + index + '_Label_' + i,
@@ -199,8 +211,9 @@ export class AxisRenderer {
     private FindAxisLabelCollision(previousLocation: GaugeLocation, previousWidth: number, previousHeight: number,
                                    currentLocation: GaugeLocation, currentWidth: number, currentHeight: number): boolean {
         let labelVisisble: boolean = ((previousLocation.x > (currentLocation.x + (currentWidth))) ||
-        ((previousLocation.x + (previousWidth)) < (currentLocation.x)) ||
-        ((previousLocation.y + (previousHeight)) < (currentLocation.y)) || ((previousLocation.y) > (currentLocation.y + (currentHeight))));
+            ((previousLocation.x + (previousWidth)) < (currentLocation.x)) ||
+            ((previousLocation.y + (previousHeight)) < (currentLocation.y)) ||
+            ((previousLocation.y) > (currentLocation.y + (currentHeight))));
         return labelVisisble;
     }
 
@@ -208,14 +221,14 @@ export class AxisRenderer {
      * Methode to get anchor position of label as start.
      * @private
      */
-    private getAxisLabelStartPosition(actualLocation: GaugeLocation, textWidth: number, style: Label,
-                                      textHeight: number, anchorPosition: string, angle: number): GaugeLocation {
-        if ( anchorPosition === 'end') {
-        actualLocation.x = actualLocation.x - textWidth;
-        } else if ( anchorPosition === 'middle') {
-        actualLocation.x = actualLocation.x - (textWidth / 2);
+    private getAxisLabelStartPosition(actualLocation: GaugeLocation, textWidth: number, style: Label, textHeight: number,
+                                      anchorPosition: string, angle: number): GaugeLocation {
+        if (anchorPosition === 'end') {
+            actualLocation.x = actualLocation.x - textWidth;
+        } else if (anchorPosition === 'middle') {
+            actualLocation.x = actualLocation.x - (textWidth / 2);
         } else {
-        actualLocation.x = actualLocation.x;
+            actualLocation.x = actualLocation.x;
         }
         return actualLocation;
     }
@@ -226,7 +239,7 @@ export class AxisRenderer {
      */
     private offsetAxisLabelsize(angle: number, size: number): number {
         let finalSize: number = ((angle >= 20 && angle <= 60) || (angle >= 120 && angle <= 160) || (angle >= 200 && angle <= 240) ||
-                        (angle >= 300 && angle <= 340)) ? size / 5 : 0 ;
+            (angle >= 300 && angle <= 340)) ? size / 5 : 0;
         return finalSize;
     }
 
@@ -298,22 +311,21 @@ export class AxisRenderer {
      */
     public calculateTicks(value: number, options: Tick, axis: Axis): string {
         let axisLineWidth: number = (axis.lineStyle.width / 2) + options.offset;
-        let isOutside: boolean = options.position === 'Outside';
         let angle: number = getAngleFromValue(
             value, axis.visibleRange.max, axis.visibleRange.min,
             axis.startAngle, axis.endAngle, axis.direction === 'ClockWise'
         );
-        let start: GaugeLocation = getLocationFromAngle(
-            angle, axis.currentRadius +
-            (isOutside ? axisLineWidth : -axisLineWidth),
-            this.gauge.midPoint
-        );
-        let end: GaugeLocation = getLocationFromAngle(
-            angle, axis.currentRadius +
-            (isOutside ? axisLineWidth : -axisLineWidth) +
-            (isOutside ? options.height : -options.height),
-            this.gauge.midPoint
-        );
+        let start: GaugeLocation =
+        getLocationFromAngle(angle, axis.currentRadius +
+                             (options.position === 'Outside' ? axisLineWidth : options.position === 'Cross' ?
+                             options.height / 2 - options.offset : -axisLineWidth),
+                             this.gauge.midPoint);
+        let end: GaugeLocation =
+        getLocationFromAngle(angle, axis.currentRadius +
+                             (options.position === 'Outside' ? axisLineWidth : options.position === 'Cross' ?
+                              options.height / 2 - options.offset : -axisLineWidth) +
+                             (options.position === 'Outside' ? options.height : -options.height),
+                             this.gauge.midPoint);
         return 'M ' + start.x + ' ' + start.y + ' L ' + end.x + ' ' + end.y + ' ';
     }
 
@@ -341,7 +353,23 @@ export class AxisRenderer {
         let oldStart: number;
         let oldEnd: number;
         axis.ranges.map((range: Range, rangeIndex: number) => {
+            if (!isNullOrUndefined(range.offset) && (<string>range.offset).length > 0) {
+                range.currentDistanceFromScale = stringToNumber(<string>range.offset, axis.currentRadius);
+            } else {
+                range.currentDistanceFromScale = <number>range.offset;
+            }
             this.calculateRangeRadius(axis, range);
+            if ((<string>range.startWidth).length > 0) {
+                startWidth = toPixel(<string>range.startWidth, range.currentRadius);
+            } else {
+                startWidth = <number>range.startWidth;
+            }
+            if ((<string>range.endWidth).length > 0) {
+                endWidth = toPixel(<string>range.endWidth, range.currentRadius);
+            } else {
+                endWidth = <number>range.endWidth;
+            }
+            range.currentRadius = this.calculateRangeRadiusWithPosition(axis, range, startWidth);
             startValue = Math.min(Math.max(range.start, min), range.end);
             endValue = Math.min(Math.max(range.start, range.end), max);
             startAngle = getAngleFromValue(startValue, max, min, axis.startAngle, axis.endAngle, isClockWise);
@@ -353,16 +381,6 @@ export class AxisRenderer {
                     (axis.rangeGap / Math.PI);
             }
             if ((startValue !== endValue) && (isAngleCross360 ? startAngle < (endAngle + 360) : (startAngle < endAngle))) {
-                if ((<string>range.startWidth).length > 0) {
-                    startWidth = toPixel(<string>range.startWidth, range.currentRadius);
-                } else {
-                    startWidth = <number>range.startWidth;
-                }
-                if ((<string>range.endWidth).length > 0) {
-                    endWidth = toPixel(<string>range.endWidth, range.currentRadius);
-                } else {
-                    endWidth = <number>range.endWidth;
-                }
                 endAngle = isClockWise ? endAngle : [startAngle, startAngle = endAngle][0];
                 endWidth = isClockWise ? endWidth : [startWidth, startWidth = endWidth][0];
                 let radius: number = range.roundedCornerRadius;
@@ -397,7 +415,7 @@ export class AxisRenderer {
                             getPathArc(
                                 gauge.midPoint,
                                 Math.floor(startAngle), Math.ceil(endAngle),
-                                range.currentRadius, startWidth, endWidth
+                                range.currentRadius, startWidth, endWidth, range, axis
                             ),
                             '', ''
                         ),
@@ -419,6 +437,15 @@ export class AxisRenderer {
         range.currentRadius = stringToNumber(
             radius, axis.currentRadius
         );
+    }
+
+    private calculateRangeRadiusWithPosition(axis: Axis, range: Range, startWidth: number): number {
+        let actualRadius: number;
+        actualRadius = !isNullOrUndefined(range.position) && range.position !== 'Auto' && isNullOrUndefined(range.radius) ?
+            (range.position === 'Outside' ? (range.currentRadius + axis.lineStyle.width / 2 + range.currentDistanceFromScale) :
+                range.position === 'Inside' ? (range.currentRadius - axis.lineStyle.width / 2 - range.currentDistanceFromScale) :
+                    (range.currentRadius + startWidth / 2 - range.currentDistanceFromScale)) : range.currentRadius;
+        return actualRadius;
     }
 
     /**

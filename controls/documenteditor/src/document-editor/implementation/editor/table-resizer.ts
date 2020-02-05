@@ -250,7 +250,9 @@ export class TableResizer {
         let row: TableRowWidget = undefined;
         if (this.resizerPosition > -1) {
             row = table.childWidgets[this.resizerPosition] as TableRowWidget;
-            this.updateRowHeight(row, dragValue);
+            if (row) {
+                this.updateRowHeight(row, dragValue);
+            }
             selection.selectPosition(selection.start, selection.end);
         }
         if (table.isInsideTable) {
@@ -261,8 +263,11 @@ export class TableResizer {
         this.startingPoint.y += HelperMethods.convertPointToPixel(dragValue);
         this.owner.viewer.layout.reLayoutTable(table);
         this.owner.editorModule.reLayout(this.owner.selection);
-        this.currentResizingTable = row.ownerTable;
-        if (table.childWidgets[this.resizerPosition] === undefined) {
+        if (row) {
+            this.currentResizingTable = row.ownerTable;
+        }
+        if (this.currentResizingTable.childWidgets === undefined
+            || this.currentResizingTable.childWidgets[this.resizerPosition] === undefined) {
             this.resizerPosition = -1;
         }
     }

@@ -82,7 +82,7 @@ import { TechnicalIndicatorModel } from './technical-indicators/technical-indica
 import { ILegendRenderEventArgs, IAxisLabelRenderEventArgs, ITextRenderEventArgs, IResizeEventArgs } from '../chart/model/chart-interface';
 import { IAnnotationRenderEventArgs, IAxisMultiLabelRenderEventArgs, IThemeStyle, IScrollEventArgs } from '../chart/model/chart-interface';
 import { IPointRenderEventArgs, ISeriesRenderEventArgs, ISelectionCompleteEventArgs } from '../chart/model/chart-interface';
-import { IDragCompleteEventArgs, ITooltipRenderEventArgs, IExportEventArgs } from '../chart/model/chart-interface';
+import { IDragCompleteEventArgs, ITooltipRenderEventArgs, IExportEventArgs, IAfterExportEventArgs } from '../chart/model/chart-interface';
 import { IZoomCompleteEventArgs, ILoadedEventArgs } from '../chart/model/chart-interface';
 import { IMultiLevelLabelClickEventArgs, ILegendClickEventArgs } from '../chart/model/chart-interface';
 import { IAnimationCompleteEventArgs, IMouseEventArgs, IPointEventArgs } from '../chart/model/chart-interface';
@@ -840,6 +840,14 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     @Event()
     public beforeExport: EmitType<IExportEventArgs>;
+
+    /**
+     * Triggers after the export completed.
+     * @event
+     * @blazorProperty 'AfterExport'
+     */
+    @Event()
+    public afterExport: EmitType<IAfterExportEventArgs>;
 
     /**
      * Triggers after chart load.
@@ -2145,6 +2153,16 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     /**
+     * To Clear all series for the chart
+     * @return {void}.
+     */
+
+    public clearSeries(): void {
+        this.series = [];
+        this.refresh();
+    }
+
+    /**
      * To destroy the widget
      * @method destroy
      * @return {void}.
@@ -2335,6 +2353,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public export(type: ExportType, fileName: string): void {
         if (this.exportModule) {
             this.exportModule.export(type, fileName);
+            if (this.afterExport) {
+                this.exportModule.getDataUrl(this);
+            }
         }
      }
 
@@ -2393,8 +2414,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             pageX = e.clientX;
             pageY = e.clientY;
         }
-        this.setMouseXY(pageX, pageY);
-        this.chartOnMouseMove(e);
+        if (getElement(this.svgId)) {
+            this.setMouseXY(pageX, pageY);
+            this.chartOnMouseMove(e);
+        }
         return false;
     }
     /**
@@ -3035,6 +3058,25 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             }
         }
         return null;
+    }
+
+    /**
+     * Fix for live data update flicker issue
+     */
+    public refreshLiveData(): void {
+        this.calculateVisibleSeries();
+        this.initTechnicalIndicators();
+        this.initTrendLines();
+        this.refreshDefinition(<Column[]>this.columns);
+        this.refreshDefinition(<Row[]>this.rows);
+        this.calculateVisibleAxis();
+        this.processData(false);
+        if (!this.isBlazor) {
+            this.enableCanvas ? this.createChartSvg() : this.removeSvg();
+            this.refreshAxis();
+            this.refreshBound();
+            this.trigger('loaded', { chart: this.isBlazor ? {} : this });
+        }
     }
 
     /**

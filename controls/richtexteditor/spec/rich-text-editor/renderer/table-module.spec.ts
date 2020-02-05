@@ -1,21 +1,12 @@
+/**
+ * Table module spec
+ */
 import { Browser, closest, isNullOrUndefined } from "@syncfusion/ej2-base";
-import { RichTextEditor } from '../../../src/rich-text-editor/base/rich-text-editor';
-import { renderRTE, destroy, setCursorPoint, androidUA, iPhoneUA, currentBrowserUA, ieUA } from './../render.spec';
+import { RichTextEditor, dispatchEvent } from "../../../src/rich-text-editor/index";
 import { InsertHtml } from '../../../src/editor-manager/plugin/inserthtml';
 import { NodeSelection } from '../../../src/selection/index';
-import { QuickToolbar, MarkdownEditor, HtmlEditor, Table, Toolbar, IRenderer, ToolbarRenderer } from "../../../src/rich-text-editor/index";
-import { dispatchEvent } from "../../../src/rich-text-editor/base/util";
+import { renderRTE, destroy, setCursorPoint, androidUA, iPhoneUA, currentBrowserUA, ieUA } from './../render.spec';
 
-RichTextEditor.Inject(MarkdownEditor);
-RichTextEditor.Inject(HtmlEditor);
-RichTextEditor.Inject(Table);
-
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(QuickToolbar);
-
-function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
-    return rteObj.quickToolbarModule;
-}
 describe('Table creation', () => {
 
     describe('div content ', () => {
@@ -550,11 +541,6 @@ describe('Table creation', () => {
     describe('table dialog open close ', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
-        let keyboardEventArgs = {
-            preventDefault: function () { },
-            keyCode: 9,
-            shiftKey: false
-        };
         beforeAll(() => {
             rteObj = renderRTE({
                 height: 400,
@@ -591,7 +577,6 @@ describe('Table creation', () => {
         });
     });
     describe('table resize start args ', () => {
-        let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let value: any = `<p><b>Description:</b></p><p>The Rich Text Editor (RTE) control is an easy to render in
 client side. Customer easy to edit the contents and get the HTML content for
@@ -613,7 +598,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                     args.cancel = true;
                 }
             });
-            rteEle = rteObj.element;
         });
         afterAll(() => {
             destroy(rteObj);
@@ -673,7 +657,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         let mobileUA: string = "Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) " +
             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36";
         let defaultUA: string = navigator.userAgent;
-        let clickEvent: any;
         beforeAll(() => {
             Browser.userAgent = mobileUA;
             rteObj = renderRTE({
@@ -718,11 +701,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             let rteEle: HTMLElement;
             let rteObj: RichTextEditor;
             let defaultUA: string = navigator.userAgent;
-            let keyboardEventArgs = {
-                preventDefault: function () { },
-                keyCode: 9,
-                shiftKey: false
-            };
             beforeAll(() => {
                 Browser.userAgent = 'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; Touch; .NET4.0C; .NET4.0E; .NET CLR 2.0.50727; .NET CLR 3.0.30729; .NET CLR 3.5.30729; Tablet PC 2.0; rv:11.0) like Gecko';
                 rteObj = renderRTE({
@@ -761,11 +739,9 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
 
     describe("table Inline Quick toolbar - showPopup method with popup open testing", () => {
         let rteEle: HTMLElement;
-        let pageY: number;
         let rteObj: any;
         let trg: HTMLElement;
         let args: any;
-        let QTBarModule: IRenderer;
         let originalTimeout: number;
 
         beforeEach((done: Function) => {
@@ -782,12 +758,10 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 value: "<div>Syncfusion</div>"
             });
             rteEle = rteObj.element;
-            pageY = window.scrollY + rteEle.getBoundingClientRect().top;
             trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
             let clickEvent: MouseEvent = document.createEvent("MouseEvents");
             clickEvent.initEvent("mousedown", true, true);
             trg.dispatchEvent(clickEvent);
-            QTBarModule = getQTBarModule(rteObj);
             done();
         });
 
@@ -909,13 +883,11 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         });
     });
 
-
     describe("TABLE with parent based selection", () => {
 
         describe("Apply to empty table td", () => {
             let rteObj: RichTextEditor;
             let rteEle: HTMLElement;
-            let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
             let controlId: string;
             beforeEach(() => {
                 rteObj = renderRTE({
@@ -1000,7 +972,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         describe(" Apply to single line within a TD", () => {
             let rteObj: RichTextEditor;
             let rteEle: HTMLElement;
-            let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
             let controlId: string;
             beforeEach(() => {
                 rteObj = renderRTE({
@@ -1083,7 +1054,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         describe(" Apply to selected two lines within a TD", () => {
             let rteObj: RichTextEditor;
             let rteEle: HTMLElement;
-            let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
             let controlId: string;
             beforeEach(() => {
                 rteObj = renderRTE({
@@ -1173,7 +1143,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         describe(" Apply to selected three lines within a TD", () => {
             let rteObj: RichTextEditor;
             let rteEle: HTMLElement;
-            let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
             let controlId: string;
             beforeEach(() => {
                 rteObj = renderRTE({
@@ -1266,7 +1235,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         describe(" Apply to all table cells", () => {
             let rteObj: RichTextEditor;
             let rteEle: HTMLElement;
-            let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
             let controlId: string;
             beforeEach(() => {
                 rteObj = renderRTE({
@@ -1371,7 +1339,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         describe(" Apply to selection of table  in between of paragraph", () => {
             let rteObj: RichTextEditor;
             let rteEle: HTMLElement;
-            let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
             let controlId: string;
             let editNode: HTMLElement;
             beforeEach(() => {
@@ -1490,9 +1457,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         describe(" Apply to text line with empty line", () => {
             let rteObj: RichTextEditor;
             let rteEle: HTMLElement;
-            let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
             let controlId: string;
-            let editNode: HTMLElement;
             beforeEach(() => {
                 rteObj = renderRTE({
                     toolbarSettings: {
@@ -1507,7 +1472,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 });
                 rteEle = rteObj.element;
                 controlId = rteEle.id;
-                editNode = (rteObj as any).inputElement;
             });
 
             afterEach(() => {
@@ -1584,9 +1548,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         describe(" Apply to in between text line in TD", () => {
             let rteObj: RichTextEditor;
             let rteEle: HTMLElement;
-            let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
             let controlId: string;
-            let editNode: HTMLElement;
             beforeEach(() => {
                 rteObj = renderRTE({
                     toolbarSettings: {
@@ -1599,7 +1561,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 });
                 rteEle = rteObj.element;
                 controlId = rteEle.id;
-                editNode = (rteObj as any).inputElement;
             });
 
             afterEach(() => {
@@ -1674,7 +1635,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         describe(" Apply the blockquotes to table parent node.", () => {
             let rteObj: RichTextEditor;
             let rteEle: HTMLElement;
-            let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
             let controlId: string;
             let editNode: HTMLElement;
             beforeEach(() => {
@@ -1716,9 +1676,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         describe(" Insert row from table header.", () => {
             let rteObj: RichTextEditor;
             let rteEle: HTMLElement;
-            let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
             let controlId: string;
-            let editNode: HTMLElement;
             beforeEach(() => {
                 rteObj = renderRTE({
                     toolbarSettings: {
@@ -1731,7 +1689,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 });
                 rteEle = rteObj.element;
                 controlId = rteEle.id;
-                editNode = (rteObj as any).inputElement;
             });
 
             afterEach(() => {
@@ -1762,9 +1719,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         describe(" Insert row to select the header element.", () => {
             let rteObj: RichTextEditor;
             let rteEle: HTMLElement;
-            let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
-            let controlId: string;
-            let editNode: HTMLElement;
             beforeEach(() => {
                 rteObj = renderRTE({
                     toolbarSettings: {
@@ -1776,8 +1730,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                     `
                 });
                 rteEle = rteObj.element;
-                controlId = rteEle.id;
-                editNode = (rteObj as any).inputElement;
             });
 
             afterEach(() => {
@@ -1805,7 +1757,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             let rteObj: RichTextEditor;
             let rteEle: HTMLElement;
             let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9, key: '' };
-            let controlId: string;
             let editNode: HTMLElement;
             beforeEach(() => {
                 rteObj = renderRTE({
@@ -1817,7 +1768,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                     `
                 });
                 rteEle = rteObj.element;
-                controlId = rteEle.id;
                 editNode = (rteObj as any).inputElement;
             });
 
@@ -1836,7 +1786,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
 
         describe("tab and shift+tab", () => {
             let rteObj: RichTextEditor;
-            let rteEle: HTMLElement;
             let keyboardEventArgs = {
                 preventDefault: function () { },
                 keyCode: 9,
@@ -1859,7 +1808,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                     <td style="width: 50%;"><br></td></tr></tbody></table><br></div><ol><li><p>Footer
                     elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li></ol>`
                 });
-                rteEle = rteObj.element;
             });
 
             afterEach(() => {
@@ -1896,7 +1844,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         describe(" EJ2-19873:  Inserting table in the list produces one extra empty list", () => {
             let rteObj: RichTextEditor;
             let rteEle: HTMLElement;
-            let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
             let controlId: string;
             let editNode: HTMLElement;
             beforeEach(() => {
@@ -1916,7 +1863,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 destroy(rteObj);
             });
             it(' insert the table at selection of end of li', (done) => {
-                let nodeSelection: NodeSelection = new NodeSelection();
                 let firstNode: HTMLElement = rteObj.element.querySelectorAll("li")[1];
                 setCursorPoint(firstNode.childNodes[0] as Element, firstNode.textContent.length - 1);
                 let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_CreateTable') as HTMLElement;
@@ -2325,9 +2271,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
     describe(" EJ2-19935: RTE text align property is not working properly in table cell", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
-        let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
         let controlId: string;
-        let editNode: HTMLElement;
         beforeEach(() => {
             rteObj = renderRTE({
                 toolbarSettings: {
@@ -2340,7 +2284,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             });
             rteEle = rteObj.element;
             controlId = rteEle.id;
-            editNode = (rteObj as any).inputElement;
         });
 
         afterEach(() => {
@@ -2370,9 +2313,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
     describe(" IE - table delete testing", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
-        let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
-        let controlId: string;
-        let editNode: HTMLElement;
         beforeEach(() => {
             Browser.userAgent = ieUA;
         });
@@ -2389,8 +2329,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 value: `<table class="e-rte-table" style="width: 100%;"><tbody><tr><td style="width: 33.3333%;" class="">1</td><td style="width: 33.3333%;">4</td><td style="width: 33.3333%;">7</td></tr><tr><td style="width: 33.3333%;">2</td><td style="width: 33.3333%;" class="e-cell-select">5</td><td style="width: 33.3333%;">8</td></tr><tr><td style="width: 33.3333%;">3</td><td style="width: 33.3333%;">6</td><td style="width: 33.3333%;">9</td></tr></tbody></table>`
             });
             rteEle = rteObj.element;
-            controlId = rteEle.id;
-            editNode = (rteObj as any).inputElement;
             let domSelection: NodeSelection = new NodeSelection();
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
             dispatchEvent((rteObj.contentModule.getEditPanel() as HTMLElement), 'mousedown');
@@ -2419,8 +2357,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 value: `<table class="e-rte-table" style="width: 100%;"><tbody><tr><td style="width: 33.3333%;" class="">1</td><td style="width: 33.3333%;">4</td><td style="width: 33.3333%;">7</td></tr><tr><td style="width: 33.3333%;">2</td><td style="width: 33.3333%;" class="e-cell-select">5</td><td style="width: 33.3333%;">8</td></tr><tr><td style="width: 33.3333%;">3</td><td style="width: 33.3333%;">6</td><td style="width: 33.3333%;">9</td></tr></tbody></table>`
             });
             rteEle = rteObj.element;
-            controlId = rteEle.id;
-            editNode = (rteObj as any).inputElement;
             let domSelection: NodeSelection = new NodeSelection();
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
             dispatchEvent((rteObj.contentModule.getEditPanel() as HTMLElement), 'mousedown');
@@ -2442,9 +2378,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
     describe(" EJ2-28899: RTE text align property is not working properly in table header cell", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
-        let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
         let controlId: string;
-        let editNode: HTMLElement;
         beforeEach(() => {
             rteObj = renderRTE({
                 toolbarSettings: {
@@ -2457,7 +2391,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             });
             rteEle = rteObj.element;
             controlId = rteEle.id;
-            editNode = (rteObj as any).inputElement;
         });
 
         afterEach(() => {
@@ -2487,7 +2420,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
         let controlId: string;
-        let editNode: HTMLElement;
         beforeEach(() => {
             Browser.userAgent = iPhoneUA;
             rteObj = renderRTE({
@@ -2502,7 +2434,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             });
             rteEle = rteObj.element;
             controlId = rteEle.id;
-            editNode = (rteObj as any).inputElement;
         });
 
         afterEach(() => {
@@ -2526,7 +2457,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
     });
     describe(" EJ2-28564:  Applying heading to table after inserting table inside another table not works properly", () => {
         let rteObj: RichTextEditor;
-        let rteEle: HTMLElement;
         beforeAll(() => {
             rteObj = renderRTE({
                 toolbarSettings: {
@@ -2536,7 +2466,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 value: `<table class="e-rte-table" style="width: 95%;"><tbody><tr><td style="width: 33.3333%;" class=""><table class="e-rte-table" style="width: 100%;"><tbody><tr><td class="" style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;" class=""><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;" class=""><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table><br></td><td style="width: 33.3333%;" class=""><br></td><td style="width: 33.3333%;" class=""><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr><tr><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td><td style="width: 33.3333%;"><br></td></tr></tbody></table>
                 `
             });
-            rteEle = rteObj.element;
         });
         afterAll(() => {
             destroy(rteObj);
@@ -2560,7 +2489,7 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 done();
             }, 600);
         });
-        it(' Insert header to root table', (done) => {
+        it(' Insert header to root table', (done: Function) => {
             expect((rteObj as any).inputElement.querySelectorAll("thead").length).toBe(1);
             let node: HTMLElement = (rteObj as any).inputElement.querySelectorAll("td")[11];
             setCursorPoint(node, 0);
@@ -2584,7 +2513,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
     describe(" EJ2-28994 - IE table insert on new line testing", () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
-        let controlId: string;
         beforeEach(() => {
             Browser.userAgent = ieUA;
             rteObj = renderRTE({
@@ -2594,7 +2522,6 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 value: `<p></p>`
             });
             rteEle = rteObj.element;
-            controlId = rteEle.id;
         });
 
         afterEach(() => {
@@ -2602,45 +2529,36 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             Browser.userAgent = currentBrowserUA;
         });
         it(' insert table ', (done) => {
+            rteObj.focusIn();
             let clickEvent: MouseEvent = document.createEvent("MouseEvents");
-            clickEvent.initEvent('mousedown', false, true);
-            (rteObj as any).inputElement.dispatchEvent(clickEvent);
+            let node: HTMLElement = (rteObj as any).inputElement.querySelector("p");
+            setCursorPoint(node, 0);
+            node.focus();
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
             setTimeout(function () {
-                let node: HTMLElement = (rteObj as any).inputElement.querySelector("p");
-                setCursorPoint(node, 0);
-                node.focus();
-                setTimeout(function () {
-                    (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-                    setTimeout(function () {
-                        let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
-                        clickEvent = document.createEvent("MouseEvents");
-                        clickEvent.initEvent("click", false, true);
-                        target.dispatchEvent(clickEvent);
-                        setTimeout(() => {
-                            expect(document.body.querySelector('.e-rte-edit-table.e-dialog')).not.toBe(null);
-                            expect(rteObj.tableModule.editdlgObj.element.querySelector('#tableColumn')).not.toBe(null);
-                            expect(rteObj.tableModule.editdlgObj.element.querySelector('#tableRow')).not.toBe(null);
-                            expect((rteObj.tableModule.editdlgObj.element.querySelector('#tableRow') as any).value === '3').toBe(true);
-                            expect((rteObj.tableModule.editdlgObj.element.querySelector('#tableColumn') as any).value === '3').toBe(true);
-                            target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
-                            target.dispatchEvent(clickEvent);
-                            setTimeout(() => {
-                                expect(rteEle.querySelectorAll('p').length).toBe(0);
-                                expect(rteEle.querySelectorAll('.e-content > p').length).toBe(0);
-                                expect(rteEle.querySelectorAll('.e-content > table').length).toBe(1);
-                                expect(rteEle.querySelector('.e-content').childNodes.length).toBe(1);
-                                let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
-                                expect(table.querySelectorAll('tr').length === 3).toBe(true);
-                                expect(table.querySelectorAll('td').length === 9).toBe(true);
-                                done();
-                            }, 500);
-                            done();
-                        }, 500);
+                let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
+                clickEvent = document.createEvent("MouseEvents");
+                clickEvent.initEvent("click", false, true);
+                target.dispatchEvent(clickEvent);
+                setTimeout(() => {
+                    expect(document.body.querySelector('.e-rte-edit-table.e-dialog')).not.toBe(null);
+                    expect(rteObj.tableModule.editdlgObj.element.querySelector('#tableColumn')).not.toBe(null);
+                    expect(rteObj.tableModule.editdlgObj.element.querySelector('#tableRow')).not.toBe(null);
+                    expect((rteObj.tableModule.editdlgObj.element.querySelector('#tableRow') as any).value === '3').toBe(true);
+                    expect((rteObj.tableModule.editdlgObj.element.querySelector('#tableColumn') as any).value === '3').toBe(true);
+                    target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
+                    target.dispatchEvent(clickEvent);
+                    setTimeout(() => {
+                        expect(rteEle.querySelectorAll('p').length).toBe(0);
+                        expect(rteEle.querySelectorAll('.e-content > p').length).toBe(0);
+                        expect(rteEle.querySelectorAll('.e-content > table').length).toBe(1);
+                        expect(rteEle.querySelector('.e-content').childNodes.length).toBe(1);
+                        let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+                        expect(table.querySelectorAll('tr').length === 3).toBe(true);
+                        expect(table.querySelectorAll('td').length === 9).toBe(true);
                         done();
                     }, 500);
-                    done();
                 }, 500);
-                done();
             }, 500);
         });
     });

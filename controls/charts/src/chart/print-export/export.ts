@@ -48,6 +48,13 @@ export class Export {
         }
     }
     /**
+     * To get data url for charts.
+     */
+    public getDataUrl(chart: Chart): { element: HTMLCanvasElement, dataUrl?: string, blobUrl?: string} {
+        let exportUtil: ExportUtils = new ExportUtils(chart);
+        return exportUtil.getDataUrl(chart as Chart);
+    }
+    /**
      * Get module name.
      */
     protected getModuleName(): string {

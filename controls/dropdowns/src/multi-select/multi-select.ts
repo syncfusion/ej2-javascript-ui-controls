@@ -1461,11 +1461,20 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.placeholder) {
             size = size > this.inputElement.placeholder.length ? size : this.inputElement.placeholder.length;
         }
-        if (this.inputElement.value.length > size) {
-            this.inputElement.size = this.inputElement.value.length;
+        if (this.getInputValueWidth() > size) {
+            this.inputElement.size = this.getInputValueWidth();
         } else {
             this.inputElement.size = size;
         }
+    }
+    private getInputValueWidth(): number {
+        let font: string = window.getComputedStyle(this.inputElement).font;
+        let canvas: HTMLCanvasElement = document.createElement('canvas');
+        let context: CanvasRenderingContext2D = canvas.getContext('2d');
+        context.font = font;
+        let metrics: TextMetrics = context.measureText(this.inputElement.value);
+        let widthVal: number = metrics.width + 25;
+        return Math.ceil(widthVal);
     }
     private isPopupOpen(): boolean {
         return ((this.popupWrapper !== null) && (this.popupWrapper.parentElement !== null));

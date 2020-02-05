@@ -1,14 +1,35 @@
 /**
- * Defines Position of axis. They are
+ * Defines Position of Ticks / Labels / Pointers. They are
  * * Inside
  * * Outside
+ * * Cross
+ * @private
+ */
+export type ExtraPosition =
+    /**  Inside of Axis. */
+    'Inside' |
+    /**  Outside of Axis. */
+    'Outside'|
+    /**  Cross of Axis. */
+    'Cross'|
+    /**  Based on Placement API. */
+    'Auto';
+
+/**
+ * Defines Position of Range. They are
+ * * Inside
+ * * Outside
+ * * Cross
+ * * Auto
  * @private
  */
 export type Position =
     /**  Inside of Axis. */
     'Inside' |
     /**  Outside of Axis. */
-    'Outside';
+    'Outside'|
+     /**  Cross of Axis. */
+     'Cross' ;
 
 /**
  * Defines type of pointer. They are
@@ -154,3 +175,16 @@ export type ContainerType =
      * To draw the rounded rectangle box
      */
     'RoundedRectangle';
+
+/**
+ * Export Type
+ */
+export type ExportType =
+    /** Used to export a image as png format */
+    'PNG' |
+    /** Used to export a image as jpeg format */
+    'JPEG' |
+    /** Used to export a file as svg format */
+    'SVG' |
+    /** Used to export a file as pdf format */
+    'PDF';

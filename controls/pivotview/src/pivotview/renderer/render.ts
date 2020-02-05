@@ -995,7 +995,9 @@ export class Render {
                 let memberPosition: number = tupInfo.uNameCollection.indexOf(cell.actualText.toString());
                 let cropUName: string = tupInfo.uNameCollection.substring(0, memberPosition) +
                     (cell.memberType === 3 ? '' : cell.actualText.toString());
-                let fieldSep: string[] = cropUName.split('::').filter((item: string) => { return item !== ''; });
+                let fieldSep: string[] = cropUName.split('::[').map((item: string) => {
+                    return item[0] === '[' ? item : ('[' + item);
+                });
                 if (cell.memberType === 3 && rowMeasurePos === fieldSep.length) {
                     fieldSep.push(cell.actualText.toString());
                 }

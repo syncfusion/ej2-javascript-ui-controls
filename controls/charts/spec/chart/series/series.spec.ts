@@ -764,6 +764,138 @@ describe('Chart Control', () => {
             chart.refresh();
         });
     });
+    describe('Checking datalabel intersect action is None', () => {
+        let chart: Chart;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let element: HTMLElement = createElement('div', { id: 'container' });
+        let dataLabel: HTMLElement;
+        let point: Points;
+        let trigger: MouseEvents = new MouseEvents();
+        let x: number;
+        let y: number;
+        let tooltip: HTMLElement;
+        let chartArea: HTMLElement;
+        let series: Series;
+        beforeAll(() => {
+            document.body.appendChild(element);
+            chart = new Chart({
+                title: 'Population of India Statistics',
+                subTitle: '(2010 - 2016)',
+                subTitleStyle: {
+                    textAlignment: 'Far'
+                },
+                titleStyle: {
+                    fontFamily: 'Roboto',
+                    fontStyle: 'medium', size: '14px'
+                },
+                chartArea: { border: { width: 0 } },
+                width: '400px', height: '400px',
+                // Initialize the chart axes
+                primaryXAxis: {
+                    minimum: 2010, maximum: 2016,
+                    interval: 1,
+                    edgeLabelPlacement: 'Shift',
+                    labelStyle: {
+                        fontFamily: 'Roboto',
+                        fontStyle: 'medium',
+                        size: '14px'
+                    },
+                    majorGridLines: { width: 0 },
+                    lineStyle: { color: '#eaeaea', width: 1 }
+                },
+                primaryYAxis: {
+                    minimum: 900, maximum: 1300,
+                    labelFormat: '{value}M',
+                    title: 'Population',
+                    labelStyle: {
+                        fontFamily: 'Roboto',
+                        fontStyle: 'medium', size: '14px'
+                    },
+                    majorGridLines: {
+                        color: '#eaeaea', width: 1
+                    },
+                    lineStyle: {
+                        color: '#eaeaea', width: 1
+                    }
+                },
+                // Initialize the chart series
+                series: [
+                    {
+                        name: 'Male',
+                        dataSource: [
+                            { x: 2010, y: 1014 }, { x: 2011, y: 1040 },
+                            { x: 2012, y: 1065 }, { x: 2013, y: 1110 },
+                            { x: 2014, y: 1130 }, { x: 2015, y: 1153 },
+                            { x: 2016, y: 1175 }
+                        ], xName: 'x', yName: 'y', animation: { enable: false },
+                        marker: {
+                            visible: true,
+                            shape: 'Circle',
+                            dataLabel: {
+                                visible: true,
+                                position: 'Top',
+                                margin: { right: 30 },
+                                template: "<div id='templateWrap' style='background-color:#00bdae;border-radius: 3px;'>" +
+                                    "<img src = 'src/chart/images/male.png'/>" +
+                                    "<div class='des' style ='color:white; font-family:Roboto; font-style: medium; fontp-size:14px;padding-right:6px'>" +
+                                    "<span>${ point.y }M </span></div></div>",
+                            }
+                        }, width: 2
+                    }, {
+                        name: 'Female',
+                        dataSource: [
+                            { x: 2010, y: 990 }, { x: 2011, y: 1010 },
+                            { x: 2012, y: 1030 }, { x: 2013, y: 1070 },
+                            { x: 2014, y: 1105 }, { x: 2015, y: 1138 },
+                            { x: 2016, y: 1155 }
+                        ], xName: 'x', yName: 'y', animation: { enable: false },
+                        marker: {
+                            visible: true,
+                            shape: 'Rectangle',
+                            dataLabel: {
+                                visible: true,
+                                position: 'Bottom',
+                                margin: { right: 15 },
+                                template: "<div id='templateWrap' style='background-color:#404041;border-radius: 3px;'>" +
+                                    "<img src = 'src/chart/images/male.png'/>" +
+                                    "<div class='des' style ='color:white; font-family:Roboto; font-style: medium; fontp-size:14px;padding-right:6px'>" +
+                                    "<span>${ point.y }M </span></div></div>",
+                            }
+                        }, width: 2
+                    }
+                ],
+            });
+            chart.appendTo('#container');
+        });
+        afterAll((): void => {
+            chart.destroy();
+            element.remove();
+        });
+        it('checking datalabel template cout without None', (done: Function) => {
+            loaded = (args: Object): void => {
+                dataLabel = document.getElementById('container_Series_0_DataLabelCollections');
+                expect(dataLabel.childElementCount === 6).toBe(true);
+                dataLabel = document.getElementById('container_Series_1_DataLabelCollections');
+                expect(dataLabel.childElementCount === 6).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.refresh();
+        });
+        it('checking datalabel template cout with None', (done: Function) => {
+            loaded = (args: Object): void => {
+                dataLabel = document.getElementById('container_Series_0_DataLabelCollections');
+                expect(dataLabel.childElementCount === 7).toBe(true);
+                dataLabel = document.getElementById('container_Series_1_DataLabelCollections');
+                expect(dataLabel.childElementCount === 7).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.series[0].marker.dataLabel.labelIntersectAction = 'None';
+            chart.series[1].marker.dataLabel.labelIntersectAction = 'None';
+            chart.refresh();
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

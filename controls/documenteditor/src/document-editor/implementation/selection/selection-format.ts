@@ -997,6 +997,7 @@ export class SelectionParagraphFormat {
             }
             this.selection.owner.isLayoutEnabled = true;
             this.viewer.renderedLists.clear();
+            this.viewer.renderedLevelOverrides = [];
             // this.viewer.pages = [];
             this.viewer.owner.editorModule.layoutWholeDocument();
             this.viewer.owner.editorModule.updateSelectionTextPosition(false);

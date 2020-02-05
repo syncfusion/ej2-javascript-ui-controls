@@ -2,8 +2,7 @@
  * Formats plugin spec
  */
 import { createElement, detach } from '@syncfusion/ej2-base';
-import { MarkdownSelection, MarkdownParser } from '../../../src/markdown-parser/index';
-
+import { MarkdownParser } from '../../../src/markdown-parser/index';
 
 describe('Markdown - Formats plugin', () => {
     let innerValue: string =
@@ -536,7 +535,6 @@ Tabs and shift-tabs work too`;
             });
              let line:string = editorObj.markdownSelection.getSelectedLine(textArea);
              expect(new RegExp('^(# )', 'gim').test(line)).toBe(true);
-
         });
         afterAll(() => {
             detach(textArea);

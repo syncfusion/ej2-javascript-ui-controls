@@ -236,6 +236,14 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     public beforeModeSwitch: EmitType<ModeSwitchEventArgs>;
 
     /**
+     * Triggers after Switching between ColorPicker mode.
+     * @event
+     * @blazorProperty 'ModeSwitched'
+     */
+    @Event()
+    public onModeSwitch: EmitType<ModeSwitchEventArgs>;
+
+    /**
      * Triggers once the component rendering is completed.
      * @event
      * @blazorProperty 'Created'
@@ -1181,6 +1189,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         this.createInput();
         this.refreshPopupPos();
         this.wireEvents();
+        this.trigger('onModeSwitch', <ModeSwitchEventArgs>{ element: this.container, mode: 'Palette'});
     }
 
     private refreshPopupPos(): void {
@@ -1306,6 +1315,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         this.createInput();
         this.refreshPopupPos();
         this.wireEvents();
+        this.trigger('onModeSwitch', <ModeSwitchEventArgs>{ element: this.container, mode: 'Picker'});
     }
 
     private ctrlBtnClick(ele: HTMLElement, e: MouseEvent): void {

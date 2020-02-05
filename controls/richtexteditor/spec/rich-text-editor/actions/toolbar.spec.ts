@@ -1,39 +1,12 @@
 /**
- * RTE - Toolbar action spec
+ * Toolbar spec
  */
-import { selectAll, select, Browser, createElement, getUniqueID, detach, EventHandler, isNullOrUndefined } from "@syncfusion/ej2-base";
-import { RichTextEditor, ToolbarType, Toolbar, HtmlEditor, MarkdownEditor } from "../../../src/rich-text-editor/index";
+import { selectAll, select, Browser, createElement, getUniqueID, detach, isNullOrUndefined } from "@syncfusion/ej2-base";
+import { RichTextEditor, ToolbarType } from "../../../src/rich-text-editor/index";
 import { IToolbarStatus } from '../../../src/common/interface';
 import { renderRTE, destroy } from "./../render.spec";
 
-RichTextEditor.Inject(HtmlEditor, MarkdownEditor, Toolbar);
-
-function copyObject(source: any, destination: any): Object {
-    for (let prop in source) {
-        destination[prop] = source[prop];
-    }
-    return destination;
-}
-
-function setMouseCoordinates(eventArg: any, x: number, y: number, target: Element): Object {
-    eventArg.pageX = x;
-    eventArg.pageY = y;
-    eventArg.clientX = x;
-    eventArg.clientY = y;
-    eventArg.target = target;
-    return eventArg;
-}
-
-function getEventObject(eventType: string, eventName: string): Object {
-    let tempEvent: any = document.createEvent(eventType);
-    tempEvent.initEvent(eventName, true, true);
-    let returnObject: any = copyObject(tempEvent, {});
-    returnObject.preventDefault = () => { return true; };
-    return returnObject;
-}
-
 describe("Toolbar - Actions Module", () => {
-
     beforeAll(() => {
         let css: string = ".e-richtexteditor { margin-top: 100px; height: 200px }" +
             ".e-toolbar { display: block; white-space: nowrap; position: relative; }" +
@@ -177,7 +150,6 @@ describe("Toolbar - Actions Module", () => {
     });
 
     describe("getToolbar public method testing", () => {
-        let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
 
         afterEach(() => {
@@ -186,7 +158,6 @@ describe("Toolbar - Actions Module", () => {
 
         it("DIV - toolbar element testing", () => {
             rteObj = renderRTE({});
-            rteEle = rteObj.element;
             expect(rteObj.getToolbar()).not.toBe(null);
             expect(rteObj.getToolbar().classList.contains("e-toolbar")).toBe(true);
             expect(rteObj.getToolbar().classList.contains("e-control")).toBe(true);
@@ -198,7 +169,6 @@ describe("Toolbar - Actions Module", () => {
                     enable: true
                 }
             });
-            rteEle = rteObj.element;
             expect(rteObj.getToolbar()).not.toBe(null);
             expect(rteObj.getToolbar().classList.contains("e-toolbar")).toBe(true);
             expect(rteObj.getToolbar().classList.contains("e-control")).toBe(true);
@@ -210,7 +180,6 @@ describe("Toolbar - Actions Module", () => {
                     enable: false
                 }
             });
-            rteEle = rteObj.element;
             expect(rteObj.getToolbar()).toBe(null);
         });
 
@@ -223,7 +192,6 @@ describe("Toolbar - Actions Module", () => {
                     enable: false
                 }
             });
-            rteEle = rteObj.element;
             expect(rteObj.getToolbar()).toBe(null);
         });
     });
@@ -403,6 +371,7 @@ describe("Toolbar - Actions Module", () => {
     describe("Toolbar fullscreen item with maximize/minimize testing", () => {
         let rteEle: HTMLElement;
         let rteObj: any;
+        let rteWrapper: HTMLElement;
 
         beforeEach(() => {
             rteObj = renderRTE({
@@ -415,6 +384,10 @@ describe("Toolbar - Actions Module", () => {
 
         afterEach(() => {
             destroy(rteObj);
+        });
+
+        afterAll(() => {
+            detach(rteWrapper);
         });
 
         it("Maximize, minimize button click testing", () => {
@@ -449,7 +422,7 @@ describe("Toolbar - Actions Module", () => {
 
         it("Scrollable div parent element with maximize testing", () => {
             let rteElement: HTMLElement = createElement('div', { id: 'rteSample' });
-            let rteWrapper: HTMLElement = createElement('div', { id: 'rteWrapper', innerHTML: rteElement.outerHTML });
+            rteWrapper = createElement('div', { id: 'rteWrapper', innerHTML: rteElement.outerHTML });
             document.body.appendChild(rteWrapper);
             let sample: RichTextEditor = new RichTextEditor({
                 height: 1000,
@@ -524,17 +497,20 @@ describe("Toolbar - Actions Module", () => {
     describe("Fixed toolbar testing", () => {
         let rteEle: HTMLElement;
         let rteObj: any;
+        let inputEle: HTMLInputElement;
 
         let mobileUA: string = "Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) " +
             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36";
         let defaultUA: string = navigator.userAgent;
+        inputEle = createElement('input', { id: 'trgBtn', attrs: { type: 'text' } }) as HTMLInputElement;
 
         beforeEach(() => {
-            document.body.appendChild(createElement('input', { id: 'trgBtn', attrs: { type: 'text' } }));
+            document.body.appendChild(inputEle);
         });
 
         afterEach(() => {
             Browser.userAgent = defaultUA;
+            detach(inputEle);
             destroy(rteObj);
         });
 
@@ -632,7 +608,7 @@ describe("Toolbar - Actions Module", () => {
             }, 400);
         });
 
-        it("DIV - Maximize/Minimize testing", () => {
+        it("DIV - Maximize/Minimize testing", (done: Function) => {
             let trg: HTMLElement;
             Browser.userAgent = mobileUA;
             rteObj = renderRTE({
@@ -645,15 +621,16 @@ describe("Toolbar - Actions Module", () => {
             expect(rteEle.querySelectorAll(".e-toolbar-item")[0].getAttribute("title")).toBe("Bold");
             expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Maximize");
             trg = <HTMLElement>document.querySelectorAll(".e-toolbar-item > button")[1];
-            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
-            clickEvent.initEvent("mousedown", true, true);
-            trg.dispatchEvent(clickEvent);
             trg.click();
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Minimize");
-            trg = <HTMLElement>document.querySelectorAll(".e-toolbar-item > button")[1];
-            trg.dispatchEvent(clickEvent);
-            trg.click();
-            expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Maximize");
+            setTimeout(() => {
+                expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Minimize");
+                trg = <HTMLElement>document.querySelectorAll(".e-toolbar-item > button")[1];
+                trg.click();
+                setTimeout(() => {
+                    expect(rteEle.querySelectorAll(".e-toolbar-item")[1].getAttribute("title")).toBe("Maximize");
+                    done();
+                }, 200);
+            }, 200);
         });
 
         it("Mobile - inlineMode with Maximize/Minimize testing", () => {
@@ -766,7 +743,6 @@ describe("Toolbar - Actions Module", () => {
     });
 
     describe("Floating toolbar testing", () => {
-        let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let ele1: HTMLElement = createElement("div", { id: "div1", styles: "height: 900px" });
         let ele2: HTMLElement = createElement("div", { id: "div2", styles: "height: 400px" });
@@ -781,7 +757,6 @@ describe("Toolbar - Actions Module", () => {
                 height: '800px',
                 value: '<br /> <br /> <br /> <br /> <p id="trg"></p>',
             });
-            rteEle = rteObj.element;
             document.body.appendChild(ele1);
             done();
         });
@@ -789,6 +764,7 @@ describe("Toolbar - Actions Module", () => {
         afterEach(() => {
             document.body.style.height = '';
             destroy(rteObj);
+            detach(ele1);
         });
 
         it("Class testing", (done: Function) => {
@@ -827,7 +803,6 @@ describe("Toolbar - Actions Module", () => {
                 height: '800px',
                 value: '<br /> <br /> <br /> <br /> <p id="trg"></p>',
             }, '#div2');
-            rteEle = rteObj.element;
             expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
             ele1.scrollTo(0, 200);
             rteObj.fullScreenModule.showFullScreen();
@@ -854,7 +829,6 @@ describe("Toolbar - Actions Module", () => {
                 height: '800px',
                 value: '<br /> <br /> <br /> <br /> <p id="trg"></p>',
             }, '#div2');
-            rteEle = rteObj.element;
             expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
             ele1.scrollTo(0, 200);
             rteObj.fullScreenModule.showFullScreen();
@@ -891,6 +865,7 @@ describe("Toolbar - Actions Module", () => {
 
         afterAll(() => {
             destroy(rteObj);
+            detach(ele1);
         });
 
         it("Preventing the SourceCode view while updating the enableFloating dynamically", () => {
@@ -907,11 +882,9 @@ describe("Toolbar - Actions Module", () => {
             expect(document.querySelector(".e-preview").parentElement.parentElement.attributes[1].value).toBe("false");
             expect((document.querySelector(".e-rte-srctextarea")as HTMLElement).style.display).toBe("block");            
         });
-        
     });
 
     describe("Floating toolbar with transform element testing", () => {
-        let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let ele1: HTMLElement = createElement("div", { id: "div1", styles: "height: 900px" });
         let ele2: HTMLElement = createElement("div", { id: "div2", styles: "height: 400px" });
@@ -928,7 +901,6 @@ describe("Toolbar - Actions Module", () => {
                 height: '800px',
                 value: '<br /> <br /> <br /> <br /> <p id="trg"></p>',
             });
-            rteEle = rteObj.element;
             document.body.appendChild(ele1);
             done();
         });
@@ -936,6 +908,8 @@ describe("Toolbar - Actions Module", () => {
         afterEach(() => {
             document.body.style.height = '';
             destroy(rteObj);
+            detach(ele1);
+            document.body.style.transform = '';
         });
 
         it("Class testing", (done: Function) => {
@@ -974,7 +948,6 @@ describe("Toolbar - Actions Module", () => {
                 height: '800px',
                 value: '<br /> <br /> <br /> <br /> <p id="trg"></p>',
             }, '#div2');
-            rteEle = rteObj.element;
             expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
             ele1.scrollTo(0, 200);
             rteObj.fullScreenModule.showFullScreen();
@@ -1096,7 +1069,7 @@ describe("Toolbar - Actions Module", () => {
                 target: formatDropDownItem
             };
             rteObj.toolbarModule.dropDownModule.formatDropDown.clickHandler(mouseEventArgs);
-            expect(document.querySelector(".e-dropdown-popup").classList.contains("e-popup-close")).toBe(true);
+            expect(document.querySelector(".e-dropdown-popup")).toBe(null);
         });
     });
 
@@ -1200,7 +1173,6 @@ describe("Toolbar - Actions Module", () => {
     });
 
     describe("Toolbar status update method testing", () => {
-        let rteEle: HTMLElement;
         let rteObj: any;
 
         beforeAll(() => {
@@ -1210,7 +1182,6 @@ describe("Toolbar - Actions Module", () => {
                         'UnorderedList', 'UnderLine', 'Formats', 'FontName', 'FontSize', 'Alignments', 'InsertCode']
                 }
             });
-            rteEle = rteObj.element;
         });
 
         afterAll(() => {
@@ -1306,7 +1277,6 @@ describe("Toolbar - Actions Module", () => {
     });
 
     describe("Toolbar status update method testing", () => {
-        let rteEle: HTMLElement;
         let rteObj: any;
 
         beforeAll(() => {
@@ -1315,12 +1285,12 @@ describe("Toolbar - Actions Module", () => {
                     items: ['InsertCode', 'SourceCode']
                 }
             });
-            rteEle = rteObj.element;
         });
 
         afterAll(() => {
             destroy(rteObj);
         });
+
         it("Status update after source code view", () => {
             rteObj.toolbarModule.updateToolbarStatus({
                 insertcode: true
@@ -1335,16 +1305,13 @@ describe("Toolbar - Actions Module", () => {
     describe('Escape key from toolbar active item', () => {
         let rteObj: RichTextEditor;
         let elem: HTMLElement;
-        let selectNode: Element;
         let editNode: HTMLElement;
-        let curDocument: Document;
         let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: false, shiftKey: false, action: '', which: 8 };
         let innerHTML: string = `<div><p class='first-p'>First p node-0</p><p class='second-p'>First p node-1</p></div>`;
         beforeAll(() => {
             rteObj = renderRTE({});
             elem = rteObj.element;
             editNode = rteObj.contentModule.getEditPanel() as HTMLElement;
-            curDocument = rteObj.contentModule.getDocument();
             editNode.innerHTML = innerHTML;
         });
 
@@ -1365,9 +1332,7 @@ describe("Toolbar - Actions Module", () => {
     describe('To open the dropdown button in the toolbar', () => {
         let rteObj: RichTextEditor;
         let elem: HTMLElement;
-        let selectNode: Element;
         let editNode: HTMLElement;
-        let curDocument: Document;
         let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: false, shiftKey: false, action: '', which: 8 };
         let innerHTML: string = `<div><p class='first-p'>First p node-0</p><p class='second-p'>First p node-1</p></div>`;
         beforeAll(() => {
@@ -1378,7 +1343,6 @@ describe("Toolbar - Actions Module", () => {
             });
             elem = rteObj.element;
             editNode = rteObj.contentModule.getEditPanel() as HTMLElement;
-            curDocument = rteObj.contentModule.getDocument();
             editNode.innerHTML = innerHTML;
         });
 
@@ -1435,7 +1399,6 @@ describe("Toolbar - Actions Module", () => {
     });
 
     describe("EJ2-30374 - Issue with toolbar alignment when render Rich Text Editor within Tab", () => {
-        let rteEle: HTMLElement;
         let rteObj: any;
         let container: HTMLElement = createElement('div', { id: getUniqueID('container'), styles: 'height:800px;' });
         let element1: HTMLElement = createElement('div', { id: getUniqueID('rte-wrapper') });
@@ -1449,11 +1412,11 @@ describe("Toolbar - Actions Module", () => {
                 toolbarSettings: { enableFloating: true }
             });
             rteObj.appendTo(element2);
-            rteEle = rteObj.element;
         });
 
         afterEach(() => {
             destroy(rteObj);
+            detach(container);
         });
 
         it("Testing scroll with parent element in hidden mode", (done: Function) => {
@@ -1470,7 +1433,6 @@ describe("Toolbar - Actions Module", () => {
     });
 
     describe("EJ2-31670 - Need to provide callback (event action) support for RTE custom toolbar", () => {
-        let rteEle: HTMLElement;
         let rteObj: any;
         let clickEventSpy: jasmine.Spy = jasmine.createSpy('customclick');
         let container: HTMLElement = createElement('div', { id: getUniqueID('container'), styles: 'height:800px;' });
@@ -1492,11 +1454,11 @@ describe("Toolbar - Actions Module", () => {
                 }
             });
             rteObj.appendTo(element1);
-            rteEle = rteObj.element;
         });
 
         afterEach(() => {
             destroy(rteObj);
+            detach(container);
         });
 
         it("Testing custom toolbar event", (done) => {
@@ -1505,6 +1467,28 @@ describe("Toolbar - Actions Module", () => {
                 expect(clickEventSpy).toHaveBeenCalled();
                 done();
             }, 500);
+        });
+    });
+
+    describe("MD - Table creation using toolbar item", () => {
+        let rteObj: any;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                editorMode: 'Markdown',
+                toolbarSettings: {
+                    items: ['CreateTable']
+                }
+            })
+        });
+
+        afterEach(() => {
+            destroy(rteObj);
+        });
+
+        it("Testing custom toolbar event", (done) => {
+            (document.querySelector('.e-toolbar-item button') as HTMLElement).click();
+            expect((document.querySelector('.e-rte-content textarea') as HTMLTextAreaElement).value.indexOf('Heading 1') > 0).toEqual(true);
+            done();
         });
     });
 });

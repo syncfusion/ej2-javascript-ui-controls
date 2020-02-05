@@ -5962,12 +5962,21 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         if (this.placeholder) {
             size = size > this.inputElement.placeholder.length ? size : this.inputElement.placeholder.length;
         }
-        if (this.inputElement.value.length > size) {
-            this.inputElement.size = this.inputElement.value.length;
+        if (this.getInputValueWidth() > size) {
+            this.inputElement.size = this.getInputValueWidth();
         }
         else {
             this.inputElement.size = size;
         }
+    }
+    getInputValueWidth() {
+        let font = window.getComputedStyle(this.inputElement).font;
+        let canvas = document.createElement('canvas');
+        let context = canvas.getContext('2d');
+        context.font = font;
+        let metrics = context.measureText(this.inputElement.value);
+        let widthVal = metrics.width + 25;
+        return Math.ceil(widthVal);
     }
     isPopupOpen() {
         return ((this.popupWrapper !== null) && (this.popupWrapper.parentElement !== null));
@@ -8892,7 +8901,8 @@ class CheckBoxSelection {
                 : args.li.querySelector('.e-checkbox-wrapper').childNodes[1];
         }
         else {
-            target = args.li.lastElementChild.childNodes[1];
+            let checkboxWrapper = args.li.querySelector('.e-checkbox-wrapper');
+            target = checkboxWrapper ? checkboxWrapper.childNodes[1] : args.li.lastElementChild.childNodes[1];
         }
         if (this.parent.itemTemplate || this.parent.enableGroupCheckBox) {
             target = args.li.firstElementChild.childNodes[1];

@@ -58,23 +58,27 @@ describe('Linear gauge events spec', () => {
         browser.actions().mouseMove(element(By.id('container_AxisIndex_0_BarPointer_0'))).perform();
         browser.sleep(1000);
         browser.compareScreen(element(By.id('container')), 'Tooltip_Event_Tooltip_TextStyle');
+		done();
     });
     it('Tooltip Event tooltip template spec', (done: Function) => {
         browser.get(browser.basePath + '/demos/linear-gauge/Tooltip/tooltipEvent-2.html');
         browser.actions().mouseMove(element(By.id('container_AxisIndex_0_BarPointer_0'))).perform();
         browser.sleep(1000);
         browser.compareScreen(element(By.id('container')), 'Tooltip_Event_Tooltip_template');
+		done();
     });
     it('Tooltip Event tooltip location spec', (done: Function) => {
         browser.get(browser.basePath + '/demos/linear-gauge/Tooltip/tooltipEvent-3.html');
         browser.actions().mouseMove(element(By.id('container_AxisIndex_0_BarPointer_0'))).perform();
         browser.sleep(1000);
         browser.compareScreen(element(By.id('container')), 'Tooltip_Event_Location');
+		done();
     });
     it('Tooltip Event tooltip content spec', (done: Function) => {
         browser.get(browser.basePath + '/demos/linear-gauge/Tooltip/tooltipEvent-4.html');
         browser.actions().mouseMove(element(By.id('container_AxisIndex_0_BarPointer_0'))).perform();
         browser.sleep(1000);
         browser.compareScreen(element(By.id('container')), 'Tooltip_Event_Content');
+		done();
     });
 });

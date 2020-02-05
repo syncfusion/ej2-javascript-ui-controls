@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 17.4.47 (2020-02-05)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Issue with predicate generation for date type is fixed.
+
+#### Breaking Changes
+
+|Property Name|Previous Type|Current Type       |
+|-------------|-------------|-------------------|
+|format       |string       |string|FormatObject|
+
+## 17.4.46 (2020-01-30)
+
+### QueryBuilder
+
+#### New Features
+
+- Provided the support to disable the combinator if only one rule is present.
+
 ## 17.4.43 (2020-01-14)
 
 ### QueryBuilder

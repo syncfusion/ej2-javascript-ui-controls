@@ -268,6 +268,10 @@ export abstract class LayoutViewer {
     /**
      * @private
      */
+    public renderedLevelOverrides: WLevelOverride[];
+    /**
+     * @private
+     */
     public headersFooters: HeaderFooters[];
     private fieldSeparator: FieldElementBox;
     /**
@@ -591,6 +595,7 @@ export abstract class LayoutViewer {
         this.characterFormat = new WCharacterFormat(this);
         this.paragraphFormat = new WParagraphFormat(this);
         this.renderedLists = new Dictionary<WAbstractList, Dictionary<number, number>>();
+        this.renderedLevelOverrides = [];
         this.headersFooters = [];
         this.styles = new WStyles();
         this.preDefinedStyles = new Dictionary<string, string>();
@@ -783,11 +788,11 @@ export abstract class LayoutViewer {
      * @private
      */
     public showComments(show: boolean): void {
-        if (this.owner && show) {
+        if (this.owner && show && this.owner.enableComment) {
             let eventArgs: BeforePaneSwitchEventArgs = { type: 'Comment' };
             this.owner.trigger('beforePaneSwitch', eventArgs);
         }
-        this.owner.commentReviewPane.showHidePane(show);
+        this.owner.commentReviewPane.showHidePane(show && this.owner.enableComment);
     }
     /**
      * Initializes components.
@@ -1195,6 +1200,9 @@ export abstract class LayoutViewer {
         this.pages = [];
         if (!isNullOrUndefined(this.renderedLists)) {
             this.renderedLists.clear();
+        }
+        if (!isNullOrUndefined(this.renderedLevelOverrides)) {
+            this.renderedLevelOverrides = [];
         }
         if (!isNullOrUndefined(this.owner.editorHistory)) {
             this.owner.editorHistory.destroy();

@@ -1,17 +1,10 @@
 /**
  * Sanitize HTML helper renderer spec
  */
-import { createElement, detach } from '@syncfusion/ej2-base';
-import { EditorManager } from "../../../src/editor-manager/index";
-import { RichTextEditor } from '../../../src/rich-text-editor/base/rich-text-editor';
+import { detach } from '@syncfusion/ej2-base';
+import { RichTextEditor, BeforeSanitizeHtmlArgs } from "../../../src/rich-text-editor/index";
+import { CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_OK } from "../../../src/rich-text-editor/base/classes";
 import { renderRTE, destroy, setCursorPoint } from './../render.spec';
-import { HtmlEditor, HTMLFormatter, BeforeSanitizeHtmlArgs, PasteCleanup } from "../../../src/rich-text-editor/index";
-import {
-    CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_PLAIN_FORMAT
-  } from "../../../src/rich-text-editor/base/classes";
-import { CLS_RTE_PASTE_OK } from "../../../src/rich-text-editor/base/classes";
-
-RichTextEditor.Inject(HtmlEditor);
 
 describe('Sanitize Html Helper', () => {
     let innerHTML: string = `<div>
@@ -68,7 +61,7 @@ describe('Sanitize Html Helper', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-    })
+    });
 
     describe('xss attack while dynamic set the value property : ', () => {
         let rteObj: RichTextEditor;
@@ -111,7 +104,7 @@ describe('Sanitize Html Helper', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-    })
+    });
 
     describe('xss attack while component initial rendering with enableHtmlEncode: ', () => {
         let rteObj: RichTextEditor;
@@ -154,7 +147,7 @@ describe('Sanitize Html Helper', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-    })
+    });
 
     describe('xss attack while dynamic set the value property with enableHtmlEncode : ', () => {
         let rteObj: RichTextEditor;
@@ -197,7 +190,7 @@ describe('Sanitize Html Helper', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-    })
+    });
 
     describe('xss attack while source code to preview : ', () => {
         let rteObj: RichTextEditor;
@@ -246,7 +239,7 @@ describe('Sanitize Html Helper', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-    })
+    });
 
     describe('xss attack while executeCommand insertHTML : ', () => {
         let rteObj: RichTextEditor;
@@ -288,8 +281,7 @@ describe('Sanitize Html Helper', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-    })
-
+    });
 
     describe('prevent the xss attack in sanitizeHtml method : ', () => {
         let rteObj: RichTextEditor;
@@ -332,7 +324,7 @@ describe('Sanitize Html Helper', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-    })
+    });
 
     describe('xss attack while executeCommand createLink : ', () => {
         let rteObj: RichTextEditor;
@@ -357,7 +349,7 @@ describe('Sanitize Html Helper', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-    })
+    });
 
     describe('xss attack while executeCommand image : ', () => {
         let rteObj: RichTextEditor;
@@ -381,7 +373,7 @@ describe('Sanitize Html Helper', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-    })
+    });
 
     describe('prevent xss attack via helper : ', () => {
         let rteObj: RichTextEditor;
@@ -398,7 +390,6 @@ describe('Sanitize Html Helper', () => {
                     }
                 }
             });
-
         });
 
         it('check the script element', () => {
@@ -408,7 +399,7 @@ describe('Sanitize Html Helper', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-    })
+    });
 
     describe('prevent xss attack by add the selectors : ', () => {
         let rteObj: RichTextEditor;
@@ -419,7 +410,6 @@ describe('Sanitize Html Helper', () => {
                     args.selectors.tags.push('style');
                 }
             });
-
         });
 
         it('check the style element', () => {
@@ -429,17 +419,11 @@ describe('Sanitize Html Helper', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-    })
+    });
 
 
     describe("prevent xss attack", () => {
-        let editorObj: EditorManager;
         let rteObj: RichTextEditor;
-        let pasteCleanUp: PasteCleanup;
-        let rteEle: HTMLElement;
-        let element: HTMLElement;
-        let keepFormatButton: HTMLElement;
-        let beforeDialogOpenEvent: boolean = false;
         let keyBoardEvent: any = {
           preventDefault: () => { },
           type: "keydown",
@@ -466,7 +450,7 @@ describe('Sanitize Html Helper', () => {
         </div>
          </div>
          `;
-      
+
         beforeAll((done: Function) => {
           rteObj = renderRTE({
             pasteCleanupSettings: {
@@ -474,11 +458,7 @@ describe('Sanitize Html Helper', () => {
             },
             beforeDialogOpen: beforeDialogOpen
           });
-          rteEle = rteObj.element;
-          editorObj = new EditorManager({ document: document, editableElement: document.getElementsByClassName("e-content")[0] });
-          function beforeDialogOpen(args: any): void {
-            beforeDialogOpenEvent = true;
-          }
+          function beforeDialogOpen(args: any): void { }
           done();
         });
         it("prevent xss attack when pasting", (done) => {
@@ -514,7 +494,7 @@ describe('Sanitize Html Helper', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-    })
+    });
     describe('prevent xss attack when enableHtmlSanitizer is true', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {
@@ -527,7 +507,6 @@ describe('Sanitize Html Helper', () => {
                     }
                 }
             });
-
         });
 
         it('check the script element', () => {
@@ -545,7 +524,6 @@ describe('Sanitize Html Helper', () => {
                 value: '<script>alert("1")</script>',
                 enableHtmlSanitizer: false
              });
-
         });
 
         it('check the script element', () => {
@@ -568,7 +546,6 @@ describe('Sanitize Html Helper', () => {
                     args.helper = null;
                 }
             });
-
         });
 
         it('check the script element', () => {
@@ -590,7 +567,6 @@ describe('Sanitize Html Helper', () => {
                     args.helper = null;
                 }
             });
-
         });
 
         it('check the script with args.helper null', () => {

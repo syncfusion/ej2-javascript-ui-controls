@@ -160,7 +160,8 @@ export class PolarSeries extends PolarRadarPanel {
                 seriesCollection.push(series);
             }
         }
-        seriesCollection.forEach((series: Series) => {
+        for (let i: number = 0; i < seriesCollection.length; i++) {
+            let series: Series = seriesCollection[i];
             if (series.drawType.indexOf('Stacking') !== -1) {
                 if (series.stackingGroup) {
                     if (stackingGroup[series.stackingGroup] === undefined) {
@@ -180,10 +181,11 @@ export class PolarSeries extends PolarRadarPanel {
             } else {
                 series.position = vSeries.rectCount++;
             }
-        });
-        seriesCollection.forEach((value: Series) => {
+        }
+        for (let i: number = 0; i < seriesCollection.length; i++) {
+            let value: Series = seriesCollection[i];
             value.rectCount = vSeries.rectCount;
-        });
+        }
     }
 
     /**

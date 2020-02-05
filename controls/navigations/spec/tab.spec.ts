@@ -227,6 +227,7 @@ describe('Tab Control', () => {
             expect(tab.items[0].content).toEqual('');
             expect(tab.items[0].cssClass).toEqual('');
             expect(tab.items[0].disabled).toEqual(false);
+            expect(tab.items[0].visible).toEqual(true);
         });
         it('TabItemHeader object - default model value testing', () => {
             tab = new Tab({
@@ -749,6 +750,32 @@ describe('Tab Control', () => {
             expect(element.querySelectorAll('.e-toolbar-item').item(0).classList.contains('e-overlay')).toEqual(false);
             expect(element.querySelectorAll('.e-toolbar-item').item(1).classList.contains('e-disable')).toEqual(true);
             expect(element.querySelectorAll('.e-toolbar-item').item(1).classList.contains('e-overlay')).toEqual(true);
+        });
+    });
+    describe('Testing visible property for item', () => {
+        let tab: Tab;
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Items - hidden class availability testing', () => {
+            tab = new Tab({
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2", visible: false }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelectorAll('.e-toolbar-item').item(0).classList.contains('e-hidden')).toEqual(false);
+            expect(element.querySelectorAll('.e-toolbar-item').item(1).classList.contains('e-hidden')).toEqual(true);
         });
     });
     describe('overflowMode property testing', () => {

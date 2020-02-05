@@ -1,9 +1,9 @@
-import { Toolbar, HtmlEditor, RichTextEditor } from './../../../../src/index';
-import { renderRTE, destroy } from './../../render.spec';
+/**
+ * cssClass spec
+ */
 import { detach } from '@syncfusion/ej2-base';
-
-RichTextEditor.Inject(HtmlEditor);
-RichTextEditor.Inject(Toolbar);
+import { RichTextEditor } from './../../../../src/index';
+import { renderRTE } from './../../render.spec';
 
 describe('RTE BASIC PROPERTIES - cssClass - ', () => {
 
@@ -21,7 +21,5 @@ describe('RTE BASIC PROPERTIES - cssClass - ', () => {
                 expect(ele.classList.contains('custom-style')).toBe(false);
             });
         });
-
     });
-   
 });

@@ -3,8 +3,6 @@
  */
 import { createElement, detach } from '@syncfusion/ej2-base';
 import { EditorManager } from '../../../src/editor-manager/index';
-import { NodeSelection, } from '../../../src/selection/index';
-
 
 describe('Formats plugin', () => {
     let innerHTML: string = `
@@ -166,7 +164,6 @@ describe('Formats plugin', () => {
         afterAll(() => {
             detach(elem);
         });
-
     });
 
     describe(' Header 1 Formats testing', () => {
@@ -215,7 +212,6 @@ describe('Formats plugin', () => {
         });
     });
 
-
     describe(' Header 2 Formats testing', () => {
         let editorObj: EditorManager;
 
@@ -261,7 +257,6 @@ describe('Formats plugin', () => {
             detach(elem);
         });
     });
-
 
     describe(' Header 3 Formats testing', () => {
         let editorObj: EditorManager;
@@ -311,12 +306,10 @@ describe('Formats plugin', () => {
             editorObj.nodeSelection.Clear(document);
         });
 
-        
         afterAll(() => {
             detach(elem);
         });
     });
-
 
     describe(' Header 4 Formats testing', () => {
         let editorObj: EditorManager;
@@ -370,7 +363,6 @@ describe('Formats plugin', () => {
         });
     });
 
-
     describe(' Header 5 Formats testing', () => {
         let editorObj: EditorManager;
 
@@ -422,7 +414,6 @@ describe('Formats plugin', () => {
             detach(elem);
         });
     });
-
 
     describe(' Header 6 Formats testing', () => {
         let editorObj: EditorManager;
@@ -551,7 +542,7 @@ describe('Formats plugin', () => {
         });
         afterAll(() => {
             detach(elem);
-        });        
+        });
     });
 
     describe(' Pre format Enter key testing', () => {

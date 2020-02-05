@@ -132,6 +132,13 @@ export interface ColorPickerModel extends ComponentModel{
     beforeModeSwitch?: EmitType<ModeSwitchEventArgs>;
 
     /**
+     * Triggers after Switching between ColorPicker mode.
+     * @event
+     * @blazorProperty 'ModeSwitched'
+     */
+    onModeSwitch?: EmitType<ModeSwitchEventArgs>;
+
+    /**
      * Triggers once the component rendering is completed.
      * @event
      * @blazorProperty 'Created'

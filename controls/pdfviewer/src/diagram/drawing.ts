@@ -2004,9 +2004,18 @@ export class Drawing {
                 if (!childElement.textNodes) {
                     setElementStype(actualObject, actualObject.wrapper.children[i]);
                 }
-                if ((actualObject.wrapper.children[i] instanceof PathElement && actualObject.measureType === 'Perimeter') || actualObject.wrapper.children[i] instanceof TextElement) {
-                    actualObject.wrapper.children[i].style.fill = 'transparent';
+                if (actualObject.enableShapeLabel === true) {
+                if ( actualObject.wrapper.children[i] instanceof TextElement) {
+                    actualObject.wrapper.children[i].style.fill = actualObject.labelFillColor;
                 }
+                if ((actualObject.wrapper.children[i] instanceof PathElement && actualObject.measureType === 'Perimeter')) {
+                    actualObject.wrapper.children[i].style.fill = 'transparent';                    
+                }
+                } else {
+                    if ((actualObject.wrapper.children[i] instanceof PathElement && actualObject.measureType === 'Perimeter') || actualObject.wrapper.children[i] instanceof TextElement) {
+                        actualObject.wrapper.children[i].style.fill = 'transparent';                    
+                }
+            }
             }
         }
         if (actualObject && (actualObject.shapeAnnotationType === "FreeText" || actualObject.enableShapeLabel === true)) {

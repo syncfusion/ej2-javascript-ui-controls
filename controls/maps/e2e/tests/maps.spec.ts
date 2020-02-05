@@ -53,79 +53,79 @@ describe('Marker Clustering Event Spec and bubble Type', function () {
     });
 });
   describe('Checking with MarkerCluster Expand in Shape', function () {
-    // it('Checking Marker Clustering Expand', (done: Function) => {
-    //     browser.load('/demos/markerClusteringExpand.html');
-    //     browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_14_cluster_1"))).perform();    
-    //     browser.compareScreen(element(By.id('container')), 'default_markerClusterExp_imageShape');
-    //     browser.actions().click(element(by.id("container_Zooming_ToolBar_ZoomIn_Rect"))).perform();
-    //     browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_0_cluster_0"))).perform();
-    //     browser.actions().mouseMove(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_6"))).perform();
-    //     browser.compareScreen(element(By.id("container")), 'ZoomDefault_MarkerCluster_TooltipmouseMove');
-    //     browser.findElement(By.id('tooltip')).sendKeys("Click");
-    //     // tooltip = element(by.id('tooltip'));
-    //     // tooltip.all(by.tagName('option')).then((options: any) => {
-    //     //     options[1].click();
-    //     // });
-    //     browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_14_cluster_1"))).perform();
-    //     browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_26"))).perform();
-    //     browser.compareScreen(element(By.id('container')), 'ZoommarkerClusterExp_clickTooltip');
-    //     browser.findElement(By.id('tooltip')).sendKeys("DoubleClick");
-    //     browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_0_cluster_0"))).perform();
-    //     browser.actions().doubleClick(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_3"))).perform();
-    //     browser.compareScreen(element(By.id('container')), 'ZoommarkerClusterExp_doubleClickTooltip');
-    //     done();
-    // });
-    // it('Checking Marker Clustering Expand shape Rectangle', (done: Function) => {
-    //     browser.load('/demos/markerClusteringExpand.html');
-    //     clustershape = element(by.id('shapes'));
-    //     clustershape.all(by.tagName('option')).then((options: any) => {
-    //         options[2].click();
-    //     });
-    //     browser.compareScreen(element(By.id('container')), 'map_markerClusterExp_RectangleShape');
-    //     browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_0_cluster_0"))).perform();
-    //     browser.actions().mouseMove(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_13"))).perform();
-    //     browser.compareScreen(element(By.id('container')), 'markerClusterExp_Rect_TooltipmouseMove');        
-    //     tooltip = element(by.id('tooltip'));
-    //     tooltip.all(by.tagName('option')).then((options: any) => {
-    //         options[1].click();
-    //     });
-    //     browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_14_cluster_1"))).perform();
-    //     browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_30"))).perform();
-    //     browser.compareScreen(element(By.id('container')), 'markerClusterExp_Rectangle_clickTooltip');
-    //     tooltip = element(by.id('tooltip'));
-    //     tooltip.all(by.tagName('option')).then((options: any) => {
-    //         options[2].click();
-    //     });
-    //     browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_14_cluster_1"))).perform();
-    //     browser.actions().doubleClick(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_39"))).perform();
-    //     browser.compareScreen(element(By.id('container')), 'markerClusterExp_Rectangle_doubleClickTooltip');
-    //     done();
-    // });
-    // it('Checking Marker Clustering Expand shape Balloon', (done: Function) => {
-    //     browser.load('/demos/markerClusteringExpand.html');
-    //     clustershape = element(by.id('shapes'));
-    //     clustershape.all(by.tagName('option')).then((options: any) => {
-    //         options[1].click();
-    //     });
-    //     browser.compareScreen(element(By.id('container')), 'map_markerClusterExp_BalloonShape');
-    //     browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_14_cluster_1"))).perform();
-    //     browser.actions().mouseMove(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_30"))).perform();
-    //     browser.compareScreen(element(By.id('container')), 'markerClusterExp_Ball_TooltipmouseMove');        
-    //     tooltip = element(by.id('tooltip'));
-    //     tooltip.all(by.tagName('option')).then((options: any) => {
-    //         options[1].click();
-    //     });
-    //     browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_0_cluster_0"))).perform();
-    //     browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_6"))).perform();
-    //     browser.compareScreen(element(By.id('container')), 'markerClusterExp_Balloon_clickTooltip');
-    //     tooltip.all(by.tagName('option')).then((options: any) => {
-    //         options[2].click();
-    //     });
-    //     browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_14_cluster_1"))).perform();
-    //     browser.actions().doubleClick(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_30"))).perform();
-    //     browser.compareScreen(element(By.id('container')), 'markerClusterExp_Balloon_doubleClickTooltip');
-    //     done();
-    // });
+    it('Checking Marker Clustering Expand', (done: Function) => {
+        browser.load('/demos/markerClusteringExpand.html');
+        browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_14_cluster_1"))).perform();    
+        browser.compareScreen(element(By.id('container')), 'default_markerClusterExp_imageShape');
+        browser.actions().click(element(by.id("container_Zooming_ToolBar_ZoomIn_Rect"))).perform();
+        browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_0_cluster_0"))).perform();
+        browser.actions().mouseMove(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_6"))).perform();
+        browser.compareScreen(element(By.id("container")), 'ZoomDefault_MarkerCluster_TooltipmouseMove');
+        browser.findElement(By.id('tooltip')).sendKeys("Click");
+        // tooltip = element(by.id('tooltip'));
+        // tooltip.all(by.tagName('option')).then((options: any) => {
+        //     options[1].click();
+        // });
+        browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_14_cluster_1"))).perform();
+        browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_26"))).perform();
+        browser.compareScreen(element(By.id('container')), 'ZoommarkerClusterExp_clickTooltip');
+        browser.findElement(By.id('tooltip')).sendKeys("DoubleClick");
+        browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_0_cluster_0"))).perform();
+        browser.actions().doubleClick(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_3"))).perform();
+        browser.compareScreen(element(By.id('container')), 'ZoommarkerClusterExp_doubleClickTooltip');
+        done();
+    });
+    it('Checking Marker Clustering Expand shape Rectangle', (done: Function) => {
+        browser.load('/demos/markerClusteringExpand.html');
+        clustershape = element(by.id('shapes'));
+        clustershape.all(by.tagName('option')).then((options: any) => {
+            options[2].click();
+        });
+        browser.compareScreen(element(By.id('container')), 'map_markerClusterExp_RectangleShape');
+        browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_0_cluster_0"))).perform();
+        browser.actions().mouseMove(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_13"))).perform();
+        browser.compareScreen(element(By.id('container')), 'markerClusterExp_Rect_TooltipmouseMove');        
+        tooltip = element(by.id('tooltip'));
+        tooltip.all(by.tagName('option')).then((options: any) => {
+            options[1].click();
+        });
+        browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_14_cluster_1"))).perform();
+        browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_30"))).perform();
+        browser.compareScreen(element(By.id('container')), 'markerClusterExp_Rectangle_clickTooltip');
+        tooltip = element(by.id('tooltip'));
+        tooltip.all(by.tagName('option')).then((options: any) => {
+            options[2].click();
+        });
+        browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_14_cluster_1"))).perform();
+        browser.actions().doubleClick(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_39"))).perform();
+        browser.compareScreen(element(By.id('container')), 'markerClusterExp_Rectangle_doubleClickTooltip');
+        done();
+    });
+    it('Checking Marker Clustering Expand shape Balloon', (done: Function) => {
+        browser.load('/demos/markerClusteringExpand.html');
+        clustershape = element(by.id('shapes'));
+        clustershape.all(by.tagName('option')).then((options: any) => {
+            options[1].click();
+        });
+        browser.compareScreen(element(By.id('container')), 'map_markerClusterExp_BalloonShape');
+        browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_14_cluster_1"))).perform();
+        browser.actions().mouseMove(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_30"))).perform();
+        browser.compareScreen(element(By.id('container')), 'markerClusterExp_Ball_TooltipmouseMove');        
+        tooltip = element(by.id('tooltip'));
+        tooltip.all(by.tagName('option')).then((options: any) => {
+            options[1].click();
+        });
+        browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_0_cluster_0"))).perform();
+        browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_6"))).perform();
+        browser.compareScreen(element(By.id('container')), 'markerClusterExp_Balloon_clickTooltip');
+        tooltip.all(by.tagName('option')).then((options: any) => {
+            options[2].click();
+        });
+        browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_14_cluster_1"))).perform();
+        browser.actions().doubleClick(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_30"))).perform();
+        browser.compareScreen(element(By.id('container')), 'markerClusterExp_Balloon_doubleClickTooltip');
+        done();
+    });
     it('Checking Marker Clustering Expand shape Triangle', (done: Function) => {
         browser.load('/demos/markerClusteringExpand.html');
         clustershape = element(by.id('shapes'));
@@ -167,7 +167,7 @@ describe('Marker Clustering Event Spec and bubble Type', function () {
         });
         browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_14_cluster_1"))).perform();
         browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_30"))).perform();
-        browser.compareScreen(element(By.id('container')), 'markerClusterExp_Triangle_clickTooltip');
+        browser.compareScreen(element(By.id('container')), 'markerClusterExp_Diamond_clickTooltip');
         tooltip.all(by.tagName('option')).then((options: any) => {
             options[2].click();
         });
@@ -421,14 +421,14 @@ describe('Marker Clustering Event Spec and bubble Type', function () {
         browser.compareScreen(element(By.id('container')), 'OSM_markerClusterExp_DiamondShape');
         browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_14_cluster_1"))).perform();
         browser.actions().mouseMove(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_30"))).perform();
-        browser.compareScreen(element(By.id('container')), 'markerClusterExp_Diamond_TooltipmouseMove');        
+        browser.compareScreen(element(By.id('container')), 'OSMmarkerClusterExp_Diamond_TooltipmouseMove');        
         tooltip = element(by.id('tooltip'));
         tooltip.all(by.tagName('option')).then((options: any) => {
             options[1].click();
         });
         browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_14_cluster_1"))).perform();
         browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_30"))).perform();
-        browser.compareScreen(element(By.id('container')), 'OSMmarkerClusterExp_Triangle_clickTooltip');
+        browser.compareScreen(element(By.id('container')), 'OSMmarkerClusterExp_Diamond_clickTooltip');
         tooltip.all(by.tagName('option')).then((options: any) => {
             options[2].click();
         });
@@ -692,7 +692,7 @@ describe('Cluster Expand with TooltipGesture in Bing Maps', function () {
         });
         browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_14_cluster_1"))).perform();
         browser.actions().click(element(by.id("container_LayerIndex_0_MarkerIndex_0_dataIndex_30"))).perform();
-        browser.compareScreen(element(By.id('container')), 'BingmarkerClusterExp_Triangle_clickTooltip');
+        browser.compareScreen(element(By.id('container')), 'BingmarkerClusterExp_Diamond_clickTooltip');
         tooltip = element(by.id('tooltip'));
         tooltip.all(by.tagName('option')).then((options: any) => {
             options[2].click();

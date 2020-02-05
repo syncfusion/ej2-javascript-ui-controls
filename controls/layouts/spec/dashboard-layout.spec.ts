@@ -359,6 +359,81 @@ describe('GridLayout', () => {
             expect(gridLayOut.panels.length).toBe(0);
         });
 
+        it('XSS testing in panel content with enableHtmlSanitizer property as false', () => {
+            let count: number = 100;
+            let panelData: PanelModel[] = [{
+                'id': count.toString() + '_layout', 'sizeX': 1, 'sizeY': 1, 'row': 0, 'col': 0,
+                content: '<span id="close" class="e-template-icon e-clear-icon"><style>body{background:rgb(0, 0, 255)}<\/style></span><div class="text-align">' + count.toString() + '</div>'
+            }];
+            gridLayOut = new DashboardLayout({
+                cellSpacing: [10, 10],
+                allowResizing: true,
+                columns: 5,
+                enableHtmlSanitizer: false,
+                panels: panelData
+                
+            });
+            gridLayOut.appendTo('#gridlayout');
+            var ele = document.body;
+            expect(window.getComputedStyle(ele).backgroundColor).toBe("rgb(0, 0, 255)");
+        });
+        it('XSS testing in panel content with enableHtmlSanitizer property as true', () => {
+            let count: number = 100;
+            let panelData: PanelModel[] = [{
+                'id': count.toString() + '_layout', 'sizeX': 1, 'sizeY': 1, 'row': 0, 'col': 0,
+                content: '<span id="close" class="e-template-icon e-clear-icon"><style>body{background:rgb(0, 0, 255)}<\/style></span><div class="text-align">' + count.toString() + '</div>'
+            }];
+            gridLayOut = new DashboardLayout({
+                cellSpacing: [10, 10],
+                allowResizing: true,
+                columns: 5,
+                enableHtmlSanitizer: true,
+                panels: panelData
+                
+            });
+            gridLayOut.appendTo('#gridlayout');
+            var ele = document.body;
+            expect(window.getComputedStyle(ele).backgroundColor).not.toBe("rgb(0, 0, 255)");
+        });
+        it('XSS testing in panel header with enableHtmlSanitizer property as false', () => {
+            let count: number = 100;
+            let panelData: PanelModel[] = [{
+                'id': count.toString() + '_layout', 'sizeX': 1, 'sizeY': 1, 'row': 0, 'col': 0,
+                content: '<span id="close" class="e-template-icon e-clear-icon"></span><div class="text-align">' + count.toString() + '</div>',
+                header: '<span>header</span><style>body{background:rgb(0, 0, 255)}<\/style>'
+            }];
+            gridLayOut = new DashboardLayout({
+                cellSpacing: [10, 10],
+                allowResizing: true,
+                columns: 5,
+                enableHtmlSanitizer: false,
+                panels: panelData
+
+            });
+            gridLayOut.appendTo('#gridlayout');
+            var ele = document.body;
+            expect(window.getComputedStyle(ele).backgroundColor).toBe("rgb(0, 0, 255)");
+        });
+        it('XSS testing in panel header with enableHtmlSanitizer property as true', () => {
+            let count: number = 100;
+            let panelData: PanelModel[] = [{
+                'id': count.toString() + '_layout', 'sizeX': 1, 'sizeY': 1, 'row': 0, 'col': 0,
+                content: '<span id="close" class="e-template-icon e-clear-icon"></span><div class="text-align">' + count.toString() + '</div>',
+                header: '<span>header</span><style>body{background:rgb(0, 0, 255)}<\/style>'
+            }];
+            gridLayOut = new DashboardLayout({
+                cellSpacing: [10, 10],
+                allowResizing: true,
+                columns: 5,
+                enableHtmlSanitizer: true,
+                panels: panelData
+
+            });
+            gridLayOut.appendTo('#gridlayout');
+            var ele = document.body;
+            expect(window.getComputedStyle(ele).backgroundColor).not.toBe("rgb(0, 0, 255)");
+        });
+
         it('Normal case testing for single panel rendering without body to restrict', () => {
             let content = generateTemplate('0');
             gridLayOut = new DashboardLayout({

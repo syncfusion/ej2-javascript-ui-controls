@@ -391,6 +391,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Property(false)
     public enableSpellCheck: boolean;
+    /**
+     * Gets or set a value indicating whether comment is enabled or not
+     * @default false
+     */
+    @Property(false)
+    public enableComment: boolean;
 
     /**
      * Gets or Sets a value indicating whether tab key can be accepted as input or not.
@@ -770,6 +776,13 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     break;
                 case 'enableRtl':
                     this.localizeDialogs(model.enableRtl);
+                    break;
+                case 'enableComment':
+                    if (this.viewer && this.showComments) {
+                        this.showComments = this.showComments ? this.enableComment : false;
+                        this.viewer.showComments(model.enableComment);
+                    }
+                    this.viewer.updateScrollBars();
                     break;
             }
         }
@@ -1805,12 +1818,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public destroy(): void {
         super.destroy();
         this.destroyDependentModules();
-        if (!this.refreshing) {
-            if (!isNullOrUndefined(this.viewer)) {
-                this.viewer.destroy();
-            }
-            this.viewer = undefined;
+        if (!isNullOrUndefined(this.viewer)) {
+            this.viewer.destroy();
         }
+        this.viewer = undefined;
         if (!isNullOrUndefined(this.element)) {
             this.element.classList.remove('e-documenteditor');
             this.element.innerHTML = '';

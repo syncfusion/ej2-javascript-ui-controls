@@ -154,7 +154,6 @@ export class KeyboardEvents extends Base<HTMLElement> implements INotifyProperty
     /**
      * Unwiring event handlers to events
      */
-
     private unwireEvents(): void {
         this.element.removeEventListener(this.eventName, this.keyPressHandler);
     }
@@ -162,7 +161,6 @@ export class KeyboardEvents extends Base<HTMLElement> implements INotifyProperty
     /**
      * To handle a key press event returns null
      */
-
     private keyPressHandler: EventListener = (e: KeyboardEventArgs): void => {
         let isAltKey: Boolean = e.altKey;
         let isCtrlKey: Boolean = e.ctrlKey;
@@ -189,7 +187,6 @@ export class KeyboardEvents extends Base<HTMLElement> implements INotifyProperty
      * @param {string} config - configuration data
      * returns {KeyData}
      */
-
     private static getKeyConfigData(config: string): KeyData {
         if (config in this.configCache) { return this.configCache[config]; }
         let keys: string[] = config.toLowerCase().split('+');

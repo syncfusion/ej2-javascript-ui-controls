@@ -1,15 +1,10 @@
-import { Toolbar, HtmlEditor, RichTextEditor, Count, Link, Image, QuickToolbar } from './../../../../src/index';
-import { renderRTE, destroy, dispatchEvent } from './../../render.spec';
-
-RichTextEditor.Inject(HtmlEditor);
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(Link);
-RichTextEditor.Inject(Count);
-RichTextEditor.Inject(Image);
-RichTextEditor.Inject(QuickToolbar);
+/**
+ * value spec
+ */
+import { RichTextEditor } from './../../../../src/index';
+import { renderRTE, destroy } from './../../render.spec';
 
 describe('RTE BASIC PROPERTIES - value - ', () => {
-
 
     describe(' onPropertyChange - ', () => {
 
@@ -51,9 +46,7 @@ describe('RTE BASIC PROPERTIES - value - ', () => {
             })
 
             it(' Test the value property value and edit area ', () => {
-                rteObj = renderRTE({
-
-                });
+                rteObj = renderRTE({ });
                 rteObj.valueTemplate = '<p>RichTextEditor</p>';
                 rteObj.dataBind();
                 expect(rteObj.value === '<p>RichTextEditor</p>').toBe(true);

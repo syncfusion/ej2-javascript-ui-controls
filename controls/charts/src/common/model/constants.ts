@@ -80,3 +80,5 @@ export const regSub: RegExp = /~\d+~/g;
 export const regSup: RegExp = /\^\d+\^/g;
 /** @private */
 export const beforeExport : string = 'beforeExport';
+/** @private */
+export const afterExport : string = 'afterExport';

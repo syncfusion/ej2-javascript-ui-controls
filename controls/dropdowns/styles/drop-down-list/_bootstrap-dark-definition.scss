@@ -12,13 +12,13 @@ $ddl-active-font-color: $active-font-color !default;
 $ddl-list-search-icon-padding: 8px !default;
 $ddl-list-filter-text-indent: 0 12px !default;
 $ddl-list-icon-color: $grey-dark-font !default;
-$ddl-list-box-shadow-color: 0 6px 12px rgba($base-font, .5) !default;
+$ddl-list-box-shadow-color: rgba($base-font, .5) !default;
 $ddl-bigger-list-font-size: 15px !default;
 $ddl-popup-background-color: $grey !default;
 $ddl-filter-border: $grey-44 !default;
 $ddl-filter-top-border: 0 !default;
 $ddl-filter-padding: 5px 8px !default;
-$ddl-filter-box-shadow: 0 !default;
+$ddl-filter-box-shadow: none !default;
 $ddl-filter-background-color: $grey-white !default;
 $ddl-default-border-color: $grey-44 !default;
 $ddl-back-icon-margin: -2px 10px 0 -54px !default;
@@ -33,7 +33,7 @@ $ddl-bigger-small-list-font-size: 14px !default;
 @include export-module('dropdownlist-bootstrap-dark') {
   #{&}.e-popup.e-ddl {
     border-radius: 4px;
-    box-shadow:  0 6px 12px $ddl-list-box-shadow-color;
+    box-shadow: 0 6px 12px $ddl-list-box-shadow-color;
     margin-top: 3px;
     overflow: auto;
     @at-root {

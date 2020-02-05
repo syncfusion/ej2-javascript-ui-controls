@@ -9,6 +9,7 @@ import { calculateAggregate, getUid } from '../base/util';
 import { Group } from '@syncfusion/ej2-data';
 import { CellType } from '../base/enum';
 import { Cell } from '../models/cell';
+import { ReturnType } from '../base/type';
 
 
 /**
@@ -60,7 +61,11 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
     }
 
     public generateRows(input: Object[] | Group, args?: Object, start?: number, end?: number): Row<AggregateColumnModel>[] {
-        if ((input as Object[]).length === 0) { return []; }
+        if ((input as Object[]).length === 0) {
+            if (args === undefined || !(args as ReturnType).count) {
+                return [];
+            }
+        }
         let data: Object[] = this.buildSummaryData(input, <SummaryData>args);
         let rows: Row<AggregateColumnModel>[] = [];
         let row: AggregateRowModel[] = (<AggregateRowModel[]>this.getData());

@@ -630,7 +630,7 @@
   .e-rte-image {
     border: 0;
     cursor: pointer;
-    display: '';
+    display: block;
     float: none;
     margin: auto;
     max-width: 100%;
@@ -1338,4 +1338,35 @@
     border-collapse: separate;
   }
 
+  .e-rte-img-dialog.e-dialog.e-device.e-dlg-modal {
+    .e-img-uploadwrap.e-droparea {
+      line-height: 10;
+      min-height: 50px;
+      position: relative;
+
+      .e-browsebtn {
+        display: block;
+        height: 36px;
+        margin: -50px auto;
+        padding: 0 18px;
+      }
+
+      .e-upload {
+        border: 0 solid transparent;
+        float: none;
+      }
+
+      .e-file-select-wrap {
+        display: none;
+      }
+    }
+
+    .e-linkheader {
+      font-family: $rte-font-family;
+      font-size: 15px;
+      opacity: .87;
+      padding-bottom: $rte-insert-dialog-label-padding-bottom;
+      padding-top: $rte-insert-dialog-label-padding-top;
+    }
+  }
 }

@@ -142,7 +142,8 @@ export class Zoom {
         chart.delayRedraw = true;
         chart.disableTrackTooltip = true;
         let argsData: IZoomCompleteEventArgs;
-        axes.forEach((axis: Axis) => {
+        for (let i: number = 0; i < axes.length; i++) {
+            let axis: Axis = axes[i] as Axis;
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -160,7 +161,7 @@ export class Zoom {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
             }
-        });
+        }
         if (this.zooming.enableDeferredZooming) {
             translateX = chart.mouseX - chart.mouseDownX;
             translateY = chart.mouseY - chart.mouseDownY;
@@ -228,7 +229,8 @@ export class Zoom {
         let mode: ZoomMode = this.zooming.mode;
         let argsData: IZoomCompleteEventArgs;
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
-        axes.forEach((axis: Axis) => {
+        for (let j: number = 0; j < axes.length; j++) {
+            let axis: Axis = axes[j] as Axis;
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -251,7 +253,7 @@ export class Zoom {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
             }
-        });
+        }
         this.zoomingRect = new Rect(0, 0, 0, 0);
         this.performZoomRedraw(chart);
     }
@@ -275,7 +277,8 @@ export class Zoom {
         this.performedUI =  true;
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
         let argsData: IZoomCompleteEventArgs;
-        axes.forEach((axis: Axis) => {
+        for (let index: number = 0; index < axes.length; index++) {
+            let axis: Axis = axes[index] as Axis;
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -300,7 +303,7 @@ export class Zoom {
                     axis.zoomPosition = argsData.currentZoomPosition;
                 }
             }
-        });
+        }
         this.performZoomRedraw(chart);
     }
 
@@ -374,7 +377,8 @@ export class Zoom {
         let argsData: IZoomCompleteEventArgs;
         let currentZF: number;
         let currentZP: number;
-        chart.axisCollections.forEach((axis: Axis, index: number) => {
+        for (let index: number = 0; index < chart.axisCollections.length; index++) {
+            let axis: Axis = chart.axisCollections[index];
             if ((axis.orientation === 'Horizontal' && mode !== 'Y') ||
                 (axis.orientation === 'Vertical' && mode !== 'X')) {
                 currentZF = axis.zoomFactor;
@@ -408,7 +412,7 @@ export class Zoom {
                     axis.zoomPosition = argsData.currentZoomPosition;
                 }
             }
-        });
+        }
     }
 
     // Series transformation style applied here.
@@ -424,7 +428,8 @@ export class Zoom {
         let yAxisLoc: number;
         let element: Element;
         if (transX !== null && transY !== null) {
-            chart.visibleSeries.forEach((value: Series) => {
+            for (let i: number = 0; i < chart.visibleSeries.length; i++) {
+                let value: Series = chart.visibleSeries[i];
                 xAxisLoc = chart.requireInvertedAxis ? value.yAxis.rect.x : value.xAxis.rect.x;
                 yAxisLoc = chart.requireInvertedAxis ? value.xAxis.rect.y : value.yAxis.rect.y;
                 translate = 'translate(' + (transX + (isPinch ? (scaleX * xAxisLoc) : xAxisLoc)) +
@@ -453,14 +458,15 @@ export class Zoom {
                         (element as HTMLElement).style.visibility = 'hidden';
                     }
                 }
-            });
+            }
         }
     }
 
     private calculateZoomAxesRange(chart: Chart, axes: AxisModel[]): void {
         let range: IZoomAxisRange;
         let axisRange: VisibleRangeModel;
-        chart.axisCollections.forEach((axis: Axis, index: number) => {
+        for (let index: number = 0; index < chart.axisCollections.length; index++) {
+            let axis: Axis = chart.axisCollections[index];
             axisRange = axis.visibleRange;
             if (this.zoomAxes[index]) {
                 if (!chart.delayRedraw) {
@@ -476,7 +482,7 @@ export class Zoom {
                 };
                 this.zoomAxes[index] = range;
             }
-        });
+        }
     }
     // Zooming Toolkit created here
     private showZoomingToolkit(chart: Chart): boolean {
@@ -587,10 +593,10 @@ export class Zoom {
      */
     public isAxisZoomed(axes: AxisModel[]): boolean {
         let showToolkit: boolean = false;
-        axes.forEach((axis: Axis) => {
+        for (let k: number = 0; k < axes.length; k++) {
+            let axis: Axis = axes[k] as Axis;
             showToolkit = (showToolkit || (axis.zoomFactor !== 1 || axis.zoomPosition !== 0));
-        });
-
+        }
         return showToolkit;
     }
 

@@ -1406,4 +1406,59 @@ describe('Aggregates Functionality testing', () => {
             grid = null;
         });
     });
+
+    describe('EJ2-35825-Aggregates with empty Grid batch adding', () => {
+        let grid: Grid;
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    dataSource: [],
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch'},
+                    toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                    allowPaging: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID' },
+                        { field: 'Freight', format: 'C2' },
+                        { field: 'ShipName', headerText: 'Ship Name',},
+                        { field: 'ShipCountry', headerText: 'Ship Country' },
+                    ],
+                    aggregates: [{
+                        columns: [{
+                            type: 'Sum',
+                            field: 'Freight',
+                            footerTemplate: 'Sum: ${Sum}'
+                        },
+                        {
+                            type: 'Average',
+                            field: 'OrderID',
+                            footerTemplate: 'Average: ${Average}'
+                        }]
+                    }]
+                },
+                done
+            );
+        });
+
+        it('adding record', () => {
+            grid.addRecord({ OrderID: 10242, CustomerID: 'HANAR', Freight: 1 });
+            let AggregateRow: HTMLTableRowElement = ((grid.getFooterContentTable() as HTMLTableElement).tFoot.rows[0] as HTMLTableRowElement);
+            let afterSumVal: string = AggregateRow.cells[1].innerHTML;
+            expect(AggregateRow).not.toBeNull();
+            expect(afterSumVal).toBe('Sum: 1');
+        });
+
+        it('cancel the added value ', (done: Function) => {
+            grid.editSettings.showConfirmDialog = false;
+            grid.closeEdit();
+            let AggregateRow: HTMLTableSectionElement = (grid.getFooterContentTable() as HTMLTableElement).tFoot;
+            expect(AggregateRow.childElementCount).toBe(0);           
+            done();
+        });
+
+        afterAll(() => {
+            destroy(grid);
+            grid = null;
+        });
+    });
+
 });

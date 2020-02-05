@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 17.4.47 (2020-02-05)
+
+### LinearGauge
+
+#### Breaking Changes
+
+- Previously, the `Offset` property in the Pointers and Ranges takes `number` values as input and now it supports `string` values too.
+
 ## 17.2.28-beta (2019-06-27)
 
 ### LinearGauge

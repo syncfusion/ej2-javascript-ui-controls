@@ -169,7 +169,7 @@
     border-color: $input-warning-color;
   }
 
-  .e-input + .e-input-group-icon:not(.e-input-group.e-float-icon-left):last-child:hover,
+  .e-input + .e-input-group-icon:not(.e-input-group):not(.e-float-icon-left):last-child:hover,
   .e-input-group.e-success .e-input + .e-input-group-icon:last-child:hover,
   .e-input-group.e-success.e-control-wrapper .e-input + .e-input-group-icon:last-child:hover {
     @if $input-skin-name == 'highcontrast' {
@@ -412,8 +412,8 @@
     }
   }
 
-  .e-float-input.e-input-group.e-small:not(.e-float-icon-left):not(.e-input-group.e-disabled) .e-input-group-icon:last-child:hover,
-  .e-float-input.e-control-wrapper.e-input-group.e-small:not(.e-float-icon-left):not(.e-input-group.e-disabled) .e-input-group-icon:last-child:hover {
+  .e-float-input.e-input-group.e-small:not(.e-float-icon-left):not(.e-input-group):not(.e-disabled) .e-input-group-icon:last-child:hover,
+  .e-float-input.e-control-wrapper.e-input-group.e-small:not(.e-float-icon-left):not(.e-input-group):not(.e-disabled) .e-input-group-icon:last-child:hover {
     @if $input-skin-name == 'highcontrast' {
       border-right-color: transparent;
     }
@@ -3078,7 +3078,7 @@
     @if $input-skin-name == 'material' {
       background: $filled-input-disabled-bg-color;
       background-image: none;
-      background-position: none;
+      background-position: initial;
       background-repeat: no-repeat;
       background-size: $zero-value;
       border-color: $filled-input-disabled-border-color;
@@ -3100,7 +3100,7 @@
     @if $input-skin-name == 'material' {
       background: $filled-input-disabled-bg-color;
       background-image: none;
-      background-position: none;
+      background-position: initial;
       background-repeat: no-repeat;
       background-size: $zero-value;
       border-color: $filled-input-disabled-border-color;

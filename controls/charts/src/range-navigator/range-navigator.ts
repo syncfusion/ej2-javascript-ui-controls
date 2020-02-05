@@ -770,8 +770,10 @@ export class RangeNavigator extends Component<HTMLElement> {
      * @private
      */
     public mouseMove(e: PointerEvent): boolean {
-        this.mouseX = this.setMouseX(e);
-        this.notify(Browser.touchMoveEvent, e);
+        if (getElement(this.element.id + '_svg')) {
+            this.mouseX = this.setMouseX(e);
+            this.notify(Browser.touchMoveEvent, e);
+        }
         return false;
     }
     /**

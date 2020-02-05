@@ -2118,4 +2118,49 @@ describe('Check for case sensitive ', ()=>{
             gridObj = actionComplete = null;
         });
     });
+
+    describe('EJ2-36193- Clear Filtering of foreignKey column', ()=>{
+        let gridObj: Grid;
+        let actionComplete: (args: any) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: normalData,
+                    allowFiltering: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120 },
+                        { field: 'CustomerID',  headerText: 'Customer ID', width: 120, foreignKeyField: 'CustomerName', foreignKeyValue: 'ShipCountry', dataSource: foreigndata },
+                        { field: 'Freight',  headerText: 'Freight', width: 120},
+                        { field: 'ShipCountry',  headerText: 'Ship Country', width: 120 }
+                    ],
+                    actionComplete: actionComplete
+                }, done);
+        });
+        it('filtering the foreignkeyvalue', (done: Function) => {
+            actionComplete = (args: any) => {
+                if(args.requestType == 'filtering') {
+                    expect(args.rows.length).toBe(2);
+                    done();    
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            filterColumn(gridObj, 'CustomerID', 'France');
+        });        
+        it('clear filter check', (done: Function) => {
+            actionComplete = (args: any) => {
+                if (args.requestType == 'refresh'){
+                    expect(args.rows.length).toBe(10);
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.clearFiltering();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+            actionComplete = null;
+        });
+    });
+
 });

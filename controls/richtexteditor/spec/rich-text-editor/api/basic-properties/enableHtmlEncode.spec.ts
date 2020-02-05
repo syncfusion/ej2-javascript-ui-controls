@@ -1,12 +1,9 @@
-import { Toolbar, HtmlEditor, RichTextEditor, Link, Image, QuickToolbar } from './../../../../src/index';
-import { renderRTE, destroy, dispatchEvent, setCursorPoint } from './../../render.spec';
-import { detach, isNullOrUndefined, } from '@syncfusion/ej2-base';
-
-RichTextEditor.Inject(HtmlEditor);
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(Link);
-RichTextEditor.Inject(Image);
-RichTextEditor.Inject(QuickToolbar);
+/**
+ * enableHtmlEncode spec
+ */
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { RichTextEditor } from './../../../../src/index';
+import { renderRTE, destroy } from './../../render.spec';
 
 describe('RTE BASIC PROPERTIES - enableHtmlEncode - ', () => {
 
@@ -17,8 +14,7 @@ describe('RTE BASIC PROPERTIES - enableHtmlEncode - ', () => {
             done();
         })
         it(' Test the default value ', () => {
-            rteObj = renderRTE({
-            });
+            rteObj = renderRTE({ });
             expect(rteObj.enableHtmlEncode).toBe(false);
         });
     })
@@ -164,6 +160,5 @@ describe('RTE BASIC PROPERTIES - enableHtmlEncode - ', () => {
             let sourceCode: HTMLTextAreaElement = rteObj.element.querySelector('.e-rte-srctextarea');
             expect(sourceCode.value === '&lt;p id="encode"&gt;Encode&lt;/p&gt;').toBe(true);
         });
-    })
-
+    });
 });

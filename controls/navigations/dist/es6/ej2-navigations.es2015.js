@@ -1414,8 +1414,8 @@ let MenuBase = class MenuBase extends Component {
                     }
                     if (this.isMenu && trgtpopUp && popupId.length) {
                         trgtliId = new RegExp('(.*)-ej2menu-' + this.element.id + '-popup').exec(popupId)[1];
-                        closedLi = trgtpopUp.querySelector('#' + trgtliId);
-                        trgtLi = (liElem && trgtpopUp.querySelector('#' + liElem.id));
+                        closedLi = trgtpopUp.querySelector('[id="' + trgtliId + '"]');
+                        trgtLi = (liElem && trgtpopUp.querySelector('[id="' + liElem.id + '"]'));
                     }
                     if (isOpen && this.hamburgerMode && ulIndex) {
                         this.afterCloseMenu(e);
@@ -2877,6 +2877,9 @@ __decorate$3([
 __decorate$3([
     Property('')
 ], Item.prototype, "suffixIcon", void 0);
+__decorate$3([
+    Property(true)
+], Item.prototype, "visible", void 0);
 __decorate$3([
     Property('None')
 ], Item.prototype, "overflow", void 0);
@@ -4512,7 +4515,7 @@ let Toolbar = class Toolbar extends Component {
         item.id ? (dom.id = item.id) : dom.id = getUniqueID('e-tbr-btn');
         let btnTxt = this.createElement('span', { className: 'e-tbar-btn-text' });
         if (textStr) {
-            btnTxt.innerHTML = SanitizeHtmlHelper.sanitize(textStr);
+            btnTxt.innerHTML = this.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(textStr) : textStr;
             dom.appendChild(btnTxt);
             dom.classList.add('e-tbtn-txt');
         }
@@ -4542,7 +4545,9 @@ let Toolbar = class Toolbar extends Component {
         let dom;
         innerEle = this.createElement('div', { className: CLS_ITEM });
         innerEle.setAttribute('aria-disabled', 'false');
-        let tempDom = this.createElement('div', { innerHTML: SanitizeHtmlHelper.sanitize(item.tooltipText) });
+        let tempDom = this.createElement('div', {
+            innerHTML: this.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(item.tooltipText) : item.tooltipText
+        });
         if (!this.tbarEle) {
             this.tbarEle = [];
         }
@@ -4599,6 +4604,9 @@ let Toolbar = class Toolbar extends Component {
         }
         if (item.disabled) {
             this.add(innerEle, CLS_DISABLE$2);
+        }
+        if (item.visible === false) {
+            this.add(innerEle, CLS_HIDDEN);
         }
         return innerEle;
     }
@@ -4884,6 +4892,9 @@ __decorate$3([
 __decorate$3([
     Property(true)
 ], Toolbar.prototype, "enableCollision", void 0);
+__decorate$3([
+    Property(true)
+], Toolbar.prototype, "enableHtmlSanitizer", void 0);
 __decorate$3([
     Event()
 ], Toolbar.prototype, "clicked", void 0);
@@ -6593,6 +6604,9 @@ __decorate$7([
 __decorate$7([
     Property(false)
 ], TabItem.prototype, "disabled", void 0);
+__decorate$7([
+    Property(true)
+], TabItem.prototype, "visible", void 0);
 /**
  * Tab is a content panel to show multiple contents in a single space, one at a time.
  * Each Tab item has an associated content, that will be displayed based on the active Tab header item.
@@ -6670,6 +6684,9 @@ let Tab = class Tab extends Component {
     refresh() {
         if (!this.isServerRendered) {
             super.refresh();
+        }
+        else if (this.isServerRendered && this.loadOn === 'Init') {
+            this.setActiveBorder();
         }
     }
     /**
@@ -6751,6 +6768,12 @@ let Tab = class Tab extends Component {
             this.setRTL(this.enableRtl);
         }
     }
+    serverItemsChanged() {
+        if (this.isServerRendered && this.loadOn === 'Init') {
+            this.setActiveContent();
+        }
+        this.setActiveBorder();
+    }
     headerReady() {
         this.initRender = true;
         this.hdrEle = this.getTabHeader();
@@ -6759,7 +6782,7 @@ let Tab = class Tab extends Component {
             this.tbObj = (this.hdrEle && this.hdrEle.ej2_instances[0]);
         }
         this.tbObj.clicked = this.clickHandler.bind(this);
-        this.tbObj.on('onItemsChanged', this.setActiveBorder.bind(this));
+        this.tbObj.on('onItemsChanged', this.serverItemsChanged.bind(this));
         this.tbItems = select('.' + CLS_HEADER$1 + ' .' + CLS_TB_ITEMS, this.element);
         if (!isNullOrUndefined(this.tbItems)) {
             rippleEffect(this.tbItems, { selector: '.e-tab-wrap' });
@@ -6779,6 +6802,9 @@ let Tab = class Tab extends Component {
         this.cntEle = select('.' + CLS_TAB + ' > .' + CLS_CONTENT$1, this.element);
         if (!isNullOrUndefined(this.cntEle)) {
             this.touchModule = new Touch(this.cntEle, { swipe: this.swipeHandler.bind(this) });
+        }
+        if (this.isServerRendered && this.loadOn === 'Init') {
+            this.setActiveContent();
         }
         this.initRender = false;
         this.renderComplete();
@@ -6876,6 +6902,7 @@ let Tab = class Tab extends Component {
             let txt = item.headerTemplate || item.header.text;
             this.lastIndex = ((tbCount === 0) ? i : ((this.isReplace) ? (index + i) : (this.lastIndex + 1)));
             let disabled = (item.disabled) ? ' ' + CLS_DISABLE$4 + ' ' + CLS_OVERLAY$2 : '';
+            let hidden = (item.visible === false) ? ' ' + CLS_HIDDEN$1 : '';
             txtWrapEle = this.createElement('div', { className: CLS_TEXT, attrs: { 'role': 'presentation' } });
             let tHtml = ((txt instanceof Object) ? txt.outerHTML : txt);
             let txtEmpty = (!isNullOrUndefined(tHtml) && tHtml !== '');
@@ -6923,7 +6950,8 @@ let Tab = class Tab extends Component {
                 id: CLS_ITEM$2 + this.tabId + '_' + this.lastIndex, role: 'tab', 'aria-selected': 'false'
             };
             let tItem = { htmlAttributes: attrObj, template: wrap };
-            tItem.cssClass = item.cssClass + ' ' + disabled + ' ' + ((css !== '') ? 'e-i' + pos : '') + ' ' + ((!txtEmpty) ? CLS_ICON : '');
+            tItem.cssClass = ((item.cssClass !== undefined) ? item.cssClass : ' ') + ' ' + disabled + ' ' + hidden
+                + ((css !== '') ? 'e-i' + pos : '') + ' ' + ((!txtEmpty) ? CLS_ICON : '');
             if (pos === 'top' || pos === 'bottom') {
                 this.element.classList.add('e-vertical-icon');
             }
@@ -7051,7 +7079,7 @@ let Tab = class Tab extends Component {
         let prevIndex = this.prevIndex;
         let oldCnt;
         let newCnt;
-        if (!this.isServerRendered) {
+        if (!this.isServerRendered || (this.isServerRendered && this.loadOn === 'Init')) {
             let itemCollection = [].slice.call(this.element.querySelector('.' + CLS_CONTENT$1).children);
             itemCollection.forEach((item) => {
                 if (item.id === this.prevActiveEle) {
@@ -7476,7 +7504,7 @@ let Tab = class Tab extends Component {
                 this.triggerAnimation(id, this.enableAnimation);
             }
         }
-        else if (!this.isServerRendered) {
+        else if (!this.isServerRendered || (this.isServerRendered && this.loadOn === 'Init')) {
             this.cntEle = select('.' + CLS_TAB + ' > .' + CLS_CONTENT$1, this.element);
             let item = this.getTrgContent(this.cntEle, this.extIndex(id));
             if (isNullOrUndefined(item)) {
@@ -7512,8 +7540,10 @@ let Tab = class Tab extends Component {
         }
     }
     contentReady() {
-        let id = CLS_ITEM$2 + this.tabId + '_' + this.selectedItem;
-        this.triggerAnimation(id, this.enableAnimation);
+        if (this.isServerRendered && this.loadOn === 'Dynamic') {
+            let id = CLS_ITEM$2 + this.tabId + '_' + this.selectedItem;
+            this.triggerAnimation(id, this.enableAnimation);
+        }
     }
     setItems(items) {
         this.isReplace = true;
@@ -7782,6 +7812,9 @@ let Tab = class Tab extends Component {
                 if (property === 'disabled') {
                     this.enableTab(index, ((newVal === true) ? false : true));
                 }
+                if (property === 'visible') {
+                    this.hideTab(index, ((newVal === true) ? false : true));
+                }
             }
         }
         else {
@@ -8006,13 +8039,16 @@ let Tab = class Tab extends Component {
         else {
             this.element.classList.remove(CLS_HIDDEN$1);
             items = selectAll('.' + CLS_TB_ITEM + ':not(.' + CLS_HIDDEN$1 + ')', this.tbItems);
+            item.classList.remove(CLS_HIDDEN$1);
             if (items.length === 0) {
                 this.select(index);
             }
-            item.classList.remove(CLS_HIDDEN$1);
         }
         this.setActiveBorder();
         item.setAttribute('aria-hidden', '' + value);
+        if (!this.isServerRendered && this.overflowMode === 'Popup' && this.tbObj) {
+            this.tbObj.refreshOverflow();
+        }
     }
     /**
      * Specifies the index or HTMLElement to select an item from the Tab.
@@ -8066,11 +8102,30 @@ let Tab = class Tab extends Component {
             this.selectingContent(args);
         }
     }
+    setActiveContent() {
+        let tabHeader = this.getTabHeader();
+        this.tbItem = selectAll('.' + CLS_TB_ITEM, tabHeader);
+        let id = CLS_ITEM$2 + this.tabId + '_' + this.selectedItem;
+        let curActItem = select(' #' + id, tabHeader);
+        let item = this.getTrgContent(this.cntEle, this.extIndex(id));
+        if (!isNullOrUndefined(item)) {
+            item.classList.add(CLS_ACTIVE$1);
+        }
+        if (curActItem.classList.contains(CLS_TB_POPUP)) {
+            this.enableAnimation = true;
+        }
+        else {
+            this.enableAnimation = false;
+        }
+        this.triggerAnimation(id, this.enableAnimation);
+        this.enableAnimation = true;
+    }
     selectingContent(args) {
         if (typeof args === 'number') {
-            if (!isNullOrUndefined(this.tbItem[args]) && this.tbItem[args].classList.contains(CLS_DISABLE$4)) {
+            if (!isNullOrUndefined(this.tbItem[args]) && (this.tbItem[args].classList.contains(CLS_DISABLE$4) ||
+                this.tbItem[args].classList.contains(CLS_HIDDEN$1))) {
                 for (let i = args + 1; i < this.items.length; i++) {
-                    if (this.items[i].disabled === false) {
+                    if (this.items[i].disabled === false && this.items[i].visible === true) {
                         args = i;
                         break;
                     }
@@ -8082,9 +8137,15 @@ let Tab = class Tab extends Component {
             if (this.tbItem.length > args && args >= 0 && !isNaN(args)) {
                 this.prevIndex = this.selectedItem;
                 if (this.tbItem[args].classList.contains(CLS_TB_POPUP)) {
+                    if (this.isServerRendered && this.loadOn === 'Init') {
+                        this.enableAnimation = false;
+                    }
                     this.setActive(this.popupHandler(this.tbItem[args]));
                 }
                 else {
+                    if (this.isServerRendered && this.loadOn === 'Init') {
+                        this.enableAnimation = true;
+                    }
                     this.setActive(args);
                 }
             }
@@ -8218,6 +8279,9 @@ __decorate$7([
 __decorate$7([
     Property('Scrollable')
 ], Tab.prototype, "overflowMode", void 0);
+__decorate$7([
+    Property('Dynamic')
+], Tab.prototype, "loadOn", void 0);
 __decorate$7([
     Property(false)
 ], Tab.prototype, "enablePersistence", void 0);

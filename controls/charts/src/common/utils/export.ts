@@ -4,8 +4,8 @@ import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { AccumulationChart } from '../../accumulation-chart/accumulation';
 import { getElement, removeElement } from '../utils/helper';
 import { ExportType } from '../utils/enum';
-import { IPrintEventArgs } from '../../chart/model/chart-interface';
-import { beforePrint } from '../model/constants';
+import { IPrintEventArgs, IAfterExportEventArgs } from '../../chart/model/chart-interface';
+import { beforePrint, afterExport } from '../model/constants';
 import { PdfPageOrientation, PdfDocument, PdfBitmap, SizeF, PdfMargins } from '@syncfusion/ej2-pdf-export';
 import { RangeNavigator } from '../..';
 import { StockChart } from '../../stock-chart/stock-chart';
@@ -57,9 +57,10 @@ export class ExportUtils {
         let div: Element = createElement('div');
         if (elements) {
             if (elements instanceof Array) {
-                elements.forEach((value: string) => {
+                for (let j: number = 0; j < elements.length; j++) {
+                    let value: string = elements[j];
                     div.appendChild(getElement(value).cloneNode(true) as Element);
-                });
+                }
             } else if (elements instanceof Element) {
                 div.appendChild(elements.cloneNode(true) as Element);
             } else {
@@ -153,6 +154,55 @@ export class ExportUtils {
             removeElement(document.getElementById(this.control.element.id + '_canvas'));
         }
     }
+    /**
+     * To get data url for charts.
+     */
+    public getDataUrl(chart: Chart): { element: HTMLCanvasElement, dataUrl?: string, blobUrl?: string} {
+        let controlValue: IControlValue = this.getControlsValue([chart]);
+        let element: HTMLCanvasElement = this.control.svgObject as HTMLCanvasElement;
+        let isCanvas: boolean = (this.control as Chart). enableCanvas;
+        if (!isCanvas) {
+            element = <HTMLCanvasElement>createElement('canvas', {
+                id: 'ej2-canvas',
+                attrs: {
+                    'width': controlValue.width.toString(),
+                    'height': controlValue.height.toString()
+                }
+            });
+        }
+        let url: string = window.URL.createObjectURL(
+            new Blob(
+                [(new XMLSerializer()).serializeToString(controlValue.svg)],
+                { type: 'image/svg+xml' }
+            )
+        );
+        if (Browser.info.name === 'msie') {
+            let canvas: HTMLCanvasElement = element;
+            if (!isCanvas) {
+                canvas = this.createCanvas();
+            }
+            let argsData: IAfterExportEventArgs = {
+                name: afterExport, cancel: false, dataUrl: element.toDataURL('image/png')
+            };
+            chart.trigger(afterExport, argsData);
+            return { element: canvas, dataUrl: canvas.toDataURL()};
+        } else {
+            let image: HTMLImageElement = new Image();
+            let ctx: CanvasRenderingContext2D = element.getContext('2d');
+            image.onload = (() => {
+                ctx.drawImage(image, 0, 0);
+                window.URL.revokeObjectURL(url);
+                let argsData: IAfterExportEventArgs = {
+                    name: afterExport, cancel: false, dataUrl: element.toDataURL('image/png')
+                };
+                chart.trigger(afterExport, argsData);
+                return argsData.dataUrl;
+            });
+            image.src = url;
+            return { element: element, blobUrl: url};
+        }
+    }
+
     /**
      * To trigger the download element
      * @param fileName

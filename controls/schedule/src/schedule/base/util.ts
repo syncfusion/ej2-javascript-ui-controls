@@ -147,8 +147,11 @@ export function getOuterHeight(element: HTMLElement): number {
 }
 
 export function removeChildren(element: HTMLElement | Element): void {
-    while (element.firstElementChild && !(element.firstElementChild.classList.contains('blazor-template'))) {
-        element.removeChild(element.firstElementChild);
+    let elementChildren: HTMLElement[] | Element[] = [].slice.call(element.children);
+    for (let elementChild of elementChildren) {
+        if (!elementChild.classList.contains('blazor-template')) {
+            element.removeChild(elementChild);
+        }
     }
 }
 

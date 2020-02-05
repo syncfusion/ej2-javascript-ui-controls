@@ -1,18 +1,13 @@
-import { Toolbar, HtmlEditor, RichTextEditor, Count, Link, Image, QuickToolbar } from './../../../../src/index';
+/**
+ * Quick Toolbar Settings spec
+ */
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { RichTextEditor } from './../../../../src/index';
 import { renderRTE, destroy, dispatchEvent, setCursorPoint } from './../../render.spec';
-import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
-
-RichTextEditor.Inject(HtmlEditor);
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(Link);
-RichTextEditor.Inject(Count);
-RichTextEditor.Inject(Image);
-RichTextEditor.Inject(QuickToolbar);
 
 describe('RTE TOOLBAR - quickToolbarSettings - ', () => {
     describe(' quickToolbarSettings property - actionOnScroll - none ', () => {
         let rteObj: RichTextEditor;
-        let controlId: string;
         beforeEach((done: Function) => {
             done();
         });
@@ -30,7 +25,6 @@ describe('RTE TOOLBAR - quickToolbarSettings - ', () => {
                 actionOnScroll: 'none'
             };
             rteObj.dataBind();
-            controlId = rteObj.element.id;
             let image: HTMLElement = rteObj.element.querySelector("#image");
             setCursorPoint(image, 0);
             dispatchEvent(image, 'mousedown');
@@ -44,10 +38,9 @@ describe('RTE TOOLBAR - quickToolbarSettings - ', () => {
                 }, 100);
             }, 100);
         });
-    })
+    });
     describe(' quickToolbarSettings property - actionOnScroll - hide ', () => {
         let rteObj: RichTextEditor;
-        let controlId: string;
         beforeEach((done: Function) => {
             done();
         });
@@ -61,7 +54,6 @@ describe('RTE TOOLBAR - quickToolbarSettings - ', () => {
                 height: 800,
                 quickToolbarSettings: { actionOnScroll: 'none' }
             });
-            controlId = rteObj.element.id;
             rteObj.quickToolbarSettings = { actionOnScroll: 'hide' };
             rteObj.dataBind();
             let image: HTMLElement = rteObj.element.querySelector("#image");
@@ -77,5 +69,5 @@ describe('RTE TOOLBAR - quickToolbarSettings - ', () => {
                 }, 100);
             }, 100);
         });
-    })
-})
+    });
+});

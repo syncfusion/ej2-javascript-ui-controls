@@ -1,14 +1,8 @@
-
-import { Toolbar, HtmlEditor, RichTextEditor, Count, Link, Image, QuickToolbar, NodeSelection, DOMNode } from './../../../../src/index';
-import { renderRTE, destroy, dispatchEvent, setCursorPoint } from './../../render.spec';
-import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
-
-RichTextEditor.Inject(HtmlEditor);
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(Link);
-RichTextEditor.Inject(Count);
-RichTextEditor.Inject(Image);
-RichTextEditor.Inject(QuickToolbar);
+/**
+ * Clear format spec
+ */
+import { RichTextEditor } from './../../../../src/index';
+import { renderRTE, destroy, dispatchEvent } from './../../render.spec';
 
 describe('Clear Format commands', () => {
     //HTML value
@@ -25,9 +19,7 @@ describe('Clear Format commands', () => {
        <img id="last-node" alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px;">`;
     let rteObj: RichTextEditor;
     let controlId: string;
-    let nodeSelection: NodeSelection;
     let rteElement: HTMLElement;
-    let domNode: DOMNode;
     beforeEach(() => {
         rteObj = renderRTE({
             value: innervalue,
@@ -37,11 +29,9 @@ describe('Clear Format commands', () => {
         })
         controlId = rteObj.element.id;
         rteElement = rteObj.element;
-        nodeSelection = rteObj.formatter.editorManager.nodeSelection;
-        domNode = (rteObj.formatter.editorManager as any).domNode as DOMNode;
     });
     afterEach(() => {
-        document.body.innerHTML = '';
+        destroy(rteObj);
     });
     /**
      * Text Node Direct Parent

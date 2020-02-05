@@ -88,10 +88,11 @@ export class ToolBarSelector {
             series[i].type = <ChartSeriesType>(seriesType.indexOf('Candle') > -1 ? 'Candle' :
             (seriesType.indexOf('OHLC') > -1 ? 'HiloOpenClose' : seriesType) );
             series[i].enableSolidCandles = seriesType === 'Candle';
-            series[i].trendlines.forEach((trendLine: TrendlineModel) => {
+            for (let index: number = 0; index < series[i].trendlines.length; index++) {
+                let trendLine: TrendlineModel = series[i].trendlines[index];
                 trendLine.animation.enable = false;
                 trendLine.enableTooltip = false;
-            });
+            }
         }
     }
     public initializeSeriesSelector(): void {

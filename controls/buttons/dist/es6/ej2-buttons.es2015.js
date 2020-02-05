@@ -845,6 +845,7 @@ let CheckBox = class CheckBox extends Component {
      * Click the CheckBox element
      * its native method
      * @public
+     * @deprecated
      */
     click() {
         this.element.click();
@@ -853,6 +854,7 @@ let CheckBox = class CheckBox extends Component {
      * Sets the focus to CheckBox
      * its native method
      * @public
+     * @deprecated
      */
     focusIn() {
         this.element.focus();

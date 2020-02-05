@@ -46,3 +46,6 @@ export const dragEnd : string = 'dragEnd';
 
 /** @private */
 export const resized : string = 'resized';
+
+/** @private */
+export const beforePrint: string = 'beforePrint';

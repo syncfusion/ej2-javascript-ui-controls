@@ -20,6 +20,10 @@ export type HeaderPosition = 'Top' | 'Bottom' | 'Left' | 'Right';
  * Options to set the content element height adjust modes.
  */
 export type HeightStyles = 'None' | 'Auto' | 'Content' | 'Fill';
+/**
+ * Specifies the options of Tab content display mode.
+ */
+export type ContentLoad = 'Dynamic' | 'Init';
 
 const CLS_TAB: string = 'e-tab';
 const CLS_HEADER: string = 'e-tab-header';
@@ -200,6 +204,12 @@ export class TabItem extends ChildProperty<TabItem> {
      */
     @Property(false)
     public disabled: boolean;
+    /**
+     * Sets false to hide the Tab item.
+     * @default true
+     */
+    @Property(true)
+    public visible: boolean;
 }
 /**
  * Tab is a content panel to show multiple contents in a single space, one at a time.
@@ -353,6 +363,15 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     @Property('Scrollable')
     public overflowMode: OverflowMode;
     /**
+     * Specifies the modes for Tab content.
+     * The possible modes are:
+     * `Dynamic` Load Tab content dynamically at the time of switching it's header.
+     * `Init` Load all tab contents at initial load.
+     * @default 'Dynamic'
+     */
+    @Property('Dynamic')
+    protected loadOn: ContentLoad;
+    /**
      * Enable or disable persisting component's state between page reloads. 
      * If enabled, following list of states will be persisted.
      * 1. selectedItem
@@ -468,6 +487,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     public refresh(): void {
         if (!this.isServerRendered) {
             super.refresh();
+        } else if (this.isServerRendered && this.loadOn === 'Init') {
+            this.setActiveBorder();
         }
     }
 
@@ -555,6 +576,13 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         }
     }
 
+    private serverItemsChanged(): void {
+        if (this.isServerRendered && this.loadOn === 'Init') {
+            this.setActiveContent();
+        }
+        this.setActiveBorder();
+    }
+
     private headerReady(): void {
         this.initRender = true;
         this.hdrEle = this.getTabHeader();
@@ -563,7 +591,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             this.tbObj = (<ToolbarModel>(this.hdrEle && (<Instance>this.hdrEle).ej2_instances[0])) as Toolbar;
         }
         this.tbObj.clicked = this.clickHandler.bind(this);
-        this.tbObj.on('onItemsChanged', this.setActiveBorder.bind(this));
+        this.tbObj.on('onItemsChanged', this.serverItemsChanged.bind(this));
         this.tbItems = <HTEle>select('.' + CLS_HEADER + ' .' + CLS_TB_ITEMS, this.element);
         if (!isNOU(this.tbItems)) {
             rippleEffect(this.tbItems, { selector: '.e-tab-wrap' });
@@ -581,6 +609,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         }
         this.cntEle = <HTEle>select('.' + CLS_TAB + ' > .' + CLS_CONTENT, this.element);
         if (!isNOU(this.cntEle)) { this.touchModule = new Touch(this.cntEle, { swipe: this.swipeHandler.bind(this) }); }
+        if (this.isServerRendered && this.loadOn === 'Init') {
+            this.setActiveContent();
+        }
         this.initRender = false;
         this.renderComplete();
     }
@@ -678,6 +709,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             let txt: Str | HTEle = item.headerTemplate || item.header.text;
             this.lastIndex = ((tbCount === 0) ? i : ((this.isReplace) ? (index + i) : (this.lastIndex + 1)));
             let disabled: Str = (item.disabled) ? ' ' + CLS_DISABLE + ' ' + CLS_OVERLAY : '';
+            let hidden: Str = (item.visible === false) ? ' ' + CLS_HIDDEN : '';
             txtWrapEle = this.createElement('div', { className: CLS_TEXT, attrs: { 'role': 'presentation' } });
             let tHtml: Str = ((txt instanceof Object) ? (<HTEle>txt).outerHTML : txt);
             let txtEmpty: boolean = (!isNOU(tHtml) && tHtml !== '');
@@ -721,7 +753,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 id: CLS_ITEM + this.tabId + '_' + this.lastIndex, role: 'tab', 'aria-selected': 'false'
             };
             let tItem: { [key: string]: {} } = { htmlAttributes: attrObj, template: wrap };
-            tItem.cssClass = item.cssClass + ' ' + disabled + ' ' + ((css !== '') ? 'e-i' + pos : '') + ' ' + ((!txtEmpty) ? CLS_ICON : '');
+            tItem.cssClass = ((item.cssClass !== undefined) ? item.cssClass : ' ') + ' ' + disabled + ' ' + hidden
+                + ((css !== '') ? 'e-i' + pos : '') + ' ' + ((!txtEmpty) ? CLS_ICON : '');
             if (pos === 'top' || pos === 'bottom') { this.element.classList.add('e-vertical-icon'); }
             tItems.push(tItem);
             i++;
@@ -840,7 +873,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         let prevIndex: number = this.prevIndex;
         let oldCnt: HTEle;
         let newCnt: HTEle;
-        if (!this.isServerRendered) {
+        if (!this.isServerRendered || (this.isServerRendered && this.loadOn === 'Init')) {
             let itemCollection: HTMLElement[] = [].slice.call(this.element.querySelector('.' + CLS_CONTENT).children);
             itemCollection.forEach((item: HTEle) => {
                 if (item.id === this.prevActiveEle) {
@@ -1217,7 +1250,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 if (!isNOU(trg)) { trg.classList.add(CLS_ACTIVE); }
                 this.triggerAnimation(id, this.enableAnimation);
             }
-        } else if (!this.isServerRendered) {
+        } else if (!this.isServerRendered || (this.isServerRendered && this.loadOn === 'Init')) {
             this.cntEle = <HTEle>select('.' + CLS_TAB + ' > .' + CLS_CONTENT, this.element);
             let item: HTEle = this.getTrgContent(this.cntEle, this.extIndex(id));
             if (isNOU(item)) {
@@ -1253,8 +1286,10 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
     }
 
     private contentReady(): void {
-        let id: string = CLS_ITEM + this.tabId + '_' + this.selectedItem;
-        this.triggerAnimation(id, this.enableAnimation);
+        if (this.isServerRendered && this.loadOn === 'Dynamic') {
+            let id: string = CLS_ITEM + this.tabId + '_' + this.selectedItem;
+            this.triggerAnimation(id, this.enableAnimation);
+        }
     }
 
     private setItems(items: object[]): void {
@@ -1487,6 +1522,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     }
                 }
                 if (property === 'disabled') { this.enableTab(index, ((newVal === true) ? false : true)); }
+                if (property === 'visible') { this.hideTab(index, ((newVal === true) ? false : true)); }
             }
         } else {
             this.lastIndex = 0;
@@ -1673,11 +1709,14 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         } else {
             this.element.classList.remove(CLS_HIDDEN);
             items = selectAll('.' + CLS_TB_ITEM + ':not(.' + CLS_HIDDEN + ')', this.tbItems);
-            if (items.length === 0) { this.select(index); }
             item.classList.remove(CLS_HIDDEN);
+            if (items.length === 0) { this.select(index); }
         }
         this.setActiveBorder();
         item.setAttribute('aria-hidden', '' + value);
+        if (!this.isServerRendered && this.overflowMode === 'Popup' && this.tbObj) {
+            this.tbObj.refreshOverflow();
+        }
     }
     /**
      * Specifies the index or HTMLElement to select an item from the Tab.
@@ -1729,11 +1768,30 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         }
     }
 
+    private setActiveContent(): void {
+        let tabHeader: Element = this.getTabHeader();
+        this.tbItem = selectAll('.' + CLS_TB_ITEM, tabHeader);
+        let id: string = CLS_ITEM + this.tabId + '_' + this.selectedItem;
+        let curActItem: HTEle = <HTEle>select(' #' + id, tabHeader);
+        let item: HTEle = this.getTrgContent(this.cntEle, this.extIndex(id));
+        if (!isNOU(item)) {
+            item.classList.add(CLS_ACTIVE);
+        }
+        if (curActItem.classList.contains(CLS_TB_POPUP)) {
+            this.enableAnimation = true;
+        } else {
+            this.enableAnimation = false;
+        }
+        this.triggerAnimation(id, this.enableAnimation);
+        this.enableAnimation = true;
+    }
+
     private selectingContent(args: number | HTEle): void {
         if (typeof args === 'number') {
-            if (!isNOU(this.tbItem[args]) && this.tbItem[<number>args].classList.contains(CLS_DISABLE)) {
+            if (!isNOU(this.tbItem[args]) && (this.tbItem[<number>args].classList.contains(CLS_DISABLE) ||
+                this.tbItem[<number>args].classList.contains(CLS_HIDDEN))) {
                 for (let i: number = <number>args + 1; i < this.items.length; i++) {
-                    if (this.items[i].disabled === false) {
+                    if (this.items[i].disabled === false && this.items[i].visible === true) {
                         args = i; break;
                     } else { args = 0; }
                 }
@@ -1741,8 +1799,14 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             if (this.tbItem.length > args && args >= 0 && !isNaN(args)) {
                 this.prevIndex = this.selectedItem;
                 if (this.tbItem[args].classList.contains(CLS_TB_POPUP)) {
+                    if (this.isServerRendered && this.loadOn === 'Init') {
+                        this.enableAnimation = false;
+                    }
                     this.setActive(this.popupHandler(this.tbItem[args]));
                 } else {
+                    if (this.isServerRendered && this.loadOn === 'Init') {
+                        this.enableAnimation = true;
+                    }
                     this.setActive(args);
                 }
             } else {

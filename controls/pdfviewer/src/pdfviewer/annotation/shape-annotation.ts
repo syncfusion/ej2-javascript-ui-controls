@@ -273,9 +273,6 @@ export class ShapeAnnotation {
                             labelBounds: annotation.LabelBounds, annotationSelectorSettings: annotation.AnnotationSelectorSettings
                         };
                         let addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
-                        if (addedAnnot.shapeAnnotationType === 'Polygon') {
-                            this.pdfViewer.nodePropertyChange(addedAnnot, { fillColor: annot.fillColor });
-                        }
                         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape');
                     }
                 }
@@ -674,6 +671,7 @@ export class ShapeAnnotation {
         } else {
             annotationModel.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotationModel.subject);
         }
+        this.pdfViewer.annotation.stickyNotesAnnotationModule.addTextToComments(annotationName, annotationModel.notes);
         // tslint:disable-next-line:radix
         let borderDashArray: number = parseInt(annotationModel.borderDashArray);
         borderDashArray = isNaN(borderDashArray) ? 0 : borderDashArray;
@@ -738,6 +736,9 @@ export class ShapeAnnotation {
 
     // tslint:disable-next-line
     private getRgbCode(colorString: string): any {
+        if (!colorString.match(/#([a-z0-9]+)/gi) && !colorString.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/)) {
+            colorString = this.pdfViewer.annotationModule.nameToHash(colorString);
+         }
         let stringArray: string[] = colorString.split(',');
         if (isNullOrUndefined(stringArray[1])) {
             let colorpick: ColorPicker = new ColorPicker();

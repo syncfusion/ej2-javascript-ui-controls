@@ -465,7 +465,7 @@ export class Zoom {
             currentLayers.markerSettings.map((markerSettings: MarkerSettings, markerIndex: number) => {
                 let markerDatas: Object[] = <Object[]>markerSettings.dataSource;
                 Array.prototype.forEach.call(markerDatas, (data: Object, dataIndex: number) => {
-                    this.maps.markerNullCount = markerIndex > 0 && dataIndex === 0 ? 0 : this.maps.markerNullCount;
+                    this.maps.markerNullCount = markerIndex >= 0 && dataIndex === 0 ? 0 : this.maps.markerNullCount;
                     let eventArgs: IMarkerRenderingEventArgs = {
                         template: markerSettings.template, data: data, maps: this.maps, marker: markerSettings,
                         cancel: false, name: markerRendering, fill: markerSettings.fill, colorValuePath: markerSettings.colorValuePath,
@@ -486,8 +486,8 @@ export class Zoom {
                         if (markerSettings.colorValuePath !== eventArgs.colorValuePath ) {
                             eventArgs = markerColorChoose(eventArgs, data);
                         }
-                        let lati: number = parseFloat(data['latitude']);
-                        let long: number = parseFloat(data['longitude']);
+                        let lati: number = !isNullOrUndefined(data['latitude']) ? parseFloat(data['latitude']) : null;
+                        let long: number = !isNullOrUndefined(data['longitude']) ? parseFloat(data['longitude']) : null;
                         let offset: Point = markerSettings.offset;
                         if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(long) && !isNullOrUndefined(lati)) {
                             let markerID: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
@@ -1026,14 +1026,14 @@ export class Zoom {
                 break;
             case 'zoomout':
                 map.staticMapZoom = map.tileZoomLevel
-                map.centerPosition.latitude = null;
-                map.centerPosition.longitude = null;
+                map.markerCenterLatitude = null;
+                map.markerCenterLongitude = null;
                 this.toolBarZooming((map.isTileMap ? map.tileZoomLevel : map.scale) - 1, 'ZoomOut');
                 break;
             case 'reset':
                 map.staticMapZoom = map.zoomSettings.enable ? map.zoomSettings.zoomFactor : 0;
-                map.centerPosition.latitude = null;
-                map.centerPosition.longitude = null;
+                map.markerCenterLatitude = null;
+                map.markerCenterLongitude = null;
                 this.toolBarZooming(1, 'ZoomOut');
                 if (!this.maps.zoomSettings.enablePanning) {
                     this.applySelection(this.zoomElements, this.selectionColor);
@@ -1166,6 +1166,10 @@ export class Zoom {
                 } else {
                     map.mapScaleValue = value - delta;
                     map.staticMapZoom = map.tileZoomLevel;
+                    if (map.mapScaleValue === 1) {
+                        map.markerCenterLatitude = null;
+                        map.markerCenterLongitude = null;
+                    }
                     if (map.staticMapZoom > 1 && map.staticMapZoom < staticMaxZoomLevel) {
                         map.staticMapZoom -= 1
                     }

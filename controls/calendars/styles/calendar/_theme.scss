@@ -133,7 +133,9 @@
           border: 0;
           color: $calendar-disable-font-color;
         }& .e-other-month:hover span.e-day {
-          color: $calendar-other-month-date-hover-bg;
+          @if ($skin-name != 'fabric-dark') {
+            color: $calendar-other-month-date-hover-bg;
+          }
         }& .e-other-month span.e-day,
         & .e-other-month.e-today span.e-day {
           color: $calendar-other-month-date;

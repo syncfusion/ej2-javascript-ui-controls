@@ -978,6 +978,8 @@ const regSub = /~\d+~/g;
 const regSup = /\^\d+\^/g;
 /** @private */
 const beforeExport = 'beforeExport';
+/** @private */
+const afterExport = 'afterExport';
 
 var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -2397,7 +2399,8 @@ function getMinPointsDelta(axis, seriesCollection) {
     let xValues;
     let minVal;
     let seriesMin;
-    seriesCollection.forEach((series, index) => {
+    for (let index = 0; index < seriesCollection.length; index++) {
+        let series = seriesCollection[index];
         xValues = [];
         if (series.visible &&
             (axis.name === series.xAxisName || (axis.name === 'primaryXAxis' && series.xAxisName === null)
@@ -2415,17 +2418,18 @@ function getMinPointsDelta(axis, seriesCollection) {
                 }
             }
             else {
-                xValues.forEach((value, index, xValues) => {
+                for (let index = 0; index < xValues.length; index++) {
+                    let value = xValues[index];
                     if (index > 0 && value) {
                         minVal = value - xValues[index - 1];
                         if (minVal !== 0) {
                             minDelta = Math.min(minDelta, minVal);
                         }
                     }
-                });
+                }
             }
         }
-    });
+    }
     if (minDelta === Number.MAX_VALUE) {
         minDelta = 1;
     }
@@ -7260,9 +7264,10 @@ class ExportUtils {
         let div = createElement('div');
         if (elements) {
             if (elements instanceof Array) {
-                elements.forEach((value) => {
+                for (let j = 0; j < elements.length; j++) {
+                    let value = elements[j];
                     div.appendChild(getElement$1(value).cloneNode(true));
-                });
+                }
             }
             else if (elements instanceof Element) {
                 div.appendChild(elements.cloneNode(true));
@@ -7348,6 +7353,50 @@ class ExportUtils {
         }
         if (!isCanvas) {
             removeElement$1(document.getElementById(this.control.element.id + '_canvas'));
+        }
+    }
+    /**
+     * To get data url for charts.
+     */
+    getDataUrl(chart) {
+        let controlValue = this.getControlsValue([chart]);
+        let element = this.control.svgObject;
+        let isCanvas = this.control.enableCanvas;
+        if (!isCanvas) {
+            element = createElement('canvas', {
+                id: 'ej2-canvas',
+                attrs: {
+                    'width': controlValue.width.toString(),
+                    'height': controlValue.height.toString()
+                }
+            });
+        }
+        let url = window.URL.createObjectURL(new Blob([(new XMLSerializer()).serializeToString(controlValue.svg)], { type: 'image/svg+xml' }));
+        if (Browser.info.name === 'msie') {
+            let canvas = element;
+            if (!isCanvas) {
+                canvas = this.createCanvas();
+            }
+            let argsData = {
+                name: afterExport, cancel: false, dataUrl: element.toDataURL('image/png')
+            };
+            chart.trigger(afterExport, argsData);
+            return { element: canvas, dataUrl: canvas.toDataURL() };
+        }
+        else {
+            let image = new Image();
+            let ctx = element.getContext('2d');
+            image.onload = (() => {
+                ctx.drawImage(image, 0, 0);
+                window.URL.revokeObjectURL(url);
+                let argsData = {
+                    name: afterExport, cancel: false, dataUrl: element.toDataURL('image/png')
+                };
+                chart.trigger(afterExport, argsData);
+                return argsData.dataUrl;
+            });
+            image.src = url;
+            return { element: element, blobUrl: url };
         }
     }
     /**
@@ -8337,6 +8386,14 @@ let Chart = class Chart extends Component {
         this.refresh();
     }
     /**
+     * To Clear all series for the chart
+     * @return {void}.
+     */
+    clearSeries() {
+        this.series = [];
+        this.refresh();
+    }
+    /**
      * To destroy the widget
      * @method destroy
      * @return {void}.
@@ -8498,6 +8555,9 @@ let Chart = class Chart extends Component {
     export(type, fileName) {
         if (this.exportModule) {
             this.exportModule.export(type, fileName);
+            if (this.afterExport) {
+                this.exportModule.getDataUrl(this);
+            }
         }
     }
     /**
@@ -8550,8 +8610,10 @@ let Chart = class Chart extends Component {
             pageX = e.clientX;
             pageY = e.clientY;
         }
-        this.setMouseXY(pageX, pageY);
-        this.chartOnMouseMove(e);
+        if (getElement$1(this.svgId)) {
+            this.setMouseXY(pageX, pageY);
+            this.chartOnMouseMove(e);
+        }
         return false;
     }
     /**
@@ -9167,6 +9229,24 @@ let Chart = class Chart extends Component {
         return null;
     }
     /**
+     * Fix for live data update flicker issue
+     */
+    refreshLiveData() {
+        this.calculateVisibleSeries();
+        this.initTechnicalIndicators();
+        this.initTrendLines();
+        this.refreshDefinition(this.columns);
+        this.refreshDefinition(this.rows);
+        this.calculateVisibleAxis();
+        this.processData(false);
+        if (!this.isBlazor) {
+            this.enableCanvas ? this.createChartSvg() : this.removeSvg();
+            this.refreshAxis();
+            this.refreshBound();
+            this.trigger('loaded', { chart: this.isBlazor ? {} : this });
+        }
+    }
+    /**
      * Clear visible Axis labels
      */
     clearVisibleAxisLabels() {
@@ -9468,6 +9548,9 @@ __decorate([
 __decorate([
     Event()
 ], Chart.prototype, "beforeExport", void 0);
+__decorate([
+    Event()
+], Chart.prototype, "afterExport", void 0);
 __decorate([
     Event()
 ], Chart.prototype, "loaded", void 0);
@@ -11100,7 +11183,8 @@ class ColumnBase {
     findRectPosition(seriesCollection) {
         let stackingGroup = [];
         let vSeries = { rectCount: 0, position: null };
-        seriesCollection.forEach((value) => {
+        for (let i = 0; i < seriesCollection.length; i++) {
+            let value = seriesCollection[i];
             if (value.type.indexOf('Stacking') !== -1) {
                 if (value.stackingGroup) {
                     if (stackingGroup[value.stackingGroup] === undefined) {
@@ -11124,10 +11208,11 @@ class ColumnBase {
             else {
                 value.position = vSeries.rectCount++;
             }
-        });
-        seriesCollection.forEach((value) => {
+        }
+        for (let i = 0; i < seriesCollection.length; i++) {
+            let value = seriesCollection[i];
             value.rectCount = vSeries.rectCount;
-        });
+        }
     }
     /**
      * Updates the symbollocation for points
@@ -12496,7 +12581,8 @@ class PolarSeries extends PolarRadarPanel {
                 seriesCollection.push(series);
             }
         }
-        seriesCollection.forEach((series) => {
+        for (let i = 0; i < seriesCollection.length; i++) {
+            let series = seriesCollection[i];
             if (series.drawType.indexOf('Stacking') !== -1) {
                 if (series.stackingGroup) {
                     if (stackingGroup[series.stackingGroup] === undefined) {
@@ -12520,10 +12606,11 @@ class PolarSeries extends PolarRadarPanel {
             else {
                 series.position = vSeries.rectCount++;
             }
-        });
-        seriesCollection.forEach((value) => {
+        }
+        for (let i = 0; i < seriesCollection.length; i++) {
+            let value = seriesCollection[i];
             value.rectCount = vSeries.rectCount;
-        });
+        }
     }
     /**
      * Animates the series.
@@ -14501,9 +14588,11 @@ class HistogramSeries extends ColumnSeries {
         let updatedData = [];
         let yValues = [];
         let binWidth;
-        Object.keys(data).forEach((key) => {
+        let keys = Object.keys(data);
+        for (let i = 0; i < keys.length; i++) {
+            let key = keys[i];
             yValues.push(data[key][series.yName]);
-        });
+        }
         series.histogramValues = {
             yValues: yValues
         };
@@ -17822,7 +17911,8 @@ class Toolkit {
         let argsData;
         this.removeTooltip();
         chart.svgObject.setAttribute('cursor', 'auto');
-        chart.axisCollections.forEach((axis) => {
+        for (let i = 0; i < chart.axisCollections.length; i++) {
+            let axis = chart.axisCollections[i];
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: 1, currentZoomPosition: 0
@@ -17837,7 +17927,7 @@ class Toolkit {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
             }
-        });
+        }
         chart.disableTrackTooltip = false;
         chart.zoomModule.isZoomed = chart.zoomModule.isPanning = chart.isChartDrag = chart.delayRedraw = false;
         chart.zoomModule.touchMoveList = chart.zoomModule.touchStartList = [];
@@ -17897,7 +17987,8 @@ class Toolkit {
             chart.disableTrackTooltip = true;
             chart.delayRedraw = true;
             let argsData;
-            axes.forEach((axis) => {
+            for (let i = 0; i < axes.length; i++) {
+                let axis = axes[i];
                 argsData = {
                     cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
                     previousZoomPosition: axis.zoomPosition, currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -17918,7 +18009,7 @@ class Toolkit {
                         axis.zoomPosition = argsData.currentZoomPosition;
                     }
                 }
-            });
+            }
         }
     }
     applySelection(elements, color) {
@@ -18012,7 +18103,8 @@ class Zoom {
         chart.delayRedraw = true;
         chart.disableTrackTooltip = true;
         let argsData;
-        axes.forEach((axis) => {
+        for (let i = 0; i < axes.length; i++) {
+            let axis = axes[i];
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -18031,7 +18123,7 @@ class Zoom {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
             }
-        });
+        }
         if (this.zooming.enableDeferredZooming) {
             translateX = chart.mouseX - chart.mouseDownX;
             translateY = chart.mouseY - chart.mouseDownY;
@@ -18097,7 +18189,8 @@ class Zoom {
         let mode = this.zooming.mode;
         let argsData;
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
-        axes.forEach((axis) => {
+        for (let j = 0; j < axes.length; j++) {
+            let axis = axes[j];
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -18121,7 +18214,7 @@ class Zoom {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
             }
-        });
+        }
         this.zoomingRect = new Rect(0, 0, 0, 0);
         this.performZoomRedraw(chart);
     }
@@ -18144,7 +18237,8 @@ class Zoom {
         this.performedUI = true;
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
         let argsData;
-        axes.forEach((axis) => {
+        for (let index = 0; index < axes.length; index++) {
+            let axis = axes[index];
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -18169,7 +18263,7 @@ class Zoom {
                     axis.zoomPosition = argsData.currentZoomPosition;
                 }
             }
-        });
+        }
         this.performZoomRedraw(chart);
     }
     /**
@@ -18241,7 +18335,8 @@ class Zoom {
         let argsData;
         let currentZF;
         let currentZP;
-        chart.axisCollections.forEach((axis, index) => {
+        for (let index = 0; index < chart.axisCollections.length; index++) {
+            let axis = chart.axisCollections[index];
             if ((axis.orientation === 'Horizontal' && mode !== 'Y') ||
                 (axis.orientation === 'Vertical' && mode !== 'X')) {
                 currentZF = axis.zoomFactor;
@@ -18276,7 +18371,7 @@ class Zoom {
                     axis.zoomPosition = argsData.currentZoomPosition;
                 }
             }
-        });
+        }
     }
     // Series transformation style applied here.
     setTransform(transX, transY, scaleX, scaleY, chart, isPinch) {
@@ -18291,7 +18386,8 @@ class Zoom {
         let yAxisLoc;
         let element;
         if (transX !== null && transY !== null) {
-            chart.visibleSeries.forEach((value) => {
+            for (let i = 0; i < chart.visibleSeries.length; i++) {
+                let value = chart.visibleSeries[i];
                 xAxisLoc = chart.requireInvertedAxis ? value.yAxis.rect.x : value.xAxis.rect.x;
                 yAxisLoc = chart.requireInvertedAxis ? value.xAxis.rect.y : value.yAxis.rect.y;
                 translate = 'translate(' + (transX + (isPinch ? (scaleX * xAxisLoc) : xAxisLoc)) +
@@ -18321,13 +18417,14 @@ class Zoom {
                         element.style.visibility = 'hidden';
                     }
                 }
-            });
+            }
         }
     }
     calculateZoomAxesRange(chart, axes) {
         let range;
         let axisRange;
-        chart.axisCollections.forEach((axis, index) => {
+        for (let index = 0; index < chart.axisCollections.length; index++) {
+            let axis = chart.axisCollections[index];
             axisRange = axis.visibleRange;
             if (this.zoomAxes[index]) {
                 if (!chart.delayRedraw) {
@@ -18344,7 +18441,7 @@ class Zoom {
                 };
                 this.zoomAxes[index] = range;
             }
-        });
+        }
     }
     // Zooming Toolkit created here
     showZoomingToolkit(chart) {
@@ -18460,9 +18557,10 @@ class Zoom {
      */
     isAxisZoomed(axes) {
         let showToolkit = false;
-        axes.forEach((axis) => {
+        for (let k = 0; k < axes.length; k++) {
+            let axis = axes[k];
             showToolkit = (showToolkit || (axis.zoomFactor !== 1 || axis.zoomPosition !== 0));
-        });
+        }
         return showToolkit;
     }
     zoomToolkitMove(e) {
@@ -20187,11 +20285,13 @@ class DataLabel {
         let hAxis = series.chart.requireInvertedAxis ? series.yAxis : series.xAxis;
         childElement.style.color = dataLabel.font.color ||
             ((Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000)) >= 128 ? 'black' : 'white');
-        if (childElement.childElementCount && !isCollide(rect, this.chart.dataLabelCollections, clip)
-            && (series.seriesType !== 'XY' || point.yValue === undefined || withIn(point.yValue, series.yAxis.visibleRange) ||
-                (series.type.indexOf('100') > -1 && withIn(series.stackedValues.endValues[point.index], series.yAxis.visibleRange)))
-            && withIn(point.xValue, series.xAxis.visibleRange) && parseFloat(childElement.style.top) >= vAxis.rect.y &&
-            parseFloat(childElement.style.left) >= hAxis.rect.x && parseFloat(childElement.style.top) <= vAxis.rect.y + vAxis.rect.height &&
+        if (childElement.childElementCount && (!isCollide(rect, this.chart.dataLabelCollections, clip) ||
+            dataLabel.labelIntersectAction === 'None') && (series.seriesType !== 'XY' || point.yValue === undefined ||
+            withIn(point.yValue, series.yAxis.visibleRange) || (series.type.indexOf('100') > -1 &&
+            withIn(series.stackedValues.endValues[point.index], series.yAxis.visibleRange))) &&
+            withIn(point.xValue, series.xAxis.visibleRange) && parseFloat(childElement.style.top) >= vAxis.rect.y &&
+            parseFloat(childElement.style.left) >= hAxis.rect.x &&
+            parseFloat(childElement.style.top) <= vAxis.rect.y + vAxis.rect.height &&
             parseFloat(childElement.style.left) <= hAxis.rect.x + hAxis.rect.width) {
             this.chart.dataLabelCollections.push(new Rect(rect.x + clip.x, rect.y + clip.y, rect.width, rect.height));
             appendChildElement(this.chart.enableCanvas, parentElement, childElement, redraw, true, 'left', 'top');
@@ -23515,6 +23615,13 @@ class Export {
         }
     }
     /**
+     * To get data url for charts.
+     */
+    getDataUrl(chart) {
+        let exportUtil = new ExportUtils(chart);
+        return exportUtil.getDataUrl(chart);
+    }
+    /**
      * Get module name.
      */
     getModuleName() {
@@ -23701,13 +23808,13 @@ class AccumulationSeries extends ChildProperty {
             return;
         }
         let dataManager = this.dataModule.getData(this.dataModule.generateQuery().requiresCount());
-        dataManager.then((e) => this.dataManagerSuccess(e, accumulation, render));
+        dataManager.then((e) => this.dataManagerSuccess(e, accumulation));
     }
     /**
      * To get points on dataManager is success
      * @private
      */
-    dataManagerSuccess(e, accumulation, render) {
+    dataManagerSuccess(e, accumulation, render = true) {
         let argsData = {
             name: seriesRender, series: this, data: e.result,
         };
@@ -23735,7 +23842,7 @@ class AccumulationSeries extends ChildProperty {
         let colors = this.palettes.length ? this.palettes : getSeriesColor(accumulation.theme);
         let clubValue = stringToNumber(this.groupTo, this.sumOfPoints);
         for (let i = 0; i < length; i++) {
-            point = this.setPoints(result, i, colors);
+            point = this.setPoints(result, i, colors, accumulation);
             let currentY = point.y;
             if (!this.isClub(point, clubValue, i)) {
                 if (isNullOrUndefined(point.y)) {
@@ -23814,7 +23921,7 @@ class AccumulationSeries extends ChildProperty {
     /**
      * Method to set points x, y and text from data source
      */
-    setPoints(data, i, colors) {
+    setPoints(data, i, colors, accumulation) {
         let point = new AccPoints();
         point.x = getValue(this.xName, data[i]);
         point.y = getValue(this.yName, data[i]);
@@ -23824,6 +23931,7 @@ class AccumulationSeries extends ChildProperty {
         point.tooltip = getValue(this.tooltipMappingName || '', data[i]);
         point.sliceRadius = getValue(this.radius, data[i]);
         point.sliceRadius = isNullOrUndefined(point.sliceRadius) ? '80%' : point.sliceRadius;
+        point.separatorY = accumulation.intl.formatNumber(point.y, { useGrouping: accumulation.useGroupingSeparator });
         this.setAccEmptyPoint(point, i, data, colors);
         return point;
     }
@@ -25051,6 +25159,9 @@ let AccumulationChart = class AccumulationChart extends Component {
      * @private
      */
     accumulationMouseMove(e) {
+        if (!getElement$1(this.element.id + '_svg')) {
+            return false;
+        }
         this.setMouseXY(e);
         this.trigger(chartMouseMove, { target: e.target.id, x: this.mouseX, y: this.mouseY });
         if (this.pointMove) {
@@ -25341,7 +25452,7 @@ let AccumulationChart = class AccumulationChart extends Component {
     renderBorder() {
         let padding = this.border.width;
         appendChildElement(false, this.svgObject, this.renderer.drawRectangle(new RectOption(this.element.id + '_border', this.background || this.themeStyle.background, this.border, 1, new Rect(padding / 2, padding / 2, this.availableSize.width - padding, this.availableSize.height - padding))), this.redraw);
-        // to draw back ground image for accumulation chart        
+        // to draw back ground image for accumulation chart
         let backGroundImage = this.backgroundImage;
         if (backGroundImage) {
             let image = new ImageOption(this.availableSize.height - padding, this.availableSize.width - padding, backGroundImage, 0, 0, this.element.id + '_background', 'visible', 'none');
@@ -27269,7 +27380,7 @@ class AccumulationTooltip extends BaseTooltip {
     }
     getTooltipText(data, tooltip) {
         let series = data.series;
-        let format = this.accumulation.useGroupingSeparator ? '${point.x} : <b>${point.label}</b>'
+        let format = this.accumulation.useGroupingSeparator ? '${point.x} : <b>${point.separatorY}</b>'
             : '${point.x} : <b>${point.y}</b>';
         format = tooltip.format ? tooltip.format : format;
         return this.parseTemplate(data.point, series, format);
@@ -29298,8 +29409,10 @@ let RangeNavigator = class RangeNavigator extends Component {
      * @private
      */
     mouseMove(e) {
-        this.mouseX = this.setMouseX(e);
-        this.notify(Browser.touchMoveEvent, e);
+        if (getElement$1(this.element.id + '_svg')) {
+            this.mouseX = this.setMouseX(e);
+            this.notify(Browser.touchMoveEvent, e);
+        }
         return false;
     }
     /**
@@ -30540,10 +30653,11 @@ class ToolBarSelector {
             series[i].type = (seriesType.indexOf('Candle') > -1 ? 'Candle' :
                 (seriesType.indexOf('OHLC') > -1 ? 'HiloOpenClose' : seriesType));
             series[i].enableSolidCandles = seriesType === 'Candle';
-            series[i].trendlines.forEach((trendLine) => {
+            for (let index = 0; index < series[i].trendlines.length; index++) {
+                let trendLine = series[i].trendlines[index];
                 trendLine.animation.enable = false;
                 trendLine.enableTooltip = false;
-            });
+            }
         }
     }
     initializeSeriesSelector() {
@@ -31971,10 +32085,11 @@ class StockChart extends Component {
         this.intl = new Internationalization();
     }
     storeDataSource() {
-        this.series.forEach((series) => {
+        for (let i = 0; i < this.series.length; i++) {
+            let series = this.series[i];
             this.tempSeriesType.push(series.type);
             series.localData = undefined;
-        });
+        }
         this.initialRender = true;
         this.rangeFound = false;
         this.resizeTo = null;
@@ -32317,8 +32432,10 @@ class StockChart extends Component {
             pageY = e.clientY;
         }
         this.trigger('stockChartMouseMove', { target: e.target.id, x: this.mouseX, y: this.mouseY });
-        this.setMouseXY(pageX, pageY);
-        this.chartOnMouseMove(e);
+        if (getElement$1(this.element.id + '_stockChart_chart')) {
+            this.setMouseXY(pageX, pageY);
+            this.chartOnMouseMove(e);
+        }
         return false;
     }
     /**
@@ -33890,15 +34007,20 @@ let BulletChart = class BulletChart extends Component {
             }
         }
         if (this.maximum === null) {
-            for (let i = 0; i < Object.keys(this.dataSource).length; i++) {
-                if (this.dataSource[i][this.targetField] > this.dataSource[i][this.valueField]) {
-                    this.maximum = this.maximum > this.dataSource[i][this.targetField] ? this.maximum + this.interval :
-                        this.dataSource[i][this.targetField] + this.interval;
+            if (!isNullOrUndefined(this.dataSource)) {
+                for (let i = 0; i < Object.keys(this.dataSource).length; i++) {
+                    if (this.dataSource[i][this.targetField] > this.dataSource[i][this.valueField]) {
+                        this.maximum = this.maximum > this.dataSource[i][this.targetField] ? this.maximum + this.interval :
+                            this.dataSource[i][this.targetField] + this.interval;
+                    }
+                    else {
+                        this.maximum = this.maximum > this.dataSource[i][this.valueField] ? this.maximum + this.interval :
+                            this.dataSource[i][this.valueField] + this.interval;
+                    }
                 }
-                else {
-                    this.maximum = this.maximum > this.dataSource[i][this.valueField] ? this.maximum + this.interval :
-                        this.dataSource[i][this.valueField] + this.interval;
-                }
+            }
+            else {
+                this.maximum = 10;
             }
         }
         if (!this.interval) {
@@ -41047,5 +41169,5 @@ class SparklineTooltip {
  * Chart components exported.
  */
 
-export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, degreeToRadian, getRotatedRectangleCoordinates, isRotatedRectIntersect, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, getUnicodeText, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, regSub, regSup, beforeExport, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartTheme, getBulletThemeColor, BulletTooltip, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
+export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, degreeToRadian, getRotatedRectangleCoordinates, isRotatedRectIntersect, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, getUnicodeText, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, regSub, regSup, beforeExport, afterExport, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartTheme, getBulletThemeColor, BulletTooltip, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
 //# sourceMappingURL=ej2-charts.es2015.js.map

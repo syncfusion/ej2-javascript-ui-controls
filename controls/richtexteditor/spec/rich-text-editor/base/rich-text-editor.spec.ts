@@ -1,20 +1,11 @@
-import { Toolbar, ActionBeginEventArgs, PasteCleanup, HTMLFormatter, MarkdownFormatter } from '../../../src/rich-text-editor/index';
-import { dispatchEvent } from '../../../src/rich-text-editor/base/util';
-import { RichTextEditor } from '../../../src/rich-text-editor/base/rich-text-editor';
+/**
+ * Base RTE spec
+ */
+import { createElement, L10n, isNullOrUndefined, Browser, getUniqueID, detach } from '@syncfusion/ej2-base';
+import { RichTextEditor, HTMLFormatter, MarkdownFormatter, dispatchEvent } from '../../../src/rich-text-editor/index';
 import { NodeSelection } from '../../../src/selection/index';
-
-import { renderRTE, destroy, dispatchKeyEvent } from './../render.spec';
-import { createElement, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { QuickToolbar, MarkdownEditor, HtmlEditor, Link, Image } from "../../../src/rich-text-editor/index";
-import { editLink } from '../../../src/rich-text-editor';
-import { Browser, detach, getUniqueID } from "@syncfusion/ej2-base";
-import { FormValidator } from "@syncfusion/ej2-inputs";
-
-RichTextEditor.Inject(MarkdownEditor);
-RichTextEditor.Inject(HtmlEditor);
-
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(QuickToolbar, Link, Image);
+import { setEditFrameFocus } from '../../../src/common/util';
+import { renderRTE, destroy } from './../render.spec';
 
 function setCursorPoint(curDocument: Document, element: Element, point: number) {
     let range: Range = curDocument.createRange();
@@ -138,10 +129,8 @@ describe('RTE base module', () => {
 
     describe('RTE without iframe', () => {
         let rteObj: RichTextEditor;
-        let elem: HTMLElement;
         beforeAll((done: Function) => {
             rteObj = renderRTE({ value: "<p>RTE</p>" });
-            elem = rteObj.element;
             done();
         });
 
@@ -211,25 +200,21 @@ describe('RTE base module', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-
     });
 
     describe('RTE getcontent method for blazor in iframe mode', () => {
         let rteObj: RichTextEditor;
-        let elem: HTMLElement;
         beforeAll((done: Function) => {
             rteObj = renderRTE({ value: "<p>RTE</p>" });
-            elem = rteObj.element;
             done();
         });
-
         it('getContent public method', () => {
-            let blazor: boolean = true;  
+            let blazor: boolean = true;
             rteObj.iframeSettings.enable = true;
-            rteObj.dataBind();                
+            rteObj.dataBind();
             if (blazor && rteObj.iframeSettings.enable) {
                 expect((rteObj as any).inputElement.innerText).toBe("RTE");
-            }            
+            }
         });
         afterAll(() => {
             destroy(rteObj);
@@ -238,19 +223,13 @@ describe('RTE base module', () => {
 
     describe("DIV - RTE value property testing", () => {
         let rteObj: RichTextEditor;
-        let rteEle: HTMLElement;
         beforeAll(() => {
             rteObj = renderRTE({
                 value: '<p>Sample</p>',
                 enableHtmlEncode: true,
-                focus: () => {
-
-                },
-                blur: () => {
-
-                }
+                focus: () => { },
+                blur: () => { }
             });
-            rteEle = rteObj.element;
         });
 
         afterAll(() => {
@@ -270,7 +249,6 @@ describe('RTE base module', () => {
 
     describe("DIV - RTE content focus and blur event handler testing", () => {
         let rteObj: RichTextEditor;
-        let rteEle: HTMLElement;
         let focusIn: boolean = false;
         let focusOut: boolean = false;
         beforeAll(() => {
@@ -283,7 +261,6 @@ describe('RTE base module', () => {
                     focusOut = true;
                 }
             });
-            rteEle = rteObj.element;
         });
 
         afterAll(() => {
@@ -327,7 +304,6 @@ describe('RTE base module', () => {
 
     describe("Iframe - RTE content focus and blur event handler testing", () => {
         let rteObj: RichTextEditor;
-        let rteEle: HTMLElement;
         let focusIn: boolean = false;
         let focusOut: boolean = false;
         beforeAll(() => {
@@ -343,7 +319,6 @@ describe('RTE base module', () => {
                     focusOut = true;
                 }
             });
-            rteEle = rteObj.element;
         });
 
         afterAll(() => {
@@ -388,14 +363,12 @@ describe('RTE base module', () => {
 
     describe('RTE iframe', () => {
         let rteObj: RichTextEditor;
-        let elem: HTMLElement;
         beforeAll((done: Function) => {
             rteObj = renderRTE({
                 iframeSettings: {
                     enable: true
                 }
             });
-            elem = rteObj.element;
             done();
         });
 
@@ -406,15 +379,12 @@ describe('RTE base module', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-
     });
 
     describe('RTE toolbar', () => {
         let rteObj: RichTextEditor;
-        let elem: HTMLElement;
         beforeAll(() => {
             rteObj = renderRTE({});
-            elem = rteObj.element;
         });
 
         it('ensure the module', () => {
@@ -428,12 +398,12 @@ describe('RTE base module', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-
     });
 
     describe('setContentHeight method testing', () => {
         let rteObj: RichTextEditor;
         let elem: HTMLElement;
+        let style: HTMLStyleElement;
         let actionBegin: boolean = false;
         let actionComplete: boolean = false;
 
@@ -441,7 +411,7 @@ describe('RTE base module', () => {
             let css: string = ".e-richtexteditor { height: 200px }" +
                 ".e-toolbar { display: block; white-space: nowrap; position: relative; }" +
                 ".e-toolbar-item { display: inline-block; }";
-            let style: HTMLStyleElement = document.createElement('style');
+            style = document.createElement('style');
             style.type = "text/css";
             style.id = "scroll";
             style.appendChild(document.createTextNode(css));
@@ -508,7 +478,6 @@ describe('RTE base module', () => {
                 (<any>rteObj).keyDown(keyboardEventArgs);
                 done();
             }, 100);
-
         });
         it('tab key', () => {
             let node = rteObj.contentModule.getEditPanel().childNodes[0];
@@ -598,7 +567,6 @@ describe('RTE base module', () => {
             expect(actionBegin).toBe(false);
             actionBegin = false;
         });
-
         it('Link Spacing', function () {
             rteObj.contentModule.getEditPanel().innerHTML = 'datamanager https://www.google.com';
             let nodetext: any = rteObj.contentModule.getEditPanel().childNodes[0];
@@ -623,9 +591,9 @@ describe('RTE base module', () => {
             expect(rteObj.contentModule.getEditPanel().innerHTML === expectedElement).toBe(true);
             expect(rteObj.contentModule.getEditPanel().textContent === expectedString).toBe(true);
         });
-
         it('space key', function () {
-            rteObj.destroy();
+            destroy(rteObj);
+            rteObj = undefined;
             rteObj = renderRTE({
                 height: 400,
                 toolbarSettings: {
@@ -638,14 +606,12 @@ describe('RTE base module', () => {
 
         afterAll(() => {
             destroy(rteObj);
+            detach(style);
         });
-
     });
 
     describe('rte Iframe mode', () => {
         let rteObj: RichTextEditor;
-        let elem: HTMLElement;
-        let editNode: HTMLElement;
         beforeAll(() => {
             rteObj = renderRTE({
                 enableRtl: false,
@@ -653,8 +619,6 @@ describe('RTE base module', () => {
                     enable: true
                 }
             });
-            editNode = rteObj.contentModule.getEditPanel() as HTMLElement;
-            elem = rteObj.element;
         });
 
         it('focus method testing', () => {
@@ -666,10 +630,9 @@ describe('RTE base module', () => {
             destroy(rteObj);
         });
     });
-    
+
     describe('RTE Events', () => {
         let rteObj: RichTextEditor;
-        let elem: HTMLElement;
         let actionBeginTiggered: boolean = false;
         let actionCompleteTiggered: boolean = false;
         let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
@@ -685,7 +648,6 @@ describe('RTE base module', () => {
             function onActionCompletefun(): void {
                 actionCompleteTiggered = true; 
             }
-            elem = rteObj.element;
         });
 
         it('backspace key press while empty content in editable element', () => {
@@ -782,13 +744,11 @@ describe('RTE base module', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-
     });
 
     describe('Toolbar - Print Module', () => {
         describe('Print rendering testing', () => {
             let beforeCount: number = 0;
-            let afterCount: number = 0;
             let bool: boolean;
             let rteObj: RichTextEditor;
             let rteEle: HTMLElement;
@@ -798,9 +758,7 @@ describe('RTE base module', () => {
                     toolbarSettings: {
                         items: ['Bold', 'Italic', 'Underline', 'Print']
                     },
-                    actionComplete: (() => {
-                        afterCount++;
-                    }),
+                    actionComplete: (() => { }),
                     actionBegin: ((args: any) => {
                         bool = args.cancel;
                         beforeCount++;
@@ -865,9 +823,7 @@ describe('RTE base module', () => {
     describe('actionBegin and actionComplete testing', () => {
         let beforeCount: boolean = false;
         let afterCount: boolean = false;
-        let bool: boolean;
         let rteObj: RichTextEditor;
-        let rteEle: HTMLElement;
         let editNode: HTMLElement;
         let selectNode: Element;
         let curDocument: Document;
@@ -888,7 +844,6 @@ describe('RTE base module', () => {
                     beforeCount = true;
                 })
             });
-            rteEle = rteObj.element;
             editNode = rteObj.contentModule.getEditPanel() as HTMLElement;
             curDocument = rteObj.contentModule.getDocument();
         });
@@ -1323,9 +1278,7 @@ describe('RTE base module', () => {
         });
         afterAll(() => {
             destroy(rteObj);
-            document.body.innerHTML = '';
         });
-
     });
     describe('RTE text area', () => {
         let rteObj: RichTextEditor;
@@ -1368,9 +1321,7 @@ describe('RTE base module', () => {
         });
         afterAll(() => {
             destroy(rteObj);
-            document.body.innerHTML = '';
         });
-
     });
     describe('RTE text area - value property', () => {
         let rteObj: RichTextEditor;
@@ -1413,13 +1364,10 @@ describe('RTE base module', () => {
         });
         afterAll(() => {
             destroy(rteObj);
-            document.body.innerHTML = '';
         });
-
     });
     describe('RTE without iframe - value property', () => {
         let rteObj: RichTextEditor;
-        let elem: HTMLElement;
         beforeAll((done: Function) => {
             rteObj = renderRTE({
                 value: ` <p><b>Description:</b></p>
@@ -1439,7 +1387,6 @@ describe('RTE base module', () => {
                     efficient public methods and client side events.</p></li><li><p>Keyboard
                     navigation support.</p></li></ol>`,
             });
-            elem = rteObj.element;
             done();
         });
         it('check textarea', () => {
@@ -1458,11 +1405,9 @@ describe('RTE base module', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-
     });
     describe('RTE iframe - value property', () => {
         let rteObj: RichTextEditor;
-        let elem: HTMLElement;
         beforeAll((done: Function) => {
             rteObj = renderRTE({
                 value: ` <p><b>Description:</b></p>
@@ -1485,7 +1430,6 @@ describe('RTE base module', () => {
                     enable: true
                 }
             });
-            elem = rteObj.element;
             done();
         });
         it('check textarea', () => {
@@ -1504,18 +1448,15 @@ describe('RTE base module', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-
     });
     describe('RTE - Public Methods', () => {
         let rteObj: RichTextEditor;
-        let elem: HTMLElement;
         beforeAll((done: Function) => {
             rteObj = renderRTE({
                 height: '200px',
                 width: '400px',
                 value: '<p> adsafasdfsd <span> fdsfds </span></p>'
             });
-            elem = rteObj.element;
             done();
         });
         it('focus method', () => {
@@ -1881,7 +1822,6 @@ describe('RTE base module', () => {
     });
     describe('RTE enablePersistence Properties', () => {
         let rteObj: RichTextEditor;
-        let elem: HTMLElement;
         beforeAll((done: Function) => {
             rteObj = renderRTE({
                 value: ` <p><b>Description:</b></p>
@@ -1901,7 +1841,6 @@ describe('RTE base module', () => {
                     efficient public methods and client side events.</p></li><li><p>Keyboard
                     navigation support.</p></li></ol>`,
             });
-            elem = rteObj.element;
             done();
         });
         it('Ensure enablePersistence property', () => {
@@ -1939,11 +1878,11 @@ describe('RTE base module', () => {
             expect(rteObj.value).toBe(window.localStorage.getItem("value"));
             window.localStorage.removeItem("value");
             rteObj.enablePersistence = false;
-            rteObj.dataBind();     
+            rteObj.dataBind();
         });
         afterAll(() => {
             destroy(rteObj);
-            document.body.innerHTML = '';
+            detach(element);
         });
     });
 
@@ -1998,7 +1937,6 @@ describe('RTE base module', () => {
     });
     describe('RTE IFRame htmlAttributes Properties', () => {
         let rteObj: RichTextEditor;
-        let elem: HTMLElement;
         let iframe: HTMLDocument;
         let iframeHeader: HTMLHeadElement;
         let iframeBody: HTMLBodyElement;
@@ -2019,14 +1957,12 @@ describe('RTE base module', () => {
             done();
         });
         it('Ensure IFrame htmlAttributes property', () => {
-            elem = rteObj.element;
             iframe = rteObj.contentModule.getDocument() as HTMLDocument;
             iframeBody = iframe.querySelector('body');
             expect(iframeBody.classList.contains('myClass')).toBe(true);
             expect(iframeBody.title).toBe('RTE');
         });
         it('Iframe resource', () => {
-            elem = rteObj.element;
             iframe = rteObj.contentModule.getDocument() as HTMLDocument;
             iframeHeader = iframe.querySelector('head');
             let scriptSheet: HTMLScriptElement = iframeHeader.querySelector('script');
@@ -2059,14 +1995,6 @@ describe('RTE base module', () => {
         });
     });
 
-    function setCursorPoint(curDocument: Document, element: Element, point: number) {
-        let range: Range = curDocument.createRange();
-        let sel: Selection = curDocument.defaultView.getSelection();
-        range.setStart(element, point);
-        range.collapse(true);
-        sel.removeAllRanges();
-        sel.addRange(range);
-    }
     describe('RTE shortcut key - HTML', () => {
         let rteObj: RichTextEditor;
         let elem: HTMLElement;
@@ -2250,7 +2178,7 @@ describe('RTE base module', () => {
             expect(!isNullOrUndefined(rteObj.element.querySelector('.e-content'))).toBe(true);
         });
 
-        it('insert-table: ctrl+shift+e', () => {
+        it('insert-table: ctrl+shift+e', (done: Function) => {
             editNode.innerHTML = innerHTML;
             editNode.focus();
             selectNode = editNode.querySelector('.first-p');
@@ -2259,19 +2187,20 @@ describe('RTE base module', () => {
             keyBoardEvent.shiftKey = true;
             keyBoardEvent.action = 'insert-table';
             (rteObj as any).keyDown(keyBoardEvent);
-            let dialog: HTMLElement = document.getElementById(elem.id + '_tabledialog');
-            expect(!isNullOrUndefined(dialog)).toBe(true);
+            setTimeout(() => {
+                let dialog: HTMLElement = document.getElementById(elem.id + '_tabledialog');
+                expect(!isNullOrUndefined(dialog)).toBe(true);
+                done();
+            }, 200);
         });
 
         afterAll(() => {
             destroy(rteObj);
         });
-
     });
 
     describe('RTE shortcut key - Markdown', () => {
         let rteObj: RichTextEditor;
-        let elem: HTMLElement;
         let editNode: HTMLTextAreaElement;
         let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: false, shiftKey: false, action: '', which: 8 };
         let innerHTML: string = `# Lists are a piece of cake
@@ -2293,8 +2222,7 @@ describe('RTE base module', () => {
                     'p': ''
                 }
             })
-         });
-            elem = rteObj.element;
+            });
             editNode = rteObj.contentModule.getEditPanel() as HTMLTextAreaElement;
             editNode.value = innerHTML;
         });
@@ -2466,11 +2394,9 @@ describe('RTE base module', () => {
         afterAll(() => {
             destroy(rteObj);
         });
-
     });
     describe('RTE Change Events', () => {
         let rteObj: RichTextEditor;
-        let elem: HTMLElement;
         let change: boolean = false;
         beforeAll((done: Function) => {
             rteObj = renderRTE({
@@ -2481,8 +2407,10 @@ describe('RTE base module', () => {
                     expect(rteObj.value).toBe('<p>testing</p>');
                 }
             });
-            elem = rteObj.element;
             done();
+        });
+        afterAll(() => {
+            destroy(rteObj);
         });
         it('Ensure Width property', () => {
             expect(rteObj.value).toBe('<p>testing</p>');
@@ -2526,7 +2454,6 @@ describe('RTE base module', () => {
 
         afterAll(() => {
             destroy(rteObj);
-            document.body.innerHTML = '';
         });
     });
 
@@ -2560,15 +2487,11 @@ describe('RTE base module', () => {
 
         afterAll(() => {
             destroy(rteObj);
-            document.body.innerHTML = '';
         });
     });
 });
 describe(' Image selection prevent - msie ', () => {
     let rteObj: RichTextEditor;
-    let rteEle: Element;
-    let mouseEventArgs: any;
-    let curDocument: Document;
     let editNode: Element;
     let selectNode: HTMLElement;
 
@@ -2583,10 +2506,8 @@ describe(' Image selection prevent - msie ', () => {
     beforeAll(() => {
         Browser.info.name = 'msie';
         rteObj = renderRTE({});
-        rteEle = rteObj.element;
         editNode = rteObj.contentModule.getEditPanel();
         rteObj.contentModule.getEditPanel().innerHTML = innerHTML;
-        curDocument = rteObj.contentModule.getDocument();
     });
     it("Image element resize prevent in msie", () => {
         selectNode = editNode.querySelector('#rteimg') as HTMLElement;
@@ -2595,14 +2516,10 @@ describe(' Image selection prevent - msie ', () => {
     });
     afterAll(() => {
         destroy(rteObj);
-        detach(rteEle);
     });
 });
 describe(' Image selection prevent - mozilla ', () => {
     let rteObj: RichTextEditor;
-    let rteEle: Element;
-    let mouseEventArgs: any;
-    let curDocument: Document;
     let editNode: Element;
     let selectNode: HTMLElement;
 
@@ -2617,10 +2534,8 @@ describe(' Image selection prevent - mozilla ', () => {
     beforeAll(() => {
         Browser.userAgent = 'mozilla/5.0 (windows nt 10.0; win64; x64; rv:60.0) gecko/20100101 firefox/60.0';
         rteObj = renderRTE({});
-        rteEle = rteObj.element;
         editNode = rteObj.contentModule.getEditPanel();
         rteObj.contentModule.getEditPanel().innerHTML = innerHTML;
-        curDocument = rteObj.contentModule.getDocument();
     });
     it("Image element resize prevent in mozilla", () => {
         selectNode = editNode.querySelector('#rteimg') as HTMLElement;
@@ -2630,13 +2545,11 @@ describe(' Image selection prevent - mozilla ', () => {
     });
     afterAll(() => {
         destroy(rteObj);
-        detach(rteEle);
     });
 });
 
 describe("RTE ExecuteCommand public method testing", () => {
     let rteObj: RichTextEditor;
-    let rteEle: HTMLElement;
     beforeAll(() => {
         rteObj = renderRTE({
             value: '<p id="pnode1">Sample</p>' +
@@ -2644,9 +2557,7 @@ describe("RTE ExecuteCommand public method testing", () => {
                 '<p id="pnode2">Sample</p>' +
                 '<p id="pnode3">Sample</p>' +
                 '<p id="createLink">CreateLinkSample</p>'
-                
         });
-        rteEle = rteObj.element;
     });
 
     afterAll(() => {
@@ -2711,12 +2622,10 @@ describe("RTE ExecuteCommand public method testing", () => {
         expect(node.firstElementChild.tagName.toLocaleLowerCase() === 'a').toBe(true);
         expect(node.firstElementChild.textContent === 'www.google.com').toBe(true);
     });
-
 });
 
 describe("RTE content remove issue", () => {
     let rteObj: RichTextEditor;
-    let rteEle: HTMLElement;
     let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
     beforeAll(() => {
         rteObj = renderRTE({
@@ -2725,7 +2634,6 @@ describe("RTE content remove issue", () => {
                 '<p id="pnode4">Sample</p>' +
                 '<p id="pnode3">Sample</p>'
         });
-        rteEle = rteObj.element;
     });
 
     afterAll(() => {
@@ -2739,7 +2647,6 @@ describe("RTE content remove issue", () => {
         expect(rteObj.contentModule.getEditPanel().textContent !== '').toBe(true);
     });
 });
-
 
 describe('RTE Placeholder DIV', () => {
     let rteObj: RichTextEditor;
@@ -2805,7 +2712,6 @@ describe('RTE Update Value', () => {
 
 describe('RTE Form reset', () => {
     let rteObj: RichTextEditor;
-    let rteEle: HTMLElement;
     let element: HTMLElement;
     beforeAll((done: Function) => {
         element = createElement('form', {
@@ -2831,8 +2737,6 @@ describe('RTE Form reset', () => {
             placeholder: 'Type something'
         });
         rteObj.appendTo('#defaultRTE');
-        let formObject: FormValidator = new FormValidator('#form-element');
-        rteEle = rteObj.element;
         done();
     });
     it(" Check the value property while click on reset button", () => {
@@ -2842,7 +2746,7 @@ describe('RTE Form reset', () => {
         expect((rteObj as any).inputElement.innerHTML).toEqual('<div><p>First p node-0</p></div>');
     });
     afterAll(() => {
-        rteObj.destroy();
+        destroy(rteObj);
         detach(element);
     });
 });
@@ -2864,95 +2768,95 @@ describe('EJ2-13507: RTE ng feature matrix - Markdown two way binding is not wor
     afterAll(() => {
         destroy(rteObj);
     });
-    describe('EJ2-14075: getText public method html mode', () => {
-        let rteObj: RichTextEditor;
-        let innerHTML: string = `<p><b>Description:</b></p>`;
-        beforeAll(() => {
-            rteObj = renderRTE({ value: innerHTML });
-        });
+});
 
-        it(' check getText', () => {
-            expect(rteObj.getText() === 'Description:').toBe(true);
-        });
-        afterAll(() => {
-            destroy(rteObj);
-        });
-    });
-    describe('EJ2-14075: getText public method html mode with iframe', () => {
-        let rteObj: RichTextEditor;
-        let innerHTML: string = `<p><b>Description:</b></p>`;
-        beforeAll(() => {
-            rteObj = renderRTE({ iframeSettings: { enable: true }, value: innerHTML });
-        });
-
-        it(' check getText', () => {
-            expect(rteObj.getText() === 'Description:').toBe(true);
-        });
-        afterAll(() => {
-            destroy(rteObj);
-        });
-    });
-    describe('EJ2-14075: getText public method markdown mode', () => {
-        let rteObj: RichTextEditor;
-        let innerHTML: string = `Markdown content`;
-        beforeAll(() => {
-            rteObj = renderRTE({ editorMode: 'Markdown', value: innerHTML });
-        });
-
-        it(' check getText', () => {
-            expect(rteObj.getText() === innerHTML).toBe(true);
-        });
-        afterAll(() => {
-            destroy(rteObj);
-        });
+describe('EJ2-14075: getText public method html mode', () => {
+    let rteObj: RichTextEditor;
+    let innerHTML: string = `<p><b>Description:</b></p>`;
+    beforeAll(() => {
+        rteObj = renderRTE({ value: innerHTML });
     });
 
-    describe('EJ2-13504 - Key board action RequestType ', () => {
-        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9, key: 'Tab' };
-        let innerHTMLStr: string = `<p>First p node-0</p><p>First p node-1</p>
+    it(' check getText', () => {
+        expect(rteObj.getText() === 'Description:').toBe(true);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
 
-    <p class='first-p-node'>dom node<label class='first-label'>label node</label></p>
+describe('EJ2-14075: getText public method html mode with iframe', () => {
+    let rteObj: RichTextEditor;
+    let innerHTML: string = `<p><b>Description:</b></p>`;
+    beforeAll(() => {
+        rteObj = renderRTE({ iframeSettings: { enable: true }, value: innerHTML });
+    });
 
-    <p class='second-p-node'><label class='second-label'>label node</label></p>
-    <p class='third-p-node'>dom node<label class='third-label'>label node</label></p>
-    <ul class='ul-third-node'><li>one-node</li><li>two-node</li><li>three-node</li></ul>`;
-        let rteObj: RichTextEditor;
-        let curDocument: Document;
-        let editNode: Element;
-        let rteEle: Element;
-        let selectNode: Element;
-        let actionBegin: string;
-        let actionComplete: string;
-        beforeAll(() => {
-            rteObj = renderRTE({
-                toolbarSettings: {
-                    items: ['|', 'Formats', '|', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|', 'Indent', 'Outdent', '|',
-                        'FontName']
-                },
-                value: innerHTMLStr,
-                actionComplete: (e): void => {
-                    actionComplete = e.requestType;
-                },
-                actionBegin: (e): void => {
-                    actionBegin = e.requestType;
-                }
-            });
-            rteEle = rteObj.element;
-            editNode = rteObj.contentModule.getEditPanel();
-            curDocument = rteObj.contentModule.getDocument();
+    it(' check getText', () => {
+        expect(rteObj.getText() === 'Description:').toBe(true);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('EJ2-14075: getText public method markdown mode', () => {
+    let rteObj: RichTextEditor;
+    let innerHTML: string = `Markdown content`;
+    beforeAll(() => {
+        rteObj = renderRTE({ editorMode: 'Markdown', value: innerHTML });
+    });
+
+    it(' check getText', () => {
+        expect(rteObj.getText() === innerHTML).toBe(true);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('EJ2-13504 - Key board action RequestType ', () => {
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9, key: 'Tab' };
+    let innerHTMLStr: string = `<p>First p node-0</p><p>First p node-1</p>
+
+<p class='first-p-node'>dom node<label class='first-label'>label node</label></p>
+
+<p class='second-p-node'><label class='second-label'>label node</label></p>
+<p class='third-p-node'>dom node<label class='third-label'>label node</label></p>
+<ul class='ul-third-node'><li>one-node</li><li>two-node</li><li>three-node</li></ul>`;
+    let rteObj: RichTextEditor;
+    let curDocument: Document;
+    let editNode: Element;
+    let selectNode: Element;
+    let actionBegin: string;
+    let actionComplete: string;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['|', 'Formats', '|', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|', 'Indent', 'Outdent', '|',
+                    'FontName']
+            },
+            value: innerHTMLStr,
+            actionComplete: (e): void => {
+                actionComplete = e.requestType;
+            },
+            actionBegin: (e): void => {
+                actionBegin = e.requestType;
+            }
         });
-        afterAll(() => {
-            destroy(rteObj);
-            detach(rteEle);
-        });
-        it(' tab key navigation from second li start point', () => {
-            selectNode = editNode.querySelector('.ul-third-node');
-            expect(selectNode.querySelector('ul')).toBeNull();
-            setCursorPoint(curDocument, selectNode.childNodes[2] as Element, 0);
-            (rteObj as any).keyDown(keyBoardEvent);
-            expect(actionComplete === 'UL').toBe(true);
-            expect(actionBegin === 'TabKey').toBe(true);
-        });
+        editNode = rteObj.contentModule.getEditPanel();
+        curDocument = rteObj.contentModule.getDocument();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it(' tab key navigation from second li start point', () => {
+        selectNode = editNode.querySelector('.ul-third-node');
+        expect(selectNode.querySelector('ul')).toBeNull();
+        setCursorPoint(curDocument, selectNode.childNodes[2] as Element, 0);
+        (rteObj as any).keyDown(keyBoardEvent);
+        expect(actionComplete === 'UL').toBe(true);
+        expect(actionBegin === 'TabKey').toBe(true);
     });
 });
 
@@ -2986,7 +2890,6 @@ describe('EJ2-15017 - refresh editor', () => {
     });
     afterAll(() => {
         destroy(rteObj);
-        document.body.innerHTML = '';
     });
 });
 
@@ -3035,10 +2938,8 @@ describe('EJ2-12731 - RTE -  IFrame heights are not auto adjusted based content'
     });
     afterAll(() => {
         destroy(rteObj);
-        document.body.innerHTML = '';
     });
 });
-
 
 describe('IFrame heights are not auto adjusted when image content is loaded', () => {
     let rteObj: RichTextEditor;
@@ -3067,7 +2968,6 @@ describe('IFrame heights are not auto adjusted when image content is loaded', ()
     });
     afterAll(() => {
         destroy(rteObj);
-        document.body.innerHTML = '';
     });
 });
 describe('EJ2-12731 - RTE -  Textarea heights are not auto adjusted based content', () => {
@@ -3112,7 +3012,6 @@ describe('EJ2-12731 - RTE -  Textarea heights are not auto adjusted based conten
     });
     afterAll(() => {
         destroy(rteObj);
-        document.body.innerHTML = '';
     });
 });
 describe('EJ2-18684 - RTE - Focus event not raised in readonly mode', () => {
@@ -3163,12 +3062,10 @@ describe('EJ2-18684 - RTE - Focus event not raised in readonly mode', () => {
     });
     afterAll(() => {
         destroy(rteObj);
-        document.body.innerHTML = '';
     });
 });
 describe('RTE textarea with innerText', () => {
     let rteObj: RichTextEditor;
-    let rteEle: HTMLElement;
     let element: HTMLElement;
     beforeAll((done: Function) => {
         element = createElement('div', {
@@ -3183,21 +3080,19 @@ describe('RTE textarea with innerText', () => {
             placeholder: 'Type something'
         });
         rteObj.appendTo('#defaultRTE');
-        rteEle = rteObj.element;
         done();
     });
     it(" Set the value decoded text", () => {
         expect((rteObj as any).inputElement.innerHTML).toEqual('<p class="first-p">First p node-0</p>');
     });
     afterAll(() => {
-        rteObj.destroy();
+        destroy(rteObj);
         detach(element);
     });
 });
 
 describe(' Paste url', () => {
     let rteObj: RichTextEditor;
-    let rteEle: HTMLElement;
     let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: false, shiftKey: false, action: null, which: 64, key: '' };
     let curDocument: Document;
     let selectNode: Element;
@@ -3206,7 +3101,6 @@ describe(' Paste url', () => {
             value: `<div><p class='first-p'>First p node-0</p></div>`,
             placeholder: 'Type something'
         });
-        rteEle = rteObj.element;
         curDocument = rteObj.contentModule.getDocument();
         done();
     });
@@ -3275,7 +3169,6 @@ describe('EJ2-23205 Revert the headings and blockquotes format while applying th
     let rteObj: RichTextEditor;
     let elem: HTMLElement;
     let editNode: HTMLTextAreaElement;
-    let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: false, shiftKey: false, action: '', which: 8 };
     let innerHTML: string = `Lists are a piece of cake
         They even auto continue as you type
         A double enter will end them
@@ -3315,8 +3208,6 @@ describe('EJ2-23205 Revert the headings and blockquotes format while applying th
     describe('EJ2-23858 Iframe angular destroy issue', () => {
         let rteObj: RichTextEditor;
         let elem: HTMLElement;
-        let editNode: HTMLTextAreaElement;
-        let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: false, shiftKey: false, action: '', which: 8 };
         let innerHTML: string = `Lists are a piece of cake
             They even auto continue as you type
             A double enter will end them
@@ -3354,9 +3245,7 @@ describe('EJ2-24017 - Enable the submit button while pressing the tab key - RTE 
     let rteObj: RichTextEditor;
     let curDocument: Document;
     let editNode: Element;
-    let rteEle: Element;
     let selectNode: Element;
-    let isChanged: boolean = false;
     beforeAll(() => {
         rteObj = renderRTE({
             toolbarSettings: {
@@ -3364,13 +3253,11 @@ describe('EJ2-24017 - Enable the submit button while pressing the tab key - RTE 
                     'FontName']
             }
         });
-        rteEle = rteObj.element;
         editNode = rteObj.contentModule.getEditPanel();
         curDocument = rteObj.contentModule.getDocument();
     });
     afterAll(() => {
         destroy(rteObj);
-        detach(rteEle);
     });
     it(' tab key navigation from RTE content without text', () => {
         selectNode = editNode.querySelector('br');
@@ -3385,9 +3272,7 @@ describe('Tab key navigation with empty RTE content and enableTabKey is set true
     let rteObj: RichTextEditor;
     let curDocument: Document;
     let editNode: Element;
-    let rteEle: Element;
     let selectNode: Element;
-    let isChanged: boolean = false;
     beforeAll(() => {
         rteObj = renderRTE({
             toolbarSettings: {
@@ -3396,13 +3281,11 @@ describe('Tab key navigation with empty RTE content and enableTabKey is set true
             },
             enableTabKey: true
         });
-        rteEle = rteObj.element;
         editNode = rteObj.contentModule.getEditPanel();
         curDocument = rteObj.contentModule.getDocument();
     });
     afterAll(() => {
         destroy(rteObj);
-        detach(rteEle);
     });
     it(' tab key navigation from RTE with empty content', () => {
         selectNode = editNode.querySelector('p');
@@ -3442,7 +3325,6 @@ describe('EJ2-24065 - Unwanted content show while changing the locale property i
     });
     afterEach((done) => {
         destroy(rteObj);
-        document.body.innerHTML = '';
         done();
     });
 });
@@ -3466,7 +3348,6 @@ describe('EJ2-23854 - Redo action occurs for keyboard shortcuts copy command wit
     });
     afterAll(() => {
         destroy(rteObj);
-        detach(rteEle);
     });
     it(' check the undo and redo button when copy action', () => {
         selectNode = editNode.querySelector('br');
@@ -3479,7 +3360,6 @@ describe('EJ2-23854 - Redo action occurs for keyboard shortcuts copy command wit
         expect(item.parentElement.classList.contains("e-overlay")).toBe(true);
     });
 });
-
 
 describe('EJ2-26042 - ExecuteCommand method performs wrongly to insert the bold command while focusing the outside of RTE. ', () => {
     let rteObj: RichTextEditor;
@@ -3508,13 +3388,11 @@ describe('EJ2-26042 - ExecuteCommand method performs wrongly to insert the bold 
     });
     afterEach((done) => {
         destroy(rteObj);
-        document.body.innerHTML = '';
         done();
     });
 });
 describe("keyConfig property testing", () => {
     let rteObj: RichTextEditor;
-    let rteEle: HTMLElement;
     var keyboardEventArgs = {
         preventDefault: function () { },
         ctrlKey: true,
@@ -3533,7 +3411,6 @@ describe("keyConfig property testing", () => {
                 '<p id="pnode2">Sample</p>' +
                 '<p id="pnode3">Sample</p>'
         });
-        rteEle = rteObj.element;
     });
 
     afterAll(() => {
@@ -3583,14 +3460,10 @@ describe('EJ2-26545 Empty P tag create while give the value with empty space in 
     <p class="e-one-paragraph">EJ2 RichTextEditor with Markdown</p>
      <p class="e-two-paragraph">EJ2 RichTextEditor with IframeEditor</p>ss`;
     let rteObj: RichTextEditor;
-    let controlId: string;
-    let rteElement: HTMLElement;
     beforeAll((done: Function) => {
         rteObj = renderRTE({
             value: innerHtml
         });
-        controlId = rteObj.element.id;
-        rteElement = rteObj.element;
         done();
     });
 
@@ -3605,21 +3478,16 @@ describe('EJ2-26545 Empty P tag create while give the value with empty space in 
 
 describe('To change the keyconfig API property', () => {
     let rteObj: RichTextEditor;
-    let rteEle: HTMLElement;
-    let editNode: HTMLElement;
-    let selectNode: Element;
-    let curDocument: Document;
     beforeAll(() => {
         rteObj = renderRTE({
             toolbarSettings: {
                 items: ['Bold', 'Italic', 'Underline', 'Print']
             }
         });
-        rteEle = rteObj.element;
-        editNode = rteObj.contentModule.getEditPanel() as HTMLElement;
-        curDocument = rteObj.contentModule.getDocument();
     });
-
+    afterAll(() => {
+        destroy(rteObj);
+    });
     it(' To trigger onproperty change method in HTMLEditor', () => {
         expect(rteObj.formatter.keyConfig.bold === 'ctrl+b').toBe(true);
         rteObj.formatter = new HTMLFormatter ({ keyConfig: { 'bold': 'ctrl+q' } });
@@ -3633,8 +3501,6 @@ describe('EJ2-29801 Tab and shift+tab key combination should have same behavior'
      <p class="e-two-paragraph">EJ2 RichTextEditor with IframeEditor</p>ss`;
     let rteObj: RichTextEditor;
     let inpEle: HTMLElement;
-    let controlId: string;
-    let rteElement: HTMLElement;
     let evt: any;
     beforeAll((done: Function) => {
         inpEle = createElement('input', { id: 'testinput' });
@@ -3642,8 +3508,6 @@ describe('EJ2-29801 Tab and shift+tab key combination should have same behavior'
         rteObj = renderRTE({
             value: innerHtml
         });
-        controlId = rteObj.element.id;
-        rteElement = rteObj.element;
         done();
     });
     it("check tab press on toolbar behavior", function () {
@@ -3655,6 +3519,7 @@ describe('EJ2-29801 Tab and shift+tab key combination should have same behavior'
     });
     afterAll(() => {
         destroy(rteObj);
+        detach(inpEle);
     });
 });
 
@@ -3671,9 +3536,7 @@ describe('EJ2-29801 Tab and shift+tab key combination should have same behavior'
         expect(rteObj.htmlAttributes.tabindex === rteObj.inputElement.getAttribute("tabindex")).toBe(true);
     });
     afterAll(() => {
-        rteObj.destroy();
-        detach(rteObj.element);
-        document.body.innerHTML = '';
+        destroy(rteObj);
     });
 });
 describe('XHTML validation', function () {
@@ -3681,6 +3544,9 @@ describe('XHTML validation', function () {
     beforeAll(function (done) {
         rteObj = renderRTE({ enableXhtml: true });
         done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
     });
     it("clean", function () {
         rteObj.value = "<!-- sit amet --><div><!-- sit amet --><p>adasd</p></div>";
@@ -3758,6 +3624,9 @@ describe('XHTML validation -iframe', function () {
         });
         done();
     });
+    afterAll(() => {
+        destroy(rteObj);
+    });
     it("clean", function () {
         rteObj.value = "<!-- sit amet --><div><!-- sit amet --><p>adasd</p></div>";
         rteObj.enableXhtml = false;
@@ -3823,5 +3692,21 @@ describe('XHTML validation -iframe', function () {
         rteObj.enableXhtml = true;
         rteObj.dataBind();
         expect(rteObj.inputElement.innerHTML).toBe('<div><p>syncsync</p></div>');
+    });
+});
+describe('IFrame - Util - setEditFrameFocus method testing', function () {
+    let rteObj: any;
+    beforeAll(function (done) {
+        rteObj = renderRTE({
+            iframeSettings: { enable: true }
+        });
+        done();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it("Set focus with active element testing", function () {
+        setEditFrameFocus(rteObj.inputElement, 'iframe');
+        expect(document.activeElement.tagName).toEqual('BODY');
     });
 });

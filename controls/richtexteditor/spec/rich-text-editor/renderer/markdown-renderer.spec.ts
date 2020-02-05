@@ -1,22 +1,15 @@
 /**
  * Markdown renderer spec
  */
-import { createElement, detach } from '@syncfusion/ej2-base';
-import { RichTextEditor } from '../../../src/rich-text-editor/base/rich-text-editor';
-import { renderRTE } from './../render.spec';
-import { MarkdownEditor, HtmlEditor } from "../../../src/rich-text-editor/index";
-
-RichTextEditor.Inject(MarkdownEditor);
-RichTextEditor.Inject(HtmlEditor);
+import { RichTextEditor } from "../../../src/rich-text-editor/index";
+import { renderRTE, destroy } from './../render.spec';
 
 describe('Markdown renderer module', () => {
 
     describe('rte Markdown element testing', () => {
         let rteObj: RichTextEditor;
-        let elem: HTMLElement;
         beforeAll(() => {
             rteObj = renderRTE({ editorMode: 'Markdown' });
-            elem = rteObj.element;
         });
 
         it('Markdown div testing', () => {
@@ -32,9 +25,7 @@ describe('Markdown renderer module', () => {
         });
 
         afterAll(() => {
-            rteObj.destroy();
-            detach(elem);
+            destroy(rteObj);
         });
     });
-
 });

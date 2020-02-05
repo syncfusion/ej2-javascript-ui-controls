@@ -75,7 +75,7 @@ export class Render {
             let firstView: View = this.parent.viewCollections[0].option;
             if (firstView) {
                 this.parent.setScheduleProperties({ currentView: firstView });
-                this.parent.serverDataBind();
+                this.parent.onServerDataBind();
                 if (this.parent.headerModule) {
                     this.parent.headerModule.updateActiveView();
                     this.parent.headerModule.setCalendarView();

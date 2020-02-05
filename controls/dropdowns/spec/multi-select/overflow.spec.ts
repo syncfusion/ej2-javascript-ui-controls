@@ -129,10 +129,10 @@ describe('MultiSelect Overflow', () => {
         });
         it('Check the min width', (done) => {
             let containerEle: HTMLElement = listObj.element.parentElement.parentElement;
-            containerEle.parentElement.style.minWidth = '200px';
+            containerEle.parentElement.style.minWidth = '300px';
             listObj.change = (): void => {
                 let containerEle: HTMLElement = listObj.element.parentElement.parentElement;
-                expect(containerEle.offsetWidth).toBe(200);
+                expect(containerEle.offsetWidth).toBe(300);
                 done();
             }
             listObj.text = null;

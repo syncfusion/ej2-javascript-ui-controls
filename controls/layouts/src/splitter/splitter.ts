@@ -548,7 +548,7 @@ export class Splitter extends Component<HTMLElement> {
             document.activeElement.classList.contains(SPLIT_BAR)) {
         this.checkPaneSize(event);
         this.triggerResizing(event);
-        } else if (event.keyCode === 13 && this.paneSettings[index].collapsible) {
+        } else if (event.keyCode === 13 && this.paneSettings[index].collapsible && document.activeElement.classList.contains(SPLIT_BAR)) {
             if (!this.previousPane.classList.contains(COLLAPSE_PANE)) {
                 this.collapse(index);
                 addClass([this.currentSeparator], SPLIT_BAR_ACTIVE);
@@ -2196,6 +2196,8 @@ export class Splitter extends Component<HTMLElement> {
         this.allPanes.splice(index, 1);
         this.removePaneOrders(elementClass);
         this.updatePanes();
+        this.paneSettings.splice(index, 1);
+        this.setProperties({ 'paneSettings': this.paneSettings }, true);
         if (this.allPanes.length > 0) {
             this.allPanes[this.allPanes.length - 1].classList.remove(STATIC_PANE);
         }

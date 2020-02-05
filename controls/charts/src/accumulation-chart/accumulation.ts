@@ -875,6 +875,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
      * @private
      */
     public accumulationMouseMove(e: PointerEvent): boolean {
+        if (!getElement(this.element.id + '_svg')) {
+            return false;
+        }
         this.setMouseXY(e);
         this.trigger(chartMouseMove, { target: (<Element>e.target).id, x: this.mouseX, y: this.mouseY });
         if (this.pointMove) {
@@ -894,7 +897,6 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             this.pieSeriesModule.findSeries(e);
         }
         this.notify(Browser.touchMoveEvent, e);
-
         return false;
     }
     public titleTooltip(event: Event, x: number, y: number, isTouch?: boolean): void {
@@ -1206,7 +1208,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
             ),
             this.redraw
         );
-        // to draw back ground image for accumulation chart        
+        // to draw back ground image for accumulation chart
         let backGroundImage: string = this.backgroundImage;
         if (backGroundImage) {
             let image: ImageOption = new ImageOption(

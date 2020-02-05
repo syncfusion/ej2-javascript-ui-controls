@@ -110,7 +110,7 @@
       }
 
       .e-card-btn span,
-      .e-card-btn span.e-icons, {
+      .e-card-btn span.e-icons {
         height: $card-action-btn-bigger-icon-height;
         width: $card-action-btn-bigger-icon-width;
       }
@@ -421,7 +421,7 @@
       }
 
       .e-card-btn span,
-      .e-card-btn span.e-icons, {
+      .e-card-btn span.e-icons {
         display: flex;
         font-size: $card-action-btn-icon-font;
         height: $card-action-btn-icon-height;
@@ -472,7 +472,7 @@
     }
 
     .e-card-content,
-    .e-card-content p, {
+    .e-card-content p {
       line-height: normal;
       overflow: hidden;
       text-overflow: ellipsis;

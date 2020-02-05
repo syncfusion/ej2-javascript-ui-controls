@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 17.4.47 (2020-02-05)
+
+### ListBox
+
+#### Bug Fixes
+
+- `#F151029` - Checkbox selection not updated on initial load, while rendering the ListBox with `iconCss` issue fixed.
+- Provided 'actionBegin' and 'actionComplete' event when moving items.
+
 ## 17.4.46 (2020-01-30)
 
 ### MultiSelect

@@ -1,9 +1,8 @@
 /**
- * MarkdownSelection plugin spec
+ * Markdown Selection plugin spec
  */
 import { createElement, detach } from '@syncfusion/ej2-base';
-import { MarkdownSelection, MarkdownParser } from '../../../src/markdown-parser/index';
-
+import { MarkdownSelection } from '../../../src/markdown-parser/index';
 
 describe('Markdown - MarkdownSelection plugin', () => {
     let innerValue: string =
@@ -65,5 +64,4 @@ Tabs and shift-tabs work too`;
             detach(textArea);
         });
     });
-
 });

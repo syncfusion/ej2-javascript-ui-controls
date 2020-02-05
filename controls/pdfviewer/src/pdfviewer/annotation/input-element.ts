@@ -120,7 +120,7 @@ export class InputElement {
             }
             // tslint:disable-next-line
             this.pdfViewer.nodePropertyChange(selectedAnnotation, {});
-            this.pdfViewer.renderSelector(selectedAnnotation.pageIndex);
+            this.pdfViewer.renderSelector(selectedAnnotation.pageIndex, this.pdfViewer.annotationSelectorSettings);
             // tslint:disable-next-line
             let commentsDiv: any = document.getElementById(this.pdfViewer.selectedItems.annotations[0].annotName);
             if (commentsDiv && commentsDiv.childNodes && this.inputBoxElement.value !== 'label') {

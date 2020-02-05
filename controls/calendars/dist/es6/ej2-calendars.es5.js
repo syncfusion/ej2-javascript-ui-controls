@@ -424,6 +424,12 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    CalendarBase.prototype.checkDeviceMode = function (ref) {
+        if (Browser.isDevice && isBlazor() && ref) {
+            // tslint:disable-next-line
+            ref.invokeMethodAsync('OnDevice', true);
+        }
+    };
     // tslint:disable-next-line:max-func-body-length
     CalendarBase.prototype.keyActionHandle = function (e, value, multiSelection) {
         if (isBlazor() && this.blazorRef) {
@@ -3486,7 +3492,8 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         this.isPopupClicked = false;
     };
     DatePicker.prototype.documentHandler = function (e) {
-        if ((!isNullOrUndefined(this.popupObj) && this.inputWrapper.container.contains(e.target)) && e.type !== 'touchstart') {
+        if ((!isNullOrUndefined(this.popupObj) && (this.inputWrapper.container.contains(e.target) ||
+            (this.popupObj.element && this.popupObj.element.contains(e.target)))) && e.type !== 'touchstart') {
             e.preventDefault();
         }
         var target = e.target;
@@ -10680,11 +10687,11 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         append([this.listTag], this.listWrapper);
     };
     TimePicker.prototype.documentClickHandler = function (event) {
-        if ((!isNullOrUndefined(this.popupObj) && this.inputWrapper.container.contains(event.target)) &&
-            event.type !== 'touchstart') {
+        var target = event.target;
+        if ((isNullOrUndefined(this.popupObj) && this.inputWrapper.container.contains(target) || (this.popupObj.element
+            && this.popupObj.element.contains(target))) && event.type !== 'touchstart') {
             event.preventDefault();
         }
-        var target = event.target;
         if (!(closest(target, '#' + this.popupObj.element.id)) && target !== this.inputElement
             && target !== (this.inputWrapper && this.inputWrapper.buttons[0]) &&
             target !== (this.inputWrapper && this.inputWrapper.clearButton) &&
@@ -10697,10 +10704,6 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         else if (target !== this.inputElement) {
             if (!Browser.isDevice) {
                 this.isPreventBlur = (Browser.isIE || Browser.info.name === 'edge') && (document.activeElement === this.inputElement);
-                if ((!isNullOrUndefined(this.popupObj) && this.inputWrapper.container.contains(event.target)) &&
-                    event.type !== 'touchstart') {
-                    event.preventDefault();
-                }
             }
         }
     };

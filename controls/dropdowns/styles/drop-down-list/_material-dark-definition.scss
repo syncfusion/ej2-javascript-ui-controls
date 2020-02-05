@@ -78,7 +78,7 @@ $ddl-bigger-small-list-font-size: 13px !default;
   .e-bigger .e-ddl-device .e-input-group.e-input-focus:not(.e-success):not(.e-warning):not(.e-error) {
     background: $grey-100;
     border-width: 0;
-    box-shadow: 0;
+    box-shadow: none;
     margin-bottom: 0;
   }
 

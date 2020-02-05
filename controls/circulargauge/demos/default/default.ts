@@ -11,7 +11,7 @@ let circulargauge: CircularGauge = new CircularGauge({
             width: 0
         },
         lineStyle: { width: 8, color: '#E0E0E0' },
-        minorTicks: {
+        minorTicks: { 
             width: 0
         },
         labelStyle: {

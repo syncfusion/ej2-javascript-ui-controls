@@ -1,15 +1,11 @@
 /**
- * MDTable plugin spec
+ * Markdown Table plugin spec
  */
-import { createElement, detach } from '@syncfusion/ej2-base';
+import { detach } from '@syncfusion/ej2-base';
 import { MarkdownParser } from '../../../src/markdown-parser/index';
 
-
 describe('Markdown - Table plugin', () => {
-    
     let innerValueEmpty: string = ``;
-    let singleLineText: string = `single text`;
-        
     let editorObj: MarkdownParser;
     let textArea: HTMLTextAreaElement; 
     beforeAll(() => {

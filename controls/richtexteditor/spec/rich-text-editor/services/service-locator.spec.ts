@@ -10,10 +10,8 @@ describe('ServiceLocator module', () => {
     };
     describe('Register and get service', () => {
         let rteObj: RichTextEditor;
-        let elem: HTMLElement;
         beforeAll(() => {
             rteObj = renderRTE({});
-            elem = rteObj.element;
             rteObj.serviceLocator.register('servFunc', servFunc);
         });
 
@@ -36,5 +34,4 @@ describe('ServiceLocator module', () => {
             destroy(rteObj);
         });
     });
-
 });

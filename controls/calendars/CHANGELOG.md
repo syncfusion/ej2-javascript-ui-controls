@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.47 (2020-02-05)
+
+### DatePicker
+
+#### Bug Fixes
+
+- `#260342` - Issue with "input not focus while already opened the another datepicker" has been resolved.
+
 ## 17.4.46 (2020-01-30)
 
 ### DatePicker
@@ -9,7 +17,6 @@
 #### Bug Fixes
 
 - `#260342` - Issue with "datepicker popup not closed while use `shift+tab`" has been resolved.
-- `#260342` - Issue with "input not getting focus while opened the another datepicker popup" has been resolved.
 
 ## 17.4.43 (2020-01-14)
 

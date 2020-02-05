@@ -709,6 +709,12 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             }
         }
     }
+    protected checkDeviceMode(ref?: object): void {
+        if (Browser.isDevice && isBlazor() && ref) {
+            // tslint:disable-next-line
+            (ref as any).invokeMethodAsync('OnDevice', true);
+        }
+    }
     // tslint:disable-next-line:max-func-body-length
     protected keyActionHandle(e: KeyboardEventArgs, value?: Date, multiSelection?: boolean): void {
         if (isBlazor() && this.blazorRef) {

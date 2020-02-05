@@ -167,7 +167,8 @@ function extend(copied, first, second, deep) {
             var src = result[key];
             var copy = obj1[key];
             var clone;
-            var blazorEventExtend = isBlazor() ? !(src instanceof Event) : true;
+            var isArrayChanged = Array.isArray(copy) && Array.isArray(src) && (copy.length !== src.length);
+            var blazorEventExtend = isBlazor() ? (!(src instanceof Event) && !isArrayChanged) : true;
             if (deep && blazorEventExtend && (isObject(copy) || Array.isArray(copy))) {
                 if (isObject(copy)) {
                     clone = src ? src : {};

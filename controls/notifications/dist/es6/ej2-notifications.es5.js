@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, attributes, classList, closest, compile, detach, extend, formatUnit, getUniqueID, isBlazor, isNullOrUndefined, isUndefined, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, attributes, classList, closest, compile, detach, extend, formatUnit, getUniqueID, isBlazor, isNullOrUndefined, isUndefined, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 import { getZindexPartial } from '@syncfusion/ej2-popups';
 
@@ -487,7 +487,11 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         if (!this.showCloseButton) {
             return;
         }
-        var closeBtn = this.createElement('div', { className: CLOSEBTN + ' e-icons ' });
+        var localeText = { close: 'Close' };
+        this.l10n = new L10n('toast', localeText, this.locale);
+        this.l10n.setLocale(this.locale);
+        var closeIconTitle = this.l10n.getConstant('close');
+        var closeBtn = this.createElement('div', { className: CLOSEBTN + ' e-icons ', attrs: { tabindex: '0', 'aria-label': closeIconTitle } });
         this.toastEle.appendChild(closeBtn);
     };
     Toast.prototype.setProgress = function () {
@@ -637,6 +641,7 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
                     _this.toastContainer.appendChild(_this.toastEle);
                 }
                 EventHandler.add(_this.toastEle, 'click', _this.clickHandler, _this);
+                EventHandler.add(_this.toastEle, 'keydown', _this.keyDownHandler, _this);
                 _this.toastContainer.style.zIndex = getZindexPartial(_this.toastContainer) + '';
                 _this.displayToast(_this.toastEle, toastObj);
             }
@@ -660,6 +665,14 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
                 _this.destroyToast(toastEle);
             }
         });
+    };
+    Toast.prototype.keyDownHandler = function (e) {
+        if (e.target.classList.contains(CLOSEBTN) &&
+            (e.keyCode === 13 || e.keyCode === 32)) {
+            var target = e.target;
+            var toastEle = closest(target, '.' + ROOT);
+            this.destroyToast(toastEle);
+        }
     };
     Toast.prototype.displayToast = function (toastEle, toastObj) {
         var _this = this;

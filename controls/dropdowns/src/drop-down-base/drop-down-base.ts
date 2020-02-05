@@ -130,9 +130,13 @@ export interface ActionBeginEventArgs {
      */
     cancel?: boolean;
     /**
-     *  
+     *  Specify the Event Name
      */
     eventName?: string;
+    /**
+     * Return Items
+     */
+    items?: Object[];
 }
 
 export interface ActionCompleteEventArgs {
@@ -174,6 +178,14 @@ export interface ActionCompleteEventArgs {
      * Return XMLHttpRequest
      */
     xhr: XMLHttpRequest;
+    /**
+     * Specify the Event Name
+     */
+    eventName?: string;
+    /**
+     * Return Items
+     */
+    items?: Object[];
 }
 
 export interface DataBoundEventArgs {

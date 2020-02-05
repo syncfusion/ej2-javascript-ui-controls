@@ -16,4 +16,13 @@ export class WLevelOverride {
         this.startAt = undefined;
         this.overrideListLevel = undefined;
     }
+    public clone(): WLevelOverride {
+        let levelOverride: WLevelOverride = new WLevelOverride();
+        levelOverride.startAt = this.startAt;
+        levelOverride.levelNumber = this.levelNumber;
+        if (!isNullOrUndefined(this.overrideListLevel)) {
+            levelOverride.overrideListLevel = this.overrideListLevel.clone(levelOverride);
+        }
+        return levelOverride;
+    }
 }

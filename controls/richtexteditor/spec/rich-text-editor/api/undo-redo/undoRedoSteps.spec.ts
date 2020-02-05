@@ -1,13 +1,8 @@
-import { Toolbar, HtmlEditor, RichTextEditor, Count, Link, Image, QuickToolbar } from '../../../../src/index';
-import { renderRTE, destroy, dispatchEvent, setCursorPoint } from '../../render.spec';
-import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
-
-RichTextEditor.Inject(HtmlEditor);
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(Link);
-RichTextEditor.Inject(Count);
-RichTextEditor.Inject(Image);
-RichTextEditor.Inject(QuickToolbar);
+/**
+ * HTML Editor Undo Redo steps spec
+ */
+import { RichTextEditor } from '../../../../src/index';
+import { renderRTE, destroy, dispatchEvent } from '../../render.spec';
 
 describe('RTE UNDO REDO - undoRedoSteps - ', () => {
 

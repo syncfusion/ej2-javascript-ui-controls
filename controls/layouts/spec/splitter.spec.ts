@@ -2218,7 +2218,7 @@ describe('Splitter Control', () => {
 
             it('Add Pane with empty values', () => {
                 let paneContent3 : PanePropertiesModel = {  }
-                splitterObj.addPane(paneContent3, 4);
+                splitterObj.addPane(paneContent3, 3);
                 expect(splitterObj.allPanes.length).toEqual(4);
                 expect(splitterObj.allBars.length).toEqual(3);
              })
@@ -5149,5 +5149,28 @@ describe('Splitter Control', () => {
             splitterObj.onMove(leftarrow);
             expect(splitterObj.element.querySelectorAll('.e-pane')[0].style.flexBasis).toEqual('50%');
         });
+    });
+
+    describe('Check paneSettings in removePane public method', () => {
+        let splitterObj: any;
+        beforeAll((): void => {
+        let element: HTMLElement = createElement('div', { id: 'default'});
+        let child1: HTMLElement = createElement('div');
+        element.appendChild(child1);
+        document.body.appendChild(element);
+        splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '30%', content:'splitter content' },{ size: '70%', content:'splitter content' }] });
+        splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+        document.body.innerHTML = '';
+        });
+        it('check paneSettings', function() {
+        expect(splitterObj.allPanes.length).toBe(2);
+        expect(splitterObj.paneSettings.length).toBe(2);
+        splitterObj.removePane(1);
+        expect(splitterObj.allPanes.length).toBe(1);
+        expect(splitterObj.paneSettings.length).toBe(1);
+        expect(splitterObj.paneSettings[0].size).toBe('30%');
+         });
     });
  });

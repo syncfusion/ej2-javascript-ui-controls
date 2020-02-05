@@ -201,7 +201,8 @@ export class MsWordPaste {
     private breakLineAddition(elm: HTMLElement): void {
         let allElements: NodeListOf<Element> = elm.querySelectorAll('*');
         for (let i: number = 0; i < allElements.length; i++) {
-            if (allElements[i].children.length === 0 && allElements[i].innerHTML === '&nbsp;') {
+            if (allElements[i].children.length === 0 && allElements[i].innerHTML === '&nbsp;' &&
+            (allElements[i].innerHTML === '&nbsp;' && !allElements[i].closest('li'))) {
                 let detachableElement: HTMLElement = this.findDetachElem(allElements[i]);
                 let brElement: HTMLElement = createElement('br') as HTMLElement;
                 if (!isNOU(detachableElement.parentElement)) {

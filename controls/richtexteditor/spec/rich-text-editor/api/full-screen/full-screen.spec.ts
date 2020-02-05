@@ -1,13 +1,10 @@
-import { Toolbar, HtmlEditor, RichTextEditor, Link, Image, QuickToolbar } from './../../../../src/index';
+/**
+ * Full screen spec
+ */
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { RichTextEditor} from './../../../../src/index';
 import { renderRTE, destroy } from './../../render.spec';
-import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { ItemModel } from '@syncfusion/ej2-navigations';
 
-RichTextEditor.Inject(HtmlEditor);
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(Link);
-RichTextEditor.Inject(Image);
-RichTextEditor.Inject(QuickToolbar);
 describe(' showFullScreen method  - ', () => {
     let rteObj: RichTextEditor;
     let onActionBegin: jasmine.Spy;

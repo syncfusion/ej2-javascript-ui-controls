@@ -1,6 +1,6 @@
 import { Component, Property, ChildProperty, INotifyPropertyChanged, NotifyPropertyChanges, Animation } from '@syncfusion/ej2-base';
-import { Browser, isNullOrUndefined as isNOU,  getUniqueID, formatUnit, EventHandler } from '@syncfusion/ej2-base';
-import { EmitType, Collection, Complex, setStyleAttribute, Event, Effect, detach, AnimationModel } from '@syncfusion/ej2-base';
+import { Browser, isNullOrUndefined as isNOU,  getUniqueID, formatUnit, EventHandler, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { EmitType, Collection, Complex, setStyleAttribute, Event, Effect, detach, AnimationModel, L10n } from '@syncfusion/ej2-base';
 import { attributes, extend, closest, compile as templateCompiler, classList, BaseEventArgs, isUndefined} from '@syncfusion/ej2-base';
 import { SwipeEventArgs, Touch, updateBlazorTemplate, isBlazor, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { ButtonModel, Button  } from '@syncfusion/ej2-buttons';
@@ -275,6 +275,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     private isDevice: Boolean;
     private innerEle: Node;
     private toastCollection: CollectionToast[] = [];
+    private l10n: L10n;
 
     /**
      * Initializes a new instance of the Toast class.
@@ -825,7 +826,12 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
 
     private setCloseButton(): void {
      if (!this.showCloseButton) { return; }
-     let closeBtn: HTEle = this.createElement ('div' , {className : CLOSEBTN + ' e-icons '});
+     let localeText: object = { close: 'Close' };
+     this.l10n = new L10n('toast', localeText, this.locale);
+     this.l10n.setLocale(this.locale);
+     let closeIconTitle: string = this.l10n.getConstant('close');
+     let closeBtn: HTEle = this.createElement (
+     'div' , {className : CLOSEBTN + ' e-icons ', attrs: { tabindex: '0', 'aria-label': closeIconTitle }});
      this.toastEle.appendChild(closeBtn);
     }
 
@@ -965,6 +971,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
           } else {
             this.toastContainer.appendChild(this.toastEle); }
           EventHandler.add(this.toastEle, 'click', this.clickHandler, this);
+          EventHandler.add(this.toastEle, 'keydown', this.keyDownHandler, this);
           this.toastContainer.style.zIndex = getZindexPartial(this.toastContainer) + '';
           this.displayToast(this.toastEle, toastObj);
         }
@@ -984,6 +991,15 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
         if ((isCloseIcon && !toastClickArgs.cancel ) || toastClickArgs.clickToClose) {
           this.destroyToast(toastEle); }
       });
+    }
+
+    private keyDownHandler(e: Event): void {
+      if (((e as KeyboardEventArgs).target as HTMLElement).classList.contains(CLOSEBTN) &&
+      ((e as KeyboardEventArgs).keyCode === 13 || (e as KeyboardEventArgs).keyCode === 32)) {
+        let target: HTEle = e.target as HTEle;
+        let toastEle: HTEle = closest(target , '.' + ROOT) as HTEle;
+        this.destroyToast(toastEle);
+      }
     }
 
     private displayToast(toastEle: HTEle, toastObj?: ToastModel): void {

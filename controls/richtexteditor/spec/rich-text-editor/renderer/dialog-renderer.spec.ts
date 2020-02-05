@@ -1,27 +1,12 @@
 /**
  * Dialog renderer spec 
  */
-import { RichTextEditor, Toolbar, Image, IRenderer, ResizeArgs } from './../../../src/index';
-import { renderRTE, destroy, setCursorPoint } from "./../render.spec";
-import { PasteCleanup } from "../../../src/rich-text-editor/actions/paste-clean-up";
-import { dispatchEvent } from '../../../src/rich-text-editor/base/util';
-
-import { QuickToolbar, MarkdownEditor, HtmlEditor, Link, Table } from "../../../src/rich-text-editor/index";
-
-RichTextEditor.Inject(MarkdownEditor);
-RichTextEditor.Inject(HtmlEditor);
-
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(Link);
-RichTextEditor.Inject(Image);
-RichTextEditor.Inject(QuickToolbar);
-RichTextEditor.Inject(Table);
-RichTextEditor.Inject(PasteCleanup);
+import { RichTextEditor } from './../../../src/index';
+import { renderRTE, destroy } from "./../render.spec";
 
 describe('Image Dialog', () => {
     let rteEle: HTMLElement;
     let rteObj: RichTextEditor;
-    let clickEvent: any;
     let beforeDialogOpenEvent: boolean = false;
     let dialogOpenEvent: boolean = false;
     let dialogCloseEvent: boolean = false;
@@ -31,7 +16,7 @@ describe('Image Dialog', () => {
             toolbarSettings: {
                 items: ['Image']
             },
-            value: `<img src='https://ej2.syncfusion.com/demos/src/rte/images/RTEImage-Feather.png' style="width:200px; height: 300px"/>`,
+            value: `<img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:200px; height: 300px"/>`,
             insertImageSettings: { resize: true, minHeight: 80, minWidth: 80 },
             beforeDialogOpen: beforeDialogOpen,
             dialogOpen: dialogOpen,
@@ -87,7 +72,6 @@ describe('Image Dialog', () => {
 describe('Link Dialog', () => {
     let rteEle: HTMLElement;
     let rteObj: RichTextEditor;
-    let clickEvent: any;
     let beforeDialogOpenEvent: boolean = false;
     let dialogOpenEvent: boolean = false;
     let dialogCloseEvent: boolean = false;
@@ -128,7 +112,6 @@ describe('Link Dialog', () => {
 describe('Table Dialog QuickToolbar', () => {
     let rteEle: HTMLElement;
     let rteObj: RichTextEditor;
-    let clickEvent: any;
     let beforeDialogOpenEvent: boolean = false;
     let dialogOpenEvent: boolean = false;
     let dialogCloseEvent: boolean = false;
@@ -195,7 +178,6 @@ describe('Table Dialog QuickToolbar', () => {
 describe('Table Dialog', () => {
     let rteEle: HTMLElement;
     let rteObj: RichTextEditor;
-    let clickEvent: any;
     let beforeDialogOpenEvent: boolean = false;
     let dialogOpenEvent: boolean = false;
     let dialogCloseEvent: boolean = false;

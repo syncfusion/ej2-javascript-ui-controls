@@ -244,8 +244,9 @@ var Input;
         }
     }
     function getParentNode(element) {
-        let parentNode = element.parentNode;
-        if (parentNode.classList.contains('e-input-in-wrap')) {
+        let parentNode = isNullOrUndefined(element.parentNode) ? element
+            : element.parentNode;
+        if (parentNode && parentNode.classList.contains('e-input-in-wrap')) {
             parentNode = parentNode.parentNode;
         }
         return parentNode;
@@ -1169,6 +1170,14 @@ let NumericTextBox = class NumericTextBox extends Component {
     clear(event) {
         this.setProperties({ value: null }, true);
         this.setElementValue('');
+        this.hiddenInput.value = '';
+        let formElement = closest(this.element, 'form');
+        if (formElement) {
+            let element = this.element.nextElementSibling;
+            let keyupEvent = document.createEvent('KeyboardEvent');
+            keyupEvent.initEvent('keyup', false, true);
+            element.dispatchEvent(keyupEvent);
+        }
     }
     resetFormHandler() {
         if (this.element.tagName === 'EJS-NUMERICTEXTBOX') {
@@ -1773,9 +1782,9 @@ let NumericTextBox = class NumericTextBox extends Component {
                 'autocorrect', 'aria-disabled', 'aria-placeholder', 'autocapitalize',
                 'spellcheck', 'aria-autocomplete', 'tabindex', 'aria-valuemin',
                 'aria-valuemax', 'aria-live', 'aria-valuenow', 'aria-invalid'];
-            attrArray.forEach((value) => {
-                this.element.removeAttribute(value);
-            });
+            for (let i = 0; i < attrArray.length; i++) {
+                this.element.removeAttribute(attrArray[i]);
+            }
             this.element.classList.remove('e-input');
             this.container.insertAdjacentElement('afterend', this.element);
             detach(this.container);
@@ -3410,9 +3419,9 @@ let MaskedTextBox = class MaskedTextBox extends Component {
             'autocorrect', 'aria-disabled', 'aria-placeholder', 'autocapitalize',
             'spellcheck', 'aria-autocomplete',
             'aria-live', 'aria-valuenow', 'aria-invalid'];
-        attrArray.forEach((value) => {
-            this.element.removeAttribute(value);
-        });
+        for (let i = 0; i < attrArray.length; i++) {
+            this.element.removeAttribute(attrArray[i]);
+        }
         this.element.classList.remove('e-input');
         this.inputObj.container.insertAdjacentElement('afterend', this.element);
         detach(this.inputObj.container);
@@ -4816,7 +4825,6 @@ let Slider = class Slider extends Component {
         }
     }
     tooltipToggle(target) {
-        this.setZindex();
         if (this.isMaterialTooltip) {
             !this.tooltipElement.classList.contains(classNames.materialTooltipOpen) ?
                 this.openMaterialTooltip() : this.refreshTooltip(this.firstHandle);
@@ -4991,7 +4999,7 @@ let Slider = class Slider extends Component {
             }
         }
         else if (this.isMaterialTooltip && this.tooltipElement) {
-            this.tooltipElement.style.zIndex = (this.zIndex + 4) + '';
+            this.tooltipElement.style.zIndex = getZindexPartial(this.element) + '';
         }
     }
     setHandlePosition() {
@@ -6096,7 +6104,7 @@ let Slider = class Slider extends Component {
         }
     }
     setZindex() {
-        this.zIndex = getZindexPartial(this.element);
+        this.zIndex = 6;
         if (!isNullOrUndefined(this.ticks) && this.ticks.placement !== 'None') {
             this.ul.style.zIndex = (this.zIndex + -7) + '';
             this.element.style.zIndex = (this.zIndex + 2) + '';
@@ -6259,7 +6267,7 @@ var FormValidator_1;
  */
 // tslint:disable-next-line:no-any
 let regex = {
-    EMAIL: new RegExp('^[A-Za-z0-9._%+-]{1,}@[A-Za-z0-9._%+-]{1,}([.]{1}[a-zA-Z0-9]{2,5}' +
+    EMAIL: new RegExp('^[A-Za-z0-9._%+-]{1,}@[A-Za-z0-9._%+-]{1,}([.]{1}[a-zA-Z0-9]{2,}' +
         '|[.]{1}[a-zA-Z0-9]{2,4}[.]{1}[a-zA-Z0-9]{2,4})$'),
     URL: /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/m,
     DATE_ISO: new RegExp('^([0-9]{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$'),
@@ -8449,7 +8457,7 @@ let Uploader = class Uploader extends Component {
         inputElement.setAttribute('name', this.uploaderName);
         this.uploadWrapper.querySelector('.' + INPUT_WRAPPER).appendChild(inputElement);
         if (this.browserName !== 'msie' && this.browserName !== 'edge') {
-            this.element.files = null;
+            this.element.value = '';
         }
     }
     getFileSize(fileData) {
@@ -9630,8 +9638,10 @@ let Uploader = class Uploader extends Component {
         for (let key of attributes$$1) {
             this.element.removeAttribute(key);
         }
-        this.uploadWrapper.parentElement.appendChild(this.element);
-        detach(this.uploadWrapper);
+        if (!isNullOrUndefined(this.uploadWrapper)) {
+            this.uploadWrapper.parentElement.appendChild(this.element);
+            detach(this.uploadWrapper);
+        }
         this.uploadWrapper = null;
         super.destroy();
     }
@@ -11138,6 +11148,7 @@ let ColorPicker = class ColorPicker extends Component {
         this.createInput();
         this.refreshPopupPos();
         this.wireEvents();
+        this.trigger('onModeSwitch', { element: this.container, mode: 'Palette' });
     }
     refreshPopupPos() {
         if (!this.inline) {
@@ -11261,6 +11272,7 @@ let ColorPicker = class ColorPicker extends Component {
         this.createInput();
         this.refreshPopupPos();
         this.wireEvents();
+        this.trigger('onModeSwitch', { element: this.container, mode: 'Picker' });
     }
     ctrlBtnClick(ele, e) {
         if (ele.classList.contains(APPLY)) {
@@ -11972,6 +11984,9 @@ __decorate$5([
 ], ColorPicker.prototype, "beforeModeSwitch", void 0);
 __decorate$5([
     Event()
+], ColorPicker.prototype, "onModeSwitch", void 0);
+__decorate$5([
+    Event()
 ], ColorPicker.prototype, "created", void 0);
 ColorPicker = __decorate$5([
     NotifyPropertyChanges
@@ -12472,8 +12487,10 @@ let TextBox = class TextBox extends Component {
             }
             this.respectiveElement.classList.remove('e-input');
             this.removeAttributes(['aria-placeholder', 'aria-disabled', 'aria-readonly', 'aria-labelledby']);
-            this.textboxWrapper.container.insertAdjacentElement('afterend', this.respectiveElement);
-            detach(this.textboxWrapper.container);
+            if (!isNullOrUndefined(this.textboxWrapper)) {
+                this.textboxWrapper.container.insertAdjacentElement('afterend', this.respectiveElement);
+                detach(this.textboxWrapper.container);
+            }
             this.textboxWrapper = null;
             super.destroy();
         }

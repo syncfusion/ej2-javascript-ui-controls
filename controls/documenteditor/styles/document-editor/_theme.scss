@@ -43,7 +43,7 @@
 
   .e-de-search-tab-content .e-input-group .e-de-op-search-close-icon:focus {
     border: 1px solid $search-icon-bdr-clr;
-    border-right-width: none;
+    border-right-width: 0;
   }
 
   .e-de-op-search-close-icon:hover {
@@ -52,7 +52,7 @@
 
   .e-spin-down:focus {
     border: 1px solid $spin-down-bdr-clr;
-    border-right-width: none;
+    border-right-width: 0;
   }
 
   .e-spin-down:hover {
@@ -61,7 +61,7 @@
 
   .e-spin-up:focus {
     border: 1px solid $spin-up-bdr-clr;
-    border-right-width: none;
+    border-right-width: 0;
   }
 
   .e-spin-up:hover {

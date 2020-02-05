@@ -1,9 +1,8 @@
 /**
- * Formats plugin spec
+ * Clear plugin spec
  */
 import { createElement, detach } from '@syncfusion/ej2-base';
 import { MarkdownParser } from '../../../src/markdown-parser/index';
-
 
 describe('Markdown - Clear plugin', () => {
     let innerValue: string =

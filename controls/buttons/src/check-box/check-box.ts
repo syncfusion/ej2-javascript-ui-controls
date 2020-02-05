@@ -519,6 +519,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
      * Click the CheckBox element
      * its native method
      * @public
+     * @deprecated
      */
     public click(): void {
         this.element.click();
@@ -528,6 +529,7 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
      * Sets the focus to CheckBox
      * its native method
      * @public
+     * @deprecated
      */
     public focusIn(): void {
         this.element.focus();

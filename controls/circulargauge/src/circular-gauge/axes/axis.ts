@@ -2,7 +2,7 @@ import { Property, Complex, ChildProperty, Collection } from '@syncfusion/ej2-ba
 import { RangeModel, LineModel, TickModel, LabelModel, AnimationModel } from './axis-model';
 import { PointerModel, CapModel, NeedleTailModel, AnnotationModel } from './axis-model';
 import { Font, Border } from '../model/base';
-import { Position, PointerType, GaugeDirection, HiddenLabel, GaugeShape } from '../utils/enum';
+import { Position, PointerRangePosition, PointerType, GaugeDirection, HiddenLabel, GaugeShape} from '../utils/enum';
 import { FontModel, BorderModel } from '../model/base-model';
 import { Size, Rect, VisibleLabels } from '../utils/helper';
 import { Theme } from '../model/theme';
@@ -101,6 +101,14 @@ export class Label extends ChildProperty<Label> {
     @Property(0)
     public offset: number;
 
+    /**
+     * To apply default padding value
+     * @default true
+     */
+
+    @Property(true)
+    public shouldMaintainPadding: boolean;
+
 }
 
 /**   
@@ -183,10 +191,31 @@ export class Range extends ChildProperty<Range> {
     @Property('')
     public legendText: string;
 
+    /**
+     * Specifies the position of range for an axis.
+     * * inside -  Renders inside axis.
+     * * outside - Renders outside axis.
+     * * cross - Renders on the axis.
+     * * auto - Renders based on radius. 
+     * @default Auto
+     */
+
+    @Property('Auto')
+    public position: PointerRangePosition;
+
+    /**
+     * Specifies the offset value of range.
+     * @default '0'
+     */
+    @Property(0)
+    public offset: number | string;
+
     /** @private */
     public currentRadius: number;
     /** @private */
     public rangeColor: string;
+    /** @private */
+    public currentDistanceFromScale: number;
 
 }
 
@@ -430,6 +459,18 @@ export class Pointer extends ChildProperty<Pointer> {
     public type: PointerType;
 
     /**
+     * Specifies the position of pointer for an axis.
+     * * inside -  Renders a Inside.
+     * * outside - Renders a Outside.
+     * * cross - Renders a Cross.
+     * * Auto - Renders a based on radius
+     * @default Auto
+     */
+
+    @Property('Auto')
+    public position: PointerRangePosition;
+
+    /**
      * Specifies the rounded corner radius for pointer.
      * @default 0
      */
@@ -531,6 +572,14 @@ export class Pointer extends ChildProperty<Pointer> {
     @Property(5)
     public markerWidth: number;
 
+    /**
+     * The offset value of pointer from scale.
+     * @default '0'
+     */
+
+    @Property(0)
+    public offset: number | string;
+
     /** @private */
     public currentValue: number;
 
@@ -539,6 +588,9 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /** @private */
     public currentRadius: number;
+
+    /** @private */
+    public currentDistanceFromScale: number;
 
 }
 

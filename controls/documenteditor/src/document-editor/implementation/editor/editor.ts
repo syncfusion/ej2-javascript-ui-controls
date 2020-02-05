@@ -276,7 +276,8 @@ export class Editor {
      */
     // Comment implementation starts
     public insertComment(text?: string): void {
-        if (isNullOrUndefined(this.selection.start) || this.owner.isReadOnlyMode) {
+        if (isNullOrUndefined(this.selection.start) || this.owner.isReadOnlyMode || this.viewer.owner.enableHeaderAndFooter
+            || !this.viewer.owner.enableComment) {
             return;
         }
         if (isNullOrUndefined(text)) {
@@ -382,7 +383,8 @@ export class Editor {
      */
     public deleteComment(): void {
         if (this.owner.isReadOnlyMode || isNullOrUndefined(this.owner) || isNullOrUndefined(this.owner.viewer)
-            || isNullOrUndefined(this.owner.viewer.currentSelectedComment)) {
+            || isNullOrUndefined(this.owner.viewer.currentSelectedComment) || this.owner.enableHeaderAndFooter
+            || !this.viewer.owner.enableComment) {
             return;
         }
         this.deleteCommentInternal(this.owner.viewer.currentSelectedComment);
@@ -2715,12 +2717,15 @@ export class Editor {
     }
     private checkSameLevelFormat(lstLevelNo: number, abstractList: any, list: WList): boolean {
         return abstractList.levels[lstLevelNo].listLevelPattern === list.abstractList.levels[lstLevelNo].listLevelPattern
-            && abstractList.levels[lstLevelNo].numberFormat === list.abstractList.levels[lstLevelNo].numberFormat;
+            && abstractList.levels[lstLevelNo].numberFormat === list.abstractList.levels[lstLevelNo].numberFormat
+            && (abstractList.levels[lstLevelNo].listLevelPattern === 'Bullet'
+                || abstractList.levels[lstLevelNo].startAt === list.abstractList.levels[lstLevelNo].startAt);
     }
-    private listLevelPatternInCollection(lstLevelNo: number, listLevelPattern: any, numberFormat: any): WList {
+    private listLevelPatternInCollection(lstLevelNo: number, listLevel: any): WList {
         return this.viewer.lists.filter((list: WList) => {
-            return list.abstractList.levels[lstLevelNo].listLevelPattern === listLevelPattern
-                && list.abstractList.levels[lstLevelNo].numberFormat === numberFormat;
+            return list.abstractList.levels[lstLevelNo].listLevelPattern === listLevel.listLevelPattern
+                && list.abstractList.levels[lstLevelNo].numberFormat === listLevel.numberFormat
+                && (listLevel.listLevelPattern === 'Bullet' || list.abstractList.levels[lstLevelNo].startAt === listLevel.startAt);
         })[0];
     }
     private getBlocksToUpdate(blocks: any): any[] {
@@ -2750,7 +2755,7 @@ export class Editor {
                 && Object.keys(obj.paragraphFormat.listFormat).length > 0) {
                 let format: any = obj.paragraphFormat.listFormat;
                 // tslint:disable-next-line:max-line-length
-                let existingList: WList = this.listLevelPatternInCollection(format.listLevelNumber, abstractList.levels[format.listLevelNumber].listLevelPattern, abstractList.levels[format.listLevelNumber].numberFormat);
+                let existingList: WList = this.listLevelPatternInCollection(format.listLevelNumber, abstractList.levels[format.listLevelNumber]);
                 if (format.listId === id) {
                     if (isNullOrUndefined(existingList) && (!list || (list
                         && !this.checkSameLevelFormat(format.listLevelNumber, abstractList, list)))) {
@@ -4635,6 +4640,7 @@ export class Editor {
             }
             if (this.viewer.blockToShift) {
                 this.viewer.renderedLists.clear();
+                this.viewer.renderedLevelOverrides = [];
                 this.viewer.layout.shiftLayoutedItems();
             }
             while (section) {
@@ -6153,16 +6159,15 @@ export class Editor {
      * @private 
      */
     public restartListAt(selection: Selection): void {
-        let currentListLevel: WListLevel = this.getListLevel(selection.start.paragraph);
-        let list: WList = new WList();
+        let currentList: WList = selection.paragraphFormat.getList();
+        let list: WList = currentList.clone();
         list.listId = this.viewer.lists[(this.viewer.lists.length - 1)].listId + 1;
-        let abstractList: WAbstractList = new WAbstractList();
+        this.viewer.lists.push(list);
+        let abstractList: WAbstractList = currentList.abstractList.clone();
         abstractList.abstractListId = this.viewer.abstractLists[(this.viewer.abstractLists.length - 1)].abstractListId + 1;
         list.abstractListId = abstractList.abstractListId;
         list.abstractList = abstractList;
         this.viewer.abstractLists.push(abstractList);
-        this.createListLevels(abstractList, currentListLevel, list);
-        this.viewer.lists.push(list);
         this.restartListAtInternal(selection, list.listId);
     }
     /**
@@ -6189,48 +6194,21 @@ export class Editor {
                     }
                 }
                 block.paragraphFormat.listFormat.listId = listId;
+                if (this.refListNumber === undefined && this.incrementListNumber === -1) {
+                    this.incrementListNumber = block.paragraphFormat.listFormat.listLevelNumber - 1;
+                }
                 if (this.refListNumber !== block.paragraphFormat.listFormat.listLevelNumber) {
                     this.incrementListNumber += 1;
                     this.refListNumber = block.paragraphFormat.listFormat.listLevelNumber;
                 }
+
                 block.paragraphFormat.listFormat.listLevelNumber = this.incrementListNumber;
                 this.viewer.layout.reLayoutParagraph(block, 0, 0);
             }
         }
         return this.changeRestartNumbering(list, block.nextRenderedWidget as BlockWidget, listId);
     }
-    private createListLevels(abstractList: WAbstractList, currentListLevel: WListLevel, list: WList): void {
-        let levelPattern: ListLevelPattern = currentListLevel.listLevelPattern;
-        let levelPatterns: ListLevelPattern[] = [];
-        let currentAbstractList: WAbstractList = <WAbstractList>currentListLevel.ownerBase;
-        for (let i: number = 0; i < 3; i++) {
-            let listLevel: WListLevel = currentAbstractList.levels[i];
-            if (!isNullOrUndefined(listLevel)) {
-                levelPatterns.push(listLevel.listLevelPattern);
-            }
-        }
-        let indexOfLevelPattern: number = levelPatterns.indexOf(levelPattern) === -1 ? 0 : levelPatterns.indexOf(levelPattern);
-        let numberFormat: string = currentListLevel.numberFormat.charAt(currentListLevel.numberFormat.length - 1);
-        for (let i: number = 0; i < currentAbstractList.levels.length; i++) {
-            let listLevel: WListLevel = new WListLevel(abstractList);
-            if (i === 0) {
-                listLevel.listLevelPattern = levelPattern;
-            } else {
-                if (indexOfLevelPattern === 0 || indexOfLevelPattern < levelPatterns.length - 1) {
-                    indexOfLevelPattern++;
-                } else {
-                    indexOfLevelPattern = 0;
-                }
-                listLevel.listLevelPattern = levelPatterns[indexOfLevelPattern];
-            }
-            listLevel.numberFormat = '%' + (i + 1) + numberFormat;
-            listLevel.startAt = 1;
-            listLevel.characterFormat.copyFormat(currentListLevel.characterFormat);
-            listLevel.paragraphFormat.copyFormat(currentListLevel.paragraphFormat);
-            listLevel.restartLevel = i;
-            abstractList.levels.push(listLevel);
-        }
-    }
+
     // tslint:disable-next-line:max-line-length
     private applyParaFormat(paragraph: ParagraphWidget, start: TextPosition, end: TextPosition, property: string, value: Object, update: boolean): void {
         this.setOffsetValue(this.selection);
@@ -6652,6 +6630,7 @@ export class Editor {
         let startIndex: string = this.selection.getHierarchicalIndex(startInfo.paragraph, startInfo.offset.toString());
         let endIndex: string = this.selection.getHierarchicalIndex(endInfo.paragraph, endInfo.offset.toString());
         this.viewer.renderedLists.clear();
+        this.viewer.renderedLevelOverrides = [];
         // this.viewer.owner.isLayoutEnabled = true;
         let sections: BodyWidget[] = this.combineSection();
         this.viewer.clearContent();
@@ -9455,6 +9434,7 @@ export class Editor {
      */
     public updateWholeListItems(block: BlockWidget): void {
         this.viewer.renderedLists.clear();
+        this.viewer.renderedLevelOverrides = [];
         let sectionIndex: number = block.bodyWidget.index;
         let currentBlock: BlockWidget;
         for (let j: number = 0; j < this.viewer.pages.length; j++) {

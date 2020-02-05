@@ -1,6 +1,6 @@
 import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, isUndefined, BlazorDragEventArgs } from '@syncfusion/ej2-base';
 import { Collection, Draggable, isNullOrUndefined, DragEventArgs, append, updateBlazorTemplate } from '@syncfusion/ej2-base';
-import { EmitType, Event, formatUnit, ChildProperty, compile, closest, isBlazor } from '@syncfusion/ej2-base';
+import { EmitType, Event, formatUnit, ChildProperty, compile, closest, isBlazor, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, addClass, detach, removeClass, EventHandler, Browser } from '@syncfusion/ej2-base';
 import { DashboardLayoutModel, PanelModel } from './dashboard-layout-model';
 
@@ -299,6 +299,14 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      */
     @Property(true)
     private allowPushing: boolean;
+
+    /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default true
+     */
+    @Property(true)
+    public enableHtmlSanitizer: boolean;
+
 
     /**
      * If allowFloating is set to true, then the DashboardLayout automatically move the panels upwards to fill the empty available 
@@ -666,7 +674,8 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                     return compile(document.querySelector(template).innerHTML.trim());
                 }
             } catch (error) {
-                return compile(template);
+                let sanitizedValue: string = SanitizeHtmlHelper.sanitize(template);
+                return compile((this.enableHtmlSanitizer && typeof (template) === 'string') ? sanitizedValue : template);
             }
         }
         return undefined;
@@ -3006,6 +3015,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     /**
      * Gets the properties to be maintained upon browser refresh.
      * @returns string
+     * @private
      */
     public getPersistData(): string {
         let keyEntity: string[] = ['panels'];

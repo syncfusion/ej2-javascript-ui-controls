@@ -1,7 +1,9 @@
-import { NodeSelection } from '../../src/selection/selection'
 /**
  * Selection spec document
  */
+import { detach } from '@syncfusion/ej2-base';
+import { NodeSelection } from '../../src/selection/selection'
+
 describe('Selection', () => {
     //HTML value
     let innervalue: string = '<p id="selectionTag"><b>Description:</b></p>' +
@@ -42,17 +44,20 @@ describe('Selection', () => {
 
     //DIV Element
     let divElement: HTMLDivElement = document.createElement('div');
+    let brElement: HTMLBRElement = document.createElement('br');
     divElement.id = 'divElement';
     divElement.contentEditable = 'true';
     divElement.innerHTML = innervalue;
 
     beforeAll(() => {
         document.body.appendChild(divElement);
-        document.body.appendChild(document.createElement('br'));
+        document.body.appendChild(brElement);
         document.body.appendChild(iframeElement);
     });
     afterAll(() => {
-        document.body.innerHTML = '';
+        detach(divElement);
+        detach(brElement);
+        detach(iframeElement);
     });
     /**
      * DIV initialize
@@ -159,7 +164,6 @@ describe('Selection', () => {
     /**
      * IFRAME initialize
     */
-
     it('IFRAME Element GetRange & setSelectionNode', () => {
         domSelection.Clear(document);
         let node: Node = editor.getElementById('selectionTag');
@@ -234,5 +238,4 @@ describe('Selection', () => {
         expect(inst.length).toEqual(4);
         domSelection.Clear(document);
     });
-
 });

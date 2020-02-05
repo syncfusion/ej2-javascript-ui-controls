@@ -315,3 +315,16 @@ export function sanitizeHelper(value: string, parent?: IRichTextEditor): string 
     }
     return value;
 }
+
+//Converting the base64 url to blob
+export function convertToBlob(dataUrl: string): Blob {
+    let arr: string[] = dataUrl.split(',');
+    let mime: string = arr[0].match(/:(.*?);/)[1];
+    let bstr: string = atob(arr[1]);
+    let n: number = bstr.length;
+    let u8arr: Uint8Array = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new Blob([u8arr], { type: mime });
+}

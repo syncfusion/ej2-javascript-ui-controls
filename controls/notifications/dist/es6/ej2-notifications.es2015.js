@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, attributes, classList, closest, compile, detach, extend, formatUnit, getUniqueID, isBlazor, isNullOrUndefined, isUndefined, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, attributes, classList, closest, compile, detach, extend, formatUnit, getUniqueID, isBlazor, isNullOrUndefined, isUndefined, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 import { getZindexPartial } from '@syncfusion/ej2-popups';
 
@@ -450,7 +450,11 @@ let Toast = class Toast extends Component {
         if (!this.showCloseButton) {
             return;
         }
-        let closeBtn = this.createElement('div', { className: CLOSEBTN + ' e-icons ' });
+        let localeText = { close: 'Close' };
+        this.l10n = new L10n('toast', localeText, this.locale);
+        this.l10n.setLocale(this.locale);
+        let closeIconTitle = this.l10n.getConstant('close');
+        let closeBtn = this.createElement('div', { className: CLOSEBTN + ' e-icons ', attrs: { tabindex: '0', 'aria-label': closeIconTitle } });
         this.toastEle.appendChild(closeBtn);
     }
     setProgress() {
@@ -598,6 +602,7 @@ let Toast = class Toast extends Component {
                     this.toastContainer.appendChild(this.toastEle);
                 }
                 EventHandler.add(this.toastEle, 'click', this.clickHandler, this);
+                EventHandler.add(this.toastEle, 'keydown', this.keyDownHandler, this);
                 this.toastContainer.style.zIndex = getZindexPartial(this.toastContainer) + '';
                 this.displayToast(this.toastEle, toastObj);
             }
@@ -620,6 +625,14 @@ let Toast = class Toast extends Component {
                 this.destroyToast(toastEle);
             }
         });
+    }
+    keyDownHandler(e) {
+        if (e.target.classList.contains(CLOSEBTN) &&
+            (e.keyCode === 13 || e.keyCode === 32)) {
+            let target = e.target;
+            let toastEle = closest(target, '.' + ROOT);
+            this.destroyToast(toastEle);
+        }
     }
     displayToast(toastEle, toastObj) {
         let showAnimate = this.animation.show;

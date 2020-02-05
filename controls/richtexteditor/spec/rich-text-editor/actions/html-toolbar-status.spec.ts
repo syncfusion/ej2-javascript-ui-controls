@@ -1,26 +1,14 @@
 /**
- * Content renderer spec
+ * HTML Toolbar status spec
  */
 import { detach } from '@syncfusion/ej2-base';
-import { RichTextEditor, Toolbar } from './../../../src/index';
-import { dispatchEvent } from './../../../src/rich-text-editor/base/util';
+import { RichTextEditor, dispatchEvent } from "../../../src/rich-text-editor/index";
 import { NodeSelection } from '../../../src/selection/selection';
-import { QuickToolbar, MarkdownEditor, HtmlEditor } from "../../../src/rich-text-editor/index";
-
-RichTextEditor.Inject(MarkdownEditor);
-RichTextEditor.Inject(HtmlEditor);
-
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(QuickToolbar);
-
 import { renderRTE, destroy } from "./../render.spec";
-
 
 describe(' HTML editor update toolbar ', () => {
     let rteObj: RichTextEditor;
-    let curDocument: Document;
     let editNode: HTMLDivElement;
-    let rteEle: Element;
     let domSelection: NodeSelection = new NodeSelection();
     let innervalue: string = '<div id="div1"><p id="paragraph1"><b>Description:</b></p>' +
         '<p id="paragraph2">The Rich Text Editor (RTE) control is an easy to render in' +
@@ -129,11 +117,9 @@ describe(' HTML editor update toolbar ', () => {
                 },
                 value: innervalue
             });
-            rteEle = rteObj.element;
             editNode = rteObj.contentModule.getEditPanel() as HTMLDivElement;
             editNode.style.width = "200px;";
             editNode.style.height = "200px";
-            curDocument = rteObj.contentModule.getDocument();
         });
         it('Check single Bold tag', () => {
             let node: Node = document.getElementById('bold31');
@@ -326,7 +312,6 @@ describe(' HTML editor update toolbar ', () => {
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.formats).toEqual('p');
         });
         afterAll(() => {
-            detach(rteEle);
             destroy(rteObj);
         });
     });
@@ -338,11 +323,9 @@ describe(' HTML editor update toolbar ', () => {
                 },
                 value: innervalue
             });
-            rteEle = rteObj.element;
             editNode = rteObj.contentModule.getEditPanel() as HTMLDivElement;
             editNode.style.width = "200px;";
             editNode.style.height = "200px";
-            curDocument = rteObj.contentModule.getDocument();
         });
         it('Check multiple formatted values ', () => {
             let node: Node = document.getElementById('bold41');
@@ -351,7 +334,6 @@ describe(' HTML editor update toolbar ', () => {
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.bold).toEqual(true);
         });
         afterAll(() => {
-            detach(rteEle);
             destroy(rteObj);
         });
     });
@@ -365,11 +347,9 @@ describe(' HTML editor update toolbar ', () => {
                 },
                 value: innervalue
             });
-            rteEle = rteObj.element;
             editNode = rteObj.contentModule.getEditPanel() as HTMLDivElement;
             editNode.style.width = "200px;";
             editNode.style.height = "200px";
-            curDocument = rteObj.contentModule.getDocument();
             controlId = rteObj.element.id;
         });
         it(' Remove the active state of Bold toolbar item while click on document ', () => {
@@ -385,7 +365,6 @@ describe(' HTML editor update toolbar ', () => {
             expect((rteObj.htmlEditorModule as any).toolbarUpdate.toolbarStatus.bold).toEqual(false);
         });
         afterAll(() => {
-            detach(rteEle);
             destroy(rteObj);
         });
     });
@@ -404,11 +383,9 @@ describe(' HTML editor update toolbar ', () => {
                 },
                 value: innervalue
             });
-            rteEle = rteObj.element;
             editNode = rteObj.contentModule.getEditPanel() as HTMLDivElement;
             editNode.style.width = "200px;";
             editNode.style.height = "200px";
-            curDocument = rteObj.contentModule.getDocument();
             controlId = rteObj.element.id;
         });
         it(' Remove the active state of Bold toolbar item while click on document ', (done) => {
@@ -423,7 +400,6 @@ describe(' HTML editor update toolbar ', () => {
         });
         afterAll(() => {
             detach(button);
-            detach(rteEle);
             destroy(rteObj);
         });
     });

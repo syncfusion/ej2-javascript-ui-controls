@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty, Collection } from '@syncfusion/ej2-base';import { Font, Border } from '../model/base';import { Position, PointerType, GaugeDirection, HiddenLabel, GaugeShape } from '../utils/enum';import { FontModel, BorderModel } from '../model/base-model';import { Size, Rect, VisibleLabels } from '../utils/helper';import { Theme } from '../model/theme';
+import { Property, Complex, ChildProperty, Collection } from '@syncfusion/ej2-base';import { Font, Border } from '../model/base';import { Position, PointerRangePosition, PointerType, GaugeDirection, HiddenLabel, GaugeShape} from '../utils/enum';import { FontModel, BorderModel } from '../model/base-model';import { Size, Rect, VisibleLabels } from '../utils/helper';import { Theme } from '../model/theme';
 
 /**
  * Interface for a class Line
@@ -85,6 +85,13 @@ export interface LabelModel {
 
     offset?: number;
 
+    /**
+     * To apply default padding value
+     * @default true
+     */
+
+    shouldMaintainPadding?: boolean;
+
 }
 
 /**
@@ -156,6 +163,23 @@ export interface RangeModel {
      * @default ''
      */
     legendText?: string;
+
+    /**
+     * Specifies the position of range for an axis.
+     * * inside -  Renders inside axis.
+     * * outside - Renders outside axis.
+     * * cross - Renders on the axis.
+     * * auto - Renders based on radius. 
+     * @default Auto
+     */
+
+    position?: PointerRangePosition;
+
+    /**
+     * Specifies the offset value of range.
+     * @default '0'
+     */
+    offset?: number | string;
 
 }
 
@@ -370,6 +394,17 @@ export interface PointerModel {
     type?: PointerType;
 
     /**
+     * Specifies the position of pointer for an axis.
+     * * inside -  Renders a Inside.
+     * * outside - Renders a Outside.
+     * * cross - Renders a Cross.
+     * * Auto - Renders a based on radius
+     * @default Auto
+     */
+
+    position?: PointerRangePosition;
+
+    /**
      * Specifies the rounded corner radius for pointer.
      * @default 0
      */
@@ -457,6 +492,13 @@ export interface PointerModel {
      */
 
     markerWidth?: number;
+
+    /**
+     * The offset value of pointer from scale.
+     * @default '0'
+     */
+
+    offset?: number | string;
 
 }
 

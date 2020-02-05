@@ -2309,7 +2309,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         inputElement.setAttribute('name', this.uploaderName);
         this.uploadWrapper.querySelector('.' + INPUT_WRAPPER).appendChild(inputElement);
         if (this.browserName !== 'msie' && this.browserName !== 'edge') {
-            this.element.files = null;
+            this.element.value = '';
         }
     }
 
@@ -3496,8 +3496,10 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         for (let key of attributes) {
             this.element.removeAttribute(key);
         }
-        this.uploadWrapper.parentElement.appendChild(this.element);
-        detach(this.uploadWrapper);
+        if (!isNullOrUndefined(this.uploadWrapper)) {
+            this.uploadWrapper.parentElement.appendChild(this.element);
+            detach(this.uploadWrapper);
+        }
         this.uploadWrapper = null;
         super.destroy();
     }

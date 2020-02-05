@@ -10,4 +10,11 @@ describe('WLevelOverride Validation Testing', () => {
         expect(levelOverride.overrideListLevel).toBe(undefined);
         expect(() => { levelOverride.destroy() }).not.toThrowError();
     });
+    it('Level Override  Clone validation', () => {
+        let levelOverride: WLevelOverride = new WLevelOverride();
+        levelOverride.startAt = 6;
+        levelOverride.overrideListLevel = new WListLevel(levelOverride);
+        let clonedOverride: WLevelOverride = levelOverride.clone();
+        expect(clonedOverride.overrideListLevel).not.toBe(undefined);
+    });
 });

@@ -326,7 +326,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
             this.checkPaneSize(event);
             this.triggerResizing(event);
         }
-        else if (event.keyCode === 13 && this.paneSettings[index].collapsible) {
+        else if (event.keyCode === 13 && this.paneSettings[index].collapsible && document.activeElement.classList.contains(SPLIT_BAR)) {
             if (!this.previousPane.classList.contains(COLLAPSE_PANE)) {
                 this.collapse(index);
                 addClass([this.currentSeparator], SPLIT_BAR_ACTIVE);
@@ -1926,6 +1926,8 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         this.allPanes.splice(index, 1);
         this.removePaneOrders(elementClass);
         this.updatePanes();
+        this.paneSettings.splice(index, 1);
+        this.setProperties({ 'paneSettings': this.paneSettings }, true);
         if (this.allPanes.length > 0) {
             this.allPanes[this.allPanes.length - 1].classList.remove(STATIC_PANE);
         }
@@ -2336,7 +2338,8 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             catch (error) {
-                return compile(template);
+                var sanitizedValue = SanitizeHtmlHelper.sanitize(template);
+                return compile((this.enableHtmlSanitizer && typeof (template) === 'string') ? sanitizedValue : template);
             }
         }
         return undefined;
@@ -4697,6 +4700,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
     /**
      * Gets the properties to be maintained upon browser refresh.
      * @returns string
+     * @private
      */
     DashboardLayout.prototype.getPersistData = function () {
         var keyEntity = ['panels'];
@@ -4719,6 +4723,9 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property(true)
     ], DashboardLayout.prototype, "allowPushing", void 0);
+    __decorate$1([
+        Property(true)
+    ], DashboardLayout.prototype, "enableHtmlSanitizer", void 0);
     __decorate$1([
         Property(true)
     ], DashboardLayout.prototype, "allowFloating", void 0);

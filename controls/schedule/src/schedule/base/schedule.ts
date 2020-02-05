@@ -759,14 +759,14 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /** @hidden */
     public layoutReady(resourceCollection?: Object[], isFirstRender?: boolean, isSetModel?: boolean): void {
-        if (!this.isServerRenderer()) {
-            return;
-        }
         if (resourceCollection && resourceCollection.length > 0 && (isFirstRender || isSetModel)) {
             this.resourceCollection = resourceCollection;
             if (this.resourceBase) {
                 this.resourceBase.refreshLayout(isSetModel);
             }
+        }
+        if (!this.isServerRenderer()) {
+            return;
         }
         if (this.activeView) {
             this.activeView.serverRenderLayout();
@@ -996,12 +996,19 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
         if (!isModuleLoad && selectedView) {
             this.setScheduleProperties({ currentView: selectedView });
-            this.serverDataBind();
+            this.onServerDataBind();
         }
         if (this.viewIndex === -1) {
             let currentIndex: number = this.getViewIndex(this.currentView);
             this.viewIndex = (currentIndex === -1) ? 0 : currentIndex;
         }
+    }
+    public onServerDataBind(): void {
+        //Timezone issue on DateHeader SelectedDate while hosting in azure Blazor
+        if (this.bulkChanges && this.bulkChanges.selectedDate) {
+            this.bulkChanges.selectedDate = util.addLocalOffset(this.bulkChanges.selectedDate as Date);
+        }
+        this.serverDataBind();
     }
     private getActiveViewOptions(): ViewsData {
         let timeScale: TimeScaleModel = {
@@ -1182,7 +1189,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                             this.headerModule.setCalendarView();
                         }
                         this.initializeView(this.currentView);
-                        this.serverDataBind();
+                        this.onServerDataBind();
                         this.animateLayout();
                         args = { requestType: 'viewNavigate', cancel: false, event: event };
                         this.trigger(events.actionComplete, args);
@@ -1209,7 +1216,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                             this.headerModule.setCalendarDate(selectedDate);
                         }
                         this.initializeView(this.currentView);
-                        this.serverDataBind();
+                        this.onServerDataBind();
                         this.animateLayout();
                         args = { requestType: 'dateNavigate', cancel: false, event: event };
                         this.trigger(events.actionComplete, args);

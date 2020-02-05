@@ -245,8 +245,9 @@ var Input;
         }
     }
     function getParentNode(element) {
-        var parentNode = element.parentNode;
-        if (parentNode.classList.contains('e-input-in-wrap')) {
+        var parentNode = isNullOrUndefined(element.parentNode) ? element
+            : element.parentNode;
+        if (parentNode && parentNode.classList.contains('e-input-in-wrap')) {
             parentNode = parentNode.parentNode;
         }
         return parentNode;
@@ -1193,6 +1194,14 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
     NumericTextBox.prototype.clear = function (event) {
         this.setProperties({ value: null }, true);
         this.setElementValue('');
+        this.hiddenInput.value = '';
+        var formElement = closest(this.element, 'form');
+        if (formElement) {
+            var element = this.element.nextElementSibling;
+            var keyupEvent = document.createEvent('KeyboardEvent');
+            keyupEvent.initEvent('keyup', false, true);
+            element.dispatchEvent(keyupEvent);
+        }
     };
     NumericTextBox.prototype.resetFormHandler = function () {
         if (this.element.tagName === 'EJS-NUMERICTEXTBOX') {
@@ -1792,7 +1801,6 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     NumericTextBox.prototype.destroy = function () {
-        var _this = this;
         this.unwireEvents();
         if (!(isBlazor() && this.isServerRendered)) {
             detach(this.hiddenInput);
@@ -1805,9 +1813,9 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
                 'autocorrect', 'aria-disabled', 'aria-placeholder', 'autocapitalize',
                 'spellcheck', 'aria-autocomplete', 'tabindex', 'aria-valuemin',
                 'aria-valuemax', 'aria-live', 'aria-valuenow', 'aria-invalid'];
-            attrArray.forEach(function (value) {
-                _this.element.removeAttribute(value);
-            });
+            for (var i = 0; i < attrArray.length; i++) {
+                this.element.removeAttribute(attrArray[i]);
+            }
             this.element.classList.remove('e-input');
             this.container.insertAdjacentElement('afterend', this.element);
             detach(this.container);
@@ -3465,15 +3473,14 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     MaskedTextBox.prototype.destroy = function () {
-        var _this = this;
         unwireEvents.call(this);
         var attrArray = ['aria-labelledby', 'role', 'autocomplete', 'aria-readonly',
             'autocorrect', 'aria-disabled', 'aria-placeholder', 'autocapitalize',
             'spellcheck', 'aria-autocomplete',
             'aria-live', 'aria-valuenow', 'aria-invalid'];
-        attrArray.forEach(function (value) {
-            _this.element.removeAttribute(value);
-        });
+        for (var i = 0; i < attrArray.length; i++) {
+            this.element.removeAttribute(attrArray[i]);
+        }
         this.element.classList.remove('e-input');
         this.inputObj.container.insertAdjacentElement('afterend', this.element);
         detach(this.inputObj.container);
@@ -4919,7 +4926,6 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Slider.prototype.tooltipToggle = function (target) {
-        this.setZindex();
         if (this.isMaterialTooltip) {
             !this.tooltipElement.classList.contains(classNames.materialTooltipOpen) ?
                 this.openMaterialTooltip() : this.refreshTooltip(this.firstHandle);
@@ -5094,7 +5100,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             }
         }
         else if (this.isMaterialTooltip && this.tooltipElement) {
-            this.tooltipElement.style.zIndex = (this.zIndex + 4) + '';
+            this.tooltipElement.style.zIndex = getZindexPartial(this.element) + '';
         }
     };
     Slider.prototype.setHandlePosition = function () {
@@ -6206,7 +6212,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Slider.prototype.setZindex = function () {
-        this.zIndex = getZindexPartial(this.element);
+        this.zIndex = 6;
         if (!isNullOrUndefined(this.ticks) && this.ticks.placement !== 'None') {
             this.ul.style.zIndex = (this.zIndex + -7) + '';
             this.element.style.zIndex = (this.zIndex + 2) + '';
@@ -6382,7 +6388,7 @@ var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, 
  */
 // tslint:disable-next-line:no-any
 var regex = {
-    EMAIL: new RegExp('^[A-Za-z0-9._%+-]{1,}@[A-Za-z0-9._%+-]{1,}([.]{1}[a-zA-Z0-9]{2,5}' +
+    EMAIL: new RegExp('^[A-Za-z0-9._%+-]{1,}@[A-Za-z0-9._%+-]{1,}([.]{1}[a-zA-Z0-9]{2,}' +
         '|[.]{1}[a-zA-Z0-9]{2,4}[.]{1}[a-zA-Z0-9]{2,4})$'),
     URL: /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/m,
     DATE_ISO: new RegExp('^([0-9]{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$'),
@@ -8645,7 +8651,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         inputElement.setAttribute('name', this.uploaderName);
         this.uploadWrapper.querySelector('.' + INPUT_WRAPPER).appendChild(inputElement);
         if (this.browserName !== 'msie' && this.browserName !== 'edge') {
-            this.element.files = null;
+            this.element.value = '';
         }
     };
     Uploader.prototype.getFileSize = function (fileData) {
@@ -9845,8 +9851,10 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             var key = attributes_2[_i];
             this.element.removeAttribute(key);
         }
-        this.uploadWrapper.parentElement.appendChild(this.element);
-        detach(this.uploadWrapper);
+        if (!isNullOrUndefined(this.uploadWrapper)) {
+            this.uploadWrapper.parentElement.appendChild(this.element);
+            detach(this.uploadWrapper);
+        }
         this.uploadWrapper = null;
         _super.prototype.destroy.call(this);
     };
@@ -11390,6 +11398,7 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
         this.createInput();
         this.refreshPopupPos();
         this.wireEvents();
+        this.trigger('onModeSwitch', { element: this.container, mode: 'Palette' });
     };
     ColorPicker.prototype.refreshPopupPos = function () {
         if (!this.inline) {
@@ -11514,6 +11523,7 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
         this.createInput();
         this.refreshPopupPos();
         this.wireEvents();
+        this.trigger('onModeSwitch', { element: this.container, mode: 'Picker' });
     };
     ColorPicker.prototype.ctrlBtnClick = function (ele, e) {
         if (ele.classList.contains(APPLY)) {
@@ -12232,6 +12242,9 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
     ], ColorPicker.prototype, "beforeModeSwitch", void 0);
     __decorate$5([
         Event()
+    ], ColorPicker.prototype, "onModeSwitch", void 0);
+    __decorate$5([
+        Event()
     ], ColorPicker.prototype, "created", void 0);
     ColorPicker = __decorate$5([
         NotifyPropertyChanges
@@ -12753,8 +12766,10 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
             }
             this.respectiveElement.classList.remove('e-input');
             this.removeAttributes(['aria-placeholder', 'aria-disabled', 'aria-readonly', 'aria-labelledby']);
-            this.textboxWrapper.container.insertAdjacentElement('afterend', this.respectiveElement);
-            detach(this.textboxWrapper.container);
+            if (!isNullOrUndefined(this.textboxWrapper)) {
+                this.textboxWrapper.container.insertAdjacentElement('afterend', this.respectiveElement);
+                detach(this.textboxWrapper.container);
+            }
             this.textboxWrapper = null;
             _super.prototype.destroy.call(this);
         }

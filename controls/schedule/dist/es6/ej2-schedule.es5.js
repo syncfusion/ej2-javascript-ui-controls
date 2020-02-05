@@ -224,8 +224,12 @@ function getOuterHeight(element) {
     return element.offsetHeight + (parseInt(style.marginTop, 10) || 0) + (parseInt(style.marginBottom, 10) || 0);
 }
 function removeChildren(element) {
-    while (element.firstElementChild && !(element.firstElementChild.classList.contains('blazor-template'))) {
-        element.removeChild(element.firstElementChild);
+    var elementChildren = [].slice.call(element.children);
+    for (var _i = 0, elementChildren_1 = elementChildren; _i < elementChildren_1.length; _i++) {
+        var elementChild = elementChildren_1[_i];
+        if (!elementChild.classList.contains('blazor-template')) {
+            element.removeChild(elementChild);
+        }
     }
 }
 function addLocalOffset(date) {
@@ -6365,6 +6369,9 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         var navigateEle = closest(e.target, '.' + NAVIGATE_CLASS);
         if (!isNullOrUndefined(navigateEle)) {
             var date = this.parent.getDateFromElement(e.currentTarget);
+            if (this.parent.isServerRenderer()) {
+                date = new Date(+date - (date.getTimezoneOffset() * 60000));
+            }
             if (!isNullOrUndefined(date)) {
                 this.closeClick();
                 this.parent.setScheduleProperties({ selectedDate: date });
@@ -9610,7 +9617,7 @@ var Render = /** @__PURE__ @class */ (function () {
             var firstView = this.parent.viewCollections[0].option;
             if (firstView) {
                 this.parent.setScheduleProperties({ currentView: firstView });
-                this.parent.serverDataBind();
+                this.parent.onServerDataBind();
                 if (this.parent.headerModule) {
                     this.parent.headerModule.updateActiveView();
                     this.parent.headerModule.setCalendarView();
@@ -11703,6 +11710,25 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
         }
         this.refreshLayout(true);
     };
+    ResourceBase.prototype.getIndexFromResourceId = function (id, name) {
+        var indexs;
+        if (this.parent.resourceCollection[this.parent.resourceCollection.length - 1].name === name) {
+            indexs = id - 1;
+        }
+        else {
+            var counts = 1;
+            for (var i = this.parent.resourceCollection.length - 1; i >= 0; i--) {
+                if (this.parent.resourceCollection[i].name === name) {
+                    indexs = (id - 1) * (counts);
+                    break;
+                }
+                else {
+                    counts = counts * (this.parent.resourceCollection[i].dataSource).length;
+                }
+            }
+        }
+        return indexs;
+    };
     ResourceBase.prototype.resourceScroll = function (id, name) {
         if (this.parent.isAdaptive || ['Agenda', 'MonthAgenda'].indexOf(this.parent.currentView) > -1) {
             return;
@@ -11717,18 +11743,29 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
             return null;
         })[0];
         var scrollElement = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
+        var index = 0;
         if (this.parent.activeView.isTimelineView()) {
-            var resourceData = resource.dataSource.filter(function (e) {
-                return e[resource.idField] === id;
-            })[0];
-            var index = this.lastResourceLevel.map(function (e) { return e.resourceData; }).indexOf(resourceData);
+            if (!this.parent.activeViewOptions.group.byGroupID) {
+                index = this.getIndexFromResourceId(id, levelName);
+            }
+            else {
+                var resourceData = resource.dataSource.filter(function (e) {
+                    return e[resource.idField] === id;
+                })[0];
+                index = this.lastResourceLevel.map(function (e) { return e.resourceData; }).indexOf(resourceData);
+            }
             var td = this.parent.element.querySelector("." + WORK_CELLS_CLASS + "[data-group-index=\"" + index + "\"]");
             if (td && !td.parentElement.classList.contains(HIDDEN_CLASS)) {
                 scrollElement.scrollTop = td.offsetTop;
             }
         }
         else {
-            var index = resource.dataSource.map(function (e) { return e[resource.idField]; }).indexOf(id);
+            if (!this.parent.activeViewOptions.group.byGroupID) {
+                index = this.getIndexFromResourceId(id, levelName);
+            }
+            else {
+                index = resource.dataSource.map(function (e) { return e[resource.idField]; }).indexOf(id);
+            }
             var offsetTarget = this.parent.element.querySelector("." + HEADER_ROW_CLASS + ":nth-child(" + (levelIndex + 1) + ")");
             var offset = [].slice.call(offsetTarget.children).map(function (node) { return node.offsetLeft; });
             scrollElement.scrollLeft = offset[index];
@@ -11864,14 +11901,14 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
     };
     /** @hidden */
     Schedule.prototype.layoutReady = function (resourceCollection, isFirstRender, isSetModel) {
-        if (!this.isServerRenderer()) {
-            return;
-        }
         if (resourceCollection && resourceCollection.length > 0 && (isFirstRender || isSetModel)) {
             this.resourceCollection = resourceCollection;
             if (this.resourceBase) {
                 this.resourceBase.refreshLayout(isSetModel);
             }
+        }
+        if (!this.isServerRenderer()) {
+            return;
         }
         if (this.activeView) {
             this.activeView.serverRenderLayout();
@@ -12102,12 +12139,19 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         }
         if (!isModuleLoad && selectedView) {
             this.setScheduleProperties({ currentView: selectedView });
-            this.serverDataBind();
+            this.onServerDataBind();
         }
         if (this.viewIndex === -1) {
             var currentIndex = this.getViewIndex(this.currentView);
             this.viewIndex = (currentIndex === -1) ? 0 : currentIndex;
         }
+    };
+    Schedule.prototype.onServerDataBind = function () {
+        //Timezone issue on DateHeader SelectedDate while hosting in azure Blazor
+        if (this.bulkChanges && this.bulkChanges.selectedDate) {
+            this.bulkChanges.selectedDate = addLocalOffset(this.bulkChanges.selectedDate);
+        }
+        this.serverDataBind();
     };
     Schedule.prototype.getActiveViewOptions = function () {
         var timeScale = {
@@ -12285,7 +12329,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
                             _this.headerModule.setCalendarView();
                         }
                         _this.initializeView(_this.currentView);
-                        _this.serverDataBind();
+                        _this.onServerDataBind();
                         _this.animateLayout();
                         args = { requestType: 'viewNavigate', cancel: false, event: event };
                         _this.trigger(actionComplete, args);
@@ -12312,7 +12356,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
                             _this.headerModule.setCalendarDate(selectedDate);
                         }
                         _this.initializeView(_this.currentView);
-                        _this.serverDataBind();
+                        _this.onServerDataBind();
                         _this.animateLayout();
                         args = { requestType: 'dateNavigate', cancel: false, event: event };
                         _this.trigger(actionComplete, args);
@@ -20963,6 +21007,9 @@ var Year = /** @__PURE__ @class */ (function (_super) {
         return _this;
     }
     Year.prototype.renderLayout = function (className) {
+        if (this.parent.resourceBase) {
+            this.parent.resourceBase.generateResourceLevels([{ renderDates: this.parent.activeView.renderDates }]);
+        }
         this.setPanel(createElement('div', { className: TABLE_WRAP_CLASS }));
         var viewTypeClass = this.parent.activeViewOptions.orientation === 'Horizontal' ? 'e-horizontal' : 'e-vertical';
         addClass([this.element], [this.viewClass, viewTypeClass, className]);

@@ -553,15 +553,19 @@ export class BulletChart extends Component<HTMLElement> implements INotifyProper
             }
         }
         if (this.maximum === null) {
-            for (let i: number = 0; i < Object.keys(this.dataSource).length; i++) {
-            if (this.dataSource[i][this.targetField] > this.dataSource[i][this.valueField]) {
-                this.maximum = this.maximum > this.dataSource[i][this.targetField] ? this.maximum + this.interval :
-                 this.dataSource[i][this.targetField] + this.interval;
+            if (!isNullOrUndefined(this.dataSource)) {
+                for (let i: number = 0; i < Object.keys(this.dataSource).length; i++) {
+                    if (this.dataSource[i][this.targetField] > this.dataSource[i][this.valueField]) {
+                        this.maximum = this.maximum > this.dataSource[i][this.targetField] ? this.maximum + this.interval :
+                         this.dataSource[i][this.targetField] + this.interval;
+                    } else {
+                        this.maximum = this.maximum > this.dataSource[i][this.valueField] ? this.maximum + this.interval :
+                        this.dataSource[i][this.valueField] + this.interval;
+                    }
+                }
             } else {
-                this.maximum = this.maximum > this.dataSource[i][this.valueField] ? this.maximum + this.interval :
-                this.dataSource[i][this.valueField] + this.interval;
+                this.maximum = 10;
             }
-        }
         }
         if (!this.interval) {
            this.interval = this.calculateNumericNiceInterval(this.maximum - this.minimum);

@@ -2,15 +2,21 @@
  * RTE - Color-picker action spec
  */
 import { Browser } from "@syncfusion/ej2-base";
-import { RichTextEditor, Toolbar } from './../../../src/index';
-import { detach } from '@syncfusion/ej2-base';
+import { RichTextEditor } from './../../../src/index';
 import { renderRTE, destroy, dispatchKeyEvent, dispatchEvent } from "./../render.spec";
-RichTextEditor.Inject(Toolbar);
+
+function setCursorPoint(curDocument: Document, element: Element, point: number) {
+    let range: Range = curDocument.createRange();
+    let sel: Selection = curDocument.defaultView.getSelection();
+    range.setStart(element, point);
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
+}
 
 describe("'FontColor and BackgroundColor' - ColorPicker render testing", () => {
     let rteEle: HTMLElement;
     let rteObj: any;
-    let mouseEventArgs: any;
 
     beforeEach(() => {
         rteObj = renderRTE({
@@ -36,17 +42,7 @@ describe("'FontColor and BackgroundColor' - ColorPicker render testing", () => {
          expect(item.tagName==='SPAN').toBe(true);
          expect(item.hasAttribute('type')).toBe(false);
      });
-
 });
-
-function setCursorPoint(curDocument: Document, element: Element, point: number) {
-    let range: Range = curDocument.createRange();
-    let sel: Selection = curDocument.defaultView.getSelection();
-    range.setStart(element, point);
-    range.collapse(true);
-    sel.removeAllRanges();
-    sel.addRange(range);
-}
 
 describe(' RTE content selection with ', () => {
     let rteObj: RichTextEditor;
@@ -55,7 +51,6 @@ describe(' RTE content selection with ', () => {
     let curDocument: Document;
     let editNode: Element;
     let selectNode: Element;
-
     let innerHTML: string = `<p>First p node-0</p><p>First p node-1</p>
 
     <p class='first-p-node'>dom node<label class='first-label'>label node</label></p>
@@ -92,7 +87,6 @@ describe(' RTE content selection with ', () => {
     });
     afterAll(() => {
         destroy(rteObj);
-        detach(rteEle);
     });
 });
 
@@ -139,14 +133,12 @@ describe(' RTE content selection with ', () => {
     });
     afterAll(() => {
         destroy(rteObj);
-        detach(rteEle);
     });
 });
 
 describe("'FontColor and BackgroundColor' - ColorPicker render testing using mobileUA", () => {
     let rteEle: HTMLElement;
     let rteObj: any;
-    let mouseEventArgs: any;
 
     let mobileUA: string = "Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) " +
         "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36";
@@ -163,8 +155,8 @@ describe("'FontColor and BackgroundColor' - ColorPicker render testing using mob
     });
 
     afterAll(() => {
-        Browser.userAgent = defaultUA;
         destroy(rteObj);
+        Browser.userAgent = defaultUA;
     });
 
     it("Color Picker initial rendering testing", () => {
@@ -179,10 +171,6 @@ describe("'FontColor and BackgroundColor' - ColorPicker render testing using mob
 describe(' Readonly ', () => {
     let rteObj: RichTextEditor;
     let rteEle: Element;
-    let mouseEventArgs: any;
-    let curDocument: Document;
-    let editNode: Element;
-    let selectNode: Element;
 
     let innerHTML: string = `<p>First p node-0</p><p>First p node-1</p>
 
@@ -199,9 +187,7 @@ describe(' Readonly ', () => {
             readonly: true
         });
         rteEle = rteObj.element;
-        editNode = rteObj.contentModule.getEditPanel();
         rteObj.contentModule.getEditPanel().innerHTML = innerHTML;
-        curDocument = rteObj.contentModule.getDocument();
     });
     it("ColorPicker - DropDown button Background selection", () => {
         rteObj.notify('selection-save', {});
@@ -217,7 +203,6 @@ describe(' Readonly ', () => {
     });
     afterAll(() => {
         destroy(rteObj);
-        detach(rteEle);
     });
 });
 
@@ -264,7 +249,6 @@ describe(' RTE content selection with ', () => {
     });
     afterAll(() => {
         destroy(rteObj);
-        detach(rteEle);
     });
 });
 
@@ -311,7 +295,6 @@ describe(' RTE content selection with ', () => {
     });
     afterAll(() => {
         destroy(rteObj);
-        detach(rteEle);
     });
 });
 
@@ -408,9 +391,6 @@ describe("'FontColor and BackgroundColor' - ColorPicker DROPDOWN", () => {
 describe("EJ2-16252: 'FontColor and BackgroundColor' - selection state", () => {
     let rteEle: HTMLElement;
     let rteObj: any;
-    let mouseEventArgs: any;
-    let editNode: Element;
-    let selectNode: Element;
     let id: string;
     beforeAll(() => {
         rteObj = renderRTE({
@@ -425,7 +405,6 @@ describe("EJ2-16252: 'FontColor and BackgroundColor' - selection state", () => {
             <ul class='ul-third-node'><li>one-node</li><li>two-node</li><li>three-node</li></ul>`
         });
         rteEle = rteObj.element;
-        editNode = rteObj.contentModule.getEditPanel();
         id = rteEle.id;
     });
 
@@ -456,9 +435,6 @@ describe("EJ2-16252: 'FontColor and BackgroundColor' - selection state", () => {
 describe("EJ2-16252: 'FontColor and BackgroundColor' - Default value set", () => {
     let rteEle: HTMLElement;
     let rteObj: any;
-    let mouseEventArgs: any;
-    let editNode: Element;
-    let selectNode: Element;
     let id: string;
     beforeAll(() => {
         rteObj = renderRTE({
@@ -479,7 +455,6 @@ describe("EJ2-16252: 'FontColor and BackgroundColor' - Default value set", () =>
             <ul class='ul-third-node'><li>one-node</li><li>two-node</li><li>three-node</li></ul>`
         });
         rteEle = rteObj.element;
-        editNode = rteObj.contentModule.getEditPanel();
         id = rteEle.id;
     });
 

@@ -22,13 +22,17 @@
   .e-date-wrapper {
     & span.e-input-group-icon {
       &.e-date-icon.e-icons.e-active {
-        color: $datepicker-icon-color;
+        @if ($skin-name != 'bootstrap' and $skin-name != 'bootstrap-dark' and $skin-name != 'fabric' and $skin-name != 'fabric-dark') {
+          color: $datepicker-icon-color;
+        }
       }&.e-date-icon.e-icons.e-active {
         @if $skin-name == 'bootstrap4' {
           background: $datepicker-icon-active-bg-color;
           border-color: $datepicker-active-border-color;
         }
-        color: $datepicker-active-icon-color;
+        @if ($skin-name != 'bootstrap' and $skin-name != 'bootstrap-dark' and $skin-name != 'fabric' and $skin-name != 'fabric-dark') {
+          color: $datepicker-active-icon-color;
+        }
       }
     }
   }

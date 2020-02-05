@@ -5,6 +5,7 @@ import { Browser, EventHandler, createElement, EmitType } from '@syncfusion/ej2-
 import { ILoadedEventArgs, ILoadEventArgs } from '../../src/linear-gauge/model/interface';
 import { LinearGauge } from '../../src/linear-gauge/linear-gauge';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
+import { GaugeLocation } from '../../src';
 
 describe('Linear gauge control', () => {
     beforeAll(() => {
@@ -524,6 +525,176 @@ describe('Linear gauge control', () => {
             gauge.refresh();
         });
     });
+ describe('Axis pointer position based on position property', () => {
+        let gauge: LinearGauge;
+        let ele: HTMLElement;
+        let direction: string;
+        let boundingRect: ClientRect;
+        let boundingRect1: ClientRect;
+        let svg: HTMLElement;
+        let value: string[] | string | number;
+        let value1: string[] | string | number;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'gauge' });
+            document.body.appendChild(ele);
+            gauge = new LinearGauge({
+                orientation : "Horizontal",
+                axes: [{    
+                 pointers: [
+                     {
+                         value: 50,
+                         markerType: 'Triangle',
+                         position: 'Inside',
+                         type: 'Marker'
+                     },
+                     {
+                         type: 'Bar',
+                         value: 30,
+                         position: 'Inside'
+                     }
+                 ]
+                }]
+            },
+                '#gauge'
+            );
+        });
+        afterAll((): void => {
+            gauge.destroy();
+            ele.remove();
+        });
+        it('Checking pointer position as inside', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let svgNode: NodeListOf<Element> = document.querySelectorAll('path#gauge_AxisIndex_0_MarkerPointer_0');
+                value = svgNode[0].getAttribute('d').split(' ');
+                expect(value[1] == '384.5' || value[1] == '379').toBe(true);
+                let svgNode1: NodeListOf<Element> = document.querySelectorAll('rect#gauge_AxisIndex_0_BarPointer_1');
+                expect(svgNode1[0].getAttribute('y')).toBe('204');
+                done();
+            };
+            gauge.refresh();
+        });
+        it('Checking pointer position as inside with opposed', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let svgNode: NodeListOf<Element> = document.querySelectorAll('path#gauge_AxisIndex_0_MarkerPointer_0');
+                value = svgNode[0].getAttribute('d').split(' ');
+                expect(value[1] == '384.5' || value[1] == '379').toBe(true);
+                let svgNode1: NodeListOf<Element> = document.querySelectorAll('rect#gauge_AxisIndex_0_BarPointer_1');
+                expect(svgNode1[0].getAttribute('y')).toBe('226');
+                done();
+            };
+            gauge.axes[0].opposedPosition = true;
+            gauge.refresh();
+        });
+        it('Checking pointer position as outside', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let svgNode: NodeListOf<Element> = document.querySelectorAll('path#gauge_AxisIndex_0_MarkerPointer_0');
+                value = svgNode[0].getAttribute('d').split(' ');
+                expect(value[1] == '384.5' || value[1] == '379').toBe(true);
+                let svgNode1: NodeListOf<Element> = document.querySelectorAll('rect#gauge_AxisIndex_0_BarPointer_1');
+                expect(svgNode1[0].getAttribute('y')).toBe('226');
+                done();
+            };
+            gauge.axes[0].opposedPosition = false;
+            gauge.axes[0].pointers[0].position = 'Outside';
+            gauge.axes[0].pointers[1].position = 'Outside';
+            gauge.refresh();
+        });
+        it('Checking pointer position as outside and opposed', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let svgNode: NodeListOf<Element> = document.querySelectorAll('path#gauge_AxisIndex_0_MarkerPointer_0');
+                value = svgNode[0].getAttribute('d').split(' ');
+                expect(value[1] == '384.5' || value[1] == '379').toBe(true);
+                let svgNode1: NodeListOf<Element> = document.querySelectorAll('rect#gauge_AxisIndex_0_BarPointer_1');
+                expect(svgNode1[0].getAttribute('y')).toBe('204');
+                done();
+            };
+            gauge.axes[0].opposedPosition = true;
+            gauge.refresh();
+        });
+        it('Checking pointer position as cross', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let svgNode: NodeListOf<Element> = document.querySelectorAll('path#gauge_AxisIndex_0_MarkerPointer_0');
+                value = svgNode[0].getAttribute('d').split(' ');
+                expect(value[1] == '384.5' || value[1] == '379').toBe(true);
+                let svgNode1: NodeListOf<Element> = document.querySelectorAll('rect#gauge_AxisIndex_0_BarPointer_1');
+                expect(svgNode1[0].getAttribute('y')).toBe('215');
+                done();
+            };
+            gauge.axes[0].opposedPosition = false;
+            gauge.axes[0].pointers[0].position = 'Cross';
+            gauge.axes[0].pointers[1].position = 'Cross';
+            gauge.refresh();
+        });
+        it('Checking pointer position as inside with vertical orientation', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let svgNode: NodeListOf<Element> = document.querySelectorAll('path#gauge_AxisIndex_0_MarkerPointer_0');
+                value = svgNode[0].getAttribute('d').split(' ');
+                expect(value[1] == '383.5' || value[1] == '378').toBe(true);
+                let svgNode1: NodeListOf<Element> = document.querySelectorAll('rect#gauge_AxisIndex_0_BarPointer_1');
+                expect(svgNode1[0].getAttribute('y')).toBe('289.5');
+                done();
+            };
+            gauge.orientation = 'Vertical';
+            gauge.axes[0].pointers[0].position = 'Inside';
+            gauge.axes[0].pointers[1].position = 'Inside';
+            gauge.refresh();
+        });
+        it('Checking pointer position as inside with opposed with vertical orientation', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let svgNode: NodeListOf<Element> = document.querySelectorAll('path#gauge_AxisIndex_0_MarkerPointer_0');
+                value = svgNode[0].getAttribute('d').split(' ');
+                expect(value[1] == '385.5' || value[1] == '380').toBe(true);
+                let svgNode1: NodeListOf<Element> = document.querySelectorAll('rect#gauge_AxisIndex_0_BarPointer_1');
+                expect(svgNode1[0].getAttribute('y')).toBe('289.5');
+                done();
+            };
+            gauge.axes[0].opposedPosition = true;
+        
+            gauge.refresh();
+        });
+        it('Checking pointer position as outside with vertical orientation', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let svgNode: NodeListOf<Element> = document.querySelectorAll('path#gauge_AxisIndex_0_MarkerPointer_0');
+                value = svgNode[0].getAttribute('d').split(' ');
+                expect(value[1] == '385.5' || value[1] == '380').toBe(true);
+                let svgNode1: NodeListOf<Element> = document.querySelectorAll('rect#gauge_AxisIndex_0_BarPointer_1');
+                expect(svgNode1[0].getAttribute('y')).toBe('289.5');
+                done();
+            };
+            gauge.axes[0].opposedPosition = false;
+            gauge.axes[0].pointers[0].position = 'Outside';
+            gauge.axes[0].pointers[1].position = 'Outside';
+            gauge.refresh();
+        });
+        it('Checking pointer position as outside and opposed with vertical orientation', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let svgNode: NodeListOf<Element> = document.querySelectorAll('path#gauge_AxisIndex_0_MarkerPointer_0');
+                value = svgNode[0].getAttribute('d').split(' ');
+                expect(value[1] == '383.5' || value[1] == '378').toBe(true);
+                let svgNode1: NodeListOf<Element> = document.querySelectorAll('rect#gauge_AxisIndex_0_BarPointer_1');
+                expect(svgNode1[0].getAttribute('y')).toBe('289.5');
+                done();
+            };
+            gauge.axes[0].opposedPosition = true;
+            gauge.refresh();
+        });
+        it('Checking pointer position as cross with vertical orientation', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                let svgNode: NodeListOf<Element> = document.querySelectorAll('path#gauge_AxisIndex_0_MarkerPointer_0');
+                value = svgNode[0].getAttribute('d').split(' ');
+                expect(value[1] == '336.05' || value[1] == '331.1').toBe(true);
+                let svgNode1: NodeListOf<Element> = document.querySelectorAll('rect#gauge_AxisIndex_0_BarPointer_1');
+                expect(svgNode1[0].getAttribute('y')).toBe('289.5');
+                done();
+            };
+            gauge.axes[0].opposedPosition = false;
+            gauge.axes[0].pointers[0].offset = '10%';
+            gauge.axes[0].pointers[1].offset = '10%';
+            gauge.axes[0].pointers[0].position = 'Cross';
+            gauge.axes[0].pointers[1].position = 'Cross';
+            gauge.refresh();
+        });
+ });
     it('memory leak', () => {     
         profile.sample();
         let average: any = inMB(profile.averageChange)

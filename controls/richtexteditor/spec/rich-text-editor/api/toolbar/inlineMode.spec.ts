@@ -1,13 +1,9 @@
-import { Toolbar, HtmlEditor, RichTextEditor, Count, Link, Image, QuickToolbar } from './../../../../src/index';
-import { renderRTE, destroy, dispatchEvent, setCursorPoint } from './../../render.spec';
-import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
-
-RichTextEditor.Inject(HtmlEditor);
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(Link);
-RichTextEditor.Inject(Count);
-RichTextEditor.Inject(Image);
-RichTextEditor.Inject(QuickToolbar);
+/**
+ * Inline mode spec
+ */
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { RichTextEditor } from './../../../../src/index';
+import { renderRTE, destroy, dispatchEvent } from './../../render.spec';
 
 describe(' Inline Quick Toolbar - ', () => {
     describe(' inlineMode property - ', () => {
@@ -130,8 +126,8 @@ describe(' Inline Quick Toolbar - ', () => {
             done();
         });
 
-        it(' Test - enable the inline toolbar dynamically', (done) => {
-            rteObj.inlineMode.enable=true;
+        it(' Test - enable as true the inline toolbar dynamically', (done) => {
+            rteObj.inlineMode.enable = true;
             rteObj.dataBind();
             let pEle: HTMLElement = rteObj.element.querySelector('#rte');
             rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
@@ -150,8 +146,28 @@ describe(' Inline Quick Toolbar - ', () => {
             }, 200);
         });
 
+        it(' Test - enable as false the inline toolbar dynamically', (done) => {
+            rteObj.inlineMode.enable = false;
+            rteObj.dataBind();
+            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
+            dispatchEvent(pEle, 'mouseup');
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-rte-quick-popup').length).toBe(0);
+                done();
+            }, 200);
+        });
+
+        it(' Test - enable as true the inline toolbar dynamically', (done) => {
+            rteObj.inlineMode.enable = true;
+            rteObj.dataBind();
+            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
+            dispatchEvent(pEle, 'mouseup');
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-rte-quick-popup').length > 0).toBe(true);
+                done();
+            }, 200);
+        });
     });
-
 });
-
-

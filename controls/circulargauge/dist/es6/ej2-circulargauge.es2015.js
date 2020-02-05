@@ -1,5 +1,6 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, compile, createElement, isBlazor, isNullOrUndefined, merge, remove, resetBlazorTemplate, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, compile, createElement, isBlazor, isNullOrUndefined, merge, print, remove, resetBlazorTemplate, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
+import { PdfBitmap, PdfDocument, PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 
 /**
  * Specifies Circular-Gauge Helper methods
@@ -223,14 +224,24 @@ function getLocationFromAngle(degree, radius, center) {
  * @returns string
  * @private
  */
-function getPathArc(center, start, end, radius, startWidth, endWidth) {
+function getPathArc(center, start, end, radius, startWidth, endWidth, range, axis) {
     end -= isCompleteAngle(start, end) ? 0.0001 : 0;
     let degree = getDegree(start, end);
-    let startRadius = radius - startWidth;
-    let endRadius = radius - endWidth;
-    let arcRadius = radius - ((startWidth + endWidth) / 2);
+    let startRadius = !isNullOrUndefined(range) ? (range.position === 'Outside' ? radius + startWidth : range.position === 'Cross'
+        && axis.direction === 'AntiClockWise' ? radius - (endWidth + startWidth) / 2 : radius - startWidth) : radius - startWidth;
+    let endRadius = !isNullOrUndefined(range) ? (range.position === 'Outside' ? radius + endWidth : range.position === 'Cross' &&
+        axis.direction === 'ClockWise' ? radius - (endWidth + startWidth) / 2 : radius - endWidth) : radius - endWidth;
+    let arcRadius = !isNullOrUndefined(range) ? (range.position === 'Outside' ? radius + ((startWidth + endWidth) / 2) :
+        range.position === 'Cross' ? (radius - ((startWidth + endWidth) / 4) - (axis.direction === 'ClockWise' ? startWidth : endWidth)
+            / 2) : radius - ((startWidth + endWidth) / 2)) : radius - ((startWidth + endWidth) / 2);
+    let insideArcRadius = !isNullOrUndefined(range) && range.position === 'Cross' ?
+        radius + ((startWidth + endWidth) / 4) - (axis.direction === 'ClockWise' ? startWidth : endWidth) / 2 : radius;
+    let insideEndRadius = !isNullOrUndefined(range) && range.position === 'Cross' && axis.direction === 'ClockWise' ?
+        radius - ((startWidth - endWidth) / 2) : radius;
+    let insideStartRadius = !isNullOrUndefined(range) && range.position === 'Cross' && axis.direction === 'AntiClockWise' ?
+        radius + ((startWidth - endWidth) / 2) : radius;
     if (startWidth !== undefined && endWidth !== undefined) {
-        return getRangePath(getLocationFromAngle(start, radius, center), getLocationFromAngle(end, radius, center), getLocationFromAngle(start, startRadius, center), getLocationFromAngle(end, endRadius, center), radius, arcRadius, arcRadius, (degree < 180) ? 0 : 1);
+        return getRangePath(getLocationFromAngle(start, insideStartRadius, center), getLocationFromAngle(end, insideEndRadius, center), getLocationFromAngle(start, startRadius, center), getLocationFromAngle(end, endRadius, center), insideArcRadius, arcRadius, arcRadius, (degree < 180) ? 0 : 1);
     }
     else {
         return getCirclePath(getLocationFromAngle(start, radius, center), getLocationFromAngle(end, radius, center), radius, (degree < 180) ? 0 : 1);
@@ -937,6 +948,9 @@ __decorate$2([
 __decorate$2([
     Property(0)
 ], Label.prototype, "offset", void 0);
+__decorate$2([
+    Property(true)
+], Label.prototype, "shouldMaintainPadding", void 0);
 /**
  * Configures the ranges of an axis.
  */
@@ -969,6 +983,12 @@ __decorate$2([
 __decorate$2([
     Property('')
 ], Range.prototype, "legendText", void 0);
+__decorate$2([
+    Property('Auto')
+], Range.prototype, "position", void 0);
+__decorate$2([
+    Property(0)
+], Range.prototype, "offset", void 0);
 /**
  * Configures the major and minor tick lines of an axis.
  */
@@ -1072,6 +1092,9 @@ __decorate$2([
     Property('Needle')
 ], Pointer.prototype, "type", void 0);
 __decorate$2([
+    Property('Auto')
+], Pointer.prototype, "position", void 0);
+__decorate$2([
     Property(0)
 ], Pointer.prototype, "roundedCornerRadius", void 0);
 __decorate$2([
@@ -1110,6 +1133,9 @@ __decorate$2([
 __decorate$2([
     Property(5)
 ], Pointer.prototype, "markerWidth", void 0);
+__decorate$2([
+    Property(0)
+], Pointer.prototype, "offset", void 0);
 /**
  * Configures an axis in a gauge.
  */
@@ -1216,6 +1242,8 @@ const dragMove = 'dragMove';
 const dragEnd = 'dragEnd';
 /** @private */
 const resized = 'resized';
+/** @private */
+const beforePrint = 'beforePrint';
 
 /**
  * Annotation Module handles the Annotation of the axis.
@@ -1786,6 +1814,8 @@ class AxisRenderer {
      * @return {void}
      * @private
      */
+    /* tslint:disable:no-string-literal */
+    /* tslint:disable:max-func-body-length */
     drawAxisLabels(axis, index, element, gauge) {
         let labelElement = gauge.renderer.createGroup({
             id: gauge.element.id + '_Axis_Labels_' + index
@@ -1811,10 +1841,19 @@ class AxisRenderer {
         let angle;
         let label;
         let radius = axis.currentRadius;
-        let labelPadding = 10;
+        let checkLabelOpposed = 0;
+        checkLabelOpposed = (style.position === 'Inside' && axis.majorTicks.position === 'Outside' &&
+            axis.minorTicks.position === 'Outside') || (style.position === 'Outside' &&
+            axis.minorTicks.position === 'Inside' && axis.majorTicks.position === 'Inside') ?
+            axis.lineStyle.width + axis.currentRadius / 20 :
+            (style.position === axis.majorTicks.position ? axis.currentRadius / 20 : axis.currentRadius / 40);
+        let labelPadding = axis.labelStyle.shouldMaintainPadding ? 10 : checkLabelOpposed;
         let color = style.font.color || this.gauge.themeStyle.labelColor;
         if (style.position === 'Outside') {
             radius += (axis.nearSize - (axis.maxLabelSize.height + axis.lineStyle.width / 2)) + (labelPadding / 2);
+        }
+        else if (style.position === 'Cross') {
+            radius = radius - (axis.maxLabelSize.height / 2) - axis.labelStyle.offset;
         }
         else {
             radius -= (axis.farSize - (axis.maxLabelSize.height + axis.lineStyle.width / 2) + (style.autoAngle ? labelPadding : 0));
@@ -1911,7 +1950,8 @@ class AxisRenderer {
     FindAxisLabelCollision(previousLocation, previousWidth, previousHeight, currentLocation, currentWidth, currentHeight) {
         let labelVisisble = ((previousLocation.x > (currentLocation.x + (currentWidth))) ||
             ((previousLocation.x + (previousWidth)) < (currentLocation.x)) ||
-            ((previousLocation.y + (previousHeight)) < (currentLocation.y)) || ((previousLocation.y) > (currentLocation.y + (currentHeight))));
+            ((previousLocation.y + (previousHeight)) < (currentLocation.y)) ||
+            ((previousLocation.y) > (currentLocation.y + (currentHeight))));
         return labelVisisble;
     }
     /**
@@ -1990,13 +2030,14 @@ class AxisRenderer {
      */
     calculateTicks(value, options, axis) {
         let axisLineWidth = (axis.lineStyle.width / 2) + options.offset;
-        let isOutside = options.position === 'Outside';
         let angle = getAngleFromValue(value, axis.visibleRange.max, axis.visibleRange.min, axis.startAngle, axis.endAngle, axis.direction === 'ClockWise');
         let start = getLocationFromAngle(angle, axis.currentRadius +
-            (isOutside ? axisLineWidth : -axisLineWidth), this.gauge.midPoint);
+            (options.position === 'Outside' ? axisLineWidth : options.position === 'Cross' ?
+                options.height / 2 - options.offset : -axisLineWidth), this.gauge.midPoint);
         let end = getLocationFromAngle(angle, axis.currentRadius +
-            (isOutside ? axisLineWidth : -axisLineWidth) +
-            (isOutside ? options.height : -options.height), this.gauge.midPoint);
+            (options.position === 'Outside' ? axisLineWidth : options.position === 'Cross' ?
+                options.height / 2 - options.offset : -axisLineWidth) +
+            (options.position === 'Outside' ? options.height : -options.height), this.gauge.midPoint);
         return 'M ' + start.x + ' ' + start.y + ' L ' + end.x + ' ' + end.y + ' ';
     }
     /**
@@ -2023,7 +2064,26 @@ class AxisRenderer {
         let oldStart;
         let oldEnd;
         axis.ranges.map((range, rangeIndex) => {
+            if (!isNullOrUndefined(range.offset) && range.offset.length > 0) {
+                range.currentDistanceFromScale = stringToNumber(range.offset, axis.currentRadius);
+            }
+            else {
+                range.currentDistanceFromScale = range.offset;
+            }
             this.calculateRangeRadius(axis, range);
+            if (range.startWidth.length > 0) {
+                startWidth = toPixel(range.startWidth, range.currentRadius);
+            }
+            else {
+                startWidth = range.startWidth;
+            }
+            if (range.endWidth.length > 0) {
+                endWidth = toPixel(range.endWidth, range.currentRadius);
+            }
+            else {
+                endWidth = range.endWidth;
+            }
+            range.currentRadius = this.calculateRangeRadiusWithPosition(axis, range, startWidth);
             startValue = Math.min(Math.max(range.start, min), range.end);
             endValue = Math.min(Math.max(range.start, range.end), max);
             startAngle = getAngleFromValue(startValue, max, min, axis.startAngle, axis.endAngle, isClockWise);
@@ -2035,18 +2095,6 @@ class AxisRenderer {
                     (axis.rangeGap / Math.PI);
             }
             if ((startValue !== endValue) && (isAngleCross360 ? startAngle < (endAngle + 360) : (startAngle < endAngle))) {
-                if (range.startWidth.length > 0) {
-                    startWidth = toPixel(range.startWidth, range.currentRadius);
-                }
-                else {
-                    startWidth = range.startWidth;
-                }
-                if (range.endWidth.length > 0) {
-                    endWidth = toPixel(range.endWidth, range.currentRadius);
-                }
-                else {
-                    endWidth = range.endWidth;
-                }
                 endAngle = isClockWise ? endAngle : [startAngle, startAngle = endAngle][0];
                 endWidth = isClockWise ? endWidth : [startWidth, startWidth = endWidth][0];
                 let radius = range.roundedCornerRadius;
@@ -2063,7 +2111,7 @@ class AxisRenderer {
                     appendPath(new PathOption(gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex, range.rangeColor, 0, range.rangeColor, range.opacity, '0', getRoundedPathArc(location, Math.floor(roundedStartAngle), Math.ceil(roundedEndAngle), oldStart, oldEnd, range.currentRadius, startWidth, endWidth), '', ''), rangeElement, gauge);
                 }
                 else {
-                    appendPath(new PathOption(gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex, range.rangeColor, 0, range.rangeColor, range.opacity, '0', getPathArc(gauge.midPoint, Math.floor(startAngle), Math.ceil(endAngle), range.currentRadius, startWidth, endWidth), '', ''), rangeElement, gauge);
+                    appendPath(new PathOption(gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex, range.rangeColor, 0, range.rangeColor, range.opacity, '0', getPathArc(gauge.midPoint, Math.floor(startAngle), Math.ceil(endAngle), range.currentRadius, startWidth, endWidth, range, axis), '', ''), rangeElement, gauge);
                 }
             }
         });
@@ -2076,6 +2124,14 @@ class AxisRenderer {
     calculateRangeRadius(axis, range) {
         let radius = range.radius !== null ? range.radius : '100%';
         range.currentRadius = stringToNumber(radius, axis.currentRadius);
+    }
+    calculateRangeRadiusWithPosition(axis, range, startWidth) {
+        let actualRadius;
+        actualRadius = !isNullOrUndefined(range.position) && range.position !== 'Auto' && isNullOrUndefined(range.radius) ?
+            (range.position === 'Outside' ? (range.currentRadius + axis.lineStyle.width / 2 + range.currentDistanceFromScale) :
+                range.position === 'Inside' ? (range.currentRadius - axis.lineStyle.width / 2 - range.currentDistanceFromScale) :
+                    (range.currentRadius + startWidth / 2 - range.currentDistanceFromScale)) : range.currentRadius;
+        return actualRadius;
     }
     /**
      * Method to get the range color of the circular gauge.
@@ -2113,6 +2169,12 @@ class PointerRenderer {
         let childElement;
         let range;
         axis.pointers.map((pointer, pointerIndex) => {
+            if (!isNullOrUndefined(pointer.offset) && pointer.offset.length > 0) {
+                pointer.currentDistanceFromScale = stringToNumber(pointer.offset, axis.currentRadius);
+            }
+            else {
+                pointer.currentDistanceFromScale = pointer.offset;
+            }
             range = axis.visibleRange;
             pointer.pathElement = [];
             this.calculatePointerRadius(axis, pointer);
@@ -2134,9 +2196,27 @@ class PointerRenderer {
      */
     calculatePointerRadius(axis, pointer) {
         let padding = 5;
-        pointer.currentRadius = pointer.radius === null ?
-            (axis.currentRadius - (axis.farSize + padding)) :
-            stringToNumber(pointer.radius, axis.currentRadius);
+        pointer.currentRadius = !isNullOrUndefined(pointer.radius) ?
+            stringToNumber(pointer.radius, axis.currentRadius) : pointer.position !== 'Auto' ?
+            this.pointerRadiusForPosition(axis, pointer) : (axis.currentRadius - (axis.farSize + padding));
+    }
+    /**
+     * Measure the pointer length of the circular gauge based on pointer position.
+     * @return {number}
+     */
+    pointerRadiusForPosition(axis, pointer) {
+        let pointerRadius;
+        let rangeBarOffset = pointer.type === 'RangeBar' ? pointer.pointerWidth : 0;
+        let markerOffset = pointer.type === 'Marker' ? ((pointer.markerShape === 'InvertedTriangle' ||
+            pointer.markerShape === 'Triangle') ? (pointer.position === 'Cross' ? pointer.markerWidth / 2 : 0) :
+            pointer.markerWidth / 2) : 0;
+        pointerRadius = pointer.position === 'Inside' ?
+            (axis.currentRadius - axis.lineStyle.width / 2 - markerOffset - pointer.currentDistanceFromScale) :
+            pointer.position === 'Outside' ?
+                (axis.currentRadius + rangeBarOffset + axis.lineStyle.width / 2 + markerOffset + pointer.currentDistanceFromScale) :
+                (axis.currentRadius + rangeBarOffset / 2 - pointer.currentDistanceFromScale -
+                    ((pointer.markerShape === 'InvertedTriangle' || pointer.markerShape === 'Triangle') ? markerOffset : 0));
+        return pointerRadius;
     }
     /**
      * Method to render the needle pointer of the ciruclar gauge.
@@ -2237,8 +2317,15 @@ class PointerRenderer {
      */
     drawMarkerPointer(axis, axisIndex, index, parentElement, gauge) {
         let pointer = axis.pointers[index];
+        let shapeBasedOnPosition = pointer.markerShape;
+        if (isNullOrUndefined(pointer.radius) && !isNullOrUndefined(pointer.position) && (pointer.markerShape === 'InvertedTriangle' ||
+            pointer.markerShape === 'Triangle')) {
+            shapeBasedOnPosition = ((pointer.position === 'Outside' || pointer.position === 'Cross') && pointer.markerShape === 'Triangle' ?
+                'InvertedTriangle' : (pointer.position === 'Inside' &&
+                pointer.markerShape === 'InvertedTriangle' ? 'Triangle' : pointer.markerShape));
+        }
         let location = getLocationFromAngle(0, pointer.currentRadius, gauge.midPoint);
-        pointer.pathElement.push(appendPath(calculateShapes(location, pointer.markerShape, new Size(pointer.markerWidth, pointer.markerHeight), pointer.imageUrl, new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Marker_' + index, pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width, pointer.border.color, null, '0', '', '')), parentElement, gauge, pointer.markerShape === 'Circle' ? 'Ellipse' : (pointer.markerShape === 'Image' ? 'Image' : 'Path')));
+        pointer.pathElement.push(appendPath(calculateShapes(location, shapeBasedOnPosition, new Size(pointer.markerWidth, pointer.markerHeight), pointer.imageUrl, new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Marker_' + index, pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width, pointer.border.color, null, '0', '', '')), parentElement, gauge, pointer.markerShape === 'Circle' ? 'Ellipse' : (pointer.markerShape === 'Image' ? 'Image' : 'Path')));
     }
     /**
      * Method to render the range bar pointer of the ciruclar gauge.
@@ -2364,7 +2451,6 @@ var __rest$1 = (undefined && undefined.__rest) || function (s, e) {
 /**
  * Specifies the CircularGauge Axis Layout
  */
-const labelPadding = 10;
 class AxisLayoutPanel {
     constructor(gauge) {
         this.gauge = gauge;
@@ -2646,38 +2732,46 @@ class AxisLayoutPanel {
         let lineSize;
         let outerHeight;
         let innerHeight;
-        let isMajorTickOutside;
-        let isMinorTickOutside;
-        let isLabelOutside;
+        let heightForCross;
         let axisPadding = 5;
         let majorTickOffset = 0;
         let minorTickOffset = 0;
         let labelOffset = 0;
+        let labelPadding = 10;
         this.farSizes = [];
         this.calculateAxisValues(rect);
         for (let axis of axes) {
             lineSize = (axis.lineStyle.width / 2);
             outerHeight = 0;
             innerHeight = 0;
-            isMajorTickOutside = axis.majorTicks.position === 'Outside';
+            heightForCross = axis.majorTicks.position === 'Cross' ? axis.majorTicks.height / 2 : heightForCross;
+            heightForCross = (axis.minorTicks.position === 'Cross' && heightForCross < axis.minorTicks.height / 2) ?
+                axis.minorTicks.height / 2 : heightForCross;
+            heightForCross = (axis.labelStyle.position === 'Cross' && heightForCross < axis.maxLabelSize.height / 2) ?
+                axis.maxLabelSize.height / 2 : heightForCross;
+            lineSize = lineSize < heightForCross ? heightForCross : lineSize;
             majorTickOffset = axis.majorTicks.offset;
-            isMinorTickOutside = axis.minorTicks.position === 'Outside';
             minorTickOffset = axis.minorTicks.offset;
-            isLabelOutside = axis.labelStyle.position === 'Outside';
             labelOffset = axis.labelStyle.offset;
+            labelPadding = axis.labelStyle.shouldMaintainPadding ? 10 : 0;
             // Calculating the outer space of the axis
-            outerHeight += !(isMajorTickOutside && isMinorTickOutside && isLabelOutside) ? axisPadding : 0;
-            outerHeight += (isMajorTickOutside ? (axis.majorTicks.height + lineSize) : 0) +
-                (isLabelOutside ? (axis.maxLabelSize.height + labelPadding + labelOffset) : 0) +
-                ((isMinorTickOutside && !isMajorTickOutside) ? (axis.minorTicks.height + lineSize) : 0) + lineSize;
-            outerHeight += (isMajorTickOutside && isMinorTickOutside) ? Math.max(majorTickOffset, minorTickOffset) :
-                (isMajorTickOutside ? majorTickOffset : isMinorTickOutside ? minorTickOffset : 0);
+            outerHeight += !(axis.majorTicks.position === 'Outside' && axis.minorTicks.position === 'Outside' &&
+                axis.labelStyle.position === 'Outside') ? axisPadding : 0;
+            outerHeight += (axis.majorTicks.position === 'Outside' ? (axis.majorTicks.height + lineSize) : 0) +
+                (axis.labelStyle.position === 'Outside' ? (axis.maxLabelSize.height + labelOffset + labelPadding) : 0) +
+                ((axis.minorTicks.position === 'Outside' && !(axis.majorTicks.position === 'Outside')) ?
+                    (axis.minorTicks.height + lineSize) : 0) + lineSize;
+            outerHeight += (axis.majorTicks.position === 'Outside' && axis.minorTicks.position === 'Outside') ?
+                Math.max(majorTickOffset, minorTickOffset) : (axis.majorTicks.position === 'Outside' ?
+                majorTickOffset : axis.minorTicks.position === 'Outside' ? minorTickOffset : 0);
             // Calculating the inner space of the axis
-            innerHeight += (!isMajorTickOutside ? (axis.majorTicks.height + lineSize) : 0) +
-                (!isLabelOutside ? (axis.maxLabelSize.height + labelPadding + labelOffset) : 0) +
-                ((!isMinorTickOutside && isMajorTickOutside) ? (axis.minorTicks.height + lineSize) : 0) + lineSize;
-            innerHeight += (!isMajorTickOutside && !isMinorTickOutside) ? Math.max(majorTickOffset, minorTickOffset) :
-                (!isMajorTickOutside ? majorTickOffset : !isMinorTickOutside ? minorTickOffset : 0);
+            innerHeight += ((axis.majorTicks.position === 'Inside') ? (axis.majorTicks.height + lineSize) : 0) +
+                ((axis.labelStyle.position === 'Inside') ? (axis.maxLabelSize.height + labelOffset + labelPadding) : 0) +
+                ((axis.minorTicks.position === 'Inside' && axis.majorTicks.position === 'Outside') ?
+                    (axis.minorTicks.height + lineSize) : 0) + lineSize;
+            innerHeight += ((axis.majorTicks.position === 'Inside') && (axis.minorTicks.position === 'Inside')) ?
+                Math.max(majorTickOffset, minorTickOffset) : ((axis.majorTicks.position === 'Inside') ?
+                majorTickOffset : (axis.minorTicks.position === 'Inside') ? minorTickOffset : 0);
             if (this.farSizes[this.farSizes.length - 1]) {
                 this.farSizes[this.farSizes.length - 1] += (innerHeight + outerHeight);
             }
@@ -2710,8 +2804,8 @@ class AxisLayoutPanel {
                 id: gauge.element.id + '_Axis_Group_' + index
             });
             renderer.drawAxisOuterLine(axis, index, element, gauge);
-            renderer.drawAxisRange(axis, index, element, gauge);
             renderer.drawAxisLine(axis, index, element, gauge);
+            renderer.drawAxisRange(axis, index, element, gauge);
             renderer.drawMajorTickLines(axis, index, element, gauge);
             renderer.drawMinorTickLines(axis, index, element, gauge);
             renderer.drawAxisLabels(axis, index, element, gauge);
@@ -3471,6 +3565,126 @@ class LegendOptions {
     }
 }
 
+/**
+ * Represent the print and export for gauge
+ */
+class ExportUtils {
+    /**
+     * Constructor for gauge
+     * @param control
+     */
+    constructor(control) {
+        this.control = control;
+    }
+    /**
+     * To print the gauge
+     * @param elements
+     */
+    print(elements) {
+        this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
+        this.printWindow.moveTo(0, 0);
+        this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
+        let argsData = {
+            cancel: false, htmlContent: this.getHTMLContent(elements), name: beforePrint
+        };
+        this.control.trigger('beforePrint', argsData, (beforePrintArgs) => {
+            if (!argsData.cancel) {
+                print(argsData.htmlContent, this.printWindow);
+            }
+        });
+    }
+    /**
+     * To get the html string of the gauge
+     * @param elements
+     * @private
+     */
+    getHTMLContent(elements) {
+        let div = createElement('div');
+        if (elements) {
+            if (elements instanceof Array) {
+                elements.forEach((value) => {
+                    div.appendChild(getElement(value).cloneNode(true));
+                });
+            }
+            else if (elements instanceof Element) {
+                div.appendChild(elements.cloneNode(true));
+            }
+            else {
+                div.appendChild(getElement(elements).cloneNode(true));
+            }
+        }
+        else {
+            div.appendChild(this.control.element.cloneNode(true));
+        }
+        return div;
+    }
+    /**
+     * To export the file as image/svg format
+     * @param type
+     * @param fileName
+     */
+    export(type, fileName, orientation) {
+        let element = createElement('canvas', {
+            id: 'ej2-canvas',
+            attrs: {
+                'width': this.control.availableSize.width.toString(),
+                'height': this.control.availableSize.height.toString()
+            }
+        });
+        let isDownload = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
+        orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
+        let svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+            this.control.svgObject.outerHTML +
+            '</svg>';
+        let url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
+            [(new XMLSerializer()).serializeToString(this.control.svgObject)], { type: 'image/svg+xml' }));
+        if (type === 'SVG') {
+            this.triggerDownload(fileName, type, url, isDownload);
+        }
+        else {
+            let image = new Image();
+            let ctx = element.getContext('2d');
+            image.onload = (() => {
+                ctx.drawImage(image, 0, 0);
+                window.URL.revokeObjectURL(url);
+                if (type === 'PDF') {
+                    let document = new PdfDocument();
+                    let imageString = element.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
+                    document.pageSettings.orientation = orientation;
+                    imageString = imageString.slice(imageString.indexOf(',') + 1);
+                    document.pages.add().graphics.drawImage(new PdfBitmap(imageString), 0, 0, (this.control.availableSize.width - 60), this.control.availableSize.height);
+                    if (isDownload) {
+                        document.save(fileName + '.pdf');
+                        document.destroy();
+                    }
+                }
+                else {
+                    this.triggerDownload(fileName, type, element.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
+                }
+            });
+            image.src = url;
+        }
+    }
+    /**
+     * To trigger the download element
+     * @param fileName
+     * @param type
+     * @param url
+     */
+    triggerDownload(fileName, type, url, isDownload) {
+        createElement('a', {
+            attrs: {
+                'download': fileName + '.' + type.toLocaleLowerCase(),
+                'href': url
+            }
+        }).dispatchEvent(new MouseEvent(isDownload ? 'click' : 'move', {
+            view: window,
+            bubbles: false,
+            cancelable: true
+        }));
+    }
+}
+
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -3998,6 +4212,22 @@ let CircularGauge = class CircularGauge extends Component {
         }
     }
     /**
+     * Handles the print method for gauge control.
+     */
+    print(id) {
+        let exportChart = new ExportUtils(this);
+        exportChart.print(id);
+    }
+    /**
+     * Handles the export method for gauge control.
+     * @param type
+     * @param fileName
+     */
+    export(type, fileName, orientation) {
+        let exportMap = new ExportUtils(this);
+        exportMap.export(type, fileName, orientation);
+    }
+    /**
      * Method to set mouse x, y from events
      */
     setMouseXY(e) {
@@ -4048,7 +4278,7 @@ let CircularGauge = class CircularGauge extends Component {
         }
         endAngle = isClockWise ? endAngle : [startAngle, startAngle = endAngle][0];
         endWidth = isClockWise ? endWidth : [startWidth, startWidth = endWidth][0];
-        element.setAttribute('d', getPathArc(this.midPoint, Math.round(startAngle), Math.round(endAngle), range.currentRadius, startWidth, endWidth));
+        element.setAttribute('d', getPathArc(this.midPoint, Math.round(startAngle), Math.round(endAngle), range.currentRadius, startWidth, endWidth, range, axis));
         setStyles(element, (range.color ? range.color : range.rangeColor), {
             color: (range.color ? range.color : range.rangeColor),
             width: 0
@@ -4280,6 +4510,9 @@ __decorate([
 __decorate([
     Event()
 ], CircularGauge.prototype, "resized", void 0);
+__decorate([
+    Event()
+], CircularGauge.prototype, "beforePrint", void 0);
 CircularGauge = __decorate([
     NotifyPropertyChanges
 ], CircularGauge);

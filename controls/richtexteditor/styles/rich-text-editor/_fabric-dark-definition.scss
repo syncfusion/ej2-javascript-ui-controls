@@ -23,8 +23,8 @@ $rte-quick-item-line-height: 25px !default;
 $rte-quick-item-active-bg: $neutral-quintenary !default;
 $rte-quick-item-active-font-color: $neutral-light-fontalt !default;
 $rte-quick-item-border: 0 !default;
-$rte-quick-item-hover-border-color: 0 !default;
-$rte-quick-item-active-border-color: 0 !default;
+$rte-quick-item-hover-border-color: transparent !default;
+$rte-quick-item-active-border-color: transparent !default;
 
 $rte-big-quick-drop-btn-line-height: 33px !default;
 $rte-quick-drop-btn-line-height: 24px !default;
@@ -80,7 +80,7 @@ $rte-split-btn-active-border: 0 !default;
 $rte-split-btn-active-color-icon-line-height: 25px !default;
 $rte-big-split-btn-active-color-icon-line-height: 35px !default;
 
-$rte-link-valid-color: none !default;
+$rte-link-valid-color: transparent !default;
 $rte-img-popup-color: #000 !default;
 $rte-img-border-color: #ccc !default;
 $rte-img-popup-border: 1px solid $rte-img-border-color !default;

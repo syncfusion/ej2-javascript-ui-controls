@@ -62,15 +62,15 @@ $tbar-default-icon-color: $gray-700 !default;
 $tbar-default-font: $gray-700 !default;
 
 $tbar-nav-press-border: 3px solid $gray-500 !default;
-$tbar-nav-hover-border: '' !default;
-$tbar-nav-focus-border: '' !default;
-$tbar-pressed-border: '' !default;
+$tbar-nav-hover-border: 0 !default;
+$tbar-nav-focus-border: 0 !default;
+$tbar-pressed-border: transparent !default;
 
 $tbar-nav-pressed-box-shadow: none !default;
 $tbar-pop-box-shadow: none !default;
 $tbar-pop-radius: 4px !default;
 $tbar-radius: 4px !default;
-$tbar-border-nav-active-type: '' !default;
+$tbar-border-nav-active-type: none !default;
 
 $tbar-btn-pop-nrml-minheight: 26px !default;
 $tbar-btn-pop-bgr-minheight: 25px !default;

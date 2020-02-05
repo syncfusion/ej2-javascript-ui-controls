@@ -11,7 +11,6 @@ import { PointerRenderer } from './pointer-renderer';
 /**
  * Specifies the CircularGauge Axis Layout
  */
-const labelPadding: number = 10;
 export class AxisLayoutPanel {
 
     private gauge: CircularGauge;
@@ -323,36 +322,45 @@ export class AxisLayoutPanel {
         let lineSize: number;
         let outerHeight: number;
         let innerHeight: number;
-        let isMajorTickOutside: boolean;
-        let isMinorTickOutside: boolean;
-        let isLabelOutside: boolean;
+        let heightForCross: number;
         let axisPadding: number = 5;
         let majorTickOffset: number = 0;
         let minorTickOffset: number = 0;
         let labelOffset: number = 0;
+        let labelPadding: number = 10;
         this.farSizes = [];
         this.calculateAxisValues(rect);
         for (let axis of axes) {
             lineSize = (axis.lineStyle.width / 2);
             outerHeight = 0; innerHeight = 0;
-            isMajorTickOutside = axis.majorTicks.position === 'Outside'; majorTickOffset = axis.majorTicks.offset;
-            isMinorTickOutside = axis.minorTicks.position === 'Outside'; minorTickOffset = axis.minorTicks.offset;
-            isLabelOutside = axis.labelStyle.position === 'Outside'; labelOffset = axis.labelStyle.offset;
+            heightForCross = axis.majorTicks.position === 'Cross' ? axis.majorTicks.height / 2 : heightForCross;
+            heightForCross = (axis.minorTicks.position === 'Cross' && heightForCross < axis.minorTicks.height / 2) ?
+                axis.minorTicks.height / 2 : heightForCross;
+            heightForCross = (axis.labelStyle.position === 'Cross' && heightForCross < axis.maxLabelSize.height / 2) ?
+                axis.maxLabelSize.height / 2 : heightForCross;
+            lineSize = lineSize < heightForCross ? heightForCross : lineSize;
+            majorTickOffset = axis.majorTicks.offset;
+            minorTickOffset = axis.minorTicks.offset;
+            labelOffset = axis.labelStyle.offset;
+            labelPadding = axis.labelStyle.shouldMaintainPadding ? 10 : 0;
             // Calculating the outer space of the axis
-            outerHeight += !(isMajorTickOutside && isMinorTickOutside && isLabelOutside) ? axisPadding : 0;
-            outerHeight += (isMajorTickOutside ? (axis.majorTicks.height + lineSize) : 0) +
-                (isLabelOutside ? (axis.maxLabelSize.height + labelPadding + labelOffset) : 0) +
-                ((isMinorTickOutside && !isMajorTickOutside) ? (axis.minorTicks.height + lineSize) : 0) + lineSize;
-
-            outerHeight += (isMajorTickOutside && isMinorTickOutside) ? Math.max(majorTickOffset, minorTickOffset) :
-                (isMajorTickOutside ? majorTickOffset : isMinorTickOutside ? minorTickOffset : 0);
+            outerHeight += !(axis.majorTicks.position === 'Outside' && axis.minorTicks.position === 'Outside' &&
+                axis.labelStyle.position === 'Outside') ? axisPadding : 0;
+            outerHeight += (axis.majorTicks.position === 'Outside' ? (axis.majorTicks.height + lineSize) : 0) +
+                (axis.labelStyle.position === 'Outside' ? (axis.maxLabelSize.height + labelOffset + labelPadding) : 0) +
+                ((axis.minorTicks.position === 'Outside' && !(axis.majorTicks.position === 'Outside')) ?
+                    (axis.minorTicks.height + lineSize) : 0) + lineSize;
+            outerHeight += (axis.majorTicks.position === 'Outside' && axis.minorTicks.position === 'Outside') ?
+                Math.max(majorTickOffset, minorTickOffset) : (axis.majorTicks.position === 'Outside' ?
+                    majorTickOffset : axis.minorTicks.position === 'Outside' ? minorTickOffset : 0);
             // Calculating the inner space of the axis
-            innerHeight += (!isMajorTickOutside ? (axis.majorTicks.height + lineSize) : 0) +
-                (!isLabelOutside ? (axis.maxLabelSize.height + labelPadding + labelOffset) : 0) +
-                ((!isMinorTickOutside && isMajorTickOutside) ? (axis.minorTicks.height + lineSize) : 0) + lineSize;
-
-            innerHeight += (!isMajorTickOutside && !isMinorTickOutside) ? Math.max(majorTickOffset, minorTickOffset) :
-                (!isMajorTickOutside ? majorTickOffset : !isMinorTickOutside ? minorTickOffset : 0);
+            innerHeight += ((axis.majorTicks.position === 'Inside') ? (axis.majorTicks.height + lineSize) : 0) +
+                ((axis.labelStyle.position === 'Inside') ? (axis.maxLabelSize.height + labelOffset + labelPadding) : 0) +
+                ((axis.minorTicks.position === 'Inside' && axis.majorTicks.position === 'Outside') ?
+                    (axis.minorTicks.height + lineSize) : 0) + lineSize;
+            innerHeight += ((axis.majorTicks.position === 'Inside') && (axis.minorTicks.position === 'Inside')) ?
+                Math.max(majorTickOffset, minorTickOffset) : ((axis.majorTicks.position === 'Inside') ?
+                    majorTickOffset : (axis.minorTicks.position === 'Inside') ? minorTickOffset : 0);
             if (this.farSizes[this.farSizes.length - 1]) {
                 this.farSizes[this.farSizes.length - 1] += (innerHeight + outerHeight);
             }
@@ -387,8 +395,8 @@ export class AxisLayoutPanel {
                 id: gauge.element.id + '_Axis_Group_' + index
             });
             renderer.drawAxisOuterLine(axis, index, element, gauge);
-            renderer.drawAxisRange(axis, index, element, gauge);
             renderer.drawAxisLine(axis, index, element, gauge);
+            renderer.drawAxisRange(axis, index, element, gauge);
             renderer.drawMajorTickLines(axis, index, element, gauge);
             renderer.drawMinorTickLines(axis, index, element, gauge);
             renderer.drawAxisLabels(axis, index, element, gauge);

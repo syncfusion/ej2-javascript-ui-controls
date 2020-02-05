@@ -1782,7 +1782,6 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private tooltipToggle(target?: HTMLElement): void {
-        this.setZindex();
         if (this.isMaterialTooltip) {
             !this.tooltipElement.classList.contains(classNames.materialTooltipOpen) ?
                 this.openMaterialTooltip() : this.refreshTooltip(this.firstHandle);
@@ -1962,7 +1961,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 this.secondHandle.style.zIndex = (this.zIndex + 4) + '';
             }
         } else if (this.isMaterialTooltip && this.tooltipElement) {
-            this.tooltipElement.style.zIndex = (this.zIndex + 4) + '';
+            this.tooltipElement.style.zIndex = getZindexPartial(this.element) + '';
         }
     }
 
@@ -3080,7 +3079,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private setZindex(): void {
-        this.zIndex = getZindexPartial(this.element);
+        this.zIndex = 6;
         if (!isNullOrUndefined(this.ticks) && this.ticks.placement !== 'None') {
             this.ul.style.zIndex = (this.zIndex + -7) + '';
             this.element.style.zIndex = (this.zIndex + 2) + '';

@@ -4,6 +4,10 @@
     font-size: $grid-xlfl-dlgfields-font-size;
   }
 
+  .e-emptyicon {
+    opacity: 0;
+  }
+
   .e-xlfl-fieldset {
     font-size: $grid-xlfl-fieldset-font-size;
     padding-top: $grid-xlfl-fieldset-padding;

@@ -3,7 +3,6 @@
  */
 import { createElement, detach, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { EditorManager } from '../../../src/editor-manager/index';
-import { NodeSelection, } from '../../../src/selection/index';
 
 describe('Indents plugin', () => {
 
@@ -86,7 +85,6 @@ describe('Indents plugin', () => {
             expect(start.style.marginLeft === '0px').toBe(true);
             expect(end.style.marginLeft === '0px').toBe(true);
 
-
             editorObj.execCommand("Indents", 'Outdent', null);
             expect(start.style.marginLeft === '').toBe(true);
             expect(end.style.marginLeft === '').toBe(true);
@@ -99,7 +97,6 @@ describe('Indents plugin', () => {
             detach(elem);
         });
     });
-
 
     describe(' apply Indents to List element testing', () => {
         let editorObj: EditorManager;
@@ -144,5 +141,4 @@ describe('Indents plugin', () => {
             detach(elem);
         });
     });
-
 });

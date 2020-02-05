@@ -1,18 +1,10 @@
 /**
- * Content renderer spec
+ * Link module spec
  */
-import { isNullOrUndefined, detach, Browser } from '@syncfusion/ej2-base';
-import { RichTextEditor, Toolbar, Link } from './../../../src/index';
+import { isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
+import { RichTextEditor } from './../../../src/index';
 import { NodeSelection } from './../../../src/selection/index';
 import { renderRTE, destroy, dispatchEvent, androidUA, iPhoneUA, currentBrowserUA } from "./../render.spec";
-import { QuickToolbar, MarkdownEditor, HtmlEditor } from "../../../src/rich-text-editor/index";
-
-RichTextEditor.Inject(MarkdownEditor);
-RichTextEditor.Inject(HtmlEditor);
-
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(QuickToolbar);
-RichTextEditor.Inject(Link);
 
 let keyboardEventArgs = {
     preventDefault: function () { },
@@ -29,7 +21,6 @@ let keyboardEventArgs = {
 };
 describe('insert Link', () => {
     describe('div content mobile ui', () => {
-        let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let mobileUA: string = "Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) " +
             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36";
@@ -37,7 +28,6 @@ describe('insert Link', () => {
         beforeAll(() => {
             Browser.userAgent = mobileUA;
             rteObj = renderRTE({});
-            rteEle = rteObj.element;
         });
         afterAll(() => {
             Browser.userAgent = defaultUA;
@@ -144,7 +134,8 @@ describe('insert Link', () => {
         });
 
         it('iframe - show link quick toolbar testing', () => {
-            rteObj.destroy();
+            destroy(rteObj);
+            rteObj = undefined;
             rteObj = renderRTE({
                 iframeSettings: {
                     enable: true
@@ -168,11 +159,9 @@ describe('insert Link', () => {
         });
     });
     describe('div content-rte testing', () => {
-        let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         beforeAll(() => {
             rteObj = renderRTE({ value: '<p>test</p>' });
-            rteEle = rteObj.element;
         });
         afterAll(() => {
             destroy(rteObj);
@@ -261,14 +250,12 @@ describe('insert Link', () => {
     });
 
     describe('Link actions with LinkPath API property set as Relative', () => {
-        let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         beforeAll(() => {
             rteObj = renderRTE({ 
                 value: '<p>test</p>',
                 enableAutoUrl: true
              });
-            rteEle = rteObj.element;
         });
         afterAll(() => {
             destroy(rteObj);
@@ -314,11 +301,9 @@ describe('insert Link', () => {
     });
 
     describe('Insert link in HTML Tag IFRAME throws error', () => {
-        let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         beforeAll(() => {
             rteObj = renderRTE({ value: '' });
-            rteEle = rteObj.element;
         });
         afterAll(() => {
             destroy(rteObj);
@@ -463,11 +448,9 @@ describe('insert Link', () => {
     });
 
     describe('link dialog open - Short cut key', () => {
-        let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         beforeAll(() => {
             rteObj = renderRTE({});
-            rteEle = rteObj.element;
         });
         afterAll(() => {
             destroy(rteObj);
@@ -487,11 +470,9 @@ describe('insert Link', () => {
     });
 
     describe('link dialog - documentClick', () => {
-        let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         beforeAll(() => {
             rteObj = renderRTE({});
-            rteEle = rteObj.element;
         });
         afterAll(() => {
             destroy(rteObj);
@@ -855,7 +836,6 @@ describe('insert Link', () => {
             dispatchEvent(link, 'mouseup');
             setTimeout(() => {
                 let linkBtn: HTMLElement = document.getElementById(controlId + "_quick_EditLink");
-                console.log(linkBtn.innerHTML);
                 linkBtn.click();
                 let linkelem: HTMLElement = rteObj.element.querySelector("#link");
                 rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, link.childNodes[0].childNodes[0], link.childNodes[0].childNodes[0], 1, 2);

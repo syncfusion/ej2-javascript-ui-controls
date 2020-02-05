@@ -79,7 +79,7 @@
 @mixin outline-active {
   @if $skin-name == 'bootstrap4' {
     background-color: $btn-bgcolor;
-    border-color: none;
+    border-color: transparent;
     $color-rgba: rgba(mix(lighten($btn-outline-active-bgcolor, 50%), $btn-outline-active-border-color, .15), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
@@ -104,7 +104,7 @@
 @mixin outline-primary-active {
   @if $skin-name == 'bootstrap4' {
     background-color: $btn-primary-bgcolor;
-    border-color: none;
+    border-color: transparent;
     $color-rgba: rgba(mix(lighten($btn-primary-active-bgcolor, 50%), $btn-outline-primary-active-border-color, .15), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
@@ -129,7 +129,7 @@
 @mixin outline-success-active {
   @if $skin-name == 'bootstrap4' {
     background-color: $btn-success-bgcolor;
-    border-color: none;
+    border-color: transparent;
     $color-rgba: rgba(mix(lighten($btn-success-active-bgcolor, 50%), $btn-success-active-border-color, .15), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
@@ -154,7 +154,7 @@
 @mixin outline-info-active {
   @if $skin-name == 'bootstrap4' {
     background-color: $btn-info-bgcolor;
-    border-color: none;
+    border-color: transparent;
     $color-rgba: rgba(mix(lighten($btn-info-active-bgcolor, 50%), $btn-info-active-border-color, .15), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
@@ -179,7 +179,7 @@
 @mixin outline-warning-active {
   @if $skin-name == 'bootstrap4' {
     background-color: $btn-warning-bgcolor;
-    border-color: none;
+    border-color: transparent;
     $color-rgba: rgba(mix(lighten($btn-warning-active-bgcolor, 50%), $btn-warning-active-border-color, .15), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }
@@ -204,7 +204,7 @@
 @mixin outline-danger-active {
   @if $skin-name == 'bootstrap4' {
     background-color: $btn-danger-bgcolor;
-    border-color: none;
+    border-color: transparent;
     $color-rgba: rgba(mix(lighten($btn-danger-active-bgcolor, 50%), $btn-danger-active-border-color, .15), .5);
     box-shadow: 0 0 0 .25em $color-rgba;
   }

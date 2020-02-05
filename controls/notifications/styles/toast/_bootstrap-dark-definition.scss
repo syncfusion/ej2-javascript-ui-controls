@@ -43,7 +43,7 @@ $toast-title-font-weight: bold !default;
 
 //theme variables
 
-$toast-box-shadow: 0 2px 5px 0 ($grey-base, .26) !default;
+$toast-box-shadow: 0 2px 5px 0 rgba($grey-base, .26) !default;
 $toast-hover-box-shadow: 0 6px 12px rgba($base-font, .5) !default;
 $toast-progress-color: $brand-primary !default;
 $toast-bg-color: $grey !default;

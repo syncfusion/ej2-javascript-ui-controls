@@ -118,8 +118,8 @@ export class FullScreen {
     }
 
     protected removeEventListener(): void {
-        this.parent.on(events.keyDown, this.onKeyDown, this);
-        this.parent.off(events.destroy, this.removeEventListener);
+        this.parent.off(events.keyDown, this.onKeyDown);
+        this.parent.off(events.destroy, this.destroy);
     }
 
     /**
@@ -130,6 +130,10 @@ export class FullScreen {
     public destroy(): void {
         if (this.parent.element.classList.contains(classes.CLS_FULL_SCREEN)) {
             this.toggleParentOverflow(false);
+        }
+        let elem: NodeListOf<Element> = document.querySelectorAll('.e-rte-overflow');
+        for (let i: number = 0; i < elem.length; i++) {
+            removeClass([elem[i]], ['e-rte-overflow']);
         }
         this.removeEventListener();
     }

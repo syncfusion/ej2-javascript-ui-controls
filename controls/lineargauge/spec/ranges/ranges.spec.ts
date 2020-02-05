@@ -177,7 +177,6 @@ describe('Linear gauge control', () => {
                 }
             ];
             gauge.refresh();
-            gauge.axes[0].ranges = [{}];
         });
     });
     it('memory leak', () => {     

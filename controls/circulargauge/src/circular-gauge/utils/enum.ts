@@ -2,13 +2,34 @@
  * Defines position of the axis ticks / labels. They are
  * * inside
  * * outside
+ * * cross
  * @private
  */
 export type Position =
-    /**  Inside position of the tick line / axis label. */
+    /**  Inside position of the tick line / axis label / Range. */
     'Inside' |
-    /**  Outside position of the tick line / axis label. */
-    'Outside';
+    /**  Outside position of the tick line / axis label / Range. */
+    'Outside' |
+    /**  Specifies the position type as range cross / Range. */
+    'Cross' ;
+
+/**
+ * Defines position of the axis range / pointers. They are
+ * * inside
+ * * outside
+ * * Cross
+ * * Auto
+ * @private
+ */
+export type PointerRangePosition =
+    /**  Inside position of the pointer. */
+    'Inside' |
+    /**  Outside position of the pointer. */
+    'Outside' |
+    /**  Cross position of the pointer. */
+    'Cross' |
+    /**  Auto position of the pointer. */
+    'Auto';
 
 /**
  * Defines Pointer type of the axis. They are
@@ -126,3 +147,16 @@ export type Alignment =
      'Center' |
      /** Places the legend on the far on the circular gauge */
      'Far';
+
+/**
+ * Export Type
+ */
+export type ExportType =
+    /** Used to export a image as png format */
+    'PNG' |
+    /** Used to export a image as jpeg format */
+    'JPEG' |
+    /** Used to export a file as svg format */
+    'SVG' |
+    /** Used to export a file as pdf format */
+    'PDF';

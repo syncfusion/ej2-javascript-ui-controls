@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 17.4.46 (2020-01-30)
+
+### Slider
+
+#### Bug Fixes
+
+- The issue "z-index value get's updated on each value change" has been resolved.
+
+### NumericTextBox
+
+#### Bug Fixes
+
+- Issue with "validation message not removed while clear the value using clear button" has been resolved.
+
+### ColorPicker
+
+- Provided `onModeSwitch` event after switching mode.
+
 ## 17.4.41 (2020-01-07)
 
 ### Slider

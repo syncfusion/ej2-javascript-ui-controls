@@ -251,6 +251,9 @@ export interface IExportEventArgs extends IChartEventArgs {
     width: number;
     height: number;
 }
+export interface IAfterExportEventArgs extends IChartEventArgs {
+    dataUrl: string;
+}
 /** @private */
 export interface IBoxPlotQuartile {
     minimum: number;

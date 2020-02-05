@@ -1,12 +1,8 @@
-import { Toolbar, MarkdownEditor, RichTextEditor, Link, Image } from './../../../../src/index';
-import { renderRTE, destroy, dispatchEvent, dispatchKeyEvent, setCursorPoint } from './../../render.spec';
-import { detach, } from '@syncfusion/ej2-base';
-
-RichTextEditor.Inject(MarkdownEditor);
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(Link);
-RichTextEditor.Inject(Image);
-
+/**
+ * placeholder spec
+ */
+import { RichTextEditor } from './../../../../src/index';
+import { renderRTE, destroy, dispatchEvent, dispatchKeyEvent } from './../../render.spec';
 
 describe('RTE Markdown BASIC PROPERTIES - placeholder - ', () => {
 
@@ -46,8 +42,7 @@ describe('RTE Markdown BASIC PROPERTIES - placeholder - ', () => {
             afterEach((done: Function) => {
                 destroy(rteObj);
                 done();
-            })
-           
+            });
             it(' Test the getText method ', () => {
                 rteObj = renderRTE({
                     editorMode: "Markdown",
@@ -71,7 +66,6 @@ describe('RTE Markdown BASIC PROPERTIES - placeholder - ', () => {
                     editorMode: "Markdown",
                     placeholder: 'Write a content'
                 });
-
                 expect(rteObj.placeholder === 'Write a content').toBe(true);
                 expect((rteObj as any).inputElement.placeholder === 'Write a content').toBe(true);
             });
@@ -140,7 +134,6 @@ describe('RTE Markdown BASIC PROPERTIES - placeholder - ', () => {
             expect((rteObj as any).inputElement.value === 'RTE').toBe(true);
         });
 
-
         it(' Test the placeholder element disable while valueTemplate exist ', () => {
             rteObj = renderRTE({
                 editorMode: "Markdown",
@@ -170,5 +163,4 @@ describe('RTE Markdown BASIC PROPERTIES - placeholder - ', () => {
             expect((rteObj as any).inputElement.value === '').toBe(true);
         });
     });
-
 });

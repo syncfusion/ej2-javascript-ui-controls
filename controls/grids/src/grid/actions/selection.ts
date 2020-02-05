@@ -405,7 +405,8 @@ export class Selection implements IAction {
                 data: isBlazor() ? selectedData : this.getSelectedRecords(), isInteracted: this.isInteracted
             };
             args = this.addMovableArgs(args, selectedMovableRow);
-            this.onActionComplete(args, events.rowSelected);
+            if (this.isRowSelected) {
+            this.onActionComplete(args, events.rowSelected); }
         });
     }
 
@@ -2043,9 +2044,7 @@ export class Selection implements IAction {
                 }
                 this.updatePersistCollection(rows[j], checkState);
             }
-            if (indexes.length > 0) {
-                this.isSingleSel() ? this.selectRow(indexes[0], true) : this.selectRows(indexes);
-            }
+            this.isSingleSel() && indexes.length > 0 ? this.selectRow(indexes[0], true) : this.selectRows(indexes);
         }
         if (this.parent.isCheckBoxSelection && this.getCurrentBatchRecordChanges().length > 0) {
             this.setCheckAllState();

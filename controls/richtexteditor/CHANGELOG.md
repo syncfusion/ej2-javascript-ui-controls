@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 17.4.47 (2020-02-05)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#150737` - Resolved the issue with inserting an image dialog that was not properly rendered on mobile devices.
+
+- `#F150655` - The issue 'Images not uploaded into the server when pasting only an image from the MS Word in the Rich Text Editor' has been resolved.
+
 ## 17.4.46 (2020-01-30)
 
 ### RichTextEditor

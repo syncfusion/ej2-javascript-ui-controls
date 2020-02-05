@@ -165,7 +165,7 @@
       &:hover {
         @if $skin-name == 'bootstrap4' {
           background-color: darken($gray-600, 7.5%);
-          border: 1px inside darken($gray-600, 10%);
+          border: 1px inset darken($gray-600, 10%);
 
           & .e-icons {
             color: $menu-icon-focussed-color;
@@ -193,7 +193,7 @@
       &:active {
         @if $skin-name == 'bootstrap4' {
           background-color: darken($gray-600, 7.5%);
-          border: 1px inside darken($gray-600, 10%);
+          border: 1px inset darken($gray-600, 10%);
         }
         @else {
           background: $menu-li-bgcolor;

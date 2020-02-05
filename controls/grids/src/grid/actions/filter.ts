@@ -596,6 +596,8 @@ export class Filter implements IAction {
             let len: number = cols.length;
             let column: Column = this.parent.grabColumnByUidFromAllCols(filteredColsUid[i]);
             if (column.field === field || (column.field === column.foreignKeyValue && column.isForeignColumn())) {
+                let currentPred: PredicateModel = this.filterSettings.columns.filter((e: PredicateModel) => {
+                    return e.uid === column.uid; })[0];
                 if (this.filterSettings.type === 'FilterBar' && !isClearFilterBar) {
                     let selector: string = '[id=\'' + column.field + '_filterBarcell\']';
                     fCell = this.parent.getHeaderContent().querySelector(selector) as HTMLInputElement;
@@ -615,9 +617,6 @@ export class Filter implements IAction {
                     let iconClass: string = this.parent.showColumnMenu ? '.e-columnmenu' : '.e-icon-filter';
                     fltrElement.querySelector(iconClass).classList.remove('e-filtered');
                 }
-                let cloneActualPredicate: PredicateModel;
-                column.isForeignColumn() ? cloneActualPredicate = extend({}, this.actualPredicate[column.foreignKeyValue][0]) :
-                cloneActualPredicate = extend({}, this.actualPredicate[field][0]);
                 this.isRemove = true;
                 if (this.actualPredicate[field]) {
                     delete this.actualPredicate[field];
@@ -626,8 +625,11 @@ export class Filter implements IAction {
                     delete this.values[field];
                 }
                 if (this.refresh) {
+                    if (isBlazor() && !this.parent.isJsComponent) {
+                        this.parent.setProperties({ filterSettings: { columns: this.filterSettings.columns } }, true);
+                    }
                     this.parent.notify(events.modelChanged, {
-                        requestType: 'filtering', type: events.actionBegin, currentFilterObject: cloneActualPredicate,
+                        requestType: 'filtering', type: events.actionBegin, currentFilterObject: currentPred,
                         currentFilterColumn: column, action: 'clearFilter'
                     });
                 }
@@ -789,9 +791,6 @@ export class Filter implements IAction {
         }
         if (isNullOrUndefined(this.value) || this.value === '') {
             this.removeFilteredColsByField(this.column.field);
-            if (isBlazor() && !this.parent.isJsComponent) {
-                this.parent.setProperties({ filterSettings: { columns: this.filterSettings.columns } }, true);
-            }
             return;
         }
         this.validateFilterValue(this.value as string);

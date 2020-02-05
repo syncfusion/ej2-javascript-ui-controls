@@ -437,6 +437,7 @@ export class EditorHistory {
         this.revertListChanges();
         this.viewer.owner.isLayoutEnabled = true;
         this.viewer.renderedLists.clear();
+        this.viewer.renderedLevelOverrides = [];
         this.viewer.pages = [];
         this.viewer.layout.layout();
         let selection: Selection = this.viewer.selection;

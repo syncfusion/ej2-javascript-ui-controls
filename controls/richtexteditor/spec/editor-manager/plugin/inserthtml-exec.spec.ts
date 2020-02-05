@@ -1,5 +1,5 @@
 /**
- * Indents plugin spec
+ * Insert HTML exec plugin spec
  */
 import { createElement, detach } from '@syncfusion/ej2-base';
 import { EditorManager } from '../../../src/editor-manager/index';
@@ -96,5 +96,4 @@ describe('Insert HTML  Exec plugin', () => {
             detach(elem);
         });
     });
-
 });

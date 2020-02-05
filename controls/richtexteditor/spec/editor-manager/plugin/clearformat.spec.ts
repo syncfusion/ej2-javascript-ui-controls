@@ -1,8 +1,10 @@
+/**
+ * ClearFormat spec document
+ */
+import { detach } from '@syncfusion/ej2-base';
 import { NodeSelection } from '../../../src/selection/selection';
 import { ClearFormat } from '../../../src/editor-manager/plugin/clearformat';
-/**
- * Selection spec document
- */
+
 describe('Clear Format commands', () => {
     //HTML value
     let innervalue: string = '<div id="div1">'+
@@ -69,21 +71,18 @@ describe('Clear Format commands', () => {
         '</div>'+
         '</div>';
 
-
     let domSelection: NodeSelection = new NodeSelection();
     //DIV Element
     let divElement: HTMLDivElement = document.createElement('div');
     divElement.id = 'divElement';
     divElement.contentEditable = 'true';
     divElement.innerHTML = innervalue;
-    let parentDiv: HTMLDivElement;
 
     beforeAll(() => {
         document.body.appendChild(divElement);
-        parentDiv = document.getElementById('div1') as HTMLDivElement;
     });
     afterAll(() => {
-        document.body.innerHTML = '';
+        detach(divElement);
     });
     /**
      * Text Node Direct Parent

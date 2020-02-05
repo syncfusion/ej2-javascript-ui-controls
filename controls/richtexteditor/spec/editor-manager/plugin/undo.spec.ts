@@ -1,10 +1,8 @@
 /**
- * Content renderer spec
+ * Undo Redo spec
  */
 import { selectAll, removeClass } from '@syncfusion/ej2-base';
-import { RichTextEditor, Toolbar, NodeSelection } from './../../../src/index';
-RichTextEditor.Inject(Toolbar);
-
+import { RichTextEditor, NodeSelection } from './../../../src/index';
 import { renderRTE, destroy } from "./../../rich-text-editor/render.spec";
 
 let keyboardEventArgs = {
@@ -288,6 +286,9 @@ describe('Undo and Redo module', () => {
            document.getElementById('preview-code').click();   
            expect(undoElement.classList.contains('e-overlay')).toBe(false);
            expect(redoElement.classList.contains('e-overlay')).toBe(true);
+        });
+        afterAll(() => {
+            destroy(rteObj);
         });
     });
 });

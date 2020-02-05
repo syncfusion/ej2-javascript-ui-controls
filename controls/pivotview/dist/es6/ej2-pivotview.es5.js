@@ -6519,7 +6519,9 @@ var Render = /** @__PURE__ @class */ (function () {
                 var memberPosition = tupInfo.uNameCollection.indexOf(cell.actualText.toString());
                 var cropUName = tupInfo.uNameCollection.substring(0, memberPosition) +
                     (cell.memberType === 3 ? '' : cell.actualText.toString());
-                var fieldSep = cropUName.split('::').filter(function (item) { return item !== ''; });
+                var fieldSep = cropUName.split('::[').map(function (item) {
+                    return item[0] === '[' ? item : ('[' + item);
+                });
                 if (cell.memberType === 3 && rowMeasurePos === fieldSep.length) {
                     fieldSep.push(cell.actualText.toString());
                 }
@@ -9685,7 +9687,7 @@ var PivotChart = /** @__PURE__ @class */ (function () {
                 var fieldPos = -1;
                 var currrentLevel = firstRowCell.level;
                 if (this.parent.dataType === 'olap') {
-                    fieldPos = tupInfo.uNameCollection.split('::').length - 1;
+                    fieldPos = tupInfo.uNameCollection.split('::[').length - 1;
                     if (firstRowCell.memberType !== 3 && (tupInfo.measureName ?
                         tupInfo.measureName === this.dataSourceSettings.values[0].name : true)) {
                         firstLevelUName = firstLevelUName === undefined ? firstRowCell.levelUniqueName : firstLevelUName;
@@ -13325,7 +13327,9 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
             drillState.push({ level: memberlevel, uName: memberUName, hierarchy: hierarchy, isDrilled: false });
             if (tupInfo[tupPos - 1] && tupInfo[tupPos - 1].typeCollection[memPos] === '1' &&
                 drillState[memPos].level > tupInfo[tupPos - 1].drillInfo[memPos].level) {
-                var uCollection = uNameCollection.split(/[~~,::]/).filter(function (item) { return item; });
+                var uCollection = uNameCollection.split(/~~|::\[/).map(function (item) {
+                    return item[0] === '[' ? item : ('[' + item);
+                });
                 uCollection.pop();
                 var parentLevel = uCollection.join('~~');
                 this.setDrillInfo(parentUName, parentLevel, memPos, tupPos, tupInfo);
@@ -13642,7 +13646,9 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
     OlapEngine.prototype.setDrillInfo = function (pUName, parentLvlCollection, memPos, tupPos, tupInfo) {
         tupPos--;
         while (tupInfo[tupPos] && tupInfo[tupPos].drillInfo[memPos].uName === pUName) {
-            var prevUcollection = tupInfo[tupPos].uNameCollection.split(/[~~,::]/).filter(function (item) { return item; });
+            var prevUcollection = tupInfo[tupPos].uNameCollection.split(/~~|::\[/).map(function (item) {
+                return item[0] === '[' ? item : ('[' + item);
+            });
             if (prevUcollection.join('~~').indexOf(parentLvlCollection) < 0) {
                 break;
             }
@@ -13864,7 +13870,7 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
                     if (withoutAllLastPos > -1) {
                         uniqueName = this.frameUniqueName(uniqueName, currentCell, currentTuple);
                     }
-                    var level = uniqueName.split(/[~~,::]/).length;
+                    var level = uniqueName.split(/~~|::\[/).length;
                     if (currentCell.memberType === 3 && this.tupRowInfo[0].measurePosition > 0) {
                         var parentUName = this.getParentUname(uniqueName, currentCell, true, true);
                         if (measureObjects[parentUName]) {
@@ -13929,8 +13935,8 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
                                 var parentUName = this.getParentUname(uName, axisSets[aPos], isMeasureAvail, true);
                                 if (measureObjects[parentUName]) {
                                     measureObjects[parentUName] = this.sortRowHeaders(measureObjects[parentUName]);
-                                    var isLastMeasure = uName.lastIndexOf('::') === uName.indexOf('::[Measures]');
-                                    var isFullLength = uName.split('::').length - 1 === tupInfo.measurePosition;
+                                    var isLastMeasure = uName.lastIndexOf('::[') === uName.indexOf('::[Measures]');
+                                    var isFullLength = uName.split('::[').length - 1 === tupInfo.measurePosition;
                                     var isLastNotDrilledMember = !tupInfo.drillInfo[tupInfo.measurePosition - 1].isDrilled;
                                     var isActualLastMember = tupInfo.members.length > (tupInfo.measurePosition + 1);
                                     if (isLastMeasure && isFullLength && isLastNotDrilledMember && isActualLastMember) {
@@ -14125,7 +14131,7 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
         var hasLastMeasure = uniqueName.indexOf(currentCell.actualText.toString() + '::[Measures]') > -1;
         uniqueName = uniqueName.substring(0, uniqueName.indexOf(currentCell.actualText.toString())) +
             currentCell.actualText.toString();
-        var measureAvail = uniqueName.split('::').length <= currentTuple.measurePosition;
+        var measureAvail = uniqueName.split('::[').length <= currentTuple.measurePosition;
         uniqueName = uniqueName + ((hasLastMeasure || measureAvail) ? ('::' + currentTuple.measureName) : '');
         return uniqueName;
     };
@@ -14176,7 +14182,7 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
                     i++;
                 }
             }
-            if (tuple.measurePosition >= (uniqueNameColl.split('::').length - 1)) {
+            if (tuple.measurePosition >= (uniqueNameColl.split('::[').length - 1)) {
                 if (sepPos[sepPos.length - 2] > -1) {
                     parentString = uniqueNameColl.substring(0, sepPos[sepPos.length - 2]) + sepObjects[sepPos[sepPos.length - 1]] +
                         tuple.measureName;
@@ -14186,14 +14192,14 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
                 }
             }
             else {
-                var lastPosition = uniqueNameColl.lastIndexOf('~~') > uniqueNameColl.lastIndexOf('::') ?
-                    uniqueNameColl.lastIndexOf('~~') : uniqueNameColl.lastIndexOf('::');
+                var lastPosition = uniqueNameColl.lastIndexOf('~~') > uniqueNameColl.lastIndexOf('::[') ?
+                    uniqueNameColl.lastIndexOf('~~') : uniqueNameColl.lastIndexOf('::[');
                 parentString = lastPosition > -1 ? uniqueNameColl.substring(0, lastPosition) : 'parent';
             }
         }
         else {
-            var lastPosition = uniqueNameColl.lastIndexOf('~~') > uniqueNameColl.lastIndexOf('::') ?
-                uniqueNameColl.lastIndexOf('~~') : uniqueNameColl.lastIndexOf('::');
+            var lastPosition = uniqueNameColl.lastIndexOf('~~') > uniqueNameColl.lastIndexOf('::[') ?
+                uniqueNameColl.lastIndexOf('~~') : uniqueNameColl.lastIndexOf('::[');
             parentString = lastPosition > -1 ? uniqueNameColl.substring(0, lastPosition) : 'parent';
         }
         return parentString;
@@ -14609,7 +14615,9 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
             }
             tupPos++;
         }
-        var memberArray = uNameCollection.split('::');
+        var memberArray = uNameCollection.split('::[').map(function (item) {
+            return item[0] === '[' ? item : ('[' + item);
+        });
         var joinArray = [];
         for (var memPos = 0; memPos <= fieldPos; memPos++) {
             if ((isWithoutAllMember || this.isPaging) && memPos === fieldPos) {
@@ -14633,7 +14641,8 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
             if (item.indexOf(uNameCollection) === 0) {
                 childSets.push(item);
                 if (this.isPaging) {
-                    var drillField = item.split('::')[fieldPos];
+                    var drillField = item.split('::[')[fieldPos];
+                    drillField = drillField[0] == '[' ? drillField : ('[' + drillField);
                     var drillFieldSep = drillField.split('~~');
                     for (var fPos = drillFieldSep.indexOf(memberName); fPos < drillFieldSep.length; fPos++) {
                         memberObj[drillFieldSep[fPos]] = drillFieldSep[fPos];
@@ -14642,7 +14651,9 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
             }
         }
         if (this.isPaging) {
-            var fieldSep = currTuple.uNameCollection.split('::');
+            var fieldSep = currTuple.uNameCollection.split('::[').map(function (item) {
+                return item[0] === '[' ? item : ('[' + item);
+            });
             var cropArray = [];
             for (var fPos = 0; fPos < fieldSep.length; fPos++) {
                 if (fPos !== fieldPos) {
@@ -14658,7 +14669,9 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
         var drillSets = {};
         for (var _a = 0, childSets_1 = childSets; _a < childSets_1.length; _a++) {
             var level = childSets_1[_a];
-            var fields = level.split('::');
+            var fields = level.split('::[').map(function (item) {
+                return item[0] === '[' ? item : ('[' + item);
+            });
             var set = '';
             for (var pos = 0; pos <= fieldPos; pos++) {
                 var field = fields[pos];
@@ -14998,11 +15011,15 @@ var OlapEngine = /** @__PURE__ @class */ (function () {
         var column = this.tupColumnInfo[pivotValue.colOrdinal] &&
             this.tupColumnInfo[pivotValue.colOrdinal].uNameCollection &&
             this.tupColumnInfo[pivotValue.colOrdinal].uNameCollection !== '' ?
-            this.tupColumnInfo[pivotValue.colOrdinal].uNameCollection.split('::') : [];
+            this.tupColumnInfo[pivotValue.colOrdinal].uNameCollection.split('::[').map(function (item) {
+                return item[0] === '[' ? item : ('[' + item);
+            }) : [];
         var row = this.tupRowInfo[pivotValue.rowOrdinal] &&
             this.tupRowInfo[pivotValue.rowOrdinal].uNameCollection &&
             this.tupRowInfo[pivotValue.rowOrdinal].uNameCollection !== '' ?
-            this.tupRowInfo[pivotValue.rowOrdinal].uNameCollection.split('::') : [];
+            this.tupRowInfo[pivotValue.rowOrdinal].uNameCollection.split('::[').map(function (item) {
+                return item[0] === '[' ? item : ('[' + item);
+            }) : [];
         var columnQuery = '';
         var rowQuery = '';
         for (var i = 0; i < column.length; i++) {
@@ -17478,7 +17495,9 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         var fieldPos = tupInfo.drillInfo.map(function (item) { return item.hierarchy; }).indexOf(currentCell.hierarchy.toString());
         if (drillInfo && drillInfo.action === 'down') {
             this.olapEngineModule.drilledSets[currentCell.actualText] = tupInfo.members[fieldPos];
-            var fields = drillInfo.memberName.split('::');
+            var fields = drillInfo.memberName.split('::[').map(function (item) {
+                return item[0] === '[' ? item : ('[' + item);
+            });
             var member = '';
             for (var pos = 0; pos <= fieldPos; pos++) {
                 var field = fields[pos];

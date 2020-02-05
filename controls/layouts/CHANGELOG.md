@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.4.47 (2020-02-05)
+
+### Splitter
+
+#### Bug Fixes
+
+- `#261892` - Issue with removePane public method does not update the value of the paneSettings property.
+
 ## 17.4.46 (2020-01-30)
 
 ### Dashboard Layout
@@ -41,6 +49,8 @@
 - `#255853` - Resolved the issue "Splitter resizing does not work as expected if it has an iframe element".
 
 - `#259892` - Resolved the issue "Splitter pane is not properly resized when it has percentage pane size".
+
+- `#258254` - Resolved the issue with the public method `addPane` that does not work when rendered a single pane.
 
 ## 17.4.41 (2020-01-07)
 

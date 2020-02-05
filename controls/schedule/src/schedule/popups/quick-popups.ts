@@ -1223,6 +1223,9 @@ export class QuickPopups {
         let navigateEle: Element = closest((e.target as Element), '.' + cls.NAVIGATE_CLASS);
         if (!isNullOrUndefined(navigateEle)) {
             let date: Date = this.parent.getDateFromElement(e.currentTarget as HTMLTableCellElement);
+            if (this.parent.isServerRenderer()) {
+                date = new Date(+date - (date.getTimezoneOffset() * 60000));
+            }
             if (!isNullOrUndefined(date)) {
                 this.closeClick();
                 this.parent.setScheduleProperties({ selectedDate: date });

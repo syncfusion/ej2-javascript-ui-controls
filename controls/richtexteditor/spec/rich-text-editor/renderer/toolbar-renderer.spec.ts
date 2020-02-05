@@ -1,14 +1,8 @@
+/**
+ * Toolbar renderer spec
+ */
 import { Browser } from "@syncfusion/ej2-base";
-import { Toolbar } from '../../../src/rich-text-editor/index';
-import { RichTextEditor } from '../../../src/rich-text-editor/base/rich-text-editor';
 import { renderRTE, destroy } from './../render.spec';
-import { QuickToolbar, MarkdownEditor, HtmlEditor } from "../../../src/rich-text-editor/index";
-
-RichTextEditor.Inject(MarkdownEditor);
-RichTextEditor.Inject(HtmlEditor);
-
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(QuickToolbar);
 
 describe('Toolbar - Renderer', () => {
 
@@ -25,8 +19,7 @@ describe('Toolbar - Renderer', () => {
             rteObj = renderRTE({
                 toolbarSettings: {
                     items: ['Formats', 'Alignments']
-                },
-
+                }
             });
             rteEle = rteObj.element;
         });
@@ -61,8 +54,7 @@ describe('Toolbar - Renderer', () => {
                 },
                 toolbarSettings: {
                     items: ['Formats', 'Alignments']
-                },
-
+                }
             });
             rteEle = rteObj.element;
         });
@@ -80,5 +72,4 @@ describe('Toolbar - Renderer', () => {
             Browser.userAgent = defaultUA;
         });
     });
-
 });

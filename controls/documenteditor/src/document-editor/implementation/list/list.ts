@@ -56,4 +56,12 @@ export class WList {
         }
     }
 
+    public clone(): WList {
+        let list: WList = new WList();
+        for (let i: number = 0; i < this.levelOverrides.length; i++) {
+            list.levelOverrides.push(this.levelOverrides[i].clone());
+        }
+        return list;
+    }
+
 }

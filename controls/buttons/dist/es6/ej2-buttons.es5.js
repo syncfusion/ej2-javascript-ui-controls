@@ -881,6 +881,7 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
      * Click the CheckBox element
      * its native method
      * @public
+     * @deprecated
      */
     CheckBox.prototype.click = function () {
         this.element.click();
@@ -889,6 +890,7 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
      * Sets the focus to CheckBox
      * its native method
      * @public
+     * @deprecated
      */
     CheckBox.prototype.focusIn = function () {
         this.element.focus();

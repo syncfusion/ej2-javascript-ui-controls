@@ -35,6 +35,7 @@ export class AjaxHandler {
 
     private httpRequest: XMLHttpRequest;
     private pdfViewer: PdfViewer;
+    private retryCount: number;
 
     /**
      * Constructor for Ajax class
@@ -44,6 +45,7 @@ export class AjaxHandler {
      */
     constructor(pdfviewer: PdfViewer) {
         this.pdfViewer = pdfviewer;
+        this.retryCount = pdfviewer.retryCount;
     }
 
     /**
@@ -58,12 +60,58 @@ export class AjaxHandler {
         } else {
             this.sendRequest(jsonObj);
         }
-        this.httpRequest.onreadystatechange = () => { this.stateChange(this); };
+        this.httpRequest.onreadystatechange = () => {
+            let isSkip: boolean = false;
+            // tslint:disable-next-line
+            let viewerBase: any = this.pdfViewer.viewerBase;
+            if (viewerBase && viewerBase.isPasswordAvailable && viewerBase.passwordData === '') {
+                isSkip = true;
+                this.retryCount = 0;
+            }
+            if (this.retryCount > 0) {
+                isSkip = this.resendRequest(this, jsonObj);
+            }
+            if (!isSkip) {
+                this.stateChange(this);
+            }
+        };
         this.httpRequest.onerror = () => { this.error(this); };
     }
-
+    // tslint:disable-next-line
+    private resendRequest(proxy: AjaxHandler, jsonObj: any): boolean {
+        let isSkip: boolean = false;
+        let status: number = proxy.httpRequest.status;
+        let statusString: string = status.toString().split('')[0];
+        if (proxy.httpRequest.readyState === 4 && status === 200) {
+            // tslint:disable-next-line
+            let data: any;
+            if (this.responseType !== null) {
+                data = proxy.httpRequest.response;
+            } else {
+                data = proxy.httpRequest.responseText;
+            }
+            if (data) {
+                if (typeof data !== 'object') {
+                    try {
+                        data = JSON.parse(data);
+                    } catch (error) {
+                        if (data !== 'Document cache is cleared') {
+                            isSkip = true;
+                        }
+                    }
+                }
+            }
+        }
+        if (statusString === '5' || isSkip) {
+            isSkip = true;
+            this.retryCount--;
+            proxy.send(jsonObj);
+        }
+        return isSkip;
+    }
     private sendRequest(jsonObj: object): void {
         this.httpRequest.open(this.type, this.url, this.mode);
+        this.httpRequest.withCredentials = this.pdfViewer.ajaxRequestSettings.withCredentials;
         this.httpRequest.setRequestHeader('Content-Type', this.contentType);
         jsonObj = this.addExtraData(jsonObj);
         this.setCustomAjaxHeaders();

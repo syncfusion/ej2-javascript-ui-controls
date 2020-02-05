@@ -5,16 +5,14 @@
       border-color: $grid-columnchooser-footer-border-color;
       opacity: $grid-columnchooser-footer-border-opacity;
     }
+
+    .e-filtered::before {
+      color: $grid-filtered-color;
+    }
   }
 
   .e-xlsel {
     background-color: $grid-autofill-color;
     border-color: $grid-autofill-color;
-  }
-
-  .e-filtered {
-    ::before {
-      color: $grid-filtered-color;
-    }
   }
 }

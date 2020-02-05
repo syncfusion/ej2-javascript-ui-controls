@@ -1714,17 +1714,17 @@ export class Layout {
         let levelOverride: WLevelOverride = !isNullOrUndefined(list.levelOverrides) ? list.levelOverrides[levelNumber] as WLevelOverride : undefined;
         // If LevelOverride exists and have either override list level or StartAtOverride, then only list numbering will be restarted.
         // tslint:disable-next-line:max-line-length
-        // if (!isNullOrUndefined(levelOverride) && !(document.renderedLevelOverrides.indexOf(levelOverride) > -1) && isNullOrUndefined(levelOverride.overrideListLevel)) {
-        //     //Add List Override style
-        //     document.renderedLevelOverrides.push(list.levelOverrides.getItem(levelNumber) as WLevelOverride);
-        //     if (document.renderedLists.containsKey((list.wordDocument as WordDocument).getAbstractListById(list.abstractListId))) {
-        // tslint:disable-next-line:max-line-length
-        //         let levels: Dictionary<number, number> = document.renderedLists.get((list.wordDocument as WordDocument).getAbstractListById(list.abstractListId));
-        //         if (levels.containsKey(levelNumber)) {
-        //             levels.remove(levelNumber);
-        //         }
-        //     }
-        // }
+        if (!isNullOrUndefined(levelOverride) && this.viewer.renderedLevelOverrides.indexOf(levelOverride) === -1 && isNullOrUndefined(levelOverride.overrideListLevel)) {
+            //Add List Override style
+            this.viewer.renderedLevelOverrides.push(levelOverride);
+            if (this.viewer.renderedLists.containsKey(this.viewer.getAbstractListById(list.abstractListId))) {
+                // tslint:disable-next-line:max-line-length
+                let levels: Dictionary<number, number> = this.viewer.renderedLists.get(this.viewer.getAbstractListById(list.abstractListId));
+                if (levels.containsKey(levelNumber)) {
+                    levels.remove(levelNumber);
+                }
+            }
+        }
         if (isNullOrUndefined(isAutoList)) {
             this.updateListValues(list, levelNumber);
         }

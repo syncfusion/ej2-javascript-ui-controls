@@ -555,8 +555,13 @@ export class Edit implements IAction {
             if (form[getComplexFieldID(col[j].field)]) {
                 let inputElements: HTMLInputElement[] = [].slice.call(form[getComplexFieldID(col[j].field)]);
                 inputElements = inputElements.length ? inputElements : [form[getComplexFieldID(col[j].field)]];
-                for (let k: number = 0; k < inputElements.length; k++) {
-                    let value: number | string | Date | boolean  = this.getValue(col[j], inputElements[k], editedData);
+                let temp: HTMLInputElement[] = inputElements.filter((e: HTMLInputElement) =>
+                    !isNullOrUndefined(((<EJ2Intance>(e as Element)).ej2_instances)));
+                if (temp.length === 0) {
+                    temp = inputElements.filter((e: HTMLInputElement) => e.hasAttribute('name'));
+                }
+                for (let k: number = 0; k < temp.length; k++) {
+                    let value: number | string | Date | boolean = this.getValue(col[j], temp[k], editedData);
                     DataUtil.setValue(col[j].field, value, editedData);
                 }
             }
@@ -574,8 +579,8 @@ export class Edit implements IAction {
     }
 
     private getValue(col: Column, input: HTMLInputElement, editedData: Object): string | boolean | number | Date {
-        let value: string | boolean | number | Date = col.isForeignColumn() ? ((<EJ2Intance>(input as Element)).ej2_instances ?
-            (<EJ2Intance>(input as Element)).ej2_instances[0].value : input.value) : input.value;
+        let value: string | boolean | number | Date = (<EJ2Intance>(input as Element)).ej2_instances ?
+            (<EJ2Intance>(input as Element)).ej2_instances[0].value : input.value;
         let gObj: IGrid = this.parent;
         let temp: Function = col.edit.read as Function;
         if (col.type === 'checkbox' || col.type === 'boolean') {

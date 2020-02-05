@@ -1,7 +1,10 @@
-import { Toolbar, HtmlEditor, RichTextEditor, Count, Link, Image, QuickToolbar } from './../../../../src/index';
-import { renderRTE, destroy, dispatchEvent } from './../../render.spec';
-import { FormValidator, ErrorOption, FormValidatorModel } from "@syncfusion/ej2-inputs";
+/**
+ * Form support spec
+ */
 import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { FormValidator } from "@syncfusion/ej2-inputs";
+import { Toolbar, HtmlEditor, RichTextEditor, Count, Link, Image, QuickToolbar } from './../../../../src/index';
+import { dispatchEvent } from './../../render.spec';
 
 RichTextEditor.Inject(HtmlEditor);
 RichTextEditor.Inject(Toolbar);
@@ -41,7 +44,6 @@ let innerHtmlRule1: string = `<form id="form-element" class="form-vertical">
         let form: FormValidator;
         let editNode: HTMLElement;
         let containerEle: HTMLElement;
-        let formEle: HTMLElement;
         let onChange: jasmine.Spy;
         beforeEach((done: Function) => {
             containerEle = document.createElement('div');
@@ -65,7 +67,6 @@ let innerHtmlRule1: string = `<form id="form-element" class="form-vertical">
                     }
                 }
             });
-            formEle = document.getElementById("form-element");
             done();
         })
         afterEach((done: Function) => {
@@ -94,7 +95,6 @@ let innerHtmlRule1: string = `<form id="form-element" class="form-vertical">
         let form: FormValidator;
         let editNode: HTMLElement;
         let containerEle: HTMLElement;
-        let formEle: HTMLElement;
         let onChange: jasmine.Spy;
         beforeEach((done: Function) => {
             window.ejsIntrop = window.ejsIntrop || {};
@@ -119,7 +119,6 @@ let innerHtmlRule1: string = `<form id="form-element" class="form-vertical">
                     }
                 }
             });
-            formEle = document.getElementById("form-element");
             done();
         })
         afterEach((done: Function) => {

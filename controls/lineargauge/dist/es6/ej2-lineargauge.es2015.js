@@ -1,5 +1,6 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, compile, createElement, isBlazor, isNullOrUndefined, merge, remove, resetBlazorTemplate, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, NotifyPropertyChanges, Property, compile, createElement, isBlazor, isNullOrUndefined, merge, print, remove, resetBlazorTemplate, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
+import { PdfBitmap, PdfDocument, PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 
 var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -184,6 +185,9 @@ __decorate$2([
 __decorate$2([
     Property(0)
 ], Label.prototype, "offset", void 0);
+__decorate$2([
+    Property('Auto')
+], Label.prototype, "position", void 0);
 /**
  * Options for customizing the ranges of an axis.
  */
@@ -233,6 +237,9 @@ __decorate$2([
 __decorate$2([
     Property(null)
 ], Tick.prototype, "offset", void 0);
+__decorate$2([
+    Property('Auto')
+], Tick.prototype, "position", void 0);
 /**
  * Options for customizing the pointers of an axis.
  */
@@ -288,6 +295,9 @@ __decorate$2([
     Property(0)
 ], Pointer.prototype, "offset", void 0);
 __decorate$2([
+    Property('Auto')
+], Pointer.prototype, "position", void 0);
+__decorate$2([
     Property(null)
 ], Pointer.prototype, "description", void 0);
 /**
@@ -313,6 +323,9 @@ __decorate$2([
 __decorate$2([
     Property(false)
 ], Axis.prototype, "isInversed", void 0);
+__decorate$2([
+    Property(false)
+], Axis.prototype, "showLastLabel", void 0);
 __decorate$2([
     Property(false)
 ], Axis.prototype, "opposedPosition", void 0);
@@ -362,6 +375,8 @@ const gaugeMouseUp = 'gaugeMouseUp';
 const valueChange = 'valueChange';
 /** @private */
 const resized = 'resized';
+/** @private */
+const beforePrint = 'beforePrint';
 
 /**
  * Specifies Linear-Gauge Helper methods
@@ -992,15 +1007,35 @@ class AxisLayoutPanel {
         axis.visibleRange = new VisibleRange(min, max, axis.majorInterval, (max - min));
         axis.minorInterval = (isNullOrUndefined(axis.minorInterval)) ? axis.majorInterval / 2 : axis.minorInterval;
         if (this.gauge.orientation === 'Vertical') {
-            x = (!axis.opposedPosition ? (bounds.x - lineSize - major.height) : bounds.x + lineSize) + major.offset;
+            x = axis.majorTicks.position === 'Auto' ? ((!axis.opposedPosition ? (bounds.x - lineSize - major.height) : bounds.x + lineSize)
+                + major.offset) : x;
+            x = axis.majorTicks.position !== 'Auto' ? (axis.majorTicks.position === 'Cross' ? bounds.x - major.height / 2 - major.offset :
+                ((axis.majorTicks.position === 'Inside' && !axis.opposedPosition) ||
+                    (axis.majorTicks.position === 'Outside' && axis.opposedPosition)) ? (bounds.x - lineSize - major.height - major.offset)
+                    : (bounds.x + lineSize + major.offset)) : x;
             axis.majorTickBounds = new Rect(x, bounds.y, major.height, bounds.height);
-            x = (!axis.opposedPosition ? (bounds.x - lineSize - minor.height) : bounds.x + lineSize) + minor.offset;
+            x = axis.minorTicks.position === 'Auto' ? ((!axis.opposedPosition ? (bounds.x - lineSize - minor.height) : bounds.x + lineSize)
+                + minor.offset) : x;
+            x = axis.minorTicks.position !== 'Auto' ? (axis.minorTicks.position === 'Cross' ? bounds.x - minor.height / 2 - minor.offset :
+                ((axis.minorTicks.position === 'Inside' && !axis.opposedPosition) ||
+                    (axis.minorTicks.position === 'Outside' && axis.opposedPosition)) ? (bounds.x - lineSize - minor.height - minor.offset)
+                    : (bounds.x + lineSize + minor.offset)) : x;
             axis.minorTickBounds = new Rect(x, bounds.y, minor.height, bounds.height);
         }
         else {
-            y = (!axis.opposedPosition ? (bounds.y - lineSize - major.height) : bounds.y + lineSize) + major.offset;
+            y = axis.majorTicks.position === 'Auto' ? ((!axis.opposedPosition ? (bounds.y - lineSize - major.height) : bounds.y + lineSize)
+                + major.offset) : y;
+            y = axis.majorTicks.position !== 'Auto' ? ((axis.majorTicks.position === 'Cross' ? bounds.y - major.height / 2 - major.offset :
+                ((axis.majorTicks.position === 'Inside' && !axis.opposedPosition) ||
+                    (axis.majorTicks.position === 'Outside' && axis.opposedPosition)) ?
+                    (bounds.y - lineSize - major.height) - major.offset : bounds.y + lineSize + major.offset)) : y;
             axis.majorTickBounds = new Rect(bounds.x, y, bounds.width, major.height);
-            y = (!axis.opposedPosition ? (bounds.y - lineSize - minor.height) : bounds.y + lineSize) + minor.offset;
+            y = axis.minorTicks.position === 'Auto' ? ((!axis.opposedPosition ? (bounds.y - lineSize - minor.height) : bounds.y + lineSize)
+                + minor.offset) : y;
+            y = axis.minorTicks.position !== 'Auto' ? ((axis.minorTicks.position === 'Cross' ? bounds.y - minor.height / 2 - major.offset :
+                ((axis.minorTicks.position === 'Inside' && !axis.opposedPosition) ||
+                    (axis.minorTicks.position === 'Outside' && axis.opposedPosition)) ?
+                    (bounds.y - lineSize - minor.height) - minor.offset : bounds.y + lineSize + minor.offset)) : y;
             axis.minorTickBounds = new Rect(bounds.x, y, bounds.width, minor.height);
         }
     }
@@ -1015,17 +1050,41 @@ class AxisLayoutPanel {
         let width;
         let height;
         let padding = 5;
-        let bounds = axis.majorTickBounds;
+        let applyPositionBounds = (axis.labelStyle.position !== 'Auto' && axis.majorTicks.position !== 'Auto' &&
+            axis.minorTicks.position !== 'Auto');
+        let bounds = applyPositionBounds ? (axis.labelStyle.position === axis.minorTicks.position &&
+            axis.minorTicks.position !== axis.majorTicks.position ? axis.minorTickBounds : axis.majorTickBounds) :
+            axis.majorTickBounds;
         let offset = axis.labelStyle.offset;
         this.calculateVisibleLabels(axis);
         width = axis.maxLabelSize.width;
         height = axis.maxLabelSize.height / 2;
         if (this.gauge.orientation === 'Vertical') {
-            x = (!axis.opposedPosition ? (bounds.x - width - padding) : (bounds.x + bounds.width + padding)) + offset;
+            x = axis.labelStyle.position === 'Auto' ? ((!axis.opposedPosition ? (bounds.x - width - padding) :
+                (bounds.x + bounds.width + padding)) + offset) : x;
+            let boundx = bounds.x;
+            boundx = applyPositionBounds ? ((axis.labelStyle.position !== axis.minorTicks.position &&
+                axis.labelStyle.position !== axis.majorTicks.position) ?
+                (axis.labelStyle.position === 'Inside' ? bounds.x - axis.lineBounds.width : axis.labelStyle.position === 'Outside' ?
+                    bounds.x + axis.lineBounds.width : bounds.x) : bounds.x) : bounds.x;
+            x = axis.labelStyle.position !== 'Auto' ? (axis.labelStyle.position === 'Cross' ? axis.lineBounds.x -
+                axis.maxLabelSize.width / 4 - offset : ((axis.labelStyle.position === 'Inside' && !axis.opposedPosition) ||
+                (axis.labelStyle.position === 'Outside' && axis.opposedPosition)) ?
+                ((boundx - width - padding) - offset) : ((boundx + bounds.width + padding) + offset)) : x;
             y = axis.lineBounds.y;
         }
         else {
-            y = (!axis.opposedPosition ? (bounds.y - padding) : ((bounds.y + bounds.height + padding) + height)) + offset;
+            y = axis.labelStyle.position === 'Auto' ? ((!axis.opposedPosition ?
+                (bounds.y - padding) : ((bounds.y + bounds.height + padding) + height)) + offset) : y;
+            let boundy = bounds.y;
+            boundy = applyPositionBounds ? ((axis.labelStyle.position !== axis.minorTicks.position &&
+                axis.labelStyle.position !== axis.majorTicks.position) ?
+                (axis.labelStyle.position === 'Inside' ? bounds.y - axis.lineBounds.height : axis.labelStyle.position === 'Outside' ?
+                    bounds.y + axis.lineBounds.height : bounds.y) : bounds.y) : bounds.y;
+            y = axis.labelStyle.position !== 'Auto' ? (axis.labelStyle.position === 'Cross' ? axis.lineBounds.y +
+                axis.maxLabelSize.height / 4 - offset : ((axis.labelStyle.position === 'Inside' && !axis.opposedPosition) ||
+                (axis.labelStyle.position === 'Outside' && axis.opposedPosition)) ?
+                (boundy - padding) - offset : ((boundy + bounds.height + padding) + height) + offset) : y;
             x = axis.lineBounds.x;
         }
         axis.labelBounds = new Rect(x, y, width, height);
@@ -1045,6 +1104,13 @@ class AxisLayoutPanel {
         let maximumValue = Math.max(range.min, range.max);
         for (let i = 0; i < axis.pointers.length; i++) {
             pointer = axis.pointers[i];
+            if (pointer.offset.length > 0) {
+                pointer.currentOffset = stringToNumber(pointer.offset, (this.gauge.orientation === 'Horizontal' ?
+                    this.gauge.availableSize.height / 2 : this.gauge.availableSize.width / 2));
+            }
+            else {
+                pointer.currentOffset = pointer.offset;
+            }
             pointer.currentValue = pointer.value !== null ?
                 pointer.value < minimumValue ? minimumValue : pointer.value > maximumValue ? maximumValue : pointer.value
                 : minimumValue;
@@ -1064,24 +1130,42 @@ class AxisLayoutPanel {
         let x;
         let y;
         let line = axis.lineBounds;
-        let offset = pointer.offset;
+        let offset = pointer.currentOffset;
         let range = axis.visibleRange;
         let placement = pointer.placement;
         let tick = axis.majorTickBounds;
         let label = axis.labelBounds;
         let border = pointer.border.width;
         if (this.gauge.orientation === 'Vertical') {
-            x = (!axis.opposedPosition) ? (placement === 'Near') ? label.x : (placement === 'Center') ? tick.x : line.x :
-                placement === 'Far' ? label.x + label.width : (placement === 'Center' ? tick.x + tick.width : line.x);
-            x = !axis.opposedPosition ? ((pointer.placement === 'Far' ? x + border : x - border) + (offset)) :
-                ((pointer.placement === 'Near' ? x - border : x + border) + (offset));
+            if (pointer.position === 'Auto') {
+                x = (!axis.opposedPosition) ? (placement === 'Near') ? label.x : (placement === 'Center') ? tick.x : line.x :
+                    placement === 'Far' ? label.x + label.width : (placement === 'Center' ? tick.x + tick.width : line.x);
+                x = !axis.opposedPosition ? ((pointer.placement === 'Far' ? x + border : x - border) + (offset)) :
+                    ((pointer.placement === 'Near' ? x - border : x + border) + (offset));
+            }
+            else {
+                x = (pointer.position === 'Cross' ? line.x - pointer.width / 2 - offset :
+                    ((pointer.position === 'Inside' && !axis.opposedPosition) ||
+                        (pointer.position === 'Outside' && axis.opposedPosition)) ?
+                        (line.x - line.width / 2 - (pointer.markerType !== 'InvertedTriangle' && pointer.markerType !== 'Triangle' ?
+                            pointer.width : 0)) - offset : ((line.x + line.width / 2) + offset));
+            }
             y = ((valueToCoefficient(pointer.currentValue, axis, this.gauge.orientation, range) * line.height) + line.y);
         }
         else {
-            y = (!axis.opposedPosition) ? (placement === 'Near') ? label.y - label.height : (placement === 'Center') ? tick.y :
-                line.y : (placement === 'Far') ? label.y : (placement === 'Center') ? tick.y + tick.height : line.y;
-            y = !axis.opposedPosition ? ((pointer.placement === 'Far' ? y + border : y - border) + (offset)) :
-                ((pointer.placement === 'Near' ? y - border : y + border) + (offset));
+            if (pointer.position === 'Auto') {
+                y = (!axis.opposedPosition) ? (placement === 'Near') ? label.y - label.height : (placement === 'Center') ? tick.y :
+                    line.y : (placement === 'Far') ? label.y : (placement === 'Center') ? tick.y + tick.height : line.y;
+                y = !axis.opposedPosition ? ((pointer.placement === 'Far' ? y + border : y - border) + (offset)) :
+                    ((pointer.placement === 'Near' ? y - border : y + border) + (offset));
+            }
+            else {
+                y = (pointer.position === 'Cross' ? line.y - pointer.height / 2 - offset :
+                    ((pointer.position === 'Inside' && !axis.opposedPosition) ||
+                        (pointer.position === 'Outside' && axis.opposedPosition)) ?
+                        (line.y - line.height / 2 - (pointer.markerType !== 'InvertedTriangle' && pointer.markerType !== 'Triangle' ?
+                            pointer.height : 0)) - offset : ((line.y + line.height / 2) + offset));
+            }
             x = ((valueToCoefficient(pointer.currentValue, axis, this.gauge.orientation, range) * line.width) + line.x);
         }
         pointer.bounds = new Rect(x, y, pointer.width, pointer.height);
@@ -1104,12 +1188,20 @@ class AxisLayoutPanel {
         let padding = 10;
         let range = axis.visibleRange;
         let orientation = this.gauge.orientation;
-        let offset = pointer.offset;
+        let offset = pointer.currentOffset;
         let container = this.gauge.containerBounds;
         if (orientation === 'Vertical') {
-            x1 = (container.width > 0) ? container.x + ((container.width / 2) - (pointer.width / 2)) :
-                (!axis.opposedPosition) ? (line.x + padding) : (line.x - pointer.width - padding);
-            x1 += (offset);
+            if (pointer.position === 'Auto') {
+                x1 = (container.width > 0) ? container.x + ((container.width / 2) - (pointer.width / 2)) :
+                    (!axis.opposedPosition) ? (line.x + padding) : (line.x - pointer.width - padding);
+                x1 += (offset);
+            }
+            else {
+                x1 = (pointer.position === 'Cross' ? line.x - pointer.width / 2 - offset :
+                    ((pointer.position === 'Inside' && !axis.opposedPosition) ||
+                        (pointer.position === 'Outside' && axis.opposedPosition)) ?
+                        (line.x - line.width / 2 - pointer.width) - offset : ((line.x + line.width / 2) + offset));
+            }
             y1 = ((valueToCoefficient(pointer.currentValue, axis, orientation, range) * line.height) + line.y);
             y2 = ((valueToCoefficient(range.min, axis, orientation, range) * line.height) + line.y);
             height = Math.abs(y2 - y1);
@@ -1117,11 +1209,19 @@ class AxisLayoutPanel {
             width = pointer.width;
         }
         else {
-            x1 = ((valueToCoefficient(range.min, axis, orientation, range) * line.width) + line.x);
-            y1 = (container.height > 0) ? (container.y + (container.height / 2) - (pointer.height) / 2) :
-                (!axis.opposedPosition) ? (line.y + padding) : (line.y - pointer.height - padding);
-            y1 += (offset);
+            if (pointer.position === 'Auto') {
+                y1 = (container.height > 0) ? (container.y + (container.height / 2) - (pointer.height) / 2) :
+                    (!axis.opposedPosition) ? (line.y + padding) : (line.y - pointer.height - padding);
+                y1 += (offset);
+            }
+            else {
+                y1 = (pointer.position === 'Cross' ? line.y - pointer.height / 2 - offset :
+                    ((pointer.position === 'Inside' && !axis.opposedPosition) ||
+                        (pointer.position === 'Outside' && axis.opposedPosition)) ?
+                        (line.y - line.height / 2 - pointer.height) - offset : ((line.y + line.height / 2) + offset));
+            }
             height = pointer.height;
+            x1 = ((valueToCoefficient(range.min, axis, orientation, range) * line.width) + line.x);
             x2 = ((valueToCoefficient(pointer.currentValue, axis, orientation, range) * line.width) + line.x);
             width = Math.abs(x2 - x1);
             x1 = (!axis.isInversed) ? x1 : x2;
@@ -1152,37 +1252,51 @@ class AxisLayoutPanel {
         let colors;
         for (let i = 0; i < axis.ranges.length; i++) {
             range = axis.ranges[i];
-            if (withInRange(null, range.start, range.end, visibleRange.max, visibleRange.min, 'range')) {
-                start = Math.min(range.start, range.end);
-                end = Math.max(range.start, range.end);
+            if (range.offset.length > 0) {
+                range.currentOffset = stringToNumber(range.offset, (this.gauge.orientation === 'Horizontal' ?
+                    this.gauge.availableSize.height / 2 : this.gauge.availableSize.width / 2));
+            }
+            else {
+                range.currentOffset = range.offset;
+            }
+            start = Math.max(range.start, visibleRange.min);
+            end = Math.min(range.end, visibleRange.max);
+            if (withInRange(null, start, end, visibleRange.max, visibleRange.min, 'range')) {
+                start = Math.min(start, range.end);
+                end = Math.max(start, end);
                 position = range.position;
                 startWidth = range.startWidth;
                 endWidth = range.endWidth;
                 colors = this.gauge.rangePalettes.length ? this.gauge.rangePalettes : getRangePalette();
                 range.interior = range.color ? range.color : colors[i % colors.length];
                 if (this.gauge.orientation === 'Vertical') {
-                    pointX = line.x + (range.offset);
+                    pointX = line.x + (range.currentOffset) + (position === 'Cross' ? startWidth / 2 : position === 'Outside' ?
+                        -(line.width / 2) : position === 'Inside' ? line.width / 2 : 0);
                     pointY = (valueToCoefficient(end, axis, orientation, visibleRange) * line.height) + line.y;
                     height = (valueToCoefficient(start, axis, orientation, visibleRange) * line.height) + line.y;
                     height -= pointY;
-                    startVal = !axis.opposedPosition ? position === 'Inside' ? (pointX + startWidth) : (pointX - startWidth)
-                        : position === 'Inside' ? (pointX - startWidth) : (pointX + startWidth);
-                    endVal = !axis.opposedPosition ? position === 'Inside' ? (pointX + endWidth) : (pointX - endWidth) :
-                        position === 'Inside' ? (pointX - endWidth) : (pointX + endWidth);
+                    startVal = !axis.opposedPosition ? (position === 'Inside' ? (pointX + startWidth) : position === 'Cross' ?
+                        (pointX - startWidth) : (pointX - startWidth)) : (position === 'Inside' ? (pointX - startWidth) :
+                        position === 'Cross' ? (pointX - startWidth) : (pointX + startWidth));
+                    endVal = !axis.opposedPosition ? position === 'Inside' ? (pointX + endWidth) : position === 'Cross' ?
+                        (pointX - endWidth) : (pointX - endWidth) : position === 'Inside' ? (pointX - endWidth) :
+                        position === 'Cross' ? (pointX - endWidth) : (pointX + endWidth);
                     range.path = 'M' + pointX + ' ' + pointY + ' L ' + pointX + ' ' + (pointY + height) +
                         ' L ' + startVal + ' ' + (pointY + height) + ' L ' + endVal + ' ' + pointY +
                         ' L ' + pointX + ' ' + pointY + ' z ';
                 }
                 else {
                     pointX = (valueToCoefficient(end, axis, orientation, visibleRange) * line.width) + line.x;
-                    pointY = axis.lineBounds.y + (range.offset);
+                    pointY = axis.lineBounds.y + (range.currentOffset) + (position === 'Cross' ? startWidth / 2 :
+                        position === 'Outside' ? -(line.height / 2) : position === 'Inside' ? line.height / 2 : 0);
                     width = (valueToCoefficient(start, axis, orientation, visibleRange) * line.width) + line.x;
                     width = pointX - width;
-                    startVal = !axis.opposedPosition ? position === 'Inside' ? (pointY + startWidth) :
-                        (pointY - startWidth) : (position === 'Inside') ? (pointY - startWidth) :
-                        (pointY + startWidth);
-                    endVal = !axis.opposedPosition ? position === 'Inside' ? (pointY + endWidth) : (pointY - endWidth) :
-                        (position === 'Inside') ? (pointY - endWidth) : (pointY + endWidth);
+                    startVal = !axis.opposedPosition ? position === 'Inside' ? (pointY + startWidth) : position === 'Cross' ?
+                        (pointY - startWidth) : (pointY - startWidth) : (position === 'Inside') ? (pointY - startWidth) :
+                        position === 'Cross' ? (pointY - startWidth) : (pointY + startWidth);
+                    endVal = !axis.opposedPosition ? position === 'Inside' ? (pointY + endWidth) : position === 'Cross' ?
+                        (pointY - endWidth) : (pointY - endWidth) : (position === 'Inside') ? (pointY - endWidth) :
+                        position === 'Cross' ? (pointY - endWidth) : (pointY + endWidth);
                     range.path = 'M' + pointX + ' ' + pointY + ' L ' + (pointX - width) + ' ' + pointY +
                         ' L ' + (pointX - width) + ' ' + startVal + ' L ' + pointX + ' ' + endVal +
                         ' L ' + pointX + ' ' + pointY + ' z ';
@@ -1227,12 +1341,35 @@ class AxisLayoutPanel {
                     formatValue(i, this.gauge).toString(),
                 value: i
             };
-            this.gauge.trigger('axisLabelRender', argsData, (argsData) => {
-                labelSize = measureText(argsData.text, axis.labelStyle.font);
+            let axisLabelRenderSuccess = (argsData) => {
                 if (!argsData.cancel) {
                     axis.visibleLabels.push(new VisibleLabels(argsData.text, i, labelSize));
                 }
-            });
+            };
+            axisLabelRenderSuccess.bind(this);
+            this.gauge.trigger(axisLabelRender, argsData, axisLabelRenderSuccess);
+        }
+        let lastLabel = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value : null;
+        let maxVal = axis.visibleRange.max;
+        if (lastLabel !== maxVal && axis.showLastLabel === true) {
+            argsData = {
+                cancel: false, name: axisLabelRender, axis: axis,
+                text: customLabelFormat ? style.format.replace(new RegExp('{value}', 'g'), format(maxVal)) :
+                    format(maxVal),
+                value: maxVal
+            };
+            // if (this.gauge.isBlazor) {
+            //     const { axis, ...blazorArgsData } : IAxisLabelRenderEventArgs = argsData;
+            //     argsData = blazorArgsData;
+            // }
+            let axisLabelRenderSuccess = (argsData) => {
+                labelSize = measureText(argsData.text, axis.labelStyle.font);
+                if (!argsData.cancel) {
+                    axis.visibleLabels.push(new VisibleLabels(argsData.text, maxVal, labelSize));
+                }
+            };
+            axisLabelRenderSuccess.bind(this);
+            this.gauge.trigger(axisLabelRender, argsData, axisLabelRenderSuccess);
         }
         this.getMaxLabelWidth(this.gauge, axis);
     }
@@ -1555,16 +1692,18 @@ class AxisRenderer extends Animations {
         let minorTickColor = axis.minorTicks.color || this.gauge.themeStyle.minorTickColor;
         let tickColor = (tickID === 'MajorTicks') ? majorTickColor : minorTickColor;
         let interval = ((tickID === 'MajorTicks') ? axis.majorInterval : axis.minorInterval);
+        // let position: string = (tickID === 'MajorTicks') ? axis.majorTicks.position : axis.minorTicks.position;
         for (let i = range.min; (i <= range.max && interval > 0); i += interval) {
-            if ((tickID === 'MajorTicks') || (tickID === 'MinorTicks' && i !== range.min && i !== range.max
-                && (i % axis.majorInterval) !== 0)) {
+            if ((tickID === 'MajorTicks') || (tickID === 'MinorTicks')) {
                 if (this.gauge.orientation === 'Vertical') {
+                    // pointX =  position === "Inside" ? tickBounds.x : tickBounds.x + ticks.height;
                     pointX = tickBounds.x;
                     pointY = (valueToCoefficient(i, axis, this.gauge.orientation, range) * line.height) + line.y;
                     tickPath = tickPath.concat('M' + pointX + ' ' + pointY + ' ' + 'L' + (pointX + ticks.height) + ' ' + pointY + ' ');
                 }
                 else {
                     pointX = (valueToCoefficient(i, axis, this.gauge.orientation, range) * line.width) + line.x;
+                    // pointY = position === "Inside" ? tickBounds.y : (tickBounds.y + ticks.height);
                     pointY = tickBounds.y;
                     tickPath = tickPath.concat('M' + pointX + ' ' + pointY + ' ' + 'L' + pointX + ' ' + (pointY + ticks.height) + ' ');
                 }
@@ -1580,6 +1719,8 @@ class AxisRenderer extends Animations {
         let rect = axis.lineBounds;
         let bounds = axis.labelBounds;
         let tick = axis.majorTickBounds;
+        // let tick: Rect = axis.labelStyle.position === axis.minorTicks.position && axis.minorTicks.position !== axis.majorTicks.position ?
+        //     axis.minorTickBounds : axis.majorTickBounds;
         let labelSize;
         let range = axis.visibleRange;
         let anchor;
@@ -1597,7 +1738,8 @@ class AxisRenderer extends Animations {
             if (this.gauge.orientation === 'Vertical') {
                 pointY = (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) *
                     rect.height) + rect.y;
-                pointX = (!axis.opposedPosition ? (tick.x - labelSize.width - padding) + offset : bounds.x);
+                pointX = axis.labelStyle.position === 'Auto' ?
+                    (!axis.opposedPosition ? (tick.x - labelSize.width - padding) + offset : bounds.x) : bounds.x;
                 pointY += (labelSize.height / 4);
             }
             else {
@@ -1645,8 +1787,17 @@ class AxisRenderer extends Animations {
             remove(getElement(pointerID));
         }
         let pointerColor = pointer.color || this.gauge.themeStyle.pointerColor;
+        let shapeBasedOnPosition = pointer.markerType;
+        if (!isNullOrUndefined(pointer.position) && (pointer.markerType === 'InvertedTriangle' ||
+            pointer.markerType === 'Triangle')) {
+            shapeBasedOnPosition = (((pointer.position === 'Outside' && !axis.opposedPosition) ||
+                (pointer.position === 'Inside' && axis.opposedPosition) || pointer.position === 'Cross')
+                && pointer.markerType === 'Triangle' ? 'InvertedTriangle' :
+                (((pointer.position === 'Inside' && !axis.opposedPosition) || (pointer.position === 'Outside' && axis.opposedPosition)) &&
+                    pointer.markerType === 'InvertedTriangle' ? 'Triangle' : pointer.markerType));
+        }
         options = new PathOption(pointerID, pointerColor, pointer.border.width, pointer.border.color, pointer.opacity, null, null, transform);
-        options = calculateShapes(pointer.bounds, pointer.markerType, new Size(pointer.width, pointer.height), pointer.imageUrl, options, this.gauge.orientation, axis, pointer);
+        options = calculateShapes(pointer.bounds, shapeBasedOnPosition, new Size(pointer.width, pointer.height), pointer.imageUrl, options, this.gauge.orientation, axis, pointer);
         pointerElement = ((pointer.markerType === 'Circle' ? this.gauge.renderer.drawCircle(options)
             : (pointer.markerType === 'Image') ? this.gauge.renderer.drawImage(options) :
                 this.gauge.renderer.drawPath(options)));
@@ -2147,6 +2298,126 @@ function getThemeStyle(theme) {
     return style;
 }
 
+/**
+ * Represent the print and export for gauge
+ */
+class ExportUtils {
+    /**
+     * Constructor for gauge
+     * @param control
+     */
+    constructor(control) {
+        this.control = control;
+    }
+    /**
+     * To print the gauge
+     * @param elements
+     */
+    print(elements) {
+        this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
+        this.printWindow.moveTo(0, 0);
+        this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
+        let argsData = {
+            cancel: false, htmlContent: this.getHTMLContent(elements), name: beforePrint
+        };
+        this.control.trigger('beforePrint', argsData, (beforePrintArgs) => {
+            if (!argsData.cancel) {
+                print(argsData.htmlContent, this.printWindow);
+            }
+        });
+    }
+    /**
+     * To get the html string of the gauge
+     * @param elements
+     * @private
+     */
+    getHTMLContent(elements) {
+        let div = createElement('div');
+        if (elements) {
+            if (elements instanceof Array) {
+                elements.forEach((value) => {
+                    div.appendChild(getElement(value).cloneNode(true));
+                });
+            }
+            else if (elements instanceof Element) {
+                div.appendChild(elements.cloneNode(true));
+            }
+            else {
+                div.appendChild(getElement(elements).cloneNode(true));
+            }
+        }
+        else {
+            div.appendChild(this.control.element.cloneNode(true));
+        }
+        return div;
+    }
+    /**
+     * To export the file as image/svg format
+     * @param type
+     * @param fileName
+     */
+    export(type, fileName, orientation) {
+        let element = createElement('canvas', {
+            id: 'ej2-canvas',
+            attrs: {
+                'width': this.control.availableSize.width.toString(),
+                'height': this.control.availableSize.height.toString()
+            }
+        });
+        let isDownload = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
+        orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
+        let svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+            this.control.svgObject.outerHTML +
+            '</svg>';
+        let url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
+            [(new XMLSerializer()).serializeToString(this.control.svgObject)], { type: 'image/svg+xml' }));
+        if (type === 'SVG') {
+            this.triggerDownload(fileName, type, url, isDownload);
+        }
+        else {
+            let image = new Image();
+            let ctx = element.getContext('2d');
+            image.onload = (() => {
+                ctx.drawImage(image, 0, 0);
+                window.URL.revokeObjectURL(url);
+                if (type === 'PDF') {
+                    let document = new PdfDocument();
+                    let imageString = element.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
+                    document.pageSettings.orientation = orientation;
+                    imageString = imageString.slice(imageString.indexOf(',') + 1);
+                    document.pages.add().graphics.drawImage(new PdfBitmap(imageString), 0, 0, (this.control.availableSize.width - 60), this.control.availableSize.height);
+                    if (isDownload) {
+                        document.save(fileName + '.pdf');
+                        document.destroy();
+                    }
+                }
+                else {
+                    this.triggerDownload(fileName, type, element.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
+                }
+            });
+            image.src = url;
+        }
+    }
+    /**
+     * To trigger the download element
+     * @param fileName
+     * @param type
+     * @param url
+     */
+    triggerDownload(fileName, type, url, isDownload) {
+        createElement('a', {
+            attrs: {
+                'download': fileName + '.' + type.toLocaleLowerCase(),
+                'href': url
+            }
+        }).dispatchEvent(new MouseEvent(isDownload ? 'click' : 'move', {
+            view: window,
+            bubbles: false,
+            cancelable: true
+        }));
+    }
+}
+
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -2253,7 +2524,6 @@ let LinearGauge = class LinearGauge extends Component {
         this.calculateBounds();
         this.renderAxisElements();
         this.renderComplete();
-        this.trigger(loaded, { gauge: !this.isBlazor ? this : null });
     }
     /**
      * @private
@@ -2299,6 +2569,7 @@ let LinearGauge = class LinearGauge extends Component {
         if (this.annotationsModule) {
             this.annotationsModule.renderAnnotationElements();
         }
+        this.trigger(loaded, { gauge: !this.isBlazor ? this : null });
     }
     renderBorder() {
         let width = this.border.width;
@@ -2616,6 +2887,22 @@ let LinearGauge = class LinearGauge extends Component {
         }
         this.notify(Browser.touchEndEvent, e);
         return true;
+    }
+    /**
+     * Handles the print method for gauge control.
+     */
+    print(id) {
+        let exportChart = new ExportUtils(this);
+        exportChart.print(id);
+    }
+    /**
+     * Handles the export method for gauge control.
+     * @param type
+     * @param fileName
+     */
+    export(type, fileName, orientation) {
+        let exportMap = new ExportUtils(this);
+        exportMap.export(type, fileName, orientation);
     }
     /**
      * Handles the mouse event arguments.
@@ -2960,6 +3247,9 @@ __decorate([
 __decorate([
     Event()
 ], LinearGauge.prototype, "resized", void 0);
+__decorate([
+    Event()
+], LinearGauge.prototype, "beforePrint", void 0);
 LinearGauge = __decorate([
     NotifyPropertyChanges
 ], LinearGauge);

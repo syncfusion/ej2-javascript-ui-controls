@@ -1,21 +1,14 @@
 /**
- * Markdown renderer spec
+ * RTE Formatter spec
  */
-import { createElement, detach } from '@syncfusion/ej2-base';
-import { RichTextEditor } from '../../../src/rich-text-editor/base/rich-text-editor';
-import { renderRTE } from './../render.spec';
+import { RichTextEditor, ActionBeginEventArgs } from "../../../src/rich-text-editor/index";
 import { MarkdownFormatter } from '../../../src/rich-text-editor/formatter/markdown-formatter';
-import { ActionBeginEventArgs } from '../../../src';
-import { MarkdownEditor, HtmlEditor } from "../../../src/rich-text-editor/index";
-
-RichTextEditor.Inject(MarkdownEditor);
-RichTextEditor.Inject(HtmlEditor);
+import { renderRTE, destroy } from './../render.spec';
 
 describe('Formatter module', () => {
 
     describe('Markdown mode testing', () => {
         let rteObj: RichTextEditor;
-        let elem: HTMLElement;
         let curDocument: Document;
         let mouseEventArgs: { [key: string]: HTMLElement };
         let editNode: HTMLTextAreaElement;
@@ -102,7 +95,6 @@ Tabs and shift-tabs work too`;
             let line: string = rteObj.formatter.editorManager.markdownSelection.getSelectedLine(editNode);
             expect(new RegExp('^(' + rteObj.formatter.editorManager.markdownSelection.replaceSpecialChar('>>>> ') + ')', 'gim').test(line)).toBe(true);
         });
-
         it("Lists - OL", () => {
             rteObj.formatter.editorManager.markdownSelection.save(0, editNode.value.length);
             rteObj.formatter.editorManager.markdownSelection.restore(editNode);
@@ -129,14 +121,12 @@ Tabs and shift-tabs work too`;
             }
         });
         afterAll(() => {
-            rteObj.destroy();
-            detach(elem);
+            destroy(rteObj);
         });
     });
 
     describe('Markdown mode actionBegin event', () => {
         let rteObj: RichTextEditor;
-        let elem: HTMLElement;
         let curDocument: Document;
         let mouseEventArgs: { [key: string]: HTMLElement };
         let keyBoardEvent: any = { preventDefault: function () { }, key: 'A', stopPropagation: function () { }, shiftKey: false, which: 8 };
@@ -194,7 +184,6 @@ Tabs and shift-tabs work too`;
             let line: string = rteObj.formatter.editorManager.markdownSelection.getSelectedLine(editNode);
             expect(new RegExp('^(' + rteObj.formatter.editorManager.markdownSelection.replaceSpecialChar('* ') + ')', 'gim').test(line)).toBe(false);
         });
-
         it('prevent the tab key navigation in list', function () {
             editNode.value = listValue;
             rteObj.formatter.editorManager.markdownSelection.save(0, editNode.value.length);
@@ -209,9 +198,7 @@ Tabs and shift-tabs work too`;
         });
 
         afterAll(() => {
-            rteObj.destroy();
-            detach(elem);
+            destroy(rteObj);
         });
     });
-
 });

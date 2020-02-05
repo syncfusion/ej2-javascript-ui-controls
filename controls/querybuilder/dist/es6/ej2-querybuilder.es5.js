@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, detach, extend, getComponent, getInstance, getValue, isBlazor, isNullOrUndefined, removeClass, rippleEffect } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, classList, cldrData, closest, detach, extend, getComponent, getInstance, getValue, isBlazor, isNullOrUndefined, removeClass, rippleEffect } from '@syncfusion/ej2-base';
 import { Button, RadioButton } from '@syncfusion/ej2-buttons';
 import { CheckBoxSelection, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
 import { DataManager, Deferred, Predicate, Query, UrlAdaptor } from '@syncfusion/ej2-data';
@@ -759,12 +759,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var dropDownObj = getComponent(filterElem, 'dropdownlist');
         var column = dropDownObj.getDataByValue(dropDownObj.value);
         var format;
-        if (column.format && column.format.indexOf('/') > -1) {
-            format = { type: 'dateTime', format: column.format };
-        }
-        else {
-            format = { type: 'dateTime', skeleton: column.format || 'yMd' };
-        }
+        format = this.getFormat(column.format);
         var valueColl = [];
         for (var i = 0, iLen = tempColl.length; i < iLen; i++) {
             if (tempColl[i].nextElementSibling) {
@@ -1384,13 +1379,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var selectedValue;
         if (format) {
             var dParser = this.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
-            if (format.indexOf('/') > -1) {
-                formatOpt = { type: 'dateTime', format: format };
-            }
-            else {
-                formatOpt = { type: 'dateTime', skeleton: format };
-            }
-            formatOpt = { type: 'dateTime', format: format };
+            formatOpt = this.getFormat(format);
             selectedValue = dParser(value);
             if (isNullOrUndefined(selectedValue)) {
                 selectedValue = this.intl.parseDate(value, formatOpt);
@@ -1489,21 +1478,19 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                                     format = column.format;
                                 }
                                 if (format) {
-                                    var formatObj = void 0;
-                                    if (format && format.indexOf('/') > -1) {
-                                        formatObj = { type: 'dateTime', format: format };
+                                    var formatObj = this.getFormat(format);
+                                    if (formatObj.skeleton) {
+                                        datepick = new DatePicker({ locale: this.getLocale(), value: selectedValue,
+                                            placeholder: place, format: formatObj, change: this.changeValue.bind(this, i) });
                                     }
                                     else {
-                                        formatObj = { type: 'dateTime', skeleton: format || 'yMd' };
+                                        datepick = new DatePicker({ value: selectedValue, locale: this.getLocale(),
+                                            placeholder: place, format: formatObj.format, change: this.changeValue.bind(this, i) });
                                     }
-                                    datepick =
-                                        new DatePicker({
-                                            value: selectedValue, placeholder: place, format: formatObj, change: this.changeValue.bind(this, i)
-                                        });
                                 }
                                 else {
-                                    datepick =
-                                        new DatePicker({ value: selectedValue, placeholder: place, change: this.changeValue.bind(this, i) });
+                                    datepick = new DatePicker({ locale: this.getLocale(),
+                                        value: selectedValue, placeholder: place, change: this.changeValue.bind(this, i) });
                                 }
                                 datepick.appendTo('#' + parentId + '_valuekey' + i);
                                 if (!rule.value) {
@@ -1638,13 +1625,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 break;
             case 'datepicker':
                 var column = this.getColumn(rule.field);
-                var format = void 0;
-                if (column.format && column.format.indexOf('/')) {
-                    format = { type: 'dateTime', format: column.format };
-                }
-                else {
-                    format = { type: 'dateTime', skeleton: column.format || 'yMd' };
-                }
+                var format = this.getFormat(column.format);
                 var selectedDate = getComponent(element, controlName).value;
                 if (rule.operator.indexOf('between') > -1) {
                     if (typeof rule.value === 'string') {
@@ -1831,13 +1812,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             }
             else if (target.className.indexOf('e-datepicker') > -1) {
                 var ddlInst = getInstance(ruleElem.querySelector('.e-rule-filter input'), DropDownList);
-                var format = void 0;
-                if (this.columns[ddlInst.index].format && this.columns[ddlInst.index].format.indexOf('/') > -1) {
-                    format = { type: 'dateTime', format: this.columns[ddlInst.index].format };
-                }
-                else {
-                    format = { type: 'dateTime', skeleton: this.columns[ddlInst.index].format || 'yMd' };
-                }
+                var format = this.getFormat(this.columns[ddlInst.index].format);
                 if (format.type) {
                     if (arrOperator.indexOf(oper) > -1) {
                         if (typeof rule.rules[index].value === 'string') {
@@ -1866,6 +1841,24 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 getComponent(valElem[1].parentElement, 'tooltip').destroy();
             }
         }
+    };
+    QueryBuilder.prototype.getFormat = function (format) {
+        var formatOptions;
+        if (format) {
+            if (typeof (format) === 'string') {
+                formatOptions = { type: 'dateTime', format: format };
+                if (format === 'short') {
+                    formatOptions.skeleton = format;
+                }
+            }
+            else {
+                formatOptions = { type: 'dateTime', skeleton: format.skeleton };
+            }
+        }
+        else {
+            formatOptions = { type: 'dateTime', skeleton: 'yMd' };
+        }
+        return formatOptions;
     };
     QueryBuilder.prototype.findGroupByIdx = function (groupIdx, rule, isRoot) {
         var ruleColl = rule.rules;
@@ -1930,7 +1923,6 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         this.isImportRules = false;
         this.unWireEvents();
         this.levelColl[this.element.id + '_group0'] = [0];
-        this.rule = { condition: 'and', rules: [] };
         this.element.innerHTML = '';
         classList(this.element, [], ['e-rtl', 'e-responsive', 'e-device']);
     };
@@ -2212,6 +2204,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 case 'locale':
                     this.locale = newProp.locale;
                     this.intl = new Internationalization(this.locale);
+                    this.refresh();
                     break;
                 case 'enableNotCondition':
                     this.onChangeNotGroup();
@@ -2734,13 +2727,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 }
                 column = this.getColumn(ruleColl[i].field);
                 if (ruleColl[i].type === 'date' && !(ruleColl[i].value instanceof Array)) {
-                    var format = void 0;
-                    if (column.format && column.format.indexOf('/') > 1) {
-                        format = { type: 'dateTime', format: column.format };
-                    }
-                    else {
-                        format = { type: 'dateTime', skeleton: column.format || 'yMd' };
-                    }
+                    var format = this.getFormat(column.format);
                     ruleValue = this.getDate(ruleColl[i].value, format);
                     if (dateOperColl.indexOf(oper) > -1) {
                         isDateFilter = true;
@@ -2753,7 +2740,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     ruleValue = ruleColl[i].value;
                 }
                 if (i === 0) {
-                    if ((oper.indexOf('in') > -1 || oper.indexOf('between') > -1 || oper.indexOf('null') > -1 ||
+                    if (isDateFilter || (oper.indexOf('in') > -1 || oper.indexOf('between') > -1 || oper.indexOf('null') > -1 ||
                         oper.indexOf('empty') > -1) && oper.indexOf('contains') < 0) {
                         pred = isDateFilter ? this.datePredicate(ruleColl[i], ruleValue) : this.arrayPredicate(ruleColl[i]);
                     }
@@ -2798,6 +2785,15 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             }
         }
         return pred;
+    };
+    QueryBuilder.prototype.getLocale = function () {
+        var gregorianFormat = '.dates.calendars.gregorian.days.format.short';
+        var localeString = this.locale;
+        var cultureObj = getValue('main.' + '' + this.locale + gregorianFormat, cldrData);
+        if (!cultureObj) {
+            localeString = 'en';
+        }
+        return localeString;
     };
     QueryBuilder.prototype.getColumn = function (field) {
         var columns = this.columns;
@@ -2850,12 +2846,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var format;
         var pred;
         var column = this.getColumn(ruleColl.field);
-        if (column.format && column.format.indexOf('/') > 1) {
-            format = { type: 'dateTime', format: column.format };
-        }
-        else {
-            format = { type: 'dateTime', skeleton: column.format || 'yMd' };
-        }
+        format = this.getFormat(column.format);
         if (ruleColl.operator.indexOf('null') > -1 || ruleColl.operator.indexOf('empty') > -1) {
             switch (ruleColl.operator) {
                 case 'isnull':
@@ -2905,7 +2896,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                         switch (ruleColl.operator) {
                             case 'between':
                                 if (column.type === 'date') {
-                                    pred = pred.and(ruleColl.field, 'lessthanorequal', this.getDate(value[j], format));
+                                    var currDate = this.getDate(value[j], format);
+                                    var nextDate = new Date(currDate.setDate(currDate.getDate() + 1));
+                                    pred = pred.and(ruleColl.field, 'lessthan', nextDate);
                                 }
                                 else {
                                     pred = pred.and(ruleColl.field, 'lessthanorequal', value[j]);

@@ -59,6 +59,12 @@ export interface ItemModel {
     suffixIcon?: string;
 
     /**
+     * Specifies whether an item should be hidden or not.
+     * @default true
+     */
+    visible?: boolean;
+
+    /**
      * Specifies the Toolbar command display area when an element's content is too large to fit available space.
      * This is applicable only to `popup` mode. Possible values are:
      * - Show:  Always shows the item as the primary priority on the *Toolbar*. 
@@ -196,6 +202,13 @@ export interface ToolbarModel extends ComponentModel{
      * @default true
      */
     enableCollision?: boolean;
+
+    /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default true
+     * @deprecated
+     */
+    enableHtmlSanitizer?: boolean;
 
     /**
      * The event will be fired on clicking the Toolbar elements.

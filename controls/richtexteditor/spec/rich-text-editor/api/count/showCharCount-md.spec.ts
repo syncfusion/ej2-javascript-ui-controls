@@ -1,13 +1,9 @@
-import { Toolbar, MarkdownEditor, Count, RichTextEditor, Link, Image, QuickToolbar } from './../../../../src/index';
-import { renderRTE, destroy } from './../../render.spec';
+/**
+ * Markdown - showCharCount spec
+ */
 import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
-
-RichTextEditor.Inject(MarkdownEditor);
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(Link);
-RichTextEditor.Inject(Count);
-RichTextEditor.Inject(Image);
-
+import { RichTextEditor } from './../../../../src/index';
+import { renderRTE, destroy } from './../../render.spec';
 
 describe('RTE Markdown COUNT - showCharCount and maxLength - ', () => {
 
@@ -160,7 +156,6 @@ describe('RTE Markdown COUNT - showCharCount and maxLength - ', () => {
     describe(' PUBLIC METHODS - ', () => {
         describe(' refresh method - ', () => {
             let rteObj: RichTextEditor;
-            let controlId: string;
             beforeEach((done: Function) => {
                 rteObj = renderRTE({
                     editorMode: "Markdown",
@@ -168,7 +163,6 @@ describe('RTE Markdown COUNT - showCharCount and maxLength - ', () => {
                     showCharCount: true,
                     maxLength: 50
                 });
-                controlId = rteObj.element.id;
                 done();
             });
             afterEach((done: Function) => {
@@ -188,7 +182,6 @@ describe('RTE Markdown COUNT - showCharCount and maxLength - ', () => {
 
         describe(' destroy method - ', () => {
             let rteObj: RichTextEditor;
-            let controlId: string;
             beforeEach((done: Function) => {
                 rteObj = renderRTE({
                     editorMode: "Markdown",
@@ -196,7 +189,6 @@ describe('RTE Markdown COUNT - showCharCount and maxLength - ', () => {
                     showCharCount: true,
                     maxLength: 50
                 });
-                controlId = rteObj.element.id;
                 done();
             });
             afterEach((done: Function) => {

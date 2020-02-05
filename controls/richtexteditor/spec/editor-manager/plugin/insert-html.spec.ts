@@ -1,8 +1,10 @@
+/**
+ * Insert HTML spec document
+ */
+import { detach } from '@syncfusion/ej2-base';
 import { InsertHtml } from '../../../src/editor-manager/plugin/inserthtml';
 import { NodeSelection } from '../../../src/selection/index';
-/**
- * Selection spec document
- */
+
 describe('Insert HTML', () => {
     //HTML value
     let innervalue: string = '<div id="parentDiv"><p id="paragraph1"><b>Description:</b><span id="span1">Span1 Element</span>'+
@@ -74,9 +76,8 @@ describe('Insert HTML', () => {
         '<span id="inner4">the Rich Text Editor (RTE) control is an easy to render in' +
         'client side.</span>'+
         '</div>';
-    
-    let domSelection: NodeSelection = new NodeSelection();
 
+    let domSelection: NodeSelection = new NodeSelection();
 
     //DIV Element
     let divElement: HTMLDivElement = document.createElement('div');
@@ -88,11 +89,10 @@ describe('Insert HTML', () => {
         document.body.appendChild(divElement);
     });
     afterAll(() => {
-        document.body.innerHTML = '';
+        detach(divElement);
     });
 
     // insert HTML
-
     it('Insert HTML in  cursor position', () => {
         let node1: Node = document.getElementById('inner1');
         let text1: Node = node1.childNodes[0];

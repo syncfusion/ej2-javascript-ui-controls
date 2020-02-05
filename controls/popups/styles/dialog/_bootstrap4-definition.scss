@@ -17,7 +17,7 @@ $dialog-icon-bg-normal: transparent !default;
 $dialog-header-bg-color: $content-popup-bg !default;
 $dialog-content-bg-color: $content-popup-bg !default;
 $dialog-footer-bg-color: $content-popup-bg !default;
-$dialog-shadow-color: $content-popup-bg !default;
+$dialog-shadow-color: 0 5px 15px rgba($black, .5) !default;
 $dialog-header-font-size: 16px !default;
 $dialog-header-font-weight: 500 !default;
 $dialog-header-font-color: $gray-900 !default;

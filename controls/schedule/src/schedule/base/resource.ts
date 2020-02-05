@@ -842,7 +842,20 @@ export class ResourceBase {
         }
         this.refreshLayout(true);
     }
-
+    private getIndexFromResourceId(id: string | number, name: string): number {
+        let indexs: number;
+        if (this.parent.resourceCollection[this.parent.resourceCollection.length - 1].name === name) {
+            indexs = (id as number) - 1;
+        } else {
+            let counts: number = 1;
+            for (let i: number = this.parent.resourceCollection.length - 1; i >= 0; i--) {
+                if (this.parent.resourceCollection[i].name === name) {
+                    indexs = ((id as number) - 1) * (counts); break;
+                } else { counts = counts * ((this.parent.resourceCollection[i].dataSource) as object[]).length; }
+            }
+        }
+        return indexs;
+    }
     public resourceScroll(id: string | number, name: string): void {
         if (this.parent.isAdaptive || ['Agenda', 'MonthAgenda'].indexOf(this.parent.currentView) > -1) {
             return;
@@ -857,16 +870,25 @@ export class ResourceBase {
             return null;
         })[0];
         let scrollElement: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+        let index: number = 0;
         if (this.parent.activeView.isTimelineView()) {
-            let resourceData: { [key: string]: Object } = (resource.dataSource as Object[]).filter((e: { [key: string]: Object }) =>
-                e[resource.idField] === id)[0] as { [key: string]: Object };
-            let index: number = this.lastResourceLevel.map((e: TdData) => e.resourceData).indexOf(resourceData);
+            if (!this.parent.activeViewOptions.group.byGroupID) {
+                index = this.getIndexFromResourceId(id, levelName);
+            } else {
+                let resourceData: { [key: string]: Object } = (resource.dataSource as Object[]).filter((e: { [key: string]: Object }) =>
+                    e[resource.idField] === id)[0] as { [key: string]: Object };
+                index = this.lastResourceLevel.map((e: TdData) => e.resourceData).indexOf(resourceData);
+            }
             let td: HTMLElement = this.parent.element.querySelector(`.${cls.WORK_CELLS_CLASS}[data-group-index="${index}"]`) as HTMLElement;
             if (td && !td.parentElement.classList.contains(cls.HIDDEN_CLASS)) {
                 scrollElement.scrollTop = td.offsetTop;
             }
         } else {
-            let index: number = (resource.dataSource as Object[]).map((e: { [key: string]: Object }) => e[resource.idField]).indexOf(id);
+            if (!this.parent.activeViewOptions.group.byGroupID) {
+                index = this.getIndexFromResourceId(id, levelName);
+            } else {
+                index = (resource.dataSource as Object[]).map((e: { [key: string]: Object }) => e[resource.idField]).indexOf(id);
+            }
             let offsetTarget: Element = this.parent.element.querySelector(`.${cls.HEADER_ROW_CLASS}:nth-child(${levelIndex + 1})`);
             let offset: number[] = [].slice.call(offsetTarget.children).map((node: HTMLElement) => node.offsetLeft);
             scrollElement.scrollLeft = offset[index];

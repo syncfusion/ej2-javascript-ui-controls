@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty, Collection } from '@syncfusion/ej2-base';import { VisibleLabels, Size, VisibleRange, Rect, Align } from '../utils/helper';import { Font, Border } from '../model/base';import { FontModel, BorderModel } from '../model/base-model';import { Point, Placement, MarkerType, Position } from '../utils/enum';
+import { Property, Complex, ChildProperty, Collection } from '@syncfusion/ej2-base';import { VisibleLabels, Size, VisibleRange, Rect, Align } from '../utils/helper';import { Font, Border } from '../model/base';import { FontModel, BorderModel } from '../model/base-model';import { Point, Placement, MarkerType, Position, ExtraPosition } from '../utils/enum';
 
 /**
  * Interface for a class Line
@@ -68,6 +68,12 @@ export interface LabelModel {
      */
     offset?: number;
 
+    /**
+     * Specifies to position the axis label.
+     * @default Auto
+     */
+    position?: ExtraPosition;
+
 }
 
 /**
@@ -112,9 +118,9 @@ export interface RangeModel {
 
     /**
      * Specifies to move the axis range.
-     * @default 0
+     * @default '0'
      */
-    offset?: number;
+    offset?: number | string;
 
     /**
      * Specifies the border of axis range.
@@ -156,6 +162,12 @@ export interface TickModel {
      * @aspDefaultValueIgnore
      */
     offset?: number;
+
+    /**
+     * Specifies to position the axis tick.
+     * @default Auto
+     */
+    position?: ExtraPosition;
 
 }
 
@@ -244,9 +256,15 @@ export interface PointerModel {
 
     /**
      * Specifies to move the pointer.
-     * @default 0
+     * @default '0'
      */
-    offset?: number;
+    offset?: number | string;
+
+    /**
+     * Specifies to position the pointer.
+     * @default Auto
+     */
+    position?: ExtraPosition;
 
     /**
      * Description of the pointer.
@@ -280,6 +298,12 @@ export interface AxisModel {
      */
 
     isInversed?: boolean;
+
+    /**
+     * Specifies the last label to be shown
+     */
+
+    showLastLabel?: boolean;
 
     /**
      * Specifies the axis rendering position.

@@ -1718,12 +1718,10 @@
         }
 
         .e-close-icon::before {
+          top: $tab-pop-close-icon-top;
+
           @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
             top: 1px;
-          }
-
-          @media screen\0 {
-            top: $tab-pop-close-icon-top;
           }
         }
 

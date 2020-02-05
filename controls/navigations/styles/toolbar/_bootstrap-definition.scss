@@ -3,7 +3,7 @@ $tbar-skin: 'bootstrap' !default;
 $tbar-btn-bgr-line-height: 35px !default;
 $tbar-zero-value: 0 !default;
 $tbar-separator-bgr-minheight: 36px !default;
-$tbar-btn-bgr-minwidth: '' !default;
+$tbar-btn-bgr-minwidth: 0 !default;
 $tbar-btn-nrml-minwidth: 0 !default;
 $tbar-btn-nrml-line-height: 25px !default;
 $tbar-btn-weight: 400 !default;
@@ -54,17 +54,17 @@ $tbar-separator-border-type: solid !default;
 $tbar-default-icon-color: $grey-light-font !default;
 $tbar-default-font: $grey-light-font !default;
 
-$tbar-nav-press-border: '' !default;
+$tbar-nav-press-border: 0 !default;
 $tbar-nav-hover-border: 1px solid $grey-ad !default;
-$tbar-nav-focus-border: '' !default;
-$tbar-pressed-border: '' !default;
+$tbar-nav-focus-border: 0 !default;
+$tbar-pressed-border: transparent !default;
 $tbar-btn-border: none !default;
 
 $tbar-nav-pressed-box-shadow: inset  0 3px 5px rgba(0 , 0 , 0 , .125) !default;
 $tbar-pop-box-shadow:  0 6px 12px rgba(0 , 0 , 0 , .175) !default;
 $tbar-pop-radius: 4px !default;
 $tbar-radius: 4px !default;
-$tbar-border-nav-active-type: '' !default;
+$tbar-border-nav-active-type: none !default;
 
 $tbar-btn-pop-nrml-minheight: 40px !default;
 $tbar-btn-pop-bgr-minheight: 40px !default;

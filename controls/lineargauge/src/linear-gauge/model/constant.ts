@@ -38,3 +38,6 @@ export const valueChange: string = 'valueChange';
 
 /** @private */
 export const resized: string = 'resized';
+
+/** @private */
+export const beforePrint: string = 'beforePrint';

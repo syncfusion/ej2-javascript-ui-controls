@@ -459,7 +459,11 @@ export class Toolbar {
         let id: string = this.container.element.id + TOOLBAR_ID;
         let commentId: string = id + COMMENT_ID;
         let element: HTMLElement = document.getElementById(commentId);
-        this.toolbar.enableItems(element.parentElement, enable);
+        if (!this.container.enableComment && element) {
+            this.toolbar.removeItems(element.parentElement);
+        } else if (element) {
+            this.toolbar.enableItems(element.parentElement, enable);
+        }
     }
     /**
      * @private

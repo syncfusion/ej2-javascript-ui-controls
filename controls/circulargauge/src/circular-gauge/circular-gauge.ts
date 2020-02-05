@@ -9,7 +9,7 @@ import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { CircularGaugeModel } from './circular-gauge-model';
 import { ILoadedEventArgs, IAnimationCompleteEventArgs, IVisiblePointer, IThemeStyle, ILegendRenderEventArgs } from './model/interface';
 import { IAxisLabelRenderEventArgs, IRadiusCalculateEventArgs, IPointerDragEventArgs, IResizeEventArgs } from './model/interface';
-import { ITooltipRenderEventArgs, IAnnotationRenderEventArgs, IMouseEventArgs } from './model/interface';
+import { ITooltipRenderEventArgs, IAnnotationRenderEventArgs, IMouseEventArgs, IPrintEventArgs } from './model/interface';
 import { TextOption, textElement, RectOption, getAngleFromLocation, getValueFromAngle, removeElement } from './utils/helper';
 import { Size, stringToNumber, measureText, Rect, GaugeLocation, getElement, getPointer, setStyles, toPixel } from './utils/helper';
 import { getAngleFromValue, getPathArc } from './utils/helper';
@@ -26,6 +26,9 @@ import { AxisLayoutPanel } from './axes/axis-panel';
 import { getThemeStyle } from './model/theme';
 import { LegendSettingsModel } from './legend/legend-model';
 import { LegendSettings, Legend } from './legend/legend';
+import { ExportUtils } from '../circular-gauge/utils/export';
+import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
+import { ExportType } from '../circular-gauge/utils/enum';
 
 /**
  * Represents the Circular gauge control.
@@ -330,6 +333,15 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
 
     @Event()
     public resized: EmitType<IResizeEventArgs>;
+
+    /**
+     * Triggers before the prints gets started.
+     * @event
+     * @blazorProperty 'OnPrint'
+     */
+
+    @Event()
+    public beforePrint: EmitType<IPrintEventArgs>;
 
     /** @private */
     public renderer: SvgRenderer;
@@ -953,6 +965,22 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         }
     }
     /**
+     * Handles the print method for gauge control.
+     */
+    public print(id?: string[] | string | Element): void {
+        let exportChart: ExportUtils = new ExportUtils(this);
+        exportChart.print(id);
+    }
+    /**
+     * Handles the export method for gauge control.
+     * @param type
+     * @param fileName
+     */
+    public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation): void {
+        let exportMap: ExportUtils = new ExportUtils(this);
+        exportMap.export(type, fileName, orientation);
+    }
+    /**
      * Method to set mouse x, y from events
      */
     private setMouseXY(e: PointerEvent): void {
@@ -1004,7 +1032,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         endWidth = isClockWise ? endWidth : [startWidth, startWidth = endWidth][0];
         element.setAttribute('d', getPathArc(
             this.midPoint, Math.round(startAngle), Math.round(endAngle), range.currentRadius,
-            startWidth, endWidth
+            startWidth, endWidth, range, axis
         ));
         setStyles(element as HTMLElement, (range.color ? range.color : range.rangeColor), {
             color: (range.color ? range.color : range.rangeColor),

@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, detach, extend, getComponent, getInstance, getValue, isBlazor, isNullOrUndefined, removeClass, rippleEffect } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, classList, cldrData, closest, detach, extend, getComponent, getInstance, getValue, isBlazor, isNullOrUndefined, removeClass, rippleEffect } from '@syncfusion/ej2-base';
 import { Button, RadioButton } from '@syncfusion/ej2-buttons';
 import { CheckBoxSelection, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
 import { DataManager, Deferred, Predicate, Query, UrlAdaptor } from '@syncfusion/ej2-data';
@@ -700,12 +700,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         let dropDownObj = getComponent(filterElem, 'dropdownlist');
         let column = dropDownObj.getDataByValue(dropDownObj.value);
         let format;
-        if (column.format && column.format.indexOf('/') > -1) {
-            format = { type: 'dateTime', format: column.format };
-        }
-        else {
-            format = { type: 'dateTime', skeleton: column.format || 'yMd' };
-        }
+        format = this.getFormat(column.format);
         let valueColl = [];
         for (let i = 0, iLen = tempColl.length; i < iLen; i++) {
             if (tempColl[i].nextElementSibling) {
@@ -1314,13 +1309,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         let selectedValue;
         if (format) {
             let dParser = this.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
-            if (format.indexOf('/') > -1) {
-                formatOpt = { type: 'dateTime', format: format };
-            }
-            else {
-                formatOpt = { type: 'dateTime', skeleton: format };
-            }
-            formatOpt = { type: 'dateTime', format: format };
+            formatOpt = this.getFormat(format);
             selectedValue = dParser(value);
             if (isNullOrUndefined(selectedValue)) {
                 selectedValue = this.intl.parseDate(value, formatOpt);
@@ -1419,21 +1408,19 @@ let QueryBuilder = class QueryBuilder extends Component {
                                     format = column.format;
                                 }
                                 if (format) {
-                                    let formatObj;
-                                    if (format && format.indexOf('/') > -1) {
-                                        formatObj = { type: 'dateTime', format: format };
+                                    let formatObj = this.getFormat(format);
+                                    if (formatObj.skeleton) {
+                                        datepick = new DatePicker({ locale: this.getLocale(), value: selectedValue,
+                                            placeholder: place, format: formatObj, change: this.changeValue.bind(this, i) });
                                     }
                                     else {
-                                        formatObj = { type: 'dateTime', skeleton: format || 'yMd' };
+                                        datepick = new DatePicker({ value: selectedValue, locale: this.getLocale(),
+                                            placeholder: place, format: formatObj.format, change: this.changeValue.bind(this, i) });
                                     }
-                                    datepick =
-                                        new DatePicker({
-                                            value: selectedValue, placeholder: place, format: formatObj, change: this.changeValue.bind(this, i)
-                                        });
                                 }
                                 else {
-                                    datepick =
-                                        new DatePicker({ value: selectedValue, placeholder: place, change: this.changeValue.bind(this, i) });
+                                    datepick = new DatePicker({ locale: this.getLocale(),
+                                        value: selectedValue, placeholder: place, change: this.changeValue.bind(this, i) });
                                 }
                                 datepick.appendTo('#' + parentId + '_valuekey' + i);
                                 if (!rule.value) {
@@ -1568,13 +1555,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 break;
             case 'datepicker':
                 let column = this.getColumn(rule.field);
-                let format;
-                if (column.format && column.format.indexOf('/')) {
-                    format = { type: 'dateTime', format: column.format };
-                }
-                else {
-                    format = { type: 'dateTime', skeleton: column.format || 'yMd' };
-                }
+                let format = this.getFormat(column.format);
                 let selectedDate = getComponent(element, controlName).value;
                 if (rule.operator.indexOf('between') > -1) {
                     if (typeof rule.value === 'string') {
@@ -1761,13 +1742,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             }
             else if (target.className.indexOf('e-datepicker') > -1) {
                 let ddlInst = getInstance(ruleElem.querySelector('.e-rule-filter input'), DropDownList);
-                let format;
-                if (this.columns[ddlInst.index].format && this.columns[ddlInst.index].format.indexOf('/') > -1) {
-                    format = { type: 'dateTime', format: this.columns[ddlInst.index].format };
-                }
-                else {
-                    format = { type: 'dateTime', skeleton: this.columns[ddlInst.index].format || 'yMd' };
-                }
+                let format = this.getFormat(this.columns[ddlInst.index].format);
                 if (format.type) {
                     if (arrOperator.indexOf(oper) > -1) {
                         if (typeof rule.rules[index].value === 'string') {
@@ -1796,6 +1771,24 @@ let QueryBuilder = class QueryBuilder extends Component {
                 getComponent(valElem[1].parentElement, 'tooltip').destroy();
             }
         }
+    }
+    getFormat(format) {
+        let formatOptions;
+        if (format) {
+            if (typeof (format) === 'string') {
+                formatOptions = { type: 'dateTime', format: format };
+                if (format === 'short') {
+                    formatOptions.skeleton = format;
+                }
+            }
+            else {
+                formatOptions = { type: 'dateTime', skeleton: format.skeleton };
+            }
+        }
+        else {
+            formatOptions = { type: 'dateTime', skeleton: 'yMd' };
+        }
+        return formatOptions;
     }
     findGroupByIdx(groupIdx, rule, isRoot) {
         let ruleColl = rule.rules;
@@ -1860,7 +1853,6 @@ let QueryBuilder = class QueryBuilder extends Component {
         this.isImportRules = false;
         this.unWireEvents();
         this.levelColl[this.element.id + '_group0'] = [0];
-        this.rule = { condition: 'and', rules: [] };
         this.element.innerHTML = '';
         classList(this.element, [], ['e-rtl', 'e-responsive', 'e-device']);
     }
@@ -2141,6 +2133,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 case 'locale':
                     this.locale = newProp.locale;
                     this.intl = new Internationalization(this.locale);
+                    this.refresh();
                     break;
                 case 'enableNotCondition':
                     this.onChangeNotGroup();
@@ -2660,13 +2653,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 }
                 column = this.getColumn(ruleColl[i].field);
                 if (ruleColl[i].type === 'date' && !(ruleColl[i].value instanceof Array)) {
-                    let format;
-                    if (column.format && column.format.indexOf('/') > 1) {
-                        format = { type: 'dateTime', format: column.format };
-                    }
-                    else {
-                        format = { type: 'dateTime', skeleton: column.format || 'yMd' };
-                    }
+                    let format = this.getFormat(column.format);
                     ruleValue = this.getDate(ruleColl[i].value, format);
                     if (dateOperColl.indexOf(oper) > -1) {
                         isDateFilter = true;
@@ -2679,7 +2666,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                     ruleValue = ruleColl[i].value;
                 }
                 if (i === 0) {
-                    if ((oper.indexOf('in') > -1 || oper.indexOf('between') > -1 || oper.indexOf('null') > -1 ||
+                    if (isDateFilter || (oper.indexOf('in') > -1 || oper.indexOf('between') > -1 || oper.indexOf('null') > -1 ||
                         oper.indexOf('empty') > -1) && oper.indexOf('contains') < 0) {
                         pred = isDateFilter ? this.datePredicate(ruleColl[i], ruleValue) : this.arrayPredicate(ruleColl[i]);
                     }
@@ -2724,6 +2711,15 @@ let QueryBuilder = class QueryBuilder extends Component {
             }
         }
         return pred;
+    }
+    getLocale() {
+        let gregorianFormat = '.dates.calendars.gregorian.days.format.short';
+        let localeString = this.locale;
+        let cultureObj = getValue('main.' + '' + this.locale + gregorianFormat, cldrData);
+        if (!cultureObj) {
+            localeString = 'en';
+        }
+        return localeString;
     }
     getColumn(field) {
         let columns = this.columns;
@@ -2776,12 +2772,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         let format;
         let pred;
         let column = this.getColumn(ruleColl.field);
-        if (column.format && column.format.indexOf('/') > 1) {
-            format = { type: 'dateTime', format: column.format };
-        }
-        else {
-            format = { type: 'dateTime', skeleton: column.format || 'yMd' };
-        }
+        format = this.getFormat(column.format);
         if (ruleColl.operator.indexOf('null') > -1 || ruleColl.operator.indexOf('empty') > -1) {
             switch (ruleColl.operator) {
                 case 'isnull':
@@ -2831,7 +2822,9 @@ let QueryBuilder = class QueryBuilder extends Component {
                         switch (ruleColl.operator) {
                             case 'between':
                                 if (column.type === 'date') {
-                                    pred = pred.and(ruleColl.field, 'lessthanorequal', this.getDate(value[j], format));
+                                    let currDate = this.getDate(value[j], format);
+                                    let nextDate = new Date(currDate.setDate(currDate.getDate() + 1));
+                                    pred = pred.and(ruleColl.field, 'lessthan', nextDate);
                                 }
                                 else {
                                     pred = pred.and(ruleColl.field, 'lessthanorequal', value[j]);

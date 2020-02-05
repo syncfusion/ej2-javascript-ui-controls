@@ -28,6 +28,9 @@ export class Year extends ViewBase implements IRenderer {
     }
 
     public renderLayout(className: string): void {
+        if (this.parent.resourceBase) {
+            this.parent.resourceBase.generateResourceLevels([(<TdData>{ renderDates: this.parent.activeView.renderDates })]);
+        }
         this.setPanel(createElement('div', { className: cls.TABLE_WRAP_CLASS }));
         let viewTypeClass: string = this.parent.activeViewOptions.orientation === 'Horizontal' ? 'e-horizontal' : 'e-vertical';
         addClass([this.element], [this.viewClass, viewTypeClass, className]);

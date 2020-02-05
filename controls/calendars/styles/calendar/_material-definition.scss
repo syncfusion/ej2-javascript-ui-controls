@@ -27,7 +27,7 @@ $calendar-text-color: rgba($grey-light-font, .87) !default;
 $calendar-hover-text: $calendar-text-color !default;
 $calendar-focus-bg-color: $grey-200 !default;
 $calendar-border-style: 1px solid rgba($grey-black, .12) !default;
-$calendar-box-shadow: $grey-300 !default;
+$calendar-box-shadow: none !default;
 $calendar-none-style: none !default;
 $calendar-cursor-default-style: default !default;
 $calendar-cursor-pointer-style: pointer !default;

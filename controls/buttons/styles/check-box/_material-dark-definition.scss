@@ -1,5 +1,5 @@
 //default
-$cbox-bgcolor: none !default;
+$cbox-bgcolor: transparent !default;
 $cbox-bigger-check-fontsize: 16px !default;
 $cbox-bigger-font-size: 14px !default;
 $cbox-bigger-height: 22px !default;
@@ -45,7 +45,7 @@ $cbox-focussed-color: $grey-dark-font !default;
 $cbox-focussed-indeterminate-color: rgba($grey-white, .3) !default;
 $cbox-font-size: 13px !default;
 $cbox-height: 18px !default;
-$cbox-hover-bgcolor: none !default;
+$cbox-hover-bgcolor: transparent !default;
 $cbox-hover-border-color: rgba($grey-white, .7) !default;
 $cbox-hover-color: rgba($grey-white, .7) !default;
 $cbox-indeterminate-bgcolor: transparent !default;

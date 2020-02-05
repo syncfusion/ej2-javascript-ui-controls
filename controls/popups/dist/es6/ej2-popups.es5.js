@@ -1628,6 +1628,7 @@ var DLG_UTIL_CONFIRM = 'e-confirm-dialog';
 var DLG_RESIZABLE = 'e-dlg-resizable';
 var DLG_RESTRICT_LEFT_VALUE = 'e-restrict-left';
 var DLG_RESTRICT_WIDTH_VALUE = 'e-resize-viewport';
+var DLG_REF_ELEMENT = 'e-dlg-ref-element';
 /**
  * Represents the dialog component that displays the information and get input from the user.
  * Two types of dialog components are `Modal and Modeless (non-modal)` depending on its interaction with parent application.
@@ -1920,6 +1921,11 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         if (this.isBlazorServerRender() && isNullOrUndefined(this.dlgContainer)) {
             this.dlgContainer = this.element.parentElement;
             this.dlgOverlay = this.element.parentElement.getElementsByClassName('e-dlg-overlay')[0];
+        }
+        if (this.element.classList.contains(DLG_UTIL_ALERT) !== true && this.element.classList.contains(DLG_UTIL_CONFIRM) !== true) {
+            var parentEle = this.isModal ? this.dlgContainer.parentElement : this.element.parentElement;
+            this.refElement = this.createElement('div', { className: DLG_REF_ELEMENT });
+            parentEle.insertBefore(this.refElement, (this.isModal ? this.dlgContainer : this.element));
         }
         if (!isNullOrUndefined(this.targetEle)) {
             this.isModal ? this.targetEle.appendChild(this.dlgContainer) : this.targetEle.appendChild(this.element);
@@ -2584,8 +2590,12 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
      * @memberof dialog
      */
     Dialog.prototype.destroy = function () {
-        var classArray = [RTL, MODAL_DLG, DLG_RESIZABLE, DLG_RESTRICT_LEFT_VALUE];
+        var classArray = [RTL, MODAL_DLG, DLG_RESIZABLE, DLG_RESTRICT_LEFT_VALUE, FULLSCREEN, DEVICE];
         var attrs = ['role', 'aria-modal', 'aria-labelledby', 'aria-describedby', 'aria-grabbed', 'tabindex', 'style'];
+        removeClass([this.targetEle], [DLG_TARGET, SCROLL_DISABLED]);
+        if (this.element.classList.contains(FULLSCREEN)) {
+            removeClass([document.body], [DLG_TARGET, SCROLL_DISABLED]);
+        }
         if (this.isModal) {
             removeClass([(!isNullOrUndefined(this.targetEle) ? this.targetEle : document.body)], SCROLL_DISABLED);
         }
@@ -2604,6 +2614,11 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         removeClass([this.element], classArray);
         if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
             removeClass([this.element], this.cssClass.split(' '));
+        }
+        if (!isNullOrUndefined(this.refElement)) {
+            this.refElement.parentElement.insertBefore((this.isModal ? this.dlgContainer : this.element), this.refElement);
+            detach(this.refElement);
+            this.refElement = undefined;
         }
         if (this.isModal && !this.isBlazorServerRender()) {
             detach(this.dlgOverlay);
@@ -2652,7 +2667,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         if (this.isModal) {
             EventHandler.remove(this.dlgOverlay, 'click', this.dlgOverlayClickEventHandler);
         }
-        if (!isNullOrUndefined(this.buttons[0].buttonModel) && this.footerTemplate === '') {
+        if (this.buttons.length > 0 && !isNullOrUndefined(this.buttons[0].buttonModel) && this.footerTemplate === '') {
             for (var i = 0; i < this.buttons.length; i++) {
                 if (typeof (this.buttons[i].click) === 'function') {
                     EventHandler.remove(this.ftrTemplateContent.children[i], 'click', this.buttons[i].click);

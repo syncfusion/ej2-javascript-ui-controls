@@ -14,6 +14,14 @@ export interface ILinearGaugeEventArgs {
     name: string;
     cancel: boolean;
 }
+
+/**
+ * specifies Print Events
+ */
+export interface IPrintEventArgs extends ILinearGaugeEventArgs {
+    htmlContent: Element;
+}
+
 /**
  * Gauge Loaded event arguments
  */

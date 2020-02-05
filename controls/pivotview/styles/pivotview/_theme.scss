@@ -300,7 +300,7 @@
           @if ($pivotgrid-skin == 'bootstrap4') {
             font-weight: 400;
             line-height: .75em;
-            padding: 8 10px;
+            padding: 8px 10px;
           }
 
           &.e-list-selected {
@@ -451,7 +451,7 @@
             @if ($pivotgrid-skin == 'bootstrap4') {
               font-weight: 400;
               line-height: .75em;
-              padding: 8 10px;
+              padding: 8px 10px;
             }
 
             &:hover {

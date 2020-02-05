@@ -131,7 +131,7 @@ export class TextMarkupAnnotation {
      * @private
      */
     public isSelectedAnnotation: boolean = false;
-
+    private dropletHeight: number = 20;
     /**
      * @private
      */
@@ -245,7 +245,22 @@ export class TextMarkupAnnotation {
             } else {
                 this.dropDivAnnotationLeft.style.display = '';
                 this.dropDivAnnotationRight.style.display = '';
+                this.updateDropletStyles();
             }
+        }
+    }
+    private updateDropletStyles(): void {
+        if (this.pdfViewer.enableTextMarkupResizer && this.dropDivAnnotationLeft && this.dropDivAnnotationLeft.offsetWidth > 0) {
+            this.dropDivAnnotationLeft.style.width = this.dropletHeight * this.pdfViewerBase.getZoomFactor() + 'px';
+            this.dropDivAnnotationRight.style.width = this.dropletHeight * this.pdfViewerBase.getZoomFactor() + 'px';
+            this.dropElementLeft.style.width = this.dropletHeight * this.pdfViewerBase.getZoomFactor() + 'px';
+            this.dropElementRight.style.width = this.dropletHeight * this.pdfViewerBase.getZoomFactor() + 'px';
+            this.dropDivAnnotationLeft.style.height = this.dropletHeight * this.pdfViewerBase.getZoomFactor() + 'px';
+            this.dropDivAnnotationRight.style.height = this.dropletHeight * this.pdfViewerBase.getZoomFactor() + 'px';
+            this.dropElementLeft.style.height = this.dropletHeight * this.pdfViewerBase.getZoomFactor() + 'px';
+            this.dropElementRight.style.height = this.dropletHeight * this.pdfViewerBase.getZoomFactor() + 'px';
+            this.dropElementLeft.style.top = this.dropletHeight * this.pdfViewerBase.getZoomFactor() + 'px';
+            this.dropElementRight.style.top = this.dropletHeight * this.pdfViewerBase.getZoomFactor() + 'px';
         }
     }
     private updateAnnotationBounds(): void {
@@ -344,7 +359,8 @@ export class TextMarkupAnnotation {
             // tslint:disable-next-line:max-line-length
             rightDivElement.style.top = topClientValue + pageTopValue * this.pdfViewerBase.getZoomFactor() + 'px';
         }
-        rightDivElement.style.left = x - this.pdfViewerBase.viewerContainer.getBoundingClientRect().left + 'px';
+        // tslint:disable-next-line:max-line-length
+        rightDivElement.style.left = x + this.pdfViewerBase.viewerContainer.scrollLeft - this.pdfViewerBase.viewerContainer.getBoundingClientRect().left + 'px';
     }
     /**
      * @private
@@ -363,7 +379,8 @@ export class TextMarkupAnnotation {
             // tslint:disable-next-line:max-line-length
             leftDivElement.style.top = topClientValue + pageTopValue * this.pdfViewerBase.getZoomFactor() + 'px';
         }
-        leftDivElement.style.left = x - this.pdfViewerBase.viewerContainer.getBoundingClientRect().left - 20 + 'px';
+        // tslint:disable-next-line:max-line-length
+        leftDivElement.style.left = x + this.pdfViewerBase.viewerContainer.scrollLeft - this.pdfViewerBase.viewerContainer.getBoundingClientRect().left - (this.dropletHeight * this.pdfViewerBase.getZoomFactor()) + 'px';
     }
 
 
@@ -1552,18 +1569,7 @@ export class TextMarkupAnnotation {
         // tslint:disable-next-line
         let currentEvent: any = event;
         if (this.pdfViewer.enableTextMarkupResizer && annotation && currentEvent && !currentEvent.touches) {
-            // tslint:disable-next-line
-            let boundingRect: any = this.pdfViewerBase.getElement('_textLayer_' + this.selectTextMarkupCurrentPage).getBoundingClientRect();
-            let left: number = annotation.bounds[0].left ? annotation.bounds[0].left : annotation.bounds[0].Left;
-            let top: number = annotation.bounds[0].top ? annotation.bounds[0].top : annotation.bounds[0].Top;
-            this.updateLeftposition(left * this.pdfViewerBase.getZoomFactor() + boundingRect.left, (boundingRect.top + top), true);
-            // tslint:disable-next-line
-            let endPosition: any = annotation.bounds[annotation.bounds.length - 1];
-            let endLeft: number = endPosition.left ? endPosition.left : endPosition.Left;
-            let endTop: number = endPosition.top ? endPosition.top : endPosition.Top;
-            let endWidth: number = endPosition.width ? endPosition.width : endPosition.Width;
-            // tslint:disable-next-line:max-line-length
-            this.updatePosition((endLeft + endWidth) * this.pdfViewerBase.getZoomFactor() + boundingRect.left, (endTop + boundingRect.top), true);
+            this.updateCurrentResizerPosition(annotation);
         }
         for (let i: number = 0; i < annotation.bounds.length; i++) {
             // tslint:disable-next-line
@@ -1590,6 +1596,30 @@ export class TextMarkupAnnotation {
         }
         if (annotation && this.pdfViewer.enableTextMarkupResizer) {
             this.isTextMarkupAnnotationMode = true;
+        }
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public updateCurrentResizerPosition(annotation?: any): void {
+        if (!annotation) {
+            annotation = this.currentTextMarkupAnnotation;
+        }
+        if (this.pdfViewer.enableTextMarkupResizer && annotation) {
+            // tslint:disable-next-line
+            let boundingRect: any = this.pdfViewerBase.getElement('_textLayer_' + this.selectTextMarkupCurrentPage).getBoundingClientRect();
+            let left: number = annotation.bounds[0].left ? annotation.bounds[0].left : annotation.bounds[0].Left;
+            let top: number = annotation.bounds[0].top ? annotation.bounds[0].top : annotation.bounds[0].Top;
+            this.updateLeftposition(left * this.pdfViewerBase.getZoomFactor() + boundingRect.left, (boundingRect.top + top), true);
+            // tslint:disable-next-line
+            let endPosition: any = annotation.bounds[annotation.bounds.length - 1];
+            let endLeft: number = endPosition.left ? endPosition.left : endPosition.Left;
+            let endTop: number = endPosition.top ? endPosition.top : endPosition.Top;
+            let endWidth: number = endPosition.width ? endPosition.width : endPosition.Width;
+            // tslint:disable-next-line:max-line-length
+            this.updatePosition((endLeft + endWidth) * this.pdfViewerBase.getZoomFactor() + boundingRect.left, (endTop + boundingRect.top), true);
         }
     }
     // tslint:disable-next-line

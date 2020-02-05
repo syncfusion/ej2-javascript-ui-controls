@@ -81,13 +81,11 @@ export class MarkdownEditor {
         let startOffset: number;
         let endOffset: number;
         let item: IToolbarItemModel = args.item as IToolbarItemModel;
-        if (this.parent.editorMode === 'Markdown') {
-            let textArea: HTMLTextAreaElement = (this.parent.contentModule.getEditPanel() as HTMLTextAreaElement);
-            textArea.focus();
-            startOffset = textArea.selectionStart;
-            endOffset = textArea.selectionEnd;
-            text = textArea.value.substring(startOffset, endOffset);
-        }
+        let textArea: HTMLTextAreaElement = (this.parent.contentModule.getEditPanel() as HTMLTextAreaElement);
+        textArea.focus();
+        startOffset = textArea.selectionStart;
+        endOffset = textArea.selectionEnd;
+        text = textArea.value.substring(startOffset, endOffset);
         switch (item.subCommand) {
             case 'Maximize':
                 this.parent.notify(events.enableFullScreen, { args: args });

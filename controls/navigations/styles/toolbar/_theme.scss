@@ -336,7 +336,7 @@
       border-left: 0;
       border-width: $tbar-popup-rtl-border-width;
 
-      &:not(.e-hor-nav.e-nav-active):hover {
+      &:not(.e-nav-active):hover {
         background: $tbar-hover-bg;
         color: $tbar-hover-font;
       }
@@ -399,9 +399,12 @@
 
       &:focus {
         background: $tbar-hover-bg;
-        border-color: $tbar-pressed-border;
         border-left: $tbar-nav-focus-border;
         color: $tbar-pressed-font;
+
+        @if $tbar-skin != 'bootstrap' {
+          border-color: $tbar-pressed-border;
+        }
 
         @if $tbar-skin == 'bootstrap4' {
           .e-icons {

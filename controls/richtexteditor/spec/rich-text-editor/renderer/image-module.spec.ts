@@ -1,26 +1,15 @@
 /**
- * Content renderer spec 
+ * Image module spec 
  */
 import { Browser, isNullOrUndefined, closest, detach, createElement } from '@syncfusion/ej2-base';
-import { Dialog } from '@syncfusion/ej2-popups';
-import { RichTextEditor, Toolbar, Image, IRenderer, ResizeArgs } from './../../../src/index';
+import { RichTextEditor, QuickToolbar, IRenderer } from './../../../src/index';
 import { NodeSelection } from './../../../src/selection/index';
 import { renderRTE, destroy, setCursorPoint, dispatchEvent, androidUA, iPhoneUA, currentBrowserUA } from "./../render.spec";
-
-import { QuickToolbar, MarkdownEditor, HtmlEditor } from "../../../src/rich-text-editor/index";
-
-RichTextEditor.Inject(MarkdownEditor);
-RichTextEditor.Inject(HtmlEditor);
-
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(QuickToolbar);
-RichTextEditor.Inject(Image);
-
-document.body.innerHTML = '';
 
 function getQTBarModule(rteObj: RichTextEditor): QuickToolbar {
     return rteObj.quickToolbarModule;
 }
+
 describe('insert image', () => {
     describe('div content', () => {
         let rteEle: HTMLElement;
@@ -28,7 +17,7 @@ describe('insert image', () => {
         let mobileUA: string = "Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) " +
             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36";
         let defaultUA: string = navigator.userAgent;
-        beforeAll(() => {
+        beforeAll((done: Function) => {
             Browser.userAgent = mobileUA;
             rteObj = renderRTE({
                 toolbarSettings: {
@@ -37,6 +26,7 @@ describe('insert image', () => {
                 insertImageSettings: { resize: false }
             });
             rteEle = rteObj.element;
+            done();
         });
         afterAll(() => {
             Browser.userAgent = defaultUA;
@@ -140,7 +130,6 @@ describe('insert image', () => {
             width -= 200;
             expect(width).toEqual((rteObj.element.querySelector('.e-rte-image') as HTMLElement).offsetWidth);
         });
-
         it('resizing - mousemove - top right', () => {
             let trg = (rteObj.element.querySelector('.e-rte-image') as HTMLElement);
             (rteObj.imageModule as any).resizeStart({ target: trg, pageX: 0 });
@@ -199,7 +188,6 @@ describe('insert image', () => {
             // width -= 200;
             // expect(width).toEqual((rteObj.element.querySelector('.e-rte-image') as HTMLElement).offsetWidth - 100);
         });
-
     });
 
     describe('percentage resize', () => {
@@ -283,18 +271,17 @@ describe('insert image', () => {
         });
     });
     describe('predefined set image', () => {
-        let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let clickEvent: any;
         let innerHTML: string = `<p><b>Description:</b></p>
 <p>The Rich Text Editor (RTE) control is an easy to render in
 client side. Customer easy to edit the contents and get the HTML content for
-<img src='https://ej2.syncfusion.com/demos/src/rte/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
+<img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
 `;
         let innerHTML1: string = `<p><b>Description:</b></p>
 <p>The Rich Text Editor (RTE) control is an easy to render in
 client side. Customer easy to edit the contents and get the HTML content for
-<img src='https://ej2.syncfusion.com/demos/src/rte/images/RTEImage-Feather.png' style="width:200px; height: 300px"/>
+<img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:200px; height: 300px"/>
 `;
         beforeAll(() => {
             rteObj = renderRTE({
@@ -305,7 +292,6 @@ client side. Customer easy to edit the contents and get the HTML content for
                 value: innerHTML,
                 insertImageSettings: { resize: true }
             });
-            rteEle = rteObj.element;
         });
         afterAll(() => {
             destroy(rteObj);
@@ -569,7 +555,6 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
-
     describe('Inserting image and applying heading', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -612,7 +597,6 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect(actionComplete).toHaveBeenCalled();
         });
     });
-
 
     describe('div content-rte testing', () => {
         let rteEle: HTMLElement;
@@ -747,6 +731,7 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
         afterAll(() => {
             destroy(rteObj);
+            detach(document.querySelector('.e-imginline'));
         });
         it('image dialog', (done: Function) => {
             expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
@@ -1278,7 +1263,6 @@ client side. Customer easy to edit the contents and get the HTML content for
     });
 
     describe('image dialog - documentClick', () => {
-        let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         let keyboardEventArgs = {
             preventDefault: function () { },
@@ -1287,7 +1271,6 @@ client side. Customer easy to edit the contents and get the HTML content for
         };
         beforeAll(() => {
             rteObj = renderRTE({ insertImageSettings: { resize: false } });
-            rteEle = rteObj.element;
         });
         afterAll(() => {
             destroy(rteObj);
@@ -1309,7 +1292,6 @@ client side. Customer easy to edit the contents and get the HTML content for
             eventsArgs = { target: document.querySelector('[title="Insert Image"]').parentElement, preventDefault: function () { } };
             (<any>rteObj).imageModule.onDocumentClick(eventsArgs);
             expect(document.body.contains((<any>rteObj).imageModule.dialogObj.element)).toBe(true);
-
         });
         it('close image dialog - while click on document', () => {
             let eventsArgs = { target: document, preventDefault: function () { } };
@@ -1410,7 +1392,6 @@ client side. Customer easy to edit the contents and get the HTML content for
     describe('image with cimbination', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
-        let clickEvent: any;
         beforeAll(() => {
             rteObj = renderRTE({
                 height: 400,
@@ -1565,7 +1546,6 @@ client side. Customer easy to edit the contents and get the HTML content for
     describe('initial load image undo redo', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
-        let clickEvent: any;
         let keyboardEventArgs = {
             preventDefault: function () { },
             altKey: false,
@@ -1580,7 +1560,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             action: ''
         };
         let innerHTML1: string = ` 
-            <img src='https://ej2.syncfusion.com/demos/src/rte/images/RTEImage-Feather.png' style="width:200px; height: 300px"/>
+            <img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:200px; height: 300px"/>
             `;
         beforeAll(() => {
             rteObj = renderRTE({
@@ -1694,7 +1674,6 @@ client side. Customer easy to edit the contents and get the HTML content for
 
     describe('Mouse Click for image testing when showOnRightClick enabled', () => {
         let rteObj: RichTextEditor;
-        let controlId: string;
         beforeEach((done: Function) => {
             rteObj = renderRTE({
                 value: `<p>Hi image is<img id="image" alt="Logo" src="https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png" style="width: 300px;">`,
@@ -1703,7 +1682,6 @@ client side. Customer easy to edit the contents and get the HTML content for
                     showOnRightClick: true
                 }
             });
-            controlId = rteObj.element.id;
             done();
         });
         afterEach((done: Function) => {
@@ -1878,7 +1856,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                     showOnRightClick: false
                 },
                 value: `<p id='img-container'>
-                    <img src='https://ej2.syncfusion.com/demos/src/rte/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
+                    <img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
                 </p>`
             });
             ele = rteObj.element;
@@ -1902,7 +1880,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                     showOnRightClick: false
                 },
                 value: `<p id='img-container'>
-                    <img src='https://ej2.syncfusion.com/demos/src/rte/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
+                    <img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
                 </p>`
             });
             ele = rteObj.element;
@@ -1926,7 +1904,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                     showOnRightClick: false
                 },
                 value: `<p id='img-container'>
-                    <img src='https://ej2.syncfusion.com/demos/src/rte/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
+                    <img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
                 </p>`
             });
             ele = rteObj.element;
@@ -1951,7 +1929,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                     showOnRightClick: true
                 },
                 value: `<p id='img-container'>
-                    <img src='https://ej2.syncfusion.com/demos/src/rte/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
+                    <img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
                 </p>`
             });
             ele = rteObj.element;
@@ -1975,7 +1953,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                     showOnRightClick: true
                 },
                 value: `<p id='img-container'>
-                    <img src='https://ej2.syncfusion.com/demos/src/rte/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
+                    <img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
                 </p>`
             });
             ele = rteObj.element;
@@ -1999,7 +1977,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                     showOnRightClick: true
                 },
                 value: `<p id='img-container'>
-                    <img src='https://ej2.syncfusion.com/demos/src/rte/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
+                    <img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
                 </p>`
             });
             ele = rteObj.element;
@@ -2025,7 +2003,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                     showOnRightClick: false
                 },
                 value: `<p id='img-container'>
-                    <img src='https://ej2.syncfusion.com/demos/src/rte/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
+                    <img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
                 </p>`
             });
             ele = rteObj.element;
@@ -2052,7 +2030,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                     showOnRightClick: true
                 },
                 value: `<p id='img-container'>
-                    <img src='https://ej2.syncfusion.com/demos/src/rte/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
+                    <img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
                 </p>`
             });
             ele = rteObj.element;
@@ -2080,7 +2058,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                     showOnRightClick: true
                 },
                 value: `<p id='img-container'>
-                    <img src='https://ej2.syncfusion.com/demos/src/rte/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
+                    <img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
                 </p>`
             });
             ele = rteObj.element;
@@ -2112,7 +2090,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                     showOnRightClick: false
                 },
                 value: `<p id='img-container'>
-                    <img src='https://ej2.syncfusion.com/demos/src/rte/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
+                    <img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
                 </p>`
             });
             ele = rteObj.element;
@@ -2145,7 +2123,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                     showOnRightClick: false
                 },
                 value: `<p id='img-container'>
-                    <img src='https://ej2.syncfusion.com/demos/src/rte/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
+                    <img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
                 </p>`
             });
             ele = rteObj.element;
@@ -2172,7 +2150,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                     showOnRightClick: true
                 },
                 value: `<p id='img-container'>
-                    <img src='https://ej2.syncfusion.com/demos/src/rte/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
+                    <img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
                 </p>`
             });
             ele = rteObj.element;
@@ -2200,7 +2178,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                     showOnRightClick: true
                 },
                 value: `<p id='img-container'>
-                    <img src='https://ej2.syncfusion.com/demos/src/rte/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
+                    <img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
                 </p>`
             });
             ele = rteObj.element;
@@ -2232,7 +2210,7 @@ client side. Customer easy to edit the contents and get the HTML content for
                     showOnRightClick: false
                 },
                 value: `<p id='img-container'>
-                    <img src='https://ej2.syncfusion.com/demos/src/rte/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
+                    <img src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style="width:300px; height: 200px"/>
                 </p>`
             });
             ele = rteObj.element;
@@ -2545,7 +2523,6 @@ client side. Customer easy to edit the contents and get the HTML content for
     });
 
     describe(' Caption image with link insert testing', () => {
-        let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
         beforeAll(() => {
             rteObj = renderRTE({
@@ -2553,9 +2530,8 @@ client side. Customer easy to edit the contents and get the HTML content for
                     items: ['Image', 'Bold']
                 },
                 insertImageSettings: { resize: false },
-                value: "<p>Test</p><img id='rteImg' src='https://ej2.syncfusion.com/demos/src/rte/images/RTEImage-Feather.png' style='width:300px; height: 200px'/>"
+                value: "<p>Test</p><img id='rteImg' src='https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png' style='width:300px; height: 200px'/>"
             });
-            rteEle = rteObj.element;
         });
         afterAll(() => {
             destroy(rteObj);
@@ -2596,7 +2572,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             }, 400);
         });
     });
-        describe(' EJ2-28120: IFrame - Images were not replaced when using caption to the image ', () => {
+    describe(' EJ2-28120: IFrame - Images were not replaced when using caption to the image ', () => {
         let rteObj: RichTextEditor;
         let controlId: string;
         beforeAll((done: Function) => {
@@ -2654,7 +2630,6 @@ client side. Customer easy to edit the contents and get the HTML content for
     });
     describe('RTE Drag and Drop Image', () => {
         let rteObj: RichTextEditor;
-        let rteEle: HTMLElement;
         let ele: HTMLElement;
         let element: HTMLElement;
         beforeAll((done: Function) => {
@@ -2675,7 +2650,12 @@ client side. Customer easy to edit the contents and get the HTML content for
                 placeholder: 'Type something'
             });
             rteObj.appendTo('#defaultRTE');
-            rteEle = rteObj.element;
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            detach(element);
+            detach(document.querySelector('.e-imginline'))
             done();
         });
         it(" Check image after drop", function (done: Function) {
@@ -2753,12 +2733,10 @@ client side. Customer easy to edit the contents and get the HTML content for
             expect(document.querySelector('.e-upload-image')).toBe(null);
             done();
          }, 2000);
-       
-    });
+        });
     });
     describe('Drag and Drop - Text', function() {
         let rteObj: RichTextEditor;
-        let ele: HTMLElement;
         let element: HTMLElement;
         beforeAll(function(done) {
             element = createElement('form', {
@@ -2770,6 +2748,11 @@ client side. Customer easy to edit the contents and get the HTML content for
                 value: "<div><p>First p node-0</p></div>",
             });
             rteObj.appendTo('#defaultRTE');
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            detach(element);
             done();
         });
         it("dragStart event", function(done) {
@@ -2810,9 +2793,6 @@ client side. Customer easy to edit the contents and get the HTML content for
                 expect(rteObj.element.querySelectorAll('.e-rte-quick-toolbar').length).toBe(0);
                 done(); 
             }, 100);
-            
         });
     });
-
-
 });

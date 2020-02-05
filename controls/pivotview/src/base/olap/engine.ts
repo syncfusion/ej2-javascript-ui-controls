@@ -701,7 +701,9 @@ export class OlapEngine {
             drillState.push({ level: memberlevel, uName: memberUName, hierarchy: hierarchy, isDrilled: false });
             if (tupInfo[tupPos - 1] && tupInfo[tupPos - 1].typeCollection[memPos] === '1' &&
                 drillState[memPos].level > tupInfo[tupPos - 1].drillInfo[memPos].level) {
-                let uCollection: string[] = uNameCollection.split(/[~~,::]/).filter((item: string) => { return item; });
+                let uCollection: string[] = uNameCollection.split(/~~|::\[/).map((item: string) => {
+                    return item[0] === '[' ? item : ('[' + item);
+                });
                 uCollection.pop();
                 let parentLevel: string = uCollection.join('~~');
                 this.setDrillInfo(parentUName, parentLevel, memPos, tupPos, tupInfo);
@@ -1028,7 +1030,9 @@ export class OlapEngine {
         tupPos--;
         while (tupInfo[tupPos] && tupInfo[tupPos].drillInfo[memPos].uName === pUName) {
             let prevUcollection: string[] =
-                tupInfo[tupPos].uNameCollection.split(/[~~,::]/).filter((item: string) => { return item; });
+                tupInfo[tupPos].uNameCollection.split(/~~|::\[/).map((item: string) => {
+                    return item[0] === '[' ? item : ('[' + item);
+                });
             if (prevUcollection.join('~~').indexOf(parentLvlCollection) < 0) {
                 break;
             }
@@ -1248,7 +1252,7 @@ export class OlapEngine {
                     if (withoutAllLastPos > -1) {
                         uniqueName = this.frameUniqueName(uniqueName, currentCell, currentTuple);
                     }
-                    let level: number = uniqueName.split(/[~~,::]/).length;
+                    let level: number = uniqueName.split(/~~|::\[/).length;
                     if (currentCell.memberType === 3 && this.tupRowInfo[0].measurePosition > 0) {
                         let parentUName: string = this.getParentUname(uniqueName, currentCell, true, true);
                         if (measureObjects[parentUName]) {
@@ -1309,8 +1313,8 @@ export class OlapEngine {
                                 let parentUName: string = this.getParentUname(uName, axisSets[aPos], isMeasureAvail, true);
                                 if (measureObjects[parentUName]) {
                                     measureObjects[parentUName] = this.sortRowHeaders(measureObjects[parentUName]);
-                                    let isLastMeasure: boolean = uName.lastIndexOf('::') === uName.indexOf('::[Measures]');
-                                    let isFullLength: boolean = uName.split('::').length - 1 === tupInfo.measurePosition;
+                                    let isLastMeasure: boolean = uName.lastIndexOf('::[') === uName.indexOf('::[Measures]');
+                                    let isFullLength: boolean = uName.split('::[').length - 1 === tupInfo.measurePosition;
                                     let isLastNotDrilledMember: boolean = !tupInfo.drillInfo[tupInfo.measurePosition - 1].isDrilled;
                                     let isActualLastMember: boolean = tupInfo.members.length > (tupInfo.measurePosition + 1);
                                     if (isLastMeasure && isFullLength && isLastNotDrilledMember && isActualLastMember) {
@@ -1506,7 +1510,7 @@ export class OlapEngine {
         let hasLastMeasure: boolean = uniqueName.indexOf(currentCell.actualText.toString() + '::[Measures]') > -1;
         uniqueName = uniqueName.substring(0, uniqueName.indexOf(currentCell.actualText.toString())) +
             currentCell.actualText.toString();
-        let measureAvail: boolean = uniqueName.split('::').length <= currentTuple.measurePosition;
+        let measureAvail: boolean = uniqueName.split('::[').length <= currentTuple.measurePosition;
         uniqueName = uniqueName + ((hasLastMeasure || measureAvail) ? ('::' + currentTuple.measureName) : '');
         return uniqueName;
     }
@@ -1554,7 +1558,7 @@ export class OlapEngine {
                     i++;
                 }
             }
-            if (tuple.measurePosition >= (uniqueNameColl.split('::').length - 1)) {
+            if (tuple.measurePosition >= (uniqueNameColl.split('::[').length - 1)) {
                 if (sepPos[sepPos.length - 2] > -1) {
                     parentString = uniqueNameColl.substring(0, sepPos[sepPos.length - 2]) + sepObjects[sepPos[sepPos.length - 1]] +
                         tuple.measureName;
@@ -1562,13 +1566,13 @@ export class OlapEngine {
                     parentString = 'parent';
                 }
             } else {
-                let lastPosition: number = uniqueNameColl.lastIndexOf('~~') > uniqueNameColl.lastIndexOf('::') ?
-                    uniqueNameColl.lastIndexOf('~~') : uniqueNameColl.lastIndexOf('::');
+                let lastPosition: number = uniqueNameColl.lastIndexOf('~~') > uniqueNameColl.lastIndexOf('::[') ?
+                    uniqueNameColl.lastIndexOf('~~') : uniqueNameColl.lastIndexOf('::[');
                 parentString = lastPosition > -1 ? uniqueNameColl.substring(0, lastPosition) : 'parent';
             }
         } else {
-            let lastPosition: number = uniqueNameColl.lastIndexOf('~~') > uniqueNameColl.lastIndexOf('::') ?
-                uniqueNameColl.lastIndexOf('~~') : uniqueNameColl.lastIndexOf('::');
+            let lastPosition: number = uniqueNameColl.lastIndexOf('~~') > uniqueNameColl.lastIndexOf('::[') ?
+                uniqueNameColl.lastIndexOf('~~') : uniqueNameColl.lastIndexOf('::[');
             parentString = lastPosition > -1 ? uniqueNameColl.substring(0, lastPosition) : 'parent';
         }
         return parentString;
@@ -1964,7 +1968,9 @@ export class OlapEngine {
             }
             tupPos++;
         }
-        let memberArray: string[] = uNameCollection.split('::');
+        let memberArray: string[] = uNameCollection.split('::[').map((item: string) => {
+            return item[0] === '[' ? item : ('[' + item);
+        });
         let joinArray: string[] = [];
         for (let memPos: number = 0; memPos <= fieldPos; memPos++) {
             if ((isWithoutAllMember || this.isPaging) && memPos === fieldPos) {
@@ -1986,7 +1992,8 @@ export class OlapEngine {
             if (item.indexOf(uNameCollection) === 0) {
                 childSets.push(item);
                 if (this.isPaging) {
-                    let drillField: string = item.split('::')[fieldPos];
+                    let drillField: string = item.split('::[')[fieldPos];
+                    drillField = drillField[0] == '[' ? drillField : ('[' + drillField);
                     let drillFieldSep: string[] = drillField.split('~~');
                     for (let fPos: number = drillFieldSep.indexOf(memberName); fPos < drillFieldSep.length; fPos++) {
                         memberObj[drillFieldSep[fPos]] = drillFieldSep[fPos];
@@ -1995,7 +2002,9 @@ export class OlapEngine {
             }
         }
         if (this.isPaging) {
-            let fieldSep: string[] = currTuple.uNameCollection.split('::');
+            let fieldSep: string[] = currTuple.uNameCollection.split('::[').map((item: string) => {
+                return item[0] === '[' ? item : ('[' + item);
+            });
             let cropArray: string[] = [];
             for (let fPos: number = 0; fPos < fieldSep.length; fPos++) {
                 if (fPos !== fieldPos) {
@@ -2010,7 +2019,9 @@ export class OlapEngine {
         }
         let drillSets: { [key: string]: string } = {};
         for (let level of childSets) {
-            let fields: string[] = level.split('::');
+            let fields: string[] = level.split('::[').map((item: string) => {
+                return item[0] === '[' ? item : ('[' + item);
+            });
             let set: string = '';
             for (let pos: number = 0; pos <= fieldPos; pos++) {
                 let field: string = fields[pos];
@@ -2332,11 +2343,15 @@ export class OlapEngine {
         let column: string[] = this.tupColumnInfo[pivotValue.colOrdinal] &&
             this.tupColumnInfo[pivotValue.colOrdinal].uNameCollection &&
             this.tupColumnInfo[pivotValue.colOrdinal].uNameCollection !== '' ?
-            this.tupColumnInfo[pivotValue.colOrdinal].uNameCollection.split('::') : [];
+            this.tupColumnInfo[pivotValue.colOrdinal].uNameCollection.split('::[').map((item: string) => {
+                return item[0] === '[' ? item : ('[' + item);
+            }) : [];
         let row: string[] = this.tupRowInfo[pivotValue.rowOrdinal] &&
             this.tupRowInfo[pivotValue.rowOrdinal].uNameCollection &&
             this.tupRowInfo[pivotValue.rowOrdinal].uNameCollection !== '' ?
-            this.tupRowInfo[pivotValue.rowOrdinal].uNameCollection.split('::') : [];
+            this.tupRowInfo[pivotValue.rowOrdinal].uNameCollection.split('::[').map((item: string) => {
+                return item[0] === '[' ? item : ('[' + item);
+            }) : [];
         let columnQuery: string = ''; let rowQuery: string = '';
         for (let i: number = 0; i < column.length; i++) {
             columnQuery = (columnQuery.length > 0 ? (columnQuery + ',') : '') + (column[i].split('~~').length > 1 ?

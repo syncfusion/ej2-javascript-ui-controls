@@ -14,7 +14,7 @@ import { Button, CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { RenderType } from '../base/enum';
-import { dispatchEvent, parseHtml, hasClass } from '../base/util';
+import { dispatchEvent, parseHtml, hasClass, convertToBlob } from '../base/util';
 import { DialogRenderer } from './dialog-renderer';
 import { isIDevice } from '../../common/util';
 /**
@@ -1294,7 +1294,7 @@ export class Image {
                         let reader: FileReader = new FileReader();
                         reader.addEventListener('load', (e: MouseEvent) => {
                             let url: string = this.parent.insertImageSettings.saveFormat === 'Base64' ? reader.result as string :
-                                URL.createObjectURL(proxy.url(reader.result as string));
+                                URL.createObjectURL(convertToBlob(reader.result as string));
                             proxy.uploadUrl = {
                                 url: url, selection: save, altText: altText,
                             selectParent: selectParent,
@@ -1520,7 +1520,7 @@ export class Image {
         let file: File = validFiles.rawFile as File;
         let reader: FileReader = new FileReader();
         reader.addEventListener('load', () => {
-            let url: string = URL.createObjectURL(proxy.url(reader.result as string));
+            let url: string = URL.createObjectURL(convertToBlob(reader.result as string));
             imageTag.src = proxy.parent.insertImageSettings.saveFormat === 'Blob' ? url : reader.result as string;
         });
         if (file) {
@@ -1660,8 +1660,8 @@ export class Image {
             reader.addEventListener('load', (e: MouseEvent) => {
                 let url: IImageCommandsArgs = {
                     cssClass: (proxy.parent.insertImageSettings.display === 'inline' ? classes.CLS_IMGINLINE : classes.CLS_IMGBREAK),
-                    url: this.parent.insertImageSettings.saveFormat === 'Base64' ? reader.result as string :
-                        URL.createObjectURL(proxy.url(reader.result as string)),
+                    url: this.parent.insertImageSettings.saveFormat === 'Base64' || !isNullOrUndefined(args.callBack) ?
+                    reader.result as string : URL.createObjectURL(convertToBlob(reader.result as string)),
                     width: {
                         width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
                         maxWidth: proxy.parent.insertImageSettings.maxWidth
@@ -1697,17 +1697,6 @@ export class Image {
             setTimeout(() => { this.showImageQuickToolbar(args); this.resizeStart(e.args as PointerEvent, imageElement); }, 0);
         }
      }
-    private url(dataurl: string): Blob {
-        let arr: string[] = dataurl.split(',');
-        let mime: string = arr[0].match(/:(.*?);/)[1];
-        let bstr: string = atob(arr[1]);
-        let n: number = bstr.length;
-        let u8arr: Uint8Array = new Uint8Array(n);
-        while (n--) {
-            u8arr[n] = bstr.charCodeAt(n);
-        }
-        return new Blob([u8arr], { type: mime });
-    }
 
     /**
      * Destroys the ToolBar.

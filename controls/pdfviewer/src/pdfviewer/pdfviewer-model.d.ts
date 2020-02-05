@@ -29,6 +29,11 @@ export interface AjaxRequestSettingsModel {
      */
     ajaxHeaders?: IAjaxHeaders[];
 
+    /**
+     * set the ajax credentials for the pdfviewer.
+     */
+    withCredentials?: boolean;
+
 }
 
 /**
@@ -1213,6 +1218,18 @@ export interface PdfViewerModel extends ComponentModel{
      * @default true
      */
     enableToolbar?: boolean;
+
+    /**
+     * Specifies the retry count for the failed requests.
+     * @default 1
+     */
+    retryCount?: number;
+
+    /**
+     * If it is set as false then error message box is not displayed in PDF viewer control.
+     * @default true
+     */
+    showNotificationDialog?: boolean;
 
     /**
      * Enable or disables the Navigation toolbar of PdfViewer.

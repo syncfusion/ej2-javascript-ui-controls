@@ -1956,11 +1956,11 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         append([this.listTag], this.listWrapper);
     }
     private documentClickHandler(event: MouseEvent): void {
-        if ((!isNullOrUndefined(this.popupObj) && this.inputWrapper.container.contains(<HTMLElement>event.target)) &&
-        event.type !== 'touchstart') {
-            event.preventDefault();
-        }
         let target: HTMLElement = <HTMLElement>event.target;
+        if ((isNullOrUndefined(this.popupObj) && this.inputWrapper.container.contains(target) || (this.popupObj.element
+            && this.popupObj.element.contains(target))) && event.type !== 'touchstart') {
+                event.preventDefault();
+            }
         if (!(closest(target, '#' + this.popupObj.element.id)) && target !== this.inputElement
             && target !== (this.inputWrapper && this.inputWrapper.buttons[0]) &&
             target !== (this.inputWrapper && this.inputWrapper.clearButton) &&
@@ -1972,10 +1972,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         } else if (target !== this.inputElement) {
             if (!Browser.isDevice) {
                 this.isPreventBlur = (Browser.isIE || Browser.info.name === 'edge') && (document.activeElement === this.inputElement);
-                if ((!isNullOrUndefined(this.popupObj) && this.inputWrapper.container.contains(<HTMLElement>event.target)) &&
-                event.type !== 'touchstart') {
-                    event.preventDefault();
-                }
             }
         }
     }

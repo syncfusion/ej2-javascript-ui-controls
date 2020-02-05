@@ -78,8 +78,8 @@ export class Marker {
                     if (markerSettings.shapeValuePath !== eventArgs.shapeValuePath ) {
                         eventArgs = markerShapeChoose(eventArgs, data);
                     }
-                    let lng: number = parseFloat(data['longitude']);
-                    let lat: number = parseFloat(data['latitude']);
+                    let lng: number = !isNullOrUndefined(data['longitude']) ? parseFloat(data['longitude']) : null;
+                    let lat: number = !isNullOrUndefined(data['latitude']) ? parseFloat(data['latitude']) : null;
                     if (this.maps.isBlazor) {
                         let data1: Object = {};
                         let text: string[] = [];
@@ -180,8 +180,8 @@ export class Marker {
                     Array.prototype.forEach.call(currentLayer.markerSettings, (markerSetting: MarkerSettingsModel, markerIndex: number) => {
                         let markerData: Object[] = <Object[]>markerSetting.dataSource;
                         Array.prototype.forEach.call(markerData, (data: Object, dataIndex: number) => {
-                            let latitude: number = parseFloat(data['latitude']);
-                            let longitude: number = parseFloat(data['longitude']);
+                            let latitude: number = !isNullOrUndefined(data['latitude']) ? parseFloat(data['latitude']) : null;
+                            let longitude: number = !isNullOrUndefined(data['longitude']) ? parseFloat(data['longitude']) : null;
                             minLong = isNullOrUndefined(minLong) && dataIndex === 0 ?
                                 longitude : minLong;
                             maxLat = isNullOrUndefined(maxLat) && dataIndex === 0 ?
@@ -211,8 +211,8 @@ export class Marker {
                 // To find the center position
                 centerLat = (minLat + maxLat) / 2;
                 centerLong = (minLong + maxLong) / 2;
-                this.maps.centerPosition.latitude = centerLat;
-                this.maps.centerPosition.longitude = centerLong;
+                this.maps.markerCenterLatitude = centerLat;
+                this.maps.markerCenterLongitude = centerLong;
                 let markerFactor: number;
                 if (this.maps.isTileMap || this.maps.baseMapRectBounds['min']['x'] === 0) {
                     zoomLevel = calculateZoomLevel(minLat, maxLat, minLong, maxLong, mapWidth, mapHeight, this.maps);
@@ -244,8 +244,8 @@ export class Marker {
             }
         } else {
             if(this.maps.markerZoomFactor > 1) {
-                this.maps.centerPosition.latitude = null;
-                this.maps.centerPosition.longitude = null;
+                this.maps.markerCenterLatitude = null;
+                this.maps.markerCenterLongitude = null;
                 this.maps.markerZoomFactor = 1;
                 if(!this.maps.enablePersistence){
                     this.maps.mapScaleValue = 1;

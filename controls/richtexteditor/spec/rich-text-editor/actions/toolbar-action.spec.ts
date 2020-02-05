@@ -1,19 +1,9 @@
 /**
- * Content Renderer spec
+ * Toolbar action spec
  */
-import { detach } from '@syncfusion/ej2-base';
-import { RichTextEditor, Toolbar, NodeSelection } from './../../../src/index';
-import { QuickToolbar, Link, Image, MarkdownEditor, HtmlEditor, MarkdownFormatter } from "../../../src/rich-text-editor/index";
+import { RichTextEditor, NodeSelection } from './../../../src/index';
+import { MarkdownFormatter } from "../../../src/rich-text-editor/index";
 import { renderRTE, destroy } from "./../render.spec";
-
-RichTextEditor.Inject(MarkdownEditor);
-RichTextEditor.Inject(HtmlEditor);
-RichTextEditor.Inject(Link);
-RichTextEditor.Inject(Image);
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(QuickToolbar);
-
-
 
 function setCursorPoint(curDocument: Document, element: Element, point: number) {
     let range: Range = curDocument.createRange();
@@ -23,10 +13,9 @@ function setCursorPoint(curDocument: Document, element: Element, point: number) 
     sel.removeAllRanges();
     sel.addRange(range);
 }
+
 describe('HTML - Parent based selection', () => {
-    let css: string = ".e-justify-left.e-icons::before { content: 'Alignments';} ";
     let style: HTMLStyleElement = document.createElement('style'); style.type = 'text/css';
-    let styleNode: Node = style.appendChild(document.createTextNode(css));
     document.getElementsByTagName('head')[0].appendChild(style);
 
     let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9, key: '' };
@@ -39,6 +28,7 @@ describe('HTML - Parent based selection', () => {
 <p class='third-p-node'>dom node<label class='third-label'>label node</label></p>
 <ul class='ul-third-node'><li>one-node</li><li>two-node</li><li>three-node</li></ul>
 <p id='convertPre'>converted to pre<p><p id='revertPre'>converted to pre<p>`;
+
     describe(' Toolbar click action ', () => {
         let rteObj: RichTextEditor;
         let curDocument: Document;
@@ -332,7 +322,6 @@ describe('HTML - Parent based selection', () => {
             });
             afterAll(() => {
                 destroy(rteObj);
-                detach(rteEle);
             });
         });
         describe(' RTE with Iframe content ', () => {
@@ -542,7 +531,6 @@ describe('HTML - Parent based selection', () => {
             });
             afterAll(() => {
                 destroy(rteObj);
-                detach(rteEle);
             });
         });
     });
@@ -683,7 +671,6 @@ Tabs and shift-tabs work too`;
         });
         afterAll(() => {
             destroy(rteObj);
-            detach(rteEle);
         });
     });
     describe(' Lists ', () => {
@@ -742,7 +729,6 @@ Tabs and shift-tabs work too`;
             (<any>rteObj).linkModule.linkDialog(evnArg);
         })
         afterAll(() => {
-            detach(rteEle);
             destroy(rteObj);
         });
     });
@@ -815,7 +801,6 @@ Tabs and shift-tabs work too`;
         });
 
         afterAll(() => {
-            detach(rteEle);
             destroy(rteObj);
         });
     });
@@ -824,7 +809,6 @@ Tabs and shift-tabs work too`;
         let actionBegin: boolean = false;
         let actionComplete: boolean = false;
         let controlId: string;
-        let selectNode: HTMLElement;
         beforeAll(() => {
             rteObj = renderRTE({
                 toolbarSettings: {
@@ -864,24 +848,23 @@ Tabs and shift-tabs work too`;
             actionBegin = false;
             actionComplete = false;
         });
-        it(" Click the paste action", (done) => {
-            if (rteObj.getInjectedModules()[0].toString().indexOf('PasteCleanup')) {
-                rteObj.getInjectedModules().shift();
-            }
-            rteObj.formatter.editorManager.markdownSelection.save(0, editNode.value.length);
-            rteObj.formatter.editorManager.markdownSelection.restore(editNode);
-            document.getElementById(controlId + "_toolbar_Paste").click();
-            setTimeout(() => {
-                expect(actionBegin).toBe(true);
-                expect(actionComplete).toBe(true);
-                actionBegin = false;
-                actionComplete = false;
-                done();
-            });
-        });
+        // it(" Click the paste action", (done) => {
+        //     if (rteObj.getInjectedModules()[0].toString().indexOf('PasteCleanup')) {
+        //         rteObj.getInjectedModules().shift();
+        //     }
+        //     rteObj.formatter.editorManager.markdownSelection.save(0, editNode.value.length);
+        //     rteObj.formatter.editorManager.markdownSelection.restore(editNode);
+        //     document.getElementById(controlId + "_toolbar_Paste").click();
+        //     setTimeout(() => {
+        //         expect(actionBegin).toBe(true);
+        //         expect(actionComplete).toBe(true);
+        //         actionBegin = false;
+        //         actionComplete = false;
+        //         done();
+        //     });
+        // });
 
         afterAll(() => {
-            detach(rteEle);
             destroy(rteObj);
         });
     });

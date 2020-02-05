@@ -48,7 +48,7 @@ export declare class Columns extends ChildProperty<Columns> {
      * Specifies the date format for columns.
      * @default null
      */
-    format: string;
+    format: string | FormatObject;
     /**
      * Specifies the step value(numeric textbox) for columns.
      * @default null
@@ -123,6 +123,12 @@ export declare class ShowButtons extends ChildProperty<ShowButtons> {
      * @default true
      */
     groupDelete: boolean;
+}
+export interface FormatObject {
+    /**
+     * Specifies the format in which the date format will process
+     */
+    skeleton?: string;
 }
 /**
  * Specify Specifies the displayMode as Horizontal or Vertical.
@@ -341,6 +347,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private filterRules;
     private ruleValueUpdate;
     private validatValue;
+    private getFormat;
     private findGroupByIdx;
     /**
      * Removes the component from the DOM and detaches all its related event handlers.
@@ -432,6 +439,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      * @returns null
      */
     getPredicate(rule: RuleModel): Predicate;
+    private getLocale;
     private getColumn;
     private datePredicate;
     private arrayPredicate;

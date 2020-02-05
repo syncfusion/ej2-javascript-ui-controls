@@ -5,6 +5,7 @@ import { getLocationFromAngle, PathOption } from '../utils/helper';
 import { linear, getAngleFromValue, getCompleteArc, getRoundedPathArc } from '../utils/helper';
 import { Animation, AnimationOptions, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { animationComplete } from '../model/constants';
+import { GaugeShape } from '../utils/enum';
 
 /**
  * Specifies the Axis rendering for circular gauge
@@ -27,12 +28,18 @@ export class PointerRenderer {
      * @private
      */
     public drawPointers(axis: Axis, axisIndex: number, element: Element, gauge: CircularGauge, animate: boolean = true): void {
+
         let pointerElement: Element = gauge.renderer.createGroup({
             id: gauge.element.id + '_Axis_Pointers_' + axisIndex
         });
         let childElement: Element;
         let range: VisibleRangeModel;
         axis.pointers.map((pointer: Pointer, pointerIndex: number) => {
+            if (!isNullOrUndefined(pointer.offset) && (<string>pointer.offset).length > 0) {
+                pointer.currentDistanceFromScale = stringToNumber(<string>pointer.offset, axis.currentRadius);
+            } else {
+                pointer.currentDistanceFromScale = <number>pointer.offset;
+            }
             range = axis.visibleRange;
             pointer.pathElement = [];
             this.calculatePointerRadius(axis, pointer);
@@ -56,9 +63,29 @@ export class PointerRenderer {
 
     private calculatePointerRadius(axis: Axis, pointer: Pointer): void {
         let padding: number = 5;
-        pointer.currentRadius = pointer.radius === null ?
-            (axis.currentRadius - (axis.farSize + padding)) :
-            stringToNumber(pointer.radius, axis.currentRadius);
+        pointer.currentRadius = !isNullOrUndefined(pointer.radius) ?
+            stringToNumber(pointer.radius, axis.currentRadius) : pointer.position !== 'Auto' ?
+                this.pointerRadiusForPosition(axis, pointer) : (axis.currentRadius - (axis.farSize + padding));
+    }
+
+    /**
+     * Measure the pointer length of the circular gauge based on pointer position.
+     * @return {number}
+     */
+
+    private pointerRadiusForPosition(axis: Axis, pointer: Pointer): number {
+        let pointerRadius: number;
+        let rangeBarOffset: number = pointer.type === 'RangeBar' ? pointer.pointerWidth : 0;
+        let markerOffset: number = pointer.type === 'Marker' ? ((pointer.markerShape === 'InvertedTriangle' ||
+            pointer.markerShape === 'Triangle') ? (pointer.position === 'Cross' ? pointer.markerWidth / 2 : 0) :
+            pointer.markerWidth / 2) : 0;
+        pointerRadius = pointer.position === 'Inside' ?
+            (axis.currentRadius - axis.lineStyle.width / 2 - markerOffset - pointer.currentDistanceFromScale) :
+            pointer.position === 'Outside' ?
+                (axis.currentRadius + rangeBarOffset + axis.lineStyle.width / 2 + markerOffset + pointer.currentDistanceFromScale) :
+                (axis.currentRadius + rangeBarOffset / 2 - pointer.currentDistanceFromScale -
+                    ((pointer.markerShape === 'InvertedTriangle' || pointer.markerShape === 'Triangle') ? markerOffset : 0));
+        return pointerRadius;
     }
 
     /**
@@ -212,13 +239,20 @@ export class PointerRenderer {
      */
     private drawMarkerPointer(axis: Axis, axisIndex: number, index: number, parentElement: Element, gauge: CircularGauge): void {
         let pointer: Pointer = <Pointer>axis.pointers[index];
+        let shapeBasedOnPosition: GaugeShape = pointer.markerShape;
+        if (isNullOrUndefined(pointer.radius) && !isNullOrUndefined(pointer.position) && (pointer.markerShape === 'InvertedTriangle' ||
+            pointer.markerShape === 'Triangle')) {
+            shapeBasedOnPosition = ((pointer.position === 'Outside' || pointer.position === 'Cross') && pointer.markerShape === 'Triangle' ?
+                'InvertedTriangle' as GaugeShape : (pointer.position === 'Inside' &&
+                    pointer.markerShape === 'InvertedTriangle' ? 'Triangle' as GaugeShape : pointer.markerShape));
+        }
         let location: GaugeLocation = getLocationFromAngle(
             0, pointer.currentRadius,
             gauge.midPoint
         );
         pointer.pathElement.push(appendPath(
             calculateShapes(
-                location, pointer.markerShape, new Size(pointer.markerWidth, pointer.markerHeight),
+                location, shapeBasedOnPosition, new Size(pointer.markerWidth, pointer.markerHeight),
                 pointer.imageUrl, new PathOption(
                     gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Marker_' + index,
                     pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width, pointer.border.color, null, '0', '', ''
@@ -353,11 +387,11 @@ export class PointerRenderer {
                     isClockWise ? (endAngle - startAngle - 360) : (endAngle - startAngle);
                 if (isClockWise) {
                     if (!roundRadius) {
-                    element.setAttribute('d', getCompleteArc(
-                        this.gauge.midPoint, minAngle,
-                        linear(arg.timeStamp, startAngle, sweepAngle, arg.duration) + 0.0001, radius, innerRadius)
-                    );
-                } else {
+                        element.setAttribute('d', getCompleteArc(
+                            this.gauge.midPoint, minAngle,
+                            linear(arg.timeStamp, startAngle, sweepAngle, arg.duration) + 0.0001, radius, innerRadius)
+                        );
+                    } else {
                         element.setAttribute('d', getRoundedPathArc(
                             this.gauge.midPoint, Math.floor(minAngle),
                             linear(arg.timeStamp, Math.floor(minAngle), sweepAngle, arg.duration) + 0.0001, oldStart,
@@ -367,10 +401,10 @@ export class PointerRenderer {
                     }
                 } else {
                     if (!roundRadius) {
-                    element.setAttribute('d', getCompleteArc(
-                        this.gauge.midPoint, linear(arg.timeStamp, startAngle, sweepAngle, arg.duration),
-                        minAngle + 0.0001, radius, innerRadius)
-                    );
+                        element.setAttribute('d', getCompleteArc(
+                            this.gauge.midPoint, linear(arg.timeStamp, startAngle, sweepAngle, arg.duration),
+                            minAngle + 0.0001, radius, innerRadius)
+                        );
                     } else {
                         sweepAngle += roundRadius;
                         element.setAttribute('d', getRoundedPathArc(

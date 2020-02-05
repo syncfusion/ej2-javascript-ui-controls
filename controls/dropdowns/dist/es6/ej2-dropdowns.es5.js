@@ -6076,12 +6076,21 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         if (this.placeholder) {
             size = size > this.inputElement.placeholder.length ? size : this.inputElement.placeholder.length;
         }
-        if (this.inputElement.value.length > size) {
-            this.inputElement.size = this.inputElement.value.length;
+        if (this.getInputValueWidth() > size) {
+            this.inputElement.size = this.getInputValueWidth();
         }
         else {
             this.inputElement.size = size;
         }
+    };
+    MultiSelect.prototype.getInputValueWidth = function () {
+        var font = window.getComputedStyle(this.inputElement).font;
+        var canvas = document.createElement('canvas');
+        var context = canvas.getContext('2d');
+        context.font = font;
+        var metrics = context.measureText(this.inputElement.value);
+        var widthVal = metrics.width + 25;
+        return Math.ceil(widthVal);
     };
     MultiSelect.prototype.isPopupOpen = function () {
         return ((this.popupWrapper !== null) && (this.popupWrapper.parentElement !== null));
@@ -9020,7 +9029,8 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
                 : args.li.querySelector('.e-checkbox-wrapper').childNodes[1];
         }
         else {
-            target = args.li.lastElementChild.childNodes[1];
+            var checkboxWrapper = args.li.querySelector('.e-checkbox-wrapper');
+            target = checkboxWrapper ? checkboxWrapper.childNodes[1] : args.li.lastElementChild.childNodes[1];
         }
         if (this.parent.itemTemplate || this.parent.enableGroupCheckBox) {
             target = args.li.firstElementChild.childNodes[1];

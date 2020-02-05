@@ -1,12 +1,9 @@
 /**
  * Resize spec
  */
-import { RichTextEditor, Toolbar, QuickToolbar, Resize, HtmlEditor } from "../../../src/rich-text-editor/index";
-import { renderRTE, destroy, removeStyleElements } from "./../render.spec";
-import { CLS_RTE_RES_HANDLE, CLS_RTE_RES_EAST } from "../../../src/rich-text-editor/base/classes";
 import { Browser } from "@syncfusion/ej2-base";
-RichTextEditor.Inject(HtmlEditor, Toolbar, Resize, QuickToolbar);
-
+import { CLS_RTE_RES_HANDLE } from "../../../src/rich-text-editor/base/classes";
+import { renderRTE, destroy } from "./../render.spec";
 
 describe("Resize - Actions Module", () => {
 
@@ -106,7 +103,6 @@ describe("Resize - Actions Module", () => {
             });
             rteEle = rteObj.element;
             done();
-
         });
 
         afterEach((done: Function) => {
@@ -165,7 +161,6 @@ describe("Resize - Actions Module", () => {
             done();
         });
 
-
         it('resize event - mouse', (done) => {
             let trg = (rteEle.querySelector('.' + CLS_RTE_RES_HANDLE) as HTMLElement);
             clickEvent = document.createEvent("MouseEvents");
@@ -208,7 +203,4 @@ describe("Resize - Actions Module", () => {
             }, 400);
         });
     });
-
-    
 });
-

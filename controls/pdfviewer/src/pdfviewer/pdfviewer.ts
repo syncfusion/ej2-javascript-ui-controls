@@ -61,6 +61,12 @@ export class AjaxRequestSettings extends ChildProperty<AjaxRequestSettings> {
      */
     @Property()
     public ajaxHeaders: IAjaxHeaders[];
+
+    /**
+     * set the ajax credentials for the pdfviewer.
+     */
+    @Property(false)
+    public withCredentials: boolean;
 }
 
 export interface IAjaxHeaders {
@@ -1473,6 +1479,20 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enableToolbar: boolean;
 
     /**
+     * Specifies the retry count for the failed requests.
+     * @default 1
+     */
+    @Property(1)
+    public retryCount: number;
+
+    /**
+     * If it is set as false then error message box is not displayed in PDF viewer control.
+     * @default true
+     */
+    @Property(true)
+    public showNotificationDialog: boolean;
+
+    /**
      * Enable or disables the Navigation toolbar of PdfViewer.
      * @default true
      */
@@ -1715,7 +1735,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the ajax Request settings of the PdfViewer.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ ajaxHeaders: [] })
+     @Property({ ajaxHeaders: [], withCredentials: false})
     public ajaxRequestSettings: AjaxRequestSettingsModel;
 
     /**

@@ -1,21 +1,16 @@
-import { Toolbar, HtmlEditor, RichTextEditor, Count, Link, Image, QuickToolbar } from './../../../../src/index';
-import { renderRTE, destroy, dispatchEvent, setCursorPoint } from './../../render.spec';
+/**
+ * Font Family spec
+ */
 import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
-
-RichTextEditor.Inject(HtmlEditor);
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(Link);
-RichTextEditor.Inject(Count);
-RichTextEditor.Inject(Image);
-RichTextEditor.Inject(QuickToolbar);
+import { RichTextEditor } from './../../../../src/index';
+import { renderRTE, destroy, dispatchEvent } from './../../render.spec';
 
 describe('RTE SELECTION BASED - fontFamily - ', () => {
 
     describe(' Default value  - ', () => {
         let rteObj: RichTextEditor;
         beforeAll((done: Function) => {
-            rteObj = renderRTE({
-            });
+            rteObj = renderRTE({ });
             done();
         })
         afterAll((done: Function) => {
@@ -206,7 +201,6 @@ describe('RTE SELECTION BASED - fontFamily - ', () => {
         describe(' destroy method - ', () => {
             let rteObj: RichTextEditor;
             let controlId: string;
-            let element: HTMLElement;
 
             beforeAll((done: Function) => {
                 rteObj = renderRTE({
@@ -223,11 +217,10 @@ describe('RTE SELECTION BASED - fontFamily - ', () => {
                     }
                 });
                 controlId = rteObj.element.id;
-                element = rteObj.element;
                 done();
             });
             afterAll((done: Function) => {
-                detach(element);
+                detach(rteObj.element);
                 done();
             })
             it(' Test the fontFamily dropdown element after destroy the component ', () => {
@@ -239,7 +232,6 @@ describe('RTE SELECTION BASED - fontFamily - ', () => {
         describe(' refresh method - ', () => {
             let rteObj: RichTextEditor;
             let controlId: string;
-            let element: HTMLElement;
 
             beforeAll((done: Function) => {
                 rteObj = renderRTE({
@@ -256,11 +248,10 @@ describe('RTE SELECTION BASED - fontFamily - ', () => {
                     }
                 });
                 controlId = rteObj.element.id;
-                element = rteObj.element;
                 done();
             });
             afterAll((done: Function) => {
-                detach(element);
+                destroy(rteObj);
                 done();
             })
             it(' Test the fontFamily dropdown after refresh the component ', () => {

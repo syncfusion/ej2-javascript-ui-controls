@@ -1,5 +1,5 @@
 import { addClass, Browser, removeClass, EventHandler, formatUnit, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { getInstance, closest, MouseEventArgs, selectAll } from '@syncfusion/ej2-base';
+import { getInstance, closest, MouseEventArgs, selectAll, detach } from '@syncfusion/ej2-base';
 import { Toolbar, ClickEventArgs, BeforeCreateArgs, OverflowMode } from '@syncfusion/ej2-navigations';
 import { DropDownButton, MenuEventArgs, BeforeOpenCloseMenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { Popup } from '@syncfusion/ej2-popups';
@@ -21,6 +21,7 @@ export class ToolbarRenderer implements IRenderer {
     private mode: OverflowMode;
     private toolbarPanel: Element;
     protected parent: IRichTextEditor;
+    private popupContainer: HTMLElement;
     private currentElement: HTMLElement;
     private currentDropdown: DropDownButton;
     private popupOverlay: HTMLElement;
@@ -42,6 +43,7 @@ export class ToolbarRenderer implements IRenderer {
         if (this.popupOverlay) {
             EventHandler.remove(this.popupOverlay, 'click touchmove', this.onPopupOverlay);
         }
+        this.removePopupContainer();
     }
 
     private toolbarBeforeCreate(e: BeforeCreateArgs): void {
@@ -78,7 +80,15 @@ export class ToolbarRenderer implements IRenderer {
     }
 
     private dropDownClose(args: MenuEventArgs): void {
+        this.removePopupContainer();
         this.parent.notify(events.selectionRestore, args);
+    }
+
+    private removePopupContainer(): void {
+        if (Browser.isDevice && !isNullOrUndefined(this.popupContainer)) {
+            detach(this.popupContainer);
+            this.popupContainer = undefined;
+        }
     }
 
     /**
@@ -167,19 +177,19 @@ export class ToolbarRenderer implements IRenderer {
 
     private setIsModel(element: HTMLElement): void {
         if (!closest(element, '.e-popup-container')) {
-            let popupContainer: HTMLElement = this.parent.createElement('div', {
+            this.popupContainer = this.parent.createElement('div', {
                 className: 'e-rte-modal-popup e-popup-container e-center'
             });
-            element.parentNode.insertBefore(popupContainer, element);
-            popupContainer.appendChild(element);
-            popupContainer.style.zIndex = element.style.zIndex;
-            popupContainer.style.display = 'flex';
+            element.parentNode.insertBefore(this.popupContainer, element);
+            this.popupContainer.appendChild(element);
+            this.popupContainer.style.zIndex = element.style.zIndex;
+            this.popupContainer.style.display = 'flex';
             element.style.position = 'relative';
             addClass([element], 'e-popup-modal');
             this.popupOverlay = this.parent.createElement('div', { className: 'e-popup-overlay' });
             this.popupOverlay.style.zIndex = (parseInt(element.style.zIndex, null) - 1).toString();
             this.popupOverlay.style.display = 'block';
-            popupContainer.appendChild(this.popupOverlay);
+            this.popupContainer.appendChild(this.popupOverlay);
             EventHandler.add(this.popupOverlay, 'click touchmove', this.onPopupOverlay, this);
         } else {
             element.parentElement.style.display = 'flex';
@@ -253,9 +263,8 @@ export class ToolbarRenderer implements IRenderer {
                 };
             },
             open: (dropDownArgs: OpenCloseMenuEventArgs): void => {
-                this.setColorPickerContentWidth(colorPicker);
+                this.setColorPickerContentWidth(colorPicker); let focusEle: HTMLElement;
                 let ele: HTMLElement = (dropDownArgs.element.querySelector('.e-control.e-colorpicker') as HTMLElement);
-                let focusEle: HTMLElement;
                 if (dropDownArgs.element.querySelector('.e-color-palette')) {
                     focusEle = (ele.parentElement.querySelector('.e-palette') as HTMLElement);
                 } else { focusEle = (ele.parentElement.querySelector('e-handler') as HTMLElement); }
@@ -291,6 +300,7 @@ export class ToolbarRenderer implements IRenderer {
                     dropElement.style.display = 'none'; (dropElement.lastElementChild as HTMLElement).style.display = 'none';
                     removeClass([dropElement.lastElementChild as HTMLElement], 'e-popup-overlay');
                 }
+                if (Browser.isDevice && !isNullOrUndefined(dropElement)) { detach(dropElement); }
             }
         });
         dropDown.isStringTemplate = true; dropDown.createElement = proxy.parent.createElement;

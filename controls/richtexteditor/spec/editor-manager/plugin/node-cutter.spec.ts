@@ -1,11 +1,10 @@
-import { InsertMethods } from '../../../src/editor-manager/plugin/insert-methods';
-import { InsertHtml } from '../../../src/editor-manager/plugin/inserthtml';
-import { IsFormatted } from '../../../src/editor-manager/plugin/isformatted';
+/**
+ * Node cutter spec document
+ */
+import { detach } from '@syncfusion/ej2-base';
 import { NodeCutter } from '../../../src/editor-manager/plugin/nodecutter';
 import { NodeSelection } from '../../../src/selection/index';
-/**
- * Selection spec document
- */
+
 describe('Node Cutter', () => {
     //HTML value
     let innervalue: string = '<div id="parentDiv"><p id="paragraph1"><b>Description:</b><span id="span1">Span1 Element</span>'+
@@ -76,7 +75,6 @@ describe('Node Cutter', () => {
     let domSelection: NodeSelection = new NodeSelection();
     let nodeCutter: NodeCutter = new NodeCutter();
 
-
     //DIV Element
     let divElement: HTMLDivElement = document.createElement('div');
     divElement.id = 'divElement';
@@ -87,11 +85,10 @@ describe('Node Cutter', () => {
         document.body.appendChild(divElement);
     });
     afterAll(() => {
-        document.body.innerHTML = '';
+        detach(divElement);
     });
 
-    // Split Node 
-
+    // Split Node
     it('Split Left and Right node', () => {
         let node1: Node = document.getElementById('paragraph4').childNodes[0];
         domSelection.setSelectionText(document, node1, node1, 0, 7);
@@ -119,7 +116,6 @@ describe('Node Cutter', () => {
     });
 
     // Cursor Node
-
     it('Get cursor position for whitespace', () => {
         let node1: Node = document.getElementById('cursor1');
         let text1: Node = node1.childNodes[0];

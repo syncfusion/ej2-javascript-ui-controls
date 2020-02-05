@@ -55,6 +55,12 @@ export interface DocumentEditorContainerModel extends ComponentModel{
     enableCsp?: boolean;
 
     /**
+     * Gets or set a value indicating whether comment is enabled or not
+     * @default false
+     */
+    enableComment?: boolean;
+
+    /**
      * Triggers when the component is created
      * @event
      * @blazorproperty 'Created'

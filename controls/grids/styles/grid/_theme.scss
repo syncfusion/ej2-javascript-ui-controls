@@ -31,10 +31,6 @@
       color: $grid-header-icon-color;
     }
 
-    &.e-default {
-      background-color: $grid-default-color;
-    }
-
     .e-tableborder {
       border-right-color: $grid-header-border-color;
     }
@@ -299,14 +295,8 @@
     }
 
     &.e-resize-lines .e-headercell .e-rhandler,
-    &.e-resize-lines .e-headercell .e-rsuppress,
-    &.e-resize-lines .e-rowdragheader {
+    &.e-resize-lines .e-headercell .e-rsuppress {
       border-right: 1px solid $grid-header-border-color;
-    }
-
-    &.e-rtl.e-resize-lines .e-rowdragheader {
-      border-left: 1px solid $grid-header-border-color;
-      border-right-width: 0;
     }
 
     &.e-resize-lines .e-focused .e-rhandler {
@@ -415,11 +405,6 @@
     .e-gridcontent .e-normaledit .e-dragindentcell,
     .e-gridcontent .e-normaledit .e-detailrowcollapse {
       border-top: 1px solid $grid-header-border-color;
-    }
-
-    .e-excelfilter .e-footer-content {
-      border-color: $grid-columnchooser-footer-border-color;
-      opacity: $grid-columnchooser-footer-border-opacity;
     }
 
     .e-ccdlg {

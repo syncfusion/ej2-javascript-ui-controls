@@ -1,6 +1,10 @@
 import { createElement, detach, getUniqueID, extend } from '@syncfusion/ej2-base';
 import { RichTextEditor } from './../../src/rich-text-editor/base/rich-text-editor';
 import { RichTextEditorModel } from './../../src/rich-text-editor/base/rich-text-editor-model';
+import { HtmlEditor, MarkdownEditor, Toolbar, QuickToolbar } from "../../src/rich-text-editor/index";
+import { Link, Image, Table, PasteCleanup, Count, Resize } from "../../src/rich-text-editor/index";
+
+RichTextEditor.Inject(HtmlEditor, MarkdownEditor, Toolbar, QuickToolbar, Link, Image, Table, PasteCleanup, Count, Resize);
 
 export let currentBrowserUA: string = navigator.userAgent;
 export let ieUA: string = 'Mozilla/5.0 (Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko';
@@ -19,9 +23,7 @@ export function renderRTE(options: RichTextEditorModel): RichTextEditor {
 export function destroy(rteObj: RichTextEditor): void {
     rteObj.destroy();
     detach(rteObj.element);
-    document.body.innerHTML = '';
 }
-
 
 export function setCursorPoint(element: Element, point: number) {
     let range: Range = document.createRange();
@@ -31,6 +33,7 @@ export function setCursorPoint(element: Element, point: number) {
     sel.removeAllRanges();
     sel.addRange(range);
 }
+
 export function dispatchEvent(element: Element, type: string) {
     let evt: any = document.createEvent('MouseEvents');
     evt.initEvent(type, true, true);

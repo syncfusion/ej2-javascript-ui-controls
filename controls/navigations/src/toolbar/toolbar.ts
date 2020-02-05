@@ -162,6 +162,12 @@ export class Item extends ChildProperty<Item>  {
     @Property('')
     public suffixIcon: string;
     /**
+     * Specifies whether an item should be hidden or not.
+     * @default true
+     */
+    @Property(true)
+    public visible: boolean;
+    /**
      * Specifies the Toolbar command display area when an element's content is too large to fit available space.
      * This is applicable only to `popup` mode. Possible values are:
      * - Show:  Always shows the item as the primary priority on the *Toolbar*. 
@@ -346,6 +352,13 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
      */
     @Property(true)
     public enableCollision: boolean;
+    /**
+     * Defines whether to allow the cross-scripting site or not.
+     * @default true
+     * @deprecated
+     */
+    @Property(true)
+    public enableHtmlSanitizer: boolean;
     /**
      * The event will be fired on clicking the Toolbar elements.
      * @event
@@ -1847,7 +1860,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         item.id ? (dom.id = item.id) : dom.id = getUniqueID('e-tbr-btn');
         let btnTxt: HTEle = this.createElement('span', { className: 'e-tbar-btn-text' });
         if (textStr) {
-            btnTxt.innerHTML = SanitizeHtmlHelper.sanitize(textStr);
+            btnTxt.innerHTML = this.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(textStr) : textStr;
             dom.appendChild(btnTxt);
             dom.classList.add('e-tbtn-txt');
         } else {
@@ -1875,7 +1888,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         let dom: HTEle;
         innerEle = this.createElement('div', { className: CLS_ITEM });
         innerEle.setAttribute('aria-disabled', 'false');
-        let tempDom: HTEle = this.createElement('div', { innerHTML: SanitizeHtmlHelper.sanitize(item.tooltipText) });
+        let tempDom: HTEle = this.createElement('div', {
+            innerHTML: this.enableHtmlSanitizer ? SanitizeHtmlHelper.sanitize(item.tooltipText) : item.tooltipText
+        });
         if (!this.tbarEle) {
             this.tbarEle = [];
         }
@@ -1929,6 +1944,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (item.disabled) {
             this.add(innerEle, CLS_DISABLE);
+        }
+        if (item.visible === false) {
+            this.add(innerEle, CLS_HIDDEN);
         }
         return innerEle;
     }

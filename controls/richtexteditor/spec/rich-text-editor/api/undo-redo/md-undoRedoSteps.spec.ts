@@ -1,12 +1,8 @@
-import { Toolbar, MarkdownEditor, RichTextEditor, Count, Link, Image, QuickToolbar } from '../../../../src/index';
-import { renderRTE, destroy, dispatchEvent, setCursorPoint } from '../../render.spec';
-import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
-
-RichTextEditor.Inject(MarkdownEditor);
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(Link);
-RichTextEditor.Inject(Count);
-RichTextEditor.Inject(Image);
+/**
+ * Markdown Undo Redo steps spec
+ */
+import { RichTextEditor } from '../../../../src/index';
+import { renderRTE, destroy, dispatchEvent } from '../../render.spec';
 
 describe('RTE Markdown UNDO REDO - undoRedoSteps - ', () => {
 
@@ -52,7 +48,6 @@ describe('RTE Markdown UNDO REDO - undoRedoSteps - ', () => {
             });
 
             it(' Test - Click the Undo item', () => {
-
                 rteObj.formatter.editorManager.markdownSelection.setSelection((rteObj as any).inputElement, 0, 2);
                 let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Bold');
                 item.click();
@@ -119,7 +114,6 @@ describe('RTE Markdown UNDO REDO - undoRedoSteps - ', () => {
             });
 
             it(' Test - Click the Undo item', () => {
-
                 rteObj.formatter.editorManager.markdownSelection.setSelection((rteObj as any).inputElement, 0, 2);
                 let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Bold');
                 item.click();
@@ -141,7 +135,6 @@ describe('RTE Markdown UNDO REDO - undoRedoSteps - ', () => {
             });
 
             it(' Test - Click the Redo item', () => {
-
                 rteObj.formatter.editorManager.markdownSelection.setSelection((rteObj as any).inputElement, 0, 2);
                 let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Bold');
                 item.click();
@@ -228,7 +221,6 @@ describe('RTE Markdown UNDO REDO - undoRedoSteps - ', () => {
             });
 
             it(' Test - return the getText method value last undo action value', () => {
-
                 rteObj.formatter.editorManager.markdownSelection.setSelection((rteObj as any).inputElement, 0, 2);
                 let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Bold');
                 item.click();
@@ -247,7 +239,6 @@ describe('RTE Markdown UNDO REDO - undoRedoSteps - ', () => {
             });
 
             it(' Test - return the getText method value last redo action value', () => {
-
                 rteObj.formatter.editorManager.markdownSelection.setSelection((rteObj as any).inputElement, 0, 2);
                 let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Bold');
                 item.click();
@@ -308,7 +299,6 @@ describe('RTE Markdown UNDO REDO - undoRedoSteps - ', () => {
                 done();
             })
             it(' Test - apply the "P" format to selected node', () => {
-
                 rteObj.formatter.editorManager.markdownSelection.setSelection((rteObj as any).inputElement, 0, 2);
                 let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Bold');
                 item.click();

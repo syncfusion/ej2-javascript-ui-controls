@@ -1,5 +1,5 @@
 /**
- * Indents plugin spec
+ * ClearFormat exec plugin spec
  */
 import { createElement, detach } from '@syncfusion/ej2-base';
 import { EditorManager } from '../../../src/editor-manager/index';
@@ -75,5 +75,4 @@ describe('Clear Format Exec plugin', () => {
             detach(elem);
         });
     });
-
 });

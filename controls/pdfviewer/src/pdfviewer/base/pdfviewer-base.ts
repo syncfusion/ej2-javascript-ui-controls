@@ -141,8 +141,15 @@ export class PdfViewerBase {
     private corruptPopup: Dialog;
     private passwordPopup: Dialog;
     private goToPagePopup: Dialog;
-    private isPasswordAvailable: boolean = false;
+    /**
+     * @private
+     */
+    public isPasswordAvailable: boolean = false;
     private document: string;
+    /**
+     * @private
+     */
+    public passwordData: string = '';
     /**
      * @private
      */
@@ -703,12 +710,14 @@ export class PdfViewerBase {
      * @private
      */
     public openNotificationPopup(errorString?: string): void {
-        if (errorString === 'Client error') {
-            this.textLayer.createNotificationPopup(this.pdfViewer.localeObj.getConstant('Client error'));
-        } else {
-            this.textLayer.createNotificationPopup(this.pdfViewer.localeObj.getConstant('Server error'));
+        if (this.pdfViewer.showNotificationDialog) {
+            if (errorString === 'Client error') {
+                this.textLayer.createNotificationPopup(this.pdfViewer.localeObj.getConstant('Client error'));
+            } else {
+                this.textLayer.createNotificationPopup(this.pdfViewer.localeObj.getConstant('Server error'));
+            }
+            this.getElement('_notify').classList.add('e-pv-notification-large-content');
         }
-        this.getElement('_notify').classList.add('e-pv-notification-large-content');
     }
 
     // tslint:disable-next-line
@@ -839,6 +848,7 @@ export class PdfViewerBase {
             } else {
                 this.document = 'data:application/pdf;base64,' + documentData;
             }
+            this.isPasswordAvailable = true;
             this.createPasswordPopup();
             this.pdfViewer.fireDocumentLoadFailed(true, null);
             this.passwordPopup.show();
@@ -866,10 +876,12 @@ export class PdfViewerBase {
         let jsonObject: object;
         if (password) {
             this.isPasswordAvailable = true;
+            this.passwordData = password;
             // tslint:disable-next-line:max-line-length
             jsonObject = { document: documentData, password: password, zoomFactor: 1, isFileName: this.isFileName, uniqueId: this.documentId };
         } else {
             this.isPasswordAvailable = false;
+            this.passwordData = '';
             jsonObject = { document: documentData, zoomFactor: 1, isFileName: this.isFileName, uniqueId: this.documentId };
         }
         return jsonObject;
@@ -3071,6 +3083,16 @@ export class PdfViewerBase {
         }
     }
 
+    private calculateImageWidth(pageWidth: number, zoomFactor: number, scaleFactor: number, imageWidth: number): number {
+        let width: number = (pageWidth / this.getZoomFactor()) * zoomFactor * scaleFactor;
+        // tslint:disable-next-line
+        if ((parseInt(imageWidth.toString())) === (parseInt(width.toString()))) {
+            imageWidth = width;
+        }
+        imageWidth = ((imageWidth * this.getZoomFactor()) / zoomFactor);
+        return imageWidth;
+    }
+
     // tslint:disable-next-line
     private renderPage(data: any, pageIndex: number): void {
         if (data) {
@@ -3105,9 +3127,9 @@ export class PdfViewerBase {
                         let scaleFactor: number = (!isNullOrUndefined(data.scaleFactor)) ? data.scaleFactor : 1.5;
                         let zoomFactor: number = this.retrieveCurrentZoomFactor();
                         if (data.zoomFactor) {
-                            imageWidth = ((imageWidth * this.getZoomFactor()) / data.zoomFactor);
+                            imageWidth = this.calculateImageWidth(pageWidth, data.zoomFactor, scaleFactor, imageWidth);
                         } else {
-                            imageWidth = ((imageWidth * this.getZoomFactor()) / zoomFactor);
+                            imageWidth = this.calculateImageWidth(pageWidth, zoomFactor, scaleFactor, imageWidth);
                         }
                         // tslint:disable-next-line
                         if (parseInt((pageWidth * scaleFactor).toString()) === parseInt(imageWidth.toString())) {
@@ -3136,9 +3158,6 @@ export class PdfViewerBase {
                             if (this.pdfViewer.magnificationModule) {
                                 this.pdfViewer.magnificationModule.rerenderCountIncrement();
                             }
-                        } else {
-                            window.sessionStorage.removeItem(this.documentId + '_' + pageIndex + '_' + zoomFactor);
-                            this.createRequestForRender(pageIndex);
                         }
                         image.onload = null;
                         image = null;
@@ -3438,7 +3457,9 @@ export class PdfViewerBase {
                 leftPosition = this.pageLeft;
             }
             if ((leftPosition > 0) && this.isMixedSizeDocument) {
-                leftPosition = leftValue;
+                if (leftValue > 0) {
+                    leftPosition = leftValue;
+                }
             }
         }
         return leftPosition;
@@ -5443,7 +5464,9 @@ export class PdfViewerBase {
      * @private
      */
     public openImportExportNotificationPopup(errorDetails: string): void {
+        if (this.pdfViewer.showNotificationDialog) {
         this.textLayer.createNotificationPopup(errorDetails);
+        }
     }
 
     // tslint:disable-next-line

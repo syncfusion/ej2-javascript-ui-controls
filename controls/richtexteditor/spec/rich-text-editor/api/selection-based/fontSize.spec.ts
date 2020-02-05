@@ -1,13 +1,9 @@
-import { Toolbar, HtmlEditor, RichTextEditor, Count, Link, Image, QuickToolbar } from './../../../../src/index';
-import { renderRTE, destroy, dispatchEvent, setCursorPoint } from './../../render.spec';
+/**
+ * Font size spec
+ */
 import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
-
-RichTextEditor.Inject(HtmlEditor);
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(Link);
-RichTextEditor.Inject(Count);
-RichTextEditor.Inject(Image);
-RichTextEditor.Inject(QuickToolbar);
+import { RichTextEditor } from './../../../../src/index';
+import { renderRTE, destroy, dispatchEvent } from './../../render.spec';
 
 describe('RTE SELECTION BASED - fontSize - ', () => {
 
@@ -204,7 +200,6 @@ describe('RTE SELECTION BASED - fontSize - ', () => {
         describe(' destroy method - ', () => {
             let rteObj: RichTextEditor;
             let controlId: string;
-            let element: HTMLElement;
 
             beforeAll((done: Function) => {
                 rteObj = renderRTE({
@@ -221,11 +216,10 @@ describe('RTE SELECTION BASED - fontSize - ', () => {
                     }
                 });
                 controlId = rteObj.element.id;
-                element = rteObj.element;
                 done();
             });
             afterAll((done: Function) => {
-                detach(element);
+                detach(rteObj.element);
                 done();
             })
             it(' Test the fontSize dropdown element after destroy the component ', () => {
@@ -237,7 +231,6 @@ describe('RTE SELECTION BASED - fontSize - ', () => {
         describe(' refresh method - ', () => {
             let rteObj: RichTextEditor;
             let controlId: string;
-            let element: HTMLElement;
 
             beforeAll((done: Function) => {
                 rteObj = renderRTE({
@@ -254,11 +247,10 @@ describe('RTE SELECTION BASED - fontSize - ', () => {
                     }
                 });
                 controlId = rteObj.element.id;
-                element = rteObj.element;
                 done();
             });
             afterAll((done: Function) => {
-                detach(element);
+                destroy(rteObj);
                 done();
             })
             it(' Test the fontSize dropdown after refresh the component ', () => {

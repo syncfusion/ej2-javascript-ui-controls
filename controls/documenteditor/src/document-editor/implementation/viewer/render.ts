@@ -446,7 +446,7 @@ export class Renderer {
             let elementBox: ElementBox = lineWidget.children[i] as ElementBox;
             if (elementBox instanceof CommentCharacterElementBox &&
                 elementBox.commentType === 0 && this.viewer.owner.selectionModule) {
-                if (!isCommentMark) {
+                if (this.viewer.owner.enableComment && !isCommentMark) {
                     isCommentMark = true;
                     elementBox.renderCommentMark();
                     let pageGap: number = 0;

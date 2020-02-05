@@ -6418,7 +6418,9 @@ class Render {
                 let memberPosition = tupInfo.uNameCollection.indexOf(cell.actualText.toString());
                 let cropUName = tupInfo.uNameCollection.substring(0, memberPosition) +
                     (cell.memberType === 3 ? '' : cell.actualText.toString());
-                let fieldSep = cropUName.split('::').filter((item) => { return item !== ''; });
+                let fieldSep = cropUName.split('::[').map((item) => {
+                    return item[0] === '[' ? item : ('[' + item);
+                });
                 if (cell.memberType === 3 && rowMeasurePos === fieldSep.length) {
                     fieldSep.push(cell.actualText.toString());
                 }
@@ -9452,7 +9454,7 @@ class PivotChart {
                 let fieldPos = -1;
                 let currrentLevel = firstRowCell.level;
                 if (this.parent.dataType === 'olap') {
-                    fieldPos = tupInfo.uNameCollection.split('::').length - 1;
+                    fieldPos = tupInfo.uNameCollection.split('::[').length - 1;
                     if (firstRowCell.memberType !== 3 && (tupInfo.measureName ?
                         tupInfo.measureName === this.dataSourceSettings.values[0].name : true)) {
                         firstLevelUName = firstLevelUName === undefined ? firstRowCell.levelUniqueName : firstLevelUName;
@@ -12839,7 +12841,9 @@ class OlapEngine {
             drillState.push({ level: memberlevel, uName: memberUName, hierarchy: hierarchy, isDrilled: false });
             if (tupInfo[tupPos - 1] && tupInfo[tupPos - 1].typeCollection[memPos] === '1' &&
                 drillState[memPos].level > tupInfo[tupPos - 1].drillInfo[memPos].level) {
-                let uCollection = uNameCollection.split(/[~~,::]/).filter((item) => { return item; });
+                let uCollection = uNameCollection.split(/~~|::\[/).map((item) => {
+                    return item[0] === '[' ? item : ('[' + item);
+                });
                 uCollection.pop();
                 let parentLevel = uCollection.join('~~');
                 this.setDrillInfo(parentUName, parentLevel, memPos, tupPos, tupInfo);
@@ -13153,7 +13157,9 @@ class OlapEngine {
     setDrillInfo(pUName, parentLvlCollection, memPos, tupPos, tupInfo) {
         tupPos--;
         while (tupInfo[tupPos] && tupInfo[tupPos].drillInfo[memPos].uName === pUName) {
-            let prevUcollection = tupInfo[tupPos].uNameCollection.split(/[~~,::]/).filter((item) => { return item; });
+            let prevUcollection = tupInfo[tupPos].uNameCollection.split(/~~|::\[/).map((item) => {
+                return item[0] === '[' ? item : ('[' + item);
+            });
             if (prevUcollection.join('~~').indexOf(parentLvlCollection) < 0) {
                 break;
             }
@@ -13371,7 +13377,7 @@ class OlapEngine {
                     if (withoutAllLastPos > -1) {
                         uniqueName = this.frameUniqueName(uniqueName, currentCell, currentTuple);
                     }
-                    let level = uniqueName.split(/[~~,::]/).length;
+                    let level = uniqueName.split(/~~|::\[/).length;
                     if (currentCell.memberType === 3 && this.tupRowInfo[0].measurePosition > 0) {
                         let parentUName = this.getParentUname(uniqueName, currentCell, true, true);
                         if (measureObjects[parentUName]) {
@@ -13436,8 +13442,8 @@ class OlapEngine {
                                 let parentUName = this.getParentUname(uName, axisSets[aPos], isMeasureAvail, true);
                                 if (measureObjects[parentUName]) {
                                     measureObjects[parentUName] = this.sortRowHeaders(measureObjects[parentUName]);
-                                    let isLastMeasure = uName.lastIndexOf('::') === uName.indexOf('::[Measures]');
-                                    let isFullLength = uName.split('::').length - 1 === tupInfo.measurePosition;
+                                    let isLastMeasure = uName.lastIndexOf('::[') === uName.indexOf('::[Measures]');
+                                    let isFullLength = uName.split('::[').length - 1 === tupInfo.measurePosition;
                                     let isLastNotDrilledMember = !tupInfo.drillInfo[tupInfo.measurePosition - 1].isDrilled;
                                     let isActualLastMember = tupInfo.members.length > (tupInfo.measurePosition + 1);
                                     if (isLastMeasure && isFullLength && isLastNotDrilledMember && isActualLastMember) {
@@ -13632,7 +13638,7 @@ class OlapEngine {
         let hasLastMeasure = uniqueName.indexOf(currentCell.actualText.toString() + '::[Measures]') > -1;
         uniqueName = uniqueName.substring(0, uniqueName.indexOf(currentCell.actualText.toString())) +
             currentCell.actualText.toString();
-        let measureAvail = uniqueName.split('::').length <= currentTuple.measurePosition;
+        let measureAvail = uniqueName.split('::[').length <= currentTuple.measurePosition;
         uniqueName = uniqueName + ((hasLastMeasure || measureAvail) ? ('::' + currentTuple.measureName) : '');
         return uniqueName;
     }
@@ -13683,7 +13689,7 @@ class OlapEngine {
                     i++;
                 }
             }
-            if (tuple.measurePosition >= (uniqueNameColl.split('::').length - 1)) {
+            if (tuple.measurePosition >= (uniqueNameColl.split('::[').length - 1)) {
                 if (sepPos[sepPos.length - 2] > -1) {
                     parentString = uniqueNameColl.substring(0, sepPos[sepPos.length - 2]) + sepObjects[sepPos[sepPos.length - 1]] +
                         tuple.measureName;
@@ -13693,14 +13699,14 @@ class OlapEngine {
                 }
             }
             else {
-                let lastPosition = uniqueNameColl.lastIndexOf('~~') > uniqueNameColl.lastIndexOf('::') ?
-                    uniqueNameColl.lastIndexOf('~~') : uniqueNameColl.lastIndexOf('::');
+                let lastPosition = uniqueNameColl.lastIndexOf('~~') > uniqueNameColl.lastIndexOf('::[') ?
+                    uniqueNameColl.lastIndexOf('~~') : uniqueNameColl.lastIndexOf('::[');
                 parentString = lastPosition > -1 ? uniqueNameColl.substring(0, lastPosition) : 'parent';
             }
         }
         else {
-            let lastPosition = uniqueNameColl.lastIndexOf('~~') > uniqueNameColl.lastIndexOf('::') ?
-                uniqueNameColl.lastIndexOf('~~') : uniqueNameColl.lastIndexOf('::');
+            let lastPosition = uniqueNameColl.lastIndexOf('~~') > uniqueNameColl.lastIndexOf('::[') ?
+                uniqueNameColl.lastIndexOf('~~') : uniqueNameColl.lastIndexOf('::[');
             parentString = lastPosition > -1 ? uniqueNameColl.substring(0, lastPosition) : 'parent';
         }
         return parentString;
@@ -14109,7 +14115,9 @@ class OlapEngine {
             }
             tupPos++;
         }
-        let memberArray = uNameCollection.split('::');
+        let memberArray = uNameCollection.split('::[').map((item) => {
+            return item[0] === '[' ? item : ('[' + item);
+        });
         let joinArray = [];
         for (let memPos = 0; memPos <= fieldPos; memPos++) {
             if ((isWithoutAllMember || this.isPaging) && memPos === fieldPos) {
@@ -14132,7 +14140,8 @@ class OlapEngine {
             if (item.indexOf(uNameCollection) === 0) {
                 childSets.push(item);
                 if (this.isPaging) {
-                    let drillField = item.split('::')[fieldPos];
+                    let drillField = item.split('::[')[fieldPos];
+                    drillField = drillField[0] == '[' ? drillField : ('[' + drillField);
                     let drillFieldSep = drillField.split('~~');
                     for (let fPos = drillFieldSep.indexOf(memberName); fPos < drillFieldSep.length; fPos++) {
                         memberObj[drillFieldSep[fPos]] = drillFieldSep[fPos];
@@ -14141,7 +14150,9 @@ class OlapEngine {
             }
         }
         if (this.isPaging) {
-            let fieldSep = currTuple.uNameCollection.split('::');
+            let fieldSep = currTuple.uNameCollection.split('::[').map((item) => {
+                return item[0] === '[' ? item : ('[' + item);
+            });
             let cropArray = [];
             for (let fPos = 0; fPos < fieldSep.length; fPos++) {
                 if (fPos !== fieldPos) {
@@ -14156,7 +14167,9 @@ class OlapEngine {
         }
         let drillSets = {};
         for (let level of childSets) {
-            let fields = level.split('::');
+            let fields = level.split('::[').map((item) => {
+                return item[0] === '[' ? item : ('[' + item);
+            });
             let set = '';
             for (let pos = 0; pos <= fieldPos; pos++) {
                 let field = fields[pos];
@@ -14487,11 +14500,15 @@ class OlapEngine {
         let column = this.tupColumnInfo[pivotValue.colOrdinal] &&
             this.tupColumnInfo[pivotValue.colOrdinal].uNameCollection &&
             this.tupColumnInfo[pivotValue.colOrdinal].uNameCollection !== '' ?
-            this.tupColumnInfo[pivotValue.colOrdinal].uNameCollection.split('::') : [];
+            this.tupColumnInfo[pivotValue.colOrdinal].uNameCollection.split('::[').map((item) => {
+                return item[0] === '[' ? item : ('[' + item);
+            }) : [];
         let row = this.tupRowInfo[pivotValue.rowOrdinal] &&
             this.tupRowInfo[pivotValue.rowOrdinal].uNameCollection &&
             this.tupRowInfo[pivotValue.rowOrdinal].uNameCollection !== '' ?
-            this.tupRowInfo[pivotValue.rowOrdinal].uNameCollection.split('::') : [];
+            this.tupRowInfo[pivotValue.rowOrdinal].uNameCollection.split('::[').map((item) => {
+                return item[0] === '[' ? item : ('[' + item);
+            }) : [];
         let columnQuery = '';
         let rowQuery = '';
         for (let i = 0; i < column.length; i++) {
@@ -16907,7 +16924,9 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         let fieldPos = tupInfo.drillInfo.map((item) => { return item.hierarchy; }).indexOf(currentCell.hierarchy.toString());
         if (drillInfo && drillInfo.action === 'down') {
             this.olapEngineModule.drilledSets[currentCell.actualText] = tupInfo.members[fieldPos];
-            let fields = drillInfo.memberName.split('::');
+            let fields = drillInfo.memberName.split('::[').map((item) => {
+                return item[0] === '[' ? item : ('[' + item);
+            });
             let member = '';
             for (let pos = 0; pos <= fieldPos; pos++) {
                 let field = fields[pos];

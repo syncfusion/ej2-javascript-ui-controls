@@ -3,7 +3,7 @@ import { IRichTextEditor, NotifyArgs, IRenderer } from '../base/interface';
 import { Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
 import { RadioButton } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
-import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach, isBlazor, extend, addClass } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach, isBlazor, extend, addClass, getUniqueID } from '@syncfusion/ej2-base';
 import { CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_REMOVE_FORMAT, CLS_RTE_PASTE_PLAIN_FORMAT } from '../base/classes';
 import { CLS_RTE_PASTE_OK, CLS_RTE_PASTE_CANCEL, CLS_RTE_DIALOG_MIN_HEIGHT } from '../base/classes';
 import { pasteCleanupGroupingTags } from '../../common/config';
@@ -15,7 +15,7 @@ import { DialogRenderer } from '../renderer/dialog-renderer';
 import { Uploader, MetaData } from '@syncfusion/ej2-inputs';
 import * as classes from '../base/classes';
 import { IHtmlFormatterCallBack } from '../../common';
-import { sanitizeHelper } from '../base/util';
+import { sanitizeHelper, convertToBlob } from '../base/util';
 /**
  * PasteCleanup module called when pasting content in RichTextEditor
  */
@@ -177,33 +177,46 @@ export class PasteCleanup {
   }
 
   private imgUploading(elm: HTMLElement): void {
-    let base64Src: string[] = [];
-    let imgName: string[] = [];
-    let imgElem: Element[] = [];
-    let allImgElm: NodeListOf<HTMLImageElement> = elm.querySelectorAll('img');
-    if (allImgElm.length > 0) {
+    let allImgElm: NodeListOf<HTMLImageElement> =
+      elm.querySelector('#' + this.parent.getID() + '_pasteContent').querySelectorAll('img');
+    if (this.parent.insertImageSettings.saveUrl && allImgElm.length > 0) {
+      let base64Src: string[] = [];
+      let imgName: string[] = [];
+      let uploadImg: Element[] = [];
       for (let i: number = 0; i < allImgElm.length; i++) {
-        if (!isNOU(allImgElm[i].getAttribute('id')) && allImgElm[i].getAttribute('id').indexOf('msWordImg') >= 0) {
-          imgElem.push(allImgElm[i]);
+        if (allImgElm[i].getAttribute('src').split(',')[0].indexOf('base64') >= 0) {
+          base64Src.push(allImgElm[i].getAttribute('src'));
+          imgName.push(getUniqueID('rte_image'));
+          uploadImg.push(allImgElm[i]);
         }
       }
-      if (imgElem.length > 0) {
-        for (let i: number = 0; i < imgElem.length; i++) {
-          base64Src.push(imgElem[i].getAttribute('src'));
-          imgName.push(imgElem[i].getAttribute('id'));
-        }
-        let fileList: File[] = [];
-        for (let i: number = 0; i < base64Src.length; i++) {
-            fileList.push(this.base64ToFile(base64Src[i], imgName[i]));
-        }
-        for (let i: number = 0; i < fileList.length; i++) {
-          this.uploadMethod(fileList[i], imgElem[i]);
-          imgElem[i].removeAttribute('id');
-        }
+      let fileList: File[] = [];
+      for (let i: number = 0; i < base64Src.length; i++) {
+          fileList.push(this.base64ToFile(base64Src[i], imgName[i]));
+      }
+      for (let i: number = 0; i < fileList.length; i++) {
+        this.uploadMethod(fileList[i], uploadImg[i]);
+      }
+      if (isNOU(this.parent.insertImageSettings.path) &&
+      this.parent.insertImageSettings.saveFormat === 'Blob') {
+        this.getBlob(allImgElm);
+      }
+    } else if (this.parent.insertImageSettings.saveFormat === 'Blob') {
+      this.getBlob(allImgElm);
+    }
+    elm.querySelector('#' + this.parent.getID() + '_pasteContent').removeAttribute('id');
+  }
 
+  private getBlob(allImgElm: NodeListOf<HTMLImageElement>): void {
+    for (let i: number = 0; i < allImgElm.length; i++) {
+      if (!isNOU(allImgElm[i].getAttribute('src')) &&
+      allImgElm[i].getAttribute('src').split(',')[0].indexOf('base64') >= 0) {
+        let blopUrl: string = URL.createObjectURL(convertToBlob(allImgElm[i].getAttribute('src')));
+        allImgElm[i].setAttribute('src', blopUrl);
       }
     }
   }
+
 
   private uploadMethod(fileList: File, imgElem: Element): void {
       let uploadEle: HTMLInputElement | HTMLElement = document.createElement('div');
@@ -451,6 +464,7 @@ export class PasteCleanup {
     }
     this.saveSelection.restore();
     clipBoardElem.innerHTML = this.sanitizeHelper(clipBoardElem.innerHTML);
+    clipBoardElem.setAttribute('id', this.parent.getID() + '_pasteContent');
     if (clipBoardElem.textContent !== '' || !isNOU(clipBoardElem.querySelector('img')) ||
     !isNOU(clipBoardElem.querySelector('table'))) {
       this.parent.formatter.editorManager.execCommand(
@@ -464,9 +478,7 @@ export class PasteCleanup {
         clipBoardElem
       );
       this.parent.notify(events.toolbarRefresh, {});
-      if (!isNOU(this.parent.insertImageSettings.saveUrl)) {
-        this.imgUploading(this.parent.inputElement);
-      }
+      this.imgUploading(this.parent.inputElement);
     }
   }
 

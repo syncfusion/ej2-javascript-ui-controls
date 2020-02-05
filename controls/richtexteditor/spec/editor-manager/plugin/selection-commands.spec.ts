@@ -1,8 +1,10 @@
+/**
+ * Selection commands spec document
+ */
+import { detach } from '@syncfusion/ej2-base';
 import { NodeSelection } from '../../../src/selection/selection';
 import { SelectionCommands } from '../../../src/editor-manager/plugin/selection-commands';
-/**
- * Selection spec document
- */
+
 describe('Selection commands', () => {
     //HTML value
     let innervalue: string = '<div id="div1"><p id="paragraph1"><b>Description:</b></p>' +
@@ -80,9 +82,7 @@ describe('Selection commands', () => {
         '<p id="paragraph29"><strong>paragraph29</strong></p>'+
         '</div>';
 
-
     let domSelection: NodeSelection = new NodeSelection();
-    let selectionCommands: SelectionCommands = new SelectionCommands();
     //DIV Element
     let divElement: HTMLDivElement = document.createElement('div');
     divElement.id = 'divElement';
@@ -90,7 +90,6 @@ describe('Selection commands', () => {
     divElement.innerHTML = innervalue;
     let ptag: Node = null;
     let fontTag: Node = null;
-    let backTag: Node = null;
     let parentDiv: HTMLDivElement;
 
     beforeAll(() => {
@@ -98,7 +97,7 @@ describe('Selection commands', () => {
         parentDiv = document.getElementById('div1') as HTMLDivElement;
     });
     afterAll(() => {
-        document.body.innerHTML = '';
+        detach(divElement);
     });
     /**
      * Text Node Direct Parent
@@ -378,7 +377,6 @@ describe('Selection commands', () => {
         expect(
             (ptag.childNodes[1].childNodes[0].childNodes[0].childNodes[0] as HTMLElement).nodeName.toLowerCase())
             .toEqual('span');
-        backTag = fontTag.parentNode;
     });
     it('Apply uppercase tag for already applied specific text node', () => {
         SelectionCommands.applyFormat(document, 'uppercase', parentDiv);
@@ -585,7 +583,7 @@ describe('Bold the content', () => {
         parentDiv = document.getElementById('div1') as HTMLDivElement;
     });
     afterAll(() => {
-        document.body.innerHTML = '';
+        detach(divElement);
     });
     it('Apply Bold with parent element contenteditable as false', () => {
         let node1: Node = document.getElementById('nestedTable');

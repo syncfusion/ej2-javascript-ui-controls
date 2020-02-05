@@ -285,6 +285,8 @@ export class AccPoints {
     public degree: number;
     /** @private */
     public transform: string;
+    /** @private */
+    public separatorY: string;
 }
 
 /**
@@ -620,13 +622,13 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
             return;
         }
         let dataManager: Promise<Object> = this.dataModule.getData(this.dataModule.generateQuery().requiresCount());
-        dataManager.then((e: { result: Object, count: number }) => this.dataManagerSuccess(e, accumulation, render));
+        dataManager.then((e: { result: Object, count: number }) => this.dataManagerSuccess(e, accumulation));
     }
     /**
      * To get points on dataManager is success
      * @private
      */
-    public dataManagerSuccess(e: { result: Object, count: number }, accumulation: AccumulationChart, render : boolean): void {
+    public dataManagerSuccess(e: { result: Object, count: number }, accumulation: AccumulationChart, render : boolean = true): void {
         let argsData: IAccSeriesRenderEventArgs = {
             name: seriesRender, series: this, data: e.result,
         };
@@ -654,7 +656,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         let colors: string[] = this.palettes.length ? this.palettes : getSeriesColor(accumulation.theme);
         let clubValue: number = stringToNumber(this.groupTo, this.sumOfPoints);
         for (let i: number = 0; i < length; i++) {
-            point = this.setPoints(result, i, colors);
+            point = this.setPoints(result, i, colors, accumulation);
             let currentY: number = point.y;
             if (!this.isClub(point, clubValue, i)) {
                 if (isNullOrUndefined(point.y)) {
@@ -734,7 +736,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     /**
      * Method to set points x, y and text from data source
      */
-    private setPoints(data: Object, i: number, colors: string[]): AccPoints {
+    private setPoints(data: Object, i: number, colors: string[], accumulation?: AccumulationChart): AccPoints {
         let point: AccPoints = new AccPoints();
         point.x = getValue(this.xName, data[i]);
         point.y = getValue(this.yName, data[i]);
@@ -744,6 +746,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         point.tooltip = getValue(this.tooltipMappingName || '', data[i]);
         point.sliceRadius = getValue(this.radius, data[i]);
         point.sliceRadius =  isNullOrUndefined(point.sliceRadius) ? '80%' : point.sliceRadius;
+        point.separatorY = accumulation.intl.formatNumber(point.y, { useGrouping: accumulation.useGroupingSeparator });
         this.setAccEmptyPoint(point, i, data, colors);
         return point;
     }

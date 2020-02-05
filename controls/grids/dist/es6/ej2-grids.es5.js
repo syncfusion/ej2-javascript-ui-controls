@@ -849,7 +849,8 @@ var Data = /** @__PURE__ @class */ (function () {
         var gObj = this.parent;
         this.dataManager = gObj.dataSource instanceof DataManager ? gObj.dataSource :
             (isNullOrUndefined(gObj.dataSource) ? new DataManager() : new DataManager(gObj.dataSource));
-        gObj.setProperties({ query: gObj.query instanceof Query ? gObj.query : new Query() }, true);
+        this.isQueryInvokedFromData = true;
+        gObj.query = gObj.query instanceof Query ? gObj.query : new Query();
     };
     /**
      * The function is used to generate updated Query from Grid model.
@@ -1887,7 +1888,9 @@ var SummaryModelGenerator = /** @__PURE__ @class */ (function () {
     };
     SummaryModelGenerator.prototype.generateRows = function (input, args, start, end) {
         if (input.length === 0) {
-            return [];
+            if (args === undefined || !args.count) {
+                return [];
+            }
         }
         var data = this.buildSummaryData(input, args);
         var rows = [];
@@ -7040,7 +7043,9 @@ var Selection = /** @__PURE__ @class */ (function () {
                 data: isBlazor() ? selectedData : _this.getSelectedRecords(), isInteracted: _this.isInteracted
             };
             args = _this.addMovableArgs(args, selectedMovableRow);
-            _this.onActionComplete(args, rowSelected);
+            if (_this.isRowSelected) {
+                _this.onActionComplete(args, rowSelected);
+            }
         });
     };
     /**
@@ -8613,9 +8618,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                 }
                 this.updatePersistCollection(rows[j], checkState);
             }
-            if (indexes.length > 0) {
-                this.isSingleSel() ? this.selectRow(indexes[0], true) : this.selectRows(indexes);
-            }
+            this.isSingleSel() && indexes.length > 0 ? this.selectRow(indexes[0], true) : this.selectRows(indexes);
         }
         if (this.parent.isCheckBoxSelection && this.getCurrentBatchRecordChanges().length > 0) {
             this.setCheckAllState();
@@ -11675,7 +11678,10 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                     requireGridRefresh = true;
                     break;
                 case 'query':
-                    requireRefresh = true;
+                    if (!this.getDataModule().isQueryInvokedFromData) {
+                        requireRefresh = true;
+                    }
+                    this.getDataModule().isQueryInvokedFromData = false;
                     break;
                 default:
                     this.extendedPropertyChange(prop, newProp, requireGridRefresh);
@@ -17319,6 +17325,7 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
             width: '100%',
             enableRtl: isRtl,
             value: new Date(fValue),
+            locale: this.parent.locale,
         }, options.column.filter.params));
         this.datePicker.appendTo(inputValue);
     };
@@ -17332,6 +17339,7 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
             width: '100%',
             enableRtl: isRtl,
             value: new Date(fValue),
+            locale: this.parent.locale,
         }, options.column.filter.params));
         this.dateTimePicker.appendTo(inputValue);
     };
@@ -17344,7 +17352,8 @@ var ExcelFilterBase = /** @__PURE__ @class */ (function (_super) {
             format: options.format,
             placeholder: this.getLocalizedLabel('CustomFilterPlaceHolder'),
             enableRtl: isRtl,
-            value: fValue
+            value: fValue,
+            locale: this.parent.locale,
         }, options.column.filter.params));
         this.numericTxtObj.appendTo(inputValue);
     };
@@ -20479,17 +20488,20 @@ var Filter = /** @__PURE__ @class */ (function () {
         }
         var colUid = cols.map(function (f) { return f.uid; });
         var filteredColsUid = colUid.filter(function (item, pos) { return colUid.indexOf(item) === pos; });
-        for (var i = 0, len = filteredColsUid.length; i < len; i++) {
-            cols[i].uid = cols[i].uid || this.parent.getColumnByField(cols[i].field).uid;
+        var _loop_1 = function (i, len) {
+            cols[i].uid = cols[i].uid || this_1.parent.getColumnByField(cols[i].field).uid;
             var len_1 = cols.length;
-            var column = this.parent.grabColumnByUidFromAllCols(filteredColsUid[i]);
+            var column = this_1.parent.grabColumnByUidFromAllCols(filteredColsUid[i]);
             if (column.field === field || (column.field === column.foreignKeyValue && column.isForeignColumn())) {
-                if (this.filterSettings.type === 'FilterBar' && !isClearFilterBar) {
+                var currentPred = this_1.filterSettings.columns.filter(function (e) {
+                    return e.uid === column.uid;
+                })[0];
+                if (this_1.filterSettings.type === 'FilterBar' && !isClearFilterBar) {
                     var selector = '[id=\'' + column.field + '_filterBarcell\']';
-                    fCell = this.parent.getHeaderContent().querySelector(selector);
+                    fCell = this_1.parent.getHeaderContent().querySelector(selector);
                     if (fCell) {
                         fCell.value = '';
-                        delete this.values[field];
+                        delete this_1.values[field];
                     }
                 }
                 while (len_1--) {
@@ -20497,30 +20509,36 @@ var Filter = /** @__PURE__ @class */ (function () {
                         cols.splice(len_1, 1);
                     }
                 }
-                var fltrElement = this.parent.getColumnHeaderByField(column.field);
+                var fltrElement = this_1.parent.getColumnHeaderByField(column.field);
                 fltrElement.removeAttribute('aria-filtered');
-                if (this.filterSettings.type !== 'FilterBar') {
-                    var iconClass = this.parent.showColumnMenu ? '.e-columnmenu' : '.e-icon-filter';
+                if (this_1.filterSettings.type !== 'FilterBar') {
+                    var iconClass = this_1.parent.showColumnMenu ? '.e-columnmenu' : '.e-icon-filter';
                     fltrElement.querySelector(iconClass).classList.remove('e-filtered');
                 }
-                var cloneActualPredicate = void 0;
-                column.isForeignColumn() ? cloneActualPredicate = extend({}, this.actualPredicate[column.foreignKeyValue][0]) :
-                    cloneActualPredicate = extend({}, this.actualPredicate[field][0]);
-                this.isRemove = true;
-                if (this.actualPredicate[field]) {
-                    delete this.actualPredicate[field];
+                this_1.isRemove = true;
+                if (this_1.actualPredicate[field]) {
+                    delete this_1.actualPredicate[field];
                 }
-                if (this.values[field]) {
-                    delete this.values[field];
+                if (this_1.values[field]) {
+                    delete this_1.values[field];
                 }
-                if (this.refresh) {
-                    this.parent.notify(modelChanged, {
-                        requestType: 'filtering', type: actionBegin, currentFilterObject: cloneActualPredicate,
+                if (this_1.refresh) {
+                    if (isBlazor() && !this_1.parent.isJsComponent) {
+                        this_1.parent.setProperties({ filterSettings: { columns: this_1.filterSettings.columns } }, true);
+                    }
+                    this_1.parent.notify(modelChanged, {
+                        requestType: 'filtering', type: actionBegin, currentFilterObject: currentPred,
                         currentFilterColumn: column, action: 'clearFilter'
                     });
                 }
-                break;
+                return "break";
             }
+        };
+        var this_1 = this;
+        for (var i = 0, len = filteredColsUid.length; i < len; i++) {
+            var state_1 = _loop_1(i, len);
+            if (state_1 === "break")
+                break;
         }
         this.updateFilterMsg();
     };
@@ -20665,9 +20683,6 @@ var Filter = /** @__PURE__ @class */ (function () {
         }
         if (isNullOrUndefined(this.value) || this.value === '') {
             this.removeFilteredColsByField(this.column.field);
-            if (isBlazor() && !this.parent.isJsComponent) {
-                this.parent.setProperties({ filterSettings: { columns: this.filterSettings.columns } }, true);
-            }
             return;
         }
         this.validateFilterValue(this.value);
@@ -21018,6 +21033,7 @@ var Resize = /** @__PURE__ @class */ (function () {
         var headerTextClone;
         var contentTextClone;
         var footerTextClone;
+        var columnIndexByField = this.parent.getColumnIndexByField(fName);
         var frzCols = gObj.getFrozenColumns();
         if (!isNullOrUndefined(gObj.getFooterContent())) {
             footerTable = gObj.getFooterContentTable();
@@ -21080,10 +21096,10 @@ var Resize = /** @__PURE__ @class */ (function () {
         if (footerText.length) {
             wFooter = this.createTable(footerTable, footerText, footerDivTag);
         }
-        var columnbyindex = gObj.getColumns()[index];
+        var columnbyindex = gObj.getColumns()[columnIndexByField];
         var result;
         var width = columnbyindex.width = formatUnit(Math.max(wHeader, wContent, wFooter));
-        this.widthService.setColumnWidth(gObj.getColumns()[index]);
+        this.widthService.setColumnWidth(gObj.getColumns()[columnIndexByField]);
         result = gObj.getColumns().some(function (x) { return x.width === null || x.width === undefined || x.width.length <= 0; });
         if (result === false) {
             var element = gObj.getColumns();
@@ -26803,11 +26819,9 @@ var NumericEditCell = /** @__PURE__ @class */ (function () {
             placeholder: isInline ? '' : args.column.headerText,
             enabled: isEditable(args.column, args.requestType, args.element),
             floatLabelType: this.parent.editSettings.mode !== 'Dialog' ? 'Never' : 'Always',
+            locale: this.parent.locale,
         }, col.edit.params));
         args.element.setAttribute('name', getComplexFieldID(args.column.field));
-        if (isBlazor()) {
-            this.obj.locale = this.parent.locale;
-        }
         this.obj.appendTo(args.element);
     };
     NumericEditCell.prototype.destroy = function () {
@@ -27675,14 +27689,14 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                             classList(ftr, [], ['e-hiddenrow', 'e-updatedtd']);
                             rowRenderer.refresh(rows[i], gObj.getColumns(), false);
                         }
-                        if (this.parent.aggregates.length > 0) {
-                            var type = 'type';
-                            var editType = [];
-                            editType[type] = 'cancel';
-                            this.parent.notify(refreshFooterRenderer, editType);
-                            if (this.parent.groupSettings.columns.length > 0) {
-                                this.parent.notify(groupAggregates, editType);
-                            }
+                    }
+                    if (this.parent.aggregates.length > 0) {
+                        var type = 'type';
+                        var editType = [];
+                        editType[type] = 'cancel';
+                        this.parent.notify(refreshFooterRenderer, editType);
+                        if (this.parent.groupSettings.columns.length > 0) {
+                            this.parent.notify(groupAggregates, editType);
                         }
                     }
                 }
@@ -27896,6 +27910,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             if (beforeBatchDeleteArgs.cancel) {
                 return;
             }
+            gObj.clearSelection();
             beforeBatchDeleteArgs.row = beforeBatchDeleteArgs.row ?
                 beforeBatchDeleteArgs.row : data ? gObj.getRows()[index] : selectedRows[0];
             if (_this.parent.getFrozenColumns()) {
@@ -27974,10 +27989,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                     index = parseInt(gObj.getSelectedRows()[0].getAttribute('aria-rowindex'), 10);
                 }
             }
-            if (gObj.getSelectedRows().length) {
-                gObj.clearSelection();
-                gObj.selectRow(index);
-            }
+            gObj.selectRow(index);
             gObj.trigger(batchDelete, beforeBatchDeleteArgs);
             gObj.notify(batchDelete, { rows: _this.parent.getRowsObject() });
             gObj.notify(toolbarRefresh, {});
@@ -28106,7 +28118,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                 _this.parent.editSettings.newRowPosition === 'Top' ? _this.editCell(0, col.field, true) :
                     _this.editCell(_this.parent.getCurrentViewRecords().length + changes[addedRecords].length - 1, col.field, true);
             }
-            if (_this.parent.aggregates.length > 0 && data) {
+            if (_this.parent.aggregates.length > 0 && (data || changes[addedRecords].length)) {
                 _this.parent.notify(refreshFooterRenderer, {});
             }
             var args1 = {
@@ -29164,8 +29176,14 @@ var Edit = /** @__PURE__ @class */ (function () {
             if (form[getComplexFieldID(col[j].field)]) {
                 var inputElements = [].slice.call(form[getComplexFieldID(col[j].field)]);
                 inputElements = inputElements.length ? inputElements : [form[getComplexFieldID(col[j].field)]];
-                for (var k = 0; k < inputElements.length; k++) {
-                    var value = this.getValue(col[j], inputElements[k], editedData);
+                var temp = inputElements.filter(function (e) {
+                    return !isNullOrUndefined((e.ej2_instances));
+                });
+                if (temp.length === 0) {
+                    temp = inputElements.filter(function (e) { return e.hasAttribute('name'); });
+                }
+                for (var k = 0; k < temp.length; k++) {
+                    var value = this.getValue(col[j], temp[k], editedData);
                     DataUtil.setValue(col[j].field, value, editedData);
                 }
             }
@@ -29181,8 +29199,8 @@ var Edit = /** @__PURE__ @class */ (function () {
         return editedData;
     };
     Edit.prototype.getValue = function (col, input, editedData) {
-        var value = col.isForeignColumn() ? (input.ej2_instances ?
-            input.ej2_instances[0].value : input.value) : input.value;
+        var value = input.ej2_instances ?
+            input.ej2_instances[0].value : input.value;
         var gObj = this.parent;
         var temp = col.edit.read;
         if (col.type === 'checkbox' || col.type === 'boolean') {

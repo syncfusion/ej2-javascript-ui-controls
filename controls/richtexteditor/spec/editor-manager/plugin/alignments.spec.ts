@@ -2,9 +2,7 @@
  * Alignments plugin spec
  */
 import { createElement, detach } from '@syncfusion/ej2-base';
-import { Alignments } from '../../../src/editor-manager/plugin';
 import { EditorManager } from '../../../src/editor-manager/base';
-import { NodeSelection, } from '../../../src/selection/index';
 
 describe('Alignments plugin', () => {
 

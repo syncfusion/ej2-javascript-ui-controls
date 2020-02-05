@@ -224,8 +224,11 @@ function getOuterHeight(element) {
     return element.offsetHeight + (parseInt(style.marginTop, 10) || 0) + (parseInt(style.marginBottom, 10) || 0);
 }
 function removeChildren(element) {
-    while (element.firstElementChild && !(element.firstElementChild.classList.contains('blazor-template'))) {
-        element.removeChild(element.firstElementChild);
+    let elementChildren = [].slice.call(element.children);
+    for (let elementChild of elementChildren) {
+        if (!elementChild.classList.contains('blazor-template')) {
+            element.removeChild(elementChild);
+        }
     }
 }
 function addLocalOffset(date) {
@@ -6274,6 +6277,9 @@ class QuickPopups {
         let navigateEle = closest(e.target, '.' + NAVIGATE_CLASS);
         if (!isNullOrUndefined(navigateEle)) {
             let date = this.parent.getDateFromElement(e.currentTarget);
+            if (this.parent.isServerRenderer()) {
+                date = new Date(+date - (date.getTimezoneOffset() * 60000));
+            }
             if (!isNullOrUndefined(date)) {
                 this.closeClick();
                 this.parent.setScheduleProperties({ selectedDate: date });
@@ -9463,7 +9469,7 @@ class Render {
             let firstView = this.parent.viewCollections[0].option;
             if (firstView) {
                 this.parent.setScheduleProperties({ currentView: firstView });
-                this.parent.serverDataBind();
+                this.parent.onServerDataBind();
                 if (this.parent.headerModule) {
                     this.parent.headerModule.updateActiveView();
                     this.parent.headerModule.setCalendarView();
@@ -11310,6 +11316,25 @@ class ResourceBase {
         }
         this.refreshLayout(true);
     }
+    getIndexFromResourceId(id, name) {
+        let indexs;
+        if (this.parent.resourceCollection[this.parent.resourceCollection.length - 1].name === name) {
+            indexs = id - 1;
+        }
+        else {
+            let counts = 1;
+            for (let i = this.parent.resourceCollection.length - 1; i >= 0; i--) {
+                if (this.parent.resourceCollection[i].name === name) {
+                    indexs = (id - 1) * (counts);
+                    break;
+                }
+                else {
+                    counts = counts * (this.parent.resourceCollection[i].dataSource).length;
+                }
+            }
+        }
+        return indexs;
+    }
     resourceScroll(id, name) {
         if (this.parent.isAdaptive || ['Agenda', 'MonthAgenda'].indexOf(this.parent.currentView) > -1) {
             return;
@@ -11324,16 +11349,27 @@ class ResourceBase {
             return null;
         })[0];
         let scrollElement = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
+        let index = 0;
         if (this.parent.activeView.isTimelineView()) {
-            let resourceData = resource.dataSource.filter((e) => e[resource.idField] === id)[0];
-            let index = this.lastResourceLevel.map((e) => e.resourceData).indexOf(resourceData);
+            if (!this.parent.activeViewOptions.group.byGroupID) {
+                index = this.getIndexFromResourceId(id, levelName);
+            }
+            else {
+                let resourceData = resource.dataSource.filter((e) => e[resource.idField] === id)[0];
+                index = this.lastResourceLevel.map((e) => e.resourceData).indexOf(resourceData);
+            }
             let td = this.parent.element.querySelector(`.${WORK_CELLS_CLASS}[data-group-index="${index}"]`);
             if (td && !td.parentElement.classList.contains(HIDDEN_CLASS)) {
                 scrollElement.scrollTop = td.offsetTop;
             }
         }
         else {
-            let index = resource.dataSource.map((e) => e[resource.idField]).indexOf(id);
+            if (!this.parent.activeViewOptions.group.byGroupID) {
+                index = this.getIndexFromResourceId(id, levelName);
+            }
+            else {
+                index = resource.dataSource.map((e) => e[resource.idField]).indexOf(id);
+            }
             let offsetTarget = this.parent.element.querySelector(`.${HEADER_ROW_CLASS}:nth-child(${levelIndex + 1})`);
             let offset = [].slice.call(offsetTarget.children).map((node) => node.offsetLeft);
             scrollElement.scrollLeft = offset[index];
@@ -11453,14 +11489,14 @@ let Schedule = class Schedule extends Component {
     }
     /** @hidden */
     layoutReady(resourceCollection, isFirstRender, isSetModel) {
-        if (!this.isServerRenderer()) {
-            return;
-        }
         if (resourceCollection && resourceCollection.length > 0 && (isFirstRender || isSetModel)) {
             this.resourceCollection = resourceCollection;
             if (this.resourceBase) {
                 this.resourceBase.refreshLayout(isSetModel);
             }
+        }
+        if (!this.isServerRenderer()) {
+            return;
         }
         if (this.activeView) {
             this.activeView.serverRenderLayout();
@@ -11687,12 +11723,19 @@ let Schedule = class Schedule extends Component {
         }
         if (!isModuleLoad && selectedView) {
             this.setScheduleProperties({ currentView: selectedView });
-            this.serverDataBind();
+            this.onServerDataBind();
         }
         if (this.viewIndex === -1) {
             let currentIndex = this.getViewIndex(this.currentView);
             this.viewIndex = (currentIndex === -1) ? 0 : currentIndex;
         }
+    }
+    onServerDataBind() {
+        //Timezone issue on DateHeader SelectedDate while hosting in azure Blazor
+        if (this.bulkChanges && this.bulkChanges.selectedDate) {
+            this.bulkChanges.selectedDate = addLocalOffset(this.bulkChanges.selectedDate);
+        }
+        this.serverDataBind();
     }
     getActiveViewOptions() {
         let timeScale = {
@@ -11868,7 +11911,7 @@ let Schedule = class Schedule extends Component {
                             this.headerModule.setCalendarView();
                         }
                         this.initializeView(this.currentView);
-                        this.serverDataBind();
+                        this.onServerDataBind();
                         this.animateLayout();
                         args = { requestType: 'viewNavigate', cancel: false, event: event };
                         this.trigger(actionComplete, args);
@@ -11894,7 +11937,7 @@ let Schedule = class Schedule extends Component {
                             this.headerModule.setCalendarDate(selectedDate);
                         }
                         this.initializeView(this.currentView);
-                        this.serverDataBind();
+                        this.onServerDataBind();
                         this.animateLayout();
                         args = { requestType: 'dateNavigate', cancel: false, event: event };
                         this.trigger(actionComplete, args);
@@ -20161,6 +20204,9 @@ class Year extends ViewBase {
         this.workCellAction = new WorkCellInteraction(parent);
     }
     renderLayout(className) {
+        if (this.parent.resourceBase) {
+            this.parent.resourceBase.generateResourceLevels([{ renderDates: this.parent.activeView.renderDates }]);
+        }
         this.setPanel(createElement('div', { className: TABLE_WRAP_CLASS }));
         let viewTypeClass = this.parent.activeViewOptions.orientation === 'Horizontal' ? 'e-horizontal' : 'e-vertical';
         addClass([this.element], [this.viewClass, viewTypeClass, className]);

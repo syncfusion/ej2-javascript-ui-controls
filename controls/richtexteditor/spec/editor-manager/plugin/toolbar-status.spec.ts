@@ -1,10 +1,11 @@
+/**
+ * Toolbar status spec document
+ */
+import { detach } from '@syncfusion/ej2-base';
 import { NodeSelection } from '../../../src/selection/selection';
 import { ToolbarStatus } from '../../../src/editor-manager/plugin/toolbar-status';
 import { IToolbarStatus } from '../../../src/common/interface';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
-/**
- * Selection spec document
- */
+
 describe('Update Toolbar commands', () => {
     //HTML value
     let innervalue: string = '<div id="div1"><p id="paragraph1"><b>Description:</b></p>' +
@@ -107,7 +108,6 @@ describe('Update Toolbar commands', () => {
         '</div>'+
         '<em id="italic52">abc</em>';
 
-
     let domSelection: NodeSelection = new NodeSelection();
     //DIV Element
     let divElement: HTMLDivElement = document.createElement('div');
@@ -121,7 +121,7 @@ describe('Update Toolbar commands', () => {
         parentDiv = document.getElementById('div1') as HTMLDivElement;
     });
     afterAll(() => {
-        document.body.innerHTML = '';
+        detach(divElement);
     });
     /**
      * Text Node Direct Parent

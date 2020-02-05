@@ -1,7 +1,7 @@
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
 import { WCharacterFormat } from '../../../src/document-editor/implementation/format/character-format';
 import { createElement } from '@syncfusion/ej2-base';
-import { Editor, TableWidget, TextElementBox, ParagraphWidget, LineWidget, DocumentEditorContainer } from '../../../src/index';
+import { Editor, TableWidget, TextElementBox, ParagraphWidget, LineWidget, DocumentEditorContainer, ListTextElementBox } from '../../../src/index';
 import { Toolbar } from '../../../src/document-editor-container/tool-bar/tool-bar';
 import { TestHelper } from '../../test-helper.spec';
 import { Selection, SelectionCharacterFormat } from '../../../src/index';
@@ -212,5 +212,49 @@ describe('Excel Table Paste Validation', () => {
         (container.documentEditor.editor as any).pasteContents(JSON.parse(excelTable));
         let TableWidget: TableWidget = container.documentEditor.selection.start.paragraph.containerWidget.childWidgets[0] as TableWidget;
         expect(TableWidget.isDefaultFormatUpdated).toBe(true);
+    });
+});
+
+
+
+let listString:string='{"sections":[{"blocks":[{"characterFormat":{"bold":false,"italic":false,"strikethrough":"None","fontSize":12,"fontFamily":"Times New Roman","fontColor":"#00000000","bidi":false,"fontSizeBidi":12},"paragraphFormat":{"leftIndent":36,"rightIndent":0,"firstLineIndent":-18,"beforeSpacing":0,"afterSpacing":0,"lineSpacing":1,"lineSpacingType":"Multiple","outlineLevel":"BodyText","textAlignment":"Left","styleName":"List Paragraph","listFormat":{"listLevelNumber":0,"listId":0},"bidi":false,"contextualSpacing":true},"inlines":[{"text":"Sadsadasd","characterFormat":{"bold":false,"italic":false,"strikethrough":"None","fontSize":12,"fontFamily":"Times New Roman","fontColor":"#00000000","bidi":false,"fontSizeBidi":12}}]},{"characterFormat":{"bold":false,"italic":false,"strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontSize":12,"fontFamily":"Times New Roman","fontColor":"#00000000","bidi":false,"boldBidi":false,"fontSizeBidi":12},"paragraphFormat":{"leftIndent":36,"rightIndent":0,"firstLineIndent":-18,"beforeSpacing":0,"afterSpacing":0,"lineSpacing":1,"lineSpacingType":"Multiple","outlineLevel":"BodyText","textAlignment":"Left","styleName":"List Paragraph","listFormat":{"listLevelNumber":0,"listId":0},"bidi":false,"contextualSpacing":true},"inlines":[{"text":"Sadsadsadsad","characterFormat":{"bold":false,"italic":false,"strikethrough":"None","fontSize":12,"fontFamily":"Times New Roman","fontColor":"#00000000","bidi":false,"fontSizeBidi":12}}]},{"characterFormat":{"bold":false,"italic":false,"strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontSize":12,"fontFamily":"Times New Roman","fontColor":"#00000000","bidi":false,"boldBidi":false,"fontSizeBidi":12},"paragraphFormat":{"leftIndent":36,"rightIndent":0,"firstLineIndent":-18,"beforeSpacing":0,"afterSpacing":0,"lineSpacing":1,"lineSpacingType":"Multiple","outlineLevel":"BodyText","textAlignment":"Left","styleName":"List Paragraph","listFormat":{"listLevelNumber":0,"listId":0},"bidi":false,"contextualSpacing":true},"inlines":[{"text":"sadasddsa","characterFormat":{"bold":false,"italic":false,"strikethrough":"None","fontSize":12,"fontFamily":"Times New Roman","fontColor":"#00000000","bidi":false,"fontSizeBidi":12}}]}],"headersFooters":{},"sectionFormat":{"headerDistance":36,"footerDistance":36,"pageWidth":612,"pageHeight":792,"leftMargin":72,"rightMargin":72,"topMargin":72,"bottomMargin":72,"differentFirstPage":false,"differentOddAndEvenPages":false,"bidi":false,"restartPageNumbering":false,"pageStartingNumber":0}}],"paragraphFormat":{"leftIndent":0,"rightIndent":0,"lineSpacing":1,"lineSpacingType":"Multiple","textAlignment":"Left"},"lists":[{"listId":0,"abstractListId":0}],"abstractLists":[{"abstractListId":0,"levels":[{"startAt":20,"restartLevel":0,"listLevelPattern":"Arabic","followCharacter":"Tab","numberFormat":"%1.","characterFormat":{"bold":false,"italic":false,"strikethrough":"None","fontFamily":"Times New Roman","fontColor":"#00000000"},"paragraphFormat":{"leftIndent":36,"firstLineIndent":-18,"lineSpacing":1,"lineSpacingType":"Multiple","tabs":[{"tabJustification":"Left","position":0,"tabLeader":"None","deletePosition":0}]}},{"startAt":1,"restartLevel":1,"listLevelPattern":"LowLetter","followCharacter":"Tab","numberFormat":"%2.","characterFormat":{"bold":false,"fontFamily":"Times New Roman"},"paragraphFormat":{"leftIndent":72,"firstLineIndent":-18,"tabs":[{"tabJustification":"Left","position":0,"tabLeader":"None","deletePosition":0}]}},{"startAt":1,"restartLevel":2,"listLevelPattern":"LowRoman","followCharacter":"Tab","numberFormat":"%3.","characterFormat":{"bold":false,"fontFamily":"Times New Roman"},"paragraphFormat":{"leftIndent":108,"firstLineIndent":-9,"tabs":[{"tabJustification":"Left","position":0,"tabLeader":"None","deletePosition":0}]}},{"startAt":1,"restartLevel":3,"listLevelPattern":"Arabic","followCharacter":"Tab","numberFormat":"%4.","characterFormat":{"bold":false,"fontFamily":"Times New Roman"},"paragraphFormat":{"leftIndent":144,"firstLineIndent":-18,"tabs":[{"tabJustification":"Left","position":0,"tabLeader":"None","deletePosition":0}]}},{"startAt":1,"restartLevel":4,"listLevelPattern":"LowLetter","followCharacter":"Tab","numberFormat":"%5.","characterFormat":{"bold":false,"fontFamily":"Times New Roman"},"paragraphFormat":{"leftIndent":180,"firstLineIndent":-18,"tabs":[{"tabJustification":"Left","position":0,"tabLeader":"None","deletePosition":0}]}},{"startAt":1,"restartLevel":5,"listLevelPattern":"LowRoman","followCharacter":"Tab","numberFormat":"%6.","characterFormat":{"bold":false,"fontFamily":"Times New Roman"},"paragraphFormat":{"leftIndent":216,"firstLineIndent":-9,"tabs":[{"tabJustification":"Left","position":0,"tabLeader":"None","deletePosition":0}]}},{"startAt":1,"restartLevel":6,"listLevelPattern":"Arabic","followCharacter":"Tab","numberFormat":"%7.","characterFormat":{"bold":false,"fontFamily":"Times New Roman"},"paragraphFormat":{"leftIndent":252,"firstLineIndent":-18,"tabs":[{"tabJustification":"Left","position":0,"tabLeader":"None","deletePosition":0}]}},{"startAt":1,"restartLevel":7,"listLevelPattern":"LowLetter","followCharacter":"Tab","numberFormat":"%8.","characterFormat":{"bold":false,"fontFamily":"Times New Roman"},"paragraphFormat":{"leftIndent":288,"firstLineIndent":-18,"tabs":[{"tabJustification":"Left","position":0,"tabLeader":"None","deletePosition":0}]}},{"startAt":1,"restartLevel":8,"listLevelPattern":"LowRoman","followCharacter":"Tab","numberFormat":"%9.","characterFormat":{"bold":false,"fontFamily":"Times New Roman"},"paragraphFormat":{"leftIndent":324,"firstLineIndent":-9,"tabs":[{"tabJustification":"Left","position":0,"tabLeader":"None","deletePosition":0}]}}]}],"background":{"color":"#FFFFFFFF"},"styles":[{"type":"Paragraph","name":"Normal","next":"Normal","characterFormat":{"bold":false,"italic":false,"strikethrough":"None","fontSize":12,"fontFamily":"Times New Roman","fontColor":"#00000000","bidi":false,"fontSizeBidi":12},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"lineSpacing":1,"lineSpacingType":"Multiple","textAlignment":"Left"}},{"type":"Character","name":"Default Paragraph Font"},{"type":"Paragraph","name":"List Paragraph","basedOn":"Normal","next":"List Paragraph","characterFormat":{"bold":false,"italic":false,"strikethrough":"None","fontSize":12,"fontColor":"#00000000","bidi":false,"fontSizeBidi":12},"paragraphFormat":{"leftIndent":36,"rightIndent":0,"lineSpacing":1,"lineSpacingType":"Multiple","textAlignment":"Left","contextualSpacing":true}}],"defaultTabWidth":36,"formatting":false,"protectionType":"NoProtection","enforcement":false}';
+
+describe('paste start at list validation ', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableLocalPaste: false });
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 750);
+    });
+    it('paste list sfdt', () => {
+        editor.editor.insertText('Sample');
+        editor.editor.onEnter();
+        editor.editor.insertText('Sample');
+        editor.editor.onEnter();
+        editor.editor.insertText('Sample');
+        editor.selection.selectAll();
+        editor.editor.applyNumbering('%1.', 'Arabic');
+        editor.selection.handleDownKey();
+        editor.editor.onEnter();
+        editor.editor.onEnter();
+        editor.editor.onEnter();
+        editor.editor.paste(listString);
+        expect((editor.selection.start.currentWidget.children[0] as ListTextElementBox).text).toBe('22.');
     });
 });

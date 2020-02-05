@@ -1,10 +1,8 @@
 /**
- * Formats plugin spec
+ * Lists plugin spec
  */
 import { createElement, detach } from '@syncfusion/ej2-base';
-import { MarkdownSelection, MarkdownParser } from '../../../src/markdown-parser/index';
-import { MarkdownFormatter } from '../../../src';
-
+import { MarkdownParser } from '../../../src/markdown-parser/index';
 
 describe('Markdown - Formats plugin', () => {
     let innerValue: string =
@@ -32,7 +30,6 @@ Tabs and shift-tabs work too`;
 They even auto continue as you type
 A double enter will end them
 Tabs and shift-tabs work too`;
-
 
     describe(' OL testing', () => {
         let editorObj: MarkdownParser;
@@ -679,5 +676,4 @@ Line with more than one break line before
             detach(textArea);
         });
     });
-
 });

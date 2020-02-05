@@ -1,21 +1,16 @@
-import { Toolbar, HtmlEditor, RichTextEditor, Count, Link, Image, QuickToolbar, HTMLFormatter } from './../../../../src/index';
-import { renderRTE, destroy, dispatchEvent, setCursorPoint } from './../../render.spec';
+/**
+ * Parent based format spec
+ */
 import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
-
-RichTextEditor.Inject(HtmlEditor);
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(Link);
-RichTextEditor.Inject(Count);
-RichTextEditor.Inject(Image);
-RichTextEditor.Inject(QuickToolbar);
+import { RichTextEditor } from './../../../../src/index';
+import { renderRTE, destroy, dispatchEvent, setCursorPoint } from './../../render.spec';
 
 describe('RTE PARENT BASED - formats - ', () => {
 
     describe(' Default value  - ', () => {
         let rteObj: RichTextEditor;
         beforeAll((done: Function) => {
-            rteObj = renderRTE({
-            });
+            rteObj = renderRTE({ });
             done();
         })
         afterAll((done: Function) => {
@@ -32,7 +27,6 @@ describe('RTE PARENT BASED - formats - ', () => {
         it(' Test the default value of items ', () => {
             expect(rteObj.format.types.length === 7).toBe(true);
         });
-
     });
     describe(' PROPERTIES - ', () => {
         describe(' toolbarSettings property - ', () => {
@@ -705,7 +699,6 @@ describe('RTE PARENT BASED - formats - ', () => {
         describe(' destroy method - ', () => {
             let rteObj: RichTextEditor;
             let controlId: string;
-            let element: HTMLElement;
 
             beforeAll((done: Function) => {
                 rteObj = renderRTE({
@@ -715,11 +708,10 @@ describe('RTE PARENT BASED - formats - ', () => {
                     }
                 });
                 controlId = rteObj.element.id;
-                element = rteObj.element;
                 done();
             });
             afterAll((done: Function) => {
-                detach(element);
+                detach(rteObj.element);
                 done();
             })
             it(' Test the formats dropdown element after destroy the component ', () => {
@@ -731,7 +723,6 @@ describe('RTE PARENT BASED - formats - ', () => {
         describe(' refresh method - ', () => {
             let rteObj: RichTextEditor;
             let controlId: string;
-            let element: HTMLElement;
 
             beforeAll((done: Function) => {
                 rteObj = renderRTE({
@@ -741,7 +732,6 @@ describe('RTE PARENT BASED - formats - ', () => {
                     }
                 });
                 controlId = rteObj.element.id;
-                element = rteObj.element;
                 done();
             });
             afterAll((done: Function) => {

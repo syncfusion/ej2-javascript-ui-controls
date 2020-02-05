@@ -9,7 +9,7 @@ import { load, loaded, gaugeMouseMove, gaugeMouseLeave, gaugeMouseDown, gaugeMou
 import { LinearGaugeModel } from './linear-gauge-model';
 import { ILoadedEventArgs, ILoadEventArgs, IAnimationCompleteEventArgs, IAnnotationRenderEventArgs } from './model/interface';
 import { ITooltipRenderEventArgs, IVisiblePointer, IMouseEventArgs, IAxisLabelRenderEventArgs, IMoveCursor } from './model/interface';
-import { IResizeEventArgs, IValueChangeEventArgs, IThemeStyle } from './model/interface';
+import { IResizeEventArgs, IValueChangeEventArgs, IThemeStyle, IPrintEventArgs } from './model/interface';
 import { Size, valueToCoefficient, calculateShapes, stringToNumber, removeElement, getElement, VisibleRange } from './utils/helper';
 import { measureText, Rect, TextOption, textElement, GaugeLocation, RectOption, PathOption } from './utils/helper';
 import { getBox, withInRange, getPointer, convertPixelToValue, isPointerDrag } from './utils/helper';
@@ -20,6 +20,9 @@ import { AxisRenderer } from './axes/axis-renderer';
 import { Annotations } from './annotations/annotations';
 import { GaugeTooltip } from './user-interaction/tooltip';
 import { getThemeStyle } from './model/theme';
+import { ExportUtils } from '../linear-gauge/utils/export';
+import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
+import { ExportType } from '../linear-gauge/utils/enum';
 
 /**
  * Represents the EJ2 Linear gauge control.
@@ -279,6 +282,14 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     @Event()
     public resized: EmitType<IResizeEventArgs>;
 
+    /**
+     * Triggers before the prints gets started.
+     * @event
+     * @blazorProperty 'OnPrint'
+     */
+
+    @Event()
+    public beforePrint: EmitType<IPrintEventArgs>;
 
     /** @private */
     public renderer: SvgRenderer;
@@ -434,7 +445,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         this.calculateBounds();
         this.renderAxisElements();
         this.renderComplete();
-        this.trigger(loaded, { gauge: !this.isBlazor ? this : null });
     }
 
     /**
@@ -486,6 +496,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         if (this.annotationsModule) {
             this.annotationsModule.renderAnnotationElements();
         }
+        this.trigger(loaded, { gauge: !this.isBlazor ? this : null });
     }
 
     private renderBorder(): void {
@@ -852,6 +863,23 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         }
         this.notify(Browser.touchEndEvent, e);
         return true;
+    }
+
+    /**
+     * Handles the print method for gauge control.
+     */
+    public print(id?: string[] | string | Element): void {
+        let exportChart: ExportUtils = new ExportUtils(this);
+        exportChart.print(id);
+    }
+    /**
+     * Handles the export method for gauge control.
+     * @param type
+     * @param fileName
+     */
+    public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation): void {
+        let exportMap: ExportUtils = new ExportUtils(this);
+        exportMap.export(type, fileName, orientation);
     }
 
     /**

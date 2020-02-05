@@ -949,7 +949,9 @@ export class SfdtExport {
     private writeList(wList: WList): any {
         let list: any = {};
         list.abstractListId = wList.abstractListId;
-        //list.levelOverrides = wList.levelOverrides;
+        if (wList.levelOverrides.length > 0) {
+            list.levelOverrides = wList.levelOverrides;
+        }
         list.listId = wList.listId;
         return list;
     }

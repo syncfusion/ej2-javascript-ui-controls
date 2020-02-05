@@ -1,19 +1,11 @@
-import { Toolbar, Table } from '../../src/rich-text-editor/index';
+/**
+ * CR-Issues RTE spec
+ */
+import { createElement, L10n, isNullOrUndefined, Browser, detach } from '@syncfusion/ej2-base';
+import { FormValidator } from "@syncfusion/ej2-inputs";
 import { dispatchEvent } from '../../src/rich-text-editor/base/util';
 import { RichTextEditor } from '../../src/rich-text-editor/base/rich-text-editor';
-import { NodeSelection } from '../../src/selection/index';
-
 import { renderRTE, destroy, setCursorPoint, dispatchEvent as dispatchEve } from './../rich-text-editor/render.spec';
-import { createElement, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { QuickToolbar, MarkdownEditor, HtmlEditor, Link, Image } from "../../src/rich-text-editor/index";
-import { Browser, detach, getUniqueID } from "@syncfusion/ej2-base";
-import { FormValidator } from "@syncfusion/ej2-inputs";
-
-RichTextEditor.Inject(MarkdownEditor);
-RichTextEditor.Inject(HtmlEditor);
-
-RichTextEditor.Inject(Toolbar, Table);
-RichTextEditor.Inject(QuickToolbar, Link, Image);
 
 describe('RTE CR issues', () => {
     describe('EJ2-20672 - Full Screen not working properly when render inside the overflow element', () => {
@@ -48,12 +40,12 @@ describe('RTE CR issues', () => {
 
         afterAll(() => {
             destroy(rteObj);
+            detach(divElem);
         });
     });
 
     describe('RTE - Incident issues', () => {
         let rteObj: RichTextEditor;
-        let elem: HTMLElement;
         let innerHTML: string = `<ol>
         <li>
             <p>Provide
@@ -82,7 +74,6 @@ describe('RTE CR issues', () => {
             rteObj = renderRTE({
                 value: innerHTML
             });
-            elem = rteObj.element;
             done();
         });
 
@@ -129,7 +120,6 @@ describe('RTE CR issues', () => {
     });
     describe('EJ2-18212 - RTE - Edited changes are not reflect using getHTML method through console window.', () => {
         let rteObj: RichTextEditor;
-        let rteEle: HTMLElement;
         beforeAll((done: Function) => {
             rteObj = renderRTE({
                 toolbarSettings: {
@@ -138,7 +128,6 @@ describe('RTE CR issues', () => {
                 value: `<div><p>First p node-0</p></div>`,
                 placeholder: 'Type something'
             });
-            rteEle = rteObj.element;
             rteObj.saveInterval = 100;
             rteObj.dataBind();
             done();
@@ -571,7 +560,6 @@ describe('RTE CR issues', () => {
             expect(((rteObj as any).inputElement as HTMLElement).style.fontFamily === '').toBe(true);
         });
 
-
         afterEach(() => {
             destroy(rteObj);
         });
@@ -594,7 +582,6 @@ describe('RTE CR issues', () => {
             let form: FormValidator;
             let editNode: HTMLElement;
             let containerEle: HTMLElement;
-            let formEle: HTMLElement;
             let onChange: jasmine.Spy;
             beforeEach((done: Function) => {
                 containerEle = document.createElement('div');
@@ -619,7 +606,6 @@ describe('RTE CR issues', () => {
                         }
                     }
                 });
-                formEle = document.getElementById("form-element");
                 done();
             })
             afterEach((done: Function) => {
@@ -698,6 +684,7 @@ describe('RTE CR issues', () => {
             done();
         });
     });
+
     L10n.load({
         'de-DE': {
             'richtexteditor': {
@@ -840,13 +827,11 @@ describe('RTE CR issues', () => {
     describe('EJ2-29347 - RTE base refresh method testing', () => {
         let rteObj: RichTextEditor;
         let rteEle: HTMLElement;
-        let controlId: string;
         beforeEach((done: Function) => {
             rteObj = renderRTE({
                 value: '<p>Syncfusion</p>'
             });
             rteEle = rteObj.element;
-            controlId = rteEle.id;
             done();
         });
         it(' Check the alignments dropdown items ', (done) => {
@@ -908,5 +893,4 @@ describe('RTE CR issues', () => {
             expect(rteObj.getCharCount()).toBe(10);
         });
     });
-
-})
+});

@@ -366,18 +366,6 @@ export interface ITableNotifyArgs {
     self?: Table;
 }
 
-export interface ItemClickEventArgs {
-    /** Defines the current Toolbar Item Object. */
-    item: ItemModel;
-    /** 
-     * Defines the current Event arguments. 
-     * @blazorType MouseEventArgs
-     */
-    originalEvent: Event;
-    /** Defines the prevent action. */
-    cancel?: boolean;
-}
-
 export interface IEditorModel {
     execCommand?: Function;
     observer?: Observer;

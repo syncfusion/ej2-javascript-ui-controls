@@ -70,6 +70,12 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     @Property(false)
     public enableCsp: boolean;
     /**
+     * Gets or set a value indicating whether comment is enabled or not
+     * @default false
+     */
+    @Property(false)
+    public enableComment: boolean;
+    /**
      * Triggers when the component is created
      * @event
      * @blazorproperty 'Created'
@@ -432,6 +438,14 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                 case 'enableRtl':
                     this.refresh();
                     break;
+                case 'enableComment':
+                    if (this.documentEditor) {
+                        this.documentEditor.enableComment = newModel.enableComment;
+                    }
+                    if (this.toolbarModule) {
+                        this.toolbarModule.enableDisableInsertComment(newModel.enableComment);
+                    }
+                    break;
             }
         }
     }
@@ -451,6 +465,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     protected render(): void {
         if (this.toolbarModule) {
             this.toolbarModule.initToolBar();
+            this.toolbarModule.enableDisableInsertComment(this.enableComment);
         }
         if (this.element.getBoundingClientRect().height < 320) {
             this.element.style.height = '320px';
@@ -565,6 +580,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             acceptTab: true,
             zIndex: this.zIndex,
             enableLocalPaste: this.enableLocalPaste,
+            enableComment: this.enableComment,
             pageOutline: '#E0E0E0'
         });
         this.documentEditor.enableAllModules();
@@ -580,7 +596,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     }
     private onCommentEnd(): void {
         if (this.toolbarModule) {
-            this.toolbarModule.enableDisableInsertComment(true);
+            this.toolbarModule.enableDisableInsertComment(true && this.enableComment);
         }
     }
     private onBeforePaneSwitch(args: BeforePaneSwitchEventArgs): void {
@@ -736,6 +752,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             }
         }
         this.previousContext = this.documentEditor.selection.contextType;
+        if (this.toolbarModule.toolbar) {
+            this.toolbarModule.enableDisableInsertComment(!this.documentEditor.enableHeaderAndFooter && this.enableComment);
+        }
     }
     /**
      * @private

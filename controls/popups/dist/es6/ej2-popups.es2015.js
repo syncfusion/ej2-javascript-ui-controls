@@ -1573,6 +1573,7 @@ const DLG_UTIL_CONFIRM = 'e-confirm-dialog';
 const DLG_RESIZABLE = 'e-dlg-resizable';
 const DLG_RESTRICT_LEFT_VALUE = 'e-restrict-left';
 const DLG_RESTRICT_WIDTH_VALUE = 'e-resize-viewport';
+const DLG_REF_ELEMENT = 'e-dlg-ref-element';
 /**
  * Represents the dialog component that displays the information and get input from the user.
  * Two types of dialog components are `Modal and Modeless (non-modal)` depending on its interaction with parent application.
@@ -1861,6 +1862,11 @@ let Dialog = class Dialog extends Component {
         if (this.isBlazorServerRender() && isNullOrUndefined(this.dlgContainer)) {
             this.dlgContainer = this.element.parentElement;
             this.dlgOverlay = this.element.parentElement.getElementsByClassName('e-dlg-overlay')[0];
+        }
+        if (this.element.classList.contains(DLG_UTIL_ALERT) !== true && this.element.classList.contains(DLG_UTIL_CONFIRM) !== true) {
+            let parentEle = this.isModal ? this.dlgContainer.parentElement : this.element.parentElement;
+            this.refElement = this.createElement('div', { className: DLG_REF_ELEMENT });
+            parentEle.insertBefore(this.refElement, (this.isModal ? this.dlgContainer : this.element));
         }
         if (!isNullOrUndefined(this.targetEle)) {
             this.isModal ? this.targetEle.appendChild(this.dlgContainer) : this.targetEle.appendChild(this.element);
@@ -2521,8 +2527,12 @@ let Dialog = class Dialog extends Component {
      * @memberof dialog
      */
     destroy() {
-        let classArray = [RTL, MODAL_DLG, DLG_RESIZABLE, DLG_RESTRICT_LEFT_VALUE];
+        let classArray = [RTL, MODAL_DLG, DLG_RESIZABLE, DLG_RESTRICT_LEFT_VALUE, FULLSCREEN, DEVICE];
         let attrs = ['role', 'aria-modal', 'aria-labelledby', 'aria-describedby', 'aria-grabbed', 'tabindex', 'style'];
+        removeClass([this.targetEle], [DLG_TARGET, SCROLL_DISABLED]);
+        if (this.element.classList.contains(FULLSCREEN)) {
+            removeClass([document.body], [DLG_TARGET, SCROLL_DISABLED]);
+        }
         if (this.isModal) {
             removeClass([(!isNullOrUndefined(this.targetEle) ? this.targetEle : document.body)], SCROLL_DISABLED);
         }
@@ -2541,6 +2551,11 @@ let Dialog = class Dialog extends Component {
         removeClass([this.element], classArray);
         if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
             removeClass([this.element], this.cssClass.split(' '));
+        }
+        if (!isNullOrUndefined(this.refElement)) {
+            this.refElement.parentElement.insertBefore((this.isModal ? this.dlgContainer : this.element), this.refElement);
+            detach(this.refElement);
+            this.refElement = undefined;
         }
         if (this.isModal && !this.isBlazorServerRender()) {
             detach(this.dlgOverlay);
@@ -2589,7 +2604,7 @@ let Dialog = class Dialog extends Component {
         if (this.isModal) {
             EventHandler.remove(this.dlgOverlay, 'click', this.dlgOverlayClickEventHandler);
         }
-        if (!isNullOrUndefined(this.buttons[0].buttonModel) && this.footerTemplate === '') {
+        if (this.buttons.length > 0 && !isNullOrUndefined(this.buttons[0].buttonModel) && this.footerTemplate === '') {
             for (let i = 0; i < this.buttons.length; i++) {
                 if (typeof (this.buttons[i].click) === 'function') {
                     EventHandler.remove(this.ftrTemplateContent.children[i], 'click', this.buttons[i].click);

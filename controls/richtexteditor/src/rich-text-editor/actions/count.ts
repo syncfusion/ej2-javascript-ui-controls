@@ -32,6 +32,7 @@ export class Count {
     private initializeInstance(): void {
         this.contentRenderer = this.renderFactory.getRenderer(RenderType.Content);
         this.editPanel = this.contentRenderer.getEditPanel();
+        this.addEventListener();
     }
 
     /**
@@ -87,6 +88,9 @@ export class Count {
      * @deprecated
      */
     public destroy(): void {
+        if (this.element && !isNullOrUndefined(document.querySelector('.' + CLS_COUNT))) {
+            detach(this.element);
+        }
         this.removeEventListener();
     }
 
@@ -97,23 +101,18 @@ export class Count {
 
     protected addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
-        if (this.parent.showCharCount) {
-            this.parent.on(events.initialEnd, this.renderCount, this);
-            this.parent.on(events.keyUp, this.refresh, this);
-            this.parent.on(events.count, this.refresh, this);
-            this.parent.on(events.refreshBegin, this.refresh, this);
-            this.parent.on(events.mouseDown, this.refresh, this);
-            this.parent.on(events.destroy, this.destroy, this);
-            this.parent.on(events.sourceCode, this.toggle, this);
-            this.parent.on(events.updateSource, this.toggle, this);
-        }
+        this.parent.on(events.initialEnd, this.renderCount, this);
+        this.parent.on(events.keyUp, this.refresh, this);
+        this.parent.on(events.count, this.refresh, this);
+        this.parent.on(events.refreshBegin, this.refresh, this);
+        this.parent.on(events.mouseDown, this.refresh, this);
+        this.parent.on(events.destroy, this.destroy, this);
+        this.parent.on(events.sourceCode, this.toggle, this);
+        this.parent.on(events.updateSource, this.toggle, this);
     }
 
     protected removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
-        if (this.element) {
-            detach(this.element);
-        }
         this.parent.off(events.initialEnd, this.renderCount);
         this.parent.off(events.keyUp, this.refresh);
         this.parent.off(events.refreshBegin, this.refresh);

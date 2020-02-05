@@ -1,12 +1,9 @@
-import { Toolbar, HtmlEditor, RichTextEditor, Link, Image, QuickToolbar } from './../../../../src/index';
-import { renderRTE, destroy } from './../../render.spec';
-import { isNullOrUndefined, detach } from '@syncfusion/ej2-base';
-
-RichTextEditor.Inject(HtmlEditor);
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(Link);
-RichTextEditor.Inject(Image);
-RichTextEditor.Inject(QuickToolbar);
+/**
+ * htmlAttributes spec
+ */
+import { detach } from '@syncfusion/ej2-base';
+import { RichTextEditor } from './../../../../src/index';
+import { renderRTE } from './../../render.spec';
 
 describe('RTE BASIC PROPERTIES - htmlAttributes - ', () => {
 
@@ -30,5 +27,4 @@ describe('RTE BASIC PROPERTIES - htmlAttributes - ', () => {
             });
         });
     });
-
 });

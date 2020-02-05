@@ -7,7 +7,6 @@
 
     div.e-icons {
       font-size: $pager-bigger-icon-font-size;
-      vertical-align: $pager-bigger-icons-align;
     }
 
     div.e-parentmsgbar {
@@ -32,8 +31,7 @@
     }
 
     &.e-rtl .e-pagercontainer {
-      margin: $pager-bigger-container-rtl-margin;
-      margin-top: $pager-bigger-rtl-pagercontainer-margin-top;
+      margin: $pager-bigger-new-container-rtl-margin;
 	}
 
     @media (max-width: 769px) {

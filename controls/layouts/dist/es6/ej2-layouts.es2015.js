@@ -305,7 +305,7 @@ let Splitter = class Splitter extends Component {
             this.checkPaneSize(event);
             this.triggerResizing(event);
         }
-        else if (event.keyCode === 13 && this.paneSettings[index].collapsible) {
+        else if (event.keyCode === 13 && this.paneSettings[index].collapsible && document.activeElement.classList.contains(SPLIT_BAR)) {
             if (!this.previousPane.classList.contains(COLLAPSE_PANE)) {
                 this.collapse(index);
                 addClass([this.currentSeparator], SPLIT_BAR_ACTIVE);
@@ -1900,6 +1900,8 @@ let Splitter = class Splitter extends Component {
         this.allPanes.splice(index, 1);
         this.removePaneOrders(elementClass);
         this.updatePanes();
+        this.paneSettings.splice(index, 1);
+        this.setProperties({ 'paneSettings': this.paneSettings }, true);
         if (this.allPanes.length > 0) {
             this.allPanes[this.allPanes.length - 1].classList.remove(STATIC_PANE);
         }
@@ -2289,7 +2291,8 @@ let DashboardLayout = class DashboardLayout extends Component {
                 }
             }
             catch (error) {
-                return compile(template);
+                let sanitizedValue = SanitizeHtmlHelper.sanitize(template);
+                return compile((this.enableHtmlSanitizer && typeof (template) === 'string') ? sanitizedValue : template);
             }
         }
         return undefined;
@@ -4622,6 +4625,7 @@ let DashboardLayout = class DashboardLayout extends Component {
     /**
      * Gets the properties to be maintained upon browser refresh.
      * @returns string
+     * @private
      */
     getPersistData() {
         let keyEntity = ['panels'];
@@ -4645,6 +4649,9 @@ __decorate$1([
 __decorate$1([
     Property(true)
 ], DashboardLayout.prototype, "allowPushing", void 0);
+__decorate$1([
+    Property(true)
+], DashboardLayout.prototype, "enableHtmlSanitizer", void 0);
 __decorate$1([
     Property(true)
 ], DashboardLayout.prototype, "allowFloating", void 0);

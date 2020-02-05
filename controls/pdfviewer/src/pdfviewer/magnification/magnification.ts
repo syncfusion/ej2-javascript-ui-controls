@@ -391,6 +391,11 @@ export class Magnification {
         if (this.pdfViewer.textSelectionModule) {
             this.pdfViewer.textSelectionModule.resizeTouchElements();
         }
+        // tslint:disable-next-line
+        let annotModule: any = this.pdfViewer.annotationModule;
+        if (annotModule && annotModule.textMarkupAnnotationModule) {
+            this.pdfViewer.annotationModule.textMarkupAnnotationModule.updateCurrentResizerPosition();
+        }
         if (this.pdfViewerBase.pageSize.length > 0) {
             // tslint:disable-next-line:max-line-length
             this.pdfViewerBase.pageContainer.style.height = this.topValue + this.pdfViewerBase.getPageHeight(this.pdfViewerBase.pageSize.length - 1) + 'px';

@@ -1,11 +1,13 @@
-import { InsertHtml } from '../../../src/editor-manager/plugin/inserthtml';
+/**
+ * Insert Text spec document
+ */
+import { detach } from '@syncfusion/ej2-base';
 import { NodeSelection } from '../../../src/selection/index';
 import { EditorManager } from '../../../src/editor-manager/index';
-/**
- * Selection spec document
- */
+
 describe('Insert text', () => {
     //HTML value
+    let divElement: HTMLDivElement;
     let innervalue: string = `
         <div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner">
         <p id="pnode1">Sample</p>
@@ -19,17 +21,16 @@ describe('Insert text', () => {
     let editorObj: EditorManager;
     beforeEach(() => {
         //DIV Element
-        let divElement: HTMLDivElement = document.createElement('div');
+        divElement = document.createElement('div');
         divElement.innerHTML = innervalue;
         document.body.appendChild(divElement);
         editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
     });
     afterEach(() => {
-        document.body.innerHTML = '';
+        detach(divElement);
     });
 
     // insert text
-
     it('Insert text in  cursor position', () => {
         let node1: Node = document.getElementById('pnode1');
         let text1: Node = node1.childNodes[0];
@@ -64,6 +65,4 @@ describe('Insert text', () => {
         }, "<p>RichTextEditor</p>");
         expect(requestType === "InsertText").toBe(true);
     });
-
-
 });

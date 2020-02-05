@@ -140,7 +140,7 @@ export class AccumulationTooltip extends BaseTooltip {
 
     private getTooltipText(data : AccPointData, tooltip: TooltipSettingsModel) : string {
         let series: AccumulationSeries = data.series;
-        let format: string = this.accumulation.useGroupingSeparator ? '${point.x} : <b>${point.label}</b>'
+        let format: string = this.accumulation.useGroupingSeparator ? '${point.x} : <b>${point.separatorY}</b>'
         : '${point.x} : <b>${point.y}</b>';
         format = tooltip.format ? tooltip.format : format;
         return this.parseTemplate(data.point, series, format);

@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 17.4.47 (2020-02-05)
+
+### Maps
+
+#### Bug Fixes
+
+- `#244109`  - Zooming will not be maintained properly when the sublayers are added to the Maps control.
+
 ## 17.4.46 (2020-01-30)
 
 ### Maps

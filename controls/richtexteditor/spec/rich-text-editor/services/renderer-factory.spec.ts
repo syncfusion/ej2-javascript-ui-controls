@@ -9,14 +9,12 @@ import { renderRTE, destroy } from './../render.spec';
 describe('RendererFactory module', () => {
     describe('Register and get service', () => {
         let rteObj: RichTextEditor;
-        let elem: HTMLElement;
         beforeAll(() => {
             rteObj = renderRTE({
                 toolbarSettings: {
                     enable: false
                 }
             });
-            elem = rteObj.element;
         });
 
         it('Check fallback', () => {
@@ -27,5 +25,4 @@ describe('RendererFactory module', () => {
             destroy(rteObj);
         });
     });
-
 });

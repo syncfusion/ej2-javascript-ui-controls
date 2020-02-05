@@ -1,9 +1,8 @@
 /**
  * RTE - CSS related spec
  */
-import { RichTextEditor, Toolbar, HtmlEditor, MarkdownEditor } from "../../src/rich-text-editor/index";
+import { RichTextEditor } from "../../src/rich-text-editor/index";
 import { renderRTE, destroy } from "./../rich-text-editor/render.spec";
-RichTextEditor.Inject(HtmlEditor, MarkdownEditor, Toolbar);
 
 describe("RichTextEditor Styles changes", () => {
     let styleEle: HTMLLinkElement = document.createElement('link');
@@ -27,8 +26,7 @@ describe("RichTextEditor Styles changes", () => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
             rteObj = renderRTE({
                 toolbarSettings: {
-                    items: [ "Bold",
-                            "FullScreen" ]
+                    items: [ "Bold", "FullScreen" ]
                 }
             });
             rteEle = rteObj.element;
@@ -47,7 +45,6 @@ describe("RichTextEditor Styles changes", () => {
                 expect(window.getComputedStyle(rteEle.querySelector('.e-rte-content')).height).not.toEqual('100%');
                 done();
             }, 2000);
-           
         });
     });
 });

@@ -725,6 +725,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 width: '100%',
                 enableRtl: isRtl,
                 value: new Date(fValue as string),
+                locale: this.parent.locale,
             },
             options.column.filter.params));
         this.datePicker.appendTo(inputValue);
@@ -741,6 +742,7 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 width: '100%',
                 enableRtl: isRtl,
                 value: new Date(fValue as string),
+                locale: this.parent.locale,
             },
             options.column.filter.params));
         this.dateTimePicker.appendTo(inputValue);
@@ -757,7 +759,8 @@ export class ExcelFilterBase extends CheckBoxFilterBase {
                 format: options.format as string,
                 placeholder: this.getLocalizedLabel('CustomFilterPlaceHolder'),
                 enableRtl: isRtl,
-                value: fValue as number
+                value: fValue as number,
+                locale: this.parent.locale,
             },
             options.column.filter.params));
         this.numericTxtObj.appendTo(inputValue);

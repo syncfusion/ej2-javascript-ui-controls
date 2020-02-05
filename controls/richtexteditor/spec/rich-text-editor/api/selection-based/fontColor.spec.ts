@@ -1,21 +1,16 @@
-import { Toolbar, HtmlEditor, RichTextEditor, Count, Link, Image, QuickToolbar } from './../../../../src/index';
-import { renderRTE, destroy, dispatchEvent, setCursorPoint } from './../../render.spec';
-import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
-
-RichTextEditor.Inject(HtmlEditor);
-RichTextEditor.Inject(Toolbar);
-RichTextEditor.Inject(Link);
-RichTextEditor.Inject(Count);
-RichTextEditor.Inject(Image);
-RichTextEditor.Inject(QuickToolbar);
+/**
+ * Font color spec
+ */
+import { isNullOrUndefined, detach } from '@syncfusion/ej2-base';
+import { RichTextEditor } from './../../../../src/index';
+import { renderRTE, destroy, dispatchEvent } from './../../render.spec';
 
 describe('RTE SELECTION BASED - fontColor - ', () => {
 
     describe(' Default value  - ', () => {
         let rteObj: RichTextEditor;
         beforeAll((done: Function) => {
-            rteObj = renderRTE({
-            });
+            rteObj = renderRTE({ });
             done();
         })
         afterAll((done: Function) => {
@@ -83,7 +78,6 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
         describe(' change the fontColor.colorCode - ', () => {
             let rteObj: RichTextEditor;
             let controlId: string;
-            let toolbar: HTMLElement;
             beforeAll((done: Function) => {
                 rteObj = renderRTE({
                     value: '<p id="rte">RTE</p>',
@@ -98,7 +92,6 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
                 };
                 rteObj.dataBind();
                 controlId = rteObj.element.id;
-                toolbar = rteObj.element.querySelector('.e-rte-toolbar');
                 done();
             });
             afterAll((done: Function) => {
@@ -331,7 +324,6 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
         describe(' destroy method - ', () => {
             let rteObj: RichTextEditor;
             let controlId: string;
-            let element: HTMLElement;
 
             beforeAll((done: Function) => {
                 rteObj = renderRTE({
@@ -347,11 +339,10 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
                     }
                 });
                 controlId = rteObj.element.id;
-                element = rteObj.element;
                 done();
             });
             afterAll((done: Function) => {
-                detach(element);
+                detach(rteObj.element);
                 done();
             })
             it(' Test the colorPicker element after destroy the component ', () => {
@@ -363,7 +354,6 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
         describe(' refresh method - ', () => {
             let rteObj: RichTextEditor;
             let controlId: string;
-            let element: HTMLElement;
 
             beforeAll((done: Function) => {
                 rteObj = renderRTE({
@@ -379,11 +369,10 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
                     }
                 });
                 controlId = rteObj.element.id;
-                element = rteObj.element;
                 done();
             });
             afterAll((done: Function) => {
-                detach(element);
+                destroy(rteObj);
                 done();
             })
             it(' Test the colorPicker element after refresh the component ', (done) => {

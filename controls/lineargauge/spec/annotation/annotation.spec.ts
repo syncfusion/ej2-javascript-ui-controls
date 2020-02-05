@@ -148,8 +148,9 @@ describe('Linear gauge control', () => {
 
         it('set annotation value in horizontal ', (): void => {
             let content: string = '<div id="annotation2">Gauge</div>';
+            gauge.loaded = (args: ILoadedEventArgs): void => {}
             gauge.orientation = 'Horizontal';
-            gauge.setAnnotationValue(0, content);
+            gauge.setAnnotationValue(0, content);     
         });
 
         it('set annotation value with null ', (): void => {

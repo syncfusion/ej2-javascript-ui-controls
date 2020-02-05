@@ -685,6 +685,125 @@ describe('Circular-Gauge Control', () => {
             gauge.refresh();
         });
     });
+
+    describe('Checking range position with position property', () => {
+        let gauge: CircularGauge;
+        let ele: HTMLElement;
+        let svg: HTMLElement;
+        let location: GaugeLocation;
+        let value: string[] | string | number;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'container' });
+            document.body.appendChild(ele);
+            gauge = new CircularGauge({
+                axes: [{
+                    ranges : [
+                        {
+                            start: 0, end: 40, startWidth: 10, endWidth: 30, offset: "0%"
+                        }
+                    ]
+                }]
+            });
+            gauge.appendTo('#container');
+        });
+        afterAll((): void => {
+            gauge.destroy();
+            ele.remove();
+        });
+        it('Checking with default axis range radius', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[1] == '311.3076893283069' || value[1] == '305.8076893283069').toBe(true);
+                expect(value[5]).toBe('214');
+                expect(value[9] == '271.0972774540941' || value[9] == '265.5972774540941').toBe(true);
+                done();
+            };
+            gauge.refresh();
+        });
+
+        it('Checking range position of inside', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[1] == '311.64970947163255' || value[1] == '306.14970947163255').toBe(true);
+                expect(value[5]).toBe('213');
+                expect(value[9] == '271.62719671832735' || value[9] == '266.12719671832735').toBe(true);
+                done();
+            };
+            gauge.axes[0].ranges[0].position = 'Inside';
+            gauge.refresh();
+        });
+
+        it('Checking range position of outside', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[1] == '310.9656691849812' || value[1] == '305.4656691849812').toBe(true);
+                expect(value[5]).toBe('215');
+                expect(value[9] == '270.5673581898609' || value[9] == '265.0673581898609').toBe(true);
+                done();
+            };
+            gauge.axes[0].ranges[0].position = 'Outside';
+            gauge.refresh();
+        });
+
+        it('Checking range position of Cross', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[1] == '309.59758861167853' || value[1] == '304.09758861167853').toBe(true);
+                expect(value[5]).toBe('224');
+                expect(value[9] == '263.14848849059604' || value[9] == '257.64848849059604').toBe(true);
+                done();
+            };
+            gauge.axes[0].ranges[0].position = 'Cross';
+            gauge.refresh();
+        });
+
+        it('Checking range position of cross with offset in percentage', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[1] == '324.23605074601716' || value[1] == '318.73605074601716').toBe(true);
+                expect(value[5]).toBe('181.2');
+                expect(value[9] == '285.8290329997772' || value[9] == '280.3290329997772').toBe(true);
+                done();
+            };
+            gauge.axes[0].ranges[0].position = 'Cross';
+            gauge.axes[0].ranges[0].offset = '20%';
+            gauge.refresh();
+        });
+
+        it('Checking range position of cross with offset as number', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[1] == '304.1252663184679' || value[1] == '298.6252663184679').toBe(true);
+                expect(value[5]).toBe('235');
+                expect(value[9] == '259.96897290519684' || value[9] == '254.46897290519684').toBe(true);
+                done();
+            };
+            gauge.axes[0].ranges[0].position = 'Outside';
+            gauge.axes[0].ranges[0].offset = 20;
+            gauge.refresh();
+        });
+
+        it('Checking range position of cross with offset in pixel', (done: Function) => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Range_0');
+                value = svg.getAttribute('d').split(' ');
+                expect(value[1] == '318.49011233814593' || value[1] == '312.99011233814593').toBe(true);
+                expect(value[5]).toBe('193');
+                expect(value[9] == '282.2255820029914' || value[9] == '276.7255820029914').toBe(true);
+                done();
+            };
+            gauge.axes[0].ranges[0].position = 'Inside';
+            gauge.axes[0].ranges[0].offset = '20px';
+            gauge.refresh();
+        });
+    });
+
     it('memory leak', () => {     
         profile.sample();
         let average: any = inMB(profile.averageChange)

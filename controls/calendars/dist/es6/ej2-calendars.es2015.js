@@ -408,6 +408,12 @@ let CalendarBase = class CalendarBase extends Component {
             }
         }
     }
+    checkDeviceMode(ref) {
+        if (Browser.isDevice && isBlazor() && ref) {
+            // tslint:disable-next-line
+            ref.invokeMethodAsync('OnDevice', true);
+        }
+    }
     // tslint:disable-next-line:max-func-body-length
     keyActionHandle(e, value, multiSelection) {
         if (isBlazor() && this.blazorRef) {
@@ -3445,7 +3451,8 @@ let DatePicker = class DatePicker extends Calendar {
         this.isPopupClicked = false;
     }
     documentHandler(e) {
-        if ((!isNullOrUndefined(this.popupObj) && this.inputWrapper.container.contains(e.target)) && e.type !== 'touchstart') {
+        if ((!isNullOrUndefined(this.popupObj) && (this.inputWrapper.container.contains(e.target) ||
+            (this.popupObj.element && this.popupObj.element.contains(e.target)))) && e.type !== 'touchstart') {
             e.preventDefault();
         }
         let target = e.target;
@@ -10568,11 +10575,11 @@ let TimePicker = class TimePicker extends Component {
         append([this.listTag], this.listWrapper);
     }
     documentClickHandler(event) {
-        if ((!isNullOrUndefined(this.popupObj) && this.inputWrapper.container.contains(event.target)) &&
-            event.type !== 'touchstart') {
+        let target = event.target;
+        if ((isNullOrUndefined(this.popupObj) && this.inputWrapper.container.contains(target) || (this.popupObj.element
+            && this.popupObj.element.contains(target))) && event.type !== 'touchstart') {
             event.preventDefault();
         }
-        let target = event.target;
         if (!(closest(target, '#' + this.popupObj.element.id)) && target !== this.inputElement
             && target !== (this.inputWrapper && this.inputWrapper.buttons[0]) &&
             target !== (this.inputWrapper && this.inputWrapper.clearButton) &&
@@ -10585,10 +10592,6 @@ let TimePicker = class TimePicker extends Component {
         else if (target !== this.inputElement) {
             if (!Browser.isDevice) {
                 this.isPreventBlur = (Browser.isIE || Browser.info.name === 'edge') && (document.activeElement === this.inputElement);
-                if ((!isNullOrUndefined(this.popupObj) && this.inputWrapper.container.contains(event.target)) &&
-                    event.type !== 'touchstart') {
-                    event.preventDefault();
-                }
             }
         }
     }

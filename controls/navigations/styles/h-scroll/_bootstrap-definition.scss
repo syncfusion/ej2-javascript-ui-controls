@@ -34,9 +34,9 @@ $hscroll-default-icon-color: $grey-light-font !default;
 $hscroll-hover-bg: $grey-e6 !default;
 $hscroll-press-bg: $grey-e6 !default;
 $hscroll-default-border: $grey-cc !default;
-$hscroll-focus-border: '' !default;
-$hscroll-active-border: '' !default;
-$hscroll-hover-border: '' !default;
+$hscroll-focus-border: 0 !default;
+$hscroll-active-border: 0 !default;
+$hscroll-hover-border: 0 !default;
 $hscroll-hover-border-color: '' !default;
 $hscroll-active-box-shadow: inset 0 3px 5px rgba(0 , 0 , 0 , .125) !default;
 

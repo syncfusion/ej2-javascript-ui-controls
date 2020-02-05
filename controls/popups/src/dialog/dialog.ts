@@ -144,6 +144,7 @@ const DLG_UTIL_CONFIRM: string = 'e-confirm-dialog';
 const DLG_RESIZABLE: string = 'e-dlg-resizable';
 const DLG_RESTRICT_LEFT_VALUE: string = 'e-restrict-left';
 const DLG_RESTRICT_WIDTH_VALUE: string = 'e-resize-viewport';
+const DLG_REF_ELEMENT: string = 'e-dlg-ref-element';
 
 export interface BeforeOpenEventArgs {
     /**
@@ -366,6 +367,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     private calculatezIndex: boolean;
     private allowMaxHeight: boolean;
     private preventVisibility: boolean;
+    private refElement: HTMLElement;
     /**
      * Specifies the value that can be displayed in dialog's content area.
      * It can be information, list, or other HTML elements.
@@ -902,6 +904,11 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             this.dlgContainer = this.element.parentElement;
             this.dlgOverlay = this.element.parentElement.getElementsByClassName('e-dlg-overlay')[0] as HTMLElement;
         }
+        if (this.element.classList.contains(DLG_UTIL_ALERT) !== true && this.element.classList.contains(DLG_UTIL_CONFIRM) !== true) {
+            let parentEle: HTMLElement = this.isModal ? this.dlgContainer.parentElement : this.element.parentElement;
+            this.refElement = this.createElement('div', { className: DLG_REF_ELEMENT });
+            parentEle.insertBefore(this.refElement, (this.isModal ? this.dlgContainer : this.element));
+        }
         if (!isNullOrUndefined(this.targetEle)) {
             this.isModal ? this.targetEle.appendChild(this.dlgContainer) : this.targetEle.appendChild(this.element);
         }
@@ -919,40 +926,26 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     target: this.target,
                     preventFocus: false
                 };
-                if (this.enableResize) {
-                    this.getMinHeight();
-                }
+                if (this.enableResize) { this.getMinHeight(); }
                 this.trigger('open', eventArgs, (openEventArgs: {[key: string]: object} ) => {
-                    if (!openEventArgs.preventFocus) {
-                        this.focusContent();
-                    }
+                    if (!openEventArgs.preventFocus) { this.focusContent(); }
                 });
             },
             close: (event: Event) => {
-                if (this.isModal) {
-                    addClass([this.dlgOverlay], 'e-fade');
-                }
+                if (this.isModal) { addClass([this.dlgOverlay], 'e-fade'); }
                 this.unBindEvent(this.element);
-                if (this.isModal) {
-                    this.dlgContainer.style.display = 'none';
-                }
+                if (this.isModal) { this.dlgContainer.style.display = 'none'; }
                 this.trigger('close', this.closeArgs);
                 let activeEle: HTMLElement = document.activeElement as HTMLElement;
-                if (!isNullOrUndefined(activeEle) && !isNullOrUndefined((activeEle).blur)) {
-                    activeEle.blur();
-                }
-                if (!isNullOrUndefined(this.storeActiveElement)) {
-                    this.storeActiveElement.focus();
-                }
+                if (!isNullOrUndefined(activeEle) && !isNullOrUndefined((activeEle).blur)) { activeEle.blur(); }
+                if (!isNullOrUndefined(this.storeActiveElement)) { this.storeActiveElement.focus(); }
             }
         });
         this.positionChange();
         this.setEnableRTL();
         if (!this.isBlazorServerRender()) {
             addClass([this.element], DLG_HIDE);
-            if (this.isModal) {
-                this.setOverlayZindex();
-            }
+            if (this.isModal) { this.setOverlayZindex(); }
         }
         if (this.visible) {
             this.show();
@@ -1499,8 +1492,12 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * @memberof dialog
      */
     public destroy(): void {
-        let classArray: string[] = [RTL, MODAL_DLG, DLG_RESIZABLE, DLG_RESTRICT_LEFT_VALUE];
+        let classArray: string[] = [RTL, MODAL_DLG, DLG_RESIZABLE, DLG_RESTRICT_LEFT_VALUE, FULLSCREEN, DEVICE];
         let attrs: string[] = ['role', 'aria-modal', 'aria-labelledby', 'aria-describedby', 'aria-grabbed', 'tabindex', 'style'];
+        removeClass([this.targetEle], [DLG_TARGET , SCROLL_DISABLED]);
+        if (this.element.classList.contains(FULLSCREEN)) {
+            removeClass([document.body], [DLG_TARGET , SCROLL_DISABLED]);
+        }
         if (this.isModal) {
             removeClass([(!isNullOrUndefined(this.targetEle) ? this.targetEle : document.body)], SCROLL_DISABLED);
         }
@@ -1516,6 +1513,11 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
         removeClass([this.element], classArray);
         if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') { removeClass([this.element], this.cssClass.split(' ')); }
+        if (!isNullOrUndefined(this.refElement)) {
+            this.refElement.parentElement.insertBefore((this.isModal ? this.dlgContainer : this.element), this.refElement);
+            detach(this.refElement);
+            this.refElement = undefined;
+        }
         if (this.isModal && !this.isBlazorServerRender()) {
             detach(this.dlgOverlay);
             this.dlgContainer.parentNode.insertBefore(this.element, this.dlgContainer);
@@ -1563,7 +1565,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.isModal) {
             EventHandler.remove(this.dlgOverlay, 'click', this.dlgOverlayClickEventHandler);
         }
-        if (!isNullOrUndefined(this.buttons[0].buttonModel) && this.footerTemplate === '') {
+        if (this.buttons.length > 0 && !isNullOrUndefined(this.buttons[0].buttonModel) && this.footerTemplate === '') {
             for (let i: number = 0; i < this.buttons.length; i++) {
                 if (typeof (this.buttons[i].click) === 'function') {
                     EventHandler.remove(this.ftrTemplateContent.children[i], 'click', this.buttons[i].click);

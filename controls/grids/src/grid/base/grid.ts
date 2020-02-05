@@ -1104,6 +1104,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**    
      * Configures the infinite scroll settings.  
      * @default { enableScroll: false, enableCache: false, maxBlock: 5, initialBlocks: 5 }    
+     * @deprecated
      */
     @Complex<InfiniteScrollSettingsModel>({}, InfiniteScrollSettings)
     public infiniteScrollSettings: InfiniteScrollSettingsModel;
@@ -2668,7 +2669,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     requireGridRefresh = true;
                     break;
                 case 'query':
-                    requireRefresh = true; break;
+                    if (!this.getDataModule().isQueryInvokedFromData) {
+                        requireRefresh = true;
+                    }
+                    this.getDataModule().isQueryInvokedFromData = false;
+                    break;
                 default:
                     this.extendedPropertyChange(prop, newProp, requireGridRefresh);
             }

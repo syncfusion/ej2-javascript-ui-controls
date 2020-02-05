@@ -43,7 +43,7 @@ $menu-seperator-border-color: $gray-200 !default;
 $menu-selected-color: darken($primary, 15%) !default;
 $menu-sub-ul-bgcolor: $primary-font !default;
 $menu-sub-li-border-color: $gray-100 !default;
-$menu-ul-bgcolor: none !default;
+$menu-ul-bgcolor: transparent !default;
 $menu-ul-border: none !default;
 $menu-li-hover-outline: 0 solid $menu-li-border-color !default;
 $menu-li-selected-outline-offset: 0 !default;

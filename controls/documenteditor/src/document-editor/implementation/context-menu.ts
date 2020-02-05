@@ -698,9 +698,11 @@ export class ContextMenu {
         let isSelectionEmpty: boolean = selection.isEmpty;
         classList(cut, isSelectionEmpty ? ['e-disabled'] : [], !isSelectionEmpty ? ['e-disabled'] : []);
         classList(copy, isSelectionEmpty ? ['e-disabled'] : [], !isSelectionEmpty ? ['e-disabled'] : []);
-        addComment.style.display = this.viewer.owner.isReadOnlyMode ? 'none' : 'block';
-        (addComment.previousSibling as HTMLElement).style.display = this.viewer.owner.isReadOnlyMode ? 'none' : 'block';
-        (addComment.nextSibling as HTMLElement).style.display = this.viewer.owner.isReadOnlyMode ? 'none' : 'block';
+        // tslint:disable-next-line:max-line-length
+        let isHideComment: boolean = this.viewer.owner.isReadOnlyMode || this.viewer.owner.enableHeaderAndFooter || !this.viewer.owner.enableComment;
+        addComment.style.display = isHideComment ? 'none' : 'block';
+        (addComment.previousSibling as HTMLElement).style.display = isHideComment ? 'none' : 'block';
+        (addComment.nextSibling as HTMLElement).style.display = isHideComment ? 'none' : 'block';
         if (owner.isReadOnlyMode) {
             return true;
         }

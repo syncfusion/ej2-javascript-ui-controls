@@ -76,7 +76,8 @@ export class ColumnBase {
     private findRectPosition(seriesCollection: Series[]): void {
         let stackingGroup: string[] = [];
         let vSeries: RectPosition = { rectCount: 0, position: null };
-        seriesCollection.forEach((value: Series) => {
+        for (let i : number = 0; i < seriesCollection.length; i++) {
+            let value: Series = seriesCollection[i];
             if (value.type.indexOf('Stacking') !== -1) {
                 if (value.stackingGroup) {
                     if (stackingGroup[value.stackingGroup] === undefined) {
@@ -96,10 +97,11 @@ export class ColumnBase {
             } else {
                 value.position = vSeries.rectCount++;
             }
-        });
-        seriesCollection.forEach((value: Series) => {
-            value.rectCount = vSeries.rectCount;
-        });
+        }
+        for (let i : number = 0; i < seriesCollection.length; i++) {
+        let value: Series = seriesCollection[i];
+        value.rectCount = vSeries.rectCount;
+       }
     }
 
     /**

@@ -1,19 +1,8 @@
-import { Toolbar, Table } from '../../src/rich-text-editor/index';
-import { dispatchEvent } from '../../src/rich-text-editor/base/util';
+/**
+ * Blazor deprecated spec
+ */
 import { RichTextEditor } from '../../src/rich-text-editor/base/rich-text-editor';
-import { NodeSelection } from '../../src/selection/index';
-
-import { renderRTE, destroy, setCursorPoint, dispatchEvent as dispatchEve } from './../rich-text-editor/render.spec';
-import { createElement, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { QuickToolbar, MarkdownEditor, HtmlEditor, Link, Image } from "../../src/rich-text-editor/index";
-import { Browser, detach, getUniqueID } from "@syncfusion/ej2-base";
-import { FormValidator } from "@syncfusion/ej2-inputs";
-
-RichTextEditor.Inject(MarkdownEditor);
-RichTextEditor.Inject(HtmlEditor);
-
-RichTextEditor.Inject(Toolbar, Table);
-RichTextEditor.Inject(QuickToolbar, Link, Image);
+import { renderRTE, destroy } from './../rich-text-editor/render.spec';
 
 describe('RTE blazor coverage issues', () => {
 
@@ -22,7 +11,6 @@ describe('RTE blazor coverage issues', () => {
         let innerValue: string =
             `<img alt="Logo" src="https://ej2.syncfusion.com/demos/src/rich-text-editor/images/RTEImage-Feather.png" style="width: 300px; outline: rgb(74, 144, 226) solid 2px;" class="e-resize">`;
         beforeAll(() => {
-            
             rteObj = renderRTE({
                 value: innerValue
             });
@@ -57,7 +45,7 @@ describe('RTE blazor coverage issues', () => {
         afterAll(() => {
             delete (window as any).Blazor;
             delete (window as any).ejsInterop;
-            rteObj.destroy();
+            destroy(rteObj);
         });
     });
 });

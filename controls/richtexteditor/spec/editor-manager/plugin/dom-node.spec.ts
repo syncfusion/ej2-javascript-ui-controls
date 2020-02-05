@@ -40,7 +40,6 @@ describe('DOMNode plugin', () => {
          </ol>
          <iframe id="iframe"></iframe>
          ` });
-        let elem2: HTMLElement = createElement('div', { id: 'dom-node-iframe', innerHTML: '<iframe id="iframe"></iframe>' });
         beforeAll(() => {
             document.body.appendChild(elem);
             (Element.prototype as any).replaceWith = null;
@@ -152,7 +151,6 @@ describe('DOMNode plugin', () => {
             expect(spanEle.parentElement.id === 'new-element').toBe(true);
         });
 
-
         it('blockNodes method', () => {
             let edit: HTMLElement = elem.querySelector('[contenteditable="true"]');
             edit.focus();
@@ -251,5 +249,4 @@ describe('DOMNode plugin', () => {
             detach(elem);
         });
     });
-
 });
